@@ -13,6 +13,7 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Configuration;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
@@ -704,18 +705,41 @@ public sealed partial class WorkstationEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    [Fact]
-    public async Task MapWorkstationEndpoints_OperationsContinuityCommandRoutes_ShouldAdvanceToClosed()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MapWorkstationEndpoints_OperationsContinuityCommandRoutes_ShouldRequireAccountingCloseAuthority(bool controller)
     {
-        await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
+        var scope = new CloseReadinessScopeDto("test-fund-profile", Guid.NewGuid(), Guid.NewGuid(),
+            Guid.NewGuid().ToString("D"), "2026-05");
+        var closeAuthority = new HttpTransitionCloseAuthority(scope);
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterOperationsContinuityServices(services);
+            RegisterRetainedReportBook(services, scope.LedgerBookId!.Value, scope.FundAccountId!.Value);
+            services.AddHttpContextAccessor();
+            services.AddSingleton<IWorkstationTenantContextAccessor, HttpContextWorkstationTenantContextAccessor>();
+            services.AddSingleton<IFundProfileTenantGuard, RegistryFundProfileTenantGuard>();
+            services.AddSingleton<IFinancialOperationsCommandCenterReadService>(closeAuthority);
+            services.AddSingleton<IClosePublicationReadinessGuard>(sp => new ClosePublicationReadinessGuard(
+                () => sp.GetRequiredService<IFinancialOperationsCommandCenterReadService>(),
+                sp.GetRequiredService<IWorkstationTenantContextAccessor>(),
+                () => new OperationsReportPackAuthority(
+                    sp.GetRequiredService<Meridian.FinancialOperations.AccountingClose.IAccountingReportPackageService>(),
+                    sp.GetRequiredService<ILedgerBookService>(),
+                    sp.GetRequiredService<IFundProfileTenancyRegistry>(),
+                    sp.GetRequiredService<ILedgerJournalStore>())));
+        }, currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserRole: controller ? UserRole.Controller : UserRole.FundAccountant);
         var client = app.GetTestClient();
 
         var start = await PostTransitionAsync(client, "/api/workstation/operations/continuity", new OperationsStartWorkflowRequestDto(
-            Guid.NewGuid(),
-            "2026-05",
+            scope.FundAccountId!.Value,
+            scope.PeriodId!,
             null,
             "custodian",
-            "spoofed-user"));
+            "spoofed-user",
+            LedgerBookId: scope.LedgerBookId));
         var workflowId = start.Workflow!.WorkflowId;
 
         var import = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/import",
@@ -738,52 +762,93 @@ public sealed partial class WorkstationEndpointsTests
                 JournalCandidate: CreateOperationsLedgerJournalCandidate(start.Workflow!.FundAccountId)));
         var reconciled = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
             new OperationsReconciliationRunRequestDto(posted.Workflow!.Version, "spoofed-user", BreakCases: []));
+        var retainedPackageId = await RetainPreCloseReportAsync(app.Services, scope.LedgerBookId!.Value);
         var posture = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
-            new OperationsGatePostureRequestDto(reconciled.Workflow!.Version, "spoofed-user", ReportPackReady: true, ReportPackId: "report-pack-1"));
+            new OperationsGatePostureRequestDto(reconciled.Workflow!.Version, "spoofed-user", ReportPackReady: true, ReportPackId: retainedPackageId));
+        var acknowledged = await AcknowledgeOperationsChecklistAsync(client, posture.Workflow!);
         var submitted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/submit",
             new OperationsSubmitApprovalRequestDto(
-                posture.Workflow!.Version,
+                acknowledged.Version,
                 "spoofed-user",
-                "ops-user",
+                "independent-reviewer",
                 "Submit evidence",
-                "report-pack-1",
-                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals()));
+                retainedPackageId,
+                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals(acknowledged)));
+        client.DefaultRequestHeaders.Add("X-Meridian-Test-User", "independent-reviewer");
         var approved = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/approve",
             new OperationsApprovalDecisionRequestDto(
                 submitted.Workflow!.Version,
                 "spoofed-user",
                 "spoofed-reviewer",
                 "Approve close",
-                "report-pack-1",
-                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals()));
-        var closed = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/close",
-            new OperationsCloseWorkflowRequestDto(
-                approved.Workflow!.Version,
-                "spoofed-user",
-                "Close period",
-                "report-pack-1",
-                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals()));
+                retainedPackageId,
+                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals(submitted.Workflow!)));
+        closeAuthority.Workflow = approved.Workflow;
+        client.DefaultRequestHeaders.Remove("X-Meridian-Test-User");
+        var closeRoute = $"/api/workstation/operations/continuity/{workflowId}/close";
+        var closeRequest = new OperationsCloseWorkflowRequestDto(approved.Workflow!.Version, "spoofed-user",
+            "Close period", retainedPackageId, ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals(approved.Workflow!), CloseScope: scope);
+        using var missingScope = await client.PostAsJsonAsync(closeRoute, closeRequest with { CloseScope = null }, ServerJsonOptions);
+        missingScope.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var refusal = await missingScope.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
+        refusal!.Success.Should().BeFalse();
+        refusal.Blockers.Should().Contain(blocker => blocker.Code == "CLOSE_READINESS_REQUIRED");
+        closeAuthority.Requests.Should().BeEmpty("missing scope must stop before evaluating or mutating a close");
+        var unchanged = await app.Services.GetRequiredService<IOperationsContinuityWorkflowService>().GetAsync(workflowId);
+        unchanged!.Version.Should().Be(approved.Workflow.Version);
+        unchanged.Status.Should().NotBe(OperationsWorkflowStatusDto.Closed);
 
-        closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed);
-        closed.Workflow.Timeline.Should().Contain(entry => entry.EventType == "workflow-closed" && entry.Actor == "ops-user");
-        closed.Workflow.Approvals.Should().Contain(approval =>
+        using var wrongScope = await client.PostAsJsonAsync(closeRoute,
+            closeRequest with { CloseScope = scope with { EntityId = "another-entity" } }, ServerJsonOptions);
+        wrongScope.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await wrongScope.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions))!.Success.Should().BeFalse();
+
+        using var deniedClose = await client.PostAsJsonAsync(closeRoute, closeRequest, ServerJsonOptions);
+        if (controller)
+        {
+            deniedClose.StatusCode.Should().Be(HttpStatusCode.Conflict);
+            var accountingRefusal = await deniedClose.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
+            accountingRefusal!.ErrorCode.Should().Be("ACCOUNTING_CLOSE_REQUIRED");
+            accountingRefusal.Blockers.Should().Contain(blocker => blocker.Code == "ClosePeriodMutationConsistencyGateUnavailable",
+                "Controller compatibility requests must execute the governed accounting hard-close service");
+        }
+        else
+        {
+            deniedClose.StatusCode.Should().Be(HttpStatusCode.Forbidden,
+                "Operations mutation permission does not confer Controller authority for hard close");
+        }
+        var retained = await app.Services.GetRequiredService<IOperationsContinuityWorkflowService>().GetAsync(workflowId);
+        closeAuthority.Requests.Last().Scope.Should().Be(scope);
+        closeAuthority.Requests.Should().OnlyContain(request => request.TenantId == "tenant-test" && request.CompanyId == "tenant-test");
+
+        retained!.Status.Should().Be(OperationsWorkflowStatusDto.ReadyForClose);
+        retained.Timeline.Should().NotContain(entry => entry.EventType == "workflow-closed");
+        retained.Approvals.Should().Contain(approval =>
             approval.Status == OperationsApprovalStateDto.Approved &&
             approval.Operator == "ops-user" &&
-            approval.Reviewer == "ops-user");
+            approval.Reviewer == "independent-reviewer");
+        retained.Timeline.Should().Contain(entry =>
+            entry.EventType == "approval-approved" && entry.Actor == "independent-reviewer");
     }
 
     [Fact]
     public async Task MapWorkstationEndpoints_OperationsContinuityApprovalSubmit_ShouldPreserveAssignedReviewerFromRequest()
     {
-        await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
+        var bookId = Guid.NewGuid();
+        var accountId = Guid.NewGuid();
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterOperationsContinuityServices(services);
+            RegisterRetainedReportBook(services, bookId, accountId);
+        });
         var client = app.GetTestClient();
 
         var start = await PostTransitionAsync(client, "/api/workstation/operations/continuity", new OperationsStartWorkflowRequestDto(
-            Guid.NewGuid(),
+            accountId,
             "2026-05",
             null,
             "custodian",
-            "spoofed-user"));
+            "spoofed-user", LedgerBookId: bookId));
         var workflowId = start.Workflow!.WorkflowId;
         var import = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/import",
             new OperationsTransitionRequestDto(start.Workflow.Version, "spoofed-user"));
@@ -805,18 +870,20 @@ public sealed partial class WorkstationEndpointsTests
                 JournalCandidate: CreateOperationsLedgerJournalCandidate(start.Workflow!.FundAccountId)));
         var reconciled = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
             new OperationsReconciliationRunRequestDto(posted.Workflow!.Version, "spoofed-user", BreakCases: []));
+        var retainedPackageId = await RetainPreCloseReportAsync(app.Services, bookId);
         var posture = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
-            new OperationsGatePostureRequestDto(reconciled.Workflow!.Version, "spoofed-user", ReportPackReady: true, ReportPackId: "report-pack-1"));
+            new OperationsGatePostureRequestDto(reconciled.Workflow!.Version, "spoofed-user", ReportPackReady: true, ReportPackId: retainedPackageId));
 
         const string assignedReviewer = "independent-reviewer";
+        var acknowledged = await AcknowledgeOperationsChecklistAsync(client, posture.Workflow!);
         var submitted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/submit",
             new OperationsSubmitApprovalRequestDto(
-                posture.Workflow!.Version,
+                acknowledged.Version,
                 "spoofed-user",
                 assignedReviewer,
                 "Submit evidence",
-                "report-pack-1",
-                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals()));
+                retainedPackageId,
+                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals(acknowledged)));
 
         submitted.Workflow!.Approvals.Should().Contain(approval =>
             approval.Status == OperationsApprovalStateDto.Submitted &&
@@ -1096,6 +1163,42 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_DataOperationsPayload_ReportsTheTenantsScopedCredentialReadiness()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-tenant-readiness", Guid.NewGuid().ToString("N"));
+        var dataRoot = Path.Combine(root, "data");
+        Directory.CreateDirectory(dataRoot);
+        var configPath = Path.Combine(root, "appsettings.json");
+        await File.WriteAllTextAsync(configPath, JsonSerializer.Serialize(new { dataRoot }));
+        var vault = new FileProviderCredentialStore(dataRoot);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterConfigStores(services, configPath);
+            services.AddSingleton<IProviderCredentialStore>(vault);
+            services.AddSingleton(NullLogger<ProviderConnectionLifecycleService>.Instance);
+            services.AddSingleton<ProviderConnectionLifecycleService>();
+            services.AddSingleton<ProviderConnectionService>();
+        },
+            currentUserPermissions: UserPermission.ManageCredentials | UserPermission.ViewHistoricalData);
+        var connections = app.Services.GetRequiredService<ProviderConnectionService>();
+        await connections.UpsertForTenantAsync(new CreateProviderConnectionRequest(
+            ConnectionId: "polygon-owned", ProviderFamilyId: "polygon", DisplayName: "Owned Polygon",
+            ExternalAccountId: "account-owned"), "tenant-test", "default");
+        var scope = await connections.GetCredentialScopeForTenantAsync("polygon-owned", "tenant-test");
+        await vault.SaveScopedAsync(new ProviderCredentialSaveRequest("polygon",
+            new Dictionary<string, string?> { ["ApiKey"] = "owned-key" }, scope!.Environment), scope);
+
+        using var dataOperations = await ReadJsonAsync(app.GetTestClient(), "/api/workstation/data-operations");
+
+        var polygon = dataOperations.RootElement.GetProperty("providers").EnumerateArray()
+            .Single(provider => provider.GetProperty("providerId").GetString() == "polygon");
+        var summary = polygon.GetProperty("connectionSummary").Deserialize<ProviderConnectionRowDto>(ServerJsonOptions);
+        summary!.CredentialState.Should().Be(ProviderCredentialStateDto.Configured,
+            "the workstation reports the same tenant readiness as the providers endpoint and Settings");
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_DataOperationsPayload_ShouldAggregateMultipleRoutingConnectionsByProviderFamily()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-routing-summary", Guid.NewGuid().ToString("N"));
@@ -1119,18 +1222,39 @@ public sealed partial class WorkstationEndpointsTests
         var connectionService = app.Services.GetRequiredService<ProviderConnectionService>();
         var bindingService = app.Services.GetRequiredService<ProviderBindingService>();
 
-        await connectionService.UpsertAsync(new CreateProviderConnectionRequest(
+        // Routing summaries follow the direct /api/provider-routing reads: only connections retained
+        // for the request tenant contribute. The foreign and unassigned connections must not.
+        await connectionService.UpsertForTenantAsync(new CreateProviderConnectionRequest(
             ConnectionId: "alpaca-paper",
             ProviderFamilyId: "alpaca",
             DisplayName: "Alpaca Paper",
             ConnectionType: "DataVendor",
             ConnectionMode: "Paper",
             Enabled: true,
-            ProductionReady: false));
-        await connectionService.UpsertAsync(new CreateProviderConnectionRequest(
+            ExternalAccountId: "account-paper",
+            ProductionReady: false), "tenant-test", "paper");
+        await connectionService.UpsertForTenantAsync(new CreateProviderConnectionRequest(
             ConnectionId: "alpaca-live",
             ProviderFamilyId: "alpaca",
             DisplayName: "Alpaca Live",
+            ConnectionType: "DataVendor",
+            ConnectionMode: "Live",
+            Enabled: true,
+            ExternalAccountId: "account-live",
+            ProductionReady: true), "tenant-test", "live");
+        await connectionService.UpsertForTenantAsync(new CreateProviderConnectionRequest(
+            ConnectionId: "alpaca-foreign",
+            ProviderFamilyId: "alpaca",
+            DisplayName: "Foreign Alpaca",
+            ConnectionType: "DataVendor",
+            ConnectionMode: "Live",
+            Enabled: true,
+            ExternalAccountId: "account-foreign",
+            ProductionReady: true), "tenant-foreign", "live");
+        await connectionService.UpsertAsync(new CreateProviderConnectionRequest(
+            ConnectionId: "alpaca-unassigned",
+            ProviderFamilyId: "alpaca",
+            DisplayName: "Unassigned Alpaca",
             ConnectionType: "DataVendor",
             ConnectionMode: "Live",
             Enabled: true,
@@ -1145,8 +1269,18 @@ public sealed partial class WorkstationEndpointsTests
             BindingId: "alpaca-live-realtime",
             Capability: nameof(ProviderCapabilityKind.RealtimeMarketData),
             ConnectionId: "alpaca-live"));
+        await bindingService.UpsertAsync(new UpdateProviderBindingRequest(
+            BindingId: "alpaca-foreign-realtime",
+            Capability: nameof(ProviderCapabilityKind.RealtimeMarketData),
+            ConnectionId: "alpaca-foreign",
+            FailoverConnectionIds: ["alpaca-unassigned"]));
+        await bindingService.UpsertAsync(new UpdateProviderBindingRequest(
+            BindingId: "alpaca-unassigned-historical",
+            Capability: nameof(ProviderCapabilityKind.HistoricalBars),
+            ConnectionId: "alpaca-unassigned"));
 
         using var dataOperations = await ReadJsonAsync(client: app.GetTestClient(), "/api/workstation/data-operations");
+        dataOperations.RootElement.GetRawText().Should().NotContain("alpaca-foreign").And.NotContain("alpaca-unassigned");
         var providers = dataOperations.RootElement.GetProperty("providers").EnumerateArray().ToArray();
 
         providers.Count(provider => provider.GetProperty("providerId").GetString() == "alpaca").Should().Be(1);
@@ -8107,15 +8241,42 @@ public sealed partial class WorkstationEndpointsTests
         return result;
     }
 
-    private static IReadOnlyList<OperationsChecklistControlApprovalDto> RequiredOperationsChecklistControlApprovals() =>
-    [
-        new("close-gate-brokeringest", "operations-lead", new DateTimeOffset(2026, 5, 31, 12, 0, 0, TimeSpan.Zero)),
-        new("close-gate-securitymaster", "security-master-lead", new DateTimeOffset(2026, 5, 31, 12, 1, 0, TimeSpan.Zero)),
-        new("close-gate-ledgerposting", "ledger-lead", new DateTimeOffset(2026, 5, 31, 12, 2, 0, TimeSpan.Zero)),
-        new("close-gate-reconciliation", "reconciliation-lead", new DateTimeOffset(2026, 5, 31, 12, 3, 0, TimeSpan.Zero)),
-        new("close-gate-approval", "controller", new DateTimeOffset(2026, 5, 31, 12, 4, 0, TimeSpan.Zero)),
-        new("close-gate-approval", "fund-admin", new DateTimeOffset(2026, 5, 31, 12, 5, 0, TimeSpan.Zero))
-    ];
+    private static async Task<OperationsContinuityWorkflowDto> AcknowledgeOperationsChecklistAsync(
+        HttpClient client, OperationsContinuityWorkflowDto workflow)
+    {
+        foreach (var taskId in workflow.CloseChecklist
+                     .Where(task => task.Gate != OperationsGateKeyDto.Approval)
+                     .Select(task => task.TaskId))
+        {
+            var acknowledged = await PostTransitionAsync(client,
+                $"/api/workstation/operations/continuity/{workflow.WorkflowId}/checklist/{taskId}/acknowledge",
+                new OperationsChecklistAcknowledgeRequestDto(
+                    workflow.Version, "spoofed-user", "Reviewed retained gate evidence."));
+            workflow = acknowledged.Workflow!;
+        }
+
+        workflow.CloseChecklist.Where(task => task.Gate != OperationsGateKeyDto.Approval)
+            .Should().OnlyContain(task => task.AcknowledgedBy == "ops-user" && task.AcknowledgedAtUtc != null);
+        return workflow;
+    }
+
+    private static IReadOnlyList<OperationsChecklistControlApprovalDto> RequiredOperationsChecklistControlApprovals(
+        OperationsContinuityWorkflowDto workflow)
+    {
+        var controls = workflow.CloseChecklist
+            .Where(task => task.Gate != OperationsGateKeyDto.Approval && task.AcknowledgedAtUtc.HasValue)
+            .Select(task => new OperationsChecklistControlApprovalDto(
+                task.TaskId, task.AcknowledgedBy!, task.AcknowledgedAtUtc!.Value))
+            .ToList();
+        if (workflow.ApprovalState == OperationsApprovalStateDto.Approved)
+        {
+            var approval = workflow.Approvals.Last(row => row.Status == OperationsApprovalStateDto.Approved);
+            controls.Add(new("close-gate-approval", approval.Operator!, approval.SubmittedAtUtc!.Value));
+            controls.Add(new("close-gate-approval", approval.Reviewer!, approval.DecidedAtUtc!.Value));
+        }
+
+        return controls;
+    }
 
     private static OperationsBreakCaseDto CreateOperationsContinuityOpenBreak(Guid fundAccountId, string breakId) =>
         new(
@@ -9711,6 +9872,7 @@ public sealed partial class WorkstationEndpointsTests
     private sealed class RecordingLedgerJournalStore : ILedgerJournalStore
     {
         public List<LedgerJournalEntryWrite> Appended { get; } = [];
+        private readonly Dictionary<Guid, DateTimeOffset> _recordedAt = [];
 
         public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
         {
@@ -9721,7 +9883,19 @@ public sealed partial class WorkstationEndpointsTests
             }
 
             Appended.Add(entry);
+            _recordedAt[entry.Entry.JournalEntryId] = DateTimeOffset.UtcNow;
             return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(LedgerJournalEntryQuery query, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(Appended
+                .Select((entry, index) => (entry, sequence: index + 1L))
+                .Where(item => item.entry.PeriodId == query.PeriodId && item.entry.LedgerBookId == query.LedgerBookId)
+                .Select(item => new LedgerJournalEntryRecord(item.entry.Entry, item.entry.AggregateId,
+                    item.entry.PeriodId, item.entry.CommandId, item.entry.CorrelationId, item.sequence,
+                    _recordedAt[item.entry.Entry.JournalEntryId], item.entry.AccountingBasis)).ToArray());
         }
 
         public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default)

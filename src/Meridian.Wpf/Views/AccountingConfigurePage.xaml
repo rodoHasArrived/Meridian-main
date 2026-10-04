@@ -1172,6 +1172,21 @@
                                         <DataGridTextColumn Header="Validation" Binding="{Binding Evidence}" Width="*" />
                                     </DataGrid.Columns>
                                 </DataGrid>
+                                <TextBlock Text="Recurring journal occurrences" Style="{StaticResource CardHeaderStyle}" Margin="0,16,0,0" />
+                                <TextBlock Text="Entity scope" Margin="0,8,0,4" />
+                                <ComboBox ItemsSource="{Binding RecurringJournalEntityOptions}" SelectedItem="{Binding SelectedRecurringJournalEntityId}" AutomationProperties.Name="Recurring journal entity scope" />
+                                <TextBlock Text="{Binding RecurringJournalQueue.StatusText}" TextWrapping="Wrap" Margin="0,8,0,0" />
+                                <DataGrid ItemsSource="{Binding RecurringJournalQueue.Rows}" IsReadOnly="True" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="RecurringJournalOccurrenceGrid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Schedule / Template" Binding="{Binding Definition}" Width="230" />
+                                        <DataGridTextColumn Header="Effective / Period" Binding="{Binding EffectiveDate}" Width="160" />
+                                        <DataGridTextColumn Header="State / Human approval" Binding="{Binding State}" Width="190" />
+                                        <DataGridTextColumn Header="Retained draft" Binding="{Binding Draft}" Width="270" />
+                                        <DataGridTextColumn Header="Blocked reason" Binding="{Binding Blockers}" Width="300" />
+                                        <DataGridTextColumn Header="Lock owner / Governed reopen" Binding="{Binding PeriodLock}" Width="350" />
+                                        <DataGridTextColumn Header="Retained source references" Binding="{Binding Evidence}" Width="300" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
                                 <TextBlock Text="Payment Intent and Cash Evidence" Style="{StaticResource CardHeaderStyle}" Margin="0,16,0,0" />
                                 <DataGrid ItemsSource="{Binding ManualJournalPaymentIntentRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="ManualJournalPaymentIntentGrid">
                                     <DataGrid.Columns>

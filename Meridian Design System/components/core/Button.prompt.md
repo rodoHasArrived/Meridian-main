@@ -1,4 +1,4 @@
-Action button mirroring the desktop control styles. `primary` is the solid teal-blue (`--accent`) institutional action — **one per screen**; `ghost` is the white paper secondary with a hairline border; `danger` is a ghost that resolves to red on hover; `link` is a text-only info action.
+Action button mirroring the desktop control styles. `primary` is the solid copper (`--accent`) institutional action — **one per screen**; `ghost` is the white paper secondary with a hairline border; `danger` is a ghost that resolves to red on hover; `link` is a text-only info action.
 
 ```jsx
 <Button variant="primary">Run backfill</Button>

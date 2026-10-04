@@ -11,6 +11,10 @@ last_reviewed: 2026-07-05
 
 # src/Meridian.Execution.Sdk
 
+## Shared close and lot convergence
+
+`CanonicalTaxLotAdapter` validates legacy execution lot identity, quantity, acquisition date, and basis against a supplied retained canonical lot. Symbols remain display evidence. The adapter refuses shorts pending an explicit direction-model cutover and does not synthesize identity or FX facts.
+
 ## Purpose
 
 Execution SDK provides abstractions shared by execution gateways, broker integrations, and execution-facing services.

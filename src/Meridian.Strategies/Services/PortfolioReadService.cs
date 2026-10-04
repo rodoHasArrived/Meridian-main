@@ -100,7 +100,11 @@ public sealed class PortfolioReadService
                 SleeveScopeId: scope.SleeveId,
                 SleeveScopeDisplayName: scope.SleeveDisplayName,
                 VehicleScopeId: scope.VehicleId,
-                VehicleScopeDisplayName: scope.VehicleDisplayName))
+                VehicleScopeDisplayName: scope.VehicleDisplayName,
+                MarkFreshness: new MarkFreshnessAssessmentDto(position.Symbol, null, scope.AccountId,
+                    DateOnly.FromDateTime(latestSnapshot.Timestamp.UtcDateTime), null, null,
+                    "Unassessed", "ReviewRequired",
+                    "The retained position has no mark observation date; snapshot time is not mark evidence.")))
             .ToArray();
 
         var longMarketValue = latestSnapshot.LongMarketValue;

@@ -187,8 +187,9 @@ public sealed class DailyMarkToMarketServiceTests
             Actor: "ops", Reason: "daily close marks"));
 
         run.UnpricedSymbols.Should().Equal("NOPRICE");
-        run.HasDraft.Should().BeTrue("priced positions must still produce a draft");
-        run.Projection!.Lines.Should().ContainSingle(line => line.Symbol == "AAPL");
+        run.HasDraft.Should().BeFalse("incomplete valuation coverage cannot support approved numbers");
+        run.IsBlocked.Should().BeTrue();
+        run.Projection.Should().BeNull();
     }
 
     [Fact]

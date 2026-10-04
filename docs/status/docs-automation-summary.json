@@ -5,6 +5,8 @@
     "scan-todos",
     "validate-docs-structure",
     "validate-agent-definitions",
+    "validate-adapter-readiness",
+    "check-adapter-readiness-matrix",
     "generate-structure-docs",
     "generate-health-dashboard",
     "validate-examples",
@@ -58,6 +60,32 @@
       "command": [
         "python3",
         "build/scripts/docs/validate-agent-definitions.py"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": null,
+      "error": null
+    },
+    {
+      "name": "validate-adapter-readiness",
+      "command": [
+        "python3",
+        "build/scripts/docs/validate-adapter-readiness.py",
+        "--summary"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": null,
+      "error": null
+    },
+    {
+      "name": "check-adapter-readiness-matrix",
+      "command": [
+        "python3",
+        "build/scripts/docs/render-adapter-readiness.py",
+        "--check"
       ],
       "return_code": 0,
       "duration_seconds": 0.0,

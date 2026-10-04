@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -153,6 +154,11 @@ def load_dotnet_summary(path: Path | None) -> tuple[list[str], list[str]]:
         f"Passed: {payload.get('passed', 0)}",
         f"Failed: {payload.get('failed', 0)}",
     ]
+    if payload.get("counts"):
+        totals.append(f"Test counts: {json.dumps(payload['counts'])}")
+    for row in results:
+        if isinstance(row, dict) and row.get("evidence_error"):
+            failed_projects.append(f"{row.get('name')}: {row['evidence_error']}")
     return totals, failed_projects
 
 
@@ -172,6 +178,10 @@ def build_summary(
         "",
         f"- Result: `{result}`",
         f"- Exit code: `{exit_code}`",
+        f"- Run attempt: `{os.environ.get('GITHUB_RUN_ATTEMPT', 'local')}`; commit: `{os.environ.get('GITHUB_SHA', 'local')}`",
+        f"- Dependency cache hit: `{os.environ.get('MERIDIAN_DEPENDENCY_CACHE_HIT', 'not reported')}`",
+        f"- Reproduce: `bash scripts/ci.sh --lane {lane}`",
+        "- Queue time: available after completion through `ci-metrics.py`; excluded from step durations.",
     ]
 
     if steps:

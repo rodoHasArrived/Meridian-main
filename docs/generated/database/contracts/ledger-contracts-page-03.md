@@ -2,11 +2,25 @@
 
 # `ledger-contracts` data objects - page 3 of 4
 
-Objects 161-240 of 298. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 299. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_CreateAccountingPolicyRequest["CreateAccountingPolicyRequest"] {
+        +AccountingBasisKindDto AccountingBasis
+        +string DisplayName
+        +DateOnly EffectiveFrom
+        +DateOnly? EffectiveTo
+        +string? FundProfileId
+        +Guid? FundStructureNodeId
+        +string? InstrumentId
+        +bool IsDefault
+        +string PolicyId
+        +AccountingPolicyRulePackDto? RulePack
+        +string RulesJson
+        +Guid? SourceEventId
+    }
     class Meridian_Contracts_Ledger_CreateLateAdjustmentRequestDto["CreateLateAdjustmentRequestDto"] {
         +OperationsActionOriginDto ActionOrigin
         +decimal Amount
@@ -30,6 +44,7 @@ classDiagram
         +FundStructureNodeKindDto FundStructureNodeKind
     }
     class Meridian_Contracts_Ledger_CreateLedgerPeriodRequest["CreateLedgerPeriodRequest"] {
+        +string? CreatedBy
         +DateOnly EndDate
         +int FiscalYear
         +string Label
@@ -544,12 +559,12 @@ classDiagram
         +string? ClosePackageId
         +string? ClosePackageManifestId
         +string? ClosePackageRetainedManifestRoute
+        +CloseReadinessScopeDto? CloseScope
         +string? ControllerRole
         +string? CorrelationId
         +IReadOnlyList~string~ EvidenceLinks
         +long ExpectedWorkflowVersion
         +bool PrepareClosingEntriesOnly
-        +string Rationale
     }
     class Meridian_Contracts_Ledger_ManualJournalEntryDraftDto["ManualJournalEntryDraftDto"] {
         +AccountingBasisKindDto AccountingBasis
@@ -658,16 +673,6 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_OperationalFinanceScopeKindDto["OperationalFinanceScopeKindDto"] {
     }
-    class Meridian_Contracts_Ledger_OperationalFinanceTraceNodeDto["OperationalFinanceTraceNodeDto"] {
-        +LedgerDimensionSetDto? Dimensions
-        +string DisplayName
-        +IReadOnlyList~string~ EvidenceLinks
-        +string NodeId
-        +string? RecordId
-        +string? Route
-        +OperationalFinanceTraceStageDto Stage
-        +string Status
-    }
     Meridian_Contracts_Ledger_DimensionMappingProfileDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_ExternalGlExportLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportCertificationDto
@@ -729,8 +734,6 @@ classDiagram
     Meridian_Contracts_Ledger_OperationalEventCommandContextDto --> Meridian_Contracts_Ledger_OperationalFinanceScopeDto
     Meridian_Contracts_Ledger_OperationalFinanceRecordTraceDto --> Meridian_Contracts_Ledger_ManualJournalEntryStatusDto
     Meridian_Contracts_Ledger_OperationalFinanceRecordTraceDto --> Meridian_Contracts_Ledger_OperationalEventCommandContextDto
-    Meridian_Contracts_Ledger_OperationalFinanceRecordTraceDto --> Meridian_Contracts_Ledger_OperationalFinanceTraceNodeDto
     Meridian_Contracts_Ledger_OperationalFinanceScopeDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_OperationalFinanceScopeDto --> Meridian_Contracts_Ledger_OperationalFinanceScopeKindDto
-    Meridian_Contracts_Ledger_OperationalFinanceTraceNodeDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
 ```

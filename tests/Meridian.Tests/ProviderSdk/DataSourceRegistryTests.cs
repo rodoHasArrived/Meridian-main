@@ -17,6 +17,34 @@ public sealed class DataSourceRegistryTests
     #region DiscoverFromAssemblies
 
     [Fact]
+    public void DiscoverFromAssemblyWithResult_AliasesShareCanonicalCapabilityConflictDetection()
+    {
+        var registry = new DataSourceRegistry();
+        registry.DiscoverFromAssemblies(CreateDataSourceAssembly(
+            new DynamicDataSource("ibkr", "Canonical stream", DataSourceCapabilityContracts.MarketDataClient)));
+
+        var result = registry.DiscoverFromAssemblyWithResult(CreateDataSourceAssembly(
+            new DynamicDataSource("interactive-brokers", "Alias stream", DataSourceCapabilityContracts.MarketDataClient)));
+
+        result.Committed.Should().BeFalse();
+        result.Outcomes.Should().ContainSingle(outcome =>
+            outcome.Candidate.Id == "ibkr" && outcome.Disposition == DataSourceRegistrationDisposition.Conflict);
+        registry.Sources.Should().ContainSingle(source => source.Id == "ibkr");
+    }
+
+    [Fact]
+    public void DiscoverFromAssemblies_ProductionInventoryExcludesTemplatesAndMapperOnlyFamilies()
+    {
+        var registry = new DataSourceRegistry();
+        registry.DiscoverFromAssemblies(typeof(NoOpMarketDataClient).Assembly);
+
+        registry.Sources.Should().NotContain(source =>
+            source.Id == "templates" || source.Id == "tradestation" || source.Id == "tradier");
+        registry.Sources.Should().OnlyContain(source =>
+            source.ImplementationType.GetDataSourceAttribute()!.IsProductionProvider);
+    }
+
+    [Fact]
     public void DiscoverFromAssemblies_NullAssemblies_ThrowsArgumentException()
     {
         var registry = new DataSourceRegistry();
@@ -244,6 +272,24 @@ public sealed class DataSourceRegistryTests
     #region RegisterServices
 
     [Fact]
+    public void RegisterServices_PreservesConfiguredFactoryForDiscoveredImplementation()
+    {
+        var registry = new DataSourceRegistry();
+        registry.DiscoverFromAssemblies(CreateDataSourceAssembly(
+            new DynamicDataSource("configured", "Configured", DataSourceCapabilityContracts.MarketDataClient)));
+        var implementation = registry.Sources.Single().ImplementationType;
+        var configuredInstance = Activator.CreateInstance(implementation)!;
+        var services = new ServiceCollection();
+        services.AddSingleton(implementation, _ => configuredInstance);
+
+        registry.RegisterServices(services);
+
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService(implementation).Should().BeSameAs(configuredInstance);
+        services.Should().ContainSingle(descriptor => descriptor.ServiceType == implementation);
+    }
+
+    [Fact]
     public void RegisterServices_NullServiceCollection_ThrowsArgumentNullException()
     {
         var registry = new DataSourceRegistry();
@@ -313,6 +359,31 @@ public sealed class DataSourceRegistryTests
     #endregion
 
     #region RegisterModules
+
+    [Fact]
+    public void RegisterModules_ConfiguredAliasReachesCanonicalModuleBeforeContainerBuild()
+    {
+        var registry = new DataSourceRegistry();
+        registry.ConfigureModule(" interactive-brokers ", new ProviderModuleContext { Enabled = true, Priority = 37 });
+        var services = new ServiceCollection();
+
+        registry.RegisterModules(services, typeof(DataSourceRegistryTests).Assembly);
+
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<CanonicalModuleMarker>().Priority.Should().Be(37);
+    }
+
+    [Fact]
+    public void RegisterModules_CatalogOwnedAliasCannotBeOverwrittenByDiscoveredModule()
+    {
+        var registry = new DataSourceRegistry();
+        registry.ConfigureModule("ibkr", new ProviderModuleContext { Enabled = true });
+        var services = new ServiceCollection();
+
+        registry.RegisterModules(services, new HashSet<string> { "interactive-brokers" }, typeof(DataSourceRegistryTests).Assembly);
+
+        services.Should().NotContain(descriptor => descriptor.ServiceType == typeof(CanonicalModuleMarker));
+    }
 
     [Fact]
     public void RegisterModules_NullServiceCollection_ThrowsArgumentNullException()
@@ -524,6 +595,18 @@ internal sealed class ManualTimeProvider(DateTimeOffset utcNow) : TimeProvider
 
 /// <summary>Marker service type registered by DataSourceRegistryRequiresConfigModule.</summary>
 internal sealed class DataSourceRegistryTestMarker { }
+
+internal sealed record CanonicalModuleMarker(int Priority);
+
+internal sealed class CanonicalAliasTestModule : ConfigurableProviderModuleBase
+{
+    public override string ModuleId => "ibkr";
+    public override string ModuleDisplayName => "Canonical alias test";
+    public override bool RequiresExternalConfig => true;
+
+    public override void Register(IServiceCollection services, DataSourceRegistry registry)
+        => services.AddSingleton(new CanonicalModuleMarker(Context!.Priority));
+}
 
 /// <summary>
 /// Test module that requires external config. Used to verify DataSourceRegistry's

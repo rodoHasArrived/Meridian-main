@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
+using Meridian.Wpf.Workstation.Controls;
 
 namespace Meridian.Wpf.Services;
 
@@ -79,6 +80,16 @@ public sealed class KeyboardShortcutService
             key = e.SystemKey;
         }
 
+        // Context-specific gestures defer to the focused element: this tunneling handler runs
+        // before any control's own routed-command binding, so consuming Ctrl+C, Ctrl+F, or
+        // Escape here would starve the dense grids' copy, filter-focus, and close-details
+        // bindings (and a text editor's native copy) whenever a global registration shares the
+        // gesture. When the focused element can serve the matching routed command the event is
+        // left unhandled and routes to it; the registrations remain for the shortcut catalog
+        // and as the behavior everywhere nothing focused can serve the gesture.
+        if (DefersToFocusedRoutedCommand(key, modifiers))
+            return;
+
         foreach (var kvp in _shortcuts)
         {
             var action = kvp.Value;
@@ -92,6 +103,77 @@ public sealed class KeyboardShortcutService
                 return;
             }
         }
+    }
+
+    /// <summary>
+    /// True when this gesture belongs to the focused element rather than the global handler:
+    /// dense grids carry routed bindings for copy (<see cref="ApplicationCommands.Copy"/>),
+    /// filter focus (<see cref="DenseGridKeyboardCommands.FocusFilter"/>), and close-details
+    /// (<see cref="DenseGridKeyboardCommands.CloseDetails"/>), and text editors serve the
+    /// routed Copy natively — all of which this service's tunneling PreviewKeyDown would
+    /// otherwise consume before they ever see the key.
+    /// </summary>
+    internal static bool DefersToFocusedRoutedCommand(Key key, ModifierKeys modifiers)
+    {
+        RoutedCommand? routed = (key, modifiers) switch
+        {
+            (Key.C, ModifierKeys.Control) => ApplicationCommands.Copy,
+            (Key.F, ModifierKeys.Control) => DenseGridKeyboardCommands.FocusFilter,
+            (Key.Escape, ModifierKeys.None) => DenseGridKeyboardCommands.CloseDetails,
+            _ => null
+        };
+
+        if (routed is null || Keyboard.FocusedElement is not { } focused)
+        {
+            return false;
+        }
+
+        if (routed.CanExecute(null, focused))
+        {
+            return true;
+        }
+
+        // The dense grid mirrors its chrome gestures onto external composition surfaces (the
+        // filter target, the inspector rail) as key bindings whose CommandTarget is the grid,
+        // because those surfaces are siblings of the grid and a query routed from the focused
+        // element can never reach the grid's command bindings. The deferral must honor the same
+        // compensation, or this tunneling handler would consume the gesture before the mirrored
+        // binding ever runs: a matching binding on the focused element's chain whose target can
+        // execute serves the gesture.
+        return FindMirroredRoutedCommandTarget(focused as DependencyObject, key, modifiers, routed) is { } target
+               && routed.CanExecute(null, target);
+    }
+
+    /// <summary>
+    /// The <see cref="KeyBinding.CommandTarget"/> of the nearest key binding for this gesture
+    /// and routed command on the focused element's ancestor chain — the same chain WPF's own
+    /// input processing consults, nearest binding first — or null when no such binding exists.
+    /// </summary>
+    private static IInputElement? FindMirroredRoutedCommandTarget(
+        DependencyObject? element, Key key, ModifierKeys modifiers, RoutedCommand routed)
+    {
+        while (element is not null)
+        {
+            if (element is UIElement scope)
+            {
+                foreach (InputBinding binding in scope.InputBindings)
+                {
+                    if (binding is KeyBinding { CommandTarget: { } target } keyBinding
+                        && keyBinding.Key == key
+                        && keyBinding.Modifiers == modifiers
+                        && ReferenceEquals(keyBinding.Command, routed))
+                    {
+                        return target;
+                    }
+                }
+            }
+
+            element = element is System.Windows.Media.Visual or System.Windows.Media.Media3D.Visual3D
+                ? System.Windows.Media.VisualTreeHelper.GetParent(element) ?? LogicalTreeHelper.GetParent(element)
+                : LogicalTreeHelper.GetParent(element);
+        }
+
+        return null;
     }
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)

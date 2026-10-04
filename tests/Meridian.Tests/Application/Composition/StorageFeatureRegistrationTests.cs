@@ -112,9 +112,9 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         services.Should().NotContain(sd => sd.ServiceType == typeof(IHostedService) &&
             sd.ImplementationType == typeof(SecurityMasterProjectionWarmupService));
         services.Should().NotContain(sd => sd.ServiceType == typeof(IHostedService) &&
-            sd.ImplementationType == typeof(DirectLendingOutboxDispatcher));
+            sd.ImplementationType == typeof(TenantPostureHostedService<DirectLendingOutboxDispatcher>));
         services.Should().NotContain(sd => sd.ServiceType == typeof(IHostedService) &&
-            sd.ImplementationType == typeof(DailyAccrualWorker));
+            sd.ImplementationType == typeof(TenantPostureHostedService<DailyAccrualWorker>));
     }
 
     [Fact]
@@ -231,9 +231,9 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IHostedService) &&
             sd.ImplementationType == typeof(SecurityMasterProjectionWarmupService));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IHostedService) &&
-            sd.ImplementationType == typeof(DirectLendingOutboxDispatcher));
+            sd.ImplementationType == typeof(TenantPostureHostedService<DirectLendingOutboxDispatcher>));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IHostedService) &&
-            sd.ImplementationType == typeof(DailyAccrualWorker));
+            sd.ImplementationType == typeof(TenantPostureHostedService<DailyAccrualWorker>));
     }
 
     [Fact]

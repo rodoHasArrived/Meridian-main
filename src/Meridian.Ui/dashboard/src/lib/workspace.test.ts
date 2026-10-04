@@ -6,6 +6,7 @@ import {
   appendRouteQuery,
   evidenceWorkbenchPath,
   legacyWorkspaceRedirect,
+  marketDataDeskPath,
   normalizeLocalWorkstationRoute,
   normalizeWorkspacePath,
   resolveWorkstationRouteBreadcrumbLabel,
@@ -164,6 +165,36 @@ describe("workspace metadata", () => {
     expect(legacyWorkspaceRedirect("/data/alerts", "?symbol=MSFT", "#active")).toBe(
       "/data/quotes?symbol=MSFT&view=alerts#active"
     );
+  });
+
+  it("resolves in-app market data desk links through one canonical helper", () => {
+    expect(marketDataDeskPath("quotes")).toBe("/data/quotes");
+    expect(marketDataDeskPath("watchlist")).toBe("/data/quotes?view=watchlist");
+    expect(marketDataDeskPath("alerts", { symbol: "MSFT" })).toBe("/data/quotes?symbol=MSFT&view=alerts");
+  });
+
+  it("keeps retired route literals out of screen source", async () => {
+    // The folds in W8-UX-CONSOL-001 left call sites still naming the retired paths, so in-app
+    // navigation bounced through a redirect that exists for external bookmarks. The redirects and
+    // their catalog keys stay - this guard only keeps screens from reaching for them directly.
+    const modules = import.meta.glob("../screens/**/*.{ts,tsx}", { query: "?raw", import: "default", eager: true });
+    const retired = ["/data/watchlist", "/data/alerts", "/accounting/trial-balance", "/data/evidence"];
+    const offenders: string[] = [];
+
+    for (const [path, source] of Object.entries(modules)) {
+      if (path.includes(".test.")) {
+        continue;
+      }
+
+      for (const literal of retired) {
+        if ((source as string).includes(`"${literal}"`) || (source as string).includes(`'${literal}'`)) {
+          offenders.push(`${path} names ${literal}`);
+        }
+      }
+    }
+
+    expect(offenders, "screens must link through WORKSTATION_ROUTE_CATALOG or a desk-path helper, not retired routes")
+      .toEqual([]);
   });
 
   it("returns workspace summaries for canonical keys", () => {

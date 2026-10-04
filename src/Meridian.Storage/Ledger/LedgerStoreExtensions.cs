@@ -22,9 +22,14 @@ public static class LedgerStoreExtensions
             RequireGovernedPostingCommand = true,
             RequireExpectedVersion = true
         });
+        services.AddSingleton<Func<Meridian.Storage.SecurityMaster.ISecurityMasterStore?>>(sp =>
+            () => sp.GetService<Meridian.Storage.SecurityMaster.ISecurityMasterStore>());
+        services.AddSingleton<Func<Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore?>>(sp =>
+            () => sp.GetService<Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore>());
         services.AddSingleton<PostgresLedgerJournalStore>();
         services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+        services.AddSingleton<Meridian.Contracts.Accounting.Lots.IOpenLotBackfillStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<IGovernedLedgerPostingTarget, DurableLedgerPostingTarget>();
         services.AddSingleton(sp => new DurableAutomatedJournalPoster(
             sp.GetRequiredService<IGovernedLedgerPostingTarget>()));

@@ -10,7 +10,7 @@ automation guidance is not scattered across the repo.
 | `.github/prompts/*.prompt.yml` | Copilot prompt files for common maintenance, provider, review, test, performance, and WPF tasks |
 | `.github/prompts/README.md` | Prompt usage guide and prompt catalog |
 | `build/scripts/docs/generate-prompts.py` | Current local prompt-generation helper |
-| `archive/docs/workflows/legacy-github-actions-2026-05-18.md` | Archive note for retired prompt-generation workflow automation |
+| [`archive/docs/workflows/legacy-github-actions-2026-05-18.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/workflows/legacy-github-actions-2026-05-18.md) | Archive note for retired prompt-generation workflow automation |
 | `docs/ai/prompts/README.md` | AI docs index for prompt usage |
 | `scripts/ai/*.sh` | AI maintenance routing scripts |
 

@@ -234,6 +234,14 @@ public sealed class GenericReadOnlyDataProviderSetupHandler : ProviderSetupHandl
     }
 }
 
+public sealed class ExternalGlProviderSetupHandler : ProviderSetupHandlerBase
+{
+    public ExternalGlProviderSetupHandler(string providerId)
+        : base(providerId, [], true, ProviderConnectionMode.ReadOnly, false, credentialOnly: true)
+    {
+    }
+}
+
 public static class DefaultProviderSetupHandlers
 {
     public static IReadOnlyList<IProviderSetupHandler> Create()
@@ -243,11 +251,13 @@ public static class DefaultProviderSetupHandlers
             new PolygonProviderSetupHandler(),
             new PlaidProviderSetupHandler(),
             new QuickBooksProviderSetupHandler(),
+            new ExternalGlProviderSetupHandler("xero"),
+            new ExternalGlProviderSetupHandler("netsuite"),
             new GenericReadOnlyDataProviderSetupHandler("ib-flex", aliases: ["ibflex", "ib-flex-web-service"]),
             new GenericReadOnlyDataProviderSetupHandler("finnhub"),
             new GenericReadOnlyDataProviderSetupHandler("tiingo"),
             new GenericReadOnlyDataProviderSetupHandler("alphavantage", aliases: ["alpha-vantage", "alphaVantage"]),
-            new GenericReadOnlyDataProviderSetupHandler("nasdaqdatalink", aliases: ["nasdaq", "nasdaq-data-link"]),
+            new GenericReadOnlyDataProviderSetupHandler("nasdaq", aliases: ["nasdaqdatalink", "nasdaq-data-link"]),
             new GenericReadOnlyDataProviderSetupHandler("twelvedata", aliases: ["twelve-data", "twelvedata-api"]),
             new GenericReadOnlyDataProviderSetupHandler("openfigi", aliases: ["open-figi", "openfigi-api"]),
             new GenericReadOnlyDataProviderSetupHandler("stooq"),

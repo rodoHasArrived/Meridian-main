@@ -1,3 +1,5 @@
+using Meridian.Storage.Archival;
+using Meridian.Core.IO;
 using Meridian.Application.Backfill;
 using Meridian.Core.Config;
 using Meridian.PortfolioRecords.Accounts;
@@ -79,6 +81,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 {
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
+        services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
         // Unified persistence config must resolve before any per-domain in-memory-vs-Postgres
         // decision below reads the per-domain variables.
         MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
@@ -97,6 +100,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityValidationSnapshotStore, FileSecurityValidationSnapshotStore>();
         services.TryAddSingleton<ISecurityValidationGateService, SecurityValidationGateService>();
         services.TryAddSingleton<DatabaseMigrationReadinessReceipt>();
+        services.TryAddSingleton(sp => new LocalTenantMigrationGate(
+            sp.GetService<TenantScopeEnforcementOptions>() ?? TenantScopeEnforcementOptions.FailClosed));
         services.AddStatementReconciliationServices();
 
         // StorageOptions - configured from AppConfig or defaults
@@ -116,7 +121,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ProviderIntegrationDryRunService>();
         services.TryAddSingleton<IProviderIntegrationHttpTransport>(sp =>
             new ProviderIntegrationHttpClientTransport(
-                new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }),
+                ProviderIntegrationHttpClientTransport.CreateHttpClient(),
                 sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<ProviderIntegrationHttpClientTransport>>()));
         services.TryAddSingleton<ProviderIntegrationRestDryRunService>();
         services.TryAddSingleton<ProviderIntegrationOpenApiImportService>();
@@ -293,6 +298,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IDepositReferenceProjectionStore, PostgresDepositReferenceProjectionStore>();
             services.AddSingleton<IMoneyMarketFundReferenceProjectionStore, PostgresMoneyMarketFundReferenceProjectionStore>();
             services.AddSingleton<ICertificateOfDepositReferenceProjectionStore, PostgresCertificateOfDepositReferenceProjectionStore>();
+            services.AddSingleton<IDirectLoanReferenceProjectionStore, PostgresDirectLoanReferenceProjectionStore>();
+            services.AddSingleton<IStructuredCreditReferenceProjectionStore, PostgresStructuredCreditReferenceProjectionStore>();
             services.AddSingleton<IOperatorOverridesStore, PostgresOperatorOverridesStore>();
             services.AddSingleton<ISecurityFieldProvenanceStore, PostgresSecurityFieldProvenanceStore>();
             services.AddSingleton<SecurityMasterMigrationRunner>();
@@ -325,6 +332,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IDepositReferenceService, DepositProjectionService>();
             services.AddSingleton<IMoneyMarketFundReferenceService, MoneyMarketFundProjectionService>();
             services.AddSingleton<ICertificateOfDepositReferenceService, CertificateOfDepositProjectionService>();
+            services.AddSingleton<IDirectLoanReferenceService, DirectLoanProjectionService>();
+            services.AddSingleton<IStructuredCreditReferenceService, StructuredCreditProjectionService>();
             services.AddSingleton<ISecurityResolver, SecurityResolver>();
             services.AddHostedService<SecurityMasterProjectionWarmupService>();
             if (options.EnableHttpClientFactory)
@@ -426,6 +435,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IDepositReferenceService, NullDepositReferenceService>();
         services.TryAddSingleton<IMoneyMarketFundReferenceService, NullMoneyMarketFundReferenceService>();
         services.TryAddSingleton<ICertificateOfDepositReferenceService, NullCertificateOfDepositReferenceService>();
+        services.TryAddSingleton<IDirectLoanReferenceService, NullDirectLoanReferenceService>();
+        services.TryAddSingleton<IStructuredCreditReferenceService, NullStructuredCreditReferenceService>();
         services.TryAddSingleton<ISecurityMasterAmender, NullSecurityMasterService>();
         services.TryAddSingleton<ISecurityMasterConflictService, NullSecurityMasterConflictService>();
         services.TryAddSingleton<ISecurityMasterImportService, NullSecurityMasterImportService>();
@@ -475,10 +486,15 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IAccrualLedgerService, AccrualLedgerService>();
             services.AddSingleton<IDirectLendingCommandService, PostgresDirectLendingCommandService>();
             services.AddSingleton<IDirectLendingService, PostgresDirectLendingService>();
+            // These workers enumerate loans across the process and the retained direct-lending
+            // model does not yet carry a tenant authority per loan. Registering them under a
+            // fail-closed ledger posture would make every ledger read fail and leave accruals and
+            // outbox deliveries retrying forever. A deferred host gate reads the final DI posture
+            // and withholds their construction/start until that attribution exists.
             if (options.EnableProcessWideHostedServices)
             {
-                services.AddHostedService<DirectLendingOutboxDispatcher>();
-                services.AddHostedService<DailyAccrualWorker>();
+                services.AddHostedService<TenantPostureHostedService<DirectLendingOutboxDispatcher>>();
+                services.AddHostedService<TenantPostureHostedService<DailyAccrualWorker>>();
             }
         }
 
@@ -524,7 +540,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             {
                 var storageOptions = sp.GetRequiredService<StorageOptions>();
                 var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "fund-accounts.json");
-                return new InMemoryFundAccountService(persistencePath);
+                return new TenantGuardedLocalFundAccountService(new InMemoryFundAccountService(persistencePath),
+                    sp.GetRequiredService<LocalTenantMigrationGate>());
             });
             services.TryAddSingleton<IAccountManagementService>(sp => (IAccountManagementService)sp.GetRequiredService<IFundAccountService>());
             services.TryAddSingleton<IAccountQueryService>(sp => (IAccountQueryService)sp.GetRequiredService<IFundAccountService>());
@@ -556,11 +573,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 var sharedDataAccessService = sp.GetService<IGovernanceSharedDataAccessService>();
                 var securityMasterQueryService = sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
                 var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "fund-structure.json");
-                return new InMemoryFundStructureService(
-                    fundAccountService,
-                    sharedDataAccessService,
-                    securityMasterQueryService,
-                    persistencePath);
+                return new TenantGuardedLocalFundStructureService(new InMemoryFundStructureService(
+                    fundAccountService, sharedDataAccessService, securityMasterQueryService, persistencePath),
+                    sp.GetRequiredService<LocalTenantMigrationGate>());
             });
         }
         // ── Banking ──────────────────────────────────────────────────────────

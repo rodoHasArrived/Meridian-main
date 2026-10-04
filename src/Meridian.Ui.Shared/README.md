@@ -6,10 +6,119 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-09-02
+last_reviewed: 2026-10-01
 ---
 
 # src/Meridian.Ui.Shared
+
+`RecurringJournalRunner` joins `AutomatedJournalScheduledWorker` and the existing journal-intake
+path to create one retained human-review draft per recurring occurrence. It holds the durable
+claim lease through intake recovery, preserves exact definitions and evidence, and projects both
+workstation queues from `IRecurringJournalQueueSource`. `RecurringJournalPeriodAuthority` resolves
+the existing PostgreSQL ledger's book/period and fund ownership; `RecurringJournalSubjectAuthority`
+verifies active entity/account membership against retained PostgreSQL fund structure. Unavailable
+authority blocks generation. The recurring endpoints provide explicit initialization, versioned configuration and
+audited restoration of exact prior definitions. Workbench resaves cannot replace retained recurring
+provenance, and its source evidence is required through approval and posting. Submission and lifecycle
+commands hold the recurring registry lease, reject unavailable state or definition drift, and validate
+the retained ancestry of governed correction drafts. See
+[Recurring Journal](../../docs/domain/recurring-journal.md) for deployment and recovery boundaries.
+
+Reporting delivery readiness captures heartbeat, failure count, and the initial-start window
+together after resolving deployment dependencies. The scheduling gate uses that same observation,
+so a successful first delivery cycle cannot leave a stale peer blocker. Bootstrap requires valid
+worker options; failed, stopped, or stale workers and unrelated deployment blockers remain refused.
+
+Scoped credential lifecycle requests require exactly one retained connection ID match. Duplicate IDs
+are refused before status, mutation or verification can select an account; discovery also omits them.
+Providers without an available live verifier return NotVerified/Blocked even when credential fields
+are complete. Presence checks no longer create verified timestamps or successful-verification records.
+
+Provider-routing connection discovery, bindings and trust summaries filter by retained ownership
+using the authenticated workstation tenant. Binding failover IDs are limited to the same visible
+connection set. Each service applies ownership against its captured configuration before returning
+bindings or evaluating trust; foreign connections do not trigger health queries. Request headers and
+query parameters cannot select another tenant. Route preview uses the same authenticated tenant
+before candidate selection and failover expansion. Default setup ownership and remaining whole-configuration
+snapshot callers still require integration.
+
+The workstation Data payload (`/api/workstation/data` and `/api/workstation/data-operations`) reads
+routing connections, bindings and trust snapshots through the same tenant-scoped service methods, so
+routing summaries never include another tenant's or an unassigned connection. A request without tenant
+scope receives no routing rows. Duplicate or case-variant connection IDs are excluded from route
+preview candidates, and duplicate certification rows leave a connection uncertified, instead of failing
+the read.
+
+`GET /api/providers/connections` without a connection ID returns provider-level readiness for the
+authenticated tenant: a provider whose provider-wide row is not ready takes the better credential state
+among that tenant's own retained connections (every owned connection is evaluated, and a ready
+provider-wide row is never replaced), so a scoped save is reflected in Settings. Other tenants' and
+unassigned connections never contribute. `?scope=provider` returns provider-wide rows only, for flows
+such as the add-provider wizard that read and write the provider-wide record. Ownership checks compare canonical provider IDs,
+so a connection retained under an alias such as `alpha-vantage` or `qbo` still resolves.
+The workstation Data and data-operations payloads use the same tenant readiness for their provider rows.
+A scoped status read for an owned connection whose provider has no credential catalog entry answers 404,
+as the credential mutation routes do. Provider comparison and failover route previews use only the
+authenticated tenant's connections and return an empty, non-routable preview without tenant scope.
+A tenant-authorized provider-ledger reconciliation routes its capability checks with
+`ICapabilityRouter.RouteForTenantAsync`, so another tenant's connection cannot satisfy them.
+
+Provider readiness resolves configuration, credential and telemetry aliases through the shared
+ProviderSdk family identity map before joining evidence. Accepted names such as `ib` and
+`interactive-brokers` project one `ibkr` readiness row. An explicitly disabled module family
+overrides enabled source rows and retained healthy connection evidence, so configuration aliases
+cannot promote a disabled factory to readiness.
+
+The shared workstation registers credentialed Xero and NetSuite accounting
+providers alongside the existing fixtures. Their HTTP client disables redirects;
+provider-neutral credential setup and connection verification expose them to
+both workstation lanes. Transport and export-control policy stay in Data Integration.
+Connection verification records the provider's expected credential generation once
+with the requesting actor. Concurrent replacements reject stale results and return
+a blocked verification response without changing the replacement's status. Alpaca applies the same
+generation check to both successful and failed tests, including scoped connections, deletion and
+recreation. A stale test cannot verify or attach an old error to the replacement credentials.
+
+Strict tenant read posture also enables the fund-scoped write tenant gate. A multi-company
+deployment with permissive reads refuses startup even when PostgreSQL is configured; login and
+session resolution recheck the account scope after runtime account changes. Unpartitioned
+fund-structure stores refuse multiple companies in migration compatibility mode. Under strict
+enforcement, shared migration wrappers refuse every unpartitioned local read and mutation with an
+explicit retained-data migration message, while leaving server-backed capabilities available.
+
+The provider setup compatibility store passes a complete legacy sidecar snapshot to the
+Data Integration vault's atomic importer. It validates all entries before publication,
+preserves existing credentials and deletion markers on retries, and removes the plaintext
+sidecar only after both encrypted generations and the import audit are retained. Data Integration's
+shared migration helper owns the cross-process source lease and restartable rename/erasure sequence,
+so simultaneous setup adapters cannot race during cleanup.
+
+Statement intake publishes durable run-over-run break observations from retained canonical rows
+and immutable match artifacts after exact accounting/access scope validation and case publication.
+Missing business identifiers or ambiguous source rows remain explicitly untracked; incomplete
+identity coverage never clears prior observations. Replays preserve original match populations even
+after casework disposition. Browser queue details surface source lineage separately from case status.
+
+Period creation requires a resolved authenticated actor and overwrites any client-supplied
+`CreatedBy` before calling the shared ledger service. The actor is retained in the same-transaction
+PostgreSQL ledger audit. `WorkstationEndpointsTests.LedgerAuditActor` exercises spoofed client
+attribution against the real period service and PostgreSQL store.
+Generated-candidate posting and manual journal lifecycle routes also require a resolved authenticated
+actor; permission alone cannot authorize use of a client-supplied posting identity.
+
+Rejected mutation leases return HTTP 429 with a positive `Retry-After` delay. The lending
+runtime test exhausts the shared projection/reconciliation budget and verifies rejection
+before mutation; `forceEnable` allows this test to exercise the real limiter without changing
+process-wide environment settings.
+
+
+Direct-lending projection and reconciliation endpoints preserve `X-Command-Id` through the
+shared service into committed run identity handling. Repeating a command on the same loan
+returns the retained run; reusing a projection command with a different explicit date returns
+409. In-memory workflows follow the same retry rule. The two HTTP write routes require a non-empty UUID in `X-Command-Id` and return 400
+before mutation when it is missing or invalid. Internal calls without an identity retain
+legacy new-run behavior and must not be treated as safe automatic retries.
+
 
 The shared workstation graph owns first-run state, the curated starter catalog,
 versioned sample provisioning, and outcome-based activation evidence. Browser and WPF
@@ -23,6 +132,120 @@ import, and `sample`/`skip` lead with the starter kit's desk. Activation outcome
 `workspace-opened` (and `data-imported` for sample workspaces) are only recorded when a client
 reports the completed work to `POST /api/workstation/first-run/outcomes/complete`, so the
 checklist reflects finished work rather than page visits.
+
+## Shared close and lot convergence
+
+Manual-journal commands retain a durable intent before changing drafts or appending a journal.
+The receipt includes the original actor, before/after drafts, exact posting write, deterministic
+audit identifiers, and the command result. A retry repairs the audit before returning success.
+Reversal and rebook retain both draft outcomes and both audit events in one command receipt.
+If posting already committed, recovery verifies that exact immutable entry and completes only
+the draft/audit handoff. If nothing committed, recovery re-enters current validation, approval,
+version, and period gates before a new write. Conflicting state remains blocked.
+
+Browser and WPF composition use `FileManualJournalMutationRecoveryStore` beside
+`manual-journal-drafts.json`. Its exclusive operating-system file lease covers the entire
+read/validate/write/audit cycle across service instances and processes. Every writer sharing
+that draft snapshot must use the same `.mutations` directory; direct snapshot edits and
+uncoordinated legacy writers are outside this protocol. Completed receipts are durable replay
+evidence and must be backed up with the draft and audit stores. Old lifecycle rows without a
+receipt are not retroactively assigned a posting actor. Focused crash/restart evidence lives in
+`AccountingConfigurationServiceTests.ManualAuditRecovery.cs`.
+
+Unscoped desktop commands resolve one retained fund/journal/tenant/company identity while holding
+that lease. Current drafts and pending before/after images, including generated correction drafts,
+participate in resolution. Ambiguous identities are rejected before recovery; explicit tenant or
+company fields never match another scope. The resolved identity is used for both recovery and the
+subsequent operation, while the original command key remains compatible with retained retries.
+Equivalent scoped/unscoped retries probe a bounded set of original-format keys, including archived
+keys, so evidence attachments replay their retained result instead of failing on the advanced version.
+Automated intake repairs pending receipts before reporting an existing deterministic draft as a duplicate.
+Governed close/reopen retries use the original ledger period version retained in their intent,
+so reopening the period cannot change the recovery identity of an interrupted reversal draft.
+
+Completed receipts use `ManualJournalMutationRecoveryOptions`: the active store defaults to 30 days,
+1,000 receipts, and 64 MiB. Oldest receipts move to `archive/<key-prefix>/<key-prefix>/<key>.json.gz`
+when any limit requires it. Archives preserve the full original envelope and integrity digest;
+exact retries find them directly by command key and perform the same audit/posting checks. The
+archive grows indefinitely and must be included in storage planning. Pending receipts, including
+interrupted completion handoffs, are never pruned to satisfy a limit.
+
+Upgrade all browser hosts, WPF installations, and other shared draft writers together before the
+first archival run. Do not resume an older writer after archival: it cannot read archived receipts.
+Back up and restore the draft snapshot, accounting audit store, and the entire `.mutations` root
+(`pending`, `completed`, and `archive`) as one consistent data set while writers are stopped or the
+shared lease is held. Archive publication verifies an atomic compressed copy before deleting the
+active copy. Identical duplicate copies converge after interruption; conflicting or corrupt copies
+block recovery and must be preserved for investigation. Fix storage/access failures and retry;
+never clear pending receipts or delete an archive to make a command succeed. Retention maintenance
+runs under the shared lease at session opening and after completion. The session verifies active
+receipt bytes once and incrementally accounts for its own completions and archives while the lease
+excludes other writers, avoiding a second full-store read/parse on each autosave. Tests in
+`ManualJournalMutationRecoveryStoreTests` and `AccountingConfigurationServiceTests.ManualRecoveryArchive.cs`
+cover retention limits, interruption, archived audit repair, and restoration of a copied data root.
+The Operations Continuity compatibility close command delegates to the Accounting Close period-lock
+executor. Both HTTP entry points enforce Controller authority, exact tenant/company/book ownership,
+closing-entry review, reconciliation sealing, and retained reporting handoff. Operations mutation
+permission alone cannot publish a closed workflow while its ledger period remains open.
+Operations posture, approval, and compatibility close requests resolve report support from the
+retained accounting package authority. A caller's readiness flag or invented package ID cannot
+establish readiness; foreign scope, missing evidence, blocking validation, or support older than
+the last ledger/reconciliation prerequisite change is refused. Pre-close support is reviewable;
+final report certification remains an output of the completed hard close. The browser and desktop
+shared publication guard re-resolves that authority at the mutation boundary and compares a retained
+package and canonical scoped-journal content hash, so replacing a package under the same ID or
+posting outside Operations invalidates prior review. Journal creation times newer than the package
+require rebuilding support; the journal fingerprint also detects changes that retain an older
+timestamp. Missing report or scoped-journal authority blocks publication. Refreshing report posture
+retains the new revision and requires renewed affected approvals.
+The guard also requires a live browser or desktop tenant/company session when a workstation
+identity accessor is registered. Supplied close subject IDs and inherited worker authority cannot
+replace a missing session. Internal callers without a workstation accessor must declare retained
+worker tenant authority, and any supplied tenant must match it before evidence is read.
+
+The tenant-guarded Financial Operations command-center endpoint now exposes the server-owned close projection to the browser. Its dependency graph includes ledger-book and close-plan authorities. Fund-wide workspace queries cannot attest period close readiness because they lack the complete declared close scope. Focused proof: `WorkstationEndpointsTests.CloseReadiness`.
+
+The ledger open-lot maintenance routes expose survey, exception queue, retained source inspection, independent review, and versioned application under explicit administrative permission and exact registered tenant/company book ownership. Actors and governed action origins come from the authenticated session. Unknown ownership is blocking. Review and application use retained source identities, never replacement request-side acquisition facts.
+
+Journal automation exposes a read-only valuation freshness preview and retains dated mark evidence through journal review. The same policy decisions feed browser and desktop position read models; absent observation history stays review required. Close subject ownership is resolved from authoritative book, account, and entity records through `CloseReadinessSubjectSource`.
+
+## Credential migration recovery
+
+The provider-module compatibility adapter requires atomic legacy-import support from the credential vault. It removes the plaintext sidecar only after the complete import and audit succeed; retries preserve credentials already retained in the vault.
+## Credential audit identity
+
+Canonical credential save, verify and delete routes accept `connectionId` as a query parameter.
+Provider configure accepts the query for an existing owned connection as well; it uses the server
+tenant and actor, refuses environment reassignment, and preserves the retained routing configuration.
+The connection-list GET accepts the same query and returns only that connection's status, using
+retained account/environment metadata and scoped credentials. Provider-wide metrics never supply
+health or fallback evidence for that scoped result, including after its credentials are deleted.
+The shared lifecycle resolves its retained tenant, provider, external account and environment against
+the server session before accessing scoped credentials. Missing, ambiguous, unowned or mismatched
+connections are refused. Scoped Alpaca verification requires the returned account to match retained
+ownership. Other scoped providers remain unverified until a connection-bound live verifier exists;
+provider-wide accounting verifiers are not invoked for scoped requests. Omitting the query retains
+the legacy path during the unfinished workstation/default-runtime cutover.
+
+Canonical and compatibility credential routes require an authenticated actor in addition to tenant
+scope and credential-management permission. Saves replace caller-supplied `RequestedBy` with that
+actor; delete and verification pass the same identity into the vault audit. Accounting-provider
+verification retains the initiating actor after any provider-internal verification event.
+Alpaca verification requires a provider-returned account identity and reports fixed failure text;
+response reason phrases, JSON paths and exception details never enter its returned errors or logs.
+The Alpaca brokerage connect/revoke routes apply the same identity and verification rules.
+Provider setup passes the server-resolved actor into credential persistence. Plaid operator mutations
+require an authenticated actor and never fall back to a request identity; signed webhook authentication
+remains independent of operator sessions.
+
+### Tenant composition
+
+The workstation replaces the core retained-worker tenant accessor with its request-aware adapter
+while preserving explicitly configured host adapters and options. The in-memory fund-structure
+startup refusal checks the effective authentication account source, including configured
+environment accounts and development demo fallback, so a multi-company login source cannot
+silently run against an unpartitioned graph. This startup check does not certify account changes
+after startup or activate strict reads automatically.
 
 ## Purpose
 
@@ -107,6 +330,18 @@ watch surface, so another company cannot trigger or populate an operator refresh
 scope is rejected by the shared tenant/company filter as typed `403` Problem Details before either
 endpoint resolves provider data. The shared service's legacy unscoped snapshot and watch surfaces
 exclude tenant/company-aware providers entirely rather than invoking their compatibility methods.
+
+The shared mutation and global API throttles accept `MDC_DISABLE_RATE_LIMIT=true` only in an
+explicit Development/Test host outside production, packaged and customer postures. Both resolve
+one shared bypass policy from the final host registrations; absent policy or host environment does
+not authorize a bypass. Direct-lending writes retain a separate 20-command/minute operator budget,
+leave loan reads available when that budget is exhausted, and return a positive `Retry-After` delay
+before invoking a rejected command. Actor and IP partition keys are namespaced separately from
+the unlimited development partition, so disabling the override cannot retain an unlimited budget
+for an operator whose name matches that internal partition. The budget follows the server-resolved
+actor, including API-key and optional local-principal requests that have no authenticated claims
+principal; changing addresses does not create another budget. An IP partition is used only when
+the request has no resolved actor.
 
 Shared operational endpoints use stable RFC 7807 Problem Details types for validation,
 authorization, conflict, unavailable-runtime, timeout, and internal failures. API-key, login-session,
@@ -2261,6 +2496,7 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-UI-SHARED -->
 | Roadmap item | Title |
 | --- | --- |
+| `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |

@@ -1377,7 +1377,18 @@ public sealed record AccountingSystemImportSummaryDto(
     IReadOnlyList<string> Warnings,
     string? TenantId = null,
     string? CompanyId = null,
-    string? ContentHash = null);
+    string? ContentHash = null)
+{
+    /// <summary>Report balance scope, independent of the requested journal/export activity period.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public AccountingSystemTrialBalanceBasisDto? TrialBalanceBasis { get; init; }
+}
+
+/// <summary>Balance-sheet accounts are cumulative; earlier income/expense balances roll into retained earnings.</summary>
+public sealed record AccountingSystemTrialBalanceBasisDto(
+    DateOnly IncomeStatementPeriodStart,
+    IReadOnlyList<string> IncomeStatementAccountCodes,
+    string? RetainedEarningsAccountCode);
 
 public sealed record AccountingSystemChartAccountDto(
     string ExternalAccountId,
@@ -1472,6 +1483,13 @@ public sealed record AccountingSystemReconciliationRowDto(
     string Detail,
     string? EvidenceRef = null)
 {
+    /// <summary>Gross activity in the requested export period, separate from report balances.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? PeriodDebit { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? PeriodCredit { get; init; }
+
     public IReadOnlyList<string> ExternalEvidenceReferences { get; init; } = [];
 
     public IReadOnlyList<string> MeridianEvidenceReferences { get; init; } = [];

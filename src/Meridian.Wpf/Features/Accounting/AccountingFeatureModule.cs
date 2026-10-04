@@ -1,3 +1,4 @@
+using Meridian.Application.Tenancy;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Reporting;
 using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Ui.Shared.Evidence;
+using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -57,20 +59,28 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         // badge until this lane is migrated to the governed HTTP surface (there is no
         // workstation API client for fund accounts yet). Reconciliation posture no longer
         // reads from this lane — see ReconciliationReadService.
-        services.AddSingleton(sp => new InMemoryFundAccountService(
-            Path.Combine(
+        // No current company or session can assign ownership to these retained snapshots. Strict
+        // hosts keep the files and refuse only this local capability, leaving server-backed
+        // workspaces usable. Every account alias passes through the same gate.
+        services.TryAddSingleton(sp => new LocalTenantMigrationGate(
+            sp.GetService<TenantScopeEnforcementOptions>() ?? TenantScopeEnforcementOptions.FailClosed));
+        services.AddSingleton(sp => new TenantGuardedLocalFundAccountService(
+            new InMemoryFundAccountService(Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Meridian",
-                "fund-accounts.json")));
-        services.AddSingleton<IFundAccountService>(sp => sp.GetRequiredService<InMemoryFundAccountService>());
-        services.AddSingleton<IFundStructureService>(sp => new InMemoryFundStructureService(
-            sp.GetRequiredService<IFundAccountService>(),
-            sharedDataAccessService: null,
-            securityMasterQueryService: sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
-            persistencePath: Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Meridian",
-                "fund-structure.json")));
+                "Meridian", "fund-accounts.json")),
+            sp.GetRequiredService<LocalTenantMigrationGate>()));
+        services.AddSingleton<IFundAccountService>(sp => sp.GetRequiredService<TenantGuardedLocalFundAccountService>());
+        services.AddSingleton<IAccountManagementService>(sp => sp.GetRequiredService<TenantGuardedLocalFundAccountService>());
+        services.AddSingleton<IAccountQueryService>(sp => sp.GetRequiredService<TenantGuardedLocalFundAccountService>());
+        services.AddSingleton<IFundStructureService>(sp => new TenantGuardedLocalFundStructureService(
+            new InMemoryFundStructureService(
+                sp.GetRequiredService<IFundAccountService>(),
+                sharedDataAccessService: null,
+                securityMasterQueryService: sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                persistencePath: Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "Meridian", "fund-structure.json")),
+            sp.GetRequiredService<LocalTenantMigrationGate>()));
         services.AddSingleton<FundStructureSetupWorkflowService>();
         services.AddSingleton<FundAccountReadService>();
         services.AddSingleton<FundLedgerReadService>();
@@ -83,6 +93,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         // session actor; the in-process IAccountingConfigurationService below remains for
         // background workers that have not yet migrated.
         services.AddSingleton<IWorkstationAccountingApiClient, WorkstationAccountingApiClient>();
+        services.AddSingleton<IWorkstationAccountingCloseApiClient, WorkstationAccountingCloseApiClient>();
         // Passport Workbench governed-write editor (Phase 4 desktop parity).
         services.AddTransient<Meridian.Wpf.ViewModels.SecurityPassportEditorViewModel>();
         services.AddTransient<Meridian.Wpf.Views.SecurityPassportEditorPage>();
@@ -117,6 +128,9 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
             new FileManualJournalEntryDraftStore(
                 Path.Combine(ResolveAccountingDataDirectory(sp), "manual-journal-drafts.json")));
+        services.TryAddSingleton<IManualJournalMutationRecoveryStore>(sp =>
+            new FileManualJournalMutationRecoveryStore(
+                Path.Combine(ResolveAccountingDataDirectory(sp), "manual-journal-drafts.json.mutations")));
         services.TryAddSingleton<FileDailyValuationPortfolioSource>(sp =>
             new FileDailyValuationPortfolioSource(
                 Path.Combine(ResolveAccountingDataDirectory(sp), "daily-valuation-schedules.json")));
@@ -209,6 +223,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         // process would execute valuation and journal automation against a composition whose
         // ledger dependencies resolve null and would fork scheduling state from the server.
         services.TryAddSingleton<DailyValuationScheduledWorker>();
+        services.TryAddSingleton<Meridian.Contracts.Workstation.IRecurringJournalQueueSource, WorkstationRecurringJournalQueueClient>();
         services.TryAddSingleton<AutomatedJournalScheduledWorker>();
         services.TryAddSingleton<ICapitalAccountWorkbenchService>(sp =>
             new CapitalAccountWorkbenchService(
@@ -231,7 +246,8 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetRequiredService<IOperationsStatusDerivationService>(),
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<IOperationsContinuityTransactionalCommitStore>(),
-                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>()));
+                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                closeReadinessGuard: sp.GetService<IClosePublicationReadinessGuard>()));
         services.TryAddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
         services.TryAddSingleton<IAccountingCloseManagementService, AccountingCloseManagementService>();
         services.TryAddSingleton<IPrivateCapitalCloseCockpitService>(sp =>
@@ -240,11 +256,21 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IDailyValuationScheduleStatusSource>(),
                 sp.GetService<IAutomatedJournalScheduleStatusSource>()));
+        services.TryAddSingleton<ICloseReadinessSubjectSource, CloseReadinessSubjectSource>();
+        services.TryAddSingleton<IWorkstationTenantContextAccessor, DesktopWorkstationTenantContextAccessor>();
+        services.TryAddSingleton<IOperationsReportPackAuthority, OperationsReportPackAuthority>();
+        services.TryAddSingleton<IClosePublicationReadinessGuard>(sp => new ClosePublicationReadinessGuard(
+            () => sp.GetService<IFinancialOperationsCommandCenterReadService>(),
+            sp.GetService<IWorkstationTenantContextAccessor>(),
+            () => sp.GetService<IOperationsReportPackAuthority>()));
         services.TryAddSingleton<IFinancialOperationsCommandCenterReadService>(sp =>
             new FinancialOperationsCommandCenterReadService(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IOperationsCloseCalendarService>(),
-                sp.GetService<IPrivateCapitalCloseCockpitService>()));
+                sp.GetService<IPrivateCapitalCloseCockpitService>(),
+                sp.GetService<ILedgerBookService>(),
+                sp.GetService<IAccountingCloseManagementService>(),
+                sp.GetService<ICloseReadinessSubjectSource>()));
         services.TryAddSingleton<IAccountingPolicyService, AccountingPolicyService>();
         services.TryAddSingleton<IAccountingBasisProjectionService, AccountingBasisProjectionService>();
         services.TryAddSingleton<IAccountingJournalDraftService, AccountingJournalDraftService>();
@@ -308,7 +334,10 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<AccountingProductionReadinessService>();
         services.AddTransient<AccountingConfigureViewModel>();
         services.AddTransient<AccountingConfigurePage>();
-        services.AddTransient<AccountingCloseViewModel>();
+        services.AddTransient(sp => new AccountingCloseViewModel(
+            sp.GetRequiredService<IAccountingProjectionQueryService>(),
+            sp.GetRequiredService<IWorkstationAccountingCloseApiClient>(),
+            sp.GetService<DesktopAuthenticationSession>()));
         services.AddTransient<AccountingClosePage>();
         services.AddTransient<FundStructureSetupViewModel>();
         services.AddTransient<FundAccountsViewModel>();

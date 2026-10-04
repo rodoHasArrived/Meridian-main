@@ -9,6 +9,16 @@ using Serilog;
 namespace Meridian.Application.Commands;
 
 /// <summary>
+/// Resolves a verified operator or workload identity for a CLI file import. Implementations must
+/// validate credentials or a session; command-line text and the ambient OS username are not
+/// authentication evidence.
+/// </summary>
+public interface ISecurityMasterCliImportAuthority
+{
+    bool TryResolveActor(out string actor);
+}
+
+/// <summary>
 /// Handles --security-master-ingest CLI command for bulk-importing securities from CSV or JSON,
 /// or directly from Polygon.io.
 /// Usage:
@@ -29,6 +39,7 @@ internal sealed class SecurityMasterCommands : ICliCommand
     private readonly IEdgarIngestOrchestrator? _edgarIngestOrchestrator;
     private readonly CorporateActionIngestOrchestrator? _corporateActionIngestOrchestrator;
     private readonly ISecurityMasterEventStore? _securityMasterEventStore;
+    private readonly ISecurityMasterCliImportAuthority? _fileImportAuthority;
     private readonly Serilog.ILogger _log;
 
     private const int ProgressReportInterval = 10;
@@ -39,7 +50,8 @@ internal sealed class SecurityMasterCommands : ICliCommand
         ISecurityMasterService? securityMasterService = null,
         IEdgarIngestOrchestrator? edgarIngestOrchestrator = null,
         CorporateActionIngestOrchestrator? corporateActionIngestOrchestrator = null,
-        ISecurityMasterEventStore? securityMasterEventStore = null)
+        ISecurityMasterEventStore? securityMasterEventStore = null,
+        ISecurityMasterCliImportAuthority? fileImportAuthority = null)
     {
         _importService = importService;
         _log = log;
@@ -47,6 +59,7 @@ internal sealed class SecurityMasterCommands : ICliCommand
         _edgarIngestOrchestrator = edgarIngestOrchestrator;
         _corporateActionIngestOrchestrator = corporateActionIngestOrchestrator;
         _securityMasterEventStore = securityMasterEventStore;
+        _fileImportAuthority = fileImportAuthority;
     }
 
     public IReadOnlyList<string> Triggers { get; } = ["--security-master-ingest", "--security-master-normalize-corporate-actions"];
@@ -255,6 +268,7 @@ internal sealed class SecurityMasterCommands : ICliCommand
 
         requests = await ingestProvider.FetchAllAsync(exchange, assetType, fetchProgress, ct)
             .ConfigureAwait(false);
+        ct.ThrowIfCancellationRequested();
 
         if (requests.Count == 0)
         {
@@ -337,6 +351,17 @@ internal sealed class SecurityMasterCommands : ICliCommand
             return CliResult.Fail(ErrorCode.ConfigurationInvalid);
         }
 
+        if (_fileImportAuthority is null
+            || !_fileImportAuthority.TryResolveActor(out var importedBy)
+            || string.IsNullOrWhiteSpace(importedBy))
+        {
+            Console.Error.WriteLine(
+                "Security Master file import requires a validated operator or workload authority. " +
+                "Use the authenticated workstation/API path until CLI authority is configured.");
+            _log.Warning("--security-master-ingest file path refused because no validated CLI authority was available");
+            return CliResult.Fail(ErrorCode.AuthenticationFailed);
+        }
+
         _log.Information("Starting Security Master ingest from {File}", filePath);
         Console.WriteLine($"Importing securities from {filePath}...");
 
@@ -356,16 +381,6 @@ internal sealed class SecurityMasterCommands : ICliCommand
             if (p.Processed % ProgressReportInterval == 0 || p.Processed == p.Total)
                 Console.WriteLine($"  Progress: {p.Processed}/{p.Total} ({p.Imported} imported, {p.Failed} failed)");
         });
-
-        // Every imported security is recorded against this actor. Prefer an explicitly named
-        // operator, fall back to the invoking OS account, and only then to the CLI's own workload
-        // identity — an unattended run is legitimately a workload, but it should still say so
-        // rather than borrowing a placeholder.
-        var importedBy = CliArguments.GetValue(args, "--imported-by") is { Length: > 0 } named
-            ? named
-            : Environment.UserName is { Length: > 0 } osUser
-                ? osUser
-                : "meridian-cli";
 
         var result = await _importService!.ImportAsync(content, extension, importedBy, progress, ct)
             .ConfigureAwait(false);

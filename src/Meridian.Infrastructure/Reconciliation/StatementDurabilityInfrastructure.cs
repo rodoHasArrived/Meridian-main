@@ -7,7 +7,7 @@ using System.Text.Json.Serialization.Metadata;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Text;
 using Meridian.Domain.Reconciliation;
-using Meridian.Storage.Archival;
+using Meridian.Core.IO;
 
 namespace Meridian.Infrastructure.Reconciliation;
 
@@ -31,6 +31,18 @@ public sealed record StatementRunMatchArtifact(
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<StatementRunMatchGroupRecord>? MatchGroups { get; init; }
+
+    /// <summary>Null on legacy artifacts. Only complete internal populations can establish source clearing.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? SourceComparisonComplete { get; init; }
+
+    /// <summary>Hash of the matcher revision and the exact executed tolerance profile, including rules/version.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SourceComparisonPolicyFingerprint { get; init; }
+
+    /// <summary>Population kinds actually compared; a narrower feed cannot clear a broader feed's breaks.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<string>? SourceComparisonPopulationKinds { get; init; }
 }
 
 /// <summary>
@@ -125,12 +137,14 @@ public sealed class InMemoryStatementRunMatchArtifactStore : IStatementRunMatchA
 
 public sealed class FileStatementRunMatchArtifactStore : IStatementRunMatchArtifactStore
 {
+    private readonly IAtomicFileWriter _atomicFileWriter;
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> Gates =
         new(StringComparer.OrdinalIgnoreCase);
     private readonly string _root;
 
-    public FileStatementRunMatchArtifactStore(string dataRoot)
+    public FileStatementRunMatchArtifactStore(string dataRoot, IAtomicFileWriter atomicFileWriter)
     {
+        _atomicFileWriter = atomicFileWriter ?? throw new ArgumentNullException(nameof(atomicFileWriter));
         ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
         _root = Path.Combine(dataRoot, "reconciliation", "statement-runs");
     }
@@ -189,9 +203,9 @@ public sealed class FileStatementRunMatchArtifactStore : IStatementRunMatchArtif
                 var json = JsonSerializer.Serialize(
                     artifact,
                     StatementDurabilityJsonContext.Default.StatementRunMatchArtifact);
-                await AtomicFileWriter.WriteAsync(temporaryPath, json, ct).ConfigureAwait(false);
+                await _atomicFileWriter.WriteAsync(temporaryPath, json, ct).ConfigureAwait(false);
                 File.Move(temporaryPath, path, overwrite: false);
-                await AtomicFileWriter
+                await _atomicFileWriter
                     .SyncDirectoryAsync(Path.GetDirectoryName(path)!, CancellationToken.None)
                     .ConfigureAwait(false);
             }
@@ -281,13 +295,15 @@ public interface IStatementCaseworkCommitStore
 
 public sealed class FileStatementCaseworkCommitStore : IStatementCaseworkCommitStore
 {
+    private readonly IAtomicFileWriter _atomicFileWriter;
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> Gates =
         new(StringComparer.OrdinalIgnoreCase);
     private readonly string _root;
     private readonly string _legacyReceiptRoot;
 
-    public FileStatementCaseworkCommitStore(string dataRoot)
+    public FileStatementCaseworkCommitStore(string dataRoot, IAtomicFileWriter atomicFileWriter)
     {
+        _atomicFileWriter = atomicFileWriter ?? throw new ArgumentNullException(nameof(atomicFileWriter));
         ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
         _root = Path.Combine(dataRoot, "reconciliation", "statement-casework-commits");
         _legacyReceiptRoot = Path.Combine(
@@ -430,9 +446,9 @@ public sealed class FileStatementCaseworkCommitStore : IStatementCaseworkCommitS
                 var json = JsonSerializer.Serialize(
                     envelope,
                     StatementDurabilityJsonContext.Default.StatementCaseworkCommitEnvelope);
-                await AtomicFileWriter.WriteAsync(temporaryPath, json, ct).ConfigureAwait(false);
+                await _atomicFileWriter.WriteAsync(temporaryPath, json, ct).ConfigureAwait(false);
                 File.Move(temporaryPath, path, overwrite: false);
-                await AtomicFileWriter
+                await _atomicFileWriter
                     .SyncDirectoryAsync(Path.GetDirectoryName(path)!, CancellationToken.None)
                     .ConfigureAwait(false);
                 return envelope;
@@ -543,7 +559,7 @@ public sealed class FileStatementCaseworkCommitStore : IStatementCaseworkCommitS
             var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
             try
             {
-                await AtomicFileWriter
+                await _atomicFileWriter
                     .WriteAsync(
                         temporaryPath,
                         JsonSerializer.Serialize(
@@ -552,7 +568,7 @@ public sealed class FileStatementCaseworkCommitStore : IStatementCaseworkCommitS
                         ct)
                     .ConfigureAwait(false);
                 File.Move(temporaryPath, path, overwrite: false);
-                await AtomicFileWriter
+                await _atomicFileWriter
                     .SyncDirectoryAsync(Path.GetDirectoryName(path)!, CancellationToken.None)
                     .ConfigureAwait(false);
             }

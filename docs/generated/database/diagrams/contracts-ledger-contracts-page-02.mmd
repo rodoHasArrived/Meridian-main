@@ -1,5 +1,7 @@
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_AccountingBasisKindDto["AccountingBasisKindDto"] {
+    }
     class Meridian_Contracts_Ledger_AccountingBasisProjectionItemDto["AccountingBasisProjectionItemDto"] {
         +AccountingBasisKindDto AccountingBasis
         +PostingRuleJournalCandidateResultDto Candidate
@@ -155,6 +157,7 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_AccountingPostingCommandDto["AccountingPostingCommandDto"] {
         +OperationsActionOriginDto ActionOrigin
+        +string? Actor
         +Guid AggregateId
         +string? ApprovalId
         +AccountingPostingApprovalStateDto ApprovalState
@@ -165,7 +168,6 @@ classDiagram
         +Guid? CorrelationId
         +EconomicEventReferenceDto? EconomicEvent
         +DateOnly EffectiveDate
-        +IReadOnlyList~AccountingPostingEvidenceReferenceDto~ Evidence
     }
     class Meridian_Contracts_Ledger_AccountingPostingEvidenceKindDto["AccountingPostingEvidenceKindDto"] {
     }
@@ -590,13 +592,13 @@ classDiagram
         +string ClosePlanId
         +ClosePostingGateDto? ClosingEntriesGate
         +ClosePeriodPlanConfigurationDto? Configuration
+        +DateTimeOffset? EvaluatedAtUtc
         +IReadOnlyList~CloseEvidenceReviewDto~ EvidenceReviews
+        +string? EvidenceVersion
+        +Guid? FundAccountId
         +string FundProfileId
         +bool IsPeriodLocked
         +IReadOnlyList~LateAdjustmentRequestDto~ LateAdjustments
-        +Guid? LedgerBookId
-        +MaterialityPolicyDto MaterialityPolicy
-        +IReadOnlyList~CloseOperatingCoverageItemDto~ OperatingCoverage
     }
     class Meridian_Contracts_Ledger_ClosePeriodReopenResultDto["ClosePeriodReopenResultDto"] {
         +ClosePostingGateDto? ClosingEntriesGate
@@ -681,23 +683,12 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_CloseTaskStatusDto["CloseTaskStatusDto"] {
     }
-    class Meridian_Contracts_Ledger_CreateAccountingPolicyRequest["CreateAccountingPolicyRequest"] {
-        +AccountingBasisKindDto AccountingBasis
-        +string DisplayName
-        +DateOnly EffectiveFrom
-        +DateOnly? EffectiveTo
-        +string? FundProfileId
-        +Guid? FundStructureNodeId
-        +string? InstrumentId
-        +bool IsDefault
-        +string PolicyId
-        +AccountingPolicyRulePackDto? RulePack
-        +string RulesJson
-        +Guid? SourceEventId
-    }
+    Meridian_Contracts_Ledger_AccountingBasisProjectionItemDto --> Meridian_Contracts_Ledger_AccountingBasisKindDto
     Meridian_Contracts_Ledger_AccountingBasisProjectionSetDto --> Meridian_Contracts_Ledger_AccountingBasisProjectionItemDto
     Meridian_Contracts_Ledger_AccountingBasisProjectionSetRequestDto --> Meridian_Contracts_Ledger_AccountingBasisProjectionTargetDto
+    Meridian_Contracts_Ledger_AccountingBasisProjectionTargetDto --> Meridian_Contracts_Ledger_AccountingBasisKindDto
     Meridian_Contracts_Ledger_AccountingBasisProjectionTargetDto --> Meridian_Contracts_Ledger_AccountingTreatmentKindDto
+    Meridian_Contracts_Ledger_AccountingBookContextDto --> Meridian_Contracts_Ledger_AccountingBasisKindDto
     Meridian_Contracts_Ledger_AccountingCloseReadinessItemDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
     Meridian_Contracts_Ledger_AccountingCloseReadinessItemDto --> Meridian_Contracts_Ledger_AccountingReadinessStateDto
     Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationSeverityDto
@@ -709,7 +700,9 @@ classDiagram
     Meridian_Contracts_Ledger_AccountingJournalPreviewLineDto --> Meridian_Contracts_Ledger_AccountingTemplateLineSideDto
     Meridian_Contracts_Ledger_AccountingJournalTemplatePreviewDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
     Meridian_Contracts_Ledger_AccountingJournalTemplatePreviewDto --> Meridian_Contracts_Ledger_AccountingJournalPreviewLineDto
+    Meridian_Contracts_Ledger_AccountingPolicyDto --> Meridian_Contracts_Ledger_AccountingBasisKindDto
     Meridian_Contracts_Ledger_AccountingPolicyDto --> Meridian_Contracts_Ledger_AccountingPolicyRulePackDto
+    Meridian_Contracts_Ledger_AccountingPolicyQuery --> Meridian_Contracts_Ledger_AccountingBasisKindDto
     Meridian_Contracts_Ledger_AccountingPolicyRuleDto --> Meridian_Contracts_Ledger_AccountingTreatmentKindDto
     Meridian_Contracts_Ledger_AccountingPolicyRulePackDto --> Meridian_Contracts_Ledger_AccountingPolicyRuleDto
     Meridian_Contracts_Ledger_AccountingPostingCommandDto --> Meridian_Contracts_Ledger_AccountingBookContextDto
@@ -769,4 +762,3 @@ classDiagram
     Meridian_Contracts_Ledger_CloseTaskDto --> Meridian_Contracts_Ledger_CloseSignOffDto
     Meridian_Contracts_Ledger_CloseTaskDto --> Meridian_Contracts_Ledger_CloseSignOffRequirementDto
     Meridian_Contracts_Ledger_CloseTaskDto --> Meridian_Contracts_Ledger_CloseTaskStatusDto
-    Meridian_Contracts_Ledger_CreateAccountingPolicyRequest --> Meridian_Contracts_Ledger_AccountingPolicyRulePackDto

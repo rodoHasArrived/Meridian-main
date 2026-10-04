@@ -250,3 +250,31 @@ original route and DTO shape directly over that same workflow.
 
 For break/case handling, see [Reconciliation Operations](./reconciliation-operations.md). For general
 receipt and artifact failure rules, see [Verified Outcome Recovery](./verified-outcome-recovery.md).
+
+## Executable PostgreSQL workflow evidence
+
+`StatementLedgerReconciliationPostgresTests` in `tests/Meridian.Tests/Integration/` exercises the
+retained BAI2 intake through the production scope resolver, PostgreSQL journal source, deterministic
+matcher, statement/report authority, Operations Continuity, and canonical casework queue. The
+resolved fund, primary book, exact period, and as-of date travel with the population query; another
+book's journals cannot participate merely because the external account and effective dates match.
+
+The scenario distinguishes the persistence boundaries: journal and statement/report authority are
+PostgreSQL-backed, while immutable match artifacts, statement-run recovery records, and source
+casework use their production durable file stores. Preserve both authorities for recovery. Deleting
+the statement/report runtime workspace tests cache hydration; it does not establish recovery from
+loss of the durable reconciliation files.
+
+With an isolated PostgreSQL endpoint configured in `MERIDIAN_LEDGER_CONNECTION_STRING` and
+`MERIDIAN_REPORTING_CONNECTION_STRING`, run:
+
+```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release \
+  --filter "FullyQualifiedName~StatementLedgerReconciliationPostgresTests"
+```
+
+The existing **Production Certification** workflow runs this class through its `Integration`
+category and rejects failed or skipped deterministic cases. The **Targeted Test** workflow has no
+database service and is insufficient for this database proof. W9-INGEST-009 / issue #2634 remains
+subject to operator acceptance. Statement admission, OFX containment, and publication durability
+changes in #2928, #2929, and #2930 retain their separate review and validation requirements.

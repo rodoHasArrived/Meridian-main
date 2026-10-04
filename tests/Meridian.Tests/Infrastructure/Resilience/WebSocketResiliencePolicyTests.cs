@@ -99,12 +99,14 @@ public class WebSocketResiliencePolicyTests
             timeout: TimeSpan.FromMilliseconds(100));
 
         // Act & Assert - Polly throws TimeoutRejectedException
+        using var watchdog = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         await Assert.ThrowsAsync<TimeoutRejectedException>(async () =>
         {
             await pipeline.ExecuteAsync(async ct =>
             {
-                await Task.Delay(TimeSpan.FromSeconds(1), ct);
-            });
+                // The independent watchdog also bounds a broken timeout policy.
+                await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+            }, watchdog.Token).AsTask().WaitAsync(TimeSpan.FromSeconds(15));
         });
     }
 

@@ -18,7 +18,7 @@ export interface Candle {
 
 export interface CandleOverlay {
   label: string;
-  /** CSS color (token var), e.g. "var(--accent, #2F6F8F)". */
+  /** CSS color (token var), e.g. "var(--accent, #A85436)". */
   color: string;
   /** Moving-average window in bars. */
   win: number;
@@ -46,17 +46,19 @@ export interface CandleChartProps {
 }
 
 const DEFAULT_OVERLAYS: CandleOverlay[] = [
-  { label: "MA20", color: "var(--accent, #2F6F8F)", win: 20 },
-  { label: "MA50", color: "var(--chart-warning, #8A520E)", win: 50 }
+  // MA20 is the violet overlay role, not the accent: copper sits 11 degrees from the brick
+  // down candle, which is the collision --chart-ma20 exists to avoid.
+  { label: "MA20", color: "var(--chart-ma20, #5D5486)", win: 20 },
+  { label: "MA50", color: "var(--chart-warning, #8A5C12)", win: 50 }
 ];
 
-const UP = "var(--chart-equity, #16885F)";
-const DOWN = "var(--chart-drawdown, #BA3F55)";
-const PLOT = "var(--chart-plot, #FFFFFF)";
-const GRID = "var(--chart-grid, #CBD3DC)";
-const AXIS = "var(--chart-axis, #59636F)";
-const BORDER = "var(--chart-border, #99A5B2)";
-const CROSSHAIR = "var(--chart-crosshair, #2F6F8F)";
+const UP = "var(--chart-equity, #3A7A56)";
+const DOWN = "var(--chart-drawdown, #A8443C)";
+const PLOT = "var(--chart-plot, #FBFAF8)";
+const GRID = "var(--chart-grid, #E4E3DE)";
+const AXIS = "var(--chart-axis, #5E666F)";
+const BORDER = "var(--chart-border, #AFABA1)";
+const CROSSHAIR = "var(--chart-crosshair, #6B655C)";
 
 export function CandleChart({
   bars,

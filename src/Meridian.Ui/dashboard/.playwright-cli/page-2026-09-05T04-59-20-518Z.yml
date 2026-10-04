@@ -1,0 +1,117 @@
+- generic [ref=f1e2]:
+  - main [ref=f1e102]:
+    - generic [ref=f1e13]:
+      - generic [ref=f1e14]:
+        - generic [ref=f1e15]: Meridian
+        - list "Setup progress" [ref=f1e19]:
+          - listitem [ref=f1e20]: Welcome
+          - listitem [ref=f1e21]: Your goal
+          - listitem [ref=f1e22]: Starting data
+          - listitem [ref=f1e23]: Review
+          - listitem [ref=f1e24]: Ready
+      - generic [ref=f1e25]:
+        - heading "Your sample workspace is ready" [level=1] [ref=f1e108]
+        - paragraph [ref=f1e109]: SAMPLE · PAPER
+        - region "Sample workspace contents" [ref=f1e114]:
+          - paragraph [ref=f1e115]: Seeded
+          - paragraph [ref=f1e120]: Sample reconciliation casework and a completed paper strategy run are loaded into your desks now. The sample portfolio below is illustrative — your live Portfolio desk starts from a clean paper account until you connect data or run a strategy.
+          - generic [ref=f1e121]:
+            - generic [ref=f1e122]:
+              - text: Sample portfolio value
+              - strong [ref=f1e123]: $255,856.40
+            - generic [ref=f1e124]:
+              - text: Sample cash
+              - strong [ref=f1e125]: $125,000.00
+            - generic [ref=f1e126]:
+              - text: Sample unrealized P&L
+              - strong [ref=f1e127]: +$3,482.40
+          - generic [ref=f1e128]:
+            - button "Reconciliation 2 breaks Real open casework loaded into the reconciliation control tower." [ref=f1e129] [cursor=pointer]:
+              - text: Reconciliation
+              - strong [ref=f1e130]: 2 breaks
+              - generic [ref=f1e131]: Real open casework loaded into the reconciliation control tower.
+            - button "Strategy 1 paper run A completed paper covered-call run loaded into the Strategy desk." [ref=f1e132] [cursor=pointer]:
+              - text: Strategy
+              - strong [ref=f1e133]: 1 paper run
+              - generic [ref=f1e134]: A completed paper covered-call run loaded into the Strategy desk.
+          - generic [ref=f1e135]:
+            - generic [ref=f1e136]:
+              - generic [ref=f1e137]:
+                - heading "Sample portfolio (illustrative)" [level=3] [ref=f1e138]
+                - button "Explore the Portfolio desk →" [ref=f1e139] [cursor=pointer]
+              - table [ref=f1e141]:
+                - rowgroup [ref=f1e142]:
+                  - row [ref=f1e143]:
+                    - columnheader "Symbol" [ref=f1e144]
+                    - columnheader "Qty" [ref=f1e145]
+                    - columnheader "Mark" [ref=f1e146]
+                    - columnheader "Value" [ref=f1e147]
+                    - columnheader "Unreal. P&L" [ref=f1e148]
+                - rowgroup [ref=f1e149]:
+                  - row [ref=f1e150]:
+                    - cell "SPY" [ref=f1e151]
+                    - cell "120" [ref=f1e152]
+                    - cell "$468.32" [ref=f1e153]
+                    - cell "$56,198.40" [ref=f1e154]
+                    - cell "+$1,946.40" [ref=f1e155]
+                  - row [ref=f1e156]:
+                    - cell "MSFT" [ref=f1e157]
+                    - cell "80" [ref=f1e158]
+                    - cell "$372.15" [ref=f1e159]
+                    - cell "$29,772.00" [ref=f1e160]
+                    - cell "+$1,100.00" [ref=f1e161]
+                  - row [ref=f1e162]:
+                    - cell "AAPL" [ref=f1e163]
+                    - cell "150" [ref=f1e164]
+                    - cell "$175.44" [ref=f1e165]
+                    - cell "$26,316.00" [ref=f1e166]
+                    - cell "+$1,086.00" [ref=f1e167]
+                  - row [ref=f1e168]:
+                    - cell "TLT" [ref=f1e169]
+                    - cell "200" [ref=f1e170]
+                    - cell "$92.85" [ref=f1e171]
+                    - cell "$18,570.00" [ref=f1e172]
+                    - cell "-$650.00" [ref=f1e173]
+              - paragraph [ref=f1e174]: Illustrative sample holdings — your live Portfolio desk starts from a clean paper account until you connect data or run a strategy.
+              - paragraph [ref=f1e175]: "Watchlist: AAPL, NVDA, TLT, EURUSD, SPY · 90 sessions of sample history for SPY, MSFT, TLT"
+            - generic [ref=f1e176]:
+              - generic [ref=f1e177]:
+                - heading "Reconciliation breaks" [level=3] [ref=f1e178]
+                - button "Review breaks →" [ref=f1e179] [cursor=pointer]
+              - list [ref=f1e180]:
+                - listitem [ref=f1e181]:
+                  - button "Cash variance High Custodian cash balance is $1,250.00 above the internal ledger for the sample account. Variance $1,250.00 · CashMismatch" [ref=f1e182] [cursor=pointer]:
+                    - generic [ref=f1e183]:
+                      - strong [ref=f1e184]: Cash variance
+                      - generic [ref=f1e185]: High
+                    - generic [ref=f1e186]: Custodian cash balance is $1,250.00 above the internal ledger for the sample account.
+                    - generic [ref=f1e187]: Variance $1,250.00 · CashMismatch
+                - listitem [ref=f1e188]:
+                  - button "Unmatched fee Medium A $42.50 custodian fee has no matching ledger entry in the sample statement. Variance $42.50 · AmountMismatch" [ref=f1e189] [cursor=pointer]:
+                    - generic [ref=f1e190]:
+                      - strong [ref=f1e191]: Unmatched fee
+                      - generic [ref=f1e192]: Medium
+                    - generic [ref=f1e193]: A $42.50 custodian fee has no matching ledger entry in the sample statement.
+                    - generic [ref=f1e194]: Variance $42.50 · AmountMismatch
+              - generic [ref=f1e195]:
+                - button "Report Sample portfolio review Template ready to run A governed report template you can run against the sample data." [ref=f1e196] [cursor=pointer]:
+                  - text: Report
+                  - strong [ref=f1e197]: Sample portfolio review
+                  - generic [ref=f1e198]: Template ready to run
+                  - generic [ref=f1e199]: A governed report template you can run against the sample data.
+                - button "Strategy Sample Covered Call Paper · Completed A completed paper covered-call run loaded into the Strategy desk — no live orders, safe to inspect." [ref=f1e200] [cursor=pointer]:
+                  - text: Strategy
+                  - strong [ref=f1e201]: Sample Covered Call
+                  - generic [ref=f1e202]: Paper · Completed
+                  - generic [ref=f1e203]: A completed paper covered-call run loaded into the Strategy desk — no live orders, safe to inspect.
+        - generic [ref=f1e204]:
+          - button "Open your desk See the workspace configured for your goal." [ref=f1e205] [cursor=pointer]:
+            - strong [ref=f1e206]: Open your desk
+            - generic [ref=f1e207]: See the workspace configured for your goal.
+          - button "Review the sample statement Import and validate a statement or holdings file." [ref=f1e208] [cursor=pointer]:
+            - strong [ref=f1e209]: Review the sample statement
+            - generic [ref=f1e210]: Import and validate a statement or holdings file.
+          - button "Run a report Produce a useful result and keep the evidence." [ref=f1e211] [cursor=pointer]:
+            - strong [ref=f1e212]: Run a report
+            - generic [ref=f1e213]: Produce a useful result and keep the evidence.
+  - region "Notifications"

@@ -1,63 +1,67 @@
 /* =====================================================================
-   Meridian Design System — Colors & Type  v2.2
-   Source of truth: shared Institutional Ops tokens used by
-   src/Meridian.Ui/dashboard/src/styles/index.css and WPF theme resources.
+   Meridian Design System — Colors & Type  v2.3
+   Mirrors the canonical palette in tokens/colors.css + tokens/colors-dark.css. Values here
+   are the dark-mode resolutions of those tokens; change them there first, then re-derive.
+   No @font-face import: the catalogue is opened from disk and served under a CSP with no
+   font CDN, so an external @import is a request that only ever fails. Platform stacks only.
    ===================================================================== */
-
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap");
 
 :root {
   /* ---------- RAW HSL (matches dashboard tokens) ---------- */
-  --background:        220 10%  6%;
-  --foreground:        210 18% 94%;
-  --card:              215 34%  9%;
-  --card-foreground:   210 30% 92%;
-  --popover:           215 36%  8%;
-  --popover-foreground:210 30% 92%;
-  --primary:           198 72% 50%;
-  --primary-foreground:213 54%  7%;
-  --secondary:         213 32% 16%;
-  --secondary-foreground:207 44% 90%;
-  --muted:             213 28% 15%;
-  --muted-foreground:  210 22% 62%;
-  --accent:             36 80% 58%;
-  --accent-foreground: 213 52%  8%;
-  --border:            208 38% 22%;
-  --input:             208 38% 22%;
-  --ring:              198 72% 50%;
-  --paper:             214 82% 68%;
-  --live:              198 72% 50%;
-  --live-env:            0 75% 59%;   /* LIVE environment alarm — distinct from data-posture cyan */
-  --warning:            36 80% 58%;
-  --success:           158 66% 44%;
-  --danger:            354 68% 62%;
-  --panel-strong:      213 48% 12%;
-  --panel-soft:        213 36% 15%;
-  --surface-raise:     213 40% 18%;
+  --background:          36 14% 7%;
+  --foreground:         38 26% 92%;
+  --card:               34 12% 11%;
+  --card-foreground:    38 26% 92%;
+  --popover:             38 18% 9%;
+  --popover-foreground: 38 26% 92%;
+  --primary:            19 61% 62%;
+  --primary-foreground:  36 14% 7%;
+  --secondary:          33 12% 14%;
+  --secondary-foreground: 37 19% 86%;
+  --muted:              33 12% 14%;
+  --muted-foreground:    32 8% 57%;
+  --accent:             40 50% 53%;
+  --accent-foreground:   36 14% 7%;
+  --border:             34 10% 26%;
+  --input:              34 10% 26%;
+  --ring:               19 61% 62%;
+  --paper:              19 66% 68%;
+  --live:               19 61% 62%;
+  --live-env:            5 51% 61%;   /* LIVE environment alarm — distinct from data-posture accent */
+  --warning:            40 50% 53%;
+  --success:           146 27% 51%;
+  --danger:              5 51% 61%;
+  --panel-strong:       40 19% 12%;
+  --panel-soft:         33 12% 14%;
+  --surface-raise:      36 12% 16%;
 
   /* ---------- RESOLVED HEX ---------- */
-  --bg:                #08101A;
-  --fg:                #DEE6EF;
-  --fg-muted:          #7C8A9B;
-  --card-bg:           #0D1722;
-  --panel-strong-bg:   #101C2B;
-  --panel-soft-bg:     #162334;
-  --surface-raise-bg:  #1B2A3C;
-  --border-color:      #1F344C;
-  --border-hi:         #477089;  /* high-contrast border — panels, active states */
+  --bg:                #14120F;
+  --fg:                #EFEBE4;
+  --fg-muted:          #9A9289;
+  --card-bg:           #201D19;
+  --panel-strong-bg:   #252119;
+  --panel-soft-bg:     #292520;
+  --surface-raise-bg:  #2E2A24;
+  --border-color:      #4A443C;
+  --border-hi:         #736B60;  /* high-contrast border — panels, active states */
 
   /* ================================================
-     CYAN ALIAS SYSTEM
-     Single canonical primary: #2AB2D4
-     WPF near-cyans are mapped to specific roles.
+     ACCENT ALIAS SYSTEM
+     Single canonical accent: #D98A64 (copper, dark mode).
+     The --cyan-* names are the repo's working-name layer
+     — tokens/colors.css maps them onto --ws-accent* — so
+     they are kept for call-site compatibility. Only the
+     identity behind them changed; nothing here is cyan.
      Never use raw hex in components — use these.
      ================================================ */
-  --cyan-primary:      #2AB2D4;  /* nav active, chart line, CTA tint — the default */
-  --cyan-focus:        #20D3F7;  /* keyboard focus ring ONLY (matches WPF FocusBrush) */
-  --cyan-pressed:      #2D9CDB;  /* hover/pressed on cyan interactive elements (WPF HoverBrush) */
-  --cyan-crosshair:    #2AB2D4;  /* chart crosshair & price labels */
-  --cyan-live:         #2AB2D4;  /* deprecated: use --state-live-* for LIVE environment; kept for nav status posture tint */
-  --cyan-nav:          #2AB2D4;  /* active nav inset / underline */
+  --cyan-primary:      #D98A64;  /* nav active, chart line, CTA tint — the default */
+  --cyan-secondary:    #E6A585;  /* hover on accent surfaces (= --ws-accent-hover) */
+  --cyan-focus:        #E6A585;  /* keyboard focus ring ONLY (matches WPF FocusBrush) */
+  --cyan-pressed:      #E39A77;  /* hover/pressed on accent interactive elements (WPF HoverBrush) */
+  --cyan-crosshair:    #9A9289;  /* chart crosshair & price labels — chrome, not the accent */
+  --cyan-live:         #D98A64;  /* deprecated: use --state-live-* for LIVE environment; kept for nav status posture tint */
+  --cyan-nav:          #D98A64;  /* active nav inset / underline */
 
   /* ================================================
      SEMANTIC STATE TOKENS
@@ -66,61 +70,61 @@
      ================================================ */
 
   /* Healthy / positive / completed */
-  --state-healthy-fg:  #26BF86;
-  --state-healthy-bd:  rgba(38, 191, 134, 0.35);
-  --state-healthy-bg:  rgba(38, 191, 134, 0.10);
+  --state-healthy-fg:  #5FA37C;
+  --state-healthy-bd:  rgba(95, 163, 124, 0.35);
+  --state-healthy-bg:  rgba(95, 163, 124, 0.10);
 
   /* Observe / warning / caution */
-  --state-warn-fg:     #D69E38;
-  --state-warn-bd:     rgba(214, 158, 56, 0.35);
-  --state-warn-bg:     rgba(214, 158, 56, 0.10);
+  --state-warn-fg:     #C29A4A;
+  --state-warn-bd:     rgba(194, 154, 74, 0.35);
+  --state-warn-bg:     rgba(194, 154, 74, 0.10);
 
   /* Critical / danger / offline */
-  --state-danger-fg:   #DE5878;
-  --state-danger-bd:   rgba(222, 88, 120, 0.35);
-  --state-danger-bg:   rgba(222, 88, 120, 0.10);
+  --state-danger-fg:   #CE7068;
+  --state-danger-bd:   rgba(206, 112, 104, 0.35);
+  --state-danger-bg:   rgba(206, 112, 104, 0.10);
 
   /* Paper environment (blue) */
-  --state-paper-fg:    #60A5FA;
-  --state-paper-bd:    rgba(96, 165, 250, 0.35);
-  --state-paper-bg:    rgba(96, 165, 250, 0.10);
+  --state-paper-fg:    #E39A77;
+  --state-paper-bd:    rgba(227, 154, 119, 0.35);
+  --state-paper-bg:    rgba(227, 154, 119, 0.10);
 
   /* Research environment */
-  --state-research-fg: #93B4DA;
-  --state-research-bd: rgba(147, 180, 218, 0.35);
-  --state-research-bg: rgba(147, 180, 218, 0.10);
+  --state-research-fg: #B5AEA4;
+  --state-research-bd: rgba(181, 174, 164, 0.35);
+  --state-research-bg: rgba(181, 174, 164, 0.10);
 
   /* Live environment — real-money alarm (distinct from danger/error) */
-  --state-live-fg:     #E84545;
-  --state-live-bd:     rgba(232, 69, 69, 0.40);
-  --state-live-bg:     rgba(232, 69, 69, 0.12);
+  --state-live-fg:     #CE7068;
+  --state-live-bd:     rgba(206, 112, 104, 0.40);
+  --state-live-bg:     rgba(206, 112, 104, 0.12);
 
   /* Neutral / inactive / muted */
-  --state-muted-fg:    #7C8A9B;
-  --state-muted-bd:    #1F344C;
-  --state-muted-bg:    #0B1520;
+  --state-muted-fg:    #9A9289;
+  --state-muted-bd:    #4A443C;
+  --state-muted-bg:    #201D19;
 
   /* Pending / loading / in-progress */
-  --state-pending-fg:  #A78BFA;
-  --state-pending-bd:  rgba(167, 139, 250, 0.35);
-  --state-pending-bg:  rgba(167, 139, 250, 0.10);
+  --state-pending-fg:  #9089B5;
+  --state-pending-bd:  rgba(144, 137, 181, 0.35);
+  --state-pending-bg:  rgba(144, 137, 181, 0.10);
 
   /* Sidebar tokens mirror the browser workstation operator rail contract. */
-  --sidebar: 220 12% 5%;
-  --sidebar-foreground: 210 18% 94%;
-  --sidebar-primary: 198 72% 50%;
-  --sidebar-primary-foreground: 213 54% 7%;
-  --sidebar-accent: 213 32% 16%;
-  --sidebar-accent-foreground: 207 44% 90%;
-  --sidebar-border: 205 34% 29%;
-  --sidebar-ring: 198 72% 50%;
+  --sidebar:  30 14% 5%;
+  --sidebar-foreground:  38 26% 92%;
+  --sidebar-primary:  19 61% 62%;
+  --sidebar-primary-foreground:  36 14% 7%;
+  --sidebar-accent:  33 12% 14%;
+  --sidebar-accent-foreground:  37 19% 86%;
+  --sidebar-border:  35 10% 34%;
+  --sidebar-ring:  19 61% 62%;
 
   /* Chart tokens use the browser workstation chart-1...5 naming contract. */
-  --chart-1: 198 72% 50%;
-  --chart-2: 158 66% 44%;
-  --chart-3: 354 68% 62%;
-  --chart-4: 36 80% 58%;
-  --chart-5: 214 82% 68%;
+  --chart-1: 146 27% 51%;
+  --chart-2:  19 61% 62%;
+  --chart-3: 250 23% 62%;
+  --chart-4: 40 50% 53%;
+  --chart-5:   5 51% 61%;
 
   /* ================================================
      WORKSPACE ACCENTS
@@ -128,13 +132,13 @@
      Accounting, Reporting, Strategy, Data, Settings.
      Use as accent strips and icon/status tints only.
      ================================================ */
-  --workspace-trading:    #2AB2D4;
-  --workspace-portfolio:  #60A5FA;
-  --workspace-accounting: #26BF86;
-  --workspace-reporting:  #D69E38;
-  --workspace-strategy:   #A78BFA;
-  --workspace-data:       #93B4DA;
-  --workspace-settings:   #7C8A9B;
+  --workspace-trading:    #D98A64;  /* copper — the accent lane */
+  --workspace-portfolio:  #7FBA97;  /* pale spruce */
+  --workspace-accounting: #5FA37C;  /* spruce */
+  --workspace-reporting:  #C29A4A;  /* brass */
+  --workspace-strategy:   #9089B5;  /* slate-violet */
+  --workspace-data:       #8C857A;  /* warm grey */
+  --workspace-settings:   #B5AEA4;  /* bone */
 
   /* ================================================
      SURFACE RADII — tighter for quant density
@@ -161,7 +165,7 @@
   --shadow-float:
     0 2px 8px rgba(0,0,0,0.40),
     0 0 0 1px rgba(255,255,255,0.02) inset;
-  --shadow-color: 215 30% 0%;
+  --shadow-color:  34 10% 0%;
   --shadow-opacity: 0.24;
   --shadow-blur: 2px;
   --shadow-spread: 0px;
@@ -173,9 +177,9 @@
      Sans: labels, prose. Mono: ALL DATA. Display: titles.
      Key rule: numbers and identifiers are ALWAYS mono.
      ================================================ */
-  --font-sans:    "Inter", "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono:    "JetBrains Mono", "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --font-display: "Space Grotesk", "IBM Plex Sans", sans-serif;
+  --font-sans:    "Segoe UI Variable Text", "Segoe UI", ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  --font-mono:    "Cascadia Mono", ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --font-display: "Segoe UI Variable Display", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
 
   /* ================================================
      DENSE DATA READABILITY — chart & table standards
@@ -190,29 +194,24 @@
   /* ================================================
      CHART STANDARDS
      ================================================ */
-  --chart-grid:        #1A2D44;   /* grid lines — subtle, never overwhelming */
-  --chart-grid-major:  #1F344C;   /* axis lines */
-  --chart-up:          #26BF86;   /* bull / gain */
-  --chart-dn:          #DE5878;   /* bear / loss */
-  --chart-ma20:        #2AB2D4;   /* MA(20) overlay */
-  --chart-ma50:        #F2C94C;   /* MA(50) overlay */
-  --chart-bench:       #60A5FA;   /* benchmark series */
-  --chart-band:        rgba(96,165,250,0.15); /* Bollinger band fill */
-  --chart-crosshair:   #2AB2D4;   /* crosshair + price tag */
-  --chart-dd:          rgba(222,88,120,0.35); /* drawdown fill */
+  --chart-grid:        #302B25;   /* grid lines — subtle, never overwhelming */
+  --chart-grid-major:  #4A443C;   /* axis lines */
+  --chart-up:          #5FA37C;   /* bull / gain */
+  --chart-dn:          #CE7068;   /* bear / loss */
+  --chart-ma20:        #9089B5;   /* MA(20) overlay */
+  --chart-ma50:        #C29A4A;   /* MA(50) overlay */
+  --chart-bench:       #8C857A;   /* benchmark series */
+  --chart-band:        rgba(140,133,122,0.15); /* Bollinger band fill */
+  --chart-crosshair:   #9A9289;   /* crosshair + price tag */
+  --chart-dd:          rgba(206,112,104,0.35); /* drawdown fill */
 
   /* ================================================
-     AMBIENT BACKGROUND — 2 faint static radial glows max.
-     Institutional Ops keeps the workstation calm: no dominant grids,
-     animated glow, or decorative gradients beyond this base layer.
+     AMBIENT BACKGROUND — flat. The restyle brief rules out
+     glowing grids, saturated gradients and glass; the canvas
+     is one opaque colour and every separation is a 1px rule.
+     Kept as a token so surfaces can keep painting it.
      ================================================ */
-  --bg-ambient:
-    radial-gradient(ellipse at 6% 0%,   rgba(42,178,212,0.06) 0%, transparent 38%),
-    radial-gradient(ellipse at 96% 96%, rgba(96,165,250,0.04)  0%, transparent 36%),
-    linear-gradient(180deg, rgba(8,16,26,1) 0%, rgba(8,16,26,1) 100%);
-  --grid-lines:
-    linear-gradient(hsl(var(--border) / 0.10) 1px, transparent 1px) 0 0 / 100% 40px,
-    linear-gradient(90deg, hsl(var(--border) / 0.10) 1px, transparent 1px) 0 0 / 40px 100%;
+  --bg-ambient: none;
 }
 
 /* ================================================================
@@ -285,10 +284,10 @@ html, body {
 .state-research { color:var(--state-research-fg);background:var(--state-research-bg);border:1px solid var(--state-research-bd); }
 .state-pending  { color:var(--state-pending-fg); background:var(--state-pending-bg); border:1px solid var(--state-pending-bd); }
 .state-muted    { color:var(--state-muted-fg);   background:var(--state-muted-bg);   border:1px solid var(--state-muted-bd); }
-.state-selected { color:var(--cyan-primary);      background:rgba(42,178,212,0.10);  border:1px solid rgba(42,178,212,0.35); }
+.state-selected { color:var(--cyan-primary);      background:rgba(217,138,100,0.10);  border:1px solid rgba(217,138,100,0.35); }
 .state-stale    { color:var(--state-warn-fg);    background:var(--state-warn-bg);    border:1px dashed var(--state-warn-bd); }
 .state-error    { color:var(--state-danger-fg);  background:var(--state-danger-bg);  border:1px solid var(--state-danger-bd); }
-.state-disabled { color:var(--state-muted-fg);   background:rgba(124,138,155,0.06); border:1px solid var(--state-muted-bd); opacity:0.72; }
+.state-disabled { color:var(--state-muted-fg);   background:rgba(154,146,137,0.06); border:1px solid var(--state-muted-bd); opacity:0.72; }
 
 /* ================================================================
    SURFACE PRIMITIVES
@@ -364,7 +363,7 @@ html, body {
   gap: 16px;
   align-items: center;
   padding: 0 18px;
-  background: #05101B;
+  background: #100E0C;
   border-bottom: 1px solid var(--border-color);
   box-shadow: var(--shadow-panel);
 }
@@ -408,7 +407,7 @@ html, body {
   padding: 0 12px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  background: #0B1520;
+  background: #201D19;
   color: var(--fg-muted);
   font-family: var(--font-mono);
   font-size: 11px;
@@ -439,7 +438,7 @@ html, body {
   min-height: 0;
   overflow: auto;
   padding: 12px 10px;
-  background: #08131F;
+  background: #1A1712;
   border-right: 1px solid var(--border-color);
 }
 
@@ -478,13 +477,13 @@ html, body {
 }
 
 .operator-nav-item:hover {
-  background: rgba(42,178,212,0.06);
+  background: rgba(217,138,100,0.06);
   color: #FFFFFF;
 }
 
 .operator-nav-item.active {
-  background: rgba(42,178,212,0.10);
-  border-color: rgba(42,178,212,0.28);
+  background: rgba(217,138,100,0.10);
+  border-color: rgba(217,138,100,0.28);
   box-shadow: inset 3px 0 0 var(--cyan-primary);
   color: #FFFFFF;
 }
@@ -498,7 +497,7 @@ html, body {
   min-height: 0;
   display: grid;
   grid-template-rows: 44px auto 1fr;
-  background: #08101A;
+  background: #14120F;
 }
 
 .toolbar-strip {
@@ -507,7 +506,7 @@ html, body {
   gap: 8px;
   min-width: 0;
   padding: 0 18px;
-  background: #0B1520;
+  background: #201D19;
   border-bottom: 1px solid var(--border-color);
   font-family: var(--font-mono);
   font-size: 11px;
@@ -521,14 +520,14 @@ html, body {
   padding: 0 10px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  background: #08101A;
+  background: #14120F;
   color: var(--fg);
   white-space: nowrap;
 }
 
 .toolbar-chip.active {
-  border-color: rgba(42,178,212,0.42);
-  background: rgba(42,178,212,0.10);
+  border-color: rgba(217,138,100,0.42);
+  background: rgba(217,138,100,0.10);
   color: var(--cyan-primary);
 }
 
@@ -542,7 +541,7 @@ html, body {
   gap: 8px;
   padding: 14px 18px;
   border-bottom: 1px solid var(--border-color);
-  background: #08131F;
+  background: #1A1712;
 }
 
 .metric-tile {
@@ -593,7 +592,7 @@ html, body {
   overflow: hidden;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  background: #0B1520;
+  background: #201D19;
   box-shadow: var(--shadow-panel);
 }
 
@@ -604,7 +603,7 @@ html, body {
   min-height: 38px;
   padding: 0 14px;
   border-bottom: 1px solid var(--border-color);
-  background: #05101B;
+  background: #100E0C;
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.14em;
@@ -637,7 +636,7 @@ html, body {
   z-index: 1;
   padding: 8px 10px;
   border-bottom: 1px solid var(--border-color);
-  background: #08101A;
+  background: #14120F;
   color: var(--fg-muted);
   font-size: 9.5px;
   font-weight: 500;
@@ -648,7 +647,7 @@ html, body {
 
 .dense-table tbody td {
   padding: 7px 10px;
-  border-bottom: 1px solid #142036;
+  border-bottom: 1px solid #292520;
   color: var(--fg);
   white-space: nowrap;
 }
@@ -658,11 +657,11 @@ html, body {
 }
 
 .dense-table tbody tr:hover td {
-  background: rgba(42,178,212,0.06);
+  background: rgba(217,138,100,0.06);
 }
 
 .dense-table tbody tr.selected td {
-  background: rgba(42,178,212,0.14);
+  background: rgba(217,138,100,0.14);
   color: #FFFFFF;
 }
 
@@ -679,8 +678,8 @@ html, body {
 .entity-summary .field {
   min-width: 0;
   padding: 11px 14px;
-  border-right: 1px solid #142036;
-  border-bottom: 1px solid #142036;
+  border-right: 1px solid #292520;
+  border-bottom: 1px solid #292520;
 }
 
 .entity-summary .field:nth-child(2n) {
@@ -728,7 +727,7 @@ html, body {
   overflow: hidden;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  background: #0B1520;
+  background: #201D19;
   box-shadow: var(--shadow-panel);
 }
 
@@ -818,14 +817,14 @@ html, body {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: #0B1520;
+  background: #201D19;
 }
 
 .state-matrix-cell {
   min-width: 0;
   padding: 12px 14px;
   border-right: 1px solid var(--border-color);
-  border-bottom: 1px solid #142036;
+  border-bottom: 1px solid #292520;
 }
 
 .state-matrix-cell:nth-child(4n) {
@@ -833,7 +832,7 @@ html, body {
 }
 
 .state-matrix-cell.header {
-  background: #05101B;
+  background: #100E0C;
   color: var(--fg-muted);
   font-family: var(--font-mono);
   font-size: 10px;
@@ -921,7 +920,7 @@ html, body {
   align-items: center;
   padding: 7px 9px;
   border-radius: var(--radius-xs);
-  background: #08101A;
+  background: #14120F;
   font-size: 11.5px;
 }
 
@@ -943,7 +942,7 @@ html, body {
   grid-template-rows: auto 1fr;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  background: #0B1520;
+  background: #201D19;
   overflow: hidden;
   box-shadow: var(--shadow-panel);
 }
@@ -956,7 +955,7 @@ html, body {
   min-height: 40px;
   padding: 0 14px;
   border-bottom: 1px solid var(--border-color);
-  background: #05101B;
+  background: #100E0C;
 }
 
 .screen-recipe-title b {
@@ -983,8 +982,8 @@ html, body {
 .screen-recipe-block {
   min-width: 0;
   padding: 12px 14px;
-  border-right: 1px solid #142036;
-  border-bottom: 1px solid #142036;
+  border-right: 1px solid #292520;
+  border-bottom: 1px solid #292520;
 }
 
 .screen-recipe-block:nth-child(2n) {
@@ -1001,7 +1000,7 @@ html, body {
 }
 
 .screen-recipe-block .v {
-  color: #D4DCE6;
+  color: #E3DED6;
   font-size: 12px;
   line-height: 1.5;
 }
@@ -1015,7 +1014,7 @@ html, body {
 .chart-standard-card {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  background: #0B1520;
+  background: #201D19;
   overflow: hidden;
   box-shadow: var(--shadow-panel);
 }
@@ -1027,7 +1026,7 @@ html, body {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  background: #05101B;
+  background: #100E0C;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -1053,7 +1052,7 @@ html, body {
   min-height: 210px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  background: #05101B;
+  background: #100E0C;
   overflow: hidden;
 }
 
@@ -1076,7 +1075,7 @@ html, body {
 .row-detail-panel {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  background: #08101A;
+  background: #14120F;
   overflow: hidden;
 }
 
@@ -1089,13 +1088,13 @@ html, body {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--fg-muted);
-  background: #05101B;
+  background: #100E0C;
 }
 
 .status-window .body,
 .row-detail-panel .body {
   padding: 10px;
-  color: #D4DCE6;
+  color: #E3DED6;
   font-size: 12px;
   line-height: 1.5;
 }

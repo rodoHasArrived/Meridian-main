@@ -241,7 +241,7 @@ internal static class SecurityMasterMapping
         EnsureSupportedAssetSchemaVersion(assetClass, json);
         var terms = ResolveAssetTermsJson(json);
 
-        return assetClass switch
+        var kind = assetClass switch
         {
             "Equity" => SecurityKind.NewEquity(new EquityTerms(
                 ToOption(GetOptionalString(json, "shareClass")),
@@ -270,7 +270,7 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalString(json, "deliveryLocationCode")),
                 GetOptionalBoolean(json, "isRollTarget") ?? false,
                 ToOption(GetOptionalInt(json, "rollWindowDays")))),
-            "Bond" => SecurityKind.NewBond(ToBondTerms(json)),
+            "Bond" => SecurityKind.NewBond(ToBondTerms(json, mode)),
             "FxSpot" => SecurityKind.NewFxSpot(new FxSpotTerms(
                 GetRequiredString(json, "baseCurrency"),
                 GetRequiredString(json, "quoteCurrency"))),
@@ -326,7 +326,7 @@ internal static class SecurityMasterMapping
             "Swap" => SecurityKind.NewSwap(new SwapTerms(
                 GetRequiredDateOnly(json, "effectiveDate"),
                 GetRequiredDateOnly(json, "maturityDate"),
-                ToFSharpList(GetRequiredArray(json, "legs").EnumerateArray().Select(ToSwapLeg)))),
+                ToFSharpList(GetSwapLegItems(json).Select(ToSwapLeg)))),
             "DirectLoan" => SecurityKind.NewDirectLoan(new DirectLoanTerms(
                 GetRequiredString(json, "borrower"),
                 ToOption(GetOptionalDateOnly(json, "maturity")),
@@ -407,6 +407,15 @@ internal static class SecurityMasterMapping
                 ToDistributionPolicyOption(GetOptionalString(json, "distributionPolicy")),
                 ToOption(GetOptionalBoolean(json, "isStableNav")),
                 ToOption(GetOptionalString(json, "pricingSource")))),
+            // Read tolerance must not become write tolerance. On a create, an unrecognized class
+            // ("ExchangeTradedFund", which the pack registry only PLANS; a typo like "Equitiy")
+            // would otherwise persist silently as OtherSecurity — and because OtherSecurity is a
+            // catalog class, every later amend passes the round-trip guard, so the
+            // misclassification is permanent and never surfaces. Amend and deactivate are guarded
+            // in SecurityMasterService.EnsureAssetClassRoundTripsSafely before they reach here;
+            // this arm is the one guard the create path has.
+            _ when mode == SecurityKindMappingMode.Write =>
+                throw new InvalidOperationException(UnrecognizedAssetClassOnWrite(assetClass)),
             // Unknown classes degrade to OtherSecurity with the raw class preserved as the category
             // instead of failing every read of the row. A newer node can register a class this node
             // has no deserializer for; throwing here made that a total read outage per security
@@ -418,7 +427,66 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalString(json, "issuerName")),
                 ToOption(GetOptionalString(json, "settlementType"))))
         };
+
+        EnsureDeclaredVocabulariesOnWrite(assetClass, json, mode);
+        return kind;
     }
+
+    /// <summary>
+    /// The schema-driven backstop for closed-vocabulary discriminants on the WRITE path: every
+    /// declared vocabulary in <see cref="SecurityAssetTermsSchema"/> is enforced here, so adding one
+    /// to the table constrains create/amend commands without a matching edit to this mapping.
+    /// <para>It runs AFTER the kind is built purely for diagnosis quality: the decode sites that
+    /// branch on a discriminant (the equity classification, the bond coupon structure) already throw
+    /// with the precise reason their case needs, and letting them speak first keeps those messages.
+    /// The mapping is a pure function, so nothing has been committed by the time this runs — the
+    /// ordering costs nothing but the wording of the exception.</para>
+    /// </summary>
+    private static void EnsureDeclaredVocabulariesOnWrite(
+        string assetClass, JsonElement json, SecurityKindMappingMode mode)
+    {
+        if (mode != SecurityKindMappingMode.Write || json.ValueKind != JsonValueKind.Object)
+        {
+            return;
+        }
+
+        foreach (var field in SecurityAssetTermsSchema.DiscriminantFields(assetClass))
+        {
+            // Absent (or explicitly null) leaves the decode site's documented default alone — an
+            // omitted couponType is legitimately Fixed. A present token of the WRONG KIND is not
+            // absent, though it reaches the decode sites as if it were: GetOptionalString erases a
+            // number, bool, object, or array to null, so the write persists the missing-value
+            // default and discards the structure the payload named, which is the same silent
+            // rewrite an undeclared spelling would cause. Refuse it the same way.
+            if (!json.TryGetProperty(field.Key, out var token) || token.ValueKind == JsonValueKind.Null)
+            {
+                continue;
+            }
+
+            if (token.ValueKind != JsonValueKind.String)
+            {
+                throw new InvalidOperationException(
+                    UndeclaredDiscriminantValue(assetClass, field.Key, token.GetRawText()));
+            }
+
+            var raw = token.GetString();
+            if (field.Allows(raw))
+            {
+                continue;
+            }
+
+            throw new InvalidOperationException(UndeclaredDiscriminantValue(assetClass, field.Key, raw));
+        }
+    }
+
+    /// <summary>
+    /// The shared rejection reason for a discriminant value outside its declared vocabulary, so the
+    /// decode sites and the schema backstop reject a given value with identical wording.
+    /// </summary>
+    private static string UndeclaredDiscriminantValue(string assetClass, string key, string? value)
+        => SecurityAssetTermsSchema.Field(assetClass, key) is { } field
+            ? field.DescribeUndeclaredValue(assetClass, value)
+            : $"Value '{value}' is not a declared '{key}' value for asset class '{assetClass}'.";
 
     /// <summary>
     /// Maps a CustomAsset payload to the first-class <see cref="SecurityKind.CustomAsset"/> case,
@@ -489,7 +557,17 @@ internal static class SecurityMasterMapping
         var other => BondSubclass.NewOther(other)
     };
 
-    private static BondTerms ToBondTerms(JsonElement json)
+    /// <summary>
+    /// Decodes the flat bond coupon contract. <c>couponType</c> is a closed schema vocabulary
+    /// (<c>Fixed</c>, <c>Floating</c>, <c>ZeroCoupon</c>, <c>Step</c>, <c>InflationLinked</c>) with
+    /// no escape: an unrecognized value cannot be carried, it collapses to <c>Fixed</c> and takes
+    /// the label plus every structure-specific field (<c>floatingIndex</c>, the step schedule, the
+    /// inflation block) with it. So the fallback arm is READ tolerance only — the same
+    /// read-tolerant/write-strict split the CustomAsset envelope check and the equity classification
+    /// decode already apply. An absent <c>couponType</c> still means <c>Fixed</c> on both paths: it
+    /// is the serializer's own spelling for a plain fixed coupon, not an unreadable value.
+    /// </summary>
+    private static BondTerms ToBondTerms(JsonElement json, SecurityKindMappingMode mode)
     {
         var couponType = GetOptionalString(json, "couponType") ?? "Fixed";
         BondCouponStructure coupon = couponType switch
@@ -512,6 +590,15 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalDecimal(json, "inflationBaseIndexValue")),
                 ToOption(GetOptionalDecimal(json, "inflationIndexRatio")),
                 ToOption(GetOptionalString(json, "dayCount"))),
+            "Fixed" => BondCouponStructure.NewFixed(
+                GetOptionalDecimal(json, "couponRate") ?? 0m,
+                ToOption(GetOptionalString(json, "dayCount"))),
+            // A WRITE fails closed on an unrecognized coupon type: silently persisting a typo
+            // ("Floter") as a fixed coupon would change the bond's economics and drop the fields
+            // the named structure owns.
+            _ when mode == SecurityKindMappingMode.Write =>
+                throw new InvalidOperationException(UndeclaredDiscriminantValue("Bond", "couponType", couponType)),
+            // Read tolerance: an unrecognized coupon type must not fail every read of the row.
             _ => BondCouponStructure.NewFixed(
                 GetOptionalDecimal(json, "couponRate") ?? 0m,
                 ToOption(GetOptionalString(json, "dayCount")))
@@ -533,12 +620,138 @@ internal static class SecurityMasterMapping
             ToFSharpList(GetOptionalArrayItemsStrict(json, "principalSchedule").Select(ToPrincipalPaymentEntry)));
     }
 
+    // Match the cash-flow resolver's alias priority, while refusing malformed supplied economics
+    // instead of persisting them as absent. The pre-widening four-field leg remains readable.
     private static SwapLeg ToSwapLeg(JsonElement json)
-        => new(
-            GetRequiredString(json, "legType"),
-            GetRequiredString(json, "currency"),
-            ToOption(GetOptionalString(json, "index")),
-            ToOption(GetOptionalDecimal(json, "fixedRate")));
+    {
+        if (json.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidOperationException("Each swap leg must be a JSON object.");
+        }
+
+        return new SwapLeg(
+            ToOption(ReadSwapLegString(json, "legId", "id", "name")),
+            ReadSwapLegString(json, "legType", "rateType", "type")
+                ?? throw new InvalidOperationException("Missing required string 'legType' in a swap leg."),
+            ReadSwapLegString(json, "currency")
+                ?? throw new InvalidOperationException("Missing required string 'currency' in a swap leg."),
+            ToOption(NormalizeSwapLegDirection(ReadSwapLegString(json, "direction", "payReceive", "payOrReceive", "side"))),
+            ToOption(ReadSwapLegString(json, "index", "indexName", "referenceIndex")),
+            ToOption(ReadSwapLegDecimal(json, "fixedRate", "rate", "couponRate")),
+            ToOption(ReadSwapLegDecimal(json, "spreadBps")),
+            ToOption(ReadSwapLegDecimal(json, "currentIndexRate", "lastFixing", "currentRate", "indexRate")),
+            ToOption(ReadSwapLegDecimal(json, "notional", "notionalAmount", "faceAmount", "principal")),
+            ToOption(ReadSwapLegString(json, "paymentFrequency", "frequency")),
+            ToOption(ReadSwapLegString(json, "dayCountConvention", "dayCount", "dayCountBasis")),
+            ReadSwapLegPrincipalExchange(json));
+    }
+
+    private static IEnumerable<JsonElement> GetSwapLegItems(JsonElement json)
+    {
+        JsonElement? emptyArray = null;
+        foreach (var alias in new[] { "legs", "swapLegs", "cashFlowLegs" })
+        {
+            if (!SecurityTermReader.TryGetProperty(json, alias, out var value))
+            {
+                continue;
+            }
+
+            if (value.ValueKind != JsonValueKind.Array)
+            {
+                throw new InvalidOperationException($"Swap leg container '{alias}' must be a JSON array.");
+            }
+
+            if (value.GetArrayLength() > 0)
+            {
+                return value.EnumerateArray();
+            }
+
+            // The resolver tries the next alias when an array is empty. An entirely empty set
+            // still reaches the domain's existing nonempty-legs validation.
+            emptyArray = value;
+        }
+
+        return emptyArray?.EnumerateArray()
+            ?? throw new InvalidOperationException("Missing required array 'legs'.");
+    }
+
+    private static string? ReadSwapLegString(JsonElement json, params string[] aliases)
+    {
+        foreach (var alias in aliases)
+        {
+            if (!SecurityTermReader.TryGetProperty(json, alias, out var value)
+                || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            {
+                continue;
+            }
+
+            if (value.ValueKind != JsonValueKind.String)
+            {
+                throw new InvalidOperationException($"Swap leg property '{alias}' must be a JSON string.");
+            }
+
+            if (SecurityTermReader.ReadString(json, alias) is { } text)
+            {
+                return text;
+            }
+        }
+
+        return null;
+    }
+
+    private static decimal? ReadSwapLegDecimal(JsonElement json, params string[] aliases)
+    {
+        foreach (var alias in aliases)
+        {
+            if (!SecurityTermReader.TryGetProperty(json, alias, out var value)
+                || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            {
+                continue;
+            }
+
+            return SecurityTermReader.ReadDecimal(json, alias)
+                ?? throw new InvalidOperationException($"Swap leg property '{alias}' must be a number or numeric string.");
+        }
+
+        return null;
+    }
+
+    private static bool ReadSwapLegPrincipalExchange(JsonElement json)
+    {
+        foreach (var alias in new[] { "exchangesPrincipal", "principalExchange", "notionalExchange" })
+        {
+            if (!SecurityTermReader.TryGetProperty(json, alias, out var value)
+                || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            {
+                continue;
+            }
+
+            if (value.ValueKind is JsonValueKind.True or JsonValueKind.False)
+            {
+                return value.GetBoolean();
+            }
+
+            if (value.ValueKind == JsonValueKind.String && bool.TryParse(value.GetString(), out var parsed))
+            {
+                return parsed;
+            }
+
+            throw new InvalidOperationException($"Swap leg property '{alias}' must be a boolean or boolean string.");
+        }
+
+        return false;
+    }
+
+    private static string? NormalizeSwapLegDirection(string? direction)
+    {
+        var normalized = direction?.Trim().ToUpperInvariant();
+        if (normalized?.Contains("PAY", StringComparison.Ordinal) == true)
+        {
+            return "Pay";
+        }
+
+        return normalized?.Contains("REC", StringComparison.Ordinal) == true ? "Receive" : direction;
+    }
 
     private static Covenant ToCovenant(JsonElement json)
         => new(
@@ -626,6 +839,12 @@ internal static class SecurityMasterMapping
                 "Annual" => PaymentFrequency.Annual,
                 var other => PaymentFrequency.NewOtherFrequency(other)
             });
+
+    private static string UnrecognizedAssetClassOnWrite(string assetClass)
+        => $"Asset class '{assetClass}' is not a Security Master asset class this node recognizes, so the write is refused: " +
+           "persisting it would silently reclassify the security as OtherSecurity and the misclassification could never be " +
+           "corrected through the amend path. Use one of the catalog asset classes " +
+           $"({string.Join(", ", SecurityAssetClassCatalog.AssetClasses)}), or apply the change from a node that supports this class.";
 
     private static JsonElement ParseJson(string json)
         => JsonDocument.Parse(json).RootElement.Clone();

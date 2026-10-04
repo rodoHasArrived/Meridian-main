@@ -119,8 +119,8 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
         var approvalStatus = ResolveApprovalHistoryStatus(approvalHistory);
         var overallStatus = ResolveOverallStatus(lanes, approvalStatus);
         var readinessScore = ResolveReadinessScore(workflows, lanes, approvalStatus);
-        var isReadyToClose = lanes.Count > 0 &&
-                             lanes.All(static lane => lane.IsReady) &&
+        var isReadyToClose = lanes.Any(static lane => lane.RequiredForClose) &&
+                             lanes.Where(static lane => lane.RequiredForClose).All(static lane => lane.IsReady) &&
                              approvalStatus == EvidenceStatusDto.Ready;
 
         return new PrivateCapitalCloseCockpitDto(
@@ -207,9 +207,13 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             BuildValuationEvidenceLane(workflows, records),
             BuildReportingLane(workflows, reportOutputs),
             BuildDeliveryLane(reportOutputs),
-            BuildCloseControlsLane(workflows),
-            BuildClosePackageLane(workflows),
-            BuildPeriodLockLane(workflows)
+            // The close-plan contributor validates current retained checklist sign-offs.
+            // These three lanes describe the copies/results produced by publication, which
+            // cannot themselves be prerequisites for that same publication.
+            BuildCloseControlsLane(workflows) with { RequiredForClose = RequiresCloseControlLane(workflows) },
+            BuildClosePackageLane(workflows) with { RequiredForClose = RequiresPublishedCloseEvidence(workflows) },
+            BuildPeriodLockLane(workflows) with { RequiredForClose = RequiresPublishedCloseEvidence(workflows)
+                || PeriodLockReopenPackages(workflows).Any(static package => package.RequiredForClose) }
         };
 
         if (dailyValuationStatus is not null)
@@ -325,7 +329,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
                                records.Any(static record => record.ValidationIssueCount > 0);
         var isReady = records.Count > 0 &&
                       subledgers.Count > 0 &&
-                      subledgers.All(IsPartnerCapitalTieOutReady) &&
+                      subledgers.All(subledger => IsPartnerCapitalTieOutReady(subledger, reportOutputs)) &&
                       records.All(static record =>
                           record.IsPosted &&
                           record.CapitalAccountSubledgerEntryCount > 0 &&
@@ -347,7 +351,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
                     ? "Partner capital account tie-out support is missing, mismatched, or lacks retained statement evidence."
                     : "No partner capital account tie-out support is available for this close scope.",
             subledgers.Select(static subledger => subledger.ActivityRoute).FirstOrDefault(static route => !string.IsNullOrWhiteSpace(route)),
-            SubledgerEvidence(subledgers, "Partner capital tie-out evidence")
+            SubledgerEvidence(subledgers, "Cumulative capital-account diagnostics")
                 .Concat(ReportEvidence(reportOutputs))
                 .ToArray(),
             "Retain partner capital tie-out evidence across subledger, ledger, and statement output");
@@ -361,7 +365,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
         var reviewRecords = records
             .Where(IsExpenseFeeAllocationRecord)
             .ToArray();
-        var hasAllocationEvidence = HasAllocationEvidence(subledgers);
+        var hasAllocationEvidence = reviewRecords.All(HasAllocationEvidence);
         var hasReviewEvidence = reviewRecords.Any() &&
                                 reviewRecords.All(static record =>
                                     record.IsPosted &&
@@ -388,7 +392,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
                 .FirstOrDefault(static route => !string.IsNullOrWhiteSpace(route))
                 ?? subledgers.Select(static subledger => subledger.ActivityRoute).FirstOrDefault(static route => !string.IsNullOrWhiteSpace(route)),
             RecordEvidence(reviewRecords, "Expense, fee, and allocation evidence")
-                .Concat(SubledgerEvidence(subledgers, "Allocation-rule evidence"))
+                .Concat(SubledgerEvidence(subledgers, "Cumulative capital-account diagnostics"))
                 .ToArray(),
             "Retain posted expense, fee, and allocation review evidence");
     }
@@ -401,7 +405,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
         var managementRecords = records
             .Where(IsManagementCompanyOperatingRecord)
             .ToArray();
-        var values = BuildManagementCompanyEvidenceValues(records, subledgers).ToArray();
+        var values = records.SelectMany(BuildManagementCompanyRecordValues).ToArray();
         var signals = new[]
         {
             EvidenceSignal("expense allocation", ContainsManagementCompanyToken(values, "allocation", "expense allocation")),
@@ -425,7 +429,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             .Select(static signal => signal.Label)
             .ToArray();
         var evidence = RecordEvidence(managementRecords, "Management-company operating evidence")
-            .Concat(SubledgerEvidence(subledgers, "Management-company support evidence"))
+            .Concat(SubledgerEvidence(subledgers, "Cumulative capital-account diagnostics"))
             .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
@@ -570,8 +574,9 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
         var navSupportActions = navSupportPackages
             .SelectMany(static package => package.RequiredActions)
             .ToArray();
-        var approvalHistoryReady = approvalHistory.Count > 0 &&
-                                   approvalHistory.All(static approval => approval.Status == OperationsApprovalStateDto.Approved);
+        var approvalHistoryReady = approvalHistory.Any(static approval => approval.IsCurrentDecision) &&
+                                   approvalHistory.Where(static approval => approval.IsCurrentDecision)
+                                       .All(static approval => approval.Status == OperationsApprovalStateDto.Approved);
         var navPackageReady = navSupportPackages.Any(static package => package.IsReady);
 
         OperationsEvidencePackageSummaryDto[] packages =
@@ -612,7 +617,8 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
                 ["close-controls", "close-package", "period-lock"],
                 approvalEvidence,
                 approvalHistoryReady,
-                "Retain approved close approval history before audit package release.")
+                "Retain approved close approval history before audit package release.") with
+                { RequiredForClose = lanes.Any(static lane => lane.RequiredForClose && lane.LaneId is "close-controls" or "close-package" or "period-lock") }
         ];
 
         return packages
@@ -1428,9 +1434,9 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             return [];
         }
 
-        var eventIds = records.Select(static record => record.FundEventId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var eventRecords = records.ToLookup(static record => record.FundEventId, StringComparer.OrdinalIgnoreCase);
         return activity.ReportOutputs
-            .Where(output => eventIds.Contains(output.FundEventId))
+            .Where(output => eventRecords[output.FundEventId].Any(record => IsCloseReportOutput(output, record)))
             .ToArray();
     }
 
@@ -1531,13 +1537,14 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
     private static EvidenceStatusDto ResolveApprovalHistoryStatus(
         IReadOnlyList<PrivateCapitalCloseCockpitApprovalDto> approvalHistory)
     {
-        if (approvalHistory.Count == 0 ||
-            approvalHistory.All(static approval => approval.Status == OperationsApprovalStateDto.Approved))
+        var currentDecisions = approvalHistory.Where(static approval => approval.IsCurrentDecision).ToArray();
+        if (currentDecisions.Length == 0 ||
+            currentDecisions.All(static approval => approval.Status == OperationsApprovalStateDto.Approved))
         {
             return EvidenceStatusDto.Ready;
         }
 
-        return approvalHistory.Any(static approval => approval.Status == OperationsApprovalStateDto.Rejected)
+        return currentDecisions.Any(static approval => approval.Status == OperationsApprovalStateDto.Rejected)
             ? EvidenceStatusDto.Blocked
             : EvidenceStatusDto.ReviewRequired;
     }
@@ -1775,22 +1782,16 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             null);
     }
 
-    private static bool HasAllocationEvidence(IEnumerable<PrivateCapitalCapitalAccountSubledgerDto> subledgers)
-        => subledgers.Any(static subledger =>
-            subledger.EvidenceCategories.Any(static category =>
-                category.IsReady &&
-                (ContainsFinancialOperationToken(category.CategoryId, "allocation") ||
-                 ContainsFinancialOperationToken(category.Label, "allocation"))) ||
-            subledger.EvidenceLinks.Any(static link => ContainsFinancialOperationToken(link, "allocation")));
-
-    private static bool IsPartnerCapitalTieOutReady(PrivateCapitalCapitalAccountSubledgerDto subledger)
+    private static bool IsPartnerCapitalTieOutReady(
+        PrivateCapitalCapitalAccountSubledgerDto subledger,
+        IReadOnlyList<PrivateCapitalReportOutputDto> scopedReportOutputs)
         => !HasPartnerCapitalTieOutBlocker(subledger) &&
            subledger.CapitalAccount is not null &&
            !string.IsNullOrWhiteSpace(subledger.InvestorId) &&
            subledger.FundEventRecords.Count > 0 &&
            subledger.SubledgerEntries.Count > 0 &&
            subledger.LedgerImpacts.Count > 0 &&
-           subledger.ReportOutputs.Any(IsPartnerCapitalStatementReady) &&
+           scopedReportOutputs.Any(output => IsSubledgerStatement(output, subledger) && IsPartnerCapitalStatementReady(output)) &&
            subledger.EvidenceLinkCount > 0 &&
            subledger.FundEventCount == subledger.SubledgerEntries.Select(static entry => entry.FundEventId).Distinct(StringComparer.OrdinalIgnoreCase).Count() &&
            subledger.PostedFundEventCount == subledger.FundEventRecords.Count(static record => record.IsPosted);
@@ -1853,41 +1854,6 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
                "cash-plan",
                "reimbursement",
                "reimburse");
-
-    private static IEnumerable<string?> BuildManagementCompanyEvidenceValues(
-        IEnumerable<PrivateCapitalFundEventLedgerRecordDto> records,
-        IEnumerable<PrivateCapitalCapitalAccountSubledgerDto> subledgers)
-    {
-        foreach (var record in records)
-        {
-            foreach (var value in BuildManagementCompanyRecordValues(record))
-            {
-                yield return value;
-            }
-        }
-
-        foreach (var subledger in subledgers)
-        {
-            yield return subledger.SubledgerId;
-            yield return subledger.LastFundEventType;
-            yield return subledger.ReadinessLabel;
-            yield return subledger.ReadinessReason;
-            yield return subledger.NextAction;
-            yield return subledger.NextActionRoute;
-            foreach (var link in subledger.EvidenceLinks)
-            {
-                yield return link;
-            }
-
-            foreach (var category in subledger.EvidenceCategories)
-            {
-                foreach (var value in BuildEvidenceCategoryValues(category))
-                {
-                    yield return value;
-                }
-            }
-        }
-    }
 
     private static IEnumerable<string?> BuildManagementCompanyRecordValues(PrivateCapitalFundEventLedgerRecordDto record)
     {
@@ -2031,7 +1997,8 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             workflow.ClosePackage?.RetainedManifestRoute,
             workflow.CloseReadiness?.Blockers.Count ?? workflow.Blockers.Count,
             openChecklistCount,
-            workflow.UpdatedAtUtc);
+            workflow.UpdatedAtUtc,
+            workflow.Version);
     }
 
     private static string BuildCockpitRoute(

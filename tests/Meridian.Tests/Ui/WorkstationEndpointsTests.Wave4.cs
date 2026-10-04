@@ -2845,7 +2845,8 @@ public sealed partial class WorkstationEndpointsTests
                 string.Equals(code, "OPERATIONS_PREREQUISITE_GATES_NOT_PASSED", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(code, "APPROVAL_REQUIRED", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(code, "LEDGER_POSTING_REQUIRED", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(code, "REPORT_PACK_REQUIRED", StringComparison.OrdinalIgnoreCase));
+                string.Equals(code, "REPORT_PACK_REQUIRED", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(code, "CLOSE_READINESS_REQUIRED", StringComparison.OrdinalIgnoreCase));
 
         using var timelineResponse = await client.GetAsync(UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityTimeline, "workflowId", workflowId.ToString()));
         timelineResponse.StatusCode.Should().Be(HttpStatusCode.OK);

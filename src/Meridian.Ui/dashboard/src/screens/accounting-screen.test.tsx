@@ -6,6 +6,8 @@ import { useLocation } from "react-router-dom";
 import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
 import * as ledgerReportsApi from "@/lib/ledger-reports-api";
+import * as markFreshnessApi from "@/lib/api/mark-freshness.api";
+import * as recurringJournalsApi from "@/lib/api/recurring-journals.api";
 import { AccountingScreen } from "@/screens/accounting-screen";
 import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import { buildSuccessfulVerifiedOperationOutcome } from "@/test/verified-operation-outcome";
@@ -74,6 +76,10 @@ vi.mock("@/lib/ledger-reports-api", () => ({
   getLedgerPeriodTrialBalance: vi.fn().mockResolvedValue([]),
   getLedgerPeriodPnlSummary: vi.fn().mockResolvedValue(null),
   getLedgerPeriodJournalEntries: vi.fn().mockResolvedValue([])
+}));
+
+vi.mock("@/lib/api/recurring-journals.api", () => ({
+  getRecurringJournalQueue: vi.fn(async (scope) => ({ ...scope, occurrences: [] }))
 }));
 
 vi.mock("@/lib/api", async () => {
@@ -1585,6 +1591,8 @@ function findAppleSecuritySearchRow() {
 describe("AccountingScreen", () => {
   beforeEach(() => {
     window.localStorage.clear();
+    vi.mocked(recurringJournalsApi.getRecurringJournalQueue).mockReset()
+      .mockImplementation(async (scope) => ({ ...scope, occurrences: [] }));
     const searchSecurities = vi.mocked(api.searchSecurities);
     searchSecurities.mockReset();
     if (defaultSearchSecuritiesImplementation) {
@@ -3407,6 +3415,10 @@ describe("AccountingScreen", () => {
     expect(configureButton).toBeEnabled();
     expect(runDueButton).toBeEnabled();
 
+    vi.spyOn(markFreshnessApi, "previewValuationMarks").mockResolvedValue({ policyVersion: "daily-close-policy", assessedPositionCount: 1, blockedPositionCount: 0, affectedValuationCount: 0, positions: [], evaluatedAtUtc: currentSchedule.nextRunAtUtc });
+    await user.click(screen.getByRole("button", { name: "Preview mark impact" }));
+    await screen.findByText(/0 of 1 positions require review/);
+
     await user.click(configureButton);
 
     expect(await within(commandCenter).findByText(`Configured daily valuation schedule daily-fund-alpha for ${currentSchedule.nextRunAtUtc}.`)).toBeInTheDocument();
@@ -3422,6 +3434,8 @@ describe("AccountingScreen", () => {
       actor: "close-cockpit-operator"
     }));
 
+    await user.click(screen.getByRole("button", { name: "Preview mark impact" }));
+    await screen.findByText(/0 of 1 positions require review/);
     await user.click(within(commandCenter).getByRole("button", {
       name: "Run due daily valuation schedules for the current tenant scope"
     }));
@@ -3480,8 +3494,8 @@ describe("AccountingScreen", () => {
       ledgerBookId: undefined,
       periodId: "2026-05",
       status: undefined
-    });
-    expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1");
+    }, expect.objectContaining({ signal: expect.any(AbortSignal), allowDevelopmentFallback: false }));
+    expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1", expect.objectContaining({ signal: expect.any(AbortSignal), allowDevelopmentFallback: false }));
   });
 
   it("scopes the close command center workflow lookup to route ledger book", async () => {
@@ -3504,8 +3518,8 @@ describe("AccountingScreen", () => {
       ledgerBookId: "book-alpha",
       periodId: "2026-05",
       status: undefined
-    });
-    expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1");
+    }, expect.objectContaining({ signal: expect.any(AbortSignal), allowDevelopmentFallback: false }));
+    expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1", expect.objectContaining({ signal: expect.any(AbortSignal), allowDevelopmentFallback: false }));
   });
 
   it("renders the close cockpit landing with focused accounting task modes", async () => {
@@ -3549,6 +3563,26 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("heading", { name: "Reconciliation exceptions and evidence" })).toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Reconciliation runs" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Accounting case workbench" })).not.toBeInTheDocument();
+  });
+
+  it("shows blocked recurring occurrences with no manual drafts after selecting entity scope", async () => {
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce({ ...manualJournalWorkbench, drafts: [] });
+    const scope = { fundProfileId: "fund-alpha", ledgerBookId: "book-alpha", entityId: "entity-master" };
+    vi.mocked(recurringJournalsApi.getRecurringJournalQueue).mockResolvedValue({ ...scope, occurrences: [{
+      ...scope, occurrenceId: "blocked-rent", scheduleId: "rent", scheduleVersion: 2,
+      templateId: "rent-template", templateVersion: 4, effectiveDate: "2026-10-01", periodId: "2026-10",
+      state: "Blocked", journalEntryId: null, approvalStatus: null, blockers: ["Period is locked."],
+      sourceEvidenceReferences: ["evidence://rent"], periodLockOwner: "controller-a",
+      governedReopenPath: "Accounting > Close > Request governed reopen"
+    }] });
+    await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
+    fireEvent.change(screen.getByLabelText("Recurring journal entity scope"), { target: { value: "entity-master" } });
+    const queue = screen.getByRole("region", { name: "Recurring journal occurrences" });
+    expect(await within(queue).findByText("rent · v2")).toBeInTheDocument();
+    expect(within(queue).getByText("Period is locked.")).toBeInTheDocument();
+    expect(within(queue).getByText("Period lock owner: controller-a")).toBeInTheDocument();
+    expect(recurringJournalsApi.getRecurringJournalQueue).toHaveBeenCalledWith(scope, expect.any(AbortSignal));
+    expect(within(queue).queryByRole("button", { name: "Review retained draft" })).not.toBeInTheDocument();
   });
 
   it("renders the manual journal entry workbench with GL and Security Master line fields", async () => {

@@ -9,16 +9,16 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-corr{display:inline-grid;gap:1px;background:var(--border,#D7DCE2);
-  border:1px solid var(--border-strong,#AAB4BF);font-family:var(--font-data,monospace);}
-.mds-corr__h{background:var(--bg-medium,#F5F7FA);color:var(--text-secondary,#4D5967);
+.mds-corr{display:inline-grid;gap:1px;background:var(--border,#E4E3DE);
+  border:1px solid var(--border-strong,#AFABA1);font-family:var(--font-data,monospace);}
+.mds-corr__h{background:var(--bg-medium,#EDEAE4);color:var(--text-secondary,#4E5258);
   font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;
   padding:4px 6px;white-space:nowrap;}
 .mds-corr__rh{justify-content:flex-end;padding-right:8px;}
 .mds-corr__cell{display:flex;align-items:center;justify-content:center;font-size:11px;
-  color:var(--text-primary,#22272E);font-variant-numeric:tabular-nums;cursor:default;}
-.mds-corr__cell--diag{color:var(--text-muted,#59636F);background:var(--bg-active,#E6EEF5)!important;}
-.mds-corr__corner{background:var(--bg-medium,#F5F7FA);}
+  color:var(--text-primary,#22252A);font-variant-numeric:tabular-nums;cursor:default;}
+.mds-corr__cell--diag{color:var(--text-muted,#5E666F);background:var(--bg-active,#F2E3DB)!important;}
+.mds-corr__corner{background:var(--bg-medium,#EDEAE4);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "corr-heatmap");
@@ -27,11 +27,11 @@ function inject() {
 }
 
 function cellColor(v) {
-  if (v == null || Number.isNaN(v)) return "var(--bg-light,#FFFFFF)";
+  if (v == null || Number.isNaN(v)) return "var(--bg-light,#FBFAF8)";
   const mag = Math.min(1, Math.abs(v));
   const pct = (mag * 62).toFixed(0);
-  const base = v >= 0 ? "var(--green,#16885F)" : "var(--red,#BA3F55)";
-  return `color-mix(in srgb, ${base} ${pct}%, var(--bg-light,#FFFFFF))`;
+  const base = v >= 0 ? "var(--green,#3A7A56)" : "var(--red,#A8443C)";
+  return `color-mix(in srgb, ${base} ${pct}%, var(--bg-light,#FBFAF8))`;
 }
 
 export function CorrelationHeatmap({

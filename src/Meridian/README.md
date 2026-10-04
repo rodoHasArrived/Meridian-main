@@ -48,6 +48,11 @@ non-HTTPS bindings unless
 `AllowedOrigins` declares browser workstation origins that may call the API when the UI is deployed
 separately from the service.
 
+Host authentication startup uses Identity's strict `AuthenticationModeResolver`, including packaged
+and customer-build defaults. Unknown modes refuse startup before Development/Test or transport
+exemptions are considered. The host retains session and lockout state under `DataRoot/identity`;
+all instances sharing that state observe revocation without restarting.
+
 Hosted brokerage composition registers concrete Alpaca, Interactive Brokers, and Robinhood gateways
 by keyed runtime ID (`alpaca`, `ibkr`, `robinhood`), retains `ib` as an Interactive Brokers
 compatibility alias, and registers StockSharp only when the connector runtime type is present.

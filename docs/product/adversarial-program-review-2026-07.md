@@ -13,7 +13,7 @@ independently spot-verified. Every finding is anchored to `file:line` so it is d
 
 > **Follow-up (2026-07-26):** a second adversarial pass re-tested this review's priority list and
 > recorded the delta in
-> [`archive/docs/assessments/adversarial-program-review-2026-07-26.md`](../../archive/docs/assessments/adversarial-program-review-2026-07-26.md).
+> [`archive/docs/assessments/adversarial-program-review-2026-07-26.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/assessments/adversarial-program-review-2026-07-26.md).
 > Since 2026-07-21: item 1 (sided reconciliation matcher) is largely wired into the live path,
 > item 4 (client-grade renderers, partners-capital statement) largely landed, and the Alpaca fill
 > stream from item 6 now exists — while items 2, 3, 5, and 7 remain substantially open. Consult the

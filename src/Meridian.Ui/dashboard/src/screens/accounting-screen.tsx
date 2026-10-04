@@ -2,12 +2,15 @@ import { BookCheck, Copy, Landmark, Network, Paperclip, RefreshCcw, Search, Shie
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import "@/styles/accounting-screen.css";
+import { useAccountingCloseSources, type CloseWorkflowQuery } from "./accounting-screen.close-sources";
+import { useValuationMarkPreview, ValuationMarkPreviewPanel } from "./accounting-screen.mark-preview";
 import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RecurringJournalQueue } from "@/components/accounting/RecurringJournalQueue";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -26,15 +29,12 @@ import {
   getAccountingSystemExportPackageManifest,
   getAccountingSystemMappingProfiles,
   getAccountingSystemProviders,
-  getFinancialOperationsCommandCenter,
-  getPrivateCapitalCloseCockpit,
   getLatestAccountingSystemImport,
   getLatestAccountingSystemReconciliation,
   getFinancialRecordExplorer,
   getOperationsContinuityWorkflow,
   getOperationsContinuityWorkflows,
   listAccountingSystemExportPackages,
-  listDailyValuationSchedules,
   previewAccountingSystemImport,
   rejectOperationsContinuityWorkflow,
   runDueDailyValuationSchedules,
@@ -125,7 +125,6 @@ import type {
   DailyValuationScheduleWorkItem,
   FinancialRecordExplorerDto,
   FinancialRecordExplorerSavedViewSaveRequestDto,
-  FinancialOperationsCommandCenter,
   MultiAssetCoverageSummary,
   OperationsApproval,
   OperationsContinuityWorkflow,
@@ -1030,18 +1029,11 @@ function mergeExternalGlExportPackage(
   return [nextPackage, ...remaining].sort((left, right) => right.createdAtUtc.localeCompare(left.createdAtUtc));
 }
 
-interface CloseWorkflowQuery {
-  fundProfileId?: string;
-  fundAccountId?: string;
-  ledgerBookId?: string;
-  periodId?: string;
-  status?: string;
-}
-
 function parseCloseWorkflowQuery(search: string): CloseWorkflowQuery {
   const params = new URLSearchParams(search);
   return {
     fundProfileId: normalizeOptionalQueryValue(params.get("fundProfileId")),
+    entityId: normalizeOptionalQueryValue(params.get("entityId")),
     fundAccountId: normalizeOptionalQueryValue(params.get("fundAccountId")),
     ledgerBookId: normalizeOptionalQueryValue(params.get("ledgerBookId")),
     periodId: normalizeOptionalQueryValue(params.get("periodId")),
@@ -1078,29 +1070,6 @@ function selectCurrentDailyValuationSchedule(
 function normalizeOptionalQueryValue(value: string | null): string | undefined {
   const normalized = value?.trim();
   return normalized ? normalized : undefined;
-}
-
-function selectCloseWorkflowSummary(
-  rows: OperationsContinuityWorkflowSummary[],
-  query: { fundProfileId?: string; fundAccountId?: string; ledgerBookId?: string; periodId?: string; status?: string }
-): OperationsContinuityWorkflowSummary | null {
-  const sorted = [...rows].sort((left, right) => right.updatedAtUtc.localeCompare(left.updatedAtUtc));
-  const scopedRows = sorted.filter((row) =>
-    matchesOptionalValue(row.fundAccountId, query.fundAccountId) &&
-    matchesOptionalValue(row.ledgerBookId ?? null, query.ledgerBookId) &&
-    matchesOptionalValue(row.periodId, query.periodId) &&
-    matchesOptionalValue(row.status, query.status)
-  );
-
-  if ((query.fundProfileId || query.fundAccountId || query.ledgerBookId || query.periodId || query.status) && scopedRows.length === 0) {
-    return null;
-  }
-
-  return scopedRows[0] ?? sorted[0] ?? null;
-}
-
-function matchesOptionalValue(actual: string | null, expected: string | undefined): boolean {
-  return expected === undefined || (actual?.localeCompare(expected, undefined, { sensitivity: "accent" }) ?? -1) === 0;
 }
 
 function AccountingApprovalsWorkstream() {
@@ -1691,16 +1660,14 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
   const [accountingSystemActionTone, setAccountingSystemActionTone] = useState<"success" | "warning" | "danger" | null>(null);
   const [accountingSystemLoading, setAccountingSystemLoading] = useState(false);
   const [accountingSystemError, setAccountingSystemError] = useState<string | null>(null);
-  const [financialOperationsCommandCenter, setFinancialOperationsCommandCenter] = useState<FinancialOperationsCommandCenter | null>(null);
-  const [financialOperationsCommandCenterLoading, setFinancialOperationsCommandCenterLoading] = useState(false);
-  const [financialOperationsCommandCenterError, setFinancialOperationsCommandCenterError] = useState<string | null>(null);
-  const [privateCapitalCloseCockpit, setPrivateCapitalCloseCockpit] = useState<PrivateCapitalCloseCockpit | null>(null);
-  const [dailyValuationSchedules, setDailyValuationSchedules] = useState<DailyValuationScheduleWorkItem[]>([]);
+  const {
+    financialOperationsCommandCenter, financialOperationsCommandCenterLoading, financialOperationsCommandCenterError,
+    privateCapitalCloseCockpit, dailyValuationSchedules, closeWorkflow, closeWorkflowLoading, closeWorkflowError,
+    refreshCloseWorkflow,
+  } = useAccountingCloseSources(closeWorkflowQuery, Boolean(data)
+    && (sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails));
   const [activeDailyValuationCommand, setActiveDailyValuationCommand] = useState<NonNullable<CloseCommandCenterViewState["actionRows"][number]["command"]> | null>(null);
   const [dailyValuationBatchStatusText, setDailyValuationBatchStatusText] = useState<string | null>(null);
-  const [closeWorkflow, setCloseWorkflow] = useState<OperationsContinuityWorkflow | null>(null);
-  const [closeWorkflowLoading, setCloseWorkflowLoading] = useState(false);
-  const [closeWorkflowError, setCloseWorkflowError] = useState<string | null>(null);
   const [securityInstrumentExplorer, setSecurityInstrumentExplorer] = useState<FinancialRecordExplorerDto | null>(null);
   const securityInstrumentExplorerView = useMemo(() => {
     if (!securityInstrumentExplorer) {
@@ -2081,58 +2048,6 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
     }
   };
 
-  const refreshCloseWorkflow = async () => {
-    if (!data) {
-      setCloseWorkflow(null);
-      setFinancialOperationsCommandCenter(null);
-      setPrivateCapitalCloseCockpit(null);
-      setDailyValuationSchedules([]);
-      return;
-    }
-
-    setCloseWorkflowLoading(true);
-    setFinancialOperationsCommandCenterLoading(true);
-    setCloseWorkflowError(null);
-    setFinancialOperationsCommandCenterError(null);
-    try {
-      const [commandCenter, closeCockpit, rows, schedules] = await Promise.all([
-        getFinancialOperationsCommandCenter(closeWorkflowQuery).catch(err => {
-          setFinancialOperationsCommandCenterError(formatApprovalError(err, "Financial Operations command center could not be loaded."));
-          return null;
-        }),
-        getPrivateCapitalCloseCockpit(closeWorkflowQuery).catch(err => {
-          setFinancialOperationsCommandCenterError(formatApprovalError(err, "Private-capital close cockpit could not be loaded."));
-          return null;
-        }),
-        getOperationsContinuityWorkflows(closeWorkflowQuery).catch(err => {
-          setCloseWorkflowError(formatApprovalError(err, "Close workflow detail could not be loaded."));
-          return [];
-        }),
-        listDailyValuationSchedules().catch(() => [])
-      ]);
-      setFinancialOperationsCommandCenter(commandCenter);
-      setPrivateCapitalCloseCockpit(closeCockpit);
-      setDailyValuationSchedules(schedules);
-      const selected = selectCloseWorkflowSummary(rows, closeWorkflowQuery);
-      if (!selected) {
-        setCloseWorkflow(null);
-        return;
-      }
-
-      const workflow = await getOperationsContinuityWorkflow(selected.workflowId);
-      setCloseWorkflow(workflow);
-    } catch (error) {
-      setCloseWorkflow(null);
-      setFinancialOperationsCommandCenter(null);
-      setPrivateCapitalCloseCockpit(null);
-      setDailyValuationSchedules([]);
-      setCloseWorkflowError(formatApprovalError(error, "Close workflow detail could not be loaded."));
-    } finally {
-      setCloseWorkflowLoading(false);
-      setFinancialOperationsCommandCenterLoading(false);
-    }
-  };
-
   const effectiveDailyValuationStatus = privateCapitalCloseCockpit?.dailyValuationStatus
     ?? financialOperationsCommandCenter?.privateCapitalCloseCockpit?.dailyValuationStatus
     ?? null;
@@ -2141,10 +2056,15 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
     [closeWorkflowQuery, dailyValuationSchedules, effectiveDailyValuationStatus]
   );
 
+  const valuationMarkPreview = useValuationMarkPreview(currentDailyValuationSchedule);
   const runCloseCommand = async (
     command: NonNullable<CloseCommandCenterViewState["actionRows"][number]["command"]>
   ) => {
     const status = effectiveDailyValuationStatus;
+    if ((command === "configure-daily-valuation-schedule" || command === "run-due-daily-valuation-schedules") && !valuationMarkPreview.isCurrent) {
+      setDailyValuationBatchStatusText("Preview mark impact for this schedule before configuring or running valuation.");
+      return;
+    }
     const hasRetainedBatch = Boolean(status?.batchCorrelationId) && (status?.journalEntryIds.length ?? 0) > 0;
     if (command === "configure-daily-valuation-schedule" && !currentDailyValuationSchedule) {
       setDailyValuationBatchStatusText("No server-retained daily valuation schedule is loaded for this close scope.");
@@ -2228,14 +2148,6 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
     }
   };
 
-  useEffect(() => {
-    if (!sectionVisibility.showCloseCockpitLanding && !sectionVisibility.showWorkflowDetails) {
-      return;
-    }
-
-    void refreshCloseWorkflow();
-  }, [closeWorkflowQuery, data, sectionVisibility.showCloseCockpitLanding, sectionVisibility.showWorkflowDetails]);
-
   const closeCommandCenter = useMemo(
     () => data ? buildCloseCommandCenterViewState({
       data,
@@ -2273,7 +2185,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
       currentDailyValuationSchedule
     ]
   );
-  const closeReportPackage = useAccountingCloseReportPackageViewModel(closeWorkflow);
+  const closeReportPackage = useAccountingCloseReportPackageViewModel(closeWorkflow, undefined, financialOperationsCommandCenter, closeWorkflowQuery);
   const workflowLaunch = useMemo(
     () => data ? buildAccountingWorkflowLaunchViewState({
       data,
@@ -2346,6 +2258,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
   return (
     <div className="space-y-5">
       <StatStrip metrics={data.metrics} label="Accounting headline metrics" />
+      {currentDailyValuationSchedule && (sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails) ? <ValuationMarkPreviewPanel preview={valuationMarkPreview} /> : null}
 
       <AccountingWorkbenchContext
         workspace={workspace}
@@ -2498,7 +2411,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
       ) : null}
 
       {sectionVisibility.showJournalEntries ? (
-        <ManualJournalEntryWorkbenchPanel view={journalEntries} />
+        <ManualJournalEntryWorkbenchPanel view={journalEntries} search={search} />
       ) : null}
 
       {sectionVisibility.showCapitalAccounts ? (
@@ -4493,7 +4406,27 @@ function ManualJournalLineBadges({ badges }: { badges: ReturnType<ManualJournalE
   );
 }
 
-function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWorkbenchViewModel }) {
+function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJournalEntryWorkbenchViewModel; search: string }) {
+  const [recurringEntitySelection, setRecurringEntitySelection] = useState<{ scopeKey: string; entityId: string } | null>(null);
+  const scopeQuery = new URLSearchParams(search);
+  const recurringFund = scopeQuery.get("fundProfileId") || view.draft.fundProfileId;
+  const recurringBook = scopeQuery.get("ledgerBookId") || view.draft.ledgerBookId;
+  const recurringScopeKey = JSON.stringify([recurringFund, recurringBook, search]);
+  const recurringEntity = recurringEntitySelection?.scopeKey === recurringScopeKey
+    ? recurringEntitySelection.entityId : scopeQuery.get("entityId") || view.draft.entityId || "";
+  const recurringQueue = <div className="space-y-2">
+    <label className="block text-xs font-semibold">Recurring journal entity scope
+      <Input value={recurringEntity} placeholder="Select an entity ID" className="mt-1"
+        onChange={(event) => setRecurringEntitySelection({ scopeKey: recurringScopeKey, entityId: event.target.value })} />
+    </label>
+    <RecurringJournalQueue
+      scope={recurringFund && recurringBook && recurringEntity.trim()
+        ? { fundProfileId: recurringFund, ledgerBookId: recurringBook, entityId: recurringEntity.trim() }
+        : null}
+      availableDraftIds={view.drafts.map((draft) => draft.journalEntryId)}
+      onSelectDraft={view.selectDraft}
+    />
+  </div>;
   // While an amount input holds unparseable text, its raw string is kept here (keyed
   // `${lineId}:${side}`) and mirrored back as the controlled value. Mirroring what the DOM
   // reports means React never rewrites the node, so the user's in-progress text survives while
@@ -4561,6 +4494,7 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
             {view.loading ? "Loading" : "Retry"}
           </Button>
         </div>
+        {recurringQueue}
       </section>
     );
   }
@@ -4634,6 +4568,7 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
             </div>
           </section>
 
+          {recurringQueue}
           <ManualJournalPrivateCapitalActivityPanel activity={view.privateCapitalActivity} />
         </div>
 

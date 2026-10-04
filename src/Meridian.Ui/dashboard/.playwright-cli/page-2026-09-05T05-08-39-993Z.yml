@@ -1,0 +1,408 @@
+- generic [ref=f2e2]:
+  - generic [ref=f2e12]:
+    - link "Skip to workbench" [ref=f2e13] [cursor=pointer]:
+      - /url: "#workbench-content"
+    - status [ref=f2e14]: Accounting Workstation loaded.
+    - banner [ref=f2e15]:
+      - generic [ref=f2e19]:
+        - generic [ref=f2e20]: Meridian
+        - generic [aria-hidden] [ref=f2e21]:
+          - generic [ref=f2e22]: /
+          - text: Accounting
+        - generic [ref=f2e23]: "Current workspace: Accounting"
+      - button "Open workstation command palette (Ctrl K)" [ref=f2e24]:
+        - generic: Go to route, action, evidence...
+        - generic [aria-hidden] [ref=f2e28]: Ctrl K
+      - region "Workstation build, environment, provenance, and provider posture" [ref=f2e29]:
+        - group [ref=f2e30]:
+          - generic "Environment, provenance, and provider posture. Build 0.1.0. Current Meridian web release. Environment Paper. Session Sample Covered Call Desk is operating in paper mode. Data provenance SEEDED. Seeded demo data. This is seeded demo data shipped without live credentials. It is not real market or account data. Providers 1 blocked. 1 provider blocked; restore provider connectivity before relying on workstation data." [ref=f2e31] [cursor=pointer]:
+            - generic [ref=f2e32]: Trust
+            - generic [ref=f2e33]: Paper · SEEDED · 1 blocked
+      - generic [ref=f2e36]:
+        - 'link "Decision brief: No active paper session. Status Blocked. Open replay evidence." [ref=f2e37] [cursor=pointer]':
+          - /url: /workstation/trading
+          - generic [ref=f2e39]: Blocked
+          - generic [ref=f2e40]: No active paper session
+        - generic [ref=f2e41]:
+          - generic "Sample data only. No live trading or production accounting." [ref=f2e42]: SAMPLE · PAPER
+          - 'button "Getting started 2/5 — next: Resolve one validation issue" [ref=f2e45] [cursor=pointer]': Getting started 2/5
+          - button "Open desktop workstation" [ref=f2e49] [cursor=pointer]
+        - button "Activity history" [ref=f2e50] [cursor=pointer]
+        - button "Notifications — 10 unread" [ref=f2e55] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f2e59]: "10"
+        - 'group "Current session: paper, Sample Covered Call Desk, Admin" [ref=f2e60]':
+          - generic [ref=f2e61]: paper
+          - generic [ref=f2e340]: Sample Covered Call Desk
+          - generic [ref=f2e341]: Admin
+    - region "Data provenance" [ref=f2e63]:
+      - status [ref=f2e64]:
+        - generic [ref=f2e65]: SEEDED — Seeded demo data
+        - generic [ref=f2e66]: This is seeded demo data shipped without live credentials. It is not real market or account data.
+    - region "Degraded mode warnings" [ref=f2e67]:
+      - generic [ref=f2e68]:
+        - alert [ref=f2e69]:
+          - generic [ref=f2e70]: SIMULATED MARKET DATA
+          - generic [ref=f2e71]: "Simulated streaming source(s) configured: synthetic. 'synthetic' generates deterministic synthetic data; 'ib' runs as a random-walk simulator in builds without the IBAPI reference and returns no historical bars."
+        - alert [ref=f2e72]:
+          - generic [ref=f2e73]: "PERSISTENCE: NONE"
+          - generic [ref=f2e74]: "Store domains without a database (data is lost on restart): ledger, security-master, fund-accounts, fund-structure, direct-lending, asset-operations, banking, money-market, reporting, scoped-access. Set MERIDIAN_DATABASE_URL to enable persistence."
+    - generic [ref=f2e75]:
+      - complementary "Meridian navigation" [ref=f2e76]:
+        - navigation "Workspaces" [ref=f2e77]:
+          - generic [ref=f2e80]:
+            - link "Open Trading workspace, Available product maturity" [ref=f2e81] [cursor=pointer]:
+              - /url: /workstation/trading
+              - generic [ref=f2e83]: Trading
+            - button "Expand Trading pages" [ref=f2e84] [cursor=pointer]
+          - generic [ref=f2e88]:
+            - link "Open Portfolio workspace, Preview product maturity" [ref=f2e89] [cursor=pointer]:
+              - /url: /workstation/portfolio
+              - generic [ref=f2e91]: Portfolio
+            - button "Expand Portfolio pages" [ref=f2e92] [cursor=pointer]
+          - generic [ref=f2e96]:
+            - link "Accounting workspace, active section, Available product maturity" [ref=f2e97] [cursor=pointer]:
+              - /url: /workstation/accounting
+              - generic [ref=f2e99]: Accounting
+            - button "Collapse Accounting pages" [expanded] [ref=f2e100] [cursor=pointer]
+          - group "Accounting pages" [ref=f2e103]:
+            - group "Close" [ref=f2e104]:
+              - link "Open Today" [ref=f2e106] [cursor=pointer]:
+                - /url: /workstation/accounting
+                - generic [ref=f2e107]: Today
+              - link "Open Operations continuity" [ref=f2e108] [cursor=pointer]:
+                - /url: /workstation/accounting/operations-continuity
+                - generic [ref=f2e109]: Operations continuity
+              - link "Open Close calendar" [ref=f2e110] [cursor=pointer]:
+                - /url: /workstation/accounting/close-calendar
+                - generic [ref=f2e111]: Close calendar
+            - group "Records" [ref=f2e112]:
+              - link "Open Ledger explorer" [ref=f2e114] [cursor=pointer]:
+                - /url: /workstation/accounting/ledger
+                - generic [ref=f2e115]: Ledger explorer
+              - link "Open Adjustments" [ref=f2e116] [cursor=pointer]:
+                - /url: /workstation/accounting/journal-entries
+                - generic [ref=f2e117]: Adjustments
+              - link "Open Capital accounts" [ref=f2e118] [cursor=pointer]:
+                - /url: /workstation/accounting/capital-accounts
+                - generic [ref=f2e119]: Capital accounts
+              - link "Open Capital calls" [ref=f2e120] [cursor=pointer]:
+                - /url: /workstation/accounting/capital-calls
+                - generic [ref=f2e121]: Capital calls
+              - link "Open Security Master" [ref=f2e122] [cursor=pointer]:
+                - /url: /workstation/accounting/security-master
+                - generic [ref=f2e123]: Security Master
+            - group "Reconciliation" [ref=f2e124]:
+              - link "Open Import statement" [ref=f2e126] [cursor=pointer]:
+                - /url: /workstation/accounting/statement-import
+                - generic [ref=f2e127]: Import statement
+              - link "Open Casework" [ref=f2e594] [cursor=pointer]:
+                - /url: /workstation/accounting/reconciliation
+                - generic [ref=f2e129]: Casework
+              - link "Open External GL" [ref=f2e130] [cursor=pointer]:
+                - /url: /workstation/accounting/reconciliation/external-gl
+                - generic [ref=f2e131]: External GL
+            - group "Review" [ref=f2e132]:
+              - link "Exceptions, current page" [ref=f2e595] [cursor=pointer]:
+                - /url: /workstation/accounting/exceptions
+                - generic [ref=f2e135]: Exceptions
+              - link "Open Approvals" [ref=f2e136] [cursor=pointer]:
+                - /url: /workstation/accounting/approvals
+                - generic [ref=f2e137]: Approvals
+            - group "Administration" [ref=f2e138]:
+              - link "Open Entity setup" [ref=f2e140] [cursor=pointer]:
+                - /url: /workstation/accounting/entity-setup
+                - generic [ref=f2e141]: Entity setup
+              - link "Open Configure" [ref=f2e142] [cursor=pointer]:
+                - /url: /workstation/accounting/configure
+                - generic [ref=f2e143]: Configure
+          - generic [ref=f2e145]:
+            - link "Open Reporting workspace, Available product maturity" [ref=f2e146] [cursor=pointer]:
+              - /url: /workstation/reporting
+              - generic [ref=f2e148]: Reporting
+            - button "Expand Reporting pages" [ref=f2e149] [cursor=pointer]
+          - generic [ref=f2e153]:
+            - link "Open Strategy workspace, Available product maturity" [ref=f2e154] [cursor=pointer]:
+              - /url: /workstation/strategy
+              - generic [ref=f2e156]: Strategy
+            - button "Expand Strategy pages" [ref=f2e157] [cursor=pointer]
+          - generic [ref=f2e161]:
+            - link "Open Data workspace, Available product maturity" [ref=f2e162] [cursor=pointer]:
+              - /url: /workstation/data
+              - generic [ref=f2e164]: Data
+            - button "Expand Data pages" [ref=f2e165] [cursor=pointer]
+          - generic [ref=f2e169]:
+            - link "Open Settings workspace, Setup product maturity" [ref=f2e170] [cursor=pointer]:
+              - /url: /workstation/settings
+              - generic [ref=f2e172]: Settings
+            - button "Expand Settings pages" [ref=f2e173] [cursor=pointer]
+      - main "Accounting workbench" [ref=f2e176]:
+        - generic [ref=f2e179]:
+          - navigation "Breadcrumb" [ref=f2e180]:
+            - button "Workstation" [ref=f2e182] [cursor=pointer]
+            - button "Accounting" [ref=f2e187] [cursor=pointer]
+            - generic [ref=f2e596]: Exceptions
+          - generic [ref=f2e193]:
+            - generic [ref=f2e194]:
+              - generic [ref=f2e195]:
+                - generic [ref=f2e196]: Workspace
+                - generic "Accounting product maturity Available" [ref=f2e197]: Available
+              - heading "Accounting Workstation" [level=1] [ref=f2e198]
+              - paragraph [ref=f2e199]: Ledger, cash-flow, reconciliation, Security Master coverage, and fund-account evidence.
+            - generic [ref=f2e200]:
+              - button "Saved workspace layouts" [ref=f2e201] [cursor=pointer]:
+                - generic [ref=f2e207]: Workspaces
+              - button "Copy link to this view" [ref=f2e208] [cursor=pointer]
+              - button "Save this view as a preset" [disabled] [ref=f2e212]
+              - button "Refresh Accounting workspace data" [ref=f2e215] [cursor=pointer]
+          - generic "Session Sample Covered Call Desk, role Admin" [ref=f2e221]: Sample Covered Call Desk
+        - region "Daily Control Tower continuity" [ref=f2e601]:
+          - paragraph [ref=f2e224]: "Daily Control Tower. Start finance users with today's exceptions, close blockers, reconciliation, ledger, reports, evidence, and data-health work before non-finance surfaces. Current: Exceptions. Next: Close. 8 steps need operator attention. Current route /accounting/exceptions. Next action: Next: Close."
+          - generic [ref=f2e225]:
+            - generic [ref=f2e231]:
+              - generic [ref=f2e232]: Operating context
+              - heading "Daily Control Tower" [level=2] [ref=f2e602]
+            - paragraph [ref=f2e234]: "Start finance users with today's exceptions, close blockers, reconciliation, ledger, reports, evidence, and data-health work before non-finance surfaces. Current: Exceptions. Next: Close. 8 steps need operator attention."
+            - generic "Current route /accounting/exceptions" [ref=f2e603]:
+              - generic [ref=f2e236]: Accounting / Exceptions
+              - generic [ref=f2e237]: /accounting/exceptions
+              - button "Set operating scope" [ref=f2e238] [cursor=pointer]
+          - 'group "Primary operator workflow: Import -> Validate -> Reconcile -> Investigate -> Approve -> Report" [ref=f2e240]':
+            - 'generic "Flow details Primary operator workflow: Import -> Validate -> Reconcile -> Investigate -> Approve -> Report" [ref=f2e241] [cursor=pointer]':
+              - generic [ref=f2e242]:
+                - generic [ref=f2e243]: Flow details
+                - generic [ref=f2e244]: "Primary operator workflow: Import -> Validate -> Reconcile -> Investigate -> Approve -> Report"
+        - generic [ref=f2e247]:
+          - status "Some workspace data is unavailable" [ref=f2e248]:
+            - generic [ref=f2e249]:
+              - generic [ref=f2e250]:
+                - generic [ref=f2e252]:
+                  - generic [ref=f2e255]: Some workspace data is unavailable
+                  - generic [aria-hidden] [ref=f2e256]: 1 detail
+                - generic [ref=f2e257]: 1 workspace area did not load. Available routes remain open while that area recovers.
+              - list "Workspace data issues" [ref=f2e258]:
+                - 'listitem "Settings: Session expired or Meridian sign-in is required." [ref=f2e259]'
+            - generic [ref=f2e260]:
+              - link "Review Settings diagnostics for failed workspace areas" [ref=f2e261] [cursor=pointer]:
+                - /url: /workstation/settings#backend-capability-coverage
+                - text: Review diagnostics
+              - button "Retry failed workspace areas" [ref=f2e262] [cursor=pointer]: Retry failed areas
+          - generic [ref=f2e348]:
+            - generic "Accounting headline metrics" [ref=f2e349]:
+              - generic [ref=f2e350]:
+                - term [ref=f2e351]: Open Breaks
+                - definition [ref=f2e352]:
+                  - generic [ref=f2e353]: "2"
+                  - generic [ref=f2e354]: 0%
+              - generic [ref=f2e355]:
+                - term [ref=f2e356]: Timing Drift
+                - definition [ref=f2e357]:
+                  - generic [ref=f2e358]: "0"
+                  - generic [ref=f2e359]: 0%
+              - generic [ref=f2e360]:
+                - term [ref=f2e361]: Security Gaps
+                - definition [ref=f2e362]:
+                  - generic [ref=f2e363]: "0"
+                  - generic [ref=f2e364]: 0%
+              - generic [ref=f2e365]:
+                - term [ref=f2e366]: Audit Ready
+                - definition [ref=f2e367]:
+                  - generic [ref=f2e368]: "0"
+                  - generic [ref=f2e369]: 0%
+              - generic [ref=f2e370]:
+                - term [ref=f2e371]: Kernel Jump Alerts
+                - definition [ref=f2e372]:
+                  - generic [ref=f2e373]: "0"
+                  - generic [ref=f2e374]: 0%
+            - region "Accounting workbench context" [ref=f2e375]:
+              - heading "Exceptions" [level=2] [ref=f2e604]
+              - paragraph [ref=f2e377]: Material accounting exceptions, ownership, evidence, and resolution actions stay in one focused review queue.
+            - region [ref=f2e605]:
+              - generic [ref=f2e606]:
+                - generic [ref=f2e607]:
+                  - paragraph [ref=f2e608]: Exceptions
+                  - heading "Operational exception workbench" [level=3] [ref=f2e609]
+                  - paragraph [ref=f2e610]: Unified review for reconciliation breaks, workflow state, comments, audit evidence, and approval handoffs.
+                - generic [ref=f2e611]:
+                  - link "Reconciliation queue" [ref=f2e612] [cursor=pointer]:
+                    - /url: /workstation/accounting/reconciliation
+                  - link "Approval gate" [ref=f2e613] [cursor=pointer]:
+                    - /url: /workstation/accounting/approvals
+              - generic [ref=f2e614]:
+                - group "Active exceptions metric. 2. Change 0 open breaks across reconciliation runs.. Status attention" [ref=f2e615]:
+                  - paragraph [ref=f2e616]: Active exceptions
+                  - paragraph [ref=f2e617]: "2"
+                  - generic "Change 0 open breaks across reconciliation runs." [ref=f2e618]: 0 open breaks across reconciliation runs.
+                - group "Comments metric. 0. Change Comment counts come from shared reconciliation casework metadata.. Status attention" [ref=f2e619]:
+                  - paragraph [ref=f2e620]: Comments
+                  - paragraph [ref=f2e621]: "0"
+                  - generic "Change Comment counts come from shared reconciliation casework metadata." [ref=f2e622]: Comment counts come from shared reconciliation casework metadata.
+                - group "Audit evidence metric. 0. Change Evidence links stay attached to the originating break and reporting packet.. Status attention" [ref=f2e623]:
+                  - paragraph [ref=f2e624]: Audit evidence
+                  - paragraph [ref=f2e625]: "0"
+                  - generic "Change Evidence links stay attached to the originating break and reporting packet." [ref=f2e626]: Evidence links stay attached to the originating break and reporting packet.
+                - group "Sign-off states metric. 0. Change Resolved, signed-off, or role-gated cases are routed back to Accounting approvals.. Status attention" [ref=f2e627]:
+                  - paragraph [ref=f2e628]: Sign-off states
+                  - paragraph [ref=f2e629]: "0"
+                  - generic "Change Resolved, signed-off, or role-gated cases are routed back to Accounting approvals." [ref=f2e630]: Resolved, signed-off, or role-gated cases are routed back to Accounting approvals.
+              - generic [ref=f2e631]:
+                - region "Unified operational exception queue" [ref=f2e632]:
+                  - generic [ref=f2e633]:
+                    - heading "Case queue" [level=3] [ref=f2e634]
+                    - paragraph [ref=f2e637]: Reconciliation exceptions with owner, SLA, comments, and audit evidence counts.
+                  - list "Operational exception cases" [ref=f2e639]:
+                    - listitem "Cash variance needs review. Open. Custodian cash balance is $1,250.00 above the internal ledger for the sample account." [ref=f2e640]:
+                      - generic [ref=f2e641]:
+                        - generic [ref=f2e642]:
+                          - generic [ref=f2e643]: Cash variance needs review
+                          - generic [ref=f2e644]: Northstar Sample Portfolio - Custodian cash balance is $1,250.00 above the internal ledger for the sample account.
+                        - generic [ref=f2e645]: Open
+                      - generic [ref=f2e646]:
+                        - generic [ref=f2e647]: "Owner: Unassigned"
+                        - generic [ref=f2e648]: "Urgency: Review required · assign owner · attach evidence · set sign-off role"
+                        - generic [ref=f2e649]: 0 comments
+                        - generic [ref=f2e650]: Evidence required
+                      - link "Open reconciliation" [ref=f2e651] [cursor=pointer]:
+                        - /url: /workstation/accounting/reconciliation
+                      - group [ref=f2e652]:
+                        - generic "Audit details" [ref=f2e653] [cursor=pointer]
+                    - listitem "Cash variance needs review. Open. A $42.50 custodian fee has no matching ledger entry in the sample statement." [ref=f2e657]:
+                      - generic [ref=f2e658]:
+                        - generic [ref=f2e659]:
+                          - generic [ref=f2e660]: Cash variance needs review
+                          - generic [ref=f2e661]: Northstar Sample Portfolio - A $42.50 custodian fee has no matching ledger entry in the sample statement.
+                        - generic [ref=f2e662]: Open
+                      - generic [ref=f2e663]:
+                        - generic [ref=f2e664]: "Owner: Unassigned"
+                        - generic [ref=f2e665]: "Urgency: Review required · assign owner · attach evidence · set sign-off role"
+                        - generic [ref=f2e666]: 0 comments
+                        - generic [ref=f2e667]: Evidence required
+                      - link "Open reconciliation" [ref=f2e668] [cursor=pointer]:
+                        - /url: /workstation/accounting/reconciliation
+                      - group [ref=f2e669]:
+                        - generic "Audit details" [ref=f2e670] [cursor=pointer]
+                - region "Exception workflow handoffs" [ref=f2e674]:
+                  - generic [ref=f2e675]:
+                    - heading "Workflow handoffs" [level=3] [ref=f2e676]
+                    - paragraph [ref=f2e677]: Resolution work stays connected to approval, audit, and retained evidence paths.
+                  - generic [ref=f2e678]:
+                    - link "Open break queue" [ref=f2e679] [cursor=pointer]:
+                      - /url: /workstation/accounting/reconciliation
+                    - link "Review approval blockers" [ref=f2e680] [cursor=pointer]:
+                      - /url: /workstation/accounting/approvals
+                    - link "Open exception evidence packet" [ref=f2e681] [cursor=pointer]:
+                      - /url: /workstation/reporting/evidence?subjectKind=accounting-exceptions&subjectId=active
+                    - link "Open audit timeline" [ref=f2e682] [cursor=pointer]:
+                      - /url: /workstation/accounting/operations-continuity
+            - region [ref=f2e585]:
+              - generic [ref=f2e586]:
+                - generic [ref=f2e587]:
+                  - paragraph [ref=f2e588]: Actions
+                  - heading "Break resolution actions" [level=3] [ref=f2e589]
+                  - paragraph [ref=f2e590]: Resolve, dismiss, route, and calibration actions use a shared action placement.
+                - link "History" [ref=f2e591] [cursor=pointer]:
+                  - /url: "#accounting-history"
+              - group [ref=f2e592]:
+                - generic "Break resolution actions and history" [ref=f2e593] [cursor=pointer]
+                - region "Reconciliation break checklist" [ref=f2e684]:
+                  - generic [ref=f2e685]:
+                    - generic [ref=f2e686]:
+                      - heading "Reconciliation break queue" [level=3] [ref=f2e687]
+                      - paragraph [ref=f2e688]: Review/resolve workflow with assignment and audit metadata.
+                    - generic [ref=f2e689]:
+                      - generic [ref=f2e690]: 2 reconciliation breaks loaded.
+                      - generic [ref=f2e691]:
+                        - paragraph [ref=f2e692]: Use Up Arrow and Down Arrow to move between rows. Use Home and End to jump to the first or last row. Use Enter or Space to select the focused row and move focus to its detail panel. Use Escape from the detail panel to return focus to the selected row.
+                        - status [ref=f2e693]: Inspect reconciliation break SAMPLE-BRK-002 selected. Detail panel updated.
+                        - treegrid "Reconciliation break queue" [ref=f2e694]:
+                          - caption [ref=f2e695]: Selectable reconciliation break queue. Select a break row to inspect reason, ownership, audit timestamps, and routing detail.
+                          - rowgroup [ref=f2e696]:
+                            - row [ref=f2e697]:
+                              - columnheader "Break" [ref=f2e698]
+                              - columnheader "Case" [ref=f2e699]
+                              - columnheader "Variance" [ref=f2e700]
+                              - columnheader "Owner" [ref=f2e701]
+                              - columnheader "Updated" [ref=f2e702]
+                              - columnheader "Status" [ref=f2e703]
+                              - columnheader "Actions" [ref=f2e704]
+                          - rowgroup [ref=f2e705]:
+                            - row "Inspect reconciliation break SAMPLE-BRK-001" [ref=f2e706] [cursor=pointer]:
+                              - gridcell "Northstar Sample Portfolio Cash variance needs review" [ref=f2e707]:
+                                - generic [ref=f2e708]:
+                                  - generic [ref=f2e709]: Northstar Sample Portfolio
+                                  - generic [ref=f2e710]: Cash variance needs review
+                              - gridcell "Cash variance needs review" [ref=f2e711]
+                              - gridcell "+$1,250.00" [ref=f2e712]
+                              - gridcell "Unassigned" [ref=f2e713]
+                              - gridcell "Sep 5, 04:57 UTC" [ref=f2e714]
+                              - gridcell "Open" [ref=f2e715]
+                              - gridcell [ref=f2e717]:
+                                - generic [ref=f2e718]:
+                                  - button "Assign reconciliation break SAMPLE-BRK-001" [ref=f2e719]: Assign
+                                  - button "Resolve reconciliation break SAMPLE-BRK-001" [ref=f2e720]: Resolve
+                                  - button "Dismiss reconciliation break SAMPLE-BRK-001" [ref=f2e721]: Dismiss
+                            - row "Inspect reconciliation break SAMPLE-BRK-002" [expanded] [active] [selected] [ref=f2e722] [cursor=pointer]:
+                              - gridcell "Northstar Sample Portfolio Cash variance needs review" [ref=f2e723]:
+                                - generic [ref=f2e724]:
+                                  - generic [ref=f2e725]: Northstar Sample Portfolio
+                                  - generic [ref=f2e726]: Cash variance needs review
+                              - gridcell "Cash variance needs review" [ref=f2e727]
+                              - gridcell "+$42.50" [ref=f2e728]
+                              - gridcell "Unassigned" [ref=f2e729]
+                              - gridcell "Sep 5, 04:57 UTC" [ref=f2e730]
+                              - gridcell "Open" [ref=f2e731]
+                              - gridcell [ref=f2e733]:
+                                - generic [ref=f2e734]:
+                                  - button "Assign reconciliation break SAMPLE-BRK-002" [ref=f2e735]: Assign
+                                  - button "Resolve reconciliation break SAMPLE-BRK-002" [ref=f2e736]: Resolve
+                                  - button "Dismiss reconciliation break SAMPLE-BRK-002" [ref=f2e737]: Dismiss
+                      - generic [ref=f2e738]:
+                        - text: Selected from break queue
+                        - region "Reconciliation break detail for SAMPLE-BRK-002" [ref=f2e787]:
+                          - generic [ref=f2e740]:
+                            - generic [ref=f2e741]:
+                              - generic [ref=f2e742]: Break detail
+                              - heading "Northstar Sample Portfolio - Cash variance needs review" [level=3] [ref=f2e743]
+                              - paragraph [ref=f2e744]: Reconciliation exception - Open
+                              - paragraph [ref=f2e745]: A $42.50 custodian fee has no matching ledger entry in the sample statement.
+                            - generic [ref=f2e746]: Open
+                          - generic [ref=f2e748]:
+                            - generic [ref=f2e749]:
+                              - term [ref=f2e750]: Variance
+                              - definition [ref=f2e751]: +$42.50
+                            - generic [ref=f2e752]:
+                              - term [ref=f2e753]: Owner
+                              - definition [ref=f2e754]: Unassigned
+                            - generic [ref=f2e755]:
+                              - term [ref=f2e756]: Detected
+                              - definition [ref=f2e757]: Sep 5, 04:57 UTC
+                            - generic [ref=f2e758]:
+                              - term [ref=f2e759]: Updated
+                              - definition [ref=f2e760]: Sep 5, 04:57 UTC
+                            - generic [ref=f2e761]:
+                              - term [ref=f2e762]: Urgency
+                              - definition [ref=f2e763]: Review required · assign owner · attach evidence · set sign-off role
+                            - generic [ref=f2e764]:
+                              - term [ref=f2e765]: Comments
+                              - definition [ref=f2e766]: "0 comment(s); latest: No visible comment"
+                            - generic [ref=f2e767]:
+                              - term [ref=f2e768]: Evidence links
+                              - definition [ref=f2e769]: 0 evidence link(s)
+                            - generic [ref=f2e770]:
+                              - term [ref=f2e771]: Required sign-off
+                              - definition [ref=f2e772]: "Sign-off: Pending. Required role is not configured."
+                            - generic [ref=f2e773]:
+                              - term [ref=f2e774]: Decision note
+                              - definition [ref=f2e775]: No decision captured
+                      - group [ref=f2e776]:
+                        - generic "Break metadata" [ref=f2e777] [cursor=pointer]
+                      - generic [ref=f2e781]: "Analysis: A $42.50 custodian fee has no matching ledger entry in the sample statement."
+                  - group [ref=f2e782]:
+                    - generic "Calibration summary" [ref=f2e783] [cursor=pointer]
+    - contentinfo "Workstation status" [ref=f2e332]:
+      - generic [ref=f2e333]:
+        - generic [ref=f2e335]: Sync
+        - generic [ref=f2e336]: attention required
+      - generic [ref=f2e337]:
+        - generic [ref=f2e338]: Workspace
+        - generic [ref=f2e339]: Accounting
+  - region "Notifications"

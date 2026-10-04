@@ -59,9 +59,9 @@ authentication and a dedicated PostgreSQL payload, then fetches `/startupz`, `/h
 
 - Browser deployment posture: [Browser Workstation Installer](./browser-workstation-installer.md)
 - WPF and desktop packaging: [README operator launch and procedures](./README.md)
-- Legacy deployment guide archived at: [archive/docs/operations/msix-packaging.md](../../archive/docs/operations/msix-packaging.md)
+- Legacy deployment guide archived at: [archive/docs/operations/msix-packaging.md](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/msix-packaging.md)
 
 ## Legacy Migration
 
-- Source content: [archive/docs/operations/msix-packaging.md](../../archive/docs/operations/msix-packaging.md)
-- Archive copy: [archive/docs/operations/msix-packaging.md](../../archive/docs/operations/msix-packaging.md)
+- Source content: [archive/docs/operations/msix-packaging.md](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/msix-packaging.md)
+- Archive copy: [archive/docs/operations/msix-packaging.md](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/msix-packaging.md)
