@@ -374,7 +374,9 @@ public sealed class ProjectReferenceGraphTests
     {
         var start = new System.Diagnostics.ProcessStartInfo(Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet")
         {
-            RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false
         };
         foreach (var argument in new[] { "msbuild", project, "-nologo", "-verbosity:quiet", "-target:Probe", "-maxcpucount:1", "-nodeReuse:false", "-property:Configuration=Release" })
         {
