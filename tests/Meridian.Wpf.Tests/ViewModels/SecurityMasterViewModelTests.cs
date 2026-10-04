@@ -1597,15 +1597,19 @@ public sealed class SecurityMasterViewModelTests
             .Set("MDC_ANONYMOUS_ROLE", null);
         var session = DesktopAuthenticationSessionTests.CreateSession("Production");
 
-        WpfTestThread.Run(() =>
+        // Collect from the test thread so cancelled polling can finish any dispatcher
+        // callback queued before Stop(). Blocking the dispatcher during GC keeps that
+        // callback (and its view model) alive regardless of the weak session subscription.
+        for (var iteration = 0; iteration < 10; iteration++)
         {
             // The page's Unloaded calls Stop(), never Dispose(): an unloaded, undisposed
             // view model must still be collectable while the singleton session lives on,
             // or every navigation to Security Master would grow the sign-out invocation
             // list by one permanently rooted view model.
-            var weakViewModel = CreateStoppedViewModel(session);
+            var weakViewModel = CreateStoppedViewModelOnDispatcher(session);
             for (var attempt = 0; attempt < 20 && weakViewModel.IsAlive; attempt++)
             {
+                WpfTestThread.Run(() => { });
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
                 Thread.Sleep(50);
@@ -1613,8 +1617,16 @@ public sealed class SecurityMasterViewModelTests
 
             weakViewModel.IsAlive.Should().BeFalse(
                 "the authentication session's SignedOut subscription must not root unloaded view models");
-            GC.KeepAlive(session);
-        });
+        }
+        GC.KeepAlive(session);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static WeakReference CreateStoppedViewModelOnDispatcher(DesktopAuthenticationSession session)
+    {
+        WeakReference? weakViewModel = null;
+        WpfTestThread.Run(() => weakViewModel = CreateStoppedViewModel(session));
+        return weakViewModel!;
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
