@@ -251,8 +251,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                             Entry = new JournalEntry(entry.JournalEntryId, entry.Timestamp, entry.Description,
                             [
                                 Line(LedgerAccounts.CashAccount("broker-1"), cash, 0m),
-                        Line(lots[0].Account, 0m, 0.06m),
-                        Line(resultAccount, debitResult ? 0.01m : 0m, debitResult ? 0m : 0.01m)
+                                Line(lots[0].Account, 0m, 0.06m),
+                                Line(resultAccount, debitResult ? 0.01m : 0m, debitResult ? 0m : 0.01m)
                             ], entry.Metadata)
                         }
                     }).WithComputedFingerprint();
