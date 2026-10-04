@@ -78,6 +78,14 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
                 return InternalReconciliationPopulations.Empty;
             }
 
+            if (context.AccountingScope is { } scope
+                && (!account.FundId.HasValue
+                    || !Guid.TryParse(scope.FundProfileId, out var fundId)
+                    || account.FundId.Value != fundId))
+            {
+                return InternalReconciliationPopulations.Empty;
+            }
+
             // Both sides of the match are keyed by the run's external (custodian) account so the
             // per-row account string a statement carries (an IBAN, a bank id, a broker account number)
             // does not have to equal Meridian's internal account code for the books to reconcile.
@@ -193,7 +201,10 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
                     aliases,
                     context.StatementPeriodStart,
                     context.StatementPeriodEnd,
-                    context.BaseCurrency),
+                    context.BaseCurrency)
+                {
+                    AccountingScope = context.AccountingScope
+                },
                 ct)
             .ConfigureAwait(false) ?? [];
     }

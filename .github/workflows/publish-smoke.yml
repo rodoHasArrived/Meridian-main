@@ -1,6 +1,17 @@
 name: Publish Smoke
 
 on:
+  workflow_call:
+    inputs:
+      project:
+        type: string
+        required: true
+      runtime:
+        type: string
+        required: true
+      version:
+        type: string
+        required: true
   workflow_dispatch:
     inputs:
       project:
@@ -29,7 +40,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: publish-smoke-${{ github.ref }}
+  group: ${{ github.workflow }}-publish-smoke-${{ github.ref }}
   cancel-in-progress: false
 
 env:
@@ -37,6 +48,8 @@ env:
   # Bind the free-text version input to an environment variable so it is never
   # interpolated directly into a pwsh run block (avoids shell/script injection).
   VERSION: ${{ inputs.version }}
+  PROJECT: ${{ inputs.project }}
+  RUNTIME: ${{ inputs.runtime }}
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
   DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
   DOTNET_NOLOGO: "true"
@@ -53,6 +66,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ github.sha }}
           fetch-depth: 1
 
       - name: Set up .NET SDK
@@ -78,16 +92,23 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/Directory.Build.props', '**/Directory.Build.targets', '**/Directory.Packages.props', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-v1-
+
+      - name: Validate reusable selections
+        shell: pwsh
+        run: |
+          if ($env:PROJECT -notin @('collector', 'desktop', 'web-workstation')) { throw 'Unsupported project.' }
+          if ($env:RUNTIME -notin @('win-x64', 'win-arm64')) { throw 'Unsupported runtime.' }
+          if ($env:VERSION -notmatch '^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$') { throw 'Invalid version.' }
 
       - name: Run publish script
         shell: pwsh
         run: |
           pwsh ./build/scripts/publish/publish.ps1 `
-            -Platform '${{ inputs.runtime }}' `
-            -Project '${{ inputs.project }}' `
+            -Platform $env:RUNTIME `
+            -Project $env:PROJECT `
             -Version "$env:VERSION" `
             -Configuration Release `
             -OutputDir artifacts/publish/publish-smoke `
@@ -143,8 +164,8 @@ jobs:
             Write-Host "::notice::This dispatch did not run installed startup; it is publish evidence only, not PRD-013 installed-startup evidence."
           }
           python build/scripts/ci/generate-release-evidence-manifest.py `
-            --project '${{ inputs.project }}' `
-            --runtime '${{ inputs.runtime }}' `
+            --project $env:PROJECT `
+            --runtime $env:RUNTIME `
             --version "$env:VERSION" `
             --artifact-root artifacts/publish/publish-smoke `
             --output artifacts/publish/publish-smoke/release-evidence.json `
@@ -157,7 +178,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: meridian-${{ inputs.project }}-${{ inputs.runtime }}-${{ github.run_number }}
+          name: meridian-${{ inputs.project }}-${{ inputs.runtime }}-${{ github.run_number }}-${{ github.run_attempt }}
           path: artifacts/publish/publish-smoke/
           if-no-files-found: warn
           retention-days: 90

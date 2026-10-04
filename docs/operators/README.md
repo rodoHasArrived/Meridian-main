@@ -37,6 +37,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 | First local setup | [Start](../start/README.md) | fastest contributor/operator orientation |
 | Product operating scope | [Meridian Design Document](../product/meridian-design-document.md) | stakeholder design context for operator posture |
 | Daily operator controls | [Operators](./README.md) | this page |
+| Adapter implementation readiness | [Generated Adapter Readiness Matrix](../source/generated/adapter-readiness-matrix.md) | credentials, SDK dependencies, capability claims, risks, degradation behavior, evidence, and next actions; source readiness does not confer operator certification |
 | Xero and NetSuite GL evidence | [External GL Providers](./external-gl-providers.md) | credential setup, import boundaries, and controlled export certification |
 | Startup, restart, and shutdown control | [Lifecycle Control Plane](../reference/lifecycle-control-plane.md) | states, supervisor commands, database ownership, and receipts |
 | Failed, blocked, or warning operation | [Verified Outcome Recovery](./verified-outcome-recovery.md) | terminal receipt triage, evidence verification, safe retry, and escalation |
@@ -45,6 +46,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 | Governed reporting, schedules, and delivery | [Governed Reporting Operations](./governed-reporting-operations.md) | reporting preflight, hard-close evidence, recovery, and secure relay operation |
 | Deployment and packaging | [Deployment and Packaging](./deployment-packaging.md) | canonical packaging/checksum/sign-off posture |
 | A firing alert | [Operator Runbook](./operator-runbook.md) | per-alert response, diagnostics bundle, incident procedure and ownership |
+| Inspect a connected pipeline or backfill trace | [Distributed Tracing](./distributed-tracing.md) | opt-in exporters, collector configuration, sampling, and shutdown delivery |
 | Objectives, thresholds, RTO/RPO | [Service Level Objectives](./service-level-objectives.md) | SLIs, targets, error budgets, and recovery objectives |
 | Troubleshooting and support evidence | [Operator Preflight Checklist](./preflight-checklist.md) | readiness gate and rollback posture |
 
@@ -53,6 +55,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 - [Browser Workstation Installer](./browser-workstation-installer.md)
 - [Lifecycle Control Plane Reference](../reference/lifecycle-control-plane.md)
 - [Deployment and Packaging](./deployment-packaging.md)
+- [Distributed Tracing](./distributed-tracing.md)
 - [Failover and Recovery](./failover-and-recovery.md)
 - [Fund Operations Persistence Cutover](./fund-ops-persistence-cutover.md)
 - [Governed Reporting Operations](./governed-reporting-operations.md)
@@ -123,6 +126,7 @@ The table below tracks active legacy/high-traffic routes and their replacements 
 
 For quick operator evidence lookups, map claims to:
 
+- [Generated Adapter Readiness Matrix](../source/generated/adapter-readiness-matrix.md) (source readiness from the [canonical adapter registry](../source/data/adapter-readiness.yml); operator sign-off still requires the validation gates below)
 - [provider-integration-status.md](../reference/provider-integration-status.md) (operational posture and phase)
 - [provider-validation-matrix.md](../reference/provider-validation-matrix.md) (gates and evidence criteria)
 - [provider-validation-evidence-schema.md](../reference/provider-validation-evidence-schema.md) (artifact shape)

@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-PLATFORM
 path: src/Meridian.Platform
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-06-07
+last_reviewed: 2026-10-02
 ---
 
 # src/Meridian.Platform
@@ -81,6 +81,13 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   event pipeline to preserve trace parent/correlation IDs across queued market events.
 - `Tracing/OpenTelemetrySetup.cs` - host OpenTelemetry setup, exporter configuration, and
   `MarketDataTracing` activity source/counter helpers for platform-level market-data telemetry.
+  Common composition explicitly opts in one DI-owned provider for the existing `Meridian`
+  pipeline/backfill sources and HTTP instrumentation. Console/OTLP exporters default off;
+  configured destinations and sampling are validated before registration. Parent-based sampling
+  retains upstream decisions. Hosted stop flushes completed spans and DI disposal exports any
+  spans completed during final cleanup before releasing the provider and exporters. There is no
+  separate process-global provider owner. See
+  [Distributed Tracing Operations](../../docs/operators/distributed-tracing.md).
 - `Tracing/Metrics.cs` and `Tracing/DefaultEventMetrics.cs` - hot-path event-pipeline counters
   and the default implementation of the contracts-owned `IEventMetrics` interface.
 - `Tracing/TracedEventMetrics.cs` - OpenTelemetry-compatible event-pipeline metrics decorator
@@ -89,6 +96,12 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   markdown documentation model generation for host diagnostics and API explorer surfaces.
 
 ## Important workflows
+
+The `EnableOpenTelemetry` composition compatibility option collects `Meridian.Pipeline` metrics
+through a DI-owned meter provider, alongside the tracing provider. Console and OTLP metrics export
+use the same explicit exporter flags, resource identity, validated destination, headers, and request
+timeout as tracing. Both providers flush during shutdown and remain alive through final disposal.
+`Tracing.Enabled` alone continues to register only the tracing provider.
 
 Use this module when changing cross-domain runtime cutover controls, shadow-write behavior,
 persisted-projection read switching, hosted projection-reconciliation plumbing, or shared
@@ -129,6 +142,7 @@ taxonomy.
 
 ```bash
 dotnet build src/Meridian.Platform/Meridian.Platform.csproj /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~TracingIntegrationTests" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~LeaseManagerTests|FullyQualifiedName~ClusterCoordinatorServiceTests|FullyQualifiedName~SplitBrainDetectorTests|FullyQualifiedName~SubscriptionOrchestratorCoordinationTests|FullyQualifiedName~IngestionJobServiceCoordinationTests|FullyQualifiedName~DiagnosticsEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~StartupSummaryTests|FullyQualifiedName~GracefulShutdownTests|FullyQualifiedName~GracefulShutdownIntegrationTests|FullyQualifiedName~ConfigurationUnificationTests|FullyQualifiedName~CommandModeRunnerTests|FullyQualifiedName~DiagnosticBundleServiceTests|FullyQualifiedName~DiagnosticsFeatureRegistrationTests|FullyQualifiedName~BackpressureAlertServiceTests|FullyQualifiedName~AlertDispatcherTests|FullyQualifiedName~HealthCheckAggregatorTests|FullyQualifiedName~SloDefinitionRegistryTests|FullyQualifiedName~AlertRunbookRegistryTests|FullyQualifiedName~DiagnosticsEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~StorageFeatureRegistrationTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false

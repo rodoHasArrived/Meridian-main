@@ -1,6 +1,7 @@
 name: CodeQL
 
 on:
+  workflow_call:
   pull_request:
   merge_group:
   push:
@@ -16,7 +17,7 @@ permissions:
   security-events: write
 
 concurrency:
-  group: codeql-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-codeql-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -45,6 +46,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ github.sha }}
           fetch-depth: 1
 
       - name: Set up .NET SDK

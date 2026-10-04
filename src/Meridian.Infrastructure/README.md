@@ -6,10 +6,15 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-09-28
+last_reviewed: 2026-10-02
 ---
 
 # src/Meridian.Infrastructure
+
+Persistence is supplied through `Core.IO.IAtomicFileWriter`, `Contracts.Etl.IEtlStagingStore`, and
+ProviderSdk `IBackfillBarWriter`. Infrastructure has no project-reference path to Storage;
+application/host composition supplies Storage implementations. See the PRD-108 inventory in
+[`layer-boundaries.md`](../../docs/architecture/layer-boundaries.md).
 
 Immutable statement match artifacts retain source-comparison completeness, represented population kinds,
 and the executed matcher/tolerance-policy fingerprint. Legacy artifacts omit these fields and cannot
@@ -32,7 +37,51 @@ This layer owns external integration details while depending on lower contracts 
 
 ## Important workflows
 
+Backfill request admission captures the current activity context; queued worker execution restores
+that parent explicitly rather than inheriting the worker's ambient context. Provider fetch and bar
+storage spans are children of the backfill attempt and retain error/exception evidence on failures,
+including internal timeout cancellations while the worker token is still active. Expected worker
+cancellation leaves those spans without error status.
+The request-only context preserves flags and trace state for in-process retries; it is not serialized
+with jobs, so recovery after restart captures a new admission context or starts a new root trace.
+The adapter-local `Meridian` activity source is subscribed by the common host-owned tracing provider
+without an Infrastructure-to-Application dependency. See
+[Distributed Tracing Operations](../../docs/operators/distributed-tracing.md).
+
+Alpaca Trading API portfolio snapshots explicitly bind `us_equity` and `us_option` position
+values to USD only when the authenticated account response explicitly supplies USD. The
+[provider Trading API models](https://alpaca.markets/sdks/python/api_reference/trading/models.html)
+define the account and position dollar-value contract. Unknown assets, crypto quote denominations,
+non-USD accounts, and missing account currency remain unbound; statement intake rejects those
+missing position currencies rather than inferring them from account base currency.
+The [Trading Account](https://docs.alpaca.markets/us/docs/account-plans) currency can establish USD
+for [trade fills](https://docs.alpaca.markets/us/v1.4.2/docs/account-activities), whose payload omits
+currency. The gateway binds only Trade/TradeFill events to the already verified account's explicit
+USD and records `currencySource=VerifiedAccount`, including activity-only bounded fetches.
+Explicit activity currencies remain unchanged. Missing account currency and missing or blank
+non-fill currencies stay missing; cash, dividends, fees, corrections, and busts never receive this
+fill-specific binding. Direct canonical CSV intake validates currency against Core's shared
+recognized-code catalog before retaining an import.
+
+Canonical CSV import requires the currency column in the header and at least one data row.
+Header-only statements cannot validate or persist as empty imports; every admitted row retains
+explicit currency and invariant decimal evidence.
+
+Canonical CSV statement imports require an explicit three-letter currency on every row.
+Older seven-column files must be regenerated with source-backed currency evidence; the
+importer does not supply USD. Quantity, price, cash and nonblank fees use invariant decimal
+notation without grouping separators. Missing optional fees remain absent, while malformed
+fees fail validation and import before persistence. Quoted fields and explicit zero amounts
+remain supported.
+
 Use this module for provider implementation, external service integration, and adapter behavior.
+
+The [adapter readiness registry](../../docs/source/data/adapter-readiness.yml) owns the source-level
+inventory of every direct adapter family. Its [generated readiness matrix](../../docs/source/generated/adapter-readiness-matrix.md)
+records capability claims, credentials and SDK dependencies, risks, degradation behavior, registration,
+targeted evidence, ownership, and next actions. Readiness describes the implementation and its linked
+evidence; live-provider validation and operator sign-off remain governed by the
+[provider validation matrix](../../docs/reference/provider-validation-matrix.md).
 
 `ProviderCapabilityDescriptorCatalog` owns built-in adapter types and factories for streaming,
 historical backfill, symbol search, corporate actions, options, and brokerage. `ProviderFactory`
@@ -307,6 +356,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
 ```bash
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~TracingIntegrationTests" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderCompositionTests|FullyQualifiedName~ProviderCatalogCompositionTests|FullyQualifiedName~ProviderModuleCompositionTests" --logger "console;verbosity=normal"
 ```
 

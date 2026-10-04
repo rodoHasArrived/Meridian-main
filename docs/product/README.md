@@ -2,7 +2,7 @@
 
 **Status:** active  
 **Owner:** core-team  
-**Reviewed:** 2026-09-28
+**Reviewed:** 2026-09-27
 
 This is the canonical stakeholder-facing entrypoint for Meridian product direction, capability posture, and roadmap interpretation.
 It routes non-technical audiences to verified evidence and prevents duplicate claims that compete with roadmap/source registries.
@@ -43,14 +43,20 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     future roadmap row must produce before a deferred product area can move into active delivery;
     boundaries, not implementation claims
 - Treat the following as dated working design inputs, not canonical status sources:
-  - [What To Work On Next (2026-09-28)](plans/next-work-determination-2026-09-28.md) — latest
-    prioritization input, anchored at `main` `0b956b06`; re-verifies every item ranked on
-    2026-09-27 against current source and re-measures the whole pull-request queue, including the
-    dependency set the prior document did not cover. It supersedes the
-    [2026-09-27 determination](../../archive/docs/plans/next-work-determination-2026-09-27.md), the
+  - [What To Work On Next (2026-10-02)](plans/next-work-determination-2026-10-02.md) — latest
+    prioritization input, anchored at `main` `02196672`; ranks work against the registry, the
+    readiness tracker, live CI, and the pull-request queue, and verifies each named roadmap
+    remainder against current source rather than against its own record. Records that the two
+    top-ranked P0 engineering items merged (#3026, #3028) and that the release-candidate tag is the
+    remaining P0 path. It moves no roadmap row and certifies no release
+  - [What To Work On Next (2026-09-28)](../../archive/docs/plans/next-work-determination-2026-09-28.md) — archived
+    baseline ranking, superseded by the 2026-10-02 determination
+  - [What To Work On Next (2026-09-27)](plans/next-work-determination-2026-09-27.md) — superseded by
+    the 2026-10-02 determination and anchored at `main` `5980fa00`; retained in place rather than
+    archived because `docs/roadmap/data/program-state.yml` and the readiness tracker cite it as the
+    recorded operator-session plan. It supersedes the
     [2026-09-23 determination](../../archive/docs/plans/next-work-determination-2026-09-23.md) and the
-    [2026-09-20 determination](../../archive/docs/plans/next-work-determination-2026-09-20.md). It moves no roadmap row
-    and certifies no release
+    [2026-09-20 determination](../../archive/docs/plans/next-work-determination-2026-09-20.md)
   - [Reporting Operating Model (2026-09)](reporting-operating-model-2026-09.md) — refined
     reporting semantics: the `Report`/`Edition`/`Publication` object split, the four-destination
     consolidation inside the existing Reporting root, the scope contract with separated effective
@@ -250,7 +256,7 @@ closing web-UI parity gaps for screens that shipped browser-first while it was d
 - The [Meridian Design Document (Version 1.0)](meridian-design-document.md) is the active stakeholder-facing product framing source.
 - It is treated as the canonical product design charter and should be updated as the first step before changing stakeholder capability narrative.
 - Current roadmap-facing status claims must point to registry-backed outputs (`docs/roadmap/data/*.yml`, `docs/roadmap/generated/*`) and reference this design charter for scope.
-- Design Baseline: `Meridian Design Document (Version 1.0)` is the canonical product thesis. It centers the proven-numbers value proposition and Verified Coverage north star, encodes activation-over-expansion and truth-discipline doctrines from the 2026-07 adversarial program review, and preserves the charter invariants (customer-neutral operational-finance core, treasury-ledger controls, shared explorer UX direction, bounded W7 live-readiness governance, the active WPF co-equal lane and web-UI parity policy, and the operational proof layer thesis).
+- Design Baseline: `Meridian Design Document (Version 1.1)` is the canonical product thesis. It centers the proven-numbers value proposition and Verified Coverage north star, encodes activation-over-expansion and truth-discipline doctrines from the 2026-07 adversarial program review, maps the W10 depth slate to charter invariants, and preserves the charter invariants (customer-neutral operational-finance core, treasury-ledger controls, shared explorer UX direction, bounded W7 live-readiness governance, the active WPF co-equal lane and web-UI parity policy, and the operational proof layer thesis).
 
 ## Stakeholder Narrative
 

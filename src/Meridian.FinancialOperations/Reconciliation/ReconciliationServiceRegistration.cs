@@ -1,3 +1,5 @@
+using Meridian.Storage.Archival;
+using Meridian.Core.IO;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Alpaca;
@@ -29,14 +31,14 @@ public static class ReconciliationServiceRegistration
                 sp.GetRequiredService<StorageOptions>().RootPath,
                 sp.GetService<ILogger<FileStatementReconciliationCheckpointStore>>()));
         services.TryAddSingleton<ICanonicalStatementStore>(sp => new JsonCanonicalStatementStore(sp.GetRequiredService<StorageOptions>().RootPath));
-        services.TryAddSingleton<IReconciliationCaseStore>(sp => new JsonReconciliationCaseStore(sp.GetRequiredService<StorageOptions>().RootPath));
-        services.TryAddSingleton<IReconciliationBreakStore>(sp => new JsonReconciliationBreakStore(sp.GetRequiredService<StorageOptions>().RootPath));
+        services.TryAddSingleton<IReconciliationCaseStore>(sp => new JsonReconciliationCaseStore(sp.GetRequiredService<StorageOptions>().RootPath, sp.GetRequiredService<IAtomicFileWriter>()));
+        services.TryAddSingleton<IReconciliationBreakStore>(sp => new JsonReconciliationBreakStore(sp.GetRequiredService<StorageOptions>().RootPath, sp.GetRequiredService<IAtomicFileWriter>()));
         services.TryAddSingleton<IStatementRunRecoveryRepository>(sp =>
             new FileStatementRunRecoveryRepository(sp.GetRequiredService<StorageOptions>().RootPath));
         services.TryAddSingleton<IStatementRunMatchArtifactStore>(sp =>
-            new FileStatementRunMatchArtifactStore(sp.GetRequiredService<StorageOptions>().RootPath));
+            new FileStatementRunMatchArtifactStore(sp.GetRequiredService<StorageOptions>().RootPath, sp.GetRequiredService<IAtomicFileWriter>()));
         services.TryAddSingleton<IStatementCaseworkCommitStore>(sp =>
-            new FileStatementCaseworkCommitStore(sp.GetRequiredService<StorageOptions>().RootPath));
+            new FileStatementCaseworkCommitStore(sp.GetRequiredService<StorageOptions>().RootPath, sp.GetRequiredService<IAtomicFileWriter>()));
         AddBrokerStatementServices(services);
         AddConnectorServices(services, static sp => sp.GetRequiredService<StorageOptions>().RootPath);
         return services;
@@ -55,11 +57,11 @@ public static class ReconciliationServiceRegistration
                 dataRoot,
                 sp.GetService<ILogger<FileStatementReconciliationCheckpointStore>>()));
         services.TryAddSingleton<ICanonicalStatementStore>(_ => new JsonCanonicalStatementStore(dataRoot));
-        services.TryAddSingleton<IReconciliationCaseStore>(_ => new JsonReconciliationCaseStore(dataRoot));
-        services.TryAddSingleton<IReconciliationBreakStore>(_ => new JsonReconciliationBreakStore(dataRoot));
+        services.TryAddSingleton<IReconciliationCaseStore>(sp => new JsonReconciliationCaseStore(dataRoot, sp.GetRequiredService<IAtomicFileWriter>()));
+        services.TryAddSingleton<IReconciliationBreakStore>(sp => new JsonReconciliationBreakStore(dataRoot, sp.GetRequiredService<IAtomicFileWriter>()));
         services.TryAddSingleton<IStatementRunRecoveryRepository>(_ => new FileStatementRunRecoveryRepository(dataRoot));
-        services.TryAddSingleton<IStatementRunMatchArtifactStore>(_ => new FileStatementRunMatchArtifactStore(dataRoot));
-        services.TryAddSingleton<IStatementCaseworkCommitStore>(_ => new FileStatementCaseworkCommitStore(dataRoot));
+        services.TryAddSingleton<IStatementRunMatchArtifactStore>(sp => new FileStatementRunMatchArtifactStore(dataRoot, sp.GetRequiredService<IAtomicFileWriter>()));
+        services.TryAddSingleton<IStatementCaseworkCommitStore>(sp => new FileStatementCaseworkCommitStore(dataRoot, sp.GetRequiredService<IAtomicFileWriter>()));
         AddBrokerStatementServices(services);
         AddConnectorServices(services, _ => dataRoot);
         return services;
@@ -78,6 +80,7 @@ public static class ReconciliationServiceRegistration
 
     private static void AddSharedServices(IServiceCollection services)
     {
+        services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
         // Safe, fail-closed defaults for the statement-run matcher. A deployment wires a real
         // internal-population provider (live positions/cash/ledger) and FX rate table by registering
         // its own implementations before calling AddStatementReconciliationServices, or via Replace.

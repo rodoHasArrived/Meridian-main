@@ -19,7 +19,7 @@ using NSubstitute;
 
 namespace Meridian.Tests.Ui;
 
-public sealed class AccountingConfigurationServiceTests
+public sealed partial class AccountingConfigurationServiceTests
 {
     private static readonly Guid ManualJournalLedgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid ManualJournalPeriodId = Guid.Parse("22222222-2222-2222-2222-222222222222");
@@ -5799,6 +5799,7 @@ public sealed class AccountingConfigurationServiceTests
             Notes: "Post source before atomic correction test.",
             EvidenceLinks: [ManualJournalPostingEvidence(approved.JournalEntry)],
             LedgerBookId: approved.JournalEntry.LedgerBookId));
+        var batchAttemptsBeforeCorrection = draftStore.BatchSaveAttempts;
         draftStore.FailNextBatch = true;
         var reversalEvidence =
             $"/api/workstation/evidence/subjects/accounting-record/reversal/ledger-book/{posted.JournalEntry.LedgerBookId:D}/{posted.JournalEntry.PeriodId}";
@@ -5822,7 +5823,7 @@ public sealed class AccountingConfigurationServiceTests
             draft.Version == posted.JournalEntry.Version);
         retained.Should().NotContain(draft =>
             draft.ReversalOfJournalEntryId == posted.JournalEntry.JournalEntryId);
-        draftStore.BatchSaveAttempts.Should().Be(1);
+        draftStore.BatchSaveAttempts.Should().Be(batchAttemptsBeforeCorrection + 1);
     }
 
     [Fact]

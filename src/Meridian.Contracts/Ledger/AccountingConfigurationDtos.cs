@@ -800,7 +800,10 @@ public sealed record ManualJournalEntryDraftDto(
     AutomatedJournalEvidenceAssessmentDto? AutomationEvidenceAssessment = null,
     string? ValuationMarkEvidenceJson = null,
     string? ValuationMarkEvidenceDigest = null,
-    bool RequiresValuationMarkEvidence = false)
+    bool RequiresValuationMarkEvidence = false,
+    string? RecurringJournalEvidenceJson = null,
+    string? RecurringJournalEvidenceDigest = null,
+    bool RequiresRecurringJournalEvidence = false)
 {
     public IReadOnlyList<JournalEntryLifecycleTransitionDto> LifecycleTransitions { get; init; } =
         LifecycleTransitions ?? [];

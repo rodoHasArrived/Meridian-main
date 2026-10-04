@@ -6,10 +6,17 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-09-28
+last_reviewed: 2026-10-02
 ---
 
 # src/Meridian.Application
+
+Governed statement reconciliation carries its resolved fund, primary ledger book, and exact period
+through the retained population provider into journal queries. The journal source validates that
+authority before reading, excludes journals from other periods, and denominates legacy cash legs
+in the retained book currency. Scope-free legacy callers retain their existing account/window
+behavior. Focused coverage lives in `LedgerJournalInternalTransactionSourceTests` and
+`RetainedInternalReconciliationPopulationProviderTests`.
 
 Derived lending runs commit their Asset Operations publication message in the same PostgreSQL
 transaction as the run and its details. HTTP requests return the committed run without calling
@@ -32,7 +39,87 @@ legacy new-run behavior and must not be treated as safe automatic retries.
 
 `DailyMarkToMarketService` uses the shared `ValuationFreshnessPolicy` for both impact previews and draft generation. Missing, future-dated, low-confidence, or over-age marks produce position-specific review reasons and prevent partial valuation batches from becoming approved support. Previewing returns affected position and valuation counts without retaining a draft.
 
+## Credential source ownership
+
+`ProviderConnectionService.GetConnectionsForTenantAsync` lists connections only when retained
+tenant ownership matches the authorized tenant. Unassigned legacy connections require explicit
+ownership establishment and are not implicitly claimed by discovery.
+Duplicate connection IDs, including case variants, cannot establish credential ownership. Discovery
+omits ambiguous records; scoped setup, scope resolution and connection mutations refuse them.
+Connection upsert and deletion use `ConfigStore.LoadRequired` so missing, corrupt or JSON-null
+configuration cannot be replaced by an empty default ownership model. Failed reads preserve the file.
+Connection and binding upsert/deletion and preset application use `ConfigStore.UpdateRequiredAsync` to hold a shared sidecar file
+lock across the required read, ownership validation and atomic write. Separate store instances cannot
+lose each other's connection additions or deletions. Waiting operations honor cancellation and re-read
+ownership after acquiring the lock. Whole-configuration saves and capability override writes take the
+same lock; callers that prepare whole-configuration snapshots before acquisition still need conversion
+to transactional updates to prevent stale snapshot replacement. External editors do not honor this lock.
+Certification persistence re-reads configuration inside the transaction after the runner completes.
+Deleted, ambiguous or changed connections and results naming another connection are refused without
+writing certification state. Unrelated concurrent connection changes are retained. This compares the
+current connection record with the checked record; it does not provide a durable revision fence for
+changes that are subsequently reverted or certify the provenance of every runner implementation.
+Provider setup performs this strict read before credential persistence and returns a fixed failure
+without creating a vault when required configuration is unreadable. Its later source/connection/binding
+update re-reads configuration under the shared transaction, preserving concurrent ownership changes
+and assigning source IDs from current state. Credential and configuration commits remain separate;
+this does not resolve cross-store commit ambiguity or make legacy setup tenant-owned.
+
+Tenant-aware route preview filters connections and bindings before ranking, health queries and
+failover expansion. It reads fresh configuration and does not add tenant results to unscoped route
+history or result telemetry. Unscoped latency/quality metrics are excluded with explicit neutral-score
+reasons; default runtime routing and tenant-aware operational history remain separate work.
+The routing snapshot excludes duplicate or case-variant connection IDs instead of failing every route,
+and a binding that references one is skipped with an explicit ambiguity reason. Trust scoring treats a
+connection with duplicate certification rows as uncertified. `ProviderSetupService.ConfigureForConnectionAsync`
+compares canonical provider IDs, so a connection retained under an alias still accepts setup.
+A tenant route only fails over to connections whose own scope matches the requested route; a fallback
+scoped to another account or fund is skipped with an explicit reason instead of inheriting the primary's
+scope match. A tenant fallback ranks by its own scope match, capped at its primary's rank. Tenant
+routing, trust and provider selection read connection-scoped health. Runtime metrics lack ownership
+provenance, so the default metrics source reports neutral unknown health for scoped connections even
+when a connection ID matches a provider-family or runtime metric ID. An ownership-aware health source
+is required to attribute runtime telemetry to a retained connection.
+
+`ProviderConnectionService.UpsertForTenantAsync` retains a server-authorized tenant and credential
+environment with the external account. Scope resolution uses that retained ownership, returns no scope
+to another tenant, and refuses incomplete records. Owned connections cannot be reassigned or modified
+through legacy mutation methods; legacy connections require an explicit ownership migration. An update
+that names an existing connection with different casing keeps the retained connection ID, so credentials
+stored under its case-sensitive scope key stay reachable. New connections retain the provider's canonical
+credential environment (for example QuickBooks `live` is kept as `production`). Existing environments
+remain exact ownership identities: an update that would change a retained alias is refused until an
+explicit configuration-and-vault migration can preserve any OAuth tokens stored under that scope. Shared
+configuration and API DTOs preserve the fields on reload. Default runtime ownership propagation and
+remaining whole-configuration snapshot callers still require integration; external editors do not honor the sidecar transaction.
+
+`StoredProviderCredentialResolver` uses the credential store as the complete authority for catalog-managed
+providers, including the store's permitted environment fallback. Missing records remain unconfigured;
+partial or deliberately removed fields cannot be filled from legacy configuration or another credential
+source. Unmanaged provider types retain their legacy resolver. Storage failures propagate to callers.
+
+The scope-bound `StoredProviderCredentialResolver` constructor accepts an `IScopedProviderCredentialStore`
+and trusted `ProviderCredentialScope`. It resolves only that tenant, connection, external account and
+environment, rejects unmanaged and non-catalog provider types, and never falls back to provider-wide
+records or config.
+The scoped store registration aliases the existing vault instance. Default host construction and the
+legacy setup route still use provider-wide resolution until authorized scope is propagated by callers;
+this constructor alone does not establish end-to-end tenant isolation.
+
+`OAuthTokenRefreshService` also accepts trusted `ownershipScope`. Scoped instances load and persist
+only that owner's OAuth tokens, including refresh responses and cache recovery after audit failure,
+and leave unassigned legacy sidecars alone. Initialization is asynchronous in both ownership modes;
+completed remote rotations commit independently of lifecycle cancellation while preserving scope.
+Default host registration still needs connection ownership propagation before scoped services replace
+the provider-wide OAuth runtime.
 ## Provider setup attribution
+
+`ConfigureForConnectionAsync` configures credentials for an already-owned connection. It validates
+the retained tenant, provider and environment before saving scoped secrets, preserves its external
+account, and does not recreate routing or bindings. Its result reports the canonical provider ID and
+the connection ID as separate identities, and it fails unless the resulting scoped status is usable
+(Configured, Verified, or NotRequired for a provider without credentials). Credential verification
+remains a separate step.
 
 `ProviderFeatureRegistration` uses the shared `AddProviderServices` composition path. The
 Infrastructure descriptor catalog supplies built-in factories for streaming, historical backfill,
@@ -67,12 +154,33 @@ service attribution when no operator initiated the call.
 
 ### Reviewed tenant maintenance and strict hosts
 
+Core/browser and desktop hosts share `TenantGuardedLocalFundStructureService` and
+`TenantGuardedLocalFundAccountService` for unpartitioned JSON-backed fallbacks. Strict enforcement
+refuses every local read and mutation with explicit migration guidance, including account query
+and management aliases. Files remain retained; selecting a current company does not attribute
+historical snapshots. Explicit deployment-boundary compatibility keeps reviewed single-company
+migration access available. Production composition still rejects these nonproduction services.
+The migration-required refusal derives from `MeridianException`, preserving shared domain-error
+classification while the HTTP boundary continues to report the specific migration guidance.
+
 The explicit `--fund-tenant-backfill --action preview|apply` command previews retained ownership
-and applies only the reviewed fingerprint; it performs no automatic migration or cutover.
+across the graph, ledger books and periods, close workflows, and configured fund accounts, then
+applies only the reviewed fingerprint. `preview-resolution|resolve` separately reviews and releases
+previously quarantined rows only when their current retained evidence derives one owner. Every
+remaining exception stays in the retained queue and blocks strict startup. Audited legacy periods
+remain unchanged and require a governed repair, preserving their existing audit evidence.
 [The operator runbook](../../docs/operators/fund-structure-tenant-backfill.md) describes attribution,
-quarantine, immutable receipts, and recovery. Core hosts now register the configured tenant read
-posture and retained worker authority; HTTP hosts replace only that fallback with their request
-accessor. Direct-lending accrual/outbox workers are constructed and started only when the final
+quarantine, immutable receipts, and recovery. Core hosts default to strict tenant reads and check
+migration readiness before serving retained data. `TenantScopeEnforcement` is the supported
+configuration setting. Application settings accept only the exact `fail-closed` and
+`deployment-boundary` values; legacy aliases are confined to the environment override documented
+in the runbook. Explicit
+`deployment-boundary` is a temporary migration posture. Core hosts register retained worker
+authority; HTTP hosts replace only that fallback with their request accessor.
+`TenantCutoverStartupPrerequisites` reuses the registered ledger, fund-account, and fund-structure
+migration/import paths so WPF can finish preparation and tenant inspection before activating its
+workspaces or shell. This preparation does not start unrelated background workers.
+Direct-lending accrual/outbox workers are constructed and started only when the final
 DI-resolved posture permits unattributed process work. Strict hosts log that these workers are
 withheld, including when a host supplies a later instance/factory override. Strict operation still
 requires per-loan tenant authority before those workers can be enabled.
@@ -642,6 +750,18 @@ Core workstation host. Do not introduce a second listener or independent monitor
 Use this module when changing command behavior, workflow orchestration, feature registration, or
 application service contracts consumed by host and UI surfaces.
 
+Shared host composition registers the Platform tracing provider only when `AppConfig.Tracing.Enabled`
+or the legacy code option `CompositionOptions.EnableOpenTelemetry` explicitly opts in. Registration
+is idempotent, and a desktop child graph reuses its parent host's ownership. `PipelineFeatureRegistration`
+selects traced metrics for `EnableOpenTelemetry`; that compatibility option also registers one
+host-owned `Meridian.Pipeline` meter provider with the explicitly selected console/OTLP exporters.
+`Tracing.Enabled` alone does not add pipeline metrics instrumentation. The event pipeline preserves each producer context across
+queueing and storage; mixed-producer batches link the other contexts while each event retains its own
+parent. Each consumer reuses batch-link scratch collections to avoid steady-state link-construction
+allocations. Processing and storage failures retain error/exception evidence on the affected spans.
+See [Distributed Tracing Operations](../../docs/operators/distributed-tracing.md) for exporter setup
+and stop/disposal semantics.
+
 Host startup and mode runners preserve one owner for every started resource. Database
 initialization is asynchronous and cancellation-aware; failed UI starts still stop and dispose the
 created server, and an internally owned lifecycle coordinator is released for failures anywhere
@@ -765,6 +885,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
 ```bash
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~TracingIntegrationTests|FullyQualifiedName~EventPipelineTracePropagationTests" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderCompositionTests|FullyQualifiedName~ProviderCatalogCompositionTests|FullyQualifiedName~ProviderModuleCompositionTests" --logger "console;verbosity=normal"
 ```
 

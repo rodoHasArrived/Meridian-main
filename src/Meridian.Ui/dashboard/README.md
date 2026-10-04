@@ -11,6 +11,14 @@ last_reviewed: 2026-08-04
 
 # src/Meridian.Ui/dashboard
 
+Accounting's draft queue reads retained recurring occurrences through the shared scoped
+`/api/ledger/journal-automation/recurring/occurrences` contract. Rows retain schedule/template
+versions, draft identity, human approval status and source evidence references. Blocked rows
+include period lock ownership and the governed reopen path. Failed reads stay unavailable;
+the browser neither falls back to sample state nor infers approval or claims an occurrence.
+Changing scope discards previous rows and ignores late responses. Focused coverage lives in
+`RecurringJournalQueue.test.tsx` and `recurring-journals.api.test.ts`.
+
 The stable test runner retains eight files per batch, two Vitest workers and process recycling.
 Fresh JSON test evidence is written under `artifacts/test-results/browser/` at repository root.
 Missing results, zero passing discovery or missing selected files fail the run. Counts, skips,

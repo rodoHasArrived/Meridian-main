@@ -22,6 +22,26 @@ authority. Consolidation removes duplicate execution, never a validation purpose
 | Golden Path, schema control, providers and deterministic integrations/recovery | Existing specialist owners; production certification also callable by releases |
 | Workflow syntax, hygiene, manifest, skips and script tests | Meridian CI `verify-workflows` |
 
+Meridian CI retains exactly its four canonical `scripts/ci.sh` lanes and the existing
+`quality-gate` aggregation. Its additional `service-backed-integrations` job calls the same
+`service-backed-integrations.yml` implementation used by Production Certification. The
+always-reported `integration-gate` companion requires success and fails for failed, cancelled
+or skipped integration execution. It runs without path filters on pull requests (including
+forks), merge groups, main pushes and manual/reusable calls.
+
+The shared implementation uses the certification `postgres:17` service, health checks and
+eight domain connection strings. The database and credentials are disposable within each
+job; no production secrets or privileged PR event are used. Checkout uses the event SHA with
+credentials persistence disabled and `contents: read`. Both project restores and test runs
+are attempted independently, so one failure cannot hide the other's result. TRX validation
+runs after failures and rejects missing required suite prefixes, failed/skipped/unknown
+outcomes and every file with zero discovered tests. Coverage and schema evidence retain the
+existing certification artifact contract (90 days); CI companion evidence is retained 14 days.
+
+Administrators may add `integration-gate` as a required companion check after human governance
+review and a successful PR/merge-group rollout. This change does not alter repository rulesets
+or replace the existing `quality-gate` requirement.
+
 ## Measurement and promotion
 
 Export Actions run metadata with embedded `jobs` from the attempt-specific jobs endpoint.
@@ -45,6 +65,8 @@ The workflow lane requires actionlint 1.7.12 on PATH and Python dependencies fro
 `build/scripts/ci/requirements.txt`. Hosted installation verifies the actionlint archive digest.
 External actions use verified full commit SHAs with version comments; Dependabot maintains
 the pins. CodeQL keeps manual C# extraction and its measured cold-restore policy.
+SVGs, the dashboard HTML input and generated workstation text assets use LF checkout line
+endings so embedded bytes, bundle hashes and freshness checks match on Windows and Linux.
 
 Required .NET/Windows slices need fresh TRX evidence and nonzero passing discovery. Browser
 batches need fresh JSON evidence for every selected file. Existing summary fields are retained,
@@ -89,6 +111,10 @@ settings and adds required GitHub Actions contexts `quality-gate`, `Secret Scan`
 and `Analyze javascript-typescript`. Preserve other protections. Do not require a path-filtered
 specialist check that may never report. Keep human governance review without introducing a
 blanket non-author approval rule. These instructions do not change repository settings.
+Bind each context to the GitHub Actions application's ID from its successful check-run record,
+then verify PR and merge-group events report all four contexts. Inspect classic branch protection
+as an administrator as well as rulesets; the planning account received HTTP 403 for classic
+protection, so readable rulesets are not a complete inventory of existing requirements.
 
 ## Release evidence
 
@@ -97,3 +123,43 @@ web-workstation/win-x64 installed-startup proof to the tag's exact commit. Publi
 on those checks plus packaging and native x64/ARM64 lifecycle evidence. Packages are promoted
 without rebuilding; family/runtime-qualified evidence names prevent release asset collisions.
 Evaluation prereleases remain separate and do not establish production certification.
+
+The coordinator is `desktop-installer-packaging.yml`. Same-repository reusable workflow
+references and explicit SHA checkouts bind the called implementation and validation to the
+coordinator commit. Production certification retains main, weekly and manual entry points;
+the coordinator replaces its independent tag invocation. Signing and release publication
+permissions stay in the release jobs; validation workflows receive no signing secrets.
+
+The early eligibility job requires the tag commit to be an ancestor of main, validates the PFX,
+password, private key, publisher and validity period, and compares MSIX identity versions from
+published production packages. Production prereleases count in this comparison. `v1.2.3-rc.1`
+and `v1.2.3` both map to `1.2.3.0`, so the second is rejected before compilation; use a higher
+package version. `eval-v*` artifacts remain in their separate evaluation channel.
+One release concurrency group serializes eligibility through publication across tags so two
+concurrent candidates cannot both pass the version check against the same older release.
+
+For a rehearsal, manually dispatch the coordinator on the reviewed branch with a valid
+`rehearsal_version` greater than existing package versions. It requires the existing protected
+`desktop-release-signing` environment and signing secrets, runs every release dependency,
+and retains `validated-release-<run>-<attempt>` without publishing. The old unsigned manual
+lifecycle shortcut is replaced by this full signed rehearsal; the standalone evaluation channel
+still provides self-signed evaluation packages.
+
+Publication verifies every gate, both native architecture receipts, installed-startup evidence,
+source commits, run IDs, run attempts and SHA-256 digests, then copies the certified MSIX files
+and verified consumer package into a fresh flat directory. It performs no builds or signing.
+Each package family/runtime has its own SBOM, checksum file and release manifest. The gate
+manifest links validation results and native lifecycle receipts to the exact promoted bytes.
+Consumer setup retains its embedded-payload verification and the separate required
+web-workstation installed-startup proof; native MSIX lifecycle receipts explicitly describe
+only the desktop MSIX packages.
+
+The administrator should dispatch a signed rehearsal after human review and before enabling
+publication for a new production tag. A successful rehearsal is required operational evidence;
+static workflow tests cannot establish certificate availability or native installation success.
+
+The pinned Gitleaks action does not support merge-group events and may skip tag pushes with
+empty commit arrays. Those events use the same Gitleaks 8.25.1 scanner and repository config
+through `scan-commit-secrets.py`, with a verified download checksum. It verifies the checkout
+SHA and scans complete reachable history, including merge-resolution changes. Fresh SARIF
+evidence is mandatory; unsupported events and empty webhook arrays cannot produce a false pass.
