@@ -34,14 +34,24 @@ public interface ISecurityMasterImportService
     /// <summary>
     /// Imports securities from a file.
     /// </summary>
-    /// <param name="fileContent">The raw file content (CSV or JSON)</param>
+    /// <param name="fileContent">
+    /// The raw file content (CSV or JSON). Attribution, source-record lineage, source identity,
+    /// reason, effective time, and identifier validity/normalization fields in the file are not
+    /// authoritative and are replaced by the import workflow.
+    /// </param>
     /// <param name="fileExtension">File extension (csv or json)</param>
+    /// <param name="actor">
+    /// The operator or workload on whose authority the import runs, recorded as the author of every
+    /// security it creates. Callers resolve this from their authenticated session — an import file
+    /// carries no identity of its own, so no default is offered here.
+    /// </param>
     /// <param name="progress">Optional progress reporter</param>
     /// <param name="ct">Cancellation token</param>
     /// <returns>Import result with statistics and errors</returns>
     Task<SecurityMasterImportResult> ImportAsync(
         string fileContent,
         string fileExtension,
+        string actor,
         IProgress<SecurityMasterImportProgress>? progress = null,
         CancellationToken ct = default);
 }
@@ -62,6 +72,8 @@ public sealed class SecurityMasterImportService : ISecurityMasterImportService, 
 
     private const int ProgressReportInterval = 10;
     private const int DelayBetweenRequestsMs = 50;
+    private const string ImportSourceSystem = "SecurityMasterImport";
+    private const string ImportReason = "Bulk import through Security Master import workflow";
 
     public SecurityMasterImportService(
         ISecurityMasterService securityMasterService,
@@ -86,9 +98,11 @@ public sealed class SecurityMasterImportService : ISecurityMasterImportService, 
     public async Task<SecurityMasterImportResult> ImportAsync(
         string fileContent,
         string fileExtension,
+        string actor,
         IProgress<SecurityMasterImportProgress>? progress = null,
         CancellationToken ct = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(actor);
         ct.ThrowIfCancellationRequested();
 
         var startedAtUtc = DateTimeOffset.UtcNow;
@@ -101,16 +115,23 @@ public sealed class SecurityMasterImportService : ISecurityMasterImportService, 
         {
             if (normalizedFileExtension.Equals(".csv", StringComparison.OrdinalIgnoreCase))
             {
-                requests = _csvParser.Parse(fileContent, out var parseErrors)
+                requests = _csvParser.Parse(fileContent, out var parseErrors, actor, startedAtUtc)
+                    .Select(request => StampImportAuthority(request, actor, startedAtUtc))
                     .ToList();
                 errors = parseErrors.ToList();
             }
             else if (normalizedFileExtension.Equals(".json", StringComparison.OrdinalIgnoreCase))
             {
-                requests = JsonSerializer.Deserialize(
+                // A bulk-import file is untrusted payload, not authority for attribution, source,
+                // or valid time. Restamp every row and nested identifier from one server timestamp;
+                // otherwise a forged file could backdate a golden record, expire an identifier, or
+                // claim another operator/provider's precedence and source-record lineage.
+                requests = (JsonSerializer.Deserialize(
                     fileContent,
                     SecurityMasterJsonContext.Default.ListCreateSecurityRequest)
-                    ?? new List<CreateSecurityRequest>();
+                    ?? new List<CreateSecurityRequest>())
+                    .Select(request => StampImportAuthority(request, actor, startedAtUtc))
+                    .ToList();
                 errors = new List<string>();
             }
             else
@@ -165,21 +186,22 @@ public sealed class SecurityMasterImportService : ISecurityMasterImportService, 
                     imported++;
                     _logger.LogDebug("Imported security {Ticker}", request.Identifiers.FirstOrDefault()?.Value ?? "?");
                 }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    // Cancellation is not an import outcome. Counting it as a failed row would report
+                    // a partial import as a completed one with failures the operator never caused.
+                    throw;
+                }
+                catch (Exception ex) when (SecurityMasterIngestFailureClassifier.IsAlreadyMastered(ex))
+                {
+                    skipped++;
+                    _logger.LogDebug("Skipped security already mastered: {Message}", ex.Message);
+                }
                 catch (Exception ex)
                 {
-                    // Check if it's a duplicate (409 or similar)
-                    if (ex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase) ||
-                        ex.Message.Contains("duplicate", StringComparison.OrdinalIgnoreCase))
-                    {
-                        skipped++;
-                        _logger.LogDebug("Skipped duplicate security: {Message}", ex.Message);
-                    }
-                    else
-                    {
-                        failed++;
-                        errors.Add($"Security {request.Identifiers.FirstOrDefault()?.Value ?? "?"}: {ex.Message}");
-                        _logger.LogError(ex, "Failed to import security");
-                    }
+                    failed++;
+                    errors.Add($"Security {request.Identifiers.FirstOrDefault()?.Value ?? "?"}: {ex.Message}");
+                    _logger.LogError(ex, "Failed to import security");
                 }
 
                 UpdateActiveImport(
@@ -235,6 +257,29 @@ public sealed class SecurityMasterImportService : ISecurityMasterImportService, 
         => string.IsNullOrWhiteSpace(fileExtension)
             ? string.Empty
             : fileExtension.StartsWith(".", StringComparison.Ordinal) ? fileExtension : $".{fileExtension}";
+
+    private static CreateSecurityRequest StampImportAuthority(
+        CreateSecurityRequest request,
+        string actor,
+        DateTimeOffset ingestedAtUtc)
+        => request with
+        {
+            Identifiers = request.Identifiers
+                .Select(identifier => identifier with
+                {
+                    ValidFrom = ingestedAtUtc,
+                    ValidTo = null,
+                    Provider = null,
+                    NormalizedValue = null,
+                    NormalizedProvider = null
+                })
+                .ToArray(),
+            EffectiveFrom = ingestedAtUtc,
+            SourceSystem = ImportSourceSystem,
+            UpdatedBy = actor,
+            SourceRecordId = null,
+            Reason = ImportReason
+        };
 
     private Guid BeginImport(string fileExtension, int total, DateTimeOffset startedAtUtc)
     {

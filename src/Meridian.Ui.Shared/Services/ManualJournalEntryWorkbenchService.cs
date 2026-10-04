@@ -6,6 +6,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.PrivateCapital;
+using Meridian.FinancialOperations.FundAdministration;
 using Meridian.Ledger;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Ledger;
@@ -36,7 +37,9 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         ILedgerJournalStore? journalStore = null,
         ReportPackWorkflowService? reportPackWorkflowService = null,
         IBankTransactionSource? bankTransactionSource = null,
-        IGovernedLedgerPostingTarget? postingTarget = null)
+        IGovernedLedgerPostingTarget? postingTarget = null,
+        IManualJournalMutationRecoveryStore? mutationRecovery = null,
+        IRecurringJournalStore? recurringStore = null)
     {
         _draftStore = draftStore ?? throw new ArgumentNullException(nameof(draftStore));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
@@ -46,6 +49,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         _postingTarget = postingTarget;
         _reportPackWorkflowService = reportPackWorkflowService;
         _bankTransactionSource = bankTransactionSource;
+        _mutationRecovery = mutationRecovery ?? DefaultMutationRecoveryFor(draftStore);
+        _recurringStore = recurringStore;
     }
 
     public async Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default)
@@ -248,9 +253,30 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         return currency;
     }
 
-    public async Task<ManualJournalEntryDraftDto> SaveDraftAsync(
-        SaveManualJournalEntryDraftRequest request,
-        CancellationToken ct = default)
+    public Task<ManualJournalEntryDraftDto> SaveDraftAsync(
+        SaveManualJournalEntryDraftRequest request, CancellationToken ct = default)
+        => ExecuteSaveMutationAsync(request, trustedAutomatedIntake: false, ct);
+
+    internal Task<ManualJournalEntryDraftDto> SaveAutomatedDraftAsync(
+        SaveManualJournalEntryDraftRequest request, CancellationToken ct)
+        => ExecuteSaveMutationAsync(request, trustedAutomatedIntake: true, ct);
+
+    private Task<ManualJournalEntryDraftDto> ExecuteSaveMutationAsync(
+        SaveManualJournalEntryDraftRequest request, bool trustedAutomatedIntake, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(request.Draft);
+        EnsureConsistentMutationScope(request.TenantId, request.Draft.TenantId, "tenant");
+        EnsureConsistentMutationScope(request.CompanyId, request.Draft.CompanyId, "company");
+        return ExecuteMutationAsync(trustedAutomatedIntake ? "automated-save" : "save", request,
+            request.Draft.FundProfileId, request.Draft.JournalEntryId, request.Draft.Version,
+            NormalizeOptional(request.TenantId) ?? request.Draft.TenantId,
+            NormalizeOptional(request.CompanyId) ?? request.Draft.CompanyId, request.CorrelationId,
+            (tenant, company) => SaveDraftCoreAsync(request with { TenantId = tenant, CompanyId = company }, trustedAutomatedIntake, ct), ct);
+    }
+
+    private async Task<ManualJournalEntryDraftDto> SaveDraftCoreAsync(
+        SaveManualJournalEntryDraftRequest request, bool trustedAutomatedIntake, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
@@ -271,7 +297,42 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             // WPF resave may edit the draft, but cannot clear, replace, or upgrade the retained grade.
             AutomationEvidenceAssessment = existing is null
                 ? request.Draft.AutomationEvidenceAssessment
-                : existing.AutomationEvidenceAssessment
+                : existing.AutomationEvidenceAssessment,
+            TreasuryContext = existing is not null &&
+                (existing.RequiresRecurringJournalEvidence || existing.RecurringJournalEvidenceJson is not null ||
+                 RecurringJournalEvidenceGuard.IsRecurring(existing.TreasuryContext?.IdempotencyKey) ||
+                 existing.RequiresValuationMarkEvidence || existing.ValuationMarkEvidenceJson is not null ||
+                 ValuationMarkEvidenceGuard.IsValuation(existing.TreasuryContext?.IdempotencyKey))
+                ? (request.Draft.TreasuryContext ?? existing.TreasuryContext) is { } valuationContext
+                    ? valuationContext with { IdempotencyKey = existing.TreasuryContext?.IdempotencyKey }
+                    : existing.TreasuryContext
+                : request.Draft.TreasuryContext,
+            RecurringJournalEvidenceJson = existing is null
+                ? (trustedAutomatedIntake ? request.Draft.RecurringJournalEvidenceJson : null)
+                : existing.RecurringJournalEvidenceJson,
+            RecurringJournalEvidenceDigest = existing is null
+                ? (trustedAutomatedIntake ? request.Draft.RecurringJournalEvidenceDigest : null)
+                : existing.RecurringJournalEvidenceDigest,
+            ReversalOfJournalEntryId = existing?.RecurringJournalEvidenceJson is not null ? existing.ReversalOfJournalEntryId : request.Draft.ReversalOfJournalEntryId,
+            RebookedFromJournalEntryId = existing?.RecurringJournalEvidenceJson is not null ? existing.RebookedFromJournalEntryId : request.Draft.RebookedFromJournalEntryId,
+            Reversal = existing?.RecurringJournalEvidenceJson is not null ? existing.Reversal : request.Draft.Reversal,
+            Rebook = existing?.RecurringJournalEvidenceJson is not null ? existing.Rebook : request.Draft.Rebook,
+            RequiresRecurringJournalEvidence = existing?.RequiresRecurringJournalEvidence == true ||
+                existing?.RecurringJournalEvidenceJson is not null || request.Draft.RequiresRecurringJournalEvidence ||
+                RecurringJournalEvidenceGuard.IsRecurring(existing?.TreasuryContext?.IdempotencyKey) ||
+                RecurringJournalEvidenceGuard.IsRecurring(request.Draft.TreasuryContext?.IdempotencyKey) ||
+                request.Draft.RecurringJournalEvidenceJson is not null,
+            ValuationMarkEvidenceJson = existing is null
+                ? (trustedAutomatedIntake ? request.Draft.ValuationMarkEvidenceJson : null)
+                : existing.ValuationMarkEvidenceJson,
+            ValuationMarkEvidenceDigest = existing is null
+                ? (trustedAutomatedIntake ? request.Draft.ValuationMarkEvidenceDigest : null)
+                : existing.ValuationMarkEvidenceDigest,
+            RequiresValuationMarkEvidence = existing?.RequiresValuationMarkEvidence == true ||
+                ValuationMarkEvidenceGuard.IsValuation(existing?.TreasuryContext?.IdempotencyKey) ||
+                existing?.ValuationMarkEvidenceJson is not null || request.Draft.RequiresValuationMarkEvidence ||
+                ValuationMarkEvidenceGuard.IsValuation(request.Draft.TreasuryContext?.IdempotencyKey) ||
+                request.Draft.ValuationMarkEvidenceJson is not null
         }, allowIncomplete: true, ct).ConfigureAwait(false);
         EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, normalizedDraft);
         if (existing is not null)
@@ -306,8 +367,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         };
         saved = ClearManualJournalReviewMetadataForEditableDraft(saved);
 
-        await _draftStore.SaveAsync(saved, ct).ConfigureAwait(false);
-        await AppendAuditAsync(saved, "manual-je.save-draft", request.Actor, request.CorrelationId, saved.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
+        await PersistMutationAsync([saved], ["manual-je.save-draft"], request.Actor, request.CorrelationId,
+            request.ReportGroupPrincipalIds, saved, ct).ConfigureAwait(false);
         return saved;
     }
 
@@ -333,21 +394,50 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             or ManualJournalEntryStatusDto.NeedsFix
             or ManualJournalEntryStatusDto.Rejected;
 
-    public Task<ManualJournalEntryDraftDto> ValidateDraftAsync(
+    public async Task<ManualJournalEntryDraftDto> ValidateDraftAsync(
         ValidateManualJournalEntryDraftRequest request,
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
         EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, request.Draft);
-        return NormalizeAndValidateAsync(request.Draft with
+        var tenantId = NormalizeOptional(request.TenantId) ?? NormalizeOptional(request.Draft.TenantId);
+        var companyId = NormalizeOptional(request.CompanyId) ?? NormalizeOptional(request.Draft.CompanyId);
+        var existing = await _draftStore.GetAsync(request.Draft.FundProfileId, request.Draft.JournalEntryId,
+            ct, tenantId, companyId).ConfigureAwait(false);
+        return await NormalizeAndValidateAsync(request.Draft with
         {
-            TenantId = NormalizeOptional(request.TenantId) ?? NormalizeOptional(request.Draft.TenantId),
-            CompanyId = NormalizeOptional(request.CompanyId) ?? NormalizeOptional(request.Draft.CompanyId)
-        }, allowIncomplete: false, ct, periodIsLocked: request.PeriodIsLocked);
+            TenantId = tenantId,
+            CompanyId = companyId,
+            // A read-only validation request is not authority to invent a policy or source receipt.
+            RecurringJournalEvidenceJson = existing?.RecurringJournalEvidenceJson,
+            RecurringJournalEvidenceDigest = existing?.RecurringJournalEvidenceDigest,
+            RequiresRecurringJournalEvidence = existing?.RequiresRecurringJournalEvidence == true ||
+                existing?.RecurringJournalEvidenceJson is not null || request.Draft.RequiresRecurringJournalEvidence ||
+                RecurringJournalEvidenceGuard.IsRecurring(existing?.TreasuryContext?.IdempotencyKey) ||
+                RecurringJournalEvidenceGuard.IsRecurring(request.Draft.TreasuryContext?.IdempotencyKey),
+            ValuationMarkEvidenceJson = existing?.ValuationMarkEvidenceJson,
+            ValuationMarkEvidenceDigest = existing?.ValuationMarkEvidenceDigest,
+            RequiresValuationMarkEvidence = existing?.RequiresValuationMarkEvidence == true ||
+                ValuationMarkEvidenceGuard.IsValuation(existing?.TreasuryContext?.IdempotencyKey) ||
+                existing?.ValuationMarkEvidenceJson is not null || request.Draft.RequiresValuationMarkEvidence ||
+                ValuationMarkEvidenceGuard.IsValuation(request.Draft.TreasuryContext?.IdempotencyKey) ||
+                request.Draft.ValuationMarkEvidenceJson is not null
+        }, allowIncomplete: false, ct, periodIsLocked: request.PeriodIsLocked).ConfigureAwait(false);
     }
 
-    public async Task<ManualJournalEntryDraftDto> SubmitApprovalAsync(
+    public Task<ManualJournalEntryDraftDto> SubmitApprovalAsync(
+        SubmitManualJournalEntryApprovalRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return WithRecurringRegistryLeaseAsync(request.FundProfileId, request.JournalEntryId, request.TenantId, request.CompanyId,
+            session => ExecuteMutationAsync("submit", request, request.FundProfileId, request.JournalEntryId, request.Version,
+                request.TenantId, request.CompanyId, request.CorrelationId, (tenant, company) => SubmitApprovalCoreAsync(request with { TenantId = tenant, CompanyId = company }, ct), ct,
+                validateBeforeRecovery: (tenant, company, pending) => ValidateRecurringBeforeRecoveryAsync(session,
+                    request.FundProfileId, request.JournalEntryId, tenant, company, pending, ct)), ct);
+    }
+
+    private async Task<ManualJournalEntryDraftDto> SubmitApprovalCoreAsync(
         SubmitManualJournalEntryApprovalRequest request,
         CancellationToken ct = default)
     {
@@ -403,12 +493,25 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             LifecycleTransitions = validated.LifecycleTransitions.Append(transition).ToArray()
         };
 
-        await _draftStore.SaveAsync(submitted, ct).ConfigureAwait(false);
-        await AppendAuditAsync(submitted, "manual-je.submit-approval", request.Actor, request.CorrelationId, submitted.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
+        // Lifecycle Submit shares this core under its outer command lease and retains that
+        // endpoint's result shape for recovery.
+        object result = _mutationCommand?.OperationIsLifecycle == true
+            ? new JournalEntryLifecycleActionResultDto(submitted, transition)
+            : submitted;
+        await PersistMutationAsync([submitted], ["manual-je.submit-approval"], request.Actor, request.CorrelationId,
+            request.ReportGroupPrincipalIds, result, ct).ConfigureAwait(false);
         return submitted;
     }
 
-    public async Task<ManualJournalEntryDraftDto> AttachEvidenceAsync(
+    public Task<ManualJournalEntryDraftDto> AttachEvidenceAsync(
+        AttachManualJournalEntryEvidenceRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return ExecuteMutationAsync("attach", request, request.FundProfileId, request.JournalEntryId, request.Version,
+            request.TenantId, request.CompanyId, request.CorrelationId, (tenant, company) => AttachEvidenceCoreAsync(request with { TenantId = tenant, CompanyId = company }, ct), ct);
+    }
+
+    private async Task<ManualJournalEntryDraftDto> AttachEvidenceCoreAsync(
         AttachManualJournalEntryEvidenceRequest request,
         CancellationToken ct = default)
     {
@@ -467,12 +570,25 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             Version = draft.Version + 1
         };
 
-        await _draftStore.SaveAsync(next, ct).ConfigureAwait(false);
-        await AppendAuditAsync(next, "manual-je.attach-evidence", request.Actor, request.CorrelationId, evidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
+        await PersistMutationAsync([next], ["manual-je.attach-evidence"], request.Actor, request.CorrelationId,
+            request.ReportGroupPrincipalIds, next, ct).ConfigureAwait(false);
         return next;
     }
 
-    public async Task<JournalEntryLifecycleActionResultDto> ApplyLifecycleActionAsync(
+    public Task<JournalEntryLifecycleActionResultDto> ApplyLifecycleActionAsync(
+        JournalEntryLifecycleActionRequestDto request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return WithRecurringRegistryLeaseAsync(request.FundProfileId, request.JournalEntryId, request.TenantId, request.CompanyId,
+            session => ExecuteMutationAsync("lifecycle-" + request.Action, request, request.FundProfileId, request.JournalEntryId,
+                request.Version, request.TenantId, request.CompanyId, request.CorrelationId,
+                (tenant, company) => ApplyLifecycleActionCoreAsync(request with { TenantId = tenant, CompanyId = company }, ct), ct,
+                replayThroughValidation: request.Action == JournalEntryLifecycleActionDto.LockAfterClose,
+                validateBeforeRecovery: (tenant, company, pending) => ValidateRecurringBeforeRecoveryAsync(session,
+                    request.FundProfileId, request.JournalEntryId, tenant, company, pending, ct)), ct);
+    }
+
+    private async Task<JournalEntryLifecycleActionResultDto> ApplyLifecycleActionCoreAsync(
         JournalEntryLifecycleActionRequestDto request,
         CancellationToken ct = default)
     {
@@ -605,7 +721,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         JournalEntryLifecycleActionRequestDto request,
         CancellationToken ct)
     {
-        var submitted = await SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
+        var submitted = await SubmitApprovalCoreAsync(new SubmitManualJournalEntryApprovalRequest(
             request.JournalEntryId,
             request.FundProfileId,
             request.Actor,
@@ -656,9 +772,10 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             next = mutate(next);
         }
 
-        await _draftStore.SaveAsync(next, ct).ConfigureAwait(false);
-        await AppendAuditAsync(next, auditAction, request.Actor, request.CorrelationId, next.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
-        return new JournalEntryLifecycleActionResultDto(next, transition);
+        var result = new JournalEntryLifecycleActionResultDto(next, transition);
+        await PersistMutationAsync([next], [auditAction], request.Actor, request.CorrelationId,
+            request.ReportGroupPrincipalIds, result, ct).ConfigureAwait(false);
+        return result;
     }
 
     private async Task<JournalEntryLifecycleActionResultDto> PostApprovedManualJournalEntryAsync(
@@ -718,15 +835,6 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 ct)
             .ConfigureAwait(false);
 
-        if (_postingTarget is not null)
-        {
-            await _postingTarget.PostAsync(write, ct).ConfigureAwait(false);
-        }
-        else
-        {
-            await journalStore.AppendAsync(write, ct).ConfigureAwait(false);
-        }
-
         var transition = BuildTransition(draft.Status, ManualJournalEntryStatusDto.Posted, request, recordedAtUtc);
         var next = draft with
         {
@@ -739,9 +847,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             PostedBy = RequireText(request.Actor, nameof(request.Actor))
         };
 
-        await _draftStore.SaveAsync(next, ct).ConfigureAwait(false);
-        await AppendAuditAsync(next, "manual-je.post", request.Actor, request.CorrelationId, next.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
-        return new JournalEntryLifecycleActionResultDto(
+        var result = new JournalEntryLifecycleActionResultDto(
             next,
             transition,
             PostedJournal: new PostedLedgerJournalEntryResultDto(
@@ -755,6 +861,9 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 write.CorrelationId,
                 PostedAtUtc: recordedAtUtc,
                 IdempotencyKey: postingCommand.IdempotencyKey));
+        await PersistMutationAsync([next], ["manual-je.post"], request.Actor, request.CorrelationId,
+            request.ReportGroupPrincipalIds, result, ct, write).ConfigureAwait(false);
+        return result;
     }
 
     private async Task<LedgerJournalEntryWrite> BuildManualJournalEntryWriteAsync(
@@ -887,7 +996,10 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 RetainedBy: RequireText(request.Actor, nameof(request.Actor)),
                 SubjectId: draft.JournalEntryId.ToString("D"))).ToArray(),
             ActionOrigin: request.ActionOrigin,
-            LedgerBookId: ledgerBookId);
+            LedgerBookId: ledgerBookId)
+        {
+            Actor = RequireText(request.Actor, nameof(request.Actor))
+        };
     }
 
     private static JournalEntryMetadata BuildManualJournalEntryMetadata(
@@ -898,6 +1010,10 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         ManualJournalSecurityMasterLineage? securityLineage)
     {
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        AddMetadataTag(tags, RecurringJournalEvidenceGuard.EvidenceTag, draft.RecurringJournalEvidenceJson);
+        AddMetadataTag(tags, RecurringJournalEvidenceGuard.DigestTag, draft.RecurringJournalEvidenceDigest);
+        AddMetadataTag(tags, ValuationMarkEvidenceGuard.EvidenceTag, draft.ValuationMarkEvidenceJson);
+        AddMetadataTag(tags, ValuationMarkEvidenceGuard.DigestTag, draft.ValuationMarkEvidenceDigest);
         AddMetadataTag(tags, "manualJournalEntryId", draft.JournalEntryId.ToString("D"));
         AddMetadataTag(tags, "manualJournalEntryStatus", draft.Status.ToString());
         AddMetadataTag(tags, "manualJournalEntryType", draft.EntryType.ToString());
@@ -915,6 +1031,9 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             tags["evidenceLinks"] = string.Join("|", evidenceLinks);
         }
 
+        IReadOnlyList<JournalEvidenceReference> recurringSources = draft.RecurringJournalEvidenceJson is null ? []
+            : RecurringJournalEvidenceGuard.Deserialize(draft.RecurringJournalEvidenceJson)?.SourceEvidence
+                ?? throw new InvalidOperationException("Recurring source provenance is unavailable at posting.");
         return new JournalEntryMetadata(
             ActivityType: "ManualJournalEntry",
             Symbol: securityLineage?.Symbol,
@@ -931,14 +1050,15 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             PaymentIntentId: NormalizeOptional(postingCommand.TreasuryContext?.PaymentIntentId),
             SettlementReference: NormalizeOptional(postingCommand.TreasuryContext?.SettlementReference),
             Tags: tags,
-            EvidenceReferences: evidenceLinks.Select(link => new JournalEvidenceReference(
+            EvidenceReferences: recurringSources.Concat(evidenceLinks.Where(link => !recurringSources.Any(source => source.Uri == link))
+                .Select(link => new JournalEvidenceReference(
                 EvidenceId: link,
                 Uri: link,
                 Kind: ClassifyManualPostingEvidence(link).ToString(),
                 SourceSystem: "ManualJournalEntryWorkbench",
                 RetainedAtUtc: recordedAtUtc,
                 RetainedBy: NormalizeOptional(draft.PostedBy) ?? "manual-journal-entry-workbench",
-                SubjectId: draft.JournalEntryId.ToString("D"))).ToArray());
+                SubjectId: draft.JournalEntryId.ToString("D")))).ToArray());
     }
 
     private async Task<ManualJournalSecurityMasterLineage?> ResolveSecurityMasterPostingLineageAsync(
@@ -1313,6 +1433,16 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             Reversal = reversal,
             Rebook = rebook
         };
+        if (posted.RecurringJournalEvidenceJson is { } recurringJson)
+        {
+            var evidence = RecurringJournalEvidenceGuard.Deserialize(recurringJson)
+                ?? throw new InvalidOperationException("Recurring correction requires its retained source provenance.");
+            correction = correction with
+            {
+                TreasuryContext = (correction.TreasuryContext ?? new TreasuryLedgerContextDto()) with
+                { IdempotencyKey = RecurringJournalEvidenceGuard.CorrectionKey(evidence.OccurrenceKey, correctionId) }
+            };
+        }
         correction = await NormalizeAndValidateAsync(correction, allowIncomplete: false, ct).ConfigureAwait(false);
         if (correction.ValidationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical))
         {
@@ -1322,9 +1452,9 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         // The source transition and its source-linked correction are one accounting mutation.
         // Retaining either draft without the other creates an unrecoverable workbench state, so
         // stores must publish both together or leave the prior source unchanged.
-        await _draftStore.SaveBatchAsync([corrected, correction], ct).ConfigureAwait(false);
-        await AppendAuditAsync(corrected, reverseSides ? "manual-je.reverse" : "manual-je.rebook", request.Actor, request.CorrelationId, corrected.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
-        await AppendAuditAsync(correction, auditAction, request.Actor, request.CorrelationId, correction.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
-        return new JournalEntryLifecycleActionResultDto(corrected, transition, [correction]);
+        var result = new JournalEntryLifecycleActionResultDto(corrected, transition, [correction]);
+        await PersistMutationAsync([corrected, correction], [reverseSides ? "manual-je.reverse" : "manual-je.rebook", auditAction],
+            request.Actor, request.CorrelationId, request.ReportGroupPrincipalIds, result, ct).ConfigureAwait(false);
+        return result;
     }
 }

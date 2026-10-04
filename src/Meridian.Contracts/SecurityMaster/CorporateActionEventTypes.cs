@@ -25,6 +25,17 @@ public static class CorporateActionEventTypes
     public const string Delisting = "Delisting";
     public const string BondMaturityRedemption = "BondMaturityRedemption";
     public const string ReturnOfCapital = "ReturnOfCapital";
+    public const string Rule144ARegSExchange = "Rule144ARegSExchange";
+    public const string AdvanceRefunding = "AdvanceRefunding";
+    public const string BankruptcyDistribution = "BankruptcyDistribution";
+    public const string ConsentSolicitation = "ConsentSolicitation";
+    public const string Conversion = "Conversion";
+    public const string ExchangeOffer = "ExchangeOffer";
+    public const string FractionalUnitsCashInLieu = "FractionalUnitsCashInLieu";
+    public const string PaymentInKind = "PaymentInKind";
+    public const string PutRedemption = "PutRedemption";
+    public const string RightsDistribution = "RightsDistribution";
+    public const string RightsExercise = "RightsExercise";
 
     /// <summary>
     /// Resolves canonical names, provider aliases, and CAEV codes to the canonical name.

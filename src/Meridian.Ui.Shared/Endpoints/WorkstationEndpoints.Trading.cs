@@ -74,7 +74,8 @@ public static partial class WorkstationEndpoints
         {
             positions = portfolio.Positions.Values.Select(pos =>
             {
-                var mark = ResolveLiveMark(pos.Symbol, quoteCollector, tradeCollector);
+                var retainedMark = ResolveLiveMarkWithObservation(pos.Symbol, quoteCollector, tradeCollector);
+                var mark = retainedMark.Price;
                 var hasMark = mark.HasValue && mark.Value > 0m;
                 var effectiveMark = hasMark ? mark!.Value : pos.AverageCostBasis;
                 var liveUnrealized = (effectiveMark - pos.AverageCostBasis) * pos.Quantity;

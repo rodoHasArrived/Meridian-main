@@ -1,10 +1,12 @@
 using System.Globalization;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Ledger;
+using Meridian.FinancialOperations.AccountingClose;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.FinancialOperations.OperationsContinuity;
 
-public sealed class FinancialOperationsCommandCenterReadService : IFinancialOperationsCommandCenterReadService
+public sealed partial class FinancialOperationsCommandCenterReadService : IFinancialOperationsCommandCenterReadService
 {
     private static readonly IReadOnlyList<OperationsGateKeyDto> CoreFlowGateOrder =
     [
@@ -18,15 +20,24 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
     private readonly IOperationsContinuityWorkflowService _workflowService;
     private readonly IOperationsCloseCalendarService? _closeCalendarService;
     private readonly IPrivateCapitalCloseCockpitService? _privateCapitalCloseCockpitService;
+    private readonly ILedgerBookService? _ledgerBookService;
+    private readonly IAccountingCloseManagementService? _closeManagementService;
+    private readonly ICloseReadinessSubjectSource? _closeSubjectSource;
 
     public FinancialOperationsCommandCenterReadService(
         IOperationsContinuityWorkflowService workflowService,
         IOperationsCloseCalendarService? closeCalendarService = null,
-        IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null)
+        IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null,
+        ILedgerBookService? ledgerBookService = null,
+        IAccountingCloseManagementService? closeManagementService = null,
+        ICloseReadinessSubjectSource? closeSubjectSource = null)
     {
         _workflowService = workflowService ?? throw new ArgumentNullException(nameof(workflowService));
         _closeCalendarService = closeCalendarService;
         _privateCapitalCloseCockpitService = privateCapitalCloseCockpitService;
+        _ledgerBookService = ledgerBookService;
+        _closeManagementService = closeManagementService;
+        _closeSubjectSource = closeSubjectSource;
     }
 
     public async Task<FinancialOperationsCommandCenterDto> GetCommandCenterAsync(
@@ -35,37 +46,17 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
         Guid? fundAccountId = null,
         string? periodId = null,
         string? entityId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
 
-        var summaries = await _workflowService
-            .ListAsync(fundAccountId, periodId, status: null, ct, ledgerBookId: ledgerBookId)
-            .ConfigureAwait(false);
-        var workflows = new List<OperationsContinuityWorkflowDto>(summaries.Count);
-        foreach (var summary in summaries)
-        {
-            ct.ThrowIfCancellationRequested();
-            var workflow = await _workflowService.GetAsync(summary.WorkflowId, ct).ConfigureAwait(false);
-            if (workflow is not null)
-            {
-                workflows.Add(workflow);
-            }
-        }
-
-        var activeWorkflow = ResolveActiveWorkflow(workflows);
-        var effectiveFundAccountId = fundAccountId ?? activeWorkflow?.FundAccountId;
-        var effectivePeriodId = periodId ?? activeWorkflow?.PeriodId;
-        var closeCalendar = _closeCalendarService is null
-            ? null
-            : await _closeCalendarService
-                .GetCalendarAsync(effectiveFundAccountId, effectivePeriodId, ct)
-                .ConfigureAwait(false);
-        var privateCapitalCloseCockpit = _privateCapitalCloseCockpitService is null
-            ? null
-            : await _privateCapitalCloseCockpitService
-                .GetCockpitAsync(fundProfileId, ledgerBookId, effectiveFundAccountId, effectivePeriodId, entityId, ct)
-                .ConfigureAwait(false);
+        var inputs = await LoadCloseInputsAsync(new(fundProfileId, ledgerBookId, fundAccountId, entityId, periodId),
+            tenantId, companyId, ct).ConfigureAwait(false);
+        var activeWorkflow = inputs.Workflow;
+        var closeCalendar = inputs.Calendar;
+        var privateCapitalCloseCockpit = inputs.Cockpit;
 
         var rows = new List<FinancialOperationsQueueRowDto>();
         if (activeWorkflow is not null)
@@ -91,27 +82,31 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
             .ToArray();
         var blockedCount = orderedRows.Count(static row => row.IsBlocked);
         var reviewCount = orderedRows.Length - blockedCount;
-        var isReady = activeWorkflow is not null
-            && (activeWorkflow.CloseReadiness?.IsReadyToClose == true || activeWorkflow.Status is OperationsWorkflowStatusDto.ReadyForClose or OperationsWorkflowStatusDto.Closed)
-            && orderedRows.Length == 0
-            && (privateCapitalCloseCockpit?.IsReadyToClose ?? true);
-        var status = activeWorkflow is null && privateCapitalCloseCockpit is null
-            ? "Unavailable"
-            : blockedCount > 0
-                ? "Blocked"
-                : isReady
-                    ? "Ready"
-                    : "AtRisk";
+        var projection = inputs.Projection.Build(orderedRows);
+        var isReady = projection.IsReadyToClose;
+        var status = projection.Status;
+        var summary = isReady ? "All required contributors are ready for the selected close scope."
+            : $"{projection.Blockers.Count} requirement(s) block close. " + projection.Blockers.FirstOrDefault()?.Message;
+        var decision = BuildCloseSupportDecision(activeWorkflow, closeCalendar, privateCapitalCloseCockpit, orderedRows)
+            with
+        { Status = status, IsReady = isReady, Summary = summary };
+        decision = decision with
+        {
+            Decisions = projection.Blockers.Where(b => !orderedRows.Any(r => r.QueueId == b.Code))
+                .Select(b => new FinancialOperationsCloseSupportDecisionRowDto(b.Code, b.Owner, b.Type,
+                    "Blocked", true, b.Message, "Resolve this requirement and refresh close readiness.", null))
+                .Concat(decision.Decisions).ToArray()
+        };
 
         return new FinancialOperationsCommandCenterDto(
             DateTimeOffset.UtcNow,
             fundProfileId,
-            ledgerBookId ?? activeWorkflow?.LedgerBookId ?? privateCapitalCloseCockpit?.LedgerBookId,
-            effectiveFundAccountId ?? privateCapitalCloseCockpit?.FundAccountId,
-            effectivePeriodId ?? privateCapitalCloseCockpit?.PeriodId,
+            ledgerBookId,
+            fundAccountId,
+            periodId,
             status,
             isReady,
-            BuildSummary(status, orderedRows.Length, blockedCount, reviewCount),
+            summary,
             orderedRows.Length,
             blockedCount,
             reviewCount,
@@ -120,17 +115,9 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
             activeWorkflow,
             closeCalendar,
             privateCapitalCloseCockpit,
-            BuildCloseSupportDecision(activeWorkflow, closeCalendar, privateCapitalCloseCockpit, orderedRows));
+            decision,
+            projection);
     }
-
-    private static OperationsContinuityWorkflowDto? ResolveActiveWorkflow(IReadOnlyList<OperationsContinuityWorkflowDto> workflows)
-        => workflows
-            .OrderBy(static workflow => IsClosedWorkflow(workflow) ? 1 : 0)
-            .ThenByDescending(static workflow => workflow.UpdatedAtUtc)
-            .FirstOrDefault();
-
-    private static bool IsClosedWorkflow(OperationsContinuityWorkflowDto workflow)
-        => workflow.Status is OperationsWorkflowStatusDto.Closed;
 
     private static void AddWorkflowRows(ICollection<FinancialOperationsQueueRowDto> rows, OperationsContinuityWorkflowDto workflow)
     {
@@ -198,6 +185,7 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
         }
 
         foreach (var approval in (workflow.Approvals ?? Array.Empty<OperationsApprovalDto>())
+            .TakeLast(1)
             .Where(static item => item.Status is not OperationsApprovalStateDto.Approved)
             .OrderByDescending(static item => item.DecidedAtUtc ?? item.SubmittedAtUtc ?? DateTimeOffset.MinValue))
         {
@@ -320,7 +308,7 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
             AddAccountingRecordRows(rows, workflow, workflow.AccountingRecordSummary);
         }
 
-        foreach (var package in (workflow.EvidencePackages ?? Array.Empty<OperationsEvidencePackageSummaryDto>())
+        foreach (var package in (workflow.EvidencePackages ?? Array.Empty<OperationsEvidencePackageSummaryDto>()).Where(static package => package.RequiredForClose)
             .Where(static item => !item.IsReady))
         {
             var capabilityLabel = BuildEvidencePackageCapabilityLabel(package.PackageId, package.Label);
@@ -412,7 +400,11 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
         OperationsContinuityWorkflowDto workflow,
         OperationsAccountingRecordSummaryDto accountingRecord)
     {
-        foreach (var category in accountingRecord.EvidenceCategories.Where(static item => !item.IsComplete))
+        // Published exports and the resulting restatement baseline are close outputs. The
+        // retained source, reconciliation, ledger, approval, and report inputs remain required.
+        var publicationRetained = workflow.ClosePackage is not null || workflow.Status == OperationsWorkflowStatusDto.Closed;
+        foreach (var category in accountingRecord.EvidenceCategories.Where(item =>
+            (publicationRetained || item.Key is not ("exports" or "restatement-lineage")) && !item.IsComplete))
         {
             rows.Add(new FinancialOperationsQueueRowDto(
                 $"accounting-record:{accountingRecord.RecordId}:{category.Key}",
@@ -439,7 +431,9 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
         }
 
         var auditPack = accountingRecord.AuditPackReadiness;
-        if (auditPack is { IsComplete: false })
+        if (auditPack is { IsComplete: false } && (publicationRetained || auditPack.MissingEvidenceCategories.Count == 0 ||
+            auditPack.MissingEvidenceCategories.Any(static key =>
+                key is not (FundAuditEvidenceCategoryKeyDto.Exports or FundAuditEvidenceCategoryKeyDto.RestatementLineage))))
         {
             rows.Add(new FinancialOperationsQueueRowDto(
                 $"accounting-record:{accountingRecord.RecordId}:audit-pack",
@@ -473,7 +467,8 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
         OperationsContinuityWorkflowDto workflow,
         OperationsDashboardSummaryDto dashboard)
     {
-        foreach (var metric in dashboard.Metrics.Where(static item => item.Status is not EvidenceStatusDto.Ready))
+        var inputMetrics = dashboard.Metrics.Where(static metric => metric.MetricId != "produce-evidence").ToArray();
+        foreach (var metric in inputMetrics.Where(static item => item.Status is not EvidenceStatusDto.Ready))
         {
             rows.Add(new FinancialOperationsQueueRowDto(
                 $"dashboard:{dashboard.DashboardId}:{metric.MetricId}",
@@ -497,7 +492,11 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
                 CloseReportImpact: FormatRequiredActions(metric.RequiredActions)));
         }
 
+        var inputActions = inputMetrics.SelectMany(static metric => metric.RequiredActions).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var outputActions = dashboard.Metrics.Where(static metric => metric.MetricId == "produce-evidence")
+            .SelectMany(static metric => metric.RequiredActions).ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var action in dashboard.RequiredActions
+            .Where(action => !outputActions.Contains(action) || inputActions.Contains(action))
             .Where(static item => !string.IsNullOrWhiteSpace(item))
             .Select(static item => item.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -554,7 +553,7 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
 
     private static void AddPrivateCapitalRows(ICollection<FinancialOperationsQueueRowDto> rows, PrivateCapitalCloseCockpitDto cockpit)
     {
-        foreach (var lane in cockpit.Lanes.Where(static item => !item.IsReady))
+        foreach (var lane in cockpit.Lanes.Where(static item => item.RequiredForClose && !item.IsReady))
         {
             var capabilityLabel = BuildPrivateCapitalCapabilityLabel(lane.LaneId, lane.Label);
             var requiredActions = FormatRequiredActions(lane.RequiredActions);
@@ -579,7 +578,7 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
                 CloseReportImpact: BuildPrivateCapitalCloseReportImpact(lane.LaneId, requiredActions)));
         }
 
-        foreach (var package in cockpit.EvidencePackages.Where(static item => !item.IsReady))
+        foreach (var package in cockpit.EvidencePackages.Where(static item => item.RequiredForClose && !item.IsReady))
         {
             var capabilityLabel = BuildPrivateCapitalCapabilityLabel(package.PackageId, package.Label);
             var requiredActions = FormatRequiredActions(package.RequiredActions);
@@ -628,7 +627,7 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
         }
 
         foreach (var approval in cockpit.ApprovalHistory
-            .Where(static item => item.Status is not OperationsApprovalStateDto.Approved)
+            .Where(static item => item.IsCurrentDecision && item.Status is not OperationsApprovalStateDto.Approved)
             .OrderByDescending(static item => item.DecidedAtUtc ?? item.SubmittedAtUtc ?? DateTimeOffset.MinValue))
         {
             rows.Add(new FinancialOperationsQueueRowDto(
@@ -670,10 +669,11 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
         var completedCoreFlowCount = coreFlowStages.Count(static item => item.Status is OperationsGateStatusDto.Passed);
         var readyReconciliationLaneCount = reconciliationLanes.Count(static item => item.IsReady);
         var completedChecklistCount = closeChecklist.Count(static item => IsChecklistTaskComplete(item));
-        var missingEvidenceCount = rows.Count(static row =>
+        var requiredEvidenceGapCount = rows.Count(static row =>
             row.SourceKind.Contains("evidence", StringComparison.OrdinalIgnoreCase)
             || row.SourceKind.Contains("nav-support", StringComparison.OrdinalIgnoreCase)
             || string.Equals(row.SourceKind, "close-checklist", StringComparison.OrdinalIgnoreCase));
+        var missingEvidenceCount = requiredEvidenceGapCount + PendingCloseOutputCount(workflow);
         var pendingApprovalCount = rows.Count(static row => row.SourceKind.Contains("approval", StringComparison.OrdinalIgnoreCase));
         var calendarBlockedCount = closeCalendar?.Items.Count(static item => !item.IsReadyToClose || item.BlockerCount > 0) ?? 0;
         var dashboardReviewCount = rows.Count(static row => row.SourceKind.Contains("dashboard", StringComparison.OrdinalIgnoreCase));
@@ -692,7 +692,7 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
             new("dashboard", "Dashboard review", dashboardReviewCount.ToString(CultureInfo.InvariantCulture), dashboardReviewCount == 0 ? "Operational dashboard metrics are ready or unavailable." : "Operational dashboard metrics or required actions need review.", dashboardReviewCount == 0 ? "Ready" : dashboardBlocked ? "Blocked" : "Review", workflow?.DashboardSummary is null ? null : "/workstation/accounting/operations-continuity"),
             new("workflow-control", "Workflow control", workflowControlCount.ToString(CultureInfo.InvariantCulture), workflowControlCount == 0 ? "Core workflow stages and reviewed automation have no surfaced action rows." : "Core workflow stage blockers, next actions, or reviewed automation need operator control.", workflowControlCount == 0 ? "Ready" : workflowControlBlocked ? "Blocked" : "Review", workflow is null ? null : "/workstation/accounting/operations-continuity"),
             new("close-checklist", "Close checklists", FormatReadyCount(completedChecklistCount, closeChecklist.Count), BuildCloseChecklistMetricDetail(workflow, closeChecklist), ResolveCloseChecklistMetricStatus(workflow, closeChecklist), closeChecklist.Count == 0 ? null : "/workstation/accounting/operations-continuity"),
-            new("evidence", "Missing support", missingEvidenceCount.ToString(CultureInfo.InvariantCulture), missingEvidenceCount == 0 ? "Required evidence packages are not blocking completion." : "Evidence, checklist, or NAV support is incomplete.", missingEvidenceCount == 0 ? "Ready" : "Blocked", null),
+            new("evidence", "Missing support", missingEvidenceCount.ToString(CultureInfo.InvariantCulture), missingEvidenceCount == 0 ? "Required evidence packages are not blocking completion." : requiredEvidenceGapCount == 0 ? "Close publication outputs are pending; required input support is current." : "Evidence, checklist, or NAV support is incomplete.", missingEvidenceCount == 0 ? "Ready" : requiredEvidenceGapCount == 0 ? "Review" : "Blocked", null),
             new("approvals", "Pending approvals", pendingApprovalCount.ToString(CultureInfo.InvariantCulture), pendingApprovalCount == 0 ? "No pending approval rows are surfaced." : "Approval rows must clear before completion.", pendingApprovalCount == 0 ? "Ready" : "Blocked", null),
             new("calendar", "Close calendar", calendarBlockedCount.ToString(CultureInfo.InvariantCulture), calendarBlockedCount == 0 ? "Close calendar items are ready or unavailable." : "Close-calendar due tasks remain blocked or under review.", calendarBlockedCount == 0 ? "Ready" : "Blocked", null),
             new("private-capital", "Private-capital close", cockpit?.OverallStatus.ToString() ?? "Unavailable", cockpit is null ? "Private-capital close cockpit is not registered." : cockpit.IsReadyToClose ? "Private-capital close cockpit is ready." : cockpit.ReadyLaneCount + "/" + cockpit.Lanes.Count + " close lanes ready.", cockpit?.IsReadyToClose == true ? "Ready" : "Review", cockpit?.CockpitRoute),
@@ -980,7 +980,7 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
             || row.SourceKind.Contains("reconciliation", StringComparison.OrdinalIgnoreCase));
         var pendingApprovalCount = rows.Count(static row =>
             row.SourceKind.Contains("approval", StringComparison.OrdinalIgnoreCase));
-        var retainedEvidenceGapCount = rows.Count(static row =>
+        var retainedEvidenceGapCount = PendingCloseOutputCount(workflow) + rows.Count(static row =>
             row.SourceKind.Contains("evidence", StringComparison.OrdinalIgnoreCase)
             || row.SourceKind.Contains("nav-support", StringComparison.OrdinalIgnoreCase)
             || string.Equals(row.SourceKind, "close-checklist", StringComparison.OrdinalIgnoreCase));

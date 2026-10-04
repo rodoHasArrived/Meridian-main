@@ -40,7 +40,7 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
-public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway
+public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway, IExplicitOrderCancellationGateway
 {
     /// <inheritdoc />
     public bool UsesFaceValuePercentageOfPar(OrderRequest request)
@@ -78,6 +78,17 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
     private const string BrokerApiSandboxBaseUrl = "https://broker-api.sandbox.alpaca.markets";
     private const string BrokerApiLiveBaseUrl = "https://broker-api.alpaca.markets";
     private const int AccountActivityPageSize = 100;
+    private const int OpenOrderPageSize = 500;
+
+    /// <summary>
+    /// How far behind the acknowledged watermark the reconnect FILL-activity backfill starts.
+    /// Backfilling from exactly the watermark recovers only fills newer than the newest
+    /// acknowledged event; a fill the stream skipped beneath an already-acknowledged newer event
+    /// was then recovered only through the order-snapshot lane, at snapshot average-price
+    /// attribution rather than its exact economics. The overlap re-reads that band. Re-read fills
+    /// are harmless: each carries its stable activity id, so the durable inbox admits it once.
+    /// </summary>
+    internal static readonly TimeSpan FillBackfillOverlap = TimeSpan.FromMinutes(15);
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly AlpacaOptions _options;
@@ -251,53 +262,6 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
     }
 
     /// <inheritdoc />
-    public async Task<ExecutionReport> CancelOrderAsync(string orderId, CancellationToken ct = default)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(orderId);
-        ObjectDisposedException.ThrowIf(_disposed, this);
-        EnsureConnected();
-
-        using var client = CreateHttpClient();
-
-        // Fetch current order details so the report carries the correct symbol and side.
-        AlpacaOrderResponse? existing = null;
-        try
-        {
-            var getResponse = await client.GetAsync($"{BaseUrl}/v2/orders/{orderId}", ct).ConfigureAwait(false);
-            if (getResponse.IsSuccessStatusCode)
-                existing = await getResponse.Content.ReadFromJsonAsync(
-                    AlpacaBrokerageSerializerContext.Default.AlpacaOrderResponse, ct).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Alpaca failed to fetch order {OrderId} before cancel", orderId);
-        }
-
-        var deleteResponse = await client.DeleteAsync($"{BaseUrl}/v2/orders/{orderId}", ct).ConfigureAwait(false);
-
-        if (!deleteResponse.IsSuccessStatusCode)
-        {
-            var errorBody = await deleteResponse.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            _logger.LogWarning("Alpaca cancel failed for {OrderId}: {Body}", orderId, errorBody);
-        }
-
-        var report = new ExecutionReport
-        {
-            OrderId = orderId,
-            ClientOrderId = existing?.ClientOrderId,
-            ReportType = deleteResponse.IsSuccessStatusCode ? ExecutionReportType.Cancelled : ExecutionReportType.Rejected,
-            Symbol = existing?.Symbol ?? string.Empty,
-            Side = existing?.Side == "sell" ? OrderSide.Sell : OrderSide.Buy,
-            OrderStatus = deleteResponse.IsSuccessStatusCode ? OrderStatus.Cancelled : OrderStatus.Rejected,
-            RejectReason = deleteResponse.IsSuccessStatusCode ? null : "Cancel request failed",
-            GatewayOrderId = orderId,
-            Timestamp = DateTimeOffset.UtcNow,
-        };
-        await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
-        return report;
-    }
-
-    /// <inheritdoc />
     public async Task<ExecutionReport> ModifyOrderAsync(
         string orderId, OrderModification modification, CancellationToken ct = default)
     {
@@ -369,7 +333,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
             Equity = ParseDecimal(account?.Equity),
             Cash = ParseDecimal(account?.Cash),
             BuyingPower = ParseDecimal(account?.BuyingPower),
-            Currency = account?.Currency ?? "USD",
+            Currency = account?.Currency ?? string.Empty,
             Status = account?.Status ?? "unknown",
             MarginMultiplier = ParseNullableDecimal(account?.Multiplier),
             RegTBuyingPower = ParseNullableDecimal(account?.RegTBuyingPower),
@@ -424,21 +388,46 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
 
         // nested=true so bracket/OCO child legs are returned under their parents regardless of
         // how the flat listing treats held legs; they are flattened below so the kill-switch
-        // sweep and reconciliation see every order the broker is actually working.
-        var response = await client.GetAsync($"{BaseUrl}/v2/orders?status=open&nested=true", ct).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
-
-        var orders = await response.Content.ReadFromJsonAsync(
-            AlpacaBrokerageSerializerContext.Default.AlpacaOrderResponseArray, ct).ConfigureAwait(false);
-
-        if (orders is null)
-            return Array.Empty<BrokerOrder>();
-
+        // sweep and reconciliation see every order the broker is actually working. Alpaca's list
+        // is bounded (50 by default, 500 maximum), so walk the broker-ID cursor until the final
+        // short page; a kill-switch cannot equate "first page" with "open book".
         var flattened = new List<BrokerOrder>();
         var seenOrderIds = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var order in orders)
+        var seenCursors = new HashSet<string>(StringComparer.Ordinal);
+        string? beforeOrderId = null;
+
+        while (true)
         {
-            AppendOrderWithLegs(order, flattened, seenOrderIds);
+            var cursorQuery = beforeOrderId is null
+                ? string.Empty
+                : $"&before_order_id={Uri.EscapeDataString(beforeOrderId)}";
+            using var response = await client.GetAsync(
+                $"{BaseUrl}/v2/orders?status=open&nested=true&limit={OpenOrderPageSize}&direction=desc{cursorQuery}",
+                ct).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+
+            var page = await response.Content.ReadFromJsonAsync(
+                AlpacaBrokerageSerializerContext.Default.AlpacaOrderResponseArray, ct).ConfigureAwait(false)
+                ?? [];
+
+            foreach (var order in page)
+            {
+                AppendOrderWithLegs(order, flattened, seenOrderIds);
+            }
+
+            if (page.Length < OpenOrderPageSize)
+            {
+                break;
+            }
+
+            var nextCursor = page[^1].Id;
+            if (string.IsNullOrWhiteSpace(nextCursor) || !seenCursors.Add(nextCursor))
+            {
+                throw new InvalidDataException(
+                    "Alpaca returned a full open-order page without a usable advancing broker-order cursor.");
+            }
+
+            beforeOrderId = nextCursor;
         }
 
         return flattened.AsReadOnly();
@@ -564,7 +553,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
                 Currency: account.Currency,
                 MarginBalance: Math.Max(0m, -account.Cash)),
             Positions: positions
-                .Select(static position => new BrokeragePositionSnapshotDto(
+                .Select(position => new BrokeragePositionSnapshotDto(
                     Symbol: position.Symbol,
                     Quantity: position.Quantity,
                     AverageEntryPrice: position.AverageEntryPrice,
@@ -574,6 +563,10 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
                     AssetClass: position.AssetClass,
                     Description: position.Description,
                     PositionId: position.PositionId,
+                    // Trading API stock/option dollar values are bound at this adapter;
+                    // account base currency is not a general position denomination fallback.
+                    Currency: string.Equals(account.Currency, "USD", StringComparison.Ordinal)
+                        && position.AssetClass is "us_equity" or "us_option" ? "USD" : null,
                     Metadata: position.Metadata))
                 .ToArray(),
             RetrievedAt: retrievedAt,
@@ -690,7 +683,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
                 TransactionId: BuildActivityId(activity),
                 TransactionType: activity.ActivityType ?? "unknown",
                 Amount: ParseDecimal(activity.NetAmount),
-                Currency: activity.Currency ?? "USD",
+                Currency: activity.Currency ?? string.Empty,
                 PostedAt: ParseActivityTimestamp(activity),
                 Symbol: activity.Symbol,
                 Description: activity.Description))
@@ -725,7 +718,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
             // argument is dropped rather than the fetch restored because nothing reads
             // `BrokerageActivitySnapshotDto.Cursor` today; re-landing Alpaca activity paging is a
             // product decision, not a build fix.
-            Activities: activities.Select(BuildCanonicalActivityEvent).ToArray());
+            Activities: activities.Select(activity => BuildCanonicalActivityEvent(activity, account.Currency)).ToArray());
     }
 
     private async Task<AccountInfo> RequireRequestedAccountAsync(
@@ -789,7 +782,9 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         var ordersById = orders
             .Where(order => !string.IsNullOrWhiteSpace(order.Id))
             .ToDictionary(order => order.Id!, StringComparer.Ordinal);
-        var fillActivities = await GetFillActivitiesAsync(watermark, ct).ConfigureAwait(false);
+        var fillActivities = await GetFillActivitiesAsync(
+            watermark is { } acknowledgedWatermark ? acknowledgedWatermark - FillBackfillOverlap : null,
+            ct).ConfigureAwait(false);
         foreach (var orderId in fillActivities
                      .Select(activity => activity.OrderId)
                      .Where(orderId => !string.IsNullOrWhiteSpace(orderId))
@@ -823,6 +818,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
                 $"Alpaca FILL activity '{activityId}' omitted its order id.");
             ordersById.TryGetValue(orderId, out var order);
             var cumulativeQuantity = ParseRequiredDecimal(activity.CumQty, "cum_qty", activityId);
+            var executedQuantity = ParseNullableDecimal(activity.Qty);
             var leavesQuantity = ParseNullableDecimal(activity.LeavesQty);
             var reportType = string.Equals(activity.Type, "fill", StringComparison.OrdinalIgnoreCase) ||
                              leavesQuantity == 0m
@@ -855,6 +851,8 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
                     OrderQuantity = ParseNullableDecimal(order?.Qty) ??
                         (leavesQuantity is { } leaves ? cumulativeQuantity + leaves : cumulativeQuantity),
                     FilledQuantity = cumulativeQuantity,
+                    LastFillQuantity = executedQuantity,
+                    AssetClass = order?.AssetClass,
                     FillPrice = fillPrice,
                     OrderStatus = status,
                     ReportType = reportType,
@@ -1507,13 +1505,21 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
             $"alpaca:{activity.ActivityType ?? "unknown"}:{ParseActivityTimestamp(activity):O}:{activity.OrderId}:{activity.Symbol}:{activity.NetAmount}:{activity.Qty}:{activity.Price}:{activity.Description}");
     }
 
-    private static BrokerageActivityEventDto BuildCanonicalActivityEvent(AlpacaAccountActivityResponse activity)
+    private static BrokerageActivityEventDto BuildCanonicalActivityEvent(
+        AlpacaAccountActivityResponse activity,
+        string? verifiedAccountCurrency)
     {
         var providerCode = activity.ActivityType?.Trim().ToUpperInvariant() ?? "UNKNOWN";
         var (category, subtype) = MapActivityType(providerCode, activity.Description);
         var option = category == BrokerageActivityCategory.OptionLifecycle
             ? BuildOptionLifecycle(activity.Symbol, subtype)
             : null;
+        // Trading API fills omit currency. Only the account already verified for this request
+        // can establish their USD denomination; non-fill activity still needs its own currency.
+        var usesAccountCurrency = string.IsNullOrWhiteSpace(activity.Currency)
+            && category == BrokerageActivityCategory.Trade
+            && subtype == BrokerageActivitySubtype.TradeFill
+            && string.Equals(verifiedAccountCurrency?.Trim(), "USD", StringComparison.OrdinalIgnoreCase);
 
         return new BrokerageActivityEventDto(
             EventId: BuildActivityId(activity),
@@ -1521,7 +1527,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
             Category: category,
             Subtype: subtype,
             EffectiveAt: ParseActivityTimestamp(activity),
-            Currency: activity.Currency ?? "USD",
+            Currency: usesAccountCurrency ? verifiedAccountCurrency!.Trim().ToUpperInvariant() : activity.Currency ?? string.Empty,
             NetAmount: ParseDecimal(activity.NetAmount),
             Symbol: activity.Symbol,
             Quantity: ParseSignedActivityQuantity(activity),
@@ -1530,7 +1536,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
             RelatedEventId: activity.TradeId,
             Description: activity.Description,
             Option: option,
-            Metadata: BuildActivityMetadata(activity, providerCode));
+            Metadata: BuildActivityMetadata(activity, providerCode, usesAccountCurrency));
     }
 
     private static decimal? ParseSignedActivityQuantity(AlpacaAccountActivityResponse activity)
@@ -1546,13 +1552,16 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
 
     private static IReadOnlyDictionary<string, string> BuildActivityMetadata(
         AlpacaAccountActivityResponse activity,
-        string providerCode)
+        string providerCode,
+        bool usesAccountCurrency)
     {
         var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["sourceAuthority"] = "ProviderReported",
             ["providerActivityCode"] = providerCode
         };
+        if (usesAccountCurrency)
+            metadata["currencySource"] = "VerifiedAccount";
         if (!string.IsNullOrWhiteSpace(activity.Side))
             metadata["side"] = activity.Side;
         if (!string.IsNullOrWhiteSpace(activity.Commission))
@@ -1847,6 +1856,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         /// become invisible to the OMS and to the kill-switch sweep.
         /// </summary>
         [JsonPropertyName("legs")] public AlpacaOrderResponse[]? Legs { get; set; }
+        [JsonPropertyName("asset_class")] public string? AssetClass { get; set; }
     }
 
     internal sealed class AlpacaAccountResponse

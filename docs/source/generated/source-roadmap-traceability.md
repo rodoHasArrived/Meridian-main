@@ -6,6 +6,7 @@ render_contract: meridian.generated-docs.v1
 schema_versions:
   - meridian.source-modules@1.0.0
 inputs:
+  - docs/source/data/adapter-readiness.yml
   - docs/source/data/diagram-index.yml
   - docs/source/data/source-modules.yml
   - docs/source/data/source-readme-coverage.yml
@@ -22,12 +23,14 @@ do_not_edit: true
 | `SRC-APP` | Meridian application layer | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `SRC-APP` | Meridian application layer | `W3-CONT-001` | Research to paper continuity |
 | `SRC-APP` | Meridian application layer | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-APP` | Meridian application layer | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `SRC-APP` | Meridian application layer | `W10-MARK-001` | Fail-closed stale-mark policy and mark-age surfacing |
 | `SRC-BACKTESTING` | Meridian backtesting | `W3-CONT-001` | Research to paper continuity |
 | `SRC-BACKTESTING` | Meridian backtesting | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
 | `SRC-BACKTESTING` | Meridian backtesting | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 | `SRC-BACKTESTING` | Meridian backtesting | `W10-PERF-001` | Portfolio and investor return measurement |
 | `SRC-BACKTESTING-SDK` | Backtesting SDK | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
+| `SRC-CONTRACTS` | Meridian contracts | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `SRC-CONTRACTS` | Meridian contracts | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `SRC-CONTRACTS` | Meridian contracts | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-CONTRACTS` | Meridian contracts | `W3-CONT-001` | Research to paper continuity |
@@ -49,6 +52,7 @@ do_not_edit: true
 | `SRC-CONTRACTS` | Meridian contracts | `W10-RECON-004` | Operator-taught match rules with promotion gate |
 | `SRC-CONTRACTS` | Meridian contracts | `W10-PERF-001` | Portfolio and investor return measurement |
 | `SRC-CONTRACTS` | Meridian contracts | `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
+| `SRC-CORE` | Meridian core | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `SRC-CORE` | Meridian core | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `SRC-CORE` | Meridian core | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-CORE` | Meridian core | `W7-LIVE-001` | Live-readiness governance |
@@ -60,6 +64,7 @@ do_not_edit: true
 | `SRC-DESIGN-DOCUMENTS` | Meridian Documents design module | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-DESIGN-ENTITIES` | Meridian Entities design module | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-DESIGN-ENTITIES` | Meridian Entities design module | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W5X-FINOPS-001` | Financial operations control center |
@@ -132,12 +137,14 @@ do_not_edit: true
 | `SRC-RISK` | Meridian risk | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-RISK` | Meridian risk | `W7-LIVE-001` | Live-readiness governance |
 | `SRC-RISK` | Meridian risk | `W9-SAFETY-007` | Kill-switch cancel-all and fat-finger, notional, and collar rules |
+| `SRC-STORAGE` | Meridian storage | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `SRC-STORAGE` | Meridian storage | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `SRC-STORAGE` | Meridian storage | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-STORAGE` | Meridian storage | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-STORAGE` | Meridian storage | `W4-RPT-001` | Governed report pack readiness |
 | `SRC-STORAGE` | Meridian storage | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-STORAGE` | Meridian storage | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
+| `SRC-STORAGE` | Meridian storage | `W10-JRNL-001` | Durable recurring journal schedules and draft runner |
 | `SRC-STRATEGIES` | Meridian strategies | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `SRC-STRATEGIES` | Meridian strategies | `W3-CONT-001` | Research to paper continuity |
 | `SRC-STRATEGIES` | Meridian strategies | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
@@ -163,6 +170,7 @@ do_not_edit: true
 | `SRC-UI-SERVICES` | UI services | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-UI-SERVICES` | UI services | `W4-RPT-001` | Governed report pack readiness |
 | `SRC-UI-SERVICES` | UI services | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-UI-SHARED` | UI shared contracts | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `SRC-UI-SHARED` | UI shared contracts | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-UI-SHARED` | UI shared contracts | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-UI-SHARED` | UI shared contracts | `W4-RPT-001` | Governed report pack readiness |
@@ -184,6 +192,7 @@ do_not_edit: true
 | `SRC-UI-SHARED` | UI shared contracts | `W10-PERF-001` | Portfolio and investor return measurement |
 | `SRC-UI-SHARED` | UI shared contracts | `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
 | `SRC-UI-SHARED` | UI shared contracts | `W9-SAFETY-007` | Kill-switch cancel-all and fat-finger, notional, and collar rules |
+| `SRC-WPF` | WPF workstation | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `SRC-WPF` | WPF workstation | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-WPF` | WPF workstation | `W4-RPT-001` | Governed report pack readiness |
 | `SRC-WPF` | WPF workstation | `W5-ACCT-001` | Accounting records and operational evidence |

@@ -66,7 +66,7 @@ public sealed class StatementReconciliationIntakeAuthorityException(
 /// authorities. It creates no parallel lifecycle: posting, close, report certification, approval,
 /// release, distribution, and receipt retention remain owned by their existing services.
 /// </summary>
-public sealed class StatementReconciliationIntakeAuthority : IStatementReconciliationIntakeAuthority
+public sealed partial class StatementReconciliationIntakeAuthority : IStatementReconciliationIntakeAuthority
 {
     private readonly IAccountQueryService? _accounts;
     private readonly IFundProfileTenancyRegistry? _tenancy;
@@ -75,6 +75,8 @@ public sealed class StatementReconciliationIntakeAuthority : IStatementReconcili
     private readonly IStatementRunWorkflowService? _statementRuns;
     private readonly IReconciliationApiService? _reconciliation;
     private readonly IReconciliationBreakQueueRepository? _breakQueue;
+    private readonly Meridian.Infrastructure.Reconciliation.ICanonicalStatementStore? _canonicalStatements;
+    private readonly Meridian.Infrastructure.Reconciliation.IStatementRunMatchArtifactStore? _matchArtifacts;
 
     public StatementReconciliationIntakeAuthority(
         IAccountQueryService? accounts,
@@ -83,7 +85,9 @@ public sealed class StatementReconciliationIntakeAuthority : IStatementReconcili
         IOperationsContinuityWorkflowService? operations,
         IStatementRunWorkflowService? statementRuns,
         IReconciliationApiService? reconciliation,
-        IReconciliationBreakQueueRepository? breakQueue)
+        IReconciliationBreakQueueRepository? breakQueue,
+        Meridian.Infrastructure.Reconciliation.ICanonicalStatementStore? canonicalStatements = null,
+        Meridian.Infrastructure.Reconciliation.IStatementRunMatchArtifactStore? matchArtifacts = null)
     {
         _accounts = accounts;
         _tenancy = tenancy;
@@ -92,6 +96,8 @@ public sealed class StatementReconciliationIntakeAuthority : IStatementReconcili
         _statementRuns = statementRuns;
         _reconciliation = reconciliation;
         _breakQueue = breakQueue;
+        _canonicalStatements = canonicalStatements;
+        _matchArtifacts = matchArtifacts;
     }
 
     public async Task<StatementAccountingScope> ResolveAccountingScopeAsync(
@@ -320,6 +326,10 @@ public sealed class StatementReconciliationIntakeAuthority : IStatementReconcili
                 "STATEMENT_CASEWORK_SCOPE_NOT_RETAINED",
                 "The canonical reconciliation queue did not retain the exact statement accounting scope.");
         }
+
+        await ObservePublishedRunAsync(import, statementRun.Import, accountingScope,
+                queueScope, sourceInstitution, retainedItems, ct)
+            .ConfigureAwait(false);
 
         return new StatementReconciliationIntakeReceipt(
             accountingScope,

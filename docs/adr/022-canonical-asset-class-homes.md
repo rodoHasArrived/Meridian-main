@@ -63,7 +63,10 @@ One canonical home per instrument family, enforced by the asset-class validators
 | Enforcement rules | `src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs` | `DisallowedStringValuesRule` / `DiscouragedTrueBooleanRule` and the Bond, InvestmentFund, and CustomAsset entries |
 | Readiness catalog | `src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs` | StructuredCredit named the securitized home; CustomAsset relabeled |
 | Profile reclassification | `src/Meridian.Application/SecurityMaster/SecurityMasterService.cs` | `KnownProfileAssetClasses` maps `structured-credit-io-po` → StructuredCredit |
-| Tests | `tests/Meridian.Tests/SecurityMaster/SecurityValidationServiceTests.cs` | Canonical-home rule coverage |
+| Asset family | `src/Meridian.FSharp/Domain/SecurityClassification.fs` | `AssetFamily.SecuritizedCredit` is the securitized family; `StructuredCash` reverts to naming cash vehicles only, so the two no longer share a label |
+| Accounting classification | `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs` | `AccountingInstrumentClass` declares StructuredCredit's accounting home, so every vendor spelling of a securitized tranche posts under one class |
+| Coverage read model | `src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs` | Structured evidence that names no security routes to StructuredCredit, not CustomAsset |
+| Tests | `tests/Meridian.Tests/SecurityMaster/SecurityValidationServiceTests.cs`, `tests/Meridian.Tests/SecurityMaster/SecurityAccountingInstrumentClassTests.cs` | Canonical-home rule coverage and the declared accounting classification |
 
 ## Rationale
 

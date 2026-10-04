@@ -30,17 +30,20 @@ public sealed class CorporateActionCommandService : ICorporateActionCommandServi
     private readonly ILogger<CorporateActionCommandService> _logger;
     private readonly ISecurityMasterStore? _store;
     private readonly ICorporateActionRestatementTrigger? _restatementTrigger;
+    private readonly ICorporateActionOperationsService? _durableOperations;
 
     public CorporateActionCommandService(
         ISecurityMasterEventStore eventStore,
         ILogger<CorporateActionCommandService> logger,
         ISecurityMasterStore? store = null,
-        ICorporateActionRestatementTrigger? restatementTrigger = null)
+        ICorporateActionRestatementTrigger? restatementTrigger = null,
+        ICorporateActionOperationsService? durableOperations = null)
     {
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _store = store;
         _restatementTrigger = restatementTrigger;
+        _durableOperations = durableOperations;
     }
 
     public async Task<CorporateActionAppendResult> AppendAsync(
@@ -50,6 +53,12 @@ public sealed class CorporateActionCommandService : ICorporateActionCommandServi
         string source,
         CancellationToken ct = default)
     {
+        if (_durableOperations is not null)
+        {
+            return CorporateActionAppendResult.Invalid(
+                "Legacy direct corporate-action append is disabled; use durable source-proposal acceptance.");
+        }
+
         if (action.SecurityId != securityId)
         {
             return CorporateActionAppendResult.Invalid("Corporate action SecurityId must match route parameter.");

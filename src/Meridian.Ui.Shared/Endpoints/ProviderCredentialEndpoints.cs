@@ -28,7 +28,7 @@ public static class ProviderCredentialEndpoints
             string provider,
             ProviderCredentialRequest request) =>
         {
-            if (!HasManageCredentialsPermission(context))
+            if (!HasManageCredentialsPermission(context) || !EndpointAuthorization.TryResolveActor(context, out var actor))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -72,7 +72,7 @@ public static class ProviderCredentialEndpoints
             ProviderCredentialRequest request,
             ProviderConnectionLifecycleService service) =>
         {
-            if (!HasManageCredentialsPermission(context))
+            if (!HasManageCredentialsPermission(context) || !EndpointAuthorization.TryResolveActor(context, out var actor))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -92,11 +92,11 @@ public static class ProviderCredentialEndpoints
                     new ProviderCredentialUpsertRequestDto(
                         credentials,
                         Environment: null,
-                        RequestedBy: "provider-credential-compatibility-endpoint"),
+                        RequestedBy: actor),
                     context.RequestAborted).ConfigureAwait(false);
             }
 
-            var verification = await service.VerifyAsync(descriptor.ProviderId, context.RequestAborted)
+            var verification = await service.VerifyAsync(descriptor.ProviderId, context.RequestAborted, actor)
                 .ConfigureAwait(false);
             sw.Stop();
 

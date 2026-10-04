@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -307,6 +308,7 @@ public sealed class AlpacaTradeUpdatesClientTests
         await using var sut = new AlpacaTradeUpdatesClient(
             new AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret", UseSandbox: true),
             NullLogger<AlpacaTradeUpdatesClient>.Instance,
+            new AtomicFileWriterAdapter(),
             _ => Task.FromResult<IReadOnlyList<ExecutionReport>>([report]),
             cursorStore: store);
         sut.ConfigureDurableStateScope("paper-account-42", AlpacaCredentialEnvironment.PaperEnvironment);
@@ -407,6 +409,7 @@ public sealed class AlpacaTradeUpdatesClientTests
         var sut = new AlpacaTradeUpdatesClient(
             new AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret", UseSandbox: true),
             NullLogger<AlpacaTradeUpdatesClient>.Instance,
+            new AtomicFileWriterAdapter(),
             _ => Task.FromResult<IReadOnlyList<ExecutionReport>>([CreateReconciledReport()]),
             cursorStore: store);
         sut.ConfigureDurableStateScope("paper-account-42", AlpacaCredentialEnvironment.PaperEnvironment);
@@ -431,8 +434,8 @@ public sealed class AlpacaTradeUpdatesClientTests
 
         try
         {
-            var firstStore = new FileAlpacaTradeUpdateCursorStore(path);
-            var secondStore = new FileAlpacaTradeUpdateCursorStore(path);
+            var firstStore = new FileAlpacaTradeUpdateCursorStore(path, new AtomicFileWriterAdapter());
+            var secondStore = new FileAlpacaTradeUpdateCursorStore(path, new AtomicFileWriterAdapter());
             await using var first = CreateSut(firstStore);
             await using var second = CreateSut(secondStore);
 
@@ -460,14 +463,17 @@ public sealed class AlpacaTradeUpdatesClientTests
             var paper = new FileAlpacaTradeUpdateCursorStore(
                 "provider-account-1",
                 AlpacaCredentialEnvironment.PaperEnvironment,
+                new AtomicFileWriterAdapter(),
                 directory);
             var live = new FileAlpacaTradeUpdateCursorStore(
                 "provider-account-1",
                 AlpacaCredentialEnvironment.LiveEnvironment,
+                new AtomicFileWriterAdapter(),
                 directory);
             var anotherPaperAccount = new FileAlpacaTradeUpdateCursorStore(
                 "provider-account-2",
                 AlpacaCredentialEnvironment.PaperEnvironment,
+                new AtomicFileWriterAdapter(),
                 directory);
 
             paper.StatePath.Should().NotBe(live.StatePath);
@@ -528,6 +534,145 @@ public sealed class AlpacaTradeUpdatesClientTests
         reports.Single(report => report.Report.OrderId == "rejected").Report.ReportType.Should().Be(ExecutionReportType.Rejected);
     }
 
+    /// <summary>
+    /// The reconnect FILL backfill starts an overlap window behind the acknowledged watermark,
+    /// not at it: a fill the stream skipped beneath an already-acknowledged newer event sits
+    /// below the watermark, and a backfill that began exactly there could never see it.
+    /// </summary>
+    [Fact]
+    public async Task GatewayReconciliation_FillBackfill_StartsAnOverlapWindowBeforeTheWatermark()
+    {
+        var handler = new RecordingHandler(request => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                request.RequestUri!.AbsolutePath.EndsWith("/account/activities/FILL", StringComparison.Ordinal)
+                    ? "[]"
+                    : "[]",
+                Encoding.UTF8,
+                "application/json")
+        });
+        await using var gateway = new AlpacaBrokerageGateway(
+            new StubHttpClientFactory(handler),
+            new AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret", UseSandbox: true),
+            NullLogger<AlpacaBrokerageGateway>.Instance);
+        var watermark = DateTimeOffset.Parse("2026-08-07T14:30:00Z");
+
+        await gateway.ReconcileExecutionSnapshotsAsync(watermark, CancellationToken.None);
+
+        var fillRequest = handler.RequestUris.Single(uri =>
+            uri.AbsolutePath.EndsWith("/account/activities/FILL", StringComparison.Ordinal));
+        var expectedAfter = (watermark - AlpacaBrokerageGateway.FillBackfillOverlap).UtcDateTime.ToString("O");
+        fillRequest.Query.Should().Contain($"after={Uri.EscapeDataString(expectedAfter)}",
+            "the backfill must re-read the band beneath the watermark where a skipped fill can hide");
+        AlpacaBrokerageGateway.FillBackfillOverlap.Should().BePositive();
+    }
+
+    [Fact]
+    public async Task GatewayReconciliation_FillActivities_CarryThePerEventQuantity()
+    {
+        var handler = new RecordingHandler(request => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                request.RequestUri!.AbsolutePath.EndsWith("/account/activities/FILL", StringComparison.Ordinal)
+                    ? CreateFillActivitiesResponse()
+                    : CreateReconciliationOrdersResponse(),
+                Encoding.UTF8,
+                "application/json")
+        });
+        await using var gateway = new AlpacaBrokerageGateway(
+            new StubHttpClientFactory(handler),
+            new AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret", UseSandbox: true),
+            NullLogger<AlpacaBrokerageGateway>.Instance);
+
+        var reports = await gateway.ReconcileExecutionSnapshotsAsync(null, CancellationToken.None);
+
+        reports.Where(report => report.Source == "rest-fill-activity")
+            .Should().NotBeEmpty()
+            .And.OnlyContain(report => report.Report.LastFillQuantity > 0m,
+                "a restarted host books an untracked fill as the activity's own quantity, not its cumulative");
+    }
+
+    [Fact]
+    public async Task ProcessMessageAsync_FillEvent_StampsThePerEventQuantityWithoutChangingIdentity()
+    {
+        var store = new TestCursorStore();
+        await using var sut = CreateSut(store);
+        const string message = """
+            {"stream":"trade_updates","data":{"event_id":"evt-1","event":"partial_fill","timestamp":"2026-08-05T14:30:00Z","qty":"4","price":"101","order":{"id":"alpaca-1","client_order_id":"MDN-1","symbol":"AAPL","side":"buy","qty":"10","filled_qty":"4","status":"partially_filled","updated_at":"2026-08-05T14:30:00Z"}}}
+            """;
+
+        await sut.ProcessMessageAsync(message);
+
+        var report = store.PendingReports.Should().ContainSingle().Which;
+        report.FilledQuantity.Should().Be(4m, "the order's filled_qty stays the cumulative");
+        report.LastFillQuantity.Should().Be(4m, "the event's qty is what this fill executed");
+
+        var withQuantity = AlpacaTradeUpdateStateCodec.ComputeContentHash(report, report.Timestamp);
+        var withoutQuantity = AlpacaTradeUpdateStateCodec.ComputeContentHash(
+            report with { LastFillQuantity = null },
+            report.Timestamp);
+        withQuantity.Should().Be(withoutQuantity,
+            "an envelope persisted before the field existed must still match a redelivery of the same event");
+    }
+
+    [Fact]
+    public async Task ProcessMessageAsync_AuthorizedAndListeningAcks_ConfirmTheHandshake()
+    {
+        var store = new TestCursorStore();
+        await using var sut = CreateSut(store);
+
+        sut.HandshakeAcknowledged.Should().BeFalse();
+        await sut.ProcessMessageAsync("""{"stream":"authorization","data":{"status":"authorized","action":"authenticate"}}""");
+        sut.HandshakeAcknowledged.Should().BeFalse("the subscription is not yet confirmed");
+        await sut.ProcessMessageAsync("""{"stream":"listening","data":{"streams":["trade_updates"]}}""");
+
+        sut.HandshakeAcknowledged.Should().BeTrue();
+        sut.UnhealthyReason.Should().NotContain("refused");
+    }
+
+    [Fact]
+    public async Task ProcessMessageAsync_UnauthorizedAck_NamesTheRefusalInHealth()
+    {
+        var store = new TestCursorStore();
+        await using var sut = CreateSut(store);
+
+        await sut.ProcessMessageAsync("""{"stream":"authorization","data":{"status":"unauthorized","action":"authenticate"}}""");
+
+        sut.IsHealthy.Should().BeFalse();
+        sut.HandshakeAcknowledged.Should().BeFalse();
+        sut.UnhealthyReason.Should().Contain("refused");
+    }
+
+    [Fact]
+    public async Task ProcessMessageAsync_ListeningAckWithoutTradeUpdates_IsNotASubscription()
+    {
+        var store = new TestCursorStore();
+        await using var sut = CreateSut(store);
+
+        await sut.ProcessMessageAsync("""{"stream":"authorization","data":{"status":"authorized"}}""");
+        await sut.ProcessMessageAsync("""{"stream":"listening","data":{"streams":["account_updates"]}}""");
+
+        sut.HandshakeAcknowledged.Should().BeFalse();
+        sut.UnhealthyReason.Should().Contain("trade_updates");
+    }
+
+    [Fact]
+    public async Task ProcessMessageAsync_FillEvent_CarriesTheBrokerAssetClassWithoutChangingIdentity()
+    {
+        var store = new TestCursorStore();
+        await using var sut = CreateSut(store);
+        const string message = """
+            {"stream":"trade_updates","data":{"event_id":"evt-2","event":"fill","timestamp":"2026-08-05T14:30:00Z","qty":"2","price":"5.10","order":{"id":"alpaca-2","client_order_id":"MDN-2","symbol":"AAPL260918C00200000","side":"buy","qty":"2","filled_qty":"2","status":"filled","asset_class":"us_option","updated_at":"2026-08-05T14:30:00Z"}}}
+            """;
+
+        await sut.ProcessMessageAsync(message);
+
+        var report = store.PendingReports.Should().ContainSingle().Which;
+        report.AssetClass.Should().Be("us_option");
+        AlpacaTradeUpdateStateCodec.ComputeContentHash(report, report.Timestamp)
+            .Should().Be(AlpacaTradeUpdateStateCodec.ComputeContentHash(report with { AssetClass = null }, report.Timestamp));
+    }
+
     [Fact]
     public async Task LegacyCursorStore_NewEnvelope_FailsClosedUntilVersionedStateIsImplemented()
     {
@@ -551,7 +696,7 @@ public sealed class AlpacaTradeUpdatesClientTests
             File.WriteAllText(
                 path,
                 """{"Watermark":"2026-08-04T21:00:00+00:00","EventIds":["legacy-event-1","legacy-event-2"]}""");
-            var sut = new FileAlpacaTradeUpdateCursorStore(path);
+            var sut = new FileAlpacaTradeUpdateCursorStore(path, new AtomicFileWriterAdapter());
 
             var loaded = sut.LoadState();
             loaded.Version.Should().Be(AlpacaTradeUpdateCursorState.CurrentVersion);
@@ -585,7 +730,7 @@ public sealed class AlpacaTradeUpdatesClientTests
 
         try
         {
-            var store = new FileAlpacaTradeUpdateCursorStore(path);
+            var store = new FileAlpacaTradeUpdateCursorStore(path, new AtomicFileWriterAdapter());
             await using var sut = CreateSut(store);
             const string eventId = "01JJ3WE73W5PG672TC4XACXH63";
 
@@ -614,7 +759,7 @@ public sealed class AlpacaTradeUpdatesClientTests
         try
         {
             File.WriteAllText(path, "{\"Version\":2,\"PendingEnvelopes\":[");
-            var store = new FileAlpacaTradeUpdateCursorStore(path);
+            var store = new FileAlpacaTradeUpdateCursorStore(path, new AtomicFileWriterAdapter());
             await using var sut = CreateSut(store);
 
             Action load = () => store.LoadState();
@@ -641,7 +786,7 @@ public sealed class AlpacaTradeUpdatesClientTests
             File.WriteAllText(
                 path,
                 $"{{\"Version\":2,\"Watermark\":null,\"EventIds\":[],\"EventHashes\":{{}},\"PendingEnvelopes\":[{pending}]}}");
-            var sut = new FileAlpacaTradeUpdateCursorStore(path);
+            var sut = new FileAlpacaTradeUpdateCursorStore(path, new AtomicFileWriterAdapter());
 
             Action load = () => sut.LoadState();
             load.Should().Throw<InvalidDataException>()
@@ -673,6 +818,7 @@ public sealed class AlpacaTradeUpdatesClientTests
         new(
             new AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret", UseSandbox: true),
             NullLogger<AlpacaTradeUpdatesClient>.Instance,
+            new AtomicFileWriterAdapter(),
             cursorStore: cursorStore);
 
     private static string CreateTradeUpdate(

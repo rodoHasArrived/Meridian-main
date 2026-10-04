@@ -1162,7 +1162,12 @@ const timelineColumns: DenseDataTableColumn<OperationsContinuityTimelineRow>[] =
 
 export function OperationsContinuityScreen() {
   const [searchParams] = useSearchParams();
-  const vm = useOperationsContinuityScreenViewModel(undefined, {
+  const closeScope = useMemo(() => ({
+    fundProfileId: searchParams.get("fundProfileId"), ledgerBookId: searchParams.get("ledgerBookId"),
+    fundAccountId: searchParams.get("fundAccountId"), entityId: searchParams.get("entityId"),
+    periodId: searchParams.get("periodId")
+  }), [searchParams]);
+  const vm = useOperationsContinuityScreenViewModel(undefined, closeScope, {
     initialWorkflowId: searchParams.get("workflowId"),
     filters: {
       ledgerBookId: searchParams.get("ledgerBookId") ?? undefined,
@@ -1450,6 +1455,7 @@ export function OperationsContinuityScreen() {
         correlationId: `browser-close-package:${row.id}`,
         evidenceLinks: row.closeWorkflowEvidenceLinks,
         checklistControlApprovals: row.closeWorkflowChecklistControlApprovals,
+        closeScope,
         actionOrigin: "HumanOperator"
       });
 
@@ -1466,7 +1472,7 @@ export function OperationsContinuityScreen() {
         error: formatCloseWorkflowCommandError(err)
       });
     }
-  }, [vm.refresh]);
+  }, [closeScope, vm.refresh]);
 
   const reopenWorkflowCommandHandler = useCallback(async () => {
     const formDisabledReason = buildReopenWorkflowFormDisabledReason(reopenWorkflowForm);

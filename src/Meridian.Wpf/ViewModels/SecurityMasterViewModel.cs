@@ -12,6 +12,7 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
@@ -26,7 +27,7 @@ namespace Meridian.Wpf.ViewModels;
 /// Wraps <see cref="SecurityMasterWorkstationDto"/>-backed search and detail
 /// surfaced by the <c>/api/workstation/security-master</c> endpoints.
 /// </summary>
-public sealed class SecurityMasterViewModel : BindableBase, IDisposable
+public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 {
     private const string AllAssetClassesFilterLabel = "All asset classes";
     private const string AllProvidersFilterLabel = "All providers";
@@ -42,6 +43,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private readonly WpfServices.NavigationService _navigationService;
     private readonly ISmQueryService _queryService;
     private readonly ISmService _service;
+    private readonly WpfServices.DesktopAuthenticationSession? _authenticationSession;
+    private readonly WpfServices.IDesktopMutationAuthorization _mutationAuthorization;
     private readonly bool _hasPolygonApiKey;
     private readonly object _selectedSecurityLoadGate = new();
     private bool _isRefreshingSearchWorkspaceFilters;
@@ -240,14 +243,14 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public SecurityMasterEditViewModel? EditVm
     {
         get => _editVm;
-        private set => SetProperty(ref _editVm, value);
+        internal set => SetProperty(ref _editVm, value);
     }
 
     private SecurityMasterDeactivateViewModel? _deactivateVm;
     public SecurityMasterDeactivateViewModel? DeactivateVm
     {
         get => _deactivateVm;
-        private set => SetProperty(ref _deactivateVm, value);
+        internal set => SetProperty(ref _deactivateVm, value);
     }
 
     private int _selectedDetailTab;
@@ -296,6 +299,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             if (SetProperty(ref _isBackfillingTradingParams, value))
             {
                 RaisePropertyChanged(nameof(RuntimeStatusDetail));
+                BackfillTradingParamsCommand?.NotifyCanExecuteChanged();
             }
         }
     }
@@ -1547,23 +1551,31 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _queryService = queryService;
         _service = service;
+        _authenticationSession = authenticationSession;
+        _mutationAuthorization = new WpfServices.DesktopMutationAuthorization(authenticationSession);
         if (authenticationSession?.CurrentActor is { Length: > 0 } sessionActor)
         {
+            // Pre-fills the operator text box only. Governed writes resolve their actor through
+            // DesktopAuthenticationSession.TryGetAuthenticatedActor, which validates the session.
             _conflictOperatorText = sessionActor;
         }
         _hasPolygonApiKey = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("POLYGON_API_KEY"));
 
         _passportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient);
 
-        CreateNewCommand = new RelayCommand(OnCreateNew);
-        EditSelectedCommand = new RelayCommand(OnEditSelected, () => HasSelectedSecurity);
-        DeactivateSelectedCommand = new RelayCommand(OnDeactivateSelected, () => HasSelectedSecurity && IsSelectedSecurityActive());
+        CreateNewCommand = new RelayCommand(OnCreateNew, () => CanModifySecurityMaster);
+        EditSelectedCommand = new RelayCommand(OnEditSelected, () => HasSelectedSecurity && CanModifySecurityMaster);
+        DeactivateSelectedCommand = new RelayCommand(OnDeactivateSelected, () => HasSelectedSecurity && IsSelectedSecurityActive() && CanModifySecurityMaster);
         LoadCorporateActionsCommand = new AsyncRelayCommand(OnLoadCorporateActions, () => HasSelectedSecurity);
         ShowRecordCorpActionCommand = new RelayCommand(OnShowRecordCorpAction, () => HasSelectedSecurity);
         CancelRecordCorpActionCommand = new RelayCommand(OnCancelRecordCorpAction);
         RecordCorpActionCommand = new AsyncRelayCommand(OnRecordCorpAction);
-        BackfillTradingParamsCommand = new AsyncRelayCommand(OnBackfillTradingParams);
-        ImportFromFileCommand = new AsyncRelayCommand(OnImportFromFile, () => !IsImporting);
+        BackfillTradingParamsCommand = new AsyncRelayCommand(
+            OnBackfillTradingParams,
+            () => !IsBackfillingTradingParams && CanTriggerSecurityMasterBackfill());
+        ImportFromFileCommand = new AsyncRelayCommand(
+            OnImportFromFile,
+            () => !IsImporting && CanModifySecurityMaster);
         CloseImportResultCommand = new RelayCommand(OnCloseImportResult);
         SearchCommand = new AsyncRelayCommand(ct => SearchAsync(ct), CanSearch);
         ClearSearchCommand = new RelayCommand(OnClearSearch, CanClearSearch);
@@ -1623,19 +1635,47 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         OpenLotRows.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
         OpenLotProvenanceHistory.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
 
+        if (_authenticationSession is not null)
+        {
+            // A weak subscription keeps the singleton session from rooting this transient
+            // view model: the page's Unloaded calls only Stop() and nothing disposes
+            // resolved instances, so a strong handler would accumulate every unloaded
+            // instance in the invocation lists — while a journal-restored page must still
+            // observe sign-outs AND sign-ins (the shell reuses the frame journal across a
+            // logout, so this instance can be restored for a newly authorized operator), so
+            // the handlers cannot simply be removed on unload. Dispose still removes them
+            // deterministically.
+            WeakEventManager<WpfServices.DesktopAuthenticationSession, EventArgs>.AddHandler(
+                _authenticationSession,
+                nameof(WpfServices.DesktopAuthenticationSession.SignedOut),
+                OnAuthenticationSessionAuthenticationChanged);
+            WeakEventManager<WpfServices.DesktopAuthenticationSession, EventArgs>.AddHandler(
+                _authenticationSession,
+                nameof(WpfServices.DesktopAuthenticationSession.SignedIn),
+                OnAuthenticationSessionAuthenticationChanged);
+        }
+
         StartWorkflowPolling();
     }
 
     private void OnCreateNew()
     {
-        EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService, _service);
+        if (!EnsureCanModifySecurityMaster())
+            return;
+
+        if (!TryAuthorizeSecurityMasterMutation("create a security", out _))
+            return;
+
+        EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService, _service, _authenticationSession, _mutationAuthorization);
         WireEditVmEvents();
         IsEditPanelVisible = true;
     }
 
     private void OnEditSelected()
     {
-        if (SelectedSecurity is null)
+        if (SelectedSecurity is null ||
+            !EnsureCanModifySecurityMaster() ||
+            !TryAuthorizeSecurityMasterMutation("edit a security", out _))
             return;
 
         // Fetch the full detail so we have all the required information
@@ -1656,7 +1696,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             {
                 await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    EditVm = new SecurityMasterEditViewModel(_loggingService, _notificationService, _service);
+                    EditVm = new SecurityMasterEditViewModel(_loggingService, _notificationService, _service, _authenticationSession, _mutationAuthorization);
                     EditVm.LoadForEdit(detail);
                     WireEditVmEvents();
                     IsEditPanelVisible = true;
@@ -1677,10 +1717,17 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void OnDeactivateSelected()
     {
-        if (SelectedSecurity is null)
+        if (SelectedSecurity is null ||
+            !EnsureCanModifySecurityMaster() ||
+            !TryAuthorizeSecurityMasterMutation("deactivate a security", out _))
             return;
 
-        DeactivateVm = new SecurityMasterDeactivateViewModel(_loggingService, _notificationService, _service)
+        DeactivateVm = new SecurityMasterDeactivateViewModel(
+            _loggingService,
+            _notificationService,
+            _service,
+            _authenticationSession,
+            _mutationAuthorization)
         {
             SecurityName = SelectedSecurity.DisplayName,
             SecurityId = SelectedSecurity.SecurityId,
@@ -2185,12 +2232,34 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     private async Task OnBackfillTradingParams()
     {
+        // The largest single mutation on this lane: one invocation amends up to 1,000 securities.
+        // Its authority is TriggerBackfill, matching the shared HTTP boundary where backfill
+        // routes require that grant alone — a profile delegated backfill without broader Security
+        // Master edit rights may run it — enforced on both the host posture below and the
+        // signed-in operator that follows.
+        if (!EnsureCanTriggerSecurityMasterBackfill())
+            return;
+
+        if (_authenticationSession is null ||
+            !_authenticationSession.TryAuthorize(UserPermission.TriggerBackfill, out var initiatedBy))
+        {
+            const string message = "Sign in with backfill permission to backfill trading parameters.";
+            StatusText = message;
+            _notificationService.ShowNotification("Security Master", message, NotificationType.Error);
+            _loggingService.LogWarning(
+                "Security Master trading-parameter backfill refused: the active desktop session does not grant TriggerBackfill or cannot name a valid actor.");
+            return;
+        }
+
         try
         {
             IsBackfillingTradingParams = true;
             BackfillStatus = "Starting trading parameters backfill…";
 
-            await _backfillService.BackfillAllAsync().ConfigureAwait(false);
+            // The resolved operator rides into every amendment's UpdatedBy: a backfill can
+            // amend up to 1,000 securities, and the audit trail must name who pressed the
+            // button rather than the automation that acted for them.
+            await _backfillService.BackfillAllAsync(initiatedBy).ConfigureAwait(false);
 
             BackfillStatus = "Trading parameters backfill completed successfully.";
             _notificationService.ShowNotification("Security Master",
@@ -3463,6 +3532,18 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             _disposed = true;
         }
 
+        if (_authenticationSession is not null)
+        {
+            WeakEventManager<WpfServices.DesktopAuthenticationSession, EventArgs>.RemoveHandler(
+                _authenticationSession,
+                nameof(WpfServices.DesktopAuthenticationSession.SignedOut),
+                OnAuthenticationSessionAuthenticationChanged);
+            WeakEventManager<WpfServices.DesktopAuthenticationSession, EventArgs>.RemoveHandler(
+                _authenticationSession,
+                nameof(WpfServices.DesktopAuthenticationSession.SignedIn),
+                OnAuthenticationSessionAuthenticationChanged);
+        }
+
         Stop();
     }
 
@@ -4316,93 +4397,5 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             _loggingService.LogError("Failed to resolve Security Master conflict", ex);
             _notificationService.ShowNotification("Security Master", "Conflict resolution failed.", NotificationType.Error);
         }
-    }
-
-    // ── Bulk Import ──────────────────────────────────────────────────────────
-    private async Task OnImportFromFile(CancellationToken ct = default)
-    {
-        var openDialog = new Microsoft.Win32.OpenFileDialog
-        {
-            Filter = "CSV/JSON Files|*.csv;*.json",
-            DefaultExt = ".csv",
-            Title = "Import Securities"
-        };
-
-        if (openDialog.ShowDialog() != true)
-            return;
-
-        try
-        {
-            IsImporting = true;
-            ImportTotal = 0;
-            ImportProcessed = 0;
-            ImportImported = 0;
-            ImportFailed = 0;
-            IsImportResultVisible = false;
-
-            var fileContent = await System.IO.File.ReadAllTextAsync(openDialog.FileName, ct).ConfigureAwait(false);
-            var fileExtension = System.IO.Path.GetExtension(openDialog.FileName);
-
-            var progress = new Progress<SecurityMasterImportProgress>(p =>
-            {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    ImportTotal = p.Total;
-                    ImportProcessed = p.Processed;
-                    ImportImported = p.Imported;
-                    ImportFailed = p.Failed;
-                    RaisePropertyChanged(nameof(ImportStatus));
-                });
-            });
-
-            var result = await _importService.ImportAsync(fileContent, fileExtension, progress, ct).ConfigureAwait(false);
-
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                ImportTotal = result.Imported + result.Skipped + result.Failed;
-                ImportImported = result.Imported;
-                ImportFailed = result.Failed;
-
-                var summary = $"Imported {result.Imported} securities, Skipped {result.Skipped}, Failed {result.Failed}.";
-                if (result.Errors.Any())
-                {
-                    summary += $"\r\nErrors:\r\n{string.Join("\r\n", result.Errors.Take(10))}";
-                    if (result.Errors.Count > 10)
-                        summary += $"\r\n... and {result.Errors.Count - 10} more errors.";
-                }
-
-                ImportResultSummary = summary;
-                IsImportResultVisible = true;
-                RaisePropertyChanged(nameof(ImportStatus));
-
-                _notificationService.ShowNotification(
-                    "Security Master Import",
-                    $"Import completed: {result.Imported} imported, {result.Failed} failed.",
-                    result.Failed == 0 ? NotificationType.Success : NotificationType.Warning);
-            });
-
-            // Refresh search results
-            _ = SearchAsync();
-            _ = RefreshOperatorWorkflowAsync();
-        }
-        catch (OperationCanceledException)
-        {
-            _notificationService.ShowNotification("Security Master Import", "Import cancelled.", NotificationType.Info);
-        }
-        catch (Exception ex)
-        {
-            _loggingService.LogError("Security Master import failed", ex);
-            _notificationService.ShowNotification("Security Master Import", $"Import failed: {ex.Message}", NotificationType.Error);
-        }
-        finally
-        {
-            IsImporting = false;
-        }
-    }
-
-    private void OnCloseImportResult()
-    {
-        IsImportResultVisible = false;
-        ImportResultSummary = string.Empty;
     }
 }

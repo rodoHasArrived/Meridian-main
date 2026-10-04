@@ -37,8 +37,8 @@
   margin: 0 auto;
   box-sizing: border-box;
   padding: 60px 68px;
-  background: var(--bg-light, #fff);
-  border: 1px solid var(--border, #CBD3DC);
+  background: var(--bg-light, #FBFAF8);
+  border: 1px solid var(--border, #E4E3DE);
   position: relative;
   overflow: hidden;
   display: flex;

@@ -37,10 +37,7 @@ CATALOG_SOURCE = (
     REPO_ROOT / "src" / "Meridian.Infrastructure" / "Adapters" / "Core"
     / "ProviderCapabilityDescriptorCatalog.cs"
 )
-STREAMING_SOURCE = (
-    REPO_ROOT / "src" / "Meridian.Application" / "Composition" / "Features"
-    / "ProviderFeatureRegistration.Registry.cs"
-)
+IDENTITY_SOURCE = REPO_ROOT / "src" / "Meridian.ProviderSdk" / "ProviderIdentity.cs"
 
 # Fallback vocabulary if the masker cannot be parsed. The live list is read from
 # SensitiveValueMasker so this guard and the runtime redaction share one definition of "secret".
@@ -105,16 +102,46 @@ def streaming_source_ids() -> frozenset[str]:
     startup. Advertising it as a primary real-time source is exactly the trap this guard exists
     to stop.
     """
+    return frozenset(
+        family for family, body in _descriptor_bodies().items()
+        if _declares_capability(body, "Streaming", 0)
+        and re.search(r"\bStreamingFactory:\s*", body)
+    )
+
+
+def provider_aliases() -> dict[str, str]:
+    """Read the same explicit aliases used by DataSourceKindConverter and registration."""
     try:
-        text = STREAMING_SOURCE.read_text(encoding="utf-8")
-        return frozenset(re.findall(r'RegisterStreamingFactory\(\s*"([^"]+)"', text))
+        text = IDENTITY_SOURCE.read_text(encoding="utf-8")
     except OSError:
-        return frozenset()
+        return {}
+    return dict(re.findall(r'\["([a-z0-9_.-]+)"\]\s*=\s*"([a-z0-9_.-]+)"', text))
 
 
-# DataSourceKind names and catalog family keys agree by casefold except where the enum uses the
-# short broker code. Keep this map tiny and explicit rather than guessing with prefix matching.
-CATALOG_ALIASES = {"ib": "ibkr"}
+def canonical_family(name: str) -> str:
+    folded = name.strip().casefold()
+    return provider_aliases().get(folded, folded)
+
+
+def _descriptor_bodies() -> dict[str, str]:
+    """Read family descriptors, retaining nested exclusions and multiline declarations."""
+    try:
+        text = CATALOG_SOURCE.read_text(encoding="utf-8")
+    except OSError:
+        return {}
+    return dict(re.findall(
+        r'new\(\s*"([a-z0-9_.-]+)"\s*,(.*?)(?=\bnew\(\s*"|\n\s*\];)',
+        text, re.S,
+    ))
+
+
+def _declares_capability(body: str, name: str, position: int) -> bool:
+    if re.search(rf"\b{name}:\s*typeof\(", body):
+        return True
+    # Positional slots precede the first named argument. A null slot is not a capability.
+    positional = re.split(r"\b[A-Z][A-Za-z]*:", body, maxsplit=1)[0]
+    slots = positional.split(",")
+    return len(slots) > position and bool(re.fullmatch(r"\s*typeof\([^()]+\)\s*\)?\s*", slots[position]))
 
 
 def _backfill_factory_bodies() -> dict[str, str]:
@@ -146,7 +173,7 @@ def _backfill_factory_bodies() -> dict[str, str]:
         return bodies
 
     for match in re.finditer(
-        r"private\s+IHistoricalDataProvider\?\s+Create(\w+)BackfillProvider\s*\(", text
+        r"(?:private|internal)\s+IHistoricalDataProvider\?\s+Create(\w+)BackfillProvider\s*\(", text
     ):
         depth = 0
         params_end = None
@@ -180,7 +207,7 @@ def _backfill_factory_bodies() -> dict[str, str]:
         else:
             continue
 
-        bodies[match.group(1).casefold()] = body
+        bodies[canonical_family(match.group(1))] = body
     return bodies
 
 
@@ -232,22 +259,10 @@ def historical_capable_families() -> frozenset[str]:
     An unreadable catalog returns empty and the caller skips the check rather than inventing a
     verdict.
     """
-    try:
-        text = CATALOG_SOURCE.read_text(encoding="utf-8")
-    except OSError:
-        return frozenset()
-
-    capable: set[str] = set()
-    for match in re.finditer(r'new\(\s*\n?\s*"([a-z0-9_.-]+)"\s*,(.*?)(?=\n\s*new\(|\n\s*\];)', text, re.S):
-        family, body = match.group(1), match.group(2)
-        if re.search(r"\bHistorical:\s*typeof\(", body):
-            capable.add(family)
-            continue
-        # Positional args stop at the first named argument (Name: value).
-        positional = re.split(r"\b[A-Z][A-Za-z]*:", body, maxsplit=1)[0]
-        if len(re.findall(r"\btypeof\(", positional)) >= 2:
-            capable.add(family)
-    return frozenset(capable)
+    return frozenset(
+        family for family, body in _descriptor_bodies().items()
+        if _declares_capability(body, "Historical", 1)
+    )
 
 
 def strip_jsonc(raw: str) -> str:
@@ -380,6 +395,8 @@ def main() -> int:
 
     document = json.loads(strip_jsonc(SAMPLE.read_text(encoding="utf-8")))
     errors: list[str] = []
+    if not provider_aliases():
+        errors.append(f"no provider aliases parsed from {IDENTITY_SOURCE.relative_to(REPO_ROOT)}")
 
     sources = document.get("DataSources", {}).get("Sources", []) or []
     rules = document.get("DataSources", {}).get("FailoverRules", []) or []
@@ -455,7 +472,7 @@ def main() -> int:
         f"names: {', '.join(sorted(kinds))}; numbers: "
         f"{', '.join(str(v) for v in sorted(kinds.values()))}"
     )
-    folded = {name.casefold(): name for name in kinds}
+    folded = {canonical_family(name): name for name in kinds}
     by_number = {value: name for name, value in kinds.items()}
 
     def resolve(value: object) -> tuple[str | None, str | None]:
@@ -480,7 +497,7 @@ def main() -> int:
                 if name
                 else (None, f"is a numeric string outside the defined DataSourceKind values ({valid})")
             )
-        name = folded.get(text.casefold())
+        name = folded.get(canonical_family(text))
         return (name, None) if name else (None, f"is not a DataSourceKind member ({valid})")
 
     streaming = streaming_source_ids()
@@ -488,7 +505,7 @@ def main() -> int:
         # An empty parse must not silently downgrade the real-time check to "anything goes":
         # DataSourceKind contains historical-only members, so the Yahoo trap would reopen.
         errors.append(
-            f"no streaming factories parsed from {STREAMING_SOURCE.relative_to(REPO_ROOT)}; "
+            f"no streaming factories parsed from {CATALOG_SOURCE.relative_to(REPO_ROOT)}; "
             f"the real-time DataSource check cannot run. Fix the parser or the path rather than "
             f"letting the guard pass by default."
         )
@@ -505,7 +522,7 @@ def main() -> int:
         # factory is rejected at collector startup, whether it is the top-level selector, a source
         # declared RealTime/Both, or a source pulled in by a failover rule.
         if needs_streaming and streaming and name is not None:
-            if name.casefold() not in {sid.casefold() for sid in streaming}:
+            if canonical_family(name) not in streaming:
                 errors.append(
                     f"{where} = {value!r} resolves to {name}, which has no streaming factory "
                     f"(registered: {', '.join(sorted(streaming))}). It cannot participate in "
@@ -634,7 +651,7 @@ def main() -> int:
             continue
 
         if must_stream:
-            if streaming and name.casefold() not in {sid.casefold() for sid in streaming}:
+            if streaming and canonical_family(name) not in streaming:
                 errors.append(
                     f"DataSources.{field} = {default_id!r} resolves to {name}, which has no "
                     f"streaming factory (registered: {', '.join(sorted(streaming))}), so the "
@@ -649,7 +666,7 @@ def main() -> int:
         # — the binding is synthesized, the provider is never registered, and
         # ProviderRoutingService drops the route as unsupported.
         historical = historical_capable_families()
-        if historical and CATALOG_ALIASES.get(name.casefold(), name.casefold()) not in historical:
+        if historical and canonical_family(name) not in historical:
             errors.append(
                 f"DataSources.{field} = {default_id!r} resolves to {name}, which declares no "
                 f"historical provider in ProviderCapabilityDescriptorCatalog (capable: "
@@ -659,7 +676,7 @@ def main() -> int:
 
         backfill_providers = document.get("Backfill", {}).get("Providers", {})
         gate = next(
-            (value for key, value in backfill_providers.items() if key.casefold() == name.casefold()),
+            (value for key, value in backfill_providers.items() if canonical_family(key) == canonical_family(name)),
             None,
         )
         # Whether an absent block is fatal depends on which activation rule the family's factory
@@ -669,14 +686,14 @@ def main() -> int:
         # default, and treating every family as default-on would miss the Synthetic case that
         # started this. When the rule cannot be read, no verdict is issued.
         enabled = gate.get("Enabled") if isinstance(gate, dict) else None
-        activation = backfill_activation().get(name.casefold())
+        activation = backfill_activation().get(canonical_family(name))
 
         # Enabled is necessary but not sufficient. A credential-gated factory returns null when
         # its key is absent, and this sample must never carry one — the secret-key scan below
         # rejects exactly that. So an out-of-box historical default has to name a provider that
         # registers without credentials; anything else synthesizes a binding with nothing behind
         # it for every operator who has not yet exported a key.
-        if name.casefold() in credential_gated_families():
+        if canonical_family(name) in credential_gated_families():
             errors.append(
                 f"DataSources.{field} = {default_id!r} resolves to {name}, whose backfill factory "
                 f"returns null when its credentials are absent. This sample is required to be "

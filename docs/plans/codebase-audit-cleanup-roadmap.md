@@ -1,6 +1,6 @@
 # Archived Legacy Plan: codebase-audit-cleanup-roadmap
 
-This plan has been migrated to [codebase-audit-cleanup-roadmap.md](../../archive/docs/plans/codebase-audit-cleanup-roadmap.md).
+This plan has been migrated to [codebase-audit-cleanup-roadmap.md](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/codebase-audit-cleanup-roadmap.md).
  It is now a source-material archive with replacement pointers in the canonical documentation lanes.
 
 **Status:** archive-migration-stub

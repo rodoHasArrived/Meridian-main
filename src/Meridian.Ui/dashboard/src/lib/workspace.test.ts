@@ -6,6 +6,7 @@ import {
   appendRouteQuery,
   evidenceWorkbenchPath,
   legacyWorkspaceRedirect,
+  marketDataDeskPath,
   normalizeLocalWorkstationRoute,
   normalizeWorkspacePath,
   resolveWorkstationRouteBreadcrumbLabel,
@@ -166,6 +167,36 @@ describe("workspace metadata", () => {
     );
   });
 
+  it("resolves in-app market data desk links through one canonical helper", () => {
+    expect(marketDataDeskPath("quotes")).toBe("/data/quotes");
+    expect(marketDataDeskPath("watchlist")).toBe("/data/quotes?view=watchlist");
+    expect(marketDataDeskPath("alerts", { symbol: "MSFT" })).toBe("/data/quotes?symbol=MSFT&view=alerts");
+  });
+
+  it("keeps retired route literals out of screen source", async () => {
+    // The folds in W8-UX-CONSOL-001 left call sites still naming the retired paths, so in-app
+    // navigation bounced through a redirect that exists for external bookmarks. The redirects and
+    // their catalog keys stay - this guard only keeps screens from reaching for them directly.
+    const modules = import.meta.glob("../screens/**/*.{ts,tsx}", { query: "?raw", import: "default", eager: true });
+    const retired = ["/data/watchlist", "/data/alerts", "/accounting/trial-balance", "/data/evidence"];
+    const offenders: string[] = [];
+
+    for (const [path, source] of Object.entries(modules)) {
+      if (path.includes(".test.")) {
+        continue;
+      }
+
+      for (const literal of retired) {
+        if ((source as string).includes(`"${literal}"`) || (source as string).includes(`'${literal}'`)) {
+          offenders.push(`${path} names ${literal}`);
+        }
+      }
+    }
+
+    expect(offenders, "screens must link through WORKSTATION_ROUTE_CATALOG or a desk-path helper, not retired routes")
+      .toEqual([]);
+  });
+
   it("returns workspace summaries for canonical keys", () => {
     expect(workspaceForKey("reporting")).toMatchObject({
       label: "Reporting",
@@ -270,6 +301,7 @@ describe("workspace metadata", () => {
       "OperationsClose",
       "OperationsContinuity",
       "PortfolioFamilyOffice",
+      "PortfolioLoanBook",
       "PortfolioShell",
       "ProviderHealth",
       "ProviderTrust",
@@ -305,8 +337,10 @@ describe("workspace metadata", () => {
   it("keeps every unwired route out of navigation but still routable", () => {
     // These screens render a permanent "not connected" state. They stay in the route catalog so
     // deep links and old bookmarks resolve, but the nav and command palette filter them out.
-    expect(UNWIRED_WORKSTATION_ROUTES.has("/portfolio/family-office")).toBe(true);
     expect(UNWIRED_WORKSTATION_ROUTES.has("/strategy/quant-lab?view=formulas")).toBe(true);
+
+    // Family Office loads /api/workstation/family-office/overview, so it is navigable again.
+    expect(UNWIRED_WORKSTATION_ROUTES.has("/portfolio/family-office")).toBe(false);
 
     // The wired parent route must stay navigable — only the formulas deep link is unwired.
     expect(UNWIRED_WORKSTATION_ROUTES.has("/strategy/quant-lab")).toBe(false);

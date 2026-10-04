@@ -49,6 +49,10 @@ MONITORING_COMPOSE = COMPOSE_DIR / "docker-compose.monitoring.yml"
 
 # Credentials the monitoring overlay must demand rather than default.
 REQUIRED_MONITORING_VARS = ("GF_SECURITY_ADMIN_USER", "GF_SECURITY_ADMIN_PASSWORD")
+EXPECTED_HEALTHCHECK = (
+    'test: ["CMD", "curl", "--fail", "--silent", "--show-error", '
+    '"http://localhost:8080/readyz"]'
+)
 
 
 class Finding(Exception):
@@ -81,6 +85,33 @@ def resolve_compose() -> list[str] | None:
     if shutil.which("docker-compose"):
         return ["docker-compose"]
     return None
+
+
+def check_source_contract(findings: list[str]) -> None:
+    """Hold the unauthenticated probe/scrape network boundary without Docker."""
+    base = BASE_COMPOSE.read_text(encoding="utf-8") if BASE_COMPOSE.is_file() else ""
+    overlay = MONITORING_COMPOSE.read_text(encoding="utf-8") if MONITORING_COMPOSE.is_file() else ""
+    if EXPECTED_HEALTHCHECK not in base:
+        findings.append(
+            "the meridian healthcheck must be exec-form curl with one transfer to "
+            "http://localhost:8080/readyz"
+        )
+    for path, binding in (
+        (BASE_COMPOSE, "127.0.0.1:8080:8080"),
+        (MONITORING_COMPOSE, "127.0.0.1:9090:9090"),
+        (MONITORING_COMPOSE, "127.0.0.1:3000:3000"),
+    ):
+        text = base if path == BASE_COMPOSE else overlay
+        if binding not in text:
+            findings.append(f"{path.relative_to(REPO_ROOT)} must publish {binding}")
+    published = re.findall(r'^\s*-\s*["\']?([^\s"\']+:\d+:\d+)["\']?\s*$', base + "\n" + overlay, re.MULTILINE)
+    unsafe = sorted(binding for binding in published if not binding.startswith("127.0.0.1:"))
+    if unsafe:
+        findings.append("monitoring compose publishes non-loopback host bindings: " + ", ".join(unsafe))
+    prometheus = MONITORING_DIR / "prometheus.yml"
+    scrape = prometheus.read_text(encoding="utf-8") if prometheus.is_file() else ""
+    if "meridian:8080" not in scrape or "metrics_path: /metrics" not in scrape:
+        findings.append("Prometheus must scrape meridian:8080/metrics inside the compose network")
 
 
 def check_rules(promtool: str, findings: list[str]) -> None:
@@ -222,6 +253,9 @@ def main() -> int:
     findings: list[str] = []
     ran: list[str] = []
     skipped: list[str] = []
+
+    check_source_contract(findings)
+    ran.append("monitoring source contract")
 
     promtool = resolve_promtool()
     if promtool:

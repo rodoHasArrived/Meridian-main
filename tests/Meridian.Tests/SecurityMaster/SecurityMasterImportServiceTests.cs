@@ -63,7 +63,7 @@ public sealed class SecurityMasterImportServiceTests
             CreateRequest(secondSecurityId, "IMPB", "US0000000001", "alpaca")
         });
 
-        var result = await importService.ImportAsync(fileContent, ".json", ct: CancellationToken.None);
+        var result = await importService.ImportAsync(fileContent, ".json", "test.operator", ct: CancellationToken.None);
 
         result.Imported.Should().Be(2);
         result.ConflictsDetected.Should().Be(1);

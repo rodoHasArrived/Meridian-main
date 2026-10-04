@@ -17,6 +17,12 @@ namespace Meridian.Storage.Store;
 /// Enumerates all <c>*.jsonl</c> files under the configured root — including any compression suffix
 /// the storage policy can emit (<c>.gz</c>/<c>.gzip</c>/<c>.zst</c>/<c>.lz4</c>/<c>.br</c>) —
 /// deserialises each line, and applies the <see cref="MarketDataQuery"/> predicate in-process.
+/// <para>
+/// <b>Concurrency posture: read-only.</b> This type never writes, appends, or deletes — it opens
+/// each file with <c>FileAccess.Read</c> and shares write and delete so a concurrent writer or an
+/// archival replace does not fault the read. Writes to this JSONL tree are owned by the storage
+/// sink, so there is no mutation posture to declare here (#2697).
+/// </para>
 /// </summary>
 public sealed class JsonlMarketDataStore : IMarketDataStore
 {

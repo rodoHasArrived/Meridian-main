@@ -21,15 +21,235 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
     private readonly IAccountingConfigurationStore _store;
     private readonly IAccountingActionAuditStore _auditStore;
     private readonly ILedgerBookService? _ledgerBookService;
+    private readonly IAccountingAuditPendingMarkerStore? _pendingAuditMarkers;
 
+    /// <summary>
+    /// Serializes a whole audited mutation: recover, declare the marker, save, append, clear.
+    /// </summary>
+    /// <remarks>
+    /// The pending marker is a single slot, so concurrent mutations do not merely race — they
+    /// destroy each other's evidence. Two callers can both finish recovery before either declares,
+    /// and the second declaration then overwrites the first; if the first mutation's save lands but
+    /// its append fails, the second clears the surviving marker and the first is left permanently
+    /// unaudited with nothing recording that it was interrupted. That is precisely the silent gap
+    /// the marker exists to close, so the marker's whole lifecycle has to be one critical section
+    /// rather than five independent steps.
+    ///
+    /// <para>Both shipping compositions register this service as a singleton, so an instance lock
+    /// covers every mutation in the process. Cross-process serialization is the stores' own concern
+    /// and they carry it: the file store holds a cross-process lock file across each whole
+    /// save/append cycle (with the anchor's monotonic head as backstop), and the PostgreSQL posture
+    /// locks the chain head row FOR UPDATE inside the append transaction.</para>
+    /// </remarks>
+    private readonly SemaphoreSlim _auditCycleLock = new(1, 1);
+
+    /// <param name="pendingAuditMarkers">
+    /// Makes the mutation and its audit append recoverable as a pair (W9-GOV-008 criterion 3). When
+    /// absent, the historical save-then-audit ordering applies and an append that fails after the
+    /// mutation commits leaves the chain silently short of that mutation.
+    /// </param>
     public AccountingConfigurationService(
         IAccountingConfigurationStore store,
         IAccountingActionAuditStore auditStore,
-        ILedgerBookService? ledgerBookService = null)
+        ILedgerBookService? ledgerBookService = null,
+        IAccountingAuditPendingMarkerStore? pendingAuditMarkers = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _auditStore = auditStore ?? throw new ArgumentNullException(nameof(auditStore));
         _ledgerBookService = ledgerBookService;
+        _pendingAuditMarkers = pendingAuditMarkers;
+    }
+
+    /// <summary>
+    /// Resolves an audit append that was declared but never confirmed, and reports what it found.
+    /// </summary>
+    /// <remarks>
+    /// <para>Runs before every audited mutation, and is worth calling at startup so an interrupted
+    /// pair is surfaced before an operator's next action rather than attributed to it.</para>
+    ///
+    /// <para>The retained hashes are what make this decidable. An interrupted pair leaves the
+    /// workspace at either the mutation's before-state or its after-state, and the marker carries
+    /// both, so recovery can tell "the mutation landed and its audit did not" from "the mutation
+    /// never landed" instead of guessing — and can refuse to guess when the state matches neither.</para>
+    /// </remarks>
+    /// <exception cref="AccountingAuditRecoveryException">
+    /// The retained workspace matches neither hash, so no honest resolution exists.
+    /// </exception>
+    public async Task<AccountingAuditRecoveryResult> RecoverPendingAuditAsync(CancellationToken ct = default)
+    {
+        await _auditCycleLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            return await RecoverPendingAuditCoreAsync(ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _auditCycleLock.Release();
+        }
+    }
+
+    /// <summary>
+    /// The recovery itself, assuming <see cref="_auditCycleLock"/> is already held.
+    /// </summary>
+    /// <remarks>
+    /// Split from the public entry point because <see cref="SaveWithAuditAsync"/> holds the lock for
+    /// its whole cycle and calls this directly; routing it back through the public method would
+    /// deadlock on the non-reentrant semaphore.
+    /// </remarks>
+    private async Task<AccountingAuditRecoveryResult> RecoverPendingAuditCoreAsync(CancellationToken ct)
+    {
+        if (_pendingAuditMarkers is null)
+        {
+            return new AccountingAuditRecoveryResult(AccountingAuditRecoveryOutcome.Nothing);
+        }
+
+        var marker = await _pendingAuditMarkers.ReadAsync(ct).ConfigureAwait(false);
+        if (marker is null)
+        {
+            return new AccountingAuditRecoveryResult(AccountingAuditRecoveryOutcome.Nothing);
+        }
+
+        var auditEvent = marker.AuditEvent;
+        var fundProfileId = NormalizeFundProfileId(auditEvent.FundProfileId);
+
+        var retainedAudit = await _auditStore
+            .ListAsync(fundProfileId, auditEvent.LedgerBookId, ct, auditEvent.TenantId, auditEvent.CompanyId)
+            .ConfigureAwait(false);
+        if (retainedAudit.Any(item => item.AuditEventId == auditEvent.AuditEventId))
+        {
+            // Both sides landed; only the clear was lost -- but "an event with this id is retained"
+            // is not the same claim as "this event is retained". Sharing an id with a different
+            // payload means two distinct events claim one identity, and the marker holds the only
+            // copy of the one that was actually declared, so clearing on the id alone would discard
+            // it and report success (Codex review finding on PR #2871).
+            //
+            // Established by replaying the append rather than by comparing here: both postures
+            // already decide equivalence over the event as they normalize and store it, which
+            // trims and nulls blank text. A digest taken in this service would differ from theirs
+            // for events they consider identical, and would raise incidents over whitespace. The
+            // append writes nothing when the payloads match and names the collision when they do
+            // not, which is exactly the check this branch was missing.
+            await _auditStore.AppendAsync(auditEvent, ct).ConfigureAwait(false);
+
+            // The audit landing does not prove the state it describes is still there. This branch
+            // returned before the workspace was ever loaded, so every Saved-phase check below was
+            // skipped whenever the event happened to be retained: a mutation whose save and append
+            // both landed, and whose workspace was then lost or rolled back, cleared the only
+            // pending evidence and reported success (Codex review finding on PR #2871). A retained
+            // audit event is stronger proof than the Saved phase, not weaker, so the state it names
+            // has to be there.
+            var auditedWorkspace = await TryLoadRetainedWorkspaceAsync(
+                    fundProfileId, auditEvent.LedgerBookId, ct, auditEvent.TenantId, auditEvent.CompanyId)
+                .ConfigureAwait(false);
+            if (auditedWorkspace is null
+                || !string.Equals(Hash(auditedWorkspace), auditEvent.AfterHash, StringComparison.Ordinal))
+            {
+                throw new AccountingAuditRecoveryException(
+                    auditEvent.AuditEventId,
+                    "An interrupted accounting mutation cannot be reconciled: its audit event is "
+                    + "retained, so the mutation completed, but the workspace it wrote is "
+                    + (auditedWorkspace is null ? "no longer retained" : "no longer what it recorded")
+                    + ". The pending marker is kept so the unaudited loss stays visible.");
+            }
+
+            await _pendingAuditMarkers.ClearAsync(auditEvent.AuditEventId, ct).ConfigureAwait(false);
+            return new AccountingAuditRecoveryResult(
+                AccountingAuditRecoveryOutcome.AlreadyAudited, auditEvent.AuditEventId);
+        }
+
+        var workspace = await TryLoadRetainedWorkspaceAsync(
+                fundProfileId, auditEvent.LedgerBookId, ct, auditEvent.TenantId, auditEvent.CompanyId)
+            .ConfigureAwait(false);
+        if (workspace is null)
+        {
+            // Nothing is retained for this scope. What that means depends on what was retained when
+            // the intent was declared, which is why the marker records it (Codex review finding on
+            // PR #2871): SaveAsync only ever inserts or replaces, so it cannot produce absence.
+            if (marker.Phase == AccountingAuditPendingMarkerPhase.Saved)
+            {
+                // The store reported this mutation saved, and nothing is retained now. That cannot
+                // be a mutation which never landed, so the retained state was lost -- including for
+                // a first mutation, where BeforeStateRetained is false and absence would otherwise
+                // look exactly like a save that never ran.
+                throw new AccountingAuditRecoveryException(
+                    auditEvent.AuditEventId,
+                    "An interrupted accounting mutation cannot be reconciled: the store reported it "
+                    + "saved and no workspace is retained for this scope. The pending marker is kept "
+                    + "so the unaudited mutation and the lost state both stay visible.");
+            }
+
+            if (marker.BeforeStateRetained)
+            {
+                // A workspace existed before the mutation and is gone now. The save did not do that,
+                // so retained state was destroyed -- an incident, and reporting it as a discarded
+                // mutation would clear the one marker recording both the loss and the unaudited
+                // mutation.
+                throw new AccountingAuditRecoveryException(
+                    auditEvent.AuditEventId,
+                    "An interrupted accounting mutation cannot be reconciled: a workspace was "
+                    + "retained for this scope when the mutation was declared and none is retained "
+                    + "now. A save never removes a workspace, so the retained state was lost by "
+                    + "something else; the pending marker is kept so the incident stays visible.");
+            }
+
+            // Nothing was retained before either, so absence now is consistent with a save that
+            // never landed, and there is nothing to audit.
+            //
+            // Established from the store rather than by comparing a digest, because the digest of
+            // "absent" is not stable: LoadWorkspaceAsync synthesizes an empty workspace stamped with
+            // the current instant, so the hash taken when the marker was written and the hash taken
+            // here are different values for the same absence. It matched neither BeforeHash nor
+            // AfterHash and fell through to the unreconcilable case below -- which is raised inside
+            // the recovery that every mutation runs first, so one crash during the first mutation on
+            // a fund profile stopped every mutation after it, permanently.
+            await _pendingAuditMarkers.ClearAsync(auditEvent.AuditEventId, ct).ConfigureAwait(false);
+            return new AccountingAuditRecoveryResult(
+                AccountingAuditRecoveryOutcome.MutationDiscarded, auditEvent.AuditEventId);
+        }
+
+        var currentHash = Hash(workspace);
+
+        if (string.Equals(currentHash, auditEvent.AfterHash, StringComparison.Ordinal))
+        {
+            // The mutation is retained but unaudited — exactly the gap a chain cannot see, because a
+            // chain proves nobody edited what is there and says nothing about what is missing.
+            await _auditStore.AppendAsync(auditEvent, ct).ConfigureAwait(false);
+            await _pendingAuditMarkers.ClearAsync(auditEvent.AuditEventId, ct).ConfigureAwait(false);
+            return new AccountingAuditRecoveryResult(
+                AccountingAuditRecoveryOutcome.AuditReplayed, auditEvent.AuditEventId);
+        }
+
+        if (marker.Phase == AccountingAuditPendingMarkerPhase.Saved)
+        {
+            // A Saved marker means the store reported this mutation written, so the only state that
+            // reconciles is the one it wrote -- handled above. Anything else, including a workspace
+            // back at its exact before-state, is retained state that was rolled back or lost after
+            // the fact, not a mutation that never happened. Discarding it would clear the one record
+            // of both the loss and the unaudited mutation.
+            //
+            // Checked here rather than only on the absent-workspace path: absence is not the only
+            // shape a rollback takes, and a book-scoped row lost behind a surviving fund-level
+            // fallback presents as a retained workspace at the before-hash.
+            throw new AccountingAuditRecoveryException(
+                auditEvent.AuditEventId,
+                "An interrupted accounting mutation cannot be reconciled: the store reported it "
+                + "saved, but the retained workspace is not the one it saved. The pending marker is "
+                + "kept so the unaudited mutation and the altered state both stay visible.");
+        }
+
+        if (string.Equals(currentHash, auditEvent.BeforeHash, StringComparison.Ordinal))
+        {
+            // The mutation never landed, so auditing it would record something that did not happen.
+            await _pendingAuditMarkers.ClearAsync(auditEvent.AuditEventId, ct).ConfigureAwait(false);
+            return new AccountingAuditRecoveryResult(
+                AccountingAuditRecoveryOutcome.MutationDiscarded, auditEvent.AuditEventId);
+        }
+
+        throw new AccountingAuditRecoveryException(
+            auditEvent.AuditEventId,
+            "An interrupted accounting mutation cannot be reconciled: the retained workspace matches "
+            + "neither the recorded before-state nor the after-state, so the pending audit event can "
+            + "be neither replayed nor discarded truthfully.");
     }
 
     public async Task<AccountingConfigurationWorkspaceDto> GetWorkspaceAsync(
@@ -658,9 +878,18 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
             RulesStudio = BuildRulesStudio(workspace, validation)
         };
         var afterHash = Hash(finalWorkspace);
-        await _store.SaveAsync(finalWorkspace, ct).ConfigureAwait(false);
-        await _auditStore.AppendAsync(
-            new AccountingActionAuditEventDto(
+
+        // One critical section for the whole cycle. See _auditCycleLock: the marker is a single
+        // slot, so overlapping mutations overwrite each other's declarations and a crash in the
+        // loser becomes undetectable.
+        await _auditCycleLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            // Resolve any interrupted pair before starting another, so an outstanding marker is
+            // attributed to the mutation that actually caused it rather than to this one.
+            await RecoverPendingAuditCoreAsync(ct).ConfigureAwait(false);
+
+            var auditEvent = new AccountingActionAuditEventDto(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 RequireText(actor, nameof(actor)),
@@ -674,13 +903,89 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
                 evidenceLinks ?? [],
                 NormalizeOptional(companyId),
                 NormalizePrincipalIds(reportGroupPrincipalIds),
-                NormalizeOptional(tenantId)),
-            ct).ConfigureAwait(false);
+                NormalizeOptional(tenantId));
+
+            // Declared before the mutation, cleared after the append. The two stores are separate
+            // interfaces over separate artifacts, so there is no transaction to share; this is what turns
+            // "the append silently didn't happen" into a recorded, decidable incident.
+            var beforeStateRetained = false;
+            if (_pendingAuditMarkers is not null)
+            {
+                // Whether anything is retained for this scope right now. Recovery cannot infer it
+                // afterwards: absence then reads the same whether the save never landed or the
+                // retained state was destroyed, and those call for opposite actions. Read inside the
+                // cycle lock, immediately before the save, so it describes the state the save is
+                // about to act on.
+                beforeStateRetained = await TryLoadRetainedWorkspaceAsync(
+                        finalWorkspace.FundProfileId,
+                        ledgerBookId ?? finalWorkspace.LedgerBookId,
+                        ct,
+                        tenantId,
+                        companyId)
+                    .ConfigureAwait(false) is not null;
+
+                await _pendingAuditMarkers
+                    .WriteAsync(
+                        new AccountingAuditPendingMarker(
+                            auditEvent, DateTimeOffset.UtcNow, beforeStateRetained),
+                        ct)
+                    .ConfigureAwait(false);
+            }
+
+            await _store.SaveAsync(finalWorkspace, ct).ConfigureAwait(false);
+
+            // The save returned, so retained state exists from here on and its later absence is a
+            // loss rather than a mutation that never happened. Recorded before the append, because
+            // the append is the step that may not complete.
+            if (_pendingAuditMarkers is not null)
+            {
+                await _pendingAuditMarkers
+                    .WriteAsync(
+                        new AccountingAuditPendingMarker(
+                            auditEvent,
+                            DateTimeOffset.UtcNow,
+                            beforeStateRetained,
+                            AccountingAuditPendingMarkerPhase.Saved),
+                        ct)
+                    .ConfigureAwait(false);
+            }
+
+            await _auditStore.AppendAsync(auditEvent, ct).ConfigureAwait(false);
+
+            if (_pendingAuditMarkers is not null)
+            {
+                await _pendingAuditMarkers.ClearAsync(auditEvent.AuditEventId, ct).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            _auditCycleLock.Release();
+        }
 
         return await GetWorkspaceAsync(finalWorkspace.FundProfileId, ledgerBookId ?? finalWorkspace.LedgerBookId, ct, finalWorkspace.TenantId, finalWorkspace.CompanyId).ConfigureAwait(false);
     }
 
     private async Task<AccountingConfigurationWorkspaceDto> LoadWorkspaceAsync(
+        string fundProfileId,
+        Guid? ledgerBookId,
+        CancellationToken ct,
+        string? tenantId = null,
+        string? companyId = null)
+        => await TryLoadRetainedWorkspaceAsync(fundProfileId, ledgerBookId, ct, tenantId, companyId)
+               .ConfigureAwait(false)
+           ?? EmptyWorkspace(fundProfileId, ledgerBookId, tenantId, companyId);
+
+    /// <summary>
+    /// The retained workspace, or <c>null</c> when nothing has been saved for this scope.
+    /// </summary>
+    /// <remarks>
+    /// Split out of <see cref="LoadWorkspaceAsync"/> so a caller can tell "nothing is retained"
+    /// apart from "here is an empty starting point". The two are the same document to a caller
+    /// composing a mutation, and completely different to
+    /// <see cref="RecoverPendingAuditCoreAsync"/>, which has to decide whether an interrupted
+    /// mutation landed.
+    /// </remarks>
+    private async Task<AccountingConfigurationWorkspaceDto?> TryLoadRetainedWorkspaceAsync(
         string fundProfileId,
         Guid? ledgerBookId,
         CancellationToken ct,
@@ -712,7 +1017,25 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
             }
         }
 
-        return new AccountingConfigurationWorkspaceDto(
+        return null;
+    }
+
+    /// <summary>
+    /// The empty starting point served when a scope has no retained workspace.
+    /// </summary>
+    /// <remarks>
+    /// <c>UpdatedAtUtc</c> is the current instant, which makes this document different on every
+    /// call. Nothing may compare a digest of it across calls: the digest of "absent" would differ
+    /// from itself, and a caller asking "is the retained state still what I read?" would always be
+    /// told no. Absence is established by <see cref="TryLoadRetainedWorkspaceAsync"/> returning
+    /// null instead.
+    /// </remarks>
+    private static AccountingConfigurationWorkspaceDto EmptyWorkspace(
+        string fundProfileId,
+        Guid? ledgerBookId,
+        string? tenantId,
+        string? companyId)
+        => new(
             fundProfileId,
             ledgerBookId,
             AccountingConfigurationStatusDto.Draft,
@@ -727,7 +1050,6 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
             RuleTestCases: [],
             TenantId: NormalizeOptional(tenantId),
             CompanyId: NormalizeOptional(companyId));
-    }
 
     private async Task<IReadOnlyList<LedgerBookDto>> LoadLedgerBooksAsync(string fundProfileId, Guid? ledgerBookId, CancellationToken ct)
     {

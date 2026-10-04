@@ -47,16 +47,17 @@ describe("buildTrialBalanceAccountTreeNodes", () => {
     expect(nodes).toHaveLength(2);
     const assetGroup = nodes.find((node) => node.code === "Asset");
     expect(assetGroup?.children).toHaveLength(2);
-    expect(assetGroup?.children?.map((child) => child.code)).toEqual(["acct-cash", "acct-receivable"]);
+    expect(assetGroup?.children?.map((child) => child.code)).toEqual(["row-cash", "row-receivable"]);
+    expect(assetGroup?.children?.map((child) => child.codeLabel)).toEqual(["acct-cash", "acct-receivable"]);
     expect(assetGroup?.children?.map((child) => child.balance)).toEqual([500, 200]);
     expect(assetGroup?.balance).toBeUndefined();
 
     const liabilityGroup = nodes.find((node) => node.code === "Liability");
     expect(liabilityGroup?.children).toHaveLength(1);
-    expect(liabilityGroup?.children?.[0]).toMatchObject({ code: "acct-payable", name: "Payable", balance: -100 });
+    expect(liabilityGroup?.children?.[0]).toMatchObject({ code: "row-payable", codeLabel: "acct-payable", name: "Payable", balance: -100 });
   });
 
-  it("keys leaf nodes by the real GL account id when one is assigned", () => {
+  it("labels leaf nodes with the real GL account id, which is not the key", () => {
     const rows = [
       buildRow({ rowId: "row-a", financialAccountId: "acct-a", accountLabel: "Cash", accountTypeLabel: "Asset", balance: 10 }),
       buildRow({ rowId: "row-b", financialAccountId: "acct-b", accountLabel: "Cash", accountTypeLabel: "Asset", balance: 20 })
@@ -64,10 +65,30 @@ describe("buildTrialBalanceAccountTreeNodes", () => {
 
     const nodes = buildTrialBalanceAccountTreeNodes(rows);
 
-    expect(nodes[0].children?.map((child) => child.code)).toEqual(["acct-a", "acct-b"]);
+    expect(nodes[0].children?.map((child) => child.code)).toEqual(["row-a", "row-b"]);
+    expect(nodes[0].children?.map((child) => child.codeLabel)).toEqual(["acct-a", "acct-b"]);
   });
 
-  it("falls back to the unique rowId when no GL account id is assigned", () => {
+  it("keeps two rows for the same account distinct, which the account id cannot", () => {
+    // The ledger returns one row per account per dimension set, so the same GL account in two
+    // funds arrives twice. Keying on the account id gave the tree two identically-coded leaves:
+    // AccountTree requires code to be unique, so selecting either highlighted the first and the
+    // reverse lookup on select resolved both to the first fund's row.
+    const rows = [
+      buildRow({ rowId: "row-alpha", financialAccountId: "1000", accountLabel: "Cash", accountTypeLabel: "Asset", balance: 10, dimensionLabel: "fund-alpha" }),
+      buildRow({ rowId: "row-beta", financialAccountId: "1000", accountLabel: "Cash", accountTypeLabel: "Asset", balance: 20, dimensionLabel: "fund-beta" })
+    ];
+
+    const nodes = buildTrialBalanceAccountTreeNodes(rows);
+    const codes = nodes[0].children?.map((child) => child.code) ?? [];
+
+    expect(codes).toEqual(["row-alpha", "row-beta"]);
+    expect(new Set(codes).size).toBe(codes.length);
+    // And the scope is on the tag, so the two are also distinguishable on sight.
+    expect(nodes[0].children?.map((child) => child.codeLabel)).toEqual(["1000 · fund-alpha", "1000 · fund-beta"]);
+  });
+
+  it("renders no account tag at all when no GL account id is assigned", () => {
     const rows = [
       buildRow({ rowId: "row-a", financialAccountId: null, accountLabel: "Cash", accountTypeLabel: "Asset", balance: 10 }),
       buildRow({ rowId: "row-b", financialAccountId: null, accountLabel: "Cash", accountTypeLabel: "Asset", balance: 20 })
@@ -76,5 +97,7 @@ describe("buildTrialBalanceAccountTreeNodes", () => {
     const nodes = buildTrialBalanceAccountTreeNodes(rows);
 
     expect(nodes[0].children?.map((child) => child.code)).toEqual(["row-a", "row-b"]);
+    // The composite rowId is the key, not something to show as an account "code".
+    expect(nodes[0].children?.map((child) => child.codeLabel)).toEqual(["", ""]);
   });
 });

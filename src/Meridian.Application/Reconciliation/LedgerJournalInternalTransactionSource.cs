@@ -1,5 +1,6 @@
 using System.Globalization;
 using Meridian.Contracts.Ledger;
+using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
@@ -13,18 +14,18 @@ namespace Meridian.Application.Reconciliation;
 /// run's external (custodian) account key, matching how the retained cash and position populations
 /// are labeled. <paramref name="AccountAliases"/> are the identifiers a posted journal may be
 /// stamped with for this account (the fund-account GUID, the account's ledger reference, the
-/// external custodian key); a journal attributable to none of them is never projected. When
-/// <paramref name="LedgerBookId"/> and <paramref name="AccountingPeriodId"/> are both retained, they
-/// replace the posting-timestamp window as the journal-store query authority.
+/// external custodian key); a journal attributable to none of them is never projected.
 /// </summary>
 public sealed record InternalLedgerTransactionQuery(
     string AccountLabel,
     IReadOnlyList<string> AccountAliases,
     DateOnly PeriodStart,
     DateOnly PeriodEnd,
-    string BaseCurrency,
-    Guid? LedgerBookId = null,
-    Guid? AccountingPeriodId = null);
+    string BaseCurrency)
+{
+    /// <summary>When present, journals must belong to this exact retained accounting authority.</summary>
+    public StatementAccountingScope? AccountingScope { get; init; }
+}
 
 /// <summary>
 /// Supplies the internal ledger-transaction population a statement run reconciles against. The
@@ -51,18 +52,18 @@ public interface IInternalLedgerTransactionSource
 /// false match or a false internal-only break, both worse than the honest informational break):
 /// <list type="bullet">
 ///   <item><b>Period scope:</b> journals are read via the tenant-scoped
-///     <see cref="ILedgerJournalStore.QueryAsync"/>. A retained ledger-book and accounting-period
-///     identity scopes the store query directly, so a journal posted later but effective in the
-///     statement period remains visible. Legacy unscoped runs retain the posting-timestamp query
-///     window. In both cases each entry's effective date
+///     <see cref="ILedgerJournalStore.QueryAsync"/> by accounting effective date, not posting
+///     timestamp, so late-posted entries and reversal/rebook records effective inside the statement
+///     window remain visible. Each entry's effective date
 ///     (<see cref="JournalEntryMetadata.EffectiveDate"/>, falling back to the posting timestamp) is
-///     re-checked against the statement window.</item>
-///   <item><b>Account attribution:</b> an entry is projected only when its metadata
-///     <c>FinancialAccountId</c> or any line's account-scoped <c>FinancialAccountId</c> equals one
-///     of the query's account aliases (ordinal-ignore-case). Only matching account-scoped cash lines
-///     are netted; an unscoped cash line is accepted only when the entry metadata itself matches.
-///     Unattributed journals — including an entire currency-blind single-account book — fail closed
-///     to the empty population.</item>
+///     re-checked against the window so an out-of-period record a store streams anyway is never
+///     projected. Governed intake additionally validates the retained fund/book/period binding,
+///     queries that exact book and period, and excludes foreign-period records before reversal
+///     filtering.</item>
+///   <item><b>Account attribution:</b> only cash legs whose account-scoped
+///     <c>FinancialAccountId</c> equals one of the query aliases are projected. An unscoped legacy
+///     cash leg may inherit matching journal metadata or the journal's one unambiguous line-level
+///     account scope. Unattributed or mixed-scope legacy cash legs fail closed.</item>
 ///   <item><b>Custodian visibility:</b> only entries that move cash project — at least one line on
 ///     a well-known cash asset account (<c>Cash</c> or a per-currency <c>Cash (XXX)</c>). Pure
 ///     internal postings (accrual declarations, fair-value marks, revaluations, period close,
@@ -71,12 +72,14 @@ public interface IInternalLedgerTransactionSource
 ///     entries (<c>reversal.of</c> tag) and the entries they reverse are both excluded: the pair
 ///     nets to nothing internally, and if the custodian really executed the movement its statement
 ///     row still surfaces as an honest break.</item>
-///   <item><b>Amount and currency:</b> the projected net amount is the entry's net cash movement
-///     (debits positive, credits negative), grouped per resolved cash currency — the line's
-///     transaction-currency detail when present, else the <c>Cash (XXX)</c> denomination, else the
-///     run's base currency (currency-blind legacy legs are assumed base-denominated). A
-///     multi-currency entry (an FX conversion) projects one record per currency, mirroring the two
-///     movements a statement shows; a zero net movement in a currency is skipped.</item>
+///   <item><b>Amount and currency:</b> the projected net amount is the requested account's cash
+///     movement only (debits positive, credits negative), grouped per resolved cash currency — the
+///     line's transaction-currency detail when present, else the <c>Cash (XXX)</c> denomination,
+///     else the run's base currency (currency-blind legacy legs are assumed base-denominated).
+///     Explicitly account-scoped cash legs belonging to another account are never netted into this
+///     account's transaction. A multi-currency entry (an FX conversion) projects one record per
+///     currency, mirroring the two movements a statement shows; a zero net movement in a currency
+///     is skipped.</item>
 ///   <item><b>Type:</b> the canonical statement vocabulary (<c>trade</c>/<c>fee</c>/<c>dividend</c>/
 ///     <c>transaction</c>) is derived from the journal's activity classification when stamped, else
 ///     from its account shape (dividend accounts before instrument accounts, so a receivable
@@ -179,53 +182,59 @@ public sealed class LedgerJournalInternalTransactionSource(
         }
 
         IReadOnlyList<LedgerJournalEntryRecord> records;
-        var ledgerBookId = query.LedgerBookId is { } retainedLedgerBookId && retainedLedgerBookId != Guid.Empty
-            ? retainedLedgerBookId
-            : (Guid?)null;
-        var accountingPeriodId = query.AccountingPeriodId is { } retainedAccountingPeriodId && retainedAccountingPeriodId != Guid.Empty
-            ? retainedAccountingPeriodId
-            : (Guid?)null;
-        if (ledgerBookId.HasValue != accountingPeriodId.HasValue)
-        {
-            // Exact accounting authority is atomic. Falling back to posting timestamps when only
-            // half of the retained scope is present could silently read another book or period.
-            return [];
-        }
-
-        var hasExactAccountingScope = ledgerBookId.HasValue && accountingPeriodId.HasValue;
         try
         {
-            var journalQuery = hasExactAccountingScope
-                ? new LedgerJournalEntryQuery(
-                    LedgerBookId: ledgerBookId,
-                    PeriodId: accountingPeriodId)
-                : new LedgerJournalEntryQuery(
-                    OccurredFrom: new DateTimeOffset(periodStart.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
-                    OccurredTo: new DateTimeOffset(query.PeriodEnd.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero));
+            if (query.AccountingScope is { } scope)
+            {
+                if (string.IsNullOrWhiteSpace(scope.FundProfileId)
+                    || scope.LedgerBookId == Guid.Empty
+                    || scope.AccountingPeriodId == Guid.Empty
+                    || scope.AsOfDate != query.PeriodEnd)
+                {
+                    return [];
+                }
+
+                var book = await journalStore.GetLedgerBookAsync(scope.LedgerBookId, ct).ConfigureAwait(false);
+                var period = await journalStore.GetPeriodAsync(scope.AccountingPeriodId, ct).ConfigureAwait(false);
+                if (book is null
+                    || book.LedgerBookId != scope.LedgerBookId
+                    || !string.Equals(book.FundProfileId.Trim(), scope.FundProfileId.Trim(), StringComparison.OrdinalIgnoreCase)
+                    || book.AccountingBasis != AccountingBasisKindDto.Primary
+                    || string.IsNullOrWhiteSpace(book.BaseCurrency)
+                    || period is null
+                    || period.PeriodId != scope.AccountingPeriodId
+                    || period.LedgerBookId != scope.LedgerBookId
+                    || period.StartDate != periodStart
+                    || period.EndDate != query.PeriodEnd)
+                {
+                    return [];
+                }
+
+                // Currency-blind legacy cash legs inherit the retained book's denomination,
+                // not the matcher's reporting currency.
+                query = query with { BaseCurrency = book.BaseCurrency };
+            }
+
             records = await journalStore.QueryAsync(
-                    journalQuery,
+                    new LedgerJournalEntryQuery(
+                        LedgerBookId: query.AccountingScope?.LedgerBookId,
+                        PeriodId: query.AccountingScope?.AccountingPeriodId,
+                        EffectiveFrom: periodStart,
+                        EffectiveTo: query.PeriodEnd),
                     ct)
                 .ConfigureAwait(false);
-            if (hasExactAccountingScope)
-            {
-                // A store that violates its period predicate must not bleed another accounting
-                // period into this population. Ledger-book ownership is enforced by the store's
-                // period join; the record itself retains the exact period id for this second check.
-                records = (records ?? [])
-                    .Where(record => record.PeriodId == accountingPeriodId.Value)
-                    .ToArray();
-            }
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             // Fail closed to the empty transaction population only: the retained cash/position
             // populations must keep reconciling even when the journal store is unavailable or does
             // not support scoped queries.
+            // AccountLabel can be a provider-side bank, brokerage, or IBAN identifier. Keep it and
+            // the alias set out of diagnostics; the caller can correlate the failed reconciliation
+            // run without copying sensitive account data into an application log.
             logger?.LogWarning(
                 ex,
-                "Failed to query posted journals for retained ledger book {LedgerBookId} and accounting period {AccountingPeriodId}; projecting an empty internal transaction population.",
-                ledgerBookId,
-                accountingPeriodId);
+                "Failed to query posted journals for a reconciliation account; projecting an empty internal transaction population.");
             return [];
         }
 
@@ -238,19 +247,21 @@ public sealed class LedgerJournalInternalTransactionSource(
         HashSet<string> aliases,
         DateOnly periodStart)
     {
-        var reversalExclusions = CollectReversalExclusions(records);
+        var scopedRecords = query.AccountingScope is { } scope
+            ? records.Where(record => record.PeriodId == scope.AccountingPeriodId).ToArray()
+            : records;
+        var reversalExclusions = CollectReversalExclusions(scopedRecords);
         var baseCurrency = string.IsNullOrWhiteSpace(query.BaseCurrency)
             ? DefaultBaseCurrency
             : query.BaseCurrency.Trim().ToUpperInvariant();
 
         var transactions = new List<InternalLedgerTransaction>();
-        foreach (var record in records)
+        foreach (var record in scopedRecords)
         {
             var entry = record.Entry;
             if (reversalExclusions.Contains(entry.JournalEntryId)
                 || record.PostingKind == LedgerPostingKindDto.ClosingEntry
-                || (entry.Metadata.ActivityType is { } activity && InternalOnlyActivityTypes.Contains(activity))
-                || !BelongsToAccount(entry, aliases))
+                || (entry.Metadata.ActivityType is { } activity && InternalOnlyActivityTypes.Contains(activity)))
             {
                 continue;
             }
@@ -258,12 +269,7 @@ public sealed class LedgerJournalInternalTransactionSource(
             // Conservative custodian-visibility rule: only postings that move cash have a statement
             // counterpart. Accrual declarations, valuation marks, and pure reclasses have no cash
             // line and are excluded structurally.
-            var metadataAccountMatches = MatchesAccountAlias(entry.Metadata.FinancialAccountId, aliases);
-            var cashLines = entry.Lines
-                .Where(line =>
-                    IsCashLine(line) &&
-                    CashLineBelongsToAccount(line, metadataAccountMatches, aliases))
-                .ToArray();
+            var cashLines = SelectAccountCashLines(entry, aliases);
             if (cashLines.Length == 0)
             {
                 continue;
@@ -340,29 +346,33 @@ public sealed class LedgerJournalInternalTransactionSource(
         return excluded;
     }
 
-    private static bool BelongsToAccount(JournalEntry entry, HashSet<string> aliases)
+    private static LedgerEntry[] SelectAccountCashLines(JournalEntry entry, HashSet<string> aliases)
     {
-        if (MatchesAccountAlias(entry.Metadata.FinancialAccountId, aliases))
-        {
-            return true;
-        }
+        var metadataBelongsToAccount = entry.Metadata.FinancialAccountId is { } metadataAccount
+            && aliases.Contains(metadataAccount.Trim());
 
-        return entry.Lines.Any(line => MatchesAccountAlias(line.Account.FinancialAccountId, aliases));
+        // An unscoped legacy cash line may inherit one unambiguous journal/line scope. Explicitly
+        // scoped cash lines never inherit: that is the critical distinction for cross-account
+        // transfers, where netting every cash line would either erase the movement or contaminate
+        // it with the other account's amount.
+        var explicitLineAccounts = entry.Lines
+            .Select(static line => line.Account.FinancialAccountId)
+            .Where(static account => !string.IsNullOrWhiteSpace(account))
+            .Select(static account => account!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var unscopedCashBelongsToAccount = metadataBelongsToAccount
+            || (entry.Metadata.FinancialAccountId is null
+                && explicitLineAccounts.Length == 1
+                && aliases.Contains(explicitLineAccounts[0]));
+
+        return entry.Lines
+            .Where(IsCashLine)
+            .Where(line => line.Account.FinancialAccountId is { } lineAccount
+                ? aliases.Contains(lineAccount.Trim())
+                : unscopedCashBelongsToAccount)
+            .ToArray();
     }
-
-    private static bool CashLineBelongsToAccount(
-        LedgerEntry line,
-        bool metadataAccountMatches,
-        HashSet<string> aliases)
-    {
-        var lineAccountId = line.Account.FinancialAccountId;
-        return string.IsNullOrWhiteSpace(lineAccountId)
-            ? metadataAccountMatches
-            : aliases.Contains(lineAccountId.Trim());
-    }
-
-    private static bool MatchesAccountAlias(string? financialAccountId, HashSet<string> aliases) =>
-        !string.IsNullOrWhiteSpace(financialAccountId) && aliases.Contains(financialAccountId.Trim());
 
     private static bool IsCashLine(LedgerEntry line) =>
         line.Account.AccountType == LedgerAccountType.Asset

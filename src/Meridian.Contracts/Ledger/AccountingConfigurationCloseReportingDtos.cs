@@ -404,7 +404,8 @@ public sealed record LockClosePeriodRequestDto(
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
     bool PrepareClosingEntriesOnly = false,
     [property: JsonIgnore]
-    string? ControllerRole = null)
+    string? ControllerRole = null,
+    CloseReadinessScopeDto? CloseScope = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
@@ -659,7 +660,11 @@ public sealed record ClosePeriodPlanDto(
     IReadOnlyList<CloseEvidenceReviewDto>? EvidenceReviews = null,
     IReadOnlyList<CloseOperatingCoverageItemDto>? OperatingCoverage = null,
     ClosePostingGateDto? ClosingEntriesGate = null,
-    long WorkflowVersion = 0)
+    long WorkflowVersion = 0,
+    Guid? WorkflowId = null,
+    Guid? FundAccountId = null,
+    string? EvidenceVersion = null,
+    DateTimeOffset? EvaluatedAtUtc = null)
 {
     public IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues { get; init; } =
         ValidationIssues ?? [];
@@ -1156,6 +1161,19 @@ public interface IAccountingConfigurationStore
 
 public interface IAccountingActionAuditStore
 {
+    /// <summary>Retains an audit event.</summary>
+    /// <remarks>
+    /// <para><b>Idempotent on <see cref="AccountingActionAuditEventDto.AuditEventId"/>, and
+    /// content-validating.</b> An implementation that already retains the id must write nothing and
+    /// return; one that retains the id with <i>different</i> content must throw rather than append,
+    /// because two events claiming one identity can be neither chained nor reconciled.</para>
+    ///
+    /// <para>This is a requirement, not an observation. <c>RecoverPendingAuditAsync</c> replays the
+    /// append to establish whether a declared event is the one already retained — so a store that
+    /// appends unconditionally turns that check into a duplicate, and then lets the marker clear
+    /// over ambiguous history. It was left unstated while two of the three implementations happened
+    /// to satisfy it and the third did not (Codex review finding on PR #2871).</para>
+    /// </remarks>
     Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default);
 
     Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAsync(

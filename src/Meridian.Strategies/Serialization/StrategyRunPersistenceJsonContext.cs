@@ -15,6 +15,7 @@ namespace Meridian.Strategies.Serialization;
     UseStringEnumConverter = true)]
 [JsonSerializable(typeof(StrategyRunEntry))]
 [JsonSerializable(typeof(BacktestResult))]
+[JsonSerializable(typeof(ExecutionRealismDescriptor))]
 [JsonSerializable(typeof(TradeCashFlow))]
 [JsonSerializable(typeof(MarginInterestCashFlow))]
 [JsonSerializable(typeof(ShortRebateCashFlow))]

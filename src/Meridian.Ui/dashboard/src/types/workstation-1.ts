@@ -325,6 +325,12 @@ export interface FinancialRecordExplorerRowDto {
   tone: FinancialRecordExplorerTone;
   cells: FinancialRecordExplorerCellDto[];
   detail: FinancialRecordExplorerSelectedRecordDto;
+  /**
+   * The strategy run this row's record belongs to, when it has one. Row ids are composite and
+   * record-scoped (a ledger row is one account within one run), so never take a row id apart to
+   * recover the run. Null for record types with no owning run.
+   */
+  sourceRunId?: string | null;
 }
 
 export interface FinancialRecordExplorerSelectedRecordDto {
@@ -949,11 +955,43 @@ export interface ExecutionControlSnapshot {
   symbolPositionLimits: Record<string, number>;
   manualOverrides: ExecutionManualOverride[];
   asOf: string;
+  version: number;
 }
 
 export interface UpdateExecutionPositionLimitRequest {
   maxPositionSize: number | null;
   reason?: string | null;
+}
+
+export interface UpdateExecutionCircuitBreakerRequest {
+  isOpen: boolean;
+  reason?: string | null;
+  correlationId?: string | null;
+}
+
+export type KillSwitchSweepOutcome = "Completed" | "Partial" | "Failed";
+
+export interface KillSwitchSweepFailure {
+  orderId: string;
+  symbol: string | null;
+  reason: string;
+}
+
+export interface KillSwitchSweepResult {
+  outcome: KillSwitchSweepOutcome;
+  requested: number;
+  cancelled: number;
+  stillWorking: KillSwitchSweepFailure[];
+  brokerViewUnavailable?: boolean | null;
+  brokerViewError?: string | null;
+}
+
+/**
+ * Opening the breaker returns the snapshot plus the coupled cancel-all sweep. Closing it - or any
+ * composition without an `IOrderManager` - returns a bare snapshot, so `sweep` stays optional.
+ */
+export interface ExecutionCircuitBreakerActivationResponse extends ExecutionControlSnapshot {
+  sweep?: KillSwitchSweepResult | null;
 }
 
 export interface RiskRuleStatus {
@@ -1428,6 +1466,7 @@ export interface OperationsDashboardSummary {
 }
 
 export interface OperationsEvidencePackageSummary {
+  requiredForClose?: boolean;
   packageId: string;
   label: string;
   status: EvidenceStatus;

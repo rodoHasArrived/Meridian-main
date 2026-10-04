@@ -5,7 +5,7 @@ namespace Meridian.Contracts.Api;
 /// </summary>
 public static class UiApiRoutes
 {
-    // Health and status endpoints (shared with StatusHttpServer)
+    // Health and status endpoints served by the ASP.NET Core workstation host
     public const string Health = "/health";
     public const string HealthDetailed = "/health/detailed";
     public const string Ready = "/ready";
@@ -363,6 +363,21 @@ public static class UiApiRoutes
     public const string SecurityMasterCorporateActionsIngest = "/api/security-master/corporate-actions/ingest";
     public const string SecurityMasterCorporateActionsInbox = "/api/security-master/corporate-actions/inbox";
     public const string SecurityMasterCorporateActionsInboxApply = "/api/security-master/corporate-actions/inbox/apply";
+    public const string SecurityMasterCorporateActionSourceProposals = "/api/security-master/corporate-actions/source-proposals";
+    public const string SecurityMasterCorporateActionSourceProposal = "/api/security-master/corporate-actions/source-proposals/{proposalId:guid}";
+    public const string SecurityMasterCorporateActionSourceProposalAccept = "/api/security-master/corporate-actions/source-proposals/{proposalId:guid}/accept";
+    public const string SecurityMasterCorporateActionSourceProposalReject = "/api/security-master/corporate-actions/source-proposals/{proposalId:guid}/reject";
+    public const string SecurityMasterCorporateActionCases = "/api/security-master/corporate-actions/cases";
+    public const string SecurityMasterCorporateActionCase = "/api/security-master/corporate-actions/cases/{caseId:guid}";
+    public const string SecurityMasterCorporateActionCaseEvidence = "/api/security-master/corporate-actions/cases/{caseId:guid}/evidence";
+    public const string SecurityMasterCorporateActionCaseConflicts = "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts";
+    public const string SecurityMasterCorporateActionCaseConflict = "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}";
+    public const string SecurityMasterCorporateActionCaseConflictResolution = "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}/resolution";
+    public const string SecurityMasterCorporateActionCaseOptions = "/api/security-master/corporate-actions/cases/{caseId:guid}/options";
+    public const string SecurityMasterCorporateActionCaseTransition = "/api/security-master/corporate-actions/cases/{caseId:guid}/transition";
+    public const string SecurityMasterCorporateActionCaseAccountingProjection = "/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-projection";
+    public const string SecurityMasterCorporateActionCaseAccountingApproval = "/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-approval";
+    public const string SecurityMasterCorporateActionCaseAccountingPosting = "/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-posting";
     public const string SecurityMasterCoverageDraft = "/api/security-master/coverage/draft/{symbol}";
     public const string SecurityMasterOperatorOverrides = "/api/security-master/{securityId:guid}/operator-overrides";
     public const string SecurityMasterFieldProvenance = "/api/security-master/{securityId:guid}/field-provenance";
@@ -370,7 +385,7 @@ public static class UiApiRoutes
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
 
-    // Passport Workbench governed-write surface (see docs/plans/security-master-passport-workbench.md).
+    // Passport Workbench governed-write surface (see docs/engineering/blueprints/security-master-passport-workbench.md).
     public const string SecurityMasterWorkbenchField = "/api/security-master/{securityId:guid}/workbench/field";
     public const string SecurityMasterWorkbenchResolveConflict = "/api/security-master/{securityId:guid}/workbench/resolve-conflict";
     public const string SecurityMasterWorkbenchSubmit = "/api/security-master/{securityId:guid}/workbench/submit";
@@ -771,6 +786,7 @@ public static class UiApiRoutes
     public const string ReconciliationMarginControl = "/api/workstation/reconciliation/margin-control";
     public const string ReconciliationMarginCertifications = "/api/workstation/reconciliation/margin-control/certifications";
     public const string ReconciliationOpenCases = "/api/workstation/reconciliation/cases";
+    public const string DirectLendingPortfolioSummary = "/api/loans/portfolio";
     public const string DirectLendingServicerStatementPreview = "/api/loans/servicer-statements/preview";
     public const string DirectLendingServicerStatementImport = "/api/loans/servicer-statements/import";
     public const string DirectLendingServicerStatementById = "/api/loans/servicer-statements/{batchId}";
@@ -835,14 +851,25 @@ public static class UiApiRoutes
     public const string LedgerManualJournalEntryEvidence = "/api/ledger/journal-entry-workbench/evidence";
     public const string LedgerManualJournalEntryLifecycleAction = "/api/ledger/journal-entry-workbench/lifecycle-action";
     public const string LedgerJournalAutomationDividendIntake = "/api/ledger/journal-automation/dividend-intake";
+    public const string LedgerOpenLotBackfillExceptions = "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/exceptions";
+    public const string LedgerOpenLotBackfillSurvey = "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/survey";
+    public const string LedgerOpenLotBackfillEvidence = "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/evidence";
+    public const string LedgerOpenLotBackfillEvidenceById = "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/evidence/{evidenceRecordId:guid}";
+    public const string LedgerOpenLotBackfillEvidenceReview = "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/evidence/{evidenceRecordId:guid}/review";
+    public const string LedgerOpenLotBackfillApply = "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/apply";
     public const string LedgerJournalAutomationFeeAccrualIntake = "/api/ledger/journal-automation/fee-accrual-intake";
     public const string LedgerJournalAutomationCapitalCallIssuanceIntake = "/api/ledger/journal-automation/capital-call-issuance-intake";
     public const string LedgerJournalAutomationCapitalCallFundingIntake = "/api/ledger/journal-automation/capital-call-funding-intake";
     public const string LedgerJournalAutomationPeriodCloseIntake = "/api/ledger/journal-automation/period-close-intake";
+    public const string LedgerJournalAutomationDailyMarkToMarketPreview = "/api/ledger/journal-automation/daily-mark-to-market-preview";
     public const string LedgerJournalAutomationDailyMarkToMarketIntake = "/api/ledger/journal-automation/daily-mark-to-market-intake";
     public const string LedgerJournalAutomationDailyMarkToMarketSchedules = "/api/ledger/journal-automation/daily-mark-to-market-schedules";
     public const string LedgerJournalAutomationDailyMarkToMarketRunDue = "/api/ledger/journal-automation/daily-mark-to-market-run-due";
     public const string LedgerJournalAutomationDailyMarkToMarketBatchLifecycle = "/api/ledger/journal-automation/daily-mark-to-market-batch-lifecycle";
+    public const string LedgerJournalAutomationRecurringOccurrences = "/api/ledger/journal-automation/recurring/occurrences";
+    public const string LedgerJournalAutomationRecurringSchedules = "/api/ledger/journal-automation/recurring/schedules";
+    public const string LedgerJournalAutomationRecurringRestore = "/api/ledger/journal-automation/recurring/restore-definitions";
+    public const string LedgerJournalAutomationRecurringInitialize = "/api/ledger/journal-automation/recurring/initialize";
     public const string LedgerJournalAutomationMonthlySchedules = "/api/ledger/journal-automation/monthly-schedules";
     public const string LedgerJournalAutomationMonthlyRunDue = "/api/ledger/journal-automation/monthly-schedules/run-due";
     public const string LedgerReportsTrialBalance = "/api/ledger/reports/trial-balance";

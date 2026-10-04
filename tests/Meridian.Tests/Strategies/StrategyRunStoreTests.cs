@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Operations;
@@ -901,6 +902,65 @@ public sealed class StrategyRunStoreTests
     }
 
     [Fact]
+    public async Task RecordLifecycleEventAsync_DeferredActivation_IsRetainedAndCanStillActivate()
+    {
+        // #2726: a promoted run the live engine declines must reach a visible state on the run.
+        // Written against the real store rather than a test double on purpose — LiveTradingEngine's
+        // own suite uses an in-memory repository that does not consult IsAllowedTransition, so it
+        // would pass even while this store rejected the write with InvalidOperationException and
+        // left the run with no visible state at all.
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var history = new FileOperationalCaseHistoryStore(dataRoot);
+            var store = new StrategyRunStore(history);
+            var startedAt = new DateTimeOffset(2026, 8, 26, 12, 0, 0, TimeSpan.Zero);
+            var started = StrategyRunEntry.Start("designer-strategy", "Designer Strategy", RunType.Paper, "run-deferred") with
+            {
+                StartedAt = startedAt,
+                LifecycleEventAtUtc = startedAt
+            };
+            await store.RecordRunAsync(started);
+
+            var deferredAt = startedAt.AddSeconds(1);
+            var deferred = started.ActivationDeferred("No live strategy implementation is registered for 'designer-strategy'.") with
+            {
+                LifecycleEventAtUtc = deferredAt
+            };
+            await store.RecordLifecycleEventAsync(deferred, StrategyRunLifecycleEventType.ActivationDeferred);
+
+            var retained = await store.GetRunByIdAsync(started.RunId);
+            retained.Should().NotBeNull();
+            retained!.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.ActivationDeferred);
+            retained.Reason.Should().Contain("No live strategy implementation is registered");
+            retained.EndedAt.Should().BeNull("a deferred run is retained open, not ended");
+
+            // The engine's startup resume sweep retries every open run, so a run still waiting on the
+            // same missing source re-defers on each restart.
+            var redeferredAt = deferredAt.AddMinutes(5);
+            var redeferred = deferred.ActivationDeferred("Still no live strategy implementation is registered.") with
+            {
+                LifecycleEventAtUtc = redeferredAt
+            };
+            var redefer = () => store.RecordLifecycleEventAsync(redeferred, StrategyRunLifecycleEventType.ActivationDeferred);
+            await redefer.Should().NotThrowAsync("a re-attempt that defers again must not be rejected");
+
+            // And the point of retaining it: once a source resolves the strategy, it activates.
+            var activatedAt = redeferredAt.AddMinutes(5);
+            var activated = redeferred.Started() with { LifecycleEventAtUtc = activatedAt };
+            var activate = () => store.RecordLifecycleEventAsync(activated, StrategyRunLifecycleEventType.Started);
+            await activate.Should().NotThrowAsync("a deferred run must be able to activate later");
+
+            (await store.GetRunByIdAsync(started.RunId))!
+                .LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Started);
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task RecordRunAsync_RejectsRegressionAfterCompletedRun()
     {
         var dataRoot = CreateDataRoot();
@@ -1363,6 +1423,103 @@ public sealed class StrategyRunStoreTests
             "fund-profile" => entry with { FundProfileId = "changed-fund" },
             _ => throw new ArgumentOutOfRangeException(nameof(changedField), changedField, null)
         };
+
+    [Fact]
+    public async Task DurableStore_RetainsRealismBoundInputHash()
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var realism = new ExecutionRealismDescriptor(
+                DefaultExecutionModel: ExecutionModel.BarMidpoint,
+                FillTiming: FillTiming.NextBar,
+                FillConservatism: FillConservatism.Conservative,
+                DelistingPolicy: DelistingPolicy.LiquidateAtLastPrice,
+                DelistingHaircutPercent: 0m,
+                DelistingGraceDays: 5,
+                CommissionKind: BacktestCommissionKind.PerShare,
+                CommissionRate: 0.005m,
+                CommissionMinimum: 1.00m,
+                CommissionMaximum: decimal.MaxValue,
+                SlippageBasisPoints: 5m,
+                MaxParticipationRate: 0m,
+                MarketImpactCoefficient: 0.1m,
+                OrderBookQueueAheadFraction: 0m,
+                AdjustForCorporateActions: true,
+                RiskFreeRate: 0.04);
+
+            var entry = StrategyRunEntry.Start(
+                "strategy-realism",
+                "Realism Strategy",
+                RunType.Backtest,
+                "run-realism",
+                datasetReference: "dataset:prices",
+                feedReference: null,
+                engine: "MeridianNative",
+                parameterSet: null) with
+            {
+                ExecutionRealism = realism
+            };
+
+            var hash = StrategyRunEntry.ComputeRealismBoundInputHash(entry);
+            entry = entry with { InputHashSha256 = hash };
+
+            // The durable store must accept a v4 realism-bound hash and retain it verbatim. Before
+            // this fix it threw, because the hash matched none of the v3/v2/evidence/legacy
+            // recomputations - and the research recorder swallowed that exception, so lineage
+            // vanished silently in production while in-memory-store tests stayed green.
+            await store.RecordRunAsync(entry);
+
+            var replayed = await new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot))
+                .GetRunByIdAsync("run-realism");
+
+            replayed.Should().NotBeNull();
+            replayed!.InputHashSha256.Should().Be(hash.ToLowerInvariant());
+            replayed.ExecutionRealism.Should().Be(realism);
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task DurableStore_AcceptsRealismBoundHashWhenNoRealismCaptured()
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+
+            // The Quant Lab endpoint records without a realism descriptor. The recorder still
+            // stamps a v4 digest, so the store must be able to recompute v4 for a null-realism
+            // entry - otherwise every such recording is rejected and swallowed as a silent null.
+            var entry = StrategyRunEntry.Start(
+                "strategy-no-realism",
+                "No Realism",
+                RunType.Backtest,
+                "run-no-realism",
+                datasetReference: null,
+                feedReference: null,
+                engine: "MeridianNative",
+                parameterSet: null);
+
+            entry = entry with { InputHashSha256 = StrategyRunEntry.ComputeRealismBoundInputHash(entry) };
+
+            await store.RecordRunAsync(entry);
+
+            var replayed = await new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot))
+                .GetRunByIdAsync("run-no-realism");
+
+            replayed.Should().NotBeNull();
+            replayed!.InputHashSha256.Should().Be(entry.InputHashSha256.ToLowerInvariant());
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
 
     private static string CreateDataRoot()
     {

@@ -1,13 +1,107 @@
 #if WINDOWS
+using System.Net;
+using System.Net.Http;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
+using Meridian.Ui.Services;
 using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Tests.Services;
 
 public sealed class WorkstationReconciliationApiClientTests
 {
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task DetailReads_NotFound_ReturnNull(bool latestRunRoute)
+    {
+        using var apiClientService = CreateApiClientService((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.NotFound)
+            {
+                Content = new StringContent("not found")
+            }));
+        var client = new WorkstationReconciliationApiClient(apiClientService);
+
+        var detail = latestRunRoute
+            ? await client.GetLatestRunDetailAsync("run-404")
+            : await client.GetRunDetailAsync("reconciliation-404");
+
+        detail.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task DetailReads_ServerError_ThrowInsteadOfReturningMissing(bool latestRunRoute)
+    {
+        using var apiClientService = CreateApiClientService((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.InternalServerError)
+            {
+                Content = new StringContent("server failed")
+            }));
+        var client = new WorkstationReconciliationApiClient(apiClientService);
+
+        Func<Task> act = latestRunRoute
+            ? async () => await client.GetLatestRunDetailAsync("run-500")
+            : async () => await client.GetRunDetailAsync("reconciliation-500");
+
+        var failure = await act.Should().ThrowAsync<HttpRequestException>();
+        failure.Which.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+        failure.Which.Message.Should().Contain("HTTP 500");
+    }
+
+    [Fact]
+    public async Task GetLatestRunDetailAsync_ConnectionFailure_ThrowsInsteadOfReturningMissing()
+    {
+        using var apiClientService = CreateApiClientService((_, _) =>
+            Task.FromException<HttpResponseMessage>(new HttpRequestException("connection refused")));
+        var client = new WorkstationReconciliationApiClient(apiClientService);
+
+        Func<Task> act = async () => await client.GetLatestRunDetailAsync("run-offline");
+
+        var failure = await act.Should().ThrowAsync<HttpRequestException>();
+        failure.Which.Message.Should().Contain("connection was unavailable");
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task SupportingReads_ServerError_ThrowInsteadOfReturningEmpty(bool calibrationRead)
+    {
+        using var apiClientService = CreateApiClientService((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.InternalServerError)
+            {
+                Content = new StringContent("server failed")
+            }));
+        var client = new WorkstationReconciliationApiClient(apiClientService);
+
+        Func<Task> act = calibrationRead
+            ? async () => await client.GetCalibrationSummaryAsync()
+            : async () => await client.GetBreakQueueAsync();
+
+        var failure = await act.Should().ThrowAsync<HttpRequestException>();
+        failure.Which.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+        failure.Which.Message.Should().Contain("HTTP 500");
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task SupportingReads_ConnectionFailure_ThrowInsteadOfReturningEmpty(bool calibrationRead)
+    {
+        using var apiClientService = CreateApiClientService((_, _) =>
+            Task.FromException<HttpResponseMessage>(new HttpRequestException("connection refused")));
+        var client = new WorkstationReconciliationApiClient(apiClientService);
+
+        Func<Task> act = calibrationRead
+            ? async () => await client.GetCalibrationSummaryAsync()
+            : async () => await client.GetBreakQueueAsync();
+
+        var failure = await act.Should().ThrowAsync<HttpRequestException>();
+        failure.Which.Message.Should().Contain("connection was unavailable");
+    }
+
     [Fact]
     public void ToActionResult_CompletedWithWarnings_RemainsSuccessfulAndExposesOperatorDetail()
     {
@@ -78,6 +172,25 @@ public sealed class WorkstationReconciliationApiClientTests
         result.OperatorMessage.Should().Contain("Supporting evidence is older than the preferred review window.");
         result.OperatorMessage.Should().Contain("Refresh supporting evidence");
         result.OperatorMessage.Should().Contain("Attach a current source statement before close sign-off.");
+    }
+
+    private static ApiClientService CreateApiClientService(
+        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> responder)
+        => new(new StubHttpClientFactory(new StubHttpMessageHandler(responder)));
+
+    private sealed class StubHttpClientFactory(HttpMessageHandler handler) : IHttpClientFactory
+    {
+        public HttpClient CreateClient(string name)
+            => new(handler, disposeHandler: false);
+    }
+
+    private sealed class StubHttpMessageHandler(
+        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> responder) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+            => responder(request, cancellationToken);
     }
 }
 #endif

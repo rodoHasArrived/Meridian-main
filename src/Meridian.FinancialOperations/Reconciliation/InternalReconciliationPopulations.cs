@@ -1,19 +1,22 @@
+using Meridian.Domain.Reconciliation;
+
 namespace Meridian.FinancialOperations.Reconciliation;
 
 /// <summary>
-/// Identifies the fund account, external (custodian) account, statement window, reporting base
-/// currency, and optional exact accounting authority a statement run reconciles against. Passed to
-/// <see cref="IInternalReconciliationPopulationProvider"/> so an implementation can fetch the
-/// matching internal portfolio, cash, and ledger populations.
+/// Identifies the fund account, external (custodian) account, statement window, and reporting base
+/// currency a statement run reconciles against. Passed to <see cref="IInternalReconciliationPopulationProvider"/>
+/// so an implementation can fetch the matching internal portfolio, cash, and ledger populations.
 /// </summary>
 public sealed record InternalReconciliationPopulationContext(
     string FundAccountId,
     string ExternalAccountId,
     DateOnly StatementPeriodStart,
     DateOnly StatementPeriodEnd,
-    string BaseCurrency,
-    Guid? LedgerBookId = null,
-    Guid? AccountingPeriodId = null);
+    string BaseCurrency)
+{
+    /// <summary>The resolved fund, ledger book, and exact period retained by governed intake.</summary>
+    public StatementAccountingScope? AccountingScope { get; init; }
+}
 
 /// <summary>
 /// The internal book a statement is reconciled against: portfolio positions, cash balances, and

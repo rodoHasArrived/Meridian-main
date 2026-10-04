@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using FluentAssertions;
 using Meridian.Identity;
 using Meridian.Identity.Auth;
@@ -9,6 +10,7 @@ using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Meridian.PortfolioRecords.Accounts;
+using Meridian.Risk;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -246,6 +248,83 @@ public sealed class RiskEndpointsTests
     }
 
     [Fact]
+    public async Task RiskEscalations_ChainedApprovalRetainsOriginalSubmitterForSegregationOfDuties()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
+            services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
+            services.AddSingleton<IExecutionGateway>(_ => new Meridian.Execution.PaperTradingGateway(
+                NullLogger<Meridian.Execution.PaperTradingGateway>.Instance,
+                options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true }));
+            services.AddSingleton(new RiskEscalationQueueService(
+                NullLogger<RiskEscalationQueueService>.Instance,
+                options: new RiskEscalationQueueOptions(
+                    Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json"))));
+            services.AddSingleton<IRiskValidator>(sp => new Meridian.Risk.CompositeRiskValidator(
+                [
+                    new EscalatingRule("order-notional", "band A"),
+                    new EscalatingRule("desk-review", "band B")
+                ],
+                NullLogger<Meridian.Risk.CompositeRiskValidator>.Instance,
+                escalationQueue: sp.GetRequiredService<RiskEscalationQueueService>()));
+            services.AddSingleton<IOrderManager>(sp => new OrderManagementSystem(
+                sp.GetRequiredService<IExecutionGateway>(),
+                NullLogger<OrderManagementSystem>.Instance,
+                riskValidator: sp.GetRequiredService<IRiskValidator>(),
+                portfolioState: sp.GetRequiredService<PaperTradingPortfolio>()));
+        }, includeExecutionEndpoints: true);
+
+        var client = app.GetTestClient();
+        var submit = new HttpRequestMessage(HttpMethod.Post, "/api/execution/orders/submit")
+        {
+            Content = JsonContent(new
+            {
+                symbol = "AAPL",
+                side = 0,
+                type = 1,
+                timeInForce = 0,
+                quantity = 10,
+                limitPrice = 100m
+            })
+        };
+        submit.Headers.Add("X-Test-User", "submitter");
+
+        var parkedResponse = await client.SendAsync(submit);
+        parkedResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
+        var parked = JsonSerializer.Deserialize<OrderResult>(
+            await parkedResponse.Content.ReadAsStringAsync(), JsonOptions());
+
+        var approveFirst = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"/api/risk/escalations/{parked!.EscalationId}/approve")
+        {
+            Content = JsonContent(new { reason = "first independent review" })
+        };
+        approveFirst.Headers.Add("X-Test-User", "risk-desk");
+        var firstApprovalResponse = await client.SendAsync(approveFirst);
+        firstApprovalResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var firstApproval = JsonSerializer.Deserialize<RiskEscalationApprovalResponse>(
+            await firstApprovalResponse.Content.ReadAsStringAsync(), JsonOptions());
+        firstApproval!.ReleaseResult!.RequiresApproval.Should().BeTrue("the second rule still requires its own decision");
+
+        var queue = app.Services.GetRequiredService<RiskEscalationQueueService>();
+        var second = queue.TryGet(firstApproval.ReleaseResult.EscalationId!);
+        second!.Actor.Should().Be("submitter", "an approver cannot replace the submitting actor during a chained release");
+
+        var selfApproveSecond = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"/api/risk/escalations/{second.EscalationId}/approve")
+        {
+            Content = JsonContent(new { reason = "submitter must not approve a later exception" })
+        };
+        selfApproveSecond.Headers.Add("X-Test-User", "submitter");
+
+        (await client.SendAsync(selfApproveSecond)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task RiskAndExecutionIntegration_RegisteredValidatorEnforcesOrderRateThrottle()
     {
         // Proves the consolidation: the RiskRuleRuntimeService that powers the dashboard supplies
@@ -450,6 +529,142 @@ public sealed class RiskEndpointsTests
         FundAccountId = fundAccountId,
     };
 
+    // ── Cross-fund violation detail is not readable by a scope-limited operator ──────────
+
+    /// <summary>
+    /// Seeds one position-limit rejection whose reason names the symbol and the size, which is the
+    /// disclosure the rules routes leaked: they gate on the global ViewTrades bit only, so an
+    /// operator entitled to part of the book read every account's traded symbols, quantities, and
+    /// entered prices out of RecentViolations.
+    /// </summary>
+    private static async Task<WebApplication> CreateRedactionAppAsync(
+        IScopedAccessAssignmentService? scopedAccess)
+    {
+        var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IPositionTracker, StaticPositionTracker>();
+            services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(Path.GetTempPath(), $"execution-controls-{Guid.NewGuid():N}")));
+            services.AddSingleton<ExecutionOperatorControlService>();
+            services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(Path.GetTempPath(), $"risk-audit-{Guid.NewGuid():N}")));
+            services.AddSingleton<ExecutionAuditTrailService>();
+            services.AddSingleton<RiskRuleRuntimeService>();
+            services.AddSingleton(new RiskRuleRuntimeOptions(Path.Combine(Path.GetTempPath(), $"risk-rules-{Guid.NewGuid():N}.json")));
+            if (scopedAccess is not null)
+            {
+                services.AddSingleton(scopedAccess);
+            }
+        });
+
+        await app.Services.GetRequiredService<ExecutionAuditTrailService>().RecordAsync(
+            category: "Risk",
+            action: "OrderRejected",
+            outcome: "Rejected",
+            actor: "risk-operator",
+            symbol: RedactionLeakSymbol,
+            reason: $"Position limit breached for {RedactionLeakSymbol}: {RedactionLeakQuantity} at {RedactionLeakPrice}.");
+
+        return app;
+    }
+
+    private const string RedactionLeakSymbol = "AAPL";
+    private const string RedactionLeakQuantity = "4200";
+    private const string RedactionLeakPrice = "187.55";
+
+    private static async Task<string> ReadRulesBodyAsync(WebApplication app, string route, string? permissions = null)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, route);
+        if (permissions is not null)
+        {
+            request.Headers.Add("X-Test-Permissions", permissions);
+        }
+
+        var response = await app.GetTestClient().SendAsync(request);
+        response.StatusCode.Should().Be(HttpStatusCode.OK, "{0} must remain readable", route);
+        return await response.Content.ReadAsStringAsync();
+    }
+
+    // The payload's asOf stamps read the run's own clock, and their fractional seconds can
+    // reproduce the seeded leak digits by chance (05:44:59.6420076 contains "4200"), so the
+    // leak scan excises the timestamp tokens themselves — and nothing around them, keeping a
+    // genuine leak beside a timestamp visible.
+    private static string WithoutClockTimestamps(string body)
+        => Regex.Replace(
+            body,
+            @"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?",
+            "<timestamp>");
+
+    [Theory]
+    [InlineData("/api/risk/rules")]
+    [InlineData("/api/risk/rules/PositionLimit/status")]
+    public async Task RiskEndpoints_ScopeLimitedOperator_CannotReadViolationDetail(string route)
+    {
+        await using var app = await CreateRedactionAppAsync(
+            new StubScopedAccessAssignmentService(throwOnQuery: false, AccessScopeKindDto.Account));
+
+        var body = await ReadRulesBodyAsync(app, route);
+
+        WithoutClockTimestamps(body)
+            .Should().NotContain(RedactionLeakQuantity, "an account-scoped operator must not read another account's order size")
+            .And.NotContain(RedactionLeakPrice, "nor the price it was entered at");
+        body.Should().Contain("violation(s)", "the rule must still read as explained, not as a breach with no cause");
+    }
+
+    [Fact]
+    public async Task RiskEndpoints_ScopeLimitedOperator_StillSeesRuleHealth()
+    {
+        await using var app = await CreateRedactionAppAsync(
+            new StubScopedAccessAssignmentService(throwOnQuery: false, AccessScopeKindDto.Fund));
+
+        var body = await ReadRulesBodyAsync(app, "/api/risk/rules");
+        var rules = JsonSerializer.Deserialize<RiskRuleStatusDto[]>(body, JsonOptions());
+        var positionLimit = rules!.Single(rule => rule.RuleName == "PositionLimit");
+
+        positionLimit.IsBreached.Should().BeTrue("redaction hides the detail, never the fact that a rule is breached");
+        positionLimit.State.Should().Be("Constrained");
+        positionLimit.RecentViolations.Should().ContainSingle()
+            .Which.Should().NotContain(RedactionLeakSymbol);
+    }
+
+    [Fact]
+    public async Task RiskEndpoints_UnrestrictedOperator_ReadsFullViolationDetail()
+    {
+        // A principal holding only global assignments is entitled to the host-wide view, so
+        // redacting it would be pure signal loss rather than a confidentiality gain.
+        await using var globallyScoped = await CreateRedactionAppAsync(
+            new StubScopedAccessAssignmentService(throwOnQuery: false, AccessScopeKindDto.Global));
+        (await ReadRulesBodyAsync(globallyScoped, "/api/risk/rules"))
+            .Should().Contain(RedactionLeakSymbol);
+
+        // Likewise a composition with no scoped-access directory at all: nobody in it is
+        // scope-limited, so there is no narrower view to fall back to.
+        await using var unscoped = await CreateRedactionAppAsync(scopedAccess: null);
+        (await ReadRulesBodyAsync(unscoped, "/api/risk/rules"))
+            .Should().Contain(RedactionLeakSymbol);
+    }
+
+    [Fact]
+    public async Task RiskEndpoints_AdminMaintenance_BypassesRedaction()
+    {
+        await using var app = await CreateRedactionAppAsync(
+            new StubScopedAccessAssignmentService(throwOnQuery: false, AccessScopeKindDto.Account));
+
+        var permissions = $"{nameof(UserPermission.ViewTrades)}, {nameof(UserPermission.AdminMaintenance)}";
+        (await ReadRulesBodyAsync(app, "/api/risk/rules", permissions))
+            .Should().Contain(RedactionLeakSymbol, "the same administrative bypass the sibling routes in this file use");
+    }
+
+    [Fact]
+    public async Task RiskEndpoints_ScopeLookupFailure_FailsClosed()
+    {
+        await using var app = await CreateRedactionAppAsync(
+            new StubScopedAccessAssignmentService(throwOnQuery: true));
+
+        // Being unable to establish that the caller is unrestricted is not a reason to hand them
+        // the whole book.
+        WithoutClockTimestamps(await ReadRulesBodyAsync(app, "/api/risk/rules"))
+            .Should().NotContain(RedactionLeakQuantity);
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
         bool includeExecutionEndpoints = false)
@@ -513,6 +728,14 @@ public sealed class RiskEndpointsTests
             AsOf: DateTimeOffset.UtcNow);
     }
 
+    private sealed class EscalatingRule(string ruleName, string reason) : IRiskRule
+    {
+        public string RuleName => ruleName;
+
+        public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default) =>
+            Task.FromResult(RiskValidationResult.Escalated(reason));
+    }
+
     private sealed class StaticPositionTracker : IPositionTracker
     {
         public PositionState GetPosition(string symbol) => new()
@@ -544,6 +767,59 @@ public sealed class RiskEndpointsTests
         public decimal GetUnrealizedPnl() => 0m;
 
         public decimal GetRealizedPnl() => 0m;
+    }
+
+    /// <summary>
+    /// Stands in for the scoped-access directory so a test can say whether the calling operator's
+    /// entitlement is bounded to part of the book. <paramref name="scopeKinds"/> empty means an
+    /// unrestricted principal; a throwing instance covers the fail-closed path.
+    /// </summary>
+    private sealed class StubScopedAccessAssignmentService(
+        bool throwOnQuery,
+        params AccessScopeKindDto[] scopeKinds) : IScopedAccessAssignmentService
+    {
+        public Task<IReadOnlyList<UserAccessAssignmentDto>> QueryAsync(
+            UserAccessAssignmentQueryDto query,
+            CancellationToken ct = default)
+        {
+            if (throwOnQuery)
+            {
+                throw new InvalidOperationException("Scoped access directory unavailable.");
+            }
+
+            IReadOnlyList<UserAccessAssignmentDto> assignments = scopeKinds
+                .Select(kind => new UserAccessAssignmentDto(
+                    AssignmentId: Guid.NewGuid(),
+                    PrincipalId: query.PrincipalId ?? "risk-operator",
+                    PrincipalKind: AccessPrincipalKindDto.User,
+                    ScopeKind: kind,
+                    ScopeId: kind == AccessScopeKindDto.Global ? null : Guid.NewGuid(),
+                    Role: "TradeDesk",
+                    RoleProfileName: null,
+                    PermissionNames: new[] { nameof(UserPermission.ViewTrades) },
+                    PermissionMask: (long)UserPermission.ViewTrades,
+                    EffectiveFrom: DateTimeOffset.UtcNow.AddDays(-1),
+                    EffectiveTo: null,
+                    GrantedBy: "test",
+                    Rationale: "test",
+                    CorrelationId: Guid.NewGuid().ToString("N"),
+                    Version: 1,
+                    CreatedAtUtc: DateTimeOffset.UtcNow.AddDays(-1),
+                    UpdatedAtUtc: DateTimeOffset.UtcNow.AddDays(-1)))
+                .ToArray();
+
+            return Task.FromResult(assignments);
+        }
+
+        public Task<UserAccessAssignmentMutationResultDto> CreateAsync(
+            UserAccessAssignmentCreateRequestDto request,
+            string actor,
+            CancellationToken ct = default) => throw new NotSupportedException();
+
+        public Task<UserAccessAssignmentMutationResultDto> RevokeAsync(
+            UserAccessAssignmentRevokeRequestDto request,
+            string actor,
+            CancellationToken ct = default) => throw new NotSupportedException();
     }
 
     private sealed class AccountScopedAuthorizationService(Guid allowedAccountId) : IScopedAuthorizationService

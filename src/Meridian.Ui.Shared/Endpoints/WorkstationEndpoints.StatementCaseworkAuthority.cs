@@ -63,7 +63,10 @@ public static partial class WorkstationEndpoints
             request.ResolvedBy.Trim(),
             (request.ResolutionNote ?? string.Empty).Trim(),
             (request.OperatorRationale ?? string.Empty).Trim(),
-            OperationsActionOriginDto.HumanOperator.ToString());
+            // The caller's origin, re-derived at the route handler, rather than a constant. For a
+            // human session this is still "HumanOperator", so existing command ids are unchanged;
+            // only a non-human origin -- which the gate downstream refuses anyway -- differs (#2673).
+            request.ActionOrigin.ToString());
         var inputHash = Sha256Digest.ComputeUtf8(material);
         var commandId = $"statement-legacy-resolve:{inputHash}";
         var commandBase = current;
@@ -115,7 +118,7 @@ public static partial class WorkstationEndpoints
             EvidenceLinks: (commandBase.EvidenceLinks ?? [])
                 .Where(static evidence => !StatementCaseworkHandoffObligation.IsControlMarker(evidence))
                 .ToArray(),
-            ActionOrigin: OperationsActionOriginDto.HumanOperator);
+            ActionOrigin: request.ActionOrigin);
     }
 
     private static JsonSerializerOptions CreateReconciliationAuditJsonOptions()

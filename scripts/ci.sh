@@ -152,6 +152,21 @@ verify_dotnet() {
   run_step "Enforce inline SHA-256 hashing ratchet" \
     "$python_cmd" build/scripts/ci/check-inline-sha256.py
 
+  run_step "Enforce posture-environment test serialization" \
+    "$python_cmd" build/scripts/ci/check-posture-env-serialization.py
+
+  run_step "Enforce server-derived ActionOrigin at endpoints" \
+    "$python_cmd" build/scripts/ci/check-action-origin-derivation.py
+
+  run_step "Enforce declared file-store concurrency postures" \
+    "$python_cmd" build/scripts/ci/check-store-concurrency-posture.py
+
+  run_step "Enforce ledger-book-native accounting scope" \
+    "$python_cmd" build/scripts/ci/check-ledger-book-scope.py
+
+  run_step "Enforce ledger dimension coverage across surfaces" \
+    "$python_cmd" build/scripts/ci/check-ledger-dimension-coverage.py
+
   run_step "Build web workstation .NET lane" \
     bash -c 'set -euo pipefail; dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore -p:EnableWindowsTargeting=true -p:UseAppHost=false 2>&1 | tee artifacts/build-logs/web-workstation-build.log'
 
@@ -165,6 +180,7 @@ verify_dotnet() {
 }
 
 verify_browser() {
+  run_step "Validate browser evidence reader" node --test src/Meridian.Ui/dashboard/scripts/vitest-evidence.test.mjs
   verify_toolchain_browser
 
   run_step "Install dashboard dependencies from lockfile" \
@@ -321,6 +337,13 @@ verify_docs() {
   run_step "Validate source READMEs" \
     "$python_cmd" build/scripts/docs/validate-source-readmes.py --summary
 
+  run_step "Validate adapter readiness and generated matrix" \
+    "$python_cmd" build/scripts/docs/run-docs-automation.py \
+      --scripts validate-adapter-readiness,check-adapter-readiness-matrix
+
+  run_step "Validate adapter readiness automation tests" \
+    bash -c '"$0" -m unittest tests/scripts/test_adapter_readiness.py tests/scripts/test_render_adapter_readiness.py' "$python_cmd"
+
   run_step "Scan source TODOs" \
     "$python_cmd" build/scripts/docs/scan-source-todos.py --summary
 
@@ -330,6 +353,9 @@ verify_docs() {
 
 verify_workflows() {
   verify_toolchain_docs
+
+  run_step "Validate Actions syntax with actionlint" actionlint -shellcheck= -pyflakes=
+  run_step "Check script test dependencies" "$python_cmd" -c 'import yaml; import PIL'
 
   run_step "Validate lane manifest" \
     "$python_cmd" build/scripts/ci/check-lane-manifest.py --summary

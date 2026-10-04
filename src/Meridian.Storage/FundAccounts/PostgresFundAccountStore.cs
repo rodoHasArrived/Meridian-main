@@ -16,21 +16,69 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
     private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
     private readonly FundAccountStoreOptions _options;
 
-    // SEC-005 slice 4c: ambient caller-tenant resolver. Optional so existing construction (tests,
-    // non-web hosts) keeps compiling and stays fail-open; the workstation host injects an
-    // IHttpContextAccessor-backed implementation. Null (no tenant in scope) => reads are not scoped and
-    // writes stamp no tenant. Trust-on-first-use: fund accounts have no in-DB registry linkage in this
-    // separate database, so the owning tenant is the operator who creates the account.
+    // Fund accounts may live in a separate database without a fund registry. The authenticated
+    // creator owns a new account; retained ownership cannot be replaced by ordinary writes.
     private readonly IFundScopeTenantAccessor? _tenantAccessor;
 
-    public PostgresFundAccountStore(FundAccountStoreOptions options, IFundScopeTenantAccessor? tenantAccessor = null)
+    // W9-GOV-008 criterion 2: how strictly to enforce that scope. Defaults to the deployment-boundary
+    // posture so existing construction sites keep their behaviour; the host injects the configured one.
+    private readonly TenantScopeEnforcementOptions _tenantScope;
+
+    public PostgresFundAccountStore(
+        FundAccountStoreOptions options,
+        IFundScopeTenantAccessor? tenantAccessor = null,
+        TenantScopeEnforcementOptions? tenantScope = null)
     {
         _options = options;
         _tenantAccessor = tenantAccessor;
+        _tenantScope = tenantScope ?? TenantScopeEnforcementOptions.DeploymentBoundary;
     }
 
-    // SEC-005 slice 4c: the caller's tenant for the current ambient scope, or null (fail-open).
-    private string? ResolveCallerTenant() => _tenantAccessor?.ResolveCallerTenant();
+    // SEC-005 slice 4c: the caller's tenant for the current ambient scope, or null.
+    private string? ResolveCallerTenant() => _tenantAccessor is not null
+        ? _tenantAccessor.ResolveCallerTenant()
+        : FundScopeTenantAuthority.CurrentTenantId;
+
+    private string? RequireWriteTenant()
+    {
+        var tenant = ResolveCallerTenant();
+        if (_tenantScope.IsFailClosed && (string.IsNullOrWhiteSpace(tenant) ||
+            string.Equals(tenant.Trim(), "all", StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new UnauthorizedAccessException("A tenant-scoped caller is required to modify fund accounts.");
+        }
+        return tenant;
+    }
+
+    private async Task RequireAccountOwnerAsync(
+        NpgsqlConnection connection, NpgsqlTransaction? transaction, Guid accountId, CancellationToken ct)
+    {
+        if (!_tenantScope.IsFailClosed)
+            return;
+
+        var tenant = RequireWriteTenant();
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = $"SELECT tenant_id FROM {Qualified("account_definition")} WHERE account_id = @account_id"
+            + (transaction is null ? "" : " FOR SHARE");
+        command.Parameters.AddWithValue("account_id", accountId);
+        var owner = await command.ExecuteScalarAsync(ct).ConfigureAwait(false) as string;
+        if (string.IsNullOrWhiteSpace(owner) ||
+            !string.Equals(owner.Trim(), tenant!.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            throw new UnauthorizedAccessException("The fund account is not owned by the caller's tenant.");
+        }
+    }
+
+    // Rejected, not emptied: an empty result is indistinguishable from a genuinely empty account set.
+    // A background job holding retained authority declares it via FundScopeTenantAuthority.
+    private void RejectUnscopedRead(string? callerTenantId)
+    {
+        if (TenantReadPredicate.ShouldRejectRead(callerTenantId, _tenantScope.Mode))
+        {
+            throw new TenantScopeRejectedException("fund accounts");
+        }
+    }
 
     private string Qualified(string table) => $"{_options.Schema}.{table}";
 
@@ -45,15 +93,19 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
 
     public async Task UpsertAccountAsync(AccountSummaryDto account, CancellationToken ct = default)
     {
+        var callerTenant = RequireWriteTenant();
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        await UpsertAccountAsync(connection, transaction: null, account, ct).ConfigureAwait(false);
+        await UpsertAccountAsync(connection, transaction: null, account, ct,
+            callerTenant, allowUnattributed: !_tenantScope.IsFailClosed).ConfigureAwait(false);
     }
 
     private async Task UpsertAccountAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction? transaction,
         AccountSummaryDto account,
-        CancellationToken ct)
+        CancellationToken ct,
+        string? callerTenantStamp = null,
+        bool allowUnattributed = true)
     {
         await using var cmd = connection.CreateCommand();
         cmd.Transaction = transaction;
@@ -93,14 +145,9 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                 -- on a later write by a tenant-scoped operator.
                 tenant_id           = coalesce(account_definition.tenant_id, EXCLUDED.tenant_id),
                 updated_at          = now()
-            -- SEC-005 slice 4c: refuse a cross-tenant overwrite. The read predicate hides a foreign account
-            -- from GetAccount, but without this guard a tenant-scoped caller who knows a foreign account UUID
-            -- could still clobber that row's fields via the conflict path (tenant_id itself is first-owner
-            -- preserved, but the other columns are not). Only update when the existing row is unbound, the
-            -- caller is tenantless (single-company fail-open), or the tenants match; otherwise 0 rows change
-            -- and the caller gets a conflict error below. Behavior-preserving under one-company-per-deployment.
-            WHERE account_definition.tenant_id IS NULL
-               OR @tenant_id IS NULL
+            -- Strict operation may update only its retained owner. Attribution of legacy rows
+            -- belongs to reviewed backfill, never the first caller who knows their UUID.
+            WHERE (@allow_unattributed AND (account_definition.tenant_id IS NULL OR @tenant_id IS NULL))
                OR lower(trim(account_definition.tenant_id)) = lower(trim(@tenant_id))
             """;
         cmd.Parameters.AddWithValue("account_id", account.AccountId);
@@ -125,8 +172,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             account.CustodianDetails is not null ? JsonSerializer.Serialize(account.CustodianDetails, JsonOpts) : DBNull.Value);
         cmd.Parameters.AddWithValue("bank_details",
             account.BankDetails is not null ? JsonSerializer.Serialize(account.BankDetails, JsonOpts) : DBNull.Value);
-        // SEC-005 slice 4c: trust-on-first-use tenant stamp from the writing operator (null => fail-open).
-        var callerTenantStamp = ResolveCallerTenant();
+        cmd.Parameters.AddWithValue("allow_unattributed", allowUnattributed);
         cmd.Parameters.AddWithValue(
             "tenant_id",
             string.IsNullOrWhiteSpace(callerTenantStamp) ? DBNull.Value : callerTenantStamp.Trim());
@@ -134,6 +180,8 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         var affected = await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         if (affected == 0)
         {
+            if (!allowUnattributed)
+                throw new UnauthorizedAccessException("The fund account is not owned by the caller's tenant.");
             // The row exists but the conflict update was blocked by the tenant guard above: a tenant-scoped
             // caller attempted to modify an account owned by a different tenant. Fail instead of silently
             // succeeding. Unreachable under one-company-per-deployment (the guard always matches there).
@@ -155,12 +203,14 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             WHERE account_id = @account_id
             """;
         cmd.Parameters.AddWithValue("account_id", accountId);
-        // SEC-005 slice 4c: scope by the account's stamped tenant_id so a foreign account GUID resolves to
-        // not-found. Fail-open for a tenantless caller or an unstamped (legacy) account.
+        // SEC-005 slice 4c: scope by the account's stamped tenant_id so a foreign account GUID resolves
+        // to not-found. Under the deployment-boundary posture an unstamped (legacy) account still
+        // resolves; under fail-closed it does not, and a tenantless caller is refused above.
         var callerTenant = ResolveCallerTenant();
+        RejectUnscopedRead(callerTenant);
         if (TenantReadPredicate.ShouldFilter(callerTenant))
         {
-            cmd.CommandText += TenantReadPredicate.FilterClause("tenant_id");
+            cmd.CommandText += TenantReadPredicate.FilterClause("tenant_id", _tenantScope.Mode);
             cmd.Parameters.AddWithValue(
                 TenantReadPredicate.ParameterName,
                 TenantReadPredicate.NormalizeParameter(callerTenant!));
@@ -171,7 +221,19 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         return ReadAccountSummary(reader);
     }
 
-    public async Task<IReadOnlyList<AccountSummaryDto>> QueryAccountsAsync(AccountStructureQuery query, CancellationToken ct = default)
+    public Task<IReadOnlyList<AccountSummaryDto>> QueryAccountsAsync(AccountStructureQuery query, CancellationToken ct = default)
+        => QueryAccountsCoreAsync(query, applyCallerTenantPredicate: true, ct);
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<AccountSummaryDto>> QueryAccountsAcrossTenantsAsync(
+        AccountStructureQuery query,
+        CancellationToken ct = default)
+        => QueryAccountsCoreAsync(query, applyCallerTenantPredicate: false, ct);
+
+    private async Task<IReadOnlyList<AccountSummaryDto>> QueryAccountsCoreAsync(
+        AccountStructureQuery query,
+        bool applyCallerTenantPredicate,
+        CancellationToken ct)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var cmd = connection.CreateCommand();
@@ -237,11 +299,22 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         }
 
         // SEC-005 slice 4c: scope by the account's stamped tenant_id (closes the fund_account_id
-        // alternate-identifier residual). Fail-open for a tenantless caller or unstamped legacy rows.
-        var callerTenant = ResolveCallerTenant();
+        // alternate-identifier residual). The predicate is skipped only for the deliberate
+        // cross-tenant enumeration used by the scope fan-out authority, which must see holdings in
+        // every tenant to answer at all.
+        var callerTenant = applyCallerTenantPredicate ? ResolveCallerTenant() : null;
+        if (applyCallerTenantPredicate)
+        {
+            // W9-GOV-008 criterion 2: an ordinary caller whose tenant cannot be resolved is refused
+            // rather than served unfiltered. Deliberately NOT applied to the fan-out path above --
+            // that one arrives through its own named entry point having declared it wants every
+            // tenant, which is a resolved scope, not an unresolvable one. Guarding it here would
+            // refuse the authority outright and it could no longer answer at all.
+            RejectUnscopedRead(callerTenant);
+        }
         if (TenantReadPredicate.ShouldFilter(callerTenant))
         {
-            sb.AppendLine(TenantReadPredicate.FilterClause("tenant_id"));
+            sb.AppendLine(TenantReadPredicate.FilterClause("tenant_id", _tenantScope.Mode));
             cmd.Parameters.AddWithValue(
                 TenantReadPredicate.ParameterName,
                 TenantReadPredicate.NormalizeParameter(callerTenant!));
@@ -289,8 +362,12 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
 
     public async Task InsertBalanceSnapshotAsync(AccountBalanceSnapshotDto snapshot, CancellationToken ct = default)
     {
+        RequireWriteTenant();
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        await InsertBalanceSnapshotAsync(connection, transaction: null, snapshot, ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await RequireAccountOwnerAsync(connection, transaction, snapshot.AccountId, ct).ConfigureAwait(false);
+        await InsertBalanceSnapshotAsync(connection, transaction, snapshot, ct).ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
 
     private async Task InsertBalanceSnapshotAsync(
@@ -335,6 +412,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         Guid accountId, DateOnly? fromDate, DateOnly? toDate, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await RequireAccountOwnerAsync(connection, transaction: null, accountId, ct).ConfigureAwait(false);
         await using var cmd = connection.CreateCommand();
         var sb = new StringBuilder();
         sb.AppendLine($"""
@@ -389,8 +467,12 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         IReadOnlyList<CustodianPositionLineDto> lines,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
+        if (_tenantScope.IsFailClosed && lines.Any(line => line.AccountId != batch.AccountId || line.BatchId != batch.BatchId))
+            throw new UnauthorizedAccessException("Statement lines must belong to their account and batch.");
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var tx = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await RequireAccountOwnerAsync(connection, tx, batch.AccountId, ct).ConfigureAwait(false);
         await InsertCustodianStatementBatchAsync(connection, tx, batch, lines, ct).ConfigureAwait(false);
         await tx.CommitAsync(ct).ConfigureAwait(false);
     }
@@ -410,7 +492,8 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                     (batch_id, account_id, as_of_date, custodian_name, source_format, file_name, line_count, ingested_at, loaded_by)
                 VALUES
                     (@batch_id, @account_id, @as_of_date, @custodian_name, @source_format, null, @line_count, @ingested_at, @loaded_by)
-                ON CONFLICT (batch_id) DO NOTHING
+                ON CONFLICT (batch_id) DO UPDATE SET batch_id = EXCLUDED.batch_id
+                WHERE custodian_statement_batch.account_id = EXCLUDED.account_id
                 """;
             cmd.Parameters.AddWithValue("batch_id", batch.BatchId);
             cmd.Parameters.AddWithValue("account_id", batch.AccountId);
@@ -420,7 +503,8 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             cmd.Parameters.AddWithValue("line_count", batch.LineCount);
             cmd.Parameters.AddWithValue("ingested_at", batch.IngestedAt);
             cmd.Parameters.AddWithValue("loaded_by", batch.LoadedBy);
-            await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            if (await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false) == 0)
+                throw new UnauthorizedAccessException("The retained statement batch belongs to another account.");
         }
 
         foreach (var line in lines)
@@ -464,8 +548,12 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         IReadOnlyList<BankStatementLineDto> lines,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
+        if (_tenantScope.IsFailClosed && lines.Any(line => line.AccountId != batch.AccountId || line.BatchId != batch.BatchId))
+            throw new UnauthorizedAccessException("Statement lines must belong to their account and batch.");
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var tx = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await RequireAccountOwnerAsync(connection, tx, batch.AccountId, ct).ConfigureAwait(false);
         await InsertBankStatementBatchAsync(connection, tx, batch, lines, ct).ConfigureAwait(false);
         await tx.CommitAsync(ct).ConfigureAwait(false);
     }
@@ -485,7 +573,8 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                     (batch_id, account_id, statement_date, bank_name, file_name, line_count, ingested_at, loaded_by)
                 VALUES
                     (@batch_id, @account_id, @statement_date, @bank_name, null, @line_count, @ingested_at, @loaded_by)
-                ON CONFLICT (batch_id) DO NOTHING
+                ON CONFLICT (batch_id) DO UPDATE SET batch_id = EXCLUDED.batch_id
+                WHERE bank_statement_batch.account_id = EXCLUDED.account_id
                 """;
             cmd.Parameters.AddWithValue("batch_id", batch.BatchId);
             cmd.Parameters.AddWithValue("account_id", batch.AccountId);
@@ -494,7 +583,8 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             cmd.Parameters.AddWithValue("line_count", batch.LineCount);
             cmd.Parameters.AddWithValue("ingested_at", batch.IngestedAt);
             cmd.Parameters.AddWithValue("loaded_by", batch.LoadedBy);
-            await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            if (await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false) == 0)
+                throw new UnauthorizedAccessException("The retained statement batch belongs to another account.");
         }
 
         foreach (var line in lines)
@@ -529,6 +619,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         Guid accountId, DateOnly asOfDate, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await RequireAccountOwnerAsync(connection, transaction: null, accountId, ct).ConfigureAwait(false);
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = $"""
             SELECT position_line_id, batch_id, account_id, as_of_date,
@@ -579,6 +670,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         Guid accountId, DateOnly asOfDate, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await RequireAccountOwnerAsync(connection, transaction: null, accountId, ct).ConfigureAwait(false);
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = $"""
             SELECT batch_id, account_id, as_of_date, custodian_name, source_format, line_count, ingested_at, loaded_by
@@ -610,6 +702,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         Guid accountId, DateOnly? fromDate, DateOnly? toDate, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await RequireAccountOwnerAsync(connection, transaction: null, accountId, ct).ConfigureAwait(false);
         await using var cmd = connection.CreateCommand();
         var sb = new StringBuilder();
         sb.AppendLine($"""
@@ -659,8 +752,12 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         IReadOnlyList<AccountReconciliationResultDto> results,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
+        if (_tenantScope.IsFailClosed && results.Any(result => result.ReconciliationRunId != run.ReconciliationRunId))
+            throw new UnauthorizedAccessException("Reconciliation results must belong to their run.");
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var tx = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await RequireAccountOwnerAsync(connection, tx, run.AccountId, ct).ConfigureAwait(false);
         await InsertReconciliationRunAsync(connection, tx, run, results, ct).ConfigureAwait(false);
         await tx.CommitAsync(ct).ConfigureAwait(false);
     }
@@ -684,7 +781,8 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                     (@reconciliation_run_id, @account_id, @as_of_date, @status,
                      @total_checks, @total_matched, @total_breaks, @break_amount_total,
                      @requested_at, @completed_at, @requested_by)
-                ON CONFLICT (reconciliation_run_id) DO NOTHING
+                ON CONFLICT (reconciliation_run_id) DO UPDATE SET reconciliation_run_id = EXCLUDED.reconciliation_run_id
+                WHERE account_reconciliation_run.account_id = EXCLUDED.account_id
                 """;
             cmd.Parameters.AddWithValue("reconciliation_run_id", run.ReconciliationRunId);
             cmd.Parameters.AddWithValue("account_id", run.AccountId);
@@ -697,7 +795,8 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             cmd.Parameters.AddWithValue("requested_at", run.RequestedAt);
             cmd.Parameters.AddWithValue("completed_at", run.CompletedAt.HasValue ? (object)run.CompletedAt.Value : DBNull.Value);
             cmd.Parameters.AddWithValue("requested_by", run.RequestedBy);
-            await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            if (await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false) == 0)
+                throw new UnauthorizedAccessException("The retained reconciliation run belongs to another account.");
         }
 
         foreach (var result in results)
@@ -734,6 +833,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         Guid accountId, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await RequireAccountOwnerAsync(connection, transaction: null, accountId, ct).ConfigureAwait(false);
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = $"""
             SELECT reconciliation_run_id, account_id, as_of_date, status,
@@ -769,6 +869,16 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         Guid reconciliationRunId, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        if (_tenantScope.IsFailClosed)
+        {
+            RequireWriteTenant();
+            await using var ownerCommand = connection.CreateCommand();
+            ownerCommand.CommandText = $"SELECT account_id FROM {Qualified("account_reconciliation_run")} WHERE reconciliation_run_id = @run_id";
+            ownerCommand.Parameters.AddWithValue("run_id", reconciliationRunId);
+            if (await ownerCommand.ExecuteScalarAsync(ct).ConfigureAwait(false) is not Guid accountId)
+                throw new UnauthorizedAccessException("The reconciliation run has no retained account authority.");
+            await RequireAccountOwnerAsync(connection, transaction: null, accountId, ct).ConfigureAwait(false);
+        }
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = $"""
             SELECT result_id, reconciliation_run_id, check_label,
@@ -802,8 +912,12 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
 
     public async Task InsertSyncHistoryAsync(AccountSyncHistoryEntryDto entry, CancellationToken ct = default)
     {
+        RequireWriteTenant();
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        await InsertSyncHistoryAsync(connection, transaction: null, entry, ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await RequireAccountOwnerAsync(connection, transaction, entry.AccountId, ct).ConfigureAwait(false);
+        await InsertSyncHistoryAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
 
     private async Task InsertSyncHistoryAsync(
@@ -837,6 +951,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                 failure_message         = EXCLUDED.failure_message,
                 security_missing_count  = EXCLUDED.security_missing_count,
                 warnings                = EXCLUDED.warnings
+            WHERE account_sync_history.account_id = EXCLUDED.account_id
             """;
         cmd.Parameters.AddWithValue("sync_history_id", entry.SyncHistoryId);
         cmd.Parameters.AddWithValue("account_id", entry.AccountId);
@@ -856,13 +971,15 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         cmd.Parameters.AddWithValue("projection_evidence_path", (object?)entry.ProjectionEvidencePath ?? DBNull.Value);
         cmd.Parameters.AddWithValue("security_missing_count", entry.SecurityMissingCount);
         cmd.Parameters.AddWithValue("warnings", JsonSerializer.Serialize(entry.Warnings, JsonOpts));
-        await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        if (await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false) == 0)
+            throw new UnauthorizedAccessException("The retained sync record belongs to another account.");
     }
 
     public async Task<IReadOnlyList<AccountSyncHistoryEntryDto>> GetSyncHistoryAsync(
         Guid accountId, string? capability, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await RequireAccountOwnerAsync(connection, transaction: null, accountId, ct).ConfigureAwait(false);
         await using var cmd = connection.CreateCommand();
         var sb = new StringBuilder();
         sb.AppendLine($"""
@@ -920,8 +1037,12 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
 
     public async Task UpsertMarginSnapshotAsync(MarginSnapshotDto snapshot, CancellationToken ct = default)
     {
+        RequireWriteTenant();
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        await UpsertMarginSnapshotAsync(connection, transaction: null, snapshot, ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await RequireAccountOwnerAsync(connection, transaction, snapshot.AccountId, ct).ConfigureAwait(false);
+        await UpsertMarginSnapshotAsync(connection, transaction, snapshot, ct).ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
 
     private async Task UpsertMarginSnapshotAsync(
@@ -1024,6 +1145,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         Guid accountId, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await RequireAccountOwnerAsync(connection, transaction: null, accountId, ct).ConfigureAwait(false);
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = $"""
             SELECT margin_snapshot_id, account_id, effective_at, recorded_at, currency,

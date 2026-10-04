@@ -30,6 +30,12 @@ internal static class CorporateActionValidation
                    "(provider aliases and ISO 15022 CAEV codes are also accepted).";
         }
 
+        var payloadError = CorporateActionPayloadSchemaCatalog.Validate(normalized, forAcceptance: true);
+        if (payloadError is not null)
+        {
+            return payloadError;
+        }
+
         if (!CorporateActionLifecycleStates.IsWriteable(normalized.LifecycleState))
         {
             return $"Corporate action LifecycleState '{normalized.LifecycleState}' is not writeable. " +

@@ -127,9 +127,29 @@ public sealed partial class PostgresLedgerJournalStore
                 where 1 = 1
             """;
 
-        return query?.SourceEventId.HasValue == true
-            ? sql + " and je_filter.source_event_id = @source_event_id"
-            : sql;
+        if (query?.SourceEventId.HasValue == true)
+        {
+            sql += " and je_filter.source_event_id = @source_event_id";
+        }
+
+        // JournalEntryMetadata.EffectiveDate is serialized as an ISO yyyy-MM-dd JSON string. Use
+        // that accounting date when it is present and fall back to the UTC posting date for legacy
+        // journals. Comparing the canonical ISO representation keeps malformed legacy metadata
+        // from turning one reconciliation read into a database cast failure.
+        const string effectiveDateExpression =
+            "coalesce(nullif(btrim(je_filter.metadata ->> 'effectiveDate'), ''), " +
+            "to_char(je_filter.occurred_at at time zone 'UTC', 'YYYY-MM-DD'))";
+        if (query?.EffectiveFrom.HasValue == true)
+        {
+            sql += $" and {effectiveDateExpression} >= @effective_from";
+        }
+
+        if (query?.EffectiveTo.HasValue == true)
+        {
+            sql += $" and {effectiveDateExpression} <= @effective_to";
+        }
+
+        return sql;
     }
 
     private static void AddDimension(IDictionary<string, object> values, string name, string? value)

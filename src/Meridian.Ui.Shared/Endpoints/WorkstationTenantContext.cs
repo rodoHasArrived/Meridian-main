@@ -18,7 +18,7 @@ public sealed record WorkstationTenantContext(
     string? RoleProfileName,
     UserPermission Permissions)
 {
-    public bool HasTenantScope => !string.IsNullOrWhiteSpace(TenantId);
+    public bool HasTenantScope => TenantReadPredicate.IsResolvedTenant(TenantId);
 }
 
 public interface IWorkstationTenantContextAccessor
@@ -95,7 +95,7 @@ public sealed class HttpContextWorkstationTenantContextAccessor : IWorkstationTe
 /// tenant read predicates without threading a caller-tenant argument through every read method.
 /// Depends only on the singleton-safe <see cref="IHttpContextAccessor"/> (AsyncLocal-backed), so it is
 /// safe to inject into the singleton ledger store without a captive scoped dependency. Returns null
-/// outside a request, or when the session has no tenant (fail-open to the deployment boundary).
+/// when the request has no concrete tenant; strict stores reject that unresolved authority.
 /// </summary>
 public sealed class WorkstationFundScopeTenantAccessor : IFundScopeTenantAccessor
 {
@@ -112,7 +112,12 @@ public sealed class WorkstationFundScopeTenantAccessor : IFundScopeTenantAccesso
         var httpContext = _httpContextAccessor.HttpContext;
         if (httpContext is null)
         {
-            return null;
+            // W9-GOV-008 criterion 2: out of request, fall back to the tenant a background job has
+            // explicitly declared it is acting for. ILedgerJournalStore alone serves roughly fifty
+            // internal and worker call sites, so once an unresolved tenant fails closed, a scheduled
+            // job with perfectly good retained authority would otherwise lose every read. A job that
+            // has declared nothing still resolves to null, and so still fails closed.
+            return FundScopeTenantAuthority.CurrentTenantId;
         }
 
         var context = HttpContextWorkstationTenantContextAccessor.Resolve(httpContext);
@@ -177,8 +182,8 @@ public static class WorkstationTenantCompanyScopeEndpointFilters
         EndpointFilterDelegate next)
     {
         var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context.HttpContext);
-        if (!string.IsNullOrWhiteSpace(tenantContext.TenantId) &&
-            !string.IsNullOrWhiteSpace(tenantContext.CompanyId))
+        if (tenantContext.HasTenantScope &&
+            TenantReadPredicate.IsResolvedTenant(tenantContext.CompanyId))
         {
             return next(context);
         }
@@ -190,10 +195,9 @@ public static class WorkstationTenantCompanyScopeEndpointFilters
 
 /// <summary>
 /// SEC-005 slice 4c-iii deployment/startup switch for the fund-scoped write tenant gate — read once at
-/// startup from the environment during DI registration, so changing it requires a restart. Off by default: a
-/// tenantless authenticated session (the legacy <c>MDC_USERNAME</c> admin) can still create/evaluate
-/// fund-scoped accounting artifacts, but the write is logged for detection. A shared multi-tenant
-/// deployment sets <c>MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED=true</c> to fail closed instead.
+/// startup during DI registration, so changing it requires a restart. Strict host composition
+/// enables this gate. Explicit deployment-boundary compatibility may retain detection-only writes;
+/// <c>MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED=true</c> tightens that compatibility posture.
 /// </summary>
 public sealed record FundScopedWriteTenantOptions(bool Enforce)
 {
@@ -202,12 +206,9 @@ public sealed record FundScopedWriteTenantOptions(bool Enforce)
 
 /// <summary>
 /// SEC-005 slice 4c-iii: gates fund-scoped <b>write</b>/evaluate routes on a server-resolved tenant.
-/// Detection-first — a tenantless caller is refused with <c>403</c> only when
-/// <see cref="FundScopedWriteTenantOptions.Enforce"/> is set (a deployment opt-in); otherwise the write
-/// proceeds and is logged so operators can see whether any real deployment still relies on the tenantless
-/// admin profile before enforcement is enabled. A tenant-scoped caller always proceeds, so single-company
-/// deployments (where the session tenant is populated) are unaffected. The read side stays fail-open;
-/// this is the write-side counterpart. See <c>docs/security/security-remediation-backlog.md</c> (SEC-005).
+/// Strict host composition refuses a tenantless caller with <c>403</c>. Explicit compatibility
+/// composition may retain detection-only writes while operators complete migration. Resource-owner
+/// checks still decide whether a scoped caller may act on the requested fund artifact.
 /// </summary>
 public static class FundScopedWriteTenantEndpointFilters
 {

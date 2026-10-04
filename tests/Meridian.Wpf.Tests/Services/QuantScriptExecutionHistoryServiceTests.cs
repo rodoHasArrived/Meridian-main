@@ -271,6 +271,34 @@ public sealed class QuantScriptExecutionHistoryServiceTests
 
         public void Dispose()
         {
+            // The service under test persists configuration through AtomicFileWriter, which replaces
+            // the file with File.Move(temp, dest, overwrite: true). On Windows the displaced file's
+            // handle is released asynchronously, and the runner's scanner opens the newly created one,
+            // so a restore running immediately after that replace can lose a race it wins a few
+            // milliseconds later -- surfacing as "the process cannot access the file ... because it is
+            // being used by another process" and failing the very test this is cleaning up after.
+            //
+            // The retry is bounded rather than a swallow: the config path is machine-global
+            // (%LOCALAPPDATA%\Meridian\appsettings.json), so quietly giving up would leave every later
+            // test in the run pointed at a deleted temp data root. If it is still locked after the full
+            // backoff, something genuinely holds it and the failure is worth surfacing.
+            const int attempts = 10;
+            for (var attempt = 1; ; attempt++)
+            {
+                try
+                {
+                    Restore();
+                    return;
+                }
+                catch (Exception ex) when ((ex is IOException or UnauthorizedAccessException) && attempt < attempts)
+                {
+                    Thread.Sleep(25 * attempt);
+                }
+            }
+        }
+
+        private void Restore()
+        {
             if (_hadExistingFile)
             {
                 File.WriteAllText(_configPath, _originalContent ?? string.Empty);

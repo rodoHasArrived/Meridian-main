@@ -183,7 +183,8 @@ public sealed record CorporateActionDto(
     string? LifecycleState = null,
     Guid? SupersedesCorpActId = null,
     decimal? RedemptionPricePercentOfPar = null,
-    JsonElement? Payload = null);
+    JsonElement? Payload = null,
+    int PayloadSchemaVersion = CorporateActionPayloads.CurrentSchemaVersion);
 
 /// <summary>
 /// Preferred-equity-specific terms returned by the preferred-terms query.

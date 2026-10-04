@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Meridian.Contracts.Schema;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Serialization;
 using Npgsql;
@@ -7,7 +6,7 @@ using NpgsqlTypes;
 
 namespace Meridian.Storage.SecurityMaster;
 
-public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
+public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
 {
     private const string BondProjectionTable = "bond_projection";
     private const string BondLifecycleProjectionTable = "bond_lifecycle_projection";
@@ -36,11 +35,13 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         Func<PostgresSecurityMasterStore, NpgsqlConnection, NpgsqlTransaction, SecurityProjectionRecord, CancellationToken, Task> WriteAsync);
 
     /// <summary>
-    /// The ordered registry of per-asset-class projection writers. Replaces the previous hard-coded
-    /// fan-out block so adding a projected asset class is a single additive registration here, and the
-    /// projected set is enumerable for the catalog-vs-projection coverage guard.
+    /// The projection writers that predate <see cref="SecurityTermsProjectionRegistry"/>: classes
+    /// whose projection needs real decisions rather than a column list — a derived lifecycle state,
+    /// a swap type scanned out of legs, a concatenated pair code, a legacy nested-coupon fallback.
+    /// They stay hand-written until each is migrated behind its own regression guard; the registry
+    /// is the destination for new classes, not a sweep over the shipped ones.
     /// </summary>
-    private static readonly IReadOnlyList<AssetProjectionWriter> ProjectionWriters =
+    private static readonly IReadOnlyList<AssetProjectionWriter> HandWrittenProjectionWriters =
     [
         new("Bond", static (store, c, t, r, ct) => store.UpsertBondProjectionTablesAsync(c, t, r, ct)),
         new("Option", static (store, c, t, r, ct) => store.UpsertOptionProjectionTablesAsync(c, t, r, ct)),
@@ -55,20 +56,34 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         new("CertificateOfDeposit", static (store, c, t, r, ct) => store.UpsertCertificateOfDepositProjectionAsync(c, t, r, ct)),
     ];
 
+    /// <summary>
+    /// The ordered registry of per-asset-class projection writers. Replaces the previous hard-coded
+    /// fan-out block so adding a projected asset class is a single additive registration here, and the
+    /// projected set is enumerable for the catalog-vs-projection coverage guard.
+    /// <para>
+    /// Anything a class can state declaratively — a table, its columns, and the declared terms they
+    /// read — is a descriptor in <see cref="SecurityTermsProjectionRegistry"/> instead of another
+    /// copy of the same gate/read/upsert/delete method, and is appended here.
+    /// </para>
+    /// </summary>
+    private static readonly IReadOnlyList<AssetProjectionWriter> ProjectionWriters =
+    [
+        .. HandWrittenProjectionWriters,
+        .. SecurityTermsProjectionRegistry.Descriptors.Select(static descriptor =>
+            new AssetProjectionWriter(
+                descriptor.AssetClass,
+                (store, c, t, r, ct) => store.WriteTermsProjectionAsync(descriptor, c, t, r, ct)))
+    ];
+
     /// <summary>The asset classes that have a dedicated relational projection, in fan-out order.</summary>
     internal static IReadOnlyList<string> ProjectedAssetClasses { get; } =
         ProjectionWriters.Select(static writer => writer.AssetClass).ToArray();
 
     private readonly SecurityMasterOptions _options;
-    private readonly ISchemaUpcaster<SecurityAssetSpecificTerms> _assetSpecificTermsUpcaster;
 
-    public PostgresSecurityMasterStore(
-        SecurityMasterOptions options,
-        ISchemaUpcaster<SecurityAssetSpecificTerms>? assetSpecificTermsUpcaster = null)
+    public PostgresSecurityMasterStore(SecurityMasterOptions options)
     {
         _options = options;
-        _assetSpecificTermsUpcaster = assetSpecificTermsUpcaster
-            ?? SecurityAssetSpecificTermsUpcasterPipeline.Instance;
     }
 
     public async Task UpsertProjectionAsync(SecurityProjectionRecord record, CancellationToken ct = default)
@@ -95,52 +110,6 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
 
         await SaveCheckpointCoreAsync(connection, transaction, projectionName, lastGlobalSequence, ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
-    }
-
-    public async Task UpsertAliasAsync(SecurityAliasDto alias, CancellationToken ct = default)
-    {
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        await using var command = connection.CreateCommand();
-        command.CommandText =
-            $"""
-            insert into {Qualified("security_aliases")} (
-                alias_id, security_id, alias_kind, alias_value, normalized_alias_value, provider, normalized_provider, scope, reason,
-                created_by, created_at, valid_from, valid_to, is_enabled)
-            values (
-                @alias_id, @security_id, @alias_kind, @alias_value, @normalized_alias_value, @provider, @normalized_provider, @scope, @reason,
-                @created_by, @created_at, @valid_from, @valid_to, @is_enabled)
-            on conflict (alias_id) do update set
-                security_id = excluded.security_id,
-                alias_kind = excluded.alias_kind,
-                alias_value = excluded.alias_value,
-                normalized_alias_value = excluded.normalized_alias_value,
-                provider = excluded.provider,
-                normalized_provider = excluded.normalized_provider,
-                scope = excluded.scope,
-                reason = excluded.reason,
-                created_by = excluded.created_by,
-                created_at = excluded.created_at,
-                valid_from = excluded.valid_from,
-                valid_to = excluded.valid_to,
-                is_enabled = excluded.is_enabled;
-            """;
-
-        command.Parameters.AddWithValue("alias_id", alias.AliasId);
-        command.Parameters.AddWithValue("security_id", alias.SecurityId);
-        command.Parameters.AddWithValue("alias_kind", alias.AliasKind);
-        command.Parameters.AddWithValue("alias_value", alias.AliasValue);
-        command.Parameters.AddWithValue("normalized_alias_value", SecurityIdentifierNormalizer.NormalizeAliasValue(alias.AliasKind, alias.AliasValue));
-        command.Parameters.AddWithValue("provider", (object?)alias.Provider ?? DBNull.Value);
-        command.Parameters.AddWithValue("normalized_provider", ToDbNullable(SecurityIdentifierNormalizer.NormalizeProvider(alias.Provider)));
-        command.Parameters.AddWithValue("scope", alias.Scope.ToString());
-        command.Parameters.AddWithValue("reason", (object?)alias.Reason ?? DBNull.Value);
-        command.Parameters.AddWithValue("created_by", alias.CreatedBy);
-        command.Parameters.AddWithValue("created_at", alias.CreatedAt.UtcDateTime);
-        command.Parameters.AddWithValue("valid_from", alias.ValidFrom.UtcDateTime);
-        command.Parameters.AddWithValue("valid_to", (object?)alias.ValidTo?.UtcDateTime ?? DBNull.Value);
-        command.Parameters.AddWithValue("is_enabled", alias.IsEnabled);
-
-        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
     public async Task DeactivateProjectionAsync(Guid securityId, DateTimeOffset effectiveTo, long version, CancellationToken ct = default)
@@ -347,11 +316,15 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
                 """;
 
             // Promote the asset-specific-terms schema version into the queryable schema_version column.
-            // The upcaster is the single authority that resolves the effective version (a payload with
-            // no explicit schemaVersion resolves to the legacy default). The stored payload itself is
-            // written unchanged so no existing read path observes an altered blob.
-            var schemaVersion = _assetSpecificTermsUpcaster.Upcast(record.AssetSpecificTerms.GetRawText())?.SchemaVersion
-                ?? SecurityMasterSchemaVersions.DefaultAssetSpecificTerms;
+            // The column has ONE definition, shared with migration 024's backfill: the version stamped
+            // on the STORED blob (a payload with no explicit schemaVersion resolves to the legacy
+            // default). It is deliberately not the post-upcast version — the stored payload is
+            // written unchanged so no read path observes an altered blob, and a cross-family
+            // economic-terms document sitting in this slot must be selectable by
+            // `where schema_version = 2` for the audit and compatibility queries the column exists
+            // for. Readability stays the mapping guard's decision, which resolves the version from
+            // the blob through the upcaster chain and never consults this column.
+            var schemaVersion = SecurityAssetSpecificTermsV0ToCurrentUpcaster.ResolveSchemaVersion(record.AssetSpecificTerms);
 
             command.Parameters.AddWithValue("security_id", record.SecurityId);
             command.Parameters.AddWithValue("asset_class", record.AssetClass);
@@ -469,54 +442,6 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             insert.Parameters.AddWithValue("source", "SecurityMaster");
             insert.Parameters.AddWithValue("confidence", DBNull.Value);
             insert.Parameters.AddWithValue("manual_override", false);
-            await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-        }
-    }
-
-    private async Task ReplaceAliasesAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        Guid securityId,
-        IReadOnlyList<SecurityAliasDto> aliases,
-        CancellationToken ct)
-    {
-        await using (var delete = connection.CreateCommand())
-        {
-            delete.Transaction = transaction;
-            delete.CommandText = $"delete from {Qualified("security_aliases")} where security_id = @security_id;";
-            delete.Parameters.AddWithValue("security_id", securityId);
-            await delete.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-        }
-
-        foreach (var alias in aliases)
-        {
-            await using var insert = connection.CreateCommand();
-            insert.Transaction = transaction;
-            insert.CommandText =
-                $"""
-                insert into {Qualified("security_aliases")} (
-                    alias_id, security_id, alias_kind, alias_value, normalized_alias_value,
-                    provider, normalized_provider, scope, reason,
-                    created_by, created_at, valid_from, valid_to, is_enabled)
-                values (
-                    @alias_id, @security_id, @alias_kind, @alias_value, @normalized_alias_value,
-                    @provider, @normalized_provider, @scope, @reason,
-                    @created_by, @created_at, @valid_from, @valid_to, @is_enabled);
-                """;
-            insert.Parameters.AddWithValue("alias_id", alias.AliasId);
-            insert.Parameters.AddWithValue("security_id", securityId);
-            insert.Parameters.AddWithValue("alias_kind", alias.AliasKind);
-            insert.Parameters.AddWithValue("alias_value", alias.AliasValue);
-            insert.Parameters.AddWithValue("normalized_alias_value", SecurityIdentifierNormalizer.NormalizeAliasValue(alias.AliasKind, alias.AliasValue));
-            insert.Parameters.AddWithValue("provider", (object?)alias.Provider ?? DBNull.Value);
-            insert.Parameters.AddWithValue("normalized_provider", ToDbNullable(SecurityIdentifierNormalizer.NormalizeProvider(alias.Provider)));
-            insert.Parameters.AddWithValue("scope", alias.Scope.ToString());
-            insert.Parameters.AddWithValue("reason", (object?)alias.Reason ?? DBNull.Value);
-            insert.Parameters.AddWithValue("created_by", alias.CreatedBy);
-            insert.Parameters.AddWithValue("created_at", alias.CreatedAt.UtcDateTime);
-            insert.Parameters.AddWithValue("valid_from", alias.ValidFrom.UtcDateTime);
-            insert.Parameters.AddWithValue("valid_to", (object?)alias.ValidTo?.UtcDateTime ?? DBNull.Value);
-            insert.Parameters.AddWithValue("is_enabled", alias.IsEnabled);
             await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
     }
@@ -1899,13 +1824,24 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
     private static string? ToNullableString(string value)
         => string.IsNullOrWhiteSpace(value) ? null : value;
 
-    private static decimal? GetOptionalDecimal(JsonElement json, string propertyName)
-        => json.TryGetProperty(propertyName, out var value) && value.TryGetDecimal(out var decimalValue)
+    // The value kind is checked BEFORE the value is read, matching the sibling readers above and
+    // below and the registry-driven DecodeTerm in PostgresSecurityMasterStore.TermsProjection.cs.
+    // JsonElement.TryGetDecimal / TryGetInt32 throw InvalidOperationException on a non-number
+    // element — including the JSON null the canonical F# serializer writes for every optional term
+    // the record does not carry (a security with no lotSize is an ordinary record) — and these two
+    // readers serve the core `securities` upsert and every hand-written projection writer, so an
+    // unchecked read could abort the whole projection transaction on a legitimate row.
+    internal static decimal? GetOptionalDecimal(JsonElement json, string propertyName)
+        => json.TryGetProperty(propertyName, out var value)
+           && value.ValueKind == JsonValueKind.Number
+           && value.TryGetDecimal(out var decimalValue)
             ? decimalValue
             : null;
 
-    private static int? GetOptionalInt(JsonElement json, string propertyName)
-        => json.TryGetProperty(propertyName, out var value) && value.TryGetInt32(out var intValue)
+    internal static int? GetOptionalInt(JsonElement json, string propertyName)
+        => json.TryGetProperty(propertyName, out var value)
+           && value.ValueKind == JsonValueKind.Number
+           && value.TryGetInt32(out var intValue)
             ? intValue
             : null;
 

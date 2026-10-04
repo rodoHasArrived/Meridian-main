@@ -29,13 +29,21 @@ public sealed partial class OrderManagementSystem
         ct.ThrowIfCancellationRequested();
         var sweepToken = CancellationToken.None;
 
+        // Before the book is read, let the submissions already past the operator-control gate
+        // reach their acknowledgement. A breaker trip and a submission race: PlaceOrderAsync
+        // consults the controls, then validates, reserves, and dispatches, and an order that
+        // passed the gate a moment before the trip could otherwise land at the broker after
+        // this sweep had looked and found nothing. Waiting here -- bounded, and only for the
+        // dispatches in flight at this instant -- means the snapshot below sees each of them
+        // as either acknowledged (and swept) or rejected at the dispatch recheck.
+        var unsettledDispatches = await WaitForInFlightDispatchesToSettleAsync().ConfigureAwait(false);
+
         // Withdrawal failures are part of the outcome, not a log line. A parked order is absent
         // from the order book below, so an escalation that could not be withdrawn would otherwise
         // leave the sweep reporting an empty book while the escalation stayed releasable -- an
         // order able to route after the halt.
         var failures = new List<KillSwitchSweepFailure>(
             await WithdrawAllParkedEscalationsAsync(sweepToken).ConfigureAwait(false));
-        var withdrawalFailures = failures.Count;
 
         // Not GetOpenOrders(): that excludes PendingCancel, and an order whose earlier cancellation
         // is still unconfirmed can absolutely still fill. Skipping it would let the kill switch
@@ -47,6 +55,32 @@ public sealed partial class OrderManagementSystem
                 or OrderStatus.PendingCancel)
             .ToList();
 
+        // A submission the settle window did not resolve is working as far as this sweep can
+        // tell: its dispatch may reach the broker after every cancellation below has been sent.
+        // One already registered in the book is swept like any other order and its cancellation
+        // result speaks for it; one not yet visible (or already terminal) is named here, because
+        // the alternative is a Completed verdict over an order nobody cancelled.
+        foreach (var unsettledOrderId in unsettledDispatches)
+        {
+            if (sweepTargets.Any(target => string.Equals(target.OrderId, unsettledOrderId, StringComparison.Ordinal)))
+            {
+                continue;
+            }
+
+            _orders.TryGetValue(unsettledOrderId, out var unsettledState);
+            if (unsettledState is not null && IsTerminalStatus(unsettledState.Status))
+            {
+                continue;
+            }
+
+            failures.Add(new KillSwitchSweepFailure(
+                unsettledOrderId,
+                unsettledState?.Symbol,
+                "The submission was still awaiting the gateway's acknowledgement when the sweep began; verify it at the broker."));
+        }
+
+        var preSweepFailures = failures.Count;
+
         // The in-memory dictionary is a claim about the book, not the book. After an OMS restart,
         // for bracket child legs that were never registered, or for orders placed out of band,
         // the broker can hold working orders this process has never heard of — so the sweep also
@@ -54,7 +88,7 @@ public sealed partial class OrderManagementSystem
         // does not cover. The snapshot is taken before anything is cancelled so it reflects the
         // pre-sweep book, and deduplication is by order id, so an order present in both views is
         // cancelled exactly once, through the tracked path that owns its state.
-        var (brokerResidualOrders, brokerViewError) =
+        var (brokerResidualOrders, brokerCancellationIds, brokerViewError) =
             await SnapshotBrokerResidualOrdersAsync(sweepTargets, sweepToken).ConfigureAwait(false);
 
         _logger.LogInformation(
@@ -72,7 +106,7 @@ public sealed partial class OrderManagementSystem
         {
             var emptySweep = failures.Count == 0
                 ? KillSwitchSweepResult.Empty
-                : KillSwitchSweepResult.From(withdrawalFailures, 0, failures);
+                : KillSwitchSweepResult.From(preSweepFailures, 0, failures);
             return brokerViewError is null
                 ? emptySweep
                 : emptySweep with { BrokerViewUnavailable = true, BrokerViewError = brokerViewError };
@@ -83,6 +117,7 @@ public sealed partial class OrderManagementSystem
         // merely losing a count.
         var cancelled = 0;
         var gate = new Lock();
+        var confirmedCancellations = new List<ConfirmedCancellation>();
         var parallelOptions = new ParallelOptions
         {
             CancellationToken = sweepToken,
@@ -98,9 +133,12 @@ public sealed partial class OrderManagementSystem
                 // has to say so per order. Letting it escape would abandon the remaining orders
                 // mid-sweep and report the whole kill switch as failed on one broker's fault.
                 KillSwitchSweepFailure? failure;
+                var gatewayOrderId = brokerCancellationIds.TryGetValue(order.OrderId, out var brokerOrderId)
+                    ? brokerOrderId
+                    : null;
                 try
                 {
-                    var result = await CancelOrderCoreAsync(order.OrderId, token).ConfigureAwait(false);
+                    var result = await CancelOrderCoreAsync(order.OrderId, token, gatewayOrderId).ConfigureAwait(false);
                     failure = result.Success
                         ? null
                         : new KillSwitchSweepFailure(
@@ -122,6 +160,14 @@ public sealed partial class OrderManagementSystem
                     else
                     {
                         cancelled++;
+                        var confirmedBrokerOrderId = gatewayOrderId;
+                        if (string.IsNullOrWhiteSpace(confirmedBrokerOrderId))
+                        {
+                            _orderBrokerIds.TryGetValue(order.OrderId, out confirmedBrokerOrderId);
+                        }
+                        confirmedCancellations.Add(new ConfirmedCancellation(
+                            order.OrderId,
+                            confirmedBrokerOrderId));
                     }
                 }
             }).ConfigureAwait(false);
@@ -148,13 +194,98 @@ public sealed partial class OrderManagementSystem
                         else
                         {
                             cancelled++;
+                            confirmedCancellations.Add(new ConfirmedCancellation(
+                                order.ClientOrderId ?? order.OrderId,
+                                order.OrderId));
                         }
                     }
                 }).ConfigureAwait(false);
         }
 
+        // A cancellation response is not proof that the broker book converged. Re-enumerate the
+        // fully paginated working book after every request has settled: rows that survived (or
+        // appeared during the sweep) make Completed impossible, and a failed verification makes
+        // the broker view explicitly unavailable.
+        var (survivingBrokerOrders, convergenceError) =
+            await SnapshotWorkingBrokerOrdersAsync(sweepToken).ConfigureAwait(false);
+        if (convergenceError is not null)
+        {
+            brokerViewError = convergenceError;
+        }
+        else
+        {
+            // A successful final enumeration supersedes an earlier transient listing failure: it
+            // establishes the broker's current open book, which is the kill switch's exit criterion.
+            brokerViewError = null;
+            foreach (var survivor in survivingBrokerOrders)
+            {
+                var confirmedIndex = confirmedCancellations.FindIndex(confirmed =>
+                    (confirmed.BrokerOrderId is { Length: > 0 } brokerOrderId
+                     && string.Equals(brokerOrderId, survivor.OrderId, StringComparison.Ordinal))
+                    || string.Equals(confirmed.LocalOrderId, survivor.ClientOrderId, StringComparison.Ordinal));
+                if (confirmedIndex >= 0)
+                {
+                    confirmedCancellations.RemoveAt(confirmedIndex);
+                    cancelled = Math.Max(0, cancelled - 1);
+                }
+
+                var failureOrderId = survivor.ClientOrderId is { Length: > 0 } clientOrderId
+                    && sweepTargets.Any(target => string.Equals(
+                        target.OrderId,
+                        clientOrderId,
+                        StringComparison.Ordinal))
+                        ? clientOrderId
+                        : survivor.OrderId;
+                if (failures.Any(failure =>
+                    string.Equals(failure.OrderId, failureOrderId, StringComparison.Ordinal)
+                    || string.Equals(failure.OrderId, survivor.OrderId, StringComparison.Ordinal)
+                    || string.Equals(failure.OrderId, survivor.ClientOrderId, StringComparison.Ordinal)))
+                {
+                    continue;
+                }
+
+                failures.Add(new KillSwitchSweepFailure(
+                    failureOrderId,
+                    survivor.Symbol,
+                    $"Broker verification still reports the order as {survivor.Status}."));
+            }
+        }
+
+        // A submission whose gateway call had still not returned by the end of the sweep is
+        // working as far as this sweep can tell, whatever its cancellation attempt reported: a
+        // cancel acknowledged before the submit settles is not proof the submit cannot land
+        // afterwards, and the broker snapshot taken above cannot show an order the broker has
+        // not yet accepted. Such an order is reported as still working and never counted as
+        // cancelled. One that settled during the sweep is judged by its cancellation result.
+        foreach (var unsettledOrderId in unsettledDispatches)
+        {
+            if (!DispatchLease.IsUnsettled(this, unsettledOrderId))
+            {
+                continue;
+            }
+
+            var confirmedIndex = confirmedCancellations.FindIndex(confirmed =>
+                string.Equals(confirmed.LocalOrderId, unsettledOrderId, StringComparison.Ordinal));
+            if (confirmedIndex >= 0)
+            {
+                confirmedCancellations.RemoveAt(confirmedIndex);
+                cancelled = Math.Max(0, cancelled - 1);
+            }
+
+            if (failures.Any(failure => string.Equals(failure.OrderId, unsettledOrderId, StringComparison.Ordinal)))
+            {
+                continue;
+            }
+
+            _orders.TryGetValue(unsettledOrderId, out var unsettledState);
+            failures.Add(new KillSwitchSweepFailure(
+                unsettledOrderId,
+                unsettledState?.Symbol,
+                "The submission was still awaiting the gateway's acknowledgement when the sweep finished; a cancellation sent before the submission settles is not proof it cannot land. Verify it at the broker."));
+        }
+
         var sweep = KillSwitchSweepResult.From(
-            sweepTargets.Count + brokerResidualOrders.Count + withdrawalFailures,
+            sweepTargets.Count + brokerResidualOrders.Count + preSweepFailures,
             cancelled,
             failures);
 
@@ -177,8 +308,120 @@ public sealed partial class OrderManagementSystem
     }
 
     /// <summary>
+    /// Waits, bounded by <see cref="OrderManagementSystemOptions.CancelAllInFlightSettleTimeout"/>,
+    /// for the submissions in flight at the moment of the call to be acknowledged or rejected, and
+    /// returns the order ids of those that were not.
+    /// <para>
+    /// Only the dispatches present when the wait starts are awaited. Submissions that begin later
+    /// are the breaker's concern -- with it open they are refused at the dispatch recheck -- and
+    /// under a plain cancel-all with no halt they are legitimately new orders; waiting for them
+    /// would let a steady submitter starve the sweep.
+    /// </para>
+    /// </summary>
+    private async Task<IReadOnlyList<string>> WaitForInFlightDispatchesToSettleAsync()
+    {
+        var inFlight = _inFlightDispatches.ToArray();
+        if (inFlight.Length == 0)
+        {
+            return [];
+        }
+
+        var settleTimeout = _options.ValidatedCancelAllInFlightSettleTimeout;
+        _logger.LogInformation(
+            "Cancel-all is waiting up to {SettleTimeout} for {InFlightCount} in-flight submission(s) to be acknowledged before sweeping the book",
+            settleTimeout,
+            inFlight.Length);
+
+        try
+        {
+            await Task.WhenAll(inFlight.Select(static entry => entry.Value.Task))
+                .WaitAsync(settleTimeout)
+                .ConfigureAwait(false);
+            return [];
+        }
+        catch (TimeoutException)
+        {
+            var unsettled = inFlight
+                .Where(static entry => !entry.Value.Task.IsCompleted)
+                .Select(static entry => entry.Key)
+                .ToList();
+            _logger.LogWarning(
+                "Cancel-all stopped waiting after {SettleTimeout}: {UnsettledCount} submission(s) still await gateway acknowledgement and will be reported as working unless their cancellation is confirmed",
+                settleTimeout,
+                unsettled.Count);
+            return unsettled;
+        }
+    }
+
+    /// <summary>
+    /// Marks one submission as in flight between registration and gateway acknowledgement, for the
+    /// kill-switch sweep to wait on. Disposal settles the lease on every exit path of
+    /// <see cref="PlaceOrderAsync"/>, including rejection and gateway failure.
+    /// </summary>
+    private sealed class DispatchLease(OrderManagementSystem owner) : IDisposable
+    {
+        private string? _orderId;
+        private TaskCompletionSource? _settled;
+
+        public void Begin(string orderId)
+        {
+            var settled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            while (true)
+            {
+                if (owner._inFlightDispatches.TryAdd(orderId, settled))
+                {
+                    _orderId = orderId;
+                    _settled = settled;
+                    return;
+                }
+
+                if (!owner._inFlightDispatches.TryGetValue(orderId, out var existing))
+                {
+                    continue;
+                }
+
+                if (!existing.Task.IsCompleted)
+                {
+                    // Another attempt is in flight under this client order id. It owns the
+                    // lease and the sweep is already waiting on it; TryRegisterOrder will
+                    // reject this attempt as a duplicate. Overwriting here would let this
+                    // attempt's disposal strip the winner's lease and hide a live broker
+                    // submission from the kill switch.
+                    return;
+                }
+
+                // A settled lease still under the id is a leak from a terminal order whose id
+                // is being reused; clear it so the new submission is visible to the sweep.
+                owner._inFlightDispatches.TryRemove(new KeyValuePair<string, TaskCompletionSource>(orderId, existing));
+            }
+        }
+
+        /// <summary>
+        /// Marks the dispatch settled: the gateway has acknowledged or refused the order and the
+        /// tracked table reflects it. Idempotent; disposal calls it again as a safety net.
+        /// </summary>
+        public void Settle()
+        {
+            if (_orderId is null || _settled is null)
+            {
+                return;
+            }
+
+            owner._inFlightDispatches.TryRemove(new KeyValuePair<string, TaskCompletionSource>(_orderId, _settled));
+            _settled.TrySetResult();
+        }
+
+        public void Dispose() => Settle();
+
+        /// <summary>Whether this order id still has an unsettled dispatch in the owner's registry.</summary>
+        public static bool IsUnsettled(OrderManagementSystem owner, string orderId) =>
+            owner._inFlightDispatches.TryGetValue(orderId, out var pending) && !pending.Task.IsCompleted;
+    }
+
+    /// <summary>
     /// Snapshots the broker's own open-order book and returns the orders the in-memory sweep will
-    /// not cover, plus the enumeration error when the broker view could not be established.
+    /// not cover, the broker-assigned cancellation ids for tracked orders, plus the enumeration
+    /// error when the broker view could not be established.
     /// <para>
     /// An enumeration failure must not abort the in-memory sweep — a broker that cannot list its
     /// book may still accept cancellations — but it is returned rather than swallowed, because
@@ -186,7 +429,10 @@ public sealed partial class OrderManagementSystem
     /// kill switch is asked, and the sweep outcome has to carry which one this was.
     /// </para>
     /// </summary>
-    private async Task<(IReadOnlyList<BrokerOrder> ResidualOrders, string? EnumerationError)> SnapshotBrokerResidualOrdersAsync(
+    private async Task<(
+        IReadOnlyList<BrokerOrder> ResidualOrders,
+        IReadOnlyDictionary<string, string> BrokerCancellationIds,
+        string? EnumerationError)> SnapshotBrokerResidualOrdersAsync(
         IReadOnlyList<OrderState> sweepTargets,
         CancellationToken ct)
     {
@@ -195,7 +441,7 @@ public sealed partial class OrderManagementSystem
             // The gateway keeps no broker-side book of its own (paper gateways execute
             // in-process), so the in-memory view is the whole book by construction rather than
             // by assumption.
-            return (Array.Empty<BrokerOrder>(), null);
+            return (Array.Empty<BrokerOrder>(), new Dictionary<string, string>(StringComparer.Ordinal), null);
         }
 
         IReadOnlyList<BrokerOrder> brokerOpenOrders;
@@ -209,19 +455,33 @@ public sealed partial class OrderManagementSystem
             _logger.LogError(
                 exception,
                 "Cancel-all could not enumerate the broker's open orders; the sweep covers only the in-memory book");
-            return (Array.Empty<BrokerOrder>(), exception.Message);
+            return (
+                Array.Empty<BrokerOrder>(),
+                new Dictionary<string, string>(StringComparer.Ordinal),
+                exception.Message);
         }
 
         if (brokerOpenOrders.Count == 0)
         {
-            return (Array.Empty<BrokerOrder>(), null);
+            return (Array.Empty<BrokerOrder>(), new Dictionary<string, string>(StringComparer.Ordinal), null);
         }
 
         var trackedIds = new HashSet<string>(
             sweepTargets.Select(static order => order.OrderId),
             StringComparer.Ordinal);
+        var trackedByBrokerId = sweepTargets
+            .Select(order => _orderBrokerIds.TryGetValue(order.OrderId, out var brokerOrderId)
+                ? (order.OrderId, BrokerOrderId: brokerOrderId)
+                : (order.OrderId, BrokerOrderId: (string?)null))
+            .Where(static mapping => !string.IsNullOrWhiteSpace(mapping.BrokerOrderId))
+            .GroupBy(static mapping => mapping.BrokerOrderId!, StringComparer.Ordinal)
+            .Where(static group => group.Count() == 1)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.Single().OrderId,
+                StringComparer.Ordinal);
 
-        return (brokerOpenOrders
+        var activeBrokerOrders = brokerOpenOrders
             // Defensive: GetOpenOrdersAsync should already return only working orders, but a
             // terminal row slipping through would make the sweep report a failure over an order
             // that cannot fill.
@@ -230,12 +490,36 @@ public sealed partial class OrderManagementSystem
                 or OrderStatus.PartiallyFilled
                 or OrderStatus.PendingCancel)
             .DistinctBy(static order => order.OrderId, StringComparer.Ordinal)
-            // Deduped on both ids: the OMS registers orders under the client order id it handed
-            // the broker, while some gateways key their book by their own order id. An order the
-            // in-memory sweep already targets is cancelled there, once.
-            .Where(order => !(order.ClientOrderId is { Length: > 0 } clientOrderId && trackedIds.Contains(clientOrderId))
-                && !trackedIds.Contains(order.OrderId))
-            .ToList(), null);
+            .ToList();
+
+        var residualOrders = new List<BrokerOrder>();
+        var brokerCancellationIds = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var brokerOrder in activeBrokerOrders)
+        {
+            // The OMS keys tracked state by the client id it submitted, while Alpaca's DELETE
+            // endpoint accepts only the broker UUID. Keep the broker row out of the residual
+            // sweep, but carry its broker-assigned id into the tracked cancellation path instead
+            // of silently falling back to the client id that matched it.
+            var trackedOrderId = brokerOrder.ClientOrderId is { Length: > 0 } clientOrderId
+                && trackedIds.Contains(clientOrderId)
+                    ? clientOrderId
+                    : trackedByBrokerId.TryGetValue(brokerOrder.OrderId, out var brokerMappedOrderId)
+                        ? brokerMappedOrderId
+                        : null;
+
+            if (trackedOrderId is null)
+            {
+                residualOrders.Add(brokerOrder);
+                continue;
+            }
+
+            if (!string.IsNullOrWhiteSpace(brokerOrder.OrderId))
+            {
+                brokerCancellationIds.TryAdd(trackedOrderId, brokerOrder.OrderId);
+            }
+        }
+
+        return (residualOrders, brokerCancellationIds, null);
     }
 
     /// <summary>
@@ -249,7 +533,11 @@ public sealed partial class OrderManagementSystem
         ExecutionReport? report = null;
         try
         {
-            report = await _gateway.CancelOrderAsync(order.OrderId, ct).ConfigureAwait(false);
+            report = await CancelAtGatewayAsync(
+                new OrderCancellationIdentifier(
+                    order.OrderId,
+                    OrderCancellationIdentifierKind.BrokerOrderId),
+                ct).ConfigureAwait(false);
             failure = report.OrderStatus is OrderStatus.Cancelled
                 ? null
                 : new KillSwitchSweepFailure(
@@ -287,6 +575,39 @@ public sealed partial class OrderManagementSystem
 
         return failure;
     }
+
+    private async Task<(IReadOnlyList<BrokerOrder> WorkingOrders, string? EnumerationError)>
+        SnapshotWorkingBrokerOrdersAsync(CancellationToken ct)
+    {
+        if (_gateway is not IBrokerageGateway brokerage)
+        {
+            return (Array.Empty<BrokerOrder>(), null);
+        }
+
+        try
+        {
+            var brokerOrders = await brokerage.GetOpenOrdersAsync(ct).ConfigureAwait(false)
+                ?? Array.Empty<BrokerOrder>();
+            return (
+                brokerOrders
+                    .Where(static order => order.Status is OrderStatus.PendingNew
+                        or OrderStatus.Accepted
+                        or OrderStatus.PartiallyFilled
+                        or OrderStatus.PendingCancel)
+                    .DistinctBy(static order => order.OrderId, StringComparer.Ordinal)
+                    .ToList(),
+                null);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "Cancel-all could not verify the broker's open-order book after cancellation");
+            return (Array.Empty<BrokerOrder>(), exception.Message);
+        }
+    }
+
+    private readonly record struct ConfirmedCancellation(string LocalOrderId, string? BrokerOrderId);
 
     /// <summary>
     /// Withdraws every parked governed escalation, returning the ones that could not be withdrawn.

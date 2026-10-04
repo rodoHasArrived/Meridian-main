@@ -15,7 +15,7 @@ public sealed class SecurityMasterCashFlowServiceTests
     public async Task GetProjectionAsync_CalculatedBullet_ShouldGenerateCouponAndMaturityScheduleFromRetainedTerms()
     {
         var securityId = Guid.Parse("11111111-aaaa-aaaa-aaaa-111111111111");
-        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var asOf = WholePeriodIssueDate();
         var store = Substitute.For<ISecurityMasterCashFlowStore>();
         store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
             .Returns(new SecurityCashFlowSourceDto(
@@ -675,7 +675,7 @@ public sealed class SecurityMasterCashFlowServiceTests
     public async Task BuildLedgerPostingsAsync_FreshBaseProjection_ShouldProduceBalancedCouponAccruals()
     {
         var securityId = Guid.Parse("55555555-eeee-eeee-eeee-555555555555");
-        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var asOf = WholePeriodIssueDate();
         var store = Substitute.For<ISecurityMasterCashFlowStore>();
         store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
             .Returns(new SecurityCashFlowSourceDto(
@@ -753,7 +753,7 @@ public sealed class SecurityMasterCashFlowServiceTests
     public async Task GetProjectionAsync_SwapLegsWithDirections_ShouldNetReceiveMinusPay()
     {
         var securityId = Guid.Parse("66666666-ffff-ffff-ffff-666666666666");
-        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var asOf = WholePeriodIssueDate();
         var service = BuildService(
             StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet),
             QueryWith(securityId, JsonSerializer.SerializeToElement(new
@@ -788,7 +788,7 @@ public sealed class SecurityMasterCashFlowServiceTests
     public async Task GetProjectionAsync_SingleFloatingLeg_ProjectsFloatingRateNoteWithPrincipalExchange()
     {
         var securityId = Guid.Parse("77777777-aaaa-bbbb-cccc-777777777777");
-        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var asOf = WholePeriodIssueDate();
         var terms = JsonSerializer.SerializeToElement(new
         {
             issueDate = asOf,
@@ -820,7 +820,7 @@ public sealed class SecurityMasterCashFlowServiceTests
     public async Task GetProjectionAsync_FloatingLeg_AppliesScenarioShiftToFloatingRatesOnly()
     {
         var securityId = Guid.Parse("88888888-aaaa-bbbb-cccc-888888888888");
-        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var asOf = WholePeriodIssueDate();
         var service = BuildService(
             StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet),
             QueryWith(securityId, JsonSerializer.SerializeToElement(new
@@ -873,6 +873,123 @@ public sealed class SecurityMasterCashFlowServiceTests
         projection!.Schedule.Should().BeEmpty();
         projection.LegSchedules.Should().HaveCount(2);
         projection.LegSchedules![0].Schedule.Should().NotBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("Deposit", "interestRate")]
+    [InlineData("DirectLoan", "currentCouponRate")]
+    [InlineData("StructuredCredit", "couponOrIndex")]
+    [InlineData("Repo", "repoRate")]
+    public async Task CanonicalClassRate_ProducesInterestInsteadOfMissingTermZero(string assetClass, string rateField)
+    {
+        var securityId = Guid.NewGuid();
+        var issue = WholePeriodIssueDate();
+        var terms = JsonSerializer.SerializeToElement(new Dictionary<string, object>
+        {
+            ["issueDate"] = issue,
+            ["maturityDate"] = issue.AddYears(1),
+            ["par"] = 100m,
+            [rateField] = 6m,
+            ["dayCountConvention"] = "30/360"
+        });
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(securityId, terms) with { AssetClass = assetClass });
+        var service = BuildService(StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet), query);
+        var result = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+        result!.Schedule.Sum(p => p.InterestAmount).Should().Be(6m);
+        result.BlockedReason.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task MissingCoupon_BlocksProjectionAndLedger_WhileExplicitZeroPaysPrincipal()
+    {
+        var securityId = Guid.NewGuid();
+        var issue = WholePeriodIssueDate();
+        var missingTerms = JsonSerializer.SerializeToElement(new { issueDate = issue, maturityDate = issue.AddYears(1), par = 100m });
+        var query = QueryWith(securityId, missingTerms);
+        var service = BuildService(StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet), query);
+        var missing = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+        missing!.Schedule.Should().BeEmpty();
+        missing.BlockedReason.Should().Contain("coupon rate is missing");
+        var posting = await service.BuildLedgerPostingsAsync(securityId);
+        posting.IsPostable.Should().BeFalse();
+        posting.BlockedReason.Should().Contain("coupon rate is missing");
+
+        query.GetByIdAsync(securityId, Arg.Any<CancellationToken>()).Returns(BuildSecurity(securityId,
+            JsonSerializer.SerializeToElement(new { issueDate = issue, maturityDate = issue.AddYears(1), par = 100m, couponRate = 0m })));
+        var zero = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+        zero!.BlockedReason.Should().BeNull();
+        zero.Schedule.Sum(p => p.PrincipalAmount).Should().Be(100m);
+        zero.Schedule.Should().OnlyContain(p => p.InterestAmount == 0m);
+    }
+
+    [Theory]
+    [InlineData("TreasuryBill")]
+    [InlineData("CommercialPaper")]
+    public async Task DiscountYield_IsNotCouponInterest(string assetClass)
+    {
+        var securityId = Guid.NewGuid();
+        var issue = WholePeriodIssueDate();
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetByIdAsync(securityId, Arg.Any<CancellationToken>()).Returns(BuildSecurity(securityId,
+            JsonSerializer.SerializeToElement(new { issueDate = issue, maturity = issue.AddYears(1), par = 100m, discountRate = 5m }))
+            with
+        { AssetClass = assetClass });
+        var result = await BuildService(StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet), query)
+            .GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+        result!.Schedule.Sum(p => p.PrincipalAmount).Should().Be(100m);
+        result.Schedule.Should().OnlyContain(p => p.InterestAmount == 0m);
+    }
+
+    [Fact]
+    public async Task UnresolvedFloatingLeg_BlocksEntireProjectionInsteadOfZeroFixing()
+    {
+        var securityId = Guid.NewGuid();
+        var issue = WholePeriodIssueDate();
+        var query = QueryWith(securityId, JsonSerializer.SerializeToElement(new
+        {
+            issueDate = issue,
+            maturityDate = issue.AddYears(1),
+            par = 100m,
+            legs = new[] { new { legType = "Floating", index = "SOFR", spreadBps = 300m } }
+        }));
+        var result = await BuildService(StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet), query)
+            .GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+        result!.Schedule.Should().BeEmpty();
+        result.BlockedReason.Should().Contain("index fixing");
+    }
+
+    [Theory]
+    [InlineData("Deposit", "interestRate")]
+    [InlineData("DirectLoan", "currentCouponRate")]
+    [InlineData("Repo", "repoRate")]
+    public async Task MissingActualPrincipal_PreservesExplicitNormalizedAnalysisButBlocksLedger(string assetClass, string rateField)
+    {
+        var id = Guid.NewGuid();
+        var issue = WholePeriodIssueDate();
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetByIdAsync(id, Arg.Any<CancellationToken>()).Returns(BuildSecurity(id,
+            JsonSerializer.SerializeToElement(new Dictionary<string, object>
+            {
+                ["issueDate"] = issue,
+                ["maturityDate"] = issue.AddYears(1),
+                [rateField] = 6m
+            })) with
+        { AssetClass = assetClass });
+        var service = BuildService(StoreWith(id, StructuredCashFlowSourceKind.CalculatedBullet), query);
+        var projection = await service.GetProjectionAsync(id, StructuredCashFlowScenario.Base);
+        projection!.IsNormalizedPer100.Should().BeTrue();
+        projection.BlockedReason.Should().Contain("principal");
+        (await service.BuildLedgerPostingsAsync(id)).IsPostable.Should().BeFalse();
+    }
+
+    private static DateOnly WholePeriodIssueDate()
+    {
+        // Exact coupon assertions require whole 30/360 periods. The first of the current UTC month
+        // keeps every payment ahead of the service's real-time cutoff and avoids month-end clamping.
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        return new DateOnly(today.Year, today.Month, 1);
     }
 
     private static ISecurityMasterCashFlowStore StoreWith(Guid securityId, StructuredCashFlowSourceKind sourceKind)

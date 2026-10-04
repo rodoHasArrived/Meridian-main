@@ -540,7 +540,8 @@ const fixtureExecutionControls: ExecutionControlSnapshot = {
       runId: "run-dev-1"
     }
   ],
-  asOf: "2026-04-28T18:15:00Z"
+  asOf: "2026-04-28T18:15:00Z",
+  version: 7
 };
 
 const fixtureReplayFiles = {
@@ -2404,7 +2405,7 @@ const fixtureCorporateActions: CorporateAction[] = [
     acquirerSecurityId: null,
     exchangeRatio: null,
     subscriptionPricePerShare: null,
-    rightsPerShare: null
+    rightsPerShare: null, recordDate: null, lifecycleState: "Paid", supersedesCorpActId: null, redemptionPricePercentOfPar: null, payload: null, payloadSchemaVersion: 1
   },
   {
     corpActId: "ca-aapl-split-2020-08",
@@ -2420,7 +2421,7 @@ const fixtureCorporateActions: CorporateAction[] = [
     acquirerSecurityId: null,
     exchangeRatio: null,
     subscriptionPricePerShare: null,
-    rightsPerShare: null
+    rightsPerShare: null, recordDate: null, lifecycleState: "Paid", supersedesCorpActId: null, redemptionPricePercentOfPar: null, payload: null, payloadSchemaVersion: 1
   }
 ];
 

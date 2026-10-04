@@ -49,9 +49,9 @@ import {
   type CapabilityMatrixViewModel
 } from "@/screens/data-screen.capability-matrix.view-model";
 import {
-  useCorporateActionInboxPanel,
-  type CorporateActionInboxViewModel
+  useCorporateActionInboxPanel
 } from "@/screens/data-screen.corporate-action-inbox.view-model";
+import { CorporateActionInboxRegion } from "@/screens/data-screen.corporate-action-inbox";
 import { useCoverageGapsPanel } from "@/screens/data-screen.coverage-gaps.view-model";
 import { CoverageGapsRegion, DataQualityRegion } from "@/screens/data-screen.data-regions";
 import { DataOverviewHub, RouteFocusCard } from "@/screens/data-screen-navigation-panels";
@@ -2094,87 +2094,6 @@ function CapabilityMatrixRegion({ panel }: { panel: CapabilityMatrixViewModel })
                   </ul>
                 </div>
               )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </section>
-  );
-}
-
-function CorporateActionInboxRegion({ panel }: { panel: CorporateActionInboxViewModel }) {
-  return (
-    <section aria-labelledby="corporate-action-inbox-title" className="workspace-region corporate-action-inbox-region">
-      <Card>
-        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
-          <div>
-            <CardTitle id="corporate-action-inbox-title">
-              Corporate action inbox
-              {panel.model && panel.model.stagedCount > 0 ? ` (${panel.model.stagedCount})` : null}
-            </CardTitle>
-            <CardDescription>
-              Staged provider announcements awaiting operator review.
-              {panel.model ? ` ${panel.model.summary} Last ingest: ${panel.model.lastIngestLabel}.` : null}
-            </CardDescription>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => void panel.refresh()}
-            disabled={panel.loading}
-            aria-label="Refresh corporate action inbox"
-          >
-            <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-            <span className="ml-1.5">{panel.loading ? "Refreshing…" : "Refresh"}</span>
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {panel.error ? (
-            <StatusBanner tone="danger" title="Corporate action inbox unavailable" detail={panel.error} />
-          ) : !panel.model ? (
-            <p className="text-sm text-muted-foreground" role="status">Loading corporate action inbox…</p>
-          ) : panel.model.rows.length === 0 ? (
-            <p className="text-sm text-muted-foreground" role="status">{panel.model.summary}</p>
-          ) : (
-            <ul className="grid gap-1.5" aria-label="Staged corporate action proposals">
-              {panel.model.rows.map((row) => (
-                <li key={row.key} className="flex flex-wrap items-center gap-2 text-sm">
-                  <Badge variant={row.tone === "warning" ? "warning" : "outline"}>
-                    {row.actionType}
-                  </Badge>
-                  <span className="font-mono font-semibold">{row.ticker}</span>
-                  <span className="text-muted-foreground">
-                    {row.valueLabel} · ex {row.exDateLabel} ({row.countdownLabel}) · {row.consensusLabel}
-                    {row.dissentingSources.length > 0
-                      ? ` · disputed by ${row.dissentingSources.join(", ")}`
-                      : ""}
-                  </span>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => void panel.apply(row)}
-                    disabled={panel.applyingKey !== null}
-                    aria-label={`Apply ${row.actionType} for ${row.ticker}`}
-                  >
-                    {panel.applyingKey === row.key ? "Applying…" : "Apply"}
-                  </Button>
-                  {panel.applyErrors[row.key] ? (
-                    <span className="text-sm text-destructive" role="alert">{panel.applyErrors[row.key]}</span>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          )}
-          {panel.model && panel.model.errors.length > 0 && (
-            <div className="mt-3">
-              <h3 className="text-sm font-semibold">Provider errors last run</h3>
-              <ul className="mt-2 grid gap-1">
-                {panel.model.errors.map((message) => (
-                  <li key={message} className="text-sm text-muted-foreground font-mono">{message}</li>
-                ))}
-              </ul>
             </div>
           )}
         </CardContent>

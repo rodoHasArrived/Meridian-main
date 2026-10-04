@@ -2,7 +2,13 @@ import { formatCompactCurrency as formatCurrency, pluralizeCount } from "@/lib/f
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 
 export type FamilyOfficeTone = "default" | "success" | "warning" | "danger";
-export type FamilyOfficeEntityType = "family-office" | "trust" | "llc" | "foundation" | "direct-accounts";
+/**
+ * Entity taxonomy exactly as the fund-structure graph reports it (`Trust`, `Fund`,
+ * `Account:Custody`, and so on). The value is only grouped and counted, never
+ * matched against a fixed set, so the backend vocabulary passes through unmapped
+ * rather than being flattened into a client-side approximation.
+ */
+export type FamilyOfficeEntityType = string;
 
 export interface FamilyOfficeRouteMetadata {
   path: string;
@@ -30,7 +36,8 @@ export interface FamilyOfficeEntityNode {
   displayName: string;
   entityType: FamilyOfficeEntityType;
   parentEntityId: string | null;
-  ownershipPercent: number;
+  /** Null when the ownership link carries no percentage; rendered as "Unmapped", never as 0%. */
+  ownershipPercent: number | null;
   netWorth: number;
   cash: number;
   liabilities: number;
@@ -523,7 +530,11 @@ function entityDisplayName(entityStructure: FamilyOfficeEntityStructure, entityI
 }
 
 /** Input is already in percent units (42.5 -> "42.5%"). For fractions use `formatRatioAsPercent`. */
-function formatPercent(value: number): string {
+function formatPercent(value: number | null): string {
+  if (value === null) {
+    return "Unmapped";
+  }
+
   return Number.isInteger(value) ? `${value}%` : `${value.toFixed(1)}%`;
 }
 

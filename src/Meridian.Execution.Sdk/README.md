@@ -11,6 +11,10 @@ last_reviewed: 2026-07-05
 
 # src/Meridian.Execution.Sdk
 
+## Shared close and lot convergence
+
+`CanonicalTaxLotAdapter` validates legacy execution lot identity, quantity, acquisition date, and basis against a supplied retained canonical lot. Symbols remain display evidence. The adapter refuses shorts pending an explicit direction-model cutover and does not synthesize identity or FX facts.
+
 ## Purpose
 
 Execution SDK provides abstractions shared by execution gateways, broker integrations, and execution-facing services.
@@ -32,6 +36,10 @@ non-paper gateways must have a matching `BrokerageConfiguration`, while the pape
 the default paper-first behavior. Gateways that implement `IExecutionGatewayModeProvider` expose
 typed paper/simulation/live mode metadata so live-readiness checks do not infer safety posture from
 gateway-id strings.
+Gateways whose providers keep client and broker order IDs in separate lookup namespaces implement
+`IExplicitOrderCancellationGateway`. Callers label the namespace with
+`OrderCancellationIdentifier`; identifier shape is never used to guess whether a value is a broker
+ID, because a UUID-shaped client ID can otherwise target an unrelated broker order.
 Brokerage activity fill snapshots can carry explicit provider-reported realized P&L when a broker
 or custodian supplies it; callers should leave the field null rather than infer it from fill
 notional. Activity snapshots can also carry provider corporate-action/factor events such as

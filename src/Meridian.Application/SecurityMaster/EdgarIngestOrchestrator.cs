@@ -117,14 +117,16 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
                         break;
                 }
             }
-            catch (Exception ex) when (IsDuplicateException(ex))
-            {
-                securitiesSkipped++;
-                _logger.LogDebug(ex, "EDGAR security write skipped for {Cik}/{Ticker}", association.Cik, association.Ticker);
-            }
+            // Cancellation is checked FIRST: the duplicate filter below must never get the chance to
+            // classify a cancelled write as a skip.
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
                 throw;
+            }
+            catch (Exception ex) when (SecurityMasterIngestFailureClassifier.IsAlreadyMastered(ex))
+            {
+                securitiesSkipped++;
+                _logger.LogDebug(ex, "EDGAR security write skipped for {Cik}/{Ticker}", association.Cik, association.Ticker);
             }
             catch (Exception ex)
             {
@@ -247,6 +249,11 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
 
                 storedPartitions++;
             }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                // A cancelled run must stop, not record a per-CIK error and carry on.
+                throw;
+            }
             catch (Exception ex)
             {
                 errors.Add($"{group.Key}/facts: {ex.Message}");
@@ -282,6 +289,10 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
                 }
 
                 storedPartitions++;
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -634,16 +645,17 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
             var conflicts = await _conflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
             return conflicts.Count;
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Reporting zero conflicts on a cancelled run would understate the ingest's outcome.
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogDebug(ex, "EDGAR ingest could not count Security Master conflicts.");
             return 0;
         }
     }
-
-    private static bool IsDuplicateException(Exception ex)
-        => ex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase)
-           || ex.Message.Contains("duplicate", StringComparison.OrdinalIgnoreCase);
 
     internal static string NormalizeCik(string? cik)
     {

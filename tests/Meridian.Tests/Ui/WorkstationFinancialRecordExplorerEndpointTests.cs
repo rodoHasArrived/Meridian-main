@@ -13,7 +13,9 @@ using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
+using Meridian.Strategies.Storage;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
@@ -194,6 +196,201 @@ public sealed partial class WorkstationEndpointsTests
         row.Detail.Fields.Should().Contain(field =>
             field.Label == "Account Scope" &&
             field.Value == "acct-ops");
+    }
+
+    /// <summary>
+    /// The ledger explorer answered for whichever run was newest, whatever run the screen was
+    /// showing, so an operator reading an older run's trial balance saw that run's rows under the
+    /// newest run's header, proof links and scope. It now answers for the run it is asked for.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorerLedger_ShouldAnswerForTheRequestedRun()
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("explorer-ledger-run-older", withBreaks: false) with
+        {
+            FundProfileId = "fund-core"
+        });
+        await store.RecordRunAsync(BuildActivePaperRun("explorer-ledger-run-newer", withBreaks: false) with
+        {
+            FundProfileId = "fund-core"
+        });
+
+        var client = app.GetTestClient();
+
+        foreach (var runId in new[] { "explorer-ledger-run-older", "explorer-ledger-run-newer" })
+        {
+            var explorer = await client.GetFromJsonAsync<FinancialRecordExplorerDto>(
+                $"/api/workstation/financial-record-explorers/ledger?filter={Uri.EscapeDataString($"run:{runId}")}",
+                ServerJsonOptions);
+
+            explorer.Should().NotBeNull();
+            explorer!.SourceState.Should().Contain(runId);
+            explorer.Filters.Should().Contain(filter => filter.FilterId == "run" && filter.Value == runId);
+            explorer.Rows.Should().OnlyContain(row => row.SourceRunId == runId);
+            explorer.ProofActions.Should().Contain(action => action.Href.Contains(runId, StringComparison.Ordinal));
+        }
+    }
+
+    /// <summary>
+    /// The screen's run picker read run ids out of the rows, and the explorer composes its rows
+    /// from exactly one run — so it offered one option and every older run was unreachable. Each
+    /// run the caller may read is published as a system view carrying its own run filter.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorerLedger_ShouldPublishEveryReadableRunAsAView()
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("explorer-ledger-view-a", withBreaks: false) with
+        {
+            FundProfileId = "fund-core"
+        });
+        await store.RecordRunAsync(BuildActivePaperRun("explorer-ledger-view-b", withBreaks: false) with
+        {
+            FundProfileId = "fund-core"
+        });
+
+        var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
+            "/api/workstation/financial-record-explorers/ledger",
+            ServerJsonOptions);
+
+        explorer.Should().NotBeNull();
+        var runViews = explorer!.SavedViews
+            .Select(view => view.Filters.FirstOrDefault(filter => filter.FilterId == "run")?.Value)
+            .Where(runId => !string.IsNullOrEmpty(runId))
+            .ToList();
+
+        runViews.Should().Contain(["explorer-ledger-view-a", "explorer-ledger-view-b"]);
+        explorer.SavedViews.Should().ContainSingle(view =>
+            view.IsActive && view.Filters.Any(filter => filter.FilterId == "run"));
+    }
+
+    /// <summary>
+    /// The picker is bounded so it stays a picker, but a run named explicitly must still resolve
+    /// past that bound — otherwise the explorer answers for a newer run while the screen's own
+    /// trial-balance and journal requests use the one the URL asked for, recombining evidence
+    /// from two different runs.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorerLedger_ShouldResolveARunOutsideThePickerBound()
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        // One past the 50-run candidate bound, so the requested run cannot be reached through the
+        // candidate list alone. Every fixture run shares one StartedAt, so the ordering falls
+        // through to the run id ASCENDING -- making "-050" the run outside the bound and "-000"
+        // the first candidate inside it. Requesting "-000" here tests nothing.
+        for (var index = 0; index <= 50; index++)
+        {
+            await store.RecordRunAsync(BuildActivePaperRun($"explorer-ledger-bounded-{index:D3}", withBreaks: false) with
+            {
+                FundProfileId = "fund-core"
+            });
+        }
+
+        var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
+            $"/api/workstation/financial-record-explorers/ledger?filter={Uri.EscapeDataString("run:explorer-ledger-bounded-050")}",
+            ServerJsonOptions);
+
+        explorer.Should().NotBeNull();
+        explorer!.SavedViews.Should().HaveCountLessThanOrEqualTo(50, "the picker stays bounded");
+        explorer.SourceState.Should().Contain("explorer-ledger-bounded-050");
+        explorer.Rows.Should().OnlyContain(row => row.SourceRunId == "explorer-ledger-bounded-050");
+
+        // And the run being displayed owns the active view. Without it the client fell back to the
+        // first candidate -- a newer run -- so the picker and any link copied from it identified a
+        // different run than the rows on screen.
+        var activeRunId = explorer.SavedViews
+            .Where(view => view.IsActive)
+            .SelectMany(view => view.Filters)
+            .Where(filter => filter.FilterId == "run")
+            .Select(filter => filter.Value)
+            .ToList();
+        activeRunId.Should().ContainSingle().Which.Should().Be("explorer-ledger-bounded-050");
+    }
+
+    /// <summary>
+    /// Resolving a run past the picker's bound read the tenant's entire run history a second time
+    /// -- and reloaded the promotion lookup with it -- so the older the deep link, the more the
+    /// request cost, growing with retained history. One scan answers both questions.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorerLedger_ForARunOutsideTheBound_ShouldScanRunHistoryOnce()
+    {
+        RunHistoryScanCountingRepository? counter = null;
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                RegisterFinancialRecordExplorerTestServices(services);
+                // Registered after the fixture's own store so this decorator is the one resolved,
+                // counting the full-history reads the explorer makes while forwarding to it.
+                services.AddSingleton<IStrategyRepository>(_ =>
+                    counter = new RunHistoryScanCountingRepository(new StrategyRunStore()));
+            },
+            currentUserPermissions: ExplorerOperatorPermissions);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        for (var index = 0; index <= 50; index++)
+        {
+            await store.RecordRunAsync(BuildActivePaperRun($"explorer-ledger-scan-{index:D3}", withBreaks: false) with
+            {
+                FundProfileId = "fund-core"
+            });
+        }
+
+        counter.Should().NotBeNull();
+        counter!.Reset();
+
+        var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
+            $"/api/workstation/financial-record-explorers/ledger?filter={Uri.EscapeDataString("run:explorer-ledger-scan-050")}",
+            ServerJsonOptions);
+
+        // The run is genuinely outside the bound, so this is the case that used to scan twice.
+        explorer.Should().NotBeNull();
+        explorer!.SourceState.Should().Contain("explorer-ledger-scan-050");
+        counter.FullHistoryScans.Should().Be(
+            1,
+            "the candidate scan already holds the requested run, so resolving it must not re-read the history");
+    }
+
+    /// <summary>
+    /// A run id can arrive from a bookmark long after the run was pruned, or name another tenant's
+    /// run. Neither may leave the screen with nothing where a readable ledger exists, and neither
+    /// may serve the named run: the explorer resolves against the caller's own runs and names the
+    /// one it resolved.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorerLedger_ForAnUnreachableRun_ShouldFallBackAndSaySo()
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("explorer-ledger-reachable", withBreaks: false) with
+        {
+            FundProfileId = "fund-core"
+        });
+
+        var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
+            $"/api/workstation/financial-record-explorers/ledger?filter={Uri.EscapeDataString("run:no-such-run")}",
+            ServerJsonOptions);
+
+        explorer.Should().NotBeNull();
+        explorer!.SourceState.Should().Contain("explorer-ledger-reachable");
+        explorer.SourceState.Should().NotContain("no-such-run");
+        explorer.Rows.Should().OnlyContain(row => row.SourceRunId == "explorer-ledger-reachable");
     }
 
     [Fact]
@@ -947,6 +1144,45 @@ public sealed partial class WorkstationEndpointsTests
         {
             var owner = await ResolveAsync(requestedFundProfileId, ct).ConfigureAwait(false);
             return owner is null || owner.IsHeldBy(requestedTenantId);
+        }
+    }
+
+    /// <summary>
+    /// Forwards to a real store while counting the unbounded run-history reads the ledger explorer
+    /// makes. Only <c>Limit == int.MaxValue</c> is counted: that is the full-history scan, as
+    /// distinct from the bounded reads other surfaces issue in the same request.
+    /// </summary>
+    private sealed class RunHistoryScanCountingRepository(IStrategyRepository inner) : IStrategyRepository
+    {
+        private int _fullHistoryScans;
+
+        public int FullHistoryScans => Volatile.Read(ref _fullHistoryScans);
+
+        public void Reset() => Volatile.Write(ref _fullHistoryScans, 0);
+
+        public Task RecordRunAsync(StrategyRunEntry entry, CancellationToken ct = default)
+            => inner.RecordRunAsync(entry, ct);
+
+        public IAsyncEnumerable<StrategyRunEntry> GetRunsAsync(string strategyId, CancellationToken ct = default)
+            => inner.GetRunsAsync(strategyId, ct);
+
+        public Task<StrategyRunEntry?> GetLatestRunAsync(string strategyId, CancellationToken ct = default)
+            => inner.GetLatestRunAsync(strategyId, ct);
+
+        public IAsyncEnumerable<StrategyRunEntry> GetAllRunsAsync(CancellationToken ct = default)
+            => inner.GetAllRunsAsync(ct);
+
+        public Task<IReadOnlyList<StrategyRunEntry>> QueryVisibleRunsAsync(
+            StrategyRunRepositoryQuery query,
+            StrategyRunRepositoryScope? scope,
+            CancellationToken ct = default)
+        {
+            if (query.Limit == int.MaxValue)
+            {
+                Interlocked.Increment(ref _fullHistoryScans);
+            }
+
+            return inner.QueryVisibleRunsAsync(query, scope, ct);
         }
     }
 

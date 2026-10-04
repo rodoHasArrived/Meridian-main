@@ -2,6 +2,7 @@ using System.Threading.Channels;
 using FluentAssertions;
 using Meridian.Execution;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -34,20 +35,12 @@ public sealed class KillSwitchBrokerTruthTests
         });
         placed.Success.Should().BeTrue();
 
-        // The broker book holds the tracked order twice over (once keyed by client order id, once
-        // by its own id) plus one order the OMS has never heard of — a post-restart survivor.
+        // The broker book holds the tracked order under its own UUID plus one order the OMS has
+        // never heard of — a post-restart survivor.
         gateway.BrokerOpenOrders.Add(new BrokerOrder
         {
             OrderId = "broker-1",
             ClientOrderId = placed.OrderId,
-            Symbol = "AAPL",
-            Side = OrderSide.Buy,
-            Type = OrderType.Limit,
-            Status = OrderStatus.Accepted
-        });
-        gateway.BrokerOpenOrders.Add(new BrokerOrder
-        {
-            OrderId = placed.OrderId,
             Symbol = "AAPL",
             Side = OrderSide.Buy,
             Type = OrderType.Limit,
@@ -71,12 +64,67 @@ public sealed class KillSwitchBrokerTruthTests
         sweep.StillWorking.Should().BeEmpty();
         sweep.BrokerViewUnavailable.Should().BeFalse();
 
-        gateway.CancelRequests.Should().ContainSingle(id => id == placed.OrderId,
-            "an order present in both views is cancelled once, through the tracked path");
+        gateway.CancelRequests.Should().ContainSingle(id => id == "broker-1",
+            "the tracked path must cancel through the broker UUID from the matching broker row");
         gateway.CancelRequests.Should().Contain("broker-orphan-1",
             "a broker-known order the in-memory book does not track must still be cancelled");
-        gateway.CancelRequests.Should().NotContain("broker-1",
-            "the broker row keyed by client order id is the same order the tracked path cancelled");
+        gateway.CancelRequests.Should().NotContain(placed.OrderId,
+            "the client order id is not valid at a broker UUID cancellation endpoint");
+        gateway.CancellationIdentifiers.Should().OnlyContain(identifier =>
+            identifier.Kind == OrderCancellationIdentifierKind.BrokerOrderId,
+            "broker snapshot matches and residual rows must use Alpaca's broker-ID namespace explicitly");
+    }
+
+    [Fact]
+    public async Task CancelAllAsync_UuidShapedClientIdCollision_DoesNotCancelTheWrongBrokerOrder()
+    {
+        const string collidingClientId = "11111111-1111-1111-1111-111111111111";
+        await using var gateway = new UnionSweepBrokerageGateway();
+        using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            ClientOrderId = collidingClientId,
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 150m
+        });
+        placed.Success.Should().BeTrue();
+
+        // Put the colliding broker UUID first. A value-only match used to associate this
+        // unrelated row with the tracked client id and then cancel the wrong order.
+        gateway.BrokerOpenOrders.Add(new BrokerOrder
+        {
+            OrderId = collidingClientId,
+            ClientOrderId = "external-order",
+            Symbol = "MSFT",
+            Side = OrderSide.Sell,
+            Type = OrderType.Limit,
+            Quantity = 5m,
+            Status = OrderStatus.Accepted
+        });
+        gateway.BrokerOpenOrders.Add(new BrokerOrder
+        {
+            OrderId = "actual-aapl-broker-id",
+            ClientOrderId = collidingClientId,
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            Status = OrderStatus.Accepted
+        });
+
+        var sweep = await oms.CancelAllAsync();
+
+        sweep.Outcome.Should().Be(KillSwitchSweepOutcome.Completed);
+        sweep.Requested.Should().Be(2);
+        sweep.Cancelled.Should().Be(2);
+        gateway.CancelRequests.Should().BeEquivalentTo(
+            ["actual-aapl-broker-id", collidingClientId]);
+        gateway.CancellationIdentifiers.Should().OnlyContain(identifier =>
+            identifier.Kind == OrderCancellationIdentifierKind.BrokerOrderId);
     }
 
     [Fact]
@@ -104,6 +152,222 @@ public sealed class KillSwitchBrokerTruthTests
         sweep.StillWorking.Should().ContainSingle(failure =>
             failure.OrderId == "broker-orphan-1" && failure.Symbol == "MSFT");
         sweep.RequiresOperatorAction.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CancelAllAsync_WhenBrokerCancellationRemainsPending_DoesNotReportCompleted()
+    {
+        await using var gateway = new UnionSweepBrokerageGateway();
+        using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 150m
+        });
+        placed.Success.Should().BeTrue();
+        gateway.BrokerOpenOrders.Add(new BrokerOrder
+        {
+            OrderId = "broker-1",
+            ClientOrderId = placed.OrderId,
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Status = OrderStatus.Accepted
+        });
+        gateway.RemainPendingAfterCancel.Add("broker-1");
+
+        var sweep = await oms.CancelAllAsync();
+
+        sweep.Outcome.Should().Be(KillSwitchSweepOutcome.Failed);
+        sweep.Cancelled.Should().Be(0);
+        sweep.StillWorking.Should().ContainSingle(failure =>
+            failure.OrderId == placed.OrderId && failure.Reason.Contains("pending", StringComparison.OrdinalIgnoreCase));
+        gateway.CancelRequests.Should().ContainSingle(id => id == "broker-1");
+    }
+
+    [Fact]
+    public async Task CancelAllAsync_WhenAnOrderAppearsDuringConvergence_DoesNotReportCompleted()
+    {
+        await using var gateway = new UnionSweepBrokerageGateway();
+        using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 150m
+        });
+        gateway.BrokerOpenOrders.Add(new BrokerOrder
+        {
+            OrderId = "broker-1",
+            ClientOrderId = placed.OrderId,
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            Status = OrderStatus.Accepted
+        });
+        gateway.BrokerOrderAppearingOnVerification = new BrokerOrder
+        {
+            OrderId = "late-broker-order",
+            ClientOrderId = "external-late-order",
+            Symbol = "MSFT",
+            Side = OrderSide.Sell,
+            Type = OrderType.Limit,
+            Quantity = 5m,
+            Status = OrderStatus.Accepted
+        };
+
+        var sweep = await oms.CancelAllAsync();
+
+        sweep.Outcome.Should().NotBe(KillSwitchSweepOutcome.Completed);
+        sweep.StillWorking.Should().ContainSingle(failure =>
+            failure.OrderId == "late-broker-order"
+            && failure.Symbol == "MSFT"
+            && failure.Reason.Contains("broker verification", StringComparison.OrdinalIgnoreCase));
+        gateway.OpenOrdersReadCount.Should().Be(2,
+            "completion requires a fresh fully enumerated broker book after cancellation");
+    }
+
+    [Fact]
+    public async Task CancelAllAsync_WhenCancelLosesToFill_AppliesAndPublishesVerifiedFill()
+    {
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        await using var gateway = new UnionSweepBrokerageGateway();
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 150m
+        });
+        gateway.BrokerOpenOrders.Add(new BrokerOrder
+        {
+            OrderId = "broker-fill-race",
+            ClientOrderId = placed.OrderId,
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            Status = OrderStatus.Accepted
+        });
+        gateway.FillDuringCancel.Add("broker-fill-race");
+
+        var sweep = await oms.CancelAllAsync();
+
+        sweep.Outcome.Should().Be(KillSwitchSweepOutcome.Failed,
+            "an execution is terminal but is not a confirmed cancellation");
+        sweep.Cancelled.Should().Be(0);
+        var state = oms.GetOrder(placed.OrderId!);
+        state.Should().NotBeNull();
+        state!.Status.Should().Be(OrderStatus.Filled);
+        state.FilledQuantity.Should().Be(10m);
+        state.AverageFillPrice.Should().Be(151.25m);
+
+        using var reportTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var fill = await oms.ExecutionReports.ReadAsync(reportTimeout.Token);
+        fill.ReportType.Should().Be(ExecutionReportType.Fill);
+        fill.FilledQuantity.Should().Be(10m);
+        fill.FillPrice.Should().Be(151.25m);
+        portfolio.Positions["AAPL"].ExactQuantity.Should().Be(10m,
+            "the verified fill must reach portfolio state, not merely adapter fields");
+    }
+
+    [Fact]
+    public async Task CancelAllAsync_WhenBrokerOrderBecomesRejected_AppliesTerminalBrokerState()
+    {
+        await using var gateway = new UnionSweepBrokerageGateway();
+        using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 150m
+        });
+        gateway.BrokerOpenOrders.Add(new BrokerOrder
+        {
+            OrderId = "broker-terminal-reject",
+            ClientOrderId = placed.OrderId,
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            Status = OrderStatus.Accepted
+        });
+        gateway.TerminalRejectDuringCancel.Add("broker-terminal-reject");
+
+        var firstSweep = await oms.CancelAllAsync();
+
+        firstSweep.Outcome.Should().Be(KillSwitchSweepOutcome.Failed,
+            "the order was not cancelled even though the broker made it non-fillable");
+        oms.GetOrder(placed.OrderId!)!.Status.Should().Be(OrderStatus.Rejected,
+            "the broker-order terminal status must replace the previously working local state");
+
+        var secondSweep = await oms.CancelAllAsync();
+        secondSweep.Requested.Should().Be(0,
+            "a broker-terminal rejection must not be swept repeatedly as a working order");
+        gateway.CancelRequests.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task CancelAllAsync_CancelledAfterPartialFill_PublishesAndBooksTheExecution()
+    {
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        await using var gateway = new UnionSweepBrokerageGateway();
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 150m
+        });
+        gateway.BrokerOpenOrders.Add(new BrokerOrder
+        {
+            OrderId = "broker-partial-cancel",
+            ClientOrderId = placed.OrderId,
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            Status = OrderStatus.PartiallyFilled
+        });
+        gateway.PartialFillDuringCancel["broker-partial-cancel"] = 3m;
+
+        var sweep = await oms.CancelAllAsync();
+
+        sweep.Outcome.Should().Be(KillSwitchSweepOutcome.Completed);
+        var state = oms.GetOrder(placed.OrderId!);
+        state!.Status.Should().Be(OrderStatus.Cancelled);
+        state.FilledQuantity.Should().Be(3m);
+        portfolio.Positions["AAPL"].ExactQuantity.Should().Be(3m);
+
+        using var reportTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var fill = await oms.ExecutionReports.ReadAsync(reportTimeout.Token);
+        fill.ReportType.Should().Be(ExecutionReportType.PartialFill);
+        fill.OrderStatus.Should().Be(OrderStatus.PartiallyFilled);
+        fill.FilledQuantity.Should().Be(3m);
+        fill.FillPrice.Should().Be(151.25m);
     }
 
     // ---- Broker view unavailable ----
@@ -215,12 +479,26 @@ public sealed class KillSwitchBrokerTruthTests
         });
         placed.Success.Should().BeTrue();
 
+        gateway.BrokerOpenOrders.Add(new BrokerOrder
+        {
+            OrderId = "parent-broker",
+            ClientOrderId = placed.OrderId,
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            Status = OrderStatus.Accepted
+        });
+        gateway.BrokerOpenOrders.AddRange(BracketChildLegs());
+
         var sweep = await oms.CancelAllAsync();
 
         sweep.Outcome.Should().Be(KillSwitchSweepOutcome.Completed);
         sweep.Requested.Should().Be(3, "the parent and both bracket legs are all working orders");
         sweep.Cancelled.Should().Be(3);
-        gateway.CancelRequests.Should().Contain(new[] { placed.OrderId, "leg-tp-client", "leg-sl-client" });
+        gateway.CancelRequests.Should().BeEquivalentTo(
+            ["parent-broker", "leg-tp-broker", "leg-sl-broker"],
+            "every tracked bracket order must cancel through its broker-assigned UUID");
     }
 
     [Fact]
@@ -304,10 +582,15 @@ public sealed class KillSwitchBrokerTruthTests
     /// stage the exact disagreement between the broker's book and the OMS's in-memory dictionary
     /// that the union sweep exists to resolve.
     /// </summary>
-    private sealed class UnionSweepBrokerageGateway : IBrokerageGateway, IExecutionGatewayModeProvider
+    private sealed class UnionSweepBrokerageGateway :
+        IBrokerageGateway,
+        IExecutionGatewayModeProvider,
+        IExplicitOrderCancellationGateway
     {
         private readonly Channel<ExecutionReport> _reports = Channel.CreateUnbounded<ExecutionReport>();
         private readonly List<string> _cancelRequests = new();
+        private readonly List<OrderCancellationIdentifier> _cancellationIdentifiers = new();
+        private int _openOrdersReadCount;
 
         public List<BrokerOrder> BrokerOpenOrders { get; } = new();
 
@@ -315,8 +598,20 @@ public sealed class KillSwitchBrokerTruthTests
 
         public IReadOnlyList<BrokerOrder>? ChildOrdersOnSubmit { get; init; }
 
+        public BrokerOrder? BrokerOrderAppearingOnVerification { get; set; }
+
         /// <summary>Order ids this double refuses to cancel, standing in for a broker that says no.</summary>
         public HashSet<string> RefuseToCancel { get; } = new(StringComparer.Ordinal);
+
+        public HashSet<string> RemainPendingAfterCancel { get; } = new(StringComparer.Ordinal);
+
+        public HashSet<string> FillDuringCancel { get; } = new(StringComparer.Ordinal);
+
+        public HashSet<string> TerminalRejectDuringCancel { get; } = new(StringComparer.Ordinal);
+
+        public Dictionary<string, decimal> PartialFillDuringCancel { get; } = new(StringComparer.Ordinal);
+
+        public int OpenOrdersReadCount => Volatile.Read(ref _openOrdersReadCount);
 
         public IReadOnlyList<string> CancelRequests
         {
@@ -325,6 +620,17 @@ public sealed class KillSwitchBrokerTruthTests
                 lock (_cancelRequests)
                 {
                     return _cancelRequests.ToList();
+                }
+            }
+        }
+
+        public IReadOnlyList<OrderCancellationIdentifier> CancellationIdentifiers
+        {
+            get
+            {
+                lock (_cancellationIdentifiers)
+                {
+                    return _cancellationIdentifiers.ToList();
                 }
             }
         }
@@ -357,22 +663,100 @@ public sealed class KillSwitchBrokerTruthTests
                 ChildOrders = ChildOrdersOnSubmit
             });
 
-        public Task<ExecutionReport> CancelOrderAsync(string orderId, CancellationToken ct = default)
+        public Task<ExecutionReport> CancelOrderAsync(string orderId, CancellationToken ct = default) =>
+            CancelOrderAsync(
+                new OrderCancellationIdentifier(orderId, OrderCancellationIdentifierKind.BrokerOrderId),
+                ct);
+
+        public Task<ExecutionReport> CancelOrderAsync(
+            OrderCancellationIdentifier identifier,
+            CancellationToken ct = default)
         {
             lock (_cancelRequests)
             {
-                _cancelRequests.Add(orderId);
+                _cancelRequests.Add(identifier.Value);
+            }
+            lock (_cancellationIdentifiers)
+            {
+                _cancellationIdentifiers.Add(identifier);
             }
 
-            var refused = RefuseToCancel.Contains(orderId);
+            BrokerOrder? brokerOrder;
+            lock (BrokerOpenOrders)
+            {
+                brokerOrder = BrokerOpenOrders.FirstOrDefault(order => identifier.Kind switch
+                {
+                    OrderCancellationIdentifierKind.BrokerOrderId => string.Equals(
+                        order.OrderId,
+                        identifier.Value,
+                        StringComparison.Ordinal),
+                    OrderCancellationIdentifierKind.ClientOrderId => string.Equals(
+                        order.ClientOrderId,
+                        identifier.Value,
+                        StringComparison.Ordinal),
+                    _ => false
+                });
+            }
+
+            var brokerOrderId = brokerOrder?.OrderId ?? identifier.Value;
+            var refused = RefuseToCancel.Contains(brokerOrderId);
+            var remainsPending = RemainPendingAfterCancel.Contains(brokerOrderId);
+            var filled = FillDuringCancel.Contains(brokerOrderId);
+            var terminalRejected = TerminalRejectDuringCancel.Contains(brokerOrderId);
+            var cancelledAfterPartialFill = PartialFillDuringCancel.TryGetValue(
+                brokerOrderId,
+                out var partialFillQuantity);
+            if (!refused && !remainsPending)
+            {
+                lock (BrokerOpenOrders)
+                {
+                    BrokerOpenOrders.RemoveAll(order => string.Equals(
+                        order.OrderId,
+                        brokerOrderId,
+                        StringComparison.Ordinal));
+                }
+            }
+
             return Task.FromResult(new ExecutionReport
             {
-                OrderId = orderId,
-                ReportType = refused ? ExecutionReportType.Rejected : ExecutionReportType.Cancelled,
-                Symbol = string.Empty,
-                Side = OrderSide.Buy,
-                OrderStatus = refused ? OrderStatus.Rejected : OrderStatus.Cancelled,
-                RejectReason = refused ? "Broker refused the cancellation." : null,
+                OrderId = brokerOrderId,
+                ClientOrderId = brokerOrder?.ClientOrderId
+                    ?? (identifier.Kind is OrderCancellationIdentifierKind.ClientOrderId
+                        ? identifier.Value
+                        : null),
+                GatewayOrderId = brokerOrderId,
+                ReportType = filled
+                    ? ExecutionReportType.Fill
+                    : terminalRejected || refused || remainsPending
+                        ? ExecutionReportType.Rejected
+                        : ExecutionReportType.Cancelled,
+                Symbol = brokerOrder?.Symbol ?? string.Empty,
+                Side = brokerOrder?.Side ?? OrderSide.Buy,
+                OrderStatus = filled
+                    ? OrderStatus.Filled
+                    : terminalRejected
+                    ? OrderStatus.Rejected
+                    : refused
+                        ? brokerOrder?.Status ?? OrderStatus.Accepted
+                    : remainsPending
+                        ? OrderStatus.PendingCancel
+                        : OrderStatus.Cancelled,
+                OrderQuantity = brokerOrder?.Quantity ?? 0m,
+                FilledQuantity = filled
+                    ? brokerOrder?.Quantity ?? 0m
+                    : cancelledAfterPartialFill
+                        ? partialFillQuantity
+                        : brokerOrder?.FilledQuantity ?? 0m,
+                FillPrice = filled || cancelledAfterPartialFill ? 151.25m : null,
+                RejectReason = filled
+                    ? "Broker order filled before cancellation completed."
+                    : terminalRejected
+                    ? "Broker order became terminal as Rejected before cancellation completed."
+                    : refused
+                    ? "Broker refused the cancellation."
+                    : remainsPending
+                        ? "Broker cancellation remains pending."
+                        : null,
                 Timestamp = DateTimeOffset.UtcNow
             });
         }
@@ -399,10 +783,31 @@ public sealed class KillSwitchBrokerTruthTests
         public Task<IReadOnlyList<BrokerPosition>> GetPositionsAsync(CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<BrokerPosition>>([]);
 
-        public Task<IReadOnlyList<BrokerOrder>> GetOpenOrdersAsync(CancellationToken ct = default) =>
-            OpenOrdersFailure is { } failure
-                ? Task.FromException<IReadOnlyList<BrokerOrder>>(failure)
-                : Task.FromResult<IReadOnlyList<BrokerOrder>>(BrokerOpenOrders.ToList());
+        public Task<IReadOnlyList<BrokerOrder>> GetOpenOrdersAsync(CancellationToken ct = default)
+        {
+            var readCount = Interlocked.Increment(ref _openOrdersReadCount);
+            if (OpenOrdersFailure is { } failure)
+            {
+                return Task.FromException<IReadOnlyList<BrokerOrder>>(failure);
+            }
+
+            List<BrokerOrder> snapshot;
+            lock (BrokerOpenOrders)
+            {
+                snapshot = BrokerOpenOrders.ToList();
+            }
+
+            if (readCount >= 2 && BrokerOrderAppearingOnVerification is { } appearing
+                && snapshot.All(order => !string.Equals(
+                    order.OrderId,
+                    appearing.OrderId,
+                    StringComparison.Ordinal)))
+            {
+                snapshot.Add(appearing);
+            }
+
+            return Task.FromResult<IReadOnlyList<BrokerOrder>>(snapshot);
+        }
 
         public Task<BrokerHealthStatus> CheckHealthAsync(CancellationToken ct = default) =>
             Task.FromResult(BrokerHealthStatus.Healthy());

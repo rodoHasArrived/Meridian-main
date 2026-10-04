@@ -34,6 +34,30 @@ public sealed class SecurityAssetClassCatalogTests
     }
 
     [Fact]
+    public void Templates_HaveExactDeclaredBindings_AndUnrealizedIsNeverSale()
+    {
+        foreach (var pack in SecurityAssetPackRegistry.All)
+            pack.AccountingRules.JournalTemplates.Should().OnlyContain(t => pack.LifecycleEvents.Contains(t.LifecycleEvent));
+        SecurityAssetPackRegistry.Find("public-equity-etf")!.AccountingRules.JournalTemplates
+            .Single(t => t.TemplateId == "asset-pack.unrealized-gain-loss").LifecycleEvent.Should().Be("Appraisal");
+        SecurityAssetPackRegistry.Find("private-loan-credit")!.AccountingRules.JournalTemplates
+            .Single(t => t.TemplateId == "asset-pack.fee-income").LifecycleEvent.Should().Be("Fee");
+        SecurityAssetPackRegistry.Find("fixed-income")!.AccountingRules.JournalTemplates
+            .Single(t => t.TemplateId == "asset-pack.amortization").LifecycleEvent.Should().Be("Amortization");
+        SecurityAssetPackRegistry.Find("derivatives-fx")!.AccountingRules.JournalTemplates
+            .Single(t => t.TemplateId == "asset-pack.variation-margin").LifecycleEvent.Should().Be("MarginSettlement");
+    }
+
+    [Theory]
+    [InlineData("MoneyMarketFund")]
+    [InlineData("CashSweep")]
+    [InlineData("PrivateFundInterest")]
+    [InlineData("RealEstateHolding")]
+    [InlineData("CommitmentGuarantee")]
+    public void ProviderOnlyClasses_DoNotAdvertiseCalculatedSchedule(string assetClass)
+        => SecurityAssetClassCatalog.GetOrDefault(assetClass).SupportsCashflowScheduleByDefault.Should().BeFalse();
+
+    [Fact]
     public void GetOrDefault_UnknownClass_FallsBackToNonThrowingDefault()
     {
         var descriptor = SecurityAssetClassCatalog.GetOrDefault("EsotericBasketCertificate");
@@ -170,9 +194,10 @@ public sealed class SecurityAssetClassCatalogTests
         // The registry is normative metadata the operational-readiness service consumes, not
         // documentation shaped like code: its own validation rules must pass for every declared
         // pack, and EVERY canonical Security Master asset class must be claimed by at least one
-        // pack — an unclaimed class silently drops out of asset-pack coverage routing. Packs may
-        // additionally claim broader business vocabulary (e.g. "Cash", "Mortgage") that the
-        // Security Master catalog does not model as classes.
+        // pack — an unclaimed class silently drops out of asset-pack coverage routing. Broader
+        // business vocabulary the Security Master does not model as a class (e.g. "Cash",
+        // "Mortgage") belongs in PlannedAssetClasses, not AssetClasses; see
+        // SecurityAssetClassParityGuardTests for the guard on both directions.
         var validation = SecurityAssetPackRegistry.ValidateAll();
         validation.IsValid.Should().BeTrue(string.Join(
             "; ", validation.Issues.Select(static issue => $"[{issue.Code}] {issue.Target}: {issue.Message}")));
@@ -254,7 +279,10 @@ public sealed class SecurityAssetClassCatalogTests
             "Maturity",
             "Default",
             "Amendment",
-            "CorporateAction"
+            "CorporateAction",
+            "Fee",
+            "Amortization",
+            "MarginSettlement"
         };
         var valuationMethods = new[]
         {
@@ -461,14 +489,19 @@ public sealed class SecurityAssetClassCatalogTests
     [Fact]
     public void AssetPackRegistry_ValidateCandidateSet_ShouldAdmitNewPackWithoutMutatingBuiltIns()
     {
+        // A pack drafted ahead of the domain work covers nothing today, so RoyaltyStream — which the
+        // Security Master does not model as a class — is declared as PLANNED coverage. Naming it under
+        // AssetClasses would claim coverage the system cannot deliver, which the readiness report
+        // would then publish to operators.
         var candidate = SecurityAssetPackRegistry.CreateCandidateDescriptor(
             "royalty-stream",
             "Royalty streams",
-            ["RoyaltyStream"],
+            [],
             ["Purchase", "Sale", "Distribution", "Appraisal", "Impairment", "Amendment"],
             ["DiscountedCashFlow", "UserEstimate", "ExternalModel"],
             [],
-            AssetPackAutomationDepth.WideCapture);
+            AssetPackAutomationDepth.WideCapture,
+            plannedAssetClasses: ["RoyaltyStream"]);
 
         var result = SecurityAssetPackRegistry.ValidateCandidateSet([candidate]);
 
@@ -556,13 +589,19 @@ public sealed class SecurityAssetClassCatalogTests
     public void AssetPackRegistry_FindByAssetClass_ShouldMapAssetClassToPackWithoutLedgerChanges()
     {
         var loanPacks = SecurityAssetPackRegistry.FindByAssetClass("DirectLoan");
-        var etfPacks = SecurityAssetPackRegistry.FindByAssetClass("ExchangeTradedFund");
+        // Exchange-traded funds are modelled as InvestmentFund. Routing is by the class a record can
+        // actually carry, so "ExchangeTradedFund" — business vocabulary the Security Master does not
+        // model — routes nowhere and is declared as planned coverage on the pack instead.
+        var etfPacks = SecurityAssetPackRegistry.FindByAssetClass("InvestmentFund");
         var structuredCreditPacks = SecurityAssetPackRegistry.FindByAssetClass("StructuredCredit");
         var commitmentPacks = SecurityAssetPackRegistry.FindByAssetClass("CommitmentGuarantee");
 
         loanPacks.Should().Contain(static pack => pack.PackId == "private-loan-credit");
         etfPacks.Should().ContainSingle(static pack => pack.PackId == "public-equity-etf");
         etfPacks[0].LedgerExtensionPolicy.Should().Contain("journal templates");
+        SecurityAssetPackRegistry.FindByAssetClass("ExchangeTradedFund").Should().BeEmpty();
+        SecurityAssetPackRegistry.Find("public-equity-etf")!.PlannedAssetClasses
+            .Should().Contain("ExchangeTradedFund");
         structuredCreditPacks.Should().ContainSingle(static pack => pack.PackId == "fixed-income");
         commitmentPacks.Should().ContainSingle(static pack => pack.PackId == "commitment-guarantee");
     }

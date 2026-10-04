@@ -131,6 +131,10 @@ public static class AuditHash
             evt.PreviousHash
         });
 
+        // Deliberately NOT routed through Sha256Digest (which lowercases): this chains the durable
+        // append-only JSONL audit log, and VerifyIntegrity compares both PreviousHash and the
+        // recomputed Hash with StringComparison.Ordinal. Lowering the casing would make every
+        // previously persisted audit event report as tampered (#2691).
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(raw));
         return Convert.ToHexString(bytes);
     }

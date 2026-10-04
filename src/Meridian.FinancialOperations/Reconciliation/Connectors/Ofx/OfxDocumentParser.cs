@@ -46,8 +46,35 @@ public static class OfxDocumentParser
             || head.Contains("<OFX ", StringComparison.OrdinalIgnoreCase);
     }
 
-    public static OfxDocument Parse(string content)
+    public static OfxDocument Parse(string content) =>
+        Parse(content, int.MaxValue, int.MaxValue, int.MaxValue, out _);
+
+    /// <summary>
+    /// Parses an OFX document, refusing one that exceeds the ingress bounds instead of building it first.
+    /// </summary>
+    /// <remarks>
+    /// Three bounds, because the parse has two allocation phases and a check after the second cannot undo
+    /// the first. <paramref name="maxDepth"/> caps aggregate nesting, which also caps the recursion in
+    /// <see cref="CollectEntries"/>: without it a deeply nested document overflows the stack, which no
+    /// caller can catch. <paramref name="maxEntries"/> stops entry discovery at the bound.
+    /// <paramref name="maxNodes"/> caps everything the parse retains - aggregates and leaf values alike -
+    /// because entries are built from the node tree, so the tree is complete before any entry exists to
+    /// count. It is passed in as an absolute figure rather than derived from
+    /// <paramref name="maxEntries"/>: an earlier form multiplied the record allowance, which tied a
+    /// memory ceiling to an unrelated knob and, at the default allowance, put the cap above the node
+    /// count the document byte limit can produce at all - a bound that cannot be reached is not a bound.
+    /// </remarks>
+    public static OfxDocument Parse(
+        string content,
+        int maxEntries,
+        int maxDepth,
+        int maxNodes,
+        out OfxParseBound bound)
     {
+        bound = OfxParseBound.None;
+        var nodes = 0;
+        var entryCount = 0;
+        var statementCount = 0;
         var root = new OfxNode("OFX-ROOT", null);
         var stack = new Stack<OfxNode>();
         stack.Push(root);
@@ -70,7 +97,7 @@ public static class OfxDocumentParser
 
             var rawTag = body[(open + 1)..close].Trim();
             index = close + 1;
-            if (rawTag.Length == 0 || rawTag[0] is '?' or '!' || rawTag.EndsWith("/", StringComparison.Ordinal))
+            if (rawTag.Length == 0 || rawTag[0] is '?' or '!')
             {
                 continue;
             }
@@ -96,25 +123,96 @@ public static class OfxDocumentParser
                 continue;
             }
 
-            var name = NormalizeTagName(rawTag);
+            var selfClosing = rawTag.EndsWith("/", StringComparison.Ordinal);
+            var name = NormalizeTagName(selfClosing ? rawTag[..^1] : rawTag);
+            if (name is "STMTRS" or "CCSTMTRS" or "INVSTMTRS")
+                statementCount++;
             var valueEnd = body.IndexOf('<', index);
-            var value = (valueEnd < 0 ? body[index..] : body[index..valueEnd]).Trim();
-            if (value.Length > 0)
+            var value = selfClosing ? string.Empty : (valueEnd < 0 ? body[index..] : body[index..valueEnd]).Trim();
+            if (value.Length > 0 || name is "CURSYM" or "CURDEF" or "ACCTID")
             {
-                stack.Peek().Leaves[name] = DecodeEntities(value);
+                // The same depth comparison the aggregate branch below makes, so a leaf is refused exactly
+                // where a child aggregate in its place would be. Only aggregates were checked, so a leaf
+                // inside an aggregate nested at the limit was retained one level past it - the shared
+                // nesting ceiling being ineffective at its own boundary for OFX alone, while the camt and
+                // Flex readers check every retained element. Whatever the parse retains is checked, not
+                // just whatever the loop calls a node.
+                if (stack.Count - 1 > maxDepth)
+                {
+                    bound = OfxParseBound.NestingTooDeep;
+                    break;
+                }
+
+                // Leaves are charged too. They are not aggregates, so an earlier version of this budget
+                // never counted them - and a document of hundreds of thousands of uniquely named leaf
+                // tags built an arbitrarily large dictionary and string graph while the aggregate count
+                // stayed near zero. Same shape as attributes escaping the camt subtree budget: whatever
+                // the parse retains has to be charged, not just whatever the loop calls a node.
+                if (++nodes > maxNodes)
+                {
+                    bound = OfxParseBound.TooManyNodes;
+                    break;
+                }
+
+                var decoded = DecodeEntities(value);
+                var leaves = stack.Peek().Leaves;
+                // Conflicting account or currency evidence cannot become authoritative by overwriting its predecessor.
+                leaves[name] = name is "ACCTID" or "CURDEF" or "CURSYM" && leaves.TryGetValue(name, out var previous)
+                    && !string.Equals(previous.Trim(), decoded.Trim(), StringComparison.OrdinalIgnoreCase)
+                        ? string.Empty
+                        : decoded;
             }
             else
             {
+                if (selfClosing)
+                {
+                    continue;
+                }
+
+                // stack carries the synthetic OFX-ROOT pushed before the walk, so its Count is one more
+                // than the aggregate depth the document actually declares. Comparing Count directly
+                // refused a document nested at exactly MaxNestingDepth, one level earlier than the camt
+                // and Flex guards, which accept reader.Depth == MaxNestingDepth. The same configured
+                // limit has to mean the same thing in every connector that reads it.
+                if (stack.Count - 1 > maxDepth)
+                {
+                    bound = OfxParseBound.NestingTooDeep;
+                    break;
+                }
+
+                if (++nodes > maxNodes)
+                {
+                    bound = OfxParseBound.TooManyNodes;
+                    break;
+                }
+
                 var aggregate = new OfxNode(name, stack.Peek());
+
+                // Counted here rather than only in CollectEntries. Entry discovery ran after the whole
+                // tree was retained, so a document carrying maxEntries + 1 compact entries stayed under
+                // both the byte cap and the node budget and still built every node object, and then every
+                // flattened dictionary, before the record bound could fire. IsEntryNode only needs the
+                // name and the parent, both of which are known here.
+                if (IsEntryNode(aggregate) && ++entryCount > maxEntries)
+                {
+                    bound = OfxParseBound.TooManyEntries;
+                    break;
+                }
+
                 stack.Peek().Children.Add(aggregate);
                 stack.Push(aggregate);
             }
         }
 
         var entries = new List<IReadOnlyDictionary<string, string>>();
-        var accountId = FindFirstLeaf(root, "ACCTID");
-        CollectEntries(root, accountId, entries);
-        return new OfxDocument(accountId, entries);
+        if (bound == OfxParseBound.None && !CollectEntries(root, null, entries, maxEntries))
+        {
+            bound = OfxParseBound.TooManyEntries;
+        }
+
+        var accounts = entries.Select(entry => entry.GetValueOrDefault("ACCTID")?.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        var accountId = accounts.Length == 1 && !string.IsNullOrWhiteSpace(accounts[0]) ? accounts[0] : null;
+        return new OfxDocument(accountId, entries) { StatementCount = statementCount };
     }
 
     private static bool IsEntryNode(OfxNode node)
@@ -129,8 +227,17 @@ public static class OfxDocumentParser
             && (node.Parent is null || !WrapperAggregates.Contains(node.Parent.Name));
     }
 
-    private static void CollectEntries(OfxNode node, string? accountId, List<IReadOnlyDictionary<string, string>> entries)
+    // Returns false when the entry bound stopped the walk. One entry past the bound is collected so the
+    // caller can tell "exactly at the bound" from "over it" by count alone.
+    private static bool CollectEntries(
+        OfxNode node,
+        string? accountId,
+        List<IReadOnlyDictionary<string, string>> entries,
+        int maxEntries)
     {
+        if (node.Name is "STMTRS" or "CCSTMTRS" or "INVSTMTRS")
+            accountId = StatementAccount(node);
+
         if (IsEntryNode(node))
         {
             var entry = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -138,8 +245,33 @@ public static class OfxDocumentParser
                 [AggregateColumn] = node.Name.ToUpperInvariant()
             };
             FlattenLeaves(node, entry);
+            // A row may repeat its containing header, but cannot replace missing/ambiguous
+            // header authority or authorize itself under a contradictory account.
+            if (entry.TryGetValue("ACCTID", out var rowAccount)
+                && !string.Equals(rowAccount.Trim(), accountId, StringComparison.OrdinalIgnoreCase))
+            {
+                entry["ACCTID"] = string.Empty;
+            }
+            // Currency belongs to the containing statement, never the first statement in the file.
+            // A row-level currency remains authoritative, including an explicitly blank value.
+            if (!entry.ContainsKey("CURSYM") && !entry.ContainsKey("CURDEF"))
+            {
+                for (var parent = node.Parent; parent is not null; parent = parent.Parent)
+                {
+                    if (parent.Name is "STMTRS" or "CCSTMTRS" or "INVSTMTRS")
+                    {
+                        if (parent.Leaves.TryGetValue("CURDEF", out var currency))
+                            entry["CURDEF"] = currency;
+                        break;
+                    }
+                }
+            }
             NormalizeEntry(entry, accountId);
             entries.Add(entry);
+            if (entries.Count > maxEntries)
+            {
+                return false;
+            }
         }
 
         // Keep walking children even below an entry aggregate so a malformed SGML file
@@ -147,8 +279,13 @@ public static class OfxDocumentParser
         // every entry instead of silently merging them.
         foreach (var child in node.Children)
         {
-            CollectEntries(child, accountId, entries);
+            if (!CollectEntries(child, accountId, entries, maxEntries))
+            {
+                return false;
+            }
         }
+
+        return true;
     }
 
     private static void FlattenLeaves(OfxNode node, IDictionary<string, string> entry)
@@ -175,6 +312,13 @@ public static class OfxDocumentParser
     /// </summary>
     private static void NormalizeEntry(Dictionary<string, string> entry, string? accountId)
     {
+        // Document-wide column mapping claims Currency once. Every row must expose the same
+        // exact key even when some rows supply CURSYM and others inherit CURDEF.
+        if (!entry.ContainsKey("CURSYM") && entry.TryGetValue("CURDEF", out var currency))
+        {
+            entry["CURSYM"] = currency;
+        }
+
         foreach (var tag in DateTags)
         {
             if (entry.TryGetValue(tag, out var raw))
@@ -244,22 +388,19 @@ public static class OfxDocumentParser
         return digits >= 8 ? trimmed[..8] : trimmed;
     }
 
-    private static string? FindFirstLeaf(OfxNode node, string tagName)
+    private static string? StatementAccount(OfxNode statement)
     {
-        if (node.Leaves.TryGetValue(tagName, out var value))
+        var identities = new List<string>();
+        if (statement.Leaves.TryGetValue("ACCTID", out var directAccount))
+            identities.Add(directAccount.Trim());
+        foreach (var header in statement.Children)
         {
-            return value;
+            if (header.Name is "BANKACCTFROM" or "CCACCTFROM" or "INVACCTFROM")
+                identities.Add(header.Leaves.TryGetValue("ACCTID", out var account) ? account.Trim() : string.Empty);
         }
-
-        foreach (var child in node.Children)
-        {
-            if (FindFirstLeaf(child, tagName) is { } found)
-            {
-                return found;
-            }
-        }
-
-        return null;
+        // Conflicting or blank header identities cannot supply authoritative account evidence.
+        var distinct = identities.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        return distinct.Length == 1 && distinct[0].Length > 0 ? distinct[0] : null;
     }
 
     private static string SkipSgmlHeader(string content)
@@ -270,8 +411,8 @@ public static class OfxDocumentParser
 
     private static string NormalizeTagName(string rawTag)
     {
-        // XML tags may carry attributes; OFX tag names never contain spaces.
-        var space = rawTag.IndexOf(' ');
+        // XML allows spaces, tabs, CR and LF between an element name and its attributes.
+        var space = rawTag.IndexOfAny([' ', '\t', '\r', '\n']);
         return (space < 0 ? rawTag : rawTag[..space]).Trim().ToUpperInvariant();
     }
 
@@ -299,4 +440,24 @@ public static class OfxDocumentParser
 /// <summary>A parsed OFX file flattened into uniform per-entry tag dictionaries.</summary>
 public sealed record OfxDocument(
     string? AccountId,
-    IReadOnlyList<IReadOnlyDictionary<string, string>> Entries);
+    IReadOnlyList<IReadOnlyDictionary<string, string>> Entries)
+{
+    /// <summary>Number of containing statement sections, including empty sections.</summary>
+    public int StatementCount { get; init; }
+}
+
+/// <summary>Which ingress bound, if any, stopped an OFX parse before the document was complete.</summary>
+public enum OfxParseBound
+{
+    /// <summary>The document was parsed in full.</summary>
+    None = 0,
+
+    /// <summary>Entry discovery stopped the parse.</summary>
+    TooManyEntries = 1,
+
+    /// <summary>Aggregate nesting exceeded the depth bound.</summary>
+    NestingTooDeep = 2,
+
+    /// <summary>The retained node budget - aggregates plus leaves - stopped the parse.</summary>
+    TooManyNodes = 3,
+}

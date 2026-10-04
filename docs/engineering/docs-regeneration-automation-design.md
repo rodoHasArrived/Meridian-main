@@ -2,7 +2,7 @@
 
 Design constraints for automating the regeneration of generated documentation artifacts. This note
 is the detail behind working-plan item `AR8-57` in
-[the 2026-08 adversarial review remediation plan](../product/adversarial-review-2026-08-remediation-plan.md);
+[the 2026-08 adversarial review remediation plan](../product/plans/adversarial-review-2026-08-remediation-plan.md);
 that item states the problem and points here for the constraints an implementation must satisfy.
 `AR8-57` is a plan-local identifier, not a roadmap registry row — there is no entry for it under
 `docs/roadmap/data/`, so do not cite it as roadmap truth.

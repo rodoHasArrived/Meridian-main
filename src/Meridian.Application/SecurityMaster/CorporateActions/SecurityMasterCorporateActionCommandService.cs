@@ -10,23 +10,33 @@ public sealed class SecurityMasterCorporateActionCommandService : ISecurityMaste
     private readonly ILogger<SecurityMasterCorporateActionCommandService> _logger;
     private readonly ISecurityMasterStore? _store;
     private readonly ICorporateActionRestatementTrigger? _restatementTrigger;
+    private readonly ICorporateActionOperationsService? _durableOperations;
 
     public SecurityMasterCorporateActionCommandService(
         ISecurityMasterEventStore eventStore,
         ILogger<SecurityMasterCorporateActionCommandService> logger,
         ISecurityMasterStore? store = null,
-        ICorporateActionRestatementTrigger? restatementTrigger = null)
+        ICorporateActionRestatementTrigger? restatementTrigger = null,
+        ICorporateActionOperationsService? durableOperations = null)
     {
         _eventStore = eventStore;
         _logger = logger;
         _store = store;
         _restatementTrigger = restatementTrigger;
+        _durableOperations = durableOperations;
     }
 
     public async Task<SecurityMasterCorporateActionAppendResultDto> AppendAsync(
         SecurityMasterCorporateActionAppendRequestDto request,
         CancellationToken ct = default)
     {
+        if (_durableOperations is not null)
+        {
+            throw new CorporateActionOperationException(
+                CorporateActionProblemCodes.DownstreamAuthorityRequired,
+                "Legacy direct corporate-action append is disabled; use durable source-proposal acceptance.");
+        }
+
         var action = ValidateRequest(request);
 
         var assetClassError = CorporateActionValidation.ValidateForAssetClass(

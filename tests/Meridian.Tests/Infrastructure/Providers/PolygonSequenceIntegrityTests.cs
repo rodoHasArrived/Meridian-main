@@ -84,6 +84,76 @@ public class PolygonSequenceIntegrityTests
     }
 
     [Fact]
+    public void ProcessTrade_DuplicateTickerSequenceAcrossTradeIdsAndVenues_IsRejected()
+    {
+        var client = CreateClient();
+        client.SubscribeTrades(new SymbolConfig("AAPL"));
+
+        client.ProcessTestMessage(
+            """[{"ev":"T","sym":"AAPL","p":150.25,"s":100,"t":1704067200000,"i":"trade-1","x":4,"q":100}]""");
+        client.ProcessTestMessage(
+            """[{"ev":"T","sym":"AAPL","p":150.30,"s":50,"t":1704067201000,"i":"trade-2","x":11,"q":100}]""");
+
+        _publishedEvents.Where(e => e.Type == MarketEventType.Trade).Should().ContainSingle(
+            "Polygon q is unique per ticker, so a duplicate cannot become a fresh stream through i or x");
+        var integrity = _publishedEvents.Single(e => e.Type == MarketEventType.Integrity);
+        integrity.Source.Should().Be(MarketDataSources.Polygon);
+        integrity.Payload.Should().BeOfType<IntegrityEvent>().Which.Should().Match<IntegrityEvent>(evt =>
+            evt.ErrorCode == 1002 &&
+            evt.SequenceNumber == 100 &&
+            evt.StreamId == "trade-2" &&
+            evt.Venue == "EDGA");
+    }
+
+    [Fact]
+    public void ProcessTrade_DecreasingTickerSequenceAcrossTradeIdsAndVenues_IsRejected()
+    {
+        var client = CreateClient();
+        client.SubscribeTrades(new SymbolConfig("AAPL"));
+
+        client.ProcessTestMessage(
+            """[{"ev":"T","sym":"AAPL","p":150.25,"s":100,"t":1704067200000,"i":"trade-1","x":4,"q":101}]""");
+        client.ProcessTestMessage(
+            """[{"ev":"T","sym":"AAPL","p":150.30,"s":50,"t":1704067201000,"i":"trade-2","x":11,"q":99}]""");
+
+        _publishedEvents.Where(e => e.Type == MarketEventType.Trade).Should().ContainSingle(
+            "Polygon q must be compared across changing trade ids and execution venues for one ticker");
+        var integrity = _publishedEvents.Single(e => e.Type == MarketEventType.Integrity);
+        integrity.Source.Should().Be(MarketDataSources.Polygon);
+        integrity.Payload.Should().BeOfType<IntegrityEvent>().Which.Should().Match<IntegrityEvent>(evt =>
+            evt.ErrorCode == 1002 &&
+            evt.Description.Contains("last 101, received 99", StringComparison.Ordinal) &&
+            evt.StreamId == "trade-2" &&
+            evt.Venue == "EDGA");
+    }
+
+    [Fact]
+    public void ProcessTrade_SequenceResetsOnlyOnNextEasternTradingDate()
+    {
+        var client = CreateClient();
+        client.SubscribeTrades(new SymbolConfig("AAPL"));
+
+        // Both timestamps straddle midnight UTC but remain Jan 15 in New York (18:59/19:01 EST).
+        client.ProcessTestMessage(
+            """[{"ev":"T","sym":"AAPL","p":150.25,"s":100,"t":1768521540000,"i":"trade-1","x":4,"q":100}]""");
+        client.ProcessTestMessage(
+            """[{"ev":"T","sym":"AAPL","p":150.30,"s":50,"t":1768521660000,"i":"trade-2","x":4,"q":1}]""");
+
+        // 14:30 UTC is 09:30 EST on Jan 16: q may restart for the new U.S. equities session.
+        client.ProcessTestMessage(
+            """[{"ev":"T","sym":"AAPL","p":150.35,"s":75,"t":1768573800000,"i":"trade-3","x":4,"q":1}]""");
+
+        _publishedEvents.Where(e => e.Type == MarketEventType.Trade).Should().HaveCount(2,
+            "UTC midnight is not a Polygon session boundary, but the next Eastern date is");
+        var integrity = _publishedEvents.Where(e => e.Type == MarketEventType.Integrity)
+            .Should().ContainSingle().Subject;
+        integrity.Payload.Should().BeOfType<IntegrityEvent>().Which.Should().Match<IntegrityEvent>(evt =>
+            evt.SequenceNumber == 1
+            && evt.StreamId == "trade-2"
+            && evt.Description.Contains("last 100, received 1", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void ProcessQuote_WithProviderSequence_PreservesItOnThePayload()
     {
         var client = CreateClient(new PolygonOptions(SubscribeQuotes: true));

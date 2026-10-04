@@ -415,6 +415,18 @@ describe("PortfolioScreen", () => {
     expect(screen.getByText(/\$18,900 exposure with \+\$90 unrealized p&l/i)).toBeDefined();
   });
 
+  it("offers a way out of an empty holdings table instead of only stating it is empty", async () => {
+    // /portfolio is where the recommended first goal lands, so a new operator with no data hits
+    // this table before anything else. It used to be a bare statement of fact.
+    const emptyTrading = { ...trading, positions: [] };
+    await renderPortfolioScreen(
+      <PortfolioScreen trading={emptyTrading} strategy={strategy} accounting={accounting} />
+    );
+
+    expect(screen.getByText("No open holdings")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Open the trading desk" })).toBeInTheDocument();
+  });
+
   it("presents raw explorer fixture metadata as operator-facing portfolio labels", async () => {
     const explorer = createPortfolioFinancialRecordExplorer();
     explorer.description = "Explore retained portfolio records from no-host development fixtures.";

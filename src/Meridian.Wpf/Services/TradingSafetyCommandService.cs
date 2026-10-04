@@ -47,7 +47,7 @@ public sealed class TradingSafetyCommandService
         {
             return new SafetyCommandOutcome(
                 false,
-                "This workstation has no execution-control connection, so the command was not sent. Halt the desk from the browser workstation or the broker.");
+                "This workstation has no execution-control connection, so the command was not sent. Halt the desk at the broker, or from a workstation that has an execution-control connection.");
         }
 
         return commandId switch

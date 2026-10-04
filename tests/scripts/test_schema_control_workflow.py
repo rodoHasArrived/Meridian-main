@@ -12,12 +12,12 @@ class SchemaControlWorkflowTests(unittest.TestCase):
         cls.workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
 
     def test_workflow_uses_repository_pinned_actions(self) -> None:
-        self.assertIn("uses: actions/checkout@v6.0.2", self.workflow)
+        self.assertIn("uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", self.workflow)
         self.assertIn("persist-credentials: false", self.workflow)
         self.assertIn("fetch-depth: 0", self.workflow)
-        self.assertIn("uses: actions/setup-python@v6.3.0", self.workflow)
+        self.assertIn("uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97", self.workflow)
         self.assertIn('python-version: "3.12"', self.workflow)
-        self.assertIn("uses: actions/upload-artifact@v7.0.1", self.workflow)
+        self.assertIn("uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a", self.workflow)
 
     def test_workflow_runs_postgres_16_service(self) -> None:
         for expected in [

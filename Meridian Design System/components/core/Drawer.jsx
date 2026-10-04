@@ -18,7 +18,7 @@ function inject() {
   to { opacity: 1; }
 }
 .mds-drawer-wrap {
-  position: fixed; background: var(--bg-light, #FAFBFC);
+  position: fixed; background: var(--bg-light, #FBFAF8);
   display: flex; flex-direction: column; z-index: 1000;
   box-shadow: var(--shadow-menu);
 }
@@ -58,26 +58,26 @@ function inject() {
 .mds-drawer-hd {
   display: flex; align-items: center; justify-content: space-between;
   padding: var(--space-md, 12px) var(--space-lg, 16px);
-  border-bottom: 1px solid var(--border-divider, #E5E9EE);
-  background: var(--bg-medium, #F5F7FA);
+  border-bottom: 1px solid var(--border-divider, #DAD8D3);
+  background: var(--bg-medium, #EDEAE4);
 }
 .mds-drawer-title {
   font-family: var(--font-body); font-size: var(--type-card-title, 13px);
-  font-weight: 600; color: var(--text-primary, #22272E); margin: 0;
+  font-weight: 600; color: var(--text-primary, #22252A); margin: 0;
 }
 .mds-drawer-close {
   appearance: none; border: none; background: transparent;
   width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
-  cursor: pointer; color: var(--text-secondary, #4D5967); font-size: 20px; line-height: 1; padding: 0;
+  cursor: pointer; color: var(--text-secondary, #4E5258); font-size: 20px; line-height: 1; padding: 0;
 }
-.mds-drawer-close:hover { color: var(--text-primary, #22272E); }
+.mds-drawer-close:hover { color: var(--text-primary, #22252A); }
 .mds-drawer-close:focus-visible {
-  outline: 2px solid var(--border-focus, #2F6F8F); outline-offset: -2px;
+  outline: 2px solid var(--border-focus, #A85436); outline-offset: -2px;
 }
 .mds-drawer-bd {
   flex: 1; overflow-y: auto; padding: var(--space-lg, 16px);
   font-family: var(--font-body); font-size: var(--type-body, 13px);
-  color: var(--text-primary, #22272E);
+  color: var(--text-primary, #22252A);
 }
 `;
   const el = document.createElement("style");

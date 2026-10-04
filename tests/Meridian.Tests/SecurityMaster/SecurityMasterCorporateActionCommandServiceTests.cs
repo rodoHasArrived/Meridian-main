@@ -10,6 +10,28 @@ namespace Meridian.Tests.SecurityMaster;
 public sealed class SecurityMasterCorporateActionCommandServiceTests
 {
     [Fact]
+    public async Task AppendAsync_WhenDurableOperationsAreRegistered_DisablesLegacyDirectWriter()
+    {
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var durableOperations = Substitute.For<ICorporateActionOperationsService>();
+        var service = new SecurityMasterCorporateActionCommandService(
+            eventStore,
+            NullLogger<SecurityMasterCorporateActionCommandService>.Instance,
+            durableOperations: durableOperations);
+
+        var append = () => service.AppendAsync(new SecurityMasterCorporateActionAppendRequestDto(
+            securityId,
+            CreateDividend(securityId),
+            SourceSystem: "workstation-http",
+            Actor: "analyst@example.com"));
+
+        var exception = await append.Should().ThrowAsync<CorporateActionOperationException>();
+        exception.Which.Code.Should().Be(CorporateActionProblemCodes.DownstreamAuthorityRequired);
+        await eventStore.DidNotReceiveWithAnyArgs().AppendCorporateActionAsync(default!, default);
+    }
+
+    [Fact]
     public async Task AppendAsync_WithValidDividend_AppendsThroughEventStoreAndReturnsAudit()
     {
         var securityId = Guid.NewGuid();

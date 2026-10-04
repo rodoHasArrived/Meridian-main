@@ -338,6 +338,77 @@ public sealed class SecurityMasterIngestStatusEndpointsTests
         payload.LastCompleted.ErrorCount.Should().Be(1);
     }
 
+    [Fact]
+    public async Task MapSecurityMasterEndpoints_ImportRoute_PassesResolvedSessionActorToImportService()
+    {
+        var queryService = Substitute.For<ContractsSecurityMasterQueryService>();
+        var conflictService = Substitute.For<ISecurityMasterConflictService>();
+        var ingestStatusService = Substitute.For<ISecurityMasterIngestStatusService>();
+        var commandService = Substitute.For<ISecurityMasterService>();
+        var importService = Substitute.For<ISecurityMasterImportService>();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        importService.ImportAsync(
+                Arg.Any<string>(),
+                Arg.Any<string>(),
+                Arg.Any<string>(),
+                Arg.Any<IProgress<SecurityMasterImportProgress>?>(),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new SecurityMasterImportResult(1, 0, 0, 0, Array.Empty<string>())));
+        await using var app = await CreateAppAsync(
+            queryService,
+            conflictService,
+            ingestStatusService,
+            commandService,
+            importService,
+            eventStore);
+        var client = app.GetTestClient();
+        const string forgedFile = "[{\"updatedBy\":\"forged.operator\",\"sourceSystem\":\"forged-source\"}]";
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.SecurityMasterImport,
+            new SecurityMasterImportRequest(forgedFile, ".json"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        await importService.Received(1).ImportAsync(
+            forgedFile,
+            ".json",
+            "security-admin",
+            null,
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task MapSecurityMasterEndpoints_ImportRoute_RejectsUnresolvedActorBeforeImport()
+    {
+        var queryService = Substitute.For<ContractsSecurityMasterQueryService>();
+        var conflictService = Substitute.For<ISecurityMasterConflictService>();
+        var ingestStatusService = Substitute.For<ISecurityMasterIngestStatusService>();
+        var commandService = Substitute.For<ISecurityMasterService>();
+        var importService = Substitute.For<ISecurityMasterImportService>();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        await using var app = await CreateAppAsync(
+            queryService,
+            conflictService,
+            ingestStatusService,
+            commandService,
+            importService,
+            eventStore,
+            actor: null);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.SecurityMasterImport,
+            new SecurityMasterImportRequest("[]", ".json"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        await importService.DidNotReceive().ImportAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<IProgress<SecurityMasterImportProgress>?>(),
+            Arg.Any<CancellationToken>());
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         ContractsSecurityMasterQueryService queryService,
         ISecurityMasterConflictService conflictService,
@@ -345,7 +416,8 @@ public sealed class SecurityMasterIngestStatusEndpointsTests
         ISecurityMasterService commandService,
         ISecurityMasterImportService importService,
         ISecurityMasterEventStore eventStore,
-        UserPermission permissions = UserPermission.ModifySecurityMaster)
+        UserPermission permissions = UserPermission.ModifySecurityMaster,
+        string? actor = "security-admin")
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -366,7 +438,10 @@ public sealed class SecurityMasterIngestStatusEndpointsTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = "security-admin";
+            if (!string.IsNullOrWhiteSpace(actor))
+            {
+                context.Items[LoginSessionMiddleware.CurrentUserKey] = actor;
+            }
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
             await next();
         });

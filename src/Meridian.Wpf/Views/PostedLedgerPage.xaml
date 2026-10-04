@@ -1,0 +1,180 @@
+<Page x:Class="Meridian.Wpf.Views.PostedLedgerPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
+      Loaded="OnPageLoaded"
+      Unloaded="OnPageUnloaded"
+      AutomationProperties.Name="Posted Ledger"
+      AutomationProperties.AutomationId="PostedLedgerPage">
+
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header: what book this is, and which period. -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,12">
+            <TextBlock Text="Posted Ledger"
+                       FontSize="20"
+                       FontWeight="SemiBold" />
+            <TextBlock Text="Trial balance and P&amp;L from the fund's posted journal — the governed book of record, scoped by ledger period. Strategy-run ledgers are simulation artifacts and live under Strategy."
+                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                       TextWrapping="Wrap"
+                       Margin="0,4,0,0" />
+            <WrapPanel Margin="0,8,0,0">
+                <TextBlock Text="{Binding SelectedPeriodLabel}" FontWeight="SemiBold" Margin="0,0,12,0" />
+                <TextBlock Text="{Binding SignoffText}"
+                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                           Margin="0,0,12,0" />
+                <TextBlock Text="{Binding BalanceSummaryText}"
+                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+            </WrapPanel>
+            <TextBlock Text="{Binding StatusText}"
+                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                       TextWrapping="Wrap"
+                       Margin="0,4,0,0" />
+            <Button Content="Refresh"
+                    Command="{Binding RefreshCommand}"
+                    HorizontalAlignment="Left"
+                    Margin="0,8,0,0"
+                    AutomationProperties.AutomationId="PostedLedgerRefreshButton" />
+        </StackPanel>
+
+        <!-- Explicit states: an unclosed period is a notice, a failure is an error. -->
+        <StackPanel Grid.Row="1">
+            <TextBlock Text="{Binding PeriodNotice}"
+                       Visibility="{Binding HasPeriodNotice, Converter={StaticResource BoolToVisibilityConverter}}"
+                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,8"
+                       AutomationProperties.AutomationId="PostedLedgerPeriodNotice" />
+            <TextBlock Text="{Binding PeriodsErrorText}"
+                       Visibility="{Binding HasPeriodsError, Converter={StaticResource BoolToVisibilityConverter}}"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,8"
+                       AutomationProperties.AutomationId="PostedLedgerPeriodsError" />
+            <TextBlock Text="{Binding TrialBalanceErrorText}"
+                       Visibility="{Binding HasTrialBalanceError, Converter={StaticResource BoolToVisibilityConverter}}"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,8"
+                       AutomationProperties.AutomationId="PostedLedgerTrialBalanceError" />
+            <TextBlock Text="{Binding PnlErrorText}"
+                       Visibility="{Binding HasPnlError, Converter={StaticResource BoolToVisibilityConverter}}"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,8"
+                       AutomationProperties.AutomationId="PostedLedgerPnlError" />
+        </StackPanel>
+
+        <!-- P&L summary for the selected period. -->
+        <ItemsControl Grid.Row="2"
+                      ItemsSource="{Binding PnlMetrics}"
+                      Margin="0,0,0,12"
+                      AutomationProperties.AutomationId="PostedLedgerPnlMetrics">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Margin="0,0,12,8" Padding="10">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Label}"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                            <TextBlock Text="{Binding Value}"
+                                       FontWeight="SemiBold"
+                                       Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="260" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Book and period pickers. Both bind SelectedItem two-way: the view model's setter
+                 loads the selection, so moving the highlight actually changes the subject. -->
+            <DockPanel Grid.Column="0" Margin="0,0,12,0" LastChildFill="True">
+                <TextBlock DockPanel.Dock="Top"
+                           Text="Ledger book"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,4" />
+                <ListBox DockPanel.Dock="Top"
+                         ItemsSource="{Binding Books}"
+                         SelectedItem="{Binding SelectedBookRow, Mode=TwoWay}"
+                         MaxHeight="120"
+                         Margin="0,0,0,12"
+                         AutomationProperties.AutomationId="PostedLedgerBookList">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="0,2">
+                                <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding BaseCurrency}"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <TextBlock DockPanel.Dock="Top"
+                           Text="Accounting basis"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,4" />
+                <ComboBox DockPanel.Dock="Top"
+                          ItemsSource="{Binding Bases}"
+                          SelectedItem="{Binding SelectedBasisRow, Mode=TwoWay}"
+                          DisplayMemberPath="Label"
+                          Margin="0,0,0,12"
+                          AutomationProperties.AutomationId="PostedLedgerBasisPicker" />
+                <TextBlock DockPanel.Dock="Top"
+                           Text="Ledger period"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,4" />
+            <ListBox ItemsSource="{Binding Periods}"
+                     SelectedItem="{Binding SelectedPeriodRow, Mode=TwoWay}"
+                     AutomationProperties.AutomationId="PostedLedgerPeriodList">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="0,2">
+                            <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding StatusLabel}"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                            <TextBlock Text="{Binding RangeLabel}"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            </DockPanel>
+
+            <!-- Posted trial balance. -->
+            <DataGrid Grid.Column="1"
+                      ItemsSource="{Binding TrialBalance}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      HeadersVisibility="Column"
+                      AutomationProperties.AutomationId="PostedLedgerTrialBalanceGrid">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Account" Binding="{Binding AccountName}" Width="*" />
+                    <DataGridTextColumn Header="Type" Binding="{Binding AccountType}" Width="120" />
+                    <!-- One row per account per dimension set: without the scope, an account
+                         posted in several funds or entities renders as identical rows. -->
+                    <DataGridTextColumn Header="Scope" Binding="{Binding ScopeLabel}" Width="180" />
+                    <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="90" />
+                    <DataGridTextColumn Header="Balance" Binding="{Binding BalanceLabel}" Width="140" />
+                    <DataGridTextColumn Header="Entries" Binding="{Binding EntryCount}" Width="90" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+    </Grid>
+</Page>

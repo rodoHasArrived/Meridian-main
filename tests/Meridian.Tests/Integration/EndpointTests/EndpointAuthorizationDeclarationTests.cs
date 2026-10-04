@@ -23,6 +23,7 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// can see it, but says nothing about enforcement. A route is done only when both hold.
 /// </para>
 /// </summary>
+[Collection("Endpoint")]
 public sealed class EndpointAuthorizationDeclarationTests : EndpointIntegrationTestBase
 {
     public EndpointAuthorizationDeclarationTests(EndpointTestFixture fixture)

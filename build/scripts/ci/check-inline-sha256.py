@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -32,6 +33,12 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_BASELINE = Path(__file__).resolve().parent / "inline-sha256-baseline.json"
 
 TRACKED_CALL = "SHA256.HashData"
+
+# HMACSHA256.HashData contains TRACKED_CALL as a substring, so a plain str.count credited three
+# keyed-hashing sites to this unkeyed-digest ratchet. Worse than the inflated number, it handed
+# those files an allowance a genuine inline SHA256.HashData could then hide inside. Require the
+# match to start an identifier so HMACSHA256 (and any other prefixed spelling) is not counted.
+TRACKED_CALL_PATTERN = re.compile(r"(?<![A-Za-z0-9_])" + re.escape(TRACKED_CALL))
 
 # The canonical home is not an inline site of itself.
 EXCLUDED_FILES = {
@@ -59,7 +66,7 @@ def count_call_sites(repo_root: Path) -> dict[str, int]:
         rel = path.relative_to(repo_root).as_posix()
         if rel in EXCLUDED_FILES:
             continue
-        occurrences = path.read_text(encoding="utf-8", errors="replace").count(TRACKED_CALL)
+        occurrences = len(TRACKED_CALL_PATTERN.findall(path.read_text(encoding="utf-8", errors="replace")))
         if occurrences:
             counts[rel] = occurrences
     return counts

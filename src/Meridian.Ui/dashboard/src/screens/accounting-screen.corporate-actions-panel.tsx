@@ -1,4 +1,5 @@
 import { Table2 } from "lucide-react";
+import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +21,7 @@ const corporateActionColumns: DenseDataTableColumn<CorporateActionRowViewModel>[
   },
   { id: "exDate", label: "Ex-date", render: (row) => <span className="font-mono text-muted-foreground">{row.exDateLabel}</span> },
   { id: "payDate", label: "Pay date", render: (row) => <span className="font-mono text-muted-foreground">{row.payDateLabel}</span> },
+  { id: "lifecycle", label: "Lifecycle", render: (row) => <Badge variant={row.lifecycleState ? "outline" : "warning"}>{row.lifecycleState ?? "Not supplied"}</Badge> },
   { id: "amount", label: "Amount", align: "right", render: (row) => <span className="font-mono tabular-nums text-foreground">{row.amountLabel}</span> }
 ];
 
@@ -72,9 +74,10 @@ export function CorporateActionsPanel({
               ariaLabel={view.tableLabel}
               caption={view.tableCaption}
             />
-            <div
+            <DenseRowDetailPanel
               id={view.detailPanelId}
-              data-selected-source="Selected from corporate actions"
+              ariaLabel="Corporate action detail workspace"
+              selectedSourceLabel="Selected from corporate actions"
               className="row-detail-panel h-fit min-w-0"
             >
               {view.selectedDetail ? (
@@ -94,7 +97,7 @@ export function CorporateActionsPanel({
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">{view.detailEmptyText}</p>
                 </div>
               )}
-            </div>
+            </DenseRowDetailPanel>
           </div>
         )}
       </CardContent>

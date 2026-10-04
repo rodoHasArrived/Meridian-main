@@ -44,6 +44,26 @@ public static class LedgerReportPackBuilder
         var provenance = BuildLineProvenance(ledger, request, statements, financialAccountId);
         artifacts.Add(CreateLineProvenanceArtifact(provenance));
 
+        var canonicalEvidence = (taxLotReliefProjections ?? [])
+            .Where(static projection => projection.CanonicalOpenLots.Count > 0)
+            .OrderBy(static projection => projection.Input.SaleDate)
+            .ThenBy(static projection => projection.Input.Account.Name, StringComparer.Ordinal)
+            .Select(static projection => new
+            {
+                projection.Input.SaleDate,
+                projection.Input.ReliefMethod,
+                Lots = projection.CanonicalOpenLots.OrderBy(static lot => lot.TaxLotRecordId).ToArray(),
+                projection.Selections,
+                projection.CostBasis,
+                projection.RecognizedGainOrLoss
+            }).ToArray();
+        if (canonicalEvidence.Length > 0)
+        {
+            var content = JsonSerializer.Serialize(canonicalEvidence);
+            artifacts.Add(new LedgerReportPackArtifact("canonical-open-lot-evidence.json", "application/json",
+                content, Sha256Digest.ComputeUtf8(content)));
+        }
+
         artifacts.Add(CreateManifestArtifact(request, statements, artifacts));
 
         var payload = string.Join(
@@ -86,10 +106,15 @@ public static class LedgerReportPackBuilder
                 .ThenBy(static selection => selection.Lot.LotId, StringComparer.Ordinal)
                 .ToList();
 
-            // A wash sale defers part of the loss; the ledger recognized only the allowed portion.
-            // Spread the disallowed amount across the relieved lots by quantity so each row's
-            // recognized gain/loss nets to what was actually booked (residual on the final row),
-            // instead of the export overstating the current-period realized loss.
+            // Attribute current deferrals to the loss lots that actually supplied them. Retained
+            // legacy outcomes have no source allocations, so keep their original proportional
+            // attribution rather than inventing a new matching result from later history.
+            var disallowedBySourceLot = (projection.WashSale?.BasisIncreases ?? [])
+                .SelectMany(static increase => increase.SourceAllocations)
+                .GroupBy(static allocation => allocation.Source.Lot.LotId, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(static group => group.Key,
+                    static group => group.Sum(static allocation => allocation.Amount),
+                    StringComparer.OrdinalIgnoreCase);
             var disallowedTotal = projection.DisallowedWashSaleLoss;
             var totalQuantity = orderedSelections.Sum(static selection => selection.QuantityRelieved);
             var allocatedDisallowed = 0m;
@@ -99,7 +124,11 @@ public static class LedgerReportPackBuilder
                 var selection = orderedSelections[index];
 
                 decimal disallowed;
-                if (disallowedTotal == 0m)
+                if (disallowedBySourceLot.Count > 0)
+                {
+                    disallowed = disallowedBySourceLot.GetValueOrDefault(selection.Lot.LotId);
+                }
+                else if (disallowedTotal == 0m)
                 {
                     disallowed = 0m;
                 }

@@ -4,6 +4,7 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Meridian.Reporting;
+using Meridian.Tests.TestHelpers;
 using NSubstitute;
 using Xunit;
 using SecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
@@ -12,6 +13,37 @@ namespace Meridian.Tests.Reporting;
 
 public sealed class ReportGenerationServiceTests
 {
+    [Theory]
+    [InlineData(".", ".")]
+    [InlineData("\r\n", " ")]
+    [InlineData("\0\t\u001b\u007f\u0085", " ")]
+    [InlineData("\u2028\u2029", " ")]
+    public async Task GenerateAsync_UntrustedFundId_RendersOneLogLineAndPreservesReportIdentity(
+        string separator, string renderedSeparator)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var query = new StubSecurityMasterQueryService(
+            new Dictionary<string, SecurityDetailDto>(),
+            new Dictionary<Guid, SecurityEconomicDefinitionRecord>());
+        var logger = new RecordingLogger<ReportGenerationService>();
+        var service = new ReportGenerationService(query, logger);
+        var fundId = $"fund-alpha{separator}approval=forged";
+        var request = new ReportRequest(
+            fundId,
+            new DateTimeOffset(2026, 4, 11, 0, 0, 0, TimeSpan.Zero),
+            BuildLedgerBookWithSymbols(["AAPL"]));
+
+        var report = await service.GenerateAsync(request, timeout.Token);
+
+        report.FundId.Should().Be(fundId);
+        request.FundId.Should().Be(fundId);
+        report.TrialBalance.Should().NotBeEmpty();
+        var log = logger.Entries.Single(entry => entry.Message.StartsWith("Generating ", StringComparison.Ordinal)).Message;
+        log.Should().Contain($"report for fund-alpha{renderedSeparator}approval=forged asOf ");
+        log.Any(char.IsControl).Should().BeFalse();
+        log.Should().NotContain("\u2028").And.NotContain("\u2029");
+    }
+
     [Fact]
     public async Task GenerateAsync_WithEconomicDefinition_MapsGovernanceFieldsAndResolvedQuality()
     {

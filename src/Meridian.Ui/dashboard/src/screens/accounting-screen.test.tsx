@@ -6,6 +6,8 @@ import { useLocation } from "react-router-dom";
 import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
 import * as ledgerReportsApi from "@/lib/ledger-reports-api";
+import * as markFreshnessApi from "@/lib/api/mark-freshness.api";
+import * as recurringJournalsApi from "@/lib/api/recurring-journals.api";
 import { AccountingScreen } from "@/screens/accounting-screen";
 import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import { buildSuccessfulVerifiedOperationOutcome } from "@/test/verified-operation-outcome";
@@ -22,7 +24,6 @@ import type {
   ExternalGlMappingProfile,
   ClosePeriodPlan,
   DailyValuationScheduleWorkItem,
-  LedgerTrialBalanceLine,
   ReconciliationCalibrationSummary,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
@@ -41,10 +42,44 @@ import type {
 } from "@/types";
 import { requireFirst, requirePresent } from "@/test/fixtures";
 
+/**
+ * Finds the alert carrying a given message. The screen renders several alert
+ * regions at once — a failed section load and a failed action are independent —
+ * so a bare `getByRole("alert")` only resolves while exactly one happens to be
+ * on screen.
+ */
+async function findAlertContaining(text: string): Promise<HTMLElement> {
+  const alerts = await screen.findAllByRole("alert");
+  const match = alerts.find((alert) => alert.textContent?.includes(text));
+  if (!match) {
+    throw new Error(`No alert contains "${text}". Alerts: ${alerts.map((a) => a.textContent).join(" | ")}`);
+  }
+
+  return match;
+}
+
 vi.mock("@/lib/ledger-reports-api", () => ({
+  getLedgerBooks: vi.fn().mockResolvedValue([{
+    ledgerBookId: "00000000-0000-0000-0000-0000000000aa",
+    fundProfileId: "fund-alpha",
+    fundStructureNodeId: "00000000-0000-0000-0000-0000000000bb",
+    fundStructureNodeKind: "Fund",
+    displayName: "Master Fund",
+    baseCurrency: "USD",
+    createdAt: "2026-01-01T00:00:00Z",
+    updatedAt: "2026-01-01T00:00:00Z",
+    accountingBasis: "Primary",
+    accountingPolicyId: "legacy-v1",
+    accountingPolicyVersion: "legacy-v1"
+  }]),
   getLedgerPeriods: vi.fn().mockResolvedValue([]),
   getLedgerPeriodTrialBalance: vi.fn().mockResolvedValue([]),
-  getLedgerPeriodPnlSummary: vi.fn().mockResolvedValue(null)
+  getLedgerPeriodPnlSummary: vi.fn().mockResolvedValue(null),
+  getLedgerPeriodJournalEntries: vi.fn().mockResolvedValue([])
+}));
+
+vi.mock("@/lib/api/recurring-journals.api", () => ({
+  getRecurringJournalQueue: vi.fn(async (scope) => ({ ...scope, occurrences: [] }))
 }));
 
 vi.mock("@/lib/api", async () => {
@@ -724,7 +759,13 @@ const corporateActions: CorporateAction[] = [
     acquirerSecurityId: null,
     exchangeRatio: null,
     subscriptionPricePerShare: null,
-    rightsPerShare: null
+    rightsPerShare: null,
+    recordDate: null,
+    lifecycleState: null,
+    supersedesCorpActId: null,
+    redemptionPricePercentOfPar: null,
+    payload: null,
+    payloadSchemaVersion: 1
   },
   {
     corpActId: "ca-split-1",
@@ -740,31 +781,13 @@ const corporateActions: CorporateAction[] = [
     acquirerSecurityId: null,
     exchangeRatio: null,
     subscriptionPricePerShare: null,
-    rightsPerShare: null
-  }
-];
-
-const trialBalanceLines: LedgerTrialBalanceLine[] = [
-  {
-    accountName: "Cash",
-    accountType: "Asset",
-    symbol: null,
-    financialAccountId: "acct-cash",
-    balance: 120500,
-    entryCount: 12,
-    security: null,
-    sourceJournalEntryId: "je-cash-1",
-    sourceEventIds: ["evt-cash-1"],
-    approvalIds: ["approval-cash-1"]
-  },
-  {
-    accountName: "Financing payable",
-    accountType: "Liability",
-    symbol: null,
-    financialAccountId: "acct-financing",
-    balance: -500,
-    entryCount: 2,
-    security: null
+    rightsPerShare: null,
+    recordDate: null,
+    lifecycleState: null,
+    supersedesCorpActId: null,
+    redemptionPricePercentOfPar: null,
+    payload: null,
+    payloadSchemaVersion: 1
   }
 ];
 
@@ -1567,6 +1590,8 @@ function findAppleSecuritySearchRow() {
 describe("AccountingScreen", () => {
   beforeEach(() => {
     window.localStorage.clear();
+    vi.mocked(recurringJournalsApi.getRecurringJournalQueue).mockReset()
+      .mockImplementation(async (scope) => ({ ...scope, occurrences: [] }));
     const searchSecurities = vi.mocked(api.searchSecurities);
     searchSecurities.mockReset();
     if (defaultSearchSecuritiesImplementation) {
@@ -3389,6 +3414,10 @@ describe("AccountingScreen", () => {
     expect(configureButton).toBeEnabled();
     expect(runDueButton).toBeEnabled();
 
+    vi.spyOn(markFreshnessApi, "previewValuationMarks").mockResolvedValue({ policyVersion: "daily-close-policy", assessedPositionCount: 1, blockedPositionCount: 0, affectedValuationCount: 0, positions: [], evaluatedAtUtc: currentSchedule.nextRunAtUtc });
+    await user.click(screen.getByRole("button", { name: "Preview mark impact" }));
+    await screen.findByText(/0 of 1 positions require review/);
+
     await user.click(configureButton);
 
     expect(await within(commandCenter).findByText(`Configured daily valuation schedule daily-fund-alpha for ${currentSchedule.nextRunAtUtc}.`)).toBeInTheDocument();
@@ -3404,6 +3433,8 @@ describe("AccountingScreen", () => {
       actor: "close-cockpit-operator"
     }));
 
+    await user.click(screen.getByRole("button", { name: "Preview mark impact" }));
+    await screen.findByText(/0 of 1 positions require review/);
     await user.click(within(commandCenter).getByRole("button", {
       name: "Run due daily valuation schedules for the current tenant scope"
     }));
@@ -3462,8 +3493,8 @@ describe("AccountingScreen", () => {
       ledgerBookId: undefined,
       periodId: "2026-05",
       status: undefined
-    });
-    expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1");
+    }, expect.objectContaining({ signal: expect.any(AbortSignal), allowDevelopmentFallback: false }));
+    expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1", expect.objectContaining({ signal: expect.any(AbortSignal), allowDevelopmentFallback: false }));
   });
 
   it("scopes the close command center workflow lookup to route ledger book", async () => {
@@ -3486,8 +3517,8 @@ describe("AccountingScreen", () => {
       ledgerBookId: "book-alpha",
       periodId: "2026-05",
       status: undefined
-    });
-    expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1");
+    }, expect.objectContaining({ signal: expect.any(AbortSignal), allowDevelopmentFallback: false }));
+    expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1", expect.objectContaining({ signal: expect.any(AbortSignal), allowDevelopmentFallback: false }));
   });
 
   it("renders the close cockpit landing with focused accounting task modes", async () => {
@@ -3531,6 +3562,26 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("heading", { name: "Reconciliation exceptions and evidence" })).toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Reconciliation runs" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Accounting case workbench" })).not.toBeInTheDocument();
+  });
+
+  it("shows blocked recurring occurrences with no manual drafts after selecting entity scope", async () => {
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce({ ...manualJournalWorkbench, drafts: [] });
+    const scope = { fundProfileId: "fund-alpha", ledgerBookId: "book-alpha", entityId: "entity-master" };
+    vi.mocked(recurringJournalsApi.getRecurringJournalQueue).mockResolvedValue({ ...scope, occurrences: [{
+      ...scope, occurrenceId: "blocked-rent", scheduleId: "rent", scheduleVersion: 2,
+      templateId: "rent-template", templateVersion: 4, effectiveDate: "2026-10-01", periodId: "2026-10",
+      state: "Blocked", journalEntryId: null, approvalStatus: null, blockers: ["Period is locked."],
+      sourceEvidenceReferences: ["evidence://rent"], periodLockOwner: "controller-a",
+      governedReopenPath: "Accounting > Close > Request governed reopen"
+    }] });
+    await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
+    fireEvent.change(screen.getByLabelText("Recurring journal entity scope"), { target: { value: "entity-master" } });
+    const queue = screen.getByRole("region", { name: "Recurring journal occurrences" });
+    expect(await within(queue).findByText("rent · v2")).toBeInTheDocument();
+    expect(within(queue).getByText("Period is locked.")).toBeInTheDocument();
+    expect(within(queue).getByText("Period lock owner: controller-a")).toBeInTheDocument();
+    expect(recurringJournalsApi.getRecurringJournalQueue).toHaveBeenCalledWith(scope, expect.any(AbortSignal));
+    expect(within(queue).queryByRole("button", { name: "Review retained draft" })).not.toBeInTheDocument();
   });
 
   it("renders the manual journal entry workbench with GL and Security Master line fields", async () => {
@@ -4525,8 +4576,7 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/reconciliation");
 
-    const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent("Calibration API offline");
+    const alert = await findAlertContaining("Calibration API offline");
     expect(alert).toHaveTextContent("Meridian service returned 503. Open diagnostics for technical details.");
     expect(alert).toHaveTextContent("Provider unavailable");
     const retry = screen.getByRole("button", { name: "Retry calibration summary load" });
@@ -4617,85 +4667,10 @@ describe("AccountingScreen", () => {
     );
   });
 
-  it("renders trial-balance rows with accessible table evidence", async () => {
-    const user = userEvent.setup();
-    vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
+  // The run-scoped trial-balance tests moved with their surface to
+  // strategy-run-ledger-screen.test.tsx; Accounting no longer renders a run's ledger.
 
-    await renderAccountingScreen(data, "/accounting/ledger");
-
-    const table = await screen.findByRole("region", { name: "Primary trial balance lines for the selected ledger run" });
-    expect(table).toBeInTheDocument();
-    const cashRow = screen.getByRole("row", { name: /Cash Asset\. Primary basis/ });
-    const financingRow = screen.getByRole("row", { name: /Financing payable Liability\. Primary basis/ });
-    expect(cashRow).toHaveAttribute("aria-selected", "true");
-    expect(cashRow).toHaveAttribute("aria-expanded", "true");
-    expect(cashRow).toHaveAttribute("aria-controls", "trial-balance-account-detail");
-    expect(screen.getByRole("region", { name: "Trial-balance detail for Cash" })).toHaveTextContent("$120,500");
-    expect(screen.getByLabelText("Filter by General Ledger account")).toHaveValue("");
-    expect(screen.getAllByText("2 GL account rows").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByRole("list", { name: "Ledger lines for selected account" })).toHaveTextContent("je-cash-1");
-    expect(screen.getByRole("link", { name: "Open source event evt-cash-1 for Cash" })).toHaveAttribute(
-      "href",
-      "/accounting/audit?sourceEventId=evt-cash-1"
-    );
-    expect(screen.getByRole("link", { name: "Open journal entry je-cash-1 for Cash" })).toHaveAttribute(
-      "href",
-      "/accounting/ledger?journalEntryId=je-cash-1"
-    );
-    expect(screen.getByRole("link", { name: "Open approval approval-cash-1 for Cash" })).toHaveAttribute(
-      "href",
-      "/accounting/approvals?approvalId=approval-cash-1"
-    );
-    expect(financingRow).toHaveAttribute("aria-expanded", "false");
-    expect(financingRow).toHaveAccessibleName(/Balance -\$500/);
-
-    await user.type(screen.getByLabelText("Filter by General Ledger account"), "financing");
-
-    expect(screen.getAllByText("1 of 2 GL account rows").length).toBeGreaterThanOrEqual(1);
-    expect(screen.queryByRole("row", { name: /Cash Asset\. Primary basis/ })).not.toBeInTheDocument();
-    const filteredFinancingRow = screen.getByRole("row", { name: /Financing payable Liability\. Primary basis/ });
-    expect(filteredFinancingRow).toHaveAttribute("aria-selected", "true");
-
-    await user.click(filteredFinancingRow);
-
-    expect(screen.getByRole("region", { name: "Trial-balance detail for Financing payable" })).toHaveTextContent("Credit / payable");
-    expect(filteredFinancingRow).toHaveAttribute("aria-selected", "true");
-  });
-
-  it("renders a useful trial-balance empty state instead of a blank table", async () => {
-    vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce([]);
-
-    await renderAccountingScreen(data, "/accounting/ledger");
-
-    expect(await screen.findByText("No trial balance lines")).toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: "Primary trial balance lines for the selected ledger run" })).not.toBeInTheDocument();
-  });
-
-  it("renders structured trial-balance api-errors with endpoint and validation detail", async () => {
-    vi.mocked(api.getRunTrialBalance).mockRejectedValueOnce(new ApiError({
-      path: "/api/workstation/runs/run-42/trial-balance",
-      status: 422,
-      title: "Validation failed",
-      detail: "Fund account is required.",
-      validationIssues: [
-        {
-          field: "fundAccountId",
-          label: "Fund account",
-          messages: ["Select a fund account before loading accounting evidence."]
-        }
-      ]
-    }));
-
-    await renderAccountingScreen(data, "/accounting/ledger");
-
-    const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent("Fund account is required.");
-    expect(alert).toHaveTextContent("Meridian service returned 422. Open diagnostics for technical details.");
-    expect(alert).toHaveTextContent("Validation failed");
-    expect(alert).toHaveTextContent("Fund account: Select a fund account before loading accounting evidence.");
-  });
-
-  it("reads the posted journal for the Accounting trial balance and labels the run explorer as a simulation artifact", async () => {
+  it("reads the posted journal for the Accounting ledger surface and no longer hosts the run explorer", async () => {
     vi.mocked(ledgerReportsApi.getLedgerPeriods).mockResolvedValueOnce([
       {
         periodId: "11111111-1111-1111-1111-111111111111",
@@ -4755,10 +4730,10 @@ describe("AccountingScreen", () => {
     expect(screen.getByText("Source: posted journal")).toBeInTheDocument();
     expect(screen.getByText("Signed off")).toBeInTheDocument();
 
-    // The run-scoped explorer stays available but is explicitly labelled a
-    // simulation artifact so it can no longer masquerade as the fund's book.
-    expect(screen.getByRole("heading", { name: "Strategy Run Ledger Explorer" })).toBeInTheDocument();
-    expect(screen.getByText("Strategy run (simulation) — not the posted journal")).toBeInTheDocument();
+    // The run-scoped explorer now lives under Strategy (/strategy/run-ledger). Accounting must
+    // not render a strategy run's simulated ledger beside the fund's book.
+    expect(screen.queryByRole("heading", { name: "Strategy Run Ledger Explorer" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Strategy run (simulation) — not the posted journal")).not.toBeInTheDocument();
   });
 
   it("runs ledger reporting export through the POST mutation instead of a GET link", async () => {
@@ -5670,8 +5645,7 @@ describe("AccountingScreen", () => {
     await user.type(rationaleInput, "Reviewed cash mismatch");
     await user.click(screen.getByRole("button", { name: /confirm resolve/i }));
 
-    const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent("Break action failed: Ledger write rejected");
+    const alert = await findAlertContaining("Break action failed: Ledger write rejected");
     expect(within(alert).getByText("Meridian service returned 409. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(within(alert).getByText("operatorRationale: Operator rationale must cite the balancing ledger entry.")).toBeInTheDocument();
   });

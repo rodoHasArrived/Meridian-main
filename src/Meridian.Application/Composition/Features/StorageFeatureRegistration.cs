@@ -1,3 +1,5 @@
+using Meridian.Storage.Archival;
+using Meridian.Core.IO;
 using Meridian.Application.Backfill;
 using Meridian.Core.Config;
 using Meridian.PortfolioRecords.Accounts;
@@ -16,10 +18,12 @@ using Meridian.Instruments.Futures;
 using Meridian.Instruments.FxSpot;
 using Meridian.Instruments.MoneyMarketFunds;
 using Meridian.Instruments.Options;
+using Meridian.FinancialOperations.Ledger;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.SecurityMaster.CashFlow;
+using Meridian.Application.Tenancy;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
 using Meridian.Contracts.DirectLending;
@@ -77,6 +81,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 {
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
+        services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
         // Unified persistence config must resolve before any per-domain in-memory-vs-Postgres
         // decision below reads the per-domain variables.
         MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
@@ -95,6 +100,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityValidationSnapshotStore, FileSecurityValidationSnapshotStore>();
         services.TryAddSingleton<ISecurityValidationGateService, SecurityValidationGateService>();
         services.TryAddSingleton<DatabaseMigrationReadinessReceipt>();
+        services.TryAddSingleton(sp => new LocalTenantMigrationGate(
+            sp.GetService<TenantScopeEnforcementOptions>() ?? TenantScopeEnforcementOptions.FailClosed));
         services.AddStatementReconciliationServices();
 
         // StorageOptions - configured from AppConfig or defaults
@@ -114,7 +121,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ProviderIntegrationDryRunService>();
         services.TryAddSingleton<IProviderIntegrationHttpTransport>(sp =>
             new ProviderIntegrationHttpClientTransport(
-                new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }),
+                ProviderIntegrationHttpClientTransport.CreateHttpClient(),
                 sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<ProviderIntegrationHttpClientTransport>>()));
         services.TryAddSingleton<ProviderIntegrationRestDryRunService>();
         services.TryAddSingleton<ProviderIntegrationOpenApiImportService>();
@@ -261,6 +268,23 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton(securityMasterOptions);
             services.AddSingleton<IValidateOptions<SecurityMasterOptions>, SecurityMasterOptionsValidator>();
             services.AddSingleton<ISecurityMasterEventStore, PostgresSecurityMasterEventStore>();
+            services.AddSingleton<ICorporateActionOperationsStore, PostgresCorporateActionOperationsStore>();
+            services.AddSingleton<ICorporateActionOperationsService>(sp => new CorporateActionOperationsService(
+                sp.GetRequiredService<ICorporateActionOperationsStore>(),
+                sp.GetRequiredService<ISecurityMasterEventStore>(),
+                sp.GetRequiredService<ISecurityMasterStore>(),
+                sp.GetRequiredService<ICorporateActionRestatementTrigger>(),
+                // Resolved optionally on purpose: the scope authority is composed only where the
+                // holdings and tenancy stores exist, and acceptance fails closed without it.
+                sp.GetService<ICorporateActionScopeFanOutGate>()));
+            services.AddSingleton<ICorporateActionCaseAccountingService>(sp => new CorporateActionCaseAccountingService(
+                sp.GetRequiredService<ICorporateActionOperationsStore>(),
+                // Resolved optionally on purpose: the accounting lane fails closed with a typed
+                // persistence-unavailable refusal when the spine store, spine posting authority,
+                // or ledger book/period authority is not composed.
+                sp.GetService<IAssetAccountingEventProjectionStore>(),
+                sp.GetService<IAccountingPostingCandidatePostService>(),
+                sp.GetService<ILedgerBookService>()));
             services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
             services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
             services.AddSingleton<IBondReferenceProjectionStore, PostgresBondReferenceProjectionStore>();
@@ -274,6 +298,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IDepositReferenceProjectionStore, PostgresDepositReferenceProjectionStore>();
             services.AddSingleton<IMoneyMarketFundReferenceProjectionStore, PostgresMoneyMarketFundReferenceProjectionStore>();
             services.AddSingleton<ICertificateOfDepositReferenceProjectionStore, PostgresCertificateOfDepositReferenceProjectionStore>();
+            services.AddSingleton<IDirectLoanReferenceProjectionStore, PostgresDirectLoanReferenceProjectionStore>();
+            services.AddSingleton<IStructuredCreditReferenceProjectionStore, PostgresStructuredCreditReferenceProjectionStore>();
             services.AddSingleton<IOperatorOverridesStore, PostgresOperatorOverridesStore>();
             services.AddSingleton<ISecurityFieldProvenanceStore, PostgresSecurityFieldProvenanceStore>();
             services.AddSingleton<SecurityMasterMigrationRunner>();
@@ -306,6 +332,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IDepositReferenceService, DepositProjectionService>();
             services.AddSingleton<IMoneyMarketFundReferenceService, MoneyMarketFundProjectionService>();
             services.AddSingleton<ICertificateOfDepositReferenceService, CertificateOfDepositProjectionService>();
+            services.AddSingleton<IDirectLoanReferenceService, DirectLoanProjectionService>();
+            services.AddSingleton<IStructuredCreditReferenceService, StructuredCreditProjectionService>();
             services.AddSingleton<ISecurityResolver, SecurityResolver>();
             services.AddHostedService<SecurityMasterProjectionWarmupService>();
             if (options.EnableHttpClientFactory)
@@ -371,9 +399,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver, SecurityMasterHistoricalSymbolTimelineResolver>();
 
             // Corporate-action ingest: fan-out, consensus scoring, staged apply, and the
-            // inbox snapshot the workbench polls for staged proposals.
+            // durable proposal inbox polled by the workbench.
             services.AddSingleton<CorporateActionIngestOrchestrator>();
-            services.AddSingleton<CorporateActionInboxState>();
         }
 
         if (AssetOperationsStartup.IsConfigured())
@@ -408,12 +435,16 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IDepositReferenceService, NullDepositReferenceService>();
         services.TryAddSingleton<IMoneyMarketFundReferenceService, NullMoneyMarketFundReferenceService>();
         services.TryAddSingleton<ICertificateOfDepositReferenceService, NullCertificateOfDepositReferenceService>();
+        services.TryAddSingleton<IDirectLoanReferenceService, NullDirectLoanReferenceService>();
+        services.TryAddSingleton<IStructuredCreditReferenceService, NullStructuredCreditReferenceService>();
         services.TryAddSingleton<ISecurityMasterAmender, NullSecurityMasterService>();
         services.TryAddSingleton<ISecurityMasterConflictService, NullSecurityMasterConflictService>();
         services.TryAddSingleton<ISecurityMasterImportService, NullSecurityMasterImportService>();
         services.TryAddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
         services.TryAddSingleton<ISecurityValidationService, NullSecurityValidationService>();
         services.TryAddSingleton<ICorporateActionCommandService, NullCorporateActionCommandService>();
+        services.TryAddSingleton<ICorporateActionOperationsService, NullCorporateActionOperationsService>();
+        services.TryAddSingleton<ICorporateActionCaseAccountingService, NullCorporateActionCaseAccountingService>();
         services.TryAddSingleton<ICorporateActionRestatementTrigger, NullCorporateActionRestatementTrigger>();
         services.TryAddSingleton<ISecurityMasterEventStore, NullSecurityMasterEventStore>();
         services.TryAddSingleton<IOperatorOverridesStore, NullOperatorOverridesStore>();
@@ -455,15 +486,40 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IAccrualLedgerService, AccrualLedgerService>();
             services.AddSingleton<IDirectLendingCommandService, PostgresDirectLendingCommandService>();
             services.AddSingleton<IDirectLendingService, PostgresDirectLendingService>();
+            // These workers enumerate loans across the process and the retained direct-lending
+            // model does not yet carry a tenant authority per loan. Registering them under a
+            // fail-closed ledger posture would make every ledger read fail and leave accruals and
+            // outbox deliveries retrying forever. A deferred host gate reads the final DI posture
+            // and withholds their construction/start until that attribution exists.
             if (options.EnableProcessWideHostedServices)
             {
-                services.AddHostedService<DirectLendingOutboxDispatcher>();
-                services.AddHostedService<DailyAccrualWorker>();
+                services.AddHostedService<TenantPostureHostedService<DirectLendingOutboxDispatcher>>();
+                services.AddHostedService<TenantPostureHostedService<DailyAccrualWorker>>();
             }
         }
 
         var useInMemoryGovernanceServices = IsInMemoryGovernanceProfileEnabled();
         EnsureGovernancePersistenceProfile(useInMemoryGovernanceServices);
+
+        // Authoritative multi-tenant scope fan-out. Composed only where every input authority is:
+        // custodied holdings say who holds the security, the fund-profile tenancy registry says who
+        // owns the holding fund, and the security master supplies the identifiers the two are joined
+        // on. A deployment missing any of them cannot enumerate an affected set, so the gate is left
+        // unregistered rather than registered in a state where it could only ever refuse — that
+        // keeps the read-side decision posture honest instead of offering controls that never work.
+        if (SecurityMasterStartup.IsConfigured()
+            && FundAccountsStartup.IsConfigured()
+            && LedgerStartup.IsConfigured())
+        {
+            services.AddSingleton<IScopeAssignmentProvider>(sp => new FundAccountHoldingScopeAssignmentProvider(
+                sp.GetService<IFundAccountStore>(),
+                sp.GetService<IFundProfileTenancyRegistry>(),
+                sp.GetRequiredService<ILogger<FundAccountHoldingScopeAssignmentProvider>>()));
+            services.TryAddSingleton<IAuthoritativeScopeFanOutService, AuthoritativeScopeFanOutService>();
+            services.TryAddSingleton<ICorporateActionScopeFanOutGate>(sp => new CorporateActionScopeFanOutGate(
+                sp.GetRequiredService<IAuthoritativeScopeFanOutService>(),
+                sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>()));
+        }
 
         // Fund accounts and governance structure.
         if (FundAccountsStartup.IsConfigured())
@@ -484,7 +540,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             {
                 var storageOptions = sp.GetRequiredService<StorageOptions>();
                 var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "fund-accounts.json");
-                return new InMemoryFundAccountService(persistencePath);
+                return new TenantGuardedLocalFundAccountService(new InMemoryFundAccountService(persistencePath),
+                    sp.GetRequiredService<LocalTenantMigrationGate>());
             });
             services.TryAddSingleton<IAccountManagementService>(sp => (IAccountManagementService)sp.GetRequiredService<IFundAccountService>());
             services.TryAddSingleton<IAccountQueryService>(sp => (IAccountQueryService)sp.GetRequiredService<IFundAccountService>());
@@ -516,11 +573,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 var sharedDataAccessService = sp.GetService<IGovernanceSharedDataAccessService>();
                 var securityMasterQueryService = sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
                 var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "fund-structure.json");
-                return new InMemoryFundStructureService(
-                    fundAccountService,
-                    sharedDataAccessService,
-                    securityMasterQueryService,
-                    persistencePath);
+                return new TenantGuardedLocalFundStructureService(new InMemoryFundStructureService(
+                    fundAccountService, sharedDataAccessService, securityMasterQueryService, persistencePath),
+                    sp.GetRequiredService<LocalTenantMigrationGate>());
             });
         }
         // ── Banking ──────────────────────────────────────────────────────────

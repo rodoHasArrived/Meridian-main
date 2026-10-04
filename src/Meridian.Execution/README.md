@@ -6,12 +6,14 @@ module_id: SRC-EXECUTION
 path: src/Meridian.Execution
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-08-11
+last_reviewed: 2026-09-25
 ---
 
 # src/Meridian.Execution
 
 ## Purpose
+
+Broker reconciliation propagates caller cancellation from health and open-order queries so cancelled requests do not become unhealthy-broker or query-failure evidence.
 
 Execution owns order routing, execution services, allocation, margin, derivatives, tax-lot, and broker gateway behavior.
 
@@ -29,6 +31,13 @@ This layer implements execution behavior and broker-facing runtime services whil
 ## Important workflows
 
 Use this module for paper session execution, broker gateway behavior, order lifecycle, and execution evidence.
+
+Both paper gateways resolve the final fill price through the shared trading-parameter helper.
+Tick-size rounding is best-effort: a rounded price is used only when it remains positive, stays
+inside the captured market-data envelope, and respects any limit or stop-limit price. Otherwise,
+the gateway retains the price already admitted by the matching policy, even if the observed print
+is off the configured tick grid. Costs are calculated from that final price. This applies to both
+immediate and resting-order fills; tick rounding cannot invalidate matching admission.
 
 The OMS owns settlement of pre-trade risk reservations. `IRiskValidator` returns a
 `RiskValidationResult` whose `Reservations` carry any capacity a stateful rule took while evaluating
@@ -165,6 +174,16 @@ review. Shared `/api/execution/controls/*` endpoints expose the snapshot plus se
 the global circuit breaker, default position limit, symbol position limits, and manual override
 create/clear actions so browser and desktop clients do not need client-local execution-control
 state.
+Kill-switch sweeps bind each tracked client order ID to the broker-assigned order ID from the
+pre-cancel broker snapshot. Shared parent and bracket-child rows are removed from the residual
+sweep only after that broker cancellation identity is retained, so a provider whose cancellation
+endpoint requires its own UUID never receives the matching client ID by mistake. Gateways with
+separate identifier namespaces receive the ID kind explicitly rather than inferring it from shape.
+After all cancel requests settle, the OMS enumerates the broker's working book again; a surviving
+row prevents `Completed`, and an unavailable final enumeration requires operator action. A cancel
+that loses to a verified fill is synchronously applied through the ordinary idempotent fill funnel,
+so tracked state, portfolio state, and execution-report observers see the execution even if the
+gateway report stream is delayed or races the cancel response.
 `ExecutionAuditTrailService` retains entries in memory by **count and time**, not count alone.
 `InMemoryRetention` (default 1,000) is the ordinary bound, and `InMemoryRetentionWindow` (default
 two hours) is kept regardless of it — because every consumer reasons about this trail in time, and a

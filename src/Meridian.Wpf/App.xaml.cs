@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Threading;
 using Meridian.PortfolioRecords.FundAccounts;
+using Meridian.Application.Composition;
 using Meridian.Application.FundStructure;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
@@ -61,9 +62,14 @@ public partial class App : System.Windows.Application
 {
     private static bool _isFirstRun;
     private static bool _isFixtureMode;
+
+    /// <summary>Set when a startup guard refused this composition and shutdown has begun.</summary>
+    private static bool _startupRefused;
     private static string[] _launchArgs = [];
     private IHost? _host;
     private ApiClientService? _apiClientService;
+    private readonly CancellationTokenSource _startupCancellation = new();
+    private bool _desktopActivated;
 
     /// <summary>
     /// Gets the service provider for dependency injection.
@@ -201,17 +207,11 @@ public partial class App : System.Windows.Application
         Services = _host.Services;
         var apiClientService = Services.InitializeDesktopApiClient();
         _apiClientService = apiClientService;
-        Services.GetRequiredService<WpfServices.StrategyRunWorkspaceService>();
 
         // Desktop sign-out must also end the shared workstation API session so no request
         // can ride the old server cookies (mirrors LifecycleControlClient's subscription).
         Services.GetRequiredService<WpfServices.DesktopAuthenticationSession>().SignedOut +=
             (_, _) => _ = apiClientService.SignOutAsync();
-
-        // Provide the DI container to NavigationService so it can resolve pages
-        WpfServices.NavigationService.Instance.SetServiceProvider(Services);
-        Services.GetRequiredService<WpfServices.ViewModelViewResolver>()
-            .LogMissingViewModels(Services.GetRequiredService<Meridian.Wpf.Shell.Services.IShellPageRegistry>());
 
         // Handle unhandled exceptions gracefully
         DispatcherUnhandledException += OnDispatcherUnhandledException;
@@ -226,13 +226,58 @@ public partial class App : System.Windows.Application
             return;
         }
 
-        // Create and show MainWindow from DI (replaces StartupUri)
-        var mainWindow = Services.GetRequiredService<MainWindow>();
-        Current.MainWindow = mainWindow;
-        ShutdownMode = ShutdownMode.OnMainWindowClose;
-        mainWindow.Show();
-        WpfServices.LoggingService.Instance.LogInfo("WPF main window shown");
-        mainWindow.ForceStartupWindowRecovery();
+        // Guards that can refuse this composition run before the shell exists, not behind it.
+        // MainWindow.OnWindowLoaded navigates to the fund-profile page and loads workspaces as soon
+        // as the window is shown, so showing first would put the very posture a guard rejects in
+        // front of the operator until teardown finished.
+        //
+        // Cheap composition guards run first. The separate async tenant gate then prepares and
+        // inspects retained stores before any workspace or shell can be resolved. Other hosted
+        // workers keep their existing startup order behind the window.
+        await RunStartupRefusalPreflightAsync();
+        if (_startupRefused)
+        {
+            return;
+        }
+
+        MainWindow? mainWindow = null;
+        try
+        {
+            await Services.GetRequiredService<WpfServices.DesktopTenantStartup>().ActivateAsync(() =>
+            {
+                _desktopActivated = true;
+                Services.GetRequiredService<WpfServices.StrategyRunWorkspaceService>();
+                WpfServices.NavigationService.Instance.SetServiceProvider(Services);
+                Services.GetRequiredService<WpfServices.ViewModelViewResolver>()
+                    .LogMissingViewModels(Services.GetRequiredService<Meridian.Wpf.Shell.Services.IShellPageRegistry>());
+
+                mainWindow = Services.GetRequiredService<MainWindow>();
+                Current.MainWindow = mainWindow;
+                ShutdownMode = ShutdownMode.OnMainWindowClose;
+                mainWindow.Show();
+                WpfServices.LoggingService.Instance.LogInfo("WPF main window shown");
+                mainWindow.ForceStartupWindowRecovery();
+            }, _startupCancellation.Token);
+        }
+        catch (OperationCanceledException) when (_startupCancellation.IsCancellationRequested)
+        {
+            return;
+        }
+        catch (Exception ex) when (Meridian.Ui.Shared.Services.HostStartupEscalation.IsRefusal(ex))
+        {
+            HandleStartupRefusal(ex);
+            return;
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            HandleStartupRefusal(new StartupRefusedException(
+                $"Desktop startup could not be completed ({ex.GetType().Name}). " +
+                "Verify configuration and retained-data readiness before restarting."));
+            return;
+        }
+
+        if (mainWindow is null || _startupCancellation.IsCancellationRequested)
+            return;
 
         // Begin listening for args forwarded from secondary instances as soon as
         // the main window exists so automation deep links do not race startup work.
@@ -242,7 +287,14 @@ public partial class App : System.Windows.Application
         WpfServices.JumpListService.Instance.Register();
 
         // Fire-and-forget async initialization with proper exception handling
-        await SafeOnStartupAsync();
+        await SafeOnStartupAsync(_startupCancellation.Token);
+        if (_startupRefused || _startupCancellation.IsCancellationRequested)
+        {
+            // Shutdown is already in flight; re-showing the window would put a usable shell in
+            // front of the operator for however long teardown takes.
+            return;
+        }
+
         WpfServices.LoggingService.Instance.LogInfo("WPF async startup completed");
         EnsureMainWindowVisible(mainWindow);
         _ = RestoreMainWindowVisibilityAsync(mainWindow);
@@ -384,9 +436,39 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IUserAccountStore>(sp => new FileUserAccountStore(
             new Meridian.Storage.StorageOptions { RootPath = Path.GetFullPath(identityDataRoot) },
             sp.GetService<Microsoft.Extensions.Logging.ILogger<FileUserAccountStore>>()));
-        services.AddSingleton<UserProfileRegistry>(sp => new UserProfileRegistry(
-            roleProfileStore: null,
-            accountStore: sp.GetRequiredService<IUserAccountStore>()));
+        services.AddDesktopTenantScopeServices();
+
+        // W9-GOV-008 criterion 2. AccountingFeatureModule registers the unpartitioned in-memory
+        // fund structure, and this desktop never calls AddWorkstationSharedServices, so the
+        // multi-company refusal that guard exists for ran only for the browser workstation: the
+        // desktop started and served one shared graph to operators across companies.
+        //
+        // Registered in the composition root rather than in that feature module, because the guard
+        // reads IUserAccountStore -- registered here, a few lines up -- and the module is
+        // constructed standalone by its own tests. Putting it there made resolving IHostedService
+        // throw for want of an account store the module never owned.
+        //
+        // Registered as a singleton and mapped to both roles, so the copy the refusal preflight
+        // runs before the shell and the copy host startup runs behind it are one object rather
+        // than two independent constructions.
+        services.AddSingleton<Meridian.Ui.Shared.Services.InMemoryFundStructureTenancyGuard>();
+        services.AddSingleton<Microsoft.Extensions.Hosting.IHostedService>(
+            sp => sp.GetRequiredService<Meridian.Ui.Shared.Services.InMemoryFundStructureTenancyGuard>());
+        services.AddSingleton<Meridian.Application.Composition.IStartupRefusalGuard>(
+            sp => sp.GetRequiredService<Meridian.Ui.Shared.Services.InMemoryFundStructureTenancyGuard>());
+
+        // ADR-019's final-graph guard. Registered here because this desktop composes its own graph
+        // and never calls AddMarketDataServices, which is the only other caller of this extension --
+        // so the lane that most needed the refusal had no guard to raise one, and the escalation
+        // work elsewhere in this change had nothing to escalate here (Codex review finding on
+        // PR #2871).
+        //
+        // A no-op on an ordinary launch: with no MeridianDeploymentPostureDeclaration and none of
+        // the posture environment variables set, StartAsync takes neither the production branch nor
+        // the supported-local one and returns immediately. It bites only where a posture is actually
+        // declared, which is the point. Its eager factory validation runs inside
+        // StartHostServicesAsync, behind the shell, which is where that work belongs.
+        services.AddProductionRegistrationGuard();
         services.AddSingleton<LoginSessionService>();
         services.AddSingleton<WpfServices.DesktopAuthenticationSession>();
         services.AddTransient<StartupWindowViewModel>();
@@ -509,20 +591,68 @@ public partial class App : System.Windows.Application
     }
 
     /// <summary>
+    /// Decides every startup refusal before any shell exists, without starting the rest of the host.
+    /// </summary>
+    /// <remarks>
+    /// <para>A refusal decides that this composition may serve nothing at all, and a shell shown
+    /// first is a shell the operator can use: <c>MainWindow.OnWindowLoaded</c> navigates to the
+    /// fund-profile page, starts the shell view model and loads workspaces as soon as the window is
+    /// shown, so the prohibited posture would be live and interactive for however long the guard
+    /// and the teardown behind it take. Checking the refusal flag afterwards only prevents the
+    /// later visibility recovery; it cannot un-serve what was already on screen.</para>
+    ///
+    /// <para>The guards run <i>alone</i> here rather than as part of host startup. Awaiting the
+    /// whole host would block the window on every ordinary hosted service too -- the symbol-registry
+    /// initializer and the canonical-registry migration both read the configured data root, which
+    /// may be slow or unreachable -- and an operator who never gets a window is not better off than
+    /// one who briefly gets the wrong one. The guards themselves resolve immediately, and
+    /// <see cref="StartHostServicesAsync"/> still starts them with everything else once the shell
+    /// is up; <c>IStartupRefusalGuard</c> requires them to be safe to run twice.</para>
+    /// </remarks>
+    private async Task RunStartupRefusalPreflightAsync(CancellationToken ct = default)
+    {
+        if (_host is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await Meridian.Ui.Shared.Services.StartupRefusalPreflight.RunAsync(_host.Services, ct);
+        }
+        catch (Exception ex) when (Meridian.Ui.Shared.Services.HostStartupEscalation.IsRefusal(ex))
+        {
+            HandleStartupRefusal(ex);
+        }
+        catch (Exception ex)
+        {
+            // Reached only for a fault outside the guards themselves -- resolving IStartupRefusalGuard
+            // from the container, say. A guard that throws is already converted to a refusal by
+            // StartupRefusalPreflight and handled above: "I cannot tell" is not "this is safe", and
+            // leaving it here meant the shell showed with the unpartitioned fund structure serving
+            // (Codex review finding on PR #2871).
+            await HandleStartupFailureAsync(ex);
+        }
+    }
+
+    /// <summary>
     /// Performs async initialization with proper exception handling.
     /// </summary>
     private async Task SafeOnStartupAsync(CancellationToken ct = default)
     {
         try
         {
-            // Run first-time setup before showing window
+            ct.ThrowIfCancellationRequested();
+            // Run first-time setup
             await InitializeFirstRunAsync();
 
             // Initialize and validate configuration
             await InitializeConfigurationAsync();
 
             // Start hosted services registered through shared composition, including
-            // database-backed projection, outbox, and worker services.
+            // database-backed projection, outbox, and worker services. Behind the window on
+            // purpose: composition guards and the async tenant gate already approved activation.
+            // The desktop tenant hosted service reuses that completed inspection.
             await StartHostServicesAsync(ct);
 
             // Initialize theme service
@@ -563,22 +693,64 @@ public partial class App : System.Windows.Application
             // Log successful startup
             WpfServices.LoggingService.Instance.LogInfo("Application started successfully");
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Exit already cancelled startup; do not revive desktop services or show a toast.
+        }
+        catch (Exception ex) when (Meridian.Ui.Shared.Services.HostStartupEscalation.IsRefusal(ex))
+        {
+            HandleStartupRefusal(ex);
+        }
         catch (Exception ex)
         {
-            WpfServices.LoggingService.Instance.LogError("Error during application startup", ex);
+            await HandleStartupFailureAsync(ex);
+        }
+    }
 
-            try
-            {
-                await WpfServices.NotificationService.Instance.NotifyErrorAsync(
-                    "Startup Error",
-                    ex.Message);
-            }
-            catch (Exception notificationEx)
-            {
-                WpfServices.LoggingService.Instance.LogError(
-                    "Failed to display startup error notification",
-                    notificationEx);
-            }
+    /// <summary>
+    /// Records a startup refusal, tells the operator why, and takes the shell down.
+    /// </summary>
+    /// <remarks>
+    /// A guard refused this composition. Every other startup fault is recoverable enough to carry
+    /// on with a degraded shell; this one is not, because carrying on is precisely what the guard
+    /// forbade. Reported through a modal dialog rather than the notification service: a toast on an
+    /// application that is closing is not seen, and the operator needs the remediation text.
+    /// </remarks>
+    private void HandleStartupRefusal(Exception ex)
+    {
+        _startupRefused = true;
+        WpfServices.LoggingService.Instance.LogError(
+            "Application startup refused by a startup guard; shutting down", ex);
+
+        // The guard's own message, not the wrapper's. A refusal reaching here inside an
+        // AggregateException would otherwise put "One or more errors occurred" in front of the
+        // operator instead of the remediation text, which is the one thing the dialog is for.
+        // The outer exception is still what gets logged, because it carries the context.
+        var refusal = Meridian.Ui.Shared.Services.HostStartupEscalation.TryFindRefusal(ex);
+        System.Windows.MessageBox.Show(
+            refusal?.Message ?? ex.Message,
+            "Meridian cannot start",
+            MessageBoxButton.OK,
+            MessageBoxImage.Error);
+        Shutdown();
+    }
+
+    /// <summary>Reports a recoverable startup fault and carries on with a degraded shell.</summary>
+    private static async Task HandleStartupFailureAsync(Exception ex)
+    {
+        WpfServices.LoggingService.Instance.LogError("Error during application startup", ex);
+
+        try
+        {
+            await WpfServices.NotificationService.Instance.NotifyErrorAsync(
+                "Startup Error",
+                ex.Message);
+        }
+        catch (Exception notificationEx)
+        {
+            WpfServices.LoggingService.Instance.LogError(
+                "Failed to display startup error notification",
+                notificationEx);
         }
     }
 
@@ -593,6 +765,20 @@ public partial class App : System.Windows.Application
         {
             await _host.StartAsync(ct).ConfigureAwait(false);
             WpfServices.LoggingService.Instance.LogInfo("WPF hosted services started");
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex) when (Meridian.Ui.Shared.Services.HostStartupEscalation.IsRefusal(ex))
+        {
+            // Deliberately ahead of the tolerant catch below, and deliberately not swallowed. The
+            // catch that follows exists for a worker that could not reach its database — degrading
+            // to reduced processing beats taking the desktop down over it. A startup guard is the
+            // opposite: it has decided this composition must not serve anything. Continuing past
+            // one runs exactly the posture the guard was written to reject, which is how the
+            // W9-GOV-008 multi-company refusal came to have no effect on this lane at all.
+            throw;
         }
         catch (Exception ex)
         {
@@ -742,7 +928,10 @@ public partial class App : System.Windows.Application
     private void OnExit(object sender, ExitEventArgs e)
     {
         WpfServices.LoggingService.Instance.LogInfo("WPF application shutdown requested");
-        SafeOnExitAsync().GetAwaiter().GetResult();
+        _startupCancellation.Cancel();
+        // A refused or cancelled pre-shell check must not create or save a workspace during exit.
+        if (_desktopActivated)
+            SafeOnExitAsync().GetAwaiter().GetResult();
         StopHostSafely();
         _apiClientService?.Dispose();
         _apiClientService = null;

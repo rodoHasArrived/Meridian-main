@@ -9,7 +9,9 @@ namespace Meridian.Application.SecurityMaster.CorporateActions;
 /// Maps an accepted superseding corporate action (amendment or cancellation) to the
 /// period-aware restatement decision. Pure routing — it never posts; it only proposes,
 /// following the same contract as the revision-publish path. Returns null when no
-/// restatement machinery is available or no ledger book is exposed.
+/// restatement machinery is available or no ledger book is exposed. Implementations used by a
+/// durable acceptance boundary should return an explicit negative decision when the lookup is
+/// authoritative and no book is exposed; <c>null</c> means no authoritative decision was possible.
 /// </summary>
 public interface ICorporateActionRestatementTrigger
 {
@@ -49,7 +51,8 @@ public sealed class NullCorporateActionRestatementTrigger : ICorporateActionRest
 /// <para>Registered as a singleton beside the command services; the workstation
 /// restatement stack is scoped, so dependencies are resolved per invocation through
 /// <see cref="IServiceScopeFactory"/>. When any piece of the stack is absent (a host
-/// without the workstation layer) the trigger degrades to no proposal.</para>
+/// without the workstation layer), the result is non-authoritative (<c>null</c>) so a durable
+/// acceptance caller can fail closed instead of silently losing closed-period handling.</para>
 /// </summary>
 public sealed class CorporateActionSupersedeRestatementTrigger : ICorporateActionRestatementTrigger
 {
@@ -93,13 +96,13 @@ public sealed class CorporateActionSupersedeRestatementTrigger : ICorporateActio
             .ConfigureAwait(false);
         if (snapshot?.DownstreamImpact is not { } impact)
         {
-            return null;
+            return new SecurityMasterRestatementDecision(RestatementRequired: false, Candidates: []);
         }
 
         var affectedLedgerBookIds = await bookResolver.ResolveAsync(impact, ct).ConfigureAwait(false);
         if (affectedLedgerBookIds.Count == 0)
         {
-            return null;
+            return new SecurityMasterRestatementDecision(RestatementRequired: false, Candidates: []);
         }
 
         // The economics changed as of the original event's ex-date (possibly long before the

@@ -829,10 +829,13 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         {
             if (SetProperty(ref _selectedPortfolioPosition, value))
             {
+                OnPropertyChanged(nameof(SelectedPortfolioMark));
                 OpenSelectedPortfolioSecurityCommand.NotifyCanExecuteChanged();
             }
         }
     }
+
+    public MarkFreshnessPresentation SelectedPortfolioMark => new(SelectedPortfolioPosition?.MarkFreshness);
 
     public CashFlowEntryDto? SelectedCashFlowEntry
     {
@@ -957,7 +960,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             FundProfileId: activeFund.FundProfileId,
             Currency: activeFund.BaseCurrency), ct);
         var privateCapitalCloseTask = LoadPrivateCapitalCloseCockpitAsync(activeFund, context, ct);
-        var financialOperationsCommandCenterTask = LoadFinancialOperationsCommandCenterAsync(activeFund, ct);
+        var financialOperationsCommandCenterTask = LoadFinancialOperationsCommandCenterAsync(activeFund, context, ct);
 
         await Task.WhenAll(ledgerTask, accountsTask, bankSnapshotsTask, cashTask, reconciliationTask, portfolioTask, accountingWorkspaceTask, privateCapitalCloseTask, financialOperationsCommandCenterTask);
 
@@ -991,7 +994,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                 ApplyPortfolio(portfolioPositions);
                 await ApplyReconciliationWorkbenchAsync(activeFund, reconciliationSnapshot, ct);
                 await LoadStatementReconciliationAsync(ct);
-                BuildWorkspaceSummary(activeFund, ledger, accounts, cashSummary, reconciliationSnapshot.Summary);
+                BuildWorkspaceSummary(activeFund, ledger, accounts, cashSummary, reconciliationSnapshot);
                 BuildAuditTrail(ledger, reconciliationSnapshot.Summary);
                 await RefreshReportPackPreviewAsync(ct);
                 UpdateReconciliationWorkbenchPresentation();
@@ -1015,7 +1018,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             ApplyPortfolio(portfolioPositions);
             await ApplyReconciliationWorkbenchAsync(activeFund, reconciliationSnapshot, ct);
             await LoadStatementReconciliationAsync(ct);
-            BuildWorkspaceSummary(activeFund, ledger, accounts, cashSummary, reconciliationSnapshot.Summary);
+            BuildWorkspaceSummary(activeFund, ledger, accounts, cashSummary, reconciliationSnapshot);
             BuildAuditTrail(ledger, reconciliationSnapshot.Summary);
             await RefreshReportPackPreviewAsync(ct);
             UpdateReconciliationWorkbenchPresentation();
@@ -1027,6 +1030,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     private async Task<FinancialOperationsCommandCenterDto?> LoadFinancialOperationsCommandCenterAsync(
         FundProfileDetail activeFund,
+        FundOperationsNavigationContext? context,
         CancellationToken ct)
     {
         if (_financialOperationsCommandCenterReadService is null)
@@ -1034,8 +1038,10 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             return null;
         }
 
+        var scope = ResolvePrivateCapitalCloseScope(activeFund, context);
         return await _financialOperationsCommandCenterReadService
-            .GetCommandCenterAsync(fundProfileId: activeFund.FundProfileId, ct: ct)
+            .GetCommandCenterAsync(activeFund.FundProfileId, scope?.LedgerBookId, scope?.FundAccountId,
+                scope?.PeriodId, scope?.EntityId, ct, scope?.TenantId, scope?.CompanyId)
             .ConfigureAwait(false);
     }
 
@@ -1595,8 +1601,9 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         FundLedgerSummary? ledger,
         IReadOnlyList<FundAccountSummary> accounts,
         CashFinancingSummary cashSummary,
-        ReconciliationSummary reconciliation)
+        FundReconciliationWorkbenchSnapshot reconciliationSnapshot)
     {
+        var reconciliation = reconciliationSnapshot.Summary;
         var securityResolvedCount = PortfolioPositions.Count(position => position.HasSecurityCoverage);
         var securityMissingCount = PortfolioPositions.Count - securityResolvedCount;
         var summary = new FundWorkspaceSummary(
@@ -1628,9 +1635,10 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         BrokerageAccountsText = summary.BrokerageAccountCount.ToString("N0");
         CustodyAccountsText = summary.CustodyAccountCount.ToString("N0");
         RaisePropertyChanged(nameof(AccountQueueStatusText));
-        OverviewStatusText = summary.TotalAccounts == 0 && summary.JournalEntryCount == 0
-            ? "The Accounting shell is ready. Link accounts, import positions, or record a run to populate fund operations."
-            : BuildOverviewStatus(summary);
+        OverviewStatusText = BuildOverviewStatus(
+            summary,
+            reconciliationSnapshot,
+            summary.TotalAccounts == 0 && summary.JournalEntryCount == 0);
     }
 
     internal static InspectorPanelModel BuildSelectedAccountInspector(FundAccountSummary? account)
@@ -1838,23 +1846,6 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     private static string DisplayDimension(string? value)
         => FormatLedgerValue(value);
-
-    private static string BuildOverviewStatus(FundWorkspaceSummary summary)
-    {
-        var status = $"{summary.FundDisplayName} is loaded with {summary.TotalAccounts} account(s), {summary.JournalEntryCount} journal entries, and {summary.ReconciliationRuns} reconciliation run(s).";
-
-        if (summary.SecurityMissingCount > 0)
-        {
-            status += $" {summary.SecurityMissingCount} unresolved security mapping(s) still need Security Master coverage.";
-        }
-
-        if (summary.SecurityCoverageIssues > 0)
-        {
-            status += $" {summary.SecurityCoverageIssues} reconciliation security coverage issue(s) remain open.";
-        }
-
-        return status;
-    }
 
     private void BuildAuditTrail(FundLedgerSummary? ledger, ReconciliationSummary reconciliation)
     {
@@ -2150,7 +2141,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             ? "Owner not confirmed"
             : $"Owner {ReconciliationOperatorText}";
         var signoffPosture = _accountingLifecycle?.SignoffPosture;
-        var closeReadiness = _accountingLifecycle?.CloseReadiness;
+        var closeReadiness = _financialOperationsCommandCenter?.Summary;
         ReconciliationOwnershipText = string.IsNullOrWhiteSpace(signoffPosture)
             ? $"{operatorLabel}. Reconciliation sign-off should happen only after queue review, stale-snapshot confirmation, and security coverage checks are complete."
             : $"{operatorLabel}. {signoffPosture} {closeReadiness}".Trim();
@@ -2165,7 +2156,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                           string.Equals(ReconciliationOperatorText, DefaultReconciliationOperator, StringComparison.OrdinalIgnoreCase)
             ? "Accounting operator"
             : ReconciliationOperatorText;
-        var readiness = _accountingLifecycle?.CloseReadiness;
+        var readiness = _financialOperationsCommandCenter?.Summary
+            ?? "Close readiness remains blocked until a scoped shared evaluation is available.";
         var traceability = _accountingLifecycle?.AuditTraceability;
         ReportPackOwnershipText = string.IsNullOrWhiteSpace(readiness)
             ? $"{reportOwner} owns final report-pack sign-off once accounting, reconciliation, and audit evidence align."
@@ -2268,6 +2260,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
         if (_financialOperationsCommandCenter is not null)
         {
+            AddSharedCloseBlockers(_financialOperationsCommandCenter);
             foreach (var row in _financialOperationsCommandCenter.QueueRows)
             {
                 FinancialOperationsQueueItems.Add(new FundFinancialOperationsQueueRow(
@@ -2288,7 +2281,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                     CloseReportImpact: row.CloseReportImpact));
             }
 
-            FinancialOperationsQueueStatusText = _financialOperationsCommandCenter.Status;
+            FinancialOperationsQueueStatusText = _financialOperationsCommandCenter.CloseReadiness is { IsComplete: true, IsReadyToClose: true } ? "Ready" : "Blocked";
             FinancialOperationsQueueSummaryText = _financialOperationsCommandCenter.Summary;
             return;
         }
@@ -2384,7 +2377,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                     IsBlocked: lane.Status is OperationsReconciliationLaneStatusDto.Blocked or OperationsReconciliationLaneStatusDto.Missing));
             }
 
-            foreach (var package in lifecycle.EvidencePackages.Where(static item => !item.IsReady))
+            foreach (var package in lifecycle.EvidencePackages.Where(static item => item.RequiredForClose && !item.IsReady))
             {
                 FinancialOperationsQueueItems.Add(new FundFinancialOperationsQueueRow(
                     QueueId: $"evidence-package:{package.PackageId}",
@@ -2420,7 +2413,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                     IsBlocked: IsEvidenceStatusBlocked(lane.Status)));
             }
 
-            foreach (var package in cockpit.EvidencePackages.Where(static item => !item.IsReady))
+            foreach (var package in cockpit.EvidencePackages.Where(static item => item.RequiredForClose && !item.IsReady))
             {
                 FinancialOperationsQueueItems.Add(new FundFinancialOperationsQueueRow(
                     QueueId: $"private-capital-package:{package.PackageId}",
@@ -2453,7 +2446,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             }
 
             foreach (var approval in cockpit.ApprovalHistory
-                .Where(static item => item.Status is not OperationsApprovalStateDto.Approved)
+                .Where(static item => item.IsCurrentDecision && item.Status is not OperationsApprovalStateDto.Approved)
                 .OrderByDescending(static item => item.DecidedAtUtc ?? item.SubmittedAtUtc ?? DateTimeOffset.MinValue))
             {
                 FinancialOperationsQueueItems.Add(new FundFinancialOperationsQueueRow(
@@ -2477,10 +2470,10 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         var blockedCount = FinancialOperationsQueueItems.Count(static item => item.IsBlocked);
         if (itemCount == 0)
         {
-            FinancialOperationsQueueStatusText = lifecycle is null && cockpit is null ? "Queue pending" : "Clear";
+            FinancialOperationsQueueStatusText = "Blocked";
             FinancialOperationsQueueSummaryText = lifecycle is null && cockpit is null
                 ? "Load Operations Continuity and close cockpit evidence to inspect active Financial Operations work items."
-                : "No active Financial Operations queue items are surfaced for the selected fund.";
+                : "Shared close readiness is unavailable. Select the full close scope and refresh before sign-off.";
             return;
         }
 
@@ -2598,9 +2591,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                 SourceTarget: MapPrivateCapitalCloseRouteTarget(approval.WorkflowRoute)));
         }
 
-        PrivateCapitalCloseStatusText = cockpit.IsReadyToClose
-            ? "Ready to close"
-            : FormatEvidenceStatusLabel(cockpit.OverallStatus);
+        PrivateCapitalCloseStatusText = _financialOperationsCommandCenter?.CloseReadiness is { IsComplete: true, IsReadyToClose: true } ? "Ready" : "Blocked";
         PrivateCapitalCloseSummaryText =
             $"{cockpit.ReadyLaneCount}/{cockpit.Lanes.Count} close lanes ready; {cockpit.BlockedLaneCount} blocked or missing; {cockpit.EvidencePackages.Count} evidence package(s); {cockpit.WorkflowCount} workflow(s), {cockpit.FundEventCount} fund event(s), {cockpit.CapitalAccountCount} capital account(s), {cockpit.ReportOutputCount} report output(s).";
         PrivateCapitalCloseEvidenceText = FormatEvidenceCount(CountCloseEvidenceLinks(cockpit));
@@ -2609,33 +2600,14 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         UpdateFinancialOperationsQueuePresentation();
     }
 
-    private static WorkstationStateModel BuildPrivateCapitalCloseReadinessState(PrivateCapitalCloseCockpitDto cockpit)
+    private WorkstationStateModel BuildPrivateCapitalCloseReadinessState(PrivateCapitalCloseCockpitDto cockpit)
     {
-        var statusLabel = FormatEvidenceStatusLabel(cockpit.OverallStatus);
-        var isReady = cockpit.IsReadyToClose;
-        var kind = cockpit.OverallStatus switch
-        {
-            EvidenceStatusDto.Ready => WorkstationStateKind.Ready,
-            EvidenceStatusDto.Stale => WorkstationStateKind.Stale,
-            EvidenceStatusDto.Unknown => WorkstationStateKind.Empty,
-            EvidenceStatusDto.Missing => WorkstationStateKind.Blocked,
-            _ => WorkstationStateKind.Blocked
-        };
-        var readinessTone = cockpit.OverallStatus switch
-        {
-            EvidenceStatusDto.Ready => WorkstationReadinessTone.EvidenceLinked,
-            EvidenceStatusDto.ReviewRequired => WorkstationReadinessTone.SignoffRequired,
-            EvidenceStatusDto.Stale => WorkstationReadinessTone.Stale,
-            EvidenceStatusDto.Blocked or EvidenceStatusDto.Missing => WorkstationReadinessTone.Blocked,
-            _ => WorkstationReadinessTone.Neutral
-        };
-        var tone = cockpit.OverallStatus switch
-        {
-            EvidenceStatusDto.Ready => WorkspaceTone.Success,
-            EvidenceStatusDto.ReviewRequired or EvidenceStatusDto.Stale => WorkspaceTone.Warning,
-            EvidenceStatusDto.Blocked or EvidenceStatusDto.Missing => WorkspaceTone.Danger,
-            _ => WorkspaceTone.Neutral
-        };
+        var projection = _financialOperationsCommandCenter?.CloseReadiness;
+        var isReady = projection is { IsComplete: true, IsReadyToClose: true };
+        var statusLabel = isReady ? "Ready" : "Blocked";
+        var kind = isReady ? WorkstationStateKind.Ready : WorkstationStateKind.Blocked;
+        var readinessTone = isReady ? WorkstationReadinessTone.EvidenceLinked : WorkstationReadinessTone.Blocked;
+        var tone = isReady ? WorkspaceTone.Success : WorkspaceTone.Danger;
         var evidenceCount = CountCloseEvidenceLinks(cockpit);
         var actionPosture = new WorkstationActionPostureModel(
             isReady ? "Review close package" : "Resolve close blockers",

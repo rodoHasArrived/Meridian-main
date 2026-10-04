@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Core.Config;
 using Meridian.Core.Diagnostics;
 using Xunit;
 
@@ -28,6 +29,21 @@ public sealed class RuntimeDiagnosticRedactorTests
         var sanitized = RuntimeDiagnosticRedactor.SanitizeEnvValue("ALPACA_SECRET_KEY", "live-secret");
 
         sanitized.Should().Be("[REDACTED]");
+    }
+
+    [Theory]
+    [InlineData("OtlpHeaders")]
+    [InlineData("Tracing.OtlpHeaders")]
+    [InlineData("MERIDIAN_TRACING__OTLPHEADERS")]
+    public void OtlpHeaders_AreSensitiveForConfigurationAndRuntimeDiagnostics(string key)
+    {
+        const string headers = "x-collector-access=private-collector-value";
+
+        SensitiveValueMasker.IsSensitiveProperty(key).Should().BeTrue();
+        SensitiveValueMasker.MaskIfSensitive(key, headers).Should().NotBe(headers).And.Contain("*");
+        RuntimeDiagnosticRedactor.IsSensitiveKey(key).Should().BeTrue();
+        RuntimeDiagnosticRedactor.SanitizeEnvValue(key, headers).Should().Be("[REDACTED]");
+        SensitiveKeyRegistry.IsSensitive("Headers").Should().BeFalse("only OTLP headers carry this sensitivity rule");
     }
 
     [Fact]

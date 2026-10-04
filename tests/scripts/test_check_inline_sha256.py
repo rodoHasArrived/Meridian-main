@@ -45,6 +45,22 @@ class CheckInlineSha256Tests(unittest.TestCase):
             },
         )
 
+    def test_keyed_hmac_hashing_is_not_counted(self) -> None:
+        """HMACSHA256.HashData holds "SHA256.HashData" as a substring, and a plain str.count
+        credited those keyed sites to this unkeyed-digest ratchet — inflating the number and
+        handing the file an allowance a genuine inline call could hide inside."""
+        counts = count(
+            {
+                "src/Meridian.Sample/Keyed.cs": "return HMACSHA256.HashData(secret, payload);",
+                "src/Meridian.Sample/Mixed.cs": (
+                    "var a = HMACSHA256.HashData(secret, payload);\n"
+                    "var b = SHA256.HashData(payload);\n"
+                ),
+            }
+        )
+
+        self.assertEqual(counts, {"src/Meridian.Sample/Mixed.cs": 1})
+
     def test_canonical_home_is_excluded(self) -> None:
         counts = count(
             {

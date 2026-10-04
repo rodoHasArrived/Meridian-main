@@ -2,6 +2,7 @@
 // exactly one module under ./types/; add new declarations there, not here.
 export * from "./types/instrument-accounting";
 export * from "./types/lifecycle";
+export * from "./types/mark-freshness";
 export * from "./types/market-data";
 export * from "./types/canonical-symbol";
 export * from "./types/provider-accounting";
@@ -14,3 +15,4 @@ export * from "./types/workstation-5";
 export * from "./types/workstation-6";
 export * from "./types/workstation-7";
 export * from "./types/workstation-8";
+export * from "./types/workstation-corporate-actions";

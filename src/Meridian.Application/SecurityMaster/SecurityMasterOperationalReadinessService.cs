@@ -886,7 +886,8 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
             AdmissionPolicy: pack.AdmissionPolicy,
             LedgerExtensionPolicy: pack.LedgerExtensionPolicy,
             RegistryValidationStatus: validation.IsValid ? "Valid" : "Invalid",
-            RegistryValidationIssues: validation.Issues);
+            RegistryValidationIssues: validation.Issues,
+            PlannedAssetClasses: pack.PlannedAssetClasses);
     }
 
     private static MultiAssetCoverageSpecification Listed(

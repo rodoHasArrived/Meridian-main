@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { UI_API_ROUTES } from "@/lib/ui-api-routes.generated";
 import {
   AUTH_API_ENDPOINTS,
   ACCOUNTING_SYSTEM_API_ENDPOINTS,
@@ -76,7 +77,23 @@ import {
   reconciliationBreakTransitionEndpoint,
   reconciliationBreakWaiveEndpoint,
   reconciliationRunEndpoint,
+  qualityCompletenessSummaryEndpoint,
+  qualityHealthEndpoint,
+  qualityHighLatencySymbolsEndpoint,
+  qualityLatencyStatisticsEndpoint,
+  qualityLowCompletenessEndpoint,
+  qualityStaleSymbolsEndpoint,
+  qualityTopErrorSymbolsEndpoint,
+  qualityUnacknowledgedAnomaliesEndpoint,
+  qualityUnhealthySymbolsEndpoint,
+  reconciliationBreakQueueTaxonomyEndpoint,
+  reconciliationBreakRebuiltSnapshotEndpoint,
+  reconciliationOpenCasesEndpoint,
+  reconciliationQueueStatusEndpoint,
+  reconciliationStatementRunBreaksEndpoint,
   reconciliationStatementRunEndpoint,
+  reconciliationStatementRunReconcileEndpoint,
+  reconciliationStatementRunValidationEndpoint,
   replayFilesEndpoint,
   replaySessionActionEndpoint,
   securityMasterAssetProfileApproveEndpoint,
@@ -88,6 +105,9 @@ import {
   securityMasterAmendEndpoint,
   securityMasterConflictsEndpoint,
   securityMasterConflictResolveEndpoint,
+  securityMasterCorporateActionCaseConflictEndpoint,
+  securityMasterCorporateActionCaseConflictsEndpoint,
+  securityMasterCorporateActionSourceProposalAcceptEndpoint,
   securityMasterCorporateActionsEndpoint,
   securityMasterEntryEndpoint,
   securityMasterTradingParametersEndpoint,
@@ -178,6 +198,24 @@ import {
 } from "@/lib/workstation-endpoints";
 
 describe("workstation API endpoint catalog", () => {
+  it("builds canonical durable source-proposal acceptance routes", () => {
+    expect(securityMasterCorporateActionSourceProposalAcceptEndpoint("proposal / 1")).toBe(
+      "/api/security-master/corporate-actions/source-proposals/proposal%20%2F%201/accept"
+    );
+  });
+
+  it("builds durable corporate-action conflict recovery routes", () => {
+    expect(securityMasterCorporateActionCaseConflictsEndpoint("case / 1")).toBe(
+      "/api/security-master/corporate-actions/cases/case%20%2F%201/conflicts"
+    );
+    expect(securityMasterCorporateActionCaseConflictsEndpoint("case-1", { state: "Open", take: 25 })).toBe(
+      "/api/security-master/corporate-actions/cases/case-1/conflicts?state=Open&take=25"
+    );
+    expect(securityMasterCorporateActionCaseConflictEndpoint("case-1", "conflict / 2")).toBe(
+      "/api/security-master/corporate-actions/cases/case-1/conflicts/conflict%20%2F%202"
+    );
+  });
+
   it("builds posted-journal ledger reporting routes over the governed book", () => {
     expect(ledgerPeriodsEndpoint()).toBe("/api/ledger/periods");
     expect(ledgerPeriodsEndpoint({ ledgerBookId: "book-1", status: "HardClosed" })).toBe(
@@ -703,6 +741,35 @@ describe("workstation API endpoint catalog", () => {
     expect(reconciliationStatementRunEndpoint("statement / 1")).toBe(
       "/api/workstation/reconciliation/statement-runs/statement%20%2F%201"
     );
+    expect(qualityHealthEndpoint()).toBe("/api/quality/health");
+    expect(qualityUnhealthySymbolsEndpoint()).toBe("/api/quality/health/unhealthy");
+    expect(qualityLatencyStatisticsEndpoint()).toBe("/api/quality/latency/statistics");
+    expect(qualityStaleSymbolsEndpoint()).toBe("/api/quality/anomalies/stale");
+    expect(qualityCompletenessSummaryEndpoint()).toBe("/api/quality/completeness/summary");
+    // Omitted query parameters leave the route bare so the server's own default applies.
+    expect(qualityHighLatencySymbolsEndpoint()).toBe("/api/quality/latency/high");
+    expect(qualityHighLatencySymbolsEndpoint(250)).toBe("/api/quality/latency/high?thresholdMs=250");
+    expect(qualityTopErrorSymbolsEndpoint(5)).toBe("/api/quality/errors/top-symbols?count=5");
+    expect(qualityUnacknowledgedAnomaliesEndpoint(25)).toBe("/api/quality/anomalies/unacknowledged?count=25");
+    expect(qualityLowCompletenessEndpoint()).toBe("/api/quality/completeness/low");
+    expect(qualityLowCompletenessEndpoint({ date: "2026-08-26", threshold: 0.5 }))
+      .toBe("/api/quality/completeness/low?date=2026-08-26&threshold=0.5");
+    expect(reconciliationQueueStatusEndpoint()).toBe("/api/workstation/reconciliation/queue-status");
+    expect(reconciliationBreakRebuiltSnapshotEndpoint("break / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/rebuilt-snapshot"
+    );
+
+    expect(reconciliationOpenCasesEndpoint()).toBe("/api/workstation/reconciliation/cases");
+    expect(reconciliationBreakQueueTaxonomyEndpoint()).toBe("/api/workstation/reconciliation/break-queue/taxonomy");
+    expect(reconciliationStatementRunValidationEndpoint("statement / 1")).toBe(
+      "/api/workstation/reconciliation/statement-runs/statement%20%2F%201/validation"
+    );
+    expect(reconciliationStatementRunBreaksEndpoint("statement / 1")).toBe(
+      "/api/workstation/reconciliation/statement-runs/statement%20%2F%201/breaks"
+    );
+    expect(reconciliationStatementRunReconcileEndpoint("statement / 1")).toBe(
+      "/api/workstation/reconciliation/statement-runs/statement%20%2F%201/reconcile"
+    );
     expect(reconciliationBreakQueueEndpoint({ status: "Open", fundAccountId: "fund / 1" })).toBe(
       "/api/workstation/reconciliation/break-queue?status=Open&fundAccountId=fund+%2F+1"
     );
@@ -837,6 +904,7 @@ describe("execution control route contract parity", () => {
   const CONTRACT_EXECUTION_MANUAL_OVERRIDES = "/api/execution/controls/manual-overrides" as const;
   const CONTRACT_EXECUTION_MANUAL_OVERRIDE_CLEAR_TEMPLATE =
     "/api/execution/controls/manual-overrides/{overrideId}/clear" as const;
+  const CONTRACT_EXECUTION_CIRCUIT_BREAKER = "/api/execution/controls/circuit-breaker" as const;
 
   it("keeps frontend helper constants aligned with backend contracts", () => {
     expect(
@@ -858,5 +926,17 @@ describe("execution control route contract parity", () => {
       executionManualOverrideClearEndpoint("override-1"),
       "frontend helper diverged from backend contract: manual override clear route template"
     ).toBe(CONTRACT_EXECUTION_MANUAL_OVERRIDE_CLEAR_TEMPLATE.replace("{overrideId}", "override-1"));
+
+    expect(
+      EXECUTION_API_ENDPOINTS.circuitBreaker,
+      "frontend helper diverged from backend contract: circuit-breaker route"
+    ).toBe(CONTRACT_EXECUTION_CIRCUIT_BREAKER);
+  });
+
+  it("keeps the kill switch reachable from the browser lane", () => {
+    expect(
+      EXECUTION_API_ENDPOINTS.circuitBreaker,
+      "the browser workstation must be able to open the execution circuit breaker, not only WPF"
+    ).toBe(UI_API_ROUTES.ExecutionControlsCircuitBreaker);
   });
 });

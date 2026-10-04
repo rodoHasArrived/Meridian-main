@@ -14,7 +14,20 @@
     }
   ],
   "comment": null,
-  "comments": [],
+  "comments": [
+    {
+      "comment": "Immutable receipts binding an explicit tenant-backfill run to its reviewed plan hash, operator, review reference, and atomically committed attribution and quarantine counts.",
+      "fingerprint": "45ff16be528f489cf1c9469d8d66ce37f5bfb9689f73baea78ef35914a5ed625",
+      "object": "fund_structure.fund_structure_tenant_backfill_receipt",
+      "object_type": "table"
+    },
+    {
+      "comment": "Fund-structure nodes the W9-GOV-008 tenant attribution declined to attribute: MixedOwnership for a genuinely shared ancestor whose descendants resolve to more than one tenant, Underivable for a node the fund_profile_tenancy registry cannot reach in either direction. Rows here are an operator decision, not a defect - resolving one records the chosen tenant and the reason.",
+      "fingerprint": "213963d36125ba654e9b0281109eb6a80356a5d92f154cabc3ce6f7305603f22",
+      "object": "fund_structure.fund_structure_tenant_quarantine",
+      "object_type": "table"
+    }
+  ],
   "composite_types": [],
   "dependencies": [
     {
@@ -28,15 +41,107 @@
       "target_kind": "table column",
       "target_name": "fund_structure_legacy_import_receipt",
       "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "cf048410639a7193c3d82ba8bed37b250bcb30af41b401b61a4aa8ebc6ab35c2",
+      "kind": "normal",
+      "source": "fund_structure.fund_structure_tenant_backfill_receipt_operator_id_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.fund_structure_tenant_backfill_receipt.operator_id",
+      "target_kind": "table column",
+      "target_name": "fund_structure_tenant_backfill_receipt",
+      "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "6a843065e81390efa133632ecd7849d59ac1569e4364d2e8c44843b374c030df",
+      "kind": "normal",
+      "source": "fund_structure.fund_structure_tenant_backfill_receipt_plan_hash_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.fund_structure_tenant_backfill_receipt.plan_hash",
+      "target_kind": "table column",
+      "target_name": "fund_structure_tenant_backfill_receipt",
+      "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "13fa1e25c69e0e0498a352c670804d8d4c79a55031853a3747fe1f48cd998f0e",
+      "kind": "normal",
+      "source": "fund_structure.fund_structure_tenant_backfill_receipt_quarantined_rows_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.fund_structure_tenant_backfill_receipt.quarantined_rows",
+      "target_kind": "table column",
+      "target_name": "fund_structure_tenant_backfill_receipt",
+      "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "5f30a63ca4b2bd8d98bd0f750c3d98dcb154a282b45811fff4fe9d4631a16a95",
+      "kind": "normal",
+      "source": "fund_structure.fund_structure_tenant_backfill_receipt_review_reference_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.fund_structure_tenant_backfill_receipt.review_reference",
+      "target_kind": "table column",
+      "target_name": "fund_structure_tenant_backfill_receipt",
+      "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "0ce64cb27da07e090b5b4116254a6f7c9eef5713f9ec7d6c635409b3627e539c",
+      "kind": "normal",
+      "source": "fund_structure.fund_structure_tenant_backfill_receipt_stamped_rows_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.fund_structure_tenant_backfill_receipt.stamped_rows",
+      "target_kind": "table column",
+      "target_name": "fund_structure_tenant_backfill_receipt",
+      "target_schema": "fund_structure"
     }
   ],
   "domains": [],
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "83ea628e231975151306afed4ae0b8d80760bcbaf8f1d18a7637664779de2ff0",
+  "fingerprint": "c33e160866af7e3675de9a08b7c3ed6b03cff3452d368ee121a3df21315b96d6",
   "foreign_tables": [],
-  "functions": [],
+  "functions": [
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "8930e49c001ae6594bb80b7d751d6d9d84ab5fc7c694ec4a1025a1c3f94f581b",
+      "fingerprint": "03d592d1bf9dc640987bceed7724230c10cf4fc3db2a226e2e392fe591fb9deb",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "reject_tenant_backfill_receipt_rewrite",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "fund_structure",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "reject_tenant_backfill_receipt_rewrite()",
+      "strict": false,
+      "volatility": "volatile"
+    }
+  ],
   "logical_modules": [
     "fund-structure"
   ],
@@ -316,6 +421,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "5e37bb2d58f02bf69fcf2b96d6fe06658a723f72c5922621e093c02c8c20b645",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 15,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -343,7 +464,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "a2f8550a7e16c1ac39b91361f6ed686e45939fde78f3c45ad3a8ef7f6e274420",
+      "fingerprint": "490cbca3ac32a4135cf585bddcfe48a942e2e43d41c69cf0dab3a51a3d703019",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -367,6 +488,28 @@
           "ready": true,
           "security_labels": [],
           "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_business_tenant ON fund_structure.business USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "6ab76dc7d838e83e5e98ede14c2e287dd795fa1d2a93ffbcb02a9cb499caa347",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_business_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
           "valid": true
         }
       ],
@@ -622,6 +765,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "6ac35a1fe9dcc866eb8254e51ef4b7266da2bbb8173d05fa674214d4cbddb87f",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 13,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -649,7 +808,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "92e017864a37d8ef4d75c5068a0571337957f8e00d0b1855bb14749120e449f1",
+      "fingerprint": "2bc1fb4cec596b5085b0d3d8e851123507277993243b7352f5de27e4ae0e8465",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -673,6 +832,28 @@
           "ready": true,
           "security_labels": [],
           "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_client_tenant ON fund_structure.client USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "1f39704eb71a126be9a7dbb774174c1919ba148dc63d0568de0d6ebdce374a54",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_client_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
           "valid": true
         }
       ],
@@ -976,6 +1157,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "3f3f4f0d0cadce108f557ecccc69406a8dacb84df9f3c3416a7a58ade3b94ccf",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 16,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -1003,7 +1200,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "8b238c3122694d1dea59f9636fb1982d0638968d2b5b6dd6244b73facead4dea",
+      "fingerprint": "674b92a2be528a5304f8f425cc89650615872fb8c846a6b58ddb258f8579ad66",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -1027,6 +1224,28 @@
           "ready": true,
           "security_labels": [],
           "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_fund_tenant ON fund_structure.fund USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "2334c4f87ad48ae7f58a36b8a40476a79f8acee77d7f85770b0eaf24d093380b",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_fund_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
           "valid": true
         }
       ],
@@ -1218,6 +1437,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "3d8ea888209e177123bd4c30a285068a0d64b981cabc9f5fa1af1aca109418ea",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -1245,7 +1480,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "2ff7e953b023a9e141469e6b87d869ab5c70178fa2b3dde390983aa1f8f413c3",
+      "fingerprint": "6e727f25a83206a99c9064eec0a76e09eafeb840e62a6ac5c2ac8912043954da",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -1287,6 +1522,28 @@
           "options": [],
           "owner": "meridian",
           "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_fund_structure_assignment_tenant ON fund_structure.fund_structure_assignment USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "97255d35240667235077288acf1b5270ccafe2162f7ae5a70148f0f2a770b5b3",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_fund_structure_assignment_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
           "primary": false,
           "ready": true,
           "security_labels": [],
@@ -1568,6 +1825,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "bb890f24869d69add953668d78c11e53c55b3e660177a12758b40977ca895205",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -1595,7 +1868,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "ffb68b6664df5beb83095948bc0f1f2212112c3a77c4a40397bb2c895d10ae1b",
+      "fingerprint": "3eddc016baa0f60d2a52749fb031c358bf972c492faeb4d8294b82f812cf828c",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -1619,6 +1892,28 @@
           "ready": true,
           "security_labels": [],
           "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_fund_structure_linked_account_tenant ON fund_structure.fund_structure_linked_account USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "a6d6a16ada6a663782135f568e6b4ce217151b7f96d0996492c53d28560ecc78",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_fund_structure_linked_account_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
           "valid": true
         }
       ],
@@ -1787,6 +2082,649 @@
       "is_partition": false,
       "kind": "table",
       "name": "fund_structure_schema_migrations",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "fund_structure",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "66c824549f2011b4f851fb3d09083d1da6f8ddabf47b3e3ec1b39dd0f28affc4",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "run_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "76d03799caab7cab1ba1357cad824bb91ffbe9f5ae5c12047865a677b612139b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "plan_hash",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "4be263855732d80031022f92cc864823fa94c85d882e01bbb6f53f248eb18d42",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "operator_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "1f9ebb04e3e50e50b983a2cf0cedaaaa64fbfb2f62ae572c5621d56ce114bd13",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "review_reference",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "770f96e912cac49025e2e383f144437f0075e4e537c85a8c33e0a1bb96fe86cb",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "applied_at_utc",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "fd1180b3c9378a155ab197c1a68723124f86532dcce17a8f214cb721d6372430",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "stamped_rows",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "d22f41163ee6190e53cbcd4f9eb16edceb10ddc751bfe2e701d37c9ed35f13ce",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "quarantined_rows",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "9e9a48b89fed5cdb085b9706b699014a379536643ff29fa0c60ac8178c37da05",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "plan",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Immutable receipts binding an explicit tenant-backfill run to its reviewed plan hash, operator, review reference, and atomically committed attribution and quarantine counts.",
+      "constraints": [
+        {
+          "columns": [
+            "operator_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(TRIM(BOTH FROM operator_id)) > 0)",
+          "delete_action": null,
+          "fingerprint": "c869ecd0776a35a49da093c926454831aac8fc4108cf7b54f8d55707713f1761",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_operator_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "plan_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (plan_hash ~ '^[a-f0-9]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "a1bf6e1f7e3b911a2f58fe70f684c60a7a7a1049714d06dbd61d9fafde586687",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_plan_hash_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "quarantined_rows"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (quarantined_rows >= 0)",
+          "delete_action": null,
+          "fingerprint": "ca3f1f97635d82b2be7703d9a1192963aca2f5cf5798140ff10d508727f0581f",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_quarantined_rows_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "review_reference"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(TRIM(BOTH FROM review_reference)) > 0)",
+          "delete_action": null,
+          "fingerprint": "eb84502ace883b09ab062b8de503f8aea9387728755962ad6bc3aeb691d2472f",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_review_reference_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "stamped_rows"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (stamped_rows >= 0)",
+          "delete_action": null,
+          "fingerprint": "39c83917043b976e6c3e7b0ef100123ae9f6d011a61316b706339e331ed9e035",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_stamped_rows_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "run_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (run_id)",
+          "delete_action": null,
+          "fingerprint": "9c9342be378f44f38f360bf1367b648d36cc6ba615f84c353b7dd62c6fc7e8ee",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "e3b7800a38de82d57a6b251f7fdadf2ec1a123be2ef30a2c873471471b9d14fb",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX fund_structure_tenant_backfill_receipt_pkey ON fund_structure.fund_structure_tenant_backfill_receipt USING btree (run_id)",
+          "expression": null,
+          "fingerprint": "e41784435e77fd06e867856be27f575a28e42530228174fadcda961ca87a85a9",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "run_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "fund_structure_tenant_backfill_receipt_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "fund_structure_tenant_backfill_receipt",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "fund_structure",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER tenant_backfill_receipt_immutable BEFORE DELETE OR UPDATE ON fund_structure.fund_structure_tenant_backfill_receipt FOR EACH ROW EXECUTE FUNCTION fund_structure.reject_tenant_backfill_receipt_rewrite()",
+          "definition_hash": "5e31bb81952e884754d3894a36fcbdbe8fef29ee70183a12e8c669a0334d2b22",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "6be12fecda9f01b9aca65221d9e8a9b8914b6f83af0670e3980d3308ce5251fc",
+          "function_schema": "fund_structure",
+          "function_signature": "reject_tenant_backfill_receipt_rewrite()",
+          "level": "row",
+          "name": "tenant_backfill_receipt_immutable",
+          "relation": "fund_structure_tenant_backfill_receipt",
+          "schema": "fund_structure",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER tenant_backfill_receipt_no_truncate BEFORE TRUNCATE ON fund_structure.fund_structure_tenant_backfill_receipt FOR EACH STATEMENT EXECUTE FUNCTION fund_structure.reject_tenant_backfill_receipt_rewrite()",
+          "definition_hash": "8b44b9a6aec4e7c3ec0732e72de05d5f9b11b809c355f39f8eb8aff150211085",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "d8e90953f763c77fa8a87b2f1a65e604ee5da8cf3c613e63bf5e55a29ea35caf",
+          "function_schema": "fund_structure",
+          "function_signature": "reject_tenant_backfill_receipt_rewrite()",
+          "level": "statement",
+          "name": "tenant_backfill_receipt_no_truncate",
+          "relation": "fund_structure_tenant_backfill_receipt",
+          "schema": "fund_structure",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "31a6610508b8c18b39c437f2245fe7d6b874e3ed47d73100906025c06d0503e7",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "node_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "e1c03dec1172c559c9d087373073e277e7a510961ad3dae58ebfc7bcb6b3cb00",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "node_kind",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "850e0da2cbcfea4b2edd7c1dc6100fe0719b33d8c73d0b7ea760b8d00752f6c5",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "reason",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": "'[]'::jsonb",
+          "fingerprint": "18c7e02fa29d3fcef034e27aff3f5c6e6a2ede4d462bf4d3efdfdde99773757b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "candidate_tenant_ids",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "68e6061670ae76ecf64e35b1f16145da46923b048a8dd75504482cc2aa1b1146",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "detected_at_utc",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "ee21099bfb3ddcd6a3a69dab7d9e35a7596aae436422d0d612083bd11bae780c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "resolved_at_utc",
+          "nullable": true,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "ed2bcad081a2b8c935f1e6f7c032500343766bbe66fdb083d29bc6c6071ca95a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "resolved_tenant_id",
+          "nullable": true,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "2ebbcc17e869056eda6062622ebec3f3526d9ae0c181245b32e589361daab4a4",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "resolution_note",
+          "nullable": true,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Fund-structure nodes the W9-GOV-008 tenant attribution declined to attribute: MixedOwnership for a genuinely shared ancestor whose descendants resolve to more than one tenant, Underivable for a node the fund_profile_tenancy registry cannot reach in either direction. Rows here are an operator decision, not a defect - resolving one records the chosen tenant and the reason.",
+      "constraints": [
+        {
+          "columns": [
+            "node_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (node_id)",
+          "delete_action": null,
+          "fingerprint": "4acdfa20455bde2516bcfd20670263f0ef7f830f64e3113abb5bc61460412a11",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_quarantine_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "d4858fe94371e621d5938591dcdb5a82da3c6bbff6a5a0a236c132f0409b4b87",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX fund_structure_tenant_quarantine_pkey ON fund_structure.fund_structure_tenant_quarantine USING btree (node_id)",
+          "expression": null,
+          "fingerprint": "5d5580092dc23c1f0402d1d2b7c5c587499a00fdbb0f800ab8b9c25ba1326a40",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "node_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "fund_structure_tenant_quarantine_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_fund_structure_tenant_quarantine_open ON fund_structure.fund_structure_tenant_quarantine USING btree (reason, detected_at_utc DESC) WHERE (resolved_at_utc IS NULL)",
+          "expression": null,
+          "fingerprint": "9a6364fc4122c79870e708df697ed4cd9728c1452aca3fc2b1a12f1e8e41e299",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "reason",
+            "detected_at_utc"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_fund_structure_tenant_quarantine_open",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "resolved_at_utc IS NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "fund_structure_tenant_quarantine",
       "options": [],
       "owner": "meridian",
       "persistence": "permanent",
@@ -2100,6 +3038,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "ab141221643e62e2ecccbb9dbb99395926e05f1c3caa20ac85117d61245bb4e2",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 17,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -2127,7 +3081,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "62ec2802f61999cce75ab4a3be505d471042237984b5810adc8fa68b85cb0a88",
+      "fingerprint": "07c6aaa85a53f2af168159461e2b5965edeb9198d7987e2a397085d6e10b643d",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -2151,6 +3105,28 @@
           "ready": true,
           "security_labels": [],
           "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_investment_portfolio_tenant ON fund_structure.investment_portfolio USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "fb99ef514cf60644a05bfaab4b5d5fb235eebf01e471fe9dde0153f06610e208",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_investment_portfolio_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
           "valid": true
         }
       ],
@@ -2470,6 +3446,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "ab141221643e62e2ecccbb9dbb99395926e05f1c3caa20ac85117d61245bb4e2",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 17,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -2497,10 +3489,32 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "8daa1a1729bcc36b9385d257a32cfcad7bce88976971a9475b35624becead910",
+      "fingerprint": "2a73d8e882d1058b1a1d3b353c75e5ed421387e677792012924aa4e2d33913c8",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_legal_entity_tenant ON fund_structure.legal_entity USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "d16ba33b4f202ddc5a35221597a020fce9d13d6072c1bb8ca9f37b7aa5699f9e",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_legal_entity_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
         {
           "comment": null,
           "definition": "CREATE UNIQUE INDEX legal_entity_pkey ON fund_structure.legal_entity USING btree (entity_id)",
@@ -2744,6 +3758,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "844b0b31d17ab74811ea261b15285f42feb3ab7de5c6ec1f084cb4637317f911",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -2771,10 +3801,32 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "d940c9b40ec5acece092bd4718a291af38ebb4beb21f990b859fc003a83256f7",
+      "fingerprint": "c09c8a17557fbf139aa3fc70255a312c3130556c30434cd4ce9ef4465263c96e",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_organization_tenant ON fund_structure.organization USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "018a5d3c0aad0705cab7fdbd99cad629bd226da1e6484e3c988a058e949b4b16",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_organization_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
         {
           "comment": null,
           "definition": "CREATE UNIQUE INDEX organization_pkey ON fund_structure.organization USING btree (organization_id)",
@@ -3018,6 +4070,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "844b0b31d17ab74811ea261b15285f42feb3ab7de5c6ec1f084cb4637317f911",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -3045,7 +4113,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "0bde1fc0288ad4490d00acf2d34b195bf5a4bfb6eec1cb25b2a5bbc13ebbab20",
+      "fingerprint": "4837066909fe139f73f5ec3c35624b0d1c8a7961bfe197750fc035dc0c55c8d8",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -3087,6 +4155,28 @@
           "options": [],
           "owner": "meridian",
           "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_ownership_link_tenant ON fund_structure.ownership_link USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "ad7536242d312145248c2211c41ef8e47ec09cd4e6ded490454cca8ad2951f22",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_ownership_link_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
           "primary": false,
           "ready": true,
           "security_labels": [],
@@ -3368,6 +4458,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "6ac35a1fe9dcc866eb8254e51ef4b7266da2bbb8173d05fa674214d4cbddb87f",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 13,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -3395,10 +4501,32 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "4898a004a19d997d341a8945c0c616329aef737a21000f0de8c5b4a5e2a5f175",
+      "fingerprint": "95ae94971b9dc2e31b9aec6beb5ea1dc1c72ab8ff4b71e017e72bbfba3f3224b",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_sleeve_tenant ON fund_structure.sleeve USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "315cc9940eeb31651b11c5242e37b8a4e3b00319af484ff11b383af78d4e7547",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_sleeve_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
         {
           "comment": null,
           "definition": "CREATE UNIQUE INDEX sleeve_pkey ON fund_structure.sleeve USING btree (sleeve_id)",
@@ -3690,6 +4818,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "97ea3991c58e8d9ba9e95210cbb2c7084d8d73757d721b3572f0b804b068b310",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 14,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -3717,10 +4861,32 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "7b3b0d5701a7c7eb5ba564ba805eab56a241a7aee674ed3ecefd08d735180754",
+      "fingerprint": "4b2084f2aa38f10b782e80ebe4c31e3ca1ba9078a278ab3515b0d7913b1fcb30",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_vehicle_tenant ON fund_structure.vehicle USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "ca938b4e3847ee15c175ae207b38a2621a4963c891e0db9ac17ee3e24c74e177",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_vehicle_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
         {
           "comment": null,
           "definition": "CREATE UNIQUE INDEX vehicle_pkey ON fund_structure.vehicle USING btree (vehicle_id)",
@@ -3815,6 +4981,22 @@
       "forced": false,
       "policies": [],
       "relation": "fund_structure_schema_migrations",
+      "schema": "fund_structure"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "b16cdd32cb2b1efeeba23fbe5c9f9d782e81b35f73de5725cf5028c37bb2202a",
+      "forced": false,
+      "policies": [],
+      "relation": "fund_structure_tenant_backfill_receipt",
+      "schema": "fund_structure"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "f4bcb7504269eb497456459ec99db932ad909d55284f97bf2c6dd100af05b413",
+      "forced": false,
+      "policies": [],
+      "relation": "fund_structure_tenant_quarantine",
       "schema": "fund_structure"
     },
     {
@@ -4138,6 +5320,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "5e37bb2d58f02bf69fcf2b96d6fe06658a723f72c5922621e093c02c8c20b645",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 15,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -4165,7 +5363,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "a2f8550a7e16c1ac39b91361f6ed686e45939fde78f3c45ad3a8ef7f6e274420",
+      "fingerprint": "490cbca3ac32a4135cf585bddcfe48a942e2e43d41c69cf0dab3a51a3d703019",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -4189,6 +5387,28 @@
           "ready": true,
           "security_labels": [],
           "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_business_tenant ON fund_structure.business USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "6ab76dc7d838e83e5e98ede14c2e287dd795fa1d2a93ffbcb02a9cb499caa347",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_business_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
           "valid": true
         }
       ],
@@ -4444,6 +5664,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "6ac35a1fe9dcc866eb8254e51ef4b7266da2bbb8173d05fa674214d4cbddb87f",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 13,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -4471,7 +5707,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "92e017864a37d8ef4d75c5068a0571337957f8e00d0b1855bb14749120e449f1",
+      "fingerprint": "2bc1fb4cec596b5085b0d3d8e851123507277993243b7352f5de27e4ae0e8465",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -4495,6 +5731,28 @@
           "ready": true,
           "security_labels": [],
           "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_client_tenant ON fund_structure.client USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "1f39704eb71a126be9a7dbb774174c1919ba148dc63d0568de0d6ebdce374a54",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_client_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
           "valid": true
         }
       ],
@@ -4798,6 +6056,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "3f3f4f0d0cadce108f557ecccc69406a8dacb84df9f3c3416a7a58ade3b94ccf",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 16,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -4825,7 +6099,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "8b238c3122694d1dea59f9636fb1982d0638968d2b5b6dd6244b73facead4dea",
+      "fingerprint": "674b92a2be528a5304f8f425cc89650615872fb8c846a6b58ddb258f8579ad66",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -4849,6 +6123,28 @@
           "ready": true,
           "security_labels": [],
           "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_fund_tenant ON fund_structure.fund USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "2334c4f87ad48ae7f58a36b8a40476a79f8acee77d7f85770b0eaf24d093380b",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_fund_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
           "valid": true
         }
       ],
@@ -5040,6 +6336,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "3d8ea888209e177123bd4c30a285068a0d64b981cabc9f5fa1af1aca109418ea",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -5067,7 +6379,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "2ff7e953b023a9e141469e6b87d869ab5c70178fa2b3dde390983aa1f8f413c3",
+      "fingerprint": "6e727f25a83206a99c9064eec0a76e09eafeb840e62a6ac5c2ac8912043954da",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -5109,6 +6421,28 @@
           "options": [],
           "owner": "meridian",
           "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_fund_structure_assignment_tenant ON fund_structure.fund_structure_assignment USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "97255d35240667235077288acf1b5270ccafe2162f7ae5a70148f0f2a770b5b3",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_fund_structure_assignment_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
           "primary": false,
           "ready": true,
           "security_labels": [],
@@ -5390,6 +6724,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "bb890f24869d69add953668d78c11e53c55b3e660177a12758b40977ca895205",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -5417,7 +6767,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "ffb68b6664df5beb83095948bc0f1f2212112c3a77c4a40397bb2c895d10ae1b",
+      "fingerprint": "3eddc016baa0f60d2a52749fb031c358bf972c492faeb4d8294b82f812cf828c",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -5441,6 +6791,28 @@
           "ready": true,
           "security_labels": [],
           "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_fund_structure_linked_account_tenant ON fund_structure.fund_structure_linked_account USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "a6d6a16ada6a663782135f568e6b4ce217151b7f96d0996492c53d28560ecc78",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_fund_structure_linked_account_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
           "valid": true
         }
       ],
@@ -5609,6 +6981,649 @@
       "is_partition": false,
       "kind": "table",
       "name": "fund_structure_schema_migrations",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "fund_structure",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "66c824549f2011b4f851fb3d09083d1da6f8ddabf47b3e3ec1b39dd0f28affc4",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "run_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "76d03799caab7cab1ba1357cad824bb91ffbe9f5ae5c12047865a677b612139b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "plan_hash",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "4be263855732d80031022f92cc864823fa94c85d882e01bbb6f53f248eb18d42",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "operator_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "1f9ebb04e3e50e50b983a2cf0cedaaaa64fbfb2f62ae572c5621d56ce114bd13",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "review_reference",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "770f96e912cac49025e2e383f144437f0075e4e537c85a8c33e0a1bb96fe86cb",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "applied_at_utc",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "fd1180b3c9378a155ab197c1a68723124f86532dcce17a8f214cb721d6372430",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "stamped_rows",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "d22f41163ee6190e53cbcd4f9eb16edceb10ddc751bfe2e701d37c9ed35f13ce",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "quarantined_rows",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "9e9a48b89fed5cdb085b9706b699014a379536643ff29fa0c60ac8178c37da05",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "plan",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Immutable receipts binding an explicit tenant-backfill run to its reviewed plan hash, operator, review reference, and atomically committed attribution and quarantine counts.",
+      "constraints": [
+        {
+          "columns": [
+            "operator_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(TRIM(BOTH FROM operator_id)) > 0)",
+          "delete_action": null,
+          "fingerprint": "c869ecd0776a35a49da093c926454831aac8fc4108cf7b54f8d55707713f1761",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_operator_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "plan_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (plan_hash ~ '^[a-f0-9]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "a1bf6e1f7e3b911a2f58fe70f684c60a7a7a1049714d06dbd61d9fafde586687",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_plan_hash_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "quarantined_rows"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (quarantined_rows >= 0)",
+          "delete_action": null,
+          "fingerprint": "ca3f1f97635d82b2be7703d9a1192963aca2f5cf5798140ff10d508727f0581f",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_quarantined_rows_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "review_reference"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(TRIM(BOTH FROM review_reference)) > 0)",
+          "delete_action": null,
+          "fingerprint": "eb84502ace883b09ab062b8de503f8aea9387728755962ad6bc3aeb691d2472f",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_review_reference_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "stamped_rows"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (stamped_rows >= 0)",
+          "delete_action": null,
+          "fingerprint": "39c83917043b976e6c3e7b0ef100123ae9f6d011a61316b706339e331ed9e035",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_stamped_rows_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "run_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (run_id)",
+          "delete_action": null,
+          "fingerprint": "9c9342be378f44f38f360bf1367b648d36cc6ba615f84c353b7dd62c6fc7e8ee",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "e3b7800a38de82d57a6b251f7fdadf2ec1a123be2ef30a2c873471471b9d14fb",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX fund_structure_tenant_backfill_receipt_pkey ON fund_structure.fund_structure_tenant_backfill_receipt USING btree (run_id)",
+          "expression": null,
+          "fingerprint": "e41784435e77fd06e867856be27f575a28e42530228174fadcda961ca87a85a9",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "run_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "fund_structure_tenant_backfill_receipt_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "fund_structure_tenant_backfill_receipt",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "fund_structure",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER tenant_backfill_receipt_immutable BEFORE DELETE OR UPDATE ON fund_structure.fund_structure_tenant_backfill_receipt FOR EACH ROW EXECUTE FUNCTION fund_structure.reject_tenant_backfill_receipt_rewrite()",
+          "definition_hash": "5e31bb81952e884754d3894a36fcbdbe8fef29ee70183a12e8c669a0334d2b22",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "6be12fecda9f01b9aca65221d9e8a9b8914b6f83af0670e3980d3308ce5251fc",
+          "function_schema": "fund_structure",
+          "function_signature": "reject_tenant_backfill_receipt_rewrite()",
+          "level": "row",
+          "name": "tenant_backfill_receipt_immutable",
+          "relation": "fund_structure_tenant_backfill_receipt",
+          "schema": "fund_structure",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER tenant_backfill_receipt_no_truncate BEFORE TRUNCATE ON fund_structure.fund_structure_tenant_backfill_receipt FOR EACH STATEMENT EXECUTE FUNCTION fund_structure.reject_tenant_backfill_receipt_rewrite()",
+          "definition_hash": "8b44b9a6aec4e7c3ec0732e72de05d5f9b11b809c355f39f8eb8aff150211085",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "d8e90953f763c77fa8a87b2f1a65e604ee5da8cf3c613e63bf5e55a29ea35caf",
+          "function_schema": "fund_structure",
+          "function_signature": "reject_tenant_backfill_receipt_rewrite()",
+          "level": "statement",
+          "name": "tenant_backfill_receipt_no_truncate",
+          "relation": "fund_structure_tenant_backfill_receipt",
+          "schema": "fund_structure",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "31a6610508b8c18b39c437f2245fe7d6b874e3ed47d73100906025c06d0503e7",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "node_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "e1c03dec1172c559c9d087373073e277e7a510961ad3dae58ebfc7bcb6b3cb00",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "node_kind",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "850e0da2cbcfea4b2edd7c1dc6100fe0719b33d8c73d0b7ea760b8d00752f6c5",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "reason",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": "'[]'::jsonb",
+          "fingerprint": "18c7e02fa29d3fcef034e27aff3f5c6e6a2ede4d462bf4d3efdfdde99773757b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "candidate_tenant_ids",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "68e6061670ae76ecf64e35b1f16145da46923b048a8dd75504482cc2aa1b1146",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "detected_at_utc",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "ee21099bfb3ddcd6a3a69dab7d9e35a7596aae436422d0d612083bd11bae780c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "resolved_at_utc",
+          "nullable": true,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "ed2bcad081a2b8c935f1e6f7c032500343766bbe66fdb083d29bc6c6071ca95a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "resolved_tenant_id",
+          "nullable": true,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "2ebbcc17e869056eda6062622ebec3f3526d9ae0c181245b32e589361daab4a4",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "resolution_note",
+          "nullable": true,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Fund-structure nodes the W9-GOV-008 tenant attribution declined to attribute: MixedOwnership for a genuinely shared ancestor whose descendants resolve to more than one tenant, Underivable for a node the fund_profile_tenancy registry cannot reach in either direction. Rows here are an operator decision, not a defect - resolving one records the chosen tenant and the reason.",
+      "constraints": [
+        {
+          "columns": [
+            "node_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (node_id)",
+          "delete_action": null,
+          "fingerprint": "4acdfa20455bde2516bcfd20670263f0ef7f830f64e3113abb5bc61460412a11",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_quarantine_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "d4858fe94371e621d5938591dcdb5a82da3c6bbff6a5a0a236c132f0409b4b87",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX fund_structure_tenant_quarantine_pkey ON fund_structure.fund_structure_tenant_quarantine USING btree (node_id)",
+          "expression": null,
+          "fingerprint": "5d5580092dc23c1f0402d1d2b7c5c587499a00fdbb0f800ab8b9c25ba1326a40",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "node_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "fund_structure_tenant_quarantine_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_fund_structure_tenant_quarantine_open ON fund_structure.fund_structure_tenant_quarantine USING btree (reason, detected_at_utc DESC) WHERE (resolved_at_utc IS NULL)",
+          "expression": null,
+          "fingerprint": "9a6364fc4122c79870e708df697ed4cd9728c1452aca3fc2b1a12f1e8e41e299",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "reason",
+            "detected_at_utc"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_fund_structure_tenant_quarantine_open",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "resolved_at_utc IS NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "fund_structure_tenant_quarantine",
       "options": [],
       "owner": "meridian",
       "persistence": "permanent",
@@ -5922,6 +7937,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "ab141221643e62e2ecccbb9dbb99395926e05f1c3caa20ac85117d61245bb4e2",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 17,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -5949,7 +7980,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "62ec2802f61999cce75ab4a3be505d471042237984b5810adc8fa68b85cb0a88",
+      "fingerprint": "07c6aaa85a53f2af168159461e2b5965edeb9198d7987e2a397085d6e10b643d",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -5973,6 +8004,28 @@
           "ready": true,
           "security_labels": [],
           "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_investment_portfolio_tenant ON fund_structure.investment_portfolio USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "fb99ef514cf60644a05bfaab4b5d5fb235eebf01e471fe9dde0153f06610e208",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_investment_portfolio_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
           "valid": true
         }
       ],
@@ -6292,6 +8345,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "ab141221643e62e2ecccbb9dbb99395926e05f1c3caa20ac85117d61245bb4e2",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 17,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -6319,10 +8388,32 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "8daa1a1729bcc36b9385d257a32cfcad7bce88976971a9475b35624becead910",
+      "fingerprint": "2a73d8e882d1058b1a1d3b353c75e5ed421387e677792012924aa4e2d33913c8",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_legal_entity_tenant ON fund_structure.legal_entity USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "d16ba33b4f202ddc5a35221597a020fce9d13d6072c1bb8ca9f37b7aa5699f9e",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_legal_entity_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
         {
           "comment": null,
           "definition": "CREATE UNIQUE INDEX legal_entity_pkey ON fund_structure.legal_entity USING btree (entity_id)",
@@ -6566,6 +8657,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "844b0b31d17ab74811ea261b15285f42feb3ab7de5c6ec1f084cb4637317f911",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -6593,10 +8700,32 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "d940c9b40ec5acece092bd4718a291af38ebb4beb21f990b859fc003a83256f7",
+      "fingerprint": "c09c8a17557fbf139aa3fc70255a312c3130556c30434cd4ce9ef4465263c96e",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_organization_tenant ON fund_structure.organization USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "018a5d3c0aad0705cab7fdbd99cad629bd226da1e6484e3c988a058e949b4b16",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_organization_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
         {
           "comment": null,
           "definition": "CREATE UNIQUE INDEX organization_pkey ON fund_structure.organization USING btree (organization_id)",
@@ -6840,6 +8969,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "844b0b31d17ab74811ea261b15285f42feb3ab7de5c6ec1f084cb4637317f911",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -6867,7 +9012,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "0bde1fc0288ad4490d00acf2d34b195bf5a4bfb6eec1cb25b2a5bbc13ebbab20",
+      "fingerprint": "4837066909fe139f73f5ec3c35624b0d1c8a7961bfe197750fc035dc0c55c8d8",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -6909,6 +9054,28 @@
           "options": [],
           "owner": "meridian",
           "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_ownership_link_tenant ON fund_structure.ownership_link USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "ad7536242d312145248c2211c41ef8e47ec09cd4e6ded490454cca8ad2951f22",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_ownership_link_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
           "primary": false,
           "ready": true,
           "security_labels": [],
@@ -7190,6 +9357,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "6ac35a1fe9dcc866eb8254e51ef4b7266da2bbb8173d05fa674214d4cbddb87f",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 13,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -7217,10 +9400,32 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "4898a004a19d997d341a8945c0c616329aef737a21000f0de8c5b4a5e2a5f175",
+      "fingerprint": "95ae94971b9dc2e31b9aec6beb5ea1dc1c72ab8ff4b71e017e72bbfba3f3224b",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_sleeve_tenant ON fund_structure.sleeve USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "315cc9940eeb31651b11c5242e37b8a4e3b00319af484ff11b383af78d4e7547",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_sleeve_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
         {
           "comment": null,
           "definition": "CREATE UNIQUE INDEX sleeve_pkey ON fund_structure.sleeve USING btree (sleeve_id)",
@@ -7512,6 +9717,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "97ea3991c58e8d9ba9e95210cbb2c7084d8d73757d721b3572f0b804b068b310",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 14,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -7539,10 +9760,32 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "7b3b0d5701a7c7eb5ba564ba805eab56a241a7aee674ed3ecefd08d735180754",
+      "fingerprint": "4b2084f2aa38f10b782e80ebe4c31e3ca1ba9078a278ab3515b0d7913b1fcb30",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_vehicle_tenant ON fund_structure.vehicle USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+          "expression": "lower(TRIM(BOTH FROM tenant_id))",
+          "fingerprint": "ca938b4e3847ee15c175ae207b38a2621a4963c891e0db9ac17ee3e24c74e177",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(TRIM(BOTH FROM tenant_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_vehicle_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "tenant_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
         {
           "comment": null,
           "definition": "CREATE UNIQUE INDEX vehicle_pkey ON fund_structure.vehicle USING btree (vehicle_id)",
@@ -7582,6 +9825,42 @@
       "triggers": []
     }
   ],
-  "triggers": [],
+  "triggers": [
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER tenant_backfill_receipt_immutable BEFORE DELETE OR UPDATE ON fund_structure.fund_structure_tenant_backfill_receipt FOR EACH ROW EXECUTE FUNCTION fund_structure.reject_tenant_backfill_receipt_rewrite()",
+      "definition_hash": "5e31bb81952e884754d3894a36fcbdbe8fef29ee70183a12e8c669a0334d2b22",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "6be12fecda9f01b9aca65221d9e8a9b8914b6f83af0670e3980d3308ce5251fc",
+      "function_schema": "fund_structure",
+      "function_signature": "reject_tenant_backfill_receipt_rewrite()",
+      "level": "row",
+      "name": "tenant_backfill_receipt_immutable",
+      "relation": "fund_structure_tenant_backfill_receipt",
+      "schema": "fund_structure",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER tenant_backfill_receipt_no_truncate BEFORE TRUNCATE ON fund_structure.fund_structure_tenant_backfill_receipt FOR EACH STATEMENT EXECUTE FUNCTION fund_structure.reject_tenant_backfill_receipt_rewrite()",
+      "definition_hash": "8b44b9a6aec4e7c3ec0732e72de05d5f9b11b809c355f39f8eb8aff150211085",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "d8e90953f763c77fa8a87b2f1a65e604ee5da8cf3c613e63bf5e55a29ea35caf",
+      "function_schema": "fund_structure",
+      "function_signature": "reject_tenant_backfill_receipt_rewrite()",
+      "level": "statement",
+      "name": "tenant_backfill_receipt_no_truncate",
+      "relation": "fund_structure_tenant_backfill_receipt",
+      "schema": "fund_structure",
+      "timing": "before"
+    }
+  ],
   "views": []
 }

@@ -67,6 +67,31 @@ public static class OperationsWorkflowAuditHashing
             draft.Outcome);
     }
 
+    public static bool TryValidateTimeline(
+        IReadOnlyList<OperationsTimelineEntryDto> timeline,
+        out string blockerCode,
+        out string message) =>
+        TryValidateChain(timeline.Select(static entry => new OperationsWorkflowAuditDto(
+            entry.AuditId,
+            entry.OccurredAtUtc,
+            entry.WorkflowId,
+            entry.FundAccountId,
+            entry.PeriodId,
+            entry.EventType,
+            entry.FromState,
+            entry.ToState,
+            entry.Gate,
+            entry.FromGateStatus,
+            entry.ToGateStatus,
+            entry.Actor,
+            entry.Rationale,
+            entry.CorrelationId,
+            entry.CorrelationKeys,
+            entry.References,
+            entry.PreviousHash,
+            entry.CurrentHash,
+            entry.Outcome)).ToArray(), out blockerCode, out message);
+
     public static bool TryValidateChain(
         IReadOnlyList<OperationsWorkflowAuditDto> timeline,
         out string blockerCode,

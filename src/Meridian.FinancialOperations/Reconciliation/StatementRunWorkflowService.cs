@@ -222,11 +222,26 @@ public sealed class StatementRunWorkflowService(
             var retainedArtifact = await _matchArtifactStore.GetAsync(runId, ct).ConfigureAwait(false);
             if (retainedArtifact is not null)
             {
+                // A retained artifact without match groups was written before groups were retained
+                // (a crash between the artifact write and the Matched checkpoint, replayed after the
+                // schema upgrade). Verify it against the group-free projection of the expected
+                // artifact and adopt it as-is: rewriting it under the retained hash would fabricate
+                // durable evidence the original run never produced.
+                var isLegacyArtifact = retainedArtifact.MatchGroups is null && expectedArtifact.MatchGroups is not null;
+                var comparableArtifact = isLegacyArtifact
+                    ? expectedArtifact with { MatchGroups = null }
+                    : expectedArtifact;
+                // A legacy conflict can also mean the matcher's assignment rules changed between
+                // the write and this replay, not that the retained bytes are corrupt; name that so
+                // an operator investigates the right thing.
                 EnsureSameArtifact(
                     retainedArtifact,
-                    expectedArtifact,
+                    comparableArtifact,
                     StatementRunRecoveryJsonContext.Default.StatementRunMatchArtifact,
-                    $"Statement run '{runId}' retained a conflicting legacy match artifact.");
+                    isLegacyArtifact
+                        ? $"Statement run '{runId}' retained a pre-upgrade match artifact that the current matcher does not reproduce; " +
+                          "the retained artifact may reflect earlier matcher assignment rules rather than corruption, and needs operator review."
+                        : $"Statement run '{runId}' retained a conflicting legacy match artifact.");
                 matchArtifact = retainedArtifact;
             }
             else
@@ -367,9 +382,10 @@ public sealed class StatementRunWorkflowService(
                     imported.Import.ExternalAccountId,
                     imported.Import.StatementPeriodStart,
                     imported.Import.StatementPeriodEnd,
-                    baseCurrency,
-                    imported.Import.AccountingScope?.LedgerBookId,
-                    imported.Import.AccountingScope?.AccountingPeriodId),
+                    baseCurrency)
+                {
+                    AccountingScope = imported.Import.AccountingScope
+                },
                 ct)
             .ConfigureAwait(false);
         var matchResult = StatementRunMatcher.Match(
@@ -388,12 +404,15 @@ public sealed class StatementRunWorkflowService(
             .ToArray();
         var breaks = linkedBreaks.Select(static item => item.Record).ToArray();
         var cases = BuildStatementCases(imported.Import, linkedBreaks, request.ImportedBy);
-        return new StatementRunMatchArtifact(
+        return StatementRunComparisonEvidence.Retain(new StatementRunMatchArtifact(
             imported.Import.ImportId,
             imported.Import.ImportId,
             breaks,
             cases,
-            matchResult.MatchCount);
+            matchResult.MatchCount)
+        {
+            MatchGroups = matchResult.MatchGroups
+        }, imported.Rows, populations, toleranceProfile);
     }
 
     private async Task<StatementRunMatchArtifact> LoadVerifiedMatchArtifactAsync(

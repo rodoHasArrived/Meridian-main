@@ -11,13 +11,62 @@ last_reviewed: 2026-08-04
 
 # src/Meridian.Ui/dashboard
 
+Accounting's draft queue reads retained recurring occurrences through the shared scoped
+`/api/ledger/journal-automation/recurring/occurrences` contract. Rows retain schedule/template
+versions, draft identity, human approval status and source evidence references. Blocked rows
+include period lock ownership and the governed reopen path. Failed reads stay unavailable;
+the browser neither falls back to sample state nor infers approval or claims an occurrence.
+Changing scope discards previous rows and ignores late responses. Focused coverage lives in
+`RecurringJournalQueue.test.tsx` and `recurring-journals.api.test.ts`.
+
+The stable test runner retains eight files per batch, two Vitest workers and process recycling.
+Fresh JSON test evidence is written under `artifacts/test-results/browser/` at repository root.
+Missing results, zero passing discovery or missing selected files fail the run. Counts, skips,
+durations and stable test identity digests support the manual CI concurrency benchmark.
+
+`EvidenceAmount` opens an exact retained evidence subject in the shared sheet primitive. Manual
+journal detail debit/credit cells carry the entry and ledger-book identity; values without a supported
+retained subject are never assigned inferred provenance. Reads disable development fallback and
+show loading, unavailable, empty, stale and mismatched-subject states. Escape and focus restoration
+use the shared sheet behavior. Full evidence links retain the selected ledger book.
+
+Statement import links to the exact retained Operations Continuity workflow, book, and period.
+An unavailable requested workflow fails closed. Close publication continues to require the full
+fund/account/entity/book/period scope and current server readiness; the import handoff alone
+does not supply that complete close authority.
+
+Reconciliation break details expose source observation state (New, Aging, Cleared, Recurring),
+lineage, occurrence and successful-run clearing independently of governed casework status.
+
+The build lockfile resolves Browserslist 4.28.9, removing the high-severity cache-growth and
+custom-stats parsing advisories reported by the September 6 production-certification scan.
+
 First launch is browser-primary. `/setup` renders the first-run concierge while the
 shared first-run API remains the source of truth for starter kits, sample safety labels,
 recommendations, and completed activation outcomes. Sample mode stays offline-capable
 and visibly labelled `SAMPLE · PAPER` throughout the shell. Until activation status is known, the
 normal shell stays closed and a failed status read exposes a retry instead of assuming setup is complete.
 
+After setup the masthead `Getting started n/m` chip opens the activation checklist, which lists
+every outcome the host tracks and routes to the surface that completes the next one. Completion is
+reported by the surface that did the work -- statement import commit, reconciliation break
+resolution, report run, and analysis export each call `recordActivationOutcome` in
+`src/lib/first-run/activation.ts` -- so the count never advances on a page visit alone.
+
+## Shared close and lot convergence
+
+Accounting forwards the entity along with fund/book/account/period when requesting the shared close decision. The close headline requires a complete ready server projection. Legacy metrics remain diagnostic and cannot produce Ready when the shared service is absent. Focused proof: `accounting-screen.close-cockpit.view-model.test.ts`.
+
+Portfolio and Trading positions display the shared mark observation date, age, and assessment. Missing assessments remain review required; recorded amounts do not imply current approved support. The valuation preview shows affected positions before a draft is requested. Both workstations retain the server close decision through blocked-to-ready recovery instead of calculating a separate readiness score.
+
+Accounting and Operations Continuity require the shared decision to match all five selected close dimensions and the current workflow revision. Scope changes invalidate prior decisions and in-flight responses. Hard-lock requests forward that explicit scope to server-side close validation; a previously ready response cannot authorize a newly selected subject.
+
+Operations Continuity submits checklist controls from the shared workflow's explicit acknowledgment actor and time, including the first submission before any close package exists. Missing controls block submission. Rejected or reopened workflows can submit a newly reviewed cycle without reusing old package approvals. Approval decisions carry retained submission evidence; an assigned reviewer is not counted as having approved until the server records the actual decision. Close publication uses the current submission and decision history together with current prerequisite acknowledgments.
+Focused proof: `operations-continuity-screen.view-model.test.ts` and `operations-continuity-screen.test.tsx`.
+
 ## Purpose
+
+Accounting balances and materiality labels format amounts using the supplied currency code, including signed values. Currency codes appear once even when the formatter emits the code as its symbol, and negative zero renders as zero.
 
 Browser workstation dashboard is the active browser operator workstation.
 
@@ -42,6 +91,7 @@ instead of introducing one-off screen styling.
 - `src/app-shell.status-panel.ts` - app-shell bootstrap, degraded workspace, and recovery status view models.
 - `src/app-shell.trust-strip.ts` - app-shell build, mode, source, and provider posture view models.
 - `src/app-shell.workflow-continuity-types.ts` - shell workflow-continuity view model contract.
+- `src/screens/operations-continuity-screen.date-format.ts` - retained UTC timestamp and due-date formatting used by the Operations Continuity view model.
 - `src/components/ui/` - shared Meridian Design System primitives, including buttons, inputs, selects, badges, tooltips, dialogs/modals, sheets, checkbox/toggle, breadcrumb, form rows/grids, tabs, status banners, context menus, multi-select, toast, and panel surfaces.
 - `src/design-system/assets.ts` - dashboard bridge for the checked-in `Meridian Design System/` package, centralizing brand and workspace icon imports before app-shell or navigation components consume them.
 - `src/assets/` - browser-bundled brand and icon copies from the `Meridian Design System/assets/` source package, including the app icon and PNG tile.
@@ -52,7 +102,7 @@ instead of introducing one-off screen styling.
 
 Legacy `/overview/*` links remain compatibility redirects in the app shell. The retired overview
 screen, Today panel, and unrouted Settings admin operations console are recorded as comment-only
-tombstones under `archive/code/src/Meridian.Ui/dashboard/src/screens/`.
+tombstones under `archive/code/src/Meridian.Ui/dashboard/src/screens/` until the 2026-09-11 archive cleanup (`982eea2d`) removed `archive/code/`; [the last copies](https://github.com/rodoHasArrived/Meridian-main/tree/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/code/src/Meridian.Ui/dashboard/src/screens) remain in history.
 
 
 ## Dense row detail accessibility contract
@@ -113,6 +163,19 @@ browser renders retained documents with classification, source hash, typed chann
 tenant/scope, extraction status, reviewer state, linked operational objects, open support-request
 count, support-only authority posture, and manifest links, while keeping intake and readiness policy
 in shared contracts/endpoints.
+When the statement-run service returns nothing, the reconciliation desk derives run rows from the
+reconciliation queue. The queue carries break and case counts but no match totals, so derived rows
+report match counts as not reported (`—`, with the reason on the row) rather than printing the
+placeholder zeros, and the Positions, Cash, and Transactions detail tabs drop their badge and say
+the totals were not reported instead of crediting the reconciliation service for them. A
+service-reported run that genuinely matched nothing still reads `0`: zero and unknown are different
+facts in a reconciliation.
+Statement import previews an uploaded file against the fund account and reporting period from the
+Commit import form, so the panel cannot parse anything until those fields are complete. That
+dependency is stated on the panel: selecting a file with the form still blank names the outstanding
+fields instead of silently doing nothing, and the commit control reports the same fields rather than
+asking for a preview it is holding back. Picking a connector fills Source institution from that
+connector's display name when the field is still blank; fund account and period are never guessed.
 Statement import accepts either a bounded file upload or a remote fetch through a fetch-capable
 provider connection. The scheduled-fetch tab previews remote activity with the same canonical
 column-confidence and per-kind breakdown as file import, then lets operators create, edit, pause,
@@ -522,6 +585,13 @@ export manifest from the close cockpit; the browser displays artifact id, format
 generation time, content hash, route, evidence count, certification state, and disabled external
 posting posture while Financial Operations remains responsible for artifact generation and
 certification mutation.
+An empty holdings table on the Portfolio desk offers the step that actually fills it rather than
+only stating that it is empty: a loaded workspace with no holdings routes to statement import, and
+an empty paper session routes to the trading desk. The offered step follows the same branch as the
+sentence printed beside it, so the two can never disagree, and a workspace that failed to load gets
+no button — that is a load failure, not an empty desk, and routing elsewhere would hide it. The
+multi-asset coverage presenters live in `portfolio-screen.multi-asset-coverage.ts`; the row and
+group types stay owned by the view model and are imported type-only.
 `FinancialRecordExplorerShell` is the browser presentation for the shared Financial Record Explorer
 DTO. Accounting loads the `ledger` and Accounting-hosted `security-instrument` explorers from
 `/api/workstation/financial-record-explorers/{explorerId}`, Portfolio loads `portfolio`, Reporting

@@ -1,6 +1,6 @@
 # Meridian Threat Model (Current State)
 
-**Last Updated:** 2026-05-21
+**Last Updated:** 2026-09-25
 
 ## 1. Overview
 
@@ -28,7 +28,7 @@ The primary network surface remains the local API host (`src/Meridian/UiServer.c
 
 **Current security assumptions**
 - Authentication defaults to required outside Development/Test (`AuthenticationModeResolver`), optional in Development/Test unless overridden by `MDC_AUTH_MODE`.
-- Session auth uses in-memory random tokens, fixed-time credential comparison, HttpOnly + SameSite=Strict cookies, and fail-closed behavior when auth is required but not configured.
+- Session auth uses random bearer tokens with only their hashes retained in the host's durable store, hashed credential verification, HttpOnly + SameSite=Strict cookies, and fail-closed behavior when auth is required but not configured. One strict auth-mode resolver governs both host startup and session composition.
 - RBAC is now actively enforced in many sensitive API paths via `EndpointAuthorization` + `UserPermission` checks (including execution, credential, security-master, and lifecycle/admin-sensitive routes), but coverage is not uniform across all endpoint groups.
 - MCP server trust boundary is still local stdio: the MCP client is treated as operator-equivalent.
 
@@ -38,9 +38,10 @@ The primary network surface remains the local API host (`src/Meridian/UiServer.c
 - `LoginSessionMiddleware`, `AuthEndpoints`, `LoginSessionService`, and `UserProfileRegistry` implement session auth and role/permission context propagation.
 - `UserPermission` + `RolePermissions` are now operational (not purely descriptive), and many write/admin endpoints use permission gates.
 - Residual concerns:
-  - Session cookies still do not set `Secure` (open remediation item; treat TLS + secure-cookie enablement as required for non-local deployments).
+  - Session cookies set `Secure` except for proven loopback HTTP. Non-local required-auth production bindings require HTTPS or an explicitly configured TLS-terminating reverse proxy.
   - Operator credentials now require password hashes in `MDC_USERS` / `MDC_PASSWORD_HASH`, and governed user-account administration writes hashes plus audit evidence under the storage root; legacy plaintext password env bootstrap is no longer accepted.
-  - Sessions are in-memory and reset on process restart.
+  - Sessions and bounded username/client login-failure windows survive restart. Cooperating instances sharing one session store serialize reads and writes under a cross-process file lease and observe logout/revocation without cached-authority fallback. The fifth failed attempt returns `429` with `Retry-After` and rate-limit headers; timed lockout expires after 15 minutes. Corrupt/unreadable state refuses access. Separate data roots do not form a shared session authority; ADR-019 still limits the supported production envelope to one local node.
+  - A selected role profile that is missing or invalid refuses identity resolution instead of restoring the broader base role. Review actor and permission resolution continues through the authenticated request context.
   - Some endpoint groups still lack explicit permission checks (for example parts of the configuration routes), so authenticated overreach remains plausible where gates are absent. (Direct-lending routes are now permission-gated — group-level `RequireAnyPermission(View/ManageDirectLending)` plus `RequirePermission(ManageDirectLending)` on mutations — and additionally carry the SEC-005 fund-scoped write-tenant gate.)
 
 ### Tenant isolation (fund-scoped data) — SEC-005
@@ -48,9 +49,9 @@ The primary network surface remains the local API host (`src/Meridian/UiServer.c
   - Ledger stores (`ledger_books`, `accounting_periods`, journal entries) carry `tenant_id` (registry-backfilled + write-stamped) and filter reads by it, including the alternate-identifier paths (`ledgerBookId`/`periodId`/`fundStructureNodeId`).
   - The operations-continuity workflow store carries `tenant_id` (resolved through its ledger book to the authoritative `fund_profile_tenancy` registry, caller-tenant fallback for book-less workflows) and filters `ListAsync`/`GetAsync`.
   - The fund-account store (`account_definition`, a separate database with no in-DB registry linkage) carries `tenant_id` stamped trust-on-first-use from the writing operator and filters `GetAccount`/`QueryAccounts`.
-  - Reads are **fail-open**: a null (unbound/legacy) `tenant_id` or a tenantless caller passes, so single-company-per-deployment behavior is unchanged. `TenantReadPredicate` (`Meridian.Contracts.Tenancy`) centralizes the decision and is unit-tested.
-- **Write side (4c-iii):** fund-scoped write/evaluate routes across `LedgerEndpoints`, `AccountingSystemEndpoints`, and `DirectLendingEndpoints` carry `RequireFundScopedWriteTenant()`. Enforcement is **off by default** (detection-first: a tenantless write is logged, not blocked) and is enabled per shared-multi-tenant deployment via `MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED=true`; the Security Master governed-write group is already unconditionally tenant-scoped.
-- **Residual (deployment-gated):** enabling enforcement requires that every authenticated session carries a tenant (the legacy tenantless `MDC_USERNAME` admin must be given a `CompanyId` before enabling, or it will be refused fund-scoped writes). Fund-account sub-tables (balances, statements, reconciliation, sync, margin) and the fund-structure store are reached by `account_id`/node id and are not yet tenant-partitioned — further defense-in-depth, tracked in `docs/security/security-remediation-backlog.md` (SEC-005 slice 4c). Single-company deployments remain safe with enforcement off.
+  - `MERIDIAN_TENANT_SCOPE_ENFORCEMENT=fail-closed` rejects tenantless callers and hides unattributed/foreign rows. `TenantReadPredicate` centralizes the storage decision. The legacy deployment-boundary migration posture permits unattributed reads only within an isolated single-company deployment; multiple configured companies refuse startup and subsequent identity resolution under that posture.
+- **Write side (4c-iii):** fund-scoped write/evaluate routes across `LedgerEndpoints`, `AccountingSystemEndpoints`, and `DirectLendingEndpoints` carry `RequireFundScopedWriteTenant()`. Strict tenant reads now automatically enable this write gate, so a separate absent/false write setting cannot leave tenantless writes enabled. `MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED=true` may additionally tighten the single-company migration posture.
+- **Deployment requirements:** every strict-mode operator needs a `CompanyId`; retained data must be attributed before switching from the migration posture. The unpartitioned fund-structure implementation refuses multiple companies even with strict mode selected. These controls and focused cross-tenant tests do not certify shared multi-tenant production hosting; the supported envelope remains ADR-019's isolated local workstation.
 
 ### Rate limiting and request abuse
 - Mutation routes commonly attach `RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)`.
@@ -82,6 +83,16 @@ The primary network surface remains the local API host (`src/Meridian/UiServer.c
 
 ### External data, SSRF, and integration boundaries
 - Most adapters use fixed vendor endpoints and resilient HTTP clients, reducing generic SSRF exposure.
+- The provider-integration REST transport requires an approved HTTPS origin and revalidates DNS
+  at each redirect. Its production client also resolves and checks addresses inside
+  `SocketsHttpHandler.ConnectCallback`, then connects to those numeric addresses without another
+  DNS lookup. TLS retains normal host/certificate validation. Automatic redirects and implicit
+  system proxies are disabled; configured provider origins must be directly reachable.
+  Private IPv6 unique-local addresses are rejected alongside private IPv4, loopback, and
+  link-local addresses. The response limit applies while streaming even without Content-Length.
+  Focused rebinding, redirect, private-address, and unknown-length-body tests are in
+  `ProviderIntegrationHttpClientTransportTests`; this does not certify every vendor adapter or
+  statement parser, and hosted validation remains required.
 - Operator-configured external hosts/ports (e.g., IB/SFTP/other integration settings) still require strict governance because misconfiguration can become internal network reachability.
 
 ### Database and business-state integrity

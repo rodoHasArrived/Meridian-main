@@ -126,4 +126,81 @@ public sealed class CapitalCallScheduleDraftBuilderTests
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("*not executable*");
     }
+
+    [Fact]
+    public void ThrowsWhenSuppliedPlanLinesDoNotTieToTheApprovedRequest()
+    {
+        var approved = FreshRollForward(Commitment("cmt-approved", "lp-approved", 1_000_000m));
+        var unauthorized = Commitment("cmt-unauthorized", "lp-unauthorized", 5_000_000m);
+        var request = CallRequest(1_000_000m, approved);
+        var forgedPlan = new CapitalCallPlan(
+            request,
+            [new CapitalCallPlanLine("call-1:cmt-unauthorized", unauthorized, 5_000_000m, 1m, 5_000_000m, 0m)],
+            AllocatedAmount: 1_000_000m,
+            ValidationIssues: []);
+
+        var act = () => CapitalCallScheduleDraftBuilder.BuildIssuanceDrafts(forgedPlan, OccurredAt);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*not executable*");
+    }
+
+    [Fact]
+    public void ThrowsWhenSuppliedPlanLineExceedsItsUncalledCapacity()
+    {
+        var commitment = Commitment("cmt-1", "lp-1", 1_000_000m);
+        var request = CallRequest(1_000_001m, FreshRollForward(commitment));
+        var plan = new CapitalCallPlan(
+            request,
+            [new CapitalCallPlanLine("call-1:cmt-1", commitment, 1_000_001m, 1m, 1_000_000m, -1m)],
+            AllocatedAmount: 1_000_001m,
+            ValidationIssues: []);
+
+        var act = () => CapitalCallScheduleDraftBuilder.BuildIssuanceDrafts(plan, OccurredAt);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*invalid plan line*");
+    }
+
+    [Fact]
+    public void ThrowsWhenSuppliedPlanDuplicatesACommitment()
+    {
+        var first = Commitment("cmt-1", "lp-1", 1_000_000m);
+        var second = Commitment("cmt-2", "lp-2", 1_000_000m);
+        var request = CallRequest(2_000_000m, FreshRollForward(first), FreshRollForward(second));
+        var plan = new CapitalCallPlan(
+            request,
+            [
+                new CapitalCallPlanLine("call-1:cmt-1:1", first, 1_000_000m, 0.5m, 1_000_000m, 0m),
+                new CapitalCallPlanLine("call-1:cmt-1:2", first, 1_000_000m, 0.5m, 1_000_000m, 0m),
+            ],
+            AllocatedAmount: 2_000_000m,
+            ValidationIssues: []);
+
+        var act = () => CapitalCallScheduleDraftBuilder.BuildIssuanceDrafts(plan, OccurredAt);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*invalid plan line*");
+    }
+
+    [Fact]
+    public void ThrowsWhenSuppliedPlanDuplicatesAnInstallment()
+    {
+        var first = Commitment("cmt-1", "lp-1", 1_000_000m);
+        var second = Commitment("cmt-2", "lp-2", 1_000_000m);
+        var request = CallRequest(2_000_000m, FreshRollForward(first), FreshRollForward(second));
+        var plan = new CapitalCallPlan(
+            request,
+            [
+                new CapitalCallPlanLine("call-1:duplicate", first, 1_000_000m, 0.5m, 1_000_000m, 0m),
+                new CapitalCallPlanLine("call-1:duplicate", second, 1_000_000m, 0.5m, 1_000_000m, 0m),
+            ],
+            AllocatedAmount: 2_000_000m,
+            ValidationIssues: []);
+
+        var act = () => CapitalCallScheduleDraftBuilder.BuildIssuanceDrafts(plan, OccurredAt);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*invalid plan line*");
+    }
 }

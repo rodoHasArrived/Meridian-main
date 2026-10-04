@@ -8,8 +8,14 @@ import { AmountCell } from "./AmountCell";
 import { toNumber } from "./money";
 
 export interface AccountNode {
-  /** Account code/number (mono prefix). Also the expand/select key — must be unique. */
+  /** Account code/number. The expand/select key — must be unique. */
   code: string;
+  /**
+   * What to render as the mono prefix, when the unique key is not itself readable as an account
+   * code. A ledger returns one row per account per dimension set, so the same GL account arrives
+   * more than once and the account number alone cannot be the key.
+   */
+  codeLabel?: string;
   name: string;
   /** Explicit balance. Omit on a parent to roll up its children. */
   balance?: number | string;
@@ -37,28 +43,28 @@ function inject(): void {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.act{border:1px solid var(--border,#CBD3DC);border-radius:var(--radius-chip,2px);
-  overflow:hidden;background:var(--bg-light,#FFFFFF);}
+.act{border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-chip,2px);
+  overflow:hidden;background:var(--bg-light,#FBFAF8);}
 .act__head{display:grid;grid-template-columns:1fr auto;gap:12px;padding:8px 12px;
-  background:var(--bg-medium,#EBEFF4);border-bottom:1px solid var(--border,#CBD3DC);
+  background:var(--bg-medium,#EDEAE4);border-bottom:1px solid var(--border,#E4E3DE);
   font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#59636F);}
+  letter-spacing:.03em;color:var(--text-muted,#5E666F);}
 .act__head .act--r{text-align:right;}
 .act__row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;
-  padding:6px 12px;border-top:1px solid var(--border,#CBD3DC);}
-.act__row:hover{background:var(--bg-hover,#F3F6F9);}
+  padding:6px 12px;border-top:1px solid var(--border,#E4E3DE);}
+.act__row:hover{background:var(--bg-hover,#F0EEE9);}
 .act__row--sel{cursor:pointer;}
-.act__row--on{background:var(--bg-active,#E6EEF5);box-shadow:inset 3px 0 0 var(--accent,#2F6F8F);}
+.act__row--on{background:var(--bg-active,#F2E3DB);box-shadow:inset 3px 0 0 var(--accent,#A85436);}
 .act__name{display:flex;align-items:center;gap:8px;min-width:0;
-  font-family:var(--font-body,inherit);font-size:12px;color:var(--text-primary,#22272E);}
+  font-family:var(--font-body,inherit);font-size:12px;color:var(--text-primary,#22252A);}
 .act__name--group{font-weight:600;}
 .act__tw{width:14px;height:14px;flex:0 0 auto;display:inline-flex;align-items:center;
-  justify-content:center;font-size:9px;color:var(--text-muted,#59636F);
+  justify-content:center;font-size:9px;color:var(--text-muted,#5E666F);
   cursor:pointer;border-radius:var(--radius-chip,2px);user-select:none;}
-.act__tw:focus-visible,.act__row:focus-visible{outline:2px solid var(--accent,#2F6F8F);outline-offset:1px;}
-.act__tw:hover{background:var(--bg-active,#E6EEF5);color:var(--text-secondary,#4D5967);}
+.act__tw:focus-visible,.act__row:focus-visible{outline:2px solid var(--accent,#A85436);outline-offset:1px;}
+.act__tw:hover{background:var(--bg-active,#F2E3DB);color:var(--text-secondary,#4E5258);}
 .act__tw--leaf{cursor:default;opacity:0;}
-.act__code{font-family:var(--font-data,monospace);font-size:11px;color:var(--text-muted,#59636F);
+.act__code{font-family:var(--font-data,monospace);font-size:11px;color:var(--text-muted,#5E666F);
   flex:0 0 auto;}
 .act__label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 `;
@@ -170,7 +176,7 @@ export function AccountTree({
                 •
               </span>
             )}
-            {node.code && <span className="act__code">{node.code}</span>}
+            {(node.codeLabel ?? node.code) && <span className="act__code">{node.codeLabel ?? node.code}</span>}
             <span className="act__label">{node.name}</span>
           </div>
           <AmountCell
@@ -178,7 +184,7 @@ export function AccountTree({
             currency={currency}
             parens
             strong={isGroup}
-            style={isGroup ? undefined : { color: "var(--text-secondary, #4D5967)" }}
+            style={isGroup ? undefined : { color: "var(--text-secondary, #4E5258)" }}
           />
         </div>
       );

@@ -243,6 +243,28 @@ public sealed record ReconciliationBreakRecord(
 }
 
 /// <summary>
+/// One matched group retained on a statement run's immutable match artifact: the statement-side and
+/// internal-side evidence members that reconciled together, with the rule, tier, and variance that
+/// formed the group. Pair matches carry one member per side; split matches carry several on one
+/// side. Membership is part of the run's durable identity — two runs that match the same number of
+/// rows through different pair or split assignments must retain different artifacts, or the
+/// matcher's determinism and idempotency cannot be evidenced from retained state.
+/// </summary>
+public sealed record StatementRunMatchGroupRecord(
+    string MatchGroupId,
+    string Kind,
+    string MatchTier,
+    IReadOnlyList<string> RuleIds,
+    IReadOnlyList<string> StatementEvidenceReferences,
+    IReadOnlyList<string> InternalEvidenceReferences,
+    decimal Confidence)
+{
+    public decimal? QuantityVariance { get; init; }
+    public decimal? MarketValueVariance { get; init; }
+    public decimal? AmountVariance { get; init; }
+}
+
+/// <summary>
 /// Machine-readable break classifications carried on <see cref="ReconciliationBreakRecord.Classification"/>.
 /// </summary>
 public static class ReconciliationBreakClassifications

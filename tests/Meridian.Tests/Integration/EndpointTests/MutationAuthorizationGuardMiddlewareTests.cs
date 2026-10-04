@@ -209,6 +209,29 @@ public sealed class MutationAuthorizationGuardMiddlewareTests
     }
 
     [Fact]
+    public async Task RequireAllPermissions_PartialCaller_IsForbiddenBeforeBinding()
+    {
+        await using var app = await CreateHostAsync(host =>
+            host.MapPost("/require-all-helper", (List<int> body) => Results.Ok(body.Count))
+                .RequireAllPermissions(
+                    UserPermission.ModifySecurityMaster,
+                    UserPermission.ResolveCorporateActionTerms));
+        using var client = app.GetTestClient();
+
+        // Holding only the last listed permission catches a regression where the pre-binding guard
+        // reads only the final metadata item from separately chained permission declarations.
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/require-all-helper")
+        {
+            Content = JsonBody("{}")
+        };
+        request.Headers.Add(PermissionsHeader, nameof(UserPermission.ResolveCorporateActionTerms));
+
+        using var response = await client.SendAsync(request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task EmptyPermissionDeclaration_IsDeferredToItsOwnSessionFilter()
     {
         await using var app = await CreateHostAsync(host =>

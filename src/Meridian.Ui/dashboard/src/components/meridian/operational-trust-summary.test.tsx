@@ -75,6 +75,31 @@ describe("OperationalTrustSummary", () => {
     expect(within(freshnessCard).getByRole("button", { name: "Refresh evidence" })).toBeInTheDocument();
   });
 
+  it("gives a long status value its own line rather than breaking a word mid-character", () => {
+    // Five tiles is the blocked case: the extra tile narrows each one to about 12rem, and the
+    // status pill does not shrink. Without a flex basis the value is squeezed into ~100px and
+    // "unavailable" splits mid-word, which is what the daily control tower rendered.
+    render(
+      <OperationalTrustSummary
+        source={{ label: "Connectivity", value: "1 warning", tone: "review" }}
+        scope={{ value: "No operating scope selected", tone: "review" }}
+        freshness={{ value: "Timestamp unavailable", tone: "review" }}
+        completeness={{ value: "6 ranked items", tone: "ready" }}
+        blocker={{ value: "Cash variance over tolerance.", tone: "blocked" }}
+      />
+    );
+
+    const value = screen.getByText("Timestamp unavailable");
+    // Wraps to its own full-width line when the space beside the pill is too tight for it.
+    expect(value).toHaveClass("basis-28");
+    expect(value).toHaveClass("grow");
+    expect(value.parentElement).toHaveClass("flex-wrap");
+
+    // The pill must stay unshrunk -- it is the text status that carries meaning without colour.
+    const pill = screen.getByText("Blocked");
+    expect(pill).toHaveClass("shrink-0");
+  });
+
   it("wraps long trust facts instead of truncating financially material labels", () => {
     render(
       <OperationalTrustSummary

@@ -31,12 +31,31 @@ vi.mock("@/lib/api", async () => {
         recentViolations: ["Observed 50 orders in the last minute."]
       }
     ]),
-    getRiskRuleConfig: vi.fn().mockResolvedValue({
-      ruleName: "DrawdownCircuitBreaker",
-      defaultMaxPositionSize: null,
-      symbolPositionLimits: null,
-      maxDrawdownPercent: 5,
-      maxOrdersPerMinute: null
+    getRiskRuleConfig: vi.fn().mockImplementation((ruleName: string) => {
+      if (ruleName === "FatFinger") {
+        return Promise.resolve({
+          ruleName: "FatFinger",
+          maxOrderQuantity: 1000,
+          maxPriceDeviationPercent: 5,
+          maxDrawdownPercent: null,
+          maxOrdersPerMinute: null
+        });
+      }
+      if (ruleName === "PriceCollar") {
+        return Promise.resolve({
+          ruleName: "PriceCollar",
+          priceCollarPercent: 3,
+          maxDrawdownPercent: null,
+          maxOrdersPerMinute: null
+        });
+      }
+      return Promise.resolve({
+        ruleName: "DrawdownCircuitBreaker",
+        defaultMaxPositionSize: null,
+        symbolPositionLimits: null,
+        maxDrawdownPercent: 5,
+        maxOrdersPerMinute: null
+      });
     }),
     updateRiskRuleConfig: vi.fn().mockResolvedValue({
       ruleName: "DrawdownCircuitBreaker",
@@ -61,6 +80,12 @@ describe("RiskControlPanel", () => {
     expect(screen.getByRole("region", { name: "Trading risk controls" })).toHaveAttribute("aria-busy", "false");
     expect(screen.getByText("OrderRateThrottle")).toBeInTheDocument();
     expect(screen.getByText(/Rule violation timeline/i)).toBeInTheDocument();
+
+    expect(screen.getByText("Fat-finger limits")).toBeInTheDocument();
+    expect(screen.getByLabelText("Maximum order quantity")).toBeInTheDocument();
+    expect(screen.getByLabelText("Maximum price deviation percent")).toBeInTheDocument();
+    expect(screen.getByText("Price collar")).toBeInTheDocument();
+    expect(screen.getByLabelText("Price collar percent")).toBeInTheDocument();
 
     const input = screen.getByLabelText("Drawdown threshold percent");
     expect(input).toHaveAttribute("aria-describedby", "risk-drawdown-threshold-help risk-control-status");

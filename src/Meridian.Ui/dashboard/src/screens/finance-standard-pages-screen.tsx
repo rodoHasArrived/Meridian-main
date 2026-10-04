@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { formatCurrency } from "@/lib/format";
+import { formatCurrencyForCode } from "@/screens/accounting-screen.formatting";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +12,7 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
-import { getOperationsCloseCalendar, getRunLedgerJournal, getRunTrialBalance } from "@/lib/api";
+import { getOperationsCloseCalendar, getRunTrialBalance } from "@/lib/api";
 import {
   normalizeReportingWorkspace,
   type ReportingWorkspacePayload
@@ -21,6 +22,8 @@ import { financeBreakLabel } from "@/screens/accounting-screen.reconciliation.vi
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { ReportRunGovernanceScreen } from "@/screens/report-run-governance-screen";
 import { TrialBalanceScreen } from "@/screens/trial-balance-screen";
+import { useAccountingPostedLedgerViewModel } from "@/screens/accounting-screen.posted-ledger.view-model";
+import { usePostedLedgerRouteScope } from "@/screens/posted-ledger-route-scope";
 import {
   buildTemplateRows,
   hasRetainedReportingAsOfDate,
@@ -30,7 +33,6 @@ import {
 } from "@/screens/reporting-screen.view-model";
 import type {
   AccountingWorkspaceResponse,
-  LedgerJournalLine,
   LedgerTrialBalanceLine,
   OperationsCloseCalendar,
   OperationsCloseCalendarItem
@@ -381,10 +383,10 @@ export function AccountDetailScreen({ data }: FinanceStandardScreenProps) {
       </Card>
       <div className="flex flex-wrap gap-2">
         <Button asChild size="sm" variant="outline">
-          <Link to={workstationRouteWithQuery("accountingLedger", { view: "trial-balance", runId: requestedRunId || null })}>Back to Trial Balance</Link>
+          <Link to={workstationRouteWithQuery("strategyRunLedger", { runId: requestedRunId || null })}>Back to Run Ledger</Link>
         </Button>
         <Button asChild size="sm" variant="outline">
-          <Link to={workstationRouteWithQuery("accountingLedger", { runId: requestedRunId || null })}>Open ledger activity</Link>
+          <Link to={workstationRouteWithQuery("strategyRunLedger", { runId: requestedRunId || null })}>Open run ledger activity</Link>
         </Button>
         {account?.sourceJournalEntryId ? (
           <Button asChild size="sm" variant="outline">
@@ -406,47 +408,80 @@ const LEDGER_EXPLORER_TABS = [
   { id: "trial-balance", label: "Trial balance" }
 ];
 
-export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
+/**
+ * Accounting's canonical ledger surface.
+ *
+ * Both tabs read the fund's posted journal. The Ledger tab used to load
+ * <c>getRunLedgerJournal</c> for whichever strategy run happened to head the reconciliation
+ * queue — a simulation artifact, rendered under the name an operator reads as the book of record,
+ * on the very screen the workspace links to as "Validate the ledger"
+ * (adversarial-program-review-2026-08-25 §1). Run evidence lives in the strategy run ledger
+ * explorer under Strategy.
+ */
+export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const view = searchParams.get("view") === "trial-balance" ? "trial-balance" : "ledger";
-  const runs = readRecordArray(asRecord(data), "reconciliationQueue");
-  const selectedRunId = searchParams.get("runId") ?? readString(runs[0] ?? null, "runId", "");
+
+  return (
+    <Tabs
+      tabs={LEDGER_EXPLORER_TABS}
+      value={view}
+      onValueChange={(nextView) => {
+        // Only `view` changes: ledgerBookId and periodId are the shared scope both tabs read.
+        const nextParams = new URLSearchParams(searchParams);
+        if (nextView === "ledger") {
+          nextParams.delete("view");
+        } else {
+          nextParams.set("view", nextView);
+        }
+        setSearchParams(nextParams, { replace: true });
+      }}
+    >
+      <TabPanel>
+        {/*
+          Always mounted, and idle unless it is the tab on screen. Held unconditionally live, its
+          posted-ledger hook duplicated every request TrialBalanceScreen already makes on the other
+          tab; unmounted instead, it lost the operator's chosen book and period every time they
+          looked at the trial balance and came back. `active` pauses the requests and keeps the
+          selection.
+        */}
+        <PostedLedgerJournalTab active={view === "ledger"} />
+      </TabPanel>
+      <TabPanel>
+        {view === "trial-balance" ? <TrialBalanceScreen /> : null}
+      </TabPanel>
+    </Tabs>
+  );
+}
+
+/** The Ledger tab's own body, so its requests belong to the tab that renders them. */
+function PostedLedgerJournalTab({ active }: { active: boolean }) {
   const [searchText, setSearchText] = useState("");
-  const [savedView, setSavedView] = useState("Selected run");
-  const [statusFilter, setStatusFilter] = useState("All statuses");
-  const [sourceTypeFilter, setSourceTypeFilter] = useState("All source types");
-  const [journalLines, setJournalLines] = useState<LedgerJournalLine[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [tabSearchParams] = useSearchParams();
+  const postedLedger = useAccountingPostedLedgerViewModel(
+    "ledger",
+    undefined,
+    {
+      includeJournal: true,
+      enabled: active,
+      // Read straight from the URL rather than back from the route binding below, so the hook has
+      // it in the same render: the binding runs after it, and a value fed back would arrive a
+      // render late.
+      requestedPeriodId: tabSearchParams.get("periodId")
+    });
+  // The same route binding the trial-balance tab uses, so the two tabs share one scope rather
+  // than holding two. This tab never wrote to the route before: selecting book B here and
+  // switching tabs showed A, and switching back showed B under a URL that said A. Only the tab
+  // on screen syncs — two active writers would race each other's edits.
+  usePostedLedgerRouteScope(postedLedger, active);
+  const journalLines = postedLedger.journalLines;
+  const loading = postedLedger.journalLoading;
 
-  useEffect(() => {
-    if (!selectedRunId || view !== "ledger") {
-      setJournalLines([]);
-      return;
-    }
-
-    let cancelled = false;
-    setLoading(true);
-    getRunLedgerJournal(selectedRunId)
-      .then((lines) => {
-        if (!cancelled) {
-          setJournalLines(lines);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setJournalLines([]);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedRunId, view]);
+  const baseCurrency = postedLedger.view.baseCurrency;
+  // The trial balance on the sibling tab is labelled in the book's base currency; these are the
+  // same governed debits and credits, so they carry it too rather than defaulting to dollars.
+  const postedMoney = (value: number) =>
+    (baseCurrency ? formatCurrencyForCode(value, baseCurrency) : formatCurrency(value));
 
   const filteredRows = useMemo(() => {
     const needle = searchText.trim().toLowerCase();
@@ -458,28 +493,21 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
       line.description,
       line.accountScopeDisplayName,
       line.entityScopeDisplayName,
+      // The retained dimensions, not only the derived display names: an entry scoped to an entity
+      // or fund was otherwise impossible to find by the id it is actually tagged with.
+      line.dimensions?.entityId,
+      line.dimensions?.fundId,
       line.dimensions?.instrumentId,
       String(line.totalDebits),
       String(line.totalCredits)
     ].some((value) => String(value ?? "").toLowerCase().includes(needle)));
   }, [journalLines, searchText]);
 
+  if (!active) {
+    return null;
+  }
+
   return (
-    <Tabs
-      tabs={LEDGER_EXPLORER_TABS}
-      value={view}
-      onValueChange={(nextView) => {
-        const nextParams = new URLSearchParams(searchParams);
-        if (nextView === "ledger") {
-          nextParams.delete("view");
-        } else {
-          nextParams.set("view", nextView);
-        }
-        setSearchParams(nextParams, { replace: true });
-      }}
-    >
-      <TabPanel>
-        {view === "ledger" ? (
     <div className="space-y-4">
       <Card className="panel-surface">
         <CardHeader>
@@ -496,58 +524,37 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
               placeholder="Cash, $120,500, AAPL, cash sweep"
             />
           </FormRow>
-          <FormRow label="Run / period" labelFor="ledger-run-select">
+          <FormRow label="Ledger book" labelFor="ledger-book-select">
             <Select
-              id="ledger-run-select"
-              value={selectedRunId}
-              onChange={(event) => setSearchParams({ runId: event.target.value })}
+              id="ledger-book-select"
+              value={postedLedger.view.bookOptions.find((option) => option.isSelected)?.id ?? ""}
+              onChange={(event) => postedLedger.selectBook(event.target.value)}
             >
-              {runs.length > 0 ? runs.map((run) => (
-                <option key={readString(run, "runId", "run")} value={readString(run, "runId", "")}>
-                  {readString(run, "strategyName", readString(run, "runId", "Ledger run"))}
-                </option>
-              )) : <option value="">No run available</option>}
+              {postedLedger.view.bookOptions.length > 0 ? postedLedger.view.bookOptions.map((option) => (
+                <option key={option.id} value={option.id}>{option.label} · {option.baseCurrency}</option>
+              )) : <option value="">No ledger book available</option>}
             </Select>
           </FormRow>
-          <FormRow label="Status" labelFor="ledger-status-filter">
-            <Select id="ledger-status-filter" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-              <option>All statuses</option>
-              <option>Posted</option>
-              <option>Unposted</option>
-              <option>Reversed</option>
+          {/* The retained list survives a failed refresh so the period stays named, which leaves
+              the selector looking entirely normal. Without this the operator had no sign that
+              discovery failed, or that the list may be missing periods closed since. */}
+          <FormRow
+            label="Ledger period"
+            labelFor="ledger-period-select"
+            error={postedLedger.view.periodSelector.errorText}
+          >
+            <Select
+              id="ledger-period-select"
+              value={postedLedger.selectedPeriodId ?? ""}
+              onChange={(event) => postedLedger.selectPeriod(event.target.value)}
+            >
+              {postedLedger.view.periodSelector.options.length > 0
+                ? postedLedger.view.periodSelector.options.map((option) => (
+                  <option key={option.id} value={option.id}>{option.label} · {option.statusLabel}</option>
+                ))
+                : <option value="">No ledger period available</option>}
             </Select>
           </FormRow>
-          <FormRow label="Source type" labelFor="ledger-source-filter">
-            <Select id="ledger-source-filter" value={sourceTypeFilter} onChange={(event) => setSourceTypeFilter(event.target.value)}>
-              <option>All source types</option>
-              <option>Manual JEs</option>
-              <option>System Generated</option>
-              <option>Reversals</option>
-            </Select>
-          </FormRow>
-        </CardContent>
-      </Card>
-
-      <Card className="panel-surface">
-        <CardHeader>
-          <CardTitle>Saved views</CardTitle>
-          <CardDescription>Use standard accounting cuts before drilling into Journal Entry Detail.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Saved ledger views">
-            {["Selected run", "Unposted", "Reversals", "Manual JEs", "System Generated"].map((view) => (
-              <Button
-                key={view}
-                type="button"
-                size="sm"
-                variant={savedView === view ? "default" : "outline"}
-                aria-pressed={savedView === view}
-                onClick={() => setSavedView(view)}
-              >
-                {view}
-              </Button>
-            ))}
-          </div>
         </CardContent>
       </Card>
 
@@ -555,7 +562,13 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
         <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <CardTitle>Ledger search results</CardTitle>
-            <CardDescription>{loading ? "Loading ledger rows." : `${filteredRows.length} row(s) for ${savedView}.`}</CardDescription>
+            <CardDescription>
+              {loading
+                ? "Loading the posted journal."
+                : postedLedger.journalErrorText
+                  ? postedLedger.journalErrorText
+                  : `${filteredRows.length} posted entry(ies)${postedLedger.selectedPeriodLabel ? ` for ${postedLedger.selectedPeriodLabel}` : ""}.`}
+            </CardDescription>
           </div>
           <Badge variant={filteredRows.length > 0 ? "success" : "outline"}>{filteredRows.length}</Badge>
         </CardHeader>
@@ -572,7 +585,6 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
                   <th className="px-3 py-2" scope="col">Entity</th>
                   <th className="px-3 py-2" scope="col">Source</th>
                   <th className="px-3 py-2" scope="col">Status</th>
-                  <th className="px-3 py-2" scope="col">Evidence status</th>
                 </tr>
               </thead>
               <tbody>
@@ -584,24 +596,33 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
                         className="font-semibold text-primary underline-offset-2 hover:underline"
                         to={workstationRouteWithQuery("accountingJournalEntryDetail", {
                           journalEntryId: line.journalEntryId,
-                          runId: selectedRunId || null
+                          periodId: postedLedger.selectedPeriodId
                         })}
                       >
                         Open journal detail
                       </Link>
                     </td>
                     <td className="px-3 py-2">{line.accountScopeDisplayName ?? "Multiple accounts"}</td>
-                    <td className="px-3 py-2 text-right font-mono">{formatCurrency(line.totalDebits)}</td>
-                    <td className="px-3 py-2 text-right font-mono">{formatCurrency(line.totalCredits)}</td>
-                    <td className="px-3 py-2">{line.entityScopeDisplayName ?? "All entities"}</td>
+                    <td className="px-3 py-2 text-right font-mono">{postedMoney(line.totalDebits)}</td>
+                    <td className="px-3 py-2 text-right font-mono">{postedMoney(line.totalCredits)}</td>
+                    <td className="px-3 py-2">{line.entityScopeDisplayName ?? "Not scoped to one entity"}</td>
                     <td className="px-3 py-2">{line.description || "Ledger posting"}</td>
                     <td className="px-3 py-2">Posted</td>
-                    <td className="px-3 py-2">{line.lineCount > 0 ? "Linked" : "Needs evidence"}</td>
                   </tr>
                 )) : (
                   <tr>
-                    <td className="px-3 py-4 text-muted-foreground" colSpan={9}>
-                      No ledger rows match the current search and filters.
+                    <td className="px-3 py-4 text-muted-foreground" colSpan={8}>
+                      {/* "Create a ledger book and period" is an instruction, and it must not be
+                          given during an outage: the selector above reports the API error, so
+                          hard-coding emptiness here told the operator to create accounting data
+                          and showed the failure that caused it, at the same time. The view state
+                          already distinguishes these -- emptyText is null while loading or failed. */}
+                      {postedLedger.view.periodSelector.options.length === 0
+                        ? (postedLedger.view.periodSelector.errorText
+                          ?? postedLedger.view.periodSelector.loadingText
+                          ?? postedLedger.view.periodSelector.emptyText
+                          ?? "No ledger periods are available for this accounting scope.")
+                        : "No posted entries match the current search."}
                     </td>
                   </tr>
                 )}
@@ -620,12 +641,6 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
         </CardContent>
       </Card>
     </div>
-        ) : null}
-      </TabPanel>
-      <TabPanel>
-        {view === "trial-balance" ? <TrialBalanceScreen data={data} /> : null}
-      </TabPanel>
-    </Tabs>
   );
 }
 

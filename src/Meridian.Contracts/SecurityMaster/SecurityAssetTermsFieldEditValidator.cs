@@ -10,7 +10,8 @@ namespace Meridian.Contracts.SecurityMaster;
 /// <see cref="SecurityAssetTermsSchema"/> contract for the record's asset class — the key must be a
 /// declared term field (or a profile-governed <c>profileFields</c> path on profile-backed classes)
 /// and the value must coerce to the declared type. Paths outside the asset-terms namespace are the
-/// annotation surface and pass through unchanged.
+/// annotation surface and pass through unchanged. Discriminant fields carry the additional
+/// constraint that the value must be one of the schema's declared vocabulary members.
 /// </summary>
 public static class SecurityAssetTermsFieldEditValidator
 {
@@ -171,6 +172,18 @@ public static class SecurityAssetTermsFieldEditValidator
             error =
                 $"Value '{newValue}' does not parse as the declared type {field.Type} for " +
                 $"'{AssetSpecificTermsPrefix}{field.Key}' on asset class '{assetClass}'.";
+            return false;
+        }
+
+        // A DISCRIMINANT is not free text: its value selects a domain case, and a value outside the
+        // declared vocabulary either vanishes on the next serialize (an unknown couponType collapses
+        // to Fixed) or silently re-types the security. Staging one would put a draft and a
+        // provenance row behind a value the write-mode codec refuses, so reject it at the edit.
+        // The comparison is exact-case for the same reason the codecs are — see
+        // SecurityAssetTermField.Allows.
+        if (!field.Allows(newValue))
+        {
+            error = field.DescribeUndeclaredValue(assetClass, newValue);
             return false;
         }
 

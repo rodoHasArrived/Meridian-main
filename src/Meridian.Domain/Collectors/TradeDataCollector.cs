@@ -28,15 +28,22 @@ public sealed class TradeDataCollector
         public SymbolId Symbol { get; }
         public string? StreamId { get; }
         public string? Venue { get; }
+        public DateOnly? SequenceSessionDate { get; }
 
-        public StreamKey(SymbolId symbol, string? streamId, string? venue)
+        public StreamKey(
+            SymbolId symbol,
+            string? streamId,
+            string? venue,
+            DateOnly? sequenceSessionDate = null)
         {
             Symbol = symbol;
             StreamId = streamId;
             Venue = venue is null ? null : venue.ToUpperInvariant();
+            SequenceSessionDate = sequenceSessionDate;
         }
     }
-    // Per-stream rolling state (one entry per unique symbol+stream+venue combination)
+    // Per-stream rolling state. Providers can explicitly override the state scope when their
+    // published trade identity or venue is narrower than the documented sequence domain.
     private readonly ConcurrentDictionary<StreamKey, SymbolTradeState> _stateBySymbol = new();
 
     // Per-symbol recent trade ring buffer (capped at MaxRecentTrades)
@@ -167,7 +174,7 @@ public sealed class TradeDataCollector
         }
 
         var symbolId = new SymbolId(symbol);
-        var streamKey = BuildStreamKey(symbolId, update.StreamId, update.Venue);
+        var streamKey = BuildSequenceStreamKey(symbolId, update);
         var state = _stateBySymbol.GetOrAdd(streamKey, _ => new SymbolTradeState(_rollingWindows));
 
         // -------- Integrity / continuity --------
@@ -317,8 +324,21 @@ public sealed class TradeDataCollector
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-    private static StreamKey BuildStreamKey(SymbolId symbol, string? streamId, string? venue)
-        => new(symbol, streamId, venue);
+    private static StreamKey BuildStreamKey(
+        SymbolId symbol,
+        string? streamId,
+        string? venue,
+        DateOnly? sequenceSessionDate = null)
+        => new(symbol, streamId, venue, sequenceSessionDate);
+
+    private static StreamKey BuildSequenceStreamKey(SymbolId symbol, MarketTradeUpdate update)
+        => string.IsNullOrWhiteSpace(update.SequenceStreamId)
+            ? BuildStreamKey(symbol, update.StreamId, update.Venue)
+            : BuildStreamKey(
+                symbol,
+                update.SequenceStreamId,
+                venue: null,
+                update.SequenceSessionDate);
 
     // =========================
     // Per-symbol state

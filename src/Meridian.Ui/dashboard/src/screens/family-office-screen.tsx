@@ -13,6 +13,8 @@ import {
 } from "@/components/data/concrete";
 import { ScreenLayout } from "@/components/ui/screen-layout";
 import { SeverityBadge } from "@/components/operations";
+import { getFamilyOfficeOverview } from "@/lib/api/family-office.api";
+import { mapFamilyOfficeOverview } from "@/screens/family-office-screen.mapper";
 import { cn } from "@/lib/utils";
 import { readinessToneToSeverityStatus, semanticToneToMetricCardTone } from "@/lib/shared-tone-mappings";
 import {
@@ -77,10 +79,83 @@ const ownershipColumns: DenseDataTableColumn<FamilyOfficeOwnershipNode>[] = [
   }
 ];
 
-export function FamilyOfficeScreen({ entityStructure = null }: { entityStructure?: FamilyOfficeEntityStructure | null }) {
+type FamilyOfficeLoadState = "idle" | "loading" | "ready" | "error";
+
+/** Source chip copy while no structure has resolved yet, so "Not connected" is never claimed mid-load. */
+function loadStateSourceLabel(loadState: FamilyOfficeLoadState): string {
+  switch (loadState) {
+    case "loading":
+      return "Loading";
+    case "error":
+      return "Unavailable";
+    default:
+      return "Not connected";
+  }
+}
+
+/**
+ * Distinguishes "still loading", "the read failed", and "the household really is
+ * unconfigured". Collapsing them would report a transport failure as an empty
+ * family office.
+ */
+function emptyStateCopy(loadState: FamilyOfficeLoadState): { title: string; detail: string | null } {
+  switch (loadState) {
+    case "loading":
+      return { title: "Loading family office data", detail: "Reading the consolidated household projection." };
+    case "error":
+      return {
+        title: "Family office data could not be loaded",
+        detail: "The consolidated household read failed. Retry, or confirm the workstation host is reachable."
+      };
+    default:
+      return { title: "Family office data is not connected", detail: null };
+  }
+}
+
+/**
+ * `entityStructure` is an explicit override used by tests and demo surfaces. When it
+ * is omitted the screen loads the consolidated household from
+ * `/api/workstation/family-office/overview`; passing `null` keeps the
+ * not-connected state without issuing a request.
+ */
+export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: FamilyOfficeEntityStructure | null } = {}) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [showTableFallback, setShowTableFallback] = useState(false);
-  const vm = buildFamilyOfficeScreenViewModel(selectedNodeId, entityStructure);
+  const [loadedStructure, setLoadedStructure] = useState<FamilyOfficeEntityStructure | null>(null);
+  const [loadState, setLoadState] = useState<FamilyOfficeLoadState>(
+    entityStructure === undefined ? "loading" : "idle"
+  );
+  const [reloadToken, setReloadToken] = useState(0);
+
+  useEffect(() => {
+    if (entityStructure !== undefined) {
+      return;
+    }
+
+    let active = true;
+    setLoadState("loading");
+    getFamilyOfficeOverview()
+      .then((overview) => {
+        if (!active) {
+          return;
+        }
+
+        setLoadedStructure(mapFamilyOfficeOverview(overview));
+        setLoadState("ready");
+      })
+      .catch(() => {
+        if (active) {
+          setLoadState("error");
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [entityStructure, reloadToken]);
+
+  const resolvedStructure = entityStructure ?? loadedStructure;
+  const vm = buildFamilyOfficeScreenViewModel(selectedNodeId, resolvedStructure);
   const graphNodeRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const shouldFocusGraphNode = useRef(false);
 
@@ -98,7 +173,7 @@ export function FamilyOfficeScreen({ entityStructure = null }: { entityStructure
   };
 
   const moveGraphSelection = (direction: "next" | "previous" | "first" | "last") => {
-    const nextNodeId = selectAdjacentFamilyOfficeNode(vm.ownershipGraph.selectedNodeId, direction, entityStructure);
+    const nextNodeId = selectAdjacentFamilyOfficeNode(vm.ownershipGraph.selectedNodeId, direction, resolvedStructure);
     if (nextNodeId) {
       shouldFocusGraphNode.current = true;
       setSelectedNodeId(nextNodeId);
@@ -139,26 +214,26 @@ export function FamilyOfficeScreen({ entityStructure = null }: { entityStructure
       <OperationalTrustSummary
         label="Family office data confidence"
         source={{
-          value: entityStructure?.displayName ?? "Not connected",
+          value: resolvedStructure?.displayName ?? loadStateSourceLabel(loadState),
           detail: "Entity, portfolio, accounting, and private-asset sources",
-          tone: entityStructure ? "ready" : "blocked"
+          tone: resolvedStructure ? "ready" : "blocked"
         }}
         scope={{
-          value: entityStructure ? `${entityStructure.entities.length} entities` : "No family entities",
-          detail: entityStructure ? `${entityStructure.baseCurrency} consolidated scope` : "Complete entity setup to establish scope",
-          tone: entityStructure?.entities.length ? "ready" : "blocked"
+          value: resolvedStructure ? `${resolvedStructure.entities.length} entities` : "No family entities",
+          detail: resolvedStructure ? `${resolvedStructure.baseCurrency} consolidated scope` : "Complete entity setup to establish scope",
+          tone: resolvedStructure?.entities.length ? "ready" : "blocked"
         }}
         freshness={{
-          value: entityStructure?.asOfDate ?? "Unavailable",
+          value: resolvedStructure?.asOfDate ?? "Unavailable",
           detail: "Latest consolidated family-office evidence",
-          tone: entityStructure?.asOfDate ? "ready" : "unknown"
+          tone: resolvedStructure?.asOfDate ? "ready" : "unknown"
         }}
         completeness={{
-          value: entityStructure
-            ? `${entityStructure.privateAssets.length} private assets · ${entityStructure.commitments.length} commitments`
+          value: resolvedStructure
+            ? `${resolvedStructure.privateAssets.length} private assets · ${resolvedStructure.commitments.length} commitments`
             : "No records loaded",
           detail: "Private-asset and commitment coverage",
-          tone: entityStructure ? "ready" : "blocked"
+          tone: resolvedStructure ? "ready" : "blocked"
         }}
         blocker={vm.notConnected ? {
           value: "Entity setup required",
@@ -172,14 +247,22 @@ export function FamilyOfficeScreen({ entityStructure = null }: { entityStructure
         <CardContent className="space-y-4">
           <EmptyState
             icon="inbox"
-            title="Family office data is not connected"
-            detail={vm.route.emptyState}
+            title={emptyStateCopy(loadState).title}
+            detail={emptyStateCopy(loadState).detail ?? vm.route.emptyState}
           />
+          {loadState === "loading" ? null : (
           <div className="flex justify-center">
-            <Button asChild>
-              <Link to={vm.emptyActionHref}>{vm.emptyActionLabel}</Link>
-            </Button>
+            {loadState === "error" ? (
+              <Button type="button" onClick={() => setReloadToken((token) => token + 1)}>
+                Retry loading family office data
+              </Button>
+            ) : (
+              <Button asChild>
+                <Link to={vm.emptyActionHref}>{vm.emptyActionLabel}</Link>
+              </Button>
+            )}
           </div>
+          )}
         </CardContent>
       </Card>
       ) : null}

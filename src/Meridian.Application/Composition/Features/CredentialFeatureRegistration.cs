@@ -27,11 +27,17 @@ internal sealed class CredentialFeatureRegistration : IServiceFeatureRegistratio
             return new FileProviderCredentialStore(config.DataRoot);
         });
 
+        services.AddSingleton<IScopedProviderCredentialStore>(sp =>
+            sp.GetRequiredService<IProviderCredentialStore>() as IScopedProviderCredentialStore
+            ?? throw new InvalidOperationException("Configured credential vault does not support scoped ownership."));
+
         services.AddSingleton<OAuthTokenRefreshService>(sp =>
         {
             var configStore = sp.GetRequiredService<ConfigStore>();
             var config = configStore.Load();
-            return new OAuthTokenRefreshService(config.DataRoot);
+            return new OAuthTokenRefreshService(config.DataRoot, vault:
+                sp.GetRequiredService<IProviderCredentialStore>() as IOAuthTokenVault
+                ?? throw new InvalidOperationException("Configured credential vault does not support OAuth token persistence."));
         });
 
         return services;

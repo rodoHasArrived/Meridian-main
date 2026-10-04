@@ -58,7 +58,13 @@ public sealed record DailyValuationBatchLifecycleRequestDto(
     string Notes,
     IReadOnlyList<string>? EvidenceLinks = null,
     string? TenantId = null,
-    string? CompanyId = null)
+    string? CompanyId = null,
+    // Defaults to AutomationAssistant, not HumanOperator. This batch approves and posts journal
+    // entries, and the workbench service gates those on OperationsOriginGuard.RequireHumanOperator
+    // -- so a permissive default would let an un-derived origin satisfy the very control that
+    // exists to require a human, which is the shape #2673 was filed for. Failing closed means a
+    // caller that does not derive the origin is refused rather than waved through.
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.AutomationAssistant)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } = EvidenceLinks ?? [];
 }

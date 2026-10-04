@@ -67,6 +67,11 @@ public sealed partial class OrderManagementSystem
                 continue;
             }
 
+            if (!string.IsNullOrWhiteSpace(child.OrderId))
+            {
+                _orderBrokerIds[childOrderId] = child.OrderId;
+            }
+
             // The same per-order side tables the parent got at registration, so child fills book
             // into the right session, fund account, and contract scale.
             if (_orderSessionIds.TryGetValue(parentOrderId, out var parentSessionId))

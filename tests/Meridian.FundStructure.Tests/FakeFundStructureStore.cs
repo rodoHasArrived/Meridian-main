@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Tenancy;
 using Meridian.Storage.FundStructure;
 
 namespace Meridian.FundStructure.Tests;
@@ -18,6 +19,17 @@ namespace Meridian.FundStructure.Tests;
 /// </remarks>
 public sealed class FakeFundStructureStore : IFundStructureStore
 {
+    private readonly ConcurrentDictionary<Guid, string> _nodeTenants = new();
+    private readonly bool _isTenantPartitioned;
+
+    /// <param name="isTenantPartitioned">
+    /// Whether this store models tenant ownership, mirroring the distinction
+    /// <see cref="FundStructureTenantMap.IsPartitioned"/> draws. Defaults to false so the existing
+    /// contract suites keep exercising an unpartitioned store, which is what they are about.
+    /// </param>
+    public FakeFundStructureStore(bool isTenantPartitioned = false)
+        => _isTenantPartitioned = isTenantPartitioned;
+
     private readonly ConcurrentDictionary<Guid, OrganizationSummaryDto> _organizations = new();
     private readonly ConcurrentDictionary<Guid, BusinessSummaryDto> _businesses = new();
     private readonly ConcurrentDictionary<Guid, ClientSummaryDto> _clients = new();
@@ -145,6 +157,22 @@ public sealed class FakeFundStructureStore : IFundStructureStore
         }
     }
 
+    public Task UpsertOwnershipLinkAsync(OwnershipLinkDto dto, string? tenantId, CancellationToken ct)
+    {
+        lock (_links)
+        {
+            if (!string.IsNullOrEmpty(tenantId))
+            {
+                if (_links.Any(link => link.OwnershipLinkId == dto.OwnershipLinkId) &&
+                    (!_nodeTenants.TryGetValue(dto.OwnershipLinkId, out var retainedTenant) ||
+                     !string.Equals(retainedTenant.Trim(), tenantId.Trim(), StringComparison.OrdinalIgnoreCase)))
+                    throw new TenantScopeRejectedException("a fund-structure link outside the caller's tenant");
+                _nodeTenants[dto.OwnershipLinkId] = tenantId;
+            }
+            return UpsertOwnershipLinkAsync(dto, ct);
+        }
+    }
+
     public Task UpsertAssignmentAsync(FundStructureAssignmentDto dto, CancellationToken ct = default)
     {
         lock (_assignments)
@@ -161,6 +189,22 @@ public sealed class FakeFundStructureStore : IFundStructureStore
         lock (_assignments)
         {
             return Task.FromResult<IReadOnlyList<FundStructureAssignmentDto>>([.. _assignments]);
+        }
+    }
+
+    public Task UpsertAssignmentAsync(FundStructureAssignmentDto dto, string? tenantId, CancellationToken ct)
+    {
+        lock (_assignments)
+        {
+            if (!string.IsNullOrEmpty(tenantId))
+            {
+                if (_assignments.Any(assignment => assignment.AssignmentId == dto.AssignmentId) &&
+                    (!_nodeTenants.TryGetValue(dto.AssignmentId, out var retainedTenant) ||
+                     !string.Equals(retainedTenant.Trim(), tenantId.Trim(), StringComparison.OrdinalIgnoreCase)))
+                    throw new TenantScopeRejectedException("a fund-structure assignment outside the caller's tenant");
+                _nodeTenants[dto.AssignmentId] = tenantId;
+            }
+            return UpsertAssignmentAsync(dto, ct);
         }
     }
 
@@ -184,4 +228,48 @@ public sealed class FakeFundStructureStore : IFundStructureStore
 
     public Task<bool> IsEmptyAsync(CancellationToken ct = default)
         => Task.FromResult(_organizations.IsEmpty && _businesses.IsEmpty && _clients.IsEmpty && _funds.IsEmpty);
+
+    public Task<FundStructureTenantMap> GetNodeTenantsAsync(CancellationToken ct = default)
+        => Task.FromResult(_isTenantPartitioned
+            ? new FundStructureTenantMap(IsPartitioned: true, new Dictionary<Guid, string>(_nodeTenants))
+            : FundStructureTenantMap.Unpartitioned);
+
+    /// <summary>
+    /// First-owner-wins, matching the Postgres store's <c>tenant_id IS NULL</c> guard — and a no-op
+    /// for a node that does not exist, matching that it is an <c>UPDATE</c>.
+    /// </summary>
+    /// <remarks>
+    /// The existence precondition is modelled deliberately. <c>StampNodeTenantAsync</c> issues
+    /// <c>UPDATE ... WHERE id = @node_id AND tenant_id IS NULL</c> across the node tables, so
+    /// stamping before the row is written affects zero rows and the attribution is silently lost. A
+    /// fake that stamped into a free-standing dictionary would accept a caller ordering the stamp
+    /// first and report success, which is how a reordering that broke exactly that landed with all
+    /// of this suite passing.
+    /// </remarks>
+    public Task StampNodeTenantAsync(Guid nodeId, string tenantId, CancellationToken ct = default)
+    {
+        if (NodeExists(nodeId))
+        {
+            _nodeTenants.TryAdd(nodeId, tenantId.Trim());
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private bool NodeExists(Guid nodeId)
+        => _organizations.ContainsKey(nodeId)
+            || _businesses.ContainsKey(nodeId)
+            || _clients.ContainsKey(nodeId)
+            || _funds.ContainsKey(nodeId)
+            || _sleeves.ContainsKey(nodeId)
+            || _vehicles.ContainsKey(nodeId)
+            || _entities.ContainsKey(nodeId)
+            || _portfolios.ContainsKey(nodeId)
+            || _linkedAccountIds.Contains(nodeId);
+
+    /// <summary>Attributes a node directly, standing in for a completed backfill.</summary>
+    public void SeedNodeTenant(Guid nodeId, string tenantId) => _nodeTenants[nodeId] = tenantId;
+
+    /// <summary>The tenant stamped on a node, or null when it is unattributed.</summary>
+    public string? TenantOf(Guid nodeId) => _nodeTenants.TryGetValue(nodeId, out var tenant) ? tenant : null;
 }

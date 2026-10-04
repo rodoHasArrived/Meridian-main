@@ -121,6 +121,7 @@ public static partial class WorkstationEndpoints
         MapStrategyEngineEndpoints(group, jsonOptions);
         MapFeatureCapabilityEndpoints(group, jsonOptions);
         MapExtensibilityEndpoints(group, jsonOptions);
+        MapCloseReadinessEndpoints(group, jsonOptions);
         MapFinancialRecordExplorerEndpoints(group, jsonOptions);
         MapFamilyOfficeEndpoints(group);
         MapDataUploadEndpoints(group, jsonOptions);
@@ -902,6 +903,22 @@ public static partial class WorkstationEndpoints
             }
 
             var trustedRequest = request with { Actor = currentUser };
+            if (request.ReportPackReady == true ||
+                (request.ReportPackReady != false && !string.IsNullOrWhiteSpace(request.ReportPackId)))
+            {
+                var retained = await ResolveOperationsReportPackAsync(context, service, workflowId, request.ReportPackId,
+                    requireRetainedRevision: false).ConfigureAwait(false);
+                if (!retained.IsReady)
+                    return ReportPackAuthorityRefusal(retained, jsonOptions);
+                trustedRequest = trustedRequest with
+                {
+                    ReportPackReady = retained.IsReady,
+                    ReportPackId = retained.ReportPackId,
+                    EvidenceLinks = (request.EvidenceLinks ?? [])
+                        .Where(link => link.Source is not ("accounting-report-pack" or "accounting-report-package-revision"))
+                        .Concat(retained.EvidenceLinks).ToArray()
+                };
+            }
             var result = await service.RefreshGatePostureAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -966,7 +983,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser, OverrideId = overrideId };
+            var trustedRequest = request with { Actor = currentUser, OverrideId = overrideId, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
             var result = await service.ApproveSecurityMasterOverrideAsync(workflowId, overrideId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -1067,7 +1084,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser };
+            var trustedRequest = request with { Actor = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
             var result = await service.PostLedgerEntriesAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -1145,7 +1162,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser };
+            var trustedRequest = request with { Actor = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
             var result = await service.AssignBreakCaseAsync(workflowId, breakId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -1181,7 +1198,10 @@ public static partial class WorkstationEndpoints
             var trustedRequest = request with
             {
                 Actor = currentUser,
-                ActionOrigin = OperationsActionOriginDto.HumanOperator,
+                // Narrower of the caller's declaration and the principal's standing: hardcoding
+                // HumanOperator stamped an API-key caller as a human, and discarded automation
+                // that declared itself (#2673).
+                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin),
                 ApprovalActor = NormalizeOptional(request.ApprovalActor),
                 ApprovalReference = NormalizeOptional(request.ApprovalReference)
             };
@@ -1216,7 +1236,10 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser };
+            var trustedRequest = request with { Actor = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
+            var reportSupport = await ResolveOperationsReportPackAsync(context, service, workflowId, trustedRequest.ReportPackId).ConfigureAwait(false);
+            if (!reportSupport.IsReady)
+                return ReportPackAuthorityRefusal(reportSupport, jsonOptions);
             var result = await service.SubmitForApprovalAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -1248,7 +1271,10 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser, Reviewer = currentUser };
+            var trustedRequest = request with { Actor = currentUser, Reviewer = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
+            var reportSupport = await ResolveOperationsReportPackAsync(context, service, workflowId, trustedRequest.ReportPackId).ConfigureAwait(false);
+            if (!reportSupport.IsReady)
+                return ReportPackAuthorityRefusal(reportSupport, jsonOptions);
             var result = await service.ApproveWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -1280,7 +1306,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser, Reviewer = currentUser };
+            var trustedRequest = request with { Actor = currentUser, Reviewer = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
             var result = await service.RejectWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -1317,9 +1343,26 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser };
-            var result = await service.CloseWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return OperationsTransitionResult(result, jsonOptions);
+            var trustedRequest = request with { Actor = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
+            var readinessRefusal = await ValidateClosePublicationReadinessAsync(context, workflowId, trustedRequest.ExpectedVersion, trustedRequest.CloseScope, jsonOptions).ConfigureAwait(false);
+            if (readinessRefusal is not null)
+                return readinessRefusal;
+            var reportSupport = await ResolveOperationsReportPackAsync(context, service, workflowId, trustedRequest.ReportPackId).ConfigureAwait(false);
+            if (!reportSupport.IsReady)
+                return ReportPackAuthorityRefusal(reportSupport, jsonOptions);
+            return await LedgerEndpoints.ExecuteClosePeriodLockAsync(
+                new LockClosePeriodRequestDto(
+                    workflowId, trustedRequest.ExpectedVersion, currentUser, trustedRequest.Rationale,
+                    trustedRequest.ReportPackId,
+                    EvidenceLinks: trustedRequest.EvidenceLinks?.Select(link => link.EvidenceId).ToArray(),
+                    ChecklistControlApprovals: trustedRequest.ChecklistControlApprovals,
+                    CorrelationId: trustedRequest.CorrelationId,
+                    ClosePackageId: trustedRequest.ClosePackageId,
+                    ClosePackageManifestId: trustedRequest.ClosePackageManifestId,
+                    ClosePackageRetainedManifestRoute: trustedRequest.ClosePackageRetainedManifestRoute,
+                    ActionOrigin: trustedRequest.ActionOrigin,
+                    CloseScope: trustedRequest.CloseScope),
+                context, jsonOptions, operationsEnvelope: true).ConfigureAwait(false);
         })
         .WithName("CloseOperationsContinuityWorkflow").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
 
@@ -1349,7 +1392,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser, IsGovernedAdmin = HasGovernedWorkflowReopenPermission(context) };
+            var trustedRequest = request with { Actor = currentUser, IsGovernedAdmin = HasGovernedWorkflowReopenPermission(context), ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
             var result = await service.ReopenWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -1957,7 +2000,12 @@ public static partial class WorkstationEndpoints
                     queueScope,
                     request with
                     {
-                        ResolvedBy = ResolveCurrentActor(context)
+                        ResolvedBy = ResolveCurrentActor(context),
+                        // Derived from the principal, discarding the body: this is the statement
+                        // legacy-resolve adapter, which is authoritative over the caller's identity
+                        // like the rest of the reconciliation casework routes. Before #2673 the
+                        // origin was left as the browser sent it. See DeriveActionOriginFromPrincipal.
+                        ActionOrigin = EndpointAuthorization.DeriveActionOriginFromPrincipal(context)
                     },
                     context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(ToReconciliationCaseworkOperationResult(transition), jsonOptions);
@@ -3137,17 +3185,25 @@ public static partial class WorkstationEndpoints
         // Routing connections, bindings and trust snapshots follow connectionRows: their direct
         // /api/provider-routing reads require ManageCredentials, which the Data workspace does not admit.
         var canManageCredentials = HasPermission(context, UserPermission.ManageCredentials);
-        var connectionRows = canManageCredentials && providerConnectionLifecycle is not null
-            ? await providerConnectionLifecycle.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false)
+        var routingTenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        // Provider readiness mirrors GET /api/providers/connections: a tenant-scoped request includes the
+        // tenant's own connection credentials, so a scoped save is reflected here as it is in Settings.
+        var connectionRows = !canManageCredentials || providerConnectionLifecycle is null
+            ? []
+            : routingTenant.HasTenantScope
+                ? await providerConnectionLifecycle.GetConnectionsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
+                : await providerConnectionLifecycle.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false);
+        // Routing reads mirror the direct /api/provider-routing endpoints: they are filtered to the
+        // authenticated tenant's retained connections, and a request without tenant scope sees none.
+        var canReadRouting = canManageCredentials && routingTenant.HasTenantScope;
+        var routingConnections = canReadRouting && routingConnectionService is not null
+            ? await routingConnectionService.GetConnectionsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
             : [];
-        var routingConnections = canManageCredentials && routingConnectionService is not null
-            ? await routingConnectionService.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false)
+        var routingBindings = canReadRouting && routingBindingService is not null
+            ? await routingBindingService.GetBindingsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
             : [];
-        var routingBindings = canManageCredentials && routingBindingService is not null
-            ? await routingBindingService.GetBindingsAsync(context.RequestAborted).ConfigureAwait(false)
-            : [];
-        var trustSnapshots = canManageCredentials && routingTrustService is not null
-            ? await routingTrustService.GetTrustSnapshotsAsync(context.RequestAborted).ConfigureAwait(false)
+        var trustSnapshots = canReadRouting && routingTrustService is not null
+            ? await routingTrustService.GetTrustSnapshotsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
             : [];
         var providers = BuildWorkstationDataProviderRecords(
             metricsStatus,
@@ -3389,7 +3445,8 @@ public static partial class WorkstationEndpoints
         {
             positions = portfolio.Positions.Values.Select(pos =>
             {
-                var mark = ResolveLiveMark(pos.Symbol, quoteCollector, tradeCollector);
+                var retainedMark = ResolveLiveMarkWithObservation(pos.Symbol, quoteCollector, tradeCollector);
+                var mark = retainedMark.Price;
                 var hasMark = mark.HasValue && mark.Value > 0m;
                 var effectiveMark = hasMark ? mark!.Value : pos.AverageCostBasis;
                 var liveUnrealized = (effectiveMark - pos.AverageCostBasis) * pos.Quantity;
@@ -3857,25 +3914,28 @@ public static partial class WorkstationEndpoints
     /// price → null (caller falls back to cost basis).
     /// </summary>
     internal static decimal? ResolveLiveMark(string symbol, QuoteCollector? quotes, TradeDataCollector? trades)
+        => ResolveLiveMarkWithObservation(symbol, quotes, trades).Price;
+
+    private static (decimal? Price, DateOnly? ObservedOn) ResolveLiveMarkWithObservation(string symbol, QuoteCollector? quotes, TradeDataCollector? trades)
     {
         if (string.IsNullOrWhiteSpace(symbol))
         {
-            return null;
+            return (null, null);
         }
 
         if (quotes is not null && quotes.TryGet(symbol, out var bbo) && bbo is not null)
         {
             if (bbo.MidPrice is { } mid && mid > 0m)
             {
-                return mid;
+                return (mid, DateOnly.FromDateTime(bbo.Timestamp.UtcDateTime));
             }
             if (bbo.AskPrice > 0m)
             {
-                return bbo.AskPrice;
+                return (bbo.AskPrice, DateOnly.FromDateTime(bbo.Timestamp.UtcDateTime));
             }
             if (bbo.BidPrice > 0m)
             {
-                return bbo.BidPrice;
+                return (bbo.BidPrice, DateOnly.FromDateTime(bbo.Timestamp.UtcDateTime));
             }
         }
 
@@ -3884,11 +3944,11 @@ public static partial class WorkstationEndpoints
             var recent = trades.GetRecentTrades(symbol, 1);
             if (recent.Count > 0 && recent[0].Price > 0m)
             {
-                return recent[0].Price;
+                return (recent[0].Price, DateOnly.FromDateTime(recent[0].Timestamp.UtcDateTime));
             }
         }
 
-        return null;
+        return (null, null);
     }
 
     private static string FormatPercent(decimal value)

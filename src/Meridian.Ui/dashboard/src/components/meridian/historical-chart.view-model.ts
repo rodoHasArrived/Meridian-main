@@ -239,9 +239,9 @@ export interface IndicatorToggleOption {
 export const COMPARE_SYMBOL_LIMIT = 3;
 
 export const COMPARE_SERIES_COLORS: ReadonlyArray<string> = [
-  "var(--chart-compare-1, #7c5cff)",
-  "var(--chart-compare-2, #f5a524)",
-  "var(--chart-compare-3, #14b8a6)"
+  "var(--chart-compare-1, #A85436)",
+  "var(--chart-compare-2, #B08A2E)",
+  "var(--chart-compare-3, #3A7A56)"
 ];
 
 export type CompareSeriesStatus = "loading" | "ready" | "error" | "empty";
@@ -998,8 +998,8 @@ const SMA_OVERLAY_DEFINITIONS: ReadonlyArray<{
   label: string;
   stroke: string;
 }> = [
-  { period: 20, label: "SMA 20", stroke: "var(--chart-sma-20, #f5a524)" },
-  { period: 50, label: "SMA 50", stroke: "var(--chart-sma-50, #7c5cff)" }
+  { period: 20, label: "SMA 20", stroke: "var(--chart-sma-20, #5D5486)" },
+  { period: 50, label: "SMA 50", stroke: "var(--chart-sma-50, #8A5C12)" }
 ];
 
 function buildSmaOverlays({ closes, midXs, yForPrice, precomputed }: BuildSmaOverlaysInput): CandlestickSmaOverlay[] {
@@ -1069,7 +1069,7 @@ function buildBollingerOverlay({ closes, midXs, yForPrice, precomputedBands }: B
     multiplier,
     label: `Bollinger (${period}, ${multiplier})`,
     ariaLabel: `${period}-period Bollinger Bands with ${multiplier} standard deviations`,
-    stroke: "var(--chart-bollinger, #38bdf8)",
+    stroke: "var(--chart-bollinger, #7E7A72)",
     upperPoints: upperPts.join(" "),
     lowerPoints: lowerPts.join(" "),
     middlePoints: middlePts.join(" "),

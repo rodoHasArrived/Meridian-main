@@ -28,6 +28,27 @@ public enum FundReconciliationSourceType : byte
     AccountRun = 1
 }
 
+public enum FundReconciliationReadAvailability : byte
+{
+    Available = 0,
+    Degraded = 1,
+    Unavailable = 2
+}
+
+public sealed record FundReconciliationReadResult(
+    ReconciliationSummary Summary,
+    int KnownRunCount,
+    int MissingRunCount,
+    int UnavailableRunCount)
+{
+    public FundReconciliationReadAvailability Availability => UnavailableRunCount switch
+    {
+        0 => FundReconciliationReadAvailability.Available,
+        _ when UnavailableRunCount >= KnownRunCount => FundReconciliationReadAvailability.Unavailable,
+        _ => FundReconciliationReadAvailability.Degraded
+    };
+}
+
 public sealed record FundReconciliationWorkbenchSnapshot(
     ReconciliationSummary Summary,
     ReconciliationCalibrationSummaryDto? CalibrationSummary,
@@ -35,7 +56,13 @@ public sealed record FundReconciliationWorkbenchSnapshot(
     IReadOnlyList<FundReconciliationBreakQueueRow> BreakQueueItems,
     IReadOnlyList<FundReconciliationRunRow> RunRows,
     DateTimeOffset RefreshedAt,
-    int InReviewBreakCount);
+    int InReviewBreakCount,
+    FundReconciliationReadAvailability ReadAvailability,
+    int KnownRunCount,
+    int MissingRunCount,
+    int UnavailableRunCount,
+    bool BreakQueueReadAvailable,
+    bool CalibrationReadAvailable);
 
 public sealed record FundReconciliationCalibrationProfileRow(
     string ToleranceProfileId,

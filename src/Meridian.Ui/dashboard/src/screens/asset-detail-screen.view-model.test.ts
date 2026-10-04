@@ -50,7 +50,13 @@ const corporateActions: CorporateAction[] = [
     acquirerSecurityId: null,
     exchangeRatio: null,
     subscriptionPricePerShare: null,
-    rightsPerShare: null
+    rightsPerShare: null,
+    recordDate: null,
+    lifecycleState: "Announced",
+    supersedesCorpActId: null,
+    redemptionPricePercentOfPar: null,
+    payload: null,
+    payloadSchemaVersion: 1
   }
 ];
 

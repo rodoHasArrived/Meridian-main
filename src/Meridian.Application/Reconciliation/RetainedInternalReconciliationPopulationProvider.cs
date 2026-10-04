@@ -78,6 +78,14 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
                 return InternalReconciliationPopulations.Empty;
             }
 
+            if (context.AccountingScope is { } scope
+                && (!account.FundId.HasValue
+                    || !Guid.TryParse(scope.FundProfileId, out var fundId)
+                    || account.FundId.Value != fundId))
+            {
+                return InternalReconciliationPopulations.Empty;
+            }
+
             // Both sides of the match are keyed by the run's external (custodian) account so the
             // per-row account string a statement carries (an IBAN, a bank id, a broker account number)
             // does not have to equal Meridian's internal account code for the books to reconcile.
@@ -101,10 +109,14 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
         {
             // Fail closed: a resolution error must surface statement rows as breaks for operator
             // review rather than throw out of the import workflow.
+            // Composed sources receive the external account label and may echo it in exception
+            // text. Keep the exception object out of logs so an IBAN, bank id, or broker account
+            // number cannot cross this outer fail-closed boundary through a provider message.
             logger?.LogWarning(
-                ex,
-                "Failed to resolve internal reconciliation populations for fund account {FundAccountId}; reconciling against an empty book.",
-                context.FundAccountId);
+                "Failed to resolve internal reconciliation populations for fund account {FundAccountId}; " +
+                "reconciling against an empty book; failure type {FailureType}.",
+                context.FundAccountId,
+                ex.GetType().Name);
             return InternalReconciliationPopulations.Empty;
         }
     }
@@ -189,9 +201,10 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
                     aliases,
                     context.StatementPeriodStart,
                     context.StatementPeriodEnd,
-                    context.BaseCurrency,
-                    context.LedgerBookId,
-                    context.AccountingPeriodId),
+                    context.BaseCurrency)
+                {
+                    AccountingScope = context.AccountingScope
+                },
                 ct)
             .ConfigureAwait(false) ?? [];
     }

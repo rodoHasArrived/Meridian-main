@@ -133,6 +133,12 @@
           "notes": "Capture the Operations continuity screen from the registered WPF shell catalog."
         },
         {
+          "title": "Posted ledger",
+          "pageTag": "PostedLedger",
+          "captureName": "wpf-posted-ledger",
+          "notes": "Capture the Posted ledger screen (posted-journal trial balance and P&L) from the registered WPF shell catalog."
+        },
+        {
           "title": "Run ledger",
           "pageTag": "RunLedger",
           "captureName": "wpf-run-ledger",

@@ -111,6 +111,25 @@ internal sealed class LedgerPostgresTestDatabase : IAsyncDisposable
         return tables;
     }
 
+    /// <summary>
+    /// Rewrites the audit chain head's schema version, standing in for a chain a newer build wrote.
+    /// </summary>
+    public async Task SetAuditChainSchemaVersionAsync(int schemaVersion, CancellationToken ct = default)
+    {
+        await using var connection = new NpgsqlConnection(Options.ConnectionString);
+        await connection.OpenAsync(ct).ConfigureAwait(false);
+
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            update "{Options.SchemaName}".accounting_action_audit_chain_head
+            set schema_version = @schema_version
+            where chain_id = 1;
+            """;
+        command.Parameters.AddWithValue("schema_version", schemaVersion);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
     public async ValueTask DisposeAsync()
     {
         await _server.DisposeAsync().ConfigureAwait(false);

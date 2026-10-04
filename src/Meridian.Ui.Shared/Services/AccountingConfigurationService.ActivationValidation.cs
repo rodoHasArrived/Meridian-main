@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Meridian.Contracts.Banking;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
@@ -947,11 +948,113 @@ public sealed partial class AccountingConfigurationService
         string? suggestedAction)
         => new(code, severity, message, targetId, suggestedAction);
 
+    /// <summary>
+    /// Digest of the workspace <b>as a store can hand it back</b>, used for the before- and
+    /// after-state hashes an accounting audit event records.
+    /// </summary>
+    /// <remarks>
+    /// <para>Taken over <see cref="Durable"/> rather than the DTO as it stands in memory. Every
+    /// comparison this digest exists for — recovery asking whether the retained workspace is the one
+    /// a mutation wrote — hashes one side before a save and the other side after a reload, so any
+    /// field a store does not round-trip makes the two sides differ forever. Under PostgreSQL that
+    /// was not hypothetical: <c>AfterHash</c> was taken over a workspace carrying a derived
+    /// <c>RulesStudio</c> that <c>PostgresAccountingConfigurationStore</c> never persists and
+    /// <c>GetAsync</c> rebuilds as null, so it could never match a reload. Both the replay path and
+    /// the already-audited check then raised — and because every mutation runs recovery first, one
+    /// interrupted mutation blocked the scope permanently (Codex review finding on PR #2871). The
+    /// file posture round-trips the whole DTO as JSON, which is why no test on it could see this.</para>
+    ///
+    /// <para>This narrows what the digest covers, and deliberately so: a hash over fields no store
+    /// retains is not a claim anyone can check later, which is the opposite of what an audit
+    /// before/after pair is for.</para>
+    ///
+    /// <para><b>Hashed as canonical JSON</b> — every object's properties in ordinal key order,
+    /// recursively — because JSON object member order is one more thing a store may not round-trip.
+    /// PostgreSQL's <c>jsonb</c> canonicalizes key order (length first, then bytewise), and the
+    /// posting-rule and rule-test payloads it holds as <c>jsonb</c> carry real dictionaries —
+    /// <c>LedgerDimensionSetDto.ExternalGlDimensions</c> — whose reloaded enumeration order is the
+    /// stored order, not the insertion order the digest hashed. <see cref="Durable"/> orders the
+    /// top-level collections but cannot see into nested maps, so a rule scoped by dimensions
+    /// inserted in a noncanonical order digested differently after reload, and recovery matched
+    /// neither hash — the same permanent block, reached through key order (Codex review finding on
+    /// PR #2871). Sorting keys at every level makes the digest a function of content alone on both
+    /// sides of the reload; array order stays significant, which is why <see cref="Durable"/> still
+    /// orders the collections.</para>
+    /// </remarks>
     private static string Hash(AccountingConfigurationWorkspaceDto workspace)
     {
-        var json = JsonSerializer.Serialize(workspace);
-        return Sha256Digest.ComputeUtf8(json);
+        var canonical = CanonicalizeJson(JsonSerializer.SerializeToNode(Durable(workspace)));
+        return Sha256Digest.ComputeUtf8(canonical?.ToJsonString() ?? "null");
     }
+
+    /// <summary>
+    /// Rebuilds a JSON tree with every object's properties in ordinal key order, recursively, so
+    /// two trees carrying the same content digest alike whatever member order their producers used.
+    /// </summary>
+    private static JsonNode? CanonicalizeJson(JsonNode? node)
+        => node switch
+        {
+            JsonObject jsonObject => new JsonObject(jsonObject
+                .OrderBy(static property => property.Key, StringComparer.Ordinal)
+                .Select(static property => KeyValuePair.Create(property.Key, CanonicalizeJson(property.Value)))),
+            JsonArray jsonArray => new JsonArray([.. jsonArray.Select(static item => CanonicalizeJson(item))]),
+            _ => node?.DeepClone(),
+        };
+
+    /// <summary>
+    /// Projects a workspace onto the shape every <see cref="IAccountingConfigurationStore"/> posture
+    /// retains and returns, so the same state digests alike whichever store is composed.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Derived views are dropped.</b> <c>RulesStudio</c> and <c>LedgerBookSetupCandidate</c>
+    /// are computed by <c>GetWorkspaceAsync</c> from the state below them; they are a rendering of
+    /// the workspace, not part of it. <c>LedgerBooks</c> and <c>AuditTrail</c> are likewise composed
+    /// from other services on read, and both PostgreSQL and the file store return them empty.</para>
+    ///
+    /// <para><b>Collections are ordered.</b> The PostgreSQL store reads each one back under its own
+    /// <c>order by</c>, so a digest over the in-memory sequence would depend on the order a caller
+    /// happened to build it in. Ordering here makes the digest a function of the content alone.</para>
+    ///
+    /// <para><b>Optional text is reduced the way a store reduces it.</b>
+    /// <c>PostgresAccountingConfigurationStore.ReplaceChartAsync</c> writes <c>ParentPath</c>,
+    /// <c>Symbol</c> and <c>FinancialAccountId</c> through <c>AddTextOrNull</c>, which trims and
+    /// nulls blank text, so a padded or blank value reloads as something the digest never covered
+    /// (Codex review finding on PR #2871). This is the rule <c>NormalizeForPersistence</c> already
+    /// applies to the audit event itself, applied to the workspace for the same reason: what is
+    /// hashed and what is written have to be the same string. Both postures then also agree that
+    /// <c>"  x  "</c> and <c>"x"</c> are one configuration, which is the answer either would give
+    /// if asked.</para>
+    ///
+    /// <para><b>The timestamp is reduced to storable precision.</b> <c>timestamptz</c> holds
+    /// microseconds and Npgsql truncates to them when it encodes the parameter, so a workspace
+    /// hashed at the full 100ns tick and then reloaded digests to two different values — the second
+    /// half of the same permanent block, and load-bearing independently of the dropped fields above.
+    /// See <see cref="AccountingAuditChain.ToRetainedPrecision"/>.</para>
+    /// </remarks>
+    private static AccountingConfigurationWorkspaceDto Durable(AccountingConfigurationWorkspaceDto workspace)
+        => workspace with
+        {
+            UpdatedAtUtc = AccountingAuditChain.ToRetainedPrecision(workspace.UpdatedAtUtc),
+            LedgerBooks = [],
+            AuditTrail = [],
+            RulesStudio = null,
+            LedgerBookSetupCandidate = null,
+            ChartOfAccounts =
+            [
+                .. workspace.ChartOfAccounts
+                    .Select(static n => n with
+                    {
+                        ParentPath = NormalizeOptional(n.ParentPath),
+                        Symbol = NormalizeOptional(n.Symbol),
+                        FinancialAccountId = NormalizeOptional(n.FinancialAccountId),
+                    })
+                    .OrderBy(static n => n.Path, StringComparer.Ordinal)
+                    .ThenBy(static n => n.NodeId, StringComparer.Ordinal)
+            ],
+            JournalTemplates = [.. workspace.JournalTemplates.OrderBy(static t => t.TemplateId, StringComparer.Ordinal)],
+            PostingRules = [.. workspace.PostingRules.OrderBy(static r => r.RuleId, StringComparer.Ordinal)],
+            RuleTestCases = [.. workspace.RuleTestCases.OrderBy(static c => c.TestCaseId, StringComparer.Ordinal)],
+        };
 
     private sealed record PostingRuleApprovalProtectedDefinition(
         string RuleVersion,

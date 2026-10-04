@@ -1,0 +1,270 @@
+using FluentAssertions;
+using Meridian.Application.Composition;
+using Meridian.Application.FundStructure;
+using Meridian.Contracts.Services;
+using Meridian.Contracts.Tenancy;
+using Meridian.Identity;
+using Meridian.Identity.Auth;
+using Meridian.PortfolioRecords.FundAccounts;
+using Meridian.Ui.Shared.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
+using AuthEnvironmentScope = Meridian.Tests.Identity.EnvironmentVariableScope;
+
+namespace Meridian.Tests.Ui;
+
+/// <summary>
+/// W9-GOV-008 criterion 2. <c>InMemoryFundStructureService</c> carries no tenant or company
+/// identifier anywhere, so every session it serves shares one graph. The criterion allowed either
+/// partitioning it or refusing multi-company access; these tests pin the refusal, and pin that it
+/// leaves the single-company deployments that actually run this posture alone.
+/// </summary>
+[Collection("IdentityEnvironment")]
+public sealed class InMemoryFundStructureTenancyGuardTests : IDisposable
+{
+    // The guard reads the same usable account source as authentication. Legacy raw hex strings
+    // are deliberately rejected; fixtures must carry a currently supported password hash.
+    private static readonly string FixturePasswordHash = PasswordHashing.HashPassword("tenant-guard-fixture-password");
+
+    private readonly AuthEnvironmentScope _environment = new AuthEnvironmentScope()
+        .Set("MDC_USERS", null)
+        .Set("MDC_DEMO_USERS", null)
+        .Set("MDC_USERNAME", null)
+        .Set("MDC_PASSWORD_HASH", null);
+
+    [Fact]
+    public async Task Guard_RefusesToStartWhenAnUnpartitionedStoreWouldServeSeveralCompanies()
+    {
+        var guard = CreateGuard(
+            new InMemoryFundStructureService(new InMemoryFundAccountService()),
+            "company-alpha",
+            "company-beta");
+
+        var start = async () => await guard.StartAsync(CancellationToken.None);
+
+        (await start.Should().ThrowAsync<InvalidOperationException>())
+            .Which.Message.Should().Contain("fund structure");
+    }
+
+    [Fact]
+    public async Task Guard_RaisesARefusalRatherThanAnOrdinaryStartupFailure()
+    {
+        // The distinction is load-bearing, not cosmetic. A host that tolerates a worker failing to
+        // start -- the desktop shell does, on purpose, so a projection pump that cannot reach its
+        // database does not take the application down -- has nothing to tell a refusal apart by
+        // unless the type says so, and swallows it. That is what happened to this guard on the WPF
+        // lane in PR #2866: registered, throwing, and absorbed by the catch one frame up.
+        var guard = CreateGuard(
+            new InMemoryFundStructureService(new InMemoryFundAccountService()),
+            "company-alpha",
+            "company-beta");
+
+        var start = async () => await guard.StartAsync(CancellationToken.None);
+
+        (await start.Should().ThrowAsync<StartupRefusedException>())
+            .Which.Should().BeAssignableTo<InvalidOperationException>(
+                "every existing catch and assertion naming that type has to keep matching");
+    }
+
+    [Fact]
+    public async Task ComposedHost_FailsToStartRatherThanServingTheUnpartitionedStructure()
+    {
+        // End to end through a real host: the refusal has to survive IHostedService orchestration
+        // and surface from StartAsync, which is the moment any shell decides whether to carry on.
+        using var host = new Microsoft.Extensions.Hosting.HostBuilder()
+            .ConfigureServices(services =>
+            {
+                services.AddSingleton<IFundStructureService>(
+                    new InMemoryFundStructureService(new InMemoryFundAccountService()));
+                services.AddSingleton(AccountStoreFor("company-alpha", "company-beta"));
+                services.AddSingleton(sp => new UserProfileRegistry(null, sp.GetRequiredService<IUserAccountStore>()));
+                services.AddLogging();
+                services.AddHostedService<InMemoryFundStructureTenancyGuard>();
+            })
+            .Build();
+
+        var start = async () => await host.StartAsync(CancellationToken.None);
+
+        var refusal = await start.Should().ThrowAsync<Exception>();
+        HostStartupEscalation.IsRefusal(refusal.Which).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Escalation_TreatsAnOrdinaryWorkerFailureAsDegradableAndARefusalAsFatal()
+    {
+        // The rule the desktop shell's two catch clauses are selected by. Its own startup path
+        // cannot be run off Windows, so this is where the rule is actually exercised.
+        HostStartupEscalation.IsRefusal(new InvalidOperationException("database unreachable"))
+            .Should().BeFalse();
+        HostStartupEscalation.IsRefusal(null).Should().BeFalse();
+        HostStartupEscalation.IsRefusal(new StartupRefusedException("refused")).Should().BeTrue();
+
+        // Hosts may start services concurrently and may wrap; a wrapped refusal is still a refusal,
+        // and one refusal among several faults decides the batch -- there is no partial refusal.
+        HostStartupEscalation.IsRefusal(
+            new InvalidOperationException("outer", new StartupRefusedException("refused")))
+            .Should().BeTrue();
+
+        // And the refusal itself is recoverable, not just detectable: a caller reporting the fault
+        // to an operator needs the guard's remediation text, which no wrapper's message carries.
+        HostStartupEscalation.TryFindRefusal(
+                new InvalidOperationException("outer", new StartupRefusedException("remediate me")))!
+            .Message.Should().Be("remediate me");
+        HostStartupEscalation.TryFindRefusal(new AggregateException(
+                new InvalidOperationException("database unreachable"),
+                new StartupRefusedException("remediate me")))!
+            .Message.Should().Be("remediate me");
+        HostStartupEscalation.TryFindRefusal(new InvalidOperationException("just a failure"))
+            .Should().BeNull();
+        HostStartupEscalation.IsRefusal(new AggregateException(
+            new InvalidOperationException("database unreachable"),
+            new StartupRefusedException("refused")))
+            .Should().BeTrue();
+        HostStartupEscalation.IsRefusal(new AggregateException(
+            new InvalidOperationException("database unreachable")))
+            .Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Guard_LeavesASingleCompanyDeploymentAlone()
+    {
+        var guard = CreateGuard(
+            new InMemoryFundStructureService(new InMemoryFundAccountService()),
+            "company-alpha",
+            "company-alpha");
+
+        await guard.StartAsync(CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task Guard_LeavesADeploymentWithNoConfiguredCompanyAlone()
+    {
+        var guard = CreateGuard(
+            new InMemoryFundStructureService(new InMemoryFundAccountService()),
+            null,
+            null);
+
+        await guard.StartAsync(CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task Guard_RefusesMultiCompanyPartitionedStoreWithPermissiveReads()
+    {
+        var partitioned = Substitute.For<IFundStructureService>();
+        var guard = CreateGuard(partitioned, "company-alpha", "company-beta");
+
+        var start = () => guard.StartAsync(CancellationToken.None);
+        await start.Should().ThrowAsync<StartupRefusedException>().WithMessage("*fail-closed*");
+    }
+
+    [Fact]
+    public async Task Guard_AllowsMultiCompanyPartitionedStoreWithStrictReads()
+    {
+        var guard = new InMemoryFundStructureTenancyGuard(
+            Substitute.For<IFundStructureService>(),
+            new UserProfileRegistry(null, AccountStoreFor("company-alpha", "company-beta"), TenantScopeEnforcementOptions.FailClosed),
+            NullLogger<InMemoryFundStructureTenancyGuard>.Instance);
+        await guard.StartAsync(CancellationToken.None);
+    }
+
+    [Theory]
+    [InlineData("MDC_USERS", "Production")]
+    [InlineData("MDC_DEMO_USERS", "Development")]
+    public async Task Guard_RefusesCompaniesFromTheEffectiveAuthenticationFallback(string variable, string environment)
+    {
+        var password = "scope-proof-password";
+        var hash = PasswordHashing.HashPassword(password);
+        _environment.Set("DOTNET_ENVIRONMENT", environment)
+            .Set("ASPNETCORE_ENVIRONMENT", environment)
+            .Set(variable, EnvironmentAccounts(hash));
+        var profiles = new UserProfileRegistry(null, AccountStoreFor(), TenantScopeEnforcementOptions.FailClosed);
+        profiles.Authenticate("operator-alpha", password)!.CompanyId.Should().Be("company-alpha");
+        profiles.Authenticate("operator-beta", password)!.CompanyId.Should().Be("company-beta");
+
+        using var host = new Microsoft.Extensions.Hosting.HostBuilder().ConfigureServices(services =>
+        {
+            services.AddSingleton<IFundStructureService>(new InMemoryFundStructureService(new InMemoryFundAccountService()));
+            services.AddSingleton(profiles);
+            services.AddLogging();
+            services.AddHostedService<InMemoryFundStructureTenancyGuard>();
+        }).Build();
+
+        var start = async () => await host.StartAsync();
+        await start.Should().ThrowAsync<StartupRefusedException>();
+    }
+
+    [Fact]
+    public async Task Guard_UsesGovernedStorePrecedenceInsteadOfCombiningInactiveEnvironmentAccounts()
+    {
+        _environment.Set("MDC_USERS", EnvironmentAccounts(FixturePasswordHash));
+        var profiles = new UserProfileRegistry(null, AccountStoreFor("governed-company"));
+        profiles.GetProfile("operator-alpha").Should().BeNull();
+        profiles.GetConfiguredCompanyIds().Should().Equal("governed-company");
+        var guard = new InMemoryFundStructureTenancyGuard(
+            new InMemoryFundStructureService(new InMemoryFundAccountService()), profiles,
+            NullLogger<InMemoryFundStructureTenancyGuard>.Instance);
+
+        await guard.StartAsync(CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task Guard_DoesNotCountDemoAccountsThatAuthenticationIgnoresInProduction()
+    {
+        _environment.Set("DOTNET_ENVIRONMENT", "Production")
+            .Set("ASPNETCORE_ENVIRONMENT", "Production")
+            .Set("MDC_DEMO_USERS", EnvironmentAccounts(FixturePasswordHash));
+        var profiles = new UserProfileRegistry(null, AccountStoreFor());
+        profiles.IsConfigured.Should().BeFalse();
+        var guard = new InMemoryFundStructureTenancyGuard(
+            new InMemoryFundStructureService(new InMemoryFundAccountService()), profiles,
+            NullLogger<InMemoryFundStructureTenancyGuard>.Instance);
+
+        await guard.StartAsync(CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task Guard_AllowsEquivalentCompanyIdsFromEnvironmentAccounts()
+    {
+        _environment.Set("MDC_USERS", EnvironmentAccounts(FixturePasswordHash)
+            .Replace("company-beta", " COMPANY-ALPHA "));
+        var profiles = new UserProfileRegistry(null, AccountStoreFor());
+        profiles.GetConfiguredCompanyIds().Should().Equal("company-alpha");
+        var guard = new InMemoryFundStructureTenancyGuard(
+            new InMemoryFundStructureService(new InMemoryFundAccountService()), profiles,
+            NullLogger<InMemoryFundStructureTenancyGuard>.Instance);
+
+        await guard.StartAsync(CancellationToken.None);
+    }
+
+    private static string EnvironmentAccounts(string hash) => $$"""
+        [{"username":"operator-alpha","passwordHash":"{{hash}}","role":"Admin","companyId":"company-alpha"},
+         {"username":"operator-beta","passwordHash":"{{hash}}","role":"Admin","companyId":"company-beta"}]
+        """;
+
+    public void Dispose() => _environment.Dispose();
+
+    private static InMemoryFundStructureTenancyGuard CreateGuard(
+        IFundStructureService fundStructureService,
+        params string?[] accountCompanyIds)
+        => new(
+            fundStructureService,
+            new UserProfileRegistry(null, AccountStoreFor(accountCompanyIds)),
+            NullLogger<InMemoryFundStructureTenancyGuard>.Instance);
+
+    private static IUserAccountStore AccountStoreFor(params string?[] accountCompanyIds)
+    {
+        var accountStore = Substitute.For<IUserAccountStore>();
+        accountStore.LoadAccounts().Returns(
+        [
+            .. accountCompanyIds.Select((companyId, index) => new UserAccountConfig(
+                $"operator-{index.ToString()}",
+                FixturePasswordHash,
+                UserRole.ReadOnly,
+                CompanyId: companyId)),
+        ]);
+
+        return accountStore;
+    }
+}

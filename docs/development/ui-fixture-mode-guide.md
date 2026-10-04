@@ -424,7 +424,7 @@ Ensure:
 - **Service**: `src/Meridian.Ui.Services/Services/FixtureDataService.cs`
 - **Tests**: `tests/Meridian.Ui.Tests/Services/FixtureDataServiceTests.cs`
 - **Contracts**: `src/Meridian.Contracts/Api/`
-- **Historical assessment**: `archive/docs/assessments/desktop-platform-improvements-implementation-guide.md`; use current engineering and operator docs for active guidance.
+- **Historical assessment**: [`archive/docs/assessments/desktop-platform-improvements-implementation-guide.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/assessments/desktop-platform-improvements-implementation-guide.md); use current engineering and operator docs for active guidance.
 
 ## Next Steps
 
@@ -447,7 +447,7 @@ After implementing basic fixture mode:
 - **Desktop Development:**
   - [Desktop Testing Guide](./desktop-testing-guide.md) - Complete testing procedures and fixture usage
   - [WPF Implementation Notes](./wpf-implementation-notes.md) - WPF architecture and patterns
-  - [Desktop Platform Improvements archive](../../archive/docs/assessments/desktop-platform-improvements-implementation-guide.md) - Historical improvement program; current guidance lives in engineering and operator docs
+  - [Desktop Platform Improvements archive](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/assessments/desktop-platform-improvements-implementation-guide.md) - Historical improvement program; current guidance lives in engineering and operator docs
 
 - **Testing and Quality:**
   - [Test Project README](https://github.com/rodoHasArrived/Meridian/blob/main/tests/Meridian.Ui.Tests/README.md) - Test coverage details

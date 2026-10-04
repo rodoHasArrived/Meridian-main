@@ -81,9 +81,9 @@
 }
 
 .workspace-filter-segment.active {
-  border-color: rgba(47, 111, 143, 0.34);
+  border-color: rgba(168, 84, 54, 0.34);
   background: var(--ws-row-selected);
-  color: #255B75;
+  color: var(--ws-accent-pressed);
 }
 
 .workspace-filter-fields {
@@ -133,7 +133,7 @@
 
 .workspace-tab.active {
   border-bottom-color: var(--cyan-primary);
-  color: #255B75;
+  color: var(--ws-accent-pressed);
 }
 
 .workspace-tab-panel {

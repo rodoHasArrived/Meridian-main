@@ -1,7 +1,7 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { getLiveQuotesSnapshot } from "@/lib/api";
-import { isAbortError } from "@/lib/api-errors";
+import { isAbortError, isApiError } from "@/lib/api-errors";
 import type { QuotesSnapshotItem, QuotesSnapshotResponse } from "@/types";
 import { describeCondition, shouldTrigger } from "./evaluator";
 import {
@@ -14,6 +14,19 @@ import {
 import type { PriceAlert, PriceAlertDraft, PriceAlertField, PriceAlertStorageState, PriceAlertTrigger } from "./index";
 
 export const PRICE_ALERTS_POLL_INTERVAL_MS = 5000;
+
+/**
+ * Shown once when the quote snapshot refuses the operator, in place of the transport error the
+ * refusal would otherwise surface. It names the cause so the banner reads as a permission boundary
+ * rather than an outage the operator should chase.
+ */
+export const quoteAccessDeniedMessage =
+  "Price alerts need market-data permission, which this operator profile does not hold.";
+
+/** 401 and 403 both mean this operator will not be served quotes; neither changes on retry. */
+function isUnauthorizedQuoteAccess(error: unknown): boolean {
+  return isApiError(error) && (error.status === 401 || error.status === 403);
+}
 
 export interface PriceAlertsApi {
   state: PriceAlertStorageState;
@@ -202,6 +215,7 @@ export function usePriceAlertsService(options: ServiceOptions = {}): PriceAlerts
     }
 
     let cancelled = false;
+    let interval: number | null = null;
     const controller = new AbortController();
 
     const tick = async () => {
@@ -217,6 +231,18 @@ export function usePriceAlertsService(options: ServiceOptions = {}): PriceAlerts
         if (cancelled || isAbortError(error)) {
           return;
         }
+        // The alerts provider is mounted for the whole shell, so an operator without market-data
+        // permission carries it on every screen. Authorization does not change between ticks:
+        // retrying it every five seconds produces standing refused traffic and an error banner that
+        // can never clear, so stand down and let the next mount or symbol change try again.
+        if (isUnauthorizedQuoteAccess(error)) {
+          setPollErrorMessage(quoteAccessDeniedMessage);
+          if (interval !== null) {
+            window.clearInterval(interval);
+            interval = null;
+          }
+          return;
+        }
         setPollErrorMessage(error instanceof Error ? error.message : "Failed to refresh quotes");
       }
     };
@@ -230,11 +256,14 @@ export function usePriceAlertsService(options: ServiceOptions = {}): PriceAlerts
       };
     }
 
-    const interval = window.setInterval(() => void tick(), pollIntervalMs);
+    interval = window.setInterval(() => void tick(), pollIntervalMs);
     return () => {
       cancelled = true;
       controller.abort();
-      window.clearInterval(interval);
+      if (interval !== null) {
+        window.clearInterval(interval);
+        interval = null;
+      }
     };
   }, [evaluateSnapshot, fetchSnapshot, pollIntervalMs, quotesStream.healthy, watchedSymbols.join("|")]);
 

@@ -4,23 +4,23 @@ import React from "react";
 
 export function StatusBanner({ tone = "success", title, detail }) {
   const c = {
-    success: { bg: "var(--green-a10, rgba(22,136,95,.10))",  bd: "var(--green, #16885F)",  fg: "var(--green-dim, #10663F)" },
-    warning: { bg: "var(--orange-a10, rgba(183,121,31,.10))", bd: "var(--orange, #8A520E)", fg: "var(--orange-dim, #683E0B)" },
-    danger:  { bg: "var(--red-a10, rgba(186,63,85,.10))",     bd: "var(--red, #BA3F55)",    fg: "var(--red-dim, #8C2F40)" },
-    info:    { bg: "var(--blue-a10, rgba(47,111,143,.10))",   bd: "var(--accent, #2F6F8F)", fg: "var(--accent, #2F6F8F)" },
+    success: { bg: "var(--green-a10, rgba(58,122,86,.10))",  bd: "var(--green, #3A7A56)",  fg: "var(--green-dim, #2C5C40)" },
+    warning: { bg: "var(--orange-a10, rgba(138,92,18,.10))", bd: "var(--orange, #8A5C12)", fg: "var(--orange-dim, #68450E)" },
+    danger:  { bg: "var(--red-a10, rgba(168,68,60,.10))",     bd: "var(--red, #A8443C)",    fg: "var(--red-dim, #7E332D)" },
+    info:    { bg: "var(--blue-a10, rgba(168,84,54,.10))",   bd: "var(--accent, #A85436)", fg: "var(--accent, #A85436)" },
   }[tone];
   return (
     <div style={{
       display: "flex", gap: 10, alignItems: "baseline", padding: "11px 14px",
       borderRadius: "var(--radius-button,2px)",
-      border: "1px solid var(--border, #D7DCE2)",
+      border: "1px solid var(--border, #E4E3DE)",
       borderLeft: `4px solid ${c.bd}`, background: c.bg,
       fontFamily: "var(--font-body)", fontSize: 13
     }}>
       <div>
         <div style={{ fontWeight: 600, color: c.fg }}>{title}</div>
         {detail && <div style={{
-          fontSize: 12, color: "var(--text-secondary, #4D5967)", marginTop: 2,
+          fontSize: 12, color: "var(--text-secondary, #4E5258)", marginTop: 2,
           fontFamily: "var(--font-data)", fontVariantNumeric: "tabular-nums"
         }}>{detail}</div>}
       </div>

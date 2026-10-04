@@ -90,11 +90,18 @@ public static class StatementRunMatchingService
         var internalOnlyResults = new List<StatementMatchResult>();
         foreach (var match in result.Results)
         {
-            if (match.BrokerEvidenceReference is { Length: > 0 } brokerReference)
+            // A many-to-one split match covers several statement rows; register the group under
+            // every broker member so none of its rows falls through to the defensive
+            // unclassified-row break.
+            var brokerReferences = match.AllBrokerEvidenceReferences;
+            if (brokerReferences.Count > 0)
             {
-                resultsByBrokerReference[brokerReference] = match;
+                foreach (var brokerReference in brokerReferences)
+                {
+                    resultsByBrokerReference[brokerReference] = match;
+                }
             }
-            else if (match.InternalEvidenceReference is { Length: > 0 })
+            else if (match.AllInternalEvidenceReferences.Count > 0)
             {
                 internalOnlyResults.Add(match);
             }
@@ -127,7 +134,7 @@ public static class StatementRunMatchingService
                 outcomes.Add(new MatchOutcome(
                     row.RawChecksum,
                     "matched",
-                    match.InternalEvidenceReference ?? string.Empty,
+                    string.Join(";", match.AllInternalEvidenceReferences),
                     match.Confidence,
                     match.Explanation)
                 {

@@ -2,6 +2,8 @@ using FluentAssertions;
 using Meridian.Application.Reconciliation;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Domain.Reconciliation;
+using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Ledger;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.Storage.Ledger;
@@ -13,6 +15,7 @@ namespace Meridian.Tests.Application.Reconciliation;
 public sealed class ScopedLedgerJournalInternalTransactionSourceTests
 {
     private const string AccountId = "account-a";
+    private static readonly Guid FundId = Guid.NewGuid();
     private const string ExternalAccountLabel = "DE89-3704-0044-0532-0130-00";
     private static readonly DateOnly PeriodStart = new(2026, 5, 1);
     private static readonly DateOnly PeriodEnd = new(2026, 5, 31);
@@ -33,6 +36,7 @@ public sealed class ScopedLedgerJournalInternalTransactionSourceTests
         var store = Store(
             [Record(latePosted, accountingPeriodId)],
             query => capturedQuery = query);
+        ConfigureScope(store, ledgerBookId, accountingPeriodId);
 
         var transactions = await new LedgerJournalInternalTransactionSource(store)
             .GetTransactionsAsync(Query(ledgerBookId, accountingPeriodId));
@@ -46,6 +50,8 @@ public sealed class ScopedLedgerJournalInternalTransactionSourceTests
         capturedQuery.PeriodId.Should().Be(accountingPeriodId);
         capturedQuery.OccurredFrom.Should().BeNull();
         capturedQuery.OccurredTo.Should().BeNull();
+        capturedQuery.EffectiveFrom.Should().Be(PeriodStart);
+        capturedQuery.EffectiveTo.Should().Be(PeriodEnd);
     }
 
     [Fact]
@@ -85,7 +91,7 @@ public sealed class ScopedLedgerJournalInternalTransactionSourceTests
     }
 
     [Fact]
-    public async Task GetTransactionsAsync_UnscopedCashLine_RequiresMatchingEntryMetadata()
+    public async Task GetTransactionsAsync_UnscopedCashLine_RejectsConflictingEntryMetadata()
     {
         var accountingPeriodId = Guid.NewGuid();
         var metadataScoped = Journal(
@@ -107,7 +113,7 @@ public sealed class ScopedLedgerJournalInternalTransactionSourceTests
 
         var transaction = (await source.GetTransactionsAsync(Query()))
             .Should().ContainSingle(
-                "an unscoped cash line is attributable only through matching entry metadata")
+                "conflicting entry metadata cannot be overridden by another line account")
             .Subject;
 
         transaction.NetAmount.Should().Be(25m);
@@ -124,14 +130,19 @@ public sealed class ScopedLedgerJournalInternalTransactionSourceTests
         var logger = new CapturingLogger<LedgerJournalInternalTransactionSource>();
         var source = new LedgerJournalInternalTransactionSource(store, logger);
 
-        var transactions = await source.GetTransactionsAsync(Query(Guid.NewGuid(), Guid.NewGuid()));
+        var ledgerBookId = Guid.NewGuid();
+        var accountingPeriodId = Guid.NewGuid();
+        ConfigureScope(store, ledgerBookId, accountingPeriodId);
+        var transactions = await source.GetTransactionsAsync(Query(ledgerBookId, accountingPeriodId));
 
         transactions.Should().BeEmpty();
         logger.Messages.Should().ContainSingle();
         logger.Messages[0].Should().NotContain(
             ExternalAccountLabel,
             "custodian account numbers and IBANs are reconciliation labels, not safe telemetry identifiers");
-        logger.Messages[0].Should().Contain("retained ledger book");
+        logger.Messages[0].Should().Contain("reconciliation account");
+        logger.Messages[0].Should().NotContain(ledgerBookId.ToString());
+        logger.Messages[0].Should().NotContain(accountingPeriodId.ToString());
     }
 
     [Fact]
@@ -146,7 +157,7 @@ public sealed class ScopedLedgerJournalInternalTransactionSourceTests
                 fundAccountId,
                 AccountTypeDto.Brokerage,
                 EntityId: null,
-                FundId: null,
+                FundId: FundId,
                 SleeveId: null,
                 VehicleId: null,
                 AccountCode: "FUND-ACCOUNT",
@@ -181,13 +192,16 @@ public sealed class ScopedLedgerJournalInternalTransactionSourceTests
             ExternalAccountLabel,
             PeriodStart,
             PeriodEnd,
-            "USD",
-            ledgerBookId,
-            accountingPeriodId));
+            "USD")
+        {
+            AccountingScope = new StatementAccountingScope(FundId.ToString("D"), ledgerBookId, accountingPeriodId, PeriodEnd)
+        });
 
         capturedQuery.Should().NotBeNull();
-        capturedQuery!.LedgerBookId.Should().Be(ledgerBookId);
-        capturedQuery.AccountingPeriodId.Should().Be(accountingPeriodId);
+        capturedQuery!.AccountingScope.Should().NotBeNull();
+        capturedQuery.AccountingScope!.LedgerBookId.Should().Be(ledgerBookId);
+        capturedQuery.AccountingScope.AccountingPeriodId.Should().Be(accountingPeriodId);
+        capturedQuery.AccountingScope.FundProfileId.Should().Be(FundId.ToString("D"));
     }
 
     private static ILedgerJournalStore Store(
@@ -212,9 +226,24 @@ public sealed class ScopedLedgerJournalInternalTransactionSourceTests
             [AccountId],
             PeriodStart,
             PeriodEnd,
-            "USD",
-            ledgerBookId,
-            accountingPeriodId);
+            "USD")
+        {
+            AccountingScope = ledgerBookId.HasValue || accountingPeriodId.HasValue
+                ? new StatementAccountingScope(FundId.ToString("D"), ledgerBookId ?? Guid.Empty, accountingPeriodId ?? Guid.Empty, PeriodEnd)
+                : null
+        };
+
+    private static void ConfigureScope(ILedgerJournalStore store, Guid ledgerBookId, Guid accountingPeriodId)
+    {
+        store.GetLedgerBookAsync(ledgerBookId, Arg.Any<CancellationToken>())
+            .Returns(new LedgerBookRecord(
+                ledgerBookId, FundId.ToString("D"), FundId, FundStructureNodeKindDto.Fund,
+                "Statement primary book", "USD", DateTimeOffset.UnixEpoch, DateTimeOffset.UnixEpoch));
+        store.GetPeriodAsync(accountingPeriodId, Arg.Any<CancellationToken>())
+            .Returns(new LedgerAccountingPeriod(
+                accountingPeriodId, ledgerBookId, 2026, 5, "May", PeriodStart, PeriodEnd,
+                "Open", DateTimeOffset.UnixEpoch, null, 1));
+    }
 
     private static JournalEntry Journal(
         DateTimeOffset timestamp,

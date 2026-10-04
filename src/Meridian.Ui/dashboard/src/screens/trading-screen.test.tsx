@@ -83,6 +83,15 @@ vi.mock("@/lib/api", async () => {
         metadata: { sessionId: "sess-1" }
       }
     ]),
+    updateExecutionCircuitBreaker: vi.fn().mockResolvedValue({
+      circuitBreaker: { isOpen: true, reason: "kill switch drill", changedBy: "ops", changedAt: "2026-01-01T00:05:00Z" },
+      defaultMaxPositionSize: 5000,
+      symbolPositionLimits: { AAPL: 2500 },
+      manualOverrides: [],
+      asOf: "2026-01-01T00:05:00Z",
+      version: 4,
+      sweep: { outcome: "Partial", requested: 2, cancelled: 1, stillWorking: [{ orderId: "PO-9", symbol: "AAPL", reason: "Broker rejected the cancellation." }] }
+    }),
     getExecutionControls: vi.fn().mockResolvedValue({
       circuitBreaker: { isOpen: false, reason: null, changedBy: "ops", changedAt: "2026-01-01T00:00:00Z" },
       defaultMaxPositionSize: 5000,
@@ -487,6 +496,34 @@ describe("TradingScreen", () => {
     const controls = screen.getByLabelText(/Execution controls snapshot: breaker closed/i);
     expect(within(controls).getByText("5000")).toBeInTheDocument();
     expect(within(controls).getByText("BypassOrderControls (AAPL)")).toBeInTheDocument();
+  });
+
+  it("exposes a reachable kill switch on the browser lane and routes it through the confirmation gate", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen(data, "/trading/risk");
+    await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalled());
+
+    const breakerButton = screen.getByRole("button", {
+      name: /open the execution circuit breaker to halt submission and cancel all open orders/i
+    });
+    expect(breakerButton).toBeEnabled();
+
+    await user.click(breakerButton);
+    const dialog = await screen.findByRole("dialog", { name: /open execution circuit breaker/i });
+    expect(dialog).toHaveAccessibleDescription(
+      "This halts new order submission across gateways and immediately sweeps every open order for cancellation. Partial fills that already occurred are not reversed, and positions remain until manually flattened."
+    );
+
+    // The mutation must not fire until the operator acknowledges - the breaker is a destructive control.
+    expect(api.updateExecutionCircuitBreaker).not.toHaveBeenCalled();
+    await user.click(within(dialog).getByRole("checkbox"));
+    await user.click(within(dialog).getByRole("button", { name: "Confirm open execution circuit breaker" }));
+
+    await waitFor(() => expect(api.updateExecutionCircuitBreaker).toHaveBeenCalledWith(
+      expect.objectContaining({ isOpen: true })
+    ));
+    // Settling the action re-reads the controls snapshot so the rendered breaker state is server truth.
+    await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(2));
   });
 
   it("renders guardrail utilization bars from the live rule registry", async () => {

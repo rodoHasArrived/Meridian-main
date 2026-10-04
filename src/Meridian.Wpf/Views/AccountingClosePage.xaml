@@ -147,6 +147,53 @@
                 </Grid>
             </Border>
 
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,14"
+                    AutomationProperties.AutomationId="AccountingCloseScopeCard">
+                <StackPanel>
+                    <TextBlock Text="Close subject" Style="{StaticResource MetricLabelStyle}" />
+                    <WrapPanel Margin="0,8,0,0">
+                        <StackPanel Width="200" Margin="0,0,10,8">
+                            <TextBlock Text="Fund profile" Style="{StaticResource CardDescriptionStyle}" />
+                            <TextBox Text="{Binding CloseScopeFundProfileId, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource FormTextBoxStyle}"
+                                     AutomationProperties.Name="Close fund profile"
+                                     AutomationProperties.AutomationId="AccountingCloseScopeFundProfileTextBox" />
+                        </StackPanel>
+                        <StackPanel Width="280" Margin="0,0,10,8">
+                            <TextBlock Text="Ledger book ID" Style="{StaticResource CardDescriptionStyle}" />
+                            <TextBox Text="{Binding CloseScopeLedgerBookIdText, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource FormTextBoxStyle}"
+                                     AutomationProperties.Name="Close ledger book ID"
+                                     AutomationProperties.AutomationId="AccountingCloseScopeLedgerBookTextBox" />
+                        </StackPanel>
+                        <StackPanel Width="280" Margin="0,0,10,8">
+                            <TextBlock Text="Fund account ID" Style="{StaticResource CardDescriptionStyle}" />
+                            <TextBox Text="{Binding CloseScopeFundAccountIdText, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource FormTextBoxStyle}"
+                                     AutomationProperties.Name="Close fund account ID"
+                                     AutomationProperties.AutomationId="AccountingCloseScopeFundAccountTextBox" />
+                        </StackPanel>
+                        <StackPanel Width="200" Margin="0,0,10,8">
+                            <TextBlock Text="Entity" Style="{StaticResource CardDescriptionStyle}" />
+                            <TextBox Text="{Binding CloseScopeEntityId, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource FormTextBoxStyle}"
+                                     AutomationProperties.Name="Close entity"
+                                     AutomationProperties.AutomationId="AccountingCloseScopeEntityTextBox" />
+                        </StackPanel>
+                        <StackPanel Width="160" Margin="0,0,0,8">
+                            <TextBlock Text="Period" Style="{StaticResource CardDescriptionStyle}" />
+                            <TextBox Text="{Binding CloseScopePeriodId, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource FormTextBoxStyle}"
+                                     AutomationProperties.Name="Close period"
+                                     AutomationProperties.AutomationId="AccountingCloseScopePeriodTextBox" />
+                        </StackPanel>
+                    </WrapPanel>
+                    <TextBlock Text="{Binding CloseScopeStatusText}" TextWrapping="Wrap"
+                               Style="{StaticResource CardDescriptionStyle}"
+                               AutomationProperties.AutomationId="AccountingCloseScopeStatusText" />
+                </StackPanel>
+            </Border>
+
             <UniformGrid Columns="4" Margin="0,0,0,14">
                 <Border Style="{StaticResource CardStyle}" Margin="0,0,10,0">
                     <StackPanel>

@@ -30,6 +30,24 @@ public sealed class SharedStorageCoordinationStore : ICoordinationStore
 
     public string RootPath { get; }
 
+    public async Task<bool> ExecuteUnderLeaseAsync(
+        LeaseRecord lease, Func<CancellationToken, Task> action, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(lease);
+        ArgumentNullException.ThrowIfNull(action);
+        var leasePath = GetLeasePath(lease.ResourceId);
+        await using var resourceLock = await AcquireResourceLockAsync(leasePath, ct).ConfigureAwait(false);
+        var retained = await ReadLeaseFileAsync(leasePath, ct).ConfigureAwait(false);
+        if (retained is null || retained.LeaseVersion != lease.LeaseVersion ||
+            !string.Equals(retained.InstanceId, lease.InstanceId, StringComparison.Ordinal) ||
+            retained.ExpiresAtUtc <= DateTimeOffset.UtcNow)
+            return false;
+
+        ct.ThrowIfCancellationRequested();
+        await action(ct).ConfigureAwait(false);
+        return true;
+    }
+
     public async Task<LeaseAcquireResult> TryAcquireLeaseAsync(
         string resourceId,
         string instanceId,

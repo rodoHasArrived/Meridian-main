@@ -6,10 +6,19 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-07-25
+last_reviewed: 2026-10-02
 ---
 
 # src/Meridian.Infrastructure
+
+Persistence is supplied through `Core.IO.IAtomicFileWriter`, `Contracts.Etl.IEtlStagingStore`, and
+ProviderSdk `IBackfillBarWriter`. Infrastructure has no project-reference path to Storage;
+application/host composition supplies Storage implementations. See the PRD-108 inventory in
+[`layer-boundaries.md`](../../docs/architecture/layer-boundaries.md).
+
+Immutable statement match artifacts retain source-comparison completeness, represented population kinds,
+and the executed matcher/tolerance-policy fingerprint. Legacy artifacts omit these fields and cannot
+establish clearing. The optional fields preserve legacy artifact hashes when absent.
 
 ## Purpose
 
@@ -28,7 +37,93 @@ This layer owns external integration details while depending on lower contracts 
 
 ## Important workflows
 
+Backfill request admission captures the current activity context; queued worker execution restores
+that parent explicitly rather than inheriting the worker's ambient context. Provider fetch and bar
+storage spans are children of the backfill attempt and retain error/exception evidence on failures,
+including internal timeout cancellations while the worker token is still active. Expected worker
+cancellation leaves those spans without error status.
+The request-only context preserves flags and trace state for in-process retries; it is not serialized
+with jobs, so recovery after restart captures a new admission context or starts a new root trace.
+The adapter-local `Meridian` activity source is subscribed by the common host-owned tracing provider
+without an Infrastructure-to-Application dependency. See
+[Distributed Tracing Operations](../../docs/operators/distributed-tracing.md).
+
+Alpaca Trading API portfolio snapshots explicitly bind `us_equity` and `us_option` position
+values to USD only when the authenticated account response explicitly supplies USD. The
+[provider Trading API models](https://alpaca.markets/sdks/python/api_reference/trading/models.html)
+define the account and position dollar-value contract. Unknown assets, crypto quote denominations,
+non-USD accounts, and missing account currency remain unbound; statement intake rejects those
+missing position currencies rather than inferring them from account base currency.
+The [Trading Account](https://docs.alpaca.markets/us/docs/account-plans) currency can establish USD
+for [trade fills](https://docs.alpaca.markets/us/v1.4.2/docs/account-activities), whose payload omits
+currency. The gateway binds only Trade/TradeFill events to the already verified account's explicit
+USD and records `currencySource=VerifiedAccount`, including activity-only bounded fetches.
+Explicit activity currencies remain unchanged. Missing account currency and missing or blank
+non-fill currencies stay missing; cash, dividends, fees, corrections, and busts never receive this
+fill-specific binding. Direct canonical CSV intake validates currency against Core's shared
+recognized-code catalog before retaining an import.
+
+Canonical CSV import requires the currency column in the header and at least one data row.
+Header-only statements cannot validate or persist as empty imports; every admitted row retains
+explicit currency and invariant decimal evidence.
+
+Canonical CSV statement imports require an explicit three-letter currency on every row.
+Older seven-column files must be regenerated with source-backed currency evidence; the
+importer does not supply USD. Quantity, price, cash and nonblank fees use invariant decimal
+notation without grouping separators. Missing optional fees remain absent, while malformed
+fees fail validation and import before persistence. Quoted fields and explicit zero amounts
+remain supported.
+
 Use this module for provider implementation, external service integration, and adapter behavior.
+
+The [adapter readiness registry](../../docs/source/data/adapter-readiness.yml) owns the source-level
+inventory of every direct adapter family. Its [generated readiness matrix](../../docs/source/generated/adapter-readiness-matrix.md)
+records capability claims, credentials and SDK dependencies, risks, degradation behavior, registration,
+targeted evidence, ownership, and next actions. Readiness describes the implementation and its linked
+evidence; live-provider validation and operator sign-off remain governed by the
+[provider validation matrix](../../docs/reference/provider-validation-matrix.md).
+
+`ProviderCapabilityDescriptorCatalog` owns built-in adapter types and factories for streaming,
+historical backfill, symbol search, corporate actions, options, and brokerage. `ProviderFactory`
+and `AddProviderServices` consume those same descriptors; the merged catalog derives its six
+factory flags from them without constructing disabled adapters. Module discovery runs before
+`BuildServiceProvider` and excludes descriptor-owned families, so a discovered Alpaca module
+cannot replace configured built-in factories. Explicit plugin assemblies retain ownership of
+their module-registered concrete factories and lifetimes. Attribute metadata alone cannot bypass
+module configuration. External discovery metadata projects module-only corporate-action and
+brokerage families into inventory without constructing them, including when disabled or awaiting
+configuration. Synthetic, Polygon and NYSE compatibility data sources are also recorded.
+OpenFIGI's `ISymbolResolver` remains in the adapter inventory, while the operator matrix
+projects only its six supported surfaces and omits resolver-only rows. Streaming instrument coverage is independently
+declared, so Polygon's Forex/Crypto/Index historical coverage does not advertise unsupported
+streams and synthetic option-chain coverage does not imply option streaming. Explicit exclusions
+also distinguish hosted ingestion, mapper-only, template-only and orchestration families.
+Catalog tests compare an explicit provider/capability inventory, enumerate adapter folders,
+audit implemented shared contracts by reflection, and require reasons for excluded families.
+Polygon's corporate-action fetcher, EDGAR reference-data ingestion, and NYSE compatibility
+history retain their explicit exclusions from unsupported shared contracts. `ProviderCompositionTests`, `ProviderCatalogCompositionTests`, and
+`ProviderModuleCompositionTests` exercise application features or the public registration method,
+configured aliases, every declared capability, module factory precedence, and template/mapper
+exclusions. Catalog presence alone does not establish live-provider readiness, and merged granular
+product metadata retains feed, entitlement, pacing, source timestamp, and quality declarations.
+Search instrument coverage is also independent of options coverage. The NYSE registration helper
+can bind configuration from the final host service provider; its compatibility interfaces resolve
+the same source instance, and streaming uses those bound authentication options.
+
+The legacy IB Flex broker importer streams XML and materializes only supported trade, position,
+and cash rows. Its existing 32 MiB source-byte and 100,000-row ceilings are joined by independent
+64-level nesting, 500,000 parse-node (including attributes), 50,000 per-row node, and 64 KiB scalar
+limits, enforced while reading rather than after building a full document. Unrelated Flex sections
+are scanned under those quotas but not retained in a parse tree. DTDs remain prohibited; nested
+statements and element/text-based row payloads are rejected.
+
+Validation and import share the same field rules. Account identity must come from the row or
+statement; currency must be explicitly supplied as a three-letter code; required numeric fields
+must contain invariant decimals without grouping separators. Missing values no longer become USD
+or zero. Explicit zero values and source-provided statement account/date fallbacks remain valid.
+Row checksums keep their existing uppercase SHA-256 identities, including retained row comments;
+source/canonical artifact hashes and atomic import uniqueness remain owned by the existing snapshot
+and canonical-store path. Cancellation propagates during XML reading and canonical row mapping.
 
 Backfill worker shutdown closes intake, cancels and observes every admitted provider attempt,
 atomically releases queue ownership, and retains a restart-safe job transition before owned
@@ -76,10 +171,13 @@ existing namespaces but are owned by ProviderSdk so plugin contracts do not depe
 Infrastructure. Infrastructure publishes type forwarders for adapters compiled against the former
 assembly location.
 
-Provider registry paths normalize configured provider identifiers before factory lookup, and the
-registry can hold multiple adapter contracts for one provider family ID. This allows identifiers
-such as `alpaca` to resolve independently for streaming, backfill, and symbol-search contracts
-without dropping one registration because another adapter uses the same family ID.
+Provider registry paths use the ProviderSdk-owned `ProviderIdentity` alias map before lookup,
+capability reporting, and health aggregation. `ib` and `interactive-brokers` resolve to `ibkr`;
+`nasdaqdatalink` resolves to `nasdaq`. The registry can hold all six contracts for one canonical
+family and resolves each through its declared factory. Streaming factories create independent
+clients. `ib-sim` transport and `ib-flex` credential resources keep their separate identities.
+Family disable settings apply across capabilities; inventory does not grant a production factory
+to template-only or mapper-only families.
 Composite historical failover treats provider rate limits as structured signals only:
 `RateLimitException` (including wrapped instances) or `HttpRequestException.StatusCode` equal to
 HTTP 429. Adapter implementations should map vendor 429 responses at the HTTP boundary instead of
@@ -147,6 +245,19 @@ account's balances or positions. Account-summary request correlation is register
 so synchronous vendor callbacks cannot arrive before the awaiting operation exists.
 Alpaca trade-update streaming accumulates complete WebSocket messages across fragmented frames,
 bounds each message before UTF-8 decoding, and reconnects after an incomplete oversized payload.
+Alpaca order cancellation accepts a typed client-ID or broker-ID namespace. Client identifiers use
+only the provider's dedicated lookup route, so a UUID-shaped client ID cannot collide with an
+unrelated broker UUID; DELETE receives only the resolved broker ID. HTTP 204 is acceptance rather
+than completion: the adapter rereads that exact broker order and emits `Cancelled` only after the
+provider reports cancellation or absence. If it filled in the race, the verified cumulative
+quantity and average price are emitted as a fill. Open-order reads request nested pages at the
+provider maximum of 500 and advance by broker-order cursor until a short page, so bracket children
+and orders beyond the default page cannot disappear from kill-switch evidence.
+Polygon trade mapping retains `i` as the published trade identity while continuity checks use a
+separate per-ticker sequence domain for `q`, independent of execution venue. Sparse increasing
+values remain valid, while duplicate or decreasing values across changing trade IDs and venues are
+rejected by the shared trade collector. Because Polygon resets `q` each U.S. equities session, the
+continuity key includes the America/New_York trading date; UTC midnight does not reset the stream.
 Failover cleanup remains best effort, but failed depth or trade unsubscriptions are logged with the
 provider and subscription identity so leaked quota-consuming streams remain observable.
 The IB vendor runtime also exposes an entitlement-aware `IBDataServices` seam for scanner discovery,
@@ -165,11 +276,12 @@ explicitly ownerless requests; owner-bound requests remain visible solely throug
 tenant/company snapshot/watch overloads and durable materialization paths.
 Its richer request callbacks publish bounded, request-correlated ProviderSdk read-model updates for
 option discovery, scanners, real-time bars, historical ticks, account/model-account P&L, and market
-rules. Each returned request and observation carries required provenance: provider and configured
-connection identity, source and receipt times, reported entitlement/feed/availability, request descriptor,
+rules. Callbacks that do not correlate to an active `IBDataServices` request are ignored. Each returned
+request and observation carries required provenance: provider and configured connection identity, source
+and receipt times, reported entitlement/feed/availability, request descriptor,
 provider-native identity, correlation, and a deterministic de-duplication key. Vendor SDK absence remains simulation/fail-closed and cannot advertise live IB capability.
 The brokerage gateway template remains an obsolete copy-target, but its scaffold behavior is
-deterministic: provider-discovery metadata, option-backed identity/capabilities, configurable
+deterministic: nonproduction discovery metadata, option-backed identity/capabilities, configurable
 connection readiness, option-backed account/position reads, and in-memory open-order tracking let
 copied providers and tests prove lifecycle behavior before replacing the template seams with broker
 APIs.
@@ -244,6 +356,8 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
 ```bash
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~TracingIntegrationTests" /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderCompositionTests|FullyQualifiedName~ProviderCatalogCompositionTests|FullyQualifiedName~ProviderModuleCompositionTests" --logger "console;verbosity=normal"
 ```
 
 ## Change rules

@@ -899,6 +899,7 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
         StatusText = $"{progressiveAction} {selectedEntries.Length} position(s)…";
 
         var failures = new List<string>();
+        var pendingApprovals = new List<string>();
         var successes = 0;
         var fundAccountId = WorkstationOperatingContextScopeResolver.ResolveFundAccountId(
             _operatingContextService?.CurrentContext);
@@ -910,26 +911,75 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
                 new ExecutionPositionActionRequest(entry.PositionKey, FundAccountId: fundAccountId),
                 _cts.Token);
 
-            if (response.Success)
+            // Judged from the action result the endpoint returned, not from the HTTP call
+            // succeeding. The position endpoints answer 200 with a Rejected or Failed status when
+            // the OMS refused the close, and counting that as "submitted" would tell an operator
+            // flattening a book that a position was closing while it was still open.
+            var outcome = ClassifyActionResponse(
+                response.Success,
+                response.ErrorMessage,
+                response.Data?.Status,
+                response.Data?.Message,
+                entry.ProductDescription);
+            switch (outcome.Kind)
             {
-                successes++;
-            }
-            else
-            {
-                failures.Add(string.IsNullOrWhiteSpace(response.ErrorMessage)
-                    ? entry.ProductDescription
-                    : $"{entry.ProductDescription}: {response.ErrorMessage}");
+                case PositionActionOutcomeKind.Submitted:
+                    successes++;
+                    break;
+                case PositionActionOutcomeKind.PendingApproval:
+                    // Parked, not failed: the order exists and an approver must release it.
+                    // Reporting it as a failure invites a resubmission that parks a second
+                    // order under a fresh client id, and approving both over-closes.
+                    pendingApprovals.Add(outcome.Detail!);
+                    break;
+                default:
+                    failures.Add(outcome.Detail!);
+                    break;
             }
         }
 
         await RefreshAsync(_cts.Token);
 
-        StatusText = failures.Count switch
+        StatusText = ComposeActionStatus(actionLabel, lowerAction, successes, pendingApprovals, failures);
+    }
+
+    /// <summary>
+    /// Renders what a batch of position actions achieved. Pending approvals are named
+    /// separately from failures and carry the endpoint's own instruction, because the operator's
+    /// correct next step for a parked order is to wait for the approver, never to resubmit.
+    /// </summary>
+    internal static string ComposeActionStatus(
+        string actionLabel,
+        string lowerAction,
+        int successes,
+        IReadOnlyList<string> pendingApprovals,
+        IReadOnlyList<string> failures)
+    {
+        var parts = new List<string>();
+        if (successes > 0)
         {
-            0 => $"{actionLabel} submitted for {successes} position(s).",
-            _ when successes > 0 => $"{actionLabel} submitted for {successes} position(s); {failures.Count} failed.",
-            _ => $"Unable to {lowerAction} the selected positions."
-        };
+            parts.Add($"{actionLabel} submitted for {successes} position(s)");
+        }
+
+        if (pendingApprovals.Count > 0)
+        {
+            parts.Add($"{pendingApprovals.Count} parked for governed approval; do not resubmit ({string.Join("; ", pendingApprovals)})");
+        }
+
+        if (failures.Count > 0)
+        {
+            parts.Add(successes > 0 || pendingApprovals.Count > 0
+                ? $"{failures.Count} failed ({string.Join("; ", failures)})"
+                : $"unable to {lowerAction} the selected positions ({string.Join("; ", failures)})");
+        }
+
+        if (parts.Count == 0)
+        {
+            return $"Unable to {lowerAction} the selected positions.";
+        }
+
+        var text = string.Join("; ", parts) + ".";
+        return char.ToUpperInvariant(text[0]) + text[1..];
     }
 
     private void OnEntryPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -957,6 +1007,75 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
             }
         }
     }
+
+    internal enum PositionActionOutcomeKind
+    {
+        Submitted,
+        PendingApproval,
+        Failed
+    }
+
+    /// <summary>What one position action achieved, judged from the returned action result.</summary>
+    internal readonly record struct PositionActionOutcome(PositionActionOutcomeKind Kind, string? Detail)
+    {
+        public bool Submitted => Kind == PositionActionOutcomeKind.Submitted;
+    }
+
+    /// <summary>
+    /// Classifies one position-action response. Submitted only when the HTTP call succeeded AND
+    /// the returned action status says the order reached the book. A PendingApproval status is
+    /// a parked order awaiting an approver, its own outcome: the endpoint's instruction travels
+    /// with it verbatim. Anything else is a position still open, and the reason the service gave
+    /// travels into the detail so the operator reads why rather than a bare name.
+    /// </summary>
+    internal static PositionActionOutcome ClassifyActionResponse(
+        bool httpSuccess,
+        string? errorMessage,
+        string? actionStatus,
+        string? actionMessage,
+        string productDescription)
+    {
+        if (httpSuccess && IsSubmittedActionStatus(actionStatus))
+        {
+            return new PositionActionOutcome(PositionActionOutcomeKind.Submitted, null);
+        }
+
+        if (httpSuccess && string.Equals(actionStatus, "PendingApproval", StringComparison.OrdinalIgnoreCase))
+        {
+            return new PositionActionOutcome(
+                PositionActionOutcomeKind.PendingApproval,
+                string.IsNullOrWhiteSpace(actionMessage)
+                    ? $"{productDescription}: parked for governed approval"
+                    : $"{productDescription}: {actionMessage}");
+        }
+
+        var detail = !string.IsNullOrWhiteSpace(errorMessage)
+            ? errorMessage
+            : httpSuccess
+                ? string.IsNullOrWhiteSpace(actionMessage)
+                    ? $"the execution service reported '{actionStatus ?? "no status"}'"
+                    : actionMessage
+                : null;
+        return new PositionActionOutcome(
+            PositionActionOutcomeKind.Failed,
+            string.IsNullOrWhiteSpace(detail)
+                ? productDescription
+                : $"{productDescription}: {detail}");
+    }
+
+    /// <summary>
+    /// The statuses under which a position action actually reached the book. Everything else
+    /// the endpoint can answer with -- Rejected, Failed, Partial, Unestablished -- means the
+    /// position is still open and the operator has to know.
+    /// </summary>
+    internal static bool IsSubmittedActionStatus(string? status) =>
+        status is not null
+        && (string.Equals(status, "Submitted", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(status, "Accepted", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(status, "Filled", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(status, "PartiallyFilled", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(status, "Completed", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(status, "Success", StringComparison.OrdinalIgnoreCase));
 
     private sealed class TradingActionResultDto
     {

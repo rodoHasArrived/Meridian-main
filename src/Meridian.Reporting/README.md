@@ -51,6 +51,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   input rows.
 - `ReportGenerationService.cs` - trial-balance report-pack generation with Security Master
   enrichment, lookup-quality classification, and asset-class section grouping.
+  Human-readable logs replace line and control delimiters with spaces while preserving the original
+  fund identifier in requests and reports.
 - `NavAttributionService.cs` - fund/entity/sleeve/vehicle NAV attribution over ledger snapshots
   with optional Security Master classification.
 

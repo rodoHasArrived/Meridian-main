@@ -37,7 +37,7 @@ export function Stepper({ steps, activeStep = 0, onStepChange, showStepNumber = 
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 [outline-offset:-2px]",
               active
                 ? "border-b-2 border-primary bg-background pb-[9px] font-semibold text-foreground"
-                : "bg-card text-muted-foreground hover:bg-[#EAEEF3] hover:text-foreground"
+                : "bg-card text-muted-foreground hover:bg-[var(--ws-row-hover)] hover:text-foreground"
             )}
           >
             {showStepNumber ? (
@@ -49,7 +49,7 @@ export function Stepper({ steps, activeStep = 0, onStepChange, showStepNumber = 
                     ? "bg-primary text-primary-foreground"
                     : complete
                       ? "bg-success text-primary-foreground"
-                      : "bg-[#F3F6F9] text-muted-foreground"
+                      : "bg-[var(--ws-surface-raised)] text-muted-foreground"
                 )}
               >
                 {complete ? "✓" : index + 1}
@@ -57,7 +57,7 @@ export function Stepper({ steps, activeStep = 0, onStepChange, showStepNumber = 
             ) : null}
             <span className="truncate">{step.label}</span>
             {step.badge != null ? (
-              <span className="ml-auto shrink-0 rounded-[2px] bg-[#F3F6F9] px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+              <span className="ml-auto shrink-0 rounded-[2px] bg-[var(--ws-surface-raised)] px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
                 {step.badge}
               </span>
             ) : null}

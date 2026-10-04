@@ -20,6 +20,7 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// shrinks as the burn-down classifies each family one way or the other.
 /// </para>
 /// </summary>
+[Collection("Endpoint")]
 public sealed class EndpointReadDeclarationTests : EndpointIntegrationTestBase
 {
     public EndpointReadDeclarationTests(EndpointTestFixture fixture)

@@ -50,10 +50,19 @@ internal static class SecurityEconomicDefinitionAdapter
             ? economic.TypeName
             : economic.LegacyAssetClass;
 
-        // The legacy slot expects the flat v1 asset-specific-terms family. When only the structured
-        // v2 economic-terms document exists, route it through the upcaster chain so it lands as a
-        // valid v1 payload — putting the raw v2 document here made every read of the row fail with
-        // "Unsupported schemaVersion '2'".
+        // The legacy slot expects the flat v1 asset-specific-terms family. The retained v1 payload is
+        // the authoritative copy and is used whenever the record carries it. When only the structured
+        // v2 economic-terms document exists — a stored event written without
+        // legacyAssetSpecificTerms, which is the event-replay rebuild path — route it through the
+        // upcaster chain so it lands as a v1 payload the guard accepts; putting the raw v2 document
+        // here made every read of the row fail with "Unsupported schemaVersion '2'".
+        //
+        // That fallback is LOSSY: the flat family is keyed per asset class and the bridge only
+        // carries the maturity/coupon/payment/accrual/discount modules, so call schedules, pool
+        // factors, issuer identity, sweep and fund terms are dropped (see
+        // SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster). The flattened payload is stamped
+        // with FlattenedFromMarkerProperty so a projection rebuilt through this route is
+        // distinguishable from one whose flat terms were always present.
         var assetSpecificTerms = economic.LegacyAssetSpecificTerms?.Clone()
             ?? SecurityAssetSpecificTermsUpcasterChain.Normalize(economic.EconomicTerms).Payload;
         var primaryIdentifier = economic.Identifiers.FirstOrDefault(identifier => identifier.IsPrimary);

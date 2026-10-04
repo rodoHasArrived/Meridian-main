@@ -32,7 +32,7 @@ public static class StatusEndpoints
             var statusCode = handlers.GetHealthStatusCode(response);
             return Results.Json(response, jsonOptions, statusCode: statusCode);
         })
-        .WithName("GetHealth").DeclareOpenRead("Intentionally unauthenticated: both the session and API-key middlewares exempt the exact /health path because the shipped docker-compose healthcheck curls it, and a probe that authentication breaks reports every configured deployment unhealthy. Payload is status, uptime and coarse check names only; the detailed probe (/health/detailed) stays authenticated.")
+        .WithName("GetHealth").RequireEstablishedPrincipalRead()
         .WithTags("Health")
         .WithDescription("Returns comprehensive health status including provider connectivity and storage health.")
         .Produces<HealthCheckResponse>(200)
@@ -107,7 +107,7 @@ public static class StatusEndpoints
             var content = await handlers.GetPrometheusMetricsAsync(cancellationToken).ConfigureAwait(false);
             return Results.Content(content, "text/plain; version=0.0.4");
         })
-        .WithName("GetMetrics").DeclareOpenRead("Intentionally unauthenticated: both the session and API-key middlewares exempt the exact /metrics path because the shipped Prometheus scrape config targets it, and a scrape that authentication breaks collects nothing. Operational caveat: the exposition includes symbol-labelled counters, so the configured symbol set is visible to any caller that can reach the port — network-restrict /metrics (scrape network or reverse-proxy allowlist) in deployments where that matters.")
+        .WithName("GetMetrics").DeclareOpenRead("Prometheus scrape endpoint. It is exempt from application authentication and therefore must remain reachable only through the loopback-bound deployment posture enforced by validate-monitoring-deployment.py.")
         .WithTags("Monitoring")
         .WithDescription("Returns Prometheus-format metrics for scraping by monitoring systems.")
         .Produces(200);

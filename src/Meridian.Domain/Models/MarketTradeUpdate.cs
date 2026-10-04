@@ -19,6 +19,14 @@ namespace Meridian.Domain.Models;
 /// like Polygon supply sequences that are unique and increasing per ticker but explicitly
 /// non-contiguous; they pass <see langword="false"/> so out-of-order/duplicate detection
 /// still runs while gaps are not reported as data loss.
+/// <paramref name="SequenceStreamId"/> can override the published <paramref name="StreamId"/>
+/// and <paramref name="Venue"/> for the collector state that owns continuity and rolling order-flow
+/// calculations. This keeps provider trade identity and venue provenance on the event while allowing
+/// a sequence documented as per-ticker to share one comparison stream across changing trade IDs and
+/// execution venues.
+/// <paramref name="SequenceSessionDate"/> further scopes that explicit continuity stream when the
+/// provider resets its sequence each trading session. The adapter supplies the provider-market date,
+/// not a UTC date inferred by the collector.
 /// </remarks>
 public sealed record MarketTradeUpdate(
     DateTimeOffset Timestamp,
@@ -31,5 +39,7 @@ public sealed record MarketTradeUpdate(
     string? Venue = null,
     string[]? RawConditions = null,
     string? Source = null,
-    bool SequenceIsContiguous = true
+    bool SequenceIsContiguous = true,
+    string? SequenceStreamId = null,
+    DateOnly? SequenceSessionDate = null
 );

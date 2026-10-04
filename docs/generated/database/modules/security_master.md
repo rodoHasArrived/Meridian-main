@@ -2,9 +2,9 @@
 
 # `security_master` schema
 
-- Relations: 71
-- Functions/procedures: 1
-- Triggers: 1
+- Relations: 90
+- Functions/procedures: 3
+- Triggers: 5
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -122,6 +122,214 @@ erDiagram
         text primary_identifier_value
         bigint version
     }
+    security_master_corporate_action_canonical_sources {
+        uuid corp_act_id PK,FK
+        uuid proposal_id PK,FK
+        text provider_id
+        text source_event_id
+        text source_event_version
+        timestamp_with_time_zone linked_at
+    }
+    security_master_corporate_action_case_accounting_approvals {
+        uuid approval_id PK
+        uuid case_id FK
+        uuid projection_id FK
+        bigint bound_case_version
+        text approved_by
+        timestamp_with_time_zone approved_at
+        text reason
+        text evidence_reference
+        character_64_ evidence_hash
+        timestamp_with_time_zone voided_at
+        text voided_by
+    }
+    security_master_corporate_action_case_accounting_postings {
+        uuid posting_id PK
+        uuid case_id FK
+        uuid projection_id FK
+        uuid approval_id FK
+        uuid journal_entry_id
+        uuid ledger_book_id
+        uuid period_id
+        text accounting_basis
+        text currency
+        numeric_28_10_ total_debits
+        numeric_28_10_ total_credits
+        text posting_status
+        uuid tax_lot_mutation_batch_id
+        text posted_by
+        timestamp_with_time_zone posted_at
+    }
+    security_master_corporate_action_case_accounting_projections {
+        uuid projection_id PK
+        uuid case_id FK
+        bigint bound_case_version
+        uuid accounting_event_id
+        bigint accounting_event_version
+        bigint spine_version
+        character_64_ projection_input_hash
+        character_64_ posting_intent_hash
+        text posting_idempotency_key
+        character_64_ drafted_candidate_fingerprint
+        uuid policy_decision_id
+        bigint policy_decision_version
+        text rule_pack_id
+        text rule_pack_version
+        text selected_rule_id
+        text selected_rule_version
+        uuid ledger_book_id
+        uuid period_id
+        bigint expected_period_version
+        text accounting_basis
+        text fund_profile_id
+        text currency
+        date effective_date
+        numeric_28_10_ total_debits
+        numeric_28_10_ total_credits
+        uuid lot_snapshot_id
+        bigint lot_snapshot_version
+        boolean has_authoritative_lot_resolution
+        text prepared_by
+        timestamp_with_time_zone prepared_at
+        boolean is_current
+        timestamp_with_time_zone superseded_at
+    }
+    security_master_corporate_action_case_conflicts {
+        uuid conflict_id PK
+        uuid case_id FK
+        text field_name
+        text description
+        jsonb candidates
+        text state
+        text resolution
+        bigint case_version
+        text recorded_by
+        timestamp_with_time_zone recorded_at
+        text resolved_by
+        timestamp_with_time_zone resolved_at
+        text resolution_evidence_reference
+        text resolution_evidence_hash
+    }
+    security_master_corporate_action_case_evidence {
+        uuid evidence_id PK
+        uuid case_id FK
+        text evidence_kind
+        text evidence_reference
+        text evidence_hash
+        text description
+        jsonb metadata
+        bigint case_version
+        text recorded_by
+        timestamp_with_time_zone recorded_at
+    }
+    security_master_corporate_action_case_transitions {
+        uuid transition_id PK
+        uuid case_id FK
+        text operation_kind
+        text from_state
+        text to_state
+        bigint expected_version
+        bigint resulting_version
+        text actor
+        text reason
+        text idempotency_key
+        timestamp_with_time_zone occurred_at
+        text correlation_id
+        boolean policy_override_applied
+    }
+    security_master_corporate_action_command_receipts {
+        uuid receipt_id PK
+        text operation_kind
+        uuid aggregate_id
+        text idempotency_key
+        character_64_ request_fingerprint
+        jsonb result_payload
+        timestamp_with_time_zone recorded_at
+    }
+    security_master_corporate_action_processing_cases {
+        uuid case_id PK
+        uuid proposal_id FK
+        uuid corp_act_id FK
+        uuid security_id FK
+        text tenant_id
+        text company_id
+        text structure_node_id
+        text fund_profile_id
+        text financial_account_id
+        text portfolio_id
+        text custody_account_id
+        text ledger_book_id
+        text period_id
+        text accounting_basis
+        text functional_currency
+        text jurisdiction
+        text state
+        bigint version
+        text methodology_profile_id
+        text assigned_to
+        text blocked_reason
+        text created_by
+        timestamp_with_time_zone created_at
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
+    security_master_corporate_action_processing_options {
+        uuid option_id PK
+        uuid case_id FK
+        text option_code
+        text label
+        text description
+        text state
+        text source_methodology
+        jsonb blockers
+        jsonb parameters
+        bigint case_version
+        text recorded_by
+        timestamp_with_time_zone recorded_at
+    }
+    security_master_corporate_action_restatement_obligations {
+        uuid obligation_id PK
+        uuid case_id FK
+        uuid corp_act_id FK
+        text tenant_id
+        text company_id
+        jsonb scope
+        boolean restatement_required
+        jsonb candidates
+        text status
+        timestamp_with_time_zone recorded_at
+    }
+    security_master_corporate_action_source_proposals {
+        uuid proposal_id PK
+        uuid security_id FK
+        text provider_id
+        text source_event_id
+        text source_event_version
+        timestamp_with_time_zone observed_at
+        text evidence_hash
+        text evidence_reference
+        text provider_release_status
+        integer payload_schema_version
+        character_64_ economic_fingerprint
+        jsonb proposed_action
+        text display_ticker
+        text winning_source
+        jsonb agreeing_sources
+        jsonb dissenting_sources
+        jsonb dissent_fields
+        text state
+        bigint version
+        uuid supersedes_proposal_id FK
+        uuid accepted_corp_act_id FK
+        uuid initial_case_id FK
+        text recorded_by
+        timestamp_with_time_zone recorded_at
+        timestamp_with_time_zone updated_at
+        text decision_by
+        timestamp_with_time_zone decision_at
+        text decision_reason
+        text correlation_id
+    }
     security_master_corporate_actions {
         uuid corp_act_id PK
         uuid security_id FK
@@ -140,9 +348,11 @@ erDiagram
         timestamp_with_time_zone recorded_at
         date record_date
         text lifecycle_state
-        uuid supersedes_corp_act_id
+        uuid supersedes_corp_act_id FK
         numeric redemption_price_percent_of_par
         jsonb payload
+        integer payload_schema_version
+        character_64_ economic_fingerprint
     }
     security_master_crypto_projection {
         uuid security_id PK
@@ -193,6 +403,33 @@ erDiagram
         text filename PK
         text checksum
         timestamp_with_time_zone applied_at
+    }
+    security_master_direct_loan_covenant_projection {
+        uuid security_id PK,FK
+        integer ordinal PK
+        text covenant_type
+        text threshold
+        text notes
+    }
+    security_master_direct_loan_principal_schedule_projection {
+        uuid security_id PK,FK
+        integer ordinal PK
+        date payment_date
+        numeric_28_10_ amount
+    }
+    security_master_direct_loan_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text borrower
+        date maturity_date
+        text reference_index
+        numeric_18_8_ spread_bps
+        numeric_12_6_ current_coupon_rate
+        text reset_frequency
+        text pricing_source
+        text primary_identifier_value
+        bigint version
     }
     security_master_drawdown_lot_projection {
         uuid lot_id PK
@@ -498,6 +735,7 @@ erDiagram
         numeric_12_8_ annual_rate
         jsonb formula_trace_json
         timestamp_with_time_zone created_at
+        uuid projected_cash_flow_id
     }
     security_master_projection_checkpoint {
         text projection_name PK
@@ -554,6 +792,7 @@ erDiagram
         jsonb tolerance_json
         text[] notes
         timestamp_with_time_zone created_at
+        uuid projected_cash_flow_id
     }
     security_master_reconciliation_run {
         uuid reconciliation_run_id PK
@@ -707,20 +946,38 @@ erDiagram
         timestamp_with_time_zone reviewed_at
         jsonb audit_trail
     }
+    security_master_security_price_selection_receipts {
+        uuid receipt_id PK
+        uuid security_id FK
+        text account_id
+        text payload
+        character_64_ payload_sha256
+        timestamp_with_time_zone recorded_at
+    }
     security_master_security_pricing_hierarchy {
         uuid security_id PK,FK
         text account_id PK
         jsonb entries
         timestamp_with_time_zone as_of
         text updated_by
+        timestamp_with_time_zone recorded_at
+    }
+    security_master_security_pricing_hierarchy_history {
+        uuid security_id PK,FK
+        text account_id PK
+        jsonb entries
+        timestamp_with_time_zone as_of PK
+        text updated_by
+        timestamp_with_time_zone recorded_at
     }
     security_master_security_raw_prices {
         uuid security_id PK,FK
         text source_id PK
         numeric_28_10_ price
-        timestamp_with_time_zone price_as_of
+        timestamp_with_time_zone price_as_of PK
         text recorded_by
         timestamp_with_time_zone recorded_at
+        text price_unit
     }
     security_master_security_snapshots {
         uuid security_id PK
@@ -886,6 +1143,27 @@ erDiagram
         uuid servicer_report_batch_id PK,FK
         text report_type
     }
+    security_master_structured_credit_factor_schedule_projection {
+        uuid security_id PK,FK
+        integer ordinal PK
+        date as_of_date
+        numeric_18_10_ factor
+    }
+    security_master_structured_credit_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text tranche
+        text pool_id
+        text collateral_type
+        numeric_28_10_ original_face
+        numeric_18_10_ current_factor
+        text coupon_or_index
+        text factor_schedule_reference
+        date maturity_date
+        text primary_identifier_value
+        bigint version
+    }
     security_master_swap_projection {
         uuid security_id PK
         text display_name
@@ -899,6 +1177,28 @@ erDiagram
     }
     security_master_cash_transaction ||--o{ security_master_payment_allocation : "payment_allocation_cash_transaction_id_fkey"
     security_master_cash_transaction ||--o{ security_master_reconciliation_result : "reconciliation_result_cash_transaction_id_fkey"
+    security_master_corporate_action_case_accounting_approvals ||--o{ security_master_corporate_action_case_accounting_postings : "corporate_action_case_accounting_postings_approval_id_fkey"
+    security_master_corporate_action_case_accounting_projections ||--o{ security_master_corporate_action_case_accounting_approvals : "corporate_action_case_accounting_approvals_projection_id_fkey"
+    security_master_corporate_action_case_accounting_projections ||--o{ security_master_corporate_action_case_accounting_postings : "corporate_action_case_accounting_postings_projection_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_case_accounting_approvals : "corporate_action_case_accounting_approvals_case_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_case_accounting_postings : "corporate_action_case_accounting_postings_case_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_case_accounting_projections : "corporate_action_case_accounting_projections_case_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_case_conflicts : "corporate_action_case_conflicts_case_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_case_evidence : "corporate_action_case_evidence_case_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_case_transitions : "corporate_action_case_transitions_case_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_processing_options : "corporate_action_processing_options_case_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_restatement_obligations : "corporate_action_restatement_obligations_case_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_source_proposals : "fk_corporate_action_source_initial_case"
+    security_master_corporate_action_source_proposals ||--o{ security_master_corporate_action_canonical_sources : "corporate_action_canonical_sources_proposal_id_fkey"
+    security_master_corporate_action_source_proposals ||--o{ security_master_corporate_action_processing_cases : "corporate_action_processing_cases_proposal_id_fkey"
+    security_master_corporate_action_source_proposals ||--o{ security_master_corporate_action_source_proposals : "corporate_action_source_proposals_supersedes_proposal_id_fkey"
+    security_master_corporate_actions ||--o{ security_master_corporate_action_canonical_sources : "corporate_action_canonical_sources_corp_act_id_fkey"
+    security_master_corporate_actions ||--o{ security_master_corporate_action_processing_cases : "corporate_action_processing_cases_corp_act_id_fkey"
+    security_master_corporate_actions ||--o{ security_master_corporate_action_restatement_obligations : "corporate_action_restatement_obligations_corp_act_id_fkey"
+    security_master_corporate_actions ||--o{ security_master_corporate_action_source_proposals : "corporate_action_source_proposals_accepted_corp_act_id_fkey"
+    security_master_corporate_actions ||--o{ security_master_corporate_actions : "fk_corporate_actions_superseded_action"
+    security_master_direct_loan_projection ||--o{ security_master_direct_loan_covenant_projection : "direct_loan_covenant_projection_security_id_fkey"
+    security_master_direct_loan_projection ||--o{ security_master_direct_loan_principal_schedule_projection : "direct_loan_principal_schedule_projection_security_id_fkey"
     security_master_journal_entry ||--o{ security_master_journal_line : "journal_line_journal_entry_id_fkey"
     security_master_loan_contract ||--o{ security_master_cash_transaction : "cash_transaction_loan_id_fkey"
     security_master_loan_contract ||--o{ security_master_fee_balance : "fee_balance_loan_id_fkey"
@@ -928,6 +1228,8 @@ erDiagram
     security_master_securities ||--o{ security_master_bond_issuer_projection : "bond_issuer_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_bond_lifecycle_projection : "bond_lifecycle_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_bond_projection : "bond_projection_security_id_fkey"
+    security_master_securities ||--o{ security_master_corporate_action_processing_cases : "corporate_action_processing_cases_security_id_fkey"
+    security_master_securities ||--o{ security_master_corporate_action_source_proposals : "corporate_action_source_proposals_security_id_fkey"
     security_master_securities ||--o{ security_master_corporate_actions : "corporate_actions_security_id_fkey"
     security_master_securities ||--o{ security_master_equity_projection : "equity_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_future_projection : "future_projection_security_id_fkey"
@@ -938,7 +1240,9 @@ erDiagram
     security_master_securities ||--o{ security_master_security_cashflow_source_assignments : "security_cashflow_source_assignments_security_id_fkey"
     security_master_securities ||--o{ security_master_security_identifiers : "security_identifiers_security_id_fkey"
     security_master_securities ||--o{ security_master_security_operator_overrides : "security_operator_overrides_security_id_fkey"
+    security_master_securities ||--o{ security_master_security_price_selection_receipts : "security_price_selection_receipts_security_id_fkey"
     security_master_securities ||--o{ security_master_security_pricing_hierarchy : "security_pricing_hierarchy_security_id_fkey"
+    security_master_securities ||--o{ security_master_security_pricing_hierarchy_history : "security_pricing_hierarchy_history_security_id_fkey"
     security_master_securities ||--o{ security_master_security_raw_prices : "security_raw_prices_security_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_position_report_line : "servicer_position_report_line_servicer_report_batch_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_statement_import_batch : "servicer_statement_import_batch_servicer_report_batch_id_fkey"
@@ -947,6 +1251,7 @@ erDiagram
     security_master_servicer_statement_import_batch ||--o{ security_master_servicer_statement_apply_audit : "servicer_statement_apply_audit_servicer_statement_batch_id_fkey"
     security_master_servicer_statement_import_batch ||--o{ security_master_servicer_statement_import_row : "servicer_statement_import_row_servicer_statement_batch_id_fkey"
     security_master_servicer_statement_import_batch ||--o{ security_master_servicer_statement_validation_issue : "servicer_statement_validation__servicer_statement_batch_id_fkey"
+    security_master_structured_credit_projection ||--o{ security_master_structured_credit_factor_schedule_projection : "structured_credit_factor_schedule_projection_security_id_fkey"
 ```
 
 | Relation | Kind | Columns | Primary key | Foreign keys | Indexes | Comment |
@@ -960,11 +1265,26 @@ erDiagram
 | `cash_transaction` | table | 13 | `cash_transaction_id` | 2 | 5 | - |
 | `certificate_of_deposit_projection` | table | 10 | `security_id` | 0 | 3 | - |
 | `commodity_projection` | table | 10 | `security_id` | 0 | 3 | - |
-| `corporate_actions` | table | 20 | `corp_act_id` | 1 | 3 | - |
+| `corporate_action_canonical_sources` | table | 6 | `corp_act_id`, `proposal_id` | 2 | 3 | - |
+| `corporate_action_case_accounting_approvals` | table | 11 | `approval_id` | 2 | 3 | - |
+| `corporate_action_case_accounting_postings` | table | 15 | `posting_id` | 3 | 3 | - |
+| `corporate_action_case_accounting_projections` | table | 32 | `projection_id` | 1 | 3 | - |
+| `corporate_action_case_conflicts` | table | 14 | `conflict_id` | 1 | 2 | - |
+| `corporate_action_case_evidence` | table | 10 | `evidence_id` | 1 | 2 | - |
+| `corporate_action_case_transitions` | table | 13 | `transition_id` | 1 | 3 | - |
+| `corporate_action_command_receipts` | table | 7 | `receipt_id` | 0 | 2 | - |
+| `corporate_action_processing_cases` | table | 25 | `case_id` | 3 | 6 | - |
+| `corporate_action_processing_options` | table | 12 | `option_id` | 1 | 2 | - |
+| `corporate_action_restatement_obligations` | table | 10 | `obligation_id` | 2 | 4 | - |
+| `corporate_action_source_proposals` | table | 29 | `proposal_id` | 4 | 7 | - |
+| `corporate_actions` | table | 22 | `corp_act_id` | 2 | 5 | - |
 | `crypto_projection` | table | 7 | `security_id` | 0 | 3 | - |
 | `data_vendor_entitlements` | table | 21 | `entitlement_id` | 0 | 4 | - |
 | `deposit_projection` | table | 11 | `security_id` | 0 | 3 | - |
 | `direct_lending_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
+| `direct_loan_covenant_projection` | table | 5 | `security_id`, `ordinal` | 1 | 1 | Covenants declared by a projected direct loan, in terms-document order (ordinal). Threshold is text because the canonical covenant term is written prose ("4.5x"), not a number. |
+| `direct_loan_principal_schedule_projection` | table | 4 | `security_id`, `ordinal` | 1 | 2 | Contractual principal instalments of a projected direct loan, in terms-document order (ordinal). Makes instalments-due-in-a-window answerable without parsing every security document. |
+| `direct_loan_projection` | table | 12 | `security_id` | 0 | 4 | Relational projection of DirectLoan asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. Distinct from the loan_contract family in this same schema, which keys on loan_id and belongs to the direct-lending servicing aggregate. |
 | `drawdown_lot_projection` | table | 7 | `lot_id` | 0 | 2 | - |
 | `equity_projection` | table | 11 | `security_id` | 1 | 3 | - |
 | `fee_balance` | table | 9 | `fee_balance_id` | 2 | 2 | - |
@@ -988,15 +1308,15 @@ erDiagram
 | `option_series_projection` | table | 6 | `option_chain_id`, `contract_symbol` | 1 | 1 | - |
 | `outbox_message` | table | 10 | `outbox_message_id` | 0 | 4 | - |
 | `payment_allocation` | table | 10 | `allocation_id` | 3 | 3 | - |
-| `projected_cash_flow` | table | 14 | `projected_flow_id` | 2 | 3 | - |
+| `projected_cash_flow` | table | 15 | `projected_flow_id` | 2 | 3 | - |
 | `projection_checkpoint` | table | 3 | `projection_name` | 0 | 1 | - |
 | `projection_run` | table | 13 | `projection_run_id` | 3 | 3 | - |
 | `read_model_checkpoint` | table | 6 | `projection_name` | 0 | 1 | - |
 | `reconciliation_exception` | table | 9 | `exception_id` | 1 | 2 | - |
-| `reconciliation_result` | table | 15 | `reconciliation_result_id` | 4 | 2 | - |
+| `reconciliation_result` | table | 16 | `reconciliation_result_id` | 4 | 2 | - |
 | `reconciliation_run` | table | 6 | `reconciliation_run_id` | 2 | 1 | - |
 | `schema_migrations` | table | 4 | `filename` | 0 | 1 | - |
-| `securities` | table | 21 | `security_id` | 0 | 5 | - |
+| `securities` | table | 21 | `security_id` | 0 | 4 | - |
 | `security_aliases` | table | 14 | `alias_id` | 1 | 3 | - |
 | `security_cashflow_source_assignments` | table | 6 | `security_id` | 1 | 2 | - |
 | `security_events` | table | 10 | `global_sequence` | 0 | 3 | - |
@@ -1008,8 +1328,10 @@ erDiagram
 | `security_master_quality_reports_id_seq` | sequence | 0 | - | 0 | 0 | - |
 | `security_master_revisions` | table | 13 | `revision_id` | 0 | 2 | - |
 | `security_operator_overrides` | table | 9 | `security_id` | 1 | 1 | - |
-| `security_pricing_hierarchy` | table | 5 | `security_id`, `account_id` | 1 | 2 | - |
-| `security_raw_prices` | table | 6 | `security_id`, `source_id` | 1 | 2 | - |
+| `security_price_selection_receipts` | table | 6 | `receipt_id` | 1 | 2 | Immutable golden-copy evaluation result, exact hierarchy snapshot, and quote comparisons; scoped receipt replay is the reproducibility authority. |
+| `security_pricing_hierarchy` | table | 6 | `security_id`, `account_id` | 1 | 2 | - |
+| `security_pricing_hierarchy_history` | table | 6 | `security_id`, `account_id`, `as_of` | 1 | 1 | Dated account-specific pricing hierarchy evidence, retaining source priorities, effective timestamp, author, and recording timestamp for historical price selection. |
+| `security_raw_prices` | table | 7 | `security_id`, `source_id`, `price_as_of` | 1 | 2 | - |
 | `security_snapshots` | table | 4 | `security_id` | 0 | 1 | - |
 | `servicer_position_report_line` | table | 14 | `servicer_report_line_id` | 2 | 2 | - |
 | `servicer_report_batch` | table | 12 | `servicer_report_batch_id` | 0 | 1 | - |
@@ -1021,4 +1343,6 @@ erDiagram
 | `servicing_revision_processing` | table | 7 | `loan_id`, `servicing_revision`, `processing_stage` | 0 | 1 | - |
 | `servicing_revision_projection` | table | 6 | `loan_id`, `revision_number` | 0 | 2 | - |
 | `servicing_revision_source` | table | 4 | `loan_id`, `servicing_revision`, `servicer_report_batch_id` | 1 | 1 | - |
+| `structured_credit_factor_schedule_projection` | table | 4 | `security_id`, `ordinal` | 1 | 2 | Dated pool-factor points of a projected structured-credit tranche, in terms-document order (ordinal). Serves the factor-as-of lookup used by amortization. |
+| `structured_credit_projection` | table | 13 | `security_id` | 0 | 3 | Relational projection of StructuredCredit tranche terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. factor_schedule_reference is the free-text trustee-report pointer, never factor data. |
 | `swap_projection` | table | 9 | `security_id` | 0 | 3 | - |

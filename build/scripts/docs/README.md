@@ -2,6 +2,10 @@
 
 This directory contains Python scripts for automating documentation tasks in the Meridian project.
 
+Repository structure generation excludes temporary schema-control inventory and candidate
+outputs under `build/schema-control`. Canonical manifests in `database/manifest` and schema
+tooling remain visible, so running schema validation does not change the published tree.
+
 ## Table of Contents
 
 - [Core Scripts](#core-scripts)
@@ -47,6 +51,32 @@ front matter, required sections, and generated block markers.
 ```bash
 python3 build/scripts/docs/validate-source-readmes.py --summary
 ```
+
+### validate-adapter-readiness.py and render-adapter-readiness.py
+
+Validate `docs/source/data/adapter-readiness.yml` against the canonical provider IDs and aliases,
+`ProviderCapabilityDescriptorCatalog`, direct adapter folders, declared implementation types,
+registration symbols, and targeted test/source evidence. The registry records implementation
+readiness; operator validation and release sign-off retain their existing owners.
+
+For intentionally unregistered excluded families, `registration: []` records the absence of runtime
+registration; exclusion sources and targeted tests remain in `evidence`. Catalogued providers must
+retain registration references.
+
+```bash
+python3 build/scripts/docs/validate-adapter-readiness.py --summary
+python3 build/scripts/docs/render-adapter-readiness.py
+python3 build/scripts/docs/render-source-docs.py --summary
+python3 build/scripts/docs/render-adapter-readiness.py --check
+python3 -m unittest tests/scripts/test_adapter_readiness.py tests/scripts/test_render_adapter_readiness.py
+```
+
+The matrix is generated under `docs/source/generated/`. Documentation automation's `quick`,
+`core`, and `full` profiles validate the registry and reject stale output without rewriting it.
+After a registry edit, run the source-docs renderer after the adapter renderer to refresh
+`docs/source/generated/MANIFEST.json`, which hashes every source registry including
+`adapter-readiness.yml`.
+The required `verify-docs` lane also runs the validator's regression tests.
 
 ### sync-source-readmes.py
 
@@ -397,7 +427,7 @@ python3 generate-health-dashboard.py \
 
 Detects and optionally auto-fixes broken internal links. The default output path is
 `docs/status/link-repair-report.md`; pass `--output` to write to an alternate location such as
-[`.artifacts/link-repair-report.md`](../../../.artifacts/link-repair-report.md).
+`.artifacts/link-repair-report.md`.
 
 ```bash
 # Report only
@@ -787,6 +817,11 @@ python3 generate-api-contract-coverage-dashboard.py \
   --output docs/status/api-contract-coverage-dashboard.md \
   --json-output docs/status/api-contract-coverage-dashboard.json \
   --summary
+
+python3 generate-ui-route-wiring-report.py \
+  --output docs/status/ui-route-wiring-report.md \
+  --json-output docs/status/ui-route-wiring-report.json \
+  --summary
 ```
 
 **Expected outputs:**
@@ -796,6 +831,19 @@ python3 generate-api-contract-coverage-dashboard.py \
 - `docs/status/evidence-continuity-dashboard.md` + `.json`
 - `docs/status/governance-readiness-dashboard.md` + `.json`
 - `docs/status/api-contract-coverage-dashboard.md` + `.json`
+- `docs/status/ui-route-wiring-report.md` + `.json`
+
+The UI route wiring report answers which mapped backend routes the browser workstation never
+calls. It resolves both sides symbolically — backend routes through `UiApiRoutes` constants,
+`MapGroup` prefixes (including prefixes handed to a helper through a `RouteGroupBuilder`
+parameter), and `*Subroute` helpers; dashboard call sites through the endpoint registry modules
+in `src/Meridian.Ui/dashboard/src/lib/`. A route is `wired` when a non-registry dashboard module
+resolves to it, `registry-only` when just the registry declares it, and `unwired` otherwise.
+Routes the browser is not meant to call (probes, provider webhooks, `410 Gone` tombstones,
+desktop-only handoffs) are listed separately with the reason, not silently dropped. Use
+`--fail-on-unresolved` to gate on route expressions the analyzer cannot fold to a literal.
+All source scans prune dependency, build, and cache directories before descending, so local
+package junctions cannot recurse back into the repository or invent route coverage.
 
 The pilot readiness dashboard derives readiness from the artifact stage-gate details and evidence
 graph, including required golden-path stage coverage and self-edge checks. Do not treat top-level

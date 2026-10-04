@@ -1,5 +1,13 @@
 import { useState } from "react";
+import { presentMarkFreshness, markFreshnessFields, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import {
+  buildMultiAssetCoverageGroups,
+  multiAssetReadinessDetail,
+  multiAssetReadinessGroup,
+  multiAssetStatusLabel,
+  multiAssetStatusTone
+} from "./portfolio-screen.multi-asset-coverage";
 import { PORTFOLIO_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
   comparisonToneForPnl,
@@ -56,6 +64,7 @@ type PortfolioSourceRun = {
 };
 
 export interface PortfolioPositionRow {
+  markFreshness: MarkFreshnessPresentation;
   id: string;
   symbol: string;
   side: string;
@@ -131,6 +140,7 @@ export interface PortfolioBrokerageAccountRow {
 }
 
 export interface PortfolioBrokeragePositionRow {
+  markFreshness: MarkFreshnessPresentation;
   id: string;
   accountLabel: string;
   accountKind: string;
@@ -411,6 +421,17 @@ export interface PortfolioRunEvidenceAction {
   ariaLabel: string;
 }
 
+/**
+ * The next step offered from an empty holdings table.
+ *
+ * Kept in step with `positionEmptyText` -- same branch order -- so the button can never
+ * contradict the sentence printed beside it.
+ */
+export interface PortfolioPositionEmptyAction {
+  label: string;
+  route: string;
+}
+
 export interface PortfolioScreenViewModel {
   metricsFromTrading: boolean;
   metricCards: TradingWorkspaceResponse["metrics"];
@@ -457,6 +478,8 @@ export interface PortfolioScreenViewModel {
   runEvidenceChip: PortfolioHeaderChip;
   positionDetailEmptyTitle: string;
   positionEmptyText: string;
+  /** Where an operator with no holdings goes next; null when there is nothing honest to offer. */
+  positionEmptyAction: PortfolioPositionEmptyAction | null;
   selectedPosition: PortfolioPositionDetail | null;
   selectPosition: (id: string) => void;
   hasRuns: boolean;
@@ -646,6 +669,7 @@ export function buildPortfolioScreenViewModel({
       side: p.side,
       quantity: p.quantity,
       avgPrice: p.averagePrice,
+      markFreshness: presentMarkFreshness(p.markFreshness),
       markPrice: p.markPrice,
       dayPnl: p.dayPnl,
       unrealizedPnl: p.unrealizedPnl,
@@ -799,10 +823,18 @@ export function buildPortfolioScreenViewModel({
     runEvidenceChip: { label: "Run evidence", value: buildLinkedRunEvidenceLabel(runRows.length) },
     positionDetailEmptyTitle: "No holding selected",
     positionEmptyText: trading
-      ? "No open positions in the active paper session."
+      ? "No open positions in the active paper session. Positions appear here once an order fills."
       : portfolio
-        ? "No open positions in the Portfolio workspace."
+        ? "No holdings yet. Import a statement or holdings file, or connect a provider, and they appear here."
         : "Portfolio workspace data unavailable.",
+    // Only offered where there is a true next step: a loaded workspace with nothing in it yet, or a
+    // paper session waiting on a fill. "Unavailable" is a failure to load, not an empty desk, so it
+    // gets no button -- routing an operator elsewhere would just hide the problem.
+    positionEmptyAction: trading
+      ? { label: "Open the trading desk", route: WORKSTATION_ROUTE_CATALOG.trading }
+      : portfolio
+        ? { label: "Import a statement", route: WORKSTATION_ROUTE_CATALOG.accountingStatementImport }
+        : null,
     selectedPosition,
     selectPosition,
     hasRuns: runRows.length > 0,
@@ -1414,71 +1446,6 @@ export function buildMultiAssetCoveragePanel(
   };
 }
 
-function multiAssetStatusTone(status: string): PortfolioMultiAssetCoverageRow["statusTone"] {
-  if (status === "Ready") return "success";
-  if (status === "Blocked") return "danger";
-  if (status === "ReviewRequired" || status === "Degraded") return "warning";
-  return "default";
-}
-
-function multiAssetStatusLabel(status: string): string {
-  if (status === "ReviewRequired") return "Review required";
-  return status;
-}
-
-function multiAssetReadinessGroup(status: string): Pick<PortfolioMultiAssetCoverageGroup, "id" | "label" | "statusTone"> {
-  if (status === "Ready") return { id: "ready", label: "Ready", statusTone: "success" };
-  if (status === "Blocked") return { id: "blocked", label: "Blocked", statusTone: "danger" };
-  if (status === "ReviewRequired" || status === "Degraded") return { id: "review", label: "Review required", statusTone: "warning" };
-  return { id: "other", label: "Other state", statusTone: "default" };
-}
-
-function multiAssetReadinessDetail(
-  status: string,
-  statusLabel: string,
-  blockerCount: number,
-  evidenceReady: number,
-  evidenceTotal: number
-): string {
-  if (status === "Ready") {
-    return `${statusLabel}: ${evidenceReady}/${evidenceTotal} evidence targets ready.`;
-  }
-
-  const blockerLabel = blockerCount === 0
-    ? "no blockers"
-    : `${blockerCount} blocker${blockerCount === 1 ? "" : "s"}`;
-  return `${statusLabel}: ${evidenceReady}/${evidenceTotal} evidence targets ready with ${blockerLabel}.`;
-}
-
-function buildMultiAssetCoverageGroups(rows: PortfolioMultiAssetCoverageRow[]): PortfolioMultiAssetCoverageGroup[] {
-  const order = ["blocked", "review", "ready", "other"];
-  const groups = order
-    .map((id) => {
-      const groupRows = rows.filter((row) => row.readinessGroupId === id);
-      if (groupRows.length === 0) {
-        return null;
-      }
-
-      const label = groupRows[0].readinessGroupLabel;
-      return {
-        id,
-        label,
-        statusTone: groupRows[0].readinessGroupId === "blocked"
-          ? "danger"
-          : groupRows[0].readinessGroupId === "ready"
-            ? "success"
-            : groupRows[0].readinessGroupId === "review"
-              ? "warning"
-              : "default",
-        summary: `${groupRows.length} asset class${groupRows.length === 1 ? "" : "es"}`,
-        rows: groupRows
-      };
-    })
-    .filter((group): group is PortfolioMultiAssetCoverageGroup => group !== null);
-
-  return groups;
-}
-
 function buildBrokerageAccountOptions(
   accounts: BrokerageHouseholdAccount[],
   selectedKey: string,
@@ -1744,6 +1711,7 @@ function toBrokeragePositionRow(
     quantity: formatNumber(position.quantity),
     averagePrice: formatCurrencyPrecise(position.averageEntryPrice),
     markPrice: formatCurrencyPrecise(position.marketPrice),
+    markFreshness: presentMarkFreshness(position.markFreshness),
     marketValue: formatCurrency(position.marketValue),
     unrealizedPnl: pnl,
     pnlTone: pnlTone(pnl),
@@ -1767,6 +1735,7 @@ function buildSelectedBrokeragePositionDetail(
   accounts: BrokerageHouseholdAccount[],
   providerLabel: string
 ): PortfolioBrokeragePositionDetail {
+  const mark = presentMarkFreshness(position.markFreshness);
   const account = accounts.find((candidate) => candidate.fundAccountId === position.fundAccountId);
   const accountKind = accountKindLabel(position.accountKind);
   const accountLabel = account?.displayName ?? accountKind;
@@ -1783,7 +1752,7 @@ function buildSelectedBrokeragePositionDetail(
     subtitle: `${providerLabel} / ${accountLabel} / ${position.assetClass}`,
     ariaLabel: `${position.symbol} brokerage position detail`,
     statusTitle: "Brokerage position inspector",
-    statusDetail: `${formatNumber(position.quantity)} ${position.symbol} shares in ${accountLabel} with ${formatCurrency(position.marketValue)} market value and ${pnl} unrealized P&L.`,
+    statusDetail: `${mark.label}: ${mark.reason} Recorded ${formatNumber(position.quantity)} ${position.symbol} shares in ${accountLabel} with ${formatCurrency(position.marketValue)} market value and ${pnl} unrealized P&L.`,
     statusTone,
     statusBadgeLabel: coverageLabel,
     statusBadgeVariant,
@@ -1792,7 +1761,8 @@ function buildSelectedBrokeragePositionDetail(
       { label: "Account kind", value: accountKind, tone: "muted" },
       { label: "Quantity", value: formatNumber(position.quantity), tone: "default" },
       { label: "Average entry", value: formatCurrencyPrecise(position.averageEntryPrice), tone: "muted" },
-      { label: "Mark price", value: formatCurrencyPrecise(position.marketPrice), tone: "muted" },
+      { label: "Recorded mark price", value: formatCurrencyPrecise(position.marketPrice), tone: "muted" },
+      ...markFreshnessFields(mark),
       { label: "Market value", value: formatCurrency(position.marketValue), tone: "default" },
       { label: "Unrealized P&L", value: pnl, tone: pnlStatusTone },
       { label: "Security coverage", value: coverageLabel, tone: coverageTone },
@@ -2333,7 +2303,7 @@ function buildSelectedPositionDetail(
   risk: PortfolioRiskState | null,
   brokerage: PortfolioBrokerageStatus | null
 ): PortfolioPositionDetail {
-  const statusTone = riskTone(risk?.state, position.pnlTone);
+  const statusTone = position.markFreshness.reviewRequired ? "warning" : riskTone(risk?.state, position.pnlTone);
   const guardrailSummary = risk?.activeGuardrails.length
     ? risk.activeGuardrails.join(" · ")
     : "No active guardrails";
@@ -2343,14 +2313,15 @@ function buildSelectedPositionDetail(
     title: position.symbol,
     subtitle: `${position.side} · ${position.quantity} shares`,
     ariaLabel: `${position.symbol} holding detail`,
-    statusTitle: `${position.symbol} selected`,
-    statusDetail: `${position.exposure} exposure with ${position.unrealizedPnl} unrealized P&L. ${risk?.summary ?? "Risk context unavailable."}`,
+    statusTitle: position.markFreshness.reviewRequired ? `${position.symbol} · Review required` : `${position.symbol} selected`,
+    statusDetail: `${position.markFreshness.reason} Recorded: ${position.exposure} exposure with ${position.unrealizedPnl} unrealized P&L. ${risk?.summary ?? "Risk context unavailable."}`,
     statusTone,
     fields: [
       { label: "Side", value: position.side, tone: "default" },
       { label: "Quantity", value: position.quantity, tone: "default" },
       { label: "Average price", value: position.avgPrice, tone: "muted" },
-      { label: "Mark price", value: position.markPrice, tone: "muted" },
+      { label: "Recorded mark price", value: position.markPrice, tone: "muted" },
+      ...markFreshnessFields(position.markFreshness),
       { label: "Exposure", value: position.exposure, tone: "default" },
       { label: "Day P&L", value: position.dayPnl, tone: pnlFieldTone(position.dayPnl) },
       { label: "Unrealized P&L", value: position.unrealizedPnl, tone: pnlFieldTone(position.unrealizedPnl) },

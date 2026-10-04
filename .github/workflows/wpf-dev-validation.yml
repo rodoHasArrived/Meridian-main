@@ -1,50 +1,6 @@
 name: WPF Dev Loop Validation
 
 on:
-  pull_request:
-    paths:
-      - "src/Meridian.Wpf/**"
-      - "tests/Meridian.Wpf.Tests/**"
-      - "src/Meridian.Application/**"
-      - "src/Meridian.Backtesting/**"
-      - "src/Meridian.Contracts/**"
-      - "src/Meridian.Core/**"
-      - "src/Meridian.Identity/**"
-      - "src/Meridian.Infrastructure/**"
-      - "src/Meridian.Platform/**"
-      - "src/Meridian.QuantScript/**"
-      - "src/Meridian.Reporting/**"
-      - "src/Meridian.Storage/**"
-      - "src/Meridian.Strategies/**"
-      - "src/Meridian.Ui.Services/**"
-      - "src/Meridian.Ui.Shared/**"
-      - "src/Meridian.Workflow/**"
-      - "scripts/dev/desktop-workflows.json"
-      - "scripts/dev/validate-wpf-dev.ps1"
-      - ".github/workflows/wpf-dev-validation.yml"
-  push:
-    branches:
-      - main
-    paths:
-      - "src/Meridian.Wpf/**"
-      - "tests/Meridian.Wpf.Tests/**"
-      - "src/Meridian.Application/**"
-      - "src/Meridian.Backtesting/**"
-      - "src/Meridian.Contracts/**"
-      - "src/Meridian.Core/**"
-      - "src/Meridian.Identity/**"
-      - "src/Meridian.Infrastructure/**"
-      - "src/Meridian.Platform/**"
-      - "src/Meridian.QuantScript/**"
-      - "src/Meridian.Reporting/**"
-      - "src/Meridian.Storage/**"
-      - "src/Meridian.Strategies/**"
-      - "src/Meridian.Ui.Services/**"
-      - "src/Meridian.Ui.Shared/**"
-      - "src/Meridian.Workflow/**"
-      - "scripts/dev/desktop-workflows.json"
-      - "scripts/dev/validate-wpf-dev.ps1"
-      - ".github/workflows/wpf-dev-validation.yml"
   workflow_dispatch:
     inputs:
       build_only:
@@ -82,45 +38,45 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 1
 
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v5.4.0
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
         with:
           global-json-file: global.json
 
       - name: Cache NuGet packages
-        uses: actions/cache@v6.1.0
+        id: nuget
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-wpf-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
           restore-keys: |
-            ${{ runner.os }}-nuget-wpf-
-            ${{ runner.os }}-nuget-
+            ${{ runner.os }}-nuget-v1-
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
 
       - name: Run WPF dev loop validation
         shell: pwsh
         env:
+          MERIDIAN_DEPENDENCY_CACHE_HIT: ${{ steps.nuget.outputs.cache-hit || 'false' }}
           BUILD_ONLY: ${{ inputs.build_only }}
           TEST_FILTER: ${{ inputs.filter }}
         run: |
-          $devArgs = @{
-            Restore = $true
-          }
-          if ($env:BUILD_ONLY -eq 'true') {
-            $devArgs.BuildOnly = $true
-          }
-          if ($env:TEST_FILTER -ne '') {
-            $devArgs.Filter = $env:TEST_FILTER
-          }
-          & scripts/dev/validate-wpf-dev.ps1 @devArgs
+          $sliceArgs = @('--slice', 'dev-loop', '--results-dir', 'artifacts/wpf-validation/dev-loop')
+          if ($env:BUILD_ONLY -eq 'true') { $sliceArgs += '--build-only' }
+          if ($env:TEST_FILTER) { $sliceArgs += @('--filter', $env:TEST_FILTER) }
+          python build/scripts/ci/run-windows-ci-tests.py @sliceArgs
 
       - name: Upload validation artifacts
         if: always()
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: wpf-dev-validation-${{ github.run_number }}
           path: artifacts/wpf-validation/dev-loop/

@@ -27,6 +27,27 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
 
     public AuthEndpointTests(EndpointTestFixture fixture) : base(fixture) { }
 
+    [Fact]
+    public async Task Login_FifthFailureReturnsDeterministicRateLimitHeadersAndNoCookie()
+    {
+        // A unique target isolates this window from other tests sharing the endpoint fixture.
+        var username = $"lockout-{Guid.NewGuid():N}";
+        for (var attempt = 1; attempt <= 6; attempt++)
+        {
+            using var response = await Client.PostAsJsonAsync("/api/auth/login", new { username, password = "wrong" });
+            response.StatusCode.Should().Be(attempt < 5 ? HttpStatusCode.Unauthorized : HttpStatusCode.TooManyRequests);
+            response.Headers.GetValues("RateLimit-Limit").Should().Equal("5");
+            response.Headers.GetValues("RateLimit-Remaining").Should().Equal(Math.Max(0, 5 - attempt).ToString());
+            response.Headers.Contains("Set-Cookie").Should().BeFalse();
+            if (attempt >= 5)
+            {
+                var retry = int.Parse(response.Headers.GetValues("Retry-After").Single(), System.Globalization.CultureInfo.InvariantCulture);
+                retry.Should().BeInRange(1, 900);
+                response.Headers.GetValues("RateLimit-Reset").Should().Equal(retry.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            }
+        }
+    }
+
     // ================================================================
     // GET /login
     // ================================================================
@@ -420,6 +441,22 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
             Environment.SetEnvironmentVariable("MDC_API_KEY", originalApiKey);
         }
     }
+
+    [Theory]
+    [InlineData("/healthz", true)]
+    [InlineData("/ready", true)]
+    [InlineData("/readyz", true)]
+    [InlineData("/live", true)]
+    [InlineData("/livez", true)]
+    [InlineData("/startup", true)]
+    [InlineData("/startupz", true)]
+    [InlineData("/metrics", true)]
+    [InlineData("/health", false)]
+    [InlineData("/health/detailed", false)]
+    [InlineData("/api/health", false)]
+    [InlineData("/metricsz", false)]
+    public void MonitoringEndpointExemptions_ExposeOnlySanitizedProbesAndScrape(string path, bool expected)
+        => MonitoringEndpointExemptions.IsExempt(path).Should().Be(expected);
 
     [Fact]
     public async Task ApiKeyMiddleware_SessionAuthenticatedRequest_PassesWithoutApiKey()

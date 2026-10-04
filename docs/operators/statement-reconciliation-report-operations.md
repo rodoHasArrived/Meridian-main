@@ -92,12 +92,15 @@ path.
 After a successful file import, the browser shows a **Trusted close handoff** only when the server
 returned both the exact `accountingScope` and `operationsWorkflowId`. The handoff displays the
 fund profile, ledger book, accounting period, and as-of date retained by the intake authority, then
-opens Operations Continuity with those identifiers in the route. Operations Continuity filters the
+opens Operations Continuity with the workflow, book, and period identifiers in the route. Operations Continuity filters the
 workflow list to the retained book and period and selects that exact workflow; it does not fall
 back to the newest unrelated workflow when the requested workflow is missing or inaccessible.
 
 Use that selected workflow to assign and resolve the projected statement cases, retain correction
-and approval evidence, complete the close checklist, and publish the governed close package.
+and approval evidence, and complete the close checklist. Publishing the governed close package
+also requires current shared readiness for the complete fund, account, entity, book, and period
+scope. The import handoff currently retains only the workflow, book, and period in its route;
+publication remains blocked until that complete scope is supplied and verified by the server.
 Continue to the Accounting close cockpit for the controller-gated ledger period lock: an Operations
 close package is proof of the workflow transition, not by itself proof that the ledger period is
 `HardClosed`. If the import result lacks either exact scope or the Operations workflow identity, the
@@ -267,3 +270,31 @@ original route and DTO shape directly over that same workflow.
 
 For break/case handling, see [Reconciliation Operations](./reconciliation-operations.md). For general
 receipt and artifact failure rules, see [Verified Outcome Recovery](./verified-outcome-recovery.md).
+
+## Executable PostgreSQL workflow evidence
+
+`StatementLedgerReconciliationPostgresTests` in `tests/Meridian.Tests/Integration/` exercises the
+retained BAI2 intake through the production scope resolver, PostgreSQL journal source, deterministic
+matcher, statement/report authority, Operations Continuity, and canonical casework queue. The
+resolved fund, primary book, exact period, and as-of date travel with the population query; another
+book's journals cannot participate merely because the external account and effective dates match.
+
+The scenario distinguishes the persistence boundaries: journal and statement/report authority are
+PostgreSQL-backed, while immutable match artifacts, statement-run recovery records, and source
+casework use their production durable file stores. Preserve both authorities for recovery. Deleting
+the statement/report runtime workspace tests cache hydration; it does not establish recovery from
+loss of the durable reconciliation files.
+
+With an isolated PostgreSQL endpoint configured in `MERIDIAN_LEDGER_CONNECTION_STRING` and
+`MERIDIAN_REPORTING_CONNECTION_STRING`, run:
+
+```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release \
+  --filter "FullyQualifiedName~StatementLedgerReconciliationPostgresTests"
+```
+
+The existing **Production Certification** workflow runs this class through its `Integration`
+category and rejects failed or skipped deterministic cases. The **Targeted Test** workflow has no
+database service and is insufficient for this database proof. W9-INGEST-009 / issue #2634 remains
+subject to operator acceptance. Statement admission, OFX containment, and publication durability
+changes in #2928, #2929, and #2930 retain their separate review and validation requirements.

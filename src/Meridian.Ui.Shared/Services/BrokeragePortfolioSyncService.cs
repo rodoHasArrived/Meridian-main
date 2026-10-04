@@ -250,8 +250,8 @@ public sealed class BrokeragePortfolioSyncService
             }
             catch (Exception ex)
             {
-                warnings.Add($"Portfolio snapshot failed: {ex.Message}");
-                _logger.LogWarning(ex, "Brokerage portfolio sync failed for {ProviderId}/{AccountId}", link.ProviderId, link.ExternalAccountId);
+                warnings.Add($"Portfolio snapshot failed: {SanitizeProviderFailureMessage(ex, link.ExternalAccountId)}");
+                LogProviderFailure("Brokerage portfolio sync", link.ProviderId, ex);
             }
         }
         else
@@ -271,8 +271,8 @@ public sealed class BrokeragePortfolioSyncService
             }
             catch (Exception ex)
             {
-                warnings.Add($"Activity snapshot failed: {ex.Message}");
-                _logger.LogWarning(ex, "Brokerage activity sync failed for {ProviderId}/{AccountId}", link.ProviderId, link.ExternalAccountId);
+                warnings.Add($"Activity snapshot failed: {SanitizeProviderFailureMessage(ex, link.ExternalAccountId)}");
+                LogProviderFailure("Brokerage activity sync", link.ProviderId, ex);
             }
         }
         else
@@ -320,11 +320,7 @@ public sealed class BrokeragePortfolioSyncService
             {
                 const string captureWarning =
                     "Accounting position-history capture failed; valuation and dividend schedules will remain blocked until a later successful sync.";
-                _logger.LogWarning(
-                    ex,
-                    "Accounting position-history capture failed for {ProviderId}/{AccountId}",
-                    link.ProviderId,
-                    link.ExternalAccountId);
+                LogProviderFailure("Accounting position-history capture", link.ProviderId, ex);
                 projection = projection with
                 {
                     Status = projection.Status with
@@ -1471,6 +1467,31 @@ public sealed class BrokeragePortfolioSyncService
             : value.ToLowerInvariant();
     }
 
+    private void LogProviderFailure(string operation, string providerId, Exception exception)
+    {
+        // Provider calls are scoped by an external account identifier, and provider exceptions may
+        // echo that IBAN, bank id, or broker account number. Log only stable, non-account context;
+        // passing the original exception object would reintroduce the identifier through its text.
+        _logger.LogWarning(
+            "{Operation} failed for provider {ProviderId}; failure type {FailureType}",
+            operation,
+            providerId,
+            exception.GetType().Name);
+    }
+
+    private static string SanitizeProviderFailureMessage(Exception exception, string externalAccountId)
+    {
+        var message = string.IsNullOrWhiteSpace(exception.Message)
+            ? exception.GetType().Name
+            : exception.Message;
+        return string.IsNullOrWhiteSpace(externalAccountId)
+            ? message
+            : message.Replace(
+                externalAccountId.Trim(),
+                "[account identifier redacted]",
+                StringComparison.OrdinalIgnoreCase);
+    }
+
     private static void ValidatePortfolioSnapshot(
         WorkstationBrokerageAccountLinkDto link,
         BrokeragePortfolioSnapshotDto snapshot,
@@ -1512,7 +1533,7 @@ public sealed class BrokeragePortfolioSyncService
                 StringComparison.Ordinal))
         {
             throw new InvalidOperationException(
-                $"Portfolio snapshot account '{snapshot.Account.AccountId}' does not match requested account '{link.ExternalAccountId}'.");
+                "Portfolio snapshot account does not match the requested brokerage account.");
         }
 
         if (snapshot.Balance is null)

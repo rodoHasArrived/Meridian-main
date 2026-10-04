@@ -77,16 +77,22 @@
                                     Style="{StaticResource PrimaryButtonStyle}"
                                     Click="StartReplay_Click"
                                     Margin="0,0,8,0"
-                                    IsEnabled="{Binding CanStart}" />
+                                    IsEnabled="{Binding CanStart}"
+                                    ToolTipService.ShowOnDisabled="True"
+                                    ToolTip="{Binding ControlDisabledReason}" />
                             <Button Content="Pause"
                                     Style="{StaticResource SecondaryButtonStyle}"
                                     Click="PauseReplay_Click"
                                     Margin="0,0,8,0"
-                                    IsEnabled="{Binding CanPause}" />
+                                    IsEnabled="{Binding CanPause}"
+                                    ToolTipService.ShowOnDisabled="True"
+                                    ToolTip="{Binding ControlDisabledReason}" />
                             <Button Content="Stop"
                                     Style="{StaticResource GhostButtonStyle}"
                                     Click="StopReplay_Click"
-                                    IsEnabled="{Binding CanStop}" />
+                                    IsEnabled="{Binding CanStop}"
+                                    ToolTipService.ShowOnDisabled="True"
+                                    ToolTip="{Binding ControlDisabledReason}" />
                         </StackPanel>
 
                         <TextBlock Text="{Binding StatusMessage}"

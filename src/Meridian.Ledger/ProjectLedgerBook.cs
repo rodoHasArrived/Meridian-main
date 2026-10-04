@@ -1,3 +1,5 @@
+using Meridian.Contracts.Text;
+
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -208,16 +210,13 @@ public sealed class ProjectLedgerBook
         return normalized;
     }
 
-    private static string? NormalizeOptionalValue(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
     private IEnumerable<KeyValuePair<LedgerBookKey, Ledger>> FilterLedgers(
         string? ledgerBook = null,
         LedgerViewKind? ledgerView = null,
         string? scenarioId = null)
     {
-        var normalizedLedgerBook = NormalizeOptionalValue(ledgerBook);
-        var normalizedScenarioId = NormalizeOptionalValue(scenarioId);
+        var normalizedLedgerBook = TextPrimitives.NormalizeOptional(ledgerBook);
+        var normalizedScenarioId = TextPrimitives.NormalizeOptional(scenarioId);
 
         return _ledgers
             .Where(pair => normalizedLedgerBook is null

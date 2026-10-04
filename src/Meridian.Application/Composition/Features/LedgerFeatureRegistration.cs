@@ -1,5 +1,6 @@
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Contracts.Ledger;
+using Meridian.Instruments.AssetOperations;
 using Meridian.Ledger;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
@@ -46,6 +47,16 @@ internal sealed class LedgerFeatureRegistration : IServiceFeatureRegistration
             ?? throw new InvalidOperationException(
                 "The configured accounting posting candidate write builder must also implement " +
                 $"{nameof(IAccountingPostingCandidateAuthorityBuilder)}."));
+        // Corporate-action accounting remains a two-step, deterministic preparation boundary:
+        // the projector produces reviewed economic/lot/posting intent and the mapper adapts a
+        // promoted rule-pack result to an Asset Accounting Event Spine request. Neither service
+        // appends a journal or bypasses the spine's policy, evidence, period, and approval gates.
+        services.TryAddSingleton<CorporateActionAccountingProjectionService>();
+        services.TryAddSingleton<ICorporateActionAccountingProjectionService>(sp =>
+            sp.GetRequiredService<CorporateActionAccountingProjectionService>());
+        services.TryAddSingleton<CorporateActionAssetAccountingEventMapper>();
+        services.TryAddSingleton<ICorporateActionAssetAccountingEventMapper>(sp =>
+            sp.GetRequiredService<CorporateActionAssetAccountingEventMapper>());
         services.TryAddSingleton<IAssetAccountingEventSpineService>(sp =>
             AssetAccountingEventSpineService.TryCreate(
                 sp.GetService<IAssetAccountingEventProjectionStore>(),

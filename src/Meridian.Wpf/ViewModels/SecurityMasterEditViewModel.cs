@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Services;
 using WpfServices = Meridian.Wpf.Services;
 using static Meridian.Contracts.Text.TextPrimitives;
@@ -21,6 +22,8 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
     private readonly WpfServices.LoggingService _loggingService;
     private readonly WpfServices.NotificationService _notificationService;
     private readonly ISecurityMasterService _service;
+    private readonly WpfServices.IDesktopAuthorizationSource? _operatorContext;
+    private readonly WpfServices.IDesktopMutationAuthorization? _mutationAuthorization;
     private JsonElement _assetSpecificTerms;
 
     private static readonly IReadOnlyList<string> AssetClassesList = SecurityAssetClassCatalog.AssetClasses;
@@ -90,23 +93,76 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
     public SecurityMasterEditViewModel(
         WpfServices.LoggingService loggingService,
         WpfServices.NotificationService notificationService,
-        ISecurityMasterService service)
+        ISecurityMasterService service,
+        WpfServices.IDesktopAuthorizationSource? operatorContext = null,
+        WpfServices.IDesktopMutationAuthorization? mutationAuthorization = null)
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
         _service = service;
+        _operatorContext = operatorContext;
+        _mutationAuthorization = mutationAuthorization;
         _assetSpecificTerms = CreateAssetSpecificTermsTemplate("Equity");
 
         CancelCommand = new RelayCommand(() => CancelRequested?.Invoke());
+    }
+
+    /// <summary>
+    /// Resolves the operator to record as the author of this write. Fails closed: rather than
+    /// stamping a placeholder into an audit field, a save with no authenticated desktop session is
+    /// refused, so the golden record never carries a write it cannot attribute.
+    /// </summary>
+    private bool TryAuthorizeMutation(out string actor)
+    {
+        if (_operatorContext is not null &&
+            _operatorContext.TryAuthorize(UserPermission.ModifySecurityMaster, out actor))
+        {
+            return true;
+        }
+
+        actor = string.Empty;
+        return false;
+    }
+
+    /// <summary>
+    /// Whether the host posture permits a Security Master write at all. Every HTTP route that
+    /// mutates the golden record requires
+    /// <see cref="Meridian.Identity.Auth.UserPermission.ModifySecurityMaster"/>; the save is held
+    /// to the same grant. When the mutation seam is composed it decides (so a credential-free host
+    /// whose MDC_ANONYMOUS_ROLE names a read-only role refuses); when only the operator seam is
+    /// composed, <see cref="TryAuthorizeMutation"/> carries the whole decision; with neither seam
+    /// nobody checked the write is allowed, so it refuses rather than defaulting open. Checked
+    /// before the actor is resolved — attribution and authorization are separate properties, and
+    /// recording a named operator on a write the operator had no right to make would be worse than
+    /// refusing.
+    /// </summary>
+    private bool IsMutationPermitted()
+    {
+        if (_mutationAuthorization is not null)
+        {
+            return _mutationAuthorization.IsGranted(UserPermission.ModifySecurityMaster);
+        }
+
+        return _operatorContext is not null;
+    }
+
+    private void ReportForbiddenMutation()
+    {
+        const string message = "This operator is not permitted to modify the Security Master.";
+        StatusText = message;
+        _notificationService.ShowNotification("Security Master", message, NotificationType.Error);
+        _loggingService.LogWarning("Security Master save refused: this desktop session does not hold the ModifySecurityMaster permission.");
     }
 
     // ── Initialization ──────────────────────────────────────────────────────
     public static SecurityMasterEditViewModel CreateNew(
         WpfServices.LoggingService loggingService,
         WpfServices.NotificationService notificationService,
-        ISecurityMasterService service)
+        ISecurityMasterService service,
+        WpfServices.IDesktopAuthorizationSource? operatorContext = null,
+        WpfServices.IDesktopMutationAuthorization? mutationAuthorization = null)
     {
-        return new SecurityMasterEditViewModel(loggingService, notificationService, service)
+        return new SecurityMasterEditViewModel(loggingService, notificationService, service, operatorContext, mutationAuthorization)
         {
             IsEditMode = false,
             Currency = "USD",
@@ -141,9 +197,24 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
     }
 
     // ── Save logic ──────────────────────────────────────────────────────────
-    [RelayCommand]
+    private bool CanSave()
+        => !IsBusy && IsMutationPermitted() && TryAuthorizeMutation(out _);
+
+    [RelayCommand(CanExecute = nameof(CanSave))]
     private async Task SaveAsync(CancellationToken ct)
     {
+        if (!IsMutationPermitted())
+        {
+            ReportForbiddenMutation();
+            return;
+        }
+
+        if (!TryAuthorizeMutation(out _))
+        {
+            ReportUnauthorizedWrite();
+            return;
+        }
+
         ClearValidationErrors();
         IsBusy = true;
         StatusText = "Saving…";
@@ -192,6 +263,12 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
 
     private async Task<SecurityDetailDto?> CreateSecurityAsync(CancellationToken ct)
     {
+        if (!TryAuthorizeMutation(out var actor))
+        {
+            ReportUnauthorizedWrite();
+            return null;
+        }
+
         var identifiers = new List<SecurityIdentifierDto>
         {
             new(
@@ -208,16 +285,32 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
             AssetSpecificTerms: CreateAssetSpecificTermsTemplate(AssetClass),
             Identifiers: identifiers,
             EffectiveFrom: DateTimeOffset.UtcNow,
+            // SourceSystem identifies the originating SYSTEM for conflict precedence, so it stays a
+            // constant for this lane; UpdatedBy is the audit actor and must be the real operator.
             SourceSystem: "WPF-UI",
-            UpdatedBy: "User",
+            UpdatedBy: actor,
             SourceRecordId: null,
             Reason: "Created via WPF UI");
 
         return await _service.CreateAsync(request, ct).ConfigureAwait(false);
     }
 
+    private void ReportUnauthorizedWrite()
+    {
+        const string message = "Sign in with Security Master edit permission before saving.";
+        StatusText = message;
+        _notificationService.ShowNotification("Security Master", message, NotificationType.Error);
+        _loggingService.LogWarning("Security Master save refused: the active desktop session does not grant ModifySecurityMaster or cannot name a valid actor.");
+    }
+
     private async Task<SecurityDetailDto?> AmendSecurityAsync(CancellationToken ct)
     {
+        if (!TryAuthorizeMutation(out var actor))
+        {
+            ReportUnauthorizedWrite();
+            return null;
+        }
+
         var request = new AmendSecurityTermsRequest(
             SecurityId: EditingSecurityId!.Value,
             ExpectedVersion: EditingVersion!.Value,
@@ -227,7 +320,7 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
             IdentifiersToExpire: [],
             EffectiveFrom: DateTimeOffset.UtcNow,
             SourceSystem: "WPF-UI",
-            UpdatedBy: "User",
+            UpdatedBy: actor,
             SourceRecordId: null,
             Reason: "Amended via WPF UI");
 
@@ -255,6 +348,7 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
     {
         RaisePropertyChanged(nameof(CanChangeAssetClass));
         RaisePropertyChanged(nameof(CanEditPrimaryIdentifier));
+        SaveCommand.NotifyCanExecuteChanged();
     }
 
     partial void OnIsEditModeChanged(bool value)

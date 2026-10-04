@@ -1,12 +1,12 @@
-# Meridian Design System — Concrete
+# Meridian Design System — Programmed Institutionalism
 
 **Production-ready · June 2026**
 
 An operator-workstation design system for **Meridian** — a self-hosted trading, market-data, research, and reporting platform. Meridian collects equities data from providers (Polygon, IBKR, Databento…), maintains a security master, runs backfills and quality scans, executes backtests/strategy runs, and operates live & paper trading with accounting and report-pack delivery.
 
-This system is grounded in the **desktop application** (`src/Meridian.Wpf`), whose visual language is **"Institutional Ops"**: a **light** workstation — a concrete-gray canvas (`#DEE3EA`) of flat light panels, capped by a near-black brand bar and status bar (`#171A1F`). One muted steel-blue accent (`#2F6F8F`), desaturated semantic colors used as alpha-10 washes (never solid fills), Segoe UI + Cascadia Mono, and structure built from **visible, load-bearing borders — no shadows, no glow, no gradients**. Think a Bloomberg-grade institutional terminal: utilitarian, flat, hard-edged — not a soft consumer-fintech app.
+This system is grounded in the **desktop application** (`src/Meridian.Wpf`), whose visual language is **"Institutional Ops"**: a **light** workstation — a warm-paper canvas (`#F2F0EC`) of flat architect-white panels, capped by a warm near-black brand bar and status bar (`#1F1D1A`). One muted copper accent (`#A85436`), desaturated semantic colors used as alpha-10 washes (never solid fills), Segoe UI + Cascadia Mono, and structure built from **visible, load-bearing borders — no shadows, no glow, no gradients**. Think a Bloomberg-grade institutional terminal: utilitarian, flat, hard-edged — not a soft consumer-fintech app.
 
-> **Concrete refresh** stripped the system to its structural essentials: square chips (0px) and crisp 2px controls, flat surfaces (the card shadow is gone — borders carry the elevation), neutral industrial grays in place of warm off-whites, and desaturated steel/spruce/brick/ochre semantics. Dark mode is graphite charcoal, equally flat. Earlier history lives in `docs/changelog/`.
+> **Programmed Institutionalism** keeps the structural essentials of the Concrete refresh — square chips (0px), crisp 2px controls, flat surfaces where borders carry the elevation — and changes the material: the canvas becomes warm drafting stock rather than industrial gray, the accent becomes copper rather than steel-blue, and the semantics become forest/brick/ochre/slate-violet. Dark mode is warm graphite, material rather than luminous. The superseded identity remains selectable as `<html data-brand="steel">`. Earlier history lives in `docs/changelog/`.
 
 ## Sources
 
@@ -38,14 +38,14 @@ This system is grounded in the **desktop application** (`src/Meridian.Wpf`), who
 
 Full guide: `guidelines/VISUAL_FOUNDATIONS.md`. Tokens live in `tokens/`.
 
-- **Color — light, institutional, concrete.** Canvas `#DEE3EA` → command band `#EBEFF4` → panel `#FFFFFF` → raised `#F3F6F9`; chrome bars near-black `#171A1F`. The canvas is a clear concrete gray so flat white panels read as distinct lifted surfaces. One accent: steel-blue `#2F6F8F` (primary buttons, focus rings, active nav, crosshair — **one per screen**), pressed `#255B75`. Semantic accents are desaturated **trios** (dim text · solid border · alpha-10 wash, never solid fills): green `#16885F`, red `#BA3F55`, amber `#8A520E`, purple `#6F5BA7`. Text ladder: primary `#22272E` · secondary `#4D5967` · muted `#59636F` · disabled `#889099`.
-- **Environment modes** are always visible: **Live** red `#BA3F55` (real money), **Paper** blue `#2F6F8F` (simulated), **Fixture** amber `#8A520E` (replay).
+- **Color — light, institutional, warm paper.** Canvas `#F2F0EC` → command band `#EDEAE4` → panel `#FBFAF8` → raised `#F6F4F0`; chrome bars warm near-black `#1F1D1A`. The canvas is warm drafting stock so flat architect-white panels read as distinct lifted surfaces. One accent: copper `#A85436` (primary buttons, focus rings, active nav — **one per screen**), hover `#AF6143`, pressed `#8C4429`. The crosshair is chrome rather than a series and takes `--text-secondary`, so it separates from the loss series by chroma where hue cannot. Semantic accents are desaturated **trios** (dim text · solid border · alpha-10 wash, never solid fills): green `#3A7A56`, red `#A8443C`, ochre `#8A5C12`, slate-violet `#5D5486`. Text ladder: primary `#22252A` · secondary `#4E5258` · muted `#5E666F` · disabled `#94999F`.
+- **Environment modes** are always visible: **Live** red `#A8443C` (real money), **Paper** copper `#A85436` (simulated), **Fixture** ochre `#8A5C12` (replay).
 - **Readiness & severity** are a first-class semantic layer (`--severity-*`, `--state-*`): every gate, lane, and check resolves to **Ready · Review · Action · Blocked · Info**, encoded by the `operations/` components. The app's own `--ws-*` token names are aliased too, so dashboard CSS resolves verbatim.
-- **Dark mode** is graphite charcoal, equally flat — canvas `#0E1113`, panel `#1A2026`, steel accent `#5790BE` for night legibility. Activates via `prefers-color-scheme` or `data-theme="dark"`; force light under OS dark with `data-theme="light"`.
+- **Dark mode** is warm graphite, equally flat — canvas `#14120F`, panel `#201D19`, lifted copper `#D98A64` carrying dark ink for night legibility. Activates via `prefers-color-scheme` or `data-theme="dark"`; force light under OS dark with `data-theme="light"`.
 - **Type:** Segoe UI Variable Display (titles, 600), Segoe UI Variable Text (body, 13px), Cascadia Mono / JetBrains Mono (all data, tabular). Ramp (px): page title 24 · section 16 · card title 13 · body 13 · metric 28 (mono 700) · data value 16 · label 9 (small-caps, muted).
 - **Spacing & density:** 32 major · 24 section · 16 generous · 12 standard · 6 tight · 3 micro. Chrome: 48px brand bar, 28px status bar, 224px (14rem) nav rail, \~34px table rows. Density scopes via `DensityToggle`: **`terminal`** (densest — 26px rows, for multi-monitor ops walls) · `compact` · default · `spacious`.
 - **Radii:** unified **2px** across chips/badges, buttons/inputs, and cards/panels — one tight corner. Metric cards carry a **3px left-accent border**. Hard corners — never friendly radii.
-- **Borders & shadows:** structure is **visible, load-bearing borders** (`#CBD3DC`; hover `#ADB8C4`; heavy header/total rules `#99A5B2`). Surfaces are **flat — no card shadow**; the only shadow is a tight hard-edged `0 2px 6px /.18` on floating menus/popovers. **No gradients, no glow, no soft cloud shadows.**
+- **Borders & shadows:** structure is **visible, load-bearing borders** (`#E4E3DE`; hover `#C6C3BB`; heavy header/total rules `#AFABA1`). Surfaces are **flat — no card shadow**; the only shadow is a tight hard-edged `0 2px 6px /.18` on floating menus/popovers. **No gradients, no glow, no soft cloud shadows.**
 - **Motion:** minimal — 100–150ms ease on background/border/color. No springs, no entrance choreography. Live numbers update without animation.
 
 ## Content fundamentals
@@ -119,7 +119,7 @@ Brand marks in `assets/brand/`: `meridian-mark.svg`, `meridian-mark-light.svg`, 
 
 Reference material lives in `guidelines/` (visual + content + the two new references below) and `docs/` (getting-started, API reference, changelog). Cards for each appear in the **Documentation** group of the Design System tab. The tab is organized by domain: **Brand · Colors · Type · Spacing · Depth & Motion · Theming** (foundations), **Core · Data · Charts · Accounting · Trading · Operations · Shell** (component galleries, mirroring `components/`), and **Documentation** (references, API stories, unit tests, the system map).
 
-- **`guidelines/VISUAL_FOUNDATIONS.md`** — the "why" behind Concrete (color, type, surface, motion).
+- **`guidelines/VISUAL_FOUNDATIONS.md`** — the "why" behind Programmed Institutionalism (color, type, surface, motion).
 - **`guidelines/CONTENT_FUNDAMENTALS.md`** — voice, number formatting, evidence-first copy.
 - **`guidelines/ICONOGRAPHY.md`** — the 24px line-icon set and usage.
 - **`guidelines/TOKEN_REFERENCE.md`** — *new.* The 3-tier token model (override Tier 1, author Tier 2, never hardcode Tier 3), white-label entry points, and the `text-secondary`-vs-`text-muted` / `accent-hover`-vs-`accent-dim` disambiguations.
@@ -178,7 +178,7 @@ Reference material lives in `guidelines/` (visual + content + the two new refere
 
 ## Core patterns & rules
 
-**Data-rich UI over whitespace.** Tight rows, hairlines, small-caps labels, tabular numbers. One teal-blue primary action per screen; everything else ghost/link. Never invent colors — use tokens; tint only via the semantic alpha-10/alpha-20 overlays.
+**Data-rich UI over whitespace.** Tight rows, hairlines, small-caps labels, tabular numbers. One copper primary action per screen; everything else ghost/link. Never invent colors — use tokens; tint only via the semantic alpha-10/alpha-20 overlays.
 
 **Accounting & money flows.** All currency goes through `AmountCell` — mono tabular, fixed decimals, accounting parentheses for negatives, zero-as-dash. Tables prove their own arithmetic: `LedgerTable` flags imbalance, `ReconciliationPanel` flags "Out by …", `JournalEntryForm` gates Post on balance, `StatementTable` double-rules totals, `AccountTree` rolls child balances, `TaxLotTable` classifies long/short and computes basis/unrealized, `TrialBalance` proves Σdebit = Σcredit across sections, `AgingTable` escalates late buckets, `FxRevaluationTable` nets unrealized G/L, `AllocationEditor` splits totals cent-exactly.
 

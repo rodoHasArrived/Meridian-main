@@ -117,6 +117,41 @@ public sealed class DailyValuationBatchLifecycleServiceTests
         return new Fixture(source, store, lifecycle, new DailyValuationBatchLifecycleService(source, store, lifecycle));
     }
 
+    [Fact]
+    public async Task ApproveAndPostAsync_WithoutADerivedOrigin_DoesNotClaimHumanStanding()
+    {
+        // This batch approves and posts journal entries, and ManualJournalEntryWorkbenchService
+        // gates every lifecycle action on OperationsOriginGuard.RequireHumanOperator. The batch used
+        // to build its lifecycle requests without setting ActionOrigin at all, so they took
+        // JournalEntryLifecycleActionRequestDto's permissive HumanOperator default and satisfied
+        // that gate on standing nobody had established -- the #2673 hole, one layer down and
+        // reachable from an HTTP route that never derived an origin because its DTO had no field
+        // for one.
+        var fixture = await CreateFixtureAsync(Draft(FirstId), Draft(SecondId));
+
+        await fixture.Service.ApproveAndPostAsync(Request());
+
+        fixture.Lifecycle.Requests.Should().NotBeEmpty();
+        fixture.Lifecycle.Requests.Should().OnlyContain(
+            request => request.ActionOrigin == OperationsActionOriginDto.AutomationAssistant,
+            "an origin the caller never derived must fail closed rather than inherit human standing");
+    }
+
+    [Fact]
+    public async Task ApproveAndPostAsync_PropagatesADerivedHumanOrigin()
+    {
+        // The other half: when the endpoint has derived the origin from a real interactive session,
+        // the batch must carry it through unchanged rather than substituting its own.
+        var fixture = await CreateFixtureAsync(Draft(FirstId), Draft(SecondId));
+
+        await fixture.Service.ApproveAndPostAsync(
+            Request() with { ActionOrigin = OperationsActionOriginDto.HumanOperator });
+
+        fixture.Lifecycle.Requests.Should().NotBeEmpty();
+        fixture.Lifecycle.Requests.Should().OnlyContain(
+            request => request.ActionOrigin == OperationsActionOriginDto.HumanOperator);
+    }
+
     private static DailyValuationBatchLifecycleRequestDto Request()
         => new(
             "daily-a",

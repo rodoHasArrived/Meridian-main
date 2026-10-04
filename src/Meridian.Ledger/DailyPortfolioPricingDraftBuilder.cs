@@ -1,6 +1,7 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 
 namespace Meridian.Ledger;
@@ -131,6 +132,13 @@ public static class DailyPortfolioPricingDraftBuilder
 
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
+            [ValuationMarkEvidenceGuard.EvidenceTag] = JsonSerializer.Serialize(pricingLines.Select(line =>
+                new ValuationMarkEvidence(input.Policy.FundId, line.Symbol, line.SecurityId,
+                    line.FinancialAccountId, effectiveDate, line.PriceObservedOn, line.MarkPrice,
+                    line.Confidence, input.Policy.FreshnessPolicy.MaximumAgeDays,
+                    input.Policy.FreshnessPolicy.MinimumConfidence, input.Policy.FreshnessPolicy.Version,
+                    line.EvidenceReference)).ToArray()),
+            ["valuation.freshnessPolicyVersion"] = input.Policy.FreshnessPolicy.Version,
             ["valuation.policyId"] = input.Policy.PolicyId,
             ["valuation.method"] = input.Policy.ValuationMethod,
             ["valuation.periodId"] = input.PeriodId,
@@ -155,6 +163,8 @@ public static class DailyPortfolioPricingDraftBuilder
                 .Distinct(StringComparer.Ordinal)
                 .Order(StringComparer.Ordinal))
         };
+
+        tags[ValuationMarkEvidenceGuard.DigestTag] = Sha256Digest.ComputeUtf8(tags[ValuationMarkEvidenceGuard.EvidenceTag]);
 
         var metadata = new JournalEntryMetadata(
             ActivityType: "fair-value-mark",
@@ -219,6 +229,9 @@ public static class DailyPortfolioPricingDraftBuilder
             .Append("v1|")
             .Append(input.Policy.FundId).Append('|')
             .Append(input.Policy.PolicyId).Append('|')
+            .Append(input.Policy.FreshnessPolicy.Version).Append('|')
+            .Append(input.Policy.FreshnessPolicy.MaximumAgeDays).Append('|')
+            .Append(input.Policy.FreshnessPolicy.MinimumConfidence).Append('|')
             .Append(input.Policy.ValuationMethod).Append('|')
             .Append(input.PeriodId).Append('|')
             .Append(DateOnly.FromDateTime(input.AsOf.UtcDateTime).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append('|')
@@ -251,8 +264,7 @@ public static class DailyPortfolioPricingDraftBuilder
                 .Append('|').Append(line.Provenance.Token());
         }
 
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonical.ToString());
     }
 
     private static bool MatchesScope(DailyPortfolioPricingLine line, DraftScope scope)

@@ -2,9 +2,42 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-24 (independent verification pass, post-resolution; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
+**Reviewed:** 2026-09-10 (scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
+
+---
+
+## Consolidated review queue — 2026-09-23
+
+This document is the single rolling review record. The nine unconsumed review PRs below are
+retained historical inputs, pinned to their original commits; consolidating the queue does not
+accept their findings as current or discard their distinct observations. Finding labels such as
+`B1`, `C4`, and `E1` are local to a pass and must be qualified by date and PR number.
+
+| Retained pass | Immutable review | Distinct scope to reconcile against current source |
+| --- | --- | --- |
+| 2026-09-01, [#2892](https://github.com/rodoHasArrived/Meridian-main/pull/2892) | [d67f261a](https://github.com/rodoHasArrived/Meridian-main/blob/d67f261a2ca5678b0a9989599abb6d27e7783772/docs/architecture/security-master-extensibility-review.md) | Identifier-constraint failure classification and event/projection atomicity. |
+| 2026-09-03, [#2904](https://github.com/rodoHasArrived/Meridian-main/pull/2904) | [b5a5ab01](https://github.com/rodoHasArrived/Meridian-main/blob/b5a5ab015b5625d669684e1b22e49c216fb5a04c/docs/architecture/security-master-extensibility-review.md) | Price currency, quote units, history, overrides, and vendor entitlement enforcement. |
+| 2026-09-04, [#2905](https://github.com/rodoHasArrived/Meridian-main/pull/2905) | [b8d5b855](https://github.com/rodoHasArrived/Meridian-main/blob/b8d5b855ba8e48802765a489bbda836bdf86ddbf/docs/architecture/security-master-extensibility-review.md) | Normalized identifier collisions reported as skips and orphaned event streams. |
+| 2026-09-07, [#2935](https://github.com/rodoHasArrived/Meridian-main/pull/2935) | [b520a3bc](https://github.com/rodoHasArrived/Meridian-main/blob/b520a3bc7bce30af33e63ac905efca5e90cd6c1e/docs/architecture/security-master-extensibility-review.md) | Issuer/classification ownership, capability parity, client schemas, and cash-flow coverage. |
+| 2026-09-09, [#2937](https://github.com/rodoHasArrived/Meridian-main/pull/2937) | [933ab5d9](https://github.com/rodoHasArrived/Meridian-main/blob/933ab5d94a5becb32758e04732bce40122eb919d/docs/architecture/security-master-extensibility-review.md) | No-drift interval; the pass's dated source checks remain historical. |
+| 2026-09-11, [#2961](https://github.com/rodoHasArrived/Meridian-main/pull/2961) | [7b2f3ada](https://github.com/rodoHasArrived/Meridian-main/blob/7b2f3adaff8378e4a568029de20ec6eb8ff1b0a3/docs/architecture/security-master-extensibility-review.md) | Payload-family discrimination, cache/registry refresh, universe-load cost, and value-consistency scope. |
+| 2026-09-16, [#2975](https://github.com/rodoHasArrived/Meridian-main/pull/2975) | [40b77352](https://github.com/rodoHasArrived/Meridian-main/blob/40b773523c09bfb77fbb517cf7c6919cdeffd71e/docs/architecture/security-master-extensibility-review.md) | Alias ambiguity, normalization, check digits, conflict IDs, bounded loading, and vacuous coverage assertions. |
+| 2026-09-21, [#2982](https://github.com/rodoHasArrived/Meridian-main/pull/2982) | [25d2c209](https://github.com/rodoHasArrived/Meridian-main/blob/25d2c209b84de9dfcbc2012ef7b82002fa98c869/docs/architecture/security-master-extensibility-review.md) | Cash-flow dispatch, journal-template binding, asset-pack validation, and unmodeled readiness. Its separate futures-fixture repair is already present on main. |
+| 2026-09-22, [#2984](https://github.com/rodoHasArrived/Meridian-main/pull/2984) | [03810312](https://github.com/rodoHasArrived/Meridian-main/blob/03810312228b97f7f1a8f1dc5057f785a980ec33/docs/architecture/security-master-extensibility-review.md) | Pricing history/units, hierarchy governance, valuation integration, and scoped entitlements. |
+
+Current-main evidence is `13aa7576575e7816c14ec3b9b5b002a3f4494c97`. Subsequent accounting-trust
+work in PR 2987 changed cash-flow dispatch, lifecycle bindings, and effective-date/quote-unit price
+selection, so the corresponding September 21/22 claims require comparison before being carried
+forward. Production Certification run 35885778558 passed all four jobs on that baseline, including
+1,028 database tests with no failures or skips; it does not establish that every architectural
+finding above is resolved.
+
+Future review work should update this record with changed source, a dated finding disposition,
+and validation evidence. An unchanged interval needs no new review PR. Reuse an open consolidation
+PR while it is awaiting review. This queue policy does not claim that the external scheduler has
+been disabled; no matching local automation was found during this consolidation.
 
 ---
 
@@ -32,6 +65,45 @@ record.
 Nothing here is a correctness emergency. The risks are extensibility and institutional-completeness
 risks that compound as new asset classes land.
 
+> **Superseded on 2026-08-28 — do not read the two sentences above as current.** They were accurate
+> for the findings that pass had. The 2026-08-28 scheduled pass filed four shipped-behaviour defects
+> that are correctness and access-control problems rather than extensibility ones: the desktop lane
+> mutates the golden record with no authorization check (P5), the legacy preferred-terms PATCH route
+> bypasses the governed-amendment gate (P1), editing an alias erases it from earlier recorded-as-of
+> views (P3b), and invalid import rows are reported to the operator as harmless skips while a
+> Polygon ingest whose page fetch fails imports the pages it got and reports success (P4; an
+> earlier wording said "a cancelled Polygon ingest" — cancellation imports nothing; see the
+> 2026-09-01 pass's P4 row). The architectural assessment below is unaffected.
+>
+> **Update 2026-09-01, mapped onto the four.** P5 is closed and verified — a
+> `RolePermissions`-backed mutation gate now covers all five in-process golden-record commands. One
+> P1 item — the legacy PATCH bypass — was closed on 2026-08-29; P1 itself stays open on its
+> actor-source rows (the open table in the 2026-09-01 pass). P3b is narrowed, not resolved: the
+> creation fields are frozen, the history problem stands. P4's clause splits three ways: on the
+> CSV import and Polygon CLI paths, ordinary validation failures are no longer misreported as skips
+> (the substring classifier is gone, so they count `Failed`) — EDGAR still counts every
+> non-duplicate failure as a skip, its result having no failed counter; a reused `SecurityId`
+> with different terms still is — the typed classifier treats every version-0 stream conflict and
+> SQLSTATE `23505` as `Skipped` without comparing payloads (the semantic half, open); and a
+> Polygon ingest whose page fetch fails mid-pagination imports the pages it got and reports
+> success — `FetchPageAsync` is unchanged, while a *cancelled* ingest imports nothing (the CLI
+> re-checks the token before its first write) and, if cancelled during the first page, reports
+> "no tickers" as success. (Narrowed 2026-09-05, after review, twice: the first wording said
+> "invalid rows", which read as all of them, and "a cancelled Polygon ingest imports a partial
+> set", which it cannot.) See the
+> [2026-09-01 pass](#scheduled-institutional-requirements-pass--2026-09-01).
+>
+> **Update 2026-09-08.** The architectural assessment still stands, with one addition the
+> [2026-09-08 pass](#scheduled-institutional-requirements-pass--2026-09-08) makes: the closed
+> 26-case write model is now shadowed by a **second, normalized term model** — the cross-asset
+> `SecurityTermModules` / `economicTerms` document — which is a lossy one-way projection of the
+> first. Thirteen of its twenty-seven modules never reach the wire, eleven of those are never
+> populated at all, and the accounting and reporting consumers already read around it into the
+> retained v1 payload. Read against the "economics shallower than the taxonomy it advertises"
+> sentence above: that is now true twice over, once per model. That pass also files two small
+> correctness back-ports of rules the subsystem has already made and documented elsewhere — an
+> unguarded create path (C4) and two unguarded numeric JSON readers (C5).
+
 > **Verification pass, 2026-08-14.** Re-read against current source at `4b39e9da8`. The findings
 > below stand as written except where a **Status (2026-08-14)** note says otherwise; four of the ten
 > risk items have since closed or materially narrowed. See
@@ -49,6 +121,114 @@ risks that compound as new asset classes land.
 > it: no catalog-to-validator parity guard, and a CSV import path that fails for **every** asset
 > class because the parser never populates the terms payloads the create path requires. See
 > [Independent verification pass](#independent-verification-pass--2026-08-24-post-resolution).
+>
+> **Scheduled institutional-requirements pass, 2026-08-26.** Re-read against `2917848a`. The verdict
+> stands; both surviving findings above are still open; six new items are filed. See
+> [Scheduled institutional-requirements pass — 2026-08-26](#scheduled-institutional-requirements-pass--2026-08-26).
+> Its highest-severity finding is new: `CashSweep` and `StructuredCredit` share the
+> `AssetFamily.StructuredCash` label and the accounting adapter reads that label as securitized, so
+> cash-sweep vehicles resolve to an asset-backed-security accounting class.
+>
+> **Resolution pass, 2026-08-26.** Four items from that pass are closed — the family split (N1), both
+> parity guards (V1 and N3), CSV import (V2), and the prose-sniffing classification it shared with
+> N2. N4, N5 and N6 stay open. See
+> [Resolution pass — 2026-08-26](#resolution-pass--2026-08-26), which also records the intended
+> behaviour deltas.
+>
+> **Scheduled institutional-requirements pass, 2026-08-27.** Re-read against `d3793290`. The verdict
+> stands. This pass concentrated on the identity/resolution layer previously assessed as "the
+> strongest part of the subsystem" and found that its *detection* half does not hold the guarantees
+> its *resolution* half does: the identifier-ambiguity detector compares raw values and ignores
+> validity windows, and primary-identifier uniqueness is enforced on the un-normalized column. Five
+> items are filed. See
+> [Scheduled institutional-requirements pass — 2026-08-27](#scheduled-institutional-requirements-pass--2026-08-27).
+>
+> **Scheduled institutional-requirements pass, 2026-08-28.** Re-read against `d3793290`, then
+> extended under review.
+>
+> **The architectural verdict stands; the risk verdict above it does not, and is superseded here.**
+> The design assessment is unchanged — the asset model, extension points and cross-asset seams are
+> sound, and every closure claimed by the 2026-08-26 resolution was independently re-verified against
+> source rather than taken on the resolution's word, and all of them hold. But the opening line
+> "nothing here is a correctness emergency… the risks are extensibility and institutional-completeness
+> risks" was written before this pass, and **four** of the six items filed below are neither: an
+> authorization bypass on a credential-backed desktop host (P5), an ungated maker-checker route (P1's
+> legacy PATCH), recorded-history loss on alias edits (P3b), and — as P4 grew under review — a set of
+> live misreporting defects, where an invalid import row is reported to the operator as a harmless
+> skip and a cancelled Polygon ingest imports a partial set and reports success. Those are all
+> shipped-behaviour defects in correctness and access control. P4 was originally filed as a fragile
+> *pattern* and became a correctness item as its consequences were traced; the count here is easy to
+> leave stale for exactly that reason. The 2026-08-13 wording is left in place as the record of what
+> that pass concluded; read it as superseded from here, not as current.
+>
+> N4, N5, N6 and the three deferred items are unchanged. Six new items are filed
+> (P1–P4 plus P3b and P5, which review surfaced). See
+> [Scheduled institutional-requirements pass — 2026-08-28](#scheduled-institutional-requirements-pass--2026-08-28).
+>
+> **Read the four items below as of the pass date, not as current.** Implementation work merged on
+> 2026-08-29 after this pass was written. As of that merge: the gate bypass (the second item) is
+> **closed**; P3b and P4 are **partially closed**, each still holding the property the item was about;
+> and **P5 is open and unchanged**, which is why it stays first. The items are left as written because
+> they record what was found and why — *Status of this pass's findings after the 2026-08-29
+> implementation merges* has the verified current state, and it, not this block, is what to schedule
+> work from.
+>
+> **Its highest-severity finding (P5) is that the desktop lane mutates the golden record with no
+> authorization check at all.** Every HTTP route that mutates the **golden record** requires
+> `ModifySecurityMaster` — other Security Master mutations deliberately use narrower capabilities, and
+> the parity asked for is with that boundary, not a collapse of them; the WPF
+> edit, deactivate, import and trading-parameter backfill commands — the last of which amends up to
+> 1,000 securities in one action — reach the same `ISecurityMasterService` in process and check
+> nothing, on a shell whose `HasPermission` fails closed only for a **credential-backed** host — it
+> returns true for everything on a credential-free host, including one naming an anonymous role, so it
+> cannot be the gate on its own — and is in any case never
+> called here. So an operator holding only `ViewSecurityMaster` is refused every mutation over HTTP
+> and permitted every one of them through the workstation. It is filed apart from P1 because it is an
+> authorization defect rather than an attribution one, and it must be fixed first: deriving the actor
+> before gating the write would attach a real operator's name to changes that should have been
+> refused.
+>
+> **The second is a live bypass of a shipped control**: the legacy
+> `PATCH …/preferred-terms` route reaches `AmendPreferredEquityTermsAsync` without calling
+> `RequireGovernedTermAmendmentRoute`, so a deployment that enables `RequireGovernedTermAmendments`
+> to force maker-checker still has an ungated amendment path. That is one call to close, and it also
+> makes the 2026-08-24 resolution's "gates all three routes uniformly" incomplete.
+> **Closed on 2026-08-29** — `SecurityMasterEndpoints.cs:1064` now calls
+> `RequireGovernedTermAmendmentRoute`, taking it to 4 call sites. Do not schedule this; it is done.
+>
+> **The third shipped-behaviour defect (P3b, priority 3) loses history today**: an alias upsert
+> overwrites the existing row's `created_at`, and `RebuildRecordedAsOfAsync` filters aliases by it, so
+> correcting an alias removes it from every recorded-as-of view earlier than the correction — an
+> identifier recorded in January and corrected in June vanishes from the January view. Unlike the gate
+> bypass it is not a one-call fix: it needs versioned or event-backed alias state, or an explicit
+> narrowing of what recorded-as-of promises for aliases.
+>
+> **The fourth misreports completed work to the operator (P4)**: an invalid import row is counted a
+> harmless `Skipped` and dropped from the error list, so the operator believes a security is in the
+> master when it was rejected, and a cancelled Polygon ingest imports a truncated page set and reports
+> success. It is listed last here and ranked below the three above because it misstates outcomes rather
+> than losing data or admitting an unauthorized write — but it is a shipped-behaviour defect, not a
+> plumbing one. It was filed as a fragile *pattern* and became a correctness item as its consequences
+> were traced, which is exactly why counts elsewhere in this document went stale on it.
+>
+> The pass began on the bulk-import path and its scope widened materially under review: P1 is now a
+> property of the whole `ISecurityMasterService` mutation surface rather than of import, P3 concerns
+> the asset-pack registry, and P4 spans three ingest paths plus a cancellation defect class. Where
+> this pass's own claims were corrected — several were — the corrections are recorded in place rather
+> than silently applied.
+>
+> **Scheduled institutional-requirements pass, 2026-08-31.** Re-read against `eaa83032`. The verdict
+> stands; N4, N5, N6 and the three deferred items are re-verified as still open; four new items are
+> filed. See
+> [Scheduled institutional-requirements pass — 2026-08-31](#scheduled-institutional-requirements-pass--2026-08-31).
+> Its highest-severity finding is new and is the same *shape* as the prose-classification defects the
+> last pass closed, one layer down: `StructuredCashFlowTermsResolver` keeps a second, unlocked alias
+> vocabulary alongside `SecurityAssetTermsSchema`, and it does not know the key `DirectLoan` actually
+> writes for its coupon. The base projection — the one the ledger bridge posts — therefore prices
+> interest at zero, while the upward and stress scenarios price it at a bare 1–3% that has nothing to
+> do with the instrument, and the downward scenarios clamp back to zero. Compounding it, `DirectLoan`
+> supplies no resolvable principal basis either, so every calculated projection runs on a synthetic
+> 100 notional whatever the rate.
 
 ---
 
@@ -93,6 +273,16 @@ an explicit `IntentionallyUnprojectedAssetClasses` list and asserts the catalog-
 partition, so "adding a catalog class without a projection forces this list to be updated in
 review". `SecurityAssetClassCatalogTests` locks the C# catalog to `AssetClassRegistry.assetClasses`.
 This is the right governance instinct.
+
+> **Updated 2026-09-02 — the projected/unprojected counts below are superseded.** `DirectLoan` and
+> `StructuredCredit` now have relational terms projections (migration 033), taking the projected set
+> from 11 classes to 13. The declared-gap machinery was also split in two, because "we chose not to
+> project it" was never an available answer for an Asset Operations class: a class whose catalog
+> capabilities include `LedgerProjection` can now only be unprojected by sitting in
+> `OpsCapableProjectionBacklog`, which `ProjectionCoverage_ReachesEveryOpsCapableAssetClassOutsideTheBacklog`
+> holds to shrink-only. `IntentionallyUnprojectedAssetClasses` keeps the nine classes that are
+> genuine decisions. Every passage below that reads "11 projected / 15 declared gaps" describes the
+> state before that change; the partition guard itself is unchanged in intent.
 
 **Open-lot modeling for par instruments is careful.** `FaceValueLot` makes previously implicit
 conventions explicit — quote basis (`ParBasis`, so a per-unit-priced lot cannot silently
@@ -224,6 +414,25 @@ because both codec sides are still hand-written.
 > drift at commit time rather than in production, but adding an asset class still means editing both
 > sides by hand plus the ~7 registries above.
 
+> **Status (2026-09-02): the table now carries values, not just keys.** `SecurityAssetTermField`
+> gained an `AllowedValues` dimension, declared for the four string fields whose domain type cannot
+> round-trip an unlisted value — `classification`, `putCall`, `exerciseStyle`, `couponType`. Labels
+> whose domain type has an open "other" case (`votingRightsCat`, `subclass`, `paymentFrequency`,
+> `distributionPolicy`) are deliberately left unconstrained: they preserve any raw string today.
+> Three surfaces read the vocabularies instead of hard-coding them — `SecurityAssetTermsFieldEditValidator`
+> rejects an out-of-vocabulary edit before it stages a draft, `SecurityMasterMapping` enforces them
+> on the WRITE path (a schema-driven backstop after the kind is built, so a vocabulary added to the
+> table binds create/amend without a matching codec edit), and
+> `SecurityMasterService.EnsureAssetClassRoundTripsSafely` walks
+> `SecurityAssetTermsSchema.DiscriminantFields` rather than carrying one bespoke `Ensure…` method per
+> field. The bond `couponType` fallback arm is now read-tolerant/write-strict like the CustomAsset
+> envelope check: an unrecognized coupon type still loads as `Fixed` but can no longer be written,
+> so a typo cannot silently re-type a floater as a fixed-rate bond. The guard distinguishes what a
+> write may ASSERT from what an existing row may KEEP: a value the codec carries verbatim
+> (`putCall`) never blocks an amend, an escaped one (`classification` → `Other` +
+> `otherClassification`) blocks only when its dependent blocks are present, and a dropped one
+> (`couponType`, `exerciseStyle`) always does.
+
 ### 5. The governed edit workflow does not reach the golden record
 
 `SecurityMasterWorkbenchCommandService.UpdateSecurityFieldAsync` stages edits as
@@ -245,7 +454,7 @@ Three consequences:
   independent-reviewer requirements, restatement resolution, and affected-ledger-book scoping — all
   applied to a side table that by design never changes the record it annotates.
 
-The overlay decision is documented and intentional (`docs/plans/security-master-passport-workbench.md`,
+The overlay decision is documented and intentional (`docs/engineering/blueprints/security-master-passport-workbench.md`,
 decision D2 as amended: a partial field-edit payload appended to the economic stream would clobber
 the definition on replay). The rationale is right. The gap is that no *typed amendment* path was
 built alongside it, so the workbench remains an annotation surface rather than a correction surface.
@@ -678,6 +887,4432 @@ part of the standing eleven-registry cost in finding 4 rather than a separate it
 
 ---
 
+## Scheduled institutional-requirements pass — 2026-08-26
+
+Re-read against `2917848a` (254 commits after `780aeb9e`, of which seven touch Security Master).
+The verdict above stands unchanged. The prior passes' two open verification findings were re-checked
+against current source and **both remain open**; five findings below are new to this document. No
+code was changed by this pass and no tests were run — every claim is a source read.
+
+### Re-verified as still open
+
+| # | Item | Evidence at `2917848a` |
+| --- | --- | --- |
+| V1 | No catalog-to-validator coverage guard | `AssetClassValidatorRegistry` still appears in `tests/Meridian.Tests/` only as a constructed dependency; no test asserts `SupportedAssetClasses` against `SecurityAssetClassCatalog`. Parity currently *holds* — all 26 catalog classes have a validator — which is exactly why the missing guard is invisible until the next class lands. |
+| V2 | CSV import is broken for every asset class | `SecurityMasterCsvParser.cs:146-147` still hardcodes `CommonTerms` and `AssetSpecificTerms` to `{}`, and `SecurityMasterMapping.cs:216-217` still requires `displayName` and `currency`. The path is live in **both** UI lanes — `SecurityMasterViewModel` (WPF) and `SecurityMasterEndpoints.cs:901` (HTTP) — so it is an operator-facing dead route, not a dormant one. |
+
+The three declared-and-deferred items are unchanged and remain governed rather than drifting: the
+15 unprojected classes are still enumerated in `SecurityAssetTermsSchemaTests.IntentionallyUnprojectedAssetClasses`
+and locked to "projected ∪ declared-gap = catalog", terms still have no valid-time history, and both
+codec arms remain hand-written behind the round-trip guard.
+
+### N1 — `CashSweep` and `StructuredCredit` share an asset family, and accounting reads the family as securitized
+
+The highest-severity item this pass. Three independently reasonable decisions compose into a
+cross-asset misclassification:
+
+1. `AssetClassRegistry` assigns `Family = AssetFamily.StructuredCash` to **both** `CashSweep`
+   (`SecurityMaster.fs:667`) and `StructuredCredit` (`:675`).
+2. `AssetFamily.StructuredCash` serializes to the literal string `"StructuredCash"`
+   (`SecurityClassification.fs:105`), which is what reaches `SecurityEconomicDefinitionRecord.AssetFamily`.
+3. `SecurityMasterAccountingEventSourceAdapter.IsStructuredCredit` matches that exact literal
+   (`:725-727`), and `ResolveAccountingAssetClass` (`:643`) tests it against `AssetFamily` among four
+   fields.
+
+So every `CashSweep` record resolves to accounting asset class `"AssetBackedSecurity"`. It then passes
+`SecurityMasterAccountingEventService.IsFixedIncome` (`:291-303`) and enters the fixed-income slice.
+Because `ToAccountingRule` returns null unless the record carries an `accountingClassification`
+(`:341-351`), the typical cash-sweep record raises `SECURITY_ACCOUNTING_RULE_MISSING` at
+**High** severity (`SecurityMasterAccountingEventService.cs:222-231`) — where correct classification
+would have produced the benign `SM_UNSUPPORTED_ACCOUNTING_INSTRUMENT` at **Info** (`:211-220`). A
+sweep vehicle carrying an `accountingClassification` is worse, not better: it proceeds into coupon and
+factor coverage validation it has no terms to satisfy.
+
+The mechanism is certain from source. What is not established without a test is how many cash-sweep
+positions reach the accounting event path in practice, and therefore how much spurious close-blocking
+break volume this produces today. That test is the cheapest way to size it.
+
+The root cause is the shared family label, not the predicate: `StructuredCash` is being asked to mean
+both "structured cash vehicle" and "securitized credit". Splitting the family (`StructuredCash` for
+sweep vehicles, a distinct `SecuritizedCredit` for tranches) fixes it at the source and removes the
+need for `IsStructuredCredit` to special-case a family name at all.
+
+### N2 — The coverage read model routes securitized evidence to `CustomAsset`, against ADR-022
+
+`MultiAssetCoverageReadService.CandidateAssetClass` (`:339`) and `ScheduleAssetClass` (`:357`) both
+return `"CustomAsset"` when `IsStructuredAssetEvidence` (`:386`) fires. ADR-022, accepted two days
+earlier, makes `StructuredCredit` the canonical home for MBS/ABS/CLO/CMBS and the validator now warns
+`SM_CUSTOM_ASSET_SECURITIZED_NONCANONICAL` for exactly that modeling
+(`AssetClassValidatorRegistry.cs:314`). The read model therefore steers operators toward the class the
+write model has just been taught to warn against.
+
+Both methods also classify by substring-sniffing a concatenation of five free-text fields
+(`CandidateType`, `RequiredFeed`, `Symbol`, `SecurityDisplayName`, `Reason`), so any security whose
+display name or reason text happens to contain "loan", "structured", "trustee", or "warehouse" is
+classified accordingly. This is the same shape as `ResolveAccountingAssetClass` in N1: asset class
+inferred from prose rather than read from the record.
+
+### N3 — `SecurityAssetPackRegistry` declares 18 asset classes the domain cannot represent
+
+The resolution pass closed the direction that was tested — every catalog class is now claimed by a
+pack. The reverse direction is unguarded, and diverges: the packs name
+
+`Art`, `BankAccount`, `Cash`, `CreditFacility`, `ExchangeTradedFund`, `Forward`, `Guarantee`,
+`InsurancePolicy`, `IntercompanyLoan`, `Mortgage`, `PartnershipInterest`, `PrivateCredit`,
+`PrivateFund`, `RealEstate`, `RealEstateInterest`, `SpecializedHolding`, `UnfundedCommitment`, `Vehicle`
+
+— none of which has a `SecurityKind` arm, a terms schema entry, or a validator. `Cash` and
+`BankAccount` are the ones that matter for fund operations: the registry advertises deep accounting
+automation for a cash-and-bank pack whose two headline classes do not exist as instruments.
+
+This surfaces to operators. `SecurityMasterOperationalReadinessService:295` projects
+`SecurityAssetPackRegistry.All` into the readiness report, so the readiness surface reports asset-pack
+coverage for instruments the system cannot hold. The fix is a second parity guard mirroring the first.
+
+### N4 — `ValidateAll()` cannot report the overlap rule it implements
+
+`ValidateCandidateSet` filters its asset-class-overlap check to groups containing at least one
+*candidate* pack (`SecurityAssetPackRegistry.cs:280`). `ValidateAll()` calls it with an empty candidate
+list (`:249-252`), so `candidateIds` is empty and the filter rejects every group: the built-in overlap
+rule can never fire. Two overlaps stand today — `DirectLoan` claimed by both `private-loan-credit` and
+`mortgage-facility-intercompany`, and `CreditFacility` by three packs — so `FindByAssetClass` returns
+an ambiguous set for them while an identical claim from a new pack would be rejected as Critical.
+
+The asymmetry between incumbents and newcomers is the observation worth keeping; **calling it "the
+opposite of what a registry guard should be" overstated it, and that phrasing is withdrawn here
+rather than only in the entries derived from it.** Read as grandfathering it is a defensible choice:
+the built-in overlaps ship deliberately, `FindByAssetClass` returns a collection by design, and
+`AssetPackRegistry_ValidateAll_ShouldAcceptBuiltInPacks` depends on the filter that produces the
+asymmetry. What is genuinely wrong is not that incumbents are exempt but that **nothing records why
+they are** — the exemption is a side effect of `candidateIds` being empty on the built-in path
+(`:249-252`), not a stated policy, so a reader cannot tell a grandfathered overlap from an
+unnoticed one. Fix that by making the allowance explicit, and extend the rule along the *planned*
+axis for candidates; do not remove the candidate filter.
+
+### N5 — The pack registry's "contract schema" is one shared prose object, not a per-pack contract
+
+Every pack is constructed with the same three static instances — `ContractSchema` (`:37`),
+`StandardValidationRules` (`:117`), `StandardReportingTaxonomy` (`:153`) — whose members are English
+phrases (`"issuer"`, `"trade date"`, `"cash variance"`, `"market price without market identifier or
+retained price evidence"`). `ValidateDescriptor` checks them only for non-emptiness
+(`RequireNonEmpty`, `:508-521`), so the validation cannot fail for any pack and cannot distinguish
+one pack's contract from another's. `InferLifecycleEvent` (`:464-500`) then derives a pack's lifecycle
+mapping by substring-matching those English journal-template names, so a template renamed for clarity
+can silently re-route to a different lifecycle event.
+
+Read as documentation-as-code the registry is useful. **Scope this to the three shared objects,
+though — an earlier version of this item said the seam "enforces nothing an asset pack could get
+wrong", and that is false of the type as a whole.** `ValidateDescriptor` rejects a great deal a pack
+can get wrong: claimed and planned classes absent from the catalog, unsupported lifecycle and
+valuation values, missing lifecycle coverage, required capture policy and accounting-automation
+status, journal-template entity scopes, unsupported template lifecycle events, and invalid admission
+policies (`SecurityAssetPackRegistry.cs:537-772`). Those checks do distinguish one pack from another
+and do fail a bad candidate.
+
+What cannot distinguish packs is the narrower set this item is actually about: `ContractSchema`,
+`ValidationRules` and `ReportingTaxonomy` are shared prose objects, identical across packs, so no
+check over them can tell a well-formed pack from a malformed one. The remedy belongs to those three —
+promote them to structured, per-pack, checkable values, or restate *them* as descriptive metadata —
+and not to the registry type, which would discard working enforcement.
+
+### N6 — Projection fan-out writes to every asset class on every upsert
+
+`UpsertProjectionCoreAsync` runs all 11 registered writers for every record
+(`PostgresSecurityMasterStore.cs:386-389`), and each writer whose class does not match issues a
+delete instead of returning (`:392-402`). A single equity upsert therefore issues **thirteen** fan-out
+`DELETE` statements against rows that by construction cannot exist: the bond writer's non-match branch
+calls `DeleteBondProjectionTablesAsync`, which loops four tables (`:461-473`), and the other nine
+non-matching writers delete one row each. `ReplaceIdentifiersAsync` and `ReplaceAliasesAsync` add two
+more for unrelated reasons, bringing the whole operation to fifteen. An earlier version of this item
+said "roughly seventeen"; the count is corrected here because it is the number sizing the
+bulk-ingest argument. Worth noting how the miscount happens, since the code invites it: the bond
+delete helper contains **one** `delete from` statement executed **four** times, so counting
+statements in the source undercounts, and counting tables without reading the loop overcounts. The registry design is right (adding a class is one additive line); the
+per-record cost is what bulk vendor ingest will feel. A `record.AssetClass`-keyed lookup plus a
+targeted cleanup on observed class *change* would keep the registry and drop the amplification.
+
+### Smaller notes, not filed as findings
+
+- **Derivative families are imprecise.** `Swap`, `Cfd`, and `Warrant` all carry
+  `AssetFamily.ListedDerivative` (`SecurityMaster.fs:671, 689, 691`); OTC swaps and CFDs are not
+  listed. `AssetFamily` is the grouping key for certified report packs
+  (`ReportGenerationService.cs:243`, `CertifiedReportingSnapshotBuilder.cs:141`), so the label is a
+  reporting rollup, not a cosmetic tag. `FxSpot` carries `AssetClass.Other` with no family at all
+  (`:653`), which lands FX under "Other" in the same rollups.
+- **Option projections are identifier-keyed while every other projection is security-keyed.**
+  `option_contract_projection` has `contract_symbol` as primary key with a nullable `security_id`
+  (migration 006); the child tables cascade from it correctly, so this is a shape inconsistency
+  rather than a leak.
+- **`AssetSpecificTermsSchema` skips version 2** (`Legacy = 1`, `CustomAssetProfile = 3`) because
+  version 2 belongs to the economic-terms family. The facade documents the split well; the numbering
+  gap is worth a one-line comment where the constants are declared so nobody reads it as a missing
+  migration.
+
+### Priorities from this pass
+
+Ordered by institutional risk per unit of work, and read as a delta on the standing Top 5 above:
+
+1. **Split the `StructuredCash` family (N1).** A correctness defect with a close-readiness blast
+   radius, fixed at the source in the one table that governs classification. Pair it with a test that
+   asserts a `CashSweep` record resolves to a cash-equivalent accounting class.
+2. **Add the two missing parity guards (V1, N3).** Validator-vs-catalog and packs-vs-catalog, both
+   mirroring four guards that already exist. Still the cheapest durable items in this document.
+3. **Fix or retire CSV import (V2).** It is wired into two operator surfaces and works in neither.
+   Whichever way it goes, it should stop being reachable in its current state.
+4. **Retire classification-by-prose (N1, N2).** `ResolveAccountingAssetClass` and the
+   `MultiAssetCoverage` routers should read a declared capability off `SecurityAssetClassCatalog`
+   rather than substring-matching four fields and five concatenated free-text values. This is the
+   generalization that makes the next asset class safe by default instead of safe by coincidence.
+5. **Relational projections — or one generic indexed seam — for the private/alternative classes.**
+   Unchanged from the standing list, and unchanged in importance: `DirectLoan`, `StructuredCredit`,
+   `PrivateFundInterest`, `RealEstateHolding`, and `CommitmentGuarantee` are precisely the classes
+   fund operations queries by issuer, maturity, and commitment, and precisely the ones with no
+   indexed path.
+
+---
+
+## Resolution pass — 2026-08-26
+
+An implementation pass on the four items prioritised out of the pass above.
+
+**Validation.** The authoring environment had no .NET SDK preinstalled; one was installed and the
+work was built and tested locally. `dotnet build Meridian.sln -c Release` succeeds with 0 errors, the
+full `Meridian.Tests` suite runs 13,806 passed / 226 skipped / 2 failed, and `Meridian.FSharp.Tests`
+passes 447/447. Both remaining failures are pre-existing and unrelated to this pass, each verified
+rather than assumed:
+
+- `StrategyDesignServiceTests.Scenario_MultiSymbolRebalance_…` reproduces identically on the base
+  commit `2917848a` in a clean worktree. The QuantScript worker is a separate process launched via
+  `dotnet exec`, and the locally installed SDK does not resolve its native dependencies — an
+  artefact of the authoring container, not of the tree. CI's own QuantScript project passes 166/166.
+- `LeanEndpointTests.StopBacktest_UnknownId_Returns404` expects 404 and gets 501, because
+  `f5f4b192` changed the Lean stop route to answer 501 without updating the test. It sits under
+  `Meridian.Tests.Integration`, which every CI `dotnet test` invocation excludes twice over, so CI
+  never runs it. Worth someone fixing — a test outside CI's reach rots silently — but it belongs to
+  the Lean surface, not here.
+
+### Closed this pass
+
+| # | Item | What landed |
+| --- | --- | --- |
+| N1 | `CashSweep` accounts as an asset-backed security | `AssetFamily.SecuritizedCredit` splits the securitized family out of `StructuredCash`; `StructuredCredit` moves to it and `CashSweep` keeps `StructuredCash`. The adapter no longer reads the family at all (see N2/N4 below), so the family is a reporting rollup again rather than an instrument identity. `SecurityAccountingInstrumentClassTests` locks the regression: a cash sweep resolves to no accounting class, which the event service reports at Info instead of raising a High-severity `SECURITY_ACCOUNTING_RULE_MISSING`. |
+| V1 | No catalog-to-validator parity guard | `SecurityAssetClassParityGuardTests.ValidatorRegistry_CoversExactlyTheCatalogAssetClasses` — the fifth guard mirroring the four that existed. |
+| N3 | Packs declare 18 classes the domain cannot represent | `SecurityAssetPackDescriptor.PlannedAssetClasses` carries anticipated coverage; `AssetClasses` now names only catalog classes. `ValidateDescriptor` enforces both directions at runtime (`asset-pack.asset-class-not-in-catalog`, `asset-pack.planned-asset-class-already-modeled`), and the parity tests guard them. The readiness DTO reports the planned set separately so a reader cannot mistake it for present coverage. |
+| V2 | CSV import broken for every asset class | The parser builds the `displayName`/`currency`/`exchange` common-terms payload it already parsed and stamps the asset-specific-terms schema version, so rows reach the create path intact. The accepted set derives from a new catalog capability, `SupportsIdentifierOnlyImport`, instead of a private table. |
+| — | Prose-sniffing classification | `ResolveAccountingAssetClass` is a lookup over `SecurityAssetClassCatalog.ResolveAccountingInstrumentClass`, not substring matching across four fields. `MultiAssetCoverageReadService` reads the class a referenced security DECLARES (via `ISecurityMasterQueryService`) and only falls back to inference for evidence naming no security — and that fallback now reads feed SHAPE fields only, never the security's symbol, display name, or reason text. |
+| N2 | Coverage read model contradicts ADR-022 | Structured evidence resolves to `StructuredCredit`; NAV/capital-call/distribution evidence resolves to `PrivateFundInterest` instead of being swept into `CustomAsset` alongside it. |
+
+### Behaviour deltas worth knowing
+
+These are intended and stated rather than incidental:
+
+- **Securitized vendor spellings collapse to one accounting class.** `MortgageBacked`,
+  `MortgageBackedSecurity` and `Mbs` previously resolved to a distinct `MortgageBackedSecurity`
+  accounting class; they now resolve to `AssetBackedSecurity` like every other securitized spelling.
+  Both pass the fixed-income gate identically and nothing downstream discriminates between them, so
+  the only difference is the string in an issue message. This follows ADR-022: the MBS-vs-ABS
+  distinction is a collateral fact, not a class name.
+- **Records admitted only because their class string read "Loan" no longer are.** Canonical
+  `DirectLoan` records were never admitted to this accounting slice; records whose class string
+  happened to be `Loan` or `AmortizingLoan` were. The canonical class now decides uniformly. This
+  removes an inconsistency rather than a capability — admitting direct loans to the slice is a
+  product decision, not a refactor, and is left unmade.
+- **CSV import accepts two asset classes, not nine.** `Equity` and `InvestmentFund` are the only
+  classes whose asset-specific terms are entirely optional, so they are the only ones a
+  ticker/name/currency row can create. The other seven the parser used to name were rejected at
+  create time anyway; they are now refused at parse time with a message that says why. A parity test
+  ties the capability to `SecurityAssetTermsSchema`, so the flag cannot drift from the contract it
+  describes.
+
+### Still open from the pass above
+
+- **N4 — `ValidateAll()` cannot fire its own overlap rule.** Untouched. `DirectLoan` remains claimed
+  by both `private-loan-credit` and `mortgage-facility-intercompany` (the latter's other three
+  claims are now planned coverage), and the candidate-only filter still means a built-in overlap
+  cannot be reported.
+- **N5 — the per-pack contract schema is one shared prose object.** Untouched.
+- **N6 — projection fan-out writes to every asset class on every upsert.** Untouched.
+- The three long-standing deferred items — relational projections for the private/alternative
+  classes, valid-time term history, and codec generation from `SecurityAssetTermsSchema` — are
+  unchanged.
+
+---
+
+## Scheduled institutional-requirements pass — 2026-08-27
+
+Re-read against `d3793290`. No code changed; no tests run. Every claim cites the file and line it
+was read from.
+
+### Re-verified as still open
+
+N4 (`ValidateAll()` cannot fire its own overlap rule), N5 (the per-pack contract schema is one
+shared prose object), and N6 (projection fan-out) are unchanged. The three long-standing deferred
+items — relational projections for the private/alternative classes, valid-time term history, and
+codec generation from `SecurityAssetTermsSchema` — are unchanged.
+
+The catalog-vs-projection gap remains a *declared* gap rather than drift: 11 classes are projected
+and 15 are named in `IntentionallyUnprojectedAssetClasses`, and
+`ProjectionCoverage_PartitionsTheCatalogIntoProjectedAndDeclaredGaps`
+(`SecurityAssetTermsSchemaTests.cs:107-119`) fails if a new catalog class appears in neither set.
+That guard is working as designed and this pass does not re-file it.
+
+### P1 — Identifier-ambiguity detection compares raw values; resolution compares normalized ones
+
+`SecurityMasterConflictDetection` keys every identifier on the **raw** stored value —
+`var key = $"{id.Kind}|{id.Value}"` at `SecurityMasterConflictDetection.cs:33` (`DetectAll`) and
+`:107, :116` (`DetectForProjection`) — under an `OrdinalIgnoreCase` comparer. The store's
+resolution path does the opposite: `PostgresSecurityMasterStore.GetByIdentifierAsync` matches on
+`normalized_identifier_value` / `normalized_alias_value` / `normalized_primary_identifier_value`
+(`PostgresSecurityMasterStore.cs:738, :751, :763, :770`), the columns migration 016 exists to
+populate.
+
+The two halves therefore disagree on what "the same identifier" means. `US0378331005` and
+`US-0378331005` resolve to the same security on lookup and are never flagged as a conflict; case
+differences are caught, punctuation and embedded whitespace are not. Since
+`SecurityIdentifierNormalizer.GetOrComputeNormalizedValue` is already the function the write path
+calls (`PostgresSecurityMasterStore.cs:463`), the fix is to key detection through it rather than
+through `id.Value`.
+
+**Normalizing the key is necessary and not sufficient, because detection never sees aliases at all.**
+`DetectAll` iterates `record.Identifiers` (`:31`) and `DetectForProjection` iterates
+`existing.Identifiers` / `projection.Identifiers` (`:105, :114`); the word *alias* does not appear
+anywhere in `SecurityMasterConflictDetection.cs` in this sense. Aliases live in a separate
+collection, written by `UpsertAliasAsync`, and `ResolveSecurityIdAsync` searches them as its second
+lookup (`PostgresSecurityMasterStore.cs:652-663`). So when two securities claim one value *through
+aliases* rather than canonical identifiers, resolution still returns one of them and no conflict is
+ever raised — a gap the normalization fix above does not touch.
+
+Worth stating precisely, because it is worse than the identifier case — though not for the reason an
+earlier version of this paragraph gave, which called the identifier query "deterministic". It is
+not. `order by i.is_primary desc limit 1` (`:645-646`) has **no tie-breaker**, and ties are the
+normal case here: two securities each claiming the identifier as primary share `is_primary = true`,
+so the ordering is unspecified and PostgreSQL may return either row. The identifier query merely
+*prefers* primary rows over non-primary ones; among equals it is as arbitrary as the alias query,
+which is `limit 1` with **no `order by` whatsoever** (`:663`). Both decide by row order; the alias
+query is worse only in that it does not even prefer a primary claimant, having no such column.
+Either way, a stable authoritative ordering is part of the remediation, not just detection parity. The alias query does honour `is_enabled` and the
+`valid_from`/`valid_to` window, so the remediation is to bring aliases into detection on the same
+terms resolution already applies to them — enabled state and validity window included — not to
+invent new predicates.
+
+### P2 — Identifier-ambiguity detection ignores `ValidFrom` / `ValidTo`
+
+Neither `DetectAll` nor `DetectForProjection` reads an identifier's validity window — `ValidFrom`
+and `ValidTo` appear nowhere in `SecurityMasterConflictDetection.cs`. The subsystem models those
+windows deliberately (`SecurityIdentifierDto.ValidFrom/ValidTo`, `SecurityIdentifier.isActiveAt`,
+`IHistoricalSymbolTimelineResolver`, and the `asOfUtc` parameter every resolution entry point
+carries), so this is an inconsistency inside the layer, not an absent capability.
+
+The consequence is a class of false positives: a recycled exchange ticker — the delisted issuer's
+symbol reassigned to a new listing — is two securities claiming one `Ticker` value, and detection
+raises an `IdentifierAmbiguity` conflict, because the fact that settles it (non-overlapping validity
+windows) is never consulted. An institutional master accumulates these continuously.
+
+**These are dismissible, and an earlier draft of this item was wrong to call them permanent.** An
+operator can clear each one: `ResolveAsync` writes `Dismissed` on the deterministic conflict id, the
+open-queue read filters `where status = 'Open'` (`PostgresSecurityMasterConflictService.cs:70`), and
+re-detection inserts with `ON CONFLICT DO NOTHING` — whose comment states the intent outright, that
+it "preserves any existing resolution state so a re-detected, already-resolved conflict is never
+re-opened" (`:46-47`). So the queue *can* be driven to zero and stays there.
+
+**But the same stickiness cuts the other way, which an earlier version of this item recorded only as
+a benefit.** `DeterministicConflictId(kind, value, a.SecurityId, b.SecurityId)` (`:70, :123`) is
+composed of the identifier and the two security ids and **nothing about validity windows or which
+occurrence produced the claim**. So when a dismissed recycled-ticker pair later becomes a *genuine*
+overlap — one of the two securities receives a new active occurrence of the same ticker — re-detection
+computes the identical `conflict_id`, the insert is a no-op under `on conflict (conflict_id) do
+nothing` (`:733`), and the row keeps its `Dismissed` status. The queue stays clean while the lookup
+is newly ambiguous: a dismissal made on one set of facts silently continues to suppress a conflict
+raised on different ones. The remediation therefore needs a version or reopen path keyed on the claim
+windows, plus a decision about the dismissed rows already stored — not only detection that reads the
+windows in the first place.
+
+The defect is therefore unnecessary manual adjudication *and* a stale-suppression risk, not an
+unclearable queue: every recycled ticker costs an operator a dismissal that the system already holds
+the facts to decide, that cost recurs for every reassignment the market makes, and the dismissal then
+outlives the facts it was based on. That is a weaker claim than the draft made and
+still worth fixing — but it is a workload argument, not a correctness one, and it should be ranked
+as such.
+
+Detection should compare only identifiers whose windows overlap — but by **pairwise interval
+intersection**, not by evaluating both claims at a single `asOf`. An earlier version of this sentence
+said "at the same `asOf` the resolution path already takes", and that is not sufficient. Two windows
+that overlap only in the *future* do not intersect today's instant, so a detector evaluated at `asOf`
+emits nothing when the future-dated claim is published — and **no write reruns detection when that
+date arrives**, because detection runs on write, not on a clock. A lookup made inside the overlap
+then resolves ambiguously with no queue item behind it. Historical overlaps fail the same way for
+as-of resolution. The detector's question is "do these two intervals intersect at all", which is
+`asOf`-independent; the *lookup* keeps applying its caller-selected instant. Keeping the two
+questions distinct also avoids re-creating the stale-dismissal problem above from the other side.
+
+### P3 — With three or more claimants, only the first pair is reported
+
+`DetectAll` collects every security claiming an identifier, then emits one conflict from
+`distinctSecurities[0]` and `distinctSecurities[1]` (`SecurityMasterConflictDetection.cs:66-67`).
+A third and subsequent claimant is silently dropped. Resolving the reported pair closes the
+conflict and leaves the remaining ambiguity unrecorded — the queue reads clean while the identifier
+is still ambiguous. The `ConflictId` is derived from the two security ids
+(`DeterministicConflictId(kind, value, a.SecurityId, b.SecurityId)`), so the shape already supports
+emitting a conflict per claimant pair, or per claimant against a designated incumbent.
+
+**Emitting every pair is still not enough, because resolving a pair does not govern the identifier.**
+`IdentifierAmbiguity` is not field-level — `IsFieldLevelConflict` admits only `EconomicTermMismatch`
+and `CommonTermMismatch` (`PostgresSecurityMasterConflictService.cs:299-301`) — so it takes the
+non-field path, whose update writes `status`, `resolved_winner_source`, `resolved_by`,
+`resolved_reason` and `resolved_at` and nothing else (`:215-224`). Nothing expires the loser's
+identifier, reassigns it, or records an owner the read path is bound by. And `ResolveSecurityIdAsync`
+never consults the conflicts table at all: it goes to `security_identifiers`, then `security_aliases`,
+then `securities.primary_identifier_*`, each `limit 1`.
+
+So an operator can resolve every emitted pair, obtain a clean queue, and lookup still returns
+whichever row the database happens to order first — the decision they recorded has no effect on the
+thing it was recorded about. Completing this item therefore means defining how a chosen `SecurityId`
+becomes authoritative: either the resolution expires or demotes the losing claim through a governed
+amendment, or the read path consults the recorded decision. Fanning out more conflicts without that
+step multiplies the adjudication and changes nothing about what a lookup returns.
+
+### P4 — Conflict detection loads the whole universe on every publish, and quadratically on rebuild
+
+`PostgresSecurityMasterConflictService.RecordConflictsForProjectionAsync` opens with
+`await _store.LoadAllAsync(ct)` (`PostgresSecurityMasterConflictService.cs:491`; the in-memory
+service does the same at `SecurityMasterConflictService.cs:142`) and hands the full projection list
+to `DetectForProjection`. That method needs exactly one question answered — *does any other
+security already claim one of these identifiers* — which
+`ix_security_identifiers_normalized_lookup` (migration 016) indexes precisely.
+
+Two paths reach it:
+
+- **Per publish.** `SecurityMasterService.TryRecordConflictsAsync`
+  (`SecurityMasterService.cs:392`) calls it on every create and amend, so each governed write
+  materializes every security row, its `jsonb` terms, its identifiers and its aliases.
+- **Per record during rebuild.** `SecurityMasterRebuildOrchestrator.TryRecordConflictsAsync`
+  loops the rebuilt set and calls it once per record
+  (`Rebuild/SecurityMasterRebuildOrchestrator.cs:154-162`), so a full projection rebuild is
+  **O(N²)** full-table loads.
+
+At the few-thousand-instrument scale this is invisible. At the 10⁵–10⁶ instruments an institutional
+master carries, the per-publish cost makes governed writes scale with the size of the book, and the
+rebuild path — the operation you reach for precisely when the master is large and something has
+gone wrong — becomes the slowest thing in the system. Replacing the universe scan with an indexed
+`by-normalized-identifier` store query closes P1 and P4 together, since the index is on the
+normalized column P1 asks detection to use.
+
+### P5 — Primary-identifier uniqueness is enforced on the un-normalized column
+
+`ux_securities_primary_identifier` is unique on `(primary_identifier_kind,
+primary_identifier_value)` — the raw value (`Migrations/001_security_master.sql:42`). Migration 016
+added `normalized_primary_identifier_value`, made it `not null`, and indexed it — but
+**non-uniquely** (`Migrations/016_security_master_normalized_identifier_lookup.sql`, the
+`ix_securities_normalized_primary_identifier` index). No later migration adds a unique index on the
+normalized column; `grep -n unique Migrations/*.sql` returns only the raw-value index.
+
+So the one database-level uniqueness guarantee the identity layer has is stated over the form the
+system does *not* resolve on. Two securities whose primary ISINs differ only in punctuation or case
+both insert, and both then resolve from the same normalized lookup — with the second row's
+`GetByIdentifierAsync` result decided by row order rather than by a constraint.
+
+**The two variant kinds are not equivalent, and an earlier version of this paragraph lumped them
+together.** Detection builds its ambiguity maps with `StringComparer.OrdinalIgnoreCase`
+(`SecurityMasterConflictDetection.cs:27, :96`), so a **case-only** pair collides in that map and *is*
+flagged — it is detected but not prevented, since the raw index compares bytewise and admits both
+rows. A **punctuation or whitespace** pair differs under `OrdinalIgnoreCase` too, so detection is
+silent on it while normalized resolution collapses it: undetected *and* unprevented. Only the second
+kind supports the strong reading. Stated accurately, the structural counterpart of P1 is that raw
+uniqueness plus normalized resolution plus case-insensitive-but-punctuation-sensitive detection
+leaves punctuation variants with no layer holding the invariant, and case variants with detection
+holding it alone.
+
+**The uniqueness rule is kind-specific, so a two-column index states it wrongly for one kind.**
+`SecurityValidationService.ValidateCrossRecordDuplicates` sets `includeProvider = isProviderSymbol`
+and keys on `IdentifierKey(identifier, includeProvider)` (`:441-449`): provider is part of identity
+for `ProviderSymbol` and deliberately not for the canonical kinds. Two providers may legitimately
+issue the same symbol text for different securities. A `(kind, normalized value)` constraint applies
+the canonical rule to every kind and would reject that pair — and it *cannot* express the correct
+rule as written, because the denormalized `securities` primary columns carry no provider at all.
+Closing this therefore means either a partial/kind-scoped index over the canonical kinds only, or
+projecting a normalized primary provider column and including it for `ProviderSymbol`. The
+constraint below is stated for the canonical kinds; do not widen it to `ProviderSymbol` without
+that column.
+
+The constraint is a unique index on `(primary_identifier_kind, normalized_primary_identifier_value)`,
+which needs a dedup pass over existing rows first. **It is not sufficient alone, and must not ship
+alone.** `ExecuteCreateAsync` appends the event stream *before* upserting the projection
+(`SecurityMasterService.cs:323-324`), in two separate awaits with no shared transaction, so a row
+rejected at the projection insert leaves its committed stream behind. That is precisely the
+orphaned-stream partial write this document establishes below for the *existing raw* constraint (see
+*What happens next is not a silent second golden record*). Adding a normalized index without
+changing that ordering does not enforce the invariant safely — it extends the same partial write to
+normalized collisions, which today slip past the raw index and insert cleanly. Scope the remediation
+to make the event append and the projection insert atomic, or to detect and compensate the committed
+stream, and land that **with** the constraint rather than after it.
+
+### P6 — Three open-lot models, a partial convergence seam, and no acquisition-currency anywhere
+
+Open-lot modeling was assessed above as careful for par instruments, and `FaceValueLot` is. What
+the earlier passes did not compare is the *other* open-lot types the platform also runs — **three,
+not two**, and an earlier draft of this item compared only two of them and drew a conclusion that
+does not survive the third:
+
+| | `FaceValueLot` (`Contracts/SecurityMaster/FaceValueLot.cs:14`) | `LedgerTaxLotRecord` (`Storage/Ledger/ILedgerJournalStore.cs:332`) | `LedgerTaxLot` (`Meridian.Ledger/LedgerTaxLot.cs:6`) | `TaxLot` (`Meridian.Execution.Sdk/TaxLot.cs:16`) |
+| --- | --- | --- | --- | --- |
+| Role | contract shape for par instruments | **durable / persisted** | in-memory relief shape | execution-side only |
+| Instrument key | `Guid SecurityId` | `Guid SecurityId` | `Guid? SecurityId` | `string Symbol` |
+| Quantity | `decimal OriginalFace` + `BookedFactor` + `ParBasis` | `decimal OriginalQuantity` + `OpenQuantity` + `UnitCost` | `decimal Quantity` + `decimal UnitCost` | `long Quantity` |
+| Currency / FX **at acquisition** | absent | absent — its `Currency` is the journal *functional* currency, an identity key, not acquisition currency | absent | absent |
+| Amortization | straight-line and constant-yield | none | none | none |
+| Relief / depletion | none | scoping for relief (filters open lots by functional currency) | `LedgerTaxLotReliefProjector` (FIFO/LIFO/HIFO/SpecificId) | `ITaxLotSelector` (FIFO/LIFO/HIFO/SpecificId) |
+
+**The convergence seam already exists.** `FaceValueLotExtensions.ToLedgerTaxLot`
+(`Meridian.Application/SecurityMaster/FaceValueLotExtensions.cs:19-31`) adapts a `FaceValueLot` into
+a `LedgerTaxLot`, and does so preserving the par economics — its own comment records that
+`quantity × unitCost` reproduces `CostBasis` and `quantity × (unitCost − 100)` reproduces
+`PremiumDiscount` for any source `ParBasis`. `ToLedgerTaxLots` maps a sequence. So a partial sale of
+a bond position **does** have a modeled path to relief: `FaceValueLot` → `ToLedgerTaxLot` →
+`LedgerTaxLotReliefProjector`. An earlier draft of this item claimed no such path existed; that was
+wrong, and the error came from comparing `FaceValueLot` against Execution's `TaxLot` and stopping.
+
+The Execution model is also more contained than the draft implied. `TaxLot` and its selectors are
+referenced only within `src/Meridian.Execution.Sdk` and `src/Meridian.Execution/TaxLotAccounting` —
+a repository-wide search returns no consumer in Ledger, Reporting or Backtesting. Its symbol keying
+and `long Quantity` are real constraints on an execution-side type, not a platform-wide lot model.
+
+**There is a fourth model, and it is the durable one.** `LedgerTaxLotRecord`
+(`src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:332-349`) carries `AcquiredDate`, `decimal
+OriginalQuantity` and `OpenQuantity`, `decimal UnitCost`, `Guid SecurityId` — and **`string
+Currency`**. It is persisted and queried through `SaveTaxLotAsync` (`:65`, implemented at
+`PostgresLedgerJournalStore.cs:848`) and `ListOpenTaxLotsAsync` (`:71`), with atomic
+acquisition/disposal mutation kinds, versioning and an evidence ref. It is the authoritative storage
+model; `LedgerTaxLot` is the in-memory shape the relief projector operates on.
+
+**So an earlier version of this item was wrong, and wrong in the way it had just corrected someone
+else for.** It stated that none of the models carries an acquisition currency and that a
+multi-currency cost basis "has nowhere to live in any of them". `LedgerTaxLotRecord` has carried
+`Currency` the whole time. The prior draft had swept two models and stopped; this one swept three and
+stopped. Restated precisely, so the surviving claim is checkable rather than sweeping:
+
+**Stop treating this as a count. It has been wrong four times** — two models, then three, then four,
+then six — and each correction came from review, never from the sweep that preceded it. The fourth
+miss is the instructive one: the round that produced "six" explicitly warned the list was not closed
+and named the risk as a narrower search axis, and that is exactly what happened. The stated axis was
+"lot-bearing record declarations"; the regex actually run required the name to contain `TaxLot`,
+`OpenLot` or `FaceValueLot` and to be followed by `(`. It therefore missed `DrawdownLotDto`,
+`PaperTradingPortfolio.PositionLot`, and — despite being named in it — `FaceValueLot` itself, which
+uses a block body. Describing an axis is not running it.
+
+So the planning input is the **command**, not a number — and it takes **two** of them, because the
+lot models do not all live in one language:
+
+```
+grep -rnE '(record|class) [A-Za-z]*Lot[A-Za-z]*\b' src/ --include=*.cs
+grep -rnE '(interface|type|class) [A-Za-z]*Lot[A-Za-z]*\b' src/ --include=*.ts --include=*.tsx
+```
+
+**The trailing `\b` matters, and the first version of this command got it wrong.** Anchoring on
+`[ ({]` requires the character straight after the type name, which excludes every **block-bodied**
+declaration — `record FaceValueLot` and `record LedgerTaxLot` both put `{` on the next line. So the
+command prescribed here as *the* planning input silently omitted the principal contract model and the
+in-memory relief model, the two named in the listing directly below it. That is the same class of
+error as the counts it replaced: a sweep is only as good as its ability to rediscover what the list
+already contains, and this one could not. **Check that property before trusting any revision of it.**
+
+**And `--include=*.cs` was the same mistake one axis over.** A single-language sweep cannot see a
+lot model that is not written in that language, and the browser workstation declares its own. The
+second command above is not a completeness flourish; it returns models that participate in the
+convergence question and were invisible to every count and every command this section has printed so
+far. The `.fs` lane was checked on the same axis and is genuinely empty (`grep -rnE 'type
+[A-Za-z]*Lot[A-Za-z]*\b' src/ --include=*.fs` returns nothing), so two commands cover it — but that
+is a *checked* result, not an assumption, and it should be rechecked rather than inherited.
+
+filtered against types that merely *operate on* lots (relief results, disposal selections, mutations,
+policies, projectors, selectors). Run at the head that produced this entry it returns, by role:
+
+- **Durable / persisted** — `LedgerTaxLotRecord` (`Storage/Ledger/ILedgerJournalStore.cs:332`).
+- **Contract shapes** — `FaceValueLot` (`Contracts/SecurityMaster/FaceValueLot.cs:14`),
+  `AssetAcquisitionLotDto` (`Contracts/AssetOperations/AssetAccountingEventDtos.cs:264`),
+  `CorporateActionLotStateSnapshotDto` (`…/CorporateActionAccountingDtos.cs:274`).
+- **In-memory relief** — `LedgerTaxLot` (`Meridian.Ledger/LedgerTaxLot.cs:6`).
+- **Execution / simulation** — `TaxLot` (`Execution.Sdk/TaxLot.cs:16`), `OpenLot` and `ClosedLot`
+  (`Backtesting.Sdk/`), and `PaperTradingPortfolio.PositionLot`
+  (`Execution/Services/PaperTradingPortfolio.cs:1331` — internal, `LotId`/`OpenQuantity`/`EntryPrice`/
+  `OpenedAt`, consumed under FIFO/LIFO/HIFO and surfaced as `PositionLotEntry`).
+- **Direct lending** — `DrawdownLotDto` (`Contracts/DirectLending/DirectLendingDtos.cs:181` —
+  `LotId`, `DrawdownDate`, `SettleDate`, `OriginalPrincipal`, `RemainingPrincipal`, `ExternalRef`;
+  an open-*principal* model, so its quantity semantics differ from every share-quantity lot above).
+- **Ingestion** — `BrokerageTaxLotSnapshotDto` (`Execution.Sdk/IBrokerageAccountSync.cs:274`).
+- **Workstation read models** — `SecurityMasterOpenLotDto`, `SecurityMasterOpenLotReadModelDto`,
+  `SecurityMasterLotModelDto`, `SecurityMasterOpenLotProvenanceDto`
+  (`Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:281-335`), plus `OpenLotSummary`
+  (`Contracts/Workstation/StrategyRunReadModels.cs:1111`).
+- **Browser workstation (TypeScript)** — the mirrors of the read models above in
+  `dashboard/src/types/workstation-7.ts:26-90` (`SecurityMasterLotModel`, `SecurityMasterOpenLot`,
+  `SecurityMasterOpenLotProvenance`, `SecurityMasterOpenLotReadModel`), and two shapes that are
+  **not** mirrors of anything server-side and matter more to convergence for exactly that reason:
+  - `SecurityLot` (`dashboard/src/components/meridian/security-details-tracker.view-model.ts:504-511`
+    — `lotId`, `tradeDate`, `quantity`, `price`, `fees`, `note`). It is **operator-entered and
+    persisted to browser local storage**, not to the ledger: `loadLots` reads it per security
+    (`security-details-tracker.tsx:486`, `:548`, `:567`). So the workstation already offers an
+    editable open-lot surface whose records never reach `LedgerTaxLotRecord`, carry **no currency at
+    all**, and hold `quantity` and `price` as JavaScript `number` — IEEE-754 binary floating point,
+    where every durable and contract model on this list uses `decimal`. Any convergence target that
+    ends at the API boundary leaves this divergence in place.
+  - `TaxLot` (`dashboard/src/components/accounting/TaxLotTable.tsx:9-25`) — the accounting-screen
+    presentation lot, with `quantity`/`costBasis`/`marketValue` typed `number | string`, an optional
+    `id`, and holding-period fields (`daysHeld`, `term`) that exist on no server model.
+    `ExecutionPositionLot` (`dashboard/src/types/execution-blotter.types.ts:33`) and
+    `CorporateActionLotPreview` (`workstation-7.ts:1601`) are the same category.
+
+  The browser lane is therefore a **third** quantity regime alongside principal-versus-share:
+  float-versus-decimal, with a currency-less editable model inside it. That belongs in the
+  reconciliation, not as an afterthought to it.
+
+Convergence planning has to start by re-running that command and reconciling **principal-versus-share
+quantity, currency, and identity keying** across whatever it returns — `DrawdownLotDto` tracks
+principal, `PositionLot` and `OpenLot` are symbol-keyed with no currency, `LedgerTaxLotRecord` is
+`SecurityId`-keyed with a functional currency. Two earlier additions to this list are described below
+for the record:
+
+- **`OpenLot`** (`src/Meridian.Backtesting.Sdk/OpenLot.cs:8`) — `LotId`, `Symbol`, `long Quantity`,
+  `EntryPrice`, `OpenedAt`, `OpenFillId`. Populated by the simulator, retained in the portfolio
+  snapshot, and projected to the workstation as `OpenLotSummary`
+  (`Contracts/Workstation/StrategyRunReadModels.cs:1111`). **Symbol-keyed with a `long` quantity**, so
+  it carries the same corporate-action fragility already noted for Execution's `TaxLot` — and unlike
+  that one it *does* have consumers outside its own subsystem.
+- **`BrokerageTaxLotSnapshotDto`** (`src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:274-281`) —
+  `AcquiredDate`, `Quantity`, `CostBasis`, **`Currency`**, `UnitCost`, carried through brokerage
+  portfolio and statement ingestion.
+
+That second one forces a narrowing of the currency claim below. The IB Flex connector builds it with
+`Currency: Attribute(element, "currency") ?? "USD"`
+(`IbFlexStatementConnector.cs:943-950`) — read off the **broker's own open-lot row**, alongside the
+acquired date and cost basis from that same row. That is not a journal functional currency imposed
+downstream; it is the lot's own currency as reported. So a per-lot acquisition currency does exist at
+the ingestion boundary and is dropped on the way in, which strengthens the underlying finding while
+correcting its scope.
+
+- **Acquisition currency** — **absent from the five ledger, contract, execution and backtesting
+  models; present on the brokerage ingestion DTO and discarded at the boundary.**
+  `LedgerTaxLotRecord.Currency` is the journal's *functional* currency, not the acquisition or
+  transaction currency:
+  `ResolveAtomicFunctionalCurrency` reads `line.Currency?.FunctionalCurrency` and requires exactly one
+  across every line (`PostgresLedgerJournalStore.AtomicTaxLots.cs:1651-1662`), the acquisition path
+  refuses a lot whose currency differs from it — *"Atomic acquisition lot currency must match the
+  durable journal functional currency"* (`:354-360`) — and the disposal path filters open lots by it
+  before mapping them into `LedgerTaxLot` (`:641-651`). It is an identity and scoping key, not a
+  record of what the position was bought in.
+- **Acquisition FX rate** — absent from **every lot type the sweep returns**. Unchanged, and the one
+  half of the original claim that has survived every revision. State it against the sweep, not a
+  count, for the reason given above.
+
+**Do not read this list as closed.** It has now been short three times — two models, then three, then
+four, now six — and each correction came from review rather than from the sweep that preceded it. The
+current count comes from a repo-wide search for lot-bearing record declarations, separating them from
+types that operate on lots; a different search axis (interfaces, DTO envelopes, read models such as
+`OpenLotSummary` and `SnapshotOpenLotEnvelope`) may well surface more. Before planning convergence,
+re-run the sweep rather than trusting this enumeration.
+
+**Two drafts of this bullet were wrong in opposite directions, and the record is worth keeping.** The
+first said no model carries an acquisition currency — correct, but asserted without checking the
+durable model. The second "corrected" it on the strength of `LedgerTaxLotRecord.Currency` existing,
+and read a field name as settling a semantic question it does not settle. The first draft's claim
+stands; only its evidence was missing. Nothing about currency is *dropped on the way into relief* —
+relief filters by it deliberately — so the sentence saying so is withdrawn, and so is the remedy that
+followed from it, which would have added redundant functional-currency context to `LedgerTaxLot`
+while leaving the real gap untouched.
+
+The target question is unchanged and stands on its other grounds: directing convergence at
+`LedgerTaxLot` without accounting for the storage model risks standing up another parallel seam
+beside the authoritative one. The item should ask how `LedgerTaxLotRecord`, `LedgerTaxLot` and the
+adapter relate, which is the contract new lot-bearing surfaces adopt, and where an acquisition
+currency and FX rate belong — noting that adding them means adding a genuinely new pair, not
+plumbing an existing field further. The convergence is also still partial in the ways already noted:
+the adapter runs one way, `LedgerTaxLot` has no amortization, and nothing requires adoption.
+
+Symbol-keyed lots remain the specific thing corporate actions break — the subsystem models ticker
+changes (`SecurityMasterTickerChangeService`, `PermTicker`, the historical symbol timeline)
+precisely because symbols are not stable identity. That argument holds for Execution's `TaxLot`,
+and it is the reason not to widen that type's reach; it is not an argument about the platform's
+lot modeling as a whole, because the ledger model is already `SecurityId`-keyed.
+
+An earlier draft called this "the most consequential structural gap in this pass" and proposed
+converging on a **new** lot aggregate keyed by `SecurityId` with decimal quantity, an explicit
+quantity basis and an acquisition currency/FX pair — describing that as cross-subsystem because
+"Execution, Ledger, Reporting, Backtesting all consume `TaxLot`". Both halves were wrong.
+`LedgerTaxLot` is already `SecurityId`-keyed with decimal quantity and relief, `ToLedgerTaxLot`
+already bridges the par model into it, and no consumer of Execution's `TaxLot` exists outside
+Execution. Ranking it first over-stated it, and the target it named would have rebuilt a seam that
+exists.
+
+Restated: the work is to **finish the existing convergence**, not to design a replacement — but it
+begins by reconciling the two ledger models rather than naming either as the target. Establish how
+`LedgerTaxLotRecord` (durable), `LedgerTaxLot` (the in-memory relief shape) and the adapter relate
+and which of that pair is the contract new lot-bearing surfaces adopt; decide where an acquisition
+currency and FX rate belong, noting the FX rate is absent from **every lot type the sweep returns**
+and the currency from all but the brokerage ingestion DTO — which reads it off the broker's own lot row and drops it
+at the boundary — so this adds a
+genuinely new pair rather than plumbing an existing field further; decide whether an explicit
+quantity basis (units vs. face) belongs on the type or stays encoded in the adapter; and settle where
+amortization lives now that the par economics survive the adaptation. That is a real plan item and a
+smaller one than the draft implied.
+
+An earlier version of this paragraph survived the four-model correction unchanged and still read
+"give `LedgerTaxLot` an acquisition currency and FX rate … and make the ledger seam the one new
+lot-bearing surfaces adopt". Following it would have attached the new pair to the shape that is *not*
+persisted and named it the adoption target — standing up exactly the parallel seam this item warns
+against, two paragraphs after the correction that withdrew that target.
+
+### Smaller notes, not filed as findings
+
+- **The profile-backed asset-class list now has three copies.** The catalog's
+  `SupportsProfileBackedTerms` flag is authoritative and pinned by
+  `SecurityAssetClassCatalogTests.SupportsProfileBackedTerms_CoversExactlyTheProfileBackedClasses`.
+  `SecurityMasterMapping.cs:654` and `SecurityAssetTermsFieldEditValidator.cs:106` read it
+  correctly. Two do not: `JsonValidationReader.SupportsProfileBackedTerms`
+  (`Validation/AssetClassValidatorRegistry.cs:1028-1035`) and
+  `SecurityMasterService.IsProfileBackedCustomAsset` (`SecurityMasterService.cs:961-970`) each
+  hard-code the same seven strings. The 2026-08-24 pass noted the second under
+  ["Noted, not re-filed"](#noted-not-re-filed); the first is new. The
+  `SecurityAssetClassParityGuardTests` added in the 2026-08-26 resolution guard the validator
+  registry's *asset-class coverage* but not this flag, and
+  `SupportsIdentifierOnlyImport_MatchesExactlyTheClassesWithNoRequiredTerms` in that same file is a
+  ready-made template for the guard this needs. Cheap to close; kept inside finding 4's registry
+  cost rather than filed separately.
+- **The reciprocal principal-schedule guard triggers on `par` by literal name.**
+  `EnsurePrincipalScheduleFitsEffectiveTermsAsync` resolves the effective face through
+  `StructuredCashFlowTermsResolver`, which aliases the face across
+  `["par", "originalFace", "notional", "principal", "principalAmount"]` — but the *reciprocal
+  trigger* set is the three literal paths `assetSpecificTerms.par`, `.issueDate` and `.maturity`
+  (`SecurityMasterWorkbenchCommandService.cs:1115-1118`). Editing a `StructuredCredit` record's
+  `originalFace` therefore does not revalidate its effective principal schedule against the new
+  face, though editing a `Bond`'s `par` does. Deriving the trigger set from the resolver's alias
+  arrays would make the guard as class-agnostic as the check it performs already is.
+- **Term-key aliases are declared twice.** `SecurityAssetTermField.Aliases` carries per-field
+  legacy spellings (`SecurityAssetTermsSchema.cs:40-53`) and `StructuredCashFlowTermsResolver`
+  keeps its own private alias arrays (`:14-60`). They already differ — the schema declares
+  `dayCount` with alias `dayCountConvention`; the resolver additionally accepts `dayCountBasis`.
+  Neither is wrong today, but two alias tables for one vocabulary is the same drift shape the terms
+  schema was introduced to end.
+
+### Priorities from this pass
+
+1. **P1 + P4 together** — key identifier-ambiguity detection through
+   `SecurityIdentifierNormalizer` and serve it from an indexed store query instead of
+   `LoadAllAsync`, closing a correctness gap and an O(N²) rebuild path with the index that already
+   exists. **Scope it to include aliases**: detection reads only `Identifiers`, so a normalized
+   canonical-identifier query — however well indexed — still leaves two securities claiming one
+   value through *aliases* undetected, while the alias lookup returns one of them unordered. The
+   unit of work is alias values and providers, their enabled state, and overlapping validity
+   windows, on the same terms `ResolveSecurityIdAsync` already applies to them. This is not "one
+   change"; it is one change plus the alias surface it does not reach.
+2. **P2** — window-filter detection by **pairwise interval intersection** (not evaluation at a single
+   `asOf`, which misses windows overlapping only in the future or only historically, with no write to
+   rerun detection when that date arrives) so recycled tickers stop generating conflicts the system already
+   holds the facts to decide. These conflicts **are** dismissible and stay dismissed, so the case is
+   the recurring adjudication cost, not a queue that cannot reach zero; rank it as workload relief —
+   **plus a correctness half**: because `DeterministicConflictId` carries no window or occurrence
+   component and re-detection is `on conflict do nothing`, a dismissal survives into a period when the
+   overlap has become genuine, suppressing a real conflict. Version or reopen on changed claim
+   windows, and decide what to do with the dismissed rows already stored.
+3. **P5** — unique index on the normalized primary identifier, after a dedup pass, **scoped to the
+   canonical kinds** and **paired with making the event append and projection insert atomic**. This
+   is what makes P1's guarantee hold at the database rather than by convention. The atomicity half is
+   not optional and not a follow-up: `ExecuteCreateAsync` appends the stream before the projection
+   upsert (`SecurityMasterService.cs:323-324`), so a constraint rejection leaves an orphaned event
+   stream — shipping the index by itself extends that partial write to normalized collisions instead
+   of closing the gap. It must not be applied to `ProviderSymbol`: provider is part of identity for that kind
+   (`ValidateCrossRecordDuplicates`, `:441-449`), two providers may legitimately share symbol text,
+   and the denormalized `securities` columns carry no provider to express the rule with. Widening it
+   means projecting a normalized primary provider column first.
+4. **P6** — **a plan now exists**, and this item is the input to it rather than a standing ask:
+   `docs/engineering/blueprints/security-lot-convergence-blueprint.md` (`W10-LOT-002`, status *proposed*),
+   which landed on `main` after this pass was written. It reaches the same durable anchor this item
+   does — `LedgerTaxLotRecord` extended rather than replaced, `SecurityId` mandatory, `TaxLot`
+   retired as authoritative — and it carries acquisition currency/FX, which this item flagged as
+   absent everywhere. **Two gaps against what the sweeps here return, both worth raising against
+   that blueprint rather than re-planning:** its scope is the .NET lane, so the browser lane's
+   `SecurityLot` is outside it (see below), and its stated end state makes decimal quantity
+   mandatory without a position on the float lane that would have to satisfy it. Read the rest of
+   this item as the reconciliation input, not as a competing plan.
+
+   Plan (do not refactor) the lot-model convergence, and **start by reconciling the models
+   named below rather than naming a target** (named, not counted — the count in this sentence was
+   itself wrong until this revision). `LedgerTaxLotRecord`
+   (`Storage/Ledger/ILedgerJournalStore.cs:332-349`) is the durable model; `LedgerTaxLot` is the
+   in-memory relief shape; `FaceValueLotExtensions.ToLedgerTaxLot` adapts the par model into the
+   latter; Execution's `TaxLot` has no consumer outside Execution and is not the thing to converge.
+   **Do not plan from a count — it has been wrong four times.** Re-run the sweep
+   (**both** commands — `grep -rnE '(record|class) [A-Za-z]*Lot[A-Za-z]*\b' src/ --include=*.cs` and
+   `grep -rnE '(interface|type|class) [A-Za-z]*Lot[A-Za-z]*\b' src/ --include=*.ts --include=*.tsx`;
+   the trailing `\b` is required, since anchoring on `[ ({]` misses block-bodied declarations like
+   `FaceValueLot` and `LedgerTaxLot`, and the `.cs`-only version misses the browser lane entirely;
+   filtered against
+   types that only operate on lots) and reconcile principal-versus-share quantity, currency and
+   identity keying across what it returns. Among the later additions — `OpenLot`
+   (`Backtesting.Sdk/OpenLot.cs:8`, symbol-keyed, simulator-populated, projected to the workstation)
+   and `BrokerageTaxLotSnapshotDto` (`Execution.Sdk/IBrokerageAccountSync.cs:274-281`) are both
+   active seams, and the browser lane's `SecurityLot`
+   (`dashboard/src/components/meridian/security-details-tracker.view-model.ts:504-511`) is a third:
+   an operator-editable open-lot model persisted to browser local storage, currency-less, with
+   float `quantity`/`price`. A convergence plan scoped to the .NET models alone does not reach it.
+   Re-run both sweeps before planning; do not trust this list either.
+   **The acquisition FX rate is absent from every lot type the sweep returns**; the acquisition
+   *currency* is absent from most of them — **do not restate that as a count either**, for the same
+   reason the model count was wrong four times; derive it from the sweep at the head you are planning
+   at. What is worth carrying forward is the one **present** case, not the tally of absences: it is
+   **present on the brokerage DTO**, read off the broker's own open-lot row
+   (`IbFlexStatementConnector.cs:943-950`) and dropped at the boundary.
+   `LedgerTaxLotRecord.Currency` is
+   the journal *functional* currency, required to match on acquisition and used to filter open lots
+   on disposal (`PostgresLedgerJournalStore.AtomicTaxLots.cs:354-360, :641-651, :1651-1662`), so
+   adding acquisition currency to the ledger pair means adding a genuinely new field rather than
+   plumbing an existing one further — but the ingestion boundary shows the value already arrives. The open work is that pair, where amortization lives, whether an explicit quantity
+   basis belongs on the type or in the adapter, and which of the ledger pair is the contract new
+   lot-bearing surfaces adopt. Two earlier versions of this entry were wrong in opposite directions:
+   one named `LedgerTaxLot` as the target without accounting for the storage model, the other read
+   `LedgerTaxLotRecord.Currency` as acquisition currency on the strength of the field name.
+5. **The profile-backed parity guard** — small and mechanical.
+6. **P3** — **not** small and not mechanical, which an earlier version of this list got wrong.
+   Emitting the missing claimant pairs is the easy half; resolving an `IdentifierAmbiguity` today
+   writes only the queue row, and the read path never applies the selected owner, so every pair can
+   be closed while lookup still returns an arbitrary claimant. Scoping this to pair fan-out ships
+   more adjudication and leaves the identity defect intact. Applying the chosen `SecurityId` —
+   through a governed identifier amendment, or an authoritative decision the read path consults —
+   is part of this item, and it is what makes the rest of it worth doing.
+
+---
+
+## Status of this pass's findings after the 2026-08-29 implementation merges
+
+> **Read this before the pass below.** Between the pass being written and this branch merging `main`
+> at `f6eea7bc`, PRs #2858, #2860, #2865 and #2868 landed implementation work against several of its
+> findings. The items below are left as written — they are the record of what was found and why — but
+> most no longer describe current `main`. What follows is a targeted re-check against the merged tree,
+> not a fresh review, and it is explicit about what was not re-verified.
+
+**Verified closed.**
+
+- **P1's legacy PATCH gate bypass** — this pass's second priority. `RequireGovernedTermAmendmentRoute`
+  now appears at **4** call sites in `SecurityMasterEndpoints.cs` (`:392, 528, 589, 1064`) against the
+  3 the pass counted, and the new one — `:1064` — is the legacy `PATCH …/preferred-terms` route. One
+  route gated, which is exactly the fix this item asked for. An earlier draft said "5 call sites",
+  counting the helper's own declaration at `:1231` as a call; that would have implied two routes were
+  gated.
+- **P1's import actor gap, for callers that pass a resolved identity** — `ImportAsync` now takes
+  `string actor` (`:47-52`), where the pass recorded no actor parameter at all. That closes the
+  structural half: the parameter exists and the HTTP path fills it from the resolved principal.
+- **P1's endpoint attribution on the golden-record routes.** The pass found exactly one path deriving
+  the actor server-side (governed workbench publish) and called it the reference implementation to
+  extend; it has been extended, and thoroughly. Every mutation route now rebinds the request rather
+  than trusting the body — `CreateAsync`, `AmendTermsAsync`, `DeactivateAsync`, both equity-terms
+  routes and the legacy PATCH all pass `request with { UpdatedBy = ResolveActor(context) }`, the alias
+  route passes `request with { CreatedBy = ResolveActor(context) }`, and the import route passes
+  `actor: ResolveActor(context)`. `ResolveActor(context)` goes from 5 occurrences at `d3793290` to 11.
+  Two details worth noting because they match this item's constraints exactly: the alias route rebinds
+  **`CreatedBy`**, which is the alias request's actor role, and the helper's comment states that
+  `SourceSystem` carries upstream source for conflict detection and precedence rather than the actor.
+
+  **Scope this to the golden-record routes, which is why they are named here.** The alias route is
+  rebound at the endpoint like the others, but what the store does with the rebound value differs on
+  an update; that path is listed under partially closed below.
+
+  **An earlier draft of this bullet cited "`TryResolveActor` now at 9 sites, against the 1 the pass
+  found". That evidence was false.** `TryResolveActor` occurs 9 times in that file at the `d3793290`
+  baseline and 9 times now — unchanged — mostly in unrelated asset-profile, pricing and entitlement
+  routes. I counted occurrences at HEAD and compared them to a number that came from a different
+  claim ("one path derives the actor for Security Master mutations"), which is not the same population.
+  A count at one revision is not evidence of a delta; only a diff is. The conclusion happened to be
+  right and the implementation is better than the bogus number suggested, which is precisely why this
+  kind of error is dangerous — it survives review by agreeing with the truth.
+- **P2** — the `UpdatedBy: "WpfImport"` constant is gone from `SecurityMasterCsvParser`.
+- **P4's classify-from-prose defect, mechanically** — the `"already exists"` / `"duplicate"` substring
+  tests are gone from the import service and Edgar, replaced by
+  `SecurityMasterIngestFailureClassifier`, which switches on exception type and SQLSTATE rather than
+  message text. That is the right shape and it closes the fragility half.
+
+**Verified partially closed — each in the specific way the item warned against.**
+
+- **P1 on the alias route, for corrections rather than creations.** The endpoint rebinds
+  `CreatedBy = ResolveActor(context)` (`SecurityMasterEndpoints.cs:456`), which does close body-spoofed
+  attribution when an alias is first recorded. On an **update** it establishes nothing: the store's
+  `on conflict (alias_id) do update` deliberately omits `created_by` and `created_at`
+  (`PostgresSecurityMasterStore.Aliases.cs:31-43`) and `returning created_by, created_at` echoes the
+  **original** creator back (`:67-70`). The rebound actor is bound as an insert parameter, discarded by
+  the conflict path, and recorded nowhere — there is no second actor column, and, as P3b establishes,
+  no alias versioning or event backing to carry one. So the operator who corrects an identifier is
+  unattributable, which is the mutation attribution P1 exists to require.
+
+  Two things are worth being clear about. The store's omission is **correct** and was made for this
+  document's own P3b reasoning — restating the creation facts on a correction is what made the alias
+  vanish from earlier as-of views. The gap is not that omission; it is that no path records the
+  *correcting* actor instead. And this bullet corrects an earlier claim of mine: the status section
+  above cited the alias rebinding among the closures. **Both halves of the evidence were already in
+  this document** — the rebinding in the closed bullet, the `created_by` omission in the P3b bullet
+  two entries down — and I did not connect them. That is the third false closure in this section, and
+  the first where the refuting evidence was already written on the same page.
+
+- **P1 on the CLI import path.** `SecurityMasterCommands` fills the new `actor` parameter from
+  `--imported-by` when supplied, falling back to `Environment.UserName` and then to `"meridian-cli"`
+  (`:364-370`). The fallback chain is deliberate and its comment reasons well — an unattended run is a
+  workload and should say so. But the first branch stamps an **arbitrary caller-supplied string** onto
+  every imported security, which is the self-asserted attribution P1 exists to remove. Be fair about
+  what is in dispute: a CLI is run by someone with shell access, the OS-user fallback is sound, and a
+  named override is defensible on a trusted host in the way `git commit --author` is. What it is not is
+  *derived or validated against trusted workflow metadata*, which is the bar this item sets. Either the
+  path validates the override against a known identity, or the document records the CLI as a deliberate
+  exception with its trust assumption stated. Neither has happened, so the item is not closed here.
+
+- **P4's semantic defect survives the rewrite.** `SecurityMasterIngestFailureClassifier.IsAlreadyMastered`
+  returns `conflict.IsAlreadyCreated` for a create-time stream conflict and `true` for any PostgreSQL
+  `23505` unique violation (`:34-52`). Neither arm compares the incoming payload to the stored one. So a
+  create re-using a `SecurityId` with *different* terms is still classified as already-mastered and
+  reported `Skipped`, which is exactly what this item establishes must not happen: the conflict proves
+  a stream exists, never that the row is an equivalent replay, because the append compares versions and
+  not payloads. The rewrite retired the fragility (message text) and kept the semantics. **An earlier
+  draft of this status section listed P4 as verified closed; that was wrong, and wrong in an
+  instructive way** — it checked that the substring test was gone rather than that its replacement was
+  correct, which is the same narrowness this review was repeatedly caught by while it was being
+  written.
+
+- **P3b.** `PostgresSecurityMasterStore.Aliases.cs` now excludes `created_by` and `created_at` from the
+  on-conflict update, with a comment giving this item's own reasoning. That closes the *vanishing*
+  alias: a January view no longer loses an identifier corrected in June. But the conflict update still
+  sets `alias_value = excluded.alias_value` (`:34`) and there is no alias versioning or event backing
+  anywhere in the store, so a January view now shows **June's corrected value** instead. That is
+  precisely the trade this item identified — "freezing `created_at` would stop the alias vanishing
+  from a January view and instead show January June's corrected value… Both outcomes are historically
+  wrong; they differ only in which direction they lie" — and precisely the outcome it asked not to be
+  mistaken for closure. The interim state is defensible if chosen deliberately; what the item asks is
+  that recorded-as-of's promise for aliases then be narrowed explicitly, which has not happened.
+
+**Verified still open.**
+
+- **P5, this pass's top priority.** No Security Master view model calls
+  `DesktopAuthenticationSession.HasPermission`; the only view-model callers remain `MainWindowViewModel`
+  and `AccountingCloseViewModel` — plus `DesktopWorkflowReadScopeResolver.HasAny` (`:143`), which is
+  the seam this item recommends reusing. The desktop lane still reaches `ISecurityMasterService` in
+  process with no authorization check, and the trading-parameter backfill command — which attempts up
+  to 1,000 securities in one action (`Take: 1000`), not every active one — is still constructed with no
+  `canExecute` predicate. P5 was filed late in
+  review (round 18), after the implementation work on the other items had likely been scoped, which
+  may explain why it was not picked up.
+
+  **Status (2026-09-01): closed.** PR #2885 (`f316077b`) landed the gate this item specified —
+  resolved from `RolePermissions` rather than the session, failing closed on a named-but-unrecognised
+  anonymous role — and it covers all five in-process mutation paths including the backfill command.
+  Verified against the property, not the artefact, in the
+  [2026-09-01 pass](#scheduled-institutional-requirements-pass--2026-09-01).
+
+**The pattern across those four is worth more than the four entries.** P3b froze the creation fields
+while still overwriting `alias_value`; P4 replaced the message-sniffing classifier while still equating
+a stream conflict with a duplicate; P1's import path gained an `actor` parameter that the CLI fills
+with an unvalidated string; and the alias route gained a server-derived `CreatedBy` that the store's
+conflict path discards on every correction. That last one is the purest instance of the pattern in the
+set — the endpoint reads exactly as the closed routes do, and the property fails one layer down. In
+each case the *named artefact* of the finding was removed and the
+property the finding was about was not established. That is the same failure mode this document
+records itself committing while it was written — checking that a defect's visible marker is gone
+rather than that the replacement makes the distinction required — and it is worth a reviewer's
+attention as a systematic risk in how these items are being closed, not as three unlucky details. A
+useful test when closing any of the remaining items: name the property the finding requires, then find
+the code that establishes it. If the answer is "the old code is gone", the item is not closed.
+
+**Not re-verified, and therefore unknown against the merged tree**: P4's cancellation half (the
+backfill's **two** swallow points and, separately, the WPF call passing no token at all — see the item
+for why those are two defects and not three; Polygon's `FetchPageAsync`; Edgar's three broad catches);
+P1's remaining
+constraints (`SourceSystem` derived from trusted metadata rather than the actor, the valid-time gates,
+the nested identifier windows, the alias source-role decision); P3; and N4, N5, N6. Absence from this
+list means it was not checked, not that it is open.
+
+## Scheduled institutional-requirements pass — 2026-08-28
+
+Re-read against `d3793290` (58 commits after `2917848a`, of which two touch Security Master — both
+the 2026-08-26 resolution). No code was changed by this pass and no tests were run; every claim below
+is a source read.
+
+> **Base refreshed.** This pass's branch was later merged with `0a5ef91a`, which landed durable
+> corporate-action processing and relocated the endpoints file. Line citations therefore resolve
+> against the merged head, not against `d3793290`.
+>
+> An earlier version of this note claimed that merge touched no surface this pass reports on. That
+> was wrong, and is retracted: the merge added `SecurityMasterTickerChangeService`, whose
+> `RecordAsync` forwards caller-controlled attribution into `AmendTermsAsync` — so it is one of the
+> callers P1 reports, and it appears in P1's table for that reason. The merge also moved P1's
+> endpoint line range when the corporate-action operations split into their own partial.
+
+Because the 2026-08-26 pass filed and closed its own findings in the same round, this pass re-verified
+each claimed closure against source independently rather than accepting the resolution's account.
+**All of them hold** — see below. The pass then read the bulk-import path end to end, which no prior
+pass had followed past `SecurityMasterCsvParser`; that is where the new findings are.
+
+### Claimed closures, independently re-verified
+
+| # | Item | Evidence at `d3793290` |
+| --- | --- | --- |
+| N1 | `CashSweep` accounted as an asset-backed security | `AssetFamily.SecuritizedCredit` exists (`SecurityClassification.fs:30`, serialized at `:112`); `StructuredCredit` carries it (`SecurityMaster.fs:675`) and `CashSweep` keeps `StructuredCash` (`:667`). The adapter no longer reads the family: `ResolveAccountingAssetClass` is a single delegation to `SecurityAssetClassCatalog.ResolveAccountingInstrumentClass` (`SecurityMasterAccountingEventSourceAdapter.cs:663-664`). |
+| V1 | No catalog-to-validator parity guard | `SecurityAssetClassParityGuardTests.ValidatorRegistry_CoversExactlyTheCatalogAssetClasses` (`:22`). |
+| N3 | Packs declare classes the domain cannot represent | Guarded in both directions (`:32`, `:43`) plus `ValidateDescriptor` rejection tests (`:63`, `:83`). `PlannedAssetClasses` is reported separately from present coverage. |
+| V2 | CSV import broken for every asset class | `BuildCommonTerms` emits `displayName`/`currency`/`exchange` (`SecurityMasterCsvParser.cs:165-179`); the accepted set derives from `SecurityAssetClassCatalog.IdentifierOnlyImportableAssetClasses` (`:110`), which is exactly `Equity` and `InvestmentFund` and is parity-tested against the terms schema (`SecurityAssetClassParityGuardTests.cs:104`). |
+| N2 | Coverage read model contradicted ADR-022 | Confirmed; the read model resolves the class a referenced security declares. |
+
+### Re-verified as still open, unchanged
+
+| # | Item | Evidence at `d3793290` |
+| --- | --- | --- |
+| N4 | `ValidateAll()` cannot fire its own overlap rule | `SecurityAssetPackRegistry.cs:289` still filters overlap groups to those containing a *candidate* pack, and `ValidateAll()` still passes an empty candidate list (`:258-261`). `DirectLoan` is still claimed by both `private-loan-credit` (`:198`) and `mortgage-facility-intercompany` (`:222`). |
+| N5 | Per-pack contract schema is one shared prose object | `ContractSchema` (`:37`), `StandardValidationRules` (`:117`) and `StandardReportingTaxonomy` (`:153`) remain single static instances of English phrases shared by all ten packs. |
+| N6 | Projection fan-out writes every class on every upsert | `PostgresSecurityMasterStore.cs:386-389` still runs all 11 writers per record; non-matching writers still delete (`:398-402`). |
+
+The three long-standing deferred items are unchanged and still governed rather than drifting: 11
+projection writers against 15 declared gaps (`ProjectionWriters`, `:43-56`;
+`IntentionallyUnprojectedAssetClasses`, `SecurityAssetTermsSchemaTests.cs:21-38`), terms still have no
+valid-time history, and both codec arms remain hand-written behind the round-trip guard.
+
+### P1 — The Security Master write surface accepts self-asserted provenance and an arbitrary caller-selected valid-time date
+
+> **Scope corrected twice under review.** This item was first filed against bulk import, then widened
+> to the shared create boundary, then widened again to amendments and unattended ingests. The scope
+> below comes from a full sweep of `ISecurityMasterService` create/amend callers rather than from the
+> path that happened to be read first, and the enumeration is the finding's real content.
+
+The highest-severity item **from the original sweep**, and the one the subsystem's own standards
+already contradict. It no longer leads the pass: P5, which review surfaced later, outranks it and must
+be fixed first — attribution derived onto writes that authorization should have refused is worse than
+no attribution, because it puts a named operator on a change they had no right to make. The heading
+above also once said "as-of date"; the analysis below retracts that, since `EffectiveFrom` selects
+nothing — it asserts economic valid-time metadata.
+
+`SecurityMasterImportService.ImportAsync` takes `fileContent`, `fileExtension`, a progress reporter
+and a cancellation token (`:42-46`) — **no actor parameter**. The JSON branch deserializes the
+uploaded file straight into `List<CreateSecurityRequest>` (`:108-115`) and hands each element to
+`CreateAsync` unmodified (`:164`). `CreateSecurityRequest` carries `SecurityId`, `SourceSystem`,
+`UpdatedBy`, `SourceRecordId` and `EffectiveFrom` (`SecurityCommands.cs:5-15`), so on this path all
+five are asserted by the file.
+
+The HTTP surface makes the gap explicit rather than incidental. `SecurityMasterEndpoints.cs:818-840`
+binds `HttpContext context`, reads the caller's permissions out of it to authorize the request, and
+then calls `ImportAsync` **without passing that identity on**. The principal is in scope, is trusted
+enough to gate the write, and is discarded before the write happens.
+
+The two operator lanes reach the import *service* by different routes, which matters for the fix.
+The browser workstation goes through the HTTP endpoint above. The WPF workstation does not:
+`SecurityMasterViewModel` takes an injected `ISecurityMasterImportService` (`:37, 1529, 1542`) and
+calls `ImportAsync` on it in-process (`:4358`), behind a `CSV/JSON` file dialog (`:4324-4328`).
+There is no `HttpContext` on that path, so threading the endpoint's principal into `ImportAsync`
+secures the browser lane only.
+
+Two distinct institutional consequences:
+
+- **Attribution.** This review already records, under What's Solid, that override approvals carry
+  "reviewer identity derived from the authenticated principal, not the request body". Bulk create is
+  the same governed surface reaching the opposite conclusion, and it is the higher-volume one. A
+  golden record cannot defend a value in an audit if the only record of who asserted it is a string
+  the asserting file chose.
+- **Falsified stored provenance — narrower than it first looks, and corrected twice.** `EffectiveFrom`
+  is caller-supplied and unbounded, so a create can date a definition to any point. Two drafts of
+  this bullet overstated what that reaches, so state the boundary precisely. *Recorded* time is safe:
+  `SecurityMasterMapping.ToEventEnvelope` stamps `EventTimestamp` server-side with `UtcNow` (`:111`),
+  and both `RebuildRecordedAsOfAsync` (`SecurityMasterAggregateRebuilder.cs:99`) and
+  `RebuildAsOfAsync` (`:67-81`) filter on *that* timestamp, never on `EffectiveFrom`. Nor is there an
+  effective-dated term query to corrupt: `GetByIdAsOfAsync`, identifier-as-of lookup and
+  reporting-as-of all delegate to `RebuildAsOfAsync`, and current term reads return the latest
+  projection. So an arbitrary `EffectiveFrom` does not alter historical query selection at all.
+  What it does is write a false economic start date into persisted provenance, where downstream
+  consumers and auditors read it as fact. That is the real exposure, and it is worth governing on its
+  own terms — but it is a stored-metadata integrity problem, not a query-correctness one, and it is
+  distinct from the separately deferred valid-time term history in the standing list.
+
+**The defect is the write surface, not bulk import.** State it as a property rather than a list,
+because five review rounds each turned up another caller and a list is the wrong shape for this:
+**on `ISecurityMasterService`, caller-supplied attribution is the default and server-derived
+attribution is the exception.** Every mutation request type carries an **actor role** and one or more
+**valid-time roles** as ordinary payload fields, and most carry a **source role** too, so any new
+caller inherits the gap unless its author knows to do otherwise. State those as roles, not field
+names, here as well as in the constraints below: the request types do not share a shape, and
+`UpsertSecurityAliasRequest` has neither `UpdatedBy` nor `SourceSystem` — its actor role is
+`CreatedBy` and its temporal roles are `ValidFrom`/`ValidTo` (`SecurityCommands.cs:59-69`). An
+implementer who built the shared boundary from the create request's field names would omit alias
+attribution and its validity controls entirely.
+
+**The alias request has no source role at all, and the execution context cannot invent one.** Say
+this explicitly rather than leaving "most carry a source role" to be discovered: `Provider` is
+identifier content, not mutation provenance (below), so an implementer applying a uniform
+actor/source/valid-time context to alias upserts has only two honest options — press `Provider` into
+service as a source field, which corrupts identifier resolution, or record no mutation source for
+aliases at all. Neither should be chosen silently. The decision this pass leaves open, and which the
+implementation must make deliberately, is whether `SecurityAliasDto` and the `security_aliases` row
+gain a trusted mutation-source column alongside `CreatedBy`, or whether alias mutations are accepted
+as carrying actor provenance only. The rest of the surface is unaffected either way.
+
+**One path already does it correctly, and it is the model for the fix.** The governed workbench
+publish endpoint calls `EndpointAuthorization.TryResolveActor(context, out var actor)` and rebinds
+the request with `request with { … Actor = actor }`
+(`WorkstationEndpoints.SecurityMasterWorkbench.cs:292-299`), so the body's value cannot decide the
+actor. `SecurityMasterWorkbenchCommandService` carries that actor into the published event
+(`:761-770`), and `ApprovedFieldEditCanonicalMergeHandler` copies it into `UpdatedBy` on the
+canonical amendment (`:170-185`). An earlier draft of this item claimed no path derives attribution
+from an authenticated identity; that was wrong, and the correction improves the remediation — the fix
+extends an existing server-derived provenance chain rather than inventing one, and that chain must be
+preserved rather than reworked by any actor-model migration.
+
+The table below is **illustrative, not exhaustive** — it is what successive sweeps have turned up.
+Enumerating it definitively means walking all six public mutations of `SecurityMasterService`
+(`CreateAsync :68`, `AmendTermsAsync :71`, `AmendPreferredEquityTermsAsync :208`,
+`AmendConvertibleEquityTermsAsync :229`, `DeactivateAsync :250`, `UpsertAliasAsync :284`) and their
+callers, including registered workflow services, not grepping method names.
+
+| Caller | Attribution today |
+| --- | --- |
+| Governed workbench publish (`WorkstationEndpoints.SecurityMasterWorkbench.cs:292-299`) | **server-derived from the authenticated actor** — the reference implementation |
+| `SecurityMasterTickerChangeService:72-85` | forwards `UpdatedBy` / `SourceSystem` / `EffectiveAtUtc` from `RecordTickerChangeRequest` |
+| `SecurityMasterImportService:164` (both UI lanes) | whatever the uploaded file asserts, or the CSV parser's constant |
+| `POST /api/security-master` (`SecurityMasterEndpoints.cs:351-362`) | request body, after `RequireSecurityMasterMutationPermission` |
+| `POST` amend (`:379-396`) | request body; the `RequireGovernedTermAmendments` gate **defaults to false** (`SecurityMasterWorkbenchOptions.cs:38`), so the direct route is live in the default configuration |
+| `SecurityMasterEditViewModel:216, 234` (WPF, in-process) | hardcoded `UpdatedBy: "User"` (`:212, 230`) |
+| `EdgarIngestOrchestrator:315, 330` | `UpdatedBy: nameof(EdgarIngestOrchestrator)` — deliberate workload identity |
+| `SecurityMasterCommands:276` (Polygon CLI) | workload identity |
+| `TradingParametersBackfillService:213` | workload identity |
+| `PATCH …/preferred-terms` (`SecurityMasterEndpoints.cs:1043-1058`) | request body, and **ungated** — see below |
+
+**The mutation surface is six members, not two.** An earlier draft of this table came from grepping
+`.CreateAsync(` and `.AmendTermsAsync(`, which is not the same thing as enumerating the service.
+`SecurityMasterService` exposes six public mutations — `CreateAsync` (`:68`), `AmendTermsAsync`
+(`:71`), `AmendPreferredEquityTermsAsync` (`:208`), `AmendConvertibleEquityTermsAsync` (`:229`),
+`DeactivateAsync` (`:250`) and `UpsertAliasAsync` (`:284`) — and the two the grep missed carry the
+same self-asserted fields: `DeactivateSecurityRequest` has `SourceSystem` / `UpdatedBy` /
+`SourceRecordId` / `EffectiveTo` (`SecurityCommands.cs:43-50`), and `UpsertSecurityAliasRequest` has
+`CreatedBy` (`:59-69`). The gap is the whole mutation surface.
+
+**A governed control has a live bypass.** There are *two* preferred-terms amendment routes. The one
+at `SecurityMasterEndpoints.cs:512-530` calls `RequireGovernedTermAmendmentRoute` before
+`AmendPreferredEquityTermsAsync`; the legacy `PATCH /api/security-master/equities/{id}/preferred-terms`
+at `:1043-1058` calls the same service method with **no gate at all**. The gate appears at exactly
+three sites (`:390`, `:520`, `:581`), and the legacy PATCH is not among them. So the
+[2026-08-24 resolution's](#resolution-pass--2026-08-24) claim that `RequireGovernedTermAmendments`
+"gates all three direct term-amendment routes uniformly" is incomplete: a fourth route reaches the
+same method, and it stays live even when a deployment enables the option specifically to force
+maker-checker. There is no equivalent legacy duplicate for convertible terms. This is the one item in
+this pass that is a defect in a shipped control rather than in attribution plumbing, and it should be
+closed on its own regardless of what happens to the rest of P1.
+
+Two corrections this table forces on the earlier framing. First, amendments are **not** covered by
+the governed path in the default configuration, so this is not a create-only gap. Second, the
+unattended ingests are not defects — `nameof(EdgarIngestOrchestrator)` is *better* attribution than
+a username would be, and a remediation that simply required a principal would either reject those
+ingests or destroy useful information.
+
+So the fix is an actor model, not a parameter. It has to distinguish an operator principal (browser
+via `HttpContext`, desktop via some desktop-side source) from a trusted workload identity (Edgar,
+the Polygon CLI, backfill) from internal system paths like
+`ApprovedFieldEditCanonicalMergeHandler:185`, and apply across the mutation surface rather than to
+creates alone. Generalising `TryResolveActor` — already proven on the workbench path — is the
+obvious starting point, and registered workflow services such as
+`SecurityMasterTickerChangeService` need a defined identity source in that model rather than being
+left to forward whatever their request carried.
+
+Five constraints the fix has to respect:
+
+- **The general rule, and the one field it must not swallow.** Successive review rounds each found
+  another field an enumerated version missed — `CreatedBy`, `EffectiveTo`, `ValidFrom`/`ValidTo`,
+  `SourceRecordId` — which is what an enumeration invites. So state it once, generally: **every
+  provenance-bearing field on a mutation request is caller-asserted today, and each must end up
+  either server-derived or validated against trusted workflow metadata.** That covers actor identity,
+  source identity, upstream record identity and every valid-time bound, whatever a given request type
+  calls them. `SourceRecordId` is the easiest to overlook and makes the point: `SecurityMasterMapping`
+  persists it into provenance on create, amend and deactivate (`:21, 34, 41`), so a caller can attach
+  an arbitrary upstream evidence identifier to a governed record.
+
+  **Read those as semantic roles, not field names — the request types do not share a shape.**
+  `UpsertSecurityAliasRequest` has neither `UpdatedBy` nor `SourceSystem`: its actor role is
+  `CreatedBy` and its temporal role is `ValidFrom`/`ValidTo` (`SecurityCommands.cs:59-69`). An actor
+  model built from the create request's field names would silently omit or mis-map alias attribution.
+
+  **`Provider` on an alias is not a source role, and must stay caller-authored.** An earlier draft of
+  this bullet mapped it to `SourceSystem`'s role by name similarity. It does not hold: `Provider`
+  namespaces the identifier *value*, and lookup compares it against the provider the *query* asks for
+  (`ProviderMatches`, `SecurityMasterQueryService.cs:443-456`) — a ticker in Bloomberg's namespace is
+  a different identifier from the same string in Reuters'. Deriving it from the executing identity
+  would rewrite what the record asserts about the world, and would break resolution for every alias
+  whose provider is not the mutating system. `Provider` is content; `SourceSystem` is provenance about
+  the mutation, which is why only the latter is in scope.
+
+  That is the same boundary `Reason` sits on, so state it once as the test rather than accumulating
+  exceptions: **the rule governs provenance about the mutation — who performed it, on whose authority,
+  from what upstream evidence, effective when — and never data that is the record's own content.**
+  `Reason` and `Provider` are both on the content side. A field's name resembling a provenance field's
+  is not evidence; what the consuming code reads it *for* is.
+
+  **`Reason` is the exception and must stay caller-authored.** It is persisted through the same
+  `ToProvenance` call, so the rule as stated would sweep it in — wrongly. An operator's rationale is
+  the one provenance field whose *content* should come from the caller; what must be trustworthy is
+  the identity it hangs off, not the prose. The reference implementation does exactly this:
+  `ApprovedFieldEditCanonicalMergeHandler` carries `revision.FieldJustification` through as the
+  amendment `Reason` while deriving `UpdatedBy` from the authenticated actor (`:178-183`). Deriving
+  or validating `Reason` against workflow metadata would discard legitimate explanations.
+
+  Treat the notes that follow as worked examples of the rule, not as its extent — an implementer who
+  satisfies only the named fields has not satisfied the finding.
+- **Every actor-identifying field must be server-derived, whatever it is called.** That is `UpdatedBy`
+  on create, amend and deactivate, and **`CreatedBy` on alias upsert** — `UpsertAliasAsync` copies
+  `request.CreatedBy` straight into the stored `SecurityAliasDto` (`SecurityMasterService.cs:284-300`)
+  and the endpoint forwards the request unchanged (`SecurityMasterEndpoints.cs:449`), so an alias's
+  audit trail is exactly as spoofable as a create's.
+- **`UpdatedBy` is the actor field; `SourceSystem` is not.** `SecurityMasterConflictDetection` reads
+  `SourceSystem` off both sides' provenance and short-circuits when they match
+  (`:446-447, 454-458`), and provider ingests set it to values like `"edgar"`
+  (`EdgarSecurityMasterIngestProvider.cs:270`) and `"polygon"`
+  (`PolygonSecurityMasterIngestProvider.cs:191`). Stamping it from the principal would make two
+  operators loading the same vendor look like distinct sources, and one operator loading two vendors
+  look like a single source — manufacturing conflicts in the first case and suppressing them in the
+  second. Derive `UpdatedBy` from the principal; derive `SourceSystem` from trusted ingest metadata
+  or a fixed workflow identifier, never from the actor.
+- **The desktop lane already has an actor source — use it rather than inventing one.** WPF holds no
+  `HttpContext`, but it is not identity-less: `DesktopAuthenticationSession.CurrentActor` resolves the
+  operator from the validated login-session profile (`:24-37`), and that same session is already
+  injected into `SecurityMasterViewModel` and read there (`:1537, 1550-1552`). So the desktop input to
+  a shared execution context exists and is authenticated; what is missing is the wiring from it to the
+  mutation requests, which today carry a hardcoded `"User"`. Naming it matters: an implementer told
+  only that "the desktop needs an actor source" may build a second identity abstraction beside the one
+  Meridian already maintains.
+
+  **Deriving the actor does not secure this lane — see P5. Attribution and authorization are separate
+  defects, and fixing the first without the second yields an accurate audit trail of writes that
+  should never have been permitted.**
+
+  **The wiring is not uniformly a one-line change, because not every desktop mutation site can see
+  that session.** `SecurityMasterDeactivateViewModel.ConfirmAsync` builds its
+  `DeactivateSecurityRequest` with a hardcoded `UpdatedBy: "User"` (`:59-68`), and its constructor
+  takes only logging, notification and `ISecurityMasterService` (`:38-48`) — `SecurityMasterViewModel`
+  constructs it without passing the authentication session it holds (`:1683`). So on this path the
+  actor source has to be threaded through a constructor that does not currently accept it, not merely
+  read from an already-injected dependency. Worth separating the two fields here: `SourceSystem:
+  "WPF-UI"` on that same request is a fixed workflow identifier, which is exactly what the
+  `SourceSystem` rule prescribes — only `UpdatedBy` is defective. Treat child view models that
+  construct mutation requests as their own wiring sites when scoping this work.
+
+  **But `CurrentActor` is not unconditionally an authenticated operator, and the wiring must not treat
+  it as one.** It falls back to `"local-development"` when `IsAnonymousDevelopmentSession` holds — the
+  unconfigured-environment posture allowed by `CanContinueWithoutCredentials` — and returns empty once
+  a session has expired (`:14-37`). Gate the operator path on `IsAuthenticated`, and either model the
+  intentional anonymous-development posture as its own non-principal identity or refuse governed
+  mutations under it. Piping the property straight through would admit non-principal attribution into
+  the very execution context this finding exists to make trustworthy.
+- **Unattended callers need a trusted workload identity, not a principal.** Edgar, the Polygon CLI
+  and the backfill service legitimately have no operator behind them. The execution context needs a
+  service/workload identity path so those ingests keep their current, more informative attribution
+  instead of being rejected or overwritten.
+- **Every caller-controlled valid-time field needs a gate, not a clamp.** Clamping to ingest time
+  would be wrong for the same reason the exposure is narrow: a security loaded today can legitimately
+  have an economic start date months back, and clamping would overwrite that true fact with a false
+  one — replacing a caller-asserted date with a caller-*independent* wrong date, which is worse
+  stored provenance, not better. Gate caller-selected dates behind an explicit permission or a
+  trusted ingest workflow instead, so the assertion is authorized rather than forbidden.
+
+  **Gate both directions, not just backdating.** A *future* bound is the same arbitrary assertion and
+  has a concrete effect: current identifier lookup requires `ValidFrom <= asOf`
+  (`SecurityMasterQueryService.cs:382-387, 392-398`), so a caller can hide an identifier from lookup by
+  dating its validity forward. Forward-dated economic terms likewise persist as asserted metadata. The
+  gate belongs on every caller-selected valid-time override in either direction.
+
+  **The live query effect is not alias-only.** `MatchesIdentifier` applies the same
+  `ValidFrom <= asOf && (ValidTo is null || ValidTo > asOf)` predicate in two arms: to the projection's
+  *canonical* identifiers first (`:382-387`), then to its aliases (`:392-398`). Canonical identifier
+  windows are caller-supplied too, and by a route that is easy to miss because it is nested rather than
+  top-level: `SecurityIdentifierDto` carries its own `ValidFrom`/`ValidTo` (`SecurityIdentifiers.cs:53-61`),
+  and requests carry collections of it on both mutations — `CreateSecurityRequest.Identifiers`
+  (`SecurityCommands.cs:10`) and `AmendSecurityTermsRequest.IdentifiersToAdd` / `IdentifiersToExpire`
+  (`:22-23`). A gate written against the requests' own scalar date fields would leave a caller able to
+  post a security whose primary ticker is dated out of the current-lookup window at creation, or to add
+  one so dated by amendment — the same result as the alias case, one nesting level down. Whatever
+  enforces this must walk into the identifier collections, not just the requests' surface fields.
+
+  **Gate the two collections a caller's window actually reaches — not `IdentifiersToExpire`.** An
+  earlier draft of this bullet said "every `SecurityIdentifierDto` a create or amend request carries",
+  which over-corrects in the opposite direction and would reject legitimate expiries on dates the
+  domain never reads. On the expiry path the incoming DTO is matched by identity alone —
+  `SecurityIdentifier.sameIdentity` compares kind, normalized value and normalized provider, never the
+  window (`SecurityIdentifiers.fs:91-97`) — and `collectExpiredIdentifiers` then sets the *stored*
+  identifier's `ValidTo` to the amendment's `EffectiveFrom`
+  (`SecurityMasterCommands.fs:457-463`). `validateAmend` likewise runs `validateIdentifier` over
+  `IdentifiersToAdd` only (`:442`). So an expiry DTO's `ValidFrom`/`ValidTo` control nothing persisted
+  or query-visible; they are placeholders, and the trusted temporal input for an expiry is the
+  amendment's `EffectiveFrom`, which the scalar gate already covers. Gate create's `Identifiers` and
+  amend's `IdentifiersToAdd`; gating the expiry collection would obscure the field that does matter
+  while rejecting valid requests.
+
+  **The exposure differs by field, and the identifier case needs stating precisely.** For economic
+  *term* dates it is stored-provenance truthfulness only — nothing selects terms by `EffectiveFrom`,
+  per the bullet above. Identifier and alias windows do have live query effect, but not uniformly:
+  `RebuildRecordedAsOfAsync` filters the returned alias collection by `CreatedAt`, `ValidFrom` and
+  `ValidTo` (`SecurityMasterAggregateRebuilder.cs:104-107`), and current lookup applies the window as
+  above. Historical *resolution* is more forgiving than an earlier draft of this bullet claimed, and
+  forgiving symmetrically across both arms: `TryGetProjectionByIdentifierAsync` falls back to
+  `MatchesIdentifierIgnoringWindow` when nothing is active at the as-of
+  (`SecurityMasterQueryService.cs:332-341`, with a comment explaining why), so a unique identifier or
+  alias outside its window still resolves. Note *which* lookups get that mercy: the fallback is enabled
+  by `allowIdentityFallback: asOfUtc is not null` (`:55`), so historical lookup is forgiving and
+  **current** lookup — the caller passing no as-of — is strictly window-filtered with no fallback at
+  all. Name the two real exposures — current lookup, and the alias collection returned by
+  `GetRecordedByIdAsOfAsync` — rather than attributing the effect to as-of identifier lookup generally.
+  The gate has to cover the whole surface, not just create: `EffectiveFrom` on create and amend,
+  `EffectiveTo` on `DeactivateSecurityRequest` (`SecurityCommands.cs:46`), `ValidFrom` / `ValidTo` on
+  `UpsertSecurityAliasRequest` (`:67-68`), and the nested `ValidFrom` / `ValidTo` on each
+  `SecurityIdentifierDto` in a create request's `Identifiers` or an amendment's `IdentifiersToAdd`
+  (but not `IdentifiersToExpire`, per the bullet above). Otherwise a caller who cannot backdate a
+  definition can still backdate its deactivation, an alias's validity window, or a canonical
+  identifier's — each reaching the same historical-integrity problem by another route.
+- **The workbench chain must be preserved, not reworked.** Publish already resolves the actor
+  server-side and carries it through the command service into the canonical amendment. That path is
+  the target state, not a migration candidate: an actor-model change that re-plumbs it risks
+  breaking the one provenance chain in this subsystem that is already correct.
+
+One earlier claim in this pass was wrong and is worth retracting explicitly: that
+`RequireGovernedTermAmendments` gates amendments, making this a create-only gap. That option defaults
+to **false** — its own docstring says the default "preserves the direct write surface for deployments
+whose provider-ingest pipelines call these routes" — so on a default deployment the direct amend
+route is live and carries caller-asserted attribution exactly like create. Deployments that enable
+the option do close the direct HTTP amend route, but not the in-process WPF amend path, which never
+touches the endpoint.
+
+### P2 — CSV import hardcodes its actor as `WpfImport`
+
+The same root cause, visible without the JSON path. `SecurityMasterCsvParser.ParseRow` constructs
+every request with `SourceSystem: "SecurityMasterImport"` and `UpdatedBy: "WpfImport"`
+(`:153-154`). Every security a CSV import ever creates carries that same attribution, so the field
+identifies neither the operator nor — since the HTTP endpoint shares the parser — the surface. It is
+a constant occupying an audit field. Closing P1 closes this with it.
+
+### P3 — The pack registry's new planned-coverage dimension is unguarded, widening N4
+
+`PlannedAssetClasses` (added 2026-08-26 to close N3) is checked for catalog membership in both
+directions, but the overlap rule reads `pack.AssetClasses` only
+(`SecurityAssetPackRegistry.cs:285-286`) and never inspects the planned set. Three packs plan
+`CreditFacility` today — `private-loan-credit` (`:202`), `mortgage-facility-intercompany` (`:226`)
+and `commitment-guarantee` (`:234`) — so the class arrives with three claimants and no owner, and
+nothing will say so until it becomes a catalog class, at which point all three packs fail
+`asset-pack.planned-asset-class-already-modeled` at once and the ownership question has to be settled
+under a red build instead of before one.
+
+This is N4's defect reproduced on the new axis. **An earlier version of this item proposed making the
+overlap rule symmetric — "for incumbents and candidates alike" — and that remedy would break the
+shipped registry.** The rule's asymmetry is deliberate: after grouping claimants it filters
+`.Where(group => group.Any(row => candidateIds.Contains(row.PackId)))` (`:289`), so it polices a new
+candidate against the existing set and never the existing set against itself. That filter is what
+lets `DirectLoan` sit in both `private-loan-credit` (`:198`) and `mortgage-facility-intercompany`
+(`:222`) while `AssetPackRegistry_ValidateAll_ShouldAcceptBuiltInPacks`
+(`SecurityAssetClassCatalogTests.cs:454`) still passes. Dropping the candidate filter would fail the
+built-in registry and that test with it.
+
+The contract does not have a single-owner invariant to enforce, and more than one thing says so:
+`FindByAssetClass` returns `IReadOnlyList<SecurityAssetPackDescriptor>` (`:253`) rather than a single
+descriptor, the readiness service publishes every pack independently, and the built-in registry ships
+a deliberate two-pack class. So three packs planning `CreditFacility` is not by itself an ownership
+defect — it is only a defect if many-to-many coverage is disallowed, and nothing establishes that it
+is.
+
+Narrowed accordingly: extend the **planned** dimension into the rule's existing candidate-scoped
+shape, so a new candidate cannot silently plan a class an incumbent already claims or plans, and
+leave incumbent-versus-incumbent overlap alone. Making overlap an error in general is a different and
+larger change that needs a uniqueness or routing contract established first — deciding whether a
+class may have several packs and, if so, how a consumer picks — and that decision does not belong to
+this item.
+
+Mitigating context for N4 as a whole: `FindByAssetClass` (`:253`) has no production consumer, only
+tests. The registry reaches production through `SecurityMasterOperationalReadinessService:295` (the
+readiness report) and `:873` (descriptor validation). So today's `DirectLoan` ambiguity misleads a
+reader rather than mis-routing a record — which is why N4 stays a governance item rather than
+escalating.
+
+### P5 — The desktop lane mutates the golden record with no authorization check at all
+
+Every HTTP route that mutates the **golden record** requires the `ModifySecurityMaster` permission:
+create (`SecurityMasterEndpoints.cs:364`), amend (`:396`), deactivate (`:424`), alias upsert (`:452`),
+both equity-terms routes (`:535, 596`), corporate-action append (`:665`) and conflict resolution
+(`:807`) each carry `RequirePermission(UserPermission.ModifySecurityMaster)`.
+
+Scope that claim to the golden-record boundary rather than to "every Security Master mutation", which
+would misdescribe the surface and mislead the remedy: the corporate-action *operations* partial
+deliberately uses narrower capabilities — `IngestCorporateActions` and `ResolveCorporateActionTerms`
+(`SecurityMasterEndpoints.CorporateActionOperations.cs:51, 101, 136, 168`) — and asset-profile
+mutations require `AdminMaintenance` (`SecurityMasterEndpoints.cs:128-242`). That specialization is
+deliberate and must survive: the parity P5 asks for is between the WPF create/amend/deactivate/import/
+backfill commands and the routes above, not a collapse of Meridian's finer-grained Security Master
+permissions into one.
+
+The WPF lane reaches the same `ISecurityMasterService` in process and checks nothing.
+`SecurityMasterEditViewModel` calls `CreateAsync` (`:216`) and `AmendTermsAsync` (`:234`) directly,
+`SecurityMasterDeactivateViewModel` calls `DeactivateAsync` (`:59-68`), and `SecurityMasterViewModel`
+calls `ImportAsync` (`:4358`). None of them — nor their parent — calls
+`DesktopAuthenticationSession.HasPermission`. The only **view-model** callers of that method are
+`MainWindowViewModel` for `ManageProviders` (`:255`) and `AccountingCloseViewModel` (`:1069-1070`) —
+say view-model rather than "desktop", because `DesktopWorkflowReadScopeResolver.HasAny` calls it too
+(`:143`), and that is the very resolver this item points at as the pattern to reuse. The desktop lane
+does have an authorization seam; no Security Master mutation command goes through it.
+
+**A fifth path makes this worse, and it is a bulk one.** When Polygon is configured,
+`BackfillTradingParamsCommand` is constructed as a plain `AsyncRelayCommand` with no `canExecute`
+predicate (`SecurityMasterViewModel.cs:1565`); `OnBackfillTradingParams` calls
+`_backfillService.BackfillAllAsync()` (`:2186-2193`), and `TradingParametersBackfillService`
+walks the active-security search result calling `AmendTermsAsync` for each
+(`TradingParametersBackfillService.cs:213`). Bound that precisely rather than saying "every active
+security": the search requests `Take: 1000` (`:59`), and `BackfillTickerAsync` returns without
+amending when Polygon has no usable data or answers non-success. So one invocation attempts **up to
+1,000** securities — on a master larger than that it cannot even reach the remainder. Still by far the
+largest single mutation on the lane, and still one an unauthorized operator can trigger, but the
+number matters when sizing the work. Any gate that covers only the edit,
+deactivate and import commands leaves the largest-blast-radius mutation on the lane open — enumerate
+the desktop mutation *commands*, not the dialogs. (Note it also invokes `BackfillAllAsync()` with no
+cancellation token from the view model, which is why it recurs in P4 below.)
+
+**The check exists and works on a credential-backed host; it is simply never invoked here.**
+`HasPermission` fails closed **only when credentials are configured** — there it returns true just
+when the resolved operator profile grants the permission — and returns true for everything whenever
+`CanContinueWithoutCredentials` holds (`DesktopAuthenticationSession.cs:49-60`). Say "credential-backed"
+rather than "configured": a credential-free host that names an anonymous role *is* configured in the
+ordinary sense, and there this method is fail-**open**, which is why the remedy below cannot be built
+on it. So on a credential-backed desktop, an authenticated operator
+holding only `ViewSecurityMaster` is refused every mutation over HTTP and permitted every one of them
+through the workstation. Its own documentation says "server-side authorization remains authoritative
+in all cases" — true for the browser lane, but this path never reaches a server, so there is no
+authoritative check behind it.
+
+**The obvious remedy — wire the commands to `HasPermission` — does not close this, and an earlier
+draft of this item prescribed exactly that.** `HasPermission` returns `true` immediately whenever
+`CanContinueWithoutCredentials` holds (`DesktopAuthenticationSession.cs:50-56`). On a credential-free
+host that names an anonymous role — `MDC_ANONYMOUS_ROLE=ReadOnly` or `Analysis`, a supported posture —
+the browser lane honours that role and refuses mutations, while a desktop gate built on
+`HasPermission` authorizes every one of them. P5 would survive its own fix in the configuration where
+an operator has been explicitly declared read-only.
+
+Meridian already solves this, one lane over, and the desktop gate should reuse the pattern rather than
+re-derive it: `DesktopWorkflowReadScopeResolver.TryResolveConfiguredAnonymousScope` resolves the named
+role's grants from `RolePermissions` instead of from the session, and its own comment gives the reason
+— *"the session answers true to every permission on such a host and would therefore ignore the
+choice"* (`:66-104`). It also fails **closed** on an unparseable role name rather than falling through
+to the session, on the stated grounds that a typo in a security setting must never grant everything.
+The mutation gate needs the same three properties: resolve the anonymous role's permissions from
+`RolePermissions`, refuse when that role lacks `ModifySecurityMaster`, and fail closed on a named-but-
+unrecognised role.
+
+**This is why it is filed separately from P1 rather than folded into it.** P1 is an attribution
+defect: the record does not truthfully say who wrote it. This is an authorization defect: the write
+should not have been accepted. They have opposite fix orders, too — wiring the actor through first,
+as P1 describes, would produce a faithful audit trail of mutations that were never permitted, which
+is worse than the status quo in one respect, because the record would then carry a named operator's
+identity on a change the operator had no right to make. The desktop mutation commands need the same
+permission gate the endpoints apply, enforced before the service call, and their enablement should
+reflect it so the UI does not offer actions that will be refused.
+
+### P3b — Editing an alias rewrites its recorded history
+
+Surfaced by review while checking P1's alias attribution rule, and it is a defect in the subsystem
+rather than in this pass's prose — which is why it is filed separately rather than folded into P1.
+
+`SecurityMasterService.UpsertAliasAsync` builds its `SecurityAliasDto` with `DateTimeOffset.UtcNow`
+as `CreatedAt` (`:284-300`), and the store's upsert overwrites **both** creation columns on conflict —
+`on conflict (alias_id) do update set … created_by = excluded.created_by, created_at =
+excluded.created_at` (`PostgresSecurityMasterStore.cs:112-124`). So an edit to an existing alias
+re-stamps who created it and when.
+
+The consequence reaches history, not just attribution. `RebuildRecordedAsOfAsync` filters aliases by
+`CreatedAt <= asOfUtc` (`SecurityMasterAggregateRebuilder.cs:104-107`), so re-stamping `CreatedAt` to
+now **removes the alias from every as-of view earlier than the edit**. An identifier that was recorded
+in January and corrected in June disappears from the January view — in a subsystem whose recorded-time
+reconstruction is one of its strongest properties, and which this review elsewhere credits for
+distinguishing "what did we believe then" from "what is true now".
+
+This also constrains P1's actor rule, which is how it came to light: deriving `CreatedBy` from the
+authenticated actor is right for a genuine create and wrong for an update, where it would relabel the
+original creator.
+
+**Preserving the creation fields is necessary but not sufficient, and an earlier draft of this item
+proposed it as though it were the fix.** The on-conflict clause overwrites the whole row —
+`alias_value`, `provider`, `scope`, `valid_from`, `valid_to` and the rest, not just the creation
+columns (`PostgresSecurityMasterStore.cs:112-124`) — and `RebuildRecordedAsOfAsync` receives that
+single current row and only filters it. So freezing `created_at` would stop the alias vanishing from
+a January view and instead show January **June's corrected value**, retroactively. Both outcomes are
+historically wrong; they differ only in which direction they lie.
+
+The real remedy is therefore larger than an on-conflict tweak: alias state has to be versioned or
+event-backed, so a recorded-as-of rebuild can return the row as it stood at that time rather than the
+current row filtered by date. If that is out of scope for now, the honest alternative is to narrow
+explicitly what recorded-as-of promises for aliases, rather than leave a guarantee the storage shape
+cannot deliver. What must not happen is shipping the creation-field fix and considering the history
+problem closed.
+
+### P4 — Three ingest paths classify duplicates by exception-message substring, and in two of them that same catch also swallows cancellation
+
+`SecurityMasterImportService:171-172` decides whether a failed create was a duplicate — and therefore
+whether the row is reported as `Skipped` or `Failed` — by testing `ex.Message` for the substrings
+`"already exists"` and `"duplicate"`. This is the classify-from-prose antipattern the 2026-08-26 pass
+retired from `ResolveAccountingAssetClass` and `MultiAssetCoverageReadService`.
+
+**It survives at three ingest sites, not one.** A sweep for that substring pair returns
+`SecurityMasterImportService:171-172`, `EdgarIngestOrchestrator:645-646` (the `IsDuplicateException`
+helper) and the Polygon CLI path in `SecurityMasterCommands:281-282` — each classifying create
+failures the same way. Fixing only the import service would leave the same defect in both provider
+ingests, so the remediation belongs on the create outcome the three share rather than in any one
+caller.
+
+**But what the misclassification costs differs by site, and EDGAR must not be described as a count
+defect.** Only import and Polygon reclassify a row between counters: the Polygon CLI increments
+`skipped` on a substring hit and `failed` otherwise (`SecurityMasterCommands.cs:281-288`), and that
+`failed` total decides the command's exit code (`:302`). EDGAR has no failed-security counter at all —
+both the duplicate-filtered catch and the generic catch increment `securitiesSkipped`
+(`EdgarIngestOrchestrator.cs:120-137`), so its skipped count is the same either way. State EDGAR's
+exposure as what it is rather than borrowing the others': the classification decides whether the row
+appends to `errors` and whether it logs at Debug or Warning, and `errors` is what the EDGAR CLI turns
+into a non-zero exit (`SecurityMasterCommands.cs:227`). Because a genuine duplicate raises the stream
+conflict message below and so misses the substring test, it lands in the generic catch — recording an
+error and failing the whole ingest for a condition the code means to treat as benign. Real, and worth
+fixing, but a different defect from the miscount; a regression test asserting an EDGAR count change
+would assert something that cannot happen.
+
+**The substring test does not match the error the system actually raises, so the classification is
+already wrong wherever a caller can re-use a security id.** An earlier draft said "at every site",
+which over-reached — see the fresh-id paths below. An earlier draft still called it fragile — something a reworded
+message *would* break. It is worse than that: when a create reuses an existing `SecurityId`,
+`PostgresSecurityMasterEventStore.AppendAsync` throws `"Security stream version conflict for {id}.
+Expected {x}, actual {y}."` (`:40`), which contains neither `"already exists"` nor `"duplicate"`. So
+the skip branch never fires for a re-used stream today.
+
+**But that diagnosis only reaches inputs that can re-use an id, which is narrower than "every site".**
+The CSV parser mints `Guid.NewGuid()` per row (`SecurityMasterCsvParser.cs:146-148`) and Polygon's
+`MapToCreateRequest` does the same (`PolygonSecurityMasterIngestProvider.cs:156-157`), so re-importing
+either source opens a *new* stream and never raises the version conflict at all. Those paths have no
+duplicate detection to misclassify — they have no idempotency in the first place.
+
+**What happens next is not a silent second golden record, and an earlier version of this item said it
+was.** Migration 001 puts a unique index on the *raw* primary identifier —
+`ux_securities_primary_identifier on securities (primary_identifier_kind, primary_identifier_value)`
+(`001_security_master.sql:42-43`) — so a repeated row whose raw primary kind and value are unchanged
+is rejected at the projection insert. But `ExecuteCreateAsync` appends the event stream *before*
+upserting the projection (`SecurityMasterService.cs:323-324`), so the real outcome is worse in a
+different way: **an orphaned event stream for a security that never reaches the projection, followed
+by a unique-constraint failure** — and, since the classifier change, a PostgreSQL `23505` reported to
+the operator as a `Skipped` row. Two defects, not one, and the regression plan has to cover the
+partial write rather than a duplicate record.
+
+The second-record path is real but narrower, and belongs to P1's normalization gap rather than here:
+the index is over the **raw** value, so a case or punctuation variant slips past it, inserts cleanly,
+and *does* produce two golden records for one instrument — which the identifier-conflict machinery
+then has to adjudicate. Keep the two cases separate in any test suite; they fail differently and are
+fixed by different changes.
+
+So the typed outcome grounded in the stream conflict serves the JSON import
+branch (and deterministic-id Edgar races), while CSV and provider ingests need an idempotency key
+before any outcome type can help them. A regression suite built only on the version conflict would
+never exercise their repeated-record behaviour.
+
+**Note what the stream-conflict case is and is not**: the
+conflict establishes that a stream already exists, nothing more — it does not establish that the
+incoming row is a replay of the stored one, since the append compares versions and never payloads
+(detailed below). Calling it a "duplicate" here would prejudge exactly the question the remedy has to
+answer, so this item says "re-used stream" and reserves "duplicate" for a row whose equivalence has
+actually been established. On the two counting sites that means the rows
+are counted `Failed` — in import, the operator-facing summary built from those counts
+(`SecurityMasterViewModel.cs:4366-4374`) already misreports them; in the Polygon CLI, `failed` is also
+the exit code. On EDGAR it means the error list and the exit code, per the bullet above. Nothing
+has to change for the defect to bite — it is biting.
+
+That also fixes where the remedy has to aim. A typed mutation outcome and its regression test must be
+grounded in the real stream-exists/concurrency path, not in a hypothetical `"already exists"` message
+that no component emits; a fix written against the latter would leave duplicate imports still
+reported as failures.
+
+**It is wrong in the other direction too: valid failures land in the skip bucket.** The substring test
+matches domain *validation* errors that merely contain the word. `SecurityMasterCommandFacade` surfaces
+codes and messages such as `duplicate_identifier_active` — "Active security identifiers must not
+contain duplicate kind/value/provider combinations." (`SecurityMasterCommands.fs:403`) — and
+`bond_step_dates_duplicate` (`:121`), and `CreateProjectionFromResult` puts that text into the thrown
+exception. So a JSON import row carrying duplicate active identifiers or duplicate schedule dates is
+reported `Skipped` rather than `Failed` and is omitted from the error list entirely: the operator is
+told the row was a harmless replay when in fact it was rejected as invalid and never persisted. That
+is a false positive, the mirror of the stream-conflict false negative below, and it is the more
+damaging of the two — a silently dropped invalid row leaves the operator believing the security is in
+the master. The typed outcome must keep domain validation failures as failures; its regression tests
+need a case in each direction.
+
+**And do not let the typed outcome equate "stream exists" with "idempotent duplicate".** The
+conflict carries no evidence about the payload: `ExecuteCreateAsync` appends with
+`expectedVersion: 0` (`SecurityMasterService.cs:320`), and `AppendAsync` throws purely on
+`currentVersion != expectedVersion` (`PostgresSecurityMasterEventStore.cs:36-41`) without comparing
+the incoming record to the stored one. So a second create reusing a `SecurityId` with *different*
+terms or provenance raises exactly the same exception as a byte-identical replay. An outcome that
+maps the conflict straight to `Skipped` would silently discard a competing source assertion — the
+same failure mode as the identifier pre-check this document already retracted, arrived at from the
+other direction. The outcome therefore needs a content-equivalence or idempotency-key check to earn
+the `Skipped` classification, and must preserve `Failed` for a non-equivalent row; without that check
+the honest classification of a stream conflict is a conflict, not a duplicate.
+
+**The same `catch` swallows cancellation.** `catch (Exception ex)` (`:168`) also catches the
+`OperationCanceledException` that `CreateAsync(request, ct)` throws when the token trips mid-row.
+The substring test does not match it, so a cancelled row is counted as `Failed` and logged as an
+import error rather than propagating. The `ct.ThrowIfCancellationRequested()` at the top of the loop
+(`:160`) only covers cancellation *between* rows. Worse, on the final row with no conflict service
+configured, nothing after the loop observes the token, so a cancelled import returns a normal
+result. This breaks the repository's standing guardrail that cancellation flow stays intact, and a
+typed duplicate outcome would not fix it: the remediation has to rethrow cancellation before
+classifying a create failure at all.
+
+The Polygon CLI path shares the shape exactly — `catch (Exception ex)` around
+`CreateAsync(request, ct)` at `SecurityMasterCommands:279-282` — so it swallows cancellation the same
+way.
+
+**Edgar is the exception, and an earlier draft of this item got it wrong.** Its create loop already
+handles this correctly: the duplicate filter is a narrow `catch (Exception ex) when
+(IsDuplicateException(ex))`, followed by `catch (OperationCanceledException) when
+(ct.IsCancellationRequested) { throw; }` (`EdgarIngestOrchestrator:120-127`). So Edgar carries the
+prose-classification defect but **not** the create-loop cancellation defect. Its swallowed
+cancellation lives in three *other* broad catches — around `SaveFactsAsync` (`:250-254`), around the
+provider fetch/store (`:286-290`), and in `CountOpenConflictsAsync` (`:627-641`), which wraps
+`GetOpenConflictsAsync(ct)` in a bare `catch (Exception)` returning `0`. Any of the three converts a
+cancellation into an ordinary error or a plausible-looking count.
+`EdgarIngestOrchestrator` has five broad catches in total; only the create loop rethrows.
+
+**Say precisely when that produces a normal return, because it is not unconditional.** Each loop
+re-observes the token at the top of the next iteration — `ct.ThrowIfCancellationRequested()` at `:229`
+for fact groups and `:269` for filers — so a cancellation swallowed partway through a run surfaces on
+the following pass, late and at the wrong site but not silently. The normal-completion case needs the
+swallow to happen with no token-observing operation after it: the **final** fact group or filer, or
+the **final** `CountOpenConflictsAsync` (`:141`) — not the first (`:58`), which is immediately
+followed by `FetchTickerAssociationsAsync(ct)` at `:60` and so re-observes cancellation on the very
+next await; only the second is followed by nothing but `Math.Max` and result construction. Those are the
+scenarios a regression test has to construct; asserting that any swallowed cancellation yields a
+normal result would assert something the loop structure prevents. The defect is still real — a
+cancelled ingest is reported as an ordinary error, and a cancelled conflict count silently becomes
+zero, which feeds `conflictsDetected` — but its blast radius is the tail of a run, not the whole of it.
+
+**Two more swallow sites sit outside the three ingests this item enumerates, which is the enumeration
+failing again rather than two new facts.** The rule stated earlier — *every broad catch wrapping a
+cancellable await on these paths swallows cancellation* — already covers them; they are named because
+both are reachable from surfaces the pass discusses elsewhere and neither is in the tables:
+
+- **The trading-parameter backfill.** `BackfillTickerAsync` rethrows correctly, but `BackfillAllAsync`
+  wraps the call in `catch (Exception ex)` and counts a failure
+  (`TradingParametersBackfillService.cs:101-108`). **Unlike Edgar, this one is silent for cancellation
+  on *any* item, not just the last** — an earlier draft of this bullet asserted the Edgar narrowing
+  here by analogy and was wrong. Edgar's loops call `ct.ThrowIfCancellationRequested()`, which
+  propagates; this loop tests `ct.IsCancellationRequested` and `break`s (`:84-88`), which does not. So
+  a cancellation swallowed at any iteration is followed by a quiet exit from the loop, a completion
+  log, and a normal success/failure summary. `break` and `throw` are not interchangeable at the top of
+  a cancellation-checking loop, and a regression test has to target the `break` rather than the
+  final-item case.
+
+  **And the per-item catch is not even the first swallow in that method.** `BackfillAllAsync` opens by
+  wrapping `_queryService.SearchAsync(searchRequest, ct)` in `catch (Exception)` and simply `return`s
+  (`:60-69`) — no failure count, no rethrow. A cancellation during that initial search therefore never
+  reaches the loop, the `break`, or the per-item catch at all, and the method returns as though the
+  backfill had completed. Fixing `:101-108` alone leaves that path exactly as it is. **Two** swallow
+  points on this one method — the search catch (`:62-69`) and the per-item catch (`:98-108`) — which is
+  why the remediation has to be scoped by *method* here rather than by catch site.
+
+  **A third defect on the same command is a different kind, and must not be counted as a swallow.**
+  The WPF call passes no token at all (`SecurityMasterViewModel.cs:2186-2193`), so a desktop-initiated
+  backfill has nothing to cancel *with*: cancellation cannot be requested, rather than being requested
+  and then dropped. That is command wiring, not exception handling, and it needs a different fix and a
+  different test — an implementer working from a merged list would go looking for a third catch that
+  does not exist, and would write a propagation test where a plumbing test is required.
+- **The Polygon page fetch, before the create loop is ever reached.**
+  `PolygonSecurityMasterIngestProvider.FetchPageAsync` wraps `GetAsync(url, ct)` and
+  `ReadAsStringAsync(ct)` in `catch (Exception)` and returns `null` (`:129-148`); `FetchAllAsync` reads
+  that as end-of-pagination and returns the pages gathered so far, after which the ingest imports that
+  partial set and reports success. Rethrowing cancellation around `CreateAsync` alone therefore leaves
+  the command completing normally after cancellation — the truncation happens upstream of the loop the
+  remediation was aimed at.
+
+Edgar also carries the prose defect on **both** mutations, not just create: `CreateOrAmendSecurityAsync`
+calls `CreateAsync` when no security exists and `AmendTermsAsync` when one does (`:303-344`), with
+both under the same outer substring filter.
+
+The two defects therefore do not have one shared home:
+
+| Site | Prose duplicate classification | Cancellation swallowed |
+| --- | --- | --- |
+| `SecurityMasterImportService:171-172` | yes | yes, same catch |
+| `SecurityMasterCommands:279-282` | yes | yes, same catch |
+| `EdgarIngestOrchestrator:120-127` | yes — create **and** amend | no — rethrows correctly |
+| `EdgarIngestOrchestrator:250-254` | — | yes, around `SaveFactsAsync` |
+| `EdgarIngestOrchestrator:286-290` | — | yes, around provider fetch/store |
+| `EdgarIngestOrchestrator:627-641` | — | yes, in the conflict count |
+
+**The two columns need separate fixes — an earlier draft of this item said otherwise and was wrong.**
+A typed outcome — covering create **and** amend, per Edgar above — fixes the first column only. It
+changes how a duplicate is *signalled*, but
+`CreateAsync(…, ct)` still throws `OperationCanceledException`, and a broad `catch (Exception)` will
+keep swallowing it whatever the duplicate signal looks like. Reading the typed outcome as covering
+cancellation would leave both operator paths returning normally after a cancelled import, which is
+the defect this item is reporting.
+
+**The cancellation rule, stated so it does not depend on the table.** Every broad `catch (Exception)`
+wrapping a cancellable await on these ingest paths swallows cancellation and needs the same remedy —
+rethrow, or narrow the catch to what it means to handle. `EdgarIngestOrchestrator` alone has five
+such catches: the create loop at `:120-127` gets it right (it rethrows), while `:250-254`,
+`:286-290` and the conflict count at `:627-641` do not, and successive sweeps kept finding more.
+The table below is illustrative of the shape, not an inventory to work through; the fix is the rule
+applied to every such catch, with Edgar's create loop as the reference for what right looks like.
+
+**A typed *create* outcome is not enough for Edgar.** `CreateOrAmendSecurityAsync` calls `CreateAsync`
+only when no security exists and otherwise calls `AmendTermsAsync` (`:303-344`), with both under the
+same outer substring filter. So a create-only outcome would leave Edgar still classifying amendment
+failures by exception message. The typed outcome has to cover both mutations, or create and amendment
+handling has to be separated there first.
+
+The duplicate fix itself is a typed mutation outcome, **not** a pre-check against the identifier index. A shared
+identifier is not a duplicate here by design: `SecurityMasterImportServiceTests.ImportAsync_WhenRecordsAreCreated_TriggersAutomaticConflictRecordingPerSecurity`
+imports two records with distinct security ids and the same ISIN from different providers, and
+asserts `Imported == 2` with one conflict detected. Pre-skipping the second row would throw away the
+competing source assertion the conflict exists to adjudicate, and would stay race-prone besides. The
+distinction worth drawing is a genuinely duplicate stream or security id — while identifier ambiguity
+keeps flowing to conflict processing untouched. Note what "genuinely duplicate" costs to establish,
+though: the stream-conflict exception alone does not prove it, per the paragraph above, so a typed
+result can report it only once the outcome carries a content-equivalence or idempotency check.
+Without that, reporting the conflict as a duplicate discards a competing assertion by a second
+route — the same mistake the pre-check would have made.
+
+### Smaller notes, not filed as findings
+
+- **CSV import defaults a missing currency to `USD`** (`SecurityMasterCsvParser.cs:122-124`). This is
+  deliberate and test-locked (`SecurityMasterCsvParserTests.ParsedRow_DefaultsCurrencyAndOmitsAbsentExchange`),
+  so it is a decision rather than an oversight — but it sits twenty lines above a docstring stating
+  the opposite principle for the sibling payload: "no term is invented for a column the file never
+  had" (`:182-184`). Currency drives FX translation, reporting rollups and valuation, so a fabricated
+  one is worth more than a defaulted one is worth saving. Worth revisiting deliberately, in either
+  direction, so the two payloads state the same contract.
+- **N6's fix is cheaper than the finding implies.** `AssetProjectionWriter` already carries its own
+  asset-class name as its first field (`PostgresSecurityMasterStore.cs:43-56`), so the amplification
+  closes with a dictionary lookup on `record.AssetClass` plus a targeted cleanup on observed class
+  *change* — no restructuring of the registry the design deliberately made additive.
+- **`LedgerExtensionPolicy` is validated by substring** (`SecurityAssetPackRegistry.cs:338-339`,
+  `Contains("core ledger")`). Harmless in isolation and consistent with N5's characterization of the
+  registry as prose checked for non-emptiness; noted so N5's eventual resolution covers it.
+- **The compensating override layer has hardened well.** `IsProfileBackedCustomAsset` and
+  `AssetClassMetadataKeywords` (`SecurityMasterService.cs:961-1029`) are still the hard-coded tables
+  finding 4 counts, but `TryResolveProfileBackedAlternativeAssetClass` now documents and enforces the
+  right rule — the registered profile id alone decides the class, and contradicting envelope metadata
+  is refused rather than silently overridden. The remaining cost is shape, not correctness, exactly
+  as the 2026-08-24 independent pass concluded.
+
+### Priorities from this pass
+
+Read as a delta on the standing lists above.
+
+1. **Enforce mutation permissions on the desktop lane (P5).** The one item here that is an
+   authorization failure rather than a governance or attribution one, and the only one that lets a
+   user perform a write the system is configured to refuse. Every HTTP route that mutates the
+   **golden record** requires `ModifySecurityMaster` — the corporate-action and asset-profile routes
+   deliberately use narrower capabilities, and must keep them; the WPF edit, deactivate, import **and trading-parameter backfill**
+   commands reach the same service in-process and check nothing. The backfill is the one to size the
+   work by: one invocation attempts up to 1,000 active securities — `BackfillAllAsync` searches with
+   `Take: 1000` and skips rows with no usable Polygon data — so a gate covering only the
+   per-record dialogs leaves the largest mutation open. Enumerate the desktop mutation commands rather
+   than the dialogs. **Do not build the gate on `HasPermission` alone** — it returns true for
+   everything on a credential-free host, so an `MDC_ANONYMOUS_ROLE=ReadOnly` deployment would stay
+   fully mutable; resolve the named anonymous role's grants from `RolePermissions` and fail closed on
+   an unrecognised name, exactly as `DesktopWorkflowReadScopeResolver` already does for read scope.
+   Gate each before
+   the service call, and reflect the result in command enablement. Sequence it
+   **before** P1's actor wiring: deriving the operator's identity first would attach a real name to
+   writes that should not have been accepted.
+2. **Gate the legacy preferred-terms PATCH route (P1).** One of **four** items in this pass that are
+   defects in shipped behaviour rather than in plumbing — P5, this, P3b and P4: a deployment that enables
+   `RequireGovernedTermAmendments` to force maker-checker still has
+   `PATCH …/preferred-terms` (`SecurityMasterEndpoints.cs:1043-1058`) reaching
+   `AmendPreferredEquityTermsAsync` ungated. One `RequireGovernedTermAmendmentRoute` call closes it,
+   and a route-level test asserting every amendment path refuses under the option keeps it closed.
+   Smallest fix in this document with the largest governance consequence.
+3. **Stop alias edits rewriting recorded history (P3b).** The third of the four by rank, and the
+   one that touches a property this subsystem is otherwise careful about: an alias upsert re-stamps
+   `created_at`, and recorded-as-of rebuilding filters on it, so correcting an identifier erases it
+   from every earlier historical view. Note the scope honestly — the upsert overwrites the whole row,
+   so preserving the creation fields alone converts a disappearing alias into a retroactively-changed
+   one, which is no more truthful. Closing this properly means versioned or event-backed alias state;
+   the interim alternative is to narrow explicitly what recorded-as-of promises for aliases. Ranked
+   here rather than lower because it loses data today, but it is not the small fix item 2 is.
+4. **Derive actor attribution across the whole mutation surface, and gate caller-set dates in both
+   directions (P1, P2).** Sequence this after item 1 — attribution without authorization records who
+   made a write that should have been refused.
+   An auditability defect on governed write paths that both operator lanes expose, on a subsystem
+   that already holds itself to the opposite standard elsewhere. Take it where the mutations
+   converge, not at `ImportAsync`: all six public members of `SecurityMasterService` carry
+   caller-asserted attribution, and amendments are not covered by the governed path in the default
+   configuration. Derive every actor field — `UpdatedBy`, and `CreatedBy` on alias upsert — and gate
+   every caller-controlled valid-time field, not just `EffectiveFrom`; that includes the `ValidFrom` /
+   `ValidTo` nested inside each `SecurityIdentifierDto` in a create request's `Identifiers` or an
+   amendment's `IdentifiersToAdd`, which a gate written against the requests' own scalar fields will not
+   reach — but not `IdentifiersToExpire`, whose windows the domain never reads. Keep the record's
+   *content* out of it — `Provider` namespaces an identifier value and `Reason` is the operator's own
+   rationale, so deriving either would corrupt what the record asserts. **`SourceSystem` is not in that
+   exempt set**: it is provenance, and it stays in scope. What is forbidden is deriving it from the
+   *actor* — it carries source identity for conflict detection, not actor identity — while leaving it
+   caller-selected still permits a forged source that manufactures or suppresses conflicts. Derive it
+   from trusted ingest metadata or a fixed workflow identifier, per the constraints above. Preserve
+   workload identities for unattended ingests rather than replacing them with a principal, and preserve
+   the workbench chain that already does this correctly.
+5. **Extend the pack-overlap rule's planned-coverage axis, keeping it candidate-scoped (N4, P3).**
+   Still among the cheapest durable items in this document, and the planned axis means deferring it
+   now schedules a three-way ownership dispute for the day `CreditFacility` lands. **Do not make the
+   rule symmetric**, which an earlier version of this entry called for: the candidate filter at
+   `SecurityAssetPackRegistry.cs:289` is deliberate, and dropping it rejects the shipped registry —
+   `DirectLoan` legitimately belongs to two built-in packs and
+   `AssetPackRegistry_ValidateAll_ShouldAcceptBuiltInPacks` requires that registry to stay valid.
+   Treating incumbent overlap as an error needs a uniqueness or routing contract that does not exist
+   (`FindByAssetClass` returns a collection by design), and that decision is not part of this item.
+6. **Key the projection fan-out by asset class (N6).** Unchanged in importance, and cheaper than
+   previously filed: the writers already carry the key.
+7. **Retire the remaining classify-from-prose sites and the swallowed cancellations (P4).** Three
+   ingests still classify mutation failures by exception message — Edgar on both create and amend.
+   Two of them swallow cancellation in that same catch; Edgar instead swallows it in three separate
+   broad catches (`:250-254`, `:286-290`, `:627-641`). Edgar's create loop is the reference
+   implementation for the rethrow, and the typed outcome must cover both mutations — and must not
+   report a stream-version conflict as a duplicate without a content-equivalence check, since the
+   conflict proves only that the stream exists. Write the
+   regression criteria per site, not once: import and the Polygon CLI move a row between `skipped` and
+   `failed`, while Edgar has no failed counter and instead gains an error entry and a non-zero exit —
+   a test asserting an Edgar count change would assert something that cannot happen. The cancellation
+   half reaches beyond those three ingests: `BackfillAllAsync` swallows it at **two** catches — the
+   initial search (`TradingParametersBackfillService.cs:62-69`) and the per-item catch (`:98-108`,
+   silent for cancellation on *any* item because the loop `break`s rather than throwing) — and
+   Polygon's `FetchPageAsync` (`:129-148`) swallows it *before* the create loop, so the ingest imports
+   a truncated page set and reports success. Fixing only the create call sites leaves both commands
+   completing normally after cancellation. Keep separate from these the WPF backfill command passing
+   **no token at all** (`SecurityMasterViewModel.cs:2186-2193`): there cancellation cannot be requested
+   rather than being dropped, so it is a wiring fix with a wiring test, not a third catch to find.
+8. **Relational projections — or one generic indexed seam — for the private/alternative classes.**
+   Unchanged from every prior pass, and unchanged in importance: `DirectLoan`, `StructuredCredit`,
+   `PrivateFundInterest`, `RealEstateHolding` and `CommitmentGuarantee` remain the classes fund
+   operations queries most and the ones with no indexed path.
+
+N5 stays open and stays low-urgency: the honest resolutions are still either promoting the contract
+fields to structured per-pack values or restating the type as descriptive metadata, and either is
+worth more than leaving it to read as a gate that cannot fail.
+
+---
+
+## Scheduled institutional-requirements pass — 2026-08-31
+
+Re-read against `eaa83032`. The verdict above stands unchanged. The three findings the 2026-08-26
+resolution pass left open were re-checked against current source and **all three remain open**, as do
+the three long-standing deferred items; four findings below are new to this document. No code was
+changed by this pass and no tests were run — every claim is a source read.
+
+The four new items share one root shape, and it is the shape the last pass began dismantling:
+**a per-asset-class fact is declared in one authoritative table and then re-declared, incompletely,
+by a consumer that nothing locks to it.** The last pass retired classification-by-prose in the
+accounting adapter and the coverage read model. The same pattern survives in the cash-flow resolver
+(A1), in identifier conflict detection (A2), in the readiness catalog (A3), and in the custom-profile
+field definition (A4).
+
+### Re-verified as still open
+
+| # | Item | Evidence at `eaa83032` |
+| --- | --- | --- |
+| N4 | `ValidateAll()` cannot fire its own overlap rule | `ValidateAll()` still calls `ValidateCandidateSet([])` (`SecurityAssetPackRegistry.cs:258-261`) and the overlap check still filters to groups containing a candidate pack (`:289`), so `candidateIds` is empty and no group survives. `DirectLoan` is still claimed by both `private-loan-credit` (`:198`) and `mortgage-facility-intercompany` (`:223`). |
+| N5 | Per-pack contract schema is one shared prose object | All ten packs still receive the same three static instances — `ContractSchema` (`:37`), `StandardValidationRules` (`:117`), `StandardReportingTaxonomy` (`:153`) — through `Pack(...)` (`:401, 413, 414`), and `ValidateDescriptor` still checks them only for non-emptiness. `InferLifecycleEvent` (`:482-518`) still derives lifecycle routing by substring-matching English journal-template names. |
+| N6 | Projection fan-out writes to every asset class on every upsert | `ProjectionWriters` is still fanned out unconditionally per record; the registry shape is right, the per-record amplification is unchanged. |
+| — | Relational projections for private/alternative classes | Still 11 projected classes (`PostgresSecurityMasterStore.ProjectedAssetClasses`) against 26 catalog classes, with the 15-class gap enumerated and partition-locked in `SecurityAssetTermsSchemaTests`. Governed, not drifting. **(Superseded 2026-09-02: `DirectLoan` and `StructuredCredit` are now projected — 13 of 26 — and the four remaining Asset Operations classes moved from the declared-gap list to a shrink-only `OpsCapableProjectionBacklog`.)** |
+| — | Valid-time term history | `securities` still holds one current row per security; `effective_to` is written only by `DeactivateProjectionAsync` (`PostgresSecurityMasterStore.cs:100-117`), so it is a lifecycle window, not a version key. Term as-of remains per-security event replay via `RebuildAsOfAsync` — correct for one security, with no bulk point-in-time universe read behind it. |
+| — | Codec generation from `SecurityAssetTermsSchema` | Both arms still hand-written behind `SecurityAssetTermsSchemaRoundTripTests`. |
+
+### A1 — The cash-flow resolver cannot read `DirectLoan`'s coupon, so private credit projects at zero interest
+
+The highest-severity item this pass, and a live economic defect rather than an extensibility risk.
+
+`SecurityAssetTermsSchema` declares `DirectLoan`'s coupon as **`currentCouponRate`**
+(`SecurityAssetTermsSchema.cs:249`). The F# serializer writes that key
+(`Interop.SecurityMaster.fs:304`) and the C# deserializer reads it
+(`SecurityMasterMapping.cs:336`), so the codec round-trip guard passes and the term is persisted
+faithfully. But `StructuredCashFlowTermsResolver` — the single place that turns stored term JSON into
+projectable economics — keeps its own private alias table, and its `CouponRateAliases` are
+`["fixedCouponRate", "couponRate", "coupon", "annualRate"]` (`StructuredCashFlowTermsResolver.cs:19`).
+`currentCouponRate` is not among them, and `DirectLoan` emits no other coupon key.
+
+So `StructuredCashFlowTerms.CouponRate` resolves `null` for every direct loan, and
+`SecurityMasterCashFlowService.BuildCalculatedProjection` computes
+`annualRate = NormalizeAnnualRate(terms.CouponRate ?? 0m)` (`:314`). Every `CalculatedBullet` /
+`CalculatedSinker` projection for a `DirectLoan` therefore returns a principal-only schedule with
+**zero interest in every period**, and `BuildLedgerPostingsAsync` (`:240-263`) feeds that same
+projection to `SecurityMasterLedgerBridge.BuildCouponAccrualPostings`. The path is asset-class
+agnostic — nothing gates it to fixed income — so there is no fail-closed stop: the projection is not
+blocked as incomplete, it is simply arithmetically zero. `DirectLoan` carries
+`SupportsCashflowScheduleByDefault: true` and `AssetOperationsCapabilitySet.DirectLending`
+(including `ProjectedCashFlows` and `LedgerProjection`), so this is a class the system advertises as
+cash-flow capable.
+
+The floating side is missing for the same reason: `DirectLoan`'s `referenceIndex` and `spreadBps`
+(`SecurityAssetTermsSchema.cs:247-248`) have **no top-level resolution** at all. The resolver reads
+`LegIndexAliases` / `LegSpreadBpsAliases` only *inside* a leg row (`:53-54`), and `DirectLoan` has no
+`legs` array — so a SOFR + 350bp loan resolves neither a rate nor a spread.
+
+**Why the tests did not catch it.** `SecurityMasterCashFlowServiceTests` has two cases explicitly
+labelled "DirectLoan-style" / "DirectLoan-shaped"
+(`:154-198`, `:291-324`) — and both build their payload with `couponRate = 6m`, a key `DirectLoan`
+never writes. The tests assert the *principal-basis* reasoning those comments are about, which is
+correct and well-covered; they document DirectLoan intent while exercising a Bond-shaped document, so
+the interest gap sits directly underneath a passing test that names the class.
+
+**Root cause, and why it is the same shape as N1/N2.** `SecurityAssetTermField` already carries an
+`Aliases` list — the schema is a declared alias vocabulary. The resolver's twenty private alias arrays
+are a second one, hand-maintained, covering vendor spellings the schema does not know and *missing*
+canonical keys the schema does. Nothing locks them together, and the round-trip guard cannot see the
+gap because the resolver is not a codec surface. The immediate fix is adding `currentCouponRate`
+resolution — and that alone does not close even the fixed-rate case, though an earlier version of
+this item said it did.
+
+**`DirectLoan` has no resolvable principal basis, so the rate is applied to a synthetic balance.**
+`PrincipalFaceAliases` is `["par", "originalFace", "notional", "principal", "principalAmount"]`
+(`StructuredCashFlowTermsResolver.cs:17`), and `DirectLoan`'s schema declares none of them — its
+keys are `borrower`, `maturity`, `referenceIndex`, `spreadBps`, `currentCouponRate`,
+`resetFrequency`, `pricingSource`, `covenants` and `principalSchedule`
+(`SecurityAssetTermsSchema.cs:243-253`). `principalSchedule` is required but is an array and is not
+an alias for the scalar. So `PrincipalFace` resolves null for *every* `DirectLoan`, and
+`var principalBasis = terms.PrincipalFace is > 0m ? terms.PrincipalFace.Value : 100m`
+(`SecurityMasterCashFlowService.cs:240`) falls back to **100**, with `outstanding` computed from it
+(`:286`). A million-dollar loan given a correct coupon would then project — and, through
+`BuildLedgerPostingsAsync`, post — interest and maturity principal as a $100 loan. Fixing the rate
+without fixing the basis produces a plausible number on the wrong notional, which is worse than the
+zero it replaces. A1's immediate fix therefore has two halves: resolve the coupon **and** define a
+resolvable outstanding-principal basis for `DirectLoan` — whether by adding a scalar term, by
+deriving the basis from the required `principalSchedule`, or both.
+
+**It does not close the floating case, and an earlier version of this item implied it did by
+prescribing "top-level index/spread resolution".** There is nowhere for a resolved index and spread
+to land, and nothing that would consume them: `StructuredCashFlowTerms` declares `CouponRate` and
+inflation members but no top-level `referenceIndex` or `spreadBps` (`:14, :21-23`), and the
+single-stream path computes
+`var annualRate = NormalizeAnnualRate(terms.CouponRate ?? 0m) + ScenarioRateShift(scenario)`
+(`SecurityMasterCashFlowService.cs:314`) — solely from `CouponRate`, defaulting to **zero**. So a
+floating `DirectLoan` supplying `referenceIndex` and `spreadBps` but omitting the optional
+`currentCouponRate` still projects zero interest **on the base scenario** after that fix — and
+something worse on the others. `ScenarioRateShift` adds `0.01m`/`0.02m`/`0.03m` for
+`Up100`/`Up200`/`Up300` and `0.03m` for `Stress` (`:677-688`), so with no coupon those scenarios
+project interest at a bare 1–3% that is not the instrument's rate at all — a plausible-looking number
+rather than an obviously missing one. The downward scenarios go negative and are clamped back to zero
+by `if (annualRate < 0m)`. Only `_ => 0m`, the base case — the one `BuildLedgerPostingsAsync` uses —
+is the clean zero. An earlier version of this paragraph asserted zero interest for every calculated
+projection, which the `+ ScenarioRateShift(scenario)` term in the very line it quoted rules out; each
+of the three behaviours needs stating and testing separately. Unlike the leg path, there is also
+no current index fixing to combine with the spread. Closing the floating case requires deciding
+*where the all-in rate comes from* — an ingest-supplied all-in `currentCouponRate`, or a current
+fixing source the projection can combine with the spread — and adding the members and the rate
+derivation to match. That is a design decision, not a resolver-alias addition.
+
+The generalizing fix needs care, and the obvious statement of it is wrong. A parity guard asserting
+that **every** `Required`/`Opt` key in `SecurityAssetTermsSchema` is reachable by a resolver alias
+family would fail the shipped schema even after the coupon fix: `DirectLoan` declares `borrower`
+(`Req`), `covenants` (`Req`) and `pricingSource` (`Opt`)
+(`SecurityAssetTermsSchema.cs:245-252`), and `StructuredCashFlowTerms` deliberately has no
+counterparts because they are not projection economics. Stated literally the guard would either fail
+permanently on the shipped registry or force unrelated terms into the cash-flow resolver. The guard
+has to run over a **defined cash-flow-relevant subset** — an explicit schema-key-to-resolver mapping,
+maintained alongside the resolver — not over every declared key.
+
+### A2 — Identifier ambiguity is detected on raw values and resolved on normalized values
+
+Resolution and detection disagree on what "the same identifier" means, and the disagreement runs the
+wrong way: the duplicates resolution silently collapses are exactly the ones detection cannot see.
+
+- **Resolution normalizes.** `ResolveSecurityIdAsync` computes
+  `SecurityIdentifierNormalizer.NormalizeValue(kind, value)` and matches
+  `normalized_identifier_value` / `normalized_alias_value` / `normalized_primary_identifier_value`
+  (`PostgresSecurityMasterStore.cs:629-694`). For ISIN, CUSIP, SEDOL, FIGI, OCC, LEI, WKN and CIK,
+  normalization strips every non-alphanumeric character and uppercases.
+- **Detection does not.** `SecurityMasterConflictDetection` keys its ambiguity map on
+  `$"{id.Kind}|{id.Value}"` — the **raw** stored value — in both `DetectAll` (`:33`) and
+  `DetectForProjection` (`:107, 115`). `SecurityIdentifierDto` carries `NormalizedValue`; neither
+  method reads it.
+- **The database does not either.** `ux_securities_primary_identifier` is unique on
+  `(primary_identifier_kind, primary_identifier_value)` — the raw pair (migration 001). Migration 016
+  added `ix_securities_normalized_primary_identifier` as a **non-unique** index.
+
+So two securities whose ISINs differ only in punctuation or spacing (`US0378331005` vs
+`US-0378331005`) pass the unique constraint, raise no `IdentifierAmbiguity` conflict, and are both
+matched by the same resolution query — which returns whichever row wins `order by i.is_primary desc
+limit 1`, with no tiebreaker between two non-primary or two primary rows. That is a silent
+wrong-security resolution, and cross-vendor formatting variance is precisely where it arises: the
+golden-record conflict surface, which exists to catch this, is blind to it by construction.
+
+The mechanism is certain from source. What is not established without a query is how many such pairs
+exist in a live universe today, and the sizing query has to carry the same provider rule as the
+remedy — an earlier version of it did not. Grouping on `(identifier_kind,
+normalized_identifier_value)` alone counts two providers' identical `ProviderSymbol` text as a
+collision, when provider is part of identity for that kind (`ValidateCrossRecordDuplicates:441-449`)
+and the resolution query filters on `normalized_provider` (`PostgresSecurityMasterStore.cs:629-650`).
+That inflates the population with legitimate distinct identities, on the one kind most likely to
+generate them, and the inflated number is what the remedy choice would be made from. Group provider
+symbols by normalized provider as well:
+
+```sql
+group by identifier_kind, normalized_identifier_value,
+         case when identifier_kind = 'ProviderSymbol' then normalized_provider end
+having count(distinct security_id) > 1
+```
+
+— or run the simpler form restricted to the provider-independent kinds. Either way it is the cheapest
+way to size the problem.
+
+**The remedy is normalized detection keys. The unique index is not a second option that reconciles
+A2, and successive versions of this item wrongly presented the two as a choice.** A unique index on
+`securities.(primary_identifier_kind, normalized_primary_identifier_value)` constrains **one table**,
+and it is not the table resolution consults first. `security_identifiers` has primary key
+`(security_id, identifier_kind, identifier_value, valid_from)` — scoped **per security**
+(`001_security_master.sql:45-57`), so two securities may hold the same identifier value freely — and
+migration 016 adds `ix_security_identifiers_normalized_lookup` as a plain `create index`, not a
+unique one (`:39`). So when security A carries a normalized value as its *primary* identifier and
+security B carries the same value as a *non-primary* `security_identifiers` row, the proposed index
+cannot see B's claim, both rows insert, and `ResolveSecurityIdAsync` — which tries the identifier
+table before the denormalized `securities` columns — can still return either. The ambiguity the index
+was meant to prevent survives it.
+
+The index therefore stands only as **defense in depth on the primary-identifier column**, alongside
+normalized detection rather than instead of it. Making it actually fail closed would mean extending
+uniqueness across *active identifier claims* — with the provider rule for `ProviderSymbol` and the
+validity-window rules both applied — which is a materially larger change than a single index, and one
+that still carries the atomic-creation precondition below.
+
+**Those two options are not interchangeable, and the index one carries a precondition this document
+establishes elsewhere.** `ExecuteCreateAsync` appends the event stream before upserting the projection
+(`SecurityMasterService.cs:323-324`, separate awaits, no shared transaction), so on a normalized
+collision a unique normalized index rejects at the projection insert *after* the stream is committed
+— the orphaned-stream partial write described under P5 and at *What happens next is not a silent
+second golden record*. Choosing the index therefore means also making the append and projection
+insert atomic, or detecting and compensating the committed stream, and landing that with the
+constraint; see P5, which states the same requirement. The detection-key option carries no such
+precondition, which is part of what distinguishes them.
+
+### A3 — Operational readiness models 13 of 26 asset classes, with no parity guard and no "unmodeled" state
+
+`SecurityMasterOperationalReadinessService.Specifications` declares thirteen entries — `Equity`,
+`Option`, `Future`, `FxSpot`, `Bond`, `DirectLoan`, `StructuredCredit`, `PrivateFundInterest`,
+`PrivateCompanyEquity`, `RealEstateHolding`, `CommitmentGuarantee`, `CustomAsset`, `OtherSecurity`
+(`:43-173`). Thirteen catalog classes have none: `Deposit`, `MoneyMarketFund`,
+`CertificateOfDeposit`, `CommercialPaper`, `TreasuryBill`, `Repo`, `CashSweep`, `Swap`, `Commodity`,
+`CryptoCurrency`, `Cfd`, `Warrant`, `InvestmentFund` — which is most of the cash-and-equivalents
+family that fund operations closes on every period.
+
+`GetReadinessAsync` projects `Specifications` directly (`:254-259`). A class with no spec produces no
+row, so the surface does not report it as unmodeled — it reports nothing. Two consequences follow
+from that, both operator-facing:
+
+- The `multi-asset-classes` metric renders "Asset classes: 13 / covered" (`:266`) as though thirteen
+  were the universe. Its three companion counters — ready, review required, blocked — are all
+  computed over the same thirteen rows, so the readiness summary is silently scoped to half the
+  catalog.
+- A `request.AssetClass` filter naming, say, `Deposit` returns zero rows and a summary of
+  0 blocked / 0 review / 0 ready. "Not modeled" and "nothing to do" are indistinguishable to the
+  caller, and the more conservative reading is not the one the UI shows.
+
+This is the same defect class as V1 and N3, one registry later: a table governing per-asset-class
+behaviour with no catalog parity guard. Five such guards now exist (F# registry, terms schema,
+projections, validators, packs); this is the sixth, and the readiness catalog is the one whose
+absence is visible to operators rather than only to the next contributor. The guard should assert
+`Specifications ∪ IntentionallyUnspecifiedClasses = catalog` **and
+`Specifications ∩ IntentionallyUnspecifiedClasses = ∅`** — so a deliberate gap stays declarable, and
+an accidental one fails at commit time.
+
+Both halves are load-bearing, and an earlier version of this entry stated only the union while
+claiming it "mirrors the projection partition". A partition is disjoint as well as exhaustive, and
+exhaustiveness alone does not give the property this guard exists for: a class listed in *both* sets
+passes, and then an accidental removal of its specification also passes, because the stale waiver
+keeps supplying catalog coverage. That recreates precisely the silent omission A3 is meant to
+prevent, with a green guard over it.
+
+**The guard is necessary and not sufficient, and an earlier version of this entry offered it as the
+whole remedy.** Adding the thirteen omitted classes to `IntentionallyUnspecifiedClasses` satisfies
+both set conditions while changing nothing an operator sees: `GetReadinessAsync` projects from
+`Specifications` alone (`:255-256`), so a `request.AssetClass` filter naming `Deposit` still returns
+zero rows, and the unfiltered summary still counts thirteen classes as the universe. An implementer
+could close the guard and leave both defects this finding actually reports — the missing "not
+modeled" state and the understated readiness total — untouched. The remedy therefore has two parts:
+materialize intentionally-unspecified catalog classes as an explicit **unmodeled** (or blocked)
+readiness state rather than as absent rows, and base the summary totals on the **catalog** rather
+than on `Specifications`. The parity guard then keeps the declared gap honest instead of standing in
+for the fix.
+
+### A4 — The custom-profile extension point declares projected and searchable fields and honours neither
+
+`SecurityAssetProfileFieldDefinitionDto` carries `IsProjected` and `IsSearchable`
+(`SecurityAssetProfiles.cs:49-50`) — the two properties an operator would read as "this profile field
+is queryable". Across `src/` and `tests/`, neither flag reaches a projection writer, an index, or a
+search predicate. Every consumer counts or displays them:
+
+- `SecurityAssetProfileGovernanceService.cs:511, 525` counts them into the promotion-readiness score;
+- `SettingsViewModel.AssetProfiles.cs:898` (WPF) and
+  `settings-screen.operations-control.ts:105, 129` (browser) render the counts;
+- the remaining hits are DTO declarations, fixtures, and tests.
+
+There is nothing behind them. Profile fields live inside the `asset_specific_terms` jsonb document,
+which carries no GIN index; the full-text `search_vector` covers six fixed columns —
+`display_name`, `primary_identifier_value`, `asset_class`, `issuer_name`, `exchange_code`, `currency`
+(migration 002) — and no profile content. `CustomAsset` is one of the fifteen classes with no
+relational projection.
+
+**A query path does exist, and an earlier version of this item wrongly said none did.**
+`SecurityMasterQueryService.SearchAsync` accepts `ProfileFieldKey` and `ProfileFieldValue`
+(`:488-489`), filters loaded projections by key and by value (`:528-542`), and its profile-aware text
+matching scans every profile field. So a profile field *can* be queried — but by loading projections
+and scanning them in memory, over the full universe, with no index behind it.
+
+That relocates the defect rather than removing it. The flags govern nothing: `IsSearchable` is read
+at exactly one place in the application layer, `SecurityAssetProfileGovernanceService.cs:525`, and
+only to *count* fields for the readiness score. Nothing consults it when serving a search. So a field
+an operator marks **non**-searchable is searched anyway, a field marked searchable gets no index, and
+`IsProjected` selects nothing for projection. The designated extension point for new asset classes —
+governed profiles, which the promotion pipeline is built to grow into first-class packages — can
+define a field, mark it projected and searchable, approve it through the full governance lifecycle,
+and have both flags mean nothing at query time.
+
+The remedy is therefore to **enforce the flags over the path that already exists and give it an
+index**, not to build a second query capability beside it. It is worth either building the generic
+indexed seam the flags imply (a
+`security_profile_field_projection` keyed `(security_id, profile_id, field_key)` populated from
+declared-projected fields, plus profile content in the search vector for declared-searchable ones),
+or restating the two properties as promotion-readiness *intent* so no profile author reads them as a
+capability.
+
+**It is not, however, an answer to the standing "relational projections for the private/alternative
+classes" item, and an earlier version of this entry claimed it was** — on the premise that those
+classes are precisely the profile-backed ones. They are not. `SupportsProfileBackedTerms: true`
+appears at seven catalog entries (`SecurityAssetClassCatalog.cs:216, 231, 275, 290, 304, 317, 330`);
+`DirectLoan` (`:246-259`) is not among them, and `DirectLoan` is squarely inside the standing
+projection gap. A profile-field projection is also keyed on the `profileFields` envelope, so even a
+profile-capable class carrying ordinary typed terms would fall outside it. Indexing profile fields
+therefore leaves exactly the records the standing item is about without indexed class-specific
+fields. Keep the two remedies separate: this one closes the flags-mean-nothing defect; the standing
+item needs projections that cover every record shape.
+
+### Smaller notes, not filed as findings
+
+- **`ISecurityMasterQueryService` is declared twice, identically.**
+  `Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService` and
+  `Meridian.Application.SecurityMaster.ISecurityMasterQueryService` declare the same eleven members;
+  `SecurityMasterQueryService` and `NullSecurityMasterQueryService` implement both, both are
+  registered in DI (`StorageFeatureRegistration.cs:299, 404-405`), and roughly ten call sites carry
+  `using` aliases or fully-qualified names to disambiguate. Adding a query member means editing two
+  interfaces that nothing locks together.
+- **`StructuredCashFlowSourceKind` names vendors in a closed enum.** `MIAC` and `MoodysAnalytics` are
+  enum members persisted as values (`SecurityMasterCashFlow.cs:12-13`), so onboarding a cash-flow
+  vendor is a contract change: the enum member plus the provider mapping. It is **not** a stored-value
+  migration, and an earlier version of this bullet said it was. `source_kind` is unconstrained `text
+  not null` with no check constraint (migration `018_security_master_cashflow_sources.sql:8`), the
+  store writes `SourceKind.ToString()`, and reads parse unknown strings through
+  `SecurityMasterEnumReads.ParseOrFallback(..., StructuredCashFlowSourceKind.Unknown)`
+  (`PostgresSecurityMasterCashFlowStore.cs:31`) — so a new value persists and reads back without
+  touching the database. Migration 029 is not evidence here either: it addressed a wide-table
+  corporate-action payload, a different problem. Overstating the cost weakened the actual
+  recommendation, which stands on its own — a provider-id string resolved against the registered
+  `IStructuredCashFlowProvider` set removes the contract change and the closed vocabulary. The
+  `Calculated*` and `ClientProvided` members are genuine modes and would stay.
+- **Normalization rules are stated twice.** The kind lists that decide alphanumeric-stripping live in
+  `SecurityIdentifierNormalizer.NormalizeValue` (`:25-32`) and again as SQL `case` arms in migration
+  016. The migration is one-time so the two cannot diverge retroactively, but a new identifier kind
+  needing stripping has no test tying the two statements together.
+
+### Priorities from this pass
+
+Ordered by institutional risk per unit of work, read as a delta on the standing lists above:
+
+1. **Teach the cash-flow resolver `DirectLoan`'s coupon and its principal basis, then guard the alias
+   vocabularies (A1).** Adding `currentCouponRate` is a few lines but does **not** on its own close
+   even the fixed-rate case: no `PrincipalFaceAliases` key appears in `DirectLoan`'s schema, so
+   `principalBasis` falls back to `100m` (`SecurityMasterCashFlowService.cs:240`) and a
+   million-dollar loan projects and posts as a $100 one. Define a resolvable outstanding-principal
+   basis alongside the coupon.
+   The **floating** case is not a resolver change: `StructuredCashFlowTerms` has no top-level
+   `referenceIndex`/`spreadBps` members and the single-stream path takes its rate solely from
+   `terms.CouponRate`, defaulting to zero (`SecurityMasterCashFlowService.cs:314`), so resolving
+   those keys alone still projects zero interest on the base scenario, and a fabricated 1–3% on
+   `Up100`/`Up200`/`Up300`/`Stress` via `ScenarioRateShift`. Decide where the all-in rate or current fixing
+   comes from, and add the members and rate derivation with it. The
+   durable half is a parity guard tying resolver aliases to `SecurityAssetTermsSchema` for the
+   cash-flow-capable classes — scoped to an explicit **cash-flow-relevant subset** of schema keys, not
+   every `Required`/`Opt` key, which would fail the shipped `DirectLoan` schema on `borrower`,
+   `covenants` and `pricingSource`. Fix the two "DirectLoan-shaped" tests to use the keys `DirectLoan`
+   actually emits at the same time — as written they would have caught this and did not.
+2. **Reconcile identifier detection with identifier resolution (A2).** Run the duplicate query first —
+   **scoped by provider for `ProviderSymbol`**, or it counts legitimate two-provider identities as
+   collisions and inflates the number the remedy is chosen from —
+   to size it. The current split is the one state that guarantees the conflict
+   surface cannot see the ambiguity the resolver acts on. **The remedy is normalized detection keys;
+   the unique index is not an alternative and earlier versions of this entry wrongly offered a
+   choice.** That index constrains `securities` alone, while `security_identifiers` is keyed per
+   security (`001_security_master.sql:45-57`) and carries only a non-unique normalized index
+   (`016:39`) — so a value held as one security's *primary* and another's *non-primary* row passes it,
+   and resolution can still return either. Treat it as defense in depth on the primary column only.
+   Detection keys themselves reach only the identifier half — they are **not** self-contained, and an
+   earlier version of this entry said they were. `SecurityMasterConflictDetection` iterates
+   `Identifiers` only (`:31, :105, :114`) and never reads aliases, while `ResolveSecurityIdAsync`
+   also searches enabled, validity-windowed aliases and returns an arbitrary claimant through an
+   unordered `limit 1` (`PostgresSecurityMasterStore.cs:655-663`). Normalizing the detection keys
+   alone would therefore declare detection reconciled with resolution while leaving ambiguous aliases
+   entirely undetected — P1's alias gap, reappearing as a false closure. Carry alias values,
+   providers, enabled state and overlapping validity windows into this remediation.
+   **The identifier half needs a kind-specific provider rule too**, not just the alias half: detection
+   keys on `$"{id.Kind}|{id.Value}"` with no provider (`:33`), while the identifier resolution query
+   filters `normalized_provider` (`PostgresSecurityMasterStore.cs:629-650`) and
+   `ValidateCrossRecordDuplicates` includes provider **only** for `ProviderSymbol` (`:441-449`). So
+   two securities sharing `ProviderSymbol` text under different providers would be reported as
+   ambiguous by detection and correctly separated by resolution — a *false* ambiguity, the mirror of
+   the alias gap above. Normalizing values and fixing aliases without that rule leaves A2 unreconciled
+   in the opposite direction. Meanwhile the unique normalized index inherits P5's
+   precondition — `ExecuteCreateAsync` appends the stream before the projection upsert
+   (`SecurityMasterService.cs:323-324`), so the index must land together with atomic
+   append-plus-projection creation or it converts normalized collisions into orphaned event streams.
+3. **Add the sixth parity guard, over the readiness catalog (A3).** Same shape, same cost, and lower
+   risk than the five that already exist — with the difference that this registry's gap is visible to
+   operators as an understated readiness summary rather than only to the next contributor. Assert the
+   two sets are **disjoint as well as exhaustive**; union alone lets a stale waiver mask a later
+   accidental removal of a specification, which is the omission the guard exists to catch. The guard
+   alone does **not** close the finding: `GetReadinessAsync` projects from `Specifications`
+   (`:255-256`), so also materialize unspecified classes as an explicit unmodeled state and base the
+   summary totals on the catalog — otherwise the guard goes green while `Deposit` still returns no
+   row and the total still reads thirteen.
+4. **Decide what `IsProjected` / `IsSearchable` mean (A4).** Enforce the flags over the profile-field
+   search path that **already exists** (`SecurityMasterQueryService.SearchAsync:488-489, 528-542`) and
+   give it an index, or demote the flags to intent — do not build a second query capability beside it.
+   Today the path is an unindexed full-universe scan that ignores both flags, so a field marked
+   non-searchable is searched anyway. Keep this separate from the standing
+   private/alternative-projection item: `DirectLoan` sits in that gap and is **not** profile-backed
+   (`SecurityAssetClassCatalog.cs:246-259`, against the seven entries that do set
+   `SupportsProfileBackedTerms`), so a profile-field projection does not cover it.
+5. **N4 and N5, together.** Both are `SecurityAssetPackRegistry`, both are unchanged across two
+   passes, and both are the same question: is this type a gate or documentation? Answering it once
+   closes both and stops the registry accumulating further weight either way.
+   **Not by making `ValidateAll()` fire the overlap rule as written** — an earlier version of this
+   entry said that, resurrecting a remedy this document had already withdrawn. Firing it would mean
+   removing or bypassing the candidate filter (`SecurityAssetPackRegistry.cs:289`), and the filter is
+   deliberate: `DirectLoan` belongs to both `private-loan-credit` (`:198`) and
+   `mortgage-facility-intercompany` (`:222`), `FindByAssetClass` returns a collection by contract, and
+   `AssetPackRegistry_ValidateAll_ShouldAcceptBuiltInPacks` requires that registry to stay valid. The
+   symmetric rule would reject supported many-to-many coverage. Keep validation candidate-scoped,
+   make the incumbent allowances explicit, and extend only the planned-coverage check — alongside
+   promoting N5's prose members to checkable per-pack values, or restating the type as descriptive
+   metadata.
+
+*Deferred and unchanged in posture:* N6 projection fan-out amplification, relational projections for
+the private/alternative classes, valid-time term history, codec generation from
+`SecurityAssetTermsSchema`.
+
+---
+
+## Scheduled institutional-requirements pass — 2026-09-01
+
+Re-read against `5b901dda`. Since `eaa83032` (the 2026-08-31 baseline), two merges put Security
+Master code in front of this review: PR #2885 (`f316077b`) landed the desktop mutation gate P5
+specified, and PR #2882 landed a new corporate-action accounting lane — service, store partial,
+migration 031, and three workstation routes. This pass therefore had three jobs: verify the P5
+closure against the property the finding requires rather than the artefact the fix produced, retire
+the "not re-verified" debt the 2026-08-29 status section explicitly left on P4's cancellation half,
+and review the new accounting lane end to end. One new finding (B1) came out of the third job at
+the pass; review of the pass's pull request then filed six more from it (B2–B7, each dated in
+place). The
+2026-08-31 findings are untouched by the range — no commit between `eaa83032` and `5b901dda`
+touches any of their anchor files (`git log` over each path returns empty) — so A1–A4 re-verify as
+open without re-argument. No code was changed by this pass and no tests were run — every claim is a
+source read at `5b901dda`, except the two reads marked as post-pin where they occur: migration 032
+(#2855, in the noted-not-verified block below) and the open-lot backfill evidence pattern B5 cites
+as a model (#2910), both read at the merged head `41c8d08c`.
+
+### Claimed closures, independently re-verified
+
+**P5 — closed, on the enumerated surface and by the remedy the item specified.** The verification
+here was an enumeration of the desktop mutation *commands* from the code surface — a sweep of
+`src/Meridian.Wpf/` for callers of every mutating member of `ISecurityMasterService`, the backfill
+service, ticker-change, corporate-action, alias, and conflict services — not a re-read of the
+dialogs the fix touched, because P5's own history shows the dialog frame is how the backfill
+command was missed. The sweep finds exactly five in-process golden-record call sites, and all five
+are gated:
+
+| Path | Service call | Enablement | Enforcement before the call |
+| --- | --- | --- | --- |
+| Create | `SecurityMasterEditViewModel.cs:276` | none (dialog-open command is gated, `SecurityMasterViewModel.cs:1594`) | `IsMutationGranted()` at `:194`, failing closed on a null seam (`:118-120`) |
+| Amend | `SecurityMasterEditViewModel.cs:308` | as above | same check, same handler |
+| Deactivate | `SecurityMasterDeactivateViewModel.cs:84` | dialog-open gated (`:1596`) | `:60-61`, failing closed on a null seam |
+| Import | `SecurityMasterViewModel.Import.cs:69` | `:1602` — `!IsImporting && CanModifySecurityMaster` | `EnsureCanModifySecurityMaster()` at `Import.cs:20` |
+| Backfill | `SecurityMasterViewModel.cs:2237` | `:1601` — `CanModifySecurityMaster` | `:2229`, with a comment naming it the largest mutation on the lane |
+
+The gate itself is the remedy this item prescribed after retracting the `HasPermission` one.
+`DesktopMutationPermissionResolver` resolves a named anonymous role's grants from `RolePermissions`
+rather than from the session — its own comment quotes the reason this document gave — refuses when
+that role lacks `ModifySecurityMaster`, and fails **closed** on a named-but-unrecognised role
+because "a typo in a security setting must never grant everything"
+(`DesktopMutationPermissionResolver.cs:43-52, 103-112`). So the configuration P5's retracted remedy
+would have left open — `MDC_ANONYMOUS_ROLE=ReadOnly` on a credential-free host — now refuses
+desktop mutations exactly as the browser lane does. On a credential-backed host the session's own
+fail-closed check decides (`:77`). Composition is sound: the parent view model constructs one
+`DesktopMutationAuthorization` over the DI-singleton session (`SecurityMasterViewModel.cs:1583`,
+`App.xaml.cs:449`) and hands the same instance to all three child dialogs (`:1670, :1698, :1722`).
+
+Three boundaries of this closure, stated so it is not read wider than it is. First, a host with
+no session *and* no configured anonymous role — `MDC_ANONYMOUS_ROLE` unset — remains fail-open
+(`DesktopMutationPermissionResolver.cs:70-77`); the resolver's comment records this as the shell's
+unconfigured local-development posture, the same decision `HasPermission` and the read-scope
+resolver already make for that host. A null session alone is not the fail-open case (corrected
+2026-09-06, after review; the previous sentence's "a null session, or a credential-free host that
+names no anonymous role" read the null session as fail-open unconditionally): the configured-role
+resolution runs before the null-session branch (`:65` ahead of `:70`), so a session-less shell
+with a named role is evaluated against that role's permissions like any other host — granted when
+the role carries `ModifySecurityMaster` (`Admin` does, `RolePermissions.cs:19-40`), refused when it
+does not (`DesktopMutationPermissionResolverTests.cs:149-157` pins a null session under `ReadOnly`
+to a refusal; corrected 2026-09-06, after review, from "is refused like any other host", which
+described only the refusing case). That is a documented, consistent posture, not drift; the
+parity P5 required was for the credential-backed and named-anonymous-role hosts, and both are
+established. Second, closure is scoped to the Security Master lane: the same sweep found the P5
+shape alive one lane over — see the strategy-promotion note below. Third, closure is of
+authorization only: the deactivate dialog the gate now guards still attributes its write to the
+literal `"User"` (`SecurityMasterDeactivateViewModel.cs:80`, unchanged at the pin) — P1's wiring
+defect, whose 2026-08-28 analysis stands — and the backfill command the gate guards attributes
+every amendment it makes to `"TradingParametersBackfillService"` rather than to the operator who
+invoked it (`TradingParametersBackfillService.cs:209`); both are carried in the open table below
+and in priority 5 (added 2026-09-02, after review: the first version of this block named neither,
+the second only the first).
+
+Residue, neither of which reopens the item: `CanModifySecurityMaster` raises no change
+notification and no gated command's `NotifyCanExecuteChanged` is invoked on sign-in/out, so a
+button can render enabled after a permission change — the body checks re-evaluate live, so the
+write still refuses; and the backfill handler still invokes `BackfillAllAsync()` with no
+cancellation token (`SecurityMasterViewModel.cs:2237`, against
+`ITradingParametersBackfillService.cs:12` which accepts one) — P4's plumbing defect, unchanged,
+tracked there.
+
+**P4's cancellation half — fully re-verified; closed at the create loops and EDGAR's broad
+catches.** The 2026-08-29 status section listed this half as "not re-verified, and therefore
+unknown". Every site it named is now verified at `5b901dda` (the fixes landed before `eaa83032`;
+no commit in this range touches these files, so the verification is of standing code, not of new
+work) — but only the sites below are verified as *fixed*. An earlier version of this heading said
+"ingest side — closed", which sweeps in the Polygon page fetch: that path feeds the CLI ingest,
+and this same pass re-verifies it as open in the table below. Scoping a closure by lane rather
+than by the sites actually checked is the over-generalisation this document keeps catching; the
+closed set is exactly these:
+
+- All three create loops rethrow cancellation **before** classifying:
+  `SecurityMasterImportService.cs:183-188`, the Polygon CLI at
+  `SecurityMasterCommands.cs:279-283`, and EDGAR at `EdgarIngestOrchestrator.cs:120-125`, each a
+  `catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }` ahead of the
+  classifier clause — the exact ordering the item said the remediation had to have.
+- EDGAR's three other broad catches — the ones this item established as the real swallow sites —
+  now rethrow the same way: around `SaveFactsAsync` (`:252-256`), around the provider fetch/store
+  (`:293-295`), and in `CountOpenConflictsAsync` (`:648-652`), whose comment states this item's own
+  reasoning ("reporting zero conflicts on a cancelled run would understate the ingest's outcome").
+- `IsDuplicateException` and its substring pair are gone from `src/` entirely; classification is
+  `SecurityMasterIngestFailureClassifier` on exception type and SQLSTATE, and EDGAR's
+  `CreateOrAmendSecurityAsync` has no catch of its own (`:307-358`), so **both** create and amend
+  flow through the typed classifier — the coverage this item said a create-only outcome would miss.
+
+What this closure is **not**: it is not the whole of P4. The classifier still equates "stream
+exists" with "idempotent duplicate" — `IsAlreadyMastered` returns `conflict.IsAlreadyCreated` for a
+version-0 conflict and `true` for any PostgreSQL `23505`, with no payload comparison
+(`SecurityMasterIngestFailureClassifier.cs:38-51`) — so a create reusing a `SecurityId` with
+*different* terms is still reported `Skipped`; and the backfill and Polygon-fetch swallows are all
+still live, per the table below.
+
+### Re-verified as still open
+
+| # | Item | Evidence at `5b901dda` |
+| --- | --- | --- |
+| A1 | Cash-flow resolver cannot read `DirectLoan`'s coupon or principal basis | `StructuredCashFlowTermsResolver.cs`, `SecurityMasterCashFlowService.cs`, `SecurityAssetTermsSchema.cs` untouched in the range; `CouponRateAliases` still lacks `currentCouponRate` (`:19`), `principalBasis` still falls back to `100m` (`SecurityMasterCashFlowService.cs:240`). |
+| A2 | Detection on raw values, resolution on normalized | `SecurityMasterConflictDetection.cs` and `PostgresSecurityMasterStore.cs` untouched in the range; detection still keys `$"{id.Kind}\|{id.Value}"` (`:33, :107, :115`). |
+| A3 | Readiness models 13 of 26 classes, no parity guard, no unmodeled state | `SecurityMasterOperationalReadinessService.cs` untouched in the range. |
+| A4 | Profile `IsProjected`/`IsSearchable` govern nothing | `SecurityAssetProfiles.cs` and `SecurityMasterQueryService.cs` untouched in the range. |
+| N4/N5 | Pack registry overlap rule cannot fire; shared prose contract schema | `SecurityAssetPackRegistry.cs` untouched in the range. |
+| N6 | Projection fan-out per upsert | Store untouched in the range. |
+| P4 (semantic) | Classifier has no content-equivalence check | `SecurityMasterIngestFailureClassifier.cs:38-51`, re-read this pass — see the closure bullet above for why the cancellation fix does not close this. |
+| P4 (backfill) | Both swallow points, the `break`, and the success count | `TradingParametersBackfillService.cs` unchanged: the `SearchAsync` catch still swallows and `return`s (`:62-70`), the loop still `break`s on `IsCancellationRequested` (`:85-89`), and the per-item `catch (Exception)` (`:98-108`) still counts a swallowed cancellation as `failureCount++` — **including the one `BackfillTickerAsync` correctly rethrows at `:223-227`**, so the inner fix is defeated one frame up and the run completes with a spurious failure count. The inner method misreports the other way as well (added 2026-09-02, after review; the row's first version listed only the cancellation sites): `BackfillTickerAsync` returns normally on a non-success status (`:136-141`), an empty result (`:146-152`), and a missing security (`:194-198`), and its `HttpRequestException` (`:219-222`) and `Exception` (`:228-231`) catches log and return — every one of which the loop then counts as `successCount++` (`:101`). The missing-key return (`:118-122`) is not among them — `BackfillAllAsync` checks the same key and returns before its loop (`:51-55`) — but that early return is a false success of its own: the interface returns `Task` with no outcome (`ITradingParametersBackfillService.cs:12`), so the desktop handler reports "completed successfully" after a run that did nothing, as it does after any normal return (`SecurityMasterViewModel.cs:2237-2241`). (Corrected 2026-09-05, after review: the row's second version listed the missing key among the counted branches.) Against the production search every row takes the non-success branch, because the identifier handed to Polygon is kind-prefixed — B7, below. |
+| P4 (WPF plumbing) | Desktop backfill has nothing to cancel with | `OnBackfillTradingParams()` takes no token and passes none (`SecurityMasterViewModel.cs:2224, :2237`); the sibling import handler plumbs one (`Import.cs:18, :69`), so the pattern exists in the same file. |
+| P4 (Polygon fetch) | HTTP failure reads as end-of-pagination; cancellation reads as an empty or short fetch | `PolygonSecurityMasterIngestProvider.cs:128-149` unchanged: `catch (Exception)` returns `null` for a non-success status or any exception, `FetchAllAsync` `break`s on `null` (`:80-82`) and returns the pages fetched so far as a normal result — so an HTTP failure mid-pagination imports a partial set that the CLI reports as success. Cancellation takes a different path (corrected 2026-09-05, after review; earlier passes and this one's header said a cancelled ingest imports a partial set): the same catch swallows the `OperationCanceledException`, but `ExecutePolygonIngestAsync` re-checks the token before its first `CreateAsync` (`SecurityMasterCommands.cs:272`) and propagates cancellation having imported nothing — unless cancellation lands during the first page, when the empty result takes the "No tickers returned" branch (`:259-263`) and the run reports success with nothing fetched. The catch is wrong for both reasons; what it produces differs by cause. |
+| P1 (CLI) | `--imported-by` stamps an unvalidated caller string | `SecurityMasterCommands.cs:364-368` unchanged; neither validation against a known identity nor a documented trust exception has appeared. |
+| P1 (alias corrections) | The correcting actor is discarded | `PostgresSecurityMasterStore.Aliases.cs` untouched in the range; the conflict path still omits `created_by` (correctly, per P3b) and still records the corrector nowhere. |
+| P1 (remaining constraints) | `SourceSystem` from trusted metadata; valid-time gates; nested identifier windows; alias source-role decision | `SecurityMasterService.cs` untouched in the range; none of the four has landed. |
+| P1 (desktop deactivate) | Desktop deactivation attributes its write to a literal | `SecurityMasterDeactivateViewModel.cs` unchanged in the range: `UpdatedBy: "User"` (`:80`) on the request the new P5 gate (`:60-68`) authorizes — authorized now, still unattributed; the 2026-08-28 wiring analysis stands. Row added 2026-09-02, after review: the table's first version omitted it. |
+| P1 (desktop backfill) | Desktop-initiated backfill attributes up to 1,000 amendments to the service | `TradingParametersBackfillService.cs` unchanged in the range: every `AmendSecurityTermsRequest` carries `SourceSystem: "PolygonBackfill"` and `UpdatedBy: "TradingParametersBackfillService"` (`:208-209`); the only caller is the desktop command (`SecurityMasterViewModel.cs:2237`), through an interface with no actor parameter (`ITradingParametersBackfillService.cs:12`). `SourceSystem` is right by P1's rule; `UpdatedBy` names the automation where it should name the operator who pressed the button. Row added 2026-09-02, after review; not previously in this document's P1 inventory. |
+| P3b | Recorded-as-of's alias promise not narrowed | No alias versioning or event backing in the range, and no documented narrowing of the recorded-as-of promise for aliases. The interim state — frozen creation fields, overwritten `alias_value` — is exactly the one the item said must not be mistaken for closure. |
+| — | Deferred quartet | Relational projections for private/alternative classes, valid-time term history, codec generation, N6 amplification — posture unchanged. |
+
+**Landed after this pass's pinned read — noted, not verified.** Merging `main` at `fa43d2e4` into
+this branch brought #2855: migration 032 replaces the raw primary-identifier unique index with
+`ux_securities_normalized_primary_identifier` on `securities`, behind a fail-closed collision
+preflight that refuses to automate canonical-record selection
+(`032_security_master_normalized_primary_identifier_uniqueness.sql`). Read against A2 as filed,
+this is the **defense-in-depth half** A2 already scopes: it constrains the one table resolution
+consults last, leaves `security_identifiers`' per-security key and non-unique normalized index
+untouched, and lands **without** the atomic append-plus-projection precondition A2 and P4
+establish — `ExecuteCreateAsync` still appends the stream before the projection upsert
+(`SecurityMasterService.cs:323-324`, unchanged), so a normalized collision at create now commits
+the event stream, fails the projection insert with `23505`, and on the ingest paths is reported to
+the operator as `Skipped` by the classifier's unique-violation arm
+(`SecurityMasterIngestFailureClassifier.cs:45`) — the orphaned-stream outcome both items describe,
+now reachable through punctuation variants that previously inserted as a second golden record. The
+detection-key remedy and the alias half remain open as written. The `ProviderSymbol` provider rule
+is not merely open — 032 enforces the wrong rule for that kind (added 2026-09-05, after review; the
+first version of this note said only that the rule remained open): the index is unfiltered
+(`032_security_master_normalized_primary_identifier_uniqueness.sql:40-41`), `securities` carries no
+provider column to scope it with (`001_security_master.sql:31-32`), and this document's own
+statement of the constraint required it scoped to the canonical kinds precisely because two
+providers may legitimately issue the same symbol text for different securities (P1's rule above,
+and priority 3 of the 2026-08-31 pass). As landed, the second such security cannot be created —
+its stream is appended, its projection insert fails with `23505`, and ingest reports it `Skipped` —
+and the preflight (`:4-35`) blocks the migration outright on any install that already holds such a
+pair. The fix is the one already specified: a partial index over the canonical kinds, or a projected
+normalized provider column included for that kind. The canonical kinds are an allowlist, not an
+exclusion (corrected 2026-09-05, after review; the first version of this note wrote `where
+primary_identifier_kind <> 'ProviderSymbol'`): the set `SecurityValidationService` already uses
+for duplicate detection (`SecurityValidationService.cs:21-35` — Cusip, Isin, Sedol, Figi,
+OccOptionSymbol, InternalCode, PermId, Bbgid, Wkn, Valoren, PermTicker, Ric), so the predicate is
+`where primary_identifier_kind in (...)` over those twelve. The exclusion form would have kept
+Ticker, Lei, Cik, and Unknown under the unique rule (`SecurityIdentifiers.cs:8-39`), which the
+constraint never claimed for them — the over-constraint this note records, one kind narrower.
+The same allowlist has to filter the preflight (added 2026-09-05, after review; the previous
+version corrected only the index): the collision query groups every kind (`:18-24`) and raises
+before the old index is dropped (`:26-32`, `:37-38`), so a migration whose index is scoped to the
+canonical kinds but whose preflight is not still refuses to run on exactly the installs the
+scoping is for — those holding a legitimate repeated `ProviderSymbol`. The predicate goes in both
+places, or the fix does not deploy where it matters. And it cannot go into `032` itself for a
+database that has already applied it (added 2026-09-06, after review): the runner records every
+applied script with a checksum and, under its default drift policy, refuses to start when an
+applied script has changed (`PostgresMigrationRunner.cs:54-76`; `MigrationDriftPolicy.Throw`,
+`PostgresMigrationRunnerOptions.cs:78-81`). The fix therefore serves two populations. Databases
+that applied 032 need an append-only follow-up migration that drops the unfiltered index and
+creates the allowlisted one. Databases blocked inside 032's preflight never recorded it, so a
+follow-up never reaches them; they need a stated recovery — the repeated provider symbols
+resolved before 032 runs, or a runner-level way to supersede the blocked script — and the fix is
+not complete until it says which.
+This note records the merge so the index is not later read as A2's closure;
+verifying 032 against A2's requirements — and this over-constraint — is the next pass's work.
+
+### B1 — The accounting lane verifies what it loads and trusts what it is told
+
+The new corporate-action accounting lane (PR #2882) is, in most respects, the strongest evidence
+yet that this review's findings are being read: every route rebinds tenant, company, actor, and a
+server-derived capability object rather than trusting the body
+(`SecurityMasterEndpoints.CorporateActionOperations.cs:606-676`), permissions are granular per
+stage (`PrepareCorporateActionAccounting`, `ApproveCorporateActionAccounting`,
+`PostCorporateActionAccounting` — `:623, :647, :671`), the store runs serializable transactions
+with advisory locks, fingerprinted receipts and replay
+(`PostgresCorporateActionOperationsStore.Accounting.cs:81-137`) — over the case store, not over
+the spine append that posting performs first; B6 is the window between them (qualified
+2026-09-06, after review) —
+maker-checker independence is enforced in both the service
+(`CorporateActionCaseAccountingService.cs:135`) and the store (`:198`), cancellation
+hygiene is clean, and the crash-retry adoption path refuses a spine whose Approved stage carries a
+different approval id (`CorporateActionCaseAccountingService.cs:233-243`) — which is narrower than
+"posted outside the case's own approval", the phrase an earlier version of this sentence used: the
+id and the candidate fingerprint are all it compares, and B3 shows a route on which an outsider
+can supply both (corrected 2026-09-05, after review).
+
+Which is what makes the gap it does have worth stating precisely: **the lane dereferences and
+re-verifies the bindings it loads, and shape-checks the bindings it is told.** Within one method,
+`AttachProjectionAsync`:
+
+- The **spine** binding is real verification of the retained *candidate's* integrity and of the
+  snapshot's stage — and of nothing else about it. The snapshot is loaded at the exact expected
+  version, required to be Drafted with a retained candidate and no posted impact, and the
+  candidate's canonical fingerprint is **recomputed** and compared
+  (`CorporateActionCaseAccountingService.cs:286-318`). That is the only fingerprint it recomputes
+  (added 2026-09-05, after review; an earlier version said "the snapshot's integrity"): the
+  record's own `CanonicalFingerprint` comes back from the store and is discarded
+  (`IAssetAccountingEventProjectionStore.cs:12-14`), `AssetAccountingEventSpineValidator` is never
+  run there, so the candidate *result's* fingerprint (`AssetAccountingEventDtos.cs:636-641`) and
+  the lot mutation's (`:643-647`) go unchecked by the resolver — and `BuildProjectionBinding` then
+  takes the result's totals and selected rule on trust
+  (`CorporateActionCaseAccountingService.cs:341-396`). That is a layering gap, not a live
+  corruption path (corrected 2026-09-05, after review; the previous version said a tampered result
+  "attaches and approves as balanced and policy-covered"):
+  the production store runs the spine validator — candidate, result, and lot fingerprints against
+  their payloads (`AssetAccountingEventDtos.cs:629-648`) — on every append
+  (`IAssetAccountingEventProjectionStore.cs:49-60`), and recomputes the record's fingerprint over
+  the stored payload on every read, throwing on mismatch
+  (`PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs:310-320`), so an inconsistent
+  result cannot be appended and an altered one cannot be loaded. What the resolver leaves to the
+  store is a guarantee the store interface does not state — the record type carries the
+  fingerprint as data (`IAssetAccountingEventProjectionStore.cs:12-14`) and a store that skipped
+  the recompute would satisfy it — and that is the defect's actual size. What is not checked is
+  what the snapshot *is*: neither the resolver
+  nor `BuildProjectionBinding` (`:320-409`)
+  nor the posting-time re-check (`ValidateSpineStillDrafted`, `:437-451`) reads `spine.EventKind`
+  (the DTO carries it, `AssetAccountingEventDtos.cs:179`; the mapper sets `CorporateAction` on
+  every event it projects, `CorporateActionAssetAccountingEventMapper.cs:175`), and nothing binds
+  the snapshot to the case (B1's subject below). So an attach caller holding a Drafted
+  acquisition, disposal, or income spine for the same security and accounting scope can bind it to
+  a corporate-action case, and the scope check (`EnsureProjectionMatchesCaseScope`) passes because
+  scope is what those spines share. An earlier version of this bullet called the spine binding
+  "real verification" without the qualifier (corrected 2026-09-02, after review). The **period**
+  is the same at posting time: dereferenced, exact-version-checked, open-checked
+  (`CorporateActionCaseAccountingService.cs:411-435`).
+- The **lot snapshot** and **policy decision** are caller-asserted: `RequireId`/`RequirePositive`
+  on the request fields (`:62-65`) and nothing more. No store is consulted, migration 031 carries
+  no reference for either (`:20-21, :35-37` are bare columns), and
+  `HasAuthoritativeLotResolution: true` is stamped unconditionally from those unexamined inputs
+  (`:403`). The downstream "fail-closed" gates — `EnsurePolicyCoverage`, `EnsureLotResolution`
+  (`CorporateActionCaseAccountingContracts.cs:333-358`), re-run at approval (store `:196-197`) and
+  posting (`:208-209`) — therefore validate the caller's assertion against itself.
+- The **hashes and idempotency key** are the same class: `ProjectionInputHash` and
+  `PostingIntentHash` are format-checked (`:60-61`) and `PostingIdempotencyKey` prefix-checked
+  (`:66-71`), while one layer down these values have real authorities — the hashes are computed by
+  `CorporateActionAccountingProjectionService` (`Fingerprints` partial: `BuildProjectionInputHash`
+  at `:29`, `BuildPostingIntentHash` at `:150`), the mapper *attests* the intent hash against the
+  mapped effect (`ValidateMappedEffectAttestation`,
+  `CorporateActionAssetAccountingEventMapper.cs:260-266`) and *derives* the posting idempotency
+  key (`BuildPostingIdempotencyKey`, `:343-372`). An earlier version of this bullet said the
+  mapper "recomputes" the intent hash at `:260-261`; those lines compare two already-computed
+  hashes, and naming the wrong authority matters because the remedy below turns on where the
+  authoritative values live. The values the case lane stores as its durable audit binding are
+  whatever the caller sent, in fields whose names promise they are the drafting pipeline's.
+  One of those names promises more than the lane delivers even on the drafting side: the
+  `PostingIdempotencyKey` the mapper derives is consumed after attach by nothing that posts.
+  `ExecuteSpinePostingAsync` builds the post request from the candidate, actor, and approval
+  (`CorporateActionCaseAccountingService.cs:501-511`; `PostPostingRuleJournalCandidateRequestDto`
+  has no key slot, `AccountingConfigurationDtos.cs:949-958`), and the posting authority takes its
+  idempotency key from the candidate's own posting command or entry metadata
+  (`AccountingPostingCandidatePostService.cs:1180-1181`). The projection's key is validated for
+  its prefix (`CorporateActionCaseAccountingService.cs:66-71`), stored
+  (`PostgresCorporateActionOperationsStore.Accounting.cs:439`), and read back into the summary
+  (`CorporateActionCaseAccountingService.cs:581`) — audit metadata under a name that says it
+  governs retries. (Added 2026-09-02, after review.)
+
+The retained candidate the service has already loaded holds the evidence rows that *drafting*
+used to bind the **lot, policy, and source-action** assertions — but not in a form attach can read
+back. Drafting binds each identity to a *role*: the manifest row for the lot snapshot must carry
+`Role == LotSnapshot` with the exact subject id and version, the policy decision
+`Role == PolicyDecision`, the source action `Role == SourceEvent`
+(`CorporateActionAccountingProjectionService.cs:1871-1874, 1880-1915`). The role lives only on the
+manifest's `CorporateActionProjectionEvidenceDependencyDto`; the row type the candidate retains,
+`RetainedEvidenceIdentityDto`, has subject type, subject id, and version but no role
+(`RetainedEvidenceIdentityDto.cs:10-24`), and the mapper's manifest match pairs rows by id, URI,
+version, subject, and hash without carrying the role across
+(`CorporateActionAssetAccountingEventMapper.cs:314-320`). The projection DTO that holds the
+manifest is not retained on the spine — the mapper forwards only `request.RetainedEvidence` on the
+event request (`:174-187`). Subject type does not stand in for the role: the projection service
+constrains it only to non-empty (`CorporateActionAccountingProjectionService.cs:1857`), and the
+manifest is caller-supplied at the drafting boundary, so `"LotSnapshot"` as a subject type is a
+fixture convention, not a contract. What attach can establish from the rows today is "some
+retained row names this id at this version" — which a caller asserting the position snapshot's id
+and version as the lot snapshot's would satisfy; what the finding needs is "the projection used
+this id *as* the lot snapshot". The attach step checks only that the list is non-empty
+(`CorporateActionCaseAccountingService.cs:369-373`). An earlier version of this paragraph
+(corrected 2026-09-02, after review) said the three assertions were comparable at attach "by
+subject id and version"; the id and version are retained, the role that makes the comparison mean
+something is not. For the source action there is a second retained authority the rows are not —
+the deterministic event identity, next paragraph — so the role gap leaves the lot and policy
+identities, not all three, without anything retained to compare against.
+
+**The sharpest instance: nothing ties the bound spine event to the case's own corporate action.**
+The cross-checks at attach are security, tenant/company, and accounting scope
+(`:326-339`, plus `EnsureProjectionMatchesCaseScope`). The processing case carries its
+`CorporateActionId` (`CorporateActionOperationsContracts.cs:477`); the accounting service never
+reads it — the identifier appears nowhere in `CorporateActionCaseAccountingService.cs` — and
+neither the projection DTO nor the `corporate_action_case_accounting_projections` table carries a
+source-action identity any later gate could compare. So where two drafted spine events exist for
+the same security in the same accounting scope — a dividend and a return of capital in one period —
+the case for action X can attach, approve, and durably post action Y's journal. Every gate passes,
+because every gate checks scope and candidate integrity, not provenance. The consequence is not a
+wrong journal in the ledger — the journal is Y's retained, fingerprint-verified candidate — it is a
+wrong *authority chain*: case X's record claims Y's economics as its accounting, and case Y can
+then no longer attach or post its own event (`spine.PostedJournalImpact is not null` fails its
+attach, the adoption path refuses an approval reference that is not its own, and the route left
+is restatement — which B4 shows is not a governed route either). The mechanism is certain from
+source; how often two Drafted
+spines coexist in one scope is not established here, and does not need to be for the gate to be
+worth having. Where the identity to compare against lives is the part this paragraph has now got
+wrong twice (both corrected 2026-09-02, after review). Drafting requires a
+`SourceCorporateActionId` (`CorporateActionAccountingProjectionService.cs:243`) and requires the
+SourceEvent-role manifest row to bind exactly that id as its subject (`:1880-1888`) — but the role
+is dropped from the retained rows (previous paragraph), and the source fields the candidate does
+retain are not the action id: `EconomicEvent.SourceEntityId` and `ProjectionLineage.SourceEntityId`
+are the drafting request's separate free-text `SourceEntityId` (`:141, :150-151, :170-171`). The
+second version stopped there and concluded nothing typed was retained. Something is: the event
+identity itself. `BuildEventIdentity` joins the source action id, source event version, case id,
+security, position, ledger book, action type, basis, effective date, and source content hash
+(`CorporateActionAccountingProjectionService.Fingerprints.cs:10-22`); the projection derives the
+event id from it (`DeterministicGuid`, `CorporateActionAccountingProjectionService.cs:137`), and
+that id is retained as the economic event's `EventId` (`:145`) and as the spine's own event id — the
+key attach already loads the snapshot by (`CorporateActionCaseAccountingService.cs:286-290`). Every
+other input is retained on the fingerprint-verified snapshot or is the case's own: event version
+(`EconomicEvent.EventVersion`), security, position, book, and basis (`spine.Scope`,
+`AssetAccountingEventDtos.cs:68-79`), action type (`ProjectionLineage.Scenario`, set at
+`CorporateActionAccountingProjectionService.cs:167`), effective date and source hash
+(`EconomicEvent`, set at `:148, :154`), case id (the case). So attach can recompute
+the identity with the *case's* `CorporateActionId` and compare it to `spine.EventId`: a mismatch
+means the candidate was drafted for a different action — or, because the case id is in the
+identity, for a different case, which closes the cross-case attach with the same check; a match
+means the id was built for this action *if the drafting path built it* (on the generic route the id
+is the caller's — B3). This is a
+recomputation, but not the kind the remedy below warns against: it is the same function over
+inputs that are all retained, not a reconstruction of a hash whose inputs were discarded. It needs
+one shared helper that performs the *complete* derivation — `DeterministicGuid` over
+`BuildEventIdentity` — because both halves are private (`Fingerprints.cs:10` and `:253`), and
+exposing only the string builder would make attach re-implement the hash-and-version-bits
+transform, which is exactly how a verifier drifts from its producer (an earlier version of this
+sentence named only the builder; corrected 2026-09-02, after review). A code change, not a
+retention change — and one caution: the identity carries no version token, so a future change to
+its composition must be versioned or the check silently drifts.
+
+Two subtleties for the implementer, both about what *not* to do:
+
+- **Do not "fix" attribution by re-stamping `PreparedBy`.** The projection records the spine
+  drafter as its preparer (`candidate.Actor` — `CorporateActionCaseAccountingService.cs:404`), and
+  maker-checker independence is measured against that drafter
+  (`CorporateActionCaseAccountingContracts.cs:380-390`), which is right: the drafter authored the
+  economics. The attach actor is recorded on the case's version-bump audit, not on the projection.
+  The consequence worth knowing is that the operator who *selected* the binding — the only actor in
+  the lane whose inputs are currently unverified — may also approve and post it. Verifying the
+  binding (above) removes what that selection can smuggle; re-labelling the preparer would instead
+  relabel the economics author, the alias-update mistake from P3b's history arriving from the other
+  direction.
+- **The remedy is comparison against a retained authority, not a second assertion — and for four
+  of the six fields the authority is not yet retained in a form attach can use.** This paragraph
+  has been corrected three times, and the corrections pulled in both directions, which is why the
+  split below names the authority for each field rather than a count. The first version claimed
+  every caller-asserted field had "an authoritative counterpart already in memory at attach time",
+  including "recomputable hashes" and a "derivable idempotency key" — wrong in kind, the remedy
+  failure this document tracks. The second (2026-09-01) moved the three hash-and-key fields to
+  "not comparable" and kept the three identities as comparable "by subject id and version" — wrong
+  on both sides: it missed a nested authority the candidate does retain, and it counted an
+  id-plus-version match as a binding when the role that makes it one is not retained. The third
+  (2026-09-02) fixed those two and then over-corrected the identities, listing all three as needing
+  retention when the source action has a retained, derived authority (the event identity, above).
+  The lesson the sequence teaches is procedural: for each field, name its authority, then look for
+  it in *every* form the snapshot retains — direct member, nested member, and deterministic
+  derivation from retained inputs — before classifying it. What the retained candidate actually
+  carries:
+  - **Comparable at attach today, and first: the spine's kind.** `spine.EventKind ==
+    AssetAccountingEventKindDto.CorporateAction` is one read of a retained field
+    (`AssetAccountingEventDtos.cs:179`), refused with `ProjectionStale` in the resolver before any
+    other comparison. It is required, not a cheaper duplicate of the event-identity recomputation
+    below (corrected 2026-09-05, after review; the first version said the identity check "would
+    also reject" a non-corporate-action spine): on the generic drafting route (B3) both the kind
+    and the economic event's id are the caller's, and the spine validator requires only that the
+    event *type* match the kind (`AssetAccountingEventDtos.cs:429-430`), so an acquisition-kind
+    spine can carry a corporate-action-derived id and pass the identity check. Only the kind field
+    refuses it. Added 2026-09-02, after review.
+  - **Comparable at attach today: `ProjectionInputHash`.** The projection service writes the
+    computed input hash into the lineage as `TermsHash`
+    (`CorporateActionAccountingProjectionService.cs:161-178`, `TermsHash: projectionInputHash` at
+    `:174`); the lineage rides the projection DTO (`:186-191`), the mapper requires it and
+    forwards it on the event request (`CorporateActionAssetAccountingEventMapper.cs:66, :174-187`),
+    and the spine copies it onto the drafted candidate (`AssetAccountingEventSpineService.cs:504`,
+    `ProjectionLineage = source.ProjectionLineage`; the candidate's member is
+    `AccountingConfigurationDtos.cs:891`), under the canonical fingerprint attach already
+    recomputes (`CorporateActionCaseAccountingService.cs:310-316`). So `request.ProjectionInputHash`
+    can be compared at attach against `candidate.ProjectionLineage.TermsHash` now, with a null or
+    absent lineage refused. Two cautions: the field is generically named and nullable
+    (`ProjectionLineageDto`, `InstrumentPositionDtos.cs:147`), and other projection lanes put a
+    different hash in it (`FactorPaydownProjectionService.cs:151`) — the equality is this lane's
+    convention, so the comparison should be written as one, and a dedicated retained field would
+    make the contract explicit without being a precondition for the check. Be exact about what
+    the equality establishes: that the hash the binding stores is the candidate's own digest and
+    not a caller string — the field-level point this item makes. It does **not** establish that
+    the candidate was computed for the case state being attached: the digest commits the case
+    version and election inputs (`Fingerprints.cs:48-52`) but is opaque to them, so a candidate
+    drafted at an earlier case version passes this check with its own digest. That is B2, below.
+  - **Comparable at attach today, by recomputing a retained identity: the source corporate
+    action.** The spine's event id is `DeterministicGuid(BuildEventIdentity(...))` over the source
+    action id and nine other inputs that are all retained on the snapshot or owned by the case
+    (the sharpest-instance paragraph above walks each one). Recompute it with the case's
+    `CorporateActionId` and compare to `spine.EventId`, through one shared helper for the whole
+    `DeterministicGuid(BuildEventIdentity(...))` derivation — both are private
+    (`Fingerprints.cs:10`, `:253`), and a verifier that reproduces only the string half drifts.
+    No retention change, and the same check binds the case id.
+  - **Not comparable at attach today: the lot snapshot and policy decision.** Their id and version
+    are on the retained rows; their *role* is not, and nothing else retained on the candidate
+    carries them typed or derives them (the roles paragraph above). The remedy is to retain them:
+    either persist the two identities into retained spine state at drafting time — the projection
+    DTO carries both typed (`CorporateActionAccountingProjectionService.cs:212-214`) — or retain
+    the role on the evidence rows so attach can find the `LotSnapshot` and `PolicyDecision` rows as
+    such. Either way they are authorities only if the drafting orchestrator bound them from store
+    reads rather than copying them from its own request (B3): the projector takes them as request
+    fields and checks them against a manifest that is itself request-supplied (`:1880-1915`).
+    Until then a subject-id scan is a second assertion wearing the first one's evidence.
+  - **Not comparable at attach today: `PostingIntentHash` and `PostingIdempotencyKey`.** The
+    retained candidate declares no member for either
+    (`PostingRuleJournalCandidateRequestDto`, `AccountingConfigurationDtos.cs:848-902`), no nested
+    field carries them, and neither is recomputable from it: `BuildPostingIntentHash` consumes the
+    input hash, treatment decision, computation, and currency
+    (`CorporateActionAccountingProjectionService.cs:180-184`; Fingerprints partial `:150`), and
+    `BuildPostingIdempotencyKey` consumes the projection DTO and the mapped effect, including
+    `MappingHash` (`CorporateActionAssetAccountingEventMapper.cs:343-372`) — inputs discarded
+    before the spine candidate is built. Prescribing "compare at attach" for these two would leave
+    them unchecked or invite a non-equivalent reconstruction. The remedy is to **persist the
+    authoritative values into retained spine state** (or onto the candidate) at drafting time,
+    where they are computed and attested, so attach has something real to compare. For the key,
+    that makes the stored column truthful and nothing more: it does not become the posting
+    idempotency authority, because posting never reads it (the hashes-and-key bullet above). The
+    remedy has a second half — either thread the mapper's key into the posting authority, so the
+    key the case recorded is the one that governs the append and any retry, or rename and document
+    the column as the mapping fingerprint it is. The first is the design the prefix validation
+    already implies; until one is chosen, `posting_idempotency_key` is a name that overstates its
+    column (added 2026-09-02, after review).
+
+  Requiring the request to match retained authorities keeps the request DTO as an
+  idempotency-friendly command envelope while making the stored binding mean what it says.
+
+### B2 — Attach stamps the binding's case version instead of verifying the candidate's
+
+Filed 2026-09-02 from review of B1's remedy (the reviewer's point that hash equality proves the
+caller copied the candidate's digest, not that the digest was computed for the case being
+attached). It is B1's thesis at the one field the lane's exact-version promise rests on.
+
+Migration 031 says the binding "retains the ... case, scope, policy, and period versions it was
+prepared against, so ReadyForApproval and posting can be gated on durable exact-version evidence"
+(`031_security_master_corporate_action_accounting_lane.sql:3-7`). The one case version it retains
+is the post-attach version, not the one the candidate was prepared against. The service builds
+the binding with `BoundCaseVersion: 0` (`CorporateActionCaseAccountingService.cs:378`); the store
+verifies the caller's `ExpectedVersion` against the row
+(`PostgresCorporateActionOperationsStore.Accounting.cs:103-106`), bumps the case exactly once
+(`UpdateCaseVersionAsync`, `PostgresCorporateActionOperationsStore.Cases.cs:947`,
+`Version = processingCase.Version + 1`), and stamps the binding with the version it just created
+(`Accounting.cs:116-127`, `BoundCaseVersion = updatedCase.Version` at `:123`). That stamp is the
+right value for what it feeds: every downstream exact-version gate compares it to the case's
+current version — `EnsureBindingSupportsReadyForApproval`
+(`CorporateActionCaseAccountingContracts.cs:310-314`) and the availability projection
+(`CorporateActionOperationsService.cs:827-830`) — which detects a case change *after* attach. What
+it cannot do is detect staleness *at* attach, because it was made current by construction, and
+nothing else retained can either.
+
+The case version the economics were actually computed for exists in exactly one retained place:
+committed into the projection input hash, alongside the election version, policy-decision
+version, and position snapshot id
+(`CorporateActionAccountingProjectionService.Fingerprints.cs:48-52`), where it is opaque. Nothing
+on the spine carries it typed: the scope retains security and position versions but no case
+version (`AssetAccountingEventScopeDto`, `AssetAccountingEventDtos.cs:68-79`), neither
+`EconomicEventReferenceDto` (`InstrumentPositionDtos.cs:112-123`) nor `ProjectionLineageDto`
+(`:134-149`) has a field for it, and the projection DTO's own `CaseId`/`CaseVersion` pair
+(`CorporateActionAccountingProjectionService.cs:203-204`) is not among what the mapper forwards on
+the event request (`CorporateActionAssetAccountingEventMapper.cs:174-187`).
+
+The consequence: a candidate is drafted against case version 3; new evidence or an election moves
+the case to 4; the stale candidate is attached at expected version 4, with its own hashes (so
+B1's field checks pass — they should, the fields are the candidate's); the store bumps to 5 and
+stamps 5; and version-3 economics post. The guard sequence after the stamp, stated as it is
+(corrected 2026-09-05, after review; the previous sentence said ReadyForApproval, approval, and
+posting "all find the binding current", which over-describes what the later two check): the
+ReadyForApproval transition is the one gate that compares the stamp — it loads the current
+binding and requires `BoundCaseVersion` to equal the case version
+(`PostgresCorporateActionOperationsStore.Cases.cs:730-746`,
+`CorporateActionCaseAccountingContracts.cs:310`) before the transition itself bumps the case
+(`:646-649`), and the two are equal by construction unless something else has changed the case
+since attach; approval then loads the case at the command's `ExpectedVersion`, requires the
+*current* binding with the requested projection id, and checks balance, policy coverage, lot
+resolution, and preparer independence
+(`PostgresCorporateActionOperationsStore.Accounting.cs:179-222`,
+`CorporateActionCaseAccountingService.cs:128-135`), stamping its own row with the version it just
+created (`:209`); posting loads the case at `ExpectedVersion` again and binds by projection and
+approval identity (`EnsureApprovalAuthorizesPosting`, `:279-340`). Neither approval nor posting
+reads `BoundCaseVersion` again. So the lane's gates are optimistic-concurrency about the case,
+exact-version about the binding at exactly one point, and silent about the candidate throughout.
+Reach, stated exactly (corrected 2026-09-02, after review; the first version of this
+paragraph called it "the workstation's ordinary flow"): no shipped client calls the attach route —
+the browser workstation carries only the generated route constant, unused
+(`ui-api-routes.generated.ts:315`), and the desktop workstation nothing — and the corporate-action
+projector and mapper that would draft the candidate have no production caller at all
+(`LedgerFeatureRegistration.cs:54-59` registers them; nothing resolves them). The three case
+routes are live API (`SecurityMasterEndpoints.CorporateActionOperations.cs:606, :630, :654`), and
+the one production path that drafts a spine event is the generic ledger route (B3, below). So the
+defect is reachable today by an API integration, not by an operator flow. Whether any affected
+rows exist is not knowable from source (corrected 2026-09-05, after review; the first version said
+"there is no data to repair yet"): the case routes and the generic drafting route are live, so an
+external integration or a manual caller may already have created spines, bindings, approvals, or
+postings. Remediation therefore starts with a deployment audit — count `CorporateAction`-kind
+spines and the case lane's bindings, approvals, and postings — and the argument for fixing it now
+is that the count can only grow.
+
+**Remedy.** Retain, at drafting time, every projection input that can stale independently — the
+digest commits the case version, the election id and version, the policy-decision id and version,
+the lot-snapshot id and version, the position-snapshot id, and the position version
+(`CorporateActionAccountingProjectionService.Fingerprints.cs:48-60`), and the accounting period's id
+and expected version (`:73-74`; added to this list 2026-09-06, after review, which had omitted it) —
+typed on the spine candidate (or the drafted spine's scope).
+At attach, reload each of them from its authority and
+compare the current version to the retained one, refusing `ProjectionStale` on any mismatch; for
+the case, that read is the row the store already loads at the caller's `ExpectedVersion`
+(`PostgresCorporateActionOperationsStore.Accounting.cs:103-106`). A case-version comparison alone
+is not the check (corrected 2026-09-06, after review; the previous version compared only the
+retained case version to `ExpectedVersion`): a position, policy decision, lot snapshot, or
+election can advance without touching the processing-case row — the spine validates the book
+position when it drafts (`AssetAccountingEventSpineService.cs:984-1013`), not when the case
+attaches, and attach reads nothing but the case (`CorporateActionCaseAccountingService.cs:62-65`
+checks that the policy and lot identities are present, `:82` requires the loaded case attachable)
+— so a candidate built from an obsolete position or policy state would pass a case-version check
+and post. Retaining the fields is the precondition; reloading them is the check. The period is the
+one input the lane already retains in the clear and still verifies too late (added 2026-09-06, after
+review): attach keeps the candidate's `ExpectedPeriodVersion` on the binding
+(`CorporateActionCaseAccountingService.cs:362-366`, `:393-394`), but the live period is read and its
+version compared only when the case lane posts (`EnsureOpenPeriodAsync`, `:222`, `:411-433`) and
+again by the posting service (`AccountingPostingCandidatePostService.cs:323-337`) — both after
+approval — so a candidate drafted against a period that has since advanced attaches and is approved
+before anything notices; the same reload at attach, and at approval, closes that. Attach is not the
+last moment the other inputs can move either, and reloading them once is not the remedy (added
+2026-09-06, after review; the previous version placed the reload at attach alone): approval reloads
+only the stored binding and checks its identity and preparer independence
+(`CorporateActionCaseAccountingService.cs:124-135`); posting reloads it and applies its static flags
+— balanced, policy coverage, lot resolution — and then the period (`:196-222`); the position alone
+has a later live check, because the spine store asserts the drafting-time position version against
+the live position on every append
+(`PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs:157-180`), which catches a moved
+position at the Approved and Posted appends inside posting, after the case's approval; and nothing
+re-reads a lot snapshot, policy decision, or election after attach, since none has an authority to
+read. So the reload of the external dependencies — position, lot snapshot, policy decision,
+election, period — must run at attach, at approval, and at posting before the spine append, or each
+authority's update must fence the binding, superseding it and voiding its approval atomically,
+as the case store already voids the approval on `Approved → AccountingReview`
+(`PostgresCorporateActionOperationsStore.Cases.cs:633-640`). The set has one more member, which
+needs no retention because the spine already holds it (added 2026-09-06, after review; the previous
+list stopped at the inputs the digest commits): the Security Master record. The spine's scope
+retains the security id and the version it was projected against
+(`AssetAccountingEventDtos.cs:68-79`), and the spine compares that version with the live record —
+and the record's status, currency, and effective window — when it projects and when it drafts
+(`ResolveAuthoritativeSecurityAsync`, `AssetAccountingEventSpineService.cs:216`, `:383`,
+`:828-849`); after Drafted nothing reads it again. The case gates compare no security version (the
+binding retains none, `CorporateActionCaseAccountingContracts.cs:12-40`), the posting service
+resolves no Security Master record, and the store's append check compares the position version, the
+security id, and the book id — not the security version
+(`PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs:153-186`). The digest cannot catch
+it either: it commits the security id and no version
+(`CorporateActionAccountingProjectionService.Fingerprints.cs:57`; the projection request carries
+none, `CorporateActionAccountingProjectionService.cs:12-44`). So terms amended after Drafted — a
+currency, a status, an effective window, any of the fields the spine itself refuses a stale version
+over — post under the version they were drafted against. Reload the record at the same three gates
+and compare its version to the scope's,
+or let a Security Master amendment supersede the binding and void its approval like the other
+authorities. And at the posting gate the first alternative has to be stated exactly, because a
+reload is a check and not a fence (corrected 2026-09-06, after review; the previous sentence let
+"reload and compare before the spine append" stand as sufficient at posting): between a reload that
+passes and the appends that follow it, any of these authorities can advance, and the only version
+the appends assert transactionally is the position's — the spine store's append selects the book
+position `for share` inside its own transaction and compares its version, security id, and book id
+(`ValidateAssetAccountingPositionCasAsync`,
+`PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs:153-186`); the period, the policy
+decision, the election, the lot snapshot, and the Security Master version take part in no
+compare-and-swap that spans the journal mutation. So at attach and at approval the reload is an
+early refusal and enough; at posting the comparison must run inside the transaction that appends —
+the same `for share` read and version assertion the position already gets, extended to the period,
+the security record, and the retained snapshot and decision rows once B3 gives them authorities — or
+the second alternative must carry it: each authority's update supersedes the binding and, while B6's
+reservation stands, is refused, so that nothing can move between the check and the write.
+The case itself is the exception at the
+later gates (narrowed 2026-09-06, after review; the previous sentence listed it with the rest): its
+workflow version advances by design at attach
+(`PostgresCorporateActionOperationsStore.Accounting.cs:116-123`), at ReadyForApproval
+(`PostgresCorporateActionOperationsStore.Cases.cs:646-649`), and at approval
+(`PostgresCorporateActionOperationsStore.Accounting.cs:201-209`), so comparing the drafting-time
+version again there would refuse every case; after attach the case is governed by its transition
+chain, and what the later gates should require is that the current version be the binding's
+`BoundCaseVersion` advanced by exactly the expected transitions, or that a separately retained
+material-content revision of the case — a digest over the fields that change its economics — still
+match; the drafting-time version is compared once, at attach. Leave `bound_case_version` as it is:
+the first version
+of this paragraph (corrected 2026-09-02, after review) said to stamp it "from the verified value's
+successor" so the column would mean the version prepared against — a remedy that changes nothing,
+because the store verifies `ExpectedVersion` and increments exactly once, so that successor *is*
+`updatedCase.Version`; and one that could not mean that anyway, since the prepared-against version
+is one earlier. The post-attach stamp is correct for the currency gate it feeds; the drafting-time
+version is a second, separately retained field, and the new attach check is where it is consumed.
+`BuildProjectionInputHash` already names the right set (`:48-60`); the work is to retain it in the
+clear as well as in the digest, and then to read each authority again at attach. One
+precondition, without which retention changes nothing (added
+2026-09-02, after review): the retained value must be what an *authoritative case read* produced
+at drafting, not what the drafting request said. The projector has no case-store dependency and
+checks only that `CaseVersion` is positive (`CorporateActionAccountingProjectionService.cs:250`), so
+a request-supplied number, retained and compared to `ExpectedVersion`, is two caller assertions
+agreeing with each other. The drafting orchestrator — which does not yet exist, see B3 — must load
+the case and bind its version into the projection request; the same holds for the election and
+position-snapshot inputs (neither has an authority to read at the pin — no election record exists
+and the position snapshot has no dereferencing service; B3's remedy says what each read must
+be), and for B1's lot and policy identities. This belongs with B1's priority
+entry, not after it: it is the same defect — attach trusting instead of verifying — at the field
+the rest of the lane's correctness is gated on.
+
+### B3 — The drafting boundary is a client request
+
+Filed 2026-09-02 from review of B2's remedy (the reviewer's point that a retained drafting-time
+case version compared to the attach request's expected version is two caller-supplied values).
+Following that point to its origin changes what B1 and B2 can mean until it is fixed.
+
+Every authority B1 and B2 propose to compare against at attach — the lineage's input hash, the
+evidence rows' role binding, the linkage identities, and any drafting-time version retained in
+future — originates in the request that drafted the spine event; the event identity and the kind are
+the exceptions, the first because B1's comparison value is recomputed from the case row, the second
+because the validator binds it, as the rest of this section shows (the list narrowed 2026-09-06,
+after review; it had named both). At the pinned source that request has one production origin, and
+it is not the corporate-action projector.
+`CorporateActionAccountingProjectionService` and `CorporateActionAssetAccountingEventMapper`, which
+compute the hashes and validate the role-bearing manifest, are registered
+(`LedgerFeatureRegistration.cs:54-59`) and resolved by nothing; no non-test code builds a
+`CorporateActionAccountingProjectionRequest`. What does draft spine events is the generic ledger
+route: `MapPost(UiApiRoutes.LedgerAssetAccountingEventProjections)` takes a
+`ProjectAssetAccountingEventRequestDto` from the body
+(`LedgerEndpoints.AccountingConfiguration.cs:322`), requires ledger-mutation permission (`:324`),
+rebinds the actor and tenant scope (`:344-352`), and hands the rest to the spine. What the spine
+then binds and what it takes as given needs stating exactly (corrected 2026-09-06, after review;
+the previous version said it resolved "scope, not economics"). It resolves the security, position,
+ledger book, and period (`AssetAccountingEventSpineService.cs:216-238`) and, against the book
+position, requires the request's economic event to equal one the position already retains — its
+origin event, its current-state source event, or a lineage trigger event — and every asserted
+evidence identity to match evidence the position retains (`ValidatePosition`, `:984-1013`).
+Before the projection can become a Drafted candidate, `BuildPostingCandidateAsync` resolves the
+book's accounting policy, dry-runs Rules Studio, and refuses unless the request's projected effect
+equals the generated lines in account, side, amount, currency, and dimension (`:415-452`,
+`:1124-1167`). So the economic event and the effect are not the caller's to invent: they must be
+a retained event on the position and its promoted-rule output. Nor is the event *kind* free
+(narrowed again 2026-09-06, after review; the version before this listed the kind among the
+caller-authored fields): the spine validator requires the economic event's `EventType` to equal
+the type name derived from the kind (`AssetAccountingEventDtos.cs:426-431`, `:29`), and that
+economic event must be one the position retains — so a `CorporateAction`-kind spine can be
+drafted only over a retained corporate-action-typed event. What the spine takes from the request
+as given (`:149-170`) is therefore the `ProjectionLineage` — `TermsHash` and the projection-input
+hash with it — and every corporate-action linkage the case lane later reads: which case, at which
+version, with which lot, policy, and election identities. Those are the fields B1 and B2 compare,
+and none of them is bound by the position, the validator, or Rules Studio. The request DTO's own
+contract says it is an "authoritative handoff from an Asset Operations projector"
+(`AssetAccountingEventDtos.cs:207-209`); the route makes it a handoff from whoever holds ledger
+mutation.
+
+The consequence for B1 and B2: with the drafting boundary where it is, attach-time comparison
+proves that the attach request is consistent with the drafting request — not that either is
+correct. A caller with ledger-mutation permission can draft a `CorporateAction`-kind spine over a
+corporate-action-typed event the book position already retains — real economics, Rules Studio's
+own lines — and attach to it whatever lineage hash and case, lot, policy, and election identities
+make B1's checks pass. The prerequisite is stated exactly (narrowed 2026-09-06, after review, in
+two steps: the first version let the caller invent the economics, the second let the caller pick
+the kind): the position must already retain a corporate-action event, and the deterministic event
+identity B1 would recompute must be that event's. That identity hashes the source action id
+*and* the case id (`CorporateActionAccountingProjectionService.Fingerprints.cs:10-22`), and the
+position check compares the whole economic event, id included, against what the position
+retains (`AssetAccountingEventSpineService.cs:984-993`) — so once B1 recomputes the identity from
+the target case's own action and case, another action's retained event cannot match it, and the
+"another corporate action" reach falls away (narrowed a third time 2026-09-06, after review) unless
+the position authority itself has been made to retain a forged event, which is a different and
+larger prerequisite. What remains is the case's *own* retained event under caller-authored
+lineage and linkage — not an arbitrary acquisition or disposal, and not another action.
+Retaining a case version that caller supplied does not bind those economics to *this case's* action.
+The spine's fingerprint, the validator, the position check, and Rules Studio keep the *record*, the
+*kind*, and the *economics* honest. The *association* — that this journal is this case's corporate
+action, which is what the case lane posts under maker-checker — is kept honest by exactly one of
+B1's comparisons, and the sentence that stood here said otherwise (corrected 2026-09-06, after
+review; the previous version said "nothing keeps the association honest", contradicting the
+paragraph above it): the event identity B1 recomputes takes its inputs from the case row — the
+case's own action id and case id — not from the drafting request, and the position check binds the
+retained event to that identity, so once that comparison runs the event is this case's action's
+event whoever drafted it. What nothing binds is the rest of what the case lane reads: the lineage
+hashes and the linkage identities and versions (case, lot, policy, election, position snapshot),
+which the drafting request authors and attach can only compare against themselves. B1's field-level
+remedies remain right; the identity check stands on its own, and the value of the hash and linkage
+comparisons is bounded by B3 until the drafting request is server-authored.
+
+The same boundary has a posting side (added 2026-09-05, after review). The generic posting route
+`MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidatePosts)`
+(`LedgerEndpoints.AccountingConfiguration.cs:474`; ledger-certification and `AdminMaintenance`,
+`:476, :522`) posts any candidate with a caller-supplied `ApprovalId` and `ApprovalEvidence`, which
+the posting service copies into the spine's Approved stage as its reference id and evidence
+(`AccountingPostingCandidatePostService.cs:1360-1369`). The case lane's crash-retry adoption then
+accepts an already-posted spine when that stage's reference id equals the case approval's id and
+the candidate fingerprint matches (`CorporateActionCaseAccountingService.cs:233-243`); it compares
+neither who attested nor what evidence the stage carries against the stored case approval. So a
+holder of the case's approval id and its retained candidate can post through the generic route
+with evidence of their choosing, and the case's own post command adopts the journal as its
+maker-checker outcome. B1's intro sentence about the adoption path is corrected above to match.
+
+**Remedy.** Two halves, and together they are the precondition for B1's hash and role-bound
+comparisons and for B2's version comparisons — not for B1's identity check, which binds the
+association from the case row alone (narrowed 2026-09-06, after review). First, a server-side
+corporate-action drafting orchestrator:
+load the case, the accepted source proposal, the lot snapshot, the policy decision, the election,
+and the position from their stores; build the projection request and the role-bearing manifest from
+those reads. The position read has a scope to satisfy, not only an identity (added 2026-09-06, after
+review): the case's stored scope distinguishes structure node, financial account, portfolio, custody
+account, and jurisdiction as well as fund, book, period, basis, and currency
+(`CorporateActionCaseScopeDto`, `CorporateActionOperationsContracts.cs:387-399`), but the
+projection-scope check compares only book, period, basis, fund, and currency
+(`EnsureProjectionMatchesCaseScope`, `CorporateActionCaseAccountingContracts.cs:364-376`), and
+attach adds only the security id and the tenant and company
+(`CorporateActionCaseAccountingService.cs:326`, `:334-335`). A security may carry more than one
+position under the same fund, book, and period — the position projection's uniqueness includes the
+position id (`003_instrument_position_projection_guards.sql:155-157`) — so a candidate drafted
+against the wrong one, another portfolio's or custody account's, passes every scope check the lane
+runs, and the identity comparison above does not catch it either, because the deterministic identity
+hashes the position id the drafting request supplied
+(`CorporateActionAccountingProjectionService.Fingerprints.cs:10-22`), the spine's own choice and not
+the case's assignment. The orchestrator must therefore resolve the position from the case's complete
+scope, and attach must compare the spine's `BookPositionId` against that case-derived position and
+the scope it was resolved under; the spine's scope can carry part of that today — its `Dimensions`
+set has slots for entity, portfolio, and an account id and none for custody account or jurisdiction
+(`AssetAccountingEventScopeDto`, `AssetAccountingEventDtos.cs:68-79`; `LedgerDimensionSetDto`,
+`AccountingConfigurationDtos.cs:249-273`) — and nothing writes or compares them, so the dimensions
+the spine cannot express are retained on the binding and compared there.
+Four of those reads name
+authorities that do not exist yet, and the list is honest only with that said (corrected
+2026-09-05, after review, twice: the previous version sent the orchestrator to reload a numeric
+source version from the proposal and listed the election as if a store held it; the version after
+that counted two missing authorities when the lot snapshot and policy decision are missing in the
+same way). The source-event
+version: the projector requires a numeric `SourceEventVersion`, the case snapshot retains only the
+provider identity, whose source version is an opaque string
+(`CorporateActionOperationsContracts.cs:305-312`), and the proposal's `Version` (`:401-409`) is
+the proposal row's own concurrency counter — it is incremented when the proposal is accepted
+(`PostgresCorporateActionOperationsStore.cs:508-518`) — so binding it would retain a workflow
+number that says nothing about the provider's event. The proposal stays on the list for the
+provider identity and terms it retains; the version has to be defined and persisted first, as a
+numeric conversion of `ProviderIdentity.SourceEventVersion` fixed at acceptance or a new field on
+the accepted proposal, and read from there. The election: no election store or election record
+exists at the pin — `ElectionId` and `ElectionVersion` appear only in the projector, mapper, and
+contracts, and the case holds election *states* (`CorporateActionOperationsContracts.cs:39-40`) and
+an `ElectionInstruction` evidence kind (`:233`) on evidence rows that carry an id, a hash, and the
+case version at which they were recorded (`CorporateActionEvidenceDto`, `:505-515`), not a
+versioned election. Either a durable election record is defined, or the binding is declared to be
+that evidence row — its `EvidenceId` as the election id, its `CaseVersion` as the version, which
+B2's digest then commits; until one is chosen the read has nothing to read. The lot snapshot and
+the policy decision: `LotSnapshotId`/`LotSnapshotVersion` and `PolicyDecisionId`/
+`PolicyDecisionVersion` exist only in the projection request and output, the attach binding, and
+its persistence (the contracts, the projector, the mapper,
+`CorporateActionCaseAccountingService.cs`, `PostgresCorporateActionOperationsStore.Accounting.cs`);
+the projector binds each from a manifest row of the matching role
+(`CorporateActionAccountingProjectionService.cs:1871-1874, :1902-1914`), rows the drafting request
+supplies. No lot-snapshot or policy-decision record or store exists.
+The lot has the election's option — the case's `TaxLotSnapshot` evidence row
+(`CorporateActionOperationsContracts.cs:232`). The policy decision has no case evidence kind at
+all, and no service to lean on either (corrected 2026-09-06, after review; the previous sentence
+called `IAccountingPolicyService.ResolvePolicyAsync` the nearest versioned authority "whose backing
+store this pass has not verified" — there is none to verify): production binds the interface to
+`AccountingPolicyService` as a singleton (`LedgerFeatureRegistration.cs:40`), whose only state is
+a process-local `ConcurrentDictionary` seeded in its constructor
+(`AccountingPolicyService.cs:50, :64-72`), and whose `PolicyId` and `Version` are strings
+(`LedgerBookDtos.cs:127-130`) where the projection binds a `Guid` decision id and a `long` version
+(`CorporateActionAccountingProjectionService.cs:29, :33`). It can resolve the rule pack for the
+drafting step below; it cannot be the retained policy-decision authority, which has to be a new
+persisted record with its own evidence identity. Until each is defined, B1's lot and policy
+comparisons would check request-invented identities against themselves. Then project
+(`ICorporateActionAccountingProjectionService`), resolve the promoted rule pack and generate the
+effect, attest it, map (`ICorporateActionAssetAccountingEventMapper`), and draft into the spine in
+process. The middle step is not optional and does not exist (added 2026-09-05, after review; the
+previous version went straight from project to map): the mapper's request requires a
+`CorporateActionMappedAccountingEffectDto` already produced by the promoted rule pack
+(`CorporateActionAssetAccountingEventMapper.cs:14-23, :38-41`); the only producer is
+`CorporateActionMappedAccountingEffectAttestor.Create`
+(`CorporateActionMappedAccountingEffectAttestor.cs:19-24`), which needs the generated effect
+lines, the rule-pack reference, and the component-to-line mappings, has one caller — a test
+(`CorporateActionAssetAccountingEventMapperTests.cs:380`) — and nothing under `src/` constructs
+the `ProjectedAccountingEffectDto` it takes. Without a server-side rule-resolution step that
+produces those three from the projection and the resolved policy, the orchestrator either cannot
+run or takes the mapped accounts from its caller — the boundary B3 exists to close.
+The sequence also has no step that applies the corporate action's lot intent, and the remedy must
+add one (added 2026-09-06, after review): the projector's output retains the spine event request and
+the lot mutations as siblings (`CorporateActionAssetAccountingEventProjectionDto`,
+`CorporateActionAccountingDtos.cs:1021-1027`); the mapper validates the mutation plan and then
+builds the spine's projection request from the event alone
+(`CorporateActionAssetAccountingEventMapper.cs:76-80`, `:174-187`), and that request has no lot slot
+at all (`ProjectAssetAccountingEventRequestDto`, `AssetAccountingEventDtos.cs:211-224`); the only
+lot instruction the later posting candidate accepts is `AssetLotMutationInstructionDto` (`:315`),
+which models an acquisition or a set of disposal selections and nothing else, where the
+corporate-action plan speaks in carry-over, allocate, change-quantity, reduce-carrying-value, and
+transfer mutations (`CorporateActionLotMutationKindDto`,
+`CorporateActionAccountingDtos.cs:251-260`); no adapter between the two models exists in the tree;
+and the spine's own lot resolution returns nothing for any kind but acquisition and disposal
+(`ResolveAuthoritativeLotMutationAsync`, `AssetAccountingEventSpineService.cs:882-903`). So a split,
+an allocation, or a carrying-value adjustment would post its journal with its lot operation dropped,
+while the case binding stamps `HasAuthoritativeLotResolution: true` as a literal
+(`CorporateActionCaseAccountingService.cs:403`) — a flag that on the projection means the *plan*
+validated (`CorporateActionAccountingDtos.cs:327-328`), not that anything applied it. The
+orchestrator therefore needs an executable corporate-action lot-mutation seam — a typed instruction
+the posting candidate can carry for these kinds, and a lot-store operation that applies it in the
+same transaction as the journal append —
+or the lane posts accounting for lot changes it never makes; defining the lot-snapshot authority
+above does not change that. That seam also needs a target it can lock (added 2026-09-06, after
+review; the previous sentence asked for the instruction and the store operation and named no target
+position). A split, spin-off, merger, or allocation creates or updates a lot under a successor
+security, and the plan names that lot by security and lot id only:
+`CorporateActionLotMutationSetDto` carries the source position and its expected version
+(`CorporateActionAccountingDtos.cs:318-328`), and each `CorporateActionLotMutationDto` carries a
+`TargetSecurityId`, a `TargetLotId`, and an expected target-lot version, but no target position and
+no target-position version (`:289-313`). The store cannot infer one: the book-position projection's
+uniqueness is keyed on the position id together with the security, book, and owner scope
+(`ux_book_position_projection_scope`, `003_instrument_position_projection_guards.sql:155-157`), so a
+security and book may carry more than one position, and the append-time compare-and-swap the spine
+already runs locks only the source position
+(`PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs:153-186`). Every cross-security
+target instruction must therefore carry its authoritative target position, that position's scope,
+and its expected version, and the lot-store operation must lock and assert the target position as it
+does the source before it writes the journal and the mutations together.
+The position deserves its
+own sentence (added 2026-09-02, after review; the first version of this list omitted it): the
+projector requires a `PositionSnapshotId` (`CorporateActionAccountingProjectionService.cs:259`)
+bound by a PositionSnapshot-role manifest row at `PositionVersion` (`:1890-1895`), and at the pin
+nothing dereferences that id — its only production uses are the projector, mapper, and contracts,
+and the `IPositionSnapshotStore` that exists is the reconciliation lane's per-account portfolio
+snapshot (`IPositionSnapshotStore.cs`), a different authority. The authority the spine itself
+reloads is the book position at its exact version (`AssetAccountingEventSpineService.cs:219-223`,
+`ValidatePosition`, `:974-978`); the orchestrator must bind the position-snapshot identity, its
+version, and its evidence row from that read, or B2's retained position input stays
+request-invented while the rest are server-read. "From that read" cannot mean minting an
+identifier (corrected 2026-09-05, after review; the previous version offered "minting the snapshot
+identity from the book position and version if no retained snapshot exists"): the projector
+requires a PositionSnapshot-role dependency whose subject is that exact id at `PositionVersion`
+(`CorporateActionAccountingProjectionService.cs:1890-1897`), and the mapper requires every manifest
+dependency to be matched by a complete, accepted retained evidence identity — id, URI, version,
+subject, and content hash (`CorporateActionAssetAccountingEventMapper.cs:307-324`). A minted id has
+no retained row behind it, so the draft the orchestrator produced would be refused at map. Either a
+retained position-snapshot record with its evidence identity is defined and persisted first, or
+the contract is changed so the PositionSnapshot dependency binds the authoritative book-position
+id and version with a retained evidence row for that read; a fresh identifier is neither.
+Second, close both generic routes to this kind:
+refuse `EventKind == CorporateAction` on `LedgerAssetAccountingEventProjections`, or require on it
+an attestation only the in-process projector can produce, so a corporate-action spine has exactly
+one origin;
+and on the generic posting route (`:474`), refuse corporate-action candidates — that is the rule,
+not one of two options (corrected 2026-09-07, after review; the previous sentence offered loading
+the stored case approval on that route as an alternative): the posting service has no case-store
+dependency, so a generic call that passed such a lookup would still append the journal and the
+Posted spine without taking B6's reservation and without writing the case-side posting record,
+leaving an immutable journal with no case record until a later case command happened to adopt it,
+and racing `Approved → AccountingReview` outside the fence exactly as B6 describes; an approval
+lookup is authorization, not the posting authority. If the generic route must accept the kind at
+all, it delegates the candidate to the case lane's complete workflow — reservation, post, record —
+rather than posting it itself. Where a check on the route is still wanted as defense in depth, it
+loads the stored case approval by the caller's `ApprovalId` and requires it to be active and bound
+to this candidate — its `CaseId` the case the spine's linkage names, its `ProjectionId` a binding
+whose `DraftedCandidateFingerprint` is this candidate's, and its attestor and evidence identity the
+Approved stage's — *before* the append, where `EnsureAssetProjectionApprovedAsync` already runs
+(`AccountingPostingCandidatePostService.cs:341-346`), ahead of `journalStore.AppendAsync` (`:349`);
+but it refuses regardless, so a corporate-action journal has exactly one posting authority.
+Attestor and evidence alone are not
+that binding (corrected 2026-09-06, after review; the previous sentence compared only those): the
+approval row already carries `CaseId`, `ProjectionId`, `BoundCaseVersion`, and its voided state
+(`CorporateActionCaseAccountingContracts.cs:54-67`), and without them a valid, active approval from
+a different case — the same approver, real evidence — would authorize an unrelated candidate, since
+`EnsureAssetProjectionApprovedAsync` itself validates only the spine and the Approved stage the
+caller's request built (`:477-519`).
+That comparison belongs on the posting route, not in the case lane's adoption branch (corrected
+2026-09-05, after review; the first version offered the adoption check as the alternative): the
+branch runs only once `spine.PostedJournalImpact` exists
+(`CorporateActionCaseAccountingService.cs:233-243`), after
+the journal (`:349`) and the Posted spine version (`:611-617`) are appended, both immutable, so
+refusing adoption leaves the unauthorised journal posted and only stops the case from recording
+it as its own. Keep the adoption comparison as defense in depth, no more. With both, the values
+B1 and B2 retain and compare are authorities; with neither, they are the drafting caller's word,
+retained — and the posting caller's, adopted.
+
+### B4 — A restated case re-binds without correction lineage
+
+Filed 2026-09-05 from review of B1 (the reviewer's point that B1 names "the restatement lane" as
+the governed continuation without its being one). The case state machine allows
+`Posted → RestatementRequired → AccountingReview` (`CorporateActionOperationsContracts.cs:123-128`;
+the comment at `:121-122` says a posted case's journals stay immutable and restatement is the only
+continuation). Once back in `AccountingReview`, attach asks only for that state
+(`EnsureProjectionAttachable`, `CorporateActionCaseAccountingContracts.cs`). Nothing in
+`CorporateActionCaseAccountingService` reads `spine.Correction`, requires a correction reference,
+or consults the case's prior posting — the service contains no reference to a correction, a
+restatement, or the postings table — and migration 031 keys posting uniqueness on the projection,
+not the case (`031_security_master_corporate_action_accounting_lane.sql:127`), so a second posting
+per case is permitted by schema. The spine's own correction check, when a candidate carries one,
+proves that the referenced journal is a posted event whose retained impact and scope match the
+reference's own book, period, and basis (`AssetAccountingEventSpineService.cs:866-877`,
+`ResolveCorrectionAuthorityAsync`) — not that it is *this case's* journal, and not that it shares
+the correcting spine's scope either (corrected 2026-09-06, after review; the previous sentence said
+"in the same book, period, and basis", which read as same-scope validation): every comparison in
+that method is between the reference and the *corrected* event, none reads `source.Scope`, and the
+request-side check asks only that the reference's fields be non-empty and name a different event
+(`:629-639`), as does the spine validator (`AssetAccountingEventDtos.cs:415-424`) — so a correction
+drafted in one book or basis can name a journal posted in another and pass.
+So a reopened case can attach, approve, and post a second
+originating journal, or a correction of some other event in the scope, and the durable history
+then holds two postings for the case with no lineage between them — while the case read shows
+only the later one (corrected 2026-09-05, after review; the previous sentence said the case record
+"shows two postings"): the case query joins a single posting, the newest by `posted_at`
+(`PostgresCorporateActionOperationsStore.Cases.cs:1138-1143`, `order by posted_at desc limit 1`),
+so the earlier journal stays posted in the ledger and invisible from the case. The mechanism is
+certain from source; the restatement command surface itself was not read for this pass.
+
+**Remedy.** For a case with a prior posting, the fresh binding must carry correction lineage that
+resolves to that case's own retained journal and lot impact: require `spine.Correction` to be
+present,
+require its posted journal id and lot batch to equal the case's last posting, and refuse an
+originating candidate outright. And require the correcting spine's book and accounting basis to
+equal the corrected journal's (added 2026-09-06, after review): the correction check never compares
+them, and a reversal posted into another book or basis neutralizes nothing where the original
+stands. The period may differ, because the corrected period may since have closed, but only under a
+rule the lane states — a correction posts into the corrected period while it is open, and into the
+current open period with the corrected period named in its lineage once it is not — not by the
+silence the check keeps today.
+Lineage is necessary and not sufficient (added 2026-09-06,
+after review; the previous version stopped at the matching reference): the spine's correction
+check loads the corrected event's retained `PostedJournalImpact`, whose `Lines` are retained with
+it (`AssetAccountingEventDtos.cs:147-158`), and compares only its identity — journal, book,
+period, basis, lot batch (`AssetAccountingEventSpineService.cs:866-879`) — never the correcting
+candidate's projected effect against it; the request-side check asks only that the reference name
+a different event (`:629-639`), and the Drafted gate only that an approved adjustment accompany it
+(`:805-819`). So a reopened case could cite its own posting as this remedy requires and still
+append a second full originating effect, doubling the ledger under a lineage that reads as a
+restatement. The correcting candidate must therefore neutralize the retained impact: its projected
+effect must be a reversal — the exact negation of the retained lines —
+or a reversal followed by a rebook — a second correction-linked candidate, not an originating one
+(corrected 2026-09-07, after review; the previous sentence called the rebook a new originating
+candidate, which the gate above would refuse, since after the reversal posts the case has a prior
+posting again): its `spine.Correction` names the reversal's posted journal, so the chain reads
+original, reversal, rebook through the one-event reference the spine has
+(`AssetAccountingCorrectionReferenceDto`, `AssetAccountingEventDtos.cs:164-172`);
+its intent says rebook, so the negation rule binds the reversal leg and not this one — an intent the
+lane cannot express yet (corrected 2026-09-07, after review; the previous clause said the posting
+kind would say it, and no posting kind does): `LedgerPostingKindDto` has `Originating` and
+`Adjustment` and no rebook (`LedgerBookDtos.cs:42-44`), the spine stamps `Adjustment` on every
+candidate that carries a correction (`AssetAccountingEventSpineService.cs:492`), and the draft
+service maps that kind to the `Adjustment` intent before any treatment is consulted
+(`AccountingJournalDraftService.cs:551-557`), so a correction-linked second candidate never reaches
+the `Rebook` branch the posting command validator already has (`AccountingPostingIntentDto.Rebook`,
+`AccountingPostingCommandDtos.cs:9-16`; `AccountingPostingCommandValidator.cs:114-120`) — a typed
+rebook intent has to be retained through projection, drafting, and candidate generation, distinct
+from the reversal's, before this chain can be told apart from a second reversal;
+its lines are what Rules
+Studio generates for the restated economics under the pre-draft approval's intended target; and it
+needs the case to re-enter `AccountingReview` a second time after the reversal posts, because attach
+binds one spine per request (`AttachCorporateActionAccountingProjectionRequestDto`,
+`CorporateActionCaseAccountingContracts.cs:116-137`) and the lane has no compound
+reversal-plus-rebook posting — a compound model that posts both atomically is the alternative, and
+it does not exist.
+A "validated delta" is
+not a third form the spine can check today (withdrawn 2026-09-06, after review; the previous
+sentence offered one whose sum with the retained lines would equal the restated economics):
+validating a delta needs the restated target as a third operand, and neither the projection request
+(`CorporateActionAccountingProjectionService.cs:12-44`) nor the spine's correction reference retains
+one, so treating the correcting effect as both the posting and the target is circular and would let
+a second full effect pass as a delta; the form becomes available only if a re-projection retains the
+restated economics typed, which B3's orchestrator could do. The spine must verify the reversal where
+it already holds both sides: in `ResolveCorrectionAuthorityAsync`, comparing the
+correcting effect it receives on the spine, `source.ProjectedEffect.Lines`, with the corrected
+event's retained `PostedJournalImpact.Lines` it loads, rather than accepting any balanced effect
+that cites the right journal. The operands are named because a review read the method as holding
+only the prior lines (stated 2026-09-06, after review): it takes only the source spine, but that
+spine carries the correcting effect at both call sites — projection sets `ProjectedEffect` from the
+request before calling it (`:166-171`, `:239`), and drafting passes the stored Projected spine
+(`:381`), on which the validator requires the effect to be present
+(`AssetAccountingEventDtos.cs:583`) — and the Drafted step then refuses unless the Rules Studio
+dry-run's generated lines equal that projected effect (`:1161-1167`), so the candidate the lane
+posts is those lines by construction; re-asserting the same comparison at candidate construction is
+belt and braces, not the missing check.
+The neutralization must reach the lots as well (added 2026-09-06, after review; the previous version
+required lineage to the prior lot batch and negation of the journal lines only). A corporate action
+that moved lots — a quantity change, an allocation, a transfer, a carrying-value reduction
+(`CorporateActionLotMutationKindDto`, `CorporateActionAccountingDtos.cs:251-260`) — leaves the
+ledger consistent with the portfolio only while the lot state matches the journal, and reversing the
+journal alone leaves the mutated lots standing against a ledger that no longer carries their effect.
+Nothing checks this today, at any of the three places a correction's lots are examined: the spine's
+correction check compares the reference's lot batch id to the retained one
+(`AssetAccountingEventSpineService.cs:878-879`), its Drafted gate requires a correcting lot
+instruction to name the same corrected journal and batch (`:811-816`), and the store's
+`ValidateCorrectionBatchAsync` requires the corrected batch to exist in the same book, security, and
+position with matching journal lineage (`PostgresLedgerJournalStore.AtomicTaxLots.cs:534-570`) —
+identity at every step, an inverse at none. The mutation plan already retains what an inverse needs:
+each `CorporateActionLotMutationDto` carries the source and target lots' before and after states and
+the lot versions it expected (`CorporateActionAccountingDtos.cs:289-313`, the states and versions at
+`:302-309`). So the reversal must apply the inverse mutations — each mutated lot returned from its
+retained after-state to its retained before-state, under a version guard on the lot as it stands now
+— and the rebook its replacement mutations, each in the same transaction as its journal append,
+which is the transaction B3's lot-store operation already has to provide;
+a reversal whose lot half fails must fail whole. The retained vocabulary cannot yet express two of
+the inverses (added 2026-09-06, after review; the previous sentence assumed every lot has a
+before-state to return to): a target operation is `Create` or `Update` only
+(`CorporateActionLotTargetOperationDto`, `CorporateActionAccountingDtos.cs:263-268`), the validator
+forbids a `Create` to carry a target-before snapshot or an expected target version (`:494-508`), and
+a full disposal or transfer-out retains no source after-state — the relief is computed against an
+absent `SourceAfter` (`:595-620`). So the inverse of a created successor lot is a delete, and the
+inverse of a fully relieved source lot is a recreation from its retained before-state, and neither
+is a mutation the plan, the validator, or the store operation B3 adds can carry. The seam needs
+typed inverse operations for both — a delete of a created target under the version the lot now
+carries, and a recreation of a relieved source at its retained before-state under the identity the
+original mutation retired — with the same identity and version guards as the rest, or the reversal
+of the two most common lot-moving actions cannot run atomically with its journal.
+At the pin the lane applies no corporate-action lot mutation at all (B3), so
+this half has nothing to reverse until B3 lands; it binds the day it does.
+The reversal also needs a drafting path that can produce it (added 2026-09-06, after review): the
+Drafted step's rule dry run receives only the source event's type, amount, currency, and effective
+date (`RuleDryRunRequestDto`, `AccountingConfigurationDtos.cs:806-819`;
+`AssetAccountingEventSpineService.cs:434-450`), the gate then requires the generated lines to equal
+the projected effect (`:1161-1167`), and the correction becomes an `Adjustment` posting kind only
+when the candidate is built afterwards (`:471-494`) — so a negation of the retained lines cannot
+pass the equality unless the rule generation is told it is reversing, and the ledger's reversal
+vocabulary below cannot reach the dry run. Add a typed reversal input to the projection and the
+dry-run request, or an authoritative reversal builder that derives the negated lines from the
+retained impact and satisfies the Drafted gate in place of the rule dry run; without one the
+requirement blocks every correction instead of governing it.
+The reversal's approval needs an authority too (added 2026-09-06, after review; the previous version
+asked only that an approved adjustment accompany the correction). What the Drafted gate checks is
+`CorrectionApproval` on the posting-candidate request (`AssetAccountingEventDtos.cs:319`), a
+`LedgerAdjustmentApprovalMetadataDto` whose approval id, status, approver, time, and reason are the
+caller's words (`LedgerBookDtos.cs:84-92`): the gate requires the status to read Approved and the
+time to be UTC and no later than the Drafted timestamp
+(`AssetAccountingEventSpineService.cs:807-810`), the candidate carries it forward as the journal's
+adjustment approval (`:494`), the posting service compares the durable record's copy to the
+candidate's (`AccountingPostingCandidatePostService.cs:925`) and, in a soft-closed period, requires
+the status again (`:1401`), and nothing loads an approval from anywhere — no store in the ledger
+lane resolves one by approval id; the metadata is a JSON column on the journal row
+(`V_ledger_007__journal_adjustment_approval_metadata.sql:2-27`), and a durable approval store the
+repository does have, the Audit lane's compliance approvals, is consulted by the workstation
+endpoints, not by the ledger. So the immutable adjustment can record that any actor approved it at
+any time, whatever the case lane later decides about the same correction.
+The reversal builder must therefore not take its approval from the request. It cannot take it from
+the case's post-attach approval either (corrected 2026-09-06, after review; the previous version
+derived it from the active case approval bound to the projection's drafted fingerprint, which is
+circular): the Drafted gate requires the correction approval before the Drafted candidate exists
+(`:807-810`), attach accepts only a spine whose latest stage is Drafted with a retained candidate
+and no posted impact (`CorporateActionCaseAccountingService.cs:298-308`), and the case approval is
+inserted only at approval, bound to the projection attach created and to the case version that
+approval advances (`PostgresCorporateActionOperationsStore.Accounting.cs:179-214`) — so an approval
+bound to the drafted fingerprint exists only after the candidate it would have had to authorize.
+Implemented literally, that either blocks every correction or leaves the caller's assertion in
+place. What the lane needs is a correction approval recorded before drafting, over a deterministic
+preview of the correcting candidate: a reversal is fully determined by the retained posted impact
+and the retained mutation plan — the negated lines and the inverse mutations — so its preview and
+the preview's fingerprint can be computed and approved on the case, as a governed decision with its
+own actor, time, and evidence, before anything is drafted; the server-side builder then derives the
+Drafted step's `CorrectionApproval` from that decision, attach compares the drafted fingerprint
+against the approved preview's, and the post-attach maker-checker approval B5 governs still binds
+the posting. A rebook's replacement lines are not known until Rules Studio generates them, so its
+pre-draft approval covers the reversal half and the intended target economics,
+and the drafted lines bind through the post-attach approval of the rebook's own second binding
+(corrected 2026-09-07, after review; the previous sentence said "as any originating candidate's do",
+and the rebook is correction-linked, not originating).
+The alternative is to
+reorder the lifecycle — let the case lane draft a correction without approval metadata and stamp it
+at posting from the case approval — but the spine requires the metadata at Drafted and the candidate
+carries it into the journal from there (`:494`), so the reorder moves a gate the spine was built
+around; the pre-draft approval keeps the gate and gives it an authority.
+The ledger's general posting path already has the vocabulary (`AccountingPostingIntentDto.Reversal`,
+`Rebook`, and `Restatement`, each requiring source-journal lineage,
+`AccountingPostingCommandValidator.cs:114-120`); the spine's correction reference carries the
+lineage without the economics. Until then, "the route left is restatement" names a door, not a
+gate.
+
+### B5 — Approval evidence is asserted at approval and minted as retained at posting
+
+Filed 2026-09-05 from review of B1. The maker-checker approval the lane is built around accepts
+its evidence as two strings: `ApproveAsync` requires the hash to be canonical SHA-256 and the
+reference to use an allowed URI scheme (`CorporateActionCaseAccountingService.cs:117-122`) and
+stores both; no artifact is loaded, hashed, or retained. At posting, `ExecuteSpinePostingAsync`
+builds a `RetainedEvidenceIdentityDto` from those two strings and fills in the rest itself —
+`ReviewStatus = Accepted`, reviewer and retainer set to the approver, review and retention time set
+to the approval time, `EvidenceVersion = 1` (`:476-499`) — and hands it to the posting authority as
+the approval's retained evidence. The posting authority's completeness check
+(`RetainedEvidenceIdentityValidator`) passes it, because every field was stamped to pass. The
+contract the spine was written to — "evidence whose bytes, source, review, retention, and subject
+scope have all been retained" (`RetainedEvidenceIdentityDto.cs:6-9`) — is met in form by a record
+that retains none of them.
+
+**Remedy.** Approval must reference an *existing* retained evidence identity, one whose bytes and
+hash were retained and whose review state was recorded by the evidence lane, and posting must load
+and compare it rather than construct it. "Load" has nothing to load yet, and the remedy has to say
+what must exist first (added 2026-09-06, after review; the previous version prescribed the
+comparison without the authority): no service or store at the pin resolves a
+`RetainedEvidenceIdentityDto` by evidence id or reference for this lane; the approval contract
+carries only the reference and the hash (`CorporateActionCaseAccountingContracts.cs:54-63`), and the
+store persists only those two columns
+(`PostgresCorporateActionOperationsStore.Accounting.cs:481-494`); and the Evidence Vault cannot
+stand in — its store is UI-owned (`IEvidenceArtifactStore`,
+`src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:14`) and returns
+`EvidenceVaultIdentityDto` (`:63-70`), not the review-and-retention identity the posting validator
+consumes. Two things are therefore required before "load and compare" can be implemented: a durable
+evidence authority below the UI — a persisted record with retain, review, and read operations, of
+the shape the ledger has since acquired for open-lot backfill evidence — a post-pin read, marked as
+such: #2910 landed it after `5b901dda`, and the lines are the merged head's, `41c8d08c`
+(`IOpenLotBackfillStore.RetainEvidenceAsync`, `GetEvidenceAsync`, `ReviewEvidenceAsync`,
+`OpenLotBackfillDtos.cs:68-70`), where the identity handed to the ledger is built from the loaded
+row and never from the request (`OpenLotBackfillRules.cs:70-74`); and a stable evidence identifier
+on the approval contract, added alongside the reference and hash (the contracts are additive-only,
+see B7), so the approval names a record the store can dereference.
+With both in place, posting loads that record and compares the whole identity it retains — not only
+its id, hash, and review state — against what the posting authority requires (tightened 2026-09-06,
+after review; the previous sentence had posting build the identity from the loaded row, which would
+re-create at the subject what B5 removes at the review fields): the posting service requires every
+approval evidence row to carry the `PostingApproval` subject type and a subject id composed from the
+exact event version, fund, book, period, basis, approval id, drafted-candidate fingerprint, tenant,
+and company (`AccountingPostingCandidatePostService.cs:1489-1508`), which the case lane today
+composes at posting (`CorporateActionCaseAccountingService.cs:476-499`). So the evidence record must
+be retained and reviewed with that approval-specific identity — the approval id allocated before the
+evidence is retained, the subject bound to the exact projection scope and candidate fingerprint —
+and posting compares the loaded subject with the one it would compose; a generic artifact, or an
+open-lot-style row passed unchanged, fails that check, and re-stamping its subject at posting is the
+minting defect again. Without the authority and the identifier a caller keeps supplying the same two
+assertions. Until then the lane's gaps are not confined to
+attach-time bindings; the approval boundary is a format check dressed as retention.
+
+### B6 — Posting is not fenced against a concurrent case transition
+
+Filed 2026-09-06 from review of B1 (the reviewer's point that the serializable transaction and
+the crash-retry path praised there do not span the store boundary posting crosses). `PostAsync`
+reads the case and requires it postable (`CorporateActionCaseAccountingService.cs:191-193`), loads
+the current binding and the active approval (`:196-219`), and then — when the bound spine carries
+no posted impact — calls `ExecuteSpinePostingAsync` (`:254-260`), which appends the journal and
+the Posted spine version through the ledger and spine stores. Only after that does it ask the
+case store to record the posting (`RecordAccountingPostingAsync`, `:263`), and that transaction
+reloads the case at the command's `ExpectedVersion`, requires it postable, and requires the same
+active approval (`PostgresCorporateActionOperationsStore.Accounting.cs:279-305`). Nothing holds
+the case between the first read and the last write. The state machine allows
+`Approved → AccountingReview` (`CorporateActionOperationsContracts.cs:115-120`), and the durable
+store voids the active approval on that transition
+(`PostgresCorporateActionOperationsStore.Cases.cs:633-640`). So if that transition commits while
+the journal is being appended, the record step fails on the stale version or the voided approval
+— after the journal and the Posted spine are already immutable. The retry does not recover it:
+the receipt-first replay (`:181-188`) finds no receipt, because the record never committed, and
+the case check (`:193`) refuses a case that is no longer `Approved` before the flow reaches the
+adoption branch (`:234-249`) that was written for exactly this "spine posted, case record
+missing" shape. The result is a posted journal with no case record behind it, on a case sitting
+in `AccountingReview` and free to bind another candidate — B4's second-posting shape, reached
+without a restatement. Reach: the window is the length of a ledger append, and the transition is
+an ordinary governed command, so this is a race two operators can run without intending to;
+whether it has happened is, as with B3, not knowable from source.
+
+**Remedy.** Fence, and recover without waving the orphan through. Fence: reserve the posting in
+the case store before the spine append — a posting-in-progress marker written under the case's
+optimistic version, which the `Approved → AccountingReview` transition refuses while it stands and
+the record step consumes — so the transition and the posting cannot interleave. A marker needs
+its failure and retry semantics stated, or it becomes a lock nobody holds (added 2026-09-06,
+after review):
+key it on the case — one active reservation per case, unique while it stands — and carry the
+command's idempotency key and request fingerprint on it as attributes (corrected 2026-09-06, after
+review; the previous version keyed it as the posting receipt is keyed, which is not one per case:
+the receipt table is unique on operation kind, aggregate id, and idempotency key, with the
+fingerprint a compared value — `030_security_master_corporate_action_operations.sql:713-726`,
+`PostgresCorporateActionOperationsStore.Accounting.cs:45-60`,
+`CorporateActionCaseAccountingService.cs:179-185` — so a marker keyed the same way would admit a
+second command under a second key, and a caller that had read the reservation's successor case
+version could reserve the approved case again and reach a second journal append), so that a retry
+with the same key and fingerprint reclaims it, the same key with a different fingerprint is a
+conflict, and any other command finds it held;
+write it under the command's `ExpectedVersion` and let
+it advance the case version, so the record step consumes the reservation's version rather than
+the client's; clear it in the same transaction that records a failure confirmed to have happened
+*before the append was invoked* — a validation, period, or spine-load failure, or cancellation
+observed before the call — and treat nothing after that point as confirmed (corrected 2026-09-06,
+after review; the previous version counted "the append threw" as a pre-append failure and let a
+still-Drafted spine clear the marker): the journal append can commit while its caller receives an
+exception, and the posting service advances the spine to Posted only after the append and a
+reload of the journal it wrote (`AccountingPostingCandidatePostService.cs:349-364`), so a durable
+journal can exist while the bound spine still reads Drafted,
+and a spine-stage check would clear the only fence with the orphan standing. And "the append" here
+is the first durable write the posting service makes, not the journal's (corrected 2026-09-06, after
+review; the previous version drew the boundary at the journal append): before it calls the journal
+store the service appends the Approved stage to the spine through a separate store call
+(`EnsureAssetProjectionApprovedAsync`, `AccountingPostingCandidatePostService.cs:339-349`, the
+append at `:522-530`), and only an `InvalidOperationException` from that call is reconciled by a
+reload (`:532-540`) — a transport failure escapes with the stage possibly committed. A failure after
+that call was invoked is therefore ambiguous in the same way, and a rule that cleared the marker on
+it — as a "spine-load failure" or "the append was never reached" — would clear the fence with the
+spine already Approved, which the next attempt then refuses as no longer Drafted
+(`ValidateSpineStillDrafted`, `CorporateActionCaseAccountingService.cs:437-450`). So the boundary is
+the invocation of the Approved-stage append: after it, the marker stays until the next attempt
+reloads the spine and the journal store together — an Approved stage under this approval with no
+journal resumes from that attestation, a journal found completes the record, and neither is inferred
+from the exception.
+So once the append has been invoked, the marker stays
+until the next attempt resolves the outcome from the journal store's own idempotency record —
+the posting it keys by ledger book and source event (`FindExistingPostingAsync`, `:350`) — not
+from the exception and not from the spine stage: a posting found there under this approval
+completes the record (adoption is legitimate here, because the standing marker proves no
+transition intervened) and advances the spine if the service had not; a posting *not* found does
+not clear it (corrected 2026-09-06, after review; the previous version cleared on the first
+miss), because the original commit can still be in flight after the caller lost its connection
+and a single negative read is not proof of rollback — the marker stays until a bounded
+reconciliation establishes a stable negative outcome;
+and a marker past that bound still unresolved goes to reconciliation rather than being cleared. And
+a stable negative does not simply release the marker to a retry as the lane stands, because the
+retry would be refused (added 2026-09-06, after review): the posting service appends the Approved
+stage to the spine — or verifies one already there — before it invokes the journal append
+(`AccountingPostingCandidatePostService.cs:339-349`; the atomic-lot branch orders them the same way,
+`:278-297`), so a confirmed append failure leaves the spine Approved with no posted impact, and the
+case lane's retry, finding no impact, requires the latest stage to be Drafted
+(`ValidateSpineStillDrafted`, `CorporateActionCaseAccountingService.cs:253`, `:437-450`) and tells
+the operator to re-attach — which attach refuses too, since it accepts only a Drafted spine
+(`:298-308`). The approved case is stranded. The retry must therefore admit a spine whose latest
+stage is Approved under this same approval — the stage's reference is the approval id
+(`AccountingPostingCandidatePostService.cs:1360-1369`) — with the bound drafted fingerprint and no
+posted impact, and resume posting from that attestation, which the posting service already does when
+it finds the Approved stage present (`:493-497`);
+the stable negative hands the marker, without releasing it, to a retry that reads both stores and
+continues from what they hold (corrected 2026-09-07, after review, twice: the first version released
+it to the Approved-stage resumption and to nothing else, which left one outcome stranded; the second
+released it for the retry to reclaim, which reopened the race — in the gap between release and
+reclaim `Approved → AccountingReview` can commit and void the approval, leaving a transitioned case
+whose spine is Approved with no journal, the state attach and the normal retry both refuse):
+ownership is renewed in place — the same row, the same key and fingerprint, a new attempt — in one
+atomic write, so the transition stays refused through the resumed append; then a journal found
+completes the record; an Approved stage under this approval and no journal resumes from that
+attestation; and a spine still Drafted with no journal — the Approved-stage append itself never
+committed — is retried from Drafted under the same reservation, since one that only an Approved
+spine can satisfy would hold that case for ever.
+The journal-found
+branch has a lot half too (added 2026-09-06, after review; the previous version adopted the journal
+and advanced the spine from the journal record alone): when the posting carried a lot batch — the
+atomic path B3's seam joins — the journal store's idempotency record is a `LedgerJournalEntryRecord`
+with no batch identity on it (`ILedgerJournalStore.cs:256-272`), while the path that succeeds takes
+the batch id from `AtomicTaxLotJournalResult` (`:449-460`) and stamps it on the Posted stage and the
+case result (`AccountingPostingCandidatePostService.cs:301-318`, asserted again at `:735`); adopting
+the journal without the batch would advance the spine with a lot lineage it cannot name.
+The batch id is deterministic — a digest of the book, the source event, and the intent
+(`:1264-1271`) — so the recovery can recompute it, and the store already reads a batch by that id:
+`ILedgerJournalStore.GetAtomicTaxLotPostingAsync` (`ILedgerJournalStore.cs:84-92`), implemented by
+the Postgres store (`PostgresLedgerJournalStore.AtomicTaxLots.cs:13`) and used by the projection
+store to prove that a Posted projection's batch identity is durable authority rather than caller
+metadata (`IAssetAccountingEventProjectionStore.cs:392-396`), returning the batch's canonical
+fingerprint, journal, mutated lots, mutations, and evidence (`AtomicTaxLotJournalResult`,
+`:449-460`) (corrected 2026-09-06, after review; the previous sentence said no such read existed and
+prescribed one — the search that "confirmed" its absence looked for a name the method does not
+carry, the closure check verifying the wrong thing this document's Method warns against). The
+journal-found branch must call it with the recomputed id, require the result's journal to be the
+posting it found and its fingerprint to match the one the retained Drafted candidate's instruction
+produces, and only then advance the spine with that batch id; what B3's seam adds is the
+corporate-action mutation kinds, since the result's kind enumerates acquisition and disposal alone
+(`AtomicTaxLotMutationKind`, `ILedgerJournalStore.cs:352-356`) — the type extends and the read
+stays.
+Recover: not by adopting the
+journal "regardless of
+the case's current state" (corrected 2026-09-06, after review; the first version of this remedy
+said exactly that): the transition
+that won the race voided the approval on purpose
+(`PostgresCorporateActionOperationsStore.Cases.cs:633-640`), and adopting through it would
+resurrect a voided authorization and overwrite a governed decision with `Posted` — another
+approval bypass, offered as the fix for one. Recovery has to preserve the newer decision and
+surface the orphan: when the bound spine carries a posted impact under an approval the case no
+longer holds, block the case with that journal attached and route it through an explicit
+reconciliation — never an automatic adoption, and not a retroactive approval either (corrected
+2026-09-06, after review; the previous version offered "a fresh approval of the already-posted
+economics" as one of the two routes): the spine already retains an Approved stage whose reference
+is the voided approval's id and whose evidence is that approval's
+(`AccountingPostingCandidatePostService.cs:1360-1369`), followed by the Posted stage, and stream
+continuity forbids removing or rewriting any prior attestation or the posted impact
+(`IAssetAccountingEventProjectionStore.cs:272-283, :296-305`). An approval issued after the
+journal exists cannot become the authorization the journal was posted under; the retained chain
+says the voided one was, and it stays so. So the orphan stays recorded as unauthorized — the case
+blocked, the journal attached, the voided approval named — and the one continuation is an
+approved correction with lineage to the orphan: a reversal, or a reversal and rebook of the
+economics the case now intends, posted through the correction path B4 requires. The fence is the
+remedy; the recovery is what the lane owes any orphan it has already made. Neither exists at the
+pin.
+
+### B7 — The Polygon jobs send a kind-prefixed identifier where a ticker is required
+
+Filed 2026-09-06 from review of the P4 backfill row (the reviewer's point that typing the
+backfill's outcomes would only report a universal failure more accurately). The production search
+path formats a security's `PrimaryIdentifier` as `"{Kind}:{Value}"`
+(`SecurityMasterDbMapper.cs:7-15`, `ToSummary`), and both Polygon jobs pass that string to the
+vendor as the ticker: `BackfillAllAsync` hands `security.PrimaryIdentifier` to
+`BackfillTickerAsync` (`TradingParametersBackfillService.cs:91-100`), which puts it in the path of
+the ticker URL (`:131-134`); `PolygonCorporateActionFetcher` does the same into its dividend query
+when it walks the search results itself (`FetchAndPersistAllAsync`,
+`PolygonCorporateActionFetcher.cs:187-199`, `:218-219`). So on those paths a ticker-primary security
+is requested as `Ticker:AAPL`, and a security whose primary identifier is an ISIN, CUSIP, or any
+other kind is sent as a ticker regardless. The scope is the bulk, search-backed paths, not every
+call (narrowed 2026-09-06, after review; the previous sentence said neither job could make a valid
+request for any security): the Security Master service also calls the fetcher directly after a
+create and after an amendment, and those two calls pass the projection's raw
+`PrimaryIdentifierValue` (`SecurityMasterService.cs:181-188`, `:340-347`), so for a ticker-primary
+security they issue a valid request, while for an ISIN- or CUSIP-primary security they still send
+that value as a ticker, since they too hold the value and not the kind. Against the production
+store, then, the bulk paths cannot make a valid request for any security, and the direct calls
+cannot for any non-ticker primary. The backfill then takes its non-success branch (`:136-141`),
+returns normally, and is counted as a success (`:101`) — P4's misreport, now with every row in
+it — and the fetch logs and moves on. P4's typed-outcome remedy is still right, and would only
+make this failure visible; it does not make the jobs work. And fixing the identifier alone does
+not make the backfill work either (added 2026-09-06, after review): `BackfillTickerAsync` reads
+the ticker-details response as an array and takes its first element
+(`TradingParametersBackfillService.cs:146-154`), but Polygon's `/v3/reference/tickers/{symbol}`
+returns `results` as a single object — which the repository's own client already models that way
+(`PolygonSymbolSearchProvider.cs:107-115`, `:224-227`) — so every *valid* response takes the "No
+results found" return as well. And a third stands behind those two (added 2026-09-06, after review):
+the amendment the backfill builds cannot be applied. It serialises `CommonTerms` as three
+vendor-named fields — `min_tick_size`, `lot_size`, `market`
+(`TradingParametersBackfillService.cs:185-191`) — and passes that as the security's common terms,
+but the command mapping requires `displayName` and `currency` and reads the canonical `lotSize`,
+`tickSize`, and `exchange` keys (`SecurityMasterMapping.cs:214-226`), strictly, by design
+(`:228-231`) — and `exchange` is the listing venue, which Polygon's `market` is not (see the
+remedy); `CommonTerms` is a whole document, not a patch, so `AmendTermsAsync` throws on the missing
+required fields, the inner catch (`:219-222`) returns normally, and the outer loop counts another
+success. Three defects stand between the job and its first amendment, and any one of them alone
+leaves the success count at 100% of nothing.
+
+**Remedy.** Three parts, and the first two before P4's outcome typing. Resolve the identifier before
+calling the vendor — on the bulk paths and on the two direct post-create and post-amend calls alike
+(added 2026-09-06, after review), so non-ticker primaries are covered wherever the fetcher is
+entered: select a Polygon-scoped `ProviderSymbol` alias for the security from the identifier store
+first, admit an active `Ticker` only when it is unambiguous — exactly one active security carries it
+for the venue Polygon serves — and refuse an ambiguous ticker as its own typed outcome, then skip —
+as a typed, counted outcome — a security that has neither. The precedence is stated because any
+active ticker is not authoritative (narrowed 2026-09-06, after review; the previous sentence took
+one as such): duplicate detection covers the canonical kinds and provider symbols only, so two
+securities may legitimately share a ticker across listings (`SecurityValidationService.cs:441-445`),
+and the fetcher persists whatever the vendor returns under the `SecurityId` it was handed, so a
+shared bare symbol would file one listing's details or corporate actions under the other.
+Parse the ticker-details response as the object it is, into the backfill's own `PolygonTickerData` —
+which already carries `min_tick_size` and `lot_size` (`TradingParametersBackfillService.cs:240-246`)
+— with its response model's `Results` changed from an array to that one object (`:237`); not into
+the symbol-search provider's `PolygonTickerDetails`, which is a private nested type without either
+field (`PolygonSymbolSearchProvider.cs:233`) (corrected 2026-09-06, after review; the first version
+of this remedy said to reuse it, which would have failed to compile or dropped both parameters).
+Merge the fetched values into the security's existing canonical common-terms document — the detail
+the backfill already loads (`:193`) — under the canonical keys, and amend with the merged document,
+never the three-field replacement (added 2026-09-06, after review). The keys are `tickSize` for
+`min_tick_size`, `lotSize` for `lot_size`, and `exchange` for `primary_exchange` — not for `market`
+(corrected 2026-09-06, after review; the previous sentence named no keys, and the finding's own list
+left `market` to be read as the exchange). Polygon's ticker payload carries both, and the
+repository's own model keeps them apart: the symbol-search provider declares `market` and
+`primary_exchange` as separate fields on both its ticker types
+(`PolygonSymbolSearchProvider.cs:196-203`, `:244-251`), maps `PrimaryExchange` to the result's
+`Exchange` in search and in details (`:99`, `:120`), and maps `Market` to nothing; the backfill's
+`PolygonTickerData` carries `market` and not `primary_exchange`
+(`TradingParametersBackfillService.cs:251-252`). Add `primary_exchange` to it and write that value
+under `exchange`; `market` — the asset-market category — has no canonical common-terms key and must
+not be written under one,
+or a category lands where a venue is expected, for exactly the securities the backfill touched. The
+merge has a fourth key, and it is the one that needs the most care (added 2026-09-06, after review;
+the previous list stopped at three and dropped an update the service advertises): the service's
+contract names currency among the parameters it backfills
+(`TradingParametersBackfillService.cs:10-12`), it already extracts `currency_name` (`:173-177`) and
+models it (`:248-249`), and the previous sentence merged nothing under `currency`. But `currency` is
+not a trading parameter like the other three: it is a required canonical field the command mapping
+will not do without (`SecurityMasterMapping.cs:217`), and the one the accounting spine asserts
+against the event's and the ledger book's functional currency before it drafts
+(`AssetAccountingEventSpineService.cs:845-846`), so a vendor value overwriting it under an open
+position changes what the ledger will refuse. Merge it as a validated three-letter code,
+upper-cased, only where the security's `currency` is absent; where a value is present and differs,
+do not overwrite — return the difference as a typed conflict outcome for an operator — and say so in
+the service contract, which today promises the backfill without the distinction.
+Give consumers the primary identifier's kind and value as structured fields
+*additively* — new optional members alongside `SecuritySummaryDto.PrimaryIdentifier` and its
+positional constructor (`SecurityDtos.cs:19-26`), or a dedicated internal lookup DTO — because
+Contracts changes are required to stay additive for the browser and WPF clients that construct and
+read the record (`src/Meridian.Contracts/README.md:127-130`, `:1093-1101`); not by replacing the
+formatted field (corrected 2026-09-06, after review). Do the first two before, not after, P4's
+outcome typing, or the typed outcome will faithfully report that nothing works.
+
+### Smaller notes, not filed as findings
+
+- **The corporate-action CLI verb hardcodes its actor.** `Actor: "meridian-cli"` at
+  `SecurityMasterCommands.cs:140`, while the import verb in the same file derives
+  `--imported-by` → OS user → workload identity with a reasoned comment (`:360-368`). P2's shape —
+  a hardcoded actor constant — closed on the CSV parser and standing on the neighbouring verb. The
+  import verb's chain is the pattern to reuse (with P1's caveat about the unvalidated override).
+- **EDGAR still reports hard failures as skips.** The generic catch increments `securitiesSkipped`
+  (`EdgarIngestOrchestrator.cs:131-134`), so the CLI's "Securities skipped" line aggregates
+  genuine write failures with benign already-mastered rows. Known from the 2026-08-28 pass's EDGAR
+  bullet; restated here only because the cancellation fix in the same catch chain might otherwise
+  read as having addressed it — it did not, and was not meant to.
+- **Import's final-row cancellation window.** With no conflict service configured, nothing after
+  the import loop observes the token (`SecurityMasterImportService.cs:222-227`), so a cancellation
+  during the final row's `CreateAsync` that the call itself does not surface returns a normal
+  result. One-row blast radius — the loop-top check covers every other iteration — and the same
+  final-item shape this document mapped on EDGAR.
+- **`RecordCorpActionCommand` has no enablement predicate** (`SecurityMasterViewModel.cs:1600`) and
+  no body check; it posts over HTTP to a route requiring `ModifySecurityMaster`, so this is not a
+  bypass — but P5's remedy asked that enablement reflect permission "so the UI does not offer
+  actions that will be refused", and several HTTP-mediated commands (corporate-action record,
+  conflict resolution, asset profiles) still offer refusable actions.
+- **P5's shape is alive one lane over, outside this review's scope.** The desktop strategy
+  workspace approves a promotion through the in-process `PromotionService` with no authorization
+  seam and `ApprovedBy: Environment.UserName`
+  (`StrategyWorkspaceShellPresentationService.cs:174-179`) — P5's authorization defect and P1's
+  self-asserted attribution, together, on the strategy lane. Not a Security Master finding; named
+  so the closure of P5 is not read as closure of the pattern, and worth filing where strategy
+  governance is reviewed.
+
+### Priorities from this pass
+
+Ordered by institutional risk per unit of work, read as a delta on the standing lists above:
+
+1. **Make the lane's drafting server-authored (B3), then make attach verify the candidate
+   instead of trusting the request (B1) and instead of stamping the case version (B2).** Three
+   comparisons can run at attach against data already
+   loaded — `spine.EventKind` against `CorporateAction`, `ProjectionInputHash` against the
+   candidate's `ProjectionLineage.TermsHash`, and the case's `CorporateActionId` through the
+   deterministic event identity against `spine.EventId` — and four need the authority retained
+   first: the lot and policy identities, whose retained evidence rows carry id and version but not
+   the role that binds them, and the posting-intent hash and idempotency key, which the candidate
+   neither carries nor can recompute. Retain those at drafting time — the identities either
+   directly or by keeping the role on the evidence rows, the hash and key as values — then
+   compare; and decide whether the key governs posting or is renamed, since today it governs
+   nothing. In the same change retain every independently versioned drafting-time
+   input the digest commits (case, election, policy decision, lot snapshot, position snapshot,
+   position, accounting period) as typed fields on the candidate; compare the drafting-time case
+   version once, at attach, and reload the external dependencies — and the Security Master record,
+   whose version the spine scope already retains and compares only through Drafted (added
+   2026-09-06) —
+   from their authorities and compare at attach and at approval, and at posting inside the
+   transaction that appends, since a reload before it is a check and not a fence (corrected
+   2026-09-06)
+   — or fence the binding
+   so an authority update supersedes it and voids its approval — refusing a stale draft on any
+   mismatch, with the case governed at the later gates by its transition chain or a retained
+   material-content revision, since its workflow version advances by design at attach,
+   ReadyForApproval, and approval (narrowed 2026-09-06): a case-version check alone misses a
+   position or policy decision that moved without touching the case, approval and posting
+   re-read only the stored binding, and only the period and the position get a later live check,
+   both after approval (corrected 2026-09-06);
+   `bound_case_version` stays the post-attach stamp the currency gate needs, and is not
+   where the candidate's currency gets tested (B2). This entry has been corrected with its finding:
+   the first version said all six fields were comparable at attach, the second said three, the
+   third said one; the count is the least important part of it. B3 comes first because without it
+   B1's hash comparisons and B2's version comparisons verify the drafting caller's word against
+   itself; the identity comparison is the exception, since its value comes from the case row,
+   so it binds the journal to this case's action on its own and can land before B3 (narrowed
+   2026-09-06). The position is the other exception in the opposite direction: the identity hashes
+   the position id the drafting caller chose, so B3's orchestrator must resolve it from the case's
+   complete scope — structure node, financial account, portfolio, custody account, jurisdiction —
+   which no gate compares today (added 2026-09-06).
+   Do this while the
+   lane has no shipped consumer — the case routes are live API with no client caller, and the
+   drafting pipeline has no production caller at all (an earlier version of this entry said the
+   lane's one consumer was the workstation; it has none at the pin — corrected 2026-09-02, after
+   review) — so a deployment audit decides whether there is anything to repair (the routes are live
+   to external callers; source cannot say no rows exist — corrected 2026-09-05), and every month of
+   postings after a consumer lands makes retrofitted verification a data-repair exercise. B4, B5,
+   and B6 ride with it: a reopened case must carry
+   correction lineage to its own posting, in the same book and basis (added 2026-09-06),
+   with a rebook itself correction-linked, carrying a typed rebook intent the lane must first
+   define, and bound in a second re-entry rather than originating (corrected 2026-09-07),
+   and a correcting effect
+   that neutralizes it — the journal lines and, once B3 applies lot mutations,
+   the lots, by inverse mutations in the same transaction, with typed inverses for created targets
+   and fully relieved sources (added 2026-09-06) — under a correction approval
+   recorded before drafting over a deterministic preview of the
+   reversal, rather than the request's asserted adjustment metadata — the case's post-attach
+   approval cannot supply it, since it exists only after the candidate it would authorize (corrected
+   2026-09-06) — before it can bind again (extended 2026-09-06),
+   approval must reference a durable evidence record — one the lane
+   must first define, with a stable identifier on the approval contract — rather than mint retained
+   evidence at posting, and
+   posting must be fenced, by one active reservation per case (corrected 2026-09-06), against a case
+   transition that lands between the spine append and the case record,
+   with any orphan already made left unauthorized and corrected by an approved reversal or rebook,
+   not adopted and not retroactively approved,
+   and a confirmed append failure resumed under the same reservation, renewed in place and never
+   released, from whatever the two stores hold
+   — the Approved
+   attestation when the spine carries it, Drafted when the Approved append itself never committed —
+   rather than refused as no longer Drafted, with the ambiguity boundary drawn at the Approved-stage
+   append and a found journal's lot batch reconciled before it is adopted (added 2026-09-06,
+   extended 2026-09-07).
+2. **Finish P4's remediation where it actually still lives — cancellation and outcome reporting
+   both.** The create loops and EDGAR's broad catches are done and verified — not "the ingest
+   side", which an earlier version of this entry said while the same list it introduces names an
+   open ingest path. What remains on the cancellation half is the two backfill swallows
+   (`TradingParametersBackfillService.cs:62-70, :98-108`), the `break` that should be a throw
+   (`:85-89`), the WPF token plumbing (`SecurityMasterViewModel.cs:2224`), and Polygon's
+   `FetchPageAsync` null-on-failure (`:128-149`) — the last of which is also a *silent truncation*
+   defect for ordinary HTTP errors, independent of cancellation. What remains on the reporting half
+   is the backfill's success accounting (added 2026-09-02, after review; an earlier version of this
+   entry said "exactly" of the cancellation sites and stopped there): every normal return from
+   `BackfillTickerAsync` — non-success status, empty result, missing security, swallowed HTTP or
+   unexpected exception (`:136-141, :146-152, :194-198, :219-222, :228-231`) — is counted as a
+   success (`:101`) and reported to the operator as one (`SecurityMasterViewModel.cs:2237-2241`);
+   a missing key never reaches the count because `BackfillAllAsync` returns first (`:51-55`), and
+   the operator is told that no-op run completed successfully too (corrected 2026-09-05, after
+   review). The remedy is P4's own prescription one method down: a
+   typed per-ticker outcome, or a propagated failure, before the count is incremented. Scope by
+   method, per the item: the per-item catch fix alone is defeated by the search catch above it,
+   and a cancellation fix alone closes P4 with failed tickers still counted as successes. And
+   fix B7 first (added 2026-09-06, after review): until the jobs resolve a real ticker instead of
+   the kind-prefixed primary identifier, the typed outcome would report, correctly, that every
+   lookup failed.
+3. **The classifier's payload-equivalence check (P4's semantic half).** Unchanged in posture and
+   now the only part of the duplicate-classification defect left: a reused `SecurityId` with
+   different terms is still `Skipped`. The typed outcome exists; it needs the content-equivalence
+   or idempotency-key evidence before `Skipped` is earned, with `Failed` (or a conflict) preserved
+   for a non-equivalent row.
+4. **A1 and A2 stand as the top standing items** — their 2026-08-31 priority entries apply
+   unchanged, and nothing in this range touched them. They outrank item 3 in institutional risk
+   (silent zero-interest projection; silent wrong-security resolution) but are listed after it here
+   only because their remedies are already fully specified above and need no new analysis.
+5. **The actor-source stragglers are four, not two — two by decision, two by wiring.** The CLI
+   override validation (P1's import path) and the corporate-action verb's hardcoded actor are one
+   decision — what a CLI run is allowed to assert about identity — and should be settled once, in
+   both places, with the trust assumption written down. The third is the desktop deactivation
+   dialog's literal `UpdatedBy: "User"` (`SecurityMasterDeactivateViewModel.cs:80`), which the new
+   P5 gate authorizes without attributing; its remedy is already specified — thread the desktop
+   actor source through a constructor that does not yet accept it, per the 2026-08-28 wiring
+   analysis. The fourth is the desktop backfill command, whose up-to-1,000 amendments per
+   invocation all carry `UpdatedBy: "TradingParametersBackfillService"`
+   (`TradingParametersBackfillService.cs:209`) because neither the interface nor the command passes
+   an actor (`ITradingParametersBackfillService.cs:12`, `SecurityMasterViewModel.cs:2237`); the
+   remedy is the same actor source threaded through the command and the service signature, with
+   `SourceSystem: "PolygonBackfill"` left as it is. P1's attribution work must not close with
+   either outstanding. This entry is scoped to *actor-source* defects — sites that have an
+   operator to name and stamp a literal or an unvalidated string instead — which is why it counts
+   four while the open table carries a fifth attribution row: alias corrections record the
+   correcting actor nowhere (`PostgresSecurityMasterStore.Aliases.cs`, the P1 alias row above).
+   That one is a recording gap, not a wiring one — there is no field to thread an actor into — and
+   its remedy is bound to the alias source-role decision under P1's remaining constraints, so it is
+   deliberately not folded into this count (scoping stated 2026-09-02, after review). This entry
+   has counted two, then three (both corrected 2026-09-02, after review): the pass re-verified P1's
+   CLI, alias, and constraint rows and did not carry the desktop rows into the table, so the
+   priority built on the table inherited the omissions — a frame limiting what was seen, the
+   failure the Method section names.
+
+---
+
+## Scheduled institutional-requirements pass — 2026-09-08
+
+Pinned at `a5c6126f`, 239 commits after the 2026-09-01 pass's `5b901dda`. This pass took the
+subsystem's **read model** as its frame — the path from the flat v1 asset-specific-terms payload,
+through the F# `SecurityMasterLegacyUpgrade` economic-definition projection, into the
+`economicTerms` JSON that reporting, accounting and fund structure consume — plus the persistence
+and operator surfaces around it. That path has not been the frame of any prior pass, and seven of
+this pass's findings live in it.
+
+The verdict is unchanged and the standing open lists below are unchanged. What this pass adds is
+the observation that the Security Master has **two term models, and the normalized one does not yet
+earn its place**: the cross-asset `SecurityTermModules` document is a lossy one-way projection of
+the per-class v1 payload, and every serious consumer already reaches around it into the retained v1
+JSON. That is the same class of problem the original review named — a taxonomy advertising more
+than its economics carry — one layer up from where it was filed.
+
+### Re-verified as still open
+
+| # | Item | Evidence at `a5c6126f` |
+| --- | --- | --- |
+| A1 | Cash-flow resolver cannot read `DirectLoan`'s coupon | `CouponRateAliases` is still `["fixedCouponRate", "couponRate", "coupon", "annualRate"]` (`StructuredCashFlowTermsResolver.cs:19`); `DirectLoan`'s declared key is `currentCouponRate` (`SecurityAssetTermsSchema.cs:369`). C3 below files the second half: even with the alias, the economic definition carries no coupon to read. |
+| A3 | Readiness models 13 of 26 classes, no parity guard | `SecurityMasterOperationalReadinessService.cs` untouched in the range. |
+| A4 | Profile `IsProjected`/`IsSearchable` govern nothing | Narrowed, not closed. They now have exactly one consumer, and it is not projection or search: `SecurityAssetProfileGovernanceService.cs:511, :525` **counts** them to score promotion readiness. A field marked projected is still not projected. |
+| N4/N5 | Pack registry overlap rule cannot fire; shared prose contract schema | `SecurityAssetPackRegistry.cs` unchanged. Every pack is built by the one `Pack(...)` factory (`:387-417`), which hands all of them the same `ContractSchema`, `StandardValidationRules` and `StandardReportingTaxonomy` constants — including packs built through the public `CreateCandidateDescriptor` (`:299-318`). `RequireSchema`, `RequireValidationRules` and `RequireReportingTaxonomy` (`:587-600`, `:673-694`) therefore cannot fail for anything constructible through the registry's own API. |
+| N6 | Projection fan-out per upsert | `PostgresSecurityMasterStore.cs:361-364` still runs all 13 writers on every record, so 12 issue a `delete … where security_id = @id` that matches nothing. |
+| A2, P1, P3b, P4 | Detection/resolution key split; provenance and actor-source rows; alias history; ingest classification and backfill counting | Anchor files unchanged in the range; not re-derived this pass. |
+| — | Deferred quartet | Relational projections for the private/alternative classes, valid-time term history, codec generation, N6 amplification — posture unchanged. **C1 and C5 both bear on the codec-generation item**, which this pass would now rank higher than "deferred". |
+
+### C1 — The cross-asset economic-terms document drops 13 of the 27 modules it is built from, and every serious consumer reaches around it
+
+`SecurityTermModules` (`src/Meridian.FSharp/Domain/SecurityTermModules.fs:497-533`) declares 27
+term modules. `SecurityEconomicDefinitionAdapter.BuildEconomicTermsJson`
+(`src/Meridian.Application/SecurityMaster/SecurityEconomicDefinitionAdapter.cs:90-209`) emits
+**14** of them: `maturity`, `coupon`, `discount`, `accrual`, `payment`, `redemption`, `call`,
+`auction`, `sweep`, `financing`, `issuer`, `equityBehavior`, `fund`, `structuredProduct`.
+
+Never emitted: `floatingRate`, `tradingParameters`, `creditRating`, `depositaryReceipt`,
+`dividendSchedule`, `covenants`, `esg`, `venue`, `multiCalendar`, `inflationLinked`, `sinkingFund`,
+`accountingElections`, `pci`.
+
+The 13 split two ways, and both halves are findings:
+
+- **Two are computed and then discarded.** `FloatingRate` is populated for `StructuredCredit`
+  (`SecurityMasterLegacyUpgrade.fs:445-451`); `TradingParameters` is populated for `Commodity`,
+  `Cfd` and `Warrant` (`:550-558`, `:565-573`, `:584-592`). The upgrade path does the work and the
+  serializer throws it away, so no consumer of `EconomicTerms` can read a reference index, a reset
+  frequency, a contract multiplier or a margin requirement — for any class.
+- **Eleven are never populated at all.** No assignment to `CreditRating`, `DepositaryReceipt`,
+  `DividendSchedule`, `Covenants`, `Esg`, `Venue`, `MultiCalendar`, `InflationLinked`,
+  `SinkingFund`, `AccountingElections` or `Pci` exists anywhere outside
+  `SecurityTermModules.empty` (`SecurityTermModules.fs:605-633`) — a repo-wide grep for each
+  field name with a non-`None` right-hand side returns nothing in `src/` or `tests/`. They are
+  declared cross-asset capability with no producer and no consumer.
+
+Three of those eleven are not merely unwired — they are **modeled twice**. `SinkingFund`,
+`InflationLinked` and `AccountingElections` exist as live, projected, Bond-only DTOs
+(`src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:117-119`) behind
+`PostgresBondReferenceProjectionStore` and migration `017_security_master_bond_clearwater_lifecycle_fields.sql`.
+The concept has a wired asset-specific home and a dead cross-asset one. That is the shape the
+review has repeatedly asked the subsystem to generalize, running in reverse.
+
+**The consequence is already visible in the consumers.** The accounting event source reads
+`LegacyAssetSpecificTerms` — the retained raw v1 payload — for the accounting classification
+(`src/Meridian.Strategies/Services/SecurityMasterAccountingEventSourceAdapter.cs:344`), typed-row
+evidence (`:441`), profile fields (`:610`) and `factorScheduleEntries` (`:619`). The certified
+reporting snapshot retains `LegacyAssetSpecificTerms.GetRawText()` verbatim
+(`src/Meridian.Reporting/CertifiedReportingSnapshotBuilder.cs:349`). The normalized document is
+being routed around by the two surfaces that most need a normalized document.
+
+**This is not data loss.** `ToEventEnvelope` serializes the whole `SecurityEconomicDefinitionRecord`
+including `LegacyAssetSpecificTerms` (`SecurityMasterMapping.cs:114-117`), and snapshots take the
+same record (`:140`), so the v1 payload is retained in the append-only stream and the loss is
+recoverable. The finding is about the read model, not the record of truth.
+
+**There is no guard.** `SecurityAssetTermsSchemaRoundTripTests` is an excellent instrument — it
+forces the v1 serialize and deserialize sides to agree per class, per field, and fails when the
+schema grows. Nothing equivalent exists for the v1 → v2 projection. Coverage is three spot tests
+(`tests/Meridian.FSharp.Tests/DomainTests.fs:766, :796, :1531`), and there is no test file for
+`SecurityEconomicDefinitionAdapter` at all.
+
+The remedy is the pattern the subsystem already proved: a per-class economic-projection coverage
+test, table-driven off `SecurityKind`'s arms and `SecurityTermModules`' fields, asserting for each
+class which modules the projection is expected to populate and which keys the serializer is
+expected to emit — so that a module added to the record, or an arm that stops populating one,
+fails a test instead of silently vanishing between two hand-written mappings.
+
+### C2 — `StructuredCredit`'s economic mapping overloads one free-text field three ways and infers strip flags by substring
+
+`SecurityMasterLegacyUpgrade.fs:413-470`, the `StructuredCredit` arm. Four sites:
+
+- `Coupon.PaymentFrequency = terms.FactorSchedule |> Option.map PaymentFrequency.OtherFrequency` (`:443`)
+- `FloatingRate.ResetFrequency = terms.FactorSchedule` (`:450`)
+- `Issuer.IssuerName = terms.PoolId`, `Issuer.IssuerProgram = Some terms.CollateralType` (`:429-431`)
+- `IsInterestOnly = terms.Tranche.Contains("IO", OrdinalIgnoreCase)`,
+  `IsPrincipalOnly = terms.Tranche.Contains("PO", OrdinalIgnoreCase)` (`:465-466`)
+
+`factorSchedule` is declared as **the free-text legacy reference** — the schema says so in as many
+words, distinguishing it from the typed `factorScheduleEntries` array
+(`SecurityAssetTermsSchema.cs:382-387`). One free-text string is here carrying a factor-schedule
+reference, a coupon payment frequency and a floating-rate reset frequency simultaneously.
+
+The payment-frequency site is the one with a live blast radius. `ToAccountingSecurity` reads
+`coupon.paymentFrequency` and hands it to `ResolvePaymentFrequency`
+(`SecurityMasterAccountingEventSourceAdapter.cs:322-323`), which maps `"Annual"` to 1, `"Monthly"`
+to 12, and — via `int.TryParse` — accepts **any numeric string** as payments per year
+(`:687-706`). A factor-schedule reference reading `"Monthly"` becomes a monthly accrual by
+coincidence; one reading `"Annual"`, or a numeric pool-file cadence code, sets the accrual
+frequency of a monthly-paying pool to whatever the string happens to parse as. The value is not
+validated against anything, because in its own field it is documentation.
+
+The substring inference is wrong on ordinary tranche labels. `"PRIORITY"` contains `IO`;
+`"POOL A"`, `"PORTFOLIO"` and `"SUBORDINATED POOL"` contain `PO`. Either flips a strip flag that
+`structuredProduct.isInterestOnly` / `isPrincipalOnly` then publishes
+(`SecurityEconomicDefinitionAdapter.cs:203-204`). The Bond arm gets the same two flags right by
+matching the `BondSubclass` union (`SecurityMasterLegacyUpgrade.fs:136-140`); `StructuredCredit`
+has no subclass field to match, which is the actual gap — `tranche` is a free-text label being
+asked to be a discriminant.
+
+Underneath all four sits a modeling gap the schema makes plain: **`StructuredCredit` has no numeric
+coupon field of any kind** (`SecurityAssetTermsSchema.cs:375-391`). `couponOrIndex` is one string
+doing the work of coupon type, rate, reference index and spread. So
+`CouponRate: ReadDecimal(coupon, "couponRate") ?? ReadDecimal(structuredProduct, "weightedAvgCoupon")`
+(`SecurityMasterAccountingEventSourceAdapter.cs:317`) resolves to null on both arms —
+`Coupon.CouponRate` is hardcoded `None` (`SecurityMasterLegacyUpgrade.fs:441`) and
+`WeightedAvgCoupon` likewise (`:452`). **Structured credit accrues at no coupon rate**, which is
+A1's defect one asset class over, from a different cause: A1's `DirectLoan` has the rate and the
+resolver cannot find it; `StructuredCredit` has nowhere to put one.
+
+### C3 — `DirectLoan`'s economic definition carries a maturity and a borrower name, and nothing else
+
+`SecurityMasterLegacyUpgrade.fs:393-412`. The whole arm populates `Maturity` and `Issuer`.
+
+`DirectLoan`'s v1 schema declares `referenceIndex`, `spreadBps`, `currentCouponRate`,
+`resetFrequency`, `principalSchedule` (required) and `covenants` (required)
+(`SecurityAssetTermsSchema.cs:363-374`). None of them reaches `Coupon`, `FloatingRate`,
+`SinkingFund` or `Covenants` — the last two being C1's always-`None` modules, so there is nowhere
+for them to land even if the arm tried.
+
+This is the half of A1 that survives A1's own remedy. Adding `currentCouponRate` to
+`CouponRateAliases` fixes `StructuredCashFlowTermsResolver`, which reads the v1 payload directly.
+It does nothing for anything reading `EconomicTerms` — the accounting adapter
+(`SecurityMasterAccountingEventSourceAdapter.cs:317-323`) and the fund-structure service
+(`src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:2730-2733`) both read
+`coupon` from the normalized document and will still see nothing. Private credit projects at zero
+interest through two independent paths, and A1 as filed closes one.
+
+### C4 — Create is the one write path with no asset-class round-trip guard
+
+`ToSecurityKind`'s fallback arm degrades an unrecognized asset class to `OtherSecurity`, preserving
+the raw class name as `category` (`SecurityMasterMapping.cs:405-420`). This is deliberate and
+correct as **read** tolerance, and the comment says so. The arm is not gated on
+`SecurityKindMappingMode`, so `Write` takes it too.
+
+The subsystem knows this and guards it — on two of three write paths.
+`EnsureAssetClassRoundTripsSafely` (`SecurityMasterService.cs:685-703`) is documented as "read
+tolerance must not become write tolerance" and refuses the write outright. It runs on amend
+(`:84`) and on deactivate (`:257`).
+
+`ExecuteCreateAsync` (`:305-314`) never calls it. The path is
+`ToCreateCommand` → `ToSecurityKind` → the fallback arm → `CreateProjectionFromResult`, which takes
+`AssetClass` from the F# snapshot (`:1524-1529`) — that is, `"OtherSecurity"`. The override
+parameter applies only to profile-backed custom assets.
+
+So `CreateAsync` with `AssetClass: "ExchangeTradedFund"` — a name **this repository's own pack
+registry advertises** under `PlannedAssetClasses` (`SecurityAssetPackRegistry.cs:179`) — persists
+silently as an `OtherSecurity`, with no error and no warning. And because `OtherSecurity` *is* a
+catalog class, every subsequent amend passes the guard: the misclassification is permanent and
+never surfaces. A typo (`"Equitiy"`, `"Bonds"`) lands the same way.
+
+`SecurityValidationGateService` does not cover this. It resolves an **already-persisted** security
+by id or ticker and validates it for a workflow (`SecurityValidationGateService.cs:22-63`); it is a
+read-side gate, not a write gate, and by the time it runs the asset class is already
+`OtherSecurity` and valid.
+
+No test covers the guard on any path — `EnsureAssetClassRoundTripsSafely` has no test reference in
+`tests/`.
+
+The fix is one call plus a test. It is the cheapest item in this document.
+
+### C5 — Two numeric JSON readers on the hand-written projection path abort the upsert on an explicit null, and the codebase says so
+
+`PostgresSecurityMasterStore.cs:1828-1836`:
+
+```csharp
+private static decimal? GetOptionalDecimal(JsonElement json, string propertyName)
+    => json.TryGetProperty(propertyName, out var value) && value.TryGetDecimal(out var decimalValue)
+```
+
+`JsonElement.TryGetDecimal` and `TryGetInt32` throw `InvalidOperationException` when `ValueKind` is
+not `Number` — including `Null`. Every sibling reader in the same file checks the kind first:
+`GetOptionalString` (`:1813`), `GetOptionalBool` (`:1838`), `GetOptionalObject` (`:1844`),
+`TryGetOptionalDateOnly` (`:1852`). These two do not.
+
+This is not an inference. The newer registry-driven path fixed exactly this and documented the
+defect it was fixing, in `PostgresSecurityMasterStore.TermsProjection.cs:241-251`:
+
+> The value kind is checked before the value is read rather than after. The shared `GetOptional*`
+> readers reach straight for `TryGetDecimal`/`TryGetInt32`, which THROW on a non-number element —
+> including on the JSON null the canonical serializer writes for every optional term the record
+> does not carry. A loan with no spread is an ordinary record, not an error, and it must not be
+> able to abort the projection transaction.
+
+The fix landed on the new path (`DecodeTerm`, `:259-275`) and was never back-ported. The unfixed
+readers still serve **all 11 hand-written projection writers** and — the part that matters most —
+the **core `securities` upsert**, where `lot_size` and `tick_size` are read from `CommonTerms` this
+way (`PostgresSecurityMasterStore.cs:339-340`). The F# serializer emits every optional common term
+unconditionally (`Interop.SecurityMaster.fs:424-436`), and `None` serializes as JSON `null` under
+System.Text.Json's built-in F# option support — which the interop tests confirm for the `Some` side
+by reading `settlementCycleDays` as a bare number
+(`tests/Meridian.Tests/Application/SecurityMaster/SecurityMasterMappingInteropTests.cs:23`).
+
+A security with no lot size is an ordinary record. Per the quoted comment's own reasoning, it
+aborts `UpsertProjectionCoreAsync`. The integration suite that would catch it is excluded from the
+CI gate (`PostgresSecurityMasterStore.TermsProjection.cs:41-42`). No code was executed for this
+pass, so the reachability is argued from the serializer and the repository's own statement of the
+behaviour, not observed; the guard asymmetry itself is not in question and the back-port is worth
+doing on the asymmetry alone.
+
+### C6 — Step-coupon and inflation terms are resolved, documented as live, and consumed by nothing
+
+`StructuredCashFlowTerms.CouponRateAsOf` (`src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:74-94`)
+and `HasStepCouponSchedule` (`:66`) have **zero callers** in `src/` or `tests/` — the grep returns
+their declarations and nothing else. The projector uses the scalar `terms.CouponRate`
+(`SecurityMasterCashFlowService.cs:314`), so a step-rate bond projects every period at its first
+rate.
+
+The doc comment above them (`StructuredCashFlowTerms.cs:69-73`) claims the opposite — that this is
+"what makes a step-rate bond computable instead of a classified-but-inert label". So does the
+schema's comment on `stepSchedule` (`SecurityAssetTermsSchema.cs:252-255`: "These are what make
+StepRate/FixedToFloat/InflationLinked subclasses computable rather than labels"). The plumbing runs
+from the F# codec through the schema through the resolver and stops one call short of the
+projector. The same is true of `InflationIndex` / `InflationBaseIndexValue` /
+`InflationIndexRatio` (`:21-23`, resolver `:43-45`): resolved, never read.
+
+A doc comment asserting a capability the code does not have is worse than a missing capability,
+because it is what a reviewer checks instead of the call graph. Either wire `CouponRateAsOf` into
+`BuildCalculatedProjection` — it is a one-line substitution at `SecurityMasterCashFlowService.cs:314` —
+or correct all three comments to say the schedules are captured and not yet projected.
+
+Two adjacent items from the same read, filed here rather than separately:
+
+- **No `IStructuredCashFlowProvider` implementation exists.** The interface
+  (`src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs:7`) has no implementer in
+  `src/` or `tests/`; the tests inject `Array.Empty<IStructuredCashFlowProvider>()`
+  (`tests/Meridian.Tests/Application/SecurityMasterCashFlowServiceTests.cs:43` and six more).
+  `MapSourceKindToProviderId` maps to `"miac"` and `"moodys-analytics"`
+  (`SecurityMasterCashFlowService.cs:598-603`) and the service returns null when no provider
+  matches (`:126-132`), so **any security assigned the MIAC or Moody's cash-flow source yields no
+  projection at all** — silently, as an ordinary null. Only `CalculatedBullet` and
+  `CalculatedSinker` produce anything.
+- **Amortization is one seam in name and three in practice.** `SecurityMasterAmortizationLedgerBridge`
+  (`:130-140`), `SecurityMasterCostBasisAdjustmentService.AddAmortizationAdjustments` (`:193-249`)
+  and `FaceValueLot.AmortizedBasisAsOf` (`FaceValueLot.cs:129-206`) each implement it
+  independently. The only method-aware one — the one that knows constant-yield — is
+  `FaceValueLot`'s, and it has no production caller. The two live implementations are
+  straight-line-only and both hardcode par at 100
+  (`SecurityMasterAmortizationLedgerBridge.cs:56, :294`; `SecurityMasterCostBasisAdjustmentService.cs:213, :225`),
+  ignoring `LedgerTaxLotRecord.ParBasis` — which is precisely the mis-amortization
+  `FaceValueLot.ParBasis` was introduced to prevent.
+
+### C7 — The browser's security-detail surface carries its own asset-class taxonomy, and it matches nothing
+
+`src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.view-model.ts:137-139`:
+
+```ts
+const ASSET_CLASS_OPTIONS = [
+  "Equity", "FixedIncome", "Future", "Option", "Fund", "Currency", "Commodity", "Crypto", "Index"
+] as const;
+```
+
+Four of the nine (`FixedIncome`, `Fund`, `Currency`, `Index`) are not `SecurityAssetClassCatalog`
+classes at all, and the list omits sixteen that are — `Bond`, `Swap`, `DirectLoan`,
+`StructuredCredit`, `PrivateFundInterest`, `PrivateCompanyEquity`, `RealEstateHolding`,
+`CommitmentGuarantee`, `Repo`, `Deposit`, `CertificateOfDeposit`, `CommercialPaper`,
+`TreasuryBill`, `CashSweep`, `Warrant`, `InvestmentFund` and `Cfd` among them. The module's
+`COUPON_TYPE_OPTIONS` (`:118-133`) likewise diverges from the schema's declared `couponType`
+vocabulary (`SecurityAssetTermsSchema.cs:245`): the UI offers `Variable`, `Step-Up` and `PIK`,
+none of which the codec can decode, and `couponType` is one of the four closed vocabularies the
+write path enforces (`SecurityAssetTermField.Allows`, ordinal and case-sensitive,
+`SecurityAssetTermsSchema.cs:96-98`).
+
+The visibility buckets have the same shape: `EQUITY_FUND_VISIBLE_FIELDS`,
+`FIXED_INCOME_VISIBLE_FIELDS` and `TRADING_ASSET_VISIBLE_FIELDS` (`:278-292`, `:378-388`), with
+everything outside equity/fund/fixed-income falling into a two-field bucket (`:292`) — so `Swap`,
+`DirectLoan`, `StructuredCredit`, `PrivateFundInterest`, `Repo` and `Deposit` render two fields.
+
+The root cause is that **`SecurityAssetTermsSchema` is never served over HTTP.** All its consumers
+are server-side; no endpoint in `src/Meridian.Ui.Shared/Endpoints/` exposes it. The browser cannot
+be schema-driven for the 26 declared classes because it cannot see the schema. The one
+schema-driven browser surface is the profile-backed create panel, which works precisely because
+`SecurityAssetProfileDefinitionDto` *is* served
+(`SecurityMasterEndpoints.cs:82-95` → `hooks/use-workstation-data.ts:786` →
+`screens/settings-screen.tsx:2591-2619`) and rendered generically from `profile.fields`. The
+pattern is proven in-repo; it is the schema endpoint that is missing.
+
+The WPF create editor gets this right without an endpoint, because it is in-process: it reads
+`SecurityAssetClassCatalog.AssetClasses` directly
+(`src/Meridian.Wpf/ViewModels/SecurityMasterEditViewModel.cs:28`), `GetPreferredIdentifierKinds`
+(`:70, :368`) and `SupportsBasicCreateWorkflow` (`:73`). Two clients, the same product decision,
+opposite answers — and the browser is the lane that ships.
+
+### Smaller notes, not filed as findings
+
+- **The passport editor is four free-text boxes for every asset class.**
+  `security-passport-editor.tsx:329-350` renders "Field path" (placeholder
+  `EconomicDefinition.Coupon`), "New value", "Effective from", "Justification"; `assetClass` is
+  used only to render a badge (`:294`). The operator must know the canonical dotted path by heart
+  and every write is an untyped string. The server-side validator behind it is genuinely
+  registry-driven (`SecurityMasterWorkbenchCommandService.cs:1093` → `SecurityAssetTermsSchema.Field`),
+  so the schema exists to drive this form and is not reaching it — the same gap as C7. The WPF
+  editor (`SecurityPassportEditorViewModel.cs`, 469 lines) is a parallel reimplementation of the
+  same four commands with independently re-derived enable rules (`:201-213` vs
+  `security-passport-editor.view-model.ts:67-94`); they agree today with nothing enforcing it.
+- **`SecurityMasterDraftProposalService.BuildDraftAsync` hardcodes `AssetClass: "Equity"`**
+  (`:82`) for every machine-proposed draft, whatever the symbol resolved to.
+- **Eight projection tables have no foreign key to `securities`.** Migrations 005–009 declare
+  `references __SCHEMA__.securities(security_id) on delete cascade` (e.g. `007:2`); migrations 010
+  (swap), 011 (commodity), 012 (crypto), 013 (deposit), 014 (MMF), 015 (CD) and 033 (direct_loan,
+  structured_credit) declare `not null primary key` only. The child tables in 033 cascade from a
+  parent that has no parent.
+- **`exchange_code` is queried case-sensitively against a verbatim-stored column.**
+  `PostgresEquityReferenceProjectionStore.cs:41` is `where exchange_code = @exchange_code` with the
+  parameter uppercased at `:44`, while the write side stores `commonTerms.exchange` unmodified
+  (`PostgresSecurityMasterStore.cs:338`). Nine lines below the query, `GetByIssuerAsync` does it
+  correctly with `lower(...) = lower(...)` (`:58`). `PostgresCommodityReferenceProjectionStore.cs:55-58`
+  has the same defect. The classes that normalize on write — futures `root_symbol`, FX currency
+  codes, crypto — are unaffected.
+- **The snapshot payload has no schema version, and dispatch is by structural sniffing.**
+  `SecuritySnapshotRecord` (`SecurityDtos.cs:121-126`) carries the *stream* version only; migration
+  `001:80-85` has no such column. `FromEconomicPayload` decides the payload family by testing for
+  the presence of `classification` and `economicTerms` (`SecurityMasterMapping.cs:121-132`). The
+  event row is unversioned too — the version lives in free-form `metadata` (`:101`) and the replay
+  path never reads it back, and never runs the upcaster. `corporate_actions` does carry
+  `payload_schema_version`; the security stream does not.
+- **Snapshots buy no I/O.** `SecurityMasterAggregateRebuilder.cs:38-42` loads the entire stream and
+  filters `StreamVersion > snapshot.Version` in memory; the predicate is never pushed into SQL. The
+  as-of rebuilds (`:61-82`, `:91-113`) ignore the snapshot entirely and fold from version 0, so
+  pruning event history — the reason to snapshot — would silently break them.
+  `RebuildEconomicDefinitionAsync` has no unit test; `SecurityMasterAggregateRebuilderTests.cs`
+  covers only the four corporate-action pass-throughs.
+- **`LoadByStatusAsync` and `SearchAsync` are 1 + 3N.** `PostgresSecurityMasterStore.cs:224-257`
+  selects ids and then hydrates one at a time, each hydration costing a securities read plus
+  `LoadIdentifiersAsync` (`:564`) plus `LoadAliasesAsync` (`:606`). `BuildWarmSetAsync`
+  (`SecurityMasterProjectionService.cs:26-44`) layers `RebuildEconomicDefinitionAsync` — two more
+  connections each — on top, and `SecurityMasterRebuildOrchestrator.cs:81-91` rebuilds per *event*
+  rather than per security, folding the same stream once per amendment in the batch.
+- **Adding an asset class touches ~17 source files**, not the "roughly seven registries" the
+  original review counted — the count is registries plus the two codec arms, the two ingest
+  adapters, the validator registry, the projection writer and its migration, the DI registration,
+  and the workbench query service. The registry work since has removed the *write*-side projection
+  boilerplate for two classes; the read store, its interface, its row records and its DI
+  registration are still hand-written per class, and 11 of 13 classes still have a hand-written
+  writer (`PostgresSecurityMasterStore.cs:45-58`, ~1,444 lines of `:367-1811`).
+- **`SecurityEconomicDefinitionAdapter.SerializeVotingRightsCat` (`:213-228`) is dead** —
+  `equityBehavior.votingRights` is emitted from `.VotingRights.Value` directly (`:181`). Its
+  `throw` on an unhandled case is the exhaustiveness guard the live path does not have.
+- **`Cfd` computes `1m / leverage * 100m` with no zero check** (`SecurityMasterLegacyUpgrade.fs:570`).
+  The write paths do enforce leverage > 0 (`SecurityMasterCommands.fs:309-310`,
+  `AssetClassValidatorRegistry.cs:270`), so it is reachable only from a row predating or bypassing
+  them — and it is unreachable in effect anyway, since C1 means `tradingParameters` is never
+  serialized.
+
+### Priorities from this pass
+
+Read as a delta on the standing lists; ordered by institutional risk per unit of work.
+
+1. **C4, then C5.** Both are small, both are correctness, and both are back-ports of a decision the
+   subsystem has already made and documented elsewhere. C4 is one call to
+   `EnsureAssetClassRoundTripsSafely` in `ExecuteCreateAsync` plus a test that a create with an
+   unknown class is refused rather than silently reclassified — the write-tolerance rule the
+   codebase already states, applied to the path that mints records. C5 is a `ValueKind` check on
+   two readers, matching the four correct siblings beside them and the guard the registry path
+   already carries, plus a projection test with an explicit-null `lotSize`. Neither needs a design
+   decision.
+2. **Decide what the normalized economic-terms model is for, then make it that (C1, C2, C3).** The
+   three findings are one problem seen from three angles, and the decision has to come before the
+   code. Either the document is the cross-asset read model — in which case the 13 unserialized
+   modules get emitted, the 11 empty ones get producers or get deleted, `SinkingFund` /
+   `InflationLinked` / `AccountingElections` stop being modeled twice, and the accounting and
+   reporting consumers stop reading `LegacyAssetSpecificTerms` — or it is a fixed-income-and-cash
+   convenience projection, in which case say so and stop building modules for the classes it does
+   not serve. Whichever answer, the guard comes with it: a per-class economic-projection coverage
+   test built the way `SecurityAssetTermsSchemaRoundTripTests` is built, so the next module cannot
+   be added to the record and dropped by the serializer without a red test. C2's four type-abuse
+   sites and C3's empty arm are then ordinary bugs against a stated contract rather than judgement
+   calls; C2's tranche sniffing should be replaced by a declared subclass discriminant, since a
+   free-text label cannot be one, and `StructuredCredit`'s missing numeric coupon field is a schema
+   change that has to land for the class to accrue at all.
+3. **Serve `SecurityAssetTermsSchema` over HTTP and drive the browser from it (C7).** The
+   profile-backed create panel already proves the pattern end to end in the same codebase, and the
+   WPF create editor already makes the same product decision correctly in-process. Until the schema
+   reaches the browser, the operator's asset-class list, coupon-type vocabulary and field
+   visibility are a third taxonomy maintained by hand — and one that offers `couponType` values the
+   write path will reject. Retiring `security-details-tracker.view-model.ts`'s four hardcoded
+   vocabularies is the deliverable; the passport editor's free-text field-path box is the same fix
+   applied a second time.
+4. **Correct or wire the three "computable, not a label" comments (C6).** Wiring `CouponRateAsOf`
+   into `BuildCalculatedProjection` is a one-line substitution and makes step-rate bonds project
+   correctly. If it is not wired this pass, the three comments must stop claiming it is, because
+   they are what a reviewer reads instead of the call graph. The absent
+   `IStructuredCashFlowProvider` implementations belong in the same decision: a cash-flow source an
+   operator can assign and that silently produces nothing should either be implementable or not be
+   assignable.
+
+---
+
+## Scheduled institutional-requirements pass — 2026-09-10
+
+Pinned at `168a55e4`, which is also `origin/main`. **No Security Master source changed since the
+2026-09-08 pass** — `git log --since=2026-09-07` over `src/Meridian.Contracts/SecurityMaster`,
+`src/Meridian.Application/SecurityMaster`, `src/Meridian.Storage/SecurityMaster` and
+`src/Meridian.ReferenceData/SecurityMaster` is empty, and the three commits in the range are the
+2026-09-08 review pass and its generated-doc refresh. Every standing finding — C1–C7, A1–A4,
+B1–B7, N4/N5, N6, P1, P3b, P4, A2 and the deferred quartet — therefore stands unchanged at the
+anchors those passes recorded, and this pass did not re-derive them.
+
+Because the code was still, this pass took as its frame the one part of the subsystem **no prior
+pass has framed on**: the migrate-on-read schema-evolution machinery — `AssetSpecificTermsSchema` /
+`EconomicTermsSchema`, the three upcasters and the composed chain, the `schema_version` column they
+feed, and the event-replay path that depends on them. (`Upcaster` appeared zero times in this
+document before this section; `SchemaVersion` once, in passing.)
+
+The verdict is unchanged. What this pass adds is that **the subsystem's schema-evolution layer is
+the least-guarded part of it**, and that the cross-family bridge the 2026-08 work added to close a
+read outage is presented as economics-preserving while carrying 11 of roughly 60 fields. C1 found
+the normalized read model to be a lossy one-way projection that consumers route around; D1 below is
+the same loss on the *return* leg, where nothing routes around it because it is the rebuild path.
+
+### D1 — The cross-family v2→v1 bridge drops 9 of the 14 modules it is given, and it is the rebuild fallback
+
+`SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert`
+(`src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs:50-90`) flattens
+a v2 economic-terms document into the flat v1 asset-specific-terms shape. It reads five modules —
+`maturity`, `coupon`, `payment`, `accrual`, `discount` — and writes eleven fields.
+
+`BuildEconomicTermsJson` (`src/Meridian.Application/SecurityMaster/SecurityEconomicDefinitionAdapter.cs:90-208`)
+emits **fourteen**. The nine `Convert` never looks at:
+
+`redemption`, `call`, `auction`, `sweep`, `financing`, `issuer`, `equityBehavior`, `fund`,
+`structuredProduct`.
+
+Six more fields are dropped inside the five modules it does read: `accrual.accrualMethod`,
+`accrual.exDividendDays`, `accrual.businessDayConvention`, `accrual.holidayCalendar`,
+`payment.paymentLagDays`, `payment.paymentCurrency`.
+
+What that means per asset class, in the terms an institutional user would name:
+
+- A **callable bond** loses `isCallable`, `firstCallDate`, `callPrice`, the entire `callSchedule`
+  and `putSchedule`, and `makeWholeSpreadBps`. What survives is a bullet bond with the same coupon.
+- An **MBS/ABS** loses `factor` and `factorDate` — the pool factor. Current face is
+  original face times factor; without it the position's principal balance is simply wrong. It also
+  loses `poolIdentifier`, `trancheClass`, `prepaymentAssumption`, `notionalBalance`,
+  `weightedAvgCoupon`, `creditEnhancementPct` and the IO/PO strip flags.
+- A **money-market fund** loses `sweepEligible`, `weightedAverageMaturityDays` and
+  `liquidityFeeEligible`; a **sweep vehicle** loses its whole `sweep` module, so the program name,
+  vehicle type and target account are gone.
+- **Every class** loses the `issuer` module — `leiCode`, `issuerSector`, `issuerCountry`,
+  `ultimateParentName`. That is the input to issuer-concentration and credit-exposure reporting.
+- **Repo / financing** loses counterparty, collateral type and haircut in full.
+
+**The path this fires on is projection rebuild.** `SecurityEconomicDefinitionAdapter.ToProjection`
+(`:57-58`) takes the retained v1 payload when present and falls back to
+`SecurityAssetSpecificTermsUpcasterChain.Normalize(economic.EconomicTerms)` when
+`LegacyAssetSpecificTerms` is null. In-process that field is never null: its only construction site
+is `ToEconomicRecord` (`:16-36`), which always assigns `projection.AssetSpecificTerms`, a
+non-nullable `JsonElement`. The fallback is reachable only for a
+`SecurityEconomicDefinitionRecord` **deserialized from a stored payload** in which the property is
+absent or null — and that is exactly what the replay path does:
+`SecurityMasterAggregateRebuilder.RebuildAsOfAsync` (`:61`), `RebuildRecordedAsOfAsync` (`:91`) and
+`RebuildAsync` (`:115`) each fold `SecurityMasterMapping.FromEconomicPayload(@event.Payload)`
+(`SecurityMasterMapping.cs:121-132`) over the event stream and hand the result to `ToProjection`.
+`SecurityMasterProjectionService.cs:36` does the same from a seed.
+
+`FromEconomicPayload` has two branches, and only one is exposed: a payload carrying
+`classification` and `economicTerms` deserializes straight to the record, so an event written
+without `legacyAssetSpecificTerms` yields null and takes the lossy fallback; a payload in the older
+projection shape goes through `ToEconomicRecord` and is safe. Whether such events exist is a
+question about deployment history that cannot be answered from the repository, and this finding
+does not claim they do. It claims the codebase models the case as live — the field is declared
+`JsonElement?` (`SecurityDtos.cs:119`), the adapter carries an explicit fallback for it, and the
+test suite constructs it null and calls that case "the latent v2 trap"
+(`SecurityAssetSpecificTermsUpcasterChainTests.cs:119-159`) — while the fallback silently discards
+about four fifths of the document.
+
+**Nothing says so.** The upcaster's own summary claims "the same document reads as a valid v1
+payload **with its economics preserved**" (`SecurityAssetSpecificTermsUpcasterChain.cs:13-15`); the
+adapter comment says it "lands as a valid v1 payload" (`SecurityEconomicDefinitionAdapter.cs:53-56`).
+Neither is qualified. There is no log, no diagnostic and no marker on the rebuilt projection
+recording that it was reconstructed by the lossy route, so a rebuilt callable bond is
+indistinguishable from a bullet bond that was always a bullet bond.
+
+**And nothing guards it.** `SecurityAssetTermsSchemaRoundTripTests` forces the v1 serialize and
+deserialize sides to agree per class and per field. `Convert` has four spot tests
+(`SecurityAssetSpecificTermsUpcasterChainTests.cs:34, :70, :120`) asserting `maturityDate`,
+`couponRate`, `dayCount` and `yieldRate` — the fields that do survive. No test asserts what is
+lost, so the nine dropped modules cannot fail a test, and a fifteenth module added to
+`BuildEconomicTermsJson` will be dropped by `Convert` in silence exactly as the thirteen in C1 are
+dropped by the serializer. This is the same missing instrument C1 asked for, on the other leg of
+the same round trip, and it strengthens the case for ranking the deferred codec-generation item
+above "deferred".
+
+The remedy has two halves, and the first is cheap. Either `Convert` covers the fourteen modules or
+its callers stop presenting it as preserving economics: at minimum the two doc comments must be
+corrected, and the rebuilt projection must carry a marker saying it came from the flattening route.
+The durable half is a `Convert` coverage test built the way the v1 round-trip suite is built —
+table-driven off `SecurityTermModules`, asserting per module that a populated module survives the
+v2 → v1 → read cycle — so the loss is enumerated in a test rather than discovered in a restatement.
+
+### D2 — The two payload families share one integer key, and version 2 is reserved by prose alone
+
+`SecurityMasterSchemaVersions.cs:48-53` states the rule plainly: `AssetSpecificTermsSchema` and
+`EconomicTermsSchema` "share nothing but the `schemaVersion` key, so their version numbers must
+never be compared against each other's acceptance sets."
+
+`SecurityAssetSpecificTermsUpcasterChain.Normalize` (`:130-136`) compares them:
+
+```csharp
+var version = SecurityAssetSpecificTermsV0ToCurrentUpcaster.ResolveSchemaVersion(payload);
+return version == EconomicTermsSchema.Current
+    ? SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(payload)
+    : SecurityAssetSpecificTermsV0ToCurrentUpcaster.Normalize(payload);
+```
+
+The dispatch is on the bare integer read out of a payload sitting in the asset-specific-terms slot.
+That is not an inconsistency to tidy — the bridge cannot work any other way, because the slot holds
+one key and two families. But it has a consequence the code does not record: **the flat family can
+never use version 2.** `AssetSpecificTermsSchema` skips from `Legacy = 1` to
+`CustomAssetProfile = 3` (`:15, :18`), and nothing explains the gap; there is no reserved constant,
+no comment at the declaration, and no test asserting 2 stays unused.
+
+If a later change declares a genuine v1→v2 evolution of the flat family, every such payload routes
+into `Convert`, which looks for nested `maturity` / `coupon` / `discount` / `accrual` / `payment`
+objects, finds none in a flat document, and — because `GetObject` returns null for each and every
+`WriteIfPresent` returns false (`:92-111`) — emits `{"schemaVersion":1}`. An empty terms object,
+stamped as valid legacy, accepted by the guard at `SecurityMasterMapping.cs:711-723`, and persisted
+by the store with `schema_version = 1`. Total loss of the record's economics with no exception and
+no diagnostic anywhere in the path.
+
+The fix is a few lines and belongs with D1: declare the reservation
+(`public const int ReservedForEconomicTerms = 2;` or equivalent) with a comment at the declaration
+saying why, and add the test the chain's own unknown-future-version test
+(`SecurityAssetSpecificTermsUpcasterChainTests.cs:96-106`) is the template for — asserting that no
+`AssetSpecificTermsSchema` constant equals `EconomicTermsSchema.Current`. Better still, discriminate
+the families on something other than the shared integer, since a payload family that must avoid
+another family's numbers is not really versioned independently of it.
+
+### D3 — `securities.schema_version` has two definitions, and they disagree on the case the column exists for
+
+Migration `024_security_master_schema_version_column.sql` adds the column and states its purpose:
+"compatibility and audit queries can filter on it directly (e.g. WHERE schema_version = 1) without
+a per-row JSON extraction." It backfills **from the blob**:
+
+```sql
+set schema_version = (asset_specific_terms->>'schemaVersion')::integer
+```
+
+`PostgresSecurityMasterStore.UpsertProjectionCoreAsync` writes it from the **post-upcast** value:
+
+```csharp
+var schemaVersion = _assetSpecificTermsUpcaster.Upcast(record.AssetSpecificTerms.GetRawText())?.SchemaVersion
+    ?? SecurityMasterSchemaVersions.DefaultAssetSpecificTerms;
+```
+
+— `PostgresSecurityMasterStore.cs:324-329`, with the payload itself bound raw at `:346`, under a
+comment that states the divergence as intentional: "The stored payload itself is written unchanged
+so no existing read path observes an altered blob."
+
+For unstamped and v1 rows the two definitions agree at 1, which is why this has stayed invisible.
+They diverge on precisely the case the column was added to make visible: a v2 economic-terms
+document in the slot backfills as 2 and upserts as 1, so the column answers "what version is this
+row?" differently depending on whether the row was migrated or written. An operator running the
+migration's own example query — `where schema_version = 1`, to select rows the flat readers can
+handle — selects a v2 blob that the guard at `SecurityMasterMapping.cs:711-723` will reject on read,
+because that guard resolves the version from the blob and has never consulted the column.
+
+The blast radius is bounded, and the bound is worth stating: **no code reads this column.** A grep
+for `schema_version` across `src/Meridian.Storage/SecurityMaster/` returns the insert, the
+`on conflict` update, the parameter bind and the comment — no `select` anywhere, in this store or
+any other. The column and its index (`ix_securities_schema_version`) exist for human compatibility
+and audit queries, so the defect lands entirely on the audience the column was built for, and on
+any future reader that trusts it. Two options, both small: promote the *normalized* payload
+alongside the normalized version, which makes the column true by construction and closes the raw-v2
+blob at the same time; or keep the blob raw, define the column as "the version of the stored blob"
+in both writers, and let the guard stay the only authority on readability. What cannot hold is the
+present arrangement, where the same column means two things and the migration comment documents
+only one of them.
+
+### Smaller notes, not filed as findings
+
+- **`SecurityAssetSpecificTermsUpcasterPipeline.ToSchemaVersion` is wrong for profile payloads.** It
+  declares `AssetSpecificTermsSchema.Legacy` (`:176`), but the pipeline returns
+  `CustomAssetProfile` (3) for a profile-backed payload, which the chain passes through unchanged
+  and the chain's own test asserts (`SecurityAssetSpecificTermsUpcasterChainTests.cs:86-93`). The
+  declared "to" version is a property of the upcaster, not of the result, and only the result is
+  used — `:328` reads `.SchemaVersion` off the returned record, never `ToSchemaVersion` — so nothing
+  is wrong today. It is a false statement in a contract that a future consumer of
+  `ISchemaUpcaster<T>` would reasonably believe.
+- **The upcaster interface models single-hop transitions, and the chain is a hand-written `if`.**
+  `Normalize` (`:130-136`) is a two-branch conditional, not a registry keyed on
+  `FromSchemaVersion`. With three upcasters that is the right size; the note is only that adding a
+  fourth means editing the conditional, and the subsystem's recurring complaint (finding 4, N4/N5,
+  A3) is that adding a thing means editing N hand-maintained places.
+- **`AssetSpecificTermsSchema.IsAccepted` takes `isProfileBacked` as a caller-supplied boolean**
+  (`:31-33`), derived at the one guard site from the payload itself
+  (`SecurityMasterMapping.cs:725-729`). A second caller that computes it differently gets a
+  different acceptance answer for the same payload. Only one non-test caller exists today
+  (`SecurityValidationService.cs:214` is the other, and it derives the flag the same way).
+
+### Priorities from this pass
+
+Read as a delta on the standing lists. All three are small; none needs a design decision.
+
+1. **Correct the two doc comments that call the v2→v1 bridge economics-preserving (D1).** It is two
+   sentences, and until it lands, the next reviewer reads "with its economics preserved" instead of
+   the call graph — which is the failure mode B1's procedural rule was written for. Do it whether
+   or not the coverage test lands this pass.
+2. **Reserve version 2 in `AssetSpecificTermsSchema` and add the test (D2).** A constant, a comment
+   at the declaration and one assertion. It closes a silent total-loss path whose cost, if the gap
+   is ever filled by someone who does not know why it is a gap, is every economic term on every
+   record of the affected family.
+3. **Give `Convert` a per-module coverage test (D1).** Table-driven off `SecurityTermModules`, in
+   the shape `SecurityAssetTermsSchemaRoundTripTests` already proves. This is C1's requested
+   instrument applied to the other leg; specifying both at once is less work than specifying either
+   twice, and it is the guard that stops module fifteen from vanishing.
+4. **Pick one definition of `securities.schema_version` (D3).** Promoting the normalized payload is
+   the option that also removes the raw-v2 blob, and it is the one this review would choose; either
+   way the migration comment and the store comment must end up describing the same column.
+5. **Everything above stays behind C4 and C5** from the 2026-09-08 pass, which remain the two
+   cheapest correctness fixes in the subsystem and have now gone a pass without moving.
+
+---
+
+## Resolution pass — 2026-09-10
+
+An implementation pass on the five items the 2026-09-10 priorities name: D1–D3 from that pass and
+C4/C5 from 2026-09-08, which it ranks ahead of them.
+
+**Validation.** The authoring environment had no .NET SDK preinstalled; 10.0.401 was installed
+locally. `dotnet build tests/Meridian.Tests -c Release` succeeds with 0 errors. `dotnet test` filtered
+to `FullyQualifiedName~SecurityMaster|FullyQualifiedName~WorkstationEndpointsTests` ran 2,240 tests:
+2,185 passed, 54 skipped (the Postgres-backed suites, which need a database the container does not
+have), and 1 failed — `SecurityMasterMappingInteropTests.ToCreateCommand_UnknownAssetClass_DegradesToOtherSecurityPreservingRawClass`,
+which asserted the exact create-time degradation C4 names as the defect. It is split into
+`ToRecord_UnknownAssetClass_DegradesToOtherSecurityPreservingRawClass` (the read tolerance it was
+protecting, now exercised on the read path) and `ToCreateCommand_UnknownAssetClass_RejectsTheWrite`;
+the affected classes then pass 184/184. No F# source changed. The GitHub-hosted `quality-gate`
+remains the authoritative full run.
+
+### Closed this pass
+
+| # | Item | What landed |
+| --- | --- | --- |
+| C4 | Create is the one write path with no asset-class round-trip guard | The `OtherSecurity` fallback arm in `SecurityMasterMapping.ToSecurityKind` is now gated on `SecurityKindMappingMode`: in `Write` mode an unrecognized class throws with the refusal message and the catalog list, so `CreateAsync` with `"ExchangeTradedFund"`, `"Equitiy"` or `"equity"` fails before the command is built and nothing is appended or upserted. Read mode degrades exactly as before. Guarded at the mapping rather than the service so every write-mode mapping is covered, not only `ExecuteCreateAsync`. `SecurityMasterAssetClassSupportTests.CreateAsync_UnrecognizedAssetClass_IsRefusedInsteadOfPersistingAsOtherSecurity` locks it. |
+| C5 | Two numeric JSON readers on the hand-written projection path abort the upsert on an explicit null | `PostgresSecurityMasterStore.GetOptionalDecimal` / `GetOptionalInt` check `ValueKind == Number` before `TryGetDecimal` / `TryGetInt32`, back-porting the registry path's `DecodeTerm` fix to the readers that serve the core `securities` upsert and all eleven hand-written writers. `PostgresSecurityMasterStoreOptionalReadersTests` covers null, string, bool, object, array, absent and non-integral inputs. |
+| D2 | The two payload families share one integer key, and version 2 is reserved by prose alone | `AssetSpecificTermsSchema.ReservedForEconomicTerms = 2` is declared with the reason at the declaration. The chain no longer dispatches on the bare integer: `SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsDocument` requires the economic version *and* at least one economic-terms module key, so a flat payload stamped 2 passes through with its version preserved for the guard's `Unsupported schemaVersion '2'` diagnostic instead of being emptied to `{"schemaVersion":1}`. `SecurityAssetSpecificTermsUpcasterChainTests` asserts the reservation, that no accepted flat version equals `EconomicTermsSchema.Current`, and the pass-through. |
+| D3 | `securities.schema_version` has two definitions | One definition, stated in both writers: **the version stamped on the stored blob** (unstamped → 1), which is what migration 024 backfills. `UpsertProjectionCoreAsync` now writes `ResolveSchemaVersion(record.AssetSpecificTerms)` instead of the post-upcast version, so a v2 economic-terms document in the slot backfills *and* upserts as 2 and `where schema_version = 2` finds every row that needs the bridge. Chosen over promoting the normalized payload because, per D1, that would persist the lossy flattening into the projection. The store's optional `ISchemaUpcaster` constructor seam, whose only use was this promotion, is removed, and the pipeline's summary no longer claims the column derives from it. Migration 024's text is left untouched: schema-control's `migration-immutable-file-modified` rule rejects any edit to an existing migration, comments included, so the definition is stated in the store's upsert comment and here rather than in the migration — whose backfill already implements exactly this definition. |
+| D1 (partial) | The cross-family v2→v1 bridge drops 9 of the 14 modules and is the rebuild fallback | The cheap half and the durable half both landed; the bridge itself stays lossy (see below). The upcaster and adapter comments no longer claim economics are preserved; they name the five bridged modules and the nine dropped ones. `Convert` stamps `flattenedFromEconomicTermsSchemaVersion: 2` on its output and `WasFlattenedFromEconomicTerms` reads it, so a projection rebuilt through the lossy route is distinguishable from one that always carried flat terms (the flat readers ignore undeclared keys, so the marker is inert on every read path). `BridgedModules` / `DroppedModules` / `EconomicTermsModules` are declared on the upcaster, and `SecurityEconomicTermsV2BridgeCoverageTests` reads the emitted module set off `ToEconomicRecord`, asserts it equals the classified set, asserts the exact flat key set `Convert` writes, and asserts per module and per field what survives and what is lost — so a fifteenth module fails a test until it is classified. |
+
+### Still open
+
+- **D1's lossless half.** Making the bridge carry call, structured-product, issuer, sweep, fund,
+  financing, redemption, auction and equity-behaviour terms needs an asset-class-aware flattening —
+  the flat spelling of a call date or a pool factor differs per class and `Convert` does not know
+  the class. That is the codec-generation item the standing lists defer; this pass makes its
+  absence visible (marker) and enumerated (test) rather than closing it.
+- The three 2026-09-10 smaller notes are unchanged, except that
+  `SecurityAssetSpecificTermsUpcasterPipeline.ToSchemaVersion` is now documented as a property of the
+  pipeline, not of any result.
+
+---
+
 ## Method
 
 Reviewed `src/Meridian.FSharp/Domain/SecurityMaster*.fs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`,
@@ -685,7 +5320,7 @@ Reviewed `src/Meridian.FSharp/Domain/SecurityMaster*.fs`, `src/Meridian.FSharp/I
 plus `Validation/`, `Rebuild/`, `CorporateActions/`, `CashFlow/`), `src/Meridian.Storage/SecurityMaster/`
 (43 files plus 26 migrations), `src/Meridian.ReferenceData/SecurityMaster/`, `src/Meridian.Instruments/`
 projection services, `src/Meridian.Ui/dashboard/src/` Security Master screens and the passport editor,
-`tests/Meridian.Tests/SecurityMaster/` (65 files), and `docs/plans/security-master-passport-workbench.md`.
+`tests/Meridian.Tests/SecurityMaster/` (65 files), and `docs/engineering/blueprints/security-master-passport-workbench.md`.
 
 The 2026-08-14 verification pass re-read the F# domain and interop, the 47 `Meridian.Contracts`
 Security Master contracts, the 58 `Meridian.Application` Security Master services, the 46
@@ -693,3 +5328,226 @@ Security Master contracts, the 58 `Meridian.Application` Security Master service
 round-trip and asset-class-support test suites.
 
 No code was changed. No tests were run — this review makes no behavioral claims requiring execution.
+
+The 2026-08-28 pass re-read the F# domain classification tables, `SecurityAssetClassCatalog`,
+`SecurityAssetPackRegistry`, the accounting event source adapter, `PostgresSecurityMasterStore`
+projection fan-out, the parity-guard and terms-schema test suites, and — new to this pass — the bulk
+import path end to end: `SecurityMasterCsvParser`, `SecurityMasterImportService`, the
+`SecurityMasterImport` endpoint in `Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs`, and the
+WPF `SecurityMasterViewModel` import command.
+
+The 2026-09-01 pass established the merge delta with `git log`/`git diff` over
+`eaa83032..5b901dda` per anchor file, then read: the desktop mutation gate and its composition
+(`DesktopMutationPermissionResolver`, the three gated view models, `App.xaml.cs` registration),
+with the mutation surface enumerated by sweeping `src/Meridian.Wpf/` for callers of every mutating
+service member rather than by revisiting the dialogs the fix touched; the five ingest files named
+by P4's cancellation tables, re-anchored line by line; and — new to this pass — the corporate-action
+accounting lane end to end: `CorporateActionCaseAccountingService`,
+`CorporateActionCaseAccountingContracts` (policy and DTOs),
+`PostgresCorporateActionOperationsStore.Accounting`, migration
+`031_security_master_corporate_action_accounting_lane.sql`, the three accounting routes in
+`SecurityMasterEndpoints.CorporateActionOperations.cs`, and the drafting-side authorities they bind
+to (`CorporateActionAccountingProjectionService`, `CorporateActionAssetAccountingEventMapper`,
+`AssetAccountingEventDtos` spine validation).
+
+Review of that pass's pull request (2026-09-02) corrected its B1 remedy three times before it
+converged, each time because an authority had been sought in one form only — as a direct member,
+when it was nested (`ProjectionLineage.TermsHash`); as an evidence row, when the row had lost the
+role that made it evidence; as a retained value, when it was a deterministic derivation of
+retained values (the event identity). The procedural rule that fell out is recorded under B1: name
+the authority per field, then look for it in every form the snapshot retains before classifying
+it. The same review added B2, extended the P4 backfill row to the inner method's success
+accounting, restored the desktop deactivation actor to P1's open table, and — in a fourth round —
+added the spine-kind check the attach path lacks, the posting idempotency key that posting never
+reads, and the desktop backfill's actor to P1's inventory; a fifth round, following the B2
+remedy's precondition to its origin, added B3 — the drafting boundary is a client request — which
+bounds what B1 and B2 can prove until a server-authored drafting path exists; a sixth (2026-09-05)
+added B4 (a restated case re-binds without correction lineage) and B5 (approval evidence minted as
+retained at posting), extended B3 to the generic posting route, and narrowed the spine bullet to
+the one fingerprint the resolver actually recomputes; a seventh and eighth (2026-09-05) recorded
+032's over-constraint and scoped the P4 header, then corrected three of this pass's own statements
+where they had overstated the live path (the spine bullet, against the production store's
+append-time validator and read-time fingerprint check), written an exclusion where an allowlist
+was required (032's predicate), or named an authority that does not exist or is something else
+(B3's election, and the proposal's workflow counter offered as a source-event version); the same
+round then caught B3's posting-side alternative validating after the immutable append — a remedy
+wrong in kind, of the sort this document's method section warns about — and moved the check to
+the posting route; a ninth counted B3's missing authorities honestly (four, not two — the lot
+snapshot and policy decision have no record either) and put the rule-pack step back between
+project and map, since the mapper consumes an attested effect nothing in production produces; a
+tenth applied 032's allowlist to the preflight as well as the index, withdrew the "mint a snapshot
+identity" alternative from B3's position read (the mapper refuses a dependency with no retained
+evidence row behind it), and corrected B4's operator-visible consequence — the case read joins
+only the newest posting, so the second journal is hidden, not shown; an eleventh (a suppressed
+Copilot comment) replaced B2's "all find the binding current" with the actual guard sequence — one
+stamp comparison at ReadyForApproval, then identity and concurrency checks at approval and
+posting — which leaves the stale-draft conclusion where it was; a twelfth (2026-09-06) narrowed
+P5's fail-open boundary to a null session *with no configured anonymous role*, since the named
+role is resolved before the null-session branch — and then, on a further round, stated that
+resolution as role-based evaluation rather than refusal, since an authorised named role is
+granted; a fourteenth (2026-09-06) added B6 — posting is not fenced against a concurrent
+`Approved → AccountingReview` transition, the one shape the crash-retry adoption path cannot
+recover — and withdrew the accounting policy service as a candidate policy-decision authority,
+since its state is a process-local dictionary and its identities are strings; a fifteenth
+(2026-09-06) corrected three of the pass's own statements — B6's recovery option, which as first
+written would have adopted a journal through an approval the winning transition had voided;
+032's fix, which is a two-population rollout because applied scripts are checksum-immutable; and
+B3's account of the generic route, narrowed once the position check and Rules Studio were read:
+the economics are bound there, and what stays caller-authored is the kind, the lineage hashes,
+and the case linkage — and a sixteenth narrowed it once more, since the validator binds the kind
+to the retained event's type, leaving the lineage hashes and the case linkage; the same round
+filed B7, the kind-prefixed identifier both Polygon jobs send as a ticker, which turns P4's
+success-count misreport into one that would cover every row; a seventeenth added B7's second
+defect — the backfill parses an object-shaped response as an array — so that the remedy is not
+presented as complete one fix early; an eighteenth (Copilot) gave B6's fence its failure and retry
+semantics, and corrected two B7 remedy instructions that were wrong in kind — a private,
+field-less model offered for reuse, and a contract field offered for replacement where the
+contracts are additive-only; a nineteenth corrected the fence once more — an append that throws
+is not a confirmed failure, since the journal can commit while the caller sees an exception, so
+the marker resolves from the journal store's idempotency record, never from the exception or the
+spine stage; a twentieth removed the "another corporate action" reach from B3 (the identity B1
+recomputes hashes the case's own action and case ids, so another action's retained event cannot
+match it), stopped the fence clearing on a single negative read, and added B7's third defect —
+the amendment replaces the common terms with three vendor-named fields the strict command mapping
+rejects; a twenty-first (2026-09-06) corrected four remedies that were each one step short of
+implementable: B2's attach check compared only the case version where the digest commits five
+other independently staleable inputs, and now reloads and compares each; B4's required a matching
+correction reference that the spine never compares against the prior journal's lines, and now
+requires the correcting effect to neutralize the retained impact; B5's said "load and compare"
+where nothing in the lane can be loaded, and now names the durable evidence authority and the
+approval-contract identifier that must exist first; and B6's recovery offered a fresh approval
+that the immutable spine cannot accept as the journal's authorization, and now keeps the orphan
+unauthorized and corrects it by approved reversal or rebook; the same round found that thirteen
+line citations into two files that later `main` merges lengthened — `AssetAccountingEventDtos.cs`
+(twenty-one lines added above the spine validator) and `AccountingPostingCandidatePostService.cs`
+(one `using` and nineteen lines added above the lifecycle-stage builders) — had been given at the
+merged head's numbering rather than the pin's, because the corrections were read in a worktree
+that carried the merges; they are renumbered to `5b901dda`, and the pass's one post-pin model, B5's
+open-lot backfill evidence, is marked as read at `41c8d08c`; a twenty-second (2026-09-06, on the
+merge commit) narrowed B3 twice — the association is bound by B1's identity check alone, since its
+comparison value comes from the case row, which leaves the lineage hashes and the linkage versions
+as what B3 is for; and its remedy gained the lot-mutation seam it lacked, since the mapper builds
+the spine request from the event alone, the posting candidate's only lot instruction models
+acquisition and disposal, and the spine resolves no other kind — and scoped B7's universal failure
+to the bulk, search-backed paths, since the two direct post-create and post-amend fetch calls pass
+the raw identifier value; a twenty-third (2026-09-06) bound B3's posting-side check to the approval
+row's own case, projection, and fingerprint rather than to attestor and evidence alone, and added
+the accounting period to B2's attach-time reload, since the
+digest commits its version and the lane verifies it only when it posts, after approval; a
+twenty-fourth (2026-09-06) named the two operands of B4's neutralization check — the correcting
+effect the spine carries as `ProjectedEffect` and the corrected event's retained posted lines —
+after a review read the correction-authority method as holding only the prior lines; source shows it
+receives the correcting effect at both call sites and the dry-run equality binds the drafted
+candidate to it,
+so the check stays where the remedy put it; a twenty-fifth (2026-09-06) extended B2's reload past
+attach to approval and posting, since approval and posting re-read only the stored binding and its
+static flags and only the period and the position get a later live check; narrowed B7's identifier
+precedence to Polygon-scoped provider symbols, admitting a ticker only when unambiguous, since
+tickers sit outside duplicate detection; and withdrew B4's "validated delta" form,
+since no retained target exists to validate a delta against; a twenty-sixth (2026-09-06) excepted
+the case's workflow version from B2's later-gate reload, since attach, ReadyForApproval, and
+approval each advance it by design; added the reversal-aware drafting path B4's negation form needs,
+since the rule dry run receives no correction input and the Drafted gate requires the generated
+lines to equal the projected effect; and bound B5's retained evidence to the approval-specific
+subject the posting service requires, so posting compares the loaded identity rather than composing
+it; a twenty-seventh (2026-09-06) extended B4's neutralization to the lots, since every correction
+check compares the lot batch's identity and none applies an inverse, while the mutation plan already
+retains each lot's before and after state; bound the reversal's approval to the case's own governed
+approval, since the correction approval the Drafted gate checks is caller-asserted metadata that no
+authority resolves; and named `primary_exchange`, not `market`, as the source of B7's canonical
+`exchange`, since the repository's
+own Polygon model keeps the two apart and maps only the former to a venue; a twenty-eighth
+(2026-09-06) added the Security Master record to B2's reload set, since the spine compares its
+version only through Drafted and the digest commits no security version at all; replaced B4's
+post-attach approval derivation, which review showed circular — the case approval exists only after
+the Drafted candidate it would have to authorize — with a correction approval recorded before
+drafting over a deterministic preview; and made B6's stable-negative branch resume from the Approved
+attestation the posting service appends before the journal,
+since the case retry otherwise refuses the spine as no longer Drafted and attach refuses it too; a
+twenty-ninth (2026-09-06) moved B2's posting-time comparison inside the appending transaction, since
+a reload before it is a check and only the position takes part in the append's compare-and-swap;
+gave B3's lot seam a target position to lock, since the plan names successor lots by security alone
+and a security and book may carry more than one position; added the inverse create and delete
+operations B4's reversal needs, since the plan's vocabulary has neither; drew B6's ambiguity
+boundary at the Approved-stage append the posting service makes first;
+and required B6's journal-found branch to reconcile the lot batch the journal record cannot name; a
+thirtieth (2026-09-06) keyed B6's reservation on the case rather than as the receipt is keyed, since
+the receipt's uniqueness admits a second command under a second key; withdrew B4's reading of the
+correction check as same-scope validation, since it compares the reference to the corrected event
+and never to the correcting spine's scope;
+and added the currency the backfill advertises to B7's merge, fill-only and validated, since the
+ledger asserts that field before it drafts; a thirty-first (2026-09-06) withdrew B6's claim that the
+store had no batch read, since `GetAtomicTaxLotPostingAsync` exists and the projection store already
+uses it — the search that confirmed its absence looked for the wrong name, which is the closure
+failure this addendum has described twice before —
+and bound B3's position read to the case's complete scope, since the scope check compares five of
+the case scope's ten fields and the identity hashes the caller's position id; a thirty-second
+(2026-09-07) made refusal of the corporate-action kind on the generic posting route the rule rather
+than an option, since an approval lookup there is authorization and not B6's reservation or the case
+record; made B4's rebook a correction-linked second binding, since the gate that refuses originating
+candidates on a posted case would have refused the rebook the remedy itself described;
+and let B6's stable negative retry from Drafted when the Approved append never committed, since a
+reservation only an Approved spine could satisfy would strand the case; a thirty-third (2026-09-07)
+replaced B4's "posting kind says rebook" with a typed rebook intent the lane must first retain,
+since no posting kind says it and the spine stamps Adjustment on every correction; and kept B6's
+reservation held through the stable-negative retry by renewing it in place, since releasing it for
+the retry to reclaim reopened the race the fence exists to close.
+
+The 2026-09-08 pass pinned `a5c6126f` (239 commits after `5b901dda`) and took the **read model** as
+its frame, which no prior pass had: `SecurityMasterLegacyUpgrade.fs` arm by arm against
+`SecurityTermModules.fs`, `SecurityEconomicDefinitionAdapter.BuildEconomicTermsJson` against both,
+and the three consumers of the resulting document — `SecurityMasterAccountingEventSourceAdapter`,
+`CertifiedReportingSnapshotBuilder`, and `InMemoryFundStructureService`. It then re-read the three
+Security Master write paths in `SecurityMasterService` against `EnsureAssetClassRoundTripsSafely`,
+the hand-written projection writers and shared JSON readers in `PostgresSecurityMasterStore.cs`
+against the guarded readers on the registry path in `PostgresSecurityMasterStore.TermsProjection.cs`,
+the cash-flow resolver and projector against their own doc comments, and the browser Security
+Master surfaces in `src/Meridian.Ui/dashboard/src/` against `SecurityAssetClassCatalog` and
+`SecurityAssetTermsSchema`. A1 and A4 were re-derived from source; A2, P1, P3b and P4 were not, and
+their rows say so.
+
+No code was changed. No .NET or TypeScript test was run, and no reviewed code path was executed:
+the .NET SDK is not present in the pass's environment. Every claim in the 2026-09-08 pass is
+therefore a source claim. C5 is the one finding whose consequence depends on runtime behaviour; it
+is argued from the repository's own statement of that behaviour
+(`PostgresSecurityMasterStore.TermsProjection.cs:241-251`) and its row says what is observed and
+what is inferred.
+
+The repository's documentation validation did run, on the pass's own diff — the docs-automation
+`core` profile, the rules engine, `validate-examples`, the AI inventory, handoff, contract-drift
+and Codex-memory checks, the roadmap and source diagram renderers, the workflow manifest, and
+`tools/roadmap/enforce_phase_scope.py` at `--phase PR1`. That is a check on this document, not on
+the subsystem it reviews, and it is recorded here only so the sentence above is not read as
+claiming more silence than the pass kept. (Added 2026-09-08, after the section was first written:
+its first version said "no tests were run", which the documentation lane's own checks contradict.)
+
+The 2026-09-10 pass first established that the subsystem was unchanged — `git log --since` and a
+`rev-list --left-right --count` against `origin/main` over the four Security Master source roots,
+all empty — and so did not re-derive any standing finding; the re-verification statement at the top
+of that section is a statement about the commit range, not about re-reading the anchors. It then
+read, as its own frame: `SecurityMasterSchemaVersions.cs`,
+`SecurityAssetSpecificTermsUpcaster.cs` and `SecurityAssetSpecificTermsUpcasterChain.cs` in full;
+`SecurityEconomicDefinitionAdapter.cs` (`ToEconomicRecord`, `ToProjection`,
+`BuildEconomicTermsJson`) against `Convert`, module by module and field by field;
+`PostgresSecurityMasterStore.UpsertProjectionCoreAsync` and migration `024`; the acceptance guard
+`EnsureSupportedAssetSchemaVersion` and its two callers; `SecurityMasterMapping.FromEconomicPayload`
+and `ToEventEnvelope`; the three `SecurityMasterAggregateRebuilder` replay entry points and
+`SecurityMasterProjectionService`; and the three upcaster test files. Reachability for D1 was
+established by enumerating every construction site of `SecurityEconomicDefinitionRecord` and every
+caller of `ToProjection` rather than by assuming the null case, and the finding says explicitly
+which half of it is a source claim and which half is a question about deployment history that the
+repository cannot answer.
+
+No code was changed. No .NET or TypeScript test was run and no reviewed code path was executed —
+the .NET SDK is not present in the pass's environment — so every claim in the 2026-09-10 pass is a
+source claim, and D3's blast-radius bound ("no code reads this column") is a grep result over
+`src/`, not an observation of a running system.
+
+The repository's documentation validation did run, on the pass's own diff: the docs-automation
+`core` profile (verified idempotent on a second run), `validate-examples` (0 invalid, so the two
+added `csharp` blocks parse), the rules engine, the AI inventory, handoff, contract-drift and
+Codex-memory checks, and `tools/roadmap/enforce_phase_scope.py` at `--phase PR1` (0 violations,
+with the regenerated `docs/status/` reports correctly recognized as generated-exempt). That is a
+check on this document, not on the subsystem it reviews, and it is recorded here only so the
+paragraph above is not read as claiming more silence than the pass kept — the same correction the
+2026-09-08 pass had to make after the fact (`4481741f`), made here before it was needed.

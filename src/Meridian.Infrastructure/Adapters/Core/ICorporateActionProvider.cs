@@ -1,5 +1,6 @@
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
+using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Infrastructure.Adapters.Core;
 
@@ -28,6 +29,13 @@ public interface ICorporateActionProvider
     /// multiple sources contribute data for the same security.
     /// </summary>
     string ProviderId { get; }
+
+    /// <summary>
+    /// Declares whether this adapter release is certified to supply acceptance-grade event
+    /// identity and retained raw evidence. The safe default is review-only.
+    /// </summary>
+    CorporateActionProviderReleaseStatusDto ReleaseStatus =>
+        CorporateActionProviderReleaseStatusDto.ReviewOnly;
 
     /// <summary>
     /// Fetches all available corporate actions (dividends, splits, mergers, etc.) for
@@ -62,4 +70,10 @@ public sealed record CorporateActionCommand(
     decimal? SplitFromFactor,
     decimal? SplitToFactor,
     string? Description,
-    string SourceProvider);
+    string SourceProvider,
+    string? SourceEventId = null,
+    string? SourceEventVersion = null,
+    DateTimeOffset? ObservedAtUtc = null,
+    string? EvidenceHash = null,
+    string? EvidenceReference = null,
+    CorporateActionProviderReleaseStatusDto ReleaseStatus = CorporateActionProviderReleaseStatusDto.ReviewOnly);

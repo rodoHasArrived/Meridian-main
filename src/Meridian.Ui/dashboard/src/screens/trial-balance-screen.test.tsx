@@ -1,72 +1,67 @@
-import { screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import * as api from "@/lib/api";
+import { useLocation } from "react-router-dom";
+import * as ledgerReportsApi from "@/lib/ledger-reports-api";
 import { TrialBalanceScreen } from "@/screens/trial-balance-screen";
-import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
-import type { AccountingWorkspaceResponse, LedgerJournalLine, LedgerTrialBalanceLine } from "@/types";
+import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
+import type {
+  LedgerPeriod,
+  LedgerPeriodPnlSummary,
+  LedgerPeriodTrialBalanceLine,
+  LedgerPostedJournalEntry
+} from "@/types";
 
-vi.mock("@/lib/api", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
+vi.mock("@/lib/ledger-reports-api", () => ({
+  getLedgerBooks: vi.fn().mockResolvedValue([{
+    ledgerBookId: "00000000-0000-0000-0000-0000000000aa",
+    fundProfileId: "fund-alpha",
+    fundStructureNodeId: "00000000-0000-0000-0000-0000000000bb",
+    fundStructureNodeKind: "Fund",
+    displayName: "Master Fund",
+    baseCurrency: "USD",
+    createdAt: "2026-01-01T00:00:00Z",
+    updatedAt: "2026-01-01T00:00:00Z",
+    accountingBasis: "Primary",
+    accountingPolicyId: "legacy-v1",
+    accountingPolicyVersion: "legacy-v1"
+  }]),
+  getLedgerPeriods: vi.fn(),
+  getLedgerPeriodTrialBalance: vi.fn(),
+  getLedgerPeriodPnlSummary: vi.fn(),
+  getLedgerPeriodJournalEntries: vi.fn()
+}));
+
+const PERIOD_ID = "11111111-1111-1111-1111-111111111111";
+const PRIOR_PERIOD_ID = "22222222-2222-2222-2222-222222222222";
+
+function makePeriod(overrides: Partial<LedgerPeriod> = {}): LedgerPeriod {
   return {
-    ...actual,
-    getRunTrialBalance: vi.fn(),
-    getRunLedgerJournal: vi.fn()
+    periodId: PERIOD_ID,
+    ledgerBookId: "book-1",
+    fiscalYear: 2026,
+    periodNo: 7,
+    label: "July 2026",
+    startDate: "2026-07-01",
+    endDate: "2026-07-31",
+    status: "HardClosed",
+    openedAt: "2026-07-01T00:00:00Z",
+    closedAt: "2026-08-02T00:00:00Z",
+    version: 1,
+    ...overrides
   };
-});
+}
 
-const data: AccountingWorkspaceResponse = {
-  metrics: [],
-  reconciliationQueue: [
-    {
-      runId: "run-42",
-      strategyName: "Paper Index Mean Reversion",
-      mode: "paper",
-      status: "Running",
-      lastUpdated: "3m ago",
-      breakCount: 2,
-      openBreakCount: 1,
-      reconciliationStatus: "BreaksOpen"
-    },
-    {
-      runId: "run-57",
-      strategyName: "Intraday Vol Carry",
-      mode: "paper",
-      status: "Paused",
-      lastUpdated: "7m ago",
-      breakCount: 1,
-      openBreakCount: 0,
-      reconciliationStatus: "Resolved"
-    }
-  ],
-  breakQueue: [],
-  cashFlow: {
-    totalCash: 0,
-    totalLedgerCash: 0,
-    netVariance: 0,
-    totalFinancing: 0,
-    runsWithCashSignals: 0,
-    runsWithCashVariance: 0,
-    tone: "success",
-    summary: "No cash-flow signals."
-  },
-  reporting: {
-    profileCount: 0,
-    recommendedProfiles: [],
-    profiles: [],
-    reportPackTargets: [],
-    summary: "No reporting profiles."
-  }
-};
-
-const trialBalanceLines: LedgerTrialBalanceLine[] = [
+const postedLines: LedgerPeriodTrialBalanceLine[] = [
   {
     accountName: "Cash",
     accountType: "Asset",
     symbol: null,
     financialAccountId: "acct-cash",
+    debitTotal: 125000,
+    creditTotal: 4500,
     balance: 120500,
     entryCount: 12,
-    security: null,
+    accountingBasis: "Primary",
     sourceJournalEntryId: "je-cash-1"
   },
   {
@@ -74,104 +69,413 @@ const trialBalanceLines: LedgerTrialBalanceLine[] = [
     accountType: "Asset",
     symbol: "AAPL",
     financialAccountId: "acct-aapl",
+    debitTotal: 5000,
+    creditTotal: 0,
     balance: 5000,
     entryCount: 3,
-    security: {
-      securityId: "sec-aapl",
-      displayName: "Apple Inc.",
-      assetClass: "Equity",
-      currency: "USD",
-      status: "Active",
-      primaryIdentifier: "AAPL",
-      subType: null
-    }
+    accountingBasis: "Primary"
   },
   {
     accountName: "Financing payable",
     accountType: "Liability",
     symbol: null,
     financialAccountId: "acct-financing",
+    debitTotal: 0,
+    creditTotal: 500,
     balance: -500,
     entryCount: 2,
-    security: null
+    accountingBasis: "Primary"
   }
 ];
 
-const journalLines: LedgerJournalLine[] = [
+const postedEntries: LedgerPostedJournalEntry[] = [
   {
     journalEntryId: "je-cash-1",
+    periodId: PERIOD_ID,
+    ledgerBookId: "book-1",
     timestamp: "2026-06-30T00:00:00Z",
     description: "Cash sweep",
     totalDebits: 500,
     totalCredits: 500,
-    lineCount: 2
+    isBalanced: true,
+    lines: [
+      { entryId: "e-1", journalEntryId: "je-1", timestamp: "2026-06-30T00:00:00Z", accountName: "Cash", accountType: "Asset", debit: 500, credit: 0, description: "Sweep in" },
+      { entryId: "e-2", journalEntryId: "je-1", timestamp: "2026-06-30T00:00:00Z", accountName: "Suspense", accountType: "Asset", debit: 0, credit: 500, description: "Sweep out" }
+    ]
   }
 ];
 
+function makePnl(): LedgerPeriodPnlSummary {
+  return {
+    periodId: PERIOD_ID,
+    ledgerBookId: "book-1",
+    fiscalYear: 2026,
+    periodNo: 7,
+    label: "July 2026",
+    totalRevenue: 5000,
+    totalExpenses: 1800,
+    netIncome: 3200,
+    periodOnPeriodVariance: null,
+    openBreakCount: 0,
+    signoffStatus: "SignedOff",
+    completedAt: "2026-08-02T00:00:00Z",
+    revenueLines: [],
+    expenseLines: []
+  };
+}
+
+/** The posted trial balance for July 2026, as the region is labelled once loaded. */
+const POSTED_REGION = "Primary trial balance lines for the posted journal for period July 2026";
+
+function primeHappyPath(lines: LedgerPeriodTrialBalanceLine[] = postedLines) {
+  vi.mocked(ledgerReportsApi.getLedgerPeriods).mockResolvedValue([makePeriod()]);
+  vi.mocked(ledgerReportsApi.getLedgerPeriodTrialBalance).mockResolvedValue(lines);
+  vi.mocked(ledgerReportsApi.getLedgerPeriodPnlSummary).mockResolvedValue(makePnl());
+  vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValue(postedEntries);
+}
+
+/**
+ * Renders the screen alongside a probe that publishes the live query string, so a test can assert
+ * what a copied or refreshed link would actually carry. Returns a reader rather than a value --
+ * the point is what the URL says after the interaction, not at render.
+ */
+function renderTrialBalanceScreenWithLocation(initialEntry: string): () => string {
+  function LocationProbe() {
+    return <output data-testid="route-search">{useLocation().search}</output>;
+  }
+
+  render(
+    <TestMemoryRouter initialEntries={[initialEntry]}>
+      <TrialBalanceScreen />
+      <LocationProbe />
+    </TestMemoryRouter>
+  );
+
+  return () => screen.getByTestId("route-search").textContent ?? "";
+}
+
 async function renderTrialBalanceScreen(initialEntry = "/accounting/ledger?view=trial-balance") {
-  const result = renderWithRouter(<TrialBalanceScreen data={data} />, { initialEntries: [initialEntry] });
+  const result = renderWithRouter(<TrialBalanceScreen />, { initialEntries: [initialEntry] });
   await waitForAsyncEffects();
   return result;
 }
 
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
 describe("TrialBalanceScreen", () => {
-  it("renders a loading state while accounting workspace data is unavailable", async () => {
-    renderWithRouter(<TrialBalanceScreen data={null} />, { initialEntries: ["/accounting/ledger?view=trial-balance"] });
+  it("renders the posted book even when the accounting workspace payload is absent", async () => {
+    // The screen's figures all come from its own /api/ledger/* requests now. It used to blank
+    // itself whenever the unrelated aggregate workspace payload was null, which hid a perfectly
+    // good posted book during a partial outage of a request it no longer depends on.
+    primeHappyPath();
+    renderWithRouter(<TrialBalanceScreen />, { initialEntries: ["/accounting/ledger?view=trial-balance"] });
     await waitForAsyncEffects();
 
-    expect(screen.getByRole("status", { name: "Loading Trial Balance" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Trial Balance" })).toBeInTheDocument();
+    expect(screen.queryByRole("status", { name: "Loading Trial Balance" })).not.toBeInTheDocument();
   });
 
-  it("renders an empty state when there are no reconciliation runs", async () => {
-    renderWithRouter(<TrialBalanceScreen data={{ ...data, reconciliationQueue: [] }} />, {
-      initialEntries: ["/accounting/ledger?view=trial-balance"]
-    });
-    await waitForAsyncEffects();
+  it("explains how to start the governed book when no ledger period exists", async () => {
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockResolvedValue([]);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodTrialBalance).mockResolvedValue([]);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodPnlSummary).mockResolvedValue(makePnl());
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValue([]);
 
-    expect(screen.getByText("No reconciliation runs are available for this accounting scope.")).toBeInTheDocument();
+    await renderTrialBalanceScreen();
+
+    expect(await screen.findByText(/No ledger periods exist yet/)).toBeInTheDocument();
   });
 
-  it("loads the trial balance for the run named in the runId query param", async () => {
-    vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
-    vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce(journalLines);
+  /**
+   * The load-bearing regression for adversarial-program-review-2026-08-25 §1: this screen is
+   * what an operator reaches for "Accounting → Trial Balance", and it must read the fund's
+   * posted journal rather than a strategy run's simulation ledger.
+   */
+  it("reads the posted journal, not a strategy run's simulation ledger", async () => {
+    primeHappyPath();
 
-    await renderTrialBalanceScreen("/accounting/ledger?view=trial-balance&runId=run-42");
+    await renderTrialBalanceScreen(`/accounting/ledger?view=trial-balance&periodId=${PERIOD_ID}`);
     await waitForAsyncEffects();
 
-    expect(api.getRunTrialBalance).toHaveBeenCalledWith("run-42");
+    expect(ledgerReportsApi.getLedgerPeriodTrialBalance).toHaveBeenCalledWith(PERIOD_ID);
+    expect(ledgerReportsApi.getLedgerPeriodJournalEntries).toHaveBeenCalledWith(PERIOD_ID);
+    expect(screen.getByText("Posted journal")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Trial balance scope" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Entity / fund / portfolio")).toHaveValue("All entities");
-    expect(screen.getByLabelText("Book")).toHaveValue("Primary GL");
-    expect(screen.getByLabelText("Period")).toHaveValue("Current period");
-    expect(screen.getByRole("button", { name: "Compare prior period" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Export" })).toBeDisabled();
-    expect(screen.getByRole("link", { name: "Jump to report preview" })).toHaveAttribute("href", "/reporting/preview");
-    expect(await screen.findByRole("region", { name: "Primary trial balance lines for the selected ledger run" })).toBeInTheDocument();
+    // The structure node the book is scoped to. This asserted the hard-coded "All entities" — an
+    // affirmative claim about a book scoped to exactly one node — and then, briefly, the book's
+    // fund profile, which names the fund even for an entity-scoped book.
+    expect(screen.getByLabelText("Entity / fund / portfolio")).toHaveValue("Fund · 00000000-0000-0000-0000-0000000000bb");
+    // The scope card names the book actually in scope, not a fixed "Primary GL": the card asks
+    // operators to confirm the book before drill-through, so it must not label another book's
+    // balances as the primary one.
+    expect(screen.getByLabelText("Book")).toHaveValue("Master Fund");
+    expect(await screen.findByRole("region", { name: POSTED_REGION })).toBeInTheDocument();
     expect(screen.getByRole("row", { name: /Cash Asset\. Primary basis/ })).toBeInTheDocument();
   });
 
+  it("loads the period named in the periodId query param", async () => {
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockResolvedValue([
+      makePeriod(),
+      makePeriod({ periodId: PRIOR_PERIOD_ID, periodNo: 6, label: "June 2026" })
+    ]);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodTrialBalance).mockResolvedValue(postedLines);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodPnlSummary).mockResolvedValue(makePnl());
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValue(postedEntries);
+
+    await renderTrialBalanceScreen(`/accounting/ledger?view=trial-balance&periodId=${PRIOR_PERIOD_ID}`);
+    await waitForAsyncEffects();
+
+    expect(ledgerReportsApi.getLedgerPeriodTrialBalance).toHaveBeenCalledWith(PRIOR_PERIOD_ID);
+    expect(screen.getByLabelText("Period", { selector: "select" })).toHaveValue(PRIOR_PERIOD_ID);
+  });
+
+  it("opens a period in a book other than the first, which the periodId alone cannot name", async () => {
+    // Periods are scoped to the selected book, and the initial load takes the first book in
+    // display order. A link carrying only the period was declined against that book's set and
+    // landed silently on its default -- a deep link opening a different period than it named.
+    const FEEDER_BOOK_ID = "00000000-0000-0000-0000-0000000000cc";
+    const FEEDER_PERIOD_ID = "33333333-3333-3333-3333-333333333333";
+    vi.mocked(ledgerReportsApi.getLedgerBooks).mockResolvedValue([
+      {
+        ledgerBookId: "00000000-0000-0000-0000-0000000000aa",
+        fundProfileId: "fund-alpha",
+        fundStructureNodeId: "00000000-0000-0000-0000-0000000000bb",
+        fundStructureNodeKind: "Fund",
+        displayName: "Alpha Master Fund",
+        baseCurrency: "USD",
+        createdAt: "2026-01-01T00:00:00Z",
+        updatedAt: "2026-01-01T00:00:00Z",
+        accountingBasis: "Primary",
+        accountingPolicyId: "legacy-v1",
+        accountingPolicyVersion: "legacy-v1"
+      },
+      {
+        ledgerBookId: FEEDER_BOOK_ID,
+        fundProfileId: "fund-alpha",
+        fundStructureNodeId: "00000000-0000-0000-0000-0000000000bb",
+        fundStructureNodeKind: "Fund",
+        displayName: "Beta Feeder Fund",
+        baseCurrency: "EUR",
+        createdAt: "2026-01-01T00:00:00Z",
+        updatedAt: "2026-01-01T00:00:00Z",
+        accountingBasis: "Primary",
+        accountingPolicyId: "legacy-v1",
+        accountingPolicyVersion: "legacy-v1"
+      }
+    ] as never);
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockImplementation((query) =>
+      Promise.resolve(query?.ledgerBookId === FEEDER_BOOK_ID
+        ? [makePeriod({ periodId: FEEDER_PERIOD_ID, ledgerBookId: FEEDER_BOOK_ID, periodNo: 6, label: "June 2026" })]
+        : [makePeriod()]) as never);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodTrialBalance).mockResolvedValue(postedLines);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodPnlSummary).mockResolvedValue(makePnl());
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValue(postedEntries);
+
+    await renderTrialBalanceScreen(
+      `/accounting/ledger?view=trial-balance&ledgerBookId=${FEEDER_BOOK_ID}&periodId=${FEEDER_PERIOD_ID}`
+    );
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    expect(ledgerReportsApi.getLedgerPeriods).toHaveBeenCalledWith({ ledgerBookId: FEEDER_BOOK_ID });
+    expect(ledgerReportsApi.getLedgerPeriodTrialBalance).toHaveBeenCalledWith(FEEDER_PERIOD_ID);
+    expect(screen.getByLabelText("Period", { selector: "select" })).toHaveValue(FEEDER_PERIOD_ID);
+  });
+
+  it("reports the retained closed-summary timestamp instead of claiming none was kept", async () => {
+    // The P&L response carries completedAt for every closed period, yet freshness was hard-coded
+    // to "Needs review — no as-of timestamp was retained", asserting an evidence gap that is not
+    // there on a perfectly good governed summary.
+    primeHappyPath();
+
+    await renderTrialBalanceScreen(`/accounting/ledger?view=trial-balance&periodId=${PERIOD_ID}`);
+    await waitForAsyncEffects();
+
+    expect(screen.queryByText("No trial-balance as-of timestamp was retained.")).not.toBeInTheDocument();
+    expect(screen.getByText("Closed-period summary completion retained with the posted journal.")).toBeInTheDocument();
+  });
+
+  it("names the selected book's fund scope rather than claiming every entity", async () => {
+    primeHappyPath();
+
+    await renderTrialBalanceScreen(`/accounting/ledger?view=trial-balance&periodId=${PERIOD_ID}`);
+    await waitForAsyncEffects();
+
+    // The book is attached to a fund-structure node; "All entities" was an affirmative claim
+    // about a book scoped to exactly one.
+    expect(screen.getAllByText((_, node) => (node?.textContent ?? "").includes("Fund · 00000000-0000-0000-0000-0000000000bb")).length)
+      .toBeGreaterThan(0);
+  });
+
+  it("lets a book chosen by hand supersede a deep link whose period request failed", async () => {
+    // A failed period request is deliberately not settled: an empty list from an outage says
+    // nothing about what the book holds, so the link stays pending and survives a retry. But
+    // pending blocked every write-back, so when the operator gave up and picked a book that
+    // worked, the screen showed that book under a URL still naming the failing one -- and
+    // copying or refreshing the route went straight back to it.
+    const MASTER_BOOK_ID = "00000000-0000-0000-0000-0000000000aa";
+    const FEEDER_BOOK_ID = "00000000-0000-0000-0000-0000000000cc";
+    const FEEDER_PERIOD_ID = "33333333-3333-3333-3333-333333333333";
+    vi.mocked(ledgerReportsApi.getLedgerBooks).mockResolvedValue([
+      {
+        ledgerBookId: MASTER_BOOK_ID,
+        fundProfileId: "fund-alpha",
+        fundStructureNodeId: "00000000-0000-0000-0000-0000000000bb",
+        fundStructureNodeKind: "Fund",
+        displayName: "Alpha Master Fund",
+        baseCurrency: "USD",
+        createdAt: "2026-01-01T00:00:00Z",
+        updatedAt: "2026-01-01T00:00:00Z",
+        accountingBasis: "Primary",
+        accountingPolicyId: "legacy-v1",
+        accountingPolicyVersion: "legacy-v1"
+      },
+      {
+        ledgerBookId: FEEDER_BOOK_ID,
+        fundProfileId: "fund-alpha",
+        fundStructureNodeId: "00000000-0000-0000-0000-0000000000dd",
+        fundStructureNodeKind: "Fund",
+        displayName: "Beta Feeder Fund",
+        baseCurrency: "USD",
+        createdAt: "2026-01-01T00:00:00Z",
+        updatedAt: "2026-01-01T00:00:00Z",
+        accountingBasis: "Primary",
+        accountingPolicyId: "legacy-v1",
+        accountingPolicyVersion: "legacy-v1"
+      }
+    ] as never);
+    // The book the link names is the one that is down.
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockImplementation((query) =>
+      (query?.ledgerBookId === FEEDER_BOOK_ID
+        ? Promise.reject(new Error("Ledger periods are unavailable."))
+        : Promise.resolve([makePeriod()])) as never);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodTrialBalance).mockResolvedValue(postedLines);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodPnlSummary).mockResolvedValue(makePnl());
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValue(postedEntries);
+
+    const search = renderTrialBalanceScreenWithLocation(
+      `/accounting/ledger?view=trial-balance&ledgerBookId=${FEEDER_BOOK_ID}&periodId=${FEEDER_PERIOD_ID}`
+    );
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    // While the failure stands the bookmark is left alone, so a retry can still honour it.
+    expect(search()).toContain(FEEDER_BOOK_ID);
+    expect(search()).toContain(FEEDER_PERIOD_ID);
+
+    await userEvent.selectOptions(
+      screen.getByLabelText("Ledger book", { selector: "select" }),
+      MASTER_BOOK_ID
+    );
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    expect(screen.getByLabelText("Period", { selector: "select" })).toHaveValue(PERIOD_ID);
+    expect(search()).toContain(MASTER_BOOK_ID);
+    expect(search()).toContain(PERIOD_ID);
+    expect(search()).not.toContain(FEEDER_BOOK_ID);
+    expect(search()).not.toContain(FEEDER_PERIOD_ID);
+  });
+
+  it("follows the book on screen even when its periods failed too", async () => {
+    // The narrower case of the same bug: with no book able to answer, waiting on the link's period
+    // left the URL naming the book the operator had already moved off. What the route says has to
+    // follow what is on screen, so a refresh retries the book being looked at rather than the one
+    // abandoned.
+    const MASTER_BOOK_ID = "00000000-0000-0000-0000-0000000000aa";
+    const FEEDER_BOOK_ID = "00000000-0000-0000-0000-0000000000cc";
+    const FEEDER_PERIOD_ID = "33333333-3333-3333-3333-333333333333";
+    vi.mocked(ledgerReportsApi.getLedgerBooks).mockResolvedValue([
+      {
+        ledgerBookId: MASTER_BOOK_ID,
+        fundProfileId: "fund-alpha",
+        fundStructureNodeId: "00000000-0000-0000-0000-0000000000bb",
+        fundStructureNodeKind: "Fund",
+        displayName: "Alpha Master Fund",
+        baseCurrency: "USD",
+        createdAt: "2026-01-01T00:00:00Z",
+        updatedAt: "2026-01-01T00:00:00Z",
+        accountingBasis: "Primary",
+        accountingPolicyId: "legacy-v1",
+        accountingPolicyVersion: "legacy-v1"
+      },
+      {
+        ledgerBookId: FEEDER_BOOK_ID,
+        fundProfileId: "fund-alpha",
+        fundStructureNodeId: "00000000-0000-0000-0000-0000000000dd",
+        fundStructureNodeKind: "Fund",
+        displayName: "Beta Feeder Fund",
+        baseCurrency: "USD",
+        createdAt: "2026-01-01T00:00:00Z",
+        updatedAt: "2026-01-01T00:00:00Z",
+        accountingBasis: "Primary",
+        accountingPolicyId: "legacy-v1",
+        accountingPolicyVersion: "legacy-v1"
+      }
+    ] as never);
+    // Neither book can answer, so nothing ever settles.
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockRejectedValue(new Error("Ledger periods are unavailable."));
+    vi.mocked(ledgerReportsApi.getLedgerPeriodTrialBalance).mockResolvedValue(postedLines);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodPnlSummary).mockResolvedValue(makePnl());
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValue(postedEntries);
+
+    const search = renderTrialBalanceScreenWithLocation(
+      `/accounting/ledger?view=trial-balance&ledgerBookId=${FEEDER_BOOK_ID}&periodId=${FEEDER_PERIOD_ID}`
+    );
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    await userEvent.selectOptions(
+      screen.getByLabelText("Ledger book", { selector: "select" }),
+      MASTER_BOOK_ID
+    );
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    expect(screen.getByLabelText("Ledger book", { selector: "select" })).toHaveValue(MASTER_BOOK_ID);
+    expect(search()).toContain(MASTER_BOOK_ID);
+    expect(search()).not.toContain(FEEDER_BOOK_ID);
+    // No book answered, so there is no period to name.
+    expect(search()).not.toContain(FEEDER_PERIOD_ID);
+  });
+
+  it("accepts a deep link whose GUIDs are upper-case", async () => {
+    // GUID text is case-insensitive — the API and .NET Guid treat these as the same ids. Comparing
+    // the raw query string exactly rejected a valid link, opened the default scope, and then
+    // rewrote the link to that different scope, losing the bookmark to a formatting difference.
+    primeHappyPath();
+
+    await renderTrialBalanceScreen(
+      `/accounting/ledger?view=trial-balance&ledgerBookId=${"00000000-0000-0000-0000-0000000000AA"}&periodId=${PERIOD_ID.toUpperCase()}`
+    );
+    await waitForAsyncEffects();
+
+    expect(ledgerReportsApi.getLedgerPeriodTrialBalance).toHaveBeenCalledWith(PERIOD_ID);
+    expect(screen.getByLabelText("Period", { selector: "select" })).toHaveValue(PERIOD_ID);
+  });
+
   it("switches basis and narrows rows with the account filter", async () => {
-    vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
-    vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce(journalLines);
+    primeHappyPath();
     const user = userEvent.setup();
 
-    await renderTrialBalanceScreen("/accounting/ledger?view=trial-balance&runId=run-42");
+    await renderTrialBalanceScreen(`/accounting/ledger?view=trial-balance&periodId=${PERIOD_ID}`);
 
     const filterInput = screen.getByPlaceholderText(/Account name, account id, type, symbol, or security/);
     await user.type(filterInput, "Apple");
 
-    const table = await screen.findByRole("region", { name: "Primary trial balance lines for the selected ledger run" });
+    const table = await screen.findByRole("region", { name: POSTED_REGION });
     expect(table).toHaveTextContent("Apple Inc.");
     expect(table).not.toHaveTextContent("Financing payable");
   });
 
   it("switches to the account hierarchy view and rolls up balances by account type", async () => {
-    vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
-    vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce(journalLines);
+    primeHappyPath();
     const user = userEvent.setup();
 
-    await renderTrialBalanceScreen("/accounting/ledger?view=trial-balance&runId=run-42");
-    await screen.findByRole("region", { name: "Primary trial balance lines for the selected ledger run" });
+    await renderTrialBalanceScreen(`/accounting/ledger?view=trial-balance&periodId=${PERIOD_ID}`);
+    await screen.findByRole("region", { name: POSTED_REGION });
 
     await user.click(screen.getByRole("button", { name: "Hierarchy" }));
 
@@ -182,46 +486,36 @@ describe("TrialBalanceScreen", () => {
     expect(screen.getByRole("treeitem", { name: /Financing payable/ })).toBeInTheDocument();
   });
 
-  it("links journal entries for the selected run to the Journal Entry Detail route", async () => {
-    vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
-    vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce(journalLines);
+  it("links posted journal entries to the Journal Entry Detail route scoped by period", async () => {
+    primeHappyPath();
 
-    await renderTrialBalanceScreen("/accounting/ledger?view=trial-balance&runId=run-42");
+    await renderTrialBalanceScreen(`/accounting/ledger?view=trial-balance&periodId=${PERIOD_ID}`);
 
     const journalLink = await screen.findByRole("link", { name: "Cash sweep" });
     expect(journalLink).toHaveAttribute(
       "href",
-      "/accounting/journal-entries/detail?journalEntryId=je-cash-1&runId=run-42"
+      `/accounting/journal-entries/detail?journalEntryId=je-cash-1&periodId=${PERIOD_ID}`
     );
   });
 
   it("distinguishes unavailable journal lineage from an empty journal", async () => {
-    vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
-    vi.mocked(api.getRunLedgerJournal).mockRejectedValueOnce(new Error("offline"));
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockResolvedValue([makePeriod()]);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodTrialBalance).mockResolvedValue(postedLines);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodPnlSummary).mockResolvedValue(makePnl());
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockRejectedValue(new Error("offline"));
 
-    await renderTrialBalanceScreen("/accounting/ledger?view=trial-balance&runId=run-42");
+    await renderTrialBalanceScreen(`/accounting/ledger?view=trial-balance&periodId=${PERIOD_ID}`);
+    await waitForAsyncEffects();
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Journal lineage unavailable");
-    expect(screen.getByRole("alert")).toHaveTextContent("posting drill-through is unavailable");
-  });
-
-  it("links related securities to the Asset Detail route", async () => {
-    vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
-    vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce(journalLines);
-
-    await renderTrialBalanceScreen("/accounting/ledger?view=trial-balance&runId=run-42");
-
-    const securityLink = await screen.findByRole("link", { name: "Apple Inc." });
-    expect(securityLink).toHaveAttribute("href", "/accounting/security-master/detail?securityId=sec-aapl");
   });
 
   it("renders empty trial-balance evidence without a fabricated table", async () => {
-    vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce([]);
-    vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce([]);
+    primeHappyPath([]);
 
-    await renderTrialBalanceScreen("/accounting/ledger?view=trial-balance&runId=run-42");
+    await renderTrialBalanceScreen(`/accounting/ledger?view=trial-balance&periodId=${PERIOD_ID}`);
 
-    expect(await screen.findByText("No trial balance lines")).toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: "Primary trial balance lines for the selected ledger run" })).not.toBeInTheDocument();
+    expect(await screen.findByText("No posted trial balance lines")).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: POSTED_REGION })).not.toBeInTheDocument();
   });
 });

@@ -79,6 +79,8 @@ GENERATED_ARTIFACT_PATTERNS: list[str] = [
     "docs/status/example-validation.md",
     "docs/status/api-contract-coverage-dashboard.md",
     "docs/status/api-contract-coverage-dashboard.json",
+    "docs/status/ui-route-wiring-report.md",
+    "docs/status/ui-route-wiring-report.json",
     "docs/diagrams/**",
     "docs/generated/**",
     "docs/**/generated/**",

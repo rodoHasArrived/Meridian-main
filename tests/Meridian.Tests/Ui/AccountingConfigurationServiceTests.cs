@@ -19,7 +19,7 @@ using NSubstitute;
 
 namespace Meridian.Tests.Ui;
 
-public sealed class AccountingConfigurationServiceTests
+public sealed partial class AccountingConfigurationServiceTests
 {
     private static readonly Guid ManualJournalLedgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid ManualJournalPeriodId = Guid.Parse("22222222-2222-2222-2222-222222222222");
@@ -1546,13 +1546,35 @@ public sealed class AccountingConfigurationServiceTests
         scheduleStatus.EvidenceLinks.Should().Contain(link => link.Route == "evidence://prices/AAPL/2026-06-30/initial");
         scheduleStatus.EvidenceLinks.Should().Contain(link => link.Route == "evidence://prices/MSFT/2026-06-30/initial");
 
+        var originalValuation = initialDrafts[0];
+        originalValuation.RequiresValuationMarkEvidence.Should().BeTrue();
+        originalValuation.ValuationMarkEvidenceDigest.Should().NotBeNullOrWhiteSpace();
+        var tamperedResave = await workbench.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
+            originalValuation with
+            {
+                ValuationMarkEvidenceJson = "[{\"MaximumAgeDays\":999999,\"PolicyVersion\":\"invented\"}]",
+                ValuationMarkEvidenceDigest = null,
+                RequiresValuationMarkEvidence = false,
+                TreasuryContext = originalValuation.TreasuryContext! with { IdempotencyKey = "stripped-valuation-lineage" }
+            }, "valuation-ops", LedgerBookId: ManualJournalLedgerBookId));
+        tamperedResave.ValuationMarkEvidenceJson.Should().Be(originalValuation.ValuationMarkEvidenceJson);
+        tamperedResave.ValuationMarkEvidenceDigest.Should().Be(originalValuation.ValuationMarkEvidenceDigest);
+        tamperedResave.RequiresValuationMarkEvidence.Should().BeTrue();
+        tamperedResave.TreasuryContext!.IdempotencyKey.Should().Be(originalValuation.TreasuryContext!.IdempotencyKey);
+        tamperedResave.Status.Should().Be(ManualJournalEntryStatusDto.Draft);
+
         var batchLifecycle = new DailyValuationBatchLifecycleService(scheduleSource, draftStore, workbench);
         var initialPosting = await batchLifecycle.ApproveAndPostAsync(new DailyValuationBatchLifecycleRequestDto(
             configured.ScheduleId,
             configured.FundProfileId,
             "controller",
             "Approve and post the complete trusted closing-mark batch.",
-            ["evidence://accounting/valuation/initial-batch"]));
+            ["evidence://accounting/valuation/initial-batch"],
+            // Declared explicitly now that the request defaults to AutomationAssistant. This test
+            // drives the real ManualJournalEntryWorkbenchService, whose RequireHumanOperator gate
+            // it previously satisfied on the DTO's old permissive default rather than on anything
+            // the caller established -- which is the hole the new default closes (#2673).
+            ActionOrigin: OperationsActionOriginDto.HumanOperator));
 
         initialPosting.IsComplete.Should().BeTrue();
         initialPosting.JournalEntryIds.Should().HaveCount(2);
@@ -1596,7 +1618,8 @@ public sealed class AccountingConfigurationServiceTests
             configured.FundProfileId,
             "controller",
             "Approve and post both corrected same-day marks.",
-            ["evidence://accounting/valuation/correction-batch"]));
+            ["evidence://accounting/valuation/correction-batch"],
+            ActionOrigin: OperationsActionOriginDto.HumanOperator));
 
         correctionPosting.IsComplete.Should().BeTrue();
         correctionPosting.JournalEntryIds.Should().HaveCount(2);
@@ -1653,6 +1676,18 @@ public sealed class AccountingConfigurationServiceTests
         var nav = await new NavAttributionService(new NullSecurityMasterQueryService()).AttributeAsync(
             new NavAttributionRequest("fund-alpha", correctionAsOf, restartedFundBook));
         nav.Consolidated.TotalNav.Should().Be(26_600m);
+
+        var forgedDraft = originalValuation with { JournalEntryId = Guid.NewGuid(), Version = 0 };
+        var forgedValidation = await workbench.ValidateDraftAsync(new ValidateManualJournalEntryDraftRequest(
+            forgedDraft, "untrusted-preparer", LedgerBookId: ManualJournalLedgerBookId));
+        forgedValidation.ValidationIssues.Should().Contain(issue => issue.Code == "manual-je.valuation-mark-review-required");
+        var forgedCreation = await workbench.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
+            forgedDraft, "untrusted-preparer", LedgerBookId: ManualJournalLedgerBookId));
+        forgedCreation.ValuationMarkEvidenceJson.Should().BeNull("public save cannot introduce a server assessment");
+        forgedCreation.ValuationMarkEvidenceDigest.Should().BeNull();
+        forgedCreation.RequiresValuationMarkEvidence.Should().BeTrue();
+        forgedCreation.Status.Should().Be(ManualJournalEntryStatusDto.NeedsFix);
+        forgedCreation.ValidationIssues.Should().Contain(issue => issue.Code == "manual-je.valuation-mark-review-required");
     }
 
     [Fact]
@@ -5764,6 +5799,7 @@ public sealed class AccountingConfigurationServiceTests
             Notes: "Post source before atomic correction test.",
             EvidenceLinks: [ManualJournalPostingEvidence(approved.JournalEntry)],
             LedgerBookId: approved.JournalEntry.LedgerBookId));
+        var batchAttemptsBeforeCorrection = draftStore.BatchSaveAttempts;
         draftStore.FailNextBatch = true;
         var reversalEvidence =
             $"/api/workstation/evidence/subjects/accounting-record/reversal/ledger-book/{posted.JournalEntry.LedgerBookId:D}/{posted.JournalEntry.PeriodId}";
@@ -5787,7 +5823,7 @@ public sealed class AccountingConfigurationServiceTests
             draft.Version == posted.JournalEntry.Version);
         retained.Should().NotContain(draft =>
             draft.ReversalOfJournalEntryId == posted.JournalEntry.JournalEntryId);
-        draftStore.BatchSaveAttempts.Should().Be(1);
+        draftStore.BatchSaveAttempts.Should().Be(batchAttemptsBeforeCorrection + 1);
     }
 
     [Fact]

@@ -13,6 +13,11 @@ namespace Meridian.Tests.SecurityMaster;
 /// coupon columns and a null swap type. The decoders now read the flat contract declared in
 /// <see cref="SecurityAssetTermsSchema"/>; these tests assert the columns are populated end-to-end from a
 /// canonical payload without a live database.
+/// <para>
+/// Covers the hand-written decoders only. The schema-driven projections declared in
+/// <c>SecurityTermsProjectionRegistry</c> decode through one shared path, so their equivalent guards
+/// live in <c>SecurityTermsProjectionRegistryTests</c> instead of being restated per class here.
+/// </para>
 /// </summary>
 [Trait("Category", "Unit")]
 public sealed class SecurityMasterProjectionCodecTests

@@ -14,8 +14,8 @@ using Meridian.Contracts.Pipeline;
 namespace Meridian.Application.UI;
 
 /// <summary>
-/// Shared handlers for status endpoints used by both StatusHttpServer (HttpListener)
-/// and ASP.NET Core web dashboard. Contains the business logic for generating
+/// Shared handlers for status endpoints used by the ASP.NET Core workstation host.
+/// Contains the business logic for generating
 /// health, status, and monitoring responses.
 /// </summary>
 public sealed class StatusEndpointHandlers
