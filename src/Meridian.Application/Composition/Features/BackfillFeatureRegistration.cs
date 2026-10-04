@@ -1,5 +1,8 @@
 using Meridian.Application.Backfill;
 using Meridian.Core.Config;
+using Meridian.Core.IO;
+using Meridian.Storage.Backfill;
+using Meridian.Storage.Archival;
 using Meridian.Contracts.Coordination;
 using Meridian.Application.Pipeline;
 using Meridian.Application.Scheduling;
@@ -9,6 +12,7 @@ using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Core.SymbolResolution;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -25,11 +29,16 @@ internal sealed class BackfillFeatureRegistration : IServiceFeatureRegistration
 {
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
+        services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
+
         // The background-worker stack is created by this factory outside the normal
         // BackfillCoordinator path. Resolve it from DI so it receives the same canonical,
         // provider-scoped symbol resolver as the coordinator and ProviderFactory.
         services.AddSingleton<BackfillServiceFactory>(sp =>
-            new BackfillServiceFactory(symbolResolver: sp.GetService<ISymbolResolver>()));
+            new BackfillServiceFactory(
+                sp.GetRequiredService<IAtomicFileWriter>(),
+                dataRoot => new JsonlBackfillBarWriter(dataRoot),
+                symbolResolver: sp.GetService<ISymbolResolver>()));
 
         // BackfillCoordinator - uses ProviderRegistry for unified provider discovery and
         // the canonical-registry symbol resolution spine when registered.

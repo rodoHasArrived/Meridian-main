@@ -6,12 +6,19 @@ module_id: SRC-CORE
 path: src/Meridian.Core
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-25
+last_reviewed: 2026-10-02
 ---
 
 # src/Meridian.Core
 
+`IO/IAtomicFileWriter.cs` exposes only the atomic operations needed by Infrastructure consumers.
+The concrete durable writer stays in Storage and is supplied through application/host composition.
+
 ## Purpose
+
+Provider connection configuration retains optional `TenantId` and `CredentialEnvironment` ownership
+fields. Missing fields identify legacy, unassigned connections; callers must not infer an owner from
+the current session. Application services enforce ownership before scoped credential resolution.
 
 Core contains cross-cutting primitives used throughout Meridian: configuration, validation,
 exceptions, logging, monitoring, scheduling, serialization, redaction, masking, and pipeline
@@ -23,6 +30,12 @@ This layer provides low-level reusable infrastructure. It must stay independent 
 
 ## Key folders and files
 
+- `ReferenceData/CurrencyCodeCatalog.cs` - the shared recognized-currency catalog for statement
+  intake and accounting. Historical statement currencies remain recognized; the separate current
+  transaction list controls new payments. The Ledger compatibility surface delegates to this catalog.
+  Current currency, fund, and bond-market units match [SIX ISO 4217 List One](https://www.six-group.com/dam/download/financial-information/data-center/iso-currrency/lists/list-one.xml)
+  published 2026-09-17, including USN, CHE/CHW, BOV, COU, MXV, UYW, XAD, and XBA–XBD.
+  The no-currency and testing sentinels XXX and XTS remain excluded from monetary evidence.
 - `Config/` - shared configuration models, JSON serializer options, JSON Schema generation,
   FluentValidation rules, validation pipeline stages, credential placeholder detection, default
   config-path resolution, environment overrides, configuration templates, config file hot-reload
@@ -38,6 +51,18 @@ This layer provides low-level reusable infrastructure. It must stay independent 
   shutdown handlers, and Application pipeline components.
 
 ## Important workflows
+
+`Config/TracingConfig.cs` defines the restart-required `AppConfig.Tracing` JSON section. Tracing and
+both exporters default off; the host's Platform integration validates explicit destinations, root
+sampling ratio, and flush timeout before creating the provider. Core owns configuration shape and
+serialization without referencing OpenTelemetry. See the
+[`Tracing` configuration contract](../../docs/reference/appsettings-schema.md#tracing).
+
+`AppConfig.TenantScopeEnforcement` is a supported restart-required security setting. Omission
+selects `fail-closed`; the host permits `deployment-boundary` only as explicit migration
+compatibility. Configuration validation accepts only these exact application-setting values and
+rejects aliases, including `open`, `boundary`, `strict`, and `closed`. The generated JSON schema
+and sample document the default. Host startup verifies retained-data readiness before strict work.
 
 Use this module when a cross-project primitive or runtime helper is required by multiple higher layers.
 Runtime feature-capability options live in `Config/FeatureCapabilityOptions.cs` so desktop and host
@@ -55,6 +80,9 @@ file hot-reload watching for Application commands, configuration services, WPF s
 shared endpoints.
 Schema generation excludes members marked `JsonIgnore`: those members may remain as in-process
 compatibility aliases, but they are not accepted configuration inputs.
+`DataSourceKindConverter` resolves the ProviderSdk alias map before enum validation, so `ibkr` and
+`interactive-brokers` load as `DataSourceKind.IB`. Unknown providers, unsupported transport modes,
+and undefined numeric values remain configuration errors.
 These Core configuration records and helpers use the `Meridian.Core.Config` namespace; Application
 keeps only configuration orchestration, credential testing, and deployment/startup adapters.
 Core exception, logging, pipeline-policy, subscription model, serialization, and monitoring helper
@@ -87,6 +115,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-CORE -->
 | Roadmap item | Title |
 | --- | --- |
+| `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W7-LIVE-001` | Live-readiness governance |
@@ -102,6 +131,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
 ```bash
 dotnet build src/Meridian.Core/Meridian.Core.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~TracingIntegrationTests" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ConfigEnvironmentOverrideTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~Core.Config|FullyQualifiedName~ConfigurationUnificationTests|FullyQualifiedName~ConfigValidatorCliTests|FullyQualifiedName~ConfigurationServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"

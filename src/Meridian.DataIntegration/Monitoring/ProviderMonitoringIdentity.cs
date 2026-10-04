@@ -1,3 +1,5 @@
+using Meridian.Infrastructure.Adapters.Core;
+
 namespace Meridian.DataIntegration.Monitoring;
 
 internal static class ProviderMonitoringIdentity
@@ -10,7 +12,7 @@ internal static class ProviderMonitoringIdentity
             return false;
         }
 
-        normalized = providerName.Trim().ToLowerInvariant();
+        normalized = ProviderIdentity.NormalizeId(providerName);
         return true;
     }
 

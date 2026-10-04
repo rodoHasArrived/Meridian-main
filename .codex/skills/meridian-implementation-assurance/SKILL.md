@@ -88,8 +88,8 @@ python .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --al
 git diff --check
 ```
 
-- Confirm `.github/workflows/ci.yml` still contains the `Validate AI contract drift` step when AI
-  workflow behavior changes.
+- Confirm `.github/workflows/meridian-ci.yml` invokes the canonical `scripts/ci.sh` docs lane,
+  which must retain the `Validate AI contract drift` check when AI workflow behavior changes.
 - For registered `src/**` module changes, mark stale docs before source-doc updates, then validate
   hashes after reviewing the nearest source README and registry entry.
 - For browser workstation work, use `npm --prefix src/Meridian.Ui/dashboard ...`; avoid WPF checks

@@ -1,5 +1,6 @@
 using System.Globalization;
 using Meridian.Contracts.Ledger;
+using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
@@ -20,7 +21,11 @@ public sealed record InternalLedgerTransactionQuery(
     IReadOnlyList<string> AccountAliases,
     DateOnly PeriodStart,
     DateOnly PeriodEnd,
-    string BaseCurrency);
+    string BaseCurrency)
+{
+    /// <summary>When present, journals must belong to this exact retained accounting authority.</summary>
+    public StatementAccountingScope? AccountingScope { get; init; }
+}
 
 /// <summary>
 /// Supplies the internal ledger-transaction population a statement run reconciles against. The
@@ -52,7 +57,9 @@ public interface IInternalLedgerTransactionSource
 ///     window remain visible. Each entry's effective date
 ///     (<see cref="JournalEntryMetadata.EffectiveDate"/>, falling back to the posting timestamp) is
 ///     re-checked against the window so an out-of-period record a store streams anyway is never
-///     projected.</item>
+///     projected. Governed intake additionally validates the retained fund/book/period binding,
+///     queries that exact book and period, and excludes foreign-period records before reversal
+///     filtering.</item>
 ///   <item><b>Account attribution:</b> only cash legs whose account-scoped
 ///     <c>FinancialAccountId</c> equals one of the query aliases are projected. An unscoped legacy
 ///     cash leg may inherit matching journal metadata or the journal's one unambiguous line-level
@@ -177,8 +184,41 @@ public sealed class LedgerJournalInternalTransactionSource(
         IReadOnlyList<LedgerJournalEntryRecord> records;
         try
         {
+            if (query.AccountingScope is { } scope)
+            {
+                if (string.IsNullOrWhiteSpace(scope.FundProfileId)
+                    || scope.LedgerBookId == Guid.Empty
+                    || scope.AccountingPeriodId == Guid.Empty
+                    || scope.AsOfDate != query.PeriodEnd)
+                {
+                    return [];
+                }
+
+                var book = await journalStore.GetLedgerBookAsync(scope.LedgerBookId, ct).ConfigureAwait(false);
+                var period = await journalStore.GetPeriodAsync(scope.AccountingPeriodId, ct).ConfigureAwait(false);
+                if (book is null
+                    || book.LedgerBookId != scope.LedgerBookId
+                    || !string.Equals(book.FundProfileId.Trim(), scope.FundProfileId.Trim(), StringComparison.OrdinalIgnoreCase)
+                    || book.AccountingBasis != AccountingBasisKindDto.Primary
+                    || string.IsNullOrWhiteSpace(book.BaseCurrency)
+                    || period is null
+                    || period.PeriodId != scope.AccountingPeriodId
+                    || period.LedgerBookId != scope.LedgerBookId
+                    || period.StartDate != periodStart
+                    || period.EndDate != query.PeriodEnd)
+                {
+                    return [];
+                }
+
+                // Currency-blind legacy cash legs inherit the retained book's denomination,
+                // not the matcher's reporting currency.
+                query = query with { BaseCurrency = book.BaseCurrency };
+            }
+
             records = await journalStore.QueryAsync(
                     new LedgerJournalEntryQuery(
+                        LedgerBookId: query.AccountingScope?.LedgerBookId,
+                        PeriodId: query.AccountingScope?.AccountingPeriodId,
                         EffectiveFrom: periodStart,
                         EffectiveTo: query.PeriodEnd),
                     ct)
@@ -207,13 +247,16 @@ public sealed class LedgerJournalInternalTransactionSource(
         HashSet<string> aliases,
         DateOnly periodStart)
     {
-        var reversalExclusions = CollectReversalExclusions(records);
+        var scopedRecords = query.AccountingScope is { } scope
+            ? records.Where(record => record.PeriodId == scope.AccountingPeriodId).ToArray()
+            : records;
+        var reversalExclusions = CollectReversalExclusions(scopedRecords);
         var baseCurrency = string.IsNullOrWhiteSpace(query.BaseCurrency)
             ? DefaultBaseCurrency
             : query.BaseCurrency.Trim().ToUpperInvariant();
 
         var transactions = new List<InternalLedgerTransaction>();
-        foreach (var record in records)
+        foreach (var record in scopedRecords)
         {
             var entry = record.Entry;
             if (reversalExclusions.Contains(entry.JournalEntryId)

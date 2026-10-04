@@ -6,10 +6,80 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-09-05
+last_reviewed: 2026-10-01
 ---
 
 # src/Meridian.FinancialOperations
+
+`FundAdministration/RecurringJournalState.cs` and `FileRecurringJournalStore` own versioned
+recurring schedules and templates, exact source evidence, one claim per schedule/effective date,
+and retained outcome history. A process-independent filesystem lease spans claim, intake and
+completion; retries preserve the deterministic draft identity. Changed definitions block existing
+claims until exact retained definitions are explicitly restored with an actor and reason.
+Initialization is explicit, and missing or corrupt initialized state fails closed. The runtime
+uses the existing PostgreSQL ledger for authoritative periods and governed reopens; the historical
+`FundAdministrationControlService` calendar and lock methods remain in-memory primitives, not
+runtime authority. See [Recurring Journal](../../docs/domain/recurring-journal.md) and
+`RecurringJournalStoreTests` / `RecurringJournalRunnerTests` for recovery and evidence boundaries.
+
+OFX account identity is scoped to the containing bank, credit-card or investment statement.
+The parser does not borrow an account from a sibling statement or unrelated row. Missing,
+blank or conflicting statement headers cannot supply account evidence. The document-level
+account summary is populated only when every emitted row shares one nonblank account;
+connector validation and import authorization retain responsibility for rejecting invalid rows
+and mixed-account imports before evidence retention. Conflicting repeated account tags remain
+invalid even when a later tag repeats the first value. The tokenizer recognizes all XML whitespace
+before attributes, and mixed accounts produce a blocking connector issue during preview and
+validation as well as import.
+
+OFX canonical rows retain the containing statement's `CURDEF` currency when no row-level
+currency is supplied. The parser does not borrow currency from another statement; explicit
+row evidence takes precedence. Missing currency remains absent for downstream refusal.
+
+OFX imports contain one statement section. Multiple bank, credit-card or investment sections are
+refused during validation and preview even when they name the same account or include an empty section.
+Case-equivalent account identifiers remain valid within a single containing statement.
+
+Statement preview, validation and commit require currency from the shared recognized-code catalog
+before retaining connector artifacts. Canonical CSV and bank connectors apply the same catalog;
+BAI2 validates before converting minor units, including zero-decimal UYI and four-decimal CLF/UYW.
+Recognized units with no defined ISO minor-unit scale are refused for BAI2 integer amounts.
+Historical currencies remain available for statement evidence. Service-level diagnostics omit a
+source row when the connector has not retained that identity.
+
+Alpaca trade fills may inherit explicit USD from the same account's verified portfolio evidence,
+through both legacy fills and rich Trade/TradeFill activities. Explicit activity currencies remain
+authoritative. Missing or non-USD account evidence cannot supply a fill currency; cash, dividends,
+fees, corrections, and busts still require their own currency evidence before import retention.
+
+Statement runs pass the accounting scope retained on their import to the internal population
+provider, preserving the fund, ledger book, and exact period selected by governed intake during
+matching. `StatementRunWorkflowServiceTests` covers that scope handoff.
+
+Accounting-system export package creation, certification, and manifest reads call
+`IAccountingSystemExportValidator` when the selected provider implements it.
+Xero and NetSuite use this seam to require current live import scope and their
+own retained control evidence in addition to the existing mapping, reconciliation,
+and human-origin checks. Successful certification never enables posting.
+Live GL reconciliation projects all retained Meridian history through the report date
+using the imported trial-balance basis, including the provider's income year and
+retained-earnings carry-forward. Gross activity within the requested inclusive dates
+is retained separately and is the only amount used for generated export review lines.
+Hashes cover both the basis and activity, so later journal changes invalidate stale
+certifications even when closing account balances remain equal.
+Reconciliation requires matching provider and ledger-book currencies, including
+zero balances omitted from the provider report. Export review retains Meridian's
+currency; a mismatch blocks provider certification even when balanced reconciliation
+is not requested. No implicit currency conversion or relabeling is performed.
+Journal accounting effective dates control both report and export windows; legacy
+entries use their UTC event date. Live accrual reports require a resolved Primary
+or Gaap ledger book; Cash, Tax and Statutory books are unsupported at reconciliation
+and every export boundary.
+Live reconciliation resolves imported account IDs through the scoped certified
+mapping, including income-year classification and retained earnings. Export review
+uses its selected profile at every boundary. Ambiguous many-to-one mappings and
+collisions are rejected. Meridian period-close journals and their reversals are
+excluded from provider-basis balances and gross export activity.
 
 Statement matching retains exact tolerance rules/version and matcher revision with population
 availability. Missing/failed internal populations and empty statements cannot certify source clearing;
@@ -27,6 +97,11 @@ tag and that fixture evidence marked as real cannot commit a journal or a succes
 
 ## Shared close and lot convergence
 
+Governed disposal posting forwards the approved instruction's optional `DisposalSalePrice` to the
+atomic tax-lot command. Storage validates that price against supported cash journal proceeds and
+retains the allocation convention; aggregate-only instructions retain no quote and reporting derives
+their canonical price from the journal and retained wash-sale deferrals.
+
 Factor-paydown candidates require lot quantity as of the event effective date, reconstructed by
 the journal store from retained mutation history. Missing or inconsistent historical quantity
 evidence returns a critical candidate issue and cannot fall back to today's holdings.
@@ -38,12 +113,43 @@ Close acceptance additionally proves account/entity/book subject ownership indep
 
 Hard close and workflow publication re-evaluate shared readiness before mutation, including callers outside the workstation HTTP route. Complete subject scope, authenticated tenant/company, exact workflow revision, and current retained prerequisites are required. Close packages, locks, and published exports are outputs of that transition; they do not create circular prerequisites. Historical approval decisions stay visible while the current decision controls readiness. The retained close plan proves each task's required sign-offs; calendar reviewer totals describe a different approval dimension.
 
+Strict PostgreSQL workflow mutations require current tenant authority matching the retained
+workflow and the requested ledger book's retained and registered owner. Existing identifiers
+cannot be reassigned through an upsert. Audit writes and timeline reads check the retained
+workflow owner, including transitions that do not persist workflow state. Missing worker
+authority fails before mutation; explicit deployment-boundary maintenance remains available.
+A bookless workflow may retain its authenticated creating tenant. Unattributed legacy workflows
+remain explicit cutover blockers until reviewed attribution or quarantine resolution completes.
+
 Operations Continuity checklist acknowledgments are explicit retained reviewer actions, separate from gate execution completion. The checklist uses gate-specific evidence or the successful gate completion audit receipt, follows retained audit links, and invalidates acknowledgments when prerequisite evidence changes, approval is rejected, or a closed workflow is reopened. Failed attempts do not count as acknowledgments or evidence changes. Submission, approval, and close validate supplied control identities and timestamps against current retained acknowledgments; historical close packages cannot authorize a new close cycle. The assigned independent reviewer records the decision at its actual time, preserving the original submitter and submission time. Successful prerequisite changes return an active approval to Pending while retaining its history.
 
 Private-capital close evidence is selected by fund event, period, and ledger entity. Partner statements must reference a selected event in the same month and match the capital account, investor, and currency. Each selected expense or fee event must retain allocation support; management-company evidence signals also come from selected event records. Cumulative capital-account balances, history, and evidence remain available as diagnostics, but prior-period or other-entity statement and allocation evidence cannot satisfy the selected close.
 `PrivateCapitalCloseCockpitServiceTests.EvidenceScope.cs` builds real cumulative subledgers for mixed May/June and mixed-entity scenarios, checks refusal with missing selected-scope support, and restores readiness by repairing that support while preserving cumulative balances and history. A separate scenario rejects a foreign-period statement even when it carries the selected event ID. These focused scenarios form part of W10-SEAM-001, whose acceptance remains in progress pending the required hosted integration evidence.
 
 ## Purpose
+
+OFX duplicate account or currency tags cannot overwrite conflicting evidence. A row account may
+repeat its valid containing header, but cannot contradict or replace missing/ambiguous header identity. Account identity
+comparisons use the same case-insensitive equality as the authorization boundary. Currency
+validation omits source row numbers when a connector does not provide them, avoiding false
+locations based on the retained-record index.
+
+Bank statement currency is source evidence. BAI2 requires an explicit account or containing-group
+currency before converting minor units, and each group resets inherited currency. camt.053 uses
+explicit amount currency or an explicit account currency when the attribute is absent; a blank
+amount attribute remains invalid. Neither parser supplies USD when all currency evidence is missing.
+IB Flex preserves absent account, activity, lot and borrow currency as unknown instead of
+supplying USD; canonical activity rows without currency fail before artifact retention.
+
+Canonical CSV connector validation rejects blank required amounts, ambiguous grouped decimals, malformed nonblank fees,
+and missing or invalid currency before rendering financial values. Statement import preview,
+validation, and commit all require explicit three-letter currency before retaining artifacts.
+OFX statement currency fills only absent row currency; explicit blank or self-closing row tags
+remain invalid; mixed explicit and inherited currency rows map through the same canonical key.
+Alpaca legacy fills use the account currency verified against the snapshot identity. Position
+currency must be supplied by the gateway; missing or blank row currency cannot borrow the account
+currency. Missing account currency remains a refusal. Month-end upload regressions
+in `StatementImportServiceTests` exercise these rules through the actual retention boundary.
 
 Physical bounded-context module project for reconciliation, accounting records, payment approvals,
 bank-transaction records, accounting-basis policy, ledger text-journal reporting, close workflows,
@@ -94,6 +200,7 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Ledger/TextJournal/` - ledger-compatible text-journal parsing, validation, report rendering,
   and CLI-facing report service backed by the Meridian double-entry ledger engine.
 - `AccountingSystem/AccountingSystemIntegrationService.cs` - provider-neutral external GL import, latest-import retention, ledger-truth reconciliation, provider availability projection, and read-only posting posture.
+- `AccountingSystem/AccountingSystemIntegrationService.Reconciliation.cs` - provider report balance projection, requested-period activity, currency identity checks, and reconciliation read models.
 - `Reconciliation/StatementRunWorkflowService.cs` - statement-run workflow that imports canonical statements, matches rows against Meridian's internal book through the shared sided `StatementMatchingEngine`, and persists linked breaks and case materialization for shared UI consumers. Rows with no internal counterpart — and internal records missing from the statement — surface as genuine breaks instead of self-matches.
 - `Reconciliation/StatementRunMatchingService.cs` - normalizes imported statement rows and projects the sided `StatementMatchingEngine` results into break records and per-row match outcomes for the live workflow; `ToleranceBreached` is computed from the actual variance.
 - `Reconciliation/InternalReconciliationBook.cs` - the internal-book seam (`IInternalReconciliationBookSource`) supplying the positions, cash balances, and ledger transactions a statement run is reconciled against; the default `EmptyInternalReconciliationBookSource` yields honest unmatched breaks until a real source is registered.
@@ -700,6 +807,7 @@ evidence deletion.
 <!-- source-roadmap-traceability:begin module=SRC-DESIGN-FINANCIAL-OPERATIONS -->
 | Roadmap item | Title |
 | --- | --- |
+| `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
 | `W5X-FINOPS-001` | Financial operations control center |

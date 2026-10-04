@@ -84,7 +84,7 @@ All SVG assets include:
 
 ## Usage Guidelines
 
-For detailed usage guidelines, color combinations, typography, and do's/don'ts, see [`BRAND_GUIDELINES.md`](../BRAND_GUIDELINES.md).
+For detailed usage guidelines, color combinations, typography, and do's/don'ts, see [`BRAND_GUIDELINES.md`](../../BRAND_GUIDELINES.md).
 
 ## Asset Optimization
 

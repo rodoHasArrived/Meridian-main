@@ -180,6 +180,7 @@ verify_dotnet() {
 }
 
 verify_browser() {
+  run_step "Validate browser evidence reader" node --test src/Meridian.Ui/dashboard/scripts/vitest-evidence.test.mjs
   verify_toolchain_browser
 
   run_step "Install dashboard dependencies from lockfile" \
@@ -336,6 +337,13 @@ verify_docs() {
   run_step "Validate source READMEs" \
     "$python_cmd" build/scripts/docs/validate-source-readmes.py --summary
 
+  run_step "Validate adapter readiness and generated matrix" \
+    "$python_cmd" build/scripts/docs/run-docs-automation.py \
+      --scripts validate-adapter-readiness,check-adapter-readiness-matrix
+
+  run_step "Validate adapter readiness automation tests" \
+    bash -c '"$0" -m unittest tests/scripts/test_adapter_readiness.py tests/scripts/test_render_adapter_readiness.py' "$python_cmd"
+
   run_step "Scan source TODOs" \
     "$python_cmd" build/scripts/docs/scan-source-todos.py --summary
 
@@ -345,6 +353,9 @@ verify_docs() {
 
 verify_workflows() {
   verify_toolchain_docs
+
+  run_step "Validate Actions syntax with actionlint" actionlint -shellcheck= -pyflakes=
+  run_step "Check script test dependencies" "$python_cmd" -c 'import yaml; import PIL'
 
   run_step "Validate lane manifest" \
     "$python_cmd" build/scripts/ci/check-lane-manifest.py --summary

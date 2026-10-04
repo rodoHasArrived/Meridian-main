@@ -10,11 +10,20 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.DataIntegration.Credentials;
 
-public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILegacyProviderCredentialImporter, IOAuthTokenVault
+public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore, ILegacyProviderCredentialImporter, IScopedOAuthTokenVault
 {
     private static readonly ILogger Log = LoggingSetup.ForContext<FileProviderCredentialStore>();
 
     private const int VaultVersion = 1;
+
+    // Vaults holding tenant/connection-scoped state use a protection tag that binaries predating
+    // scoped ownership reject as unreadable. Those binaries ignore the envelope version and would
+    // otherwise load the vault, drop every Scope and scoped OAuth record they do not model, and
+    // rewrite it. An unreadable primary and backup make them fail closed instead, so a rollback
+    // cannot silently take scoped credentials offline. Vaults without scoped state keep the
+    // version 1 format and stay readable by older binaries.
+    private const int ScopedVaultVersion = 2;
+    private const string ScopedProtectionSuffix = "+scoped-v2";
     private const string VaultFileName = "provider-credentials.vault";
     private const string VaultBackupFileName = "provider-credentials.vault.bak";
     private const string KeyFileName = "provider-credentials.key";
@@ -57,7 +66,16 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         return BuildStatus(descriptor, readResult);
     }
 
-    public async Task<ProviderCredentialReadResult?> ReadForProviderAsync(string providerId, CancellationToken ct = default)
+    public Task<ProviderCredentialReadResult?> ReadForProviderAsync(string providerId, CancellationToken ct = default)
+        => ReadInternalAsync(providerId, null, ct);
+
+    public Task<ProviderCredentialReadResult?> ReadScopedAsync(string providerId, ProviderCredentialScope scope, CancellationToken ct = default)
+        => ReadInternalAsync(providerId, scope ?? throw new ArgumentNullException(nameof(scope)), ct);
+
+    public async Task<ProviderCredentialStoreStatus> GetScopedStatusAsync(string providerId, ProviderCredentialScope scope, CancellationToken ct = default)
+        => BuildStatus(RequireDescriptor(providerId), await ReadScopedAsync(providerId, scope, ct).ConfigureAwait(false));
+
+    private async Task<ProviderCredentialReadResult?> ReadInternalAsync(string providerId, ProviderCredentialScope? scope, CancellationToken ct)
     {
         var descriptor = RequireDescriptor(providerId);
 
@@ -69,8 +87,9 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
             if (File.Exists(VaultPath) || File.Exists(_vaultBackupPath))
             {
                 var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
-                if (vault.Providers.TryGetValue(descriptor.ProviderId, out var localRecord))
+                if (vault.Providers.TryGetValue(scope?.StorageKey(descriptor.ProviderId) ?? descriptor.ProviderId, out var localRecord))
                 {
+                    ValidateRecordScope(localRecord, scope);
                     return ToReadResult(descriptor, localRecord, ProviderCredentialSourceDto.LocalEncryptedStore);
                 }
             }
@@ -80,16 +99,40 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
             _gate.Release();
         }
 
+        if (scope is not null)
+            return null;
         var fallbackRecord = ReadEnvironmentFallback(descriptor);
         return fallbackRecord is null
             ? null
             : ToReadResult(descriptor, fallbackRecord, ProviderCredentialSourceDto.Environment);
     }
 
-    public async Task SaveAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default)
+    public Task SaveAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default)
+        => SaveCredentialsAsync(request, false, null, ct);
+
+    public Task SaveScopedAsync(ProviderCredentialSaveRequest request, ProviderCredentialScope scope, CancellationToken ct = default)
+        => SaveCredentialsAsync(request, false, scope ?? throw new ArgumentNullException(nameof(scope)), ct);
+
+    public Task SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default)
+        => SaveCredentialsAsync(request, true, null, ct);
+
+    public Task<string> SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request,
+        ProviderCredentialReadResult expectedConnection, CancellationToken ct = default)
+        => SaveCredentialsAsync(request, true, null, ct, expectedConnection);
+
+    private async Task<string> SaveCredentialsAsync(ProviderCredentialSaveRequest request, bool retainCurrentGenerationAsBackup,
+        ProviderCredentialScope? scope, CancellationToken ct, ProviderCredentialReadResult? expectedConnection = null)
     {
         ArgumentNullException.ThrowIfNull(request);
         var descriptor = RequireDescriptor(request.ProviderId);
+        if (scope is not null)
+        {
+            if (!string.Equals(descriptor.NormalizeEnvironment(scope.Environment), scope.Environment, StringComparison.Ordinal)
+                || (request.Environment is not null && !string.Equals(descriptor.NormalizeEnvironment(request.Environment), scope.Environment, StringComparison.Ordinal)))
+                throw new InvalidDataException("Credential environment does not match its ownership scope.");
+            request = request with { Environment = scope.Environment };
+        }
+        var storageKey = scope?.StorageKey(descriptor.ProviderId) ?? descriptor.ProviderId;
         var normalizedCredentials = NormalizeCredentialFields(descriptor, request.Credentials ?? new Dictionary<string, string?>());
         var now = DateTimeOffset.UtcNow;
 
@@ -98,19 +141,38 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         {
             using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
-            vault.Providers.TryGetValue(descriptor.ProviderId, out var existing);
+            vault.Providers.TryGetValue(storageKey, out var existing);
+            if (existing is not null)
+                ValidateRecordScope(existing, scope);
+
+            if (expectedConnection is not null)
+            {
+                var currentRecord = existing ?? (scope is null ? ReadEnvironmentFallback(descriptor) : null);
+                var current = currentRecord is null ? null : ToReadResult(descriptor, currentRecord,
+                    existing is null ? ProviderCredentialSourceDto.Environment : ProviderCredentialSourceDto.LocalEncryptedStore);
+                if (current is null || current.Source != expectedConnection.Source ||
+                    current.CredentialGeneration != expectedConnection.CredentialGeneration ||
+                    !string.Equals(current.Environment, expectedConnection.Environment, StringComparison.Ordinal) ||
+                    current.Credentials.Count != expectedConnection.Credentials.Count ||
+                    current.Credentials.Any(pair => expectedConnection.Get(pair.Key) != pair.Value))
+                    throw new ProviderCredentialConflictException();
+            }
 
             var updated = CreateUpdatedRecord(descriptor, request, normalizedCredentials, existing, now);
+            updated.Scope = scope;
+            if (scope is not null)
+                updated.ExternalAccountId = scope.ExternalAccountId;
 
-            vault.Providers[descriptor.ProviderId] = updated;
-            await WriteVaultAsync(vault, ct).ConfigureAwait(false);
+            vault.Providers[storageKey] = updated;
+            await WriteVaultAsync(vault, ct, retainCurrentGenerationAsBackup: retainCurrentGenerationAsBackup).ConfigureAwait(false);
             await AppendAuditAsync(
                 descriptor,
                 "save",
                 request.Actor,
                 BuildStatus(descriptor, ToReadResult(descriptor, updated, ProviderCredentialSourceDto.LocalEncryptedStore)),
                 updated.Fields.Keys.OrderBy(static field => field, StringComparer.OrdinalIgnoreCase).ToArray(),
-                ct).ConfigureAwait(false);
+                ct, scope).ConfigureAwait(false);
+            return updated.Metadata["credentialGeneration"];
         }
         finally
         {
@@ -157,6 +219,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         metadata["lastRotatedAt"] = now.ToString("O");
         metadata["rotationDueAt"] = now.AddDays(DefaultRotationWindowDays).ToString("O");
         metadata["verificationRequired"] = "true";
+        metadata["credentialGeneration"] = Guid.NewGuid().ToString("N");
         metadata["credentialStore"] = "local-encrypted-vault";
 
         return new ProviderCredentialVaultRecord
@@ -251,6 +314,53 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         }
     }
 
+    public async Task<IReadOnlyDictionary<string, OAuthToken>> ReadScopedOAuthTokensAsync(ProviderCredentialScope scope, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
+            var result = new Dictionary<string, OAuthToken>(StringComparer.Ordinal);
+            foreach (var pair in vault.ScopedOAuthTokens)
+            {
+                var record = pair.Value;
+                if (record.Scope is null || string.IsNullOrWhiteSpace(record.ProviderName) || record.Token is null ||
+                    !string.Equals(pair.Key, record.Scope.StorageKey(record.ProviderName), StringComparison.Ordinal))
+                    throw new InvalidDataException("OAuth credential ownership is invalid.");
+                if (record.Scope == scope)
+                    result.Add(record.ProviderName, record.Token);
+            }
+            return result;
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task SaveScopedOAuthTokenAsync(string providerName, OAuthToken? token, ProviderCredentialScope scope, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(providerName);
+        ArgumentNullException.ThrowIfNull(scope);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
+            var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
+            var key = scope.StorageKey(providerName);
+            if (vault.ScopedOAuthTokens.TryGetValue(key, out var existing) &&
+                (existing.Scope != scope || existing.ProviderName != providerName))
+                throw new InvalidDataException("OAuth credential ownership is invalid.");
+            if (token is null)
+                vault.ScopedOAuthTokens.Remove(key);
+            else
+                vault.ScopedOAuthTokens[key] = new ScopedOAuthVaultRecord { ProviderName = providerName, Scope = scope, Token = token };
+            // A completed remote rotation must recover this owner's replacement token.
+            await WriteVaultAsync(vault, ct, discardPreviousGeneration: token is null,
+                retainCurrentGenerationAsBackup: true).ConfigureAwait(false);
+            await AppendOAuthAuditAsync(providerName, token is null ? "oauth-delete" : "oauth-save", ct, scope).ConfigureAwait(false);
+        }
+        finally { _gate.Release(); }
+    }
+
     public async Task<IReadOnlyDictionary<string, OAuthToken>> ReadOAuthTokensAsync(CancellationToken ct = default)
     {
         await _gate.WaitAsync(ct).ConfigureAwait(false);
@@ -314,9 +424,9 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         finally { _gate.Release(); }
     }
 
-    private Task AppendOAuthAuditAsync(string providerName, string action, CancellationToken ct)
+    private Task AppendOAuthAuditAsync(string providerName, string action, CancellationToken ct, ProviderCredentialScope? scope = null)
     {
-        var line = JsonSerializer.Serialize(new { Timestamp = DateTimeOffset.UtcNow, ProviderId = providerName, Action = action }, JsonOptions);
+        var line = JsonSerializer.Serialize(new { Timestamp = DateTimeOffset.UtcNow, ProviderId = providerName, Action = action, Scope = scope }, JsonOptions);
         return AppendAuditLineAsync(line, ct);
     }
 
@@ -391,7 +501,13 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         }
     }
 
-    public async Task DeleteAsync(string providerId, string? actor = null, CancellationToken ct = default)
+    public Task DeleteAsync(string providerId, string? actor = null, CancellationToken ct = default)
+        => DeleteInternalAsync(providerId, null, actor, ct);
+
+    public Task DeleteScopedAsync(string providerId, ProviderCredentialScope scope, string? actor = null, CancellationToken ct = default)
+        => DeleteInternalAsync(providerId, scope ?? throw new ArgumentNullException(nameof(scope)), actor, ct);
+
+    private async Task DeleteInternalAsync(string providerId, ProviderCredentialScope? scope, string? actor, CancellationToken ct)
     {
         var descriptor = RequireDescriptor(providerId);
 
@@ -400,8 +516,12 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         {
             using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
-            vault.Providers.Remove(descriptor.ProviderId);
-            vault.LegacyImportedProviderIds.Add(descriptor.ProviderId);
+            var storageKey = scope?.StorageKey(descriptor.ProviderId) ?? descriptor.ProviderId;
+            if (vault.Providers.TryGetValue(storageKey, out var existing))
+                ValidateRecordScope(existing, scope);
+            vault.Providers.Remove(storageKey);
+            if (scope is null)
+                vault.LegacyImportedProviderIds.Add(descriptor.ProviderId);
             await WriteVaultAsync(vault, ct, discardPreviousGeneration: true).ConfigureAwait(false);
             await AppendAuditAsync(
                 descriptor,
@@ -409,7 +529,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
                 actor,
                 BuildStatus(descriptor, null),
                 [],
-                ct).ConfigureAwait(false);
+                ct, scope).ConfigureAwait(false);
         }
         finally
         {
@@ -417,10 +537,19 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         }
     }
 
-    public async Task RecordVerificationAsync(ProviderCredentialVerificationUpdate update, CancellationToken ct = default)
+    public Task RecordVerificationAsync(ProviderCredentialVerificationUpdate update, CancellationToken ct = default)
+        => RecordVerificationInternalAsync(update, null, ct);
+
+    public Task RecordScopedVerificationAsync(ProviderCredentialVerificationUpdate update, ProviderCredentialScope scope, CancellationToken ct = default)
+        => RecordVerificationInternalAsync(update, scope ?? throw new ArgumentNullException(nameof(scope)), ct);
+
+    private async Task RecordVerificationInternalAsync(ProviderCredentialVerificationUpdate update, ProviderCredentialScope? scope, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(update);
         var descriptor = RequireDescriptor(update.ProviderId);
+        if (scope is not null && update.ExternalAccountId is not null && !string.Equals(update.ExternalAccountId.Trim(), scope.ExternalAccountId, StringComparison.Ordinal))
+            throw new InvalidDataException("Verified account does not match its credential ownership scope.");
+        var storageKey = scope?.StorageKey(descriptor.ProviderId) ?? descriptor.ProviderId;
         var verifiedAt = update.VerifiedAt ?? DateTimeOffset.UtcNow;
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
@@ -428,14 +557,21 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         {
             using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
-            if (!vault.Providers.TryGetValue(descriptor.ProviderId, out var record))
+            if (!vault.Providers.TryGetValue(storageKey, out var record))
             {
+                if (update.ExpectedCredentialGeneration is not null)
+                    throw new ProviderCredentialConflictException();
                 return;
             }
 
+            ValidateRecordScope(record, scope);
+            if (update.ExpectedCredentialGeneration is not null &&
+                record.Metadata.GetValueOrDefault("credentialGeneration", string.Empty) != update.ExpectedCredentialGeneration)
+                throw new ProviderCredentialConflictException();
+
             record.LastVerifiedAt = verifiedAt;
             record.LastError = update.Success ? null : SanitizeError(update.ErrorMessage);
-            record.ExternalAccountId = update.Success ? NormalizeOptional(update.ExternalAccountId) : record.ExternalAccountId;
+            record.ExternalAccountId = update.Success ? scope?.ExternalAccountId ?? NormalizeOptional(update.ExternalAccountId) : record.ExternalAccountId;
             if (update.Success)
             {
                 record.LastSuccessfulAt = verifiedAt;
@@ -448,7 +584,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
                 record.Metadata["verificationRequired"] = "true";
             }
 
-            vault.Providers[descriptor.ProviderId] = record;
+            vault.Providers[storageKey] = record;
             await WriteVaultAsync(vault, ct).ConfigureAwait(false);
             await AppendAuditAsync(
                 descriptor,
@@ -456,12 +592,19 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
                 update.Actor,
                 BuildStatus(descriptor, ToReadResult(descriptor, record, ProviderCredentialSourceDto.LocalEncryptedStore)),
                 [],
-                ct).ConfigureAwait(false);
+                ct, scope).ConfigureAwait(false);
         }
         finally
         {
             _gate.Release();
         }
+    }
+
+    private static void ValidateRecordScope(ProviderCredentialVaultRecord record, ProviderCredentialScope? scope)
+    {
+        if (record.Scope != scope || (scope is not null
+            && (record.Environment != scope.Environment || record.ExternalAccountId != scope.ExternalAccountId)))
+            throw new InvalidDataException("Stored credentials do not match the requested ownership scope.");
     }
 
     private static ProviderCredentialCatalogEntry RequireDescriptor(string providerId)
@@ -571,13 +714,15 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
 
         var credentialSource = readResult?.Source ?? ProviderCredentialSourceDto.None;
         var hasError = !string.IsNullOrWhiteSpace(readResult?.LastError);
+        var verificationRequired = readResult?.AuditMetadata.TryGetValue("verificationRequired", out var required) == true &&
+            string.Equals(required, "true", StringComparison.OrdinalIgnoreCase);
         var credentialState = missingFields.Length == descriptor.RequiredFields.Count
             ? ProviderCredentialStateDto.Missing
             : missingFields.Length > 0
                 ? ProviderCredentialStateDto.Partial
                 : hasError
                     ? ProviderCredentialStateDto.Invalid
-                    : readResult?.LastSuccessfulAt is not null
+                    : !verificationRequired && readResult?.LastSuccessfulAt is not null
                         ? ProviderCredentialStateDto.Verified
                         : ProviderCredentialStateDto.Configured;
 
@@ -846,25 +991,68 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
 
         var envelope = JsonSerializer.Deserialize<ProtectedVaultEnvelope>(envelopeJson, JsonOptions)
             ?? throw new InvalidOperationException("Provider credential vault envelope is invalid.");
+        // Not a corruption type: recovering from the backup would let this release overwrite a
+        // newer primary it cannot model, which is the rollback loss this format guards against.
+        if (envelope.Version > ScopedVaultVersion)
+            throw new NotSupportedException(
+                $"Provider credential vault format version {envelope.Version} was written by a newer Meridian release and cannot be opened by this one.");
         var protectedBytes = Convert.FromBase64String(envelope.CipherText);
         var plainBytes = await UnprotectAsync(envelope.Protection, protectedBytes, ct).ConfigureAwait(false);
         var vaultJson = Encoding.UTF8.GetString(plainBytes);
-        var vault = JsonSerializer.Deserialize<ProviderCredentialVault>(vaultJson, JsonOptions);
-        return vault ?? throw new InvalidOperationException("Provider credential vault payload is invalid.");
+        var vault = JsonSerializer.Deserialize<ProviderCredentialVault>(vaultJson, JsonOptions)
+            ?? throw new InvalidOperationException("Provider credential vault payload is invalid.");
+
+        // Existing vaults retain accepted configuration aliases such as nasdaqdatalink and ib.
+        // Normalize the immutable read snapshot; the next ordinary mutation persists canonical
+        // keys under the existing writer lock. Retain the newest whole record if aliases coexist,
+        // rather than combining credential fields from different saved generations.
+        foreach (var pair in vault.Providers)
+        {
+            if (pair.Value.Scope is not { } retainedScope)
+            {
+                if (pair.Key.Contains("@scope:", StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException("Stored scoped credentials have no ownership scope.");
+                continue;
+            }
+
+            // Check the persisted ownership identity before re-keying an accepted provider alias.
+            // Never repair a mismatched scope by moving its secrets into another owner's record.
+            ValidateRecordScope(pair.Value, retainedScope);
+            if (!string.Equals(pair.Key, retainedScope.StorageKey(pair.Value.ProviderId), StringComparison.Ordinal))
+                throw new InvalidDataException("Stored credential identity does not match its ownership scope.");
+        }
+
+        vault.Providers = vault.Providers
+            .GroupBy(pair => pair.Value.Scope is { } retainedScope
+                ? retainedScope.StorageKey(ProviderCredentialCatalog.NormalizeProviderId(pair.Value.ProviderId))
+                : ProviderCredentialCatalog.NormalizeProviderId(pair.Key), StringComparer.Ordinal)
+            .ToDictionary(
+                group => group.Key,
+                group =>
+                {
+                    var record = group.OrderByDescending(pair => pair.Value.UpdatedAt)
+                        .ThenByDescending(pair => string.Equals(pair.Key, group.Key, StringComparison.Ordinal))
+                        .ThenBy(pair => pair.Key, StringComparer.Ordinal)
+                        .First().Value;
+                    record.ProviderId = record.Scope is null
+                        ? group.Key
+                        : ProviderCredentialCatalog.NormalizeProviderId(record.ProviderId);
+                    return record;
+                },
+                StringComparer.OrdinalIgnoreCase);
+        vault.LegacyImportedProviderIds = vault.LegacyImportedProviderIds
+            .Select(ProviderCredentialCatalog.NormalizeProviderId)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return vault;
     }
 
     private async Task WriteVaultAsync(ProviderCredentialVault vault, CancellationToken ct,
         bool discardPreviousGeneration = false, bool retainCurrentGenerationAsBackup = false)
     {
         EnsureVaultDirectory();
-        vault.Version = VaultVersion;
+        var scopedFormat = ContainsScopedState(vault);
         vault.UpdatedAt = DateTimeOffset.UtcNow;
-
-        var vaultJson = JsonSerializer.Serialize(vault, JsonOptions);
-        var plainBytes = Encoding.UTF8.GetBytes(vaultJson);
-        var (protection, protectedBytes) = await ProtectAsync(plainBytes, ct).ConfigureAwait(false);
-        var envelope = new ProtectedVaultEnvelope(VaultVersion, protection, Convert.ToBase64String(protectedBytes));
-        var envelopeJson = JsonSerializer.Serialize(envelope, JsonOptions);
+        var envelopeJson = await SerializeEnvelopeAsync(vault, scopedFormat, ct).ConfigureAwait(false);
 
         // Roll the current (readable) vault to the last-known-good backup before replacing
         // it, so a corrupting write can always fall back one generation in LoadVaultAsync.
@@ -880,8 +1068,16 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
             try
             {
                 // Keep a usable recovery copy when this mutation follows primary corruption.
-                await LoadVaultFromFileAsync(VaultPath, ct).ConfigureAwait(false);
+                var previousVault = await LoadVaultFromFileAsync(VaultPath, ct).ConfigureAwait(false);
                 var previousGeneration = await File.ReadAllBytesAsync(VaultPath, ct).ConfigureAwait(false);
+                if (scopedFormat && !IsScopedEnvelope(previousGeneration))
+                {
+                    // Re-protect the unchanged previous generation so an older binary cannot fall
+                    // back to it and overwrite the scoped primary written below.
+                    previousGeneration = Encoding.UTF8.GetBytes(
+                        await SerializeEnvelopeAsync(previousVault, scopedFormat: true, ct).ConfigureAwait(false));
+                }
+
                 await AtomicFileWriter.WriteAsync(_vaultBackupPath, previousGeneration, ct).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsVaultCorruption(ex))
@@ -894,9 +1090,68 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
             }
         }
 
+        if (scopedFormat && !discardPreviousGeneration)
+            await EnsureBackupUsesScopedFormatAsync(ct).ConfigureAwait(false);
+
         await AtomicFileWriter.WriteAsync(VaultPath, envelopeJson, ct).ConfigureAwait(false);
         if (discardPreviousGeneration || retainCurrentGenerationAsBackup)
             await AtomicFileWriter.WriteAsync(_vaultBackupPath, envelopeJson, CancellationToken.None).ConfigureAwait(false);
+    }
+
+    private static bool ContainsScopedState(ProviderCredentialVault vault)
+        => vault.ScopedOAuthTokens.Count > 0 || vault.Providers.Values.Any(static record => record.Scope is not null);
+
+    private async Task<string> SerializeEnvelopeAsync(ProviderCredentialVault vault, bool scopedFormat, CancellationToken ct)
+    {
+        var version = scopedFormat ? ScopedVaultVersion : VaultVersion;
+        vault.Version = version;
+        var plainBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(vault, JsonOptions));
+        var (protection, protectedBytes) = await ProtectAsync(plainBytes, ct).ConfigureAwait(false);
+        var envelope = new ProtectedVaultEnvelope(version, scopedFormat ? protection + ScopedProtectionSuffix : protection,
+            Convert.ToBase64String(protectedBytes));
+        return JsonSerializer.Serialize(envelope, JsonOptions);
+    }
+
+    private static bool IsScopedEnvelope(byte[] envelopeBytes)
+    {
+        try
+        {
+            var envelope = JsonSerializer.Deserialize<ProtectedVaultEnvelope>(envelopeBytes, JsonOptions);
+            return envelope?.Protection?.EndsWith(ScopedProtectionSuffix, StringComparison.Ordinal) == true;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Guarantees that a backup surviving a scoped write is not readable by older binaries. This
+    /// covers a backup left behind when the primary was missing, corrupt, or could not be copied.
+    /// An unreadable backup is left in place because older binaries cannot open it either. I/O
+    /// failures propagate so the scoped primary is never published beside a legacy backup.
+    /// </summary>
+    private async Task EnsureBackupUsesScopedFormatAsync(CancellationToken ct)
+    {
+        if (!File.Exists(_vaultBackupPath))
+            return;
+
+        var backupGeneration = await File.ReadAllBytesAsync(_vaultBackupPath, ct).ConfigureAwait(false);
+        if (IsScopedEnvelope(backupGeneration))
+            return;
+
+        ProviderCredentialVault backupVault;
+        try
+        {
+            backupVault = await LoadVaultFromFileAsync(_vaultBackupPath, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (IsVaultCorruption(ex))
+        {
+            return;
+        }
+
+        var upgraded = await SerializeEnvelopeAsync(backupVault, scopedFormat: true, ct).ConfigureAwait(false);
+        await AtomicFileWriter.WriteAsync(_vaultBackupPath, upgraded, ct).ConfigureAwait(false);
     }
 
     private async Task<(string Protection, byte[] ProtectedBytes)> ProtectAsync(byte[] plainBytes, CancellationToken ct)
@@ -913,6 +1168,8 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
     private async Task<byte[]> UnprotectAsync(string protection, byte[] protectedBytes, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        if (protection.EndsWith(ScopedProtectionSuffix, StringComparison.Ordinal))
+            protection = protection[..^ScopedProtectionSuffix.Length];
         return protection switch
         {
             "dpapi-current-user" when OperatingSystem.IsWindows() => UnprotectWithDpapi(protectedBytes),
@@ -1049,7 +1306,8 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         string? actor,
         ProviderCredentialStoreStatus status,
         IReadOnlyList<string> fields,
-        CancellationToken ct)
+        CancellationToken ct,
+        ProviderCredentialScope? scope = null)
     {
         var entry = new ProviderCredentialAuditEntry(
             Timestamp: DateTimeOffset.UtcNow,
@@ -1061,7 +1319,8 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
             VerificationState: status.VerificationState,
             FieldNames: fields,
             Environment: status.Environment,
-            ExternalAccountId: status.ExternalAccountId);
+            ExternalAccountId: status.ExternalAccountId,
+            Scope: scope);
         var json = JsonSerializer.Serialize(entry, JsonOptions);
         await AppendAuditLineAsync(json, ct).ConfigureAwait(false);
     }
@@ -1088,7 +1347,8 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         ProviderVerificationStateDto VerificationState,
         IReadOnlyList<string> FieldNames,
         string? Environment,
-        string? ExternalAccountId);
+        string? ExternalAccountId,
+        ProviderCredentialScope? Scope);
 
     private sealed class ProviderCredentialVault
     {
@@ -1096,12 +1356,21 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
         public Dictionary<string, ProviderCredentialVaultRecord> Providers { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, OAuthToken> OAuthTokens { get; set; } = new(StringComparer.Ordinal);
+        public Dictionary<string, ScopedOAuthVaultRecord> ScopedOAuthTokens { get; set; } = new(StringComparer.Ordinal);
         public HashSet<string> LegacyImportedProviderIds { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public HashSet<string> LegacyImportedOAuthProviders { get; set; } = new(StringComparer.Ordinal);
     }
 
+    private sealed class ScopedOAuthVaultRecord
+    {
+        public string ProviderName { get; set; } = string.Empty;
+        public ProviderCredentialScope? Scope { get; set; }
+        public OAuthToken? Token { get; set; }
+    }
+
     private sealed class ProviderCredentialVaultRecord
     {
+        public ProviderCredentialScope? Scope { get; set; }
         public string ProviderId { get; set; } = string.Empty;
         public Dictionary<string, string> Fields { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public string? Environment { get; set; }

@@ -286,19 +286,42 @@ public sealed class ProviderConnectionEndpointsTests
     [Fact]
     public async Task CredentialMutationAudit_UsesAuthenticatedActorForSaveVerifyAndDelete()
     {
-        await using var app = await CreateAppAsync(_ => { });
+        using var env = AlpacaEnvScope.Clear();
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IHttpClientFactory>(
+            new StubHttpClientFactory(new CapturingStubHandler(_ => { }, new StringContent("{\"account_number\":\"audit-account\"}", Encoding.UTF8, "application/json")))));
         var client = app.GetTestClient();
-        var save = await client.PutAsync("/api/providers/polygon/credentials", new StringContent(
-            """{"credentials":{"apiKey":"audit-test-key"},"requestedBy":"forged-operator"}""", Encoding.UTF8, "application/json"));
+        var save = await client.PutAsync("/api/providers/alpaca/credentials", new StringContent(
+            """{"credentials":{"KeyId":"audit-test-key","SecretKey":"audit-test-secret"},"environment":"paper","requestedBy":"forged-operator"}""", Encoding.UTF8, "application/json"));
         save.StatusCode.Should().Be(HttpStatusCode.OK);
-        (await client.PostAsync("/api/providers/polygon/verify", null)).StatusCode.Should().Be(HttpStatusCode.OK);
-        (await client.DeleteAsync("/api/providers/polygon/credentials")).StatusCode.Should().Be(HttpStatusCode.OK);
+        (await client.PostAsync("/api/providers/alpaca/verify", null)).StatusCode.Should().Be(HttpStatusCode.OK);
+        (await client.DeleteAsync("/api/providers/alpaca/credentials")).StatusCode.Should().Be(HttpStatusCode.OK);
         var store = app.Services.GetRequiredService<IProviderCredentialStore>();
         var auditPath = Path.Combine(Path.GetDirectoryName(store.VaultPath)!, "provider-credentials.audit.jsonl");
         var entries = (await File.ReadAllLinesAsync(auditPath)).Select(line => JsonSerializer.Deserialize<JsonElement>(line)).ToArray();
         entries.Should().HaveCount(3);
         entries.Should().OnlyContain(entry => entry.GetProperty("actor").GetString() == "provider-ops");
         entries.Select(entry => entry.GetProperty("action").GetString()).Should().Equal("save", "verify-success", "delete");
+    }
+
+    [Theory]
+    [InlineData("polygon")]
+    [InlineData("tiingo")]
+    [InlineData("finnhub")]
+    public async Task CredentialPresence_DoesNotCreateVerificationEvidence(string providerId)
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        var client = app.GetTestClient();
+        (await client.PutAsync($"/api/providers/{providerId}/credentials", JsonContent(new { credentials = new { ApiKey = "presence-only-key" } })))
+            .StatusCode.Should().Be(HttpStatusCode.OK);
+        var store = app.Services.GetRequiredService<IProviderCredentialStore>();
+        var before = await File.ReadAllTextAsync(store.VaultPath);
+        var result = await ReadAsync<ProviderCredentialVerificationResultDto>(await client.PostAsync($"/api/providers/{providerId}/verify", null));
+        result.Success.Should().BeFalse();
+        result.VerificationState.Should().Be(ProviderVerificationStateDto.NotVerified);
+        result.LastVerifiedAt.Should().BeNull();
+        result.ExternalAccountId.Should().BeNull();
+        (await store.ReadForProviderAsync(providerId))!.LastVerifiedAt.Should().BeNull();
+        (await File.ReadAllTextAsync(store.VaultPath)).Should().Be(before);
     }
 
     [Fact]
@@ -356,6 +379,114 @@ public sealed class ProviderConnectionEndpointsTests
         (await store.GetStatusAsync("alpaca")).AuditMetadata["lastVerifiedBy"].Should().Be("provider-ops");
     }
 
+    [Theory]
+    [InlineData(false, "replaced", true)]
+    [InlineData(false, "replaced", false)]
+    [InlineData(false, "deleted", true)]
+    [InlineData(false, "deleted", false)]
+    [InlineData(false, "recreated", true)]
+    [InlineData(false, "recreated", false)]
+    [InlineData(true, "replaced", true)]
+    [InlineData(true, "replaced", false)]
+    [InlineData(true, "deleted", true)]
+    [InlineData(true, "deleted", false)]
+    [InlineData(true, "recreated", true)]
+    [InlineData(true, "recreated", false)]
+    public async Task AlpacaVerification_CredentialChangesRejectTheInFlightResultWithoutMutation(
+        bool scoped, string transition, bool providerSucceeds)
+    {
+        using var env = AlpacaEnvScope.Clear();
+        using var handler = new PausedVerificationHandler(providerSucceeds);
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IHttpClientFactory>(
+            new StubHttpClientFactory(handler)));
+        if (scoped)
+            await RetainConnectionAsync(app, "owned", "provider-tenant", "alpaca", "account-a", "paper");
+        var vault = (FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        var scope = new ProviderCredentialScope("provider-tenant", "owned", "account-a", "paper");
+        var otherScope = new ProviderCredentialScope("another-tenant", "owned", "account-a", "paper");
+        await vault.SaveScopedAsync(new ProviderCredentialSaveRequest("alpaca",
+            new Dictionary<string, string?> { ["KeyId"] = "foreign-key", ["SecretKey"] = "foreign-secret" }, "paper"), otherScope);
+        var suffix = scoped ? "?connectionId=owned" : string.Empty;
+        var credentialRoute = "/api/providers/alpaca/credentials" + suffix;
+        var client = app.GetTestClient();
+        (await client.PutAsync(credentialRoute, JsonContent(new
+        {
+            credentials = new { KeyId = "tested-key", SecretKey = "tested-secret" },
+            environment = "paper"
+        }))).StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        var verification = client.PostAsync("/api/providers/alpaca/verify" + suffix, null, timeout.Token);
+        byte[] vaultBefore;
+        string auditBefore;
+        var auditPath = Path.Combine(Path.GetDirectoryName(vault.VaultPath)!, "provider-credentials.audit.jsonl");
+        try
+        {
+            await handler.Started.WaitAsync(timeout.Token);
+            handler.TestedKey.Should().Be("tested-key");
+            if (transition is "deleted" or "recreated")
+                (await client.DeleteAsync(credentialRoute)).StatusCode.Should().Be(HttpStatusCode.OK);
+            if (transition is "replaced" or "recreated")
+            {
+                (await client.PutAsync(credentialRoute, JsonContent(new
+                {
+                    credentials = new { KeyId = "replacement-key", SecretKey = "replacement-secret" },
+                    environment = "paper"
+                }))).StatusCode.Should().Be(HttpStatusCode.OK);
+            }
+            vaultBefore = await File.ReadAllBytesAsync(vault.VaultPath);
+            auditBefore = await File.ReadAllTextAsync(auditPath);
+        }
+        finally
+        {
+            handler.Release();
+        }
+
+        var response = await verification;
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await ReadAsync<ProviderCredentialVerificationResultDto>(response);
+        result.Success.Should().BeFalse();
+        result.VerificationState.Should().Be(ProviderVerificationStateDto.NotVerified);
+        result.Health.Should().Be(ProviderContinuityHealthDto.Blocked);
+        result.LastVerifiedAt.Should().BeNull();
+        result.ExternalAccountId.Should().BeNull();
+        result.LastError.Should().Be("Provider credentials changed during verification. Verify the current connection again.");
+        (await File.ReadAllBytesAsync(vault.VaultPath)).Should().Equal(vaultBefore,
+            "neither a stale success nor a stale failure may modify the current credential generation");
+        (await File.ReadAllTextAsync(auditPath)).Should().Be(auditBefore,
+            "rejected verification must not create misleading verification audit evidence");
+        var current = scoped ? await vault.ReadScopedAsync("alpaca", scope) : await vault.ReadForProviderAsync("alpaca");
+        if (transition == "deleted")
+            current.Should().BeNull();
+        else
+        {
+            current!.Get("KeyId").Should().Be("replacement-key");
+            current.LastVerifiedAt.Should().BeNull();
+            current.LastError.Should().BeNull();
+        }
+        (await vault.ReadScopedAsync("alpaca", otherScope))!.Get("KeyId").Should().Be("foreign-key");
+    }
+
+    private sealed class PausedVerificationHandler(bool succeeds) : HttpMessageHandler
+    {
+        private readonly TaskCompletionSource _started = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _released = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public Task Started => _started.Task;
+        public string? TestedKey { get; private set; }
+        public void Release() => _released.TrySetResult();
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            TestedKey = request.Headers.GetValues("APCA-API-KEY-ID").Single();
+            _started.TrySetResult();
+            await _released.Task.WaitAsync(ct);
+            return new HttpResponseMessage(succeeds ? HttpStatusCode.OK : HttpStatusCode.Unauthorized)
+            {
+                Content = new StringContent("""{"account_number":"account-a"}""", Encoding.UTF8, "application/json")
+            };
+        }
+    }
+
     private sealed class VerificationRecoveryHandler(string failureKind, string secret) : HttpMessageHandler
     {
         private int _calls;
@@ -386,6 +517,202 @@ public sealed class ProviderConnectionEndpointsTests
             Exceptions.Add(exception);
         }
     }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ScopedCredentialRoute_VerifiesOnlyRetainedAccountAndDeletesOnlyItsRecord(bool accountMatches)
+    {
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IHttpClientFactory>(
+            new StubHttpClientFactory(new CapturingStubHandler(_ => { },
+                new StringContent(JsonSerializer.Serialize(new { account_number = accountMatches ? "account-a" : "account-b" }), Encoding.UTF8, "application/json")))));
+        await RetainConnectionAsync(app, "owned", "provider-tenant", "alpaca", "account-a", "paper");
+        var vault = (FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        await vault.SaveAsync(new ProviderCredentialSaveRequest("alpaca", new Dictionary<string, string?> { ["KeyId"] = "legacy-key", ["SecretKey"] = "legacy-secret" }, "paper"));
+        var scope = new ProviderCredentialScope("provider-tenant", "owned", "account-a", "paper");
+        var client = app.GetTestClient();
+        var saved = await client.PutAsync("/api/providers/alpaca/credentials?connectionId=owned", JsonContent(new
+        {
+            credentials = new { KeyId = "scoped-key", SecretKey = "scoped-secret" },
+            environment = "paper",
+            requestedBy = "spoofed-actor"
+        }));
+        saved.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await vault.ReadScopedAsync("alpaca", scope))!.Get("KeyId").Should().Be("scoped-key");
+        var rows = await ReadAsync<ProviderConnectionRowDto[]>(await client.GetAsync("/api/providers/connections?connectionId=owned"));
+        rows.Should().ContainSingle();
+        rows[0].ExternalAccountId.Should().Be("account-a");
+        rows[0].CredentialState.Should().Be(ProviderCredentialStateDto.Configured);
+        rows[0].FallbackActive.Should().BeFalse();
+        var verification = await ReadAsync<ProviderCredentialVerificationResultDto>(await client.PostAsync("/api/providers/alpaca/verify?connectionId=owned", JsonContent(new { })));
+        verification.Success.Should().Be(accountMatches);
+        (await vault.ReadScopedAsync("alpaca", scope))!.ExternalAccountId.Should().Be("account-a");
+        (await client.DeleteAsync("/api/providers/alpaca/credentials?connectionId=owned")).StatusCode.Should().Be(HttpStatusCode.OK);
+        (await vault.ReadScopedAsync("alpaca", scope)).Should().BeNull();
+        var deletedRows = await ReadAsync<ProviderConnectionRowDto[]>(await client.GetAsync("/api/providers/connections?connectionId=owned"));
+        deletedRows.Single().CredentialState.Should().Be(ProviderCredentialStateDto.Missing);
+        deletedRows.Single().ExternalAccountId.Should().Be("account-a");
+        (await vault.ReadForProviderAsync("alpaca"))!.Get("KeyId").Should().Be("legacy-key");
+        var audit = await File.ReadAllTextAsync(Path.Combine(Path.GetDirectoryName(vault.VaultPath)!, "provider-credentials.audit.jsonl"));
+        audit.Should().Contain("provider-ops").And.NotContain("spoofed-actor").And.NotContain("scoped-secret");
+    }
+
+    [Theory]
+    [InlineData("other")]
+    [InlineData("missing")]
+    [InlineData("wrong-provider")]
+    [InlineData("")]
+    [InlineData("owned&connectionId=other")]
+    public async Task ScopedCredentialRoute_RefusesUnownedOrAmbiguousConnectionBeforeMutation(string query)
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        await RetainConnectionAsync(app, "owned", "provider-tenant", "alpaca", "account-a", "paper");
+        await RetainConnectionAsync(app, "other", "another-tenant", "alpaca", "account-b", "paper");
+        await RetainConnectionAsync(app, "wrong-provider", "provider-tenant", "polygon", "account-c", "default");
+        var vault = (FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        var client = app.GetTestClient();
+        var route = "/api/providers/alpaca/credentials?connectionId=" + query;
+        (await client.PutAsync(route, JsonContent(new { credentials = new { KeyId = "refused", SecretKey = "refused" } }))).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.DeleteAsync(route)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.PostAsync("/api/providers/alpaca/verify?connectionId=" + query, JsonContent(new { }))).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        if (query != "wrong-provider")
+            (await client.GetAsync("/api/providers/connections?connectionId=" + query)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        File.Exists(vault.VaultPath).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("provider-tenant")]
+    [InlineData("another-tenant")]
+    public async Task ScopedCredentialRoute_RejectsDuplicateRetainedIds(string duplicateTenant)
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        await RetainConnectionAsync(app, "owned", "provider-tenant", "alpaca", "account-a", "paper");
+        var store = new Meridian.Application.UI.ConfigStore(app.Services.GetRequiredService<ConfigStore>().ConfigPath);
+        var config = store.Load();
+        var original = config.ProviderConnections!.Connections!.Single();
+        config = config with
+        {
+            ProviderConnections = config.ProviderConnections with
+            {
+                Connections = [original, original with { ConnectionId = "OWNED", TenantId = duplicateTenant, ExternalAccountId = "account-b" }]
+            }
+        };
+        await File.WriteAllTextAsync(store.ConfigPath, JsonSerializer.Serialize(config));
+        var before = await File.ReadAllTextAsync(store.ConfigPath);
+        var service = new Meridian.Application.ProviderRouting.ProviderConnectionService(store);
+        (await service.GetCredentialScopeForTenantAsync("owned", "provider-tenant")).Should().BeNull();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.DeleteForTenantAsync("owned", "provider-tenant"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpsertForTenantAsync(
+            new Meridian.Contracts.Api.CreateProviderConnectionRequest("owned", "alpaca", "Owned", ExternalAccountId: "account-a"), "provider-tenant", "paper"));
+        var client = app.GetTestClient();
+        (await client.GetAsync("/api/providers/connections?connectionId=owned")).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.PutAsync("/api/providers/alpaca/credentials?connectionId=owned", JsonContent(new { credentials = new { KeyId = "refused", SecretKey = "refused" } }))).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.DeleteAsync("/api/providers/alpaca/credentials?connectionId=owned")).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.PostAsync("/api/providers/alpaca/verify?connectionId=owned", JsonContent(new { }))).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await File.ReadAllTextAsync(store.ConfigPath)).Should().Be(before);
+        File.Exists(((FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>()).VaultPath).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ScopedCredentialVerification_DoesNotInvokeProviderWideAccountingVerifier()
+    {
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IAccountingSystemProvider>(sp =>
+            new FakeQuickBooksAccountingVerifier(sp.GetRequiredService<IProviderCredentialStore>())));
+        await RetainConnectionAsync(app, "books", "provider-tenant", "quickbooks", "realm-a", "sandbox");
+        var client = app.GetTestClient();
+        var saved = await client.PutAsync("/api/providers/quickbooks/credentials?connectionId=books", JsonContent(new
+        {
+            credentials = new { ClientId = "client", ClientSecret = "secret", RefreshToken = "refresh", RealmId = "realm-a" },
+            environment = "sandbox"
+        }));
+        saved.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await ReadAsync<ProviderCredentialVerificationResultDto>(await client.PostAsync("/api/providers/quickbooks/verify?connectionId=books", JsonContent(new { })));
+        result.Success.Should().BeFalse();
+        result.VerificationState.Should().Be(ProviderVerificationStateDto.NotVerified);
+        var vault = (FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        (await vault.ReadScopedAsync("quickbooks", new ProviderCredentialScope("provider-tenant", "books", "realm-a", "sandbox")))!.LastVerifiedAt.Should().BeNull();
+        var audit = await File.ReadAllTextAsync(Path.Combine(Path.GetDirectoryName(vault.VaultPath)!, "provider-credentials.audit.jsonl"));
+        audit.Should().NotContain("test-quickbooks-verifier");
+    }
+
+    [Fact]
+    public async Task ProviderReadiness_CountsOnlyTheTenantsOwnScopedCredentials()
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        await RetainConnectionAsync(app, "owned", "provider-tenant", "polygon", "account-a", "default");
+        await RetainConnectionAsync(app, "foreign", "another-tenant", "finnhub", "account-b", "default");
+        var vault = (FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        await vault.SaveScopedAsync(new ProviderCredentialSaveRequest("polygon", new Dictionary<string, string?> { ["ApiKey"] = "owned-key" }, "default"),
+            new ProviderCredentialScope("provider-tenant", "owned", "account-a", "default"));
+        await vault.SaveScopedAsync(new ProviderCredentialSaveRequest("finnhub", new Dictionary<string, string?> { ["ApiKey"] = "foreign-key" }, "default"),
+            new ProviderCredentialScope("another-tenant", "foreign", "account-b", "default"));
+
+        var rows = await ReadAsync<ProviderConnectionRowDto[]>(await app.GetTestClient().GetAsync("/api/providers/connections"));
+
+        rows.Single(row => row.ProviderId == "polygon").CredentialState.Should().Be(ProviderCredentialStateDto.Configured,
+            "a scoped save on the tenant's own connection makes the provider ready for that tenant");
+        rows.Single(row => row.ProviderId == "polygon").DisplayName.Should().Be(ProviderCredentialCatalog.Find("polygon")!.DisplayName,
+            "the provider-level row keeps the provider's name rather than the connection's");
+        rows.Single(row => row.ProviderId == "finnhub").CredentialState.Should().NotBe(ProviderCredentialStateDto.Configured,
+            "another tenant's scoped credentials never contribute");
+    }
+
+    [Fact]
+    public async Task ProviderReadiness_PicksTheBestOwnedConnectionAndProviderScopeReadsOnlyProviderWideRecords()
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        await RetainConnectionAsync(app, "a-configured", "provider-tenant", "polygon", "account-a", "default");
+        await RetainConnectionAsync(app, "b-verified", "provider-tenant", "polygon", "account-b", "default");
+        var vault = (FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        var configured = new ProviderCredentialScope("provider-tenant", "a-configured", "account-a", "default");
+        var verified = new ProviderCredentialScope("provider-tenant", "b-verified", "account-b", "default");
+        await vault.SaveScopedAsync(new ProviderCredentialSaveRequest("polygon", new Dictionary<string, string?> { ["ApiKey"] = "key-a" }, "default"), configured);
+        await vault.SaveScopedAsync(new ProviderCredentialSaveRequest("polygon", new Dictionary<string, string?> { ["ApiKey"] = "key-b" }, "default"), verified);
+        await vault.RecordScopedVerificationAsync(new ProviderCredentialVerificationUpdate("polygon", Success: true, ExternalAccountId: "account-b",
+            VerifiedAt: DateTimeOffset.UtcNow, Actor: "provider-ops"), verified);
+        var client = app.GetTestClient();
+
+        var tenantRows = await ReadAsync<ProviderConnectionRowDto[]>(await client.GetAsync("/api/providers/connections"));
+        var providerWideRows = await ReadAsync<ProviderConnectionRowDto[]>(await client.GetAsync("/api/providers/connections?scope=provider"));
+
+        var polygon = tenantRows.Single(row => row.ProviderId == "polygon");
+        polygon.CredentialState.Should().Be(ProviderCredentialStateDto.Verified,
+            "every owned connection is evaluated, so a later Verified connection wins over an earlier Configured one");
+        polygon.ExternalAccountId.Should().Be("account-b");
+        providerWideRows.Single(row => row.ProviderId == "polygon").CredentialState.Should().NotBe(ProviderCredentialStateDto.Configured)
+            .And.NotBe(ProviderCredentialStateDto.Verified, "scope=provider must not count the tenant's connection credentials");
+    }
+
+    [Fact]
+    public async Task ScopedCredentialRoute_AcceptsARetainedProviderAlias()
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        await RetainConnectionAsync(app, "av", "provider-tenant", "alpha-vantage", "account-a", "default");
+        var client = app.GetTestClient();
+
+        var saved = await client.PutAsync("/api/providers/alphavantage/credentials?connectionId=av",
+            JsonContent(new { credentials = new { ApiKey = "alias-key" } }));
+
+        saved.StatusCode.Should().Be(HttpStatusCode.OK, "the retained alias and the requested provider resolve to one catalog entry");
+        var rows = await ReadAsync<ProviderConnectionRowDto[]>(await client.GetAsync("/api/providers/connections?connectionId=av"));
+        rows.Should().ContainSingle().Which.CredentialState.Should().Be(ProviderCredentialStateDto.Configured);
+    }
+
+    [Fact]
+    public async Task ScopedStatusRead_ReturnsNotFoundForAnOwnedConnectionOutsideTheCredentialCatalog()
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        await RetainConnectionAsync(app, "plugin-owned", "provider-tenant", "uncatalogued-plugin", "account-a", "default");
+
+        var response = await app.GetTestClient().GetAsync("/api/providers/connections?connectionId=plugin-owned");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound, "a provider without managed credentials is a controlled answer, not a server error");
+    }
+
+    private static Task<Meridian.Contracts.Api.ProviderConnectionDto> RetainConnectionAsync(WebApplication app, string id, string tenant, string provider, string account, string environment)
+        => new Meridian.Application.ProviderRouting.ProviderConnectionService(
+            new Meridian.Application.UI.ConfigStore(app.Services.GetRequiredService<ConfigStore>().ConfigPath))
+            .UpsertForTenantAsync(new Meridian.Contracts.Api.CreateProviderConnectionRequest(id, provider, id, ExternalAccountId: account), tenant, environment);
 
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,

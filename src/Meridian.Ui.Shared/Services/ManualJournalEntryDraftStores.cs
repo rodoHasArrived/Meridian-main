@@ -128,6 +128,8 @@ public sealed class FileManualJournalEntryDraftStore :
     JsonFileSnapshotStore<FileManualJournalEntryDraftStore.ManualJournalEntryDraftSnapshot>,
     IManualJournalEntryDraftStore
 {
+    /// <summary>All manual command writers for this snapshot share this durable lease directory.</summary>
+    public string MutationRecoveryDirectory => Path.GetFullPath(SnapshotPath) + ".mutations";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true

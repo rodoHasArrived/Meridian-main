@@ -1238,7 +1238,8 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             disposalSelections,
             instruction.CorrectsMutationBatchId,
             instruction.ReliefMethod,
-            instruction.PolicyRevision);
+            instruction.PolicyRevision,
+            instruction.DisposalSalePrice);
         return await atomicStore.AppendAssetPostingAsync(command, ct).ConfigureAwait(false);
     }
 
