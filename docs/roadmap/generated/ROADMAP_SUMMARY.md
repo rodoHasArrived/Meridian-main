@@ -18,7 +18,7 @@ do_not_edit: true
 
 # Roadmap Summary
 
-Snapshot date: 2026-08-30
+Snapshot date: 2026-10-02
 
 | ID | Title | Status | Health | Priority | Owner lane |
 | --- | --- | --- | --- | --- | --- |
@@ -46,17 +46,17 @@ Snapshot date: 2026-08-30
 | W9-ALPACA-004 | Alpaca fill streaming into order and ledger state | accepted | green | high | Execution and Fund Accounts |
 | W9-REPORT-005 | Client-grade PDF/XLSX exports and partners-capital statement | accepted | green | high | Accounting and Ledger |
 | W9-NAV-006 | Unitized NAV and real fee, waterfall, and capital-call economics | accepted | green | high | Accounting and Ledger |
-| W9-SAFETY-007 | Kill-switch cancel-all and fat-finger, notional, and collar rules | ready_for_acceptance | green | high | Execution and Fund Accounts |
+| W9-SAFETY-007 | Kill-switch cancel-all and fat-finger, notional, and collar rules | accepted | green | high | Execution and Fund Accounts |
 | W9-GOV-008 | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit | in_progress | green | high | Platform Security and Governance |
 | W9-INGEST-009 | Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher | in_progress | green | high | Accounting and Ledger |
 | W9-ASSET-010 | Asset Accounting Event Spine and atomic lot posting | done | green | critical | Accounting and Ledger |
-| W9-CORPACT-011 | Durable corporate action case processing and accounting projection | in_progress | red | high | Accounting and Ledger |
+| W9-CORPACT-011 | Durable corporate action case processing and accounting projection | ready_for_acceptance | green | high | Accounting and Ledger |
 | W10-DEBT-001 | God-file burn-down against the file-size ratchet | planned | green | medium | Workstation Shell and UX |
 | W10-MARK-001 | Fail-closed stale-mark policy and mark-age surfacing | in_progress | green | high | Accounting and Ledger |
 | W10-RECON-001 | Durable break lineage identity and run-over-run break diff | planned | green | high | Accounting and Ledger |
 | W10-PROV-001 | Ledger-amount evidence subject and shared proof drawer | planned | green | high | Workstation Shell and UX |
 | W10-RECON-002 | Break clustering and bulk-resolution activation | planned | green | high | Accounting and Ledger |
-| W10-JRNL-001 | Durable recurring journal schedules and draft runner | planned | green | high | Accounting and Ledger |
+| W10-JRNL-001 | Durable recurring journal schedules and draft runner | in_progress | green | high | Accounting and Ledger |
 | W10-TAX-001 | Tax character, wash-sale, and lot-relief operator surface | planned | green | high | Accounting and Ledger |
 | W10-SEAM-001 | Unified close-readiness projection behind one shared contract | in_progress | green | high | Workstation Shell and UX |
 | W10-RECON-003 | Unified tolerance model and what-if replay workbench | planned | green | medium | Accounting and Ledger |

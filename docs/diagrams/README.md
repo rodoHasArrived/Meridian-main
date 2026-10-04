@@ -572,7 +572,7 @@ See [uml/README.md](uml/README.md) for the full inventory and rendering instruct
 
 - [Architecture Overview](../architecture/overview.md)
 - [C4 Diagrams Reference](../architecture/c4-diagrams.md)
-- [Production Status](../../archive/docs/status/production-status.md)
+- [Production Status](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/status/production-status.md)
 - [Provider Management](../architecture/provider-management.md)
 
 ---

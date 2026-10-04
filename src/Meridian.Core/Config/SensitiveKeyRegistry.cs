@@ -19,7 +19,7 @@ public static class SensitiveKeyRegistry
         "password", "pwd", "secret", "key", "token", "credential",
         "connectionstring", "connection_string",
         "auth", "authorization", "session", "refresh", "bearer",
-        "certificate"
+        "certificate", "otlpheaders"
     ];
 
     /// <summary>

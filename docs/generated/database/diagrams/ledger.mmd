@@ -137,6 +137,8 @@ erDiagram
         timestamp_with_time_zone created_at
         uuid security_id
         uuid book_position_id
+        integer proceeds_allocation_version
+        numeric disposal_sale_price
     }
     ledger_fund_profile_tenancy {
         text fund_profile_id PK
@@ -438,6 +440,7 @@ erDiagram
         numeric_38_12_ booked_factor
         numeric_38_12_ par_basis
         jsonb acquisition_terms
+        jsonb basis_adjustment
     }
     ledger_wash_sale_deferrals {
         uuid deferral_id PK

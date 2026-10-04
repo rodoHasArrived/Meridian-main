@@ -57,4 +57,4 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -
 
 - [Desktop support policy](./policies/desktop-support-policy.md)
 - [WPF implementation notes](./wpf-implementation-notes.md)
-- [Archived historical copy](../../archive/docs/summaries/desktop-testing-guide.md)
+- [Archived historical copy](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/summaries/desktop-testing-guide.md)

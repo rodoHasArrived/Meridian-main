@@ -20,7 +20,7 @@ const { useState, useMemo } = React;
 .journ-section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .journ-search { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .journ-search input { padding: 8px 12px; border: 1px solid var(--border); background: var(--bg-light); font-size: 13px; width: 220px; }
-.journ-search input:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 2px rgba(47,111,143,.2); }
+.journ-search input:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 2px color-mix(in srgb, var(--border-focus) 20%, transparent); }
 .journ-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .journ-table th { background: var(--bg-medium); padding: 9px 12px; text-align: left; border: 1px solid var(--border); font-weight: 600; font-size: 11px; }
 .journ-table td { padding: 10px 12px; border: 1px solid var(--border); height: 40px; }
@@ -29,7 +29,7 @@ const { useState, useMemo } = React;
 .journ-entry-row { cursor: pointer; transition: background 120ms; }
 .journ-entry-row:hover { background: var(--bg-hover); }
 .journ-entry-row.unreconciled { background: var(--amber-a10,rgba(197,136,26,.06)); }
-.journ-entry-row.reconciled { background: var(--green-a10,rgba(22,136,95,.06)); }
+.journ-entry-row.reconciled { background: var(--green-a10,rgba(58,122,86,.06)); }
 .journ-modal-hd { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 18px; border-bottom: 1px solid var(--border); background: var(--bg-light); }
 .journ-modal-body { padding: 18px; overflow-y: auto; max-height: 70vh; }
 .journ-modal-title { font-size: 16px; font-weight: 600; color: var(--text-primary); }

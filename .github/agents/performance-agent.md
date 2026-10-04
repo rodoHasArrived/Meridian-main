@@ -273,8 +273,8 @@ For each optimisation, produce a brief structured summary:
 ## Related Resources
 
 - **Master AI index:** [`docs/ai/README.md`](../../docs/ai/README.md)
-- **ADR-013 (channel policy):** [`archive/docs/adr/013-bounded-channel-policy.md`](../../archive/docs/adr/013-bounded-channel-policy.md)
-- **ADR-014 (JSON source generators):** [`archive/docs/adr/014-json-source-generators.md`](../../archive/docs/adr/014-json-source-generators.md)
+- **ADR-013 (channel policy):** [`archive/docs/adr/013-bounded-channel-policy.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/adr/013-bounded-channel-policy.md) (removed from the tree by the 2026-09-11 archive cleanup; last version)
+- **ADR-014 (JSON source generators):** [`archive/docs/adr/014-json-source-generators.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/adr/014-json-source-generators.md) (removed from the tree by the 2026-09-11 archive cleanup; last version)
 - **Error prevention:** [`docs/ai/ai-known-errors.md`](../../docs/ai/ai-known-errors.md)
 - **Code review (Lens 2):** [`.github/agents/code-review-agent.md`](code-review-agent.md)
 - **Bug fix:** [`.github/agents/bug-fix-agent.md`](bug-fix-agent.md)

@@ -18,7 +18,8 @@ internal sealed class ProviderHealthTracker
         _failureBackoffDuration = failureBackoffDuration;
         foreach (var name in providerNames)
         {
-            _healthStatus[name] = new ProviderHealthStatus(name, true, "Not checked");
+            var providerId = ProviderIdentity.NormalizeId(name);
+            _healthStatus[providerId] = new ProviderHealthStatus(providerId, true, "Not checked");
         }
     }
 
@@ -29,23 +30,25 @@ internal sealed class ProviderHealthTracker
     /// Whether the provider is currently within its post-failure backoff window and should be skipped.
     /// </summary>
     public bool IsInBackoffPeriod(string providerName)
-        => _providerFailures.TryGetValue(providerName, out var failedAt)
+        => _providerFailures.TryGetValue(ProviderIdentity.NormalizeId(providerName), out var failedAt)
            && DateTimeOffset.UtcNow - failedAt < _failureBackoffDuration;
 
     /// <summary>Record a provider failure, starting its backoff window and marking it unhealthy.</summary>
     public void RecordFailure(string providerName, string message)
     {
+        providerName = ProviderIdentity.NormalizeId(providerName);
         _providerFailures[providerName] = DateTimeOffset.UtcNow;
         UpdateHealth(providerName, isAvailable: false, message);
     }
 
     /// <summary>Clear a provider's failure state after a successful call.</summary>
     public void ClearFailure(string providerName)
-        => _providerFailures.TryRemove(providerName, out _);
+        => _providerFailures.TryRemove(ProviderIdentity.NormalizeId(providerName), out _);
 
     /// <summary>Update the recorded health status for a provider.</summary>
     public void UpdateHealth(string providerName, bool isAvailable, string? message = null, TimeSpan? responseTime = null)
     {
+        providerName = ProviderIdentity.NormalizeId(providerName);
         _healthStatus[providerName] = new ProviderHealthStatus(
             providerName,
             isAvailable,

@@ -8,7 +8,7 @@ using Serilog;
 
 namespace Meridian.Storage.Etl;
 
-public sealed class EtlStagingStore
+public sealed class EtlStagingStore : IEtlStagingStore
 {
     private readonly ILogger _log = LoggingSetup.ForContext<EtlStagingStore>();
     private readonly string _rootPath;

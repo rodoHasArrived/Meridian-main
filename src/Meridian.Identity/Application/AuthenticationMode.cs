@@ -2,13 +2,13 @@ using Microsoft.Extensions.Hosting;
 
 namespace Meridian.Identity;
 
-internal enum AuthenticationMode
+public enum AuthenticationMode
 {
     Optional,
     Required
 }
 
-internal static class AuthenticationModeResolver
+public static class AuthenticationModeResolver
 {
     private const string AuthModeEnvVar = "MDC_AUTH_MODE";
     private const string PackagedBuildEnvVar = "MDC_PACKAGED_BUILD";
@@ -16,6 +16,7 @@ internal static class AuthenticationModeResolver
 
     public static AuthenticationMode Resolve(IHostEnvironment environment)
     {
+        ArgumentNullException.ThrowIfNull(environment);
         var configuredMode = Environment.GetEnvironmentVariable(AuthModeEnvVar);
         if (!string.IsNullOrWhiteSpace(configuredMode))
         {

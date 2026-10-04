@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Meridian.Storage.Archival;
 
 namespace Meridian.Ui.Services;
 
@@ -17,6 +18,8 @@ public sealed class BackfillCheckpointService
 {
     private static readonly Lazy<BackfillCheckpointService> _instance = new(() => new BackfillCheckpointService());
     private readonly string _checkpointDir;
+    private readonly Dictionary<string, JobGate> _jobGates = new(StringComparer.OrdinalIgnoreCase);
+    private readonly object _jobGateSync = new();
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
         WriteIndented = true,
@@ -26,9 +29,11 @@ public sealed class BackfillCheckpointService
 
     public static BackfillCheckpointService Instance => _instance.Value;
 
-    private BackfillCheckpointService()
+    private BackfillCheckpointService() : this(null) { }
+
+    internal BackfillCheckpointService(string? checkpointDirectory)
     {
-        _checkpointDir = Path.Combine(
+        _checkpointDir = checkpointDirectory ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "Meridian",
             "backfill-checkpoints");
@@ -50,25 +55,33 @@ public sealed class BackfillCheckpointService
         DateTime toDate,
         CancellationToken ct = default)
     {
-        var checkpoint = new BackfillCheckpoint
+        var gate = await AcquireJobGateAsync(jobId, ct).ConfigureAwait(false);
+        try
         {
-            JobId = jobId,
-            Provider = provider,
-            FromDate = fromDate,
-            ToDate = toDate,
-            CreatedAt = DateTime.UtcNow,
-            Status = CheckpointStatus.InProgress,
-            SymbolCheckpoints = symbols.Select(s => new SymbolCheckpoint
+            var checkpoint = new BackfillCheckpoint
             {
-                Symbol = s,
-                Status = SymbolCheckpointStatus.Pending,
-                BarsDownloaded = 0,
-                RetryCount = 0
-            }).ToList()
-        };
+                JobId = jobId,
+                Provider = provider,
+                FromDate = fromDate,
+                ToDate = toDate,
+                CreatedAt = DateTime.UtcNow,
+                Status = CheckpointStatus.InProgress,
+                SymbolCheckpoints = symbols.Select(s => new SymbolCheckpoint
+                {
+                    Symbol = s,
+                    Status = SymbolCheckpointStatus.Pending,
+                    BarsDownloaded = 0,
+                    RetryCount = 0
+                }).ToList()
+            };
 
-        await SaveCheckpointAsync(checkpoint, ct);
-        return checkpoint;
+            await SaveCheckpointAsync(checkpoint, ct);
+            return checkpoint;
+        }
+        finally
+        {
+            gate.Dispose();
+        }
     }
 
     /// <summary>
@@ -83,51 +96,59 @@ public sealed class BackfillCheckpointService
         string? errorMessage = null,
         CancellationToken ct = default)
     {
-        var checkpoint = await LoadCheckpointAsync(jobId, ct);
-        if (checkpoint == null)
-            return;
-
-        var symbolCp = checkpoint.SymbolCheckpoints.FirstOrDefault(
-            s => string.Equals(s.Symbol, symbol, StringComparison.OrdinalIgnoreCase));
-
-        if (symbolCp != null)
+        var gate = await AcquireJobGateAsync(jobId, ct).ConfigureAwait(false);
+        try
         {
-            symbolCp.Status = status;
-            symbolCp.BarsDownloaded = barsDownloaded;
-            symbolCp.LastProcessedDate = lastDate;
-            symbolCp.ErrorMessage = errorMessage;
-            symbolCp.LastUpdated = DateTime.UtcNow;
+            var checkpoint = await LoadCheckpointAsync(jobId, ct);
+            if (checkpoint == null)
+                return;
 
-            if (status == SymbolCheckpointStatus.Completed)
+            var symbolCp = checkpoint.SymbolCheckpoints.FirstOrDefault(
+                s => string.Equals(s.Symbol, symbol, StringComparison.OrdinalIgnoreCase));
+
+            if (symbolCp != null)
             {
-                symbolCp.CompletedAt = DateTime.UtcNow;
+                symbolCp.Status = status;
+                symbolCp.BarsDownloaded = barsDownloaded;
+                symbolCp.LastProcessedDate = lastDate;
+                symbolCp.ErrorMessage = errorMessage;
+                symbolCp.LastUpdated = DateTime.UtcNow;
+
+                if (status == SymbolCheckpointStatus.Completed)
+                {
+                    symbolCp.CompletedAt = DateTime.UtcNow;
+                }
+                else if (status == SymbolCheckpointStatus.Failed)
+                {
+                    symbolCp.RetryCount++;
+                }
             }
-            else if (status == SymbolCheckpointStatus.Failed)
+
+            // Update overall status
+            var allCompleted = checkpoint.SymbolCheckpoints.All(
+                s => s.Status is SymbolCheckpointStatus.Completed or SymbolCheckpointStatus.Skipped);
+            var anyFailed = checkpoint.SymbolCheckpoints.Any(
+                s => s.Status == SymbolCheckpointStatus.Failed);
+
+            if (allCompleted)
             {
-                symbolCp.RetryCount++;
+                checkpoint.Status = CheckpointStatus.Completed;
+                checkpoint.CompletedAt = DateTime.UtcNow;
             }
+            else if (anyFailed && checkpoint.SymbolCheckpoints.All(
+                s => s.Status is SymbolCheckpointStatus.Completed or SymbolCheckpointStatus.Failed or SymbolCheckpointStatus.Skipped))
+            {
+                checkpoint.Status = CheckpointStatus.PartiallyCompleted;
+                checkpoint.CompletedAt = DateTime.UtcNow;
+            }
+
+            checkpoint.TotalBarsDownloaded = checkpoint.SymbolCheckpoints.Sum(s => s.BarsDownloaded);
+            await SaveCheckpointAsync(checkpoint, ct);
         }
-
-        // Update overall status
-        var allCompleted = checkpoint.SymbolCheckpoints.All(
-            s => s.Status is SymbolCheckpointStatus.Completed or SymbolCheckpointStatus.Skipped);
-        var anyFailed = checkpoint.SymbolCheckpoints.Any(
-            s => s.Status == SymbolCheckpointStatus.Failed);
-
-        if (allCompleted)
+        finally
         {
-            checkpoint.Status = CheckpointStatus.Completed;
-            checkpoint.CompletedAt = DateTime.UtcNow;
+            gate.Dispose();
         }
-        else if (anyFailed && checkpoint.SymbolCheckpoints.All(
-            s => s.Status is SymbolCheckpointStatus.Completed or SymbolCheckpointStatus.Failed or SymbolCheckpointStatus.Skipped))
-        {
-            checkpoint.Status = CheckpointStatus.PartiallyCompleted;
-            checkpoint.CompletedAt = DateTime.UtcNow;
-        }
-
-        checkpoint.TotalBarsDownloaded = checkpoint.SymbolCheckpoints.Sum(s => s.BarsDownloaded);
-        await SaveCheckpointAsync(checkpoint, ct);
     }
 
     /// <summary>
@@ -138,15 +159,23 @@ public sealed class BackfillCheckpointService
         string errorMessage,
         CancellationToken ct = default)
     {
-        var checkpoint = await LoadCheckpointAsync(jobId, ct);
-        if (checkpoint == null)
-            return;
+        var gate = await AcquireJobGateAsync(jobId, ct).ConfigureAwait(false);
+        try
+        {
+            var checkpoint = await LoadCheckpointAsync(jobId, ct);
+            if (checkpoint == null)
+                return;
 
-        checkpoint.Status = CheckpointStatus.Failed;
-        checkpoint.ErrorMessage = errorMessage;
-        checkpoint.CompletedAt = DateTime.UtcNow;
+            checkpoint.Status = CheckpointStatus.Failed;
+            checkpoint.ErrorMessage = errorMessage;
+            checkpoint.CompletedAt = DateTime.UtcNow;
 
-        await SaveCheckpointAsync(checkpoint, ct);
+            await SaveCheckpointAsync(checkpoint, ct);
+        }
+        finally
+        {
+            gate.Dispose();
+        }
     }
 
     /// <summary>
@@ -278,6 +307,73 @@ public sealed class BackfillCheckpointService
         return Task.CompletedTask;
     }
 
+    internal int ActiveJobGateCount
+    {
+        get
+        {
+            lock (_jobGateSync)
+                return _jobGates.Count;
+        }
+    }
+
+    internal async Task<IDisposable> AcquireJobGateAsync(string jobId, CancellationToken ct = default)
+    {
+        JobGate gate;
+        lock (_jobGateSync)
+        {
+            if (!_jobGates.TryGetValue(jobId, out gate!))
+            {
+                gate = new JobGate();
+                _jobGates.Add(jobId, gate);
+            }
+            // Waiters own a reference before they wait, including cancellable waiters.
+            gate.References++;
+        }
+
+        try
+        {
+            await gate.Semaphore.WaitAsync(ct).ConfigureAwait(false);
+            return new JobGateLease(this, jobId, gate);
+        }
+        catch
+        {
+            ReleaseJobGateReference(jobId, gate);
+            throw;
+        }
+    }
+
+    private void ReleaseJobGateReference(string jobId, JobGate gate)
+    {
+        lock (_jobGateSync)
+        {
+            if (--gate.References == 0)
+            {
+                _jobGates.Remove(jobId);
+                gate.Semaphore.Dispose();
+            }
+        }
+    }
+
+    private sealed class JobGate
+    {
+        public SemaphoreSlim Semaphore { get; } = new(1, 1);
+        public int References { get; set; }
+    }
+
+    private sealed class JobGateLease(BackfillCheckpointService owner, string jobId, JobGate gate) : IDisposable
+    {
+        private BackfillCheckpointService? _owner = owner;
+
+        public void Dispose()
+        {
+            var currentOwner = Interlocked.Exchange(ref _owner, null);
+            if (currentOwner == null)
+                return;
+            gate.Semaphore.Release();
+            currentOwner.ReleaseJobGateReference(jobId, gate);
+        }
+    }
+
     private string GetCheckpointPath(string jobId) =>
         Path.Combine(_checkpointDir, $"{jobId}.json");
 
@@ -285,7 +381,7 @@ public sealed class BackfillCheckpointService
     {
         var path = GetCheckpointPath(checkpoint.JobId);
         var json = JsonSerializer.Serialize(checkpoint, _jsonOptions);
-        await File.WriteAllTextAsync(path, json, ct);
+        await AtomicFileWriter.WriteAsync(path, json, ct).ConfigureAwait(false);
     }
 
     private async Task<BackfillCheckpoint?> LoadCheckpointFromFileAsync(string path, CancellationToken ct)
@@ -297,6 +393,10 @@ public sealed class BackfillCheckpointService
         {
             var json = await File.ReadAllTextAsync(path, ct);
             return JsonSerializer.Deserialize<BackfillCheckpoint>(json, _jsonOptions);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
         }
         catch
         {

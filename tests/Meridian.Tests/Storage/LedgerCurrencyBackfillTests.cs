@@ -18,6 +18,7 @@ public sealed class LedgerCurrencyBackfillTests
     private static readonly DateTimeOffset OccurredAt = DateTimeOffset.Parse("2026-05-15T18:00:00Z");
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task RepairEvidencedLegs_BookCorroboratedBySingleCurrencyLegs_StampsIdentityTranslation()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -57,6 +58,7 @@ public sealed class LedgerCurrencyBackfillTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task RepairEvidencedLegs_BookThatTransactsInForeignCurrency_LeavesBlindLegsAlone()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -87,6 +89,7 @@ public sealed class LedgerCurrencyBackfillTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task Survey_LegsInPeriodWithNoLedgerBook_ReportsUnresolvedLedgerBook()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -104,6 +107,7 @@ public sealed class LedgerCurrencyBackfillTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task Affirm_BookWithNoCurrencyEvidenceAtAll_CompletesLegsAndRecordsTheAuthority()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -141,6 +145,7 @@ public sealed class LedgerCurrencyBackfillTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task Affirm_BookThatTransactsInForeignCurrency_IsRefusedRatherThanOverruling()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -165,6 +170,7 @@ public sealed class LedgerCurrencyBackfillTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task Affirm_CurrencyThatIsNotTheBooksOwnBase_IsRefused()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -182,6 +188,7 @@ public sealed class LedgerCurrencyBackfillTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task Affirm_BookWhoseLegsAreAlreadyDetermined_IsRefusedAsNeedingNoAssertion()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();

@@ -11,13 +11,17 @@ public sealed class FutureProjectionServiceTests
     [Fact]
     public async Task GetExpiryLadderAsync_ExcludesRetiredAndExpiredContracts()
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var front = Expiry(3);
+        var deferred = Expiry(6);
+        var retired = Expiry(9);
+        var expired = Expiry(-3);
+
         IReadOnlyList<FutureProjectionRow> rows =
         [
-            MakeRow(Guid.NewGuid(), "ES", "ESZ6", today.AddDays(30), false, "Active"),
-            MakeRow(Guid.NewGuid(), "ES", "ESH7", today.AddDays(120), false, "Active"),
-            MakeRow(Guid.NewGuid(), "ES", "ESH5", today.AddDays(-365), false, "Retired"),
-            MakeRow(Guid.NewGuid(), "ES", "ESM6", today.AddDays(-30), false, "Expired")
+            MakeRow(Guid.NewGuid(), "ES", Code("ES", front), front, false, "Active"),
+            MakeRow(Guid.NewGuid(), "ES", Code("ES", deferred), deferred, false, "Active"),
+            MakeRow(Guid.NewGuid(), "ES", Code("ES", retired), retired, false, "Retired"),
+            MakeRow(Guid.NewGuid(), "ES", Code("ES", expired), expired, false, "Expired")
         ];
 
         var projectionStore = Substitute.For<IFutureReferenceProjectionStore>();
@@ -27,18 +31,21 @@ public sealed class FutureProjectionServiceTests
 
         var ladder = await service.GetExpiryLadderAsync("ES");
 
+        // The retired contract expires after both survivors, so only the lifecycle stat can exclude it.
         ladder.Should().HaveCount(2);
-        ladder.Select(r => r.PrimaryIdentifier).Should().ContainInOrder(["ESZ6", "ESH7"]);
+        ladder.Select(r => r.PrimaryIdentifier).Should().ContainInOrder([Code("ES", front), Code("ES", deferred)]);
     }
 
     [Fact]
     public async Task GetFrontMonthAsync_PrefersRollTargetOverActive()
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var rollTarget = Expiry(3);
+        var active = Expiry(6);
+
         IReadOnlyList<FutureProjectionRow> rows =
         [
-            MakeRow(Guid.NewGuid(), "ES", "ESZ6", today.AddDays(30), true, "RollTarget"),
-            MakeRow(Guid.NewGuid(), "ES", "ESH7", today.AddDays(120), false, "Active")
+            MakeRow(Guid.NewGuid(), "ES", Code("ES", rollTarget), rollTarget, true, "RollTarget"),
+            MakeRow(Guid.NewGuid(), "ES", Code("ES", active), active, false, "Active")
         ];
 
         var projectionStore = Substitute.For<IFutureReferenceProjectionStore>();
@@ -49,17 +56,19 @@ public sealed class FutureProjectionServiceTests
         var frontMonth = await service.GetFrontMonthAsync("ES");
 
         frontMonth.Should().NotBeNull();
-        frontMonth!.PrimaryIdentifier.Should().Be("ESZ6");
+        frontMonth!.PrimaryIdentifier.Should().Be(Code("ES", rollTarget));
     }
 
     [Fact]
     public async Task GetFrontMonthAsync_IgnoresExpiredRollTargets()
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var lapsed = Expiry(-15);
+        var active = Expiry(3);
+
         IReadOnlyList<FutureProjectionRow> rows =
         [
-            MakeRow(Guid.NewGuid(), "ES", "ESM5", today.AddDays(-30), true, "Expired"),
-            MakeRow(Guid.NewGuid(), "ES", "ESU6", today.AddDays(30), false, "Active")
+            MakeRow(Guid.NewGuid(), "ES", Code("ES", lapsed), lapsed, true, "Expired"),
+            MakeRow(Guid.NewGuid(), "ES", Code("ES", active), active, false, "Active")
         ];
 
         var projectionStore = Substitute.For<IFutureReferenceProjectionStore>();
@@ -70,18 +79,20 @@ public sealed class FutureProjectionServiceTests
         var frontMonth = await service.GetFrontMonthAsync("ES");
 
         frontMonth.Should().NotBeNull();
-        frontMonth!.PrimaryIdentifier.Should().Be("ESU6");
+        frontMonth!.PrimaryIdentifier.Should().Be(Code("ES", active));
     }
 
 
     [Fact]
     public async Task GetFrontMonthAsync_IgnoresPastExpiryRollTargetsEvenWhenLifecycleIsRollTarget()
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var lapsed = Expiry(-15);
+        var active = Expiry(3);
+
         IReadOnlyList<FutureProjectionRow> rows =
         [
-            MakeRow(Guid.NewGuid(), "ES", "ESM5", today.AddDays(-30), true, "RollTarget"),
-            MakeRow(Guid.NewGuid(), "ES", "ESU6", today.AddDays(30), false, "Active")
+            MakeRow(Guid.NewGuid(), "ES", Code("ES", lapsed), lapsed, true, "RollTarget"),
+            MakeRow(Guid.NewGuid(), "ES", Code("ES", active), active, false, "Active")
         ];
 
         var projectionStore = Substitute.For<IFutureReferenceProjectionStore>();
@@ -92,7 +103,7 @@ public sealed class FutureProjectionServiceTests
         var frontMonth = await service.GetFrontMonthAsync("ES");
 
         frontMonth.Should().NotBeNull();
-        frontMonth!.PrimaryIdentifier.Should().Be("ESU6");
+        frontMonth!.PrimaryIdentifier.Should().Be(Code("ES", active));
     }
     [Fact]
     public async Task GetExpiryLadderAsync_ReturnsEmpty_ForBlankRootSymbol()
@@ -105,6 +116,21 @@ public sealed class FutureProjectionServiceTests
 
         result.Should().BeEmpty();
     }
+
+    // FutureProjectionService filters the ladder against DateOnly.FromDateTime(DateTime.UtcNow) and
+    // takes no clock, so fixed calendar expiries turn these cases into time bombs: they pass until the
+    // hard-coded contract lapses and then fail on an unchanged commit. Expiries are therefore anchored
+    // to the run date, in whole months so a midnight boundary cannot reclassify a contract mid-run.
+    private static readonly DateOnly RunDate = DateOnly.FromDateTime(DateTime.UtcNow);
+
+    private static DateOnly Expiry(int monthsFromRunDate) => RunDate.AddMonths(monthsFromRunDate);
+
+    /// <summary>CME contract month codes, January through December.</summary>
+    private const string MonthCodes = "FGHJKMNQUVXZ";
+
+    /// <summary>Renders the venue-style contract code for a root and expiry, e.g. ES + Dec 2026 = ESZ6.</summary>
+    private static string Code(string root, DateOnly expiry)
+        => $"{root}{MonthCodes[expiry.Month - 1]}{expiry.Year % 10}";
 
     private static FutureProjectionRow MakeRow(Guid securityId, string root, string symbol, DateOnly expiry, bool isRollTarget, string stat)
         => new(securityId, symbol, "USD", root, expiry.ToString("MMMy"), expiry,

@@ -74,7 +74,7 @@ public static class ProviderTemplateFactory
         }
 
         return new ProviderTemplate(
-            Name: provider.ProviderId,
+            Name: ProviderIdentity.NormalizeId(provider.ProviderId),
             DisplayName: provider.ProviderDisplayName,
             ProviderType: caps.PrimaryType,
             Priority: priority,
@@ -166,6 +166,9 @@ public static class ProviderTemplateFactory
         var capabilityInfo = new CapabilityInfo
         {
             SupportsStreaming = caps.SupportsStreaming,
+            SupportsBackfill = caps.SupportsBackfill,
+            SupportsSymbolSearch = caps.SupportsSymbolSearch,
+            SupportsCorporateActions = provider is ICorporateActionProvider,
             SupportsMarketDepth = caps.SupportsMarketDepth,
             MaxDepthLevels = caps.MaxDepthLevels,
             SupportsAdjustedPrices = caps.SupportsAdjustedPrices,
@@ -189,7 +192,7 @@ public static class ProviderTemplateFactory
 
         return new ProviderCatalogEntry
         {
-            ProviderId = provider.ProviderId,
+            ProviderId = ProviderIdentity.NormalizeId(provider.ProviderId),
             DisplayName = provider.ProviderDisplayName,
             Description = provider.ProviderDescription,
             ProviderType = typeKind,

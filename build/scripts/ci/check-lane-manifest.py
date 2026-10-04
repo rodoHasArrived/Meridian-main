@@ -12,7 +12,7 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_MANIFEST = REPO_ROOT / "build" / "ci" / "lane-manifest.json"
-REQUIRED_STATUS_CHECK = "Meridian CI / quality-gate"
+REQUIRED_STATUS_CHECK = "quality-gate"
 REQUIRED_LANES = {
     "bootstrap",
     "quality-gate",

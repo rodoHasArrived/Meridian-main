@@ -74,6 +74,17 @@ public sealed class CliModeResolverTests
         result.Should().Be(CliModeResolver.RunMode.Headless);
     }
 
+    [Fact]
+    public void Resolve_WithFundTenantBackfillAction_DoesNotTreatActionAsDeploymentMode()
+    {
+        var args = new[] { "--fund-tenant-backfill", "--action", "preview", "--output", "plan.json" };
+
+        var (mode, error) = CliModeResolver.ResolveWithError(args);
+
+        mode.Should().Be(CliModeResolver.RunMode.Headless);
+        error.Should().BeNull();
+    }
+
     [Theory]
     [InlineData("workstation", CliModeResolver.RunMode.Workstation)]
     [InlineData("web-workstation", CliModeResolver.RunMode.Workstation)]

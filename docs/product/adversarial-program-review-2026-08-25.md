@@ -2348,7 +2348,7 @@ This review is independent input. Live delivery status stays in the roadmap regi
 (`docs/roadmap/README.md`, `docs/roadmap/data/*.yml`), and release readiness stays in the
 [Implementation and Readiness Tracker](implementation-todo-list.md). Where this review's findings
 overlap the ranked W9 slate or the
-[production-readiness backlog](production-readiness-backlog-2026-08.md), those documents remain
+[production-readiness backlog](plans/production-readiness-backlog-2026-08.md), those documents remain
 authoritative for sequencing.
 
 Two items are re-raised from the 2026-08-24 pass without progress and are noted here as such rather

@@ -21,56 +21,56 @@ function inject() {
 .fdt-wrap { display: flex; flex-direction: column; gap: 12px; }
 .fdt-toolbar {
   display: flex; align-items: center; gap: 12px; padding: 12px;
-  background: var(--bg-medium, #F5F7FA); border-radius: var(--radius-chip,2px);
-  border: 1px solid var(--border, #D7DCE2);
+  background: var(--bg-medium, #EDEAE4); border-radius: var(--radius-chip,2px);
+  border: 1px solid var(--border, #E4E3DE);
 }
 .fdt-search { flex: 1; min-width: 200px; }
 .fdt-actions { display: flex; gap: 8px; }
 .fdt-badge {
-  display: inline-block; padding: 4px 8px; background: var(--accent, #2F6F8F);
+  display: inline-block; padding: 4px 8px; background: var(--accent, #A85436);
   color: var(--text-on-accent, white); border-radius: var(--radius-chip,2px); font-size: 11px; font-weight: 600;
 }
-.fdt-table { border: 1px solid var(--border, #D7DCE2); border-radius: var(--radius-chip,2px); overflow: hidden; }
+.fdt-table { border: 1px solid var(--border, #E4E3DE); border-radius: var(--radius-chip,2px); overflow: hidden; }
 .fdt-table-scroll { overflow-y: auto; }
 .fdt-table table {
   width: 100%; border-collapse: separate; border-spacing: 0;
   font-family: var(--font-data); font-size: 12px;
 }
 .fdt-table thead {
-  position: sticky; top: 0; z-index: 1; background: var(--bg-medium, #F5F7FA);
+  position: sticky; top: 0; z-index: 1; background: var(--bg-medium, #EDEAE4);
 }
 .fdt-table th {
   padding: 9px 12px; text-align: left; white-space: nowrap;
   font-family: var(--font-body); font-size: 10px; font-weight: 600;
   font-variant: all-small-caps; letter-spacing: 0.03em;
-  color: var(--text-muted, #59636F); border-bottom: 1px solid var(--border, #D7DCE2);
+  color: var(--text-muted, #5E666F); border-bottom: 1px solid var(--border, #E4E3DE);
   cursor: pointer; user-select: none;
   transition: background 100ms ease;
 }
-.fdt-table th:hover { background: var(--bg-light, #fff); }
-.fdt-table th:focus-visible { outline: var(--focus-ring); outline-offset: -2px; color: var(--accent, #2F6F8F); }
+.fdt-table th:hover { background: var(--bg-light, #FBFAF8); }
+.fdt-table th:focus-visible { outline: var(--focus-ring); outline-offset: -2px; color: var(--accent, #A85436); }
 .fdt-table th.fdt--sorted {
-  background: var(--bg-light, #fff); color: var(--accent, #2F6F8F);
+  background: var(--bg-light, #FBFAF8); color: var(--accent, #A85436);
 }
 .fdt-table th.fdt--r { text-align: right; }
 .fdt-table td {
-  padding: 7px 12px; border-top: 1px solid var(--border, #D7DCE2);
-  color: var(--text-primary, #22272E); font-variant-numeric: tabular-nums;
+  padding: 7px 12px; border-top: 1px solid var(--border, #E4E3DE);
+  color: var(--text-primary, #22252A); font-variant-numeric: tabular-nums;
   height: var(--theme-row-height, 40px); box-sizing: border-box;
 }
 /* density: row height tracks --theme-row-height; vertical padding compresses to fit */
 body[data-theme-density="compact"] .fdt-table td { padding-top: 4px; padding-bottom: 4px; }
 body[data-theme-density="spacious"] .fdt-table td { padding-top: 13px; padding-bottom: 13px; }
 .fdt-table tbody tr {
-  background: var(--bg-light, #fff); transition: background 100ms ease;
+  background: var(--bg-light, #FBFAF8); transition: background 100ms ease;
 }
-.fdt-table tbody tr:nth-child(even) { background: var(--card-surface-raised, #FAFBFC); }
-.fdt-table tbody tr:hover { background: var(--bg-active, #E6EEF5); box-shadow: inset 3px 0 0 var(--accent, #2F6F8F); }
+.fdt-table tbody tr:nth-child(even) { background: var(--card-surface-raised, #F6F4F0); }
+.fdt-table tbody tr:hover { background: var(--bg-active, #F2E3DB); box-shadow: inset 3px 0 0 var(--accent, #A85436); }
 .fdt-table tbody tr.fdt--spacer, .fdt-table tbody tr.fdt--spacer:hover { background: transparent; box-shadow: none; }
 .fdt-table tbody tr.fdt--spacer td { border-top: none; padding: 0; }
 .fdt-table td.fdt--r { text-align: right; }
 .fdt-empty {
-  padding: 48px 24px; text-align: center; color: var(--text-muted, #59636F);
+  padding: 48px 24px; text-align: center; color: var(--text-muted, #5E666F);
   font-family: var(--font-body); font-size: 13px;
 }
 `;
@@ -117,7 +117,7 @@ export function FilteredDataTable({
 
   return (
     <div className="fdt-wrap">
-      {title && <h3 style={{ margin: "0 0 12px 0", fontSize: "15px", fontFamily: "var(--font-body)", color: "var(--text-primary, #22272E)" }}>{title}</h3>}
+      {title && <h3 style={{ margin: "0 0 12px 0", fontSize: "15px", fontFamily: "var(--font-body)", color: "var(--text-primary, #22252A)" }}>{title}</h3>}
 
       <div className="fdt-toolbar">
         <div className="fdt-search">
@@ -127,7 +127,7 @@ export function FilteredDataTable({
             onChange={(e) => state.setQuery(e.target.value)}
           />
         </div>
-        <div style={{ fontSize: "12px", color: "var(--text-muted, #59636F)" }}>
+        <div style={{ fontSize: "12px", color: "var(--text-muted, #5E666F)" }}>
           {state.resultCount} of {state.rawData.length}
           {state.filterCount > 0 && <span className="fdt-badge" style={{ marginLeft: "8px" }}>{state.filterCount} filter{state.filterCount !== 1 ? "s" : ""}</span>}
         </div>

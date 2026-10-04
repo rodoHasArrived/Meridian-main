@@ -903,71 +903,9 @@ public static partial class LedgerEndpoints
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        app.MapPost(UiApiRoutes.LedgerCloseManagementPeriodLock, async (
+        app.MapPost(UiApiRoutes.LedgerCloseManagementPeriodLock, (
             LockClosePeriodRequestDto request,
-            HttpContext context) =>
-        {
-            if (!HasLedgerMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            string? controllerRole = null;
-            if (!request.PrepareClosingEntriesOnly &&
-                !TryResolveControllerRole(context, out controllerRole))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = ResolveAccountingCloseManagementService(context);
-            if (service is null)
-            {
-                return ServiceUnavailable();
-            }
-
-            try
-            {
-                var scope = await ResolveCloseWorkflowTenantScopeAsync(context, service, request.WorkflowId).ConfigureAwait(false);
-                if (!scope.IsAccessible)
-                {
-                    return CloseWorkflowScopeDenied();
-                }
-                if (scope.Plan is null)
-                {
-                    return Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." });
-                }
-
-                var actor = ResolveMutationActor(context, request.Actor);
-                var result = await service
-                    .LockClosePeriodScopedAsync(
-                        request with
-                        {
-                            Actor = actor,
-                            // Narrower of declaration and principal standing (#2673).
-                            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin),
-                            ControllerRole = controllerRole
-                        },
-                        actor,
-                        scope.TenantContext.TenantId,
-                        scope.TenantContext.CompanyId,
-                        context.RequestAborted)
-                    .ConfigureAwait(false);
-                return result is null
-                    ? Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." })
-                    : Results.Json(result, jsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.ValidationProblem(new Dictionary<string, string[]>
-                {
-                    ["request"] = [ex.Message]
-                });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.Conflict(new { error = ex.Message });
-            }
-        })
+            HttpContext context) => ExecuteClosePeriodLockAsync(request, context, jsonOptions))
         .WithName("LockLedgerCloseManagementPeriod").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<ClosePeriodLockResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)

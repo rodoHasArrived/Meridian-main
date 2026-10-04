@@ -11,6 +11,28 @@ last_reviewed: 2026-08-04
 
 # src/Meridian.Ui/dashboard
 
+Accounting's draft queue reads retained recurring occurrences through the shared scoped
+`/api/ledger/journal-automation/recurring/occurrences` contract. Rows retain schedule/template
+versions, draft identity, human approval status and source evidence references. Blocked rows
+include period lock ownership and the governed reopen path. Failed reads stay unavailable;
+the browser neither falls back to sample state nor infers approval or claims an occurrence.
+Changing scope discards previous rows and ignores late responses. Focused coverage lives in
+`RecurringJournalQueue.test.tsx` and `recurring-journals.api.test.ts`.
+
+The stable test runner retains eight files per batch, two Vitest workers and process recycling.
+Fresh JSON test evidence is written under `artifacts/test-results/browser/` at repository root.
+Missing results, zero passing discovery or missing selected files fail the run. Counts, skips,
+durations and stable test identity digests support the manual CI concurrency benchmark.
+
+`EvidenceAmount` opens an exact retained evidence subject in the shared sheet primitive. Manual
+journal detail debit/credit cells carry the entry and ledger-book identity; values without a supported
+retained subject are never assigned inferred provenance. Reads disable development fallback and
+show loading, unavailable, empty, stale and mismatched-subject states. Escape and focus restoration
+use the shared sheet behavior. Full evidence links retain the selected ledger book.
+
+Reconciliation break details expose source observation state (New, Aging, Cleared, Recurring),
+lineage, occurrence and successful-run clearing independently of governed casework status.
+
 The build lockfile resolves Browserslist 4.28.9, removing the high-severity cache-growth and
 custom-stats parsing advisories reported by the September 6 production-certification scan.
 
@@ -38,6 +60,8 @@ Operations Continuity submits checklist controls from the shared workflow's expl
 Focused proof: `operations-continuity-screen.view-model.test.ts` and `operations-continuity-screen.test.tsx`.
 
 ## Purpose
+
+Accounting balances and materiality labels format amounts using the supplied currency code, including signed values. Currency codes appear once even when the formatter emits the code as its symbol, and negative zero renders as zero.
 
 Browser workstation dashboard is the active browser operator workstation.
 
@@ -73,7 +97,7 @@ instead of introducing one-off screen styling.
 
 Legacy `/overview/*` links remain compatibility redirects in the app shell. The retired overview
 screen, Today panel, and unrouted Settings admin operations console are recorded as comment-only
-tombstones under `archive/code/src/Meridian.Ui/dashboard/src/screens/`.
+tombstones under `archive/code/src/Meridian.Ui/dashboard/src/screens/` until the 2026-09-11 archive cleanup (`982eea2d`) removed `archive/code/`; [the last copies](https://github.com/rodoHasArrived/Meridian-main/tree/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/code/src/Meridian.Ui/dashboard/src/screens) remain in history.
 
 
 ## Dense row detail accessibility contract

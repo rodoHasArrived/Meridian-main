@@ -62,6 +62,25 @@ public sealed class AddProviderWizardViewModelTests
         });
     }
 
+    [Theory]
+    [InlineData("nasdaqdatalink", "nasdaq")]
+    [InlineData("ib", "ibkr")]
+    public void LoadProviderCatalog_MatchesCanonicalStatusToAnAliasedCatalogEntry(string alias, string canonical)
+    {
+        WpfTestThread.Run(() =>
+        {
+            var viewModel = new AddProviderWizardViewModel();
+            var provider = CreateProvider(alias, alias, ProviderTier.Free, false, true);
+            var status = new ProviderCredentialStatus(canonical, canonical, CredentialState.Configured, "Configured", []);
+
+            viewModel.LoadProviderCatalog([provider], [status]);
+
+            viewModel.FindProvider(canonical).Should().BeSameAs(provider);
+            viewModel.ProviderCatalog.Should().ContainSingle().Which.CredentialStatusBrush.Should()
+                .BeSameAs(new ProviderCatalogViewModel(provider, status).CredentialStatusBrush);
+        });
+    }
+
     [Fact]
     public void SelectProviderFilterCommand_WhenFilterHasNoMatches_ProjectsRecoveryState()
     {

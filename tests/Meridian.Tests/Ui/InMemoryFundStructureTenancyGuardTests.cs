@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.Services;
+using Meridian.Contracts.Tenancy;
 using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.PortfolioRecords.FundAccounts;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
+using AuthEnvironmentScope = Meridian.Tests.Identity.EnvironmentVariableScope;
 
 namespace Meridian.Tests.Ui;
 
@@ -19,8 +21,19 @@ namespace Meridian.Tests.Ui;
 /// partitioning it or refusing multi-company access; these tests pin the refusal, and pin that it
 /// leaves the single-company deployments that actually run this posture alone.
 /// </summary>
-public sealed class InMemoryFundStructureTenancyGuardTests
+[Collection("IdentityEnvironment")]
+public sealed class InMemoryFundStructureTenancyGuardTests : IDisposable
 {
+    // The guard reads the same usable account source as authentication. Legacy raw hex strings
+    // are deliberately rejected; fixtures must carry a currently supported password hash.
+    private static readonly string FixturePasswordHash = PasswordHashing.HashPassword("tenant-guard-fixture-password");
+
+    private readonly AuthEnvironmentScope _environment = new AuthEnvironmentScope()
+        .Set("MDC_USERS", null)
+        .Set("MDC_DEMO_USERS", null)
+        .Set("MDC_USERNAME", null)
+        .Set("MDC_PASSWORD_HASH", null);
+
     [Fact]
     public async Task Guard_RefusesToStartWhenAnUnpartitionedStoreWouldServeSeveralCompanies()
     {
@@ -66,6 +79,7 @@ public sealed class InMemoryFundStructureTenancyGuardTests
                 services.AddSingleton<IFundStructureService>(
                     new InMemoryFundStructureService(new InMemoryFundAccountService()));
                 services.AddSingleton(AccountStoreFor("company-alpha", "company-beta"));
+                services.AddSingleton(sp => new UserProfileRegistry(null, sp.GetRequiredService<IUserAccountStore>()));
                 services.AddLogging();
                 services.AddHostedService<InMemoryFundStructureTenancyGuard>();
             })
@@ -136,22 +150,107 @@ public sealed class InMemoryFundStructureTenancyGuardTests
     }
 
     [Fact]
-    public async Task Guard_DoesNotConstrainAPartitionedStore()
+    public async Task Guard_RefusesMultiCompanyPartitionedStoreWithPermissiveReads()
     {
-        // The Postgres service carries the tenant column and the scoping this guard substitutes for,
-        // so several companies on it is the supported arrangement, not a refusal.
         var partitioned = Substitute.For<IFundStructureService>();
         var guard = CreateGuard(partitioned, "company-alpha", "company-beta");
 
+        var start = () => guard.StartAsync(CancellationToken.None);
+        await start.Should().ThrowAsync<StartupRefusedException>().WithMessage("*fail-closed*");
+    }
+
+    [Fact]
+    public async Task Guard_AllowsMultiCompanyPartitionedStoreWithStrictReads()
+    {
+        var guard = new InMemoryFundStructureTenancyGuard(
+            Substitute.For<IFundStructureService>(),
+            new UserProfileRegistry(null, AccountStoreFor("company-alpha", "company-beta"), TenantScopeEnforcementOptions.FailClosed),
+            NullLogger<InMemoryFundStructureTenancyGuard>.Instance);
         await guard.StartAsync(CancellationToken.None);
     }
+
+    [Theory]
+    [InlineData("MDC_USERS", "Production")]
+    [InlineData("MDC_DEMO_USERS", "Development")]
+    public async Task Guard_RefusesCompaniesFromTheEffectiveAuthenticationFallback(string variable, string environment)
+    {
+        var password = "scope-proof-password";
+        var hash = PasswordHashing.HashPassword(password);
+        _environment.Set("DOTNET_ENVIRONMENT", environment)
+            .Set("ASPNETCORE_ENVIRONMENT", environment)
+            .Set(variable, EnvironmentAccounts(hash));
+        var profiles = new UserProfileRegistry(null, AccountStoreFor(), TenantScopeEnforcementOptions.FailClosed);
+        profiles.Authenticate("operator-alpha", password)!.CompanyId.Should().Be("company-alpha");
+        profiles.Authenticate("operator-beta", password)!.CompanyId.Should().Be("company-beta");
+
+        using var host = new Microsoft.Extensions.Hosting.HostBuilder().ConfigureServices(services =>
+        {
+            services.AddSingleton<IFundStructureService>(new InMemoryFundStructureService(new InMemoryFundAccountService()));
+            services.AddSingleton(profiles);
+            services.AddLogging();
+            services.AddHostedService<InMemoryFundStructureTenancyGuard>();
+        }).Build();
+
+        var start = async () => await host.StartAsync();
+        await start.Should().ThrowAsync<StartupRefusedException>();
+    }
+
+    [Fact]
+    public async Task Guard_UsesGovernedStorePrecedenceInsteadOfCombiningInactiveEnvironmentAccounts()
+    {
+        _environment.Set("MDC_USERS", EnvironmentAccounts(FixturePasswordHash));
+        var profiles = new UserProfileRegistry(null, AccountStoreFor("governed-company"));
+        profiles.GetProfile("operator-alpha").Should().BeNull();
+        profiles.GetConfiguredCompanyIds().Should().Equal("governed-company");
+        var guard = new InMemoryFundStructureTenancyGuard(
+            new InMemoryFundStructureService(new InMemoryFundAccountService()), profiles,
+            NullLogger<InMemoryFundStructureTenancyGuard>.Instance);
+
+        await guard.StartAsync(CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task Guard_DoesNotCountDemoAccountsThatAuthenticationIgnoresInProduction()
+    {
+        _environment.Set("DOTNET_ENVIRONMENT", "Production")
+            .Set("ASPNETCORE_ENVIRONMENT", "Production")
+            .Set("MDC_DEMO_USERS", EnvironmentAccounts(FixturePasswordHash));
+        var profiles = new UserProfileRegistry(null, AccountStoreFor());
+        profiles.IsConfigured.Should().BeFalse();
+        var guard = new InMemoryFundStructureTenancyGuard(
+            new InMemoryFundStructureService(new InMemoryFundAccountService()), profiles,
+            NullLogger<InMemoryFundStructureTenancyGuard>.Instance);
+
+        await guard.StartAsync(CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task Guard_AllowsEquivalentCompanyIdsFromEnvironmentAccounts()
+    {
+        _environment.Set("MDC_USERS", EnvironmentAccounts(FixturePasswordHash)
+            .Replace("company-beta", " COMPANY-ALPHA "));
+        var profiles = new UserProfileRegistry(null, AccountStoreFor());
+        profiles.GetConfiguredCompanyIds().Should().Equal("company-alpha");
+        var guard = new InMemoryFundStructureTenancyGuard(
+            new InMemoryFundStructureService(new InMemoryFundAccountService()), profiles,
+            NullLogger<InMemoryFundStructureTenancyGuard>.Instance);
+
+        await guard.StartAsync(CancellationToken.None);
+    }
+
+    private static string EnvironmentAccounts(string hash) => $$"""
+        [{"username":"operator-alpha","passwordHash":"{{hash}}","role":"Admin","companyId":"company-alpha"},
+         {"username":"operator-beta","passwordHash":"{{hash}}","role":"Admin","companyId":"company-beta"}]
+        """;
+
+    public void Dispose() => _environment.Dispose();
 
     private static InMemoryFundStructureTenancyGuard CreateGuard(
         IFundStructureService fundStructureService,
         params string?[] accountCompanyIds)
         => new(
             fundStructureService,
-            AccountStoreFor(accountCompanyIds),
+            new UserProfileRegistry(null, AccountStoreFor(accountCompanyIds)),
             NullLogger<InMemoryFundStructureTenancyGuard>.Instance);
 
     private static IUserAccountStore AccountStoreFor(params string?[] accountCompanyIds)
@@ -161,7 +260,7 @@ public sealed class InMemoryFundStructureTenancyGuardTests
         [
             .. accountCompanyIds.Select((companyId, index) => new UserAccountConfig(
                 $"operator-{index.ToString()}",
-                new string('0', 64),
+                FixturePasswordHash,
                 UserRole.ReadOnly,
                 CompanyId: companyId)),
         ]);

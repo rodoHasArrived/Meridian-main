@@ -9,7 +9,7 @@ Blueprint Mode. Every pattern here is grounded in the actual Meridian codebase.
 
 ## Naming Conventions
 
-> **Domain model naming full spec:** [`CLAUDE.domain-naming.md`](../../../docs/ai/claude/CLAUDE.domain-naming.md)
+> **Domain model naming full spec:** [`CLAUDE.domain-naming.md`](../../../../docs/ai/claude/CLAUDE.domain-naming.md)
 > Apply those rules whenever designing types in `Meridian.FSharp`, `Meridian.Contracts` (domain
 > sub-namespace), or any financial-instrument definition layer.
 
@@ -216,7 +216,7 @@ public partial class XxxPage : Page
 
 ## F# Domain Type Patterns
 
-> **Full domain naming standard:** [`CLAUDE.domain-naming.md`](../../../docs/ai/claude/CLAUDE.domain-naming.md)
+> **Full domain naming standard:** [`CLAUDE.domain-naming.md`](../../../../docs/ai/claude/CLAUDE.domain-naming.md)
 > The rules below are a concise primer; use the full spec when creating new domain types.
 
 ### Identifier types — single-case DU, `Id` suffix

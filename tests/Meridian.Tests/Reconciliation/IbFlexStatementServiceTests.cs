@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using System.Globalization;
 using System.Xml.Linq;
 using System.Xml;
@@ -274,7 +275,7 @@ public sealed class IbFlexStatementServiceTests : IDisposable
 
         // CSV broker with a CSV file → validates via the CSV parser.
         var csvPath = Path.Combine(_tempDir, "statement.csv");
-        File.WriteAllText(csvPath, "account,symbol,quantity,price,cashAmount,activityType,tradeDate\nA1,SPY,10,500,0,position,2026-06-30\n");
+        File.WriteAllText(csvPath, "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency\nA1,SPY,10,500,0,position,2026-06-30,,USD\n");
         var csvRequest = new BrokerStatementImportRequest("samplebroker", csvPath, new DateOnly(2026, 6, 30)) with
         {
             ExternalAccountId = "A1"
@@ -372,8 +373,8 @@ public sealed class IbFlexStatementServiceTests : IDisposable
     {
         var workflow = StatementRunWorkflowService.CreateEphemeralForTesting(
             _store,
-            new JsonReconciliationCaseStore(_tempDir),
-            new JsonReconciliationBreakStore(_tempDir),
+            new JsonReconciliationCaseStore(_tempDir, new AtomicFileWriterAdapter()),
+            new JsonReconciliationBreakStore(_tempDir, new AtomicFileWriterAdapter()),
             new RoutingBrokerStatementService(new CsvBrokerStatementService(_store), _service),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()));
         var path = WriteFlexFile(SampleFlexXml);
@@ -417,8 +418,8 @@ public sealed class IbFlexStatementServiceTests : IDisposable
     {
         var workflow = StatementRunWorkflowService.CreateEphemeralForTesting(
             _store,
-            new JsonReconciliationCaseStore(_tempDir),
-            new JsonReconciliationBreakStore(_tempDir),
+            new JsonReconciliationCaseStore(_tempDir, new AtomicFileWriterAdapter()),
+            new JsonReconciliationBreakStore(_tempDir, new AtomicFileWriterAdapter()),
             new RoutingBrokerStatementService(new CsvBrokerStatementService(_store), _service),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()));
         var path = WriteFlexFile(SampleFlexXml, "generic-broker-report.xml");

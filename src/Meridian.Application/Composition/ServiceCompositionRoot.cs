@@ -74,6 +74,8 @@ public static class ServiceCompositionRoot
     {
         options ??= CompositionOptions.Default;
 
+        services.AddFundScopeTenantServices();
+
         // Core configuration and storage — always required
         services.RegisterFeature<ConfigurationFeatureRegistration>(options);
         services.RegisterFeature<CoordinationFeatureRegistration>(options);
@@ -320,7 +322,14 @@ public sealed record CompositionOptions
     public bool EnableProcessWideHostedServices { get; init; } = true;
 
     /// <summary>
-    /// Whether to enable OpenTelemetry tracing and metrics instrumentation.
+    /// Explicit programmatic opt-in to tracing and the existing metrics decorator.
+    /// Operators normally opt in through AppConfig.Tracing.Enabled.
     /// </summary>
     public bool EnableOpenTelemetry { get; init; }
+
+    /// <summary>
+    /// Whether this graph owns a tracing provider. Desktop child graphs reuse their parent's
+    /// listener; independent utility and ETL hosts still own telemetry even without workers.
+    /// </summary>
+    public bool OwnsTracingProvider { get; init; } = true;
 }

@@ -16,15 +16,6 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[3]
 WORKFLOW_DIR = REPO_ROOT / ".github" / "workflows"
 
-CURRENT_ACTION_REFS = {
-    "actions/checkout": "v7.0.1",
-    "actions/setup-dotnet": "v5.4.0",
-    "actions/cache": "v6.1.0",
-    "actions/upload-artifact": "v7.0.1",
-    "actions/setup-node": "v6.4.0",
-    "actions/setup-python": "v7.0.0",
-}
-
 ACTIVE_DOC_ROOTS = [
     REPO_ROOT / ".github" / "workflows",
     REPO_ROOT / "README.md",
@@ -94,13 +85,19 @@ def check_duplicate_workflow_names(failures: list[str]) -> None:
 
 
 def check_action_refs(failures: list[str]) -> None:
-    uses_pattern = re.compile(r"uses:\s*([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)@([A-Za-z0-9_.-]+)")
+    # Cover every external action, including repository subpaths and reusable workflows.
+    uses_pattern = re.compile(r"^\s*(?:-\s*)?uses:\s*([^\s#]+)([^\n]*)", re.MULTILINE)
     for workflow in sorted(WORKFLOW_DIR.glob("*.yml")) + sorted(WORKFLOW_DIR.glob("*.yaml")):
         text = workflow.read_text(encoding="utf-8")
-        for action, version in uses_pattern.findall(text):
-            expected = CURRENT_ACTION_REFS.get(action)
-            if expected and version != expected:
-                fail(f"{workflow.relative_to(REPO_ROOT)} uses {action}@{version}; expected @{expected}.", failures)
+        for reference, comment in uses_pattern.findall(text):
+            reference = reference.strip('\"\'')
+            if reference.startswith("./"):
+                continue
+            pinned = (bool(re.fullmatch(r"docker://.+@sha256:[a-f0-9]{64}", reference))
+                      if reference.startswith("docker://") else
+                      bool(re.fullmatch(r"[\w.-]+/[\w./-]+@[a-f0-9]{40}", reference)))
+            if not pinned or not re.search(r"#\s*v\d", comment):
+                fail(f"{workflow.relative_to(REPO_ROOT)} uses {reference}; external actions require a full verified SHA and version comment.", failures)
 
 
 def check_local_uses_exist(failures: list[str]) -> None:

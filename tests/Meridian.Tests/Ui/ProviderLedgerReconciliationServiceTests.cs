@@ -530,6 +530,27 @@ public sealed class ProviderLedgerReconciliationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_ProviderLedgerReconciliation_RoutesCapabilityChecksOnlyForTheAuthorizedTenant()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var router = new FixedCapabilityRouter(IsRoutable: true);
+            await using var fixture = await CreateFixtureAsync(root, includeSecurityLookup: true, capabilityRouter: router);
+
+            await fixture.RunReconciliationAsync(fixture.AccountId);
+
+            router.RoutedTenants.Should().NotBeEmpty().And.OnlyContain(tenant => tenant == fixture.QueueScope.TenantId,
+                "a tenant-authorized run must never select or record another tenant's connection");
+            router.UnscopedRouteCount.Should().Be(0);
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task Scenario_ProviderLedgerReconciliation_BlocksWhenProviderCapabilityIsNotRoutable()
     {
         var root = CreateTempRoot();
@@ -3880,7 +3901,23 @@ public sealed class ProviderLedgerReconciliationServiceTests
 
     private sealed record FixedCapabilityRouter(bool IsRoutable) : ICapabilityRouter
     {
+        public List<string> RoutedTenants { get; } = [];
+
+        public int UnscopedRouteCount { get; private set; }
+
+        public ValueTask<ProviderRouteResult> RouteForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default)
+        {
+            RoutedTenants.Add(tenantId);
+            return RouteCoreAsync(context, ct);
+        }
+
         public ValueTask<ProviderRouteResult> RouteAsync(ProviderRouteContext context, CancellationToken ct = default)
+        {
+            UnscopedRouteCount++;
+            return RouteCoreAsync(context, ct);
+        }
+
+        private ValueTask<ProviderRouteResult> RouteCoreAsync(ProviderRouteContext context, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
             if (!IsRoutable)
@@ -3914,9 +3951,25 @@ public sealed class ProviderLedgerReconciliationServiceTests
 
     private sealed class SelectiveCapabilityRouter(params ProviderCapabilityKind[] unsupportedCapabilities) : ICapabilityRouter
     {
-        private readonly HashSet<ProviderCapabilityKind> _unsupportedCapabilities = unsupportedCapabilities.ToHashSet();
+        public List<string> RoutedTenants { get; } = [];
+
+        public int UnscopedRouteCount { get; private set; }
+
+        public ValueTask<ProviderRouteResult> RouteForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default)
+        {
+            RoutedTenants.Add(tenantId);
+            return RouteCoreAsync(context, ct);
+        }
 
         public ValueTask<ProviderRouteResult> RouteAsync(ProviderRouteContext context, CancellationToken ct = default)
+        {
+            UnscopedRouteCount++;
+            return RouteCoreAsync(context, ct);
+        }
+
+        private readonly HashSet<ProviderCapabilityKind> _unsupportedCapabilities = unsupportedCapabilities.ToHashSet();
+
+        private ValueTask<ProviderRouteResult> RouteCoreAsync(ProviderRouteContext context, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
             if (_unsupportedCapabilities.Contains(context.Capability))
@@ -3950,7 +4003,23 @@ public sealed class ProviderLedgerReconciliationServiceTests
 
     private sealed class AssetClassPositionCapabilityRouter(string unsupportedAssetClass) : ICapabilityRouter
     {
+        public List<string> RoutedTenants { get; } = [];
+
+        public int UnscopedRouteCount { get; private set; }
+
+        public ValueTask<ProviderRouteResult> RouteForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default)
+        {
+            RoutedTenants.Add(tenantId);
+            return RouteCoreAsync(context, ct);
+        }
+
         public ValueTask<ProviderRouteResult> RouteAsync(ProviderRouteContext context, CancellationToken ct = default)
+        {
+            UnscopedRouteCount++;
+            return RouteCoreAsync(context, ct);
+        }
+
+        private ValueTask<ProviderRouteResult> RouteCoreAsync(ProviderRouteContext context, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
             if (context.Capability == ProviderCapabilityKind.AccountPositions &&

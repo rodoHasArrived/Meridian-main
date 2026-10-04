@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 2 of 4
 
-Objects 81-160 of 258. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 260. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -441,6 +441,7 @@ classDiagram
         +string RecordedBy
         +Guid SecurityId
         +string SourceId
+        +SecurityPriceUnit Unit
     }
     class Meridian_Contracts_SecurityMaster_RejectCorporateActionSourceProposalRequestDto["RejectCorporateActionSourceProposalRequestDto"] {
         +string Actor

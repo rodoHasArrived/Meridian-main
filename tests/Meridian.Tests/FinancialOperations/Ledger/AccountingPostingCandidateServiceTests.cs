@@ -2520,6 +2520,7 @@ public sealed partial class AccountingPostingCandidateServiceTests
     private sealed class StaticTaxLotStore : ILedgerJournalStore
     {
         public List<LedgerTaxLotRecord> OpenLots { get; } = [];
+        public Exception? HistoryReadFailure { get; set; }
 
         public Task<IReadOnlyList<LedgerTaxLotRecord>> ListOpenTaxLotsByAssetScopeAsync(
             Guid ledgerBookId,
@@ -2527,7 +2528,9 @@ public sealed partial class AccountingPostingCandidateServiceTests
             Guid bookPositionId,
             DateOnly effectiveDate,
             CancellationToken ct = default)
-            => Task.FromResult<IReadOnlyList<LedgerTaxLotRecord>>(OpenLots
+            => HistoryReadFailure is { } failure
+                ? Task.FromException<IReadOnlyList<LedgerTaxLotRecord>>(failure)
+                : Task.FromResult<IReadOnlyList<LedgerTaxLotRecord>>(OpenLots
                 .Where(lot => lot.LedgerBookId == ledgerBookId &&
                               lot.SecurityId == securityId &&
                               lot.BookPositionId == bookPositionId &&

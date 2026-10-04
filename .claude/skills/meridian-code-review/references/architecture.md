@@ -4,7 +4,7 @@
 
 > **Last verified:** 2026-03-16 | **Refresh:** `python3 build/scripts/ai-repo-updater.py audit`
 >
-> Read this file when you need deep context on project structure, dependency rules, or specific subsystem design to give accurate review feedback. For current statistics, provider list, and key abstraction file paths, see [`../_shared/project-context.md`](../_shared/project-context.md) which is the single authoritative source.
+> Read this file when you need deep context on project structure, dependency rules, or specific subsystem design to give accurate review feedback. For current statistics, provider list, and key abstraction file paths, see [`../_shared/project-context.md`](../../_shared/project-context.md) which is the single authoritative source.
 
 ## Table of Contents
 
@@ -424,7 +424,7 @@ tests/
 
 ### Domain Model Naming (Financial Instrument / Security Master Layer)
 
-> **Full spec:** [`CLAUDE.domain-naming.md`](../../../docs/ai/claude/CLAUDE.domain-naming.md)
+> **Full spec:** [`CLAUDE.domain-naming.md`](../../../../docs/ai/claude/CLAUDE.domain-naming.md)
 > Apply when reviewing any code in `Meridian.FSharp`, `Meridian.Contracts` (domain sub-namespace),
 > or `Meridian.Application.SecurityMaster`.
 

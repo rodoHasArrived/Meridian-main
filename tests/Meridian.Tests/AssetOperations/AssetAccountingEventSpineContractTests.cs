@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.Ledger;
 
 namespace Meridian.Tests.AssetOperations;
@@ -113,6 +114,45 @@ public sealed class AssetAccountingEventSpineContractTests
                 new DateOnly(2026, 6, 30),
                 evidence)
             .Should().HaveCountGreaterThanOrEqualTo(2);
+    }
+
+    [Theory]
+    [InlineData(BondAmortizationMethod.ConstantYield, 0.0425, true)]
+    [InlineData(BondAmortizationMethod.StraightLine, null, true)]
+    [InlineData(BondAmortizationMethod.ConstantYield, null, false)]
+    [InlineData(BondAmortizationMethod.StraightLine, 0.0425, false)]
+    public void AcquisitionLot_FaceAmortizationInputsMustBeCoherent(
+        BondAmortizationMethod method, double? effectiveYield, bool valid)
+    {
+        // 1,000 face at 98.5 per 100 of par is quantity 10 at unit cost 98.5 = 985.
+        var instruction = new AssetLotMutationInstructionDto(
+            AssetLotMutationIntentDto.Acquire,
+            new AssetAcquisitionLotDto(Guid.NewGuid(), "face-lot", new DateOnly(2026, 6, 30), 10m, 98.5m,
+                "Assets:Investment", OriginalFace: 1_000m, BookedFactor: 1m, ParBasis: 100m,
+                AmortizationMethod: method, EffectiveYield: (decimal?)effectiveYield));
+
+        var issues = AssetLotMutationInstructionValidator.Validate(
+            AssetAccountingEventKindDto.Acquisition, instruction, 985m, new DateOnly(2026, 6, 30),
+            BuildProjected().RetainedEvidence);
+
+        if (valid)
+            issues.Should().BeEmpty();
+        else
+            issues.Should().ContainSingle(issue => issue.Contains("Constant-yield amortization"));
+    }
+
+    [Fact]
+    public void AcquisitionLot_AmortizationInputsWithoutFaceTerms_FailClosed()
+    {
+        var instruction = new AssetLotMutationInstructionDto(
+            AssetLotMutationIntentDto.Acquire,
+            new AssetAcquisitionLotDto(Guid.NewGuid(), "unit-lot", new DateOnly(2026, 6, 30), 2m, 50m,
+                "Assets:Investment", AmortizationMethod: BondAmortizationMethod.StraightLine));
+
+        AssetLotMutationInstructionValidator.Validate(
+                AssetAccountingEventKindDto.Acquisition, instruction, 100m, new DateOnly(2026, 6, 30),
+                BuildProjected().RetainedEvidence)
+            .Should().ContainSingle(issue => issue.Contains("only to a face lot"));
     }
 
     [Fact]

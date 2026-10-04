@@ -117,7 +117,7 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "MoneyMarketFund",
-            SupportsCashflowScheduleByDefault: true,
+            SupportsCashflowScheduleByDefault: false,
             UsesFaceValueLots: false,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
@@ -192,7 +192,7 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "CashSweep",
-            SupportsCashflowScheduleByDefault: true,
+            SupportsCashflowScheduleByDefault: false,
             UsesFaceValueLots: false,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
@@ -277,7 +277,7 @@ public static class SecurityAssetClassCatalog
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.AssetBackedSecurity),
         new(
             AssetClass: "PrivateFundInterest",
-            SupportsCashflowScheduleByDefault: true,
+            SupportsCashflowScheduleByDefault: false,
             UsesFaceValueLots: false,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
@@ -304,7 +304,7 @@ public static class SecurityAssetClassCatalog
             SupportsProfileBackedTerms: true),
         new(
             AssetClass: "RealEstateHolding",
-            SupportsCashflowScheduleByDefault: true,
+            SupportsCashflowScheduleByDefault: false,
             UsesFaceValueLots: false,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
@@ -317,7 +317,7 @@ public static class SecurityAssetClassCatalog
             SupportsProfileBackedTerms: true),
         new(
             AssetClass: "CommitmentGuarantee",
-            SupportsCashflowScheduleByDefault: true,
+            SupportsCashflowScheduleByDefault: false,
             UsesFaceValueLots: false,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:

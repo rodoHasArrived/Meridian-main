@@ -508,6 +508,67 @@ class CheckAiInventoryTests(unittest.TestCase):
 
             self.assertTrue(any(finding.kind == "duplicated-repository-tree" for finding in findings))
 
+    def test_shared_project_context_passes_when_shared_sections_match(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            shared = "<!-- shared-context:begin -->\nShared facts.\n<!-- shared-context:end -->\n"
+            write(root / check_ai_inventory.SHARED_CONTEXT_CANONICAL, "# Claude header\n" + shared)
+            for rel_path in check_ai_inventory.SHARED_CONTEXT_MIRRORS:
+                write(root / rel_path, "# Host header\n" + shared + "\n## Host-specific\nOnly here.\n")
+
+            self.assertEqual([], check_ai_inventory.check_shared_project_context(root))
+
+    def test_shared_project_context_reports_drifted_mirror(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write(
+                root / check_ai_inventory.SHARED_CONTEXT_CANONICAL,
+                "<!-- shared-context:begin -->\nShared facts.\n<!-- shared-context:end -->\n",
+            )
+            codex, agents = check_ai_inventory.SHARED_CONTEXT_MIRRORS
+            write(root / codex, "<!-- shared-context:begin -->\nDrifted facts.\n<!-- shared-context:end -->\n")
+            write(root / agents, "No markers at all.\n")
+
+            findings = check_ai_inventory.check_shared_project_context(root)
+
+            self.assertEqual({codex, agents}, {finding.path for finding in findings})
+            self.assertTrue(all(finding.kind == "shared-project-context" for finding in findings))
+
+    def test_shared_project_context_is_skipped_without_canonical_markers(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write(root / check_ai_inventory.SHARED_CONTEXT_CANONICAL, "No markers.\n")
+            write(root / check_ai_inventory.SHARED_CONTEXT_MIRRORS[0], "Different text.\n")
+
+            self.assertEqual([], check_ai_inventory.check_shared_project_context(root))
+
+    def test_shared_project_context_reports_deleted_or_renamed_mirror(self) -> None:
+        for rel_path in check_ai_inventory.SHARED_CONTEXT_MIRRORS:
+            for operation in ("delete", "rename"):
+                with self.subTest(mirror=rel_path, operation=operation), tempfile.TemporaryDirectory() as tmp:
+                    root = Path(tmp)
+                    shared = "<!-- shared-context:begin -->\nShared facts.\n<!-- shared-context:end -->\n"
+                    write(root / check_ai_inventory.SHARED_CONTEXT_CANONICAL, shared)
+                    for mirror_path in check_ai_inventory.SHARED_CONTEXT_MIRRORS:
+                        write(root / mirror_path, shared)
+
+                    self.assertEqual([], check_ai_inventory.check_shared_project_context(root))
+                    path = root / rel_path
+                    if operation == "delete":
+                        path.unlink()
+                    else:
+                        path.rename(path.with_name("renamed-project-context.md"))
+
+                    findings = check_ai_inventory.check_shared_project_context(root)
+
+                    self.assertEqual(1, len(findings))
+                    finding = findings[0]
+                    self.assertEqual("drift", finding.severity)
+                    self.assertEqual("shared-project-context", finding.kind)
+                    self.assertEqual(rel_path, finding.path)
+                    self.assertEqual(check_ai_inventory.SHARED_CONTEXT_CANONICAL, finding.expected_doc)
+                    self.assertIn("is missing", finding.message)
+
     def test_check_catalog_drift_reports_claude_repository_tree_duplication(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
