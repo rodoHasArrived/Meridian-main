@@ -6,10 +6,21 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-01
 ---
 
 # src/Meridian.FinancialOperations
+
+`FundAdministration/RecurringJournalState.cs` and `FileRecurringJournalStore` own versioned
+recurring schedules and templates, exact source evidence, one claim per schedule/effective date,
+and retained outcome history. A process-independent filesystem lease spans claim, intake and
+completion; retries preserve the deterministic draft identity. Changed definitions block existing
+claims until exact retained definitions are explicitly restored with an actor and reason.
+Initialization is explicit, and missing or corrupt initialized state fails closed. The runtime
+uses the existing PostgreSQL ledger for authoritative periods and governed reopens; the historical
+`FundAdministrationControlService` calendar and lock methods remain in-memory primitives, not
+runtime authority. See [Recurring Journal](../../docs/domain/recurring-journal.md) and
+`RecurringJournalStoreTests` / `RecurringJournalRunnerTests` for recovery and evidence boundaries.
 
 OFX account identity is scoped to the containing bank, credit-card or investment statement.
 The parser does not borrow an account from a sibling statement or unrelated row. Missing,
@@ -86,6 +97,11 @@ tag and that fixture evidence marked as real cannot commit a journal or a succes
 
 ## Shared close and lot convergence
 
+Governed disposal posting forwards the approved instruction's optional `DisposalSalePrice` to the
+atomic tax-lot command. Storage validates that price against supported cash journal proceeds and
+retains the allocation convention; aggregate-only instructions retain no quote and reporting derives
+their canonical price from the journal and retained wash-sale deferrals.
+
 Factor-paydown candidates require lot quantity as of the event effective date, reconstructed by
 the journal store from retained mutation history. Missing or inconsistent historical quantity
 evidence returns a critical candidate issue and cannot fall back to today's holdings.
@@ -96,6 +112,14 @@ The Financial Operations command center owns the shared close decision. It requi
 Close acceptance additionally proves account/entity/book subject ownership independently of workflow selection. The real close-plan reader stamps workflow, account, and retained evidence versions from one state snapshot; final projection rechecks those stamps so concurrent sign-off or configuration changes block instead of mixing snapshots. The closing-entry gate is mandatory. Repairing the underlying scope/evidence issue allows a fresh assessment to restore readiness.
 
 Hard close and workflow publication re-evaluate shared readiness before mutation, including callers outside the workstation HTTP route. Complete subject scope, authenticated tenant/company, exact workflow revision, and current retained prerequisites are required. Close packages, locks, and published exports are outputs of that transition; they do not create circular prerequisites. Historical approval decisions stay visible while the current decision controls readiness. The retained close plan proves each task's required sign-offs; calendar reviewer totals describe a different approval dimension.
+
+Strict PostgreSQL workflow mutations require current tenant authority matching the retained
+workflow and the requested ledger book's retained and registered owner. Existing identifiers
+cannot be reassigned through an upsert. Audit writes and timeline reads check the retained
+workflow owner, including transitions that do not persist workflow state. Missing worker
+authority fails before mutation; explicit deployment-boundary maintenance remains available.
+A bookless workflow may retain its authenticated creating tenant. Unattributed legacy workflows
+remain explicit cutover blockers until reviewed attribution or quarantine resolution completes.
 
 Operations Continuity checklist acknowledgments are explicit retained reviewer actions, separate from gate execution completion. The checklist uses gate-specific evidence or the successful gate completion audit receipt, follows retained audit links, and invalidates acknowledgments when prerequisite evidence changes, approval is rejected, or a closed workflow is reopened. Failed attempts do not count as acknowledgments or evidence changes. Submission, approval, and close validate supplied control identities and timestamps against current retained acknowledgments; historical close packages cannot authorize a new close cycle. The assigned independent reviewer records the decision at its actual time, preserving the original submitter and submission time. Successful prerequisite changes return an active approval to Pending while retaining its history.
 
@@ -783,6 +807,7 @@ evidence deletion.
 <!-- source-roadmap-traceability:begin module=SRC-DESIGN-FINANCIAL-OPERATIONS -->
 | Roadmap item | Title |
 | --- | --- |
+| `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
 | `W5X-FINOPS-001` | Financial operations control center |

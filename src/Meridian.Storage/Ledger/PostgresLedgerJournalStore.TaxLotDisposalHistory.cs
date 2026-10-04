@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Ledger;
 using Npgsql;
@@ -20,7 +21,11 @@ public sealed record LedgerTaxLotDisposalHistoryRecord(
     IReadOnlyList<WashSaleBasisIncrease> WashSaleBasisIncreases,
     decimal MatchedReplacementQuantity,
     IReadOnlyList<OpenLotDto>? CanonicalLots = null,
-    IReadOnlyList<OpenLotDto>? PoolLots = null);
+    IReadOnlyList<OpenLotDto>? PoolLots = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    int? ProceedsAllocationVersion = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    decimal? SalePrice = null);
 
 /// <summary>
 /// Reads retained tax-lot disposal history so realized-gain reporting can be rebuilt from the
@@ -46,6 +51,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
         IReadOnlyList<Guid> journalEntryIds,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
         if (ledgerBookId == Guid.Empty)
         {
             throw new ArgumentException("Ledger book id is required.", nameof(ledgerBookId));
@@ -59,6 +65,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
         }
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await EnsureBookWriteAuthorityAsync(connection, null, ledgerBookId, ct).ConfigureAwait(false);
         var lotsByBatch = await LoadDisposalLotsAsync(connection, ledgerBookId, journalIds, ct).ConfigureAwait(false);
         if (lotsByBatch.Count == 0)
         {
@@ -87,7 +94,9 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
                     hasDeferrals ? retained.Increases : Array.Empty<WashSaleBasisIncrease>(),
                     hasDeferrals ? retained.MatchedQuantity : 0m,
                     batch.Value.CanonicalLots,
-                    poolByBatch.GetValueOrDefault(batch.Key));
+                    poolByBatch.GetValueOrDefault(batch.Key),
+                    batch.Value.ProceedsAllocationVersion,
+                    batch.Value.SalePrice);
             })
             .OrderBy(static record => record.MutationBatchId)
             .ToArray();
@@ -125,7 +134,9 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
                    mutation.tax_lot_record_id,
                    lot.original_face,
                    lot.booked_factor,
-                   lot.par_basis
+                   lot.par_basis,
+                   batch.proceeds_allocation_version,
+                   batch.disposal_sale_price
             from {Qualified("tax_lot_mutations")} mutation
             join {Qualified("atomic_tax_lot_posting_batches")} batch
               on batch.mutation_batch_id = mutation.mutation_batch_id
@@ -199,7 +210,9 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
                 before.Account,
                 reliefMethod,
                 new List<LedgerTaxLotDisposalHistoryLot> { lot },
-                new List<OpenLotDto> { canonical });
+                new List<OpenLotDto> { canonical },
+                reader.IsDBNull(21) ? null : reader.GetInt32(21),
+                reader.IsDBNull(22) ? null : reader.GetDecimal(22));
         }
 
         return batches;
@@ -309,5 +322,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
         LedgerAccount Account,
         LedgerTaxLotReliefMethod ReliefMethod,
         List<LedgerTaxLotDisposalHistoryLot> Lots,
-        List<OpenLotDto> CanonicalLots);
+        List<OpenLotDto> CanonicalLots,
+        int? ProceedsAllocationVersion,
+        decimal? SalePrice);
 }

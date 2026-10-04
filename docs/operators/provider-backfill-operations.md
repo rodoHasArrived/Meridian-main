@@ -169,6 +169,7 @@ Backfill operations entering support/handover should include:
 
 ## Related operator runbooks
 
+- [Distributed Tracing](./distributed-tracing.md) for connected queue, worker, provider-fetch, and storage spans
 - [Operator Preflight Checklist](./preflight-checklist.md)
 - [Reconciliation Operations](./reconciliation-operations.md)
 - [Failover and Recovery](./failover-and-recovery.md)

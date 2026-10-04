@@ -866,6 +866,10 @@ public static class UiApiRoutes
     public const string LedgerJournalAutomationDailyMarkToMarketSchedules = "/api/ledger/journal-automation/daily-mark-to-market-schedules";
     public const string LedgerJournalAutomationDailyMarkToMarketRunDue = "/api/ledger/journal-automation/daily-mark-to-market-run-due";
     public const string LedgerJournalAutomationDailyMarkToMarketBatchLifecycle = "/api/ledger/journal-automation/daily-mark-to-market-batch-lifecycle";
+    public const string LedgerJournalAutomationRecurringOccurrences = "/api/ledger/journal-automation/recurring/occurrences";
+    public const string LedgerJournalAutomationRecurringSchedules = "/api/ledger/journal-automation/recurring/schedules";
+    public const string LedgerJournalAutomationRecurringRestore = "/api/ledger/journal-automation/recurring/restore-definitions";
+    public const string LedgerJournalAutomationRecurringInitialize = "/api/ledger/journal-automation/recurring/initialize";
     public const string LedgerJournalAutomationMonthlySchedules = "/api/ledger/journal-automation/monthly-schedules";
     public const string LedgerJournalAutomationMonthlyRunDue = "/api/ledger/journal-automation/monthly-schedules/run-due";
     public const string LedgerReportsTrialBalance = "/api/ledger/reports/trial-balance";

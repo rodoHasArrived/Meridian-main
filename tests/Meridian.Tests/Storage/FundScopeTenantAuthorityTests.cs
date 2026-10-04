@@ -46,6 +46,8 @@ public sealed class FundScopeTenantAuthorityTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
+    [InlineData("all")]
+    [InlineData("  ALL  ")]
     public void Enter_RefusesABlankTenant(string? tenantId)
     {
         // A blank authority resolves to nothing, which is indistinguishable from having entered no

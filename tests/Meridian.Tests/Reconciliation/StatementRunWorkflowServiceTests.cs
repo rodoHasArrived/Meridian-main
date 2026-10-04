@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using FluentAssertions;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
@@ -393,8 +394,8 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         var importStore = new JsonCanonicalStatementStore(_root);
         return StatementRunWorkflowService.CreateEphemeralForTesting(
             importStore,
-            new JsonReconciliationCaseStore(_root),
-            new JsonReconciliationBreakStore(_root),
+            new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()),
+            new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter()),
             new CsvBrokerStatementService(importStore),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()),
             populations,
