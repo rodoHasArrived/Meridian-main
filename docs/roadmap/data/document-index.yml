@@ -36,7 +36,7 @@ documents:
       - W2-TRD-001
       - W7-LIVE-001
   - id: DOC-PRIORITY-SLATE-2026-07
-    path: docs/product/product-roadmap-priorities-2026-07.md
+    path: docs/product/plans/product-roadmap-priorities-2026-07.md
     title: 2026-07 first-order improvement slate
     role: planning_interpretation
     owner_lane: Core Team
@@ -71,7 +71,7 @@ documents:
       - W9-NAV-006
       - W9-CORPACT-011
   - id: DOC-W9-CLOSEOUT-2026-08
-    path: docs/product/w9-close-out-delivery-plan-2026-08.md
+    path: docs/product/plans/w9-close-out-delivery-plan-2026-08.md
     title: 2026-08 W9 close-out delivery plan
     role: planning_interpretation
     owner_lane: Core Team
@@ -80,7 +80,7 @@ documents:
       - W9-GOV-008
       - W9-INGEST-009
   - id: DOC-DEPTH-SLATE-2026-07
-    path: docs/product/w10-depth-slate-2026-07.md
+    path: docs/product/plans/w10-depth-slate-2026-07.md
     title: 2026-07 W10 depth slate
     role: planning_interpretation
     owner_lane: Core Team
@@ -97,7 +97,7 @@ documents:
       - W10-PERF-001
       - W10-CONSOL-001
   - id: DOC-OPEN-LOT-CONVERGENCE
-    path: docs/architecture/security-lot-convergence-blueprint.md
+    path: docs/engineering/blueprints/security-lot-convergence-blueprint.md
     title: Security-identified open-lot convergence blueprint
     role: planning_interpretation
     owner_lane: Accounting and Ledger

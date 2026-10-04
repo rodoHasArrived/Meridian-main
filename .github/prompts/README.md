@@ -133,7 +133,7 @@ python build/scripts/docs/generate-prompts.py \
 ```
 
 Archived workflow context is tracked in
-[`../../docs/archive/workflows/legacy-github-actions-2026-05-18.md`](../../docs/archive/workflows/legacy-github-actions-2026-05-18.md).
+[`../../docs/archive/workflows/legacy-github-actions-2026-05-18.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/workflows/legacy-github-actions-2026-05-18.md).
 
 ## Adding New Prompts
 

@@ -4,7 +4,7 @@
 **Owner:** core-team
 **Reviewed:** 2026-08-02
 **Roadmap row:** `W10-MARK-001` in [`docs/roadmap/data/roadmap-items.yml`](../../roadmap/data/roadmap-items.yml)
-**Slate rationale:** [`docs/product/w10-depth-slate-2026-07.md`](../../product/w10-depth-slate-2026-07.md)
+**Slate rationale:** [`docs/product/plans/w10-depth-slate-2026-07.md`](../../product/plans/w10-depth-slate-2026-07.md)
 **Risk targeted:** `RISK-STALE-MARK-001` — **`status: open`** in
 [`docs/roadmap/data/risk-register.yml`](../../roadmap/data/risk-register.yml). This blueprint is a
 design, not a delivery. The risk stays open, and the roadmap row stays `planned`, until the

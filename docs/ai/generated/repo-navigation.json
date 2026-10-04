@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-28T06:31:55Z",
+  "generatedAt": "2026-10-04T00:48:18Z",
   "generatorVersion": "1.0",
-  "repositoryRoot": "Meridian-main",
+  "repositoryRoot": "pr-3011",
   "subsystems": [
     {
       "id": "host-shell",
@@ -191,7 +191,7 @@
         "docs/ai/README.md",
         "docs/ai/ai-known-errors.md",
         "docs/ai/navigation/README.md",
-        "docs/development/wpf-web-ui-alignment-plan.md"
+        "docs/engineering/plans/wpf-web-ui-alignment-plan.md"
       ],
       "recommendedStart": "Meridian.Ui.Services",
       "docCoverageHint": "high"
@@ -743,8 +743,7 @@
         "Meridian.Domain",
         "Meridian.Execution.Sdk",
         "Meridian.IbApi.SmokeStub",
-        "Meridian.ProviderSdk",
-        "Meridian.Storage"
+        "Meridian.ProviderSdk"
       ],
       "relatedDocs": [
         "docs/ai/claude/CLAUDE.providers.md"
@@ -1109,7 +1108,7 @@
         "Meridian.Workflow"
       ],
       "relatedDocs": [
-        "docs/development/wpf-web-ui-alignment-plan.md"
+        "docs/engineering/plans/wpf-web-ui-alignment-plan.md"
       ]
     },
     {
@@ -1354,7 +1353,7 @@
       ]
     },
     {
-      "path": "docs/development/wpf-web-ui-alignment-plan.md",
+      "path": "docs/engineering/plans/wpf-web-ui-alignment-plan.md",
       "title": "WPF web-UI alignment plan",
       "area": "ui",
       "whenToConsult": "When a task affects workflow-centric desktop or workspace experiences.",
@@ -1621,7 +1620,7 @@
         }
       ],
       "authoritativeDocs": [
-        "docs/development/wpf-web-ui-alignment-plan.md",
+        "docs/engineering/plans/wpf-web-ui-alignment-plan.md",
         "docs/ai/ai-known-errors.md"
       ],
       "recommendedSkill": "meridian-blueprint",
@@ -1927,11 +1926,6 @@
       "from": "Meridian.Infrastructure",
       "to": "Meridian.ProviderSdk",
       "reason": "Meridian.Infrastructure references Meridian.ProviderSdk directly via project reference."
-    },
-    {
-      "from": "Meridian.Infrastructure",
-      "to": "Meridian.Storage",
-      "reason": "Meridian.Infrastructure references Meridian.Storage directly via project reference."
     },
     {
       "from": "Meridian.Ledger",

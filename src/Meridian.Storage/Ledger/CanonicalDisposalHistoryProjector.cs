@@ -58,7 +58,11 @@ public static class CanonicalDisposalHistoryProjector
             disposal.MutationBatchId, disposal.JournalEntryId, disposal.Account,
             entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(entry.Timestamp.UtcDateTime),
             disposal.ReliefMethod, history, recognized, disposal.WashSaleBasisIncreases,
-            disposal.MatchedReplacementQuantity))
+            disposal.MatchedReplacementQuantity, disposal.ProceedsAllocationVersion,
+            // Durable prices are quoted per ledger lot unit; canonical face reporting uses
+            // actual face quantity, just as the unit-cost conversion above does.
+            disposal.SalePrice / (canonical[0].Acquisition.QuantityBasis == LotQuantityBasis.Face
+                ? LedgerTaxLotFaceValueTerms.LedgerLotParBasis : 1m)))
             ?? throw new LedgerValidationException("Retained canonical disposal cannot produce a complete report projection.");
         if (projection.CostBasis != disposal.Lots.Sum(static lot => lot.CostBasis) ||
             projection.RecognizedGainOrLoss != recognized)

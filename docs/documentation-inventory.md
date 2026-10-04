@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-07-19
+**Reviewed:** 2026-09-28
 
 This inventory describes the current `docs/` tree. It is deliberately compact: use it to decide
 which folder owns a document, whether the folder is canonical or supporting, and which remaining
@@ -45,7 +45,7 @@ lanes are transitional. Detailed rebuild history is preserved in the
 | `docs/status/` | supporting / generated | [Status](status/README.md) | Automation-owned reports plus compatibility artifacts still consumed by tooling. |
 | `docs/testing/` | supporting | [Testing](testing/README.md) | Scenario-specific acceptance and release-gate references. |
 | `docs/operations/` | transitional | [Compatibility index](operations/README.md) | Legacy paths retained only where tests, monitoring, or active links still consume them. |
-| `docs/plans/` | transitional | [Plans index](plans/README.md) | Active/tool-consumed planning inputs that have not yet moved to an owning canonical lane. |
+| `docs/plans/` | transitional | [Plans index](plans/README.md) | Redirect stubs only, kept because tooling or the brainstorm ledger reads their paths. Plans live in `docs/engineering/blueprints/`, `docs/engineering/plans/`, and `docs/product/plans/`, all listed in the [Plans and Blueprints Register](engineering/blueprints/README.md). |
 
 ## Current Project-State Sources
 
@@ -57,9 +57,9 @@ Do not infer current delivery status from folder names or dated plans. Use this 
 4. `docs/product/implementation-todo-list.md` for production-readiness execution.
 5. Source READMEs and `docs/source/data/source-modules.yml` for implemented module behavior.
 
-As of the 2026-07-18 program-state snapshot, Evidence Vault productization, statement
-reconciliation onboarding, and WPF parity are in progress. Production readiness remains blocked
-until the canonical tracker and release evidence close on the same release commit.
+See [Documentation](README.md#current-project-snapshot) for the current program-state snapshot.
+Production readiness remains blocked until the canonical tracker and release evidence close on the
+same release commit.
 
 ## Placement Rules
 
@@ -68,6 +68,8 @@ until the canonical tracker and release evidence close on the same release commi
 - Add system design to `architecture`, business vocabulary to `domain`, and assistant guidance to
   `ai`.
 - Do not add new durable guidance to `operations` or `plans`; first identify the canonical owner.
+- File every plan or blueprint in its home folder and add a row to the
+  [Plans and Blueprints Register](engineering/blueprints/README.md).
 - Do not hand-edit generated roadmap, source, status, screenshot, or repository-structure outputs.
 - Archive superseded material under the matching `archive/docs/<bucket>/` index and update links.
 - Use repository-relative paths in committed documentation; machine-specific checkout paths belong
@@ -77,8 +79,8 @@ until the canonical tracker and release evidence close on the same release commi
 
 1. Retire `docs/operations/` only after monitoring registries, route-consistency tests, and active
    links no longer require its compatibility paths.
-2. Move each remaining `docs/plans/` item when its owning canonical lane or tooling contract is
-   ready; do not bulk-move tool inputs.
+2. Remove each remaining `docs/plans/` redirect stub once nothing reads its path; do not
+   bulk-move tool inputs.
 3. Continue adding lifecycle metadata to touched hand-authored documents rather than formatting the
    entire tree in one churn-heavy pass.
 4. Run the structure validator and link checker after every folder move.

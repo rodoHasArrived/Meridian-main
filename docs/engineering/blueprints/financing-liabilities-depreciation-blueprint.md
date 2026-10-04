@@ -247,7 +247,7 @@ DebtIssuanceCostAmortized,
 ```
 
 `DepreciationPosted` landed with the depreciation engine and sits before the capital-call members
-added by the [commitment & capital-call blueprint](../../development/accounting-blueprints/commitment-and-capital-call-engine.md).
+added by the [commitment & capital-call blueprint](accounting/commitment-and-capital-call-engine.md).
 Append the three financing kinds **after** the current tail; the enum is append-only and shared
 across blueprints.
 
