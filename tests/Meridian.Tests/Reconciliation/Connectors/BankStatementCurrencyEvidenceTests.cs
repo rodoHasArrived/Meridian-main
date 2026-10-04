@@ -19,6 +19,7 @@ public sealed class BankStatementCurrencyEvidenceTests : IDisposable
     [InlineData("camt", "blank-amount")]
     [InlineData("camt", "invalid-amount")]
     [InlineData("camt", "unknown-code")]
+    [InlineData("camt", "unrecognized-account")]
     [InlineData("bai2", "missing")]
     [InlineData("bai2", "invalid")]
     [InlineData("bai2", "unknown-code")]
@@ -33,6 +34,7 @@ public sealed class BankStatementCurrencyEvidenceTests : IDisposable
                 "missing" => source.Replace("<Ccy>EUR</Ccy>", "").Replace(" Ccy=\"EUR\"", ""),
                 "blank-amount" => source.Replace("Ccy=\"EUR\"", "Ccy=\" \""),
                 "unknown-code" => source.Replace("Ccy=\"EUR\"", "Ccy=\"ZZZ\""),
+                "unrecognized-account" => source.Replace("<Ccy>EUR</Ccy>", "<Ccy>ZZZ</Ccy>").Replace(" Ccy=\"EUR\"", ""),
                 _ => source.Replace("Ccy=\"EUR\"", "Ccy=\"???\"")
             };
         }

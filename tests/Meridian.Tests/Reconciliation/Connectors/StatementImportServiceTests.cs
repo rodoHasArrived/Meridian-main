@@ -460,7 +460,8 @@ public sealed class StatementImportServiceTests : IDisposable
     [InlineData(null)]
     [InlineData("")]
     [InlineData(" ")]
-    public async Task MonthEndFlexActivity_MissingCurrencyCannotBecomeUsd(string? currency)
+    [InlineData("ZZZ")]
+    public async Task MonthEndFlexActivity_UnknownCurrencyFailsBeforeRetention(string? currency)
     {
         var attribute = currency is null ? string.Empty : $" currency=\"{currency}\"";
         var content = "<FlexQueryResponse><FlexStatements><FlexStatement accountId=\"FUND-A\">"

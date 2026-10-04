@@ -280,7 +280,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
                             if (balanceAmount != CamtAmountResult.Ok)
                             {
                                 var (code, message) = balanceAmount == CamtAmountResult.BadCurrency
-                                    ? ("CAMT_BALANCE_BAD_CURRENCY", "Closing balance requires explicit three-letter amount or account currency.")
+                                    ? ("CAMT_BALANCE_BAD_CURRENCY", "Closing balance requires explicit recognized amount or account currency.")
                                     : balanceAmount == CamtAmountResult.BadDirection
                                     ? ("CAMT_BALANCE_BAD_DIRECTION",
                                         "Closing balance has a missing or unrecognized CdtDbtInd (credit/debit direction); the statement cannot be reconciled.")
@@ -359,7 +359,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
                             if (entryAmount != CamtAmountResult.Ok)
                             {
                                 var (code, message) = entryAmount == CamtAmountResult.BadCurrency
-                                    ? ("CAMT_ENTRY_BAD_CURRENCY", "Entry requires explicit three-letter amount or account currency.")
+                                    ? ("CAMT_ENTRY_BAD_CURRENCY", "Entry requires explicit recognized amount or account currency.")
                                     : entryAmount == CamtAmountResult.BadDirection
                                     ? ("CAMT_ENTRY_BAD_DIRECTION",
                                         "Entry has a missing or unrecognized CdtDbtInd (credit/debit direction); the statement cannot be reconciled.")
