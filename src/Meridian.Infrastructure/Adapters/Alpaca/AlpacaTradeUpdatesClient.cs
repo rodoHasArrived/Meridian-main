@@ -11,7 +11,6 @@ using Meridian.Contracts.Integrity;
 using Meridian.Core.Config;
 using Meridian.Core.IO;
 using Meridian.Execution.Sdk;
-using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 using ExecutionOrderSide = Meridian.Execution.Sdk.OrderSide;
 
@@ -25,6 +24,7 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
     private const int MaxTradeUpdateMessageBytes = 4 * 1024 * 1024;
 
     private readonly AlpacaOptions _options;
+    private readonly IAtomicFileWriter _atomicFileWriter;
     private readonly ILogger<AlpacaTradeUpdatesClient> _logger;
     private readonly Channel<TradeUpdateEnvelope> _reports = Channel.CreateUnbounded<TradeUpdateEnvelope>(
         new UnboundedChannelOptions { AllowSynchronousContinuations = false });
@@ -58,11 +58,13 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
     public AlpacaTradeUpdatesClient(
         AlpacaOptions options,
         ILogger<AlpacaTradeUpdatesClient> logger,
+        IAtomicFileWriter atomicFileWriter,
         Func<CancellationToken, Task<IReadOnlyList<ExecutionReport>>>? reconcile = null,
         TimeProvider? clock = null,
         TimeSpan? staleAfter = null,
         IAlpacaTradeUpdateCursorStore? cursorStore = null)
     {
+        _atomicFileWriter = atomicFileWriter ?? throw new ArgumentNullException(nameof(atomicFileWriter));
         _options = options;
         _logger = logger;
         _reconcile = reconcile is null
@@ -179,7 +181,7 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
                     "The Alpaca durable state scope cannot change after the execution stream has initialized.");
             }
 
-            _cursorStore = new FileAlpacaTradeUpdateCursorStore(providerAccountId, tradingEnvironment);
+            _cursorStore = new FileAlpacaTradeUpdateCursorStore(providerAccountId, tradingEnvironment, _atomicFileWriter);
         }
     }
 
@@ -1022,9 +1024,11 @@ public sealed class FileAlpacaTradeUpdateCursorStore : IAlpacaTradeUpdateCursorS
     private readonly RootedPathGuard _pathGuard;
     private readonly string _path;
     private readonly string _lockPath;
+    private readonly IAtomicFileWriter _atomicFileWriter;
 
-    public FileAlpacaTradeUpdateCursorStore(string? path = null)
+    public FileAlpacaTradeUpdateCursorStore(string? path, IAtomicFileWriter atomicFileWriter)
     {
+        _atomicFileWriter = atomicFileWriter ?? throw new ArgumentNullException(nameof(atomicFileWriter));
         if (path is null)
         {
             throw new ArgumentException(
@@ -1053,8 +1057,10 @@ public sealed class FileAlpacaTradeUpdateCursorStore : IAlpacaTradeUpdateCursorS
     public FileAlpacaTradeUpdateCursorStore(
         string providerAccountId,
         string tradingEnvironment,
+        IAtomicFileWriter atomicFileWriter,
         string? stateRoot = null)
     {
+        _atomicFileWriter = atomicFileWriter ?? throw new ArgumentNullException(nameof(atomicFileWriter));
         ArgumentException.ThrowIfNullOrWhiteSpace(providerAccountId);
         ArgumentException.ThrowIfNullOrWhiteSpace(tradingEnvironment);
 
@@ -1157,7 +1163,7 @@ public sealed class FileAlpacaTradeUpdateCursorStore : IAlpacaTradeUpdateCursorS
         var serialized = AlpacaTradeUpdateStateCodec.Serialize(state);
         Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
         _pathGuard.EnsurePath(_path);
-        AtomicFileWriter.Write(_path, serialized);
+        _atomicFileWriter.Write(_path, serialized);
     }
 
     private FileStream AcquireWriterLeaseLocked()

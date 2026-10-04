@@ -1,3 +1,5 @@
+using Meridian.Storage.Archival;
+using Meridian.Core.IO;
 using Meridian.Application.Accounting;
 using Meridian.Application.Composition;
 using Meridian.Application.Config.Credentials;
@@ -24,6 +26,7 @@ using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Core.Contracts;
 using Meridian.DataIntegration.AccountingSystem.Fixtures;
+using Meridian.DataIntegration.AccountingSystem;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Documents;
@@ -78,6 +81,7 @@ public static class WorkstationServiceCollectionExtensions
 {
     public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services)
     {
+        services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
         // Unified persistence config must resolve before the reporting/scoped-access
         // registrations below read the per-domain connection-string variables.
         Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
@@ -130,25 +134,16 @@ public static class WorkstationServiceCollectionExtensions
         // This accessor retains only singleton IHttpContextAccessor and rereads its AsyncLocal
         // request each time, so singleton accounting guards can consume it without capturing a scope.
         services.TryAddSingleton<IWorkstationTenantContextAccessor, HttpContextWorkstationTenantContextAccessor>();
-        // SEC-005 slice 4c-ii: ambient caller-tenant accessor consumed by the singleton Postgres ledger
-        // store for tenant read predicates. Singleton + IHttpContextAccessor-backed (no captive scope).
-        services.TryAddSingleton<IFundScopeTenantAccessor, WorkstationFundScopeTenantAccessor>();
-        // SEC-005 slice 4c-iii: fund-scoped write tenant gate switch. Off by default (detection-first) so
-        // the tenantless legacy admin still writes; a shared multi-tenant deployment opts into fail-closed
-        // enforcement via MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED=true.
-        services.TryAddSingleton(new FundScopedWriteTenantOptions(
-            Enforce: string.Equals(
+        // Replace only the core worker fallback. Preserve an explicitly supplied host accessor;
+        // otherwise HTTP scope must take precedence over any ambient background authority.
+        services.AddFundScopeTenantServices<WorkstationFundScopeTenantAccessor>();
+        // Strict tenant reads must be paired with strict writes. The explicit write switch can
+        // tighten the single-company migration posture, but cannot weaken the strict posture.
+        services.TryAddSingleton(sp => new FundScopedWriteTenantOptions(
+            Enforce: sp.GetRequiredService<Meridian.Contracts.Tenancy.TenantScopeEnforcementOptions>().IsFailClosed || string.Equals(
                 Environment.GetEnvironmentVariable("MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED"),
                 "true",
                 StringComparison.OrdinalIgnoreCase)));
-        // W9-GOV-008 criterion 2: read-side posture, the counterpart of the write gate above. Kept on
-        // the deployment-boundary default because fail-closed over a graph whose tenant attribution
-        // has not run hides the retained structure from every caller rather than closing a leak -- a
-        // deployment attributes first (FundStructureTenantAttribution, migration 004), reviews what
-        // the attribution quarantined, and then sets MERIDIAN_TENANT_SCOPE_ENFORCEMENT=fail-closed.
-        services.TryAddSingleton(TenantScopeEnforcementOptions.FromEnvironmentValue(
-            Environment.GetEnvironmentVariable(TenantScopeEnforcementOptions.EnvironmentVariable),
-            TenantScopeEnforcementOptions.DeploymentBoundary));
         // W9-GOV-008 criterion 2: the fund-structure implementation with no tenant partition must not
         // serve a deployment configured for more than one company. Checked once at startup rather
         // than per call; see InMemoryFundStructureTenancyGuard for why that is the safer shape.
@@ -298,6 +293,14 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, XeroFixtureAccountingProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, NetSuiteFixtureAccountingProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, QuickBooksOnlineAccountingProvider>());
+        services.AddHttpClient("external-gl-read-only")
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
+        services.TryAddSingleton<XeroAccountingProvider>(sp => new XeroAccountingProvider(
+            sp.GetRequiredService<Meridian.DataIntegration.Credentials.IProviderCredentialStore>(), sp.GetRequiredService<IHttpClientFactory>().CreateClient("external-gl-read-only")));
+        services.TryAddSingleton<NetSuiteAccountingProvider>(sp => new NetSuiteAccountingProvider(
+            sp.GetRequiredService<Meridian.DataIntegration.Credentials.IProviderCredentialStore>(), sp.GetRequiredService<IHttpClientFactory>().CreateClient("external-gl-read-only")));
+        services.AddSingleton<IAccountingSystemProvider>(sp => sp.GetRequiredService<XeroAccountingProvider>());
+        services.AddSingleton<IAccountingSystemProvider>(sp => sp.GetRequiredService<NetSuiteAccountingProvider>());
         services.TryAddSingleton<AccountingSystemIntegrationService>();
         services.TryAddSingleton<IAccountingMigrationRunArtifactStore>(sp =>
             new FileAccountingMigrationRunArtifactStore(
@@ -326,7 +329,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<AccountingProductionReadinessService>();
         services.TryAddSingleton(ResolvePlaidOptions);
         services.TryAddSingleton<IPlaidConnectionRepository>(sp =>
-            new FilePlaidConnectionRepository(ResolveWorkstationDataDirectory(sp)));
+            new FilePlaidConnectionRepository(ResolveWorkstationDataDirectory(sp), sp.GetRequiredService<IAtomicFileWriter>()));
         services.TryAddSingleton<IPlaidClient>(sp =>
             new PlaidHttpClient(sp.GetRequiredService<IHttpClientFactory>().CreateClient(nameof(PlaidHttpClient))));
         services.TryAddSingleton<PlaidWorkstationService>();
@@ -920,6 +923,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
             new FileManualJournalEntryDraftStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "manual-journal-drafts.json")));
+        services.TryAddSingleton<IManualJournalMutationRecoveryStore>(sp =>
+            new FileManualJournalMutationRecoveryStore(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "manual-journal-drafts.json.mutations")));
         services.TryAddSingleton<FileDailyValuationPortfolioSource>(sp =>
             new FileDailyValuationPortfolioSource(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "daily-valuation-schedules.json")));
@@ -960,7 +966,9 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<ReportPackWorkflowService>(),
                 sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>(),
-                sp.GetService<IGovernedLedgerPostingTarget>()));
+                sp.GetService<IGovernedLedgerPostingTarget>(),
+                sp.GetRequiredService<IManualJournalMutationRecoveryStore>(),
+                sp.GetRequiredService<Meridian.FinancialOperations.FundAdministration.IRecurringJournalStore>()));
         services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
             (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
         services.TryAddSingleton<DailyValuationBatchLifecycleService>();
@@ -1010,6 +1018,15 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<DailyValuationScheduledWorker>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostedService, DailyValuationSchedulerHostedService>());
+        services.TryAddSingleton<Meridian.FinancialOperations.FundAdministration.FileRecurringJournalStore>(sp =>
+            new Meridian.FinancialOperations.FundAdministration.FileRecurringJournalStore(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "recurring-journals")));
+        services.TryAddSingleton<Meridian.FinancialOperations.FundAdministration.IRecurringJournalStore>(sp =>
+            sp.GetRequiredService<Meridian.FinancialOperations.FundAdministration.FileRecurringJournalStore>());
+        services.TryAddSingleton<IRecurringJournalSubjectAuthority, RecurringJournalSubjectAuthority>();
+        services.TryAddSingleton<IRecurringJournalPeriodAuthority, RecurringJournalPeriodAuthority>();
+        services.TryAddSingleton<RecurringJournalRunner>();
+        services.TryAddSingleton<IRecurringJournalQueueSource>(sp => sp.GetRequiredService<RecurringJournalRunner>());
         services.TryAddSingleton<AutomatedJournalScheduledWorker>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostedService, AutomatedJournalSchedulerHostedService>());
@@ -1027,9 +1044,11 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IDailyValuationScheduleStatusSource>(),
                 sp.GetService<IAutomatedJournalScheduleStatusSource>()));
         services.TryAddSingleton<ICloseReadinessSubjectSource, CloseReadinessSubjectSource>();
+        services.TryAddSingleton<IOperationsReportPackAuthority, OperationsReportPackAuthority>();
         services.TryAddSingleton<IClosePublicationReadinessGuard>(sp => new ClosePublicationReadinessGuard(
             () => sp.GetService<IFinancialOperationsCommandCenterReadService>(),
-            sp.GetService<IWorkstationTenantContextAccessor>()));
+            sp.GetService<IWorkstationTenantContextAccessor>(),
+            () => sp.GetService<IOperationsReportPackAuthority>()));
         services.TryAddSingleton<IFinancialOperationsCommandCenterReadService>(sp =>
             new FinancialOperationsCommandCenterReadService(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
@@ -1078,7 +1097,9 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IStatementRunWorkflowService>(),
                 sp.GetService<Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService>(),
-                sp.GetService<IReconciliationBreakQueueRepository>()));
+                sp.GetService<IReconciliationBreakQueueRepository>(),
+                sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.ICanonicalStatementStore>(),
+                sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.IStatementRunMatchArtifactStore>()));
         services.TryAddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
             new OperationsContinuityReconciliationBridge(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),

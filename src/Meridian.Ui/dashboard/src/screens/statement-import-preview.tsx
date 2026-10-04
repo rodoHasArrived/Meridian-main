@@ -160,7 +160,7 @@ function StatementKindSummarySection({
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
               summary.kind === selected?.kind
                 ? "border-primary bg-primary/15 text-primary"
-                : "border-border bg-secondary/35 text-muted-foreground hover:border-[#ADB8C4]"
+                : "border-border bg-secondary/35 text-muted-foreground hover:border-[var(--ws-border-hover)]"
             )}
             onClick={() => onSelectKind(summary.kind)}
           >

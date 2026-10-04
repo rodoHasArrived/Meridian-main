@@ -48,32 +48,32 @@ function inject(): void {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.stm-wrap{overflow-x:auto;border:1px solid var(--border,#CBD3DC);
-  border-radius:var(--radius-chip,2px);background:var(--bg-light,#FFFFFF);}
+.stm-wrap{overflow-x:auto;border:1px solid var(--border,#E4E3DE);
+  border-radius:var(--radius-chip,2px);background:var(--bg-light,#FBFAF8);}
 .stm{width:100%;border-collapse:separate;border-spacing:0;font-family:var(--font-data,monospace);font-size:12px;}
-.stm thead th{padding:9px 14px;white-space:nowrap;background:var(--bg-medium,#EBEFF4);
+.stm thead th{padding:9px 14px;white-space:nowrap;background:var(--bg-medium,#EDEAE4);
   font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#59636F);
-  border-bottom:1px solid var(--border,#CBD3DC);text-align:right;}
+  letter-spacing:.03em;color:var(--text-muted,#5E666F);
+  border-bottom:1px solid var(--border,#E4E3DE);text-align:right;}
 .stm thead th.stm--l{text-align:left;}
 .stm__section td{padding:10px 14px 5px;font-family:var(--font-body,inherit);font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-secondary,#4D5967);
-  border-top:1px solid var(--border,#CBD3DC);}
+  font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-secondary,#4E5258);
+  border-top:1px solid var(--border,#E4E3DE);}
 .stm__section--first td{border-top:none;}
-.stm__item td{padding:9px 14px;color:var(--text-primary,#22272E);height:40px;}
-.stm__item td.stm--l{color:var(--text-secondary,#4D5967);}
+.stm__item td{padding:9px 14px;color:var(--text-primary,#22252A);height:40px;}
+.stm__item td.stm--l{color:var(--text-secondary,#4E5258);}
 .stm__item td.stm--num{text-align:right;}
-.stm__item--muted td.stm--l{color:var(--text-muted,#59636F);}
-.stm__sub td{padding:10px 14px;font-weight:600;border-top:1px solid var(--border,#CBD3DC);
-  background:var(--card-surface-raised,#F3F6F9);}
+.stm__item--muted td.stm--l{color:var(--text-muted,#5E666F);}
+.stm__sub td{padding:10px 14px;font-weight:600;border-top:1px solid var(--border,#E4E3DE);
+  background:var(--card-surface-raised,#F6F4F0);}
 .stm__sub td.stm--l{font-family:var(--font-body,inherit);font-variant:all-small-caps;letter-spacing:.03em;
-  font-size:11px;color:var(--text-primary,#22272E);}
+  font-size:11px;color:var(--text-primary,#22252A);}
 .stm__sub td.stm--num{text-align:right;}
-.stm__total td{padding:10px 14px;font-weight:600;background:var(--bg-medium,#EBEFF4);
-  border-top:2px solid var(--border-strong,#99A5B2);
-  border-bottom:3px double var(--border-strong,#99A5B2);}
+.stm__total td{padding:10px 14px;font-weight:600;background:var(--bg-medium,#EDEAE4);
+  border-top:2px solid var(--border-strong,#AFABA1);
+  border-bottom:3px double var(--border-strong,#AFABA1);}
 .stm__total td.stm--l{font-family:var(--font-body,inherit);font-variant:all-small-caps;letter-spacing:.04em;
-  font-size:12px;color:var(--text-primary,#22272E);}
+  font-size:12px;color:var(--text-primary,#22252A);}
 .stm__total td.stm--num{text-align:right;}
 `;
   const el = document.createElement("style");
@@ -119,7 +119,7 @@ export function StatementTable({ sections, total, columns, currency = "USD", par
                   {valuesOf(row).map((v, vi) => (
                     <td key={vi} className="stm--num">
                       {v == null || v === "" ? (
-                        <span style={{ color: "var(--text-disabled, #889099)" }}>—</span>
+                        <span style={{ color: "var(--text-disabled, #94999F)" }}>—</span>
                       ) : (
                         <AmountCell value={v} currency={currency} parens={parens} mode={pnl ? "pnl" : "plain"} />
                       )}

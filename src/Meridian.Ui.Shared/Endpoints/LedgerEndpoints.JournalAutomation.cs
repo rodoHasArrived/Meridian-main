@@ -21,6 +21,7 @@ public static partial class LedgerEndpoints
     /// </summary>
     private static void MapJournalAutomationEndpoints(WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        MapRecurringJournalEndpoints(app, jsonOptions);
         app.MapGet(UiApiRoutes.LedgerJournalAutomationMonthlySchedules, async (HttpContext context) =>
         {
             if (!HasLedgerReadPermission(context))

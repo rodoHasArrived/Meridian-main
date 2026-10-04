@@ -8,6 +8,39 @@
 
 ---
 
+## Consolidated review queue — 2026-09-23
+
+This document is the single rolling review record. The nine unconsumed review PRs below are
+retained historical inputs, pinned to their original commits; consolidating the queue does not
+accept their findings as current or discard their distinct observations. Finding labels such as
+`B1`, `C4`, and `E1` are local to a pass and must be qualified by date and PR number.
+
+| Retained pass | Immutable review | Distinct scope to reconcile against current source |
+| --- | --- | --- |
+| 2026-09-01, [#2892](https://github.com/rodoHasArrived/Meridian-main/pull/2892) | [d67f261a](https://github.com/rodoHasArrived/Meridian-main/blob/d67f261a2ca5678b0a9989599abb6d27e7783772/docs/architecture/security-master-extensibility-review.md) | Identifier-constraint failure classification and event/projection atomicity. |
+| 2026-09-03, [#2904](https://github.com/rodoHasArrived/Meridian-main/pull/2904) | [b5a5ab01](https://github.com/rodoHasArrived/Meridian-main/blob/b5a5ab015b5625d669684e1b22e49c216fb5a04c/docs/architecture/security-master-extensibility-review.md) | Price currency, quote units, history, overrides, and vendor entitlement enforcement. |
+| 2026-09-04, [#2905](https://github.com/rodoHasArrived/Meridian-main/pull/2905) | [b8d5b855](https://github.com/rodoHasArrived/Meridian-main/blob/b8d5b855ba8e48802765a489bbda836bdf86ddbf/docs/architecture/security-master-extensibility-review.md) | Normalized identifier collisions reported as skips and orphaned event streams. |
+| 2026-09-07, [#2935](https://github.com/rodoHasArrived/Meridian-main/pull/2935) | [b520a3bc](https://github.com/rodoHasArrived/Meridian-main/blob/b520a3bc7bce30af33e63ac905efca5e90cd6c1e/docs/architecture/security-master-extensibility-review.md) | Issuer/classification ownership, capability parity, client schemas, and cash-flow coverage. |
+| 2026-09-09, [#2937](https://github.com/rodoHasArrived/Meridian-main/pull/2937) | [933ab5d9](https://github.com/rodoHasArrived/Meridian-main/blob/933ab5d94a5becb32758e04732bce40122eb919d/docs/architecture/security-master-extensibility-review.md) | No-drift interval; the pass's dated source checks remain historical. |
+| 2026-09-11, [#2961](https://github.com/rodoHasArrived/Meridian-main/pull/2961) | [7b2f3ada](https://github.com/rodoHasArrived/Meridian-main/blob/7b2f3adaff8378e4a568029de20ec6eb8ff1b0a3/docs/architecture/security-master-extensibility-review.md) | Payload-family discrimination, cache/registry refresh, universe-load cost, and value-consistency scope. |
+| 2026-09-16, [#2975](https://github.com/rodoHasArrived/Meridian-main/pull/2975) | [40b77352](https://github.com/rodoHasArrived/Meridian-main/blob/40b773523c09bfb77fbb517cf7c6919cdeffd71e/docs/architecture/security-master-extensibility-review.md) | Alias ambiguity, normalization, check digits, conflict IDs, bounded loading, and vacuous coverage assertions. |
+| 2026-09-21, [#2982](https://github.com/rodoHasArrived/Meridian-main/pull/2982) | [25d2c209](https://github.com/rodoHasArrived/Meridian-main/blob/25d2c209b84de9dfcbc2012ef7b82002fa98c869/docs/architecture/security-master-extensibility-review.md) | Cash-flow dispatch, journal-template binding, asset-pack validation, and unmodeled readiness. Its separate futures-fixture repair is already present on main. |
+| 2026-09-22, [#2984](https://github.com/rodoHasArrived/Meridian-main/pull/2984) | [03810312](https://github.com/rodoHasArrived/Meridian-main/blob/03810312228b97f7f1a8f1dc5057f785a980ec33/docs/architecture/security-master-extensibility-review.md) | Pricing history/units, hierarchy governance, valuation integration, and scoped entitlements. |
+
+Current-main evidence is `13aa7576575e7816c14ec3b9b5b002a3f4494c97`. Subsequent accounting-trust
+work in PR 2987 changed cash-flow dispatch, lifecycle bindings, and effective-date/quote-unit price
+selection, so the corresponding September 21/22 claims require comparison before being carried
+forward. Production Certification run 35885778558 passed all four jobs on that baseline, including
+1,028 database tests with no failures or skips; it does not establish that every architectural
+finding above is resolved.
+
+Future review work should update this record with changed source, a dated finding disposition,
+and validation evidence. An unchanged interval needs no new review PR. Reuse an open consolidation
+PR while it is awaiting review. This queue policy does not claim that the external scheduler has
+been disabled; no matching local automation was found during this consolidation.
+
+---
+
 ## Purpose
 
 An evidence-based assessment of the Security Master against institutional-finance reference-data
@@ -421,7 +454,7 @@ Three consequences:
   independent-reviewer requirements, restatement resolution, and affected-ledger-book scoping — all
   applied to a side table that by design never changes the record it annotates.
 
-The overlay decision is documented and intentional (`docs/plans/security-master-passport-workbench.md`,
+The overlay decision is documented and intentional (`docs/engineering/blueprints/security-master-passport-workbench.md`,
 decision D2 as amended: a partial field-edit payload appended to the economic stream would clobber
 the definition on replay). The rationale is right. The gap is that no *typed amendment* path was
 built alongside it, so the workbench remains an annotation surface rather than a correction surface.
@@ -1590,7 +1623,7 @@ against, two paragraphs after the correction that withdrew that target.
    and the denormalized `securities` columns carry no provider to express the rule with. Widening it
    means projecting a normalized primary provider column first.
 4. **P6** — **a plan now exists**, and this item is the input to it rather than a standing ask:
-   `docs/architecture/security-lot-convergence-blueprint.md` (`W10-LOT-002`, status *proposed*),
+   `docs/engineering/blueprints/security-lot-convergence-blueprint.md` (`W10-LOT-002`, status *proposed*),
    which landed on `main` after this pass was written. It reaches the same durable anchor this item
    does — `LedgerTaxLotRecord` extended rather than replaced, `SecurityId` mandatory, `TaxLot`
    retired as authoritative — and it carries acquisition currency/FX, which this item flagged as
@@ -5287,7 +5320,7 @@ Reviewed `src/Meridian.FSharp/Domain/SecurityMaster*.fs`, `src/Meridian.FSharp/I
 plus `Validation/`, `Rebuild/`, `CorporateActions/`, `CashFlow/`), `src/Meridian.Storage/SecurityMaster/`
 (43 files plus 26 migrations), `src/Meridian.ReferenceData/SecurityMaster/`, `src/Meridian.Instruments/`
 projection services, `src/Meridian.Ui/dashboard/src/` Security Master screens and the passport editor,
-`tests/Meridian.Tests/SecurityMaster/` (65 files), and `docs/plans/security-master-passport-workbench.md`.
+`tests/Meridian.Tests/SecurityMaster/` (65 files), and `docs/engineering/blueprints/security-master-passport-workbench.md`.
 
 The 2026-08-14 verification pass re-read the F# domain and interop, the 47 `Meridian.Contracts`
 Security Master contracts, the 58 `Meridian.Application` Security Master services, the 46

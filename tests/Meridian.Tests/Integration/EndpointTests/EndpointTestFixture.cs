@@ -3,6 +3,7 @@ using System.Text.Json;
 using Meridian.Application.Composition;
 using Meridian.Application.DirectLending;
 using Meridian.PortfolioRecords.FundAccounts;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.Identity.Auth;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.Services;
@@ -219,6 +220,15 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         _afterProviderCatalogBound?.Invoke();
         builder.Services.RemoveAll<IDirectLendingService>();
         builder.Services.AddSingleton<IDirectLendingService, InMemoryDirectLendingService>();
+        // Endpoint behavior uses explicit fixture-owned account/structure fakes. Keep the host's
+        // strict tenant options and request gates; local migration refusal is covered separately.
+        var testAccounts = new InMemoryFundAccountService();
+        builder.Services.RemoveAll<IFundAccountService>();
+        builder.Services.RemoveAll<IAccountManagementService>();
+        builder.Services.RemoveAll<IAccountQueryService>();
+        builder.Services.AddSingleton<IFundAccountService>(testAccounts);
+        builder.Services.AddSingleton<IAccountManagementService>(testAccounts);
+        builder.Services.AddSingleton<IAccountQueryService>(testAccounts);
         builder.Services.RemoveAll<IFundStructureService>();
         builder.Services.AddSingleton<IFundStructureService>(sp =>
             new InMemoryFundStructureService(

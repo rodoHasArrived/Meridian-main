@@ -459,7 +459,7 @@ public sealed class PaperTradingGateway :
         PaperMarketObservation observation,
         CancellationToken ct)
     {
-        fillPrice = await _tradingParameters.SnapToTickSizeAsync(request.Symbol, fillPrice, ct)
+        fillPrice = await _tradingParameters.ResolveFillPriceAsync(request, fillPrice, observation, ct)
             .ConfigureAwait(false);
 
         var costs = _costModel.Compute(request.Quantity, fillPrice, observation.MidPrice);

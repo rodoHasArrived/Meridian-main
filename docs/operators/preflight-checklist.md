@@ -72,5 +72,5 @@ Before any release-bound activity:
 
 - [Provider validation packet bundle workflow](../reference/provider-validation-evidence-schema.md)
 - [Provider validation matrix](../reference/provider-validation-matrix.md)
-- [Deployment standard (legacy source moved from migration lane)](../../archive/docs/operations/environment-and-deployment-standard.md)
+- [Deployment standard (legacy source moved from migration lane)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/environment-and-deployment-standard.md)
 - [Operator startup and launch references](./README.md)

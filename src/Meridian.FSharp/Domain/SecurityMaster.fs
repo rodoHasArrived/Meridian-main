@@ -410,11 +410,24 @@ type OtherSecurityTerms = {
     SettlementType: string option
 }
 
+/// A swap leg with the economics consumed by cash-flow projection. Optional terms keep
+/// legacy legs readable and allow the projection to use security-level fallbacks.
 type SwapLeg = {
+    LegId: string option
     LegType: string
     Currency: string
+    /// Pay or Receive from the holder's perspective. None leaves the leg unnetted.
+    Direction: string option
     Index: string option
     FixedRate: decimal option
+    SpreadBps: decimal option
+    /// Observed index fixing used for flat-forward projection, without an implied forward curve.
+    CurrentIndexRate: decimal option
+    Notional: decimal option
+    PaymentFrequency: string option
+    DayCount: string option
+    /// Whether principal exchanges are part of the leg's contractual terms.
+    ExchangesPrincipal: bool
 }
 
 type SwapTerms = {

@@ -100,7 +100,9 @@ classDiagram
     class Meridian_Contracts_AssetOperations_AssetAcquisitionLotDto["AssetAcquisitionLotDto"] {
         +string AccountId
         +DateOnly AcquiredDate
+        +Meridian_Contracts_FixedIncome_BondAmortizationMethod? AmortizationMethod
         +decimal? BookedFactor
+        +decimal? EffectiveYield
         +string LotId
         +decimal? OriginalFace
         +decimal? ParBasis
@@ -178,6 +180,7 @@ classDiagram
         +LedgerAdjustmentApprovalMetadataDto? CorrectionApproval
         +Guid? CorrectsJournalEntryId
         +Guid? CorrectsMutationBatchId
+        +decimal? DisposalSalePrice
         +IReadOnlyList~AssetDisposalLotSelectionDto~ DisposalSelections
         +AssetLotMutationIntentDto Intent
         +string? PolicyRevision

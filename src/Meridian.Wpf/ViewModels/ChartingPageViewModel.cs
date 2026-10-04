@@ -71,7 +71,9 @@ public sealed class ChartingPageViewModel : BindableBase
     private static readonly SolidColorBrush PrimaryIndicatorBrush = ToBrush(Palette.ChartPrimary);
     private static readonly SolidColorBrush SecondaryIndicatorBrush = ToBrush(Palette.ChartSecondary);
     private static readonly SolidColorBrush WarningIndicatorBrush = ToBrush(Palette.ChartTertiary);
-    private static readonly SolidColorBrush NeutralIndicatorBrush = ToBrush(Palette.LightText);
+    // Palette.LightText is ink for the near-black chrome bars, not a series colour; it read as a
+    // pale line only because the plot area used to be navy. MutedText is the neutral on a light plot.
+    private static readonly SolidColorBrush NeutralIndicatorBrush = ToBrush(Palette.MutedText);
 
     // LiveCharts2 SkiaSharp paints — reused across renders to avoid per-frame allocation.
     private static readonly SolidColorPaint SkBullishFill = new(ToSkColor(Palette.ChartPositive));

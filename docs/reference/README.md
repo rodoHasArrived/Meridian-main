@@ -25,6 +25,7 @@ Reference content here must stay schema/procedure-neutral and claim-stable. Proc
 | Data fields and normalization | [Data Dictionary](data-dictionary.md), [Data Uniformity](data-uniformity.md), [Reconciliation Break Taxonomy](reconciliation-break-taxonomy.md) | Stable field/type definitions and cross-provider terminology. |
 | Environment and config | [Environment Variables](environment-variables.md), [Appsettings Schema Reference](appsettings-schema.md), [EDGAR Reference Data](edgar-reference-data.md) | Lookup details only; setup procedures belong in operators/start docs. |
 | Provider capability and readiness lookup | [Provider Capability Matrix](provider-capability-matrix.md), [Provider Validation Matrix](provider-validation-matrix.md), [Provider Integration Status](provider-integration-status.md) | Canonical lookup in this lane; keep procedure and rollout details in operators. |
+| Adapter implementation readiness | [Generated Adapter Readiness Matrix](../source/generated/adapter-readiness-matrix.md), [Adapter Readiness Registry](../source/data/adapter-readiness.yml) | Source-owned implementation inventory and targeted evidence; live-provider validation and operator sign-off remain separate gates. |
 | Contract compatibility and schemas | [Contract Compatibility Matrix](contract-compatibility-matrix.md), [Provider Validation Evidence Schema](provider-validation-evidence-schema.md), [Provider Validation Matrix](provider-validation-matrix.md) | Keep generated or matrix-owned content in place until moved through a focused migration. |
 | UFL and asset profiles | [UFL Supported Assets Index](ufl-supported-assets-index.md), [UFL Capability Model](ufl-capability-model.md), [UFL Conformance Matrix](ufl-conformance-matrix.md) | Target-state lookup material now lives in reference. |
 | Ledger, accounting, and reporting contracts | [Ledger Journal Store](ledger-journal-store.md), [Export Preflight Rules](export-preflight-rules.md), [Accounting Configuration](accounting-configuration.md), [Accounting Report Packs](accounting-report-packs.md) | Stable contracts and artifact layouts. |
@@ -39,6 +40,8 @@ Provider-selection claims belong in capability and validation matrices, not date
 - Procedures for credentials, setup, repair, and fallback operation belong in [Operators](../operators/README.md).
 - Capability, data-type, coverage, rate-limit, and validation lookup belongs in this reference lane or generated/matrix-owned status files.
 - Provider orchestration and fallback logic belongs in engineering/source docs and current source README files.
+- Adapter-family implementation readiness is owned by the [source registry](../source/data/adapter-readiness.yml)
+  and its [generated matrix](../source/generated/adapter-readiness-matrix.md); do not maintain a duplicate readiness inventory here.
 
 Do not treat old rate-limit, entitlement, or data-quality statements as current without checking live provider documentation or current validation evidence.
 
@@ -92,11 +95,11 @@ Stable lookup details for storage and streaming should live in reference, genera
 Use this index for stable lookup claims that still appear in legacy locations:
 
 - `docs/roadmap/data/*.yml` → [Data Dictionary](data-dictionary.md), [Reconciliation Break Taxonomy](reconciliation-break-taxonomy.md) for canonical lookup fields.
-- `archive/docs/status/IMPROVEMENTS.md` → historical context only; prefer [Provider Capability Matrix](provider-capability-matrix.md) and [Provider Validation Matrix](provider-validation-matrix.md) for stable lookup claims.
+- [`archive/docs/status/IMPROVEMENTS.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/status/IMPROVEMENTS.md) → historical context only; prefer [Provider Capability Matrix](provider-capability-matrix.md) and [Provider Validation Matrix](provider-validation-matrix.md) for stable lookup claims.
 - `docs/status/provider-validation-matrix.md` → [Provider Validation Matrix](provider-validation-matrix.md) as canonical evidence lookup.
-- archived `docs/providers/provider-comparison.md` → [Provider Capability Matrix](provider-capability-matrix.md), then [archive copy](../../archive/docs/providers/provider-comparison.md) for historical context.
-- archived `docs/providers/provider-confidence-baseline.md` → [Provider Capability Matrix](provider-capability-matrix.md), [Provider Validation Matrix](provider-validation-matrix.md), then [archive copy](../../archive/docs/providers/provider-confidence-baseline.md) for historical context.
-- archived `docs/providers/README.md` → [Provider Integration Status](provider-integration-status.md), then [archive copy](../../archive/docs/providers/README.md).
+- archived `docs/providers/provider-comparison.md` → [Provider Capability Matrix](provider-capability-matrix.md), then [archive copy](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/providers/provider-comparison.md) for historical context.
+- archived `docs/providers/provider-confidence-baseline.md` → [Provider Capability Matrix](provider-capability-matrix.md), [Provider Validation Matrix](provider-validation-matrix.md), then [archive copy](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/providers/provider-confidence-baseline.md) for historical context.
+- archived `docs/providers/README.md` → [Provider Integration Status](provider-integration-status.md), then [archive copy](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/providers/README.md).
 - Legacy strategy/status handoff notes in legacy docs → [Strategy Promotion History](strategy-promotion-history.md) and [Backtest Preflight and Stage Telemetry](backtest-preflight-and-stage-telemetry.md) only after schema stability is validated.
 - `docs/status/provider-capability-matrix.md` → [Provider Capability Matrix](provider-capability-matrix.md)
 - `docs/status/provider-integration-status.md` → [Provider Integration Status](provider-integration-status.md)
@@ -110,16 +113,16 @@ Use this index for stable lookup claims that still appear in legacy locations:
 - `docs/status/provider-test-gap-baseline.md` → [Provider Validation Matrix](provider-validation-matrix.md), [Provider Validation Evidence Schema](provider-validation-evidence-schema.md)
 - `docs/status/provider-test-minimums.md` → [Provider Validation Matrix](provider-validation-matrix.md)
 - `docs/status/ibkr-provider-inventory.md` → [Provider Integration Status](provider-integration-status.md), [Provider Capability Matrix](provider-capability-matrix.md)
-- `docs/status/IMPROVEMENTS.md`, `docs/status/EVALUATIONS_AND_AUDITS.md`, `docs/status/FEATURE_INVENTORY.md`, `docs/status/TODO.md` → [Provider Capability Matrix](provider-capability-matrix.md), [Design Review Memo](design-review-memo.md), or [Reconciliation Break Taxonomy](reconciliation-break-taxonomy.md), depending on claim type; historical copies in [archive/docs/reference](../../archive/docs/reference/).
+- `docs/status/IMPROVEMENTS.md`, `docs/status/EVALUATIONS_AND_AUDITS.md`, `docs/status/FEATURE_INVENTORY.md`, `docs/status/TODO.md` → [Provider Capability Matrix](provider-capability-matrix.md), [Design Review Memo](design-review-memo.md), or [Reconciliation Break Taxonomy](reconciliation-break-taxonomy.md), depending on claim type; historical copies in [archive/docs/reference](https://github.com/rodoHasArrived/Meridian-main/tree/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/reference).
 
-If a replacement page is still missing for a high-traffic legacy route, keep a short redirect stub at the old location and track it in `archive/docs/reference/README.md` until canonical replacement is in place.
+If a replacement page is still missing for a high-traffic legacy route, keep a short redirect stub at the old location and track it in `archive/docs/reference/README.md` until canonical replacement is in place. The 2026-09-11 archive cleanup (`982eea2d`) removed both indexes listed below; recreate them with the next archived reference batch. The links show their last content.
 
 ### Archive destination for legacy reference material
 
 When a legacy reference document is retired, move it under `archive/docs/reference/` and keep migration context in:
 
-- [Reference Archive](../../archive/docs/reference/README.md)
-- [Archive README](../../archive/docs/README.md)
+- [Reference Archive](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/reference/README.md)
+- [Archive README](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/README.md)
 
 ## Ownership and Governance Alignment
 

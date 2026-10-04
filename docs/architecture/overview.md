@@ -106,10 +106,10 @@ separate visible root workspace.
 
 ## Related Documents
 
-- [Trading Workstation Migration Blueprint (Archived)](../../archive/docs/plans/trading-workstation-migration-blueprint.md)
+- [Trading Workstation Migration Blueprint (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/trading-workstation-migration-blueprint.md)
 - [Stakeholder Product Charter](../product/meridian-design-document.md)
-- [Current Direction and Status (Archived)](../../archive/docs/plans/current-direction-and-status.md)
-- [Governance and Fund Operations Blueprint (Archived)](../../archive/docs/plans/governance-fund-ops-blueprint.md)
+- [Current Direction and Status (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/current-direction-and-status.md)
+- [Governance and Fund Operations Blueprint (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/governance-fund-ops-blueprint.md)
 - [Project Roadmap](../roadmap/README.md)
 - [Layer Boundaries](layer-boundaries.md)
 - [Desktop Layers](desktop-layers.md)

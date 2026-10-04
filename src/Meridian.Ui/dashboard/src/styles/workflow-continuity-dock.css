@@ -4,9 +4,9 @@
   align-items: center;
   gap: 0.3125rem;
   min-width: 0;
-  border-bottom: 1px solid var(--ws-border, #CBD3DC);
-  background: var(--ws-surface, #FFFFFF);
-  color: var(--ws-text, #22272E);
+  border-bottom: 1px solid var(--ws-border, #E4E3DE);
+  background: var(--ws-surface, #FBFAF8);
+  color: var(--ws-text, #22252A);
   box-shadow: none;
   padding: 0.25rem 1rem;
 }
@@ -91,7 +91,7 @@
 }
 
 .workflow-continuity-scope-chip dt {
-  color: var(--ws-text-muted, #59636F);
+  color: var(--ws-text-muted, #5E666F);
   font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
   font-size: 0.75rem;
   font-weight: 700;
@@ -117,7 +117,7 @@
   height: 1.375rem;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  background: var(--ws-surface-subtle, #F3F6F9);
+  background: var(--ws-surface-subtle, #EDEAE4);
   color: var(--fg-muted);
   transition: color 0.16s ease, border-color 0.16s ease, background 0.16s ease;
 }
@@ -228,7 +228,7 @@
 }
 
 .workflow-continuity-decision-reason span:first-child {
-  color: var(--ws-text-muted, #59636F);
+  color: var(--ws-text-muted, #5E666F);
   font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
   font-size: 0.75rem;
   font-weight: 700;
@@ -249,7 +249,7 @@
   max-width: 100%;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  background: var(--ws-surface-subtle, #F3F6F9);
+  background: var(--ws-surface-subtle, #EDEAE4);
   color: var(--ws-text-muted);
   font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
   font-size: 0.75rem;
@@ -290,8 +290,8 @@
 }
 
 .workflow-continuity-step:hover {
-  border-color: var(--ws-border-strong, #99A5B2);
-  background: var(--ws-surface-raised, #F3F6F9);
+  border-color: var(--ws-border-strong, #AFABA1);
+  background: var(--ws-surface-raised, #F6F4F0);
   box-shadow: none;
 }
 
@@ -433,7 +433,7 @@
 }
 
 .workflow-continuity-expanded-flow span:first-child {
-  color: var(--ws-text-muted, #59636F);
+  color: var(--ws-text-muted, #5E666F);
   font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
   font-size: 0.75rem;
   font-weight: 700;
@@ -485,7 +485,7 @@
 }
 
 .workflow-continuity-operator-flow summary:focus-visible {
-  outline: 2px solid rgba(42, 178, 212, 0.45);
+  outline: 2px solid rgba(217, 138, 100, 0.45);
   outline-offset: 2px;
 }
 

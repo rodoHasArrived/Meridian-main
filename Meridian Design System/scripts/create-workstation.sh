@@ -36,8 +36,8 @@ cat > "$PROJECT_DIR/index.html" << 'ENDHTML'
       margin: 0;
       padding: 0;
       font-family: var(--font-body, "Segoe UI Variable", system-ui, sans-serif);
-      background: var(--bg, #ECEFF3);
-      color: var(--text-primary, #22272E);
+      background: var(--bg, #F2F0EC);
+      color: var(--text-primary, #22252A);
     }
     main { padding: 16px; }
   </style>
@@ -73,15 +73,16 @@ cat > "$PROJECT_DIR/screens/ExampleScreen.html" << 'ENDSCREEN'
       margin: 0;
       padding: 16px;
       font-family: var(--font-body, "Segoe UI Variable", system-ui, sans-serif);
-      background: var(--bg, #ECEFF3);
-      color: var(--text-primary, #22272E);
+      background: var(--bg, #F2F0EC);
+      color: var(--text-primary, #22252A);
     }
     .container { max-width: 1200px; margin: 0 auto; }
     .section { margin-bottom: 32px; }
     .section h2 { font-size: 18px; font-weight: 600; margin-bottom: 12px; }
     .controls { display: flex; gap: 12px; flex-wrap: wrap; }
-    input, select { padding: 8px 12px; border: 1px solid var(--border, #D7DCE2); background: var(--bg-light, #fff); font-size: 13px; }
-    input:focus, select:focus { outline: none; border-color: var(--border-focus, #2F6F8F); box-shadow: 0 0 0 2px rgba(47,111,143,.2); }
+    input, select { padding: 8px 12px; border: 1px solid var(--border, #E4E3DE); background: var(--bg-light, #FBFAF8); font-size: 13px; }
+    input:focus, select:focus { outline: none; border-color: var(--border-focus, #A85436);
+      box-shadow: 0 0 0 2px var(--accent-a10, rgba(168,84,54,.2)); }
   </style>
 </head>
 <body>
@@ -107,7 +108,7 @@ cat > "$PROJECT_DIR/screens/ExampleScreen.html" << 'ENDSCREEN'
     <div class="section">
       <h2>Data Display</h2>
       <table style="width:100%; border:1px solid var(--border); border-collapse:collapse; font-size:13px;">
-        <thead style="background:var(--bg-medium,#F5F7FA);">
+        <thead style="background:var(--bg-medium,#EDEAE4);">
           <tr>
             <th style="padding:9px 12px; text-align:left; border-bottom:1px solid var(--border);">Name</th>
             <th style="padding:9px 12px; text-align:left; border-bottom:1px solid var(--border);">Value</th>
@@ -148,7 +149,7 @@ cat > "$PROJECT_DIR/screens/ExampleScreen.html" << 'ENDSCREEN'
   <script src="../_ds/_ds_bundle.js"></script>
   <script>
     const { Button } = window.MeridianDesignSystem_4f61be;
-    document.getElementById("btn-primary").style.background = "var(--accent, #2F6F8F)";
+    document.getElementById("btn-primary").style.background = "var(--accent, #A85436)";
     document.getElementById("btn-primary").style.color = "white";
     document.getElementById("btn-primary").style.border = "none";
     document.getElementById("btn-primary").style.padding = "8px 16px";

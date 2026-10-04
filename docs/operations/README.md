@@ -18,7 +18,7 @@ registries, rules, or strong links still consume them. Do not add new durable gu
 ## Migration Notes
 
 Full historical copies are retained in
-[archive/docs/operations/](../../archive/docs/operations/README.md), and the legacy-path routing
+[archive/docs/operations/](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/README.md), and the legacy-path routing
 table in [Operators](../operators/README.md) maps old paths to canonical replacements.
 
 The files still present here stay because active tooling consumes them at these paths:

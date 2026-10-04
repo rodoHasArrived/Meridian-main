@@ -34,6 +34,10 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
 
 ## API contract notes
 
+- Security Master swap legs retain optional identifiers, pay/receive directions, spreads, index
+  fixings, notionals, payment frequencies, and day-count conventions through serialization, plus
+  the principal-exchange flag. Legacy legs may omit these terms. Supplied notionals must be
+  positive and directions must be Pay or Receive; missing economics remain unresolved.
 - C# callers should enter through C#-friendly interop wrappers and should not depend on internal F# domain types.
 - Security Master identifier interop retains optional provider/source metadata for standard
   identifiers. For `ProviderSymbol`, the provider namespace carried by the identifier kind remains

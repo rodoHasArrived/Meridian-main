@@ -143,7 +143,7 @@ export function buildDialogCloseButtonViewModel({
     className: [
       "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[2px] border [outline-offset:-2px]",
       "border-border bg-transparent text-muted-foreground transition-colors duration-150",
-      "hover:border-[#ADB8C4] hover:bg-[#EAEEF3] hover:text-foreground",
+      "hover:border-[var(--ws-border-hover)] hover:bg-[var(--ws-row-hover)] hover:text-foreground",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
       "disabled:cursor-not-allowed disabled:opacity-50"
     ].join(" ")

@@ -35,6 +35,10 @@ public sealed class BrokerageExecutionReconciliationService
         {
             brokerOrders = await gateway.GetOpenOrdersAsync(ct).ConfigureAwait(false);
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Broker open-order reconciliation query failed for gateway {GatewayId}", gateway.GatewayId);
@@ -134,6 +138,10 @@ public sealed class BrokerageExecutionReconciliationService
         try
         {
             return await gateway.CheckHealthAsync(ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {

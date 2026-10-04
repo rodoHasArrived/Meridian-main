@@ -1,3 +1,5 @@
+using Meridian.Domain.Reconciliation;
+
 namespace Meridian.FinancialOperations.Reconciliation;
 
 /// <summary>
@@ -10,7 +12,11 @@ public sealed record InternalReconciliationPopulationContext(
     string ExternalAccountId,
     DateOnly StatementPeriodStart,
     DateOnly StatementPeriodEnd,
-    string BaseCurrency);
+    string BaseCurrency)
+{
+    /// <summary>The resolved fund, ledger book, and exact period retained by governed intake.</summary>
+    public StatementAccountingScope? AccountingScope { get; init; }
+}
 
 /// <summary>
 /// The internal book a statement is reconciled against: portfolio positions, cash balances, and

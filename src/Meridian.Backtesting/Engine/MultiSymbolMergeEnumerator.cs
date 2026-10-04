@@ -47,20 +47,29 @@ internal static class MultiSymbolMergeEnumerator
         var heap = new PriorityQueue<int, (long TimestampMs, int StreamIndex)>(
             streams.Count,
             Comparer<(long TimestampMs, int StreamIndex)>.Default);
-
-        for (var i = 0; i < streams.Count; i++)
-        {
-            enumerators[i] = streams[i].GetAsyncEnumerator(ct);
-            if (await enumerators[i].MoveNextAsync().ConfigureAwait(false))
-            {
-                heap.Enqueue(
-                    i,
-                    (enumerators[i].Current.Timestamp.ToUnixTimeMilliseconds(), i));
-            }
-        }
+        Exception? initializationError = null;
 
         try
         {
+            try
+            {
+                for (var i = 0; i < streams.Count; i++)
+                {
+                    enumerators[i] = streams[i].GetAsyncEnumerator(ct);
+                    if (await enumerators[i].MoveNextAsync().ConfigureAwait(false))
+                    {
+                        heap.Enqueue(
+                            i,
+                            (enumerators[i].Current.Timestamp.ToUnixTimeMilliseconds(), i));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                initializationError = ex;
+                throw;
+            }
+
             while (heap.Count > 0)
             {
                 ct.ThrowIfCancellationRequested();
@@ -78,8 +87,26 @@ internal static class MultiSymbolMergeEnumerator
         }
         finally
         {
+            List<Exception>? disposalErrors = null;
             foreach (var e in enumerators)
-                await e.DisposeAsync().ConfigureAwait(false);
+            {
+                if (e is null)
+                    continue;
+                try
+                {
+                    await e.DisposeAsync().ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    (disposalErrors ??= []).Add(ex);
+                }
+            }
+            if (disposalErrors is not null)
+            {
+                if (initializationError is not null)
+                    disposalErrors.Insert(0, initializationError);
+                throw new AggregateException("Failed to dispose merged streams.", disposalErrors);
+            }
         }
     }
 }

@@ -21,6 +21,12 @@ public static class StructuredCashFlowLedgerGate
     {
         ArgumentNullException.ThrowIfNull(projection);
 
+        if (projection.BlockedReason is { Length: > 0 } blockedReason)
+            return blockedReason;
+
+        if (projection.IsNormalizedPer100)
+            return "A normalized per-100 analytical schedule cannot be posted without actual principal or notional.";
+
         if (projection.Staleness == StructuredCashFlowStaleness.Unknown)
         {
             return "Cash flow source freshness is unknown; refresh or confirm the source before posting accruals to the ledger.";

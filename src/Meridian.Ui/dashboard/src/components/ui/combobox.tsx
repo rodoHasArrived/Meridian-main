@@ -128,7 +128,7 @@ export function Combobox({
       ) : null}
       <div
         className={cn(
-          "flex h-9 items-center rounded-[2px] border border-border bg-[#F3F6F9]",
+          "flex h-9 items-center rounded-[2px] border border-border bg-[var(--ws-surface-raised)]",
           "focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/40",
           disabled && "cursor-not-allowed opacity-55"
         )}
@@ -176,7 +176,7 @@ export function Combobox({
                   onClick={() => commit(option)}
                   className={cn(
                     "flex cursor-pointer items-center gap-2 px-3 py-2 font-mono text-xs text-foreground",
-                    index === highlighted && "bg-[#EAEEF3]",
+                    index === highlighted && "bg-[var(--ws-row-hover)]",
                     isSelected && "font-semibold text-primary"
                   )}
                 >

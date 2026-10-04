@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -97,9 +98,10 @@ class CleanupGeneratedScriptTests(unittest.TestCase):
 
             self.assertEqual(opt_in_preview.returncode, 0, opt_in_preview.stderr)
             self.assertIn("Restorable Node.js dependencies", opt_in_preview.stdout)
-            self.assertIn("Meridian.Ui", opt_in_preview.stdout)
-            self.assertIn("dashboard", opt_in_preview.stdout)
-            self.assertIn("node_modules", opt_in_preview.stdout)
+            # Format-Table wraps paths at the host's display width. Verify the
+            # complete path while disregarding those presentation line breaks.
+            preview_text = re.sub(r"[\r\n]+\s*", "", opt_in_preview.stdout)
+            self.assertIn(str(dashboard_node_modules), preview_text)
 
             opt_in_execute = self._run_script(
                 powershell,

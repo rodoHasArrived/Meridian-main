@@ -74,6 +74,14 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
             Aliases: Array.Empty<SecurityAliasDto>());
     }
 
+    // Detection anchors an identifier conflict on the lower security id of the claimant pair, so a
+    // lookup by one fixed side fails whenever Guid.NewGuid() orders the pair the other way.
+    private static bool IsPairConflict(SecurityMasterConflict conflict, Guid securityA, Guid securityB)
+    {
+        var pair = new[] { securityA.ToString(), securityB.ToString() };
+        return pair.Contains(conflict.ValueA) && pair.Contains(conflict.ValueB) && conflict.ValueA != conflict.ValueB;
+    }
+
     [SecurityMasterDatabaseFact]
     public async Task GetOpenConflictsAsync_DetectsAndPersistsConflict()
     {
@@ -85,7 +93,7 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
 
         var conflicts = await NewService(store).GetOpenConflictsAsync(CancellationToken.None);
 
-        var conflict = conflicts.Should().ContainSingle(c => c.SecurityId == securityA).Subject;
+        var conflict = conflicts.Should().ContainSingle(c => IsPairConflict(c, securityA, securityB)).Subject;
         conflict.ConflictKind.Should().Be("IdentifierAmbiguity");
         conflict.FieldPath.Should().Contain("Isin");
         conflict.Status.Should().Be("Open");
@@ -93,9 +101,19 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
 
     [SecurityMasterDatabaseFact]
     public async Task ResolveAsync_PersistsWinnerAndResolverAcrossInstances()
+        => await AssertResolutionPersistsAcrossInstancesAsync(reverseClaimants: false);
+
+    [SecurityMasterDatabaseFact]
+    public async Task ResolveAsync_PersistsWinnerAndResolverAcrossInstances_WhenClaimantsAreReverseOrdered()
+        => await AssertResolutionPersistsAcrossInstancesAsync(reverseClaimants: true);
+
+    private async Task AssertResolutionPersistsAcrossInstancesAsync(bool reverseClaimants)
     {
-        var securityA = Guid.NewGuid();
-        var securityB = Guid.NewGuid();
+        // Exercise both claimant orders on every run. Randomly choosing the anchor concealed the
+        // original lookup defect on approximately half of executions.
+        var securities = new[] { Guid.NewGuid(), Guid.NewGuid() }.Order().ToArray();
+        var securityA = securities[reverseClaimants ? 1 : 0];
+        var securityB = securities[reverseClaimants ? 0 : 1];
         var store = StoreReturning(
             MakeProjection(securityA, "Cusip", "037833100", "provA"),
             MakeProjection(securityB, "Cusip", "037833100", "provB"));
@@ -103,7 +121,7 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
         // Instance A detects and resolves.
         var serviceA = NewService(store);
         var open = await serviceA.GetOpenConflictsAsync(CancellationToken.None);
-        var conflictId = open.Single(c => c.SecurityId == securityA).ConflictId;
+        var conflictId = open.Single(c => IsPairConflict(c, securityA, securityB)).ConflictId;
 
         var resolved = await serviceA.ResolveAsync(
             new ResolveConflictRequest(conflictId, "Resolve", "operator@meridian.test", "Edgar is golden.", ChosenWinnerSource: "Edgar"),

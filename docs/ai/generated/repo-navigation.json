@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-07T06:29:36Z",
+  "generatedAt": "2026-09-28T04:47:55Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -191,7 +191,7 @@
         "docs/ai/README.md",
         "docs/ai/ai-known-errors.md",
         "docs/ai/navigation/README.md",
-        "docs/development/wpf-web-ui-alignment-plan.md"
+        "docs/engineering/plans/wpf-web-ui-alignment-plan.md"
       ],
       "recommendedStart": "Meridian.Ui.Services",
       "docCoverageHint": "high"
@@ -1009,6 +1009,7 @@
       "projectReferences": [
         "Meridian.Contracts",
         "Meridian.Infrastructure",
+        "Meridian.Platform",
         "Meridian.Reporting",
         "Meridian.Storage",
         "Meridian.Ui.Shared"
@@ -1108,7 +1109,7 @@
         "Meridian.Workflow"
       ],
       "relatedDocs": [
-        "docs/development/wpf-web-ui-alignment-plan.md"
+        "docs/engineering/plans/wpf-web-ui-alignment-plan.md"
       ]
     },
     {
@@ -1353,7 +1354,7 @@
       ]
     },
     {
-      "path": "docs/development/wpf-web-ui-alignment-plan.md",
+      "path": "docs/engineering/plans/wpf-web-ui-alignment-plan.md",
       "title": "WPF web-UI alignment plan",
       "area": "ui",
       "whenToConsult": "When a task affects workflow-centric desktop or workspace experiences.",
@@ -1620,7 +1621,7 @@
         }
       ],
       "authoritativeDocs": [
-        "docs/development/wpf-web-ui-alignment-plan.md",
+        "docs/engineering/plans/wpf-web-ui-alignment-plan.md",
         "docs/ai/ai-known-errors.md"
       ],
       "recommendedSkill": "meridian-blueprint",
@@ -2225,323 +2226,323 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Infrastructure/Reconciliation/IbFlexStatementService.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-06T14:21:59-07:00",
-      "lastCommit": "ac546aa33",
-      "lastSummary": "fix: delegate asynchronous XML value reads",
+      "path": "src/Meridian.Strategies/README.md",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-09-28T00:40:02+00:00",
+      "lastCommit": "2d1621987",
+      "lastSummary": "docs: repair plain-text archive path mentions left by the 2026-09-11 cleanup",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-28T00:40:02+00:00",
+      "lastCommit": "2d1621987",
+      "lastSummary": "docs: repair plain-text archive path mentions left by the 2026-09-11 cleanup",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Infrastructure/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-06T14:16:08-07:00",
-      "lastCommit": "010ac9cb6",
-      "lastSummary": "fix: bound legacy IB Flex parsing and reject missing evidence",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-06T00:31:37-07:00",
-      "lastCommit": "c7734ccc5",
-      "lastSummary": "Prove ETL restart deduplication and exclude its ledger from the catalog",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Storage/Interfaces/IStorageCatalogService.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-06T00:31:37-07:00",
-      "lastCommit": "c7734ccc5",
-      "lastSummary": "Prove ETL restart deduplication and exclude its ledger from the catalog",
+      "path": "src/Meridian.Backtesting/README.md",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-09-28T00:40:02+00:00",
+      "lastCommit": "2d1621987",
+      "lastSummary": "docs: repair plain-text archive path mentions left by the 2026-09-11 cleanup",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Contracts/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Contracts/Coordination/ICoordinationStore.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
+      "path": "src/Meridian.QuantScript/README.md",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-09-28T00:40:02+00:00",
+      "lastCommit": "2d1621987",
+      "lastSummary": "docs: repair plain-text archive path mentions left by the 2026-09-11 cleanup",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Contracts/Coordination/IExecutionLease.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
+      "path": "src/Meridian.Execution/Adapters/PaperTradingGateway.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-09-25T19:49:41-07:00",
+      "lastCommit": "aff38fd00",
+      "lastSummary": "fix(paper): preserve fill bounds after tick rounding",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Contracts/Coordination/ILeaseManager.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
+      "path": "src/Meridian.Execution/Adapters/PaperTradingGatewaySupport.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-09-25T19:49:41-07:00",
+      "lastCommit": "aff38fd00",
+      "lastSummary": "fix(paper): preserve fill bounds after tick rounding",
       "touches": 1
     },
     {
-      "path": "src/Meridian.DataIntegration/Etl/EtlServices.cs",
+      "path": "src/Meridian.Execution/PaperTradingGateway.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-09-25T19:49:41-07:00",
+      "lastCommit": "aff38fd00",
+      "lastSummary": "fix(paper): preserve fill bounds after tick rounding",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Execution/README.md",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-09-25T19:49:41-07:00",
+      "lastCommit": "aff38fd00",
+      "lastSummary": "fix(paper): preserve fill bounds after tick rounding",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-09-25T18:37:15-07:00",
+      "lastCommit": "dcc87676c",
+      "lastSummary": "fix(reconciliation): retain provenance across save and replay",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-09-25T18:37:15-07:00",
+      "lastCommit": "dcc87676c",
+      "lastSummary": "fix(reconciliation): retain provenance across save and replay",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Identity/Application/UserProfileRegistry.cs",
       "subsystem": "Unmapped",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Identity/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Identity/Application/AuthenticationMode.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Identity/Application/LoginSessionService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Identity/Infrastructure/LoginSessionStoreLock.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian/UiServer.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
       "touches": 1
     },
     {
       "path": "src/Meridian.DataIntegration/README.md",
       "subsystem": "Unmapped",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
-      "touches": 1
+      "lastModified": "2026-09-25T14:10:07-07:00",
+      "lastCommit": "4302179dd",
+      "lastSummary": "Retain rotated OAuth tokens in both recovery generations",
+      "touches": 2
     },
     {
-      "path": "src/Meridian.Platform/Coordination/LeaseManager.Execution.cs",
+      "path": "src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs",
       "subsystem": "Unmapped",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
+      "lastModified": "2026-09-25T14:10:07-07:00",
+      "lastCommit": "4302179dd",
+      "lastSummary": "Retain rotated OAuth tokens in both recovery generations",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Platform/Coordination/LeaseManager.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Platform/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs",
+      "path": "src/Meridian.Storage/README.md",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
-      "touches": 1
+      "lastModified": "2026-09-23T10:07:54-07:00",
+      "lastCommit": "ee60700ff",
+      "lastSummary": "fix: ignore storage-root dates during Parquet conversion",
+      "touches": 3
     },
     {
-      "path": "src/Meridian.Storage/Services/StorageCatalogService.ReadSnapshot.cs",
+      "path": "src/Meridian.Storage/Services/ParquetConversionService.cs",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
+      "lastModified": "2026-09-23T10:07:54-07:00",
+      "lastCommit": "ee60700ff",
+      "lastSummary": "fix: ignore storage-root dates during Parquet conversion",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Storage/Services/StorageCatalogService.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Services/AuditChainService.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-05T22:26:20-07:00",
-      "lastCommit": "ccfc48437",
-      "lastSummary": "Reject damaged audit history and prove independent process appends",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/README.md",
+      "path": "src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs",
       "subsystem": "Unmapped",
-      "lastModified": "2026-09-05T22:03:59-07:00",
-      "lastCommit": "d0fd41763",
-      "lastSummary": "Repair production certification provenance and integration regressions",
-      "touches": 21
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/README.md",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T22:03:59-07:00",
-      "lastCommit": "d0fd41763",
-      "lastSummary": "Repair production certification provenance and integration regressions",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-09-05T22:03:59-07:00",
-      "lastCommit": "d0fd41763",
-      "lastSummary": "Repair production certification provenance and integration regressions",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsLedgerPostingService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-05T22:03:59-07:00",
-      "lastCommit": "d0fd41763",
-      "lastSummary": "Repair production certification provenance and integration regressions",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/package-lock.json",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T22:03:59-07:00",
-      "lastCommit": "d0fd41763",
-      "lastSummary": "Repair production certification provenance and integration regressions",
+      "lastModified": "2026-09-23T09:37:58-07:00",
+      "lastCommit": "db08ddece",
+      "lastSummary": "Fix dated-root historical reads and refresh W10 certification controls",
       "touches": 1
     },
     {
       "path": "src/Meridian.Application/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-09-05T02:00:23-07:00",
-      "lastCommit": "d49fbc8e7",
-      "lastSummary": "Harden log rendering and verify retained lot review versions",
-      "touches": 16
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
+      "touches": 3
     },
     {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-05T02:00:23-07:00",
-      "lastCommit": "d49fbc8e7",
-      "lastSummary": "Harden log rendering and verify retained lot review versions",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs",
+      "path": "src/Meridian.Contracts/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-09-05T02:00:23-07:00",
-      "lastCommit": "d49fbc8e7",
-      "lastSummary": "Harden log rendering and verify retained lot review versions",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Reporting/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-05T02:00:23-07:00",
-      "lastCommit": "d49fbc8e7",
-      "lastSummary": "Harden log rendering and verify retained lot review versions",
+      "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Reporting/ReportGenerationService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-05T02:00:23-07:00",
-      "lastCommit": "d49fbc8e7",
-      "lastSummary": "Harden log rendering and verify retained lot review versions",
+      "path": "src/Meridian.FSharp/Domain/SecurityMaster.fs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Wpf/README.md",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 12
-    },
-    {
-      "path": "src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.close-cockpit.view-model.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.close-scope.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.close-test-fixtures.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.CloseScope.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.WorkflowSelection.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.AllocationEvidence.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
+      "path": "src/Meridian.FSharp/Domain/SecurityMasterCommands.fs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
       "touches": 1
     },
     {
-      "path": "src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.EvidenceScope.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
+      "path": "src/Meridian.FSharp/Interop.SecurityMaster.fs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui.Services/README.md",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
+      "path": "src/Meridian.FSharp/README.md",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/ILedgerJournalStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-23T00:03:37+00:00",
+      "lastCommit": "f6df84d03",
+      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLots.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-23T00:03:37+00:00",
+      "lastCommit": "f6df84d03",
+      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-09-23T00:03:37+00:00",
+      "lastCommit": "f6df84d03",
+      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-23T00:03:37+00:00",
+      "lastCommit": "f6df84d03",
+      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-23T00:03:37+00:00",
+      "lastCommit": "f6df84d03",
+      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-23T00:03:37+00:00",
+      "lastCommit": "f6df84d03",
+      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-23T00:03:37+00:00",
+      "lastCommit": "f6df84d03",
+      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
       "touches": 1
     }
   ],

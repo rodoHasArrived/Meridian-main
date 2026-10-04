@@ -73,7 +73,7 @@ export function FileUpload({
         className={cn(
           "flex w-full flex-col items-center gap-2 rounded-[2px] border-2 border-dashed px-5 py-5 text-center transition-colors",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-          dragging ? "border-primary bg-primary/10" : "border-border bg-[#F3F6F9] hover:border-[#ADB8C4]",
+          dragging ? "border-primary bg-primary/10" : "border-border bg-[var(--ws-surface-raised)] hover:border-[var(--ws-border-hover)]",
           disabled && "cursor-not-allowed opacity-55"
         )}
       >

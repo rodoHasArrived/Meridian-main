@@ -11,6 +11,30 @@ namespace Meridian.Tests.Ui;
 [Collection("Sequential")]
 public sealed class ProductionStartupPolicySmokeTests
 {
+    [Theory]
+    [InlineData("Production")]
+    [InlineData("Development")]
+    [InlineData("Test")]
+    public void AuthenticationMode_InvalidValue_RefusesStartupBeforeTransportExemptions(string environmentName)
+    {
+        using var mode = new EnvironmentVariableScope("MDC_AUTH_MODE", "requried");
+        Action validate = () => UiServer.ValidateAuthenticationTransportSecurity(
+            new TestHostEnvironment(environmentName), new ApiHostOptions());
+
+        validate.Should().Throw<InvalidOperationException>().WithMessage("*MDC_AUTH_MODE*requried*");
+    }
+
+    [Theory]
+    [InlineData("MDC_PACKAGED_BUILD")]
+    [InlineData("MERIDIAN_CUSTOMER_BUILD")]
+    public void AuthenticationMode_AutoPackagedDevelopment_UsesTheIdentityDefault(string buildFlag)
+    {
+        using var mode = new EnvironmentVariableScope("MDC_AUTH_MODE", "auto");
+        using var packaged = new EnvironmentVariableScope(buildFlag, "true");
+
+        UiServer.IsAuthenticationRequired(new TestHostEnvironment("Development")).Should().BeTrue();
+    }
+
     [Fact]
     public void UiServer_WhenProductionEnvironmentAndInMemoryBindingsExist_FailsStartup()
     {

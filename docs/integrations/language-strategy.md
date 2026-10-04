@@ -758,4 +758,4 @@ public class OrderBookBenchmarks
 
 **Document Owner:** Architecture Team
 **Review Cycle:** Quarterly
-**See Also:** [Architecture](../architecture/overview.md) | [Production Status](../../archive/docs/status/production-status.md) | [Why This Architecture](../architecture/why-this-architecture.md)
+**See Also:** [Architecture](../architecture/overview.md) | [Production Status](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/status/production-status.md) | [Why This Architecture](../architecture/why-this-architecture.md)
