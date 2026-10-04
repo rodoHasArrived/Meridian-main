@@ -19,6 +19,21 @@ owns their construction; atomic durability, staging and JSONL naming policies re
 into wash-sale projection evidence together with the configured window, scope and activation date.
 This adds no persisted policy field or schema migration.
 
+The durable replacement resolver excludes relieved lot IDs only within the disposing account's
+complete identity. LedgerBook scope retains same-ID acquisitions in sibling accounts. Prior-deferral
+basis adjustments use that same full account identity (name, type, symbol and financial account ID),
+so a sibling account's same-ID lot cannot change the disposing lot's basis or holding-period start.
+
+Ledger migration `039` adds nullable disposal allocation-version and sale-price evidence to immutable
+atomic batches without backfilling existing rows. New disposal inserts retain the current convention
+after the exact-replay check, leaving legacy retries and absent-price command fingerprints unchanged.
+An explicit original quote must reproduce supported, account-scoped cash journal proceeds; fees and
+other unsupported expense shapes cannot supply that assertion. Aggregate-only governed commands
+retain the current version with a null price, deriving their canonical price at reporting from the
+journal and retained wash-sale deferrals. They do not invent a source execution quote. History replays
+an explicit retained quote exactly, while old unversioned batches keep the legacy allocator.
+Unsupported versions or inconsistent retained economics block reporting.
+
 `PostgresLedgerJournalStore.GetPeriodLockOwnerAsync` reads the retained close actor under the same
 tenant guard as the period. Recurring journal generation consumes the existing PostgreSQL period
 authority and this actor for blocked-occurrence evidence; its file-backed schedule store never
@@ -158,7 +173,7 @@ All supported durable relief methods certify current canonical basis under the l
 policy while keeping acquisition unit cost and acquisition evidence immutable. Partial discrete
 relief of an adjusted lot stores exact remaining transaction and functional basis on its existing mutation; Reporting
 reproduces certified posted basis without rounding it through acquisition unit cost. Migration
-`V_ledger_040` follows PR #3048's reserved amortization ordinal 039. PostgreSQL coverage lives in
+`V_ledger_041` follows PR #3048's reserved amortization ordinal 040. PostgreSQL coverage lives in
 `AtomicTaxLotJournalStoreTests.CurrentBasis`; see the [lot convergence blueprint](../../docs/engineering/blueprints/security-lot-convergence-blueprint.md).
 
 ## Purpose

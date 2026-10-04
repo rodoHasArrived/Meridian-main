@@ -77,11 +77,21 @@ public static class CanonicalDisposalHistoryProjector
         var proceeds = basis + recognized - disallowed;
         if (proceeds < 0m)
             throw new LedgerValidationException("Retained canonical disposal cannot produce nonnegative proceeds.");
+        if (disposal.ProceedsAllocationVersion is not null and not LedgerTaxLotReliefProjector.CurrentProceedsAllocationVersion ||
+            disposal.ProceedsAllocationVersion is null && disposal.SalePrice is not null)
+            throw new LedgerValidationException("Retained canonical disposal has an unsupported proceeds allocation version or quote.");
+        var scale = canonical[0].Acquisition.QuantityBasis == LotQuantityBasis.Face
+            ? LedgerTaxLotFaceValueTerms.LedgerLotParBasis : 1m;
+        var salePrice = disposal.SalePrice / scale ?? (disposal.ProceedsAllocationVersion is null
+            ? decimal.Round(proceeds / quantity, 10, MidpointRounding.AwayFromZero) : proceeds / quantity);
+        if (disposal.SalePrice is not null &&
+            Meridian.Contracts.Ledger.LedgerCurrencyRounding.RoundCurrency(quantity * salePrice) != proceeds)
+            throw new LedgerValidationException("Retained canonical disposal quote differs from journal proceeds.");
         var saleDate = entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(entry.Timestamp.UtcDateTime);
         var lots = history.Select((lot, index) => new LedgerTaxLot(lot.LotId, lot.AcquiredDate,
             lot.Quantity, lot.UnitCost, canonical[index].SecurityId,
             lot.HoldingPeriodStart < lot.AcquiredDate ? lot.HoldingPeriodStart : null)).ToArray();
-        var input = new LedgerTaxLotReliefInput(disposal.Account, saleDate, quantity, proceeds / quantity,
+        var input = new LedgerTaxLotReliefInput(disposal.Account, saleDate, quantity, salePrice,
             disposal.ReliefMethod, lots, financialAccountId: disposal.Account.FinancialAccountId,
             specificLotIds: disposal.ReliefMethod == LedgerTaxLotReliefMethod.SpecificId
                 ? history.Select(static lot => lot.LotId).ToArray() : null);
@@ -91,6 +101,16 @@ public static class CanonicalDisposalHistoryProjector
         var remainingEconomicResult = economicResult;
         var remainingResult = Math.Abs(economicResult);
         var remainingBasis = basis;
+        // Apply the retained allocator to certified basis directly: repricing unit costs would
+        // lose adjusted-basis fractional cents. Versioned discrete relief keeps main's sign bounds.
+        var signPreserving = disposal.ReliefMethod != LedgerTaxLotReliefMethod.AverageCost &&
+            disposal.ProceedsAllocationVersion == LedgerTaxLotReliefProjector.CurrentProceedsAllocationVersion;
+        var minimums = history.Select(lot => salePrice >= lot.UnitCost ? lot.CostBasis : 0m).ToArray();
+        var maximums = history.Select(lot => salePrice <= lot.UnitCost ? lot.CostBasis : proceeds).ToArray();
+        var remainingMinimum = minimums.Sum();
+        var remainingMaximum = maximums.Sum();
+        if (signPreserving && (proceeds < remainingMinimum || proceeds > remainingMaximum))
+            throw new LedgerValidationException("Retained canonical proceeds cannot preserve each parcel's economic result sign.");
         for (var index = 0; index < history.Count; index++)
         {
             var retained = history[index];
@@ -111,11 +131,21 @@ public static class CanonicalDisposalHistoryProjector
                 parcelResult = economicResult < 0m ? -result : result;
                 parcelProceeds = retained.CostBasis + parcelResult;
             }
+            else if (signPreserving)
+            {
+                remainingMinimum -= minimums[index];
+                remainingMaximum -= maximums[index];
+                var lower = Math.Max(minimums[index], remainingProceeds - remainingMaximum);
+                var upper = Math.Min(maximums[index], remainingProceeds - remainingMinimum);
+                parcelProceeds = Math.Clamp(Meridian.Contracts.Ledger.LedgerCurrencyRounding.RoundCurrency(
+                    retained.Quantity * salePrice), lower, upper);
+                parcelResult = parcelProceeds - retained.CostBasis;
+            }
             else
             {
                 parcelProceeds = index == history.Count - 1 ? remainingProceeds
                     : Math.Min(remainingProceeds, Meridian.Contracts.Ledger.LedgerCurrencyRounding.RoundCurrency(
-                        proceeds * (retained.Quantity / quantity)));
+                        retained.Quantity * salePrice));
                 parcelResult = parcelProceeds - retained.CostBasis;
             }
             if (index == history.Count - 1)

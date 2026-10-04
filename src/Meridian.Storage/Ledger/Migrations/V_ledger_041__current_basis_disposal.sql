@@ -1,4 +1,4 @@
--- W10-LOT-002 partial delivery. Ordinal 039 is reserved for PR #3048 amortization;
+-- W10-LOT-002 partial delivery. Ordinal 040 is reserved for PR #3048 amortization;
 -- preserve its cost convention when this migration is applied after that slice.
 -- Acquisition unit cost stays immutable. A canonical discrete disposal can relieve a
 -- different governed current basis, retained in the exact pre-relief lot snapshot.

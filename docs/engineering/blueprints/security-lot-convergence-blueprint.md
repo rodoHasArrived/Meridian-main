@@ -353,9 +353,9 @@ posted cost and journal lines without a currency-rounded unit-cost recalculation
 movements are supported when exactly representable in PostgreSQL's twelve-decimal numeric columns;
 unrepresentable quantities or functional relief amounts fail before posting rather than rounding.
 
-Migration `V_ledger_040` reserves ordinal 039 for the atomic amortization work in
+Migration `V_ledger_041` reserves ordinal 040 for the atomic amortization work in
 [PR #3048](https://github.com/rodoHasArrived/Meridian-main/pull/3048). Merge and deploy #3048 before
-this continuation so migration 039 cannot later replace the expanded disposal cost check. This
+this continuation so migration 040 cannot later replace the expanded disposal cost check. This
 slice preserves its amortization cost convention and accepts its governed current-basis projection;
 it does not claim delivery or certification of that separate draft.
 
