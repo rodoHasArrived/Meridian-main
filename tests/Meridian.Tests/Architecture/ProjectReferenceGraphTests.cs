@@ -315,6 +315,27 @@ public sealed class ProjectReferenceGraphTests
         Assert.Contains("Infrastructure -> Shared -> Storage", failure.Message);
     }
 
+    [Theory]
+    [InlineData("west%3B", "west")]
+    [InlineData("west%3B%3Beast", "west;east")]
+    public async Task EmptyEscapedFragments_ShouldMatch_RealMSBuildTask(string encoded, string expected)
+    {
+        using var fixture = new ProjectGraphFixture();
+        var storage = fixture.WriteProject("Storage");
+        fixture.WriteProject("Shared", $"""
+            <ItemGroup Condition="'$(Marker)' == '{expected}'"><ProjectReference Include="../Storage/Storage.csproj" /></ItemGroup>
+            <Target Name="Probe"><Error Condition="'$(Marker)' != '{expected}'" Text="Wrong empty fragments: $(Marker)" /></Target>
+            """);
+        var infrastructure = fixture.WriteProject("Infrastructure", $"""
+            <ItemGroup><ProjectReference Include="../Shared/Shared.csproj" AdditionalProperties="Marker={encoded}" /></ItemGroup>
+            <Target Name="Probe"><MSBuild Projects="@(ProjectReference)" Targets="Probe" /></Target>
+            """);
+        await AssertRealMSBuildProbeAsync(infrastructure);
+        var failure = await Assert.ThrowsAsync<TrueException>(() =>
+            ProjectReferenceGraph.AssertNoDependencyAsync(infrastructure, storage, "Release"));
+        Assert.Contains("Infrastructure -> Shared -> Storage", failure.Message);
+    }
+
     [Fact]
     public async Task TargetLevelRemovals_ShouldMatch_RealMSBuildTask()
     {
