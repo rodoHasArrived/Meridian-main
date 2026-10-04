@@ -34,7 +34,7 @@ flowchart LR
   W7_LIVE_001 --> W8_UX_CONSOL_001
   W8_WPF_PARITY_001["W8-WPF-PARITY-001\nW8 - in_progress / on_track"]
   W8_UX_CONSOL_001 --> W8_WPF_PARITY_001
-  W9_TRUTH_001["W9-TRUTH-001\nW9 - ready_for_acceptance / yellow"]
+  W9_TRUTH_001["W9-TRUTH-001\nW9 - accepted / green"]
   W8_WPF_PARITY_001 --> W9_TRUTH_001
   W9_DEMO_002["W9-DEMO-002\nW9 - done / green"]
   W9_TRUTH_001 --> W9_DEMO_002
@@ -66,7 +66,7 @@ flowchart LR
   W10_RECON_001 --> W10_PROV_001
   W10_RECON_002["W10-RECON-002\nW10 - planned / green"]
   W10_PROV_001 --> W10_RECON_002
-  W10_JRNL_001["W10-JRNL-001\nW10 - planned / green"]
+  W10_JRNL_001["W10-JRNL-001\nW10 - in_progress / green"]
   W10_RECON_002 --> W10_JRNL_001
   W10_TAX_001["W10-TAX-001\nW10 - planned / green"]
   W10_JRNL_001 --> W10_TAX_001

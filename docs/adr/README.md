@@ -2,7 +2,7 @@
 
 **Status:** supporting
 **Owner:** core-team
-**Reviewed:** 2026-07-19
+**Reviewed:** 2026-09-30
 
 Active architectural decisions are routed through:
 
@@ -14,7 +14,7 @@ Historical ADRs 001–016 were migrated to the archive during the documentation 
 archive-migration stubs that previously mirrored them here have been removed. Full historical ADR
 content is preserved in:
 
-- [ADR archive index](../../archive/docs/adr/README.md)
+- [ADR archive index](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/adr/README.md)
 
 This folder keeps only current material:
 
@@ -24,4 +24,5 @@ This folder keeps only current material:
 - [020-lifecycle-control-plane.md](020-lifecycle-control-plane.md)
 - [021-verified-operation-outcomes-and-case-history.md](021-verified-operation-outcomes-and-case-history.md)
 - [022-canonical-asset-class-homes.md](022-canonical-asset-class-homes.md)
+- [023-host-wide-provider-credential-ownership.md](023-host-wide-provider-credential-ownership.md) (Proposed)
 - [_template.md](_template.md) — template for authoring new ADRs

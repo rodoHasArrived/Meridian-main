@@ -37,6 +37,12 @@ The generator is the source of truth. Do not manually edit the generated files.
 
 This keeps orientation-first work separate from deeper implementation or tracing.
 
+For host tracing configuration or disconnected pipeline/backfill spans, start with
+[Distributed Tracing Operations](../../operators/distributed-tracing.md) and the
+[`Tracing` configuration contract](../../reference/appsettings-schema.md#tracing), then inspect
+`src/Meridian.Platform/Tracing/`, shared host composition under
+`src/Meridian.Application/Composition/`, and the pipeline/backfill owners in the source registry.
+
 ---
 
 ## MCP Surface

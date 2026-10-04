@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -136,7 +137,7 @@ public sealed class StatementImportCaseworkEvidenceTests : IDisposable
 
         committed.CaseCount.Should().Be(1);
         committed.BreakCount.Should().Be(1);
-        var artifacts = new FileStatementRunMatchArtifactStore(_root);
+        var artifacts = new FileStatementRunMatchArtifactStore(_root, new AtomicFileWriterAdapter());
         var retainedMatch = await artifacts.GetAsync(committed.RunId, ct);
         retainedMatch.Should().NotBeNull();
         retainedMatch!.MatchCount.Should().Be(2);
@@ -265,13 +266,13 @@ public sealed class StatementImportCaseworkEvidenceTests : IDisposable
         IInternalReconciliationPopulationProvider? populationProvider = null)
     {
         var imports = new JsonCanonicalStatementStore(_root);
-        return new StatementRunWorkflowService(imports, new JsonReconciliationCaseStore(_root),
-            new JsonReconciliationBreakStore(_root), new CsvBrokerStatementService(imports),
+        return new StatementRunWorkflowService(imports, new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()),
+            new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter()), new CsvBrokerStatementService(imports),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()),
             populationProvider ?? new RetainedBookPopulationProvider(populations ?? InternalReconciliationPopulations.Empty),
             IdentityReconciliationFxRateProvider.Instance, new InMemoryStatementToleranceProfileProvider(),
-            new FileStatementRunRecoveryRepository(_root), new FileStatementRunMatchArtifactStore(_root),
-            caseworkCommitStore: new FileStatementCaseworkCommitStore(_root));
+            new FileStatementRunRecoveryRepository(_root), new FileStatementRunMatchArtifactStore(_root, new AtomicFileWriterAdapter()),
+            caseworkCommitStore: new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter()));
     }
 
     private StatementImportService CreateImportService(StatementRunWorkflowService workflow)

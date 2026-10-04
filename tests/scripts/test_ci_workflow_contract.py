@@ -20,17 +20,24 @@ class CiWorkflowContractTests(unittest.TestCase):
             next_job = self.workflow.find("\n  ", next_job + 1)
         return self.workflow[start : next_job if next_job != -1 else None]
 
-    def test_legacy_evidence_jobs_do_not_duplicate_normal_pr_quality_gate(self) -> None:
+    def test_legacy_checks_have_single_canonical_owner(self) -> None:
         for job_name in ("dotnet", "browser-workstation", "source-doc-determinism"):
-            with self.subTest(job=job_name):
-                block = self._job_block(job_name)
-                self.assertIn("if: github.event_name != 'pull_request'", block)
+            self.assertNotIn(f"  {job_name}:", self.workflow)
+        script = (REPO_ROOT / "scripts/ci.sh").read_text(encoding="utf-8")
+        for check in ("Validate AI contract drift", "Validate provider-validation script tests",
+                      "Validate AI navigation freshness", "Validate AI handoff checklist schema",
+                      "Enforce mode escalation policy", "Enforce validation-floor guard",
+                      "Validate roadmap registry", "Validate source READMEs", "Scan source TODOs",
+                      "Workstation bundle freshness gate", "Reject whole-repo generated documentation drift"):
+            self.assertIn(check, script)
+        self.assertIn("--collect:\"XPlat Code Coverage\"", self.workflow)
+        self.assertIn("  merge_group:", self.workflow)
 
     def test_secret_scan_remains_pull_request_visible(self) -> None:
         secret_block = self._job_block("secret-scan")
 
         self.assertNotIn("if: github.event_name != 'pull_request'", secret_block)
-        self.assertIn("gitleaks/gitleaks-action@v3", secret_block)
+        self.assertIn("gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e", secret_block)
         self.assertIn('GITLEAKS_VERSION: "8.25.1"', secret_block)
 
 

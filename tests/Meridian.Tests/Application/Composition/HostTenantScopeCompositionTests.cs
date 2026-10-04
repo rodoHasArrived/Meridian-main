@@ -34,9 +34,8 @@ public sealed class HostTenantScopeCompositionTests : IDisposable
     }
 
     [Fact]
-    public async Task CoreOnlyHost_EnforcesTheConfiguredPostureAndTracksRetainedWorkerAuthority()
+    public async Task CoreOnlyHost_EnforcesStrictDefaultAndTracksRetainedWorkerAuthority()
     {
-        _environment.Set(TenantScopeEnforcementOptions.EnvironmentVariable, "fail-closed");
         var services = CreateCoreServices();
         using var provider = services.BuildServiceProvider();
         var posture = provider.GetRequiredService<TenantScopeEnforcementOptions>();
@@ -61,11 +60,25 @@ public sealed class HostTenantScopeCompositionTests : IDisposable
     }
 
     [Fact]
-    public void CoreOnlyHost_LeavesAnUnconfiguredDeploymentOnItsExistingBoundary()
+    public void CoreOnlyHost_RequiresAuthorityWhenNoPostureIsConfigured()
     {
         using var provider = CreateCoreServices().BuildServiceProvider();
-        provider.GetRequiredService<TenantScopeEnforcementOptions>().IsFailClosed.Should().BeFalse();
-        provider.GetRequiredService<IFundScopeTenantAccessor>().ResolveCallerTenant().Should().BeNull();
+        var options = provider.GetRequiredService<TenantScopeEnforcementOptions>();
+        var tenant = provider.GetRequiredService<IFundScopeTenantAccessor>().ResolveCallerTenant();
+        options.IsFailClosed.Should().BeTrue();
+        tenant.Should().BeNull();
+        TenantReadPredicate.ShouldRejectRead(tenant, options.Mode).Should().BeTrue();
+    }
+
+    [Fact]
+    public void CoreOnlyHost_AllowsExplicitDeploymentBoundaryDuringRetainedDataMigration()
+    {
+        _environment.Set(TenantScopeEnforcementOptions.EnvironmentVariable, "deployment-boundary");
+        using var provider = CreateCoreServices().BuildServiceProvider();
+        var options = provider.GetRequiredService<TenantScopeEnforcementOptions>();
+        var tenant = provider.GetRequiredService<IFundScopeTenantAccessor>().ResolveCallerTenant();
+        options.IsFailClosed.Should().BeFalse();
+        TenantReadPredicate.ShouldRejectRead(tenant, options.Mode).Should().BeFalse();
     }
 
     [Fact]
@@ -79,7 +92,6 @@ public sealed class HostTenantScopeCompositionTests : IDisposable
     [Fact]
     public void BrowserHost_UsesRequestAuthorityAndDoesNotBorrowWorkerAuthorityForATenantlessRequest()
     {
-        _environment.Set(TenantScopeEnforcementOptions.EnvironmentVariable, "fail-closed");
         var services = CreateCoreServices();
         var http = new HttpContextAccessor();
         services.AddSingleton<IHttpContextAccessor>(http);
@@ -99,6 +111,9 @@ public sealed class HostTenantScopeCompositionTests : IDisposable
             accessor.ResolveCallerTenant().Should().Be("request-tenant");
             http.HttpContext.Items.Clear();
             accessor.ResolveCallerTenant().Should().BeNull();
+            TenantReadPredicate.ShouldRejectRead(
+                accessor.ResolveCallerTenant(),
+                provider.GetRequiredService<TenantScopeEnforcementOptions>().Mode).Should().BeTrue();
             http.HttpContext = null;
             accessor.ResolveCallerTenant().Should().Be("worker-tenant");
         }

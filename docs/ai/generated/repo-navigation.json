@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-21T06:29:51Z",
+  "generatedAt": "2026-09-28T04:47:55Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -191,7 +191,7 @@
         "docs/ai/README.md",
         "docs/ai/ai-known-errors.md",
         "docs/ai/navigation/README.md",
-        "docs/development/wpf-web-ui-alignment-plan.md"
+        "docs/engineering/plans/wpf-web-ui-alignment-plan.md"
       ],
       "recommendedStart": "Meridian.Ui.Services",
       "docCoverageHint": "high"
@@ -1009,6 +1009,7 @@
       "projectReferences": [
         "Meridian.Contracts",
         "Meridian.Infrastructure",
+        "Meridian.Platform",
         "Meridian.Reporting",
         "Meridian.Storage",
         "Meridian.Ui.Shared"
@@ -1108,7 +1109,7 @@
         "Meridian.Workflow"
       ],
       "relatedDocs": [
-        "docs/development/wpf-web-ui-alignment-plan.md"
+        "docs/engineering/plans/wpf-web-ui-alignment-plan.md"
       ]
     },
     {
@@ -1353,7 +1354,7 @@
       ]
     },
     {
-      "path": "docs/development/wpf-web-ui-alignment-plan.md",
+      "path": "docs/engineering/plans/wpf-web-ui-alignment-plan.md",
       "title": "WPF web-UI alignment plan",
       "area": "ui",
       "whenToConsult": "When a task affects workflow-centric desktop or workspace experiences.",
@@ -1620,7 +1621,7 @@
         }
       ],
       "authoritativeDocs": [
-        "docs/development/wpf-web-ui-alignment-plan.md",
+        "docs/engineering/plans/wpf-web-ui-alignment-plan.md",
         "docs/ai/ai-known-errors.md"
       ],
       "recommendedSkill": "meridian-blueprint",
@@ -2225,324 +2226,324 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-approval.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T14:47:04Z",
-      "lastCommit": "9c01f3f42",
-      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-approval.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T14:47:04Z",
-      "lastCommit": "9c01f3f42",
-      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-certification.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T14:47:04Z",
-      "lastCommit": "9c01f3f42",
-      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-certification.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T14:47:04Z",
-      "lastCommit": "9c01f3f42",
-      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-distribution.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T14:47:04Z",
-      "lastCommit": "9c01f3f42",
-      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-distribution.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T14:47:04Z",
-      "lastCommit": "9c01f3f42",
-      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-publication.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T14:47:04Z",
-      "lastCommit": "9c01f3f42",
-      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-publication.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T14:47:04Z",
-      "lastCommit": "9c01f3f42",
-      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T06:33:31Z",
-      "lastCommit": "a693b3da2",
-      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "path": "src/Meridian.Strategies/README.md",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-09-28T00:40:02+00:00",
+      "lastCommit": "2d1621987",
+      "lastSummary": "docs: repair plain-text archive path mentions left by the 2026-09-11 cleanup",
       "touches": 3
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/lib/report-health.test.ts",
+      "path": "src/Meridian.Ui/dashboard/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T06:33:31Z",
-      "lastCommit": "a693b3da2",
-      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "lastModified": "2026-09-28T00:40:02+00:00",
+      "lastCommit": "2d1621987",
+      "lastSummary": "docs: repair plain-text archive path mentions left by the 2026-09-11 cleanup",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/lib/report-health.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T06:33:31Z",
-      "lastCommit": "a693b3da2",
-      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "path": "src/Meridian.Backtesting/README.md",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-09-28T00:40:02+00:00",
+      "lastCommit": "2d1621987",
+      "lastSummary": "docs: repair plain-text archive path mentions left by the 2026-09-11 cleanup",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.QuantScript/README.md",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-09-28T00:40:02+00:00",
+      "lastCommit": "2d1621987",
+      "lastSummary": "docs: repair plain-text archive path mentions left by the 2026-09-11 cleanup",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Execution/Adapters/PaperTradingGateway.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-09-25T19:49:41-07:00",
+      "lastCommit": "aff38fd00",
+      "lastSummary": "fix(paper): preserve fill bounds after tick rounding",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Execution/Adapters/PaperTradingGatewaySupport.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-09-25T19:49:41-07:00",
+      "lastCommit": "aff38fd00",
+      "lastSummary": "fix(paper): preserve fill bounds after tick rounding",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Execution/PaperTradingGateway.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-09-25T19:49:41-07:00",
+      "lastCommit": "aff38fd00",
+      "lastSummary": "fix(paper): preserve fill bounds after tick rounding",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Execution/README.md",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-09-25T19:49:41-07:00",
+      "lastCommit": "aff38fd00",
+      "lastSummary": "fix(paper): preserve fill bounds after tick rounding",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-09-25T18:37:15-07:00",
+      "lastCommit": "dcc87676c",
+      "lastSummary": "fix(reconciliation): retain provenance across save and replay",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-09-25T18:37:15-07:00",
+      "lastCommit": "dcc87676c",
+      "lastSummary": "fix(reconciliation): retain provenance across save and replay",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Identity/Application/UserProfileRegistry.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-lineage-summary.test.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T06:33:31Z",
-      "lastCommit": "a693b3da2",
-      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-lineage-summary.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T06:33:31Z",
-      "lastCommit": "a693b3da2",
-      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-datum.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T06:33:31Z",
-      "lastCommit": "a693b3da2",
-      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-datum.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T06:33:31Z",
-      "lastCommit": "a693b3da2",
-      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-impact.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T06:33:31Z",
-      "lastCommit": "a693b3da2",
-      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-impact.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T06:33:31Z",
-      "lastCommit": "a693b3da2",
-      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-materiality.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T06:33:31Z",
-      "lastCommit": "a693b3da2",
-      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-materiality.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T06:33:31Z",
-      "lastCommit": "a693b3da2",
-      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-provenance-adapter.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T06:33:31Z",
-      "lastCommit": "a693b3da2",
-      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-provenance-adapter.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T06:33:31Z",
-      "lastCommit": "a693b3da2",
-      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-trace.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T06:33:31Z",
-      "lastCommit": "a693b3da2",
-      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-trace.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-16T06:33:31Z",
-      "lastCommit": "a693b3da2",
-      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-15T16:30:17Z",
-      "lastCommit": "e3300a8a9",
-      "lastSummary": "Fix the formatting and generated-docs drift CI caught",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-15T16:20:05Z",
-      "lastCommit": "2af229a27",
-      "lastSummary": "Seed demo market history where the Data desk can read it",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-lifecycle.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-14T09:05:53Z",
-      "lastCommit": "3e18510a4",
-      "lastSummary": "fix(reporting): address the Codex review findings",
+      "path": "src/Meridian.Identity/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-lifecycle.ts",
+      "path": "src/Meridian.Ui.Shared/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-14T09:05:53Z",
-      "lastCommit": "3e18510a4",
-      "lastSummary": "fix(reporting): address the Codex review findings",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-production.test.ts",
+      "path": "src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-14T09:05:53Z",
-      "lastCommit": "3e18510a4",
-      "lastSummary": "fix(reporting): address the Codex review findings",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-production.ts",
+      "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-14T09:05:53Z",
-      "lastCommit": "3e18510a4",
-      "lastSummary": "fix(reporting): address the Codex review findings",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.production-surface.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-14T09:05:53Z",
-      "lastCommit": "3e18510a4",
-      "lastSummary": "fix(reporting): address the Codex review findings",
+      "path": "src/Meridian.Identity/Application/AuthenticationMode.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Identity/Application/LoginSessionService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Identity/Infrastructure/LoginSessionStoreLock.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian/UiServer.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.DataIntegration/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-25T14:10:07-07:00",
+      "lastCommit": "4302179dd",
+      "lastSummary": "Retain rotated OAuth tokens in both recovery generations",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.production-surface.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-14T09:05:53Z",
-      "lastCommit": "3e18510a4",
-      "lastSummary": "fix(reporting): address the Codex review findings",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Wpf/Services/PendingOperationsQueueService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-12T12:35:19Z",
-      "lastCommit": "3820d604d",
-      "lastSummary": "Bound the replay drain by both queues, and assert against a collection",
+      "path": "src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-25T14:10:07-07:00",
+      "lastCommit": "4302179dd",
+      "lastSummary": "Retain rotated OAuth tokens in both recovery generations",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-production-surface.test.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-12T11:42:37Z",
-      "lastCommit": "78c21baf3",
-      "lastSummary": "feat(reporting): model the reporting workstation as a production pipeline",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-production-surface.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-12T11:42:37Z",
-      "lastCommit": "78c21baf3",
-      "lastSummary": "feat(reporting): model the reporting workstation as a production pipeline",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/report-change-since-review.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-12T11:42:37Z",
-      "lastCommit": "78c21baf3",
-      "lastSummary": "feat(reporting): model the reporting workstation as a production pipeline",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/report-change-since-review.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-12T11:42:37Z",
-      "lastCommit": "78c21baf3",
-      "lastSummary": "feat(reporting): model the reporting workstation as a production pipeline",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-period-object.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-12T11:42:37Z",
-      "lastCommit": "78c21baf3",
-      "lastSummary": "feat(reporting): model the reporting workstation as a production pipeline",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-period-object.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-12T11:42:37Z",
-      "lastCommit": "78c21baf3",
-      "lastSummary": "feat(reporting): model the reporting workstation as a production pipeline",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Wpf/Controls/DataConfidenceIndicator.xaml",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-12T11:24:39Z",
-      "lastCommit": "e4cf27a99",
-      "lastSummary": "Drop the click affordance when the explanation command cannot execute",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.IBApi.cs",
+      "path": "src/Meridian.Storage/README.md",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-12T10:47:02Z",
-      "lastCommit": "404211a4a",
-      "lastSummary": "End depth-exchange liveness when the vendor rejects the submission",
-      "touches": 5
+      "lastModified": "2026-09-23T10:07:54-07:00",
+      "lastCommit": "ee60700ff",
+      "lastSummary": "fix: ignore storage-root dates during Parquet conversion",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Storage/Services/ParquetConversionService.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-23T10:07:54-07:00",
+      "lastCommit": "ee60700ff",
+      "lastSummary": "fix: ignore storage-root dates during Parquet conversion",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-23T09:37:58-07:00",
+      "lastCommit": "db08ddece",
+      "lastSummary": "Fix dated-root historical reads and refresh W10 certification controls",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Contracts/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FSharp/Domain/SecurityMaster.fs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FSharp/Domain/SecurityMasterCommands.fs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FSharp/Interop.SecurityMaster.fs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FSharp/README.md",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/ILedgerJournalStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-23T00:03:37+00:00",
+      "lastCommit": "f6df84d03",
+      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLots.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-23T00:03:37+00:00",
+      "lastCommit": "f6df84d03",
+      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-09-23T00:03:37+00:00",
+      "lastCommit": "f6df84d03",
+      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-23T00:03:37+00:00",
+      "lastCommit": "f6df84d03",
+      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-23T00:03:37+00:00",
+      "lastCommit": "f6df84d03",
+      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-23T00:03:37+00:00",
+      "lastCommit": "f6df84d03",
+      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-23T00:03:37+00:00",
+      "lastCommit": "f6df84d03",
+      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
+      "touches": 1
     }
   ],
   "recentChangesWindowDays": 14,

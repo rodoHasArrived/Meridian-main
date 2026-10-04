@@ -129,8 +129,8 @@ curl http://localhost:8080/api/workstation/reconciliation/margin-control
 
 ## Migration source
 
-- Legacy source: [archive/docs/operations/reconciliation-operations.md](../../archive/docs/operations/reconciliation-operations.md)  
-- Archive copy: [archive/docs/operations/reconciliation-operations.md](../../archive/docs/operations/reconciliation-operations.md)
+- Legacy source: [archive/docs/operations/reconciliation-operations.md](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/reconciliation-operations.md)  
+- Archive copy: [archive/docs/operations/reconciliation-operations.md](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/reconciliation-operations.md)
 
 ## Reconciliation SLA calendar configuration
 

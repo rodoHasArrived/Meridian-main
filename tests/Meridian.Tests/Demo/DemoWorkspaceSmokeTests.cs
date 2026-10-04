@@ -6,10 +6,20 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Meridian.Application.Composition;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Configuration;
+using Meridian.Contracts.Tenancy;
 using Meridian.Identity.Auth;
 using Meridian.Storage;
+using Meridian.Storage.AssetOperations;
+using Meridian.Storage.Banking;
+using Meridian.Storage.DirectLending;
+using Meridian.Storage.FundAccounts;
+using Meridian.Storage.FundStructure;
+using Meridian.Storage.Ledger;
+using Meridian.Storage.MoneyMarket;
+using Meridian.Storage.SecurityMaster;
 using Meridian.TestSupport;
 using Meridian.Tests.TestSupport;
 using Meridian.Ui.Shared.Endpoints;
@@ -82,6 +92,7 @@ public sealed class DemoWorkspaceSmokeTests : IAsyncLifetime
             "MDC_PASSWORD_HASH",
             "MDC_USERS",
             "MDC_DISABLE_RATE_LIMIT",
+            TenantScopeEnforcementOptions.EnvironmentVariable,
             "MERIDIAN_USE_INMEMORY_GOVERNANCE",
             DemoWorkspaceLayout.DemoModeEnvironmentVariable,
             "DOTNET_ENVIRONMENT",
@@ -103,6 +114,7 @@ public sealed class DemoWorkspaceSmokeTests : IAsyncLifetime
         Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", null);
         Environment.SetEnvironmentVariable("MDC_USERS", null);
         Environment.SetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT", "true");
+        Environment.SetEnvironmentVariable(TenantScopeEnforcementOptions.EnvironmentVariable, "fail-closed");
         Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", "true");
         Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, "true");
         Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Test");
@@ -145,12 +157,28 @@ public sealed class DemoWorkspaceSmokeTests : IAsyncLifetime
 
         _app = builder.Build();
         _providerCatalogLease = ProviderCatalogTestLease.Capture(_app.Services);
+        await EnsureDatabaseSchemasReadyAsync(_app.Services);
         _app.UseLoginSessionAuthentication();
         _app.MapWorkstationEndpoints(ServerJsonOptions);
         _app.MapFirstRunEndpoints();
 
         await _app.StartAsync();
         _client = _app.GetTestClient();
+    }
+
+    [Fact]
+    public async Task TenantStartup_InspectsMigratedSchemasWithFailClosedGuardEnabled()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        _app!.Services.GetRequiredService<TenantScopeEnforcementOptions>().IsFailClosed.Should().BeTrue();
+        _app.Services.GetServices<IHostedService>().OfType<TenantCutoverGuardService>()
+            .Should().ContainSingle();
+
+        var readiness = await _app.Services.GetRequiredService<ITenantCutoverReadinessCheck>()
+            .InspectAsync(timeout.Token);
+
+        readiness.IsReady.Should().BeTrue();
+        readiness.Findings.Should().BeEmpty();
     }
 
     [Theory]
@@ -336,6 +364,48 @@ public sealed class DemoWorkspaceSmokeTests : IAsyncLifetime
             "demo_money_market");
     }
 
+    private static async Task EnsureDatabaseSchemasReadyAsync(IServiceProvider services)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+        var ct = timeout.Token;
+        var readiness = services.GetRequiredService<DatabaseMigrationReadinessReceipt>();
+
+        // Schema scopes reserve names; they do not create tables. This direct TestServer host
+        // does not run HostStartup's database initialization, even when ambient certification
+        // connections select PostgreSQL adapters. Migrate the registered fixture schemas in
+        // production dependency order before the unchanged tenant-startup guard inspects them.
+        if (services.GetService<LedgerMigrationRunner>() is { } ledger)
+        {
+            await ledger.EnsureMigratedAsync(ct);
+            readiness.MarkLedgerReady();
+        }
+        if (services.GetService<SecurityMasterMigrationRunner>() is { } securityMaster)
+            await securityMaster.EnsureMigratedAsync(ct);
+        if (services.GetService<DirectLendingMigrationRunner>() is { } directLending)
+            await directLending.EnsureMigratedAsync(ct);
+        if (services.GetService<AssetOperationsMigrationRunner>() is { } assetOperations)
+            await assetOperations.EnsureMigratedAsync(ct);
+
+        // This fixture seeds file-backed demo records, not legacy customer snapshots for a
+        // database cutover. Run schema-only migrations here: the production startup helpers
+        // also import those files as unattributed legacy data, which correctly refuses strict
+        // tenant startup until a reviewed backfill. Never bypass that guard for demo tests.
+        if (services.GetService<FundAccountStoreOptions>() is { } fundAccounts)
+        {
+            await new FundAccountMigrationRunner(fundAccounts).EnsureMigratedAsync(ct);
+            readiness.MarkFundAccountsReady();
+        }
+        if (services.GetService<FundStructureStoreOptions>() is { } fundStructure)
+        {
+            await new FundStructureMigrationRunner(fundStructure).EnsureMigratedAsync(ct);
+            readiness.MarkFundStructureReady();
+        }
+        if (services.GetService<BankingStoreOptions>() is { } banking)
+            await new BankingMigrationRunner(banking).EnsureMigratedAsync(ct);
+        if (services.GetService<MoneyMarketStoreOptions>() is { } moneyMarket)
+            await new MoneyMarketMigrationRunner(moneyMarket).EnsureMigratedAsync(ct);
+    }
+
     private async Task AddDatabaseSchemaScopeAsync(
         string connectionStringEnvironmentVariable,
         string schemaEnvironmentVariable,
@@ -388,6 +458,8 @@ public sealed class DemoWorkspaceSmokeFixtureLifecycleTests
             Environment.GetEnvironmentVariable("MERIDIAN_REPORTING_CONNECTION_STRING");
         var originalDirectLendingConnection =
             Environment.GetEnvironmentVariable("MERIDIAN_DIRECT_LENDING_CONNECTION_STRING");
+        var originalTenantEnforcement =
+            Environment.GetEnvironmentVariable(TenantScopeEnforcementOptions.EnvironmentVariable);
         var fixture = new DemoWorkspaceSmokeTests();
 
         try
@@ -395,6 +467,8 @@ public sealed class DemoWorkspaceSmokeFixtureLifecycleTests
             await fixture.InitializeAsync();
             Environment.GetEnvironmentVariable("MERIDIAN_REPORTING_CONNECTION_STRING")
                 .Should().Be(" ");
+            Environment.GetEnvironmentVariable(TenantScopeEnforcementOptions.EnvironmentVariable)
+                .Should().Be("fail-closed");
 
             await fixture.DisposeAsync();
 
@@ -406,6 +480,8 @@ public sealed class DemoWorkspaceSmokeFixtureLifecycleTests
                 .Should().Be(originalReportingConnection);
             Environment.GetEnvironmentVariable("MERIDIAN_DIRECT_LENDING_CONNECTION_STRING")
                 .Should().Be(originalDirectLendingConnection);
+            Environment.GetEnvironmentVariable(TenantScopeEnforcementOptions.EnvironmentVariable)
+                .Should().Be(originalTenantEnforcement);
         }
         finally
         {

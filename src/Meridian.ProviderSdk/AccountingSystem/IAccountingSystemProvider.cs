@@ -38,4 +38,8 @@ public sealed record AccountingSystemConnectionVerificationResult(
     string? ExternalCompanyId,
     string? LastError,
     DateTimeOffset? VerifiedAtUtc,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings)
+{
+    /// <summary>Opaque generation that must still be current when recording this result.</summary>
+    public string? ExpectedCredentialGeneration { get; init; }
+}

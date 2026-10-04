@@ -4,6 +4,7 @@ using System.Text.Json;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Core.IO;
+using Meridian.Core.ReferenceData;
 using Meridian.Domain.Reconciliation;
 using Meridian.Storage.Archival;
 
@@ -150,6 +151,7 @@ public sealed class StatementImportService(
                 suggestions: []);
         }
 
+        parse = RequireCurrencyEvidence(parse);
         var profile = await catalog.FindAsync(parse.ProfileId, ct).ConfigureAwait(false);
         if (profile is not null && StatementMappingProfileCatalog.CheckDrift(profile, parse.Fingerprint) is { } drift)
         {
@@ -205,6 +207,7 @@ public sealed class StatementImportService(
                 $"Statement cannot be imported: {Describe(_ingressLimits.TooManyRecords())}");
         }
 
+        parse = RequireCurrencyEvidence(parse);
         if (parse.HasErrors)
         {
             var errors = parse.Issues
@@ -466,6 +469,7 @@ public sealed class StatementImportService(
         // StatementImportValidationResult.Errors is a string list, not issue objects, so the code has to
         // travel inside the text here exactly as it does in the commit throws. Preview is the only path
         // that returns StatementImportIssueDto with Code as its own field.
+        parse = RequireCurrencyEvidence(parse);
         var errors = parse.Issues
             .Where(static issue => string.Equals(issue.Severity, StatementParseIssue.ErrorSeverity, StringComparison.OrdinalIgnoreCase))
             .Select(Describe)
@@ -500,6 +504,23 @@ public sealed class StatementImportService(
         }
 
         return await fetching.FetchAsync(request, ct).ConfigureAwait(false);
+    }
+
+    private static StatementParseResult RequireCurrencyEvidence(StatementParseResult parse)
+    {
+        foreach (var record in parse.Records)
+        {
+            if (!CurrencyCodeCatalog.TryNormalizeRecognized(record.Currency, out _))
+            {
+                return parse with
+                {
+                    Issues = [.. parse.Issues, StatementParseIssue.Error(
+                        "ROW_INVALID_CURRENCY", "Rows require explicit recognized currency evidence before import.", field: "Currency")]
+                };
+            }
+        }
+
+        return parse;
     }
 
     private static void EnsureParsedAccountAuthority(

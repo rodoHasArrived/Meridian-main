@@ -44,7 +44,15 @@ class CentralPackageVersionTests(unittest.TestCase):
 
         for package in packages:
             with self.subTest(package=package):
-                self.assertEqual(self.versions[package], "10.0.7")
+                expected = "10.0.12" if package in {
+                    "Microsoft.Extensions.Configuration",
+                    "Microsoft.Extensions.DependencyInjection.Abstractions",
+                    "Microsoft.Extensions.Logging.Abstractions",
+                    "Microsoft.Extensions.Options",
+                } else "10.0.7"
+                self.assertEqual(self.versions[package], expected)
+
+        self.assertEqual(self.versions["Microsoft.Extensions.ObjectPool"], "10.0.12")
 
     def test_json_stack_pins_match_system_text_json_transitives(self) -> None:
         self.assertEqual(self.versions["System.Text.Json"], "10.0.7")

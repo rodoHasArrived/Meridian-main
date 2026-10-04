@@ -138,7 +138,7 @@ For AI tooling, Codex skill, Codex catalog, prompt, docs automation, or assistan
 
 - Required: run the direct Python/script checks that back the relevant Make targets. If GNU Make is
   installed, `make ai-verify` and `make ai-arch-check` are acceptable wrappers. Confirm the CI
-  `Validate AI contract drift` step remains present.
+  `Validate AI contract drift` check remains in the canonical `scripts/ci.sh` docs lane.
 - Required for Codex memory changes: `python build/scripts/docs/check-codex-memory.py --summary`.
 - Advisory: `make ai-audit*`, `make ai-report`, `make ai-docs-freshness`,
   `make ai-docs-drift`, `make ai-docs-sync-report`, `make ai-arch-check-summary`,
@@ -173,3 +173,11 @@ For AI tooling, Codex skill, Codex catalog, prompt, docs automation, or assistan
 **Residual Risk**
 - <real remaining blocker or gap>
 ```
+
+CI/CD validation ownership and administrator rollout are maintained in
+[CI/CD ownership and rollout](../../../docs/engineering/ci-cd-optimization.md). Meridian CI owns the four canonical
+`scripts/ci.sh` lanes; legacy CI owns Secret Scan and nightly/manual coverage.
+The four-lane `Meridian CI / quality-gate` keeps its identity. The always-reported
+`Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with
+Production Certification, including pull requests and merge groups.
+All CI governance changes require human review.

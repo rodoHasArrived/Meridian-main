@@ -1,6 +1,6 @@
 # Archived Legacy Plan: research-backtest-trust-and-velocity-blueprint
 
-This plan has been migrated to [research-backtest-trust-and-velocity-blueprint.md](../../archive/docs/plans/research-backtest-trust-and-velocity-blueprint.md).
+This plan has been migrated to [research-backtest-trust-and-velocity-blueprint.md](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/research-backtest-trust-and-velocity-blueprint.md).
  It is now a source-material archive with replacement pointers in the canonical documentation lanes.
 
 **Status:** archive-migration-stub

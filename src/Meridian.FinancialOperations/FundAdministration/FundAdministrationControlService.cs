@@ -14,6 +14,10 @@ namespace Meridian.FinancialOperations.FundAdministration;
 /// State is held in-memory behind a single lock, matching the repository's in-memory service
 /// convention. The same <see cref="FundAdministrationEventLog"/> can be shared with the middle-office
 /// service so postings, locks, reopens, exports, and deliveries land in one governance chain.
+/// This primitive is not the production recurring runner's authority. Production recurring
+/// definitions and occurrence claims use <see cref="IRecurringJournalStore"/>; period authority
+/// is resolved separately from the durable ledger store. Never infer an open period from this
+/// service's empty in-memory period collection after restart.
 /// </remarks>
 public sealed class FundAdministrationControlService
 {

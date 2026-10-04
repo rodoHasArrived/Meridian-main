@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Contracts.FundStructure;
 using Npgsql;
+using NpgsqlTypes;
 
 namespace Meridian.Storage.FundStructure;
 
@@ -678,23 +679,31 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         await UpsertOwnershipLinkAsync(conn, transaction: null, dto, ct).ConfigureAwait(false);
     }
 
+    public async Task UpsertOwnershipLinkAsync(OwnershipLinkDto dto, string? tenantId, CancellationToken ct)
+    {
+        await using var conn = await OpenAsync(ct).ConfigureAwait(false);
+        await UpsertOwnershipLinkAsync(conn, transaction: null, dto, ct, tenantId).ConfigureAwait(false);
+    }
+
     private async Task UpsertOwnershipLinkAsync(
         NpgsqlConnection conn,
         NpgsqlTransaction? transaction,
         OwnershipLinkDto dto,
-        CancellationToken ct)
+        CancellationToken ct, string? tenantId = null)
     {
         await using var cmd = conn.CreateCommand();
         cmd.Transaction = transaction;
         cmd.CommandText = $@"INSERT INTO {Q("ownership_link")}
                 (ownership_link_id, parent_node_id, child_node_id, relationship_type,
-                 ownership_percent, is_primary, effective_from, effective_to, notes, updated_at)
-            VALUES (@id, @parent, @child, @rel_type, @pct, @primary, @eff_from, @eff_to, @notes, now())
+                 ownership_percent, is_primary, effective_from, effective_to, notes, updated_at, tenant_id)
+            VALUES (@id, @parent, @child, @rel_type, @pct, @primary, @eff_from, @eff_to, @notes, now(), @tenant)
             ON CONFLICT (ownership_link_id) DO UPDATE SET
                 parent_node_id = EXCLUDED.parent_node_id, child_node_id = EXCLUDED.child_node_id,
                 relationship_type = EXCLUDED.relationship_type, ownership_percent = EXCLUDED.ownership_percent,
                 is_primary = EXCLUDED.is_primary, effective_from = EXCLUDED.effective_from,
-                effective_to = EXCLUDED.effective_to, notes = EXCLUDED.notes, updated_at = now()";
+                effective_to = EXCLUDED.effective_to, notes = EXCLUDED.notes, updated_at = now()
+            WHERE @tenant IS NULL OR lower(trim(ownership_link.tenant_id)) = lower(trim(@tenant))";
+        cmd.Parameters.AddWithValue("tenant", NpgsqlDbType.Text, (object?)tenantId ?? DBNull.Value);
         cmd.Parameters.AddWithValue("id", dto.OwnershipLinkId);
         cmd.Parameters.AddWithValue("parent", dto.ParentNodeId);
         cmd.Parameters.AddWithValue("child", dto.ChildNodeId);
@@ -704,7 +713,8 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         cmd.Parameters.AddWithValue("eff_from", dto.EffectiveFrom);
         cmd.Parameters.AddWithValue("eff_to", dto.EffectiveTo.HasValue ? (object)dto.EffectiveTo.Value : DBNull.Value);
         cmd.Parameters.AddWithValue("notes", (object?)dto.Notes ?? DBNull.Value);
-        await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        if (await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false) != 1)
+            throw new Meridian.Contracts.Tenancy.TenantScopeRejectedException("a fund-structure link outside the caller's tenant");
     }
 
     public async Task<IReadOnlyList<OwnershipLinkDto>> GetAllOwnershipLinksAsync(CancellationToken ct = default)
@@ -736,23 +746,31 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         await UpsertAssignmentAsync(conn, transaction: null, dto, ct).ConfigureAwait(false);
     }
 
+    public async Task UpsertAssignmentAsync(FundStructureAssignmentDto dto, string? tenantId, CancellationToken ct)
+    {
+        await using var conn = await OpenAsync(ct).ConfigureAwait(false);
+        await UpsertAssignmentAsync(conn, transaction: null, dto, ct, tenantId).ConfigureAwait(false);
+    }
+
     private async Task UpsertAssignmentAsync(
         NpgsqlConnection conn,
         NpgsqlTransaction? transaction,
         FundStructureAssignmentDto dto,
-        CancellationToken ct)
+        CancellationToken ct, string? tenantId = null)
     {
         await using var cmd = conn.CreateCommand();
         cmd.Transaction = transaction;
         cmd.CommandText = $@"INSERT INTO {Q("fund_structure_assignment")}
                 (assignment_id, node_id, assignment_type, assignment_reference,
-                 effective_from, effective_to, is_primary, updated_at)
-            VALUES (@id, @node_id, @type, @ref, @eff_from, @eff_to, @primary, now())
+                 effective_from, effective_to, is_primary, updated_at, tenant_id)
+            VALUES (@id, @node_id, @type, @ref, @eff_from, @eff_to, @primary, now(), @tenant)
             ON CONFLICT (assignment_id) DO UPDATE SET
                 node_id = EXCLUDED.node_id, assignment_type = EXCLUDED.assignment_type,
                 assignment_reference = EXCLUDED.assignment_reference,
                 effective_from = EXCLUDED.effective_from, effective_to = EXCLUDED.effective_to,
-                is_primary = EXCLUDED.is_primary, updated_at = now()";
+                is_primary = EXCLUDED.is_primary, updated_at = now()
+            WHERE @tenant IS NULL OR lower(trim(fund_structure_assignment.tenant_id)) = lower(trim(@tenant))";
+        cmd.Parameters.AddWithValue("tenant", NpgsqlDbType.Text, (object?)tenantId ?? DBNull.Value);
         cmd.Parameters.AddWithValue("id", dto.AssignmentId);
         cmd.Parameters.AddWithValue("node_id", dto.NodeId);
         cmd.Parameters.AddWithValue("type", dto.AssignmentType);
@@ -760,7 +778,8 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         cmd.Parameters.AddWithValue("eff_from", dto.EffectiveFrom);
         cmd.Parameters.AddWithValue("eff_to", dto.EffectiveTo.HasValue ? (object)dto.EffectiveTo.Value : DBNull.Value);
         cmd.Parameters.AddWithValue("primary", dto.IsPrimary);
-        await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        if (await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false) != 1)
+            throw new Meridian.Contracts.Tenancy.TenantScopeRejectedException("a fund-structure assignment outside the caller's tenant");
     }
 
     public async Task<IReadOnlyList<FundStructureAssignmentDto>> GetAllAssignmentsAsync(CancellationToken ct = default)

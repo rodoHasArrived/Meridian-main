@@ -39,8 +39,8 @@ Initial evidence pointers:
 - Data package lifecycle controls (create/list/validate/import/delete) and path-containment protections.
 
 Initial evidence pointers:
-- `archive/docs/operations/reconciliation-operations.md`
-- `archive/docs/operations/reconciliation-runbook.md`
+- [`archive/docs/operations/reconciliation-operations.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/reconciliation-operations.md)
+- [`archive/docs/operations/reconciliation-runbook.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/reconciliation-runbook.md)
 - `docs/operators/reconciliation-operations.md`
 - `docs/operators/deployment-packaging.md`
 - `docs/operators/fund-ops-persistence-cutover.md`
@@ -67,8 +67,8 @@ Initial evidence pointers:
 Initial evidence pointers:
 - `docs/development/build-observability.md`
 - `docs/development/documentation-automation.md`
-- `archive/docs/operations/deployment.md`
-- `archive/docs/operations/msix-packaging.md`
+- [`archive/docs/operations/deployment.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/deployment.md)
+- [`archive/docs/operations/msix-packaging.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/msix-packaging.md)
 - `docs/status/doc-health-dashboard.md`
 
 ## Out-of-Scope (Current Program Iteration)

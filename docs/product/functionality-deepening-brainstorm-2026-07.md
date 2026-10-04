@@ -33,7 +33,7 @@
 This snapshot was written against the 2026-07-28 tree. Pull-request review (Copilot and Codex,
 2026-08-05) plus re-verification against current source surfaced two kinds of drift, corrected
 in place throughout the document and summarized here. The W10 depth slate
-([`w10-depth-slate-2026-07.md`](w10-depth-slate-2026-07.md), `W10-MARK-001`…`W10-CONSOL-001`)
+([`w10-depth-slate-2026-07.md`](plans/w10-depth-slate-2026-07.md), `W10-MARK-001`…`W10-CONSOL-001`)
 now owns live sequencing for much of this territory; treat this document as grounding and
 rationale, not as the current backlog.
 

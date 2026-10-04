@@ -672,6 +672,7 @@ def check_catalog_drift(root: Path, inventory: Sequence[InventoryItem]) -> list[
 
     findings.extend(check_legacy_canonical_links(root, inventory))
     findings.extend(check_compact_assistant_guides(root))
+    findings.extend(check_shared_project_context(root))
     findings.extend(check_ui_platform_policy(root))
     findings.extend(check_stale_operator_surface_language(root, inventory))
     findings.extend(check_missing_workflow_references(root))
@@ -850,6 +851,78 @@ def check_compact_assistant_guides(root: Path) -> list[Finding]:
                 message=(
                     f"{rel_path} embeds a full repository tree; link to generated navigation or "
                     "repository-structure sources instead of duplicating broad layout context."
+                ),
+            )
+        )
+
+    return findings
+
+
+SHARED_CONTEXT_CANONICAL = ".claude/skills/_shared/project-context.md"
+SHARED_CONTEXT_MIRRORS = (
+    ".codex/skills/_shared/project-context.md",
+    ".agents/skills/_shared/project-context.md",
+)
+SHARED_CONTEXT_BEGIN = "<!-- shared-context:begin"
+SHARED_CONTEXT_END = "<!-- shared-context:end -->"
+
+
+def extract_shared_context(text: str) -> str | None:
+    """Return the marker-delimited shared section, or None when either marker is missing."""
+    start = text.find(SHARED_CONTEXT_BEGIN)
+    end = text.find(SHARED_CONTEXT_END)
+    if start < 0 or end < start:
+        return None
+    return text[start : end + len(SHARED_CONTEXT_END)]
+
+
+def check_shared_project_context(root: Path) -> list[Finding]:
+    """Report missing host copies or shared sections that drift from the canonical copy."""
+    canonical_path = root / SHARED_CONTEXT_CANONICAL
+    if not canonical_path.is_file():
+        return []
+
+    canonical = extract_shared_context(
+        canonical_path.read_text(encoding="utf-8", errors="replace").replace("\r\n", "\n")
+    )
+    if canonical is None:
+        # The markers opt the copies into this check; without them there is no shared section to compare.
+        return []
+
+    findings: list[Finding] = []
+    for rel_path in SHARED_CONTEXT_MIRRORS:
+        path = root / rel_path
+        if not path.is_file():
+            findings.append(
+                Finding(
+                    severity="drift",
+                    surface="agent-skills-compatible-hosts",
+                    kind="shared-project-context",
+                    name=path.name,
+                    path=rel_path,
+                    expected_doc=SHARED_CONTEXT_CANONICAL,
+                    message=(
+                        f"{rel_path} is missing; restore the required mirror with the shared section "
+                        f"from {SHARED_CONTEXT_CANONICAL}."
+                    ),
+                )
+            )
+            continue
+        mirror = extract_shared_context(path.read_text(encoding="utf-8", errors="replace").replace("\r\n", "\n"))
+        if mirror == canonical:
+            continue
+        reason = "is missing its shared-context markers" if mirror is None else "has a shared section that differs"
+        findings.append(
+            Finding(
+                severity="drift",
+                surface="agent-skills-compatible-hosts",
+                kind="shared-project-context",
+                name=path.name,
+                path=rel_path,
+                expected_doc=SHARED_CONTEXT_CANONICAL,
+                message=(
+                    f"{rel_path} {reason} from {SHARED_CONTEXT_CANONICAL}; copy the canonical shared "
+                    "section and keep host-specific guidance after the end marker."
                 ),
             )
         )

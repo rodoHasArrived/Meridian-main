@@ -18,7 +18,7 @@ do_not_edit: true
 
 # Roadmap Summary
 
-Snapshot date: 2026-09-26
+Snapshot date: 2026-10-02
 
 | ID | Title | Status | Health | Priority | Owner lane |
 | --- | --- | --- | --- | --- | --- |
@@ -40,7 +40,7 @@ Snapshot date: 2026-09-26
 | W7-LIVE-001 | Live-readiness governance | done | green | medium | Accounting and Ledger |
 | W8-UX-CONSOL-001 | Browser workstation screen consolidation | in_progress | on_track | medium | Workstation Shell and UX |
 | W8-WPF-PARITY-001 | WPF desktop workstation reactivation and web-UI parity | in_progress | on_track | high | Desktop Workstation |
-| W9-TRUTH-001 | Loud fail-closed handling of simulated data and in-memory persistence | ready_for_acceptance | yellow | critical | Data Confidence and Validation |
+| W9-TRUTH-001 | Loud fail-closed handling of simulated data and in-memory persistence | accepted | green | critical | Data Confidence and Validation |
 | W9-DEMO-002 | One-command seeded demo with durable storage | done | green | critical | Workstation Shell and UX |
 | W9-PAPER-003 | Paper-trading realism with limit/stop matching and costs | accepted | green | critical | Execution and Fund Accounts |
 | W9-ALPACA-004 | Alpaca fill streaming into order and ledger state | accepted | green | high | Execution and Fund Accounts |
@@ -56,7 +56,7 @@ Snapshot date: 2026-09-26
 | W10-RECON-001 | Durable break lineage identity and run-over-run break diff | in_progress | yellow | high | Accounting and Ledger |
 | W10-PROV-001 | Ledger-amount evidence subject and shared proof drawer | planned | green | high | Workstation Shell and UX |
 | W10-RECON-002 | Break clustering and bulk-resolution activation | planned | green | high | Accounting and Ledger |
-| W10-JRNL-001 | Durable recurring journal schedules and draft runner | planned | green | high | Accounting and Ledger |
+| W10-JRNL-001 | Durable recurring journal schedules and draft runner | in_progress | green | high | Accounting and Ledger |
 | W10-TAX-001 | Tax character, wash-sale, and lot-relief operator surface | planned | green | high | Accounting and Ledger |
 | W10-SEAM-001 | Unified close-readiness projection behind one shared contract | in_progress | green | high | Workstation Shell and UX |
 | W10-RECON-003 | Unified tolerance model and what-if replay workbench | planned | green | medium | Accounting and Ledger |

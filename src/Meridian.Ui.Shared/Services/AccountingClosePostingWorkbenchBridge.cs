@@ -1174,7 +1174,7 @@ public sealed class AccountingClosePostingWorkbenchBridge :
         // Retain the exact reopen intent before changing the durable period. If the ledger reopen
         // succeeds but reversal creation is interrupted, the SoftClosed period and this receipt
         // form an explicit recoverable state: only an exact command replay may continue.
-        await RetainReopenIntentAsync(
+        var originalPeriodVersion = await RetainReopenIntentAsync(
                 context,
                 scope.FundProfileId,
                 period,
@@ -1239,7 +1239,7 @@ public sealed class AccountingClosePostingWorkbenchBridge :
                         ? await governedLifecycle.ReverseCloseLockedClosingEntryForGovernedReopenAsync(
                                 lifecycleRequest,
                                 period.PeriodId,
-                                period.Version,
+                                originalPeriodVersion,
                                 BuildReopenCommandHash(context, period.PeriodId, command),
                                 ct)
                             .ConfigureAwait(false)
@@ -1314,7 +1314,7 @@ public sealed class AccountingClosePostingWorkbenchBridge :
         };
     }
 
-    private async Task RetainReopenIntentAsync(
+    private async Task<long> RetainReopenIntentAsync(
         AccountingClosePostingContext context,
         string fundProfileId,
         LedgerPeriodDto period,
@@ -1342,17 +1342,22 @@ public sealed class AccountingClosePostingWorkbenchBridge :
                 allowCreate: period.Status == LedgerPeriodStatusDto.HardClosed,
                 ct)
             .ConfigureAwait(false);
-        if (retention == CloseReopenReceiptRetention.Conflict)
+        if (retention.State == CloseReopenReceiptRetention.Conflict)
         {
             throw new InvalidOperationException(
                 "The retained governed reopen intent does not match this actor, correlation, reason, approval, and evidence; retry is rejected.");
         }
 
-        if (retention == CloseReopenReceiptRetention.Missing)
+        if (retention.State == CloseReopenReceiptRetention.Missing)
         {
             throw new InvalidOperationException(
                 "The ledger period is already soft-closed without a retained governed reopen intent; retry fails closed.");
         }
+
+        // The ledger transition increments its version before reversal drafting. Keep using
+        // the version retained with the original intent so an interrupted draft write and
+        // its exact retry identify the same manual mutation receipt.
+        return retention.LedgerPeriodVersion;
     }
 
     private static string BuildReopenCommandHash(

@@ -1,35 +1,74 @@
-# Engineering Blueprints
+# Plans and Blueprints Register
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-01
+**Reviewed:** 2026-09-28
 
-Code-ready technical design documents produced by Blueprint Mode. Each blueprint translates a
-prioritized idea into named interfaces, component designs, data flows, a test plan, and an
-implementation checklist grounded in Meridian's actual stack.
+This README is the **single register for every planning document in the repository**: code-ready
+blueprints, working delivery plans, prioritization inputs, and domain-owned backlogs. Each plan has
+one home folder, listed below; this register is the one place that lists them all. Live roadmap
+status is never recorded here. It stays in the roadmap registry (`docs/roadmap/README.md`,
+`docs/roadmap/data/*.yml`), and every row below is a documentation-coherence marker only.
 
-This README is the **canonical register for every active blueprint in the repository**, wherever it
-is filed. Blueprints live next to their owning lane, so there is more than one folder; there is only
-one register. Add new blueprints here as well as to their lane index.
+## Where plans live
 
-## Register
+| Kind | Home | Examples |
+|---|---|---|
+| Code-ready technical designs (Blueprint Mode) | `docs/engineering/blueprints/` (fund-accounting designs in `accounting/`) | Feature blueprints with interfaces, data flows, test plans |
+| Engineering working plans | [`docs/engineering/plans/`](../plans/README.md) | Burn-downs, parity plans, tooling backlogs, phased implementation plans |
+| Product delivery plans and prioritization inputs | [`docs/product/plans/`](../../product/plans/README.md) | Wave close-out plans, priority slates, remediation plans, next-work determinations |
+| Domain-owned backlogs | The owning domain folder, e.g. `docs/security/` | Security remediation backlog, SOC 2 roadmap |
+| Finished or superseded plans | [`archive/docs/plans/`](../../../archive/docs/plans/README.md) | Implemented blueprints, superseded determinations |
+
+`docs/plans/` is not a home for new plans. It keeps only redirect stubs whose paths are read by
+tooling; see [its index](../../plans/README.md). Brainstorms and adversarial reviews are ideation and
+assessment inputs, not plans, and stay listed in the [Product index](../../product/README.md).
+
+## Blueprints
+
+Code-ready technical design documents produced by Blueprint Mode. Each translates a prioritized idea
+into named interfaces, component designs, data flows, a test plan, and an implementation checklist
+grounded in Meridian's actual stack.
 
 | Blueprint | Home | Lane | Delivery state |
 |---|---|---|---|
 | [Repo Engine, Depreciation Schedule, and Borrower-Side Debt](financing-liabilities-depreciation-blueprint.md) | `docs/engineering/blueprints/` | Ledger / financing | **Partially implemented** — depreciation *calculation core and governed-draft seam* shipped (`DepreciationScheduleCalculator`, `FixedAssetDepreciationProjector`, `FixedAssetDepreciationDraftBuilder` with a submittable-approval test, `AutomatedJournalEventKind.DepreciationPosted`). No fixed-asset store, migration, orchestrating service, endpoints, or read model yet; repo and borrower-side debt remain design-only |
 | [Fail-Closed Mark Freshness and Mark-Age Surfacing](w10-mark-001-fail-closed-marks.md) | `docs/engineering/blueprints/` | Ledger / valuation | **Design** — nothing implemented. `StalePricePolicy` and `MarkPriceQualityPolicy` both still exist, the stale-price default is still permissive, `Assess` still clamps a negative age to zero, and no mark override store, `MarkFreshnessRef`, or `ReviewRequired` state exists in source. Targets `RISK-STALE-MARK-001`, which remains `open` |
 | [Risk Engine: Severity-Aware Evaluation and Pre-Trade Decision Journal](risk-engine-severity-and-decision-journal-blueprint.md) | `docs/engineering/blueprints/` | Execution / pre-trade risk | **Partially implemented** — PR 1 shipped: severity is decisional (`RiskRuleSeverity`, `RiskFinding`, `RiskViolation`, `RiskDecisionKind` in `Meridian.Execution.Sdk`), `CompositeRiskValidator` evaluates every rule instead of stopping at the first failure, `RiskValidationResult` is factory-only with an immutable violation snapshot, and `OrderRateThrottle` reserves capacity atomically with settlement at the OMS routing boundary. The decision journal (PR 2), the `/api/risk/decisions` read surface over the WAL (PR 3), and WPF parity (PR 4) remain design-only. Engine prerequisite for the `W9-SAFETY-007` rule catalogue |
-| [Full Incentive-Fee Mechanics](../../development/accounting-blueprints/incentive-fee-mechanics.md) | `docs/development/accounting-blueprints/` | Ledger / fund accounting | **Design** — no incentive-fee policy, hurdle calculator, or durable HWM/LCF state in source |
-| [Commitment & Capital-Call Engine](../../development/accounting-blueprints/commitment-and-capital-call-engine.md) | `docs/development/accounting-blueprints/` | Ledger / private capital | **Partially implemented** — domain layer and draft *construction* shipped (`PrivateCapitalCommitments`, `CommitmentRollForwardCalculator`, `DefaultInterestCalculator`, `CapitalCallDraftFactory`/`PlanBuilder`/`ScheduleDraftBuilder`). No service consumes the draft builders, so approval, durable posting, and funding orchestration — plus persistence, endpoints, and workbench — remain design-only |
-| [Equalization / Series Accounting](../../development/accounting-blueprints/equalization-and-series-accounting.md) | `docs/development/accounting-blueprints/` | Ledger / fund accounting | **Partially implemented** — `EqualizationCalculator` shipped as an *entry-exposure helper only* (no `GAV_cryst`, so it is not the §5.1/§5.2 crystallization math); lot-level Method A, Method B series accounting, persistence, and endpoints remain design-only |
-| [Portfolio Cash Ladder](../../product/portfolio-cash-ladder-blueprint-2026-07.md) | `docs/product/` | Portfolio forecasting | **Partially implemented** — compute-on-request vertical slice shipped; persisted runs, per-currency views, and structured sourcing remain design-only |
-| [Quote-stream fan-out](../../product/web-ui-stream-fan-out-blueprint-2026-07.md) | `docs/product/` | Workstation shell | **Implemented** — PRs A–C shipped; PR D was rescoped into the report-run stream blueprint |
-| [Report-run status stream](../../product/web-ui-report-run-stream-blueprint-2026-07.md) | `docs/product/` | Workstation shell / reporting | **Implemented, two open divergences** — D3 as designed; D1's targeted wake is unimplemented (`StreamBroadcaster.Wake` discards its topic, so every transition rebuilds all watched runs) and D2's shared SSE helper landed additively, so `WorkstationEndpoints.Stream.cs` still has a duplicate loop and `ResolveStreamSessionId` |
-| [Report Writer Debounced Live Auto-Preview](../../plans/report-writer-auto-preview-blueprint.md) | `docs/plans/` | Browser workstation | **Design** — `reporting-screen.report-writer-auto-preview.ts` does not exist in source |
-| [Security Master Passport Workbench](../../plans/security-master-passport-workbench.md) | `docs/plans/` | Data confidence / accounting | **Largely implemented** — Phases 1–4 shipped (governed-write DTOs, `ISecurityMasterConflictAuthorityPolicy`, `ISecurityMasterWorkbenchCommandService`, `WorkstationEndpoints.SecurityMasterWorkbench.cs`, `SecurityMasterWorkbenchOptions`, WPF `SecurityPassportEditorViewModel`). The browser editor also landed across three slices — `security-passport-editor.tsx` + `.view-model.ts`, the typed workbench client, source-conflict Accept/Override, and the `coverage-passport-drill-in.tsx` entry point — **do not rebuild it**. Open (`[~]`): the remaining Economics/Venues/History read tabs, `IRestatementCandidateResolver` follow-ons (repeated restatement, `IGovernedLedgerAdjustmentPoster`, durable security→report-line index), full lifecycle integration tests, ADR record |
+| [Full Incentive-Fee Mechanics](accounting/incentive-fee-mechanics.md) | `docs/engineering/blueprints/accounting/` | Ledger / fund accounting | **Design** — no incentive-fee policy, hurdle calculator, or durable HWM/LCF state in source |
+| [Commitment & Capital-Call Engine](accounting/commitment-and-capital-call-engine.md) | `docs/engineering/blueprints/accounting/` | Ledger / private capital | **Partially implemented** — domain layer and draft *construction* shipped (`PrivateCapitalCommitments`, `CommitmentRollForwardCalculator`, `DefaultInterestCalculator`, `CapitalCallDraftFactory`/`PlanBuilder`/`ScheduleDraftBuilder`). No service consumes the draft builders, so approval, durable posting, and funding orchestration — plus persistence, endpoints, and workbench — remain design-only |
+| [Equalization / Series Accounting](accounting/equalization-and-series-accounting.md) | `docs/engineering/blueprints/accounting/` | Ledger / fund accounting | **Partially implemented** — `EqualizationCalculator` shipped as an *entry-exposure helper only* (no `GAV_cryst`, so it is not the §5.1/§5.2 crystallization math); lot-level Method A, Method B series accounting, persistence, and endpoints remain design-only |
+| [Portfolio Cash Ladder](portfolio-cash-ladder-blueprint-2026-07.md) | `docs/engineering/blueprints/` | Portfolio forecasting | **Partially implemented** — compute-on-request vertical slice shipped; persisted runs, per-currency views, and structured sourcing remain design-only |
+| [Report-run status stream](web-ui-report-run-stream-blueprint-2026-07.md) | `docs/engineering/blueprints/` | Workstation shell / reporting | **Implemented, two open divergences** — D3 as designed; D1's targeted wake is unimplemented (`StreamBroadcaster.Wake` discards its topic, so every transition rebuilds all watched runs) and D2's shared SSE helper landed additively, so `WorkstationEndpoints.Stream.cs` still has a duplicate loop and `ResolveStreamSessionId` |
+| [Report Writer Debounced Live Auto-Preview](report-writer-auto-preview-blueprint.md) | `docs/engineering/blueprints/` | Browser workstation | **Design** — `reporting-screen.report-writer-auto-preview.ts` does not exist in source |
+| [Security-Lot Convergence](security-lot-convergence-blueprint.md) | `docs/engineering/blueprints/` | Ledger / security master | **Proposed** — design input for `W10-LOT-002` (evidence path in the roadmap registry) |
+| [Security Master Passport Workbench](security-master-passport-workbench.md) | `docs/engineering/blueprints/` | Data confidence / accounting | **Largely implemented** — Phases 1–4 shipped (governed-write DTOs, `ISecurityMasterConflictAuthorityPolicy`, `ISecurityMasterWorkbenchCommandService`, `WorkstationEndpoints.SecurityMasterWorkbench.cs`, `SecurityMasterWorkbenchOptions`, WPF `SecurityPassportEditorViewModel`). The browser editor also landed across three slices — `security-passport-editor.tsx` + `.view-model.ts`, the typed workbench client, source-conflict Accept/Override, and the `coverage-passport-drill-in.tsx` entry point — **do not rebuild it**. Open (`[~]`): the remaining Economics/Venues/History read tabs, `IRestatementCandidateResolver` follow-ons (repeated restatement, `IGovernedLedgerAdjustmentPoster`, durable security→report-line index), full lifecycle integration tests, ADR record |
 
-Delivery state is a documentation-coherence marker, not roadmap truth. Live status stays in the
-roadmap registry (`docs/roadmap/README.md`, `docs/roadmap/data/*.yml`).
+## Working plans
+
+| Plan | Home | Lane | State |
+|---|---|---|---|
+| [W9 Close-Out Delivery Plan (2026-08)](../../product/plans/w9-close-out-delivery-plan-2026-08.md) | `docs/product/plans/` | Program | Accepted planning input (`DEC-W9-CLOSEOUT-001`); sequences `W9-SAFETY-007`, `W9-GOV-008`, `W9-INGEST-009` |
+| [2026-07 First-Order Improvement Slate](../../product/plans/product-roadmap-priorities-2026-07.md) | `docs/product/plans/` | Program | Accepted planning input (`DEC-PRIORITY-SLATE-001`); ranked W9 rationale |
+| [2026-07 Depth Slate](../../product/plans/w10-depth-slate-2026-07.md) | `docs/product/plans/` | Program | Accepted planning input (`DEC-DEPTH-SLATE-001`); W10 rationale |
+| [What To Work On Next (2026-10-02)](../../product/plans/next-work-determination-2026-10-02.md) | `docs/product/plans/` | Program | Latest prioritization input; supersedes the 2026-09-27 determination and the unmerged 2026-09-28/2026-09-29 proposals |
+| [What To Work On Next (2026-09-27)](../../product/plans/next-work-determination-2026-09-27.md) | `docs/product/plans/` | Program | Superseded by the 2026-10-02 determination; retained in place because `program-state.yml` and the readiness tracker cite it as the recorded operator-session plan |
+| [Adversarial Review 2026-08 Remediation Plan](../../product/plans/adversarial-review-2026-08-remediation-plan.md) | `docs/product/plans/` | Program | Active working plan |
+| [Production-Readiness Backlog (2026-08)](../../product/plans/production-readiness-backlog-2026-08.md) | `docs/product/plans/` | Release readiness | Active working plan; the [Implementation and Readiness Tracker](../../product/implementation-todo-list.md) remains the P0 release gate |
+| [WPF / Web-UI Alignment Plan](../plans/wpf-web-ui-alignment-plan.md) | `docs/engineering/plans/` | Desktop workstation | Active; drives `W8-WPF-PARITY-001` |
+| [God-File Burn-Down Plan](../plans/god-file-burn-down-plan.md) | `docs/engineering/plans/` | Engineering hygiene | Active; the size ceilings it burns down are checked by `build/scripts/ci/check-file-size.py` |
+| [Web-UI Improvements Implementation Plan (2026-07)](../plans/web-ui-improvements-implementation-plan-2026-07.md) | `docs/engineering/plans/` | Browser workstation | Proposed |
+| [Security Remediation Backlog](../../security/security-remediation-backlog.md) | `docs/security/` | Security | Domain-owned backlog; cited from source |
+| [SOC 2 Roadmap](../../security/compliance/soc2-roadmap.md) | `docs/security/compliance/` | Compliance | Domain-owned roadmap |
+
+## Archived plans
+
+| Plan | Reason |
+|---|---|
+| [Quote-stream fan-out](../../../archive/docs/plans/web-ui-stream-fan-out-blueprint-2026-07.md) | Implemented — PRs A–C shipped; PR D was rescoped into the report-run stream blueprint |
+| [Tooling Workflow Backlog](../../../archive/docs/plans/tooling-workflow-backlog.md) | Completed — all nine items (MW-001–MW-009) verified delivered in source on 2026-09-28; see its closure record |
+| [What To Work On Next (2026-09-20)](../../../archive/docs/plans/next-work-determination-2026-09-20.md) | Superseded by the 2026-09-23 determination |
+| [What To Work On Next (2026-09-23)](../../../archive/docs/plans/next-work-determination-2026-09-23.md) | Superseded by the 2026-09-27 determination |
 
 The design-system Workstation Template Blueprint
 (`Meridian Design System/guidelines/WORKSTATION_BLUEPRINT.md`) is deliberately **not** in this
@@ -62,7 +101,7 @@ Reservations for the in-flight blueprints:
 
 | Range | Reserved by |
 |---|---|
-| 034–036 | [Equalization / series accounting](../../development/accounting-blueprints/equalization-and-series-accounting.md) — policy, subscription lots, fund series |
+| 034–036 | [Equalization / series accounting](accounting/equalization-and-series-accounting.md) — policy, subscription lots, fund series |
 | 037–039 | [Fail-closed mark freshness](w10-mark-001-fail-closed-marks.md) — **in phase order**: 037 per-position freshness assessment, 038 valuation attempt record plus attempt-draft association (both Phase 2), 039 mark override plus audit (Phase 3) |
 
 Re-derive the next free ordinal from disk at implementation time and update this table if an
@@ -167,13 +206,16 @@ inferred. Current recorded contract:
   `fund_series.high_water_mark_per_share` is removed, because two stores let crystallization advance
   one HWM while the next fee calculation reads the other.
 
-## Adding a blueprint
+## Adding a blueprint or plan
 
-1. File it next to its owning lane (`docs/engineering/blueprints/`,
-   `docs/development/accounting-blueprints/`, or `docs/product/` for product-direction designs).
+1. File it in `docs/engineering/blueprints/` (fund-accounting designs in `accounting/`). Working
+   plans go in `docs/engineering/plans/` or `docs/product/plans/` instead; see
+   [Where plans live](#where-plans-live).
 2. Add a lifecycle header (`Status`, `Owner`, `Reviewed`) — `validate-docs-structure.py` warns
    without one.
-3. Add a row to the register above and to the lane's own index.
+3. Add a row to the matching table above and to the home folder's own index.
 4. Check the shared conventions before claiming a migration ordinal, route prefix, or enum ordinal.
 5. Re-check delivery state when the lane ships; a blueprint that still says "design-only" after its
    code has landed is a defect in this register.
+6. When a plan is finished or superseded, `git mv` it to `archive/docs/plans/`, move its row to
+   [Archived plans](#archived-plans), and add it to the archive index.
