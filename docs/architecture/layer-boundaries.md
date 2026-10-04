@@ -69,7 +69,8 @@ Meridian (Host/Exe)   →  Application (+ transitive)
    `_MSBuildProjectReferenceExistent` items so negotiated framework/platform metadata is included.
    Bare projects without that target retain evaluation-only inspection. Neither route restores
    or compiles projects. Residual MSBuild escapes are preserved as literal property values, matching the
-   MSBuild task oracle for `Marker=west%253Beast=1`, and escaped for command-line forwarding. Traversal distinguishes the same project under different contexts,
+   [MSBuild task parser](https://source.dot.net/Microsoft.Build/parent/Shared/PropertyParser.cs.html)
+   and the task oracle for `Marker=west%253Beast=1`, and escaped for command-line forwarding. Traversal distinguishes the same project under different contexts,
    with fail-closed budgets of 32 contexts per project and 1,024 overall; exceeding a budget
    reports the project chain and possible non-stabilizing cycle rather than passing the gate.
    A direct edge or any intermediate path from Infrastructure to Storage fails with its chain.
