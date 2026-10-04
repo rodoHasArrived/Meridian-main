@@ -44,6 +44,58 @@ public sealed class CorporateActionAdjustmentServiceTests
     }
 
     [Fact]
+    public async Task PrepareAsync_AnnouncedAction_IsNotAuthoritativeForAdjustment()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResult(securityId);
+        var asOf = new DateTimeOffset(2024, 2, 15, 23, 59, 59, TimeSpan.Zero);
+        var announced = new CorporateActionDto(
+            Guid.NewGuid(), securityId, "StockSplit", new DateOnly(2024, 2, 1), null,
+            null, null, 2m, null, null, null, null, null, null,
+            LifecycleState: CorporateActionLifecycleStates.Announced);
+        _mockQueryService.SetCorporateActions([announced]);
+        var bar = CreateBar("SPY", new DateOnly(2024, 1, 2), 100m, 100m, 100m, 100m, 1_000);
+
+        var plan = await _service.PrepareAsync([bar], "SPY", asOf);
+
+        plan.Apply(bar).Should().Be(bar);
+    }
+
+    [Fact]
+    public async Task PrepareAsync_ActionEffectiveAfterBoundary_DoesNotAdjust()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResult(securityId);
+        var asOf = new DateTimeOffset(2024, 1, 15, 23, 59, 59, TimeSpan.Zero);
+        var futureSplit = new CorporateActionDto(
+            Guid.NewGuid(), securityId, "StockSplit", new DateOnly(2024, 2, 1), null,
+            null, null, 2m, null, null, null, null, null, null,
+            LifecycleState: CorporateActionLifecycleStates.Confirmed);
+        _mockQueryService.SetCorporateActions([futureSplit]);
+        var bar = CreateBar("SPY", new DateOnly(2024, 1, 2), 100m, 100m, 100m, 100m, 1_000);
+
+        var plan = await _service.PrepareAsync([bar], "SPY", asOf);
+
+        plan.Apply(bar).Should().Be(bar);
+    }
+
+    [Fact]
+    public async Task PrepareAsync_LegacyOnlyImplementationFailsClosedAtEffectiveBoundary()
+    {
+        ICorporateActionAdjustmentService legacy = new LegacyOnlyAdjustmentService();
+        var bar = CreateBar("SPY", new DateOnly(2024, 1, 2), 100m, 100m, 100m, 100m, 1_000);
+
+        Func<Task> act = async () =>
+            await legacy.PrepareAsync(
+                [bar],
+                "SPY",
+                new DateTimeOffset(2024, 1, 31, 23, 59, 59, TimeSpan.Zero));
+
+        await act.Should().ThrowAsync<NotSupportedException>()
+            .WithMessage("*must implement PrepareAsync*effective-through boundary*");
+    }
+
+    [Fact]
     public async Task AdjustAsync_NoCorporateActions_ReturnsOriginalBars()
     {
         var securityId = Guid.NewGuid();
@@ -405,6 +457,37 @@ public sealed class CorporateActionAdjustmentServiceTests
         result[0].Volume.Should().Be(4000);
     }
 
+    [Fact]
+    public async Task PrepareAsync_FullHistoryProducesStableContentVersionAndSingleDividendFactor()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResult(securityId);
+        var exDate = new DateOnly(2024, 2, 1);
+        _mockQueryService.SetCorporateActions([
+            new CorporateActionDto(Guid.NewGuid(), securityId, "Dividend", exDate, null, 1m, "USD", null, null, null, null, null, null, null),
+            new CorporateActionDto(Guid.NewGuid(), securityId, "Dividend", exDate, null, 1m, "USD", null, null, null, null, null, null, null)
+        ]);
+        var bars = new[]
+        {
+            CreateBar("SPY", new DateOnly(2024, 1, 30), 90m, 90m, 90m, 90m),
+            CreateBar("SPY", new DateOnly(2024, 1, 31), 100m, 100m, 100m, 100m),
+            CreateBar("SPY", exDate, 98m, 98m, 98m, 98m)
+        };
+        var asOf = new DateTimeOffset(2024, 12, 31, 23, 59, 59, TimeSpan.Zero);
+
+        var first = await _service.PrepareAsync(bars, "SPY", asOf);
+        var second = await _service.PrepareAsync(bars.ToArray(), "spy", asOf);
+
+        first.EffectiveThroughUtc.Should().Be(asOf);
+        first.BarCount.Should().Be(3);
+        first.ContentVersion.Should().StartWith("sha256:");
+        second.ContentVersion.Should().Be(first.ContentVersion);
+        first.Apply(bars[0]).Close.Should().Be(88.2m,
+            "the combined dividend uses one factor based on the immediate pre-ex close");
+        first.Apply(bars[1]).Close.Should().Be(98m);
+        first.Apply(bars[2]).Should().Be(bars[2]);
+    }
+
     private static HistoricalBar CreateBar(
         string symbol,
         DateOnly date,
@@ -481,5 +564,14 @@ public sealed class CorporateActionAdjustmentServiceTests
         public Task<IReadOnlyList<SecurityMasterEventEnvelope>> GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default) => throw new NotImplementedException();
         public Task<SecurityEconomicDefinitionRecord?> GetEconomicDefinitionByIdAsync(Guid securityId, CancellationToken ct = default) => throw new NotImplementedException();
         public Task<TradingParametersDto?> GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default) => throw new NotImplementedException();
+    }
+
+    private sealed class LegacyOnlyAdjustmentService : ICorporateActionAdjustmentService
+    {
+        public Task<IReadOnlyList<HistoricalBar>> AdjustAsync(
+            IReadOnlyList<HistoricalBar> bars,
+            string ticker,
+            CancellationToken ct = default) =>
+            Task.FromResult(bars);
     }
 }

@@ -2279,6 +2279,7 @@ Meridian-main
 │   │   │   ├── dk1-baseline-trust-thresholds.md
 │   │   │   ├── dk1-pilot-parity-runbook.md
 │   │   │   ├── dk1-trust-rationale-mapping.md
+│   │   │   ├── prd-106-portfolio-snapshot-hardening.md
 │   │   │   ├── wave2-cockpit-evidence-packet.md
 │   │   │   └── wave4-evidence-template.md
 │   │   ├── ai-handoff-checklist-report.json
@@ -8528,6 +8529,7 @@ Meridian-main
 │   │   ├── MeridianNativeBacktestStudioEngineTests.cs
 │   │   ├── MultiSymbolMergeEnumeratorTests.cs
 │   │   ├── OptionsOverwriteStrategyTests.cs
+│   │   ├── PortfolioCorporateActionSnapshotTests.cs
 │   │   ├── SimulatedPortfolioCacheTests.cs
 │   │   ├── SimulatedPortfolioTests.cs
 │   │   ├── StageTelemetryTests.cs
