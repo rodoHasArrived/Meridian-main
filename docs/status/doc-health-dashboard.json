@@ -1,6 +1,6 @@
 {
   "total_files": 681,
-  "total_lines": 150286,
+  "total_lines": 150287,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2203,7 +2203,7 @@
     },
     {
       "path": "docs/engineering/blueprints/README.md",
-      "line_count": 221,
+      "line_count": 222,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
