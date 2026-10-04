@@ -268,7 +268,7 @@ conflict by construction.
 | **P1** | Fix the registry parse break and enforce the schemas | Three days old. Under an hour. The status-authoritative file parses only in this repository |
 | **P1** | Take or decline `W9-CORPACT-011` (**10 days**) | Zero engineering; its stated precondition is met on PostgreSQL |
 | **P1** | Re-review `W9-GOV-008` and `W9-INGEST-009` against current source; refresh `W8-WPF-PARITY-001` (**88 days**) | Three rows now understate what `main` does, because #3026 and #3028 landed after their reviews |
-| **P1** | Close #3031 (obsolete) and the stale determinations #3012 and #3030 | Their substance has landed or been superseded; they currently misdescribe the program |
+| **P1** | Close #3031 (obsolete) and the stale determination #3030 | Their substance has landed or been superseded; they currently misdescribe the program. **#3012 is no longer part of this action** — it was resolved on 2026-10-04 by archiving its 2026-09-28 ranking rather than closing it unmerged; see [Note on the determination pile-up](#note-on-the-determination-pile-up) |
 | **P2** | Read #2826 against merged #3026 — expect to close, not resolve | Four of its seven hand-written conflicts are files #3026 just rewrote with PostgreSQL evidence |
 | **P2** | Reconcile `W10-PROV-001`'s status against #3041, and do not review #3041 as ready while it has zero CI | A `planned` row has an open implementation PR with no checks run |
 | **P2** | Continue `W10-LOT-002`: successor mutations, amortization convergence, advance refunding | The only `critical` row; successor mutations verified absent from the lot contracts again today |
