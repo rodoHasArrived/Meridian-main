@@ -4,9 +4,10 @@
 **Owner:** core-team
 **Reviewed:** 2026-10-02
 **Baseline:** `main` at `021966720e518bb76403e91b2810481a32561f0a`
-**Supersedes:** [2026-09-27](next-work-determination-2026-09-27.md), and the 2026-09-28 and
-2026-09-29 determinations proposed in still-open
-[#3012](https://github.com/rodoHasArrived/Meridian-main/pull/3012) and
+**Supersedes:** [2026-09-27](next-work-determination-2026-09-27.md), the 2026-09-28 determination
+from [#3012](https://github.com/rodoHasArrived/Meridian-main/pull/3012) — **retained as archived
+history at [`archive/docs/plans/next-work-determination-2026-09-28.md`](../../../archive/docs/plans/next-work-determination-2026-09-28.md)
+rather than landed as an active input** — and the 2026-09-29 determination proposed in still-open
 [#3030](https://github.com/rodoHasArrived/Meridian-main/pull/3030)
 **Method:** verified every carried-forward claim against **current source on `main`**, not against
 its own record or its pull-request body; re-measured the whole open pull-request queue with
@@ -277,12 +278,19 @@ conflict by construction.
 
 ## Note on the determination pile-up
 
-Three determinations are now proposed and unmerged or superseded at once: #3012 (2026-09-28), #3030
-(2026-09-29), and this one. **Recommend closing #3012 and #3030 without merging.** #3012's baseline
-is ~160 commits behind; #3030's top two recommendations both merged on 09-30 and 10-01, and its
-tag-scheme claim is corrected above. Landing three documents that each claim to supersede 2026-09-27
-would leave the register describing a program nobody can reconstruct. That is a maintainer call, not
-one this document makes.
+Three determinations were proposed and unmerged or superseded at once: #3012 (2026-09-28), #3030
+(2026-09-29), and this one. **This document recommended closing #3012 and #3030 without merging.**
+#3012's baseline is ~160 commits behind; #3030's top two recommendations both merged on 09-30 and
+10-01, and its tag-scheme claim is corrected above. Landing three documents that each claim to
+supersede 2026-09-27 would leave the register describing a program nobody can reconstruct. That was
+a maintainer call, not one this document makes.
+
+**Resolution for #3012 (recorded 2026-10-04).** The maintainer took a third option rather than
+either of the two above: #3012 merges `main` and **retains its 2026-09-28 ranking as archived
+history only**, at `archive/docs/plans/next-work-determination-2026-09-28.md`, registered in the
+archive index as superseded by this document. It therefore adds no competing active prioritization
+input, which is what the pile-up concern was about. #3030 remains open and the recommendation above
+still stands for it.
 
 **The tracker's own citations of that plan are already broken.** Measured on clean `main`
 (`python3 build/scripts/docs/repair-links.py --summary`): 1,854 internal links checked, **3 broken,
