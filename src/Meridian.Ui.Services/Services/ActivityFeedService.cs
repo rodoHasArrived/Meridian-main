@@ -466,6 +466,12 @@ public sealed class ActivityFeedService : IAsyncDisposable
         _activities.ReplaceAll(merged);
     }
 
+    internal static FileStream OpenActivityLogSnapshot(string path)
+        // Keep reading the opened generation while an atomic rename publishes a newer one.
+        // Startup and legacy migration must not hold the publisher's destination name open.
+        => new(path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete,
+            bufferSize: 4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
+
     private async Task LoadActivitiesAsync(CancellationToken ct = default)
     {
         try
@@ -480,7 +486,11 @@ public sealed class ActivityFeedService : IAsyncDisposable
 
             if (File.Exists(loadPath))
             {
-                var json = await File.ReadAllTextAsync(loadPath, ct);
+                string json;
+                using (var reader = new StreamReader(OpenActivityLogSnapshot(loadPath)))
+                {
+                    json = await reader.ReadToEndAsync(ct);
+                }
                 var items = JsonSerializer.Deserialize<List<ActivityItem>>(json, _jsonOptions);
                 if (items != null)
                 {

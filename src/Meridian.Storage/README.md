@@ -11,6 +11,21 @@ last_reviewed: 2026-10-01
 
 # src/Meridian.Storage
 
+Atomic writes retain the existing flushed-temp-then-publish sequence. On Windows, if the rename
+is denied while an existing destination is open, publication uses `File.Replace` with a temporary
+backup. The synchronous Windows publication step is serialized within this process using bounded
+locks keyed by the normalized, case-insensitive destination path; temporary-file writes and flushes
+remain concurrent. This prevents competing replacements and their recovery steps from overlapping.
+Readers that share deletion keep their old generation while fresh readers see the complete
+replacement. A failed replacement restores the old generation only when the destination is absent;
+an unrestored `.atomic-recovery.<id>.tmp` backup is retained beside the destination for recovery.
+The recovery error log identifies that generated backup name and the error code without logging
+caller-controlled paths or exception text. Backup cleanup after successful publication is best
+effort. Readers that deny deletion still block publication, and permission failures remain visible.
+`AtomicFileWriterTests` covers the seven overwrite surfaces, concurrent publishers, and failure
+retention, including coordinated publishers using equivalent path spellings. These locks do not
+coordinate separate processes, add a Windows power-loss guarantee, or make concurrent appends transactional.
+
 `Archival/AtomicFileWriterAdapter.cs`, `EtlStagingStore` in `Etl/EtlStores.cs`, and `Backfill/JsonlBackfillBarWriter.cs`
 implement lower-level persistence ports consumed by Infrastructure. Application/host composition
 owns their construction; atomic durability, staging and JSONL naming policies remain in Storage.
