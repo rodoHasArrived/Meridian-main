@@ -220,7 +220,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
     {
         foreach (var explicitPrice in new[] { false, true })
             foreach (var gain in new[] { false, true })
-                foreach (var defect in new[] { "sibling", "unscoped", "side", "type", "symbol" })
+                foreach (var defect in new[] { "sibling", "unscoped", "side", "type", "symbol", "symbol-without-lineage" })
                 {
                     await using var database = await LedgerPostgresTestDatabase.CreateAsync();
                     var (command, lots, _) = await PrepareProceedsDisposalAsync(database, precisePrice: false,
@@ -236,9 +236,19 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                         "sibling" => resultAccount with { FinancialAccountId = "broker-2" },
                         "unscoped" => resultAccount with { FinancialAccountId = null },
                         "type" => resultAccount with { AccountType = LedgerAccountType.Asset },
-                        "symbol" => resultAccount with { Symbol = "OTHER" },
+                        "symbol" or "symbol-without-lineage" => resultAccount with { Symbol = "OTHER" },
                         _ => resultAccount
                     };
+                    var metadata = entry.Metadata;
+                    if (defect == "symbol")
+                    {
+                        // Valid lineage lets this case reach exact result-account validation.
+                        // The separate missing-lineage case retains the earlier posting guard proof.
+                        var tags = SecurityMasterLineageTags(TestSecurityId);
+                        tags["securityMasterLineage"] =
+                            $"OTHER:{TestSecurityId:N}:ledger-map:OTHER:sm-approval:lot-controller:security-status:active:{tags["securityMasterProvenance"]}";
+                        metadata = metadata with { Tags = tags };
+                    }
                     LedgerEntry Line(LedgerAccount account, decimal debit, decimal credit) => new(
                         Guid.NewGuid(), entry.JournalEntryId, entry.Timestamp, account, debit, credit,
                         entry.Description, entry.Lines[0].Dimensions,
@@ -253,13 +263,15 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                                 Line(LedgerAccounts.CashAccount("broker-1"), cash, 0m),
                                 Line(lots[0].Account, 0m, 0.06m),
                                 Line(resultAccount, debitResult ? 0.01m : 0m, debitResult ? 0m : 0.01m)
-                            ], entry.Metadata)
+                            ], metadata)
                         }
                     }).WithComputedFingerprint();
                     var auditBefore = (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents;
                     var post = () => database.JournalStore.AppendAssetPostingAsync(command);
                     await post.Should().ThrowAsync<LedgerValidationException>()
-                        .WithMessage("*disposing account's exact*");
+                        .WithMessage(defect == "symbol-without-lineage"
+                            ? "*declares instrument symbol 'OTHER' without matching Security Master lineage*"
+                            : "*disposing account's exact*");
                     (await database.JournalStore.GetAtomicTaxLotPostingAsync(command.MutationBatchId)).Should().BeNull();
                     (await database.JournalStore.GetByPeriodAsync(command.Journal.PeriodId)).Should().BeEmpty();
                     (await database.JournalStore.GetTaxLotsByIdsAsync(command.LedgerBookId,
