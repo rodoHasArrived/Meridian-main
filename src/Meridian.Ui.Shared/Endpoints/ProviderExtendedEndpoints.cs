@@ -54,10 +54,12 @@ public static class ProviderExtendedEndpoints
         .Produces(404);
 
         // Failover configuration
-        group.MapGet(UiApiRoutes.ProviderFailover, async ([FromServices] ConfigStore store, [FromServices] ProviderRouteExplainabilityService explainabilityService, CancellationToken ct) =>
+        group.MapGet(UiApiRoutes.ProviderFailover, async (HttpContext context, [FromServices] ConfigStore store, [FromServices] ProviderRouteExplainabilityService explainabilityService, CancellationToken ct) =>
         {
             var cfg = store.Load();
-            var selection = await explainabilityService.PreviewAsync(
+            var selection = await ProviderEndpoints.PreviewRouteForRequestAsync(
+                explainabilityService,
+                context,
                 new RoutePreviewRequest(
                     Capability: "RealtimeMarketData",
                     Symbol: cfg.Symbols?.FirstOrDefault()?.Symbol),

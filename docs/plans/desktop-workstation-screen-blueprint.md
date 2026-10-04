@@ -1,6 +1,6 @@
 # Archived Legacy Plan: desktop-workstation-screen-blueprint
 
-This plan has been migrated to [desktop-workstation-screen-blueprint.md](../../archive/docs/plans/desktop-workstation-screen-blueprint.md).
+This plan has been migrated to [desktop-workstation-screen-blueprint.md](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/desktop-workstation-screen-blueprint.md).
  It is now a source-material archive with replacement pointers in the canonical documentation lanes.
 
 **Status:** archive-migration-stub

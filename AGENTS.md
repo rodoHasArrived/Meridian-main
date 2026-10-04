@@ -121,7 +121,7 @@ Actions remains the merge authority.
 - Treat prior baselines and named productization targets as roadmap/status evidence, not development ceilings. Expansion lanes can proceed when current source, roadmap, or user direction supports them.
 - Use the current [Meridian Design Document](docs/product/meridian-design-document.md) as the canonical product scope reference.
 - `src/Meridian.Ui/dashboard/` (browser workstation) and `src/Meridian.Wpf/` (desktop workstation) are two active, co-equal operator UI lanes.
-- `src/Meridian.Wpf/` is reactivated as an active product/UI lane; its immediate focus is closing web-UI parity gaps (`W8-WPF-PARITY-001`, see `docs/development/wpf-web-ui-alignment-plan.md`). Existing shell compatibility, tests, and release workflows continue.
+- `src/Meridian.Wpf/` is reactivated as an active product/UI lane; its immediate focus is closing web-UI parity gaps (`W8-WPF-PARITY-001`, see `docs/engineering/plans/wpf-web-ui-alignment-plan.md`). Existing shell compatibility, tests, and release workflows continue.
 - `src/Meridian.Ui/wwwroot/workstation/` remains the built browser workstation asset lane served by the local host.
 - Keep `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` as shared API/read-model support surfaces that both the browser and WPF workstations consume so neither forks product state.
 - No mobile development lane: do not create mobile applications, mobile-specific product surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or mobile-first workflows. Responsive browser validation is allowed only for the browser workstation.
@@ -172,3 +172,11 @@ installed `make`.
 dotnet run --project src/Meridian/Meridian.csproj -- --help
 python build/python/cli/buildctl.py --help
 ```
+
+CI/CD validation ownership and administrator rollout are maintained in
+[CI/CD ownership and rollout](docs/engineering/ci-cd-optimization.md). Meridian CI owns the four canonical
+`scripts/ci.sh` lanes; legacy CI owns Secret Scan and nightly/manual coverage.
+The four-lane `Meridian CI / quality-gate` keeps its identity. The always-reported
+`Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with
+Production Certification, including pull requests and merge groups.
+All CI governance changes require human review.

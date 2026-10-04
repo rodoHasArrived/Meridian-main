@@ -14,9 +14,8 @@ class WindowsDesktopBuildWorkflowTests(unittest.TestCase):
         cls.workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
 
     def test_workflow_uses_isolated_wpf_validation_script(self) -> None:
-        self.assertIn("Run isolated WPF validation", self.workflow)
-        self.assertIn("scripts/dev/validate-wpf-dev.ps1", self.workflow)
-        self.assertIn("-Restore", self.workflow)
+        self.assertIn("Run isolated Windows validation", self.workflow)
+        self.assertIn("python build/scripts/ci/run-windows-ci-tests.py", self.workflow)
         self.assertIn("artifacts/wpf-validation/windows-desktop-build", self.workflow)
         self.assertNotIn("dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj", self.workflow)
 

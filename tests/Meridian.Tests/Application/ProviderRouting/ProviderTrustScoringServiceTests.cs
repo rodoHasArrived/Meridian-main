@@ -92,6 +92,50 @@ public sealed class ProviderTrustScoringServiceTests : IDisposable
         decision.Score.Should().Be(100);
     }
 
+    [Theory]
+    [InlineData("tenant-alpaca", "alpaca")]
+    [InlineData("alpaca", "alpaca")]
+    [InlineData("ALPACA", "alpaca")]
+    [InlineData("shared-runtime", "shared-runtime")]
+    public async Task GetTrustSnapshotsForTenantAsync_IgnoresRuntimeHealthWithoutOwnershipProvenance(
+        string connectionId,
+        string metricProviderId)
+    {
+        var dataRoot = Path.Combine(_tempDirectory, "data");
+        Directory.CreateDirectory(Path.Combine(dataRoot, "_status"));
+        await SaveConfigAsync(new AppConfig() with
+        {
+            DataRoot = dataRoot,
+            ProviderConnections = new ProviderConnectionsConfig(
+                Connections: [new ProviderConnectionConfig(connectionId, "alpaca", "Tenant Alpaca", TenantId: "tenant-a")],
+                Certifications: [])
+        });
+        // Provider IDs have no ownership provenance, even when an owner chooses a colliding connection ID.
+        await File.WriteAllTextAsync(Path.Combine(dataRoot, "_status", "providers.json"),
+            $$"""
+            {"timestamp":"2026-09-28T12:00:00Z","providers":[{"providerId":"{{metricProviderId}}","providerType":"Streaming","isConnected":false,"dataQualityScore":10,"timestamp":"2026-09-28T12:00:00Z"}],"totalProviders":1,"healthyProviders":0}
+            """);
+        var store = new ConfigStore(_configPath);
+        var healthSource = new DefaultProviderConnectionHealthSource(store);
+        var service = new ProviderTrustScoringService(store, healthSource);
+
+        var unscoped = await service.GetTrustSnapshotsAsync();
+        var tenant = await service.GetTrustSnapshotsForTenantAsync("tenant-a");
+
+        unscoped.Single().Decision!.Reasons.Should().Contain(r => r.ReasonCode == "HEALTH_NOT_HEALTHY");
+        tenant.Single().Decision!.Reasons.Should().NotContain(r => r.ReasonCode == "HEALTH_NOT_HEALTHY",
+            "a provider ID match cannot attribute shared runtime telemetry to this tenant's connection");
+        var unscopedHealth = await healthSource.GetHealthAsync(connectionId, "alpaca");
+        unscopedHealth.Status.Should().Be("degraded");
+        unscopedHealth.Score.Should().Be(10);
+        var scopedHealth = await ((IProviderConnectionHealthSource)healthSource).GetConnectionHealthAsync(connectionId, "alpaca");
+        scopedHealth.ConnectionId.Should().Be(connectionId);
+        scopedHealth.ProviderFamilyId.Should().Be("alpaca");
+        scopedHealth.Status.Should().Be("unknown");
+        scopedHealth.IsHealthy.Should().BeTrue();
+        scopedHealth.Score.Should().Be(100);
+    }
+
     private async Task SaveConfigAsync(AppConfig config)
     {
         var store = new ConfigStore(_configPath);

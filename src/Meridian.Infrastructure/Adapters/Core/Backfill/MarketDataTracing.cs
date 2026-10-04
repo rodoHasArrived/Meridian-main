@@ -6,11 +6,13 @@ internal static class MarketDataTracing
 {
     private static readonly ActivitySource Source = new("Meridian");
 
-    public static Activity? StartBackfillActivity(string provider, string symbol, string? from, string? to)
+    public static Activity? StartBackfillActivity(
+        string provider, string symbol, string? from, string? to, ActivityContext parentContext)
     {
         var activity = Source.StartActivity(
             $"Backfill.{provider}",
-            ActivityKind.Client);
+            ActivityKind.Consumer,
+            parentContext);
 
         activity?.SetTag("backfill.provider", provider);
         activity?.SetTag("market.symbol", symbol);

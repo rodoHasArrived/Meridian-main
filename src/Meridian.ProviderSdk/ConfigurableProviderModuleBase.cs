@@ -42,6 +42,9 @@ public abstract class ConfigurableProviderModuleBase : IProviderModule
     public virtual bool RequiresExternalConfig => false;
 
     /// <inheritdoc/>
+    public virtual bool IsProductionProvider => true;
+
+    /// <inheritdoc/>
     public void Configure(ProviderModuleContext context)
         => Context = context ?? throw new ArgumentNullException(nameof(context));
 

@@ -51,6 +51,8 @@ public static class FundScopeTenantAuthority
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
         ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        if (!TenantReadPredicate.IsResolvedTenant(tenantId))
+            throw new ArgumentException("Retained authority requires a concrete tenant; 'all' is unscoped.", nameof(tenantId));
 
         var previous = Current.Value;
         Current.Value = new RetainedAuthority(tenantId.Trim(), reason);

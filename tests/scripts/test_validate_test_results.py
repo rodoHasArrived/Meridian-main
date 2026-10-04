@@ -67,6 +67,36 @@ class ValidateTestResultsTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "produced no TRX files"):
                 MODULE.collect_evidence(Path(temporary_directory))
 
+    def test_rejects_zero_discovery_even_when_the_other_required_suite_passes(self):
+        for empty_prefix in ("meridian-integrations", "direct-lending-integrations"):
+            with self.subTest(empty_prefix=empty_prefix), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                prefixes = ["meridian-integrations", "direct-lending-integrations"]
+                for prefix in prefixes:
+                    self.write_trx(root, f"{prefix}.trx", [] if prefix == empty_prefix else [("api", "Passed")])
+                evidence = MODULE.collect_evidence(root, prefixes)
+                self.assertFalse(evidence["certifiable"])
+                self.assertIn(f"required TRX suite '{empty_prefix}' produced no passing tests", MODULE.validation_errors(evidence))
+
+    def test_rejects_zero_discovery_without_required_prefixes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.write_trx(root, "empty.trx", [])
+            evidence = MODULE.collect_evidence(root)
+            self.assertFalse(evidence["certifiable"])
+            self.assertIn("production certification executed no passing tests", MODULE.validation_errors(evidence))
+
+    def test_rejects_empty_trx_beside_passing_trx_with_the_same_prefix(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.write_trx(root, "meridian-integrations_net10.trx", [("api", "Passed")])
+            self.write_trx(root, "meridian-integrations_net11.trx", [])
+            self.write_trx(root, "direct-lending-integrations_net10.trx", [("ledger", "Passed")])
+            evidence = MODULE.collect_evidence(root, ["meridian-integrations", "direct-lending-integrations"])
+            self.assertFalse(evidence["certifiable"])
+            self.assertTrue(any("meridian-integrations_net11.trx' contains zero discovered tests" in error
+                                for error in MODULE.validation_errors(evidence)))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -6,6 +6,7 @@ using Meridian.Application.Services;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Finnhub;
 using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
@@ -36,9 +37,9 @@ public sealed class ProviderFactoryCredentialContextTests
             ["finnhub-corp-actions"] = "finnhub",
             ["fred"] = "fred",
             ["fred-symbols"] = "fred",
-            ["nasdaq"] = "nasdaqdatalink",
-            ["nasdaq-corp-actions"] = "nasdaqdatalink",
-            ["nasdaq-symbols"] = "nasdaqdatalink",
+            ["nasdaq"] = "nasdaq",
+            ["nasdaq-corp-actions"] = "nasdaq",
+            ["nasdaq-symbols"] = "nasdaq",
             ["polygon"] = "polygon",
             ["polygon-options"] = "polygon",
             ["robinhood"] = "robinhood",
@@ -160,6 +161,82 @@ public sealed class ProviderFactoryCredentialContextTests
         }
         finally { if (Directory.Exists(root)) Directory.Delete(root, recursive: true); }
     }
+
+    [Theory]
+    [InlineData("tenant")]
+    [InlineData("connection")]
+    [InlineData("account")]
+    [InlineData("environment")]
+    public async Task ScopedRuntimeResolver_RotationAndDeletionCannotSelectAnotherOwnersCredentials(string dimension)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "scoped-runtime", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var first = new ProviderCredentialScope("tenant-a", "connection-a", "account-a", "paper");
+            var second = new ProviderCredentialScope(
+                dimension == "tenant" ? "tenant-b" : "tenant-a",
+                dimension == "connection" ? "connection-b" : "connection-a",
+                dimension == "account" ? "account-b" : "account-a",
+                dimension == "environment" ? "live" : "paper");
+            var store = new FileProviderCredentialStore(root);
+            ProviderCredentialSaveRequest Request(string key, string? secret, string environment) =>
+                new("alpaca", new Dictionary<string, string?> { ["KeyId"] = key, ["SecretKey"] = secret }, environment);
+            await store.SaveAsync(Request("legacy-key", "legacy-secret", "paper"));
+            await store.SaveScopedAsync(Request("first-key", "first-secret", first.Environment), first);
+            await store.SaveScopedAsync(Request("second-key", "second-secret", second.Environment), second);
+            var fallback = new TrackingCredentialResolver(new Dictionary<string, string?>
+            {
+                ["ALPACA_KEY_ID"] = "fallback-key",
+                ["ALPACA_SECRET_KEY"] = "fallback-secret"
+            });
+            IProviderCredentialResolver resolver = new StoredProviderCredentialResolver(new FileProviderCredentialStore(root), fallback, first);
+            IProviderCredentialResolver other = new StoredProviderCredentialResolver(new FileProviderCredentialStore(root), fallback, second);
+            ICredentialContext Resolve(IProviderCredentialResolver selected) => selected.CreateContext(
+                typeof(AlpacaHistoricalDataProvider), new Dictionary<string, string?> { ["ALPACA_SECRET_KEY"] = "config-secret" });
+            Resolve(resolver).Get("ALPACA_KEY_ID").Should().Be("first-key");
+            Resolve(other).Get("ALPACA_KEY_ID").Should().Be("second-key");
+
+            await store.SaveScopedAsync(Request("rotated-key", "", first.Environment), first);
+            Resolve(resolver).Get("ALPACA_KEY_ID").Should().Be("rotated-key");
+            Resolve(resolver).Get("ALPACA_SECRET_KEY").Should().BeNull();
+            Resolve(other).Get("ALPACA_SECRET_KEY").Should().Be("second-secret");
+            await store.DeleteScopedAsync("alpaca", first);
+            Resolve(resolver).IsConfigured("ALPACA_KEY_ID").Should().BeFalse();
+            Resolve(resolver).IsConfigured("ALPACA_SECRET_KEY").Should().BeFalse();
+            Resolve(other).Get("ALPACA_KEY_ID").Should().Be("second-key");
+            fallback.ContextRequests.Should().BeEmpty();
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, recursive: true); }
+    }
+
+    [Fact]
+    public void ScopedRuntimeResolver_UnmanagedProviderCannotBypassOwnershipThroughFallback()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "scoped-runtime", Guid.NewGuid().ToString("N"));
+        var fallback = new TrackingCredentialResolver();
+        var resolver = new StoredProviderCredentialResolver(new FileProviderCredentialStore(root), fallback,
+            new ProviderCredentialScope("tenant-a", "connection-a", "account-a", "paper"));
+        var resolve = () => resolver.CreateContext(typeof(object));
+        resolve.Should().Throw<InvalidOperationException>();
+        fallback.ContextRequests.Should().BeEmpty();
+        Directory.Exists(root).Should().BeFalse();
+    }
+
+    [Fact]
+    public void ScopedRuntimeResolver_PluginProviderOutsideTheCatalogCannotBypassOwnershipThroughFallback()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "scoped-runtime", Guid.NewGuid().ToString("N"));
+        var fallback = new TrackingCredentialResolver();
+        var resolver = new StoredProviderCredentialResolver(new FileProviderCredentialStore(root), fallback,
+            new ProviderCredentialScope("tenant-a", "connection-a", "account-a", "paper"));
+        var resolve = () => resolver.CreateContext(typeof(UncataloguedPluginProvider));
+        resolve.Should().Throw<InvalidOperationException>();
+        fallback.ContextRequests.Should().BeEmpty();
+        Directory.Exists(root).Should().BeFalse();
+    }
+
+    [DataSource("uncatalogued-plugin", "Uncatalogued plugin", Meridian.Infrastructure.DataSources.DataSourceType.Historical, DataSourceCategory.Free)]
+    private sealed class UncataloguedPluginProvider;
 
     [Fact]
     public async Task StoredResolver_CorruptVaultDoesNotSilentlySwitchToAnotherCredentialSource()
@@ -493,7 +570,8 @@ public sealed class ProviderFactoryCredentialContextTests
 
         var providers = factory.CreateSymbolSearchProviders();
 
-        providers.Should().BeEmpty();
+        providers.Should().ContainSingle().Which.Should().BeOfType<EdgarSymbolSearchProvider>(
+            "EDGAR is the declared credential-free search adapter; all credential-gated adapters must be absent");
         resolver.ContextRequests.Should().ContainEquivalentOf(
             new ContextRequest(typeof(AlpacaHistoricalDataProvider), ["ALPACA_KEY_ID", "ALPACA_SECRET_KEY"]));
         resolver.ContextRequests.Should().ContainEquivalentOf(

@@ -34,6 +34,32 @@ generate_structure_docs = load_module(
 
 
 class GenerateStructureDocsTests(unittest.TestCase):
+    def test_schema_validation_outputs_do_not_change_repository_tree(self) -> None:
+        for git_available in (False, True):
+            with self.subTest(git_available=git_available), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                canonical = ("database/manifest/contracts.json", "tools/schema_control/__init__.py", "build/scripts/schema-control.py")
+                for name in canonical:
+                    path = root / name
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text("canonical\n", encoding="utf-8")
+                result = subprocess.CompletedProcess(
+                    args=["git", "ls-files"], returncode=0 if git_available else 1,
+                    stdout="\0".join(canonical).encode("utf-8"), stderr=b"",
+                )
+                with patch.object(generate_structure_docs.subprocess, "run", return_value=result):
+                    before = generate_structure_docs.render_tree(root)
+                    for name in ("migrations.json", "candidate/manifest/contracts.json", "candidate/docs/summary.md"):
+                        output = root / "build/schema-control" / name
+                        output.parent.mkdir(parents=True, exist_ok=True)
+                        output.write_text("temporary validation output\n", encoding="utf-8")
+                    after = generate_structure_docs.render_tree(root)
+                self.assertEqual(before, after)
+                self.assertIn("contracts.json", after)
+                self.assertIn("schema_control", after)
+                self.assertIn("schema-control.py", after)
+                self.assertNotIn("migrations.json", after)
+
     def test_git_visible_files_merge_case_colliding_index_paths_and_filesystem_outputs(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

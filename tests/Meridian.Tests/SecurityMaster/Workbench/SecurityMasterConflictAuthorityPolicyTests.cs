@@ -1,5 +1,5 @@
 // Phase 1 tests for the Security Master Passport Workbench conflict-authority policy.
-// See docs/plans/security-master-passport-workbench.md (test plan: "Unit — SecurityMasterConflictAuthorityPolicy").
+// See docs/engineering/blueprints/security-master-passport-workbench.md (test plan: "Unit — SecurityMasterConflictAuthorityPolicy").
 //
 // Types under test (implemented in Phase 1):
 //   - SecurityMasterConflictAuthorityPolicy / ISecurityMasterConflictAuthorityPolicy

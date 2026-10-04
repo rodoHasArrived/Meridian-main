@@ -114,13 +114,13 @@ Each converted asset profile must include:
 - `Next Milestone Contract`
 - `Provider Payload Boundary`
 
-The details of each section are defined in [UFL Asset Profile Template](../../archive/docs/plans/ufl-asset-profile-template.md).
+The details of each section are defined in [UFL Asset Profile Template](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/ufl-asset-profile-template.md).
 
 ## Related Documents
 
 - [UFL Supported Asset Profiles](ufl-supported-assets-index.md)
 - [UFL Conformance Matrix](ufl-conformance-matrix.md)
-- [UFL Projection and Evidence Kernel](../../archive/docs/plans/ufl-projection-and-evidence-kernel.md)
-- [UFL Accounting Impact Model](../../archive/docs/plans/ufl-accounting-impact-model.md)
-- [UFL Asset Profile Template](../../archive/docs/plans/ufl-asset-profile-template.md)
+- [UFL Projection and Evidence Kernel](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/ufl-projection-and-evidence-kernel.md)
+- [UFL Accounting Impact Model](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/ufl-accounting-impact-model.md)
+- [UFL Asset Profile Template](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/ufl-asset-profile-template.md)
 
