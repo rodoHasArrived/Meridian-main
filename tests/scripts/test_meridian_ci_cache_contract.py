@@ -42,15 +42,14 @@ class MeridianCiCacheContractTests(unittest.TestCase):
         # Check directory entries, since Path.exists() alone cannot catch a Linux-only
         # case mismatch when this regression test runs on Windows.
         self.assertIn("NuGet.Config", {entry.name for entry in REPO_ROOT.iterdir()})
-        self.assertIn("NuGet.Config", patterns)
+        self.assertIn("**/NuGet.Config", patterns)
         self.assertNotIn("nuget.config", patterns)
         self.assertTrue((REPO_ROOT / "tests" / "Directory.Build.props").is_file())
         for input_pattern in (
             "**/*.csproj",
             "**/*.fsproj",
-            "**/Directory.Build.props",
-            "**/Directory.Build.targets",
-            "**/Directory.Packages.props",
+            "**/*.props",
+            "**/*.targets",
             "**/packages.lock.json",
             "global.json",
         ):
@@ -81,12 +80,12 @@ class MeridianCiCacheContractTests(unittest.TestCase):
                 setup = self._step_block(job, "Set up Python")
                 install = self._step_block(job, "Install docs script dependencies")
                 self.assertIn("cache: pip", setup)
-                self.assertIn("cache-dependency-path: build/scripts/docs/requirements.txt", setup)
+                self.assertIn("build/scripts/docs/requirements.txt", setup)
                 self.assertNotRegex(install, r"(?m)^        if:")
                 self.assertRegex(
                     install,
                     r"(?m)^        run: python -m pip install --requirement "
-                    r"build/scripts/docs/requirements\.txt\s*$",
+                    rf"build/scripts/{'ci' if lane == 'verify-workflows' else 'docs'}/requirements\.txt\s*$",
                 )
                 self.assertLess(job.index(setup), job.index(install))
                 self.assertLess(job.index(install), job.index(f"bash scripts/ci.sh --lane {lane}"))

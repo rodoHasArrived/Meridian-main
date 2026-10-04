@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Ledger;
 
 /// <summary>One lot relieved by a retained disposal, as recorded at the time it was booked.</summary>
@@ -33,7 +35,11 @@ public sealed record LedgerTaxLotDisposalHistory(
     IReadOnlyList<LedgerTaxLotDisposalHistoryLot> Lots,
     decimal RecognizedGainOrLoss,
     IReadOnlyList<WashSaleBasisIncrease> WashSaleBasisIncreases,
-    decimal MatchedReplacementQuantity)
+    decimal MatchedReplacementQuantity,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    int? ProceedsAllocationVersion = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    decimal? SalePrice = null)
 {
     /// <summary>Total wash-sale loss deferred out of this disposal.</summary>
     public decimal DisallowedWashSaleLoss
@@ -69,8 +75,8 @@ public static class LedgerTaxLotReliefHistoryProjector
         if (quantitySold <= 0m)
             return null;
 
-        // Proceeds are recovered rather than stored: recognized = proceeds - basis - deferred, so
-        // proceeds = basis + recognized + deferred. Deriving them from the booked gain/loss keeps the
+        // Proceeds are recovered rather than stored: recognized = proceeds - basis + deferred, so
+        // proceeds = basis + recognized - deferred. Deriving them from the booked gain/loss keeps the
         // rebuilt rows tied to the journal instead of to a separately-recorded price that could drift.
         var retainedCostBasis = history.Lots.Sum(static lot => lot.CostBasis);
         var disallowed = history.DisallowedWashSaleLoss;
@@ -78,12 +84,20 @@ public static class LedgerTaxLotReliefHistoryProjector
         if (proceeds < 0m)
             return null;
 
-        var salePrice = proceeds / quantitySold;
+        // An explicit quote preserves sub-cent input that can control parcel signs and character.
+        // Current aggregate-only postings retain the version but no invented execution quote;
+        // their price follows final journal economics, including subsequently retained deferrals.
+        // Legacy rows keep the original recovered-price precision and final-residual convention.
+        if (history.ProceedsAllocationVersion is null && history.SalePrice is not null)
+            return null;
+        var salePrice = history.SalePrice ?? (history.ProceedsAllocationVersion is null
+            ? RoundUnitPrice(proceeds / quantitySold) : proceeds / quantitySold);
 
         LedgerTaxLotReliefProjection projection;
         try
         {
-            projection = LedgerTaxLotReliefProjector.Project(BuildInput(history, quantitySold, salePrice));
+            projection = LedgerTaxLotReliefProjector.ReconstructRetainedDisposal(
+                BuildInput(history, quantitySold, salePrice), history.ProceedsAllocationVersion);
         }
         catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
         {
@@ -92,12 +106,18 @@ public static class LedgerTaxLotReliefHistoryProjector
             return null;
         }
 
+        if (history.ProceedsAllocationVersion is not null &&
+            (projection.Proceeds != proceeds || projection.CostBasis != retainedCostBasis))
+            return null;
+
         if (history.WashSaleBasisIncreases.Count == 0)
             return projection;
 
         // The retained outcome is attached rather than recomputed: the pack must report the deferral
         // that was actually booked, not one re-derived from today's replacement history.
-        var economicLoss = projection.RealizedGainOrLoss < 0m ? -projection.RealizedGainOrLoss : 0m;
+        var economicLoss = projection.Selections
+            .Where(static selection => selection.RealizedGainOrLoss < 0m)
+            .Sum(static selection => -selection.RealizedGainOrLoss);
         return projection with
         {
             WashSale = new WashSaleOutcome(
@@ -116,7 +136,7 @@ public static class LedgerTaxLotReliefHistoryProjector
             history.Account,
             history.SaleDate,
             quantitySold,
-            RoundUnitPrice(salePrice),
+            salePrice,
             history.ReliefMethod,
             history.Lots
                 .Select(static lot => new LedgerTaxLot(

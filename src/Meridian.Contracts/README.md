@@ -6,10 +6,30 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-08-03
+last_reviewed: 2026-10-01
 ---
 
 # src/Meridian.Contracts
+
+`Etl/IEtlStagingStore.cs` lets source adapters retain imported streams through an injected
+persistence port without referencing the Storage implementation.
+
+`Workstation/RecurringJournalDtos.cs` publishes one exact-scope occurrence projection for browser
+and WPF Accounting queues. It carries retained schedule/template versions, source evidence
+references, authoritative draft approval status, blockers, lock owner and governed reopen path.
+`ManualJournalEntryDraftDto` additionally retains recurring provenance JSON, digest and a required
+evidence marker; these server-owned fields persist through the existing human approval lifecycle.
+
+Provider connection API and configuration DTOs retain optional `TenantId` and `CredentialEnvironment`
+alongside connection and external-account identity. These additive fields preserve server-owned
+credential scope across both workstation lanes. They are not accepted as tenant authority in the
+connection creation request; absent fields remain unassigned legacy ownership.
+
+External GL import summaries optionally retain `TrialBalanceBasis`: the provider's
+income-statement year start, income account codes and retained-earnings identity.
+It is distinct from the requested journal period. Reconciliation rows optionally
+retain gross `PeriodDebit`/`PeriodCredit` for export review, independently of report
+balances. These additive fields are omitted when absent to preserve legacy payloads.
 
 Reconciliation queue items optionally retain `Lineage`: a stable source identity, occurrence identity,
 first/last observation and successful-run clearing evidence. This metadata is omitted when absent
@@ -25,17 +45,43 @@ Lifecycle route contracts distinguish sanitized unauthenticated readiness/livene
 authenticated comprehensive health and status payloads. The ASP.NET Core workstation host is the
 single monitoring transport owner.
 
+`Api/ProviderCatalog.cs` exposes six provider-factory inventory flags: `SupportsStreaming`,
+`SupportsBackfill`, `SupportsSymbolSearch`, `SupportsCorporateActions`, `SupportsOptionsChain`,
+and `SupportsBrokerage`. Backfill, symbol search, and on-demand corporate actions are additive
+fields; the application projects them from the same descriptor slots that register built-in
+factories. Provider IDs in the application catalog are canonical (`ibkr`, `nasdaq`), while
+ProviderSdk resolves accepted configuration aliases before the projection. Contracts keeps its
+static fallback independent of concrete adapters. Factory inventory alone supplies no readiness
+or entitlement proof: `MarketDataCapabilities` retains the provider's feed, pacing, entitlement,
+timestamp, and quality declarations. Historical dividend/split evidence does not imply an
+on-demand corporate-action factory. `ProviderCatalogCompositionTests` validates these fields and
+metadata through the actual public application registration path.
+
 Operations Continuity journal candidates carry a typed `Provenance` origin mark into the posting
 command. Omitted marks remain `Real`; seeded or simulated evidence must be explicitly marked,
 and the governed ledger boundary rejects mismatches.
 
 ## Shared close and lot convergence
 
+`AssetLotMutationInstructionDto.DisposalSalePrice` optionally retains the original disposal quote
+through governed drafting and posting. It is omitted from JSON when absent so existing retained
+event payloads keep their shape. Aggregate-only instructions do not claim an original quote.
+
 `Workstation/CloseReadinessDtos.cs` defines the declared five-dimension close scope, required contributor posture, and owner/record-linked blockers. `Accounting/Lots/` defines security-identified decimal lot views with retained acquisition currency, FX, basis, and evidence; this is an additive migration contract, not a legacy-writer cutover.
 
 `OpenLotBackfillDtos` adds retained acquisition-source packets, independent review, a durable exception queue, and versioned application receipts. Apply accepts a retained source identity rather than replacement acquisition facts. `MarkFreshnessDtos` carries one server decision per position, including observation date, age, policy version, and blocking reason; absent assessments remain review required. Close plan transports retain workflow, account, and evidence-version stamps for declared-scope validation.
 
 ## Purpose
+
+`TenantScopeEnforcementOptions.ConfigurationKey` names the supported `TenantScopeEnforcement`
+setting; host composition defaults to strict and honors its environment override. Compatibility
+mode is an explicit migration posture. Missing request/session authority cannot be replaced by
+client-supplied tenant IDs or an ambient worker scope.
+The application-setting parser accepts only the documented canonical values; the environment
+parser retains its legacy aliases separately. `TenantReadPredicate` uses the same resolved-tenant
+definition for rejection and filtering: `all` is unresolved. Strict mode refuses it, while explicit
+deployment-boundary compatibility leaves an unresolved caller unfiltered so migration does not
+hide records already attributed to real tenants.
 
 `Coordination/IExecutionLease.cs` defines execution-scoped ownership. A unique run owner can
 execute a side effect only while the coordination store excludes lease transfer. Managers or
@@ -1439,6 +1485,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-CONTRACTS -->
 | Roadmap item | Title |
 | --- | --- |
+| `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W3-CONT-001` | Research to paper continuity |
@@ -1502,6 +1549,7 @@ W7 live-readiness gate.
 
 ```bash
 dotnet build src/Meridian.Contracts/Meridian.Contracts.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderCatalogCompositionTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~LeaseManagerTests|FullyQualifiedName~ClusterCoordinatorServiceTests|FullyQualifiedName~SplitBrainDetectorTests|FullyQualifiedName~SubscriptionOrchestratorCoordinationTests|FullyQualifiedName~IngestionJobServiceCoordinationTests|FullyQualifiedName~DiagnosticsEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 ```

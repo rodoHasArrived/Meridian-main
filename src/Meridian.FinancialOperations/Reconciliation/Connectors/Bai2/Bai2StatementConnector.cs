@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text;
 using Meridian.Contracts.Integrity;
-using Meridian.Ledger;
+using Meridian.Core.ReferenceData;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors.Bai2;
 
@@ -196,6 +196,13 @@ public sealed class Bai2StatementConnector : IStatementConnector
                     {
                         issues.Add(StatementParseIssue.Error("BAI2_INVALID_CURRENCY",
                             "Account or containing group must supply explicit recognized currency before minor-unit conversion."));
+                        return Task.FromResult(EmptyResult(issues));
+                    }
+                    if (accountCurrency is "XAG" or "XAU" or "XBA" or "XBB" or "XBC" or "XBD"
+                        or "XDR" or "XPD" or "XPT" or "XSU" or "XUA")
+                    {
+                        issues.Add(StatementParseIssue.Error("BAI2_UNSUPPORTED_MINOR_UNITS",
+                            $"Currency {accountCurrency} has no defined ISO 4217 minor-unit scale for BAI2 integer amounts."));
                         return Task.FromResult(EmptyResult(issues));
                     }
                     if (account is { } identifiedAccount &&
@@ -563,13 +570,14 @@ public sealed class Bai2StatementConnector : IStatementConnector
 
     // BAI2 expresses amounts in the currency's minor units, so the scale to major units follows the
     // declared ISO 4217 currency, not an assumed two decimals: JPY has no minor unit (10000 is 10000
-    // yen, not 100), while the Gulf dinars use three. Assuming cents would misstate every balance and
-    // transaction for those currencies by one or two orders of magnitude.
+    // yen, not 100), the Gulf dinars use three decimals, and CLF/UYW use four. Codes with no defined
+    // ISO minor-unit scale are rejected before conversion rather than assuming cents.
     private static decimal ToMajorUnits(long minorUnits, string currency) => currency.Trim().ToUpperInvariant() switch
     {
         "JPY" or "KRW" or "CLP" or "ISK" or "VND" or "XAF" or "XOF" or "XPF"
-            or "BIF" or "DJF" or "GNF" or "KMF" or "PYG" or "RWF" or "UGX" or "VUV" => minorUnits,
+            or "BIF" or "DJF" or "GNF" or "KMF" or "PYG" or "RWF" or "UGX" or "UYI" or "VUV" => minorUnits,
         "BHD" or "IQD" or "JOD" or "KWD" or "LYD" or "OMR" or "TND" => minorUnits / 1_000m,
+        "CLF" or "UYW" => minorUnits / 10_000m,
         _ => minorUnits / 100m
     };
 

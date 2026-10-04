@@ -6,6 +6,8 @@ using Meridian.Core.Config;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Testing;
+using Meridian.Storage.Archival;
+using Meridian.Storage.Backfill;
 
 namespace Meridian.Tests.Backfill;
 
@@ -800,7 +802,7 @@ public sealed class BackfillWorkerServiceLifecycleTests
             EnableRateLimitRotation: false,
             Jobs: new BackfillJobsConfig(JobsDirectory: jobsDirectory));
 
-        var create = () => new BackfillServiceFactory().CreateServices(
+        var create = () => new BackfillServiceFactory(new AtomicFileWriterAdapter(), root => new JsonlBackfillBarWriter(root)).CreateServices(
             new AppConfig(DataRoot: artifacts.RootPath),
             config,
             artifacts.RootPath,
@@ -1029,7 +1031,7 @@ public sealed class BackfillWorkerServiceLifecycleTests
 
         if (ownedSymbolResolver is null && atomicWriteAsync is null)
         {
-            return new BackfillServiceFactory().CreateServices(
+            return new BackfillServiceFactory(new AtomicFileWriterAdapter(), root => new JsonlBackfillBarWriter(root)).CreateServices(
                 new AppConfig(DataRoot: dataRoot),
                 config,
                 dataRoot,
@@ -1053,7 +1055,8 @@ public sealed class BackfillWorkerServiceLifecycleTests
             ? new BackfillJobManager(
                 gapAnalyzer,
                 requestQueue,
-                jobsDirectory)
+                jobsDirectory,
+                new AtomicFileWriterAdapter())
             : new BackfillJobManager(
                 gapAnalyzer,
                 requestQueue,
@@ -1066,7 +1069,7 @@ public sealed class BackfillWorkerServiceLifecycleTests
             rateLimits,
             jobsConfig,
             new AppConfig(DataRoot: dataRoot),
-            dataRoot);
+            new JsonlBackfillBarWriter(dataRoot));
         return new BackfillServices(
             jobManager,
             requestQueue,

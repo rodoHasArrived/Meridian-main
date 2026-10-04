@@ -1,6 +1,10 @@
 using Meridian.Contracts.Tenancy;
+using Meridian.Application.UI;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
+using System.Text.Json;
 
 namespace Meridian.Application.Composition;
 
@@ -11,15 +15,47 @@ public static class TenantScopeServiceRegistration
     {
         if (!services.Any(descriptor => descriptor.ServiceType == typeof(TenantScopeEnforcementOptions)))
         {
-            // Attribute retained data before selecting fail-closed. An absent setting keeps the
-            // deployment-boundary default; an invalid explicit setting still refuses composition.
-            services.AddSingleton(TenantScopeEnforcementOptions.FromEnvironmentValue(
-                Environment.GetEnvironmentVariable(TenantScopeEnforcementOptions.EnvironmentVariable),
-                TenantScopeEnforcementOptions.DeploymentBoundary));
+            var environmentValue = Environment.GetEnvironmentVariable(TenantScopeEnforcementOptions.EnvironmentVariable);
+            // Refuse a misspelled explicit override immediately. Resolve file configuration from
+            // the final host graph, where ConfigStore/IConfiguration may be registered later.
+            var environmentOptions = string.IsNullOrWhiteSpace(environmentValue) ? null :
+                TenantScopeEnforcementOptions.FromEnvironmentValue(environmentValue, TenantScopeEnforcementOptions.FailClosed);
+            services.AddSingleton(sp => environmentOptions ?? ResolveConfiguration(sp));
         }
 
         services.TryAddSingleton<IFundScopeTenantAccessor, RetainedAuthorityFundScopeTenantAccessor>();
+        services.TryAddSingleton<ITenantCutoverReadinessCheck, PostgresTenantCutoverReadinessCheck>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, TenantCutoverGuardService>());
         return services;
+    }
+
+    private static TenantScopeEnforcementOptions ResolveConfiguration(IServiceProvider services)
+    {
+        var configured = services.GetService<IConfiguration>()?[TenantScopeEnforcementOptions.ConfigurationKey];
+        var path = services.GetService<ConfigStore>()?.ConfigPath;
+        if (configured is null && path is not null && File.Exists(path))
+        {
+            // ConfigStore.Load intentionally falls back on malformed files. Security posture must
+            // not use that recovery path: an unreadable explicit setting refuses startup.
+            using var document = JsonDocument.Parse(File.ReadAllText(path), new JsonDocumentOptions
+            {
+                AllowTrailingCommas = true,
+                CommentHandling = JsonCommentHandling.Skip
+            });
+            foreach (var property in document.RootElement.EnumerateObject())
+            {
+                if (property.Name.Equals(TenantScopeEnforcementOptions.ConfigurationKey, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                        continue;
+                    if (property.Value.ValueKind != JsonValueKind.String)
+                        throw new ArgumentException("TenantScopeEnforcement must be 'fail-closed' or 'deployment-boundary'.");
+                    configured = property.Value.GetString();
+                }
+            }
+        }
+
+        return TenantScopeEnforcementOptions.FromConfigurationValue(configured);
     }
 
     /// <summary>Replaces the worker fallback with the host adapter, preserving explicit registrations.</summary>

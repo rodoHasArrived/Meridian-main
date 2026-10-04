@@ -1,4 +1,4 @@
-using Meridian.Ledger;
+using Meridian.Core.ReferenceData;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 

@@ -42,7 +42,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("--surface web", self.web_workflow)
         self.assertIn("--require-fresh", self.web_workflow)
         self.assertIn("pull-requests: write", self.web_workflow)
-        self.assertIn("uses: peter-evans/create-pull-request@v8", self.web_workflow)
+        self.assertIn("uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1", self.web_workflow)
         capture_step = self.web_workflow.split("- name: Capture web screenshots", 1)[1].split(
             "- name: Validate web screenshot captures", 1
         )[0]

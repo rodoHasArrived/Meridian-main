@@ -3,6 +3,7 @@ using Meridian.Application.Composition;
 using Meridian.Application.FundStructure;
 using Meridian.Storage.Archival;
 using Meridian.Storage.FundStructure;
+using Meridian.Storage.FundAccounts;
 
 namespace Meridian.Application.Commands;
 
@@ -30,9 +31,9 @@ internal sealed class FundStructureTenantBackfillCommand : ICliCommand
         {
             var action = CliArguments.GetValue(args, "--action");
             var outputPath = CliArguments.GetValue(args, "--output");
-            if (action is not ("preview" or "apply") || string.IsNullOrWhiteSpace(outputPath))
+            if (action is not ("preview" or "apply" or "preview-resolution" or "resolve") || string.IsNullOrWhiteSpace(outputPath))
             {
-                await _output.WriteLineAsync("Use --fund-tenant-backfill --action preview|apply --output <evidence.json>. Apply also requires --run-id, --plan-hash, --operator, and --review-reference.");
+                await _output.WriteLineAsync("Use --fund-tenant-backfill --action preview|apply|preview-resolution|resolve --output <evidence.json>. Apply and resolve also require --run-id, --plan-hash, --operator, and --review-reference.");
                 return CliResult.Fail(2);
             }
 
@@ -42,11 +43,12 @@ internal sealed class FundStructureTenantBackfillCommand : ICliCommand
             using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
             deadline.CancelAfter(TimeSpan.FromSeconds(timeout));
 
-            if (action == "preview")
+            if (action is "preview" or "preview-resolution")
             {
-                var plan = await _createRunner().PreviewAsync(deadline.Token).ConfigureAwait(false);
+                var runner = _createRunner();
+                var plan = await (action == "preview" ? runner.PreviewAsync(deadline.Token) : runner.PreviewResolutionAsync(deadline.Token)).ConfigureAwait(false);
                 await AtomicFileWriter.WriteAsync(outputPath, JsonSerializer.Serialize(plan, new JsonSerializerOptions { WriteIndented = true }), UnixFileMode.UserRead | UnixFileMode.UserWrite, deadline.Token).ConfigureAwait(false);
-                await _output.WriteLineAsync($"Preview {plan.PlanHash}: {plan.Stamps.Count} proposed stamps, {plan.Exceptions.Count} exceptions, {plan.BlockingReasons.Count} apply blockers.");
+                await _output.WriteLineAsync($"Preview {plan.PlanHash}: {plan.Stamps.Count} proposed stamps, {plan.Exceptions.Count} exceptions, {plan.Resolutions.Count} reviewed releases, {plan.BlockingReasons.Count} apply blockers.");
                 return CliResult.Ok();
             }
 
@@ -55,7 +57,9 @@ internal sealed class FundStructureTenantBackfillCommand : ICliCommand
             var hash = Required(args, "--plan-hash");
             var operatorId = Required(args, "--operator");
             var reference = Required(args, "--review-reference");
-            var receipt = await _createRunner().ApplyAsync(runId, hash, operatorId, reference, deadline.Token).ConfigureAwait(false);
+            var applyRunner = _createRunner();
+            var receipt = await (action == "resolve" ? applyRunner.ResolveAsync(runId, hash, operatorId, reference, deadline.Token)
+                : applyRunner.ApplyAsync(runId, hash, operatorId, reference, deadline.Token)).ConfigureAwait(false);
             await AtomicFileWriter.WriteAsync(outputPath, JsonSerializer.Serialize(receipt, new JsonSerializerOptions { WriteIndented = true }), UnixFileMode.UserRead | UnixFileMode.UserWrite, deadline.Token).ConfigureAwait(false);
             await _output.WriteLineAsync($"Receipt {receipt.RunId}: {receipt.StampedRows} stamps, {receipt.QuarantinedRows} exceptions retained.");
             return CliResult.Ok();
@@ -80,10 +84,16 @@ internal sealed class FundStructureTenantBackfillCommand : ICliCommand
         var ledger = Environment.GetEnvironmentVariable(LedgerStartup.ConnectionStringVariable);
         ArgumentException.ThrowIfNullOrWhiteSpace(fund);
         ArgumentException.ThrowIfNullOrWhiteSpace(ledger);
+        var accountsConnection = Environment.GetEnvironmentVariable("MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING");
+        FundAccountStoreOptions? accounts = string.IsNullOrWhiteSpace(accountsConnection) ? null : new()
+        {
+            ConnectionString = accountsConnection,
+            Schema = Environment.GetEnvironmentVariable("MERIDIAN_FUND_ACCOUNTS_SCHEMA") ?? "fund_accounts"
+        };
         return new(new PostgresFundStructureTenantBackfillStore(new FundStructureStoreOptions
         {
             ConnectionString = fund,
             Schema = Environment.GetEnvironmentVariable(FundStructureStartup.SchemaVariable) ?? "fund_structure"
-        }, ledger, Environment.GetEnvironmentVariable(LedgerStartup.SchemaVariable) ?? "ledger"));
+        }, ledger, Environment.GetEnvironmentVariable(LedgerStartup.SchemaVariable) ?? "ledger", fundAccounts: accounts));
     }
 }

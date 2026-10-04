@@ -398,6 +398,199 @@ public sealed class PostgresFundAccountStoreTests : IClassFixture<FundAccountDat
         public string? ResolveCallerTenant() => tenant;
     }
 
+    [FundAccountDatabaseFact]
+    public async Task AllSentinel_DeploymentBoundaryRetainsAccountVisibilityWhileStrictReadsRefuse()
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var fundId = Guid.NewGuid();
+        var alpha = MakeAccount() with { FundId = fundId };
+        var beta = MakeAccount() with { FundId = fundId };
+        var legacy = MakeAccount() with { FundId = fundId };
+        await CreateStore(new FixedTenantAccessor("alpha")).UpsertAccountAsync(alpha, cts.Token);
+        await CreateStore(new FixedTenantAccessor("beta")).UpsertAccountAsync(beta, cts.Token);
+        await CreateStore(new FixedTenantAccessor(null)).UpsertAccountAsync(legacy, cts.Token);
+        var query = new AccountStructureQuery(FundId: fundId);
+
+        foreach (var sentinel in new[] { "all", "  ALL  " })
+        {
+            var maintenance = new PostgresFundAccountStore(_fixture.Options,
+                new FixedTenantAccessor(sentinel), TenantScopeEnforcementOptions.DeploymentBoundary);
+            (await maintenance.QueryAccountsAsync(query, cts.Token)).Select(account => account.AccountId)
+                .Should().BeEquivalentTo(new[] { alpha.AccountId, beta.AccountId, legacy.AccountId },
+                    "the legacy unscoped sentinel must not hide retained tenant-owned accounts during migration");
+            (await maintenance.GetAccountAsync(alpha.AccountId, cts.Token))!.AccountId.Should().Be(alpha.AccountId);
+            (await maintenance.GetAccountAsync(beta.AccountId, cts.Token))!.AccountId.Should().Be(beta.AccountId);
+
+            var strict = new PostgresFundAccountStore(_fixture.Options,
+                new FixedTenantAccessor(sentinel), TenantScopeEnforcementOptions.FailClosed);
+            await FluentActions.Awaiting(() => strict.QueryAccountsAsync(query, cts.Token))
+                .Should().ThrowAsync<TenantScopeRejectedException>();
+            await FluentActions.Awaiting(() => strict.GetAccountAsync(alpha.AccountId, cts.Token))
+                .Should().ThrowAsync<TenantScopeRejectedException>();
+        }
+
+        var owner = new PostgresFundAccountStore(_fixture.Options,
+            new FixedTenantAccessor("alpha"), TenantScopeEnforcementOptions.FailClosed);
+        (await owner.QueryAccountsAsync(query, cts.Token)).Should().ContainSingle()
+            .Which.AccountId.Should().Be(alpha.AccountId);
+        (await owner.GetAccountAsync(beta.AccountId, cts.Token)).Should().BeNull();
+    }
+
+    [FundAccountDatabaseFact]
+    public async Task StrictStore_AccountAndChildRecords_RejectMissingOrForeignAuthority()
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var owner = new PostgresFundAccountStore(_fixture.Options, new FixedTenantAccessor("alpha"), TenantScopeEnforcementOptions.FailClosed);
+        var account = MakeAccount();
+        await owner.UpsertAccountAsync(account, cts.Token);
+        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        var balance = new AccountBalanceSnapshotDto(Guid.NewGuid(), account.AccountId, account.FundId,
+            date, "USD", 125m, null, null, null, "tenant-test", DateTimeOffset.UtcNow, null);
+        var custody = new CustodianStatementBatchDto(Guid.NewGuid(), account.AccountId, date, "Custodian", "csv", 1, DateTimeOffset.UtcNow, "operator");
+        var position = MakePositionLine(custody.BatchId, account.AccountId, date, "SEC-1", false);
+        var bank = new BankStatementBatchDto(Guid.NewGuid(), account.AccountId, date, "Bank", 1, DateTimeOffset.UtcNow, "operator");
+        var bankLine = new BankStatementLineDto(Guid.NewGuid(), bank.BatchId, account.AccountId, date, date, 125m, "USD", "deposit", "test", null, 125m);
+        var run = new AccountReconciliationRunDto(Guid.NewGuid(), account.AccountId, date, "Completed", 1, 1, 0, 0m, DateTimeOffset.UtcNow, null, "operator");
+        var result = new AccountReconciliationResultDto(Guid.NewGuid(), run.ReconciliationRunId, "cash", true, "cash", "Matched", 125m, 125m, 0m, "matched");
+        var sync = MakeSyncEntry(account.AccountId, AccountSyncStatusDto.Succeeded);
+        var margin = MakeMarginSnapshot(account.AccountId, DateTimeOffset.UtcNow, 125m);
+        Func<PostgresFundAccountStore, Task>[] writes =
+        [
+            store => store.UpsertAccountAsync(account with { DisplayName = "updated" }, cts.Token),
+            store => store.InsertBalanceSnapshotAsync(balance, cts.Token),
+            store => store.InsertCustodianStatementBatchAsync(custody, [position], cts.Token),
+            store => store.InsertBankStatementBatchAsync(bank, [bankLine], cts.Token),
+            store => store.InsertReconciliationRunAsync(run, [result], cts.Token),
+            store => store.InsertSyncHistoryAsync(sync, cts.Token),
+            store => store.UpsertMarginSnapshotAsync(margin, cts.Token)
+        ];
+        foreach (var caller in new string?[] { null, " ", "all", "beta" })
+        {
+            var refused = new PostgresFundAccountStore(_fixture.Options, new FixedTenantAccessor(caller), TenantScopeEnforcementOptions.FailClosed);
+            using var enclosingWorker = FundScopeTenantAuthority.Enter("alpha", "must-not-override-request-authority");
+            foreach (var write in writes)
+                await FluentActions.Awaiting(() => write(refused)).Should().ThrowAsync<UnauthorizedAccessException>();
+        }
+
+        (await owner.GetAccountAsync(account.AccountId, cts.Token))!.DisplayName.Should().Be(account.DisplayName);
+        (await owner.GetBalanceHistoryAsync(account.AccountId, null, null, cts.Token)).Should().BeEmpty();
+        foreach (var write in writes)
+            await write(owner);
+
+        Func<PostgresFundAccountStore, Task>[] reads =
+        [
+            store => store.GetBalanceHistoryAsync(account.AccountId, null, null, cts.Token),
+            store => store.GetCustodianPositionsAsync(account.AccountId, date, cts.Token),
+            store => store.GetCustodianStatementBatchesAsync(account.AccountId, date, cts.Token),
+            store => store.GetBankStatementLinesAsync(account.AccountId, null, null, cts.Token),
+            store => store.GetReconciliationRunsAsync(account.AccountId, cts.Token),
+            store => store.GetReconciliationResultsAsync(run.ReconciliationRunId, cts.Token),
+            store => store.GetSyncHistoryAsync(account.AccountId, null, cts.Token),
+            store => store.GetMarginSnapshotsAsync(account.AccountId, cts.Token)
+        ];
+        foreach (var caller in new string?[] { null, "beta" })
+        {
+            var refused = new PostgresFundAccountStore(_fixture.Options, new FixedTenantAccessor(caller), TenantScopeEnforcementOptions.FailClosed);
+            foreach (var read in reads)
+                await FluentActions.Awaiting(() => read(refused)).Should().ThrowAsync<UnauthorizedAccessException>();
+        }
+        (await owner.GetBalanceHistoryAsync(account.AccountId, null, null, cts.Token)).Should().ContainSingle();
+        (await owner.GetCustodianPositionsAsync(account.AccountId, date, cts.Token)).Should().ContainSingle();
+        (await owner.GetBankStatementLinesAsync(account.AccountId, null, null, cts.Token)).Should().ContainSingle();
+        (await owner.GetReconciliationResultsAsync(run.ReconciliationRunId, cts.Token)).Should().ContainSingle();
+        (await owner.GetSyncHistoryAsync(account.AccountId, null, cts.Token)).Should().ContainSingle();
+        (await owner.GetMarginSnapshotsAsync(account.AccountId, cts.Token)).Should().ContainSingle();
+    }
+
+    [FundAccountDatabaseFact]
+    public async Task StrictStore_ChildIdentifiers_CannotAttachToAnotherAccountsRetainedRecords()
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var alpha = new PostgresFundAccountStore(_fixture.Options, new FixedTenantAccessor("alpha"), TenantScopeEnforcementOptions.FailClosed);
+        var beta = new PostgresFundAccountStore(_fixture.Options, new FixedTenantAccessor("beta"), TenantScopeEnforcementOptions.FailClosed);
+        var alphaAccount = MakeAccount();
+        var betaAccount = MakeAccount();
+        await alpha.UpsertAccountAsync(alphaAccount, cts.Token);
+        await beta.UpsertAccountAsync(betaAccount, cts.Token);
+        var sync = MakeSyncEntry(alphaAccount.AccountId, AccountSyncStatusDto.Succeeded);
+        await alpha.InsertSyncHistoryAsync(sync, cts.Token);
+        await FluentActions.Awaiting(() => beta.InsertSyncHistoryAsync(sync with { AccountId = betaAccount.AccountId, Status = AccountSyncStatusDto.Failed }, cts.Token))
+            .Should().ThrowAsync<UnauthorizedAccessException>();
+        (await alpha.GetSyncHistoryAsync(alphaAccount.AccountId, null, cts.Token)).Single().Status.Should().Be(AccountSyncStatusDto.Succeeded);
+
+        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        var batch = new CustodianStatementBatchDto(Guid.NewGuid(), alphaAccount.AccountId, date, "Custodian", "csv", 1, DateTimeOffset.UtcNow, "operator");
+        await alpha.InsertCustodianStatementBatchAsync(batch, [], cts.Token);
+        var forgedLine = MakePositionLine(batch.BatchId, betaAccount.AccountId, date, "SEC-1", false);
+        await FluentActions.Awaiting(() => beta.InsertCustodianStatementBatchAsync(batch with { AccountId = betaAccount.AccountId }, [forgedLine], cts.Token))
+            .Should().ThrowAsync<UnauthorizedAccessException>();
+        var ownBatch = batch with { BatchId = Guid.NewGuid(), AccountId = betaAccount.AccountId };
+        await FluentActions.Awaiting(() => beta.InsertCustodianStatementBatchAsync(ownBatch, [forgedLine], cts.Token))
+            .Should().ThrowAsync<UnauthorizedAccessException>();
+        await FluentActions.Awaiting(() => beta.InsertCustodianStatementBatchAsync(ownBatch, [forgedLine with { BatchId = ownBatch.BatchId, AccountId = alphaAccount.AccountId }], cts.Token))
+            .Should().ThrowAsync<UnauthorizedAccessException>();
+        (await beta.GetCustodianPositionsAsync(betaAccount.AccountId, date, cts.Token)).Should().BeEmpty();
+
+        var bank = new BankStatementBatchDto(Guid.NewGuid(), alphaAccount.AccountId, date, "Bank", 0, DateTimeOffset.UtcNow, "operator");
+        await alpha.InsertBankStatementBatchAsync(bank, [], cts.Token);
+        await FluentActions.Awaiting(() => beta.InsertBankStatementBatchAsync(bank with { AccountId = betaAccount.AccountId }, [], cts.Token))
+            .Should().ThrowAsync<UnauthorizedAccessException>();
+        var run = new AccountReconciliationRunDto(Guid.NewGuid(), alphaAccount.AccountId, date, "Completed", 0, 0, 0, 0m, DateTimeOffset.UtcNow, null, "operator");
+        await alpha.InsertReconciliationRunAsync(run, [], cts.Token);
+        await FluentActions.Awaiting(() => beta.InsertReconciliationRunAsync(run with { AccountId = betaAccount.AccountId }, [], cts.Token))
+            .Should().ThrowAsync<UnauthorizedAccessException>();
+        var forgedResult = new AccountReconciliationResultDto(Guid.NewGuid(), run.ReconciliationRunId, "cash", true, "cash", "Matched", 0m, 0m, 0m, "forged");
+        await FluentActions.Awaiting(() => beta.InsertReconciliationRunAsync(run with { ReconciliationRunId = Guid.NewGuid(), AccountId = betaAccount.AccountId }, [forgedResult], cts.Token))
+            .Should().ThrowAsync<UnauthorizedAccessException>();
+        (await alpha.GetReconciliationResultsAsync(run.ReconciliationRunId, cts.Token)).Should().BeEmpty();
+    }
+
+    [FundAccountDatabaseFact]
+    public async Task StrictStore_RetainedWorkerAuthority_CanWriteButCannotClaimUnattributedLegacyAccount()
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var legacy = MakeAccount();
+        await CreateStore().UpsertAccountAsync(legacy, cts.Token);
+        var strictWorker = new PostgresFundAccountStore(_fixture.Options, tenantScope: TenantScopeEnforcementOptions.FailClosed);
+        using (FundScopeTenantAuthority.Enter(" ALPHA ", "retained-account-job"))
+        {
+            var owned = MakeAccount();
+            await strictWorker.UpsertAccountAsync(owned, cts.Token);
+            await strictWorker.InsertSyncHistoryAsync(MakeSyncEntry(owned.AccountId, AccountSyncStatusDto.Succeeded), cts.Token);
+            (await strictWorker.GetSyncHistoryAsync(owned.AccountId, null, cts.Token)).Should().ContainSingle();
+            await FluentActions.Awaiting(() => strictWorker.UpsertAccountAsync(legacy with { DisplayName = "claimed" }, cts.Token))
+                .Should().ThrowAsync<UnauthorizedAccessException>();
+        }
+        (await CreateStore().GetAccountAsync(legacy.AccountId, cts.Token))!.DisplayName.Should().Be(legacy.DisplayName);
+        await FluentActions.Awaiting(() => strictWorker.UpsertAccountAsync(MakeAccount(), cts.Token)).Should().ThrowAsync<UnauthorizedAccessException>();
+    }
+
+    [FundAccountDatabaseFact]
+    public async Task StrictStore_RawLegacyImport_PreservesUnattributedRecordsForReviewedBackfill()
+    {
+        var options = CreateIsolatedOptions("strict_import");
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        try
+        {
+            await new FundAccountMigrationRunner(options).EnsureMigratedAsync(cts.Token);
+            var strict = new PostgresFundAccountStore(options, tenantScope: TenantScopeEnforcementOptions.FailClosed);
+            var account = MakeAccount();
+            (await strict.ImportLegacySnapshotIfEmptyAsync(CreateLegacyRequest(CreateSourceHash(), account), cts.Token))
+                .Should().Be(FundAccountLegacyImportResult.Imported);
+            (await new PostgresFundAccountStore(options).GetAccountAsync(account.AccountId, cts.Token)).Should().NotBeNull();
+            using var connection = new NpgsqlConnection(options.ConnectionString);
+            await connection.OpenAsync(cts.Token);
+            using var command = connection.CreateCommand();
+            command.CommandText = $"SELECT tenant_id FROM {options.Schema}.account_definition WHERE account_id = @account_id";
+            command.Parameters.AddWithValue("account_id", account.AccountId);
+            (await command.ExecuteScalarAsync(cts.Token)).Should().Be(DBNull.Value);
+        }
+        finally
+        {
+            await FundAccountDatabaseFixture.DropSchemaAsync(options.ConnectionString, options.Schema);
+        }
+    }
+
     private FundAccountStoreOptions CreateIsolatedOptions(string prefix) => new()
     {
         ConnectionString = _fixture.Options.ConnectionString,

@@ -634,7 +634,7 @@ python3 build/scripts/ai-architecture-check.py --src src/ check-adrs
 - **Code review agent (Lens 5):** [`.github/agents/code-review-agent.md`](code-review-agent.md)
 - **Brokerage gateway interface:** [`src/Meridian.Execution.Sdk/IBrokerageGateway.cs`](../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs)
 - **Options chain interface:** [`src/Meridian.ProviderSdk/IOptionsChainProvider.cs`](../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs)
-- **Historical capabilities:** [`src/Meridian.Infrastructure/Adapters/Core/HistoricalDataCapabilities.cs`](../../src/Meridian.Infrastructure/Adapters/Core/HistoricalDataCapabilities.cs) (preview: `HistoricalDataCapabilities.cs`)
+- **Historical capabilities:** [`src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs`](../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs) (preview: `HistoricalDataCapabilities.cs`)
 - **WebSocket base class:** [`src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs`](../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs)
 
 ---

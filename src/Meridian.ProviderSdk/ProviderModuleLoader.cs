@@ -58,7 +58,7 @@ public sealed class ProviderModuleLoader
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
         ArgumentNullException.ThrowIfNull(context);
-        _moduleContexts[moduleId] = context;
+        _moduleContexts[ProviderIdentity.NormalizeId(moduleId)] = context;
     }
 
     /// <summary>
@@ -69,7 +69,7 @@ public sealed class ProviderModuleLoader
     {
         ArgumentNullException.ThrowIfNull(contexts);
         foreach (var (id, ctx) in contexts)
-            _moduleContexts[id] = ctx;
+            ConfigureModule(id, ctx);
     }
 
     /// <summary>
@@ -135,7 +135,10 @@ public sealed class ProviderModuleLoader
             var moduleId = "(unknown)";
             try
             {
-                moduleId = module.ModuleId;
+                moduleId = ProviderIdentity.NormalizeId(module.ModuleId);
+
+                if (!module.IsProductionProvider)
+                    continue;
 
                 // Inject context when one was pre-registered for this module ID.
                 if (_moduleContexts.TryGetValue(moduleId, out var context))

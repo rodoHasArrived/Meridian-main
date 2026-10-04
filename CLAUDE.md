@@ -44,7 +44,7 @@ Meridian is a .NET 10 trading and operational-finance platform with fund operati
 - Operator UI work runs across two active, co-equal lanes: the browser workstation in
   `src/Meridian.Ui/dashboard/` and the reactivated WPF desktop workstation in `src/Meridian.Wpf/`.
   The WPF lane's immediate focus is closing web-UI parity gaps (`W8-WPF-PARITY-001`); see
-  `docs/development/wpf-web-ui-alignment-plan.md`.
+  `docs/engineering/plans/wpf-web-ui-alignment-plan.md`.
 - Built browser-workstation assets live in `src/Meridian.Ui/wwwroot/workstation/`.
 - Shared read-model and endpoint support belongs in `src/Meridian.Ui.Services/` and
   `src/Meridian.Ui.Shared/`.
@@ -138,9 +138,9 @@ path:
   reconciliation summaries, report-pack approvals).
 
 > Note: the out-of-process Chief of Staff (CoS) ADK runtime that previously owned this heavy-duty
-> path was archived in commit `7ee19e38f`. Its code and plan now live under
-> `archive/code/tools/chief-of-staff-runtime/` and `archive/docs/plans/chief-of-staff-runtime.md`
-> for historical reference only. Do not wire new work to it — use specialist agents plus the
+> path was archived in commit `7ee19e38f`, and the archive copies of its code and plan were
+> removed from the tree by the 2026-09-11 archive cleanup (`982eea2d`). For historical reference
+> only, recover them from the parent commit, e.g. `git show 8a420730:archive/docs/plans/chief-of-staff-runtime.md`. Do not wire new work to it — use specialist agents plus the
 > workflow-contract gates instead.
 
 ### Agent Design Patterns
@@ -210,3 +210,11 @@ When updating this file:
 - keep only evergreen guidance that accelerates task execution,
 - update the generator in `build/scripts/docs/update-claude-md.py` if automation would reintroduce
   bloat.
+
+CI/CD validation ownership and administrator rollout are maintained in
+[CI/CD ownership and rollout](docs/engineering/ci-cd-optimization.md). Meridian CI owns the four canonical
+`scripts/ci.sh` lanes; legacy CI owns Secret Scan and nightly/manual coverage.
+The four-lane `Meridian CI / quality-gate` keeps its identity. The always-reported
+`Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with
+Production Certification, including pull requests and merge groups.
+All CI governance changes require human review.

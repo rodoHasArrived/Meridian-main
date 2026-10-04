@@ -316,10 +316,12 @@ public sealed class DesktopWorkflowScriptTests
     {
         var workflow = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\windows-desktop-build.yml"));
 
-        workflow.Should().Contain("pwsh ./scripts/dev/validate-wpf-dev.ps1");
-        workflow.Should().Contain("-Restore");
-        workflow.Should().Contain("-Filter \"Category!=Integration&FullyQualifiedName!~Integration\"");
-        workflow.Should().Contain("-OutputRoot \"artifacts/wpf-validation/windows-desktop-build\"");
+        workflow.Should().Contain("python build/scripts/ci/run-windows-ci-tests.py");
+        workflow.Should().Contain("--results-dir artifacts/wpf-validation/windows-desktop-build");
+        var slices = File.ReadAllText(GetRepositoryFilePath(@"build\ci\windows-test-slices.json"));
+        slices.Should().Contain("Category!=Integration&FullyQualifiedName!~Integration");
+        slices.Should().Contain("Meridian.Setup.Tests.csproj");
+        slices.Should().Contain("Meridian.LifecycleSupervisor.Tests.csproj");
         workflow.Should().Contain("run_smoke_publish");
         workflow.Should().Contain("Decide desktop smoke publish");
         workflow.Should().Contain("if: steps.desktop-smoke.outputs.run == 'true'");
@@ -410,8 +412,21 @@ public sealed class DesktopWorkflowScriptTests
         sharedBuildScript.Should().Contain("function Invoke-MeridianWpfTempProjectCleanup");
         sharedBuildScript.Should().Contain("-Filter '*_wpftmp.csproj'");
 
-        workflow.Should().Contain("$devArgs = @{");
-        workflow.Should().Contain("Restore = $true");
+        workflow.Should().Contain("python build/scripts/ci/run-windows-ci-tests.py @sliceArgs");
+        workflow.Should().Contain("@('--slice', 'dev-loop'");
+        workflow.Should().Contain("$sliceArgs += '--build-only'");
+        workflow.Should().Contain("$sliceArgs += @('--filter', $env:TEST_FILTER)");
+
+        var sharedCiRunner = File.ReadAllText(GetRepositoryFilePath(@"build\scripts\ci\run-windows-ci-tests.py"));
+        sharedCiRunner.Should().Contain("\"restore\"");
+        sharedCiRunner.Should().Contain("\"build\"");
+        sharedCiRunner.Should().Contain("/m:1");
+        sharedCiRunner.Should().Contain("/nr:false");
+        sharedCiRunner.Should().Contain("/p:UseSharedCompilation=false");
+        using var slices = JsonDocument.Parse(File.ReadAllText(GetRepositoryFilePath(@"build\ci\windows-test-slices.json")));
+        var devLoop = slices.RootElement.EnumerateArray().Single(slice => slice.GetProperty("name").GetString() == "dev-loop");
+        devLoop.GetProperty("project").GetString().Should().Be("tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj");
+        devLoop.GetProperty("filter").GetString().Should().Be("FullyQualifiedName~DesktopWorkflowScriptTests");
 
         makefile.Should().Contain("desktop-test-dev:");
         makefile.Should().Contain("scripts/dev/validate-wpf-dev.ps1");

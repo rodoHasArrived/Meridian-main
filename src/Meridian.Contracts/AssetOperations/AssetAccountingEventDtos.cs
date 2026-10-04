@@ -320,7 +320,9 @@ public sealed record AssetLotMutationInstructionDto(
     Guid? CorrectsMutationBatchId = null,
     Guid? CorrectsJournalEntryId = null,
     LedgerAdjustmentApprovalMetadataDto? CorrectionApproval = null,
-    string? AssetAccountId = null)
+    string? AssetAccountId = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    decimal? DisposalSalePrice = null)
 {
     public IReadOnlyList<AssetDisposalLotSelectionDto> DisposalSelections { get; init; } =
         DisposalSelections ?? [];
@@ -851,6 +853,8 @@ public static class AssetLotMutationInstructionValidator
             if ((acquisition.AmortizationMethod.HasValue || acquisition.EffectiveYield.HasValue) &&
                 !acquisition.HasFaceValueTerms)
                 issues.Add("Acquisition amortization inputs apply only to a face lot stating its par terms.");
+            if (instruction.DisposalSalePrice is not null)
+                issues.Add("Acquisition instructions cannot carry a disposal sale price.");
             if (acquisition.AmortizationMethod is { } method &&
                 (!Enum.IsDefined(method) ||
                  (method == Meridian.Contracts.FixedIncome.BondAmortizationMethod.ConstantYield) != acquisition.EffectiveYield.HasValue))
@@ -870,6 +874,8 @@ public static class AssetLotMutationInstructionValidator
             }
 
             var ordinals = new HashSet<int>();
+            if (instruction.DisposalSalePrice is < 0m)
+                issues.Add("Disposal sale price must be nonnegative when supplied.");
             var lotIds = new HashSet<Guid>();
             var evidenceIds = retainedEvidence.Select(static item => item.EvidenceId)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);

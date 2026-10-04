@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using System.Text;
 using FluentAssertions;
 using Meridian.FinancialOperations.Reconciliation;
@@ -17,11 +18,11 @@ public sealed class BankStatementCurrencyEvidenceTests : IDisposable
     [InlineData("camt", "missing")]
     [InlineData("camt", "blank-amount")]
     [InlineData("camt", "invalid-amount")]
-    [InlineData("camt", "unrecognized-amount")]
+    [InlineData("camt", "unknown-code")]
     [InlineData("camt", "unrecognized-account")]
     [InlineData("bai2", "missing")]
     [InlineData("bai2", "invalid")]
-    [InlineData("bai2", "unrecognized")]
+    [InlineData("bai2", "unknown-code")]
     [InlineData("bai2", "previous-group")]
     public async Task MonthEndBankStatement_UnknownCurrencyCannotCreateAmountsOrRetainedEvidence(string format, string defect)
     {
@@ -32,7 +33,7 @@ public sealed class BankStatementCurrencyEvidenceTests : IDisposable
             {
                 "missing" => source.Replace("<Ccy>EUR</Ccy>", "").Replace(" Ccy=\"EUR\"", ""),
                 "blank-amount" => source.Replace("Ccy=\"EUR\"", "Ccy=\" \""),
-                "unrecognized-amount" => source.Replace("Ccy=\"EUR\"", "Ccy=\"ZZZ\""),
+                "unknown-code" => source.Replace("Ccy=\"EUR\"", "Ccy=\"ZZZ\""),
                 "unrecognized-account" => source.Replace("<Ccy>EUR</Ccy>", "<Ccy>ZZZ</Ccy>").Replace(" Ccy=\"EUR\"", ""),
                 _ => source.Replace("Ccy=\"EUR\"", "Ccy=\"???\"")
             };
@@ -42,7 +43,7 @@ public sealed class BankStatementCurrencyEvidenceTests : IDisposable
             source = source.Replace(",USD,", defect switch
             {
                 "invalid" => ",???,",
-                "unrecognized" => ",ZZZ,",
+                "unknown-code" => ",ZZZ,",
                 _ => ",,"
             });
             if (defect == "previous-group")
@@ -101,7 +102,7 @@ public sealed class BankStatementCurrencyEvidenceTests : IDisposable
     {
         var store = new JsonCanonicalStatementStore(_root);
         var workflow = StatementRunWorkflowService.CreateEphemeralForTesting(store,
-            new JsonReconciliationCaseStore(_root), new JsonReconciliationBreakStore(_root),
+            new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()), new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter()),
             new CsvBrokerStatementService(store), new StatementReconciliationContextAdapter(new StatementReconciliationService()));
         var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));
         return (new StatementImportService(new StatementConnectorRegistry([connector]), catalog, workflow, _root), workflow);

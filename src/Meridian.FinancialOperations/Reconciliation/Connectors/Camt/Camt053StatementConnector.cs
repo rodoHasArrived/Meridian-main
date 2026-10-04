@@ -4,7 +4,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using Meridian.Contracts.Integrity;
-using Meridian.Ledger;
+using Meridian.Core.ReferenceData;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors.Camt;
 

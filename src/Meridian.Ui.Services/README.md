@@ -6,16 +6,61 @@ module_id: SRC-UI-SERVICES
 path: src/Meridian.Ui.Services
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-09-05
+last_reviewed: 2026-10-01
 ---
 
 # src/Meridian.Ui.Services
 
 ## Purpose
 
+Owned credential connection discovery excludes incomplete ownership and duplicate connection IDs.
+Status reads accept an explicit connection ID so credential-management selection does not borrow
+provider-wide state. Account and environment metadata remain attached to each connection.
+
+`SetupWizardService.SaveCredentialsAsync` accepts a save only when the service acknowledges the requested
+provider's canonical ID with a Configured or Verified state.
+`SettingsConfigurationService.SaveProviderCredentialsAsync` returns the persisted state; `Partial` means
+the fields were saved while required fields are still missing, so callers report it as incomplete rather
+than as a failed save.
+Credential-management save, remove and verification operations use the shared authenticated API
+client. Saves send canonical field names; mutations require a matching provider and an acknowledged
+result state. Verification requires a successful, dated server result. Optional connection IDs route
+to retained scoped ownership. Fixed failure messages do not echo secrets or server response bodies.
+A 401 or 403 refusal throws `CredentialServiceRefusedException`, a subclass of the existing
+`InvalidOperationException`, whose message states that credential changes need a signed-in account
+with a tenant assignment and ManageCredentials. Nothing falls back to a local or environment store.
+Each `ProviderCredentialStatus` carries the vault field schema the service reported for that provider,
+or null when the service reported none; editors must use those names rather than the local catalog's.
+Status reads also include managed providers the service reports but the local market-data catalog
+omits (QuickBooks, Plaid, IB Flex). Verification treats a successful `NotRequired` result as ready.
+Removal accepts `Missing`, or `NotRequired` with an explicit `NotRequired` credential source;
+a missing or default source cannot confirm a `NotRequired` result.
+`providerWideOnly: true` reads provider-wide records only, without the tenant's connection credentials.
+Provider IDs use the shared ProviderSdk identity map for request paths, mutation acknowledgements,
+status joins and catalog deduplication. Aliases resolve to one canonical status row and retain the
+service field schema; ambiguous duplicate service rows remain unavailable. Status projections retain
+verification state and timestamp so callers can distinguish configured from verified credentials.
+
+`SettingsConfigurationService.GetProviderCredentialStatusesAsync` reads the authenticated service's
+credential states. Missing, ambiguous or refused responses remain unavailable, even when environment
+variables contain keys. The synchronous environment method remains a legacy diagnostic helper and
+is no longer used by the WPF settings, credential management or add-provider status surfaces.
+
+Setup wizard credential saves use the authenticated canonical credential API through the shared
+session/CSRF client. They no longer write secrets to application configuration, process environment,
+or user environment. An optional retained connection ID selects scoped persistence. Missing or refused
+API acknowledgements fail the save with fixed error text; there is no local plaintext fallback.
+
 Batch exports reject duplicate queue entries, skip cancelled attempts, and serialize atomic job-store writes with observable failures. Initial creation and manual or scheduled requeues persist before publishing to workers. Cancellation and removal persist before signalling an execution token or releasing job ownership; failed writes restore the previous status and keep queued work retryable. Successful cancellations and removals remain effective after restart; completion and failure notifications follow durable history and execution cleanup so subscribers can queue a repeat or retry. Raw, JSONL, and CSV are supported; Parquet is rejected until a physical writer exists. JSONL accounting uses the actual decompressed artifact path. CSV discovers all columns, quotes every cell, and fails with rejected row numbers before replacing an artifact. Backfill checkpoint mutations serialize per job and reclaim locks after the last holder or waiter leaves, including cancellation and persistence failures. Activity-feed persistence coalesces pending snapshots while preserving waiter completion and shutdown draining.
 
 UI services contains workstation endpoints, UI projections, and operator workflow service support.
+
+Fixture network delays retain their 50–149 ms simulation range and use a configurable time provider.
+The shared singleton uses system time. Tests control timer completion directly and verify both
+pre-cancelled and pending requests; caller cancellation is honored without waiting for simulated time.
+
+Provider health caches and history use ProviderSdk canonical family identities so accepted
+configuration and telemetry aliases address the same health row.
 
 
 `Services/Accounting/AccountingProjectionQueryService.cs` exposes shared accounting close projections for desktop and browser surfaces: trial balance, dimension-scoped roll-forward, source-linked audit rows, and close-state evidence gates.

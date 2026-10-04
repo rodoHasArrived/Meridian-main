@@ -52,7 +52,7 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
     //  IProviderMetadata                                                      //
     // --------------------------------------------------------------------- //
 
-    public string ProviderId => "alpaca-options";
+    public string ProviderId => "alpaca";
     public string ProviderDisplayName => "Alpaca Options";
     public string ProviderDescription => "US equity option chains with greeks and IV via Alpaca Markets Data API.";
     public int ProviderPriority => 8;

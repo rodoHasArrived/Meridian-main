@@ -3,9 +3,9 @@ using System.Text;
 using System.Text.Json;
 using System.Globalization;
 using Meridian.Contracts.Integrity;
+using Meridian.Core.ReferenceData;
 using Meridian.Domain.Reconciliation;
-using Meridian.Ledger;
-using Meridian.Storage.Archival;
+using Meridian.Core.IO;
 
 namespace Meridian.Infrastructure.Reconciliation;
 
@@ -742,11 +742,13 @@ public sealed record StatementBreakCaseworkAuditEvent(
 
 public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
 {
+    private readonly IAtomicFileWriter _atomicFileWriter;
     private readonly string _folder;
     private readonly SemaphoreSlim _gate = new(1, 1);
 
-    public JsonReconciliationBreakStore(string dataRoot)
+    public JsonReconciliationBreakStore(string dataRoot, IAtomicFileWriter atomicFileWriter)
     {
+        _atomicFileWriter = atomicFileWriter ?? throw new ArgumentNullException(nameof(atomicFileWriter));
         ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
         _folder = Path.Combine(dataRoot, "reconciliation", "statement-breaks");
     }
@@ -760,7 +762,7 @@ public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
             foreach (var record in records)
             {
                 ArgumentNullException.ThrowIfNull(record);
-                await AtomicFileWriter
+                await _atomicFileWriter
                     .WriteAsync(
                         BreakPath(record.BreakId),
                         JsonSerializer.Serialize(
@@ -866,7 +868,7 @@ public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
 
             if (retained is null || !SameArtifact(retained, authoritativeRecord))
             {
-                await AtomicFileWriter
+                await _atomicFileWriter
                     .WriteAsync(
                         BreakPath(initialRecord.BreakId),
                         JsonSerializer.Serialize(
@@ -878,7 +880,7 @@ public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
 
             if (retainedAudit is null)
             {
-                await AtomicFileWriter
+                await _atomicFileWriter
                     .WriteAsync(
                         auditPath,
                         JsonSerializer.Serialize(
@@ -950,7 +952,7 @@ public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
                     $"Source statement break '{next.BreakId}' no longer matches either retained source-commit image.");
             }
 
-            await AtomicFileWriter
+            await _atomicFileWriter
                 .WriteAsync(
                     BreakPath(next.BreakId),
                     JsonSerializer.Serialize(
@@ -1000,7 +1002,7 @@ public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
                 return;
             }
 
-            await AtomicFileWriter
+            await _atomicFileWriter
                 .WriteAsync(
                     path,
                     JsonSerializer.Serialize(

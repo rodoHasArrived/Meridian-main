@@ -1,56 +1,39 @@
-# Plans Source-Material Index
+# Plans Folder (Redirect Stubs Only)
 
 **Status:** transitional-compatibility
 **Owner:** core-team
-**Reviewed:** 2026-07-19
+**Reviewed:** 2026-09-28
 
-This folder is retained only for active or tool-consumed planning inputs that have not yet moved to
-an owning canonical lane. Do not add new durable roadmap truth here. Canonical direction is
-maintained in:
+**This folder holds no active plans.** Every planning document is listed in the single
+[Plans and Blueprints Register](../engineering/blueprints/README.md), which names each plan's home:
 
-- [`docs/product/README.md`](../product/README.md)
-- [`docs/engineering/README.md`](../engineering/README.md)
-- [`docs/operators/README.md`](../operators/README.md)
-- [`docs/roadmap/README.md`](../roadmap/README.md)
+- code-ready blueprints in [`docs/engineering/blueprints/`](../engineering/blueprints/README.md),
+- engineering working plans in [`docs/engineering/plans/`](../engineering/plans/README.md),
+- product delivery plans and prioritization inputs in [`docs/product/plans/`](../product/plans/README.md),
+- finished or superseded plans in [`archive/docs/plans/`](../../archive/docs/plans/README.md).
 
-## Current Role In The Rebuild
+Durable roadmap truth belongs in `docs/roadmap/data/*.yml` and generated roadmap views, never in a
+plan.
 
-- Treat plan files as source material unless explicitly linked from canonical targets.
-- High-traffic or completed plans are archived in [`../../archive/docs/plans/README.md`](../../archive/docs/plans/README.md).
-- Durable roadmap truth belongs in `docs/roadmap/data/*.yml` and generated roadmap views.
-- Durable implementation rules belong in `docs/engineering/README.md` and `docs/reference/` where appropriate.
+## Why the remaining files stay
 
-## Migration Summary
+Each file left here is a redirect stub. It stays at this path only because tooling or a historical
+record reads the path:
 
-Legacy planning content has been migrated to [`../../archive/docs/plans/`](../../archive/docs/plans/),
-and the archive-migration stubs that previously mirrored each archived plan in this folder have been
-removed. Use [`../../archive/docs/plans/README.md`](../../archive/docs/plans/README.md) for the full
-historical index; migration batch evidence is captured in `docs/documentation-inventory.md` as
-`archive` action rows.
+| File | Kept because |
+|---|---|
+| [report-writer-auto-preview-blueprint.md](report-writer-auto-preview-blueprint.md) | The append-only brainstorm ledger (`.claude/skills/meridian-brainstorm/brainstorm-history.jsonl`) records this path; the blueprint itself moved to `docs/engineering/blueprints/` |
+| [desktop-workstation-screen-blueprint.md](desktop-workstation-screen-blueprint.md) and [desktop-workstation-screen-blueprint.checklist.json](desktop-workstation-screen-blueprint.checklist.json) | Read by `scripts/dev/desktop_screen_blueprint_checklist.py` and its tests |
+| [paper-trading-cockpit-reliability-sprint.md](paper-trading-cockpit-reliability-sprint.md) | Evidence input for the pilot-readiness and paper-replay dashboard generators |
+| [codebase-audit-cleanup-roadmap.md](codebase-audit-cleanup-roadmap.md) | Referenced by the meridian-archive-organizer skill evaluation fixtures (`must_exist`) |
+| [research-backtest-trust-and-velocity-blueprint.md](research-backtest-trust-and-velocity-blueprint.md) | Redirect for inbound links to the archived plan |
 
-The files still present here stay because they are active or consumed by tooling at these paths:
+The four archive-migration stubs point at plans removed from the tree by the 2026-09-11 archive
+cleanup (`982eea2d`); their links resolve to the last copies at `8a420730`.
 
-- [security-master-passport-workbench.md](security-master-passport-workbench.md) — active plan; a
-  full blueprint, registered in the canonical
-  [blueprint register](../engineering/blueprints/README.md).
-- [desktop-workstation-screen-blueprint.md](desktop-workstation-screen-blueprint.md) and
-  [desktop-workstation-screen-blueprint.checklist.json](desktop-workstation-screen-blueprint.checklist.json)
-  — consumed by `scripts/dev/desktop_screen_blueprint_checklist.py` and its tests.
-- [paper-trading-cockpit-reliability-sprint.md](paper-trading-cockpit-reliability-sprint.md) —
-  evidence input for the pilot-readiness and paper-replay dashboard generators.
-- [codebase-audit-cleanup-roadmap.md](codebase-audit-cleanup-roadmap.md) — referenced by the
-  meridian-archive-organizer skill evaluation fixtures (`must_exist`).
-- [research-backtest-trust-and-velocity-blueprint.md](research-backtest-trust-and-velocity-blueprint.md)
-  — referenced by the meridian-simulated-user-panel skill evaluation manifests.
-- [report-writer-auto-preview-blueprint.md](report-writer-auto-preview-blueprint.md) — active,
-  unimplemented browser-workstation design; retained at this path because the 2026-07-13 brainstorm
-  ledger (`.claude/skills/meridian-brainstorm/brainstorm-history.jsonl`) records it as its
-  `document_updated` target. Indexed in the canonical
-  [blueprint register](../engineering/blueprints/README.md).
+## Rules
 
-## Migration Rules
-
-1. Add new long-form planning docs outside `docs/plans/` and into canonical targets only.
-2. Keep this folder as source material for historical context.
-3. Every archive batch must update this file (this index) and the target bucket README.
-4. After any migration batch, run `python build/scripts/docs/validate-docs-structure.py --summary` and link repair checks.
+1. Do not add plans here. File new plans in their home folder and add a register row.
+2. Remove a stub once nothing reads its path, and update this table.
+3. After any change, run `python build/scripts/docs/validate-docs-structure.py --summary` and the
+   link check.

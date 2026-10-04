@@ -239,6 +239,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
             : snapshot.AccountId;
         var accountCurrency = snapshot.Portfolio?.Account is { } portfolioAccount
             && AccountsMatch(account, portfolioAccount.AccountId?.Trim())
+            && string.Equals(portfolioAccount.Currency?.Trim(), "USD", StringComparison.OrdinalIgnoreCase)
                 ? portfolioAccount.Currency?.Trim().ToUpperInvariant()
                 : null;
         var activityCodeMap = StatementRecordMapper.BuildActivityCodeMap(profile);
@@ -307,7 +308,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
             foreach (var activity in richActivities)
             {
                 rowNumber++;
-                if (!TryRetain(MapRichActivity(account, activity)))
+                if (!TryRetain(MapRichActivity(account, activity, accountCurrency)))
                 {
                     return EmptyResult(profileId, issues);
                 }
@@ -481,8 +482,17 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
 
     private static StatementCanonicalRecord MapRichActivity(
         string account,
-        BrokerageActivityEventDto activity)
+        BrokerageActivityEventDto activity,
+        string? accountCurrency)
     {
+        string? currency = activity.Currency;
+        if (string.IsNullOrWhiteSpace(currency)
+            && activity.Category == BrokerageActivityCategory.Trade
+            && activity.Subtype == BrokerageActivitySubtype.TradeFill)
+        {
+            currency = accountCurrency;
+        }
+
         var kind = activity.Category switch
         {
             BrokerageActivityCategory.Fee => StatementRecordKind.Fee,
@@ -517,7 +527,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
             CashAmount: cashAmount,
             ActivityType: StatementRecordMapper.ToArtifactActivityType(kind),
             TradeDate: DateOnly.FromDateTime(activity.EffectiveAt.UtcDateTime),
-            Currency: string.IsNullOrWhiteSpace(activity.Currency) ? null : activity.Currency.ToUpperInvariant(),
+            Currency: string.IsNullOrWhiteSpace(currency) ? null : currency.ToUpperInvariant(),
             FeesCommission: commission,
             ExternalTransactionId: activity.EventId,
             ActivityCategory: activity.Category.ToString(),

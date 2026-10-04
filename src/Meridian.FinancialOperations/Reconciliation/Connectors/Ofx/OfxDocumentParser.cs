@@ -74,6 +74,7 @@ public static class OfxDocumentParser
         bound = OfxParseBound.None;
         var nodes = 0;
         var entryCount = 0;
+        var statementCount = 0;
         var root = new OfxNode("OFX-ROOT", null);
         var stack = new Stack<OfxNode>();
         stack.Push(root);
@@ -124,9 +125,11 @@ public static class OfxDocumentParser
 
             var selfClosing = rawTag.EndsWith("/", StringComparison.Ordinal);
             var name = NormalizeTagName(selfClosing ? rawTag[..^1] : rawTag);
+            if (name is "STMTRS" or "CCSTMTRS" or "INVSTMTRS")
+                statementCount++;
             var valueEnd = body.IndexOf('<', index);
             var value = selfClosing ? string.Empty : (valueEnd < 0 ? body[index..] : body[index..valueEnd]).Trim();
-            if (value.Length > 0 || name is "CURSYM" or "CURDEF")
+            if (value.Length > 0 || name is "CURSYM" or "CURDEF" or "ACCTID")
             {
                 // The same depth comparison the aggregate branch below makes, so a leaf is refused exactly
                 // where a child aggregate in its place would be. Only aggregates were checked, so a leaf
@@ -151,7 +154,13 @@ public static class OfxDocumentParser
                     break;
                 }
 
-                stack.Peek().Leaves[name] = DecodeEntities(value);
+                var decoded = DecodeEntities(value);
+                var leaves = stack.Peek().Leaves;
+                // Conflicting account or currency evidence cannot become authoritative by overwriting its predecessor.
+                leaves[name] = name is "ACCTID" or "CURDEF" or "CURSYM" && leaves.TryGetValue(name, out var previous)
+                    && !string.Equals(previous.Trim(), decoded.Trim(), StringComparison.OrdinalIgnoreCase)
+                        ? string.Empty
+                        : decoded;
             }
             else
             {
@@ -196,13 +205,14 @@ public static class OfxDocumentParser
         }
 
         var entries = new List<IReadOnlyDictionary<string, string>>();
-        var accountId = FindFirstLeaf(root, "ACCTID");
-        if (bound == OfxParseBound.None && !CollectEntries(root, accountId, entries, maxEntries))
+        if (bound == OfxParseBound.None && !CollectEntries(root, null, entries, maxEntries))
         {
             bound = OfxParseBound.TooManyEntries;
         }
 
-        return new OfxDocument(accountId, entries);
+        var accounts = entries.Select(entry => entry.GetValueOrDefault("ACCTID")?.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        var accountId = accounts.Length == 1 && !string.IsNullOrWhiteSpace(accounts[0]) ? accounts[0] : null;
+        return new OfxDocument(accountId, entries) { StatementCount = statementCount };
     }
 
     private static bool IsEntryNode(OfxNode node)
@@ -225,6 +235,9 @@ public static class OfxDocumentParser
         List<IReadOnlyDictionary<string, string>> entries,
         int maxEntries)
     {
+        if (node.Name is "STMTRS" or "CCSTMTRS" or "INVSTMTRS")
+            accountId = StatementAccount(node);
+
         if (IsEntryNode(node))
         {
             var entry = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -232,6 +245,13 @@ public static class OfxDocumentParser
                 [AggregateColumn] = node.Name.ToUpperInvariant()
             };
             FlattenLeaves(node, entry);
+            // A row may repeat its containing header, but cannot replace missing/ambiguous
+            // header authority or authorize itself under a contradictory account.
+            if (entry.TryGetValue("ACCTID", out var rowAccount)
+                && !string.Equals(rowAccount.Trim(), accountId, StringComparison.OrdinalIgnoreCase))
+            {
+                entry["ACCTID"] = string.Empty;
+            }
             // Currency belongs to the containing statement, never the first statement in the file.
             // A row-level currency remains authoritative, including an explicitly blank value.
             if (!entry.ContainsKey("CURSYM") && !entry.ContainsKey("CURDEF"))
@@ -368,22 +388,19 @@ public static class OfxDocumentParser
         return digits >= 8 ? trimmed[..8] : trimmed;
     }
 
-    private static string? FindFirstLeaf(OfxNode node, string tagName)
+    private static string? StatementAccount(OfxNode statement)
     {
-        if (node.Leaves.TryGetValue(tagName, out var value))
+        var identities = new List<string>();
+        if (statement.Leaves.TryGetValue("ACCTID", out var directAccount))
+            identities.Add(directAccount.Trim());
+        foreach (var header in statement.Children)
         {
-            return value;
+            if (header.Name is "BANKACCTFROM" or "CCACCTFROM" or "INVACCTFROM")
+                identities.Add(header.Leaves.TryGetValue("ACCTID", out var account) ? account.Trim() : string.Empty);
         }
-
-        foreach (var child in node.Children)
-        {
-            if (FindFirstLeaf(child, tagName) is { } found)
-            {
-                return found;
-            }
-        }
-
-        return null;
+        // Conflicting or blank header identities cannot supply authoritative account evidence.
+        var distinct = identities.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        return distinct.Length == 1 && distinct[0].Length > 0 ? distinct[0] : null;
     }
 
     private static string SkipSgmlHeader(string content)
@@ -394,8 +411,8 @@ public static class OfxDocumentParser
 
     private static string NormalizeTagName(string rawTag)
     {
-        // XML tags may carry attributes; OFX tag names never contain spaces.
-        var space = rawTag.IndexOf(' ');
+        // XML allows spaces, tabs, CR and LF between an element name and its attributes.
+        var space = rawTag.IndexOfAny([' ', '\t', '\r', '\n']);
         return (space < 0 ? rawTag : rawTag[..space]).Trim().ToUpperInvariant();
     }
 
@@ -423,7 +440,11 @@ public static class OfxDocumentParser
 /// <summary>A parsed OFX file flattened into uniform per-entry tag dictionaries.</summary>
 public sealed record OfxDocument(
     string? AccountId,
-    IReadOnlyList<IReadOnlyDictionary<string, string>> Entries);
+    IReadOnlyList<IReadOnlyDictionary<string, string>> Entries)
+{
+    /// <summary>Number of containing statement sections, including empty sections.</summary>
+    public int StatementCount { get; init; }
+}
 
 /// <summary>Which ingress bound, if any, stopped an OFX parse before the document was complete.</summary>
 public enum OfxParseBound

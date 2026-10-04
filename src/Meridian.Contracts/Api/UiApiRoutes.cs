@@ -385,7 +385,7 @@ public static class UiApiRoutes
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
 
-    // Passport Workbench governed-write surface (see docs/plans/security-master-passport-workbench.md).
+    // Passport Workbench governed-write surface (see docs/engineering/blueprints/security-master-passport-workbench.md).
     public const string SecurityMasterWorkbenchField = "/api/security-master/{securityId:guid}/workbench/field";
     public const string SecurityMasterWorkbenchResolveConflict = "/api/security-master/{securityId:guid}/workbench/resolve-conflict";
     public const string SecurityMasterWorkbenchSubmit = "/api/security-master/{securityId:guid}/workbench/submit";
@@ -866,6 +866,10 @@ public static class UiApiRoutes
     public const string LedgerJournalAutomationDailyMarkToMarketSchedules = "/api/ledger/journal-automation/daily-mark-to-market-schedules";
     public const string LedgerJournalAutomationDailyMarkToMarketRunDue = "/api/ledger/journal-automation/daily-mark-to-market-run-due";
     public const string LedgerJournalAutomationDailyMarkToMarketBatchLifecycle = "/api/ledger/journal-automation/daily-mark-to-market-batch-lifecycle";
+    public const string LedgerJournalAutomationRecurringOccurrences = "/api/ledger/journal-automation/recurring/occurrences";
+    public const string LedgerJournalAutomationRecurringSchedules = "/api/ledger/journal-automation/recurring/schedules";
+    public const string LedgerJournalAutomationRecurringRestore = "/api/ledger/journal-automation/recurring/restore-definitions";
+    public const string LedgerJournalAutomationRecurringInitialize = "/api/ledger/journal-automation/recurring/initialize";
     public const string LedgerJournalAutomationMonthlySchedules = "/api/ledger/journal-automation/monthly-schedules";
     public const string LedgerJournalAutomationMonthlyRunDue = "/api/ledger/journal-automation/monthly-schedules/run-due";
     public const string LedgerReportsTrialBalance = "/api/ledger/reports/trial-balance";
