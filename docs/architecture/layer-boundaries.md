@@ -67,6 +67,7 @@ Meridian (Host/Exe)   →  Application (+ transitive)
    and removals, including `_GlobalPropertiesToRemoveFromProjectReferences`. For projects
    importing `PrepareProjectReferences`, inspection runs that target and reads its prepared
    `_MSBuildProjectReferenceExistent` items so negotiated framework/platform metadata is included.
+   Declared references absent from prepared items are retained, including for empty/custom targets.
    Reference-specific `ToolsVersion` is part of context identity and is forwarded to child MSBuild.
    Unsupported toolsets fail closed, including when the same path also has a valid toolset context.
    Bare projects without that target retain evaluation-only inspection. Neither route restores

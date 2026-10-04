@@ -394,6 +394,50 @@ public sealed class ProjectReferenceGraphTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task NonstandardPreparation_ShouldPreserve_UnrepresentedDeclaredReferences(bool partialPreparation)
+    {
+        using var fixture = new ProjectGraphFixture();
+        var storage = fixture.WriteProject("Storage");
+        fixture.WriteProject("Contracts");
+        var infrastructure = fixture.WriteProject("Infrastructure", $"""
+            <ItemGroup><ProjectReference Include="../Storage/Storage.csproj" ReferenceOutputAssembly="false" /></ItemGroup>
+            <Target Name="PrepareProjectReferences">
+              {(partialPreparation ? "<ItemGroup><_MSBuildProjectReferenceExistent Include=\"../Contracts/Contracts.csproj\" /></ItemGroup>" : "")}
+            </Target>
+            """);
+        Assert.Empty(Directory.EnumerateFiles(fixture.Root, "*.cs", SearchOption.AllDirectories));
+        var failure = await Assert.ThrowsAsync<TrueException>(() =>
+            ProjectReferenceGraph.AssertNoDependencyAsync(infrastructure, storage, "Release"));
+        Assert.Contains("Infrastructure -> Storage", failure.Message);
+    }
+
+    [Theory]
+    [InlineData("PrepareProjectReferences")]
+    [InlineData("prepareprojectreferences")]
+    public async Task RepresentedPreparation_ShouldUse_NegotiatedContextWithoutRawDuplicate(string targetName)
+    {
+        using var fixture = new ProjectGraphFixture();
+        var storage = fixture.WriteProject("Storage");
+        fixture.WriteProject("Shared", """
+            <ItemGroup Condition="'$(IncludeStorage)' != 'false'"><ProjectReference Include="../Storage/Storage.csproj" /></ItemGroup>
+            <Target Name="Probe"><Error Condition="'$(IncludeStorage)' != 'false'" Text="Prepared context was lost" /></Target>
+            """);
+        var infrastructure = fixture.WriteProject("Infrastructure", $"""
+            <ItemGroup><ProjectReference Include="../Shared/Shared.csproj" /></ItemGroup>
+            <Target Name="{targetName}">
+              <ItemGroup><_MSBuildProjectReferenceExistent Include="../Shared/Shared.csproj" AdditionalProperties="IncludeStorage=false" /></ItemGroup>
+            </Target>
+            <Target Name="Probe" DependsOnTargets="PrepareProjectReferences">
+              <MSBuild Projects="@(_MSBuildProjectReferenceExistent)" Targets="Probe" />
+            </Target>
+            """);
+        await AssertRealMSBuildProbeAsync(infrastructure);
+        await ProjectReferenceGraph.AssertNoDependencyAsync(infrastructure, storage, "Release");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task UnsupportedReferenceToolsVersion_ShouldFailClosed_LikeRealMSBuildTask(bool repeatPath)
     {
         using var fixture = new ProjectGraphFixture();

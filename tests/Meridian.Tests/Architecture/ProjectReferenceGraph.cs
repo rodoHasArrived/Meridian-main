@@ -73,11 +73,11 @@ internal static class ProjectReferenceGraph
         var preprocessed = await RunMSBuildAsync(project, "-preprocess");
         var hasPreparation = XDocument.Parse(preprocessed).Descendants()
             .Any(element => element.Name.LocalName == "Target" &&
-                (string?)element.Attribute("Name") == "PrepareProjectReferences");
-        var itemName = hasPreparation ? "_MSBuildProjectReferenceExistent" : "ProjectReference";
+                StringComparer.OrdinalIgnoreCase.Equals((string?)element.Attribute("Name"), "PrepareProjectReferences"));
+        var itemNames = hasPreparation ? "ProjectReference,_MSBuildProjectReferenceExistent" : "ProjectReference";
         var arguments = new List<string>
         {
-            $"-getItem:{itemName}",
+            $"-getItem:{itemNames}",
             "-getProperty:_GlobalPropertiesToRemoveFromProjectReferences"
         };
         if (hasPreparation)
@@ -89,8 +89,18 @@ internal static class ProjectReferenceGraph
         using var evaluation = JsonDocument.Parse(output);
         var removals = evaluation.RootElement.GetProperty("Properties")
             .GetProperty("_GlobalPropertiesToRemoveFromProjectReferences").GetString() ?? "";
-        return evaluation.RootElement.GetProperty("Items").GetProperty(itemName)
-            .EnumerateArray()
+        var items = evaluation.RootElement.GetProperty("Items");
+        var declared = items.GetProperty("ProjectReference").EnumerateArray().ToArray();
+        var prepared = hasPreparation
+            ? items.GetProperty("_MSBuildProjectReferenceExistent").EnumerateArray().ToArray()
+            : [];
+        var representedPaths = prepared.Select(reference =>
+            Path.GetFullPath(reference.GetProperty("FullPath").GetString()!)).ToHashSet(PathComparer);
+        // Custom preparation targets may populate none or only some of the standard
+        // internal items. Preserve unrepresented declared edges, while using negotiated
+        // contexts for represented paths rather than adding an unnegotiated duplicate.
+        return prepared.Concat(declared.Where(reference => !representedPaths.Contains(
+                Path.GetFullPath(reference.GetProperty("FullPath").GetString()!))))
             .Select(reference => new ProjectContext(
                 Path.GetFullPath(reference.GetProperty("FullPath").GetString()!),
                 GetReferenceProperties(project.Properties, reference, removals),
