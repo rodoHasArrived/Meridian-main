@@ -438,6 +438,50 @@ public sealed class ProjectReferenceGraphTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task PartialPreparation_ShouldPreserve_DistinctSamePathProperties(bool enabledFirst)
+    {
+        using var fixture = new ProjectGraphFixture();
+        var storage = fixture.WriteProject("Storage");
+        fixture.WriteProject("Shared", """
+            <ItemGroup Condition="'$(IncludeStorage)' == 'true'"><ProjectReference Include="../Storage/Storage.csproj" /></ItemGroup>
+            """);
+        var infrastructure = fixture.WriteProject("Infrastructure", $"""
+            <ItemGroup>
+              <ProjectReference Include="../Shared/Shared.csproj" AdditionalProperties="IncludeStorage={enabledFirst.ToString().ToLowerInvariant()}" />
+              <ProjectReference Include="../Shared/Shared.csproj" AdditionalProperties="IncludeStorage={(!enabledFirst).ToString().ToLowerInvariant()}" />
+            </ItemGroup>
+            <Target Name="PrepareProjectReferences">
+              <ItemGroup><_MSBuildProjectReferenceExistent Include="../Shared/Shared.csproj" AdditionalProperties="IncludeStorage=false" /></ItemGroup>
+            </Target>
+            """);
+        var failure = await Assert.ThrowsAsync<TrueException>(() =>
+            ProjectReferenceGraph.AssertNoDependencyAsync(infrastructure, storage, "Release"));
+        Assert.Contains("Infrastructure -> Shared -> Storage", failure.Message);
+    }
+
+    [Fact]
+    public async Task PartialPreparation_ShouldPreserve_DistinctSamePathToolsets()
+    {
+        using var fixture = new ProjectGraphFixture();
+        var storage = fixture.WriteProject("Storage");
+        fixture.WriteProject("Shared");
+        var infrastructure = fixture.WriteProject("Infrastructure", """
+            <ItemGroup>
+              <ProjectReference Include="../Shared/Shared.csproj" ToolsVersion="Current" />
+              <ProjectReference Include="../Shared/Shared.csproj" ToolsVersion="BoundaryUnsupportedToolset" />
+            </ItemGroup>
+            <Target Name="PrepareProjectReferences">
+              <ItemGroup><_MSBuildProjectReferenceExistent Include="../Shared/Shared.csproj" ToolsVersion="Current" /></ItemGroup>
+            </Target>
+            """);
+        var failure = await Assert.ThrowsAsync<TrueException>(() =>
+            ProjectReferenceGraph.AssertNoDependencyAsync(infrastructure, storage, "Release"));
+        Assert.Contains("BoundaryUnsupportedToolset", failure.Message);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task UnsupportedReferenceToolsVersion_ShouldFailClosed_LikeRealMSBuildTask(bool repeatPath)
     {
         using var fixture = new ProjectGraphFixture();

@@ -94,18 +94,86 @@ internal static class ProjectReferenceGraph
         var prepared = hasPreparation
             ? items.GetProperty("_MSBuildProjectReferenceExistent").EnumerateArray().ToArray()
             : [];
-        var representedPaths = prepared.Select(reference =>
-            Path.GetFullPath(reference.GetProperty("FullPath").GetString()!)).ToHashSet(PathComparer);
-        // Custom preparation targets may populate none or only some of the standard
-        // internal items. Preserve unrepresented declared edges, while using negotiated
-        // contexts for represented paths rather than adding an unnegotiated duplicate.
-        return prepared.Concat(declared.Where(reference => !representedPaths.Contains(
-                Path.GetFullPath(reference.GetProperty("FullPath").GetString()!))))
+        var unrepresented = declared.ToList();
+        foreach (var reference in prepared)
+        {
+            var path = Path.GetFullPath(reference.GetProperty("FullPath").GetString()!);
+            var candidates = unrepresented.Where(item => PathComparer.Equals(path,
+                Path.GetFullPath(item.GetProperty("FullPath").GetString()!))).ToArray();
+            if (candidates.Length == 0)
+            {
+                continue;
+            }
+
+            var contexts = candidates.Select(item => CreateContext(project.Properties, item, removals)).ToArray();
+            var comparer = new ProjectContextComparer();
+            JsonElement? represented = contexts.Distinct(comparer).Count() == 1 ? candidates[0] : null;
+            if (represented is null)
+            {
+                var scored = candidates.Select(item => (Item: item, Score: ReferenceMatchScore(item, reference)))
+                    .Where(item => item.Score >= 0).OrderByDescending(item => item.Score).ToArray();
+                if (scored.Length > 0)
+                {
+                    var best = scored.Where(item => item.Score == scored[0].Score).ToArray();
+                    if (best.Select(item => CreateContext(project.Properties, item.Item, removals))
+                        .Distinct(comparer).Count() == 1)
+                    {
+                        represented = best[0].Item;
+                    }
+                }
+            }
+
+            if (represented is { } matched)
+            {
+                var context = CreateContext(project.Properties, matched, removals);
+                unrepresented.RemoveAll(item => comparer.Equals(context,
+                    CreateContext(project.Properties, item, removals)));
+            }
+        }
+
+        // Keep distinct unrepresented contexts, even when a prepared item shares their path.
+        // Ambiguous partial mappings retain declarations rather than dropping an edge.
+        return prepared.Concat(unrepresented)
             .Select(reference => new ProjectContext(
                 Path.GetFullPath(reference.GetProperty("FullPath").GetString()!),
                 GetReferenceProperties(project.Properties, reference, removals),
                 ReadMetadata(reference, "ToolsVersion") is { Length: > 0 } toolsVersion ? toolsVersion : null))
             .ToArray();
+    }
+
+    private static ProjectContext CreateContext(
+        IReadOnlyDictionary<string, string> parentProperties, JsonElement reference, string removals) =>
+        new(Path.GetFullPath(reference.GetProperty("FullPath").GetString()!),
+            GetReferenceProperties(parentProperties, reference, removals),
+            ReadMetadata(reference, "ToolsVersion") is { Length: > 0 } toolsVersion ? toolsVersion : null);
+
+    private static int ReferenceMatchScore(JsonElement declared, JsonElement prepared)
+    {
+        // Preparation may add framework/platform properties, but an explicit declared
+        // override or toolset must agree before it can identify a represented context.
+        var empty = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var expected = GetReferenceProperties(empty, declared, "");
+        var actual = GetReferenceProperties(empty, prepared, "");
+        var toolset = ReadMetadata(declared, "ToolsVersion");
+        var preparedToolset = ReadMetadata(prepared, "ToolsVersion");
+        if (expected.Any(property => !actual.TryGetValue(property.Key, out var value) ||
+            !StringComparer.Ordinal.Equals(property.Value, value)) ||
+            (toolset.Length > 0 && !StringComparer.OrdinalIgnoreCase.Equals(toolset,
+                preparedToolset.Length > 0 ? preparedToolset : "Current")))
+        {
+            return -1;
+        }
+
+        var removed = (ReadMetadata(declared, "UndefineProperties") + ";" +
+            ReadMetadata(declared, "GlobalPropertiesToRemove"))
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var preparedRemoved = (ReadMetadata(prepared, "UndefineProperties") + ";" +
+            ReadMetadata(prepared, "GlobalPropertiesToRemove"))
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return removed.All(preparedRemoved.Contains)
+            ? expected.Count + removed.Length + (toolset.Length > 0 ? 1 : 0)
+            : -1;
     }
 
     private static async Task<string> RunMSBuildAsync(ProjectContext project, params string[] arguments)
