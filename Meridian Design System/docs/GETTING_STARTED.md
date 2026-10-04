@@ -4,11 +4,11 @@ Welcome to **Meridian**, a production-ready design system for operator workstati
 
 ## 30-second overview
 
-Meridian ships **109 components**, **14 pre-built templates**, and **331 design tokens** grounded in the desktop app's **"Institutional Ops"** language: light institutional workstation, hairline borders, one steel-blue accent, desaturated semantics, no gradients or shadows.
+Meridian ships **109 components**, **14 pre-built templates**, and **331 design tokens** grounded in the **"Programmed Institutionalism"** language: light institutional workstation on warm drafting stock, hairline borders, one copper accent, desaturated semantics, no gradients or shadows.
 
-- **Light canvas** `#DEE3EA` with panels in gray-white
+- **Light canvas** `#F2F0EC` (Soft Stone) with panels in Architect White `#FBFAF8`
 - **Hard edges** (0–2px radii, visible borders, no card shadows)
-- **One accent** steel-blue `#2F6F8F` for primary actions
+- **One accent** copper `#A85436` for primary actions (hover `#AF6143`, pressed `#8C4429`)
 - **Mono data** (Cascadia/JetBrains Mono) for all prices, IDs, counts, timestamps
 - **Motion** 100–150ms ease on color/border; no springs, no entrance animation
 - **Keyboard-first** (Ctrl-K command palette, arrow navigation, focus rings)

@@ -136,9 +136,9 @@ public sealed class CatalogRebuildOptions
     public string[] IncludePatterns { get; init; } = new[] { "*.jsonl", "*.jsonl.gz", "*.parquet" };
 
     /// <summary>
-    /// Paths to exclude from scanning.
+    /// Paths to exclude from scanning, including internal durability metadata.
     /// </summary>
-    public string[] ExcludePaths { get; init; } = new[] { "_catalog", "_wal", "_temp" };
+    public string[] ExcludePaths { get; init; } = new[] { "_catalog", "_wal", "_dedup", "_temp" };
 }
 
 /// <summary>

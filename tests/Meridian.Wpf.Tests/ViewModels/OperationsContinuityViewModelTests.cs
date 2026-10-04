@@ -93,7 +93,7 @@ public sealed class OperationsContinuityViewModelTests
         viewModel.HasCalendarError.Should().BeTrue();
         viewModel.HasPolicyError.Should().BeTrue();
         viewModel.WorkflowRows.Should().BeEmpty();
-        viewModel.QueueRollup.StatusLabel.Should().Be("Clear", "an empty queue with no client rolls up as clear, not blocked");
+        viewModel.QueueRollup.StatusLabel.Should().Be("Blocked", "missing shared close authority must not appear clear");
         viewModel.NextAction.DisabledReason.Should().NotBeNull();
     }
 
@@ -123,6 +123,83 @@ public sealed class OperationsContinuityViewModelTests
 
         action.DisabledReason.Should().Be(
             "This workflow is closed and locked; use the governed reopen command to make changes.");
+    }
+
+    [Theory]
+    [InlineData("missing")]
+    [InlineData("stale")]
+    [InlineData("scope")]
+    [InlineData("version")]
+    public async Task SharedCloseDecision_BlocksAndRecoversWithoutTrustingClearLocalGates(string issue)
+    {
+        var scope = new CloseReadinessScopeDto("fund-alpha", Guid.NewGuid(), CreateSummary().FundAccountId, "entity-alpha", "2026-07");
+        var detail = CreateDetail() with
+        {
+            LedgerBookId = scope.LedgerBookId,
+            Status = OperationsWorkflowStatusDto.ReadyForClose,
+            Gates = [],
+            Blockers = [],
+            BreakCases = [],
+            CloseChecklist = [],
+            ReconciliationLanes = [],
+            NextActions = [new("close-workflow", "Close workflow", "/accounting/operations-continuity", null)]
+        };
+        var projection = new CloseReadinessProjectionDto(scope, DateTimeOffset.UtcNow, "Ready", true, true, [], []);
+        var commandCenter = new FinancialOperationsCommandCenterDto(DateTimeOffset.UtcNow, scope.FundProfileId,
+            scope.LedgerBookId, scope.FundAccountId, scope.PeriodId, "Ready", true, "Ready", 0, 0, 0, [], [],
+            ActiveWorkflow: detail, CloseReadiness: projection);
+        var client = new FakeOperationsClient
+        {
+            Workflows = [CreateSummary()],
+            Detail = detail,
+            CommandCenter = issue switch
+            {
+                "missing" => commandCenter with { CloseReadiness = null },
+                "scope" => commandCenter with { CloseReadiness = projection with { Scope = scope with { EntityId = "other-entity" } } },
+                "version" => commandCenter with { ActiveWorkflow = detail with { Version = detail.Version - 1 } },
+                _ => commandCenter with
+                {
+                    CloseReadiness = projection with
+                    {
+                        Status = "Blocked",
+                        IsReadyToClose = false,
+                        Blockers = [new("evidence-stale", "report-evidence", "Stale", 1, "Error", "Controller", "The retained report evidence is stale.", ["report-1"])]
+                    }
+                }
+            }
+        };
+        using var vm = new OperationsContinuityViewModel(client) { Parameter = scope };
+        await vm.RefreshAsync();
+        vm.CloseReadiness.IsReady.Should().BeFalse();
+        vm.NextAction.DisabledReason.Should().NotBeNull();
+        vm.QueueRows.Should().Contain(row => row.Id == "shared-close-readiness");
+
+        client.CommandCenter = commandCenter;
+        await vm.RefreshAsync();
+        vm.CloseReadiness.IsReady.Should().BeTrue();
+        vm.CloseReadiness.Label.Should().Be("Ready to close");
+        vm.NextAction.DisabledReason.Should().BeNull();
+        vm.QueueRows.Should().NotContain(row => row.Id == "shared-close-readiness");
+        vm.EntityInput = "other-entity";
+        vm.CloseReadiness.IsReady.Should().BeFalse("editing the scope invalidates the prior decision before another request");
+    }
+
+    [Fact]
+    public async Task EditingScope_DropsAnInFlightReadyResponse()
+    {
+        var scope = new CloseReadinessScopeDto("fund-alpha", Guid.NewGuid(), CreateSummary().FundAccountId, "entity-alpha", "2026-07");
+        var detail = CreateDetail() with { LedgerBookId = scope.LedgerBookId };
+        var pending = new TaskCompletionSource<FinancialOperationsCommandCenterDto?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var client = new FakeOperationsClient { Workflows = [CreateSummary()], Detail = detail, CloseReadinessLoader = () => pending.Task };
+        using var vm = new OperationsContinuityViewModel(client) { Parameter = scope };
+        var refresh = vm.RefreshAsync();
+        vm.EntityInput = "other-entity";
+        pending.SetResult(new FinancialOperationsCommandCenterDto(DateTimeOffset.UtcNow, scope.FundProfileId,
+            scope.LedgerBookId, scope.FundAccountId, scope.PeriodId, "Ready", true, "Ready", 0, 0, 0, [], [],
+            ActiveWorkflow: detail, CloseReadiness: new(scope, DateTimeOffset.UtcNow, "Ready", true, true, [], [])));
+        await refresh;
+        vm.CloseReadiness.IsReady.Should().BeFalse();
+        vm.QueueRollup.StatusLabel.Should().Be("Blocked");
     }
 
     private static OperationsContinuityWorkflowSummaryDto CreateSummary()
@@ -316,6 +393,11 @@ public sealed class OperationsContinuityViewModelTests
 
     private sealed class FakeOperationsClient : IOperationsControlCenterClient
     {
+        public FinancialOperationsCommandCenterDto? CommandCenter { get; set; }
+        public Func<Task<FinancialOperationsCommandCenterDto?>>? CloseReadinessLoader { get; set; }
+
+        public Task<FinancialOperationsCommandCenterDto?> GetCloseReadinessAsync(CloseReadinessScopeDto scope, CancellationToken ct = default)
+            => CloseReadinessLoader?.Invoke() ?? Task.FromResult(CommandCenter);
         public IReadOnlyList<OperationsContinuityWorkflowSummaryDto>? Workflows { get; set; }
 
         public OperationsContinuityWorkflowDto? Detail { get; set; }

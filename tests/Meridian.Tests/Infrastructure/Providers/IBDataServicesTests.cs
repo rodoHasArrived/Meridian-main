@@ -414,6 +414,70 @@ public sealed class IBDataServicesTests
     }
 
     [Fact]
+    public void CallbackBridge_ScannerRefreshCycles_ReplaceTheBatchInsteadOfAccumulating()
+    {
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport, "ignored-because-transport-supplies-identity");
+        var requestId = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"));
+
+        transport.RaiseScannerResult(requestId, Scanner(0, "AAPL"));
+        transport.RaiseScannerResult(requestId, Scanner(1, "MSFT"));
+        transport.RaiseScannerBatchEnd(requestId);
+        // The vendor re-sends the full current ranked list each cycle; MSFT left the scan, so
+        // the read model must report the current batch, not the union of every cycle.
+        transport.RaiseScannerResult(requestId, Scanner(0, "NVDA"));
+        transport.RaiseScannerResult(requestId, Scanner(1, "AAPL"));
+
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Streaming);
+        request.ScannerResults.Should().HaveCount(2);
+        request.ScannerResults!.Select(result => result.Symbol).Should().Equal("NVDA", "AAPL");
+
+        static ProviderScannerResult Scanner(int rank, string symbol)
+            => new(rank, symbol, "NASDAQ", null, null, null, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow));
+    }
+
+    [Fact]
+    public void CallbackBridge_FirstScannerCycleWithNoRows_PublishesTheEmptyScan()
+    {
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport, "ignored-because-transport-supplies-identity");
+        var requestId = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"));
+
+        // The very first cycle matched nothing: the delimiter arrives before any row, and the
+        // request must report the live empty scan instead of staying Requested with no results.
+        transport.RaiseScannerBatchEnd(requestId);
+
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Streaming);
+        request.ScannerResults.Should().NotBeNull().And.BeEmpty();
+    }
+
+    [Fact]
+    public void CallbackBridge_EmptyScannerRefreshCycle_ClearsTheCurrentBatch()
+    {
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport, "ignored-because-transport-supplies-identity");
+        var requestId = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"));
+
+        transport.RaiseScannerResult(requestId, Scanner(0, "AAPL"));
+        transport.RaiseScannerBatchEnd(requestId);
+        // A refresh matching nothing emits the next delimiter with no intervening rows; the
+        // read model must report the empty current scan, not keep exposing the prior batch.
+        transport.RaiseScannerBatchEnd(requestId);
+
+        services.GetRequests().Single().ScannerResults.Should().BeEmpty();
+
+        // A later cycle's first row still starts a fresh batch after the empty one.
+        transport.RaiseScannerResult(requestId, Scanner(0, "NVDA"));
+        services.GetRequests().Single().ScannerResults.Should().ContainSingle()
+            .Which.Symbol.Should().Be("NVDA");
+
+        static ProviderScannerResult Scanner(int rank, string symbol)
+            => new(rank, symbol, "NASDAQ", null, null, null, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow));
+    }
+
+    [Fact]
     public void Cancellation_MarksOnlyTheRequestedStreamAndCallsTransportCancellation()
     {
         var transport = new RecordingTransport();
@@ -424,6 +488,537 @@ public sealed class IBDataServicesTests
 
         services.GetRequests().Single().Status.Should().Be(ProviderDataRequestStatus.Cancelled);
         transport.Calls.Should().Contain($"cancel:{requestId}:pnl");
+    }
+
+    [Fact]
+    public void Cancellation_QueuedCallbacksArrivingAfterCancel_DoNotResurrectTheStream()
+    {
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport);
+        var requestId = services.SubscribeTickByTick(new SymbolConfig("AAPL"));
+        transport.RaiseTick(requestId, new ProviderTickByTickObservation(DateTimeOffset.UtcNow, "last", 200m, 10m));
+
+        services.CancelRequest(requestId, CancellationToken.None);
+
+        // The IB reader loop can still hold queued events for the cancelled id; neither a
+        // payload nor a completion may flip the operator-visible outcome back to a live status.
+        transport.RaiseTick(requestId, new ProviderTickByTickObservation(DateTimeOffset.UtcNow, "last", 201m, 5m));
+        transport.RaiseCompleted(requestId);
+
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Cancelled);
+        request.TickByTickObservations.Should().ContainSingle();
+    }
+
+    [Fact]
+    public void Cancellation_MarketDataTypeArrivingAfterCancel_LeavesLineageAndReadModelFrozenTogether()
+    {
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport);
+        var requestId = services.SubscribeTickByTick(new SymbolConfig("AAPL"));
+        transport.RaiseMarketDataType(requestId, 1);
+
+        services.CancelRequest(requestId, CancellationToken.None);
+
+        // Lineage evidence outlives the request, so a queued availability callback for the
+        // cancelled id must not mutate it: the retained lineage and the frozen read model
+        // must keep reporting the same availability the request had when it went terminal.
+        transport.RaiseMarketDataType(requestId, 3);
+
+        services.GetLineage().Single().Availability.Should().Be(IBMarketDataAvailability.Live);
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Cancelled);
+        request.Lineage!.Availability.Should().Be(IBMarketDataAvailability.Live);
+    }
+
+    [Fact]
+    public void Cancellation_TransportCancelFailure_LeavesTheRequestRoutableForRejection()
+    {
+        var transport = new CallbackTransport { CancelFailure = new InvalidOperationException("socket write failed") };
+        using var services = new IBDataServices(transport);
+        var requestId = services.SubscribeTickByTick(new SymbolConfig("AAPL"));
+
+        var act = () => services.CancelRequest(requestId, CancellationToken.None);
+
+        // The vendor stream may still be live, so the request must not be reported cancelled
+        // and the request-scoped error that follows must still reach the read model.
+        act.Should().Throw<InvalidOperationException>();
+        services.GetRequests().Single().Status.Should().Be(ProviderDataRequestStatus.Requested);
+
+        transport.RaiseRejected(requestId, "10197", "No market data during competing live session.");
+        services.GetRequests().Single().Status.Should().Be(ProviderDataRequestStatus.Rejected);
+    }
+
+    /// <summary>
+    /// The routability pre-checks on the reader loop cannot close the race where a terminal
+    /// transition lands between the check and the recorder, so the freeze is enforced inside
+    /// the atomic read-model update itself: even a direct record call on a terminal request
+    /// is dropped rather than resurrecting it.
+    /// </summary>
+    [Fact]
+    public void Cancellation_DirectRecordAfterCancel_DoesNotResurrectTheReadModel()
+    {
+        var services = new IBDataServices(new RecordingTransport());
+        var requestId = services.SubscribeTickByTick(new SymbolConfig("AAPL"));
+
+        services.CancelRequest(requestId, CancellationToken.None);
+        services.RecordTickByTick(requestId, new ProviderTickByTickObservation(DateTimeOffset.UtcNow, "last", 200m, 10m));
+
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Cancelled);
+        request.TickByTickObservations.Should().BeNullOrEmpty();
+    }
+
+    [Fact]
+    public void Cancellation_LandingBetweenRequestedPublicationAndSend_SkipsTheTransportSubmission()
+    {
+        var transport = new RecordingTransport();
+        var services = new IBDataServices(transport);
+
+        // A watcher reacting to the Requested publication reproduces the cancel-before-send
+        // race deterministically: it runs inside Issue, after the read model is public but
+        // before the transport submission.
+        services.ReadModelUpdated += model =>
+        {
+            if (model.Status == ProviderDataRequestStatus.Requested)
+                services.CancelRequest(model.RequestId, CancellationToken.None);
+        };
+
+        services.SubscribePnl("DU123", "model-a");
+
+        // The cancel won the pre-send window, so the submission must be skipped entirely —
+        // and no wire cancel is spent either: nothing was submitted, and a transport that
+        // rejects cancellation of an unknown id would throw through this subscriber into
+        // Issue's registration handling.
+        services.GetRequests().Single().Status.Should().Be(ProviderDataRequestStatus.Cancelled);
+        transport.Calls.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Cancellation_PreSendWithARejectingTransportCancel_StillLandsCancelled()
+    {
+        // A transport that rejects cancellation of an unknown request must never get the
+        // chance to throw through the subscriber into Issue's registration handling: the
+        // pre-send freeze alone prevents the submission, so no wire cancel is attempted.
+        var transport = new CallbackTransport { CancelFailure = new InvalidOperationException("unknown request id") };
+        using var services = new IBDataServices(transport);
+        services.ReadModelUpdated += model =>
+        {
+            if (model.Status == ProviderDataRequestStatus.Requested)
+                services.CancelRequest(model.RequestId, CancellationToken.None);
+        };
+
+        var requestId = services.SubscribePnl("DU123", "model-a");
+
+        services.GetRequests().Single(x => x.RequestId == requestId).Status
+            .Should().Be(ProviderDataRequestStatus.Cancelled);
+    }
+
+    [Fact]
+    public void LineageSubscriberCancellingAtRegistration_LeavesTheTerminalModelAsTheLastPublication()
+    {
+        using var services = new IBDataServices(new CallbackTransport());
+        var statuses = new List<ProviderDataRequestStatus>();
+        services.ReadModelUpdated += model => statuses.Add(model.Status);
+
+        // A consumer reacting to the registration-time lineage publication by cancelling the
+        // request runs before Issue's own drain: the Requested projection must already sit in
+        // the per-request queue ahead of the terminal model, or watchers would receive stale
+        // Requested after Cancelled.
+        services.LineageUpdated += lineage =>
+        {
+            if (lineage.Status == "requested")
+                services.CancelRequest(lineage.RequestId, CancellationToken.None);
+        };
+
+        services.SubscribePnl("DU123", "model-a");
+
+        services.GetRequests().Single().Status.Should().Be(ProviderDataRequestStatus.Cancelled);
+        statuses.Should().Equal(ProviderDataRequestStatus.Requested, ProviderDataRequestStatus.Cancelled);
+    }
+
+    [Fact]
+    public void ConcurrentTerminalTransitions_WithCrossCancellingSubscriber_DoNotDeadlock()
+    {
+        using var services = new IBDataServices(new CallbackTransport());
+        var first = services.SubscribePnl("DU1", "model-a");
+        var second = services.SubscribePnl("DU2", "model-b");
+
+        // A synchronous watcher reacting to one request's completion by cancelling the other
+        // models the cross-request reaction that must not entangle two requests' gates: with
+        // publications delivered under the per-request locks, two concurrent completions each
+        // holding their own gate while cancelling the other would deadlock both transitions.
+        services.ReadModelUpdated += model =>
+        {
+            if (model.Status == ProviderDataRequestStatus.Completed)
+                services.CancelRequest(model.RequestId == first ? second : first, CancellationToken.None);
+        };
+
+        var completeFirst = Task.Run(() => services.CompleteRequest(first));
+        var completeSecond = Task.Run(() => services.CompleteRequest(second));
+
+        Task.WaitAll([completeFirst, completeSecond], TimeSpan.FromSeconds(10)).Should().BeTrue(
+            "terminal transitions must not deadlock on each other's publication callbacks");
+        services.GetRequests().Should().OnlyContain(request =>
+            request.Status == ProviderDataRequestStatus.Completed
+            || request.Status == ProviderDataRequestStatus.Cancelled);
+    }
+
+    [Fact]
+    public void MarketDataTypeReportedInsideTheGatedSend_RaisesLineageAfterTheGateIsReleased()
+    {
+        // The transport reports availability synchronously while Issue's send still holds the
+        // request's gate. If the lineage notification were raised there, the subscriber would run
+        // under the gate and any other thread transitioning the same request would block until
+        // the subscriber returned — the probe below joins such a thread with a timeout.
+        using var services = new IBDataServices(new CallbackTransport { ReportMarketDataTypeDuringPnlRequest = true });
+        var completedWithoutBlocking = false;
+        services.LineageUpdated += lineage =>
+        {
+            if (lineage.Status == "market-data-type")
+            {
+                var complete = Task.Run(() => services.CompleteRequest(lineage.RequestId));
+                completedWithoutBlocking = complete.Wait(TimeSpan.FromSeconds(10));
+            }
+        };
+
+        services.SubscribePnl("DU123", "model-a");
+
+        completedWithoutBlocking.Should().BeTrue(
+            "the availability lineage notification must be delivered after the gated send releases the request gate, where other threads can transition the request");
+        services.GetRequests().Single().Status.Should().Be(ProviderDataRequestStatus.Completed);
+    }
+
+    [Fact]
+    public void ConcurrentIssues_WithCrossCancellingLineageSubscriber_DoNotDeadlock()
+    {
+        // Two requests are issued concurrently on a transport whose send reports availability
+        // synchronously, and a lineage subscriber reacting to that report cancels the other
+        // request. Raised under the sending thread's gate, each subscriber would hold its own
+        // request's gate while taking the other's — the cross-request cycle the publication
+        // queue exists to prevent.
+        using var services = new IBDataServices(new CallbackTransport { ReportMarketDataTypeDuringPnlRequest = true });
+        var seen = new List<int>();
+        services.LineageUpdated += lineage =>
+        {
+            int[] others;
+            lock (seen)
+            {
+                if (!seen.Contains(lineage.RequestId))
+                    seen.Add(lineage.RequestId);
+                others = lineage.Status == "market-data-type"
+                    ? seen.Where(id => id != lineage.RequestId).ToArray()
+                    : [];
+            }
+
+            foreach (var other in others)
+                services.CancelRequest(other, CancellationToken.None);
+        };
+
+        var issueFirst = Task.Run(() => services.SubscribePnl("DU1", "model-a"));
+        var issueSecond = Task.Run(() => services.SubscribePnl("DU2", "model-b"));
+
+        Task.WaitAll([issueFirst, issueSecond], TimeSpan.FromSeconds(10)).Should().BeTrue(
+            "a lineage subscriber reacting to an availability report delivered inside one request's gated send must not entangle two requests' gates");
+        services.GetRequests().Should().OnlyContain(request =>
+            request.Status == ProviderDataRequestStatus.Requested
+            || request.Status == ProviderDataRequestStatus.Cancelled);
+    }
+
+    [Fact]
+    public async Task TimeoutDuringAStalledSubmission_FailsClosedWithoutWaitingForTheTransport()
+    {
+        // A submission stalled on the wire (socket backpressure, a wedged custom transport)
+        // must not pin the request's transition gate: a watcher that saw the published
+        // Requested model can still time the request out, the read model reaches its
+        // fail-closed TimedOut state immediately, and the wire cancel is deferred to the
+        // submitting thread for when the subscription actually exists.
+        using var transport = new StallingScannerTransport();
+        using var services = new IBDataServices(transport);
+
+        var issueTask = Task.Run(() => services.RequestScanner(
+            new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN")));
+        transport.SubmissionStarted.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue();
+        var requestId = services.GetRequests().Single().RequestId;
+
+        await Task.Run(() => services.TimeoutRequest(requestId)).WaitAsync(TimeSpan.FromSeconds(5));
+
+        services.GetRequests().Single().Status.Should().Be(ProviderDataRequestStatus.TimedOut);
+        transport.CancelledCapabilities.Should().BeEmpty(
+            "the wire cancel waits for the stalled submission to return instead of blocking the timeout");
+
+        transport.ReleaseSubmission.Set();
+        (await issueTask.WaitAsync(TimeSpan.FromSeconds(5))).Should().Be(requestId);
+        transport.CancelledCapabilities.Should().ContainSingle().Which.Should().Be("scanner");
+    }
+
+    private sealed class StallingScannerTransport : IIBDataServiceTransport, IDisposable
+    {
+        public ManualResetEventSlim SubmissionStarted { get; } = new(false);
+        public ManualResetEventSlim ReleaseSubmission { get; } = new(false);
+        public IReadOnlyList<string> CancelledCapabilities => _cancelledCapabilities;
+        private readonly List<string> _cancelledCapabilities = [];
+
+        public void RequestScanner(int requestId, IBScannerRequest request)
+        {
+            SubmissionStarted.Set();
+            ReleaseSubmission.Wait(TimeSpan.FromSeconds(30));
+        }
+
+        public void RequestContractDetails(int requestId, SymbolConfig contract) { }
+        public void RequestOptionChain(int requestId, SymbolConfig underlying) { }
+        public void RequestHistoricalNews(int requestId, int conId, string providerCodes, DateTimeOffset start, DateTimeOffset end, int maximumResults) { }
+        public void RequestNewsArticle(int requestId, string providerCode, string articleId) { }
+        public void RequestFundamentals(int requestId, SymbolConfig contract, string reportType) { }
+        public void RequestDividendEarnings(int requestId, SymbolConfig contract) { }
+        public void RequestTickByTick(int requestId, SymbolConfig contract, string tickType, int numberOfTicks, bool ignoreSize) { }
+        public void RequestPnl(int requestId, string account, string? modelCode) { }
+        public void RequestMarketRule(int requestId, int marketRuleId) { }
+        public void RequestDepthExchanges(int requestId) { }
+
+        public void CancelDataRequest(int requestId, string capability)
+        {
+            lock (_cancelledCapabilities)
+                _cancelledCapabilities.Add(capability);
+        }
+
+        public void Dispose()
+        {
+            SubmissionStarted.Dispose();
+            ReleaseSubmission.Dispose();
+        }
+    }
+
+    [Fact]
+    public void DurableMaterializations_PairEachModelWithItsOwnLineageSnapshot()
+    {
+        // Two availability reports land inside the gated send, so two lineage-and-model
+        // transitions sit queued before any drain runs. Each durable materialization must carry
+        // the lineage snapshot its model was built with: resolving the live lineage map at drain
+        // time instead would pair the first queued model with the second, newer lineage.
+        var store = new RecordingDurableResultStore();
+        var transport = new CallbackTransport { MarketDataTypesDuringPnlRequest = [3, 1] };
+        using var services = new IBDataServices(transport, new IBDurableResultProjector(store));
+
+        services.SubscribePnl(
+            "DU123", "model-a", ownership: new IBDataRequestOwnership("tenant-a", "company-a"));
+
+        store.Materializations.Should().NotBeEmpty();
+        foreach (var (request, lineage) in store.Materializations)
+        {
+            lineage.Should().BeSameAs(request.Lineage,
+                "a durable materialization must persist the lineage snapshot its read model was built with");
+        }
+    }
+
+    private sealed class RecordingDurableResultStore : IBDurableResultStore
+    {
+        public List<(ProviderDataRequestReadModel Request, IBDataLineage? Lineage)> Materializations { get; } = [];
+
+        public void Upsert(
+            IBDataRequestOwnership ownership,
+            string providerConnectionId,
+            string requestCorrelationId,
+            ProviderDataRequestReadModel request,
+            IBDataLineage? lineage)
+            => Materializations.Add((request, lineage));
+
+        public IReadOnlyList<IBDurableResult> Get(
+            string tenantId,
+            string companyId,
+            string? capability = null,
+            string? accountId = null,
+            string? modelAccountId = null)
+            => [];
+    }
+
+    [Fact]
+    public void CrossCapabilityCallbacks_WithACollidingRequestId_DoNotTouchTheReadModel()
+    {
+        // The vendor allocates ordinary ticker ids independently of this service's request ids,
+        // so a foreign stream's id can collide with a tracked request after subscription churn.
+        // A payload whose domain does not match the tracked request's capability must be
+        // dropped, not appended to the unrelated read model and its durable projection.
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport);
+        var requestId = services.SubscribePnl("DU123", "model-a");
+
+        transport.RaiseTick(requestId, new ProviderTickByTickObservation(DateTimeOffset.UtcNow, "last", 200m, 10m));
+        transport.RaiseScanner(requestId, new ProviderScannerResult(
+            0, "AAPL", "NASDAQ", null, null, null, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow)));
+        transport.RaiseScannerBatchEnd(requestId);
+
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Requested,
+            "a foreign-domain payload must not advance an unrelated request to Streaming");
+        request.TickByTickObservations.Should().BeNullOrEmpty();
+        request.ScannerResults.Should().BeNullOrEmpty();
+
+        // The request's own domain still records.
+        transport.RaisePnl(requestId, new ProviderAccountPnl(
+            "DU123", "model-a", 10m, 4m, 6m, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow)));
+        services.GetRequests().Single().Pnl.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void OptionPayloadOnAContractDetailsRequest_IsRecorded()
+    {
+        // The manager's contractDetails callback deliberately emits an option payload alongside
+        // the details when a contract-details request resolves to an option; the capability
+        // guard must accept that flow, not only the option-chain request's.
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport);
+        var requestId = services.RequestContractDetails(new SymbolConfig("AAPL"));
+
+        transport.RaiseOptionContract(requestId, new ProviderOptionContract(
+            "AAPL", string.Empty, new DateOnly(2027, 1, 15), 200m, "C", "SMART", string.Empty,
+            string.Empty, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow)));
+
+        services.GetRequests().Single().OptionContracts.Should().ContainSingle();
+    }
+
+    [Fact]
+    public void TerminalTransitionDuringAvailabilityRecording_KeepsLineageAndProvenanceCoherent()
+    {
+        // A watcher reacting to the availability update by cancelling models a terminal
+        // transition racing the recorder. Recorded as two separate transitions, the cancel could
+        // freeze the read model with the new lineage availability embedded while its request and
+        // observation provenance still reported the previous availability — incoherent evidence
+        // the durable projector would materialize permanently.
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport);
+        var requestId = services.SubscribePnl("DU123", "model-a");
+        services.ReadModelUpdated += model =>
+        {
+            if (model.Lineage?.Status == "market-data-type" && model.Status == ProviderDataRequestStatus.Requested)
+                services.CancelRequest(model.RequestId, CancellationToken.None);
+        };
+
+        transport.RaiseMarketDataType(requestId, 3);
+
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Cancelled);
+        request.Lineage!.Availability.Should().Be(IBMarketDataAvailability.Delayed);
+        request.Provenance.MarketDataAvailability.Should().Be(
+            nameof(IBMarketDataAvailability.Delayed),
+            "the frozen terminal model must carry the same availability in its lineage and its provenance");
+    }
+
+    [Fact]
+    public void FailedRegistration_RemovesTheRequestGateWithTheOtherRequestState()
+    {
+        // Request ids are monotonic, so a gate left behind by a failed registration can never be
+        // drained or reused; during a persistence outage every retried request would leak one.
+        var store = new ThrowingDurableResultStore();
+        using var services = new IBDataServices(new RecordingTransport(), new IBDurableResultProjector(store));
+
+        var subscribe = () => services.SubscribePnl(
+            "DU123", "model-a", ownership: new IBDataRequestOwnership("tenant-a", "company-a"));
+
+        subscribe.Should().Throw<InvalidOperationException>();
+        services.GetRequests("tenant-a", "company-a").Should().BeEmpty();
+        var gates = (System.Collections.ICollection)typeof(IBDataServices)
+            .GetField("_readModelGates", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .GetValue(services)!;
+        gates.Count.Should().Be(0, "a failed registration must not leak its per-request gate");
+    }
+
+    private sealed class ThrowingDurableResultStore : IBDurableResultStore
+    {
+        public void Upsert(
+            IBDataRequestOwnership ownership,
+            string providerConnectionId,
+            string requestCorrelationId,
+            ProviderDataRequestReadModel request,
+            IBDataLineage? lineage)
+            => throw new InvalidOperationException("durable store unavailable");
+
+        public IReadOnlyList<IBDurableResult> Get(
+            string tenantId,
+            string companyId,
+            string? capability = null,
+            string? accountId = null,
+            string? modelAccountId = null)
+            => [];
+    }
+
+    /// <summary>
+    /// The vendor delivers a bounded historical-tick result as batches whose done flag describes
+    /// the batch, so the transport may mark only the final batch's last element as completing —
+    /// completing on the first element would drop the rest of the batch at the active-status guard.
+    /// </summary>
+    [Fact]
+    public void HistoricalTicks_TerminalBatchWithMultipleTicks_RetainsEveryTick()
+    {
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport);
+        var requestId = services.RequestHistoricalTicks(
+            new IBHistoricalTickRequest(new SymbolConfig("AAPL"), null, DateTimeOffset.UtcNow, 3));
+
+        transport.RaiseHistoricalTick(requestId, HistoricalTick(200.10m), completed: false);
+        transport.RaiseHistoricalTick(requestId, HistoricalTick(200.15m), completed: false);
+        transport.RaiseHistoricalTick(requestId, HistoricalTick(200.20m), completed: true);
+
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Completed);
+        request.HistoricalTicks.Should().HaveCount(3);
+    }
+
+    private static ProviderHistoricalTick HistoricalTick(decimal price)
+        => new(DateTimeOffset.UtcNow, price, 10m, "TRADES", null, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow));
+
+    [Fact]
+    public void BidAskHistoricalTicks_WithOppositeBookImbalance_KeepDistinctDeduplicationKeys()
+    {
+        // Two BID_ASK snapshots with the same prices and combined size but opposite side sizes
+        // (bid/ask 1/9 versus 9/1) are distinct observations: summing the sides into one scalar
+        // would give them the same deduplication identity and lose the book imbalance.
+        var services = new IBDataServices(new RecordingTransport());
+        var requestId = services.RequestHistoricalTicks(
+            new IBHistoricalTickRequest(new SymbolConfig("AAPL"), null, DateTimeOffset.UtcNow, 2));
+        var timestamp = DateTimeOffset.UtcNow;
+        var provenance = ProviderDataProvenance.Unattributed(timestamp);
+
+        services.RecordHistoricalTick(requestId, new ProviderHistoricalTick(
+            timestamp, 200.10m, 10m, "BID_ASK", 200.05m, 200.15m, null, provenance)
+        { BidSize = 1m, AskSize = 9m });
+        services.RecordHistoricalTick(requestId, new ProviderHistoricalTick(
+            timestamp, 200.10m, 10m, "BID_ASK", 200.05m, 200.15m, null, provenance)
+        { BidSize = 9m, AskSize = 1m });
+
+        var ticks = services.GetRequests().Single().HistoricalTicks!;
+        ticks.Should().HaveCount(2);
+        ticks[0].BidSize.Should().Be(1m);
+        ticks[0].AskSize.Should().Be(9m);
+        ticks[1].Provenance.StableDeduplicationKey.Should().NotBe(
+            ticks[0].Provenance.StableDeduplicationKey,
+            "opposite book imbalances are distinct observations, not duplicates");
+    }
+
+    [Fact]
+    public void BidAskHistoricalTicks_WithTheSameMidpointButDifferentSpreads_KeepDistinctDeduplicationKeys()
+    {
+        // Two BID_ASK snapshots can share a midpoint, combined size, and even a balanced book
+        // while quoting different spreads (200.05/200.15 versus 200.00/200.20): the side prices
+        // are part of the observation and must keep the deduplication keys apart.
+        var services = new IBDataServices(new RecordingTransport());
+        var requestId = services.RequestHistoricalTicks(
+            new IBHistoricalTickRequest(new SymbolConfig("AAPL"), null, DateTimeOffset.UtcNow, 2));
+        var timestamp = DateTimeOffset.UtcNow;
+        var provenance = ProviderDataProvenance.Unattributed(timestamp);
+
+        services.RecordHistoricalTick(requestId, new ProviderHistoricalTick(
+            timestamp, 200.10m, 10m, "BID_ASK", 200.05m, 200.15m, null, provenance)
+        { BidSize = 5m, AskSize = 5m });
+        services.RecordHistoricalTick(requestId, new ProviderHistoricalTick(
+            timestamp, 200.10m, 10m, "BID_ASK", 200.00m, 200.20m, null, provenance)
+        { BidSize = 5m, AskSize = 5m });
+
+        var ticks = services.GetRequests().Single().HistoricalTicks!;
+        ticks.Should().HaveCount(2);
+        ticks[1].Provenance.StableDeduplicationKey.Should().NotBe(
+            ticks[0].Provenance.StableDeduplicationKey,
+            "quotes with the same midpoint but different spreads are distinct observations, not duplicates");
     }
 
     [Fact]
@@ -512,6 +1107,20 @@ public sealed class IBDataServicesTests
         services.GetRequests().Single(x => x.RequestId == rules).MarketRuleIncrements.Should().ContainSingle();
     }
 
+    [Fact]
+    public void CallbackSource_UnrelatedProviderRequestRejected_IsIgnoredWithoutAffectingTrackedRequests()
+    {
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport);
+        var requestId = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"));
+
+        var action = () => transport.RaiseRejected(12345, "354", "Requested market data is not subscribed.");
+
+        action.Should().NotThrow();
+        services.GetRequests().Single().Should().Match<ProviderDataRequestReadModel>(request =>
+            request.RequestId == requestId && request.Status == ProviderDataRequestStatus.Requested);
+    }
+
     private class RecordingTransport : IIBDataServiceTransport
     {
         public List<string> Calls { get; } = [];
@@ -535,6 +1144,9 @@ public sealed class IBDataServicesTests
     {
         public string ProviderConnectionId => "ib-gateway:live:7";
         public ProviderScannerResult? ScannerResultDuringRequest { get; init; }
+        public Exception? CancelFailure { get; init; }
+        public bool ReportMarketDataTypeDuringPnlRequest { get; init; }
+        public IReadOnlyList<int>? MarketDataTypesDuringPnlRequest { get; init; }
         public event EventHandler<IBMarketDataTypeUpdate>? MarketDataTypeReceived;
         public event EventHandler<(int RequestId, ProviderContractDetails Details)>? ContractDetailsReceived;
         public event EventHandler<(int RequestId, ProviderOptionChainDefinition Definition)>? OptionChainDefinitionReceived;
@@ -546,6 +1158,7 @@ public sealed class IBDataServicesTests
         public event EventHandler<(int RequestId, ProviderDividendEarnings Payload)>? DividendEarningsReceived;
         public event EventHandler<(int RequestId, ProviderOptionContract Contract)>? OptionContractReceived;
         public event EventHandler<(int RequestId, ProviderScannerResult Result)>? ScannerResultReceived;
+        public event EventHandler<int>? ScannerBatchCompleted;
         public event EventHandler<(int RequestId, ProviderRealTimeBar Bar)>? RealTimeBarReceived;
         public event EventHandler<(int RequestId, ProviderHistoricalTick Tick, bool Completed)>? HistoricalTickReceived;
         public event EventHandler<(int RequestId, ProviderAccountPnl Pnl)>? PnlReceived;
@@ -565,23 +1178,40 @@ public sealed class IBDataServicesTests
         public void RequestFundamentals(int requestId, SymbolConfig contract, string reportType) { }
         public void RequestDividendEarnings(int requestId, SymbolConfig contract) { }
         public void RequestTickByTick(int requestId, SymbolConfig contract, string tickType, int numberOfTicks, bool ignoreSize) { }
-        public void RequestPnl(int requestId, string account, string? modelCode) { }
+        public void RequestPnl(int requestId, string account, string? modelCode)
+        {
+            // Models the IB reader loop delivering availability callbacks while the send is
+            // still on the wire: the service observes them synchronously inside its gated send.
+            if (ReportMarketDataTypeDuringPnlRequest)
+                MarketDataTypeReceived?.Invoke(this, new IBMarketDataTypeUpdate(requestId, 3));
+            foreach (var marketDataType in MarketDataTypesDuringPnlRequest ?? [])
+                MarketDataTypeReceived?.Invoke(this, new IBMarketDataTypeUpdate(requestId, marketDataType));
+        }
         public void RequestMarketRule(int requestId, int marketRuleId) { }
         public void RequestDepthExchanges(int requestId) { }
+        public void RequestHistoricalTicks(int requestId, IBHistoricalTickRequest request) { }
+        public void CancelDataRequest(int requestId, string capability)
+        {
+            if (CancelFailure is { } failure)
+                throw failure;
+        }
         public void RaiseContract(int id, ProviderContractDetails value) => ContractDetailsReceived?.Invoke(this, (id, value));
         public void RaiseChain(int id, ProviderOptionChainDefinition value) => OptionChainDefinitionReceived?.Invoke(this, (id, value));
         public void RaiseHeadline(int id, ProviderNewsHeadline value) => HistoricalNewsReceived?.Invoke(this, (id, value));
         public void RaiseArticle(int id, ProviderNewsArticlePayload value) => NewsArticleReceived?.Invoke(this, (id, value));
         public void RaiseFundamental(int id, ProviderFundamentalReport value) => FundamentalReportReceived?.Invoke(this, (id, value));
         public void RaiseTick(int id, ProviderTickByTickObservation value) => TickByTickReceived?.Invoke(this, (id, value));
+        public void RaiseHistoricalTick(int id, ProviderHistoricalTick value, bool completed) => HistoricalTickReceived?.Invoke(this, (id, value, completed));
         public void RaiseDepth(int id, IReadOnlyList<ProviderDepthExchangeDescription> value) => DepthExchangesReceived?.Invoke(this, (id, value));
         public void RaiseDividend(int id, ProviderDividendEarnings value) => DividendEarningsReceived?.Invoke(this, (id, value));
         public void RaiseScanner(int id, ProviderScannerResult value) => ScannerResultReceived?.Invoke(this, (id, value));
         public void RaisePnl(int id, ProviderAccountPnl value) => PnlReceived?.Invoke(this, (id, value));
+        public void RaiseOptionContract(int id, ProviderOptionContract value) => OptionContractReceived?.Invoke(this, (id, value));
         public void RaiseMarketRule(int id, IReadOnlyList<ProviderMarketRuleIncrement> value) => MarketRuleReceived?.Invoke(this, (id, value));
         public void RaiseCompleted(int id) => RequestCompleted?.Invoke(this, id);
         public void RaiseRejected(int id, string code, string message) => RequestRejected?.Invoke(this, (id, code, message));
         public void RaiseScannerResult(int requestId, ProviderScannerResult result) => ScannerResultReceived?.Invoke(this, (requestId, result));
+        public void RaiseScannerBatchEnd(int id) => ScannerBatchCompleted?.Invoke(this, id);
         public void RaiseMarketDataType(int requestId, int marketDataType) => MarketDataTypeReceived?.Invoke(this, new IBMarketDataTypeUpdate(requestId, marketDataType));
     }
 }

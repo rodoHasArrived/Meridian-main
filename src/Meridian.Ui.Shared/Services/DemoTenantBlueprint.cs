@@ -1,3 +1,4 @@
+using Meridian.Contracts.Domain;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Ui.Shared.Services;
@@ -63,6 +64,16 @@ public static class DemoTenantBlueprint
 
     /// <summary>Trading sessions of durable market history the demo seeds per symbol.</summary>
     public static int MarketHistorySessionCount => MarketHistorySessions;
+
+    /// <summary>
+    /// Source identity stamped on every seeded market event. The repository's existing
+    /// sample-data identity is used rather than a vendor name, so nothing the Data desk
+    /// attributes to a provider can be seeded history (W9-TRUTH-001).
+    /// </summary>
+    public const string MarketHistorySource = MarketDataSources.Sample;
+
+    /// <summary>Venue stamped on seeded trade prints; names the simulation, not an exchange.</summary>
+    public const string MarketHistoryVenue = "SIMULATED";
 
     /// <summary>Fixed identity of the seeded demo fund account.</summary>
     public static readonly Guid FundAccountId = Guid.Parse("5eeded00-de30-4a7d-9b1c-000000000001");

@@ -106,6 +106,32 @@ public class ParquetConversionServiceTests : IDisposable
         result.SkippedAlreadyConverted.Should().Be(1);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    public async Task ConvertCompletedDaysAsync_WithDateAboveDataRoot_UsesArchiveDate(int rootDateOffset)
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var yesterday = today.AddDays(-1);
+        var dataRoot = Path.Combine(_testDataRoot, today.AddDays(rootDateOffset).ToString("yyyy-MM-dd"), "data");
+        Directory.CreateDirectory(dataRoot);
+        var fileName = $"AAPL.Trade.{yesterday:yyyy-MM-dd}.jsonl";
+        await File.WriteAllTextAsync(Path.Combine(dataRoot, fileName),
+            JsonSerializer.Serialize(new { Symbol = "AAPL", Price = 185.5, Size = 100 }));
+        var service = new ParquetConversionService(new StorageOptions { RootPath = dataRoot });
+
+        var result = await service.ConvertCompletedDaysAsync();
+
+        result.FilesConverted.Should().Be(1);
+        result.RecordsConverted.Should().Be(1);
+        result.Errors.Should().Be(0);
+        File.Exists(Path.Combine(dataRoot, "_parquet", Path.ChangeExtension(fileName, ".parquet")))
+            .Should().BeTrue();
+        var replay = await service.ConvertCompletedDaysAsync();
+        replay.FilesConverted.Should().Be(0);
+        replay.SkippedAlreadyConverted.Should().Be(1);
+    }
+
     [Fact]
     public async Task ConvertCompletedDaysAsync_WithLargeArchive_ConvertsInRowGroups()
     {

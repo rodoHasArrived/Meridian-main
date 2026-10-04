@@ -60,6 +60,28 @@ public sealed class StatementImportCommandsTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_StatementValidate_MissingSource_ReturnsFileNotFound()
+    {
+        // An operator can validate a path before a statement arrives; that failure must remain a
+        // structured CLI result rather than escaping from the connector-pipeline source read.
+        var commitService = new StubStatementImportCommitService();
+        var command = new StatementImportCommands(commitService, Logger.None);
+        var missingPath = Path.Combine(Path.GetTempPath(), $"meridian-missing-statement-{Guid.NewGuid():N}.csv");
+
+        var result = await CommandTestConsole.CaptureErrorAsync(
+            () => command.ExecuteAsync(
+                [
+                    "--statement-validate",
+                    "--statement-broker", "samplebroker",
+                    "--statement-source-path", missingPath,
+                    "--statement-date", "2026-01-31"
+                ]));
+
+        result.Error.Should().Be(ErrorCode.FileNotFound);
+        commitService.ValidatedDocuments.Should().BeEmpty("a missing source cannot be validated by a connector");
+    }
+
+    [Fact]
     public async Task Dispatcher_PrefersBrokerImportOnlyForBrokerSpecificStatementArgs()
     {
         var root = Path.Combine(Path.GetTempPath(), $"meridian-statement-cli-{Guid.NewGuid():N}");
@@ -153,10 +175,10 @@ public sealed class StatementImportCommandsTests
         var statementPath = Path.Combine(root, "statement.csv");
         await File.WriteAllLinesAsync(statementPath,
         [
-            "account,symbol,quantity,price,cashAmount,activityType,tradeDate",
-            "FUND-1,SPY,10,500,0,position,2026-05-28",
-            "FUND-1,,0,0,2500.25,cash,2026-05-28",
-            "FUND-1,MSFT,1,15.75,0,fee,2026-05-28"
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency",
+            "FUND-1,SPY,10,500,0,position,2026-05-28,,USD",
+            "FUND-1,,0,0,2500.25,cash,2026-05-28,,USD",
+            "FUND-1,MSFT,1,15.75,0,fee,2026-05-28,,USD"
         ]);
 
         var services = new ServiceCollection();

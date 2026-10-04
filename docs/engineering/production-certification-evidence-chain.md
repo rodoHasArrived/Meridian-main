@@ -26,6 +26,33 @@ not change the tracker's release-gate semantics; the tracker stays authoritative
 
 ## Hosted-Run Diagnosis: Production Certification run #4 (2026-07-27)
 
+### 2026-09-06 regression diagnosis
+
+[Run 34009195583](https://github.com/rodoHasArrived/Meridian-main/actions/runs/34009195583)
+on `87f91548455be9932069b597ea0381a1a67917e4` passed recovery and documentation evidence but failed
+dependency evidence and integration tests (899 passed, 6 failed, 0 skipped). Direct Lending did
+not run because the first test command failed. This is not a release-certifying result.
+
+The repair candidate updates Browserslist from 4.28.2 to 4.28.9 to remove the two high-severity
+advisories. It restores authorized detailed-health schema tests, enables PostgreSQL error detail
+only on the collision-diagnostic test connection, and verifies the retired Lean stop route's
+explicit 501 problem response. Operations Continuity now carries typed journal provenance into
+the posting command; seeded fixtures must retain their mark instead of entering as real data.
+The PostgreSQL scenario also proves rejection of unmarked fixture evidence without a journal commit.
+These changes require a fresh complete certification run; they do not close any P0 evidence gate.
+
+The follow-up storage review found that `AuditChainService` logged a prior-tail read failure and
+continued an append with an empty predecessor. The candidate now validates retained links before
+extending the chain and refuses malformed or broken history without modifying it. A process-level
+integration scenario starts three independent writers and checks all 36 retained entries, closing
+the gap between the previous same-process concurrency test and the PRD-009 multi-process requirement.
+Fresh hosted validation is required for this follow-up as well.
+
+The WAL process-recovery scenario adds the PRD-009 low-volume termination proof: its child appends
+one record without an explicit flush or commit, the parent observes the lifecycle-owned delayed
+flush while the child is alive, then kills the child without disposal and recovers exactly that
+record using a fresh WAL instance. This proves process termination recovery, not power-loss durability.
+
 Run [30283696811](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30283696811)
 (`workflow_dispatch`, `main` @ `104171091`) failed all four jobs. Per-job root causes and their
 dispositions:
@@ -165,6 +192,30 @@ bash scripts/ci.sh --lane verify-docs
 ## Evidence Log
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
+
+- **2026-09-11** — **`Production Certification` wall-clock work, measured against run #61**
+  ([34057693252](https://github.com/rodoHasArrived/Meridian-main/actions/runs/34057693252), the
+  last green run on `main`). The run took 9m44s and `deterministic PostgreSQL integration and
+  coverage evidence` took 9m39s of it, so that job alone *is* the workflow's duration — the other
+  three finish in 41s–1m29s and none of their cost is on the critical path. Inside that job the
+  step timings were: container init 24s, checkout 16s, `Install PostgreSQL 17 client tools` 17s,
+  restore 21s, **build 3m05s**, **`Meridian.Tests` execution 4m49s** (932 tests), DirectLending
+  build+test 17s, evidence capture and upload 6s. Three costs outside build and test were removed
+  or cut: the client-tool install is gone from this job (the `postgres:17` service container
+  already carries `pg_dump`/`psql` at exactly the server's major, so evidence capture now runs
+  them in-container via `docker exec`, which also takes `apt.postgresql.org` — the host that
+  stalled run #28 — off the critical path entirely); the service health probe now polls every 2s
+  instead of every 10s, keeping its 100s tolerance window but no longer idling the runner ~8–12s
+  after Postgres is already accepting connections; and `~/.nuget/packages` is cached in both .NET
+  jobs on the pattern the other CI workflows already use. The recovery drill still installs
+  `postgresql-client-17`, because `invoke-production-recovery.ps1` needs the binaries on the
+  runner itself; that job is not on the critical path, so it was left alone rather than churned.
+  Expect roughly 40s off a 9m39s critical path (~7%) once the package cache is warm — the first
+  run after this change is a cache miss. **No hosted run has validated this yet**; the next
+  certification run is the evidence. The remaining 82% is build (3m05s) and test execution
+  (4m49s): `tests/xunit.runner.json` pins `maxParallelThreads: 2` on a 4-vCPU runner, which is
+  the largest untaken lever and is deliberately left for a deliberate trial, since raising
+  concurrency against the shared `meridian` database risks flakes on a fail-closed gate.
 
 - **2026-08-19** — **FROZEN COMMIT `65dc0107`: all three evidence lanes green together with the
   authoritative merge gate**, which no commit in this repository had achieved before.

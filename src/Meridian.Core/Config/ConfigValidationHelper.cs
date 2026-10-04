@@ -1,4 +1,5 @@
 using FluentValidation;
+using Meridian.Contracts.Tenancy;
 using Serilog;
 
 namespace Meridian.Core.Config;
@@ -10,6 +11,18 @@ public sealed class AppConfigValidator : AbstractValidator<AppConfig>
 {
     public AppConfigValidator()
     {
+        RuleFor(x => x.TenantScopeEnforcement)
+            .Must(value =>
+            {
+                try
+                {
+                    TenantScopeEnforcementOptions.FromConfigurationValue(value);
+                    return true;
+                }
+                catch (ArgumentException) { return false; }
+            })
+            .WithMessage("TenantScopeEnforcement must be 'fail-closed' or 'deployment-boundary'.");
+
         RuleFor(x => x.DataRoot)
             .NotEmpty()
             .WithMessage("DataRoot must be specified")

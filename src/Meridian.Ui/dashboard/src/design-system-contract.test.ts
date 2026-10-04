@@ -133,11 +133,11 @@ describe("dashboard design-system contract", () => {
     expect(componentSourceByName.get("AgingTable")).toBe("components/accounting/AgingTable.jsx");
     expect(componentSourceByName.get("ReconciliationPanel")).toBe("components/accounting/ReconciliationPanel.jsx");
     expect(defaultThemeTokenByName.get("--theme-bg-canvas")).toMatchObject({
-      value: "#DEE3EA",
+      value: "#F2F0EC",
       definedIn: "tokens/theme.css"
     });
     expect(defaultThemeTokenByName.get("--theme-accent")).toMatchObject({
-      value: "#2F6F8F",
+      value: "#A85436",
       definedIn: "tokens/theme.css"
     });
 
@@ -235,25 +235,25 @@ describe("dashboard design-system contract", () => {
     expect(existsSync(resolveDashboardAsset("icons/README.md"))).toBe(true);
   });
 
-  it("keeps the workstation color tokens aligned with the Concrete light design-system source", () => {
+  it("keeps the workstation color tokens aligned with the Programmed Institutionalism light design-system source", () => {
     const styles = readDashboardStyles();
     const designSystemTheme = readDesignSystemPackageFile("tokens/theme.css");
 
-    // Concrete canvas #DEE3EA → 215 22% 89%; steel accent #2F6F8F → 200 51% 37%.
-    expect(designSystemTheme).toContain("--theme-bg-canvas: #DEE3EA");
-    expect(designSystemTheme).toContain("--theme-accent: #2F6F8F");
-    expect(designSystemTheme).toContain("--theme-border: #CBD3DC");
-    expect(styles).toContain("--background: 215 22% 89%");
-    expect(styles).toContain("--foreground: 215 15% 16%");
-    expect(styles).toContain("--primary: 200 51% 37%");
-    expect(styles).toContain("--ws-page-bg: #DEE3EA");
-    expect(styles).toContain("--ws-surface: #ffffff");
-    expect(styles).toContain("--ws-surface-subtle: #EBEFF4");
-    expect(styles).toContain("--ws-surface-raised: #F3F6F9");
-    expect(styles).toContain("--ws-masthead-bg: #171A1F");
-    expect(styles).toContain("--ws-border: #CBD3DC");
-    expect(styles).toContain("--ws-border-strong: #99A5B2");
-    expect(styles).toContain("--ws-accent: #2F6F8F");
+    // Warm paper canvas #F2F0EC → 40 19% 94%; terracotta accent #A85436 → 16 51% 44%.
+    expect(designSystemTheme).toContain("--theme-bg-canvas: #F2F0EC");
+    expect(designSystemTheme).toContain("--theme-accent: #A85436");
+    expect(designSystemTheme).toContain("--theme-border: #E4E3DE");
+    expect(styles).toContain("--background: 40 19% 94%");
+    expect(styles).toContain("--foreground: 218 11% 15%");
+    expect(styles).toContain("--primary: 16 51% 44%");
+    expect(styles).toContain("--ws-page-bg: #F2F0EC");
+    expect(styles).toContain("--ws-surface: #FBFAF8");
+    expect(styles).toContain("--ws-surface-subtle: #EDEAE4");
+    expect(styles).toContain("--ws-surface-raised: #F6F4F0");
+    expect(styles).toContain("--ws-masthead-bg: #1F1D1A");
+    expect(styles).toContain("--ws-border: #E4E3DE");
+    expect(styles).toContain("--ws-border-strong: #AFABA1");
+    expect(styles).toContain("--ws-accent: #A85436");
     expect(styles).toContain("--bg: var(--ws-page-bg)");
     expect(styles).toContain("--surface-topbar: var(--ws-masthead-bg)");
     expect(styles).toContain("--border-color: var(--ws-border)");
@@ -279,13 +279,13 @@ describe("dashboard design-system contract", () => {
     expect(styles).toContain("--text-secondary: var(--theme-secondary-text)");
     expect(styles).toContain("--text-muted: var(--theme-muted-text)");
     expect(styles).toContain("--nav-item: var(--text-secondary)");
-    expect(styles.match(/--ws-text-muted: #8F9AA7/g)).toHaveLength(2);
+    expect(styles.match(/--ws-text-muted: #9A9289/g)).toHaveLength(2);
     expect(styles).not.toContain("--ws-text-muted: #8893A0");
     expect(readinessPanel).toContain(
-      "var(--text-primary,var(--ws-text,#22272E))"
+      "var(--text-primary,var(--ws-text,#22252A))"
     );
     expect(readinessPanel).toContain(
-      "var(--text-muted,var(--ws-text-muted,#59636F))"
+      "var(--text-muted,var(--ws-text-muted,#5E666F))"
     );
 
     const panelBackground = readManualDarkHexToken(styles, "--ws-surface");
@@ -316,7 +316,7 @@ describe("dashboard design-system contract", () => {
     }
   });
 
-  it("unifies workstation radii to Concrete 2px and keeps surfaces flat", () => {
+  it("unifies workstation radii to the mandated 2px and keeps surfaces flat", () => {
     const styles = readDashboardStyles();
 
     // Concrete: one tight 2px corner across chips/controls/cards; the named
@@ -401,21 +401,23 @@ describe("dashboard design-system contract", () => {
 
   // ─── Light Institutional Ops alignment contracts ─────────────────────────
 
-  it("exposes sidebar tokens aligned with the Concrete institutional rail", () => {
+  it("exposes sidebar tokens aligned with the Programmed Institutionalism institutional rail", () => {
     const styles = readDashboardStyles();
     const navStyles = readWorkspaceNavStyles();
     const tailwindConfig = readTailwindConfig();
 
     // Concrete rail: band #EBEFF4 → 213 29% 94%; border #CBD3DC → 212 20% 83%.
-    expect(styles).toContain("--sidebar: 213 29% 94%");
-    expect(styles).toContain("--sidebar-foreground: 212 14% 35%");
-    expect(styles).toContain("--sidebar-primary: 200 51% 37%");
-    expect(styles).toContain("--sidebar-border: 212 20% 83%");
-    expect(styles).toContain("--sidebar-ring: 200 51% 37%");
+    expect(styles).toContain("--sidebar: 40 20% 91%");
+    expect(styles).toContain("--sidebar-foreground: 216 6% 33%");
+    expect(styles).toContain("--sidebar-primary: 16 51% 44%");
+    expect(styles).toContain("--sidebar-border: 50 10% 88%");
+    expect(styles).toContain("--sidebar-ring: 16 51% 44%");
     expect(styles).toContain("[data-appearance=\"light\"]");
     expect(navStyles).toContain("--mds-nav-rail-bg: var(--theme-bg-hover, var(--ws-rail-bg))");
     expect(navStyles).toContain("--mds-nav-rail-accent: var(--theme-accent, var(--ws-accent))");
-    expect(navStyles).toContain("background: var(--mds-nav-rail-active, var(--ws-rail-active, #E1EAF2))");
+    // The fallback mirrors --ws-rail-active (#F2E3DB); it previously quoted --accent-ghost
+    // (#F4E7E0), a different token.
+    expect(navStyles).toContain("background: var(--mds-nav-rail-active, var(--ws-rail-active, #F2E3DB))");
 
     // Tailwind color registrations present
     expect(tailwindConfig).toContain("sidebar: {");
@@ -423,16 +425,16 @@ describe("dashboard design-system contract", () => {
     expect(tailwindConfig).toContain("\"hsl(var(--sidebar-border) / <alpha-value>)\"");
   });
 
-  it("exposes chart-1…5 tokens aligned with the Concrete semantic palette", () => {
+  it("exposes chart-1…5 tokens aligned with the Programmed Institutionalism semantic palette", () => {
     const styles = readDashboardStyles();
     const tailwindConfig = readTailwindConfig();
 
-    // steel #2F6F8F · spruce #16885F · brick #BA3F55 · ochre #8A520E · slate #6E8597
-    expect(styles).toContain("--chart-1: 200 51% 37%");
-    expect(styles).toContain("--chart-2: 158 72% 31%");
-    expect(styles).toContain("--chart-3: 349 49% 49%");
-    expect(styles).toContain("--chart-4: 33 82% 30%");
-    expect(styles).toContain("--chart-5: 206 16% 51%");
+    // copper #A85436 · spruce #3A7A56 · brick #A8443C · ochre #8A5C12 · warm slate #7E7A72
+    expect(styles).toContain("--chart-1: 16 51% 44%");
+    expect(styles).toContain("--chart-2: 146 36% 35%");
+    expect(styles).toContain("--chart-3: 4 47% 45%");
+    expect(styles).toContain("--chart-4: 37 77% 31%");
+    expect(styles).toContain("--chart-5: 40 5% 47%");
 
     // Tailwind color registrations present
     expect(tailwindConfig).toContain("chart: {");
@@ -451,14 +453,14 @@ describe("dashboard design-system contract", () => {
     expect(tailwindConfig).toContain("flat:");
   });
 
-  it("adds the Concrete semantic palette and environment-mode tokens", () => {
+  it("adds the Programmed Institutionalism semantic palette and environment-mode tokens", () => {
     const styles = readDashboardStyles();
 
     // Tier 2 semantic hues authored once in :root (light).
-    expect(styles).toContain("--green: #16885F");
-    expect(styles).toContain("--red: #BA3F55");
-    expect(styles).toContain("--orange: #8A520E");
-    expect(styles).toContain("--purple: #6F5BA7");
+    expect(styles).toContain("--green: #3A7A56");
+    expect(styles).toContain("--red: #A8443C");
+    expect(styles).toContain("--orange: #8A5C12");
+    expect(styles).toContain("--purple: #5D5486");
     expect(styles).toContain("--amber: var(--orange)");
 
     // Environment modes derive from the semantic palette (Live·Paper·Fixture).
@@ -470,20 +472,23 @@ describe("dashboard design-system contract", () => {
   it("derives the severity and state trios from the semantic palette via color-mix", () => {
     const styles = readDashboardStyles();
 
-    // Severity chips (Ready·Review·Action·Blocked·Info) derive from Tier 2.
-    expect(styles).toContain("--severity-ready-fg: var(--green)");
-    expect(styles).toContain("--severity-review-fg: var(--ws-accent)");
-    expect(styles).toContain("--severity-action-fg: var(--orange)");
-    expect(styles).toContain("--severity-blocked-fg: var(--red)");
+    // Severity chips (Ready·Review·Action·Blocked·Info) derive from Tier 2. The foreground
+    // takes the -dim variant, not the raw hue: a chip's label sits on a 10% wash of its own
+    // hue, and measured against that wash the raw hue gave 4.32-4.41:1 for ready/review —
+    // under AA. The -dim variants measure 5.9-8.1:1. check_contrast.py now pins every chip.
+    expect(styles).toContain("--severity-ready-fg: var(--green-dim)");
+    expect(styles).toContain("--severity-review-fg: var(--ws-accent-pressed)");
+    expect(styles).toContain("--severity-action-fg: var(--orange-dim)");
+    expect(styles).toContain("--severity-blocked-fg: var(--red-dim)");
     expect(styles).toContain(
       "--severity-blocked-bg: color-mix(in srgb, var(--red) 10%, transparent)"
     );
 
     // State layer (healthy/warn/danger/paper/strategy/live/pending) derives too.
-    expect(styles).toContain("--state-live-fg: var(--red)");
-    expect(styles).toContain("--state-paper-fg: var(--ws-accent)");
-    expect(styles).toContain("--state-strategy-fg: var(--purple)");
-    expect(styles).toContain("--state-pending-fg: var(--purple)");
+    expect(styles).toContain("--state-live-fg: var(--red-dim)");
+    expect(styles).toContain("--state-paper-fg: var(--ws-accent-pressed)");
+    expect(styles).toContain("--state-strategy-fg: var(--purple-dim)");
+    expect(styles).toContain("--state-pending-fg: var(--purple-dim)");
     expect(styles).toContain(
       "--state-strategy-bg: color-mix(in srgb, var(--purple) 10%, transparent)"
     );
@@ -497,13 +502,13 @@ describe("dashboard design-system contract", () => {
     expect(styles).toContain(":root[data-theme=\"dark\"]");
     expect(styles).toContain(":root[data-theme=\"light\"]");
 
-    // Concrete graphite dark base: canvas #0E1113 · panel #1A2026 · steel #5790BE.
-    expect(styles).toContain("--ws-page-bg: #0E1113");
-    expect(styles).toContain("--ws-surface: #1A2026");
-    expect(styles).toContain("--ws-accent: #5790BE");
+    // Warm graphite dark base: canvas #14120F · panel #201D19 · copper #D98A64.
+    expect(styles).toContain("--ws-page-bg: #14120F");
+    expect(styles).toContain("--ws-surface: #201D19");
+    expect(styles).toContain("--ws-accent: #D98A64");
 
-    // The forced-light opt-out re-asserts the Concrete light canvas.
-    expect(styles.match(/--ws-page-bg: #DEE3EA/g)).toHaveLength(2);
+    // The forced-light opt-out re-asserts the warm-paper light canvas.
+    expect(styles.match(/--ws-page-bg: #F2F0EC/g)).toHaveLength(2);
   });
 
   it("uses Segoe UI as the primary sans font and Cascadia Mono with JetBrains fallback for mono", () => {
@@ -566,7 +571,7 @@ describe("dashboard design-system contract", () => {
     const evidenceViewModel = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.view-model.ts");
     const wpfThemeTokens = readRepositoryFile("src/Meridian.Wpf/Styles/ThemeTokens.xaml");
     const wpfThemeSurfaces = readRepositoryFile("src/Meridian.Wpf/Styles/ThemeSurfaces.xaml");
-    const designDocs = readRepositoryFile("archive/docs/plans/desktop-ui-workflow-acceptance-matrix.md");
+    const designDocs = readRepositoryFile("docs/screenshots/README.md");
     const screenshotDocs = readRepositoryFile("docs/screenshots/README.md");
     const screenshotValidator = readRepositoryFile("scripts/dev/validate-screenshot-captures.py");
 
@@ -634,7 +639,7 @@ describe("dashboard design-system contract", () => {
     expect(readDashboardPrimitive("toast.tsx")).toContain("export function ToastProvider");
   });
 
-  it("keeps UI primitives on Concrete 2px radii and shallow light-system shadows", () => {
+  it("keeps UI primitives on the mandated 2px radii and shallow light-system shadows", () => {
     const primitiveSource = readdirSync(resolve(process.cwd(), "src/components/ui"))
       .filter((entry) => entry.endsWith(".tsx") && !entry.endsWith(".test.tsx"))
       .map((entry) => readDashboardPrimitive(entry))

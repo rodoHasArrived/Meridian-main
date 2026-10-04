@@ -117,7 +117,7 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "MoneyMarketFund",
-            SupportsCashflowScheduleByDefault: true,
+            SupportsCashflowScheduleByDefault: false,
             UsesFaceValueLots: false,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
@@ -192,7 +192,7 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "CashSweep",
-            SupportsCashflowScheduleByDefault: true,
+            SupportsCashflowScheduleByDefault: false,
             UsesFaceValueLots: false,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
@@ -277,7 +277,7 @@ public static class SecurityAssetClassCatalog
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.AssetBackedSecurity),
         new(
             AssetClass: "PrivateFundInterest",
-            SupportsCashflowScheduleByDefault: true,
+            SupportsCashflowScheduleByDefault: false,
             UsesFaceValueLots: false,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
@@ -304,7 +304,7 @@ public static class SecurityAssetClassCatalog
             SupportsProfileBackedTerms: true),
         new(
             AssetClass: "RealEstateHolding",
-            SupportsCashflowScheduleByDefault: true,
+            SupportsCashflowScheduleByDefault: false,
             UsesFaceValueLots: false,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
@@ -317,7 +317,7 @@ public static class SecurityAssetClassCatalog
             SupportsProfileBackedTerms: true),
         new(
             AssetClass: "CommitmentGuarantee",
-            SupportsCashflowScheduleByDefault: true,
+            SupportsCashflowScheduleByDefault: false,
             UsesFaceValueLots: false,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
@@ -450,6 +450,23 @@ public static class SecurityAssetClassCatalog
 
     public static IReadOnlyList<string> GetAssetOperationsCapabilities(string? assetClass)
         => GetOrDefault(assetClass).AssetOperationsCapabilities ?? AssetOperationsCapabilitySet.IdentityOnly;
+
+    /// <summary>
+    /// The asset classes that declare an Asset Operations capability set of their own, rather than
+    /// falling through to <see cref="AssetOperationsCapabilitySet.IdentityOnly"/>. Every declared
+    /// set adds LifecycleState, ProjectedCashFlows, ActualActivity, Reconciliation, LedgerProjection
+    /// and WorkflowAudit on top of identity, so declaring one is what makes a class ops-capable.
+    /// <para>
+    /// Naming the set once lets surfaces that owe these classes more than identity — relational term
+    /// projections, readiness reporting, coverage guards — agree on which classes those are, instead
+    /// of each re-deriving it from a null check or a capability-string match.
+    /// </para>
+    /// </summary>
+    public static IReadOnlyList<string> AssetOperationsCapableAssetClasses { get; } =
+        Descriptors
+            .Where(static descriptor => descriptor.AssetOperationsCapabilities is not null)
+            .Select(static descriptor => descriptor.AssetClass)
+            .ToArray();
 
     /// <summary>
     /// Resolves the accounting-slice instrument class a record posts as, from the class names it

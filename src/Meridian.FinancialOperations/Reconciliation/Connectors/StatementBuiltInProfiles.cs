@@ -39,7 +39,7 @@ public static class StatementBuiltInProfiles
             new("ActivityType", "activityType", ["activity type", "transaction type", "txn type", "activity"], Required: true),
             new("TradeDate", "tradeDate", ["trade date", "transaction date", "date"], Required: true),
             new("SettlementDate", "settlementDate", ["settle date", "settlement date"]),
-            new("Currency", "currency", ["ccy", "iso currency"]),
+            new("Currency", "currency", ["ccy", "iso currency"], Required: true),
             new("FeesCommission", "feesCommission", ["fees", "commission", "fee amount"]),
             new("ExternalTransactionId", "externalTransactionId", ["transaction id", "reference", "external id"]),
             new("AccountId", "accountId"),

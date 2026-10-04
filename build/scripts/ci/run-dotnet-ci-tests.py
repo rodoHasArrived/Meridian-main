@@ -12,14 +12,33 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
+import hashlib
+import shlex
 import subprocess
 import sys
+import tempfile
+import time
+import xml.etree.ElementTree as ET
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from threading import Lock
 from typing import Sequence
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from test_evidence import collect_trx
+
 CORE_TEST_PROJECT_PATH = "tests/Meridian.Tests/Meridian.Tests.csproj"
+
+# Hosted observations are scheduling hints only. Filters and report order remain
+# authoritative; unknown shards retain their roster order.
+SHARD_DURATION_HINTS = {
+    "core-ui-workstation-endpoints": 307, "core-execution-strategy": 207,
+    "core-ui-other": 205, "core-platform-domain-root": 74, "quantscript": 64,
+    "core-application": 40, "core-remainder": 31,
+}
 
 # Test projects that cannot execute on the ubuntu PR lane and are exercised by the
 # windows-desktop workflows instead: Meridian.Wpf.Tests compiles an empty stub off-Windows
@@ -196,15 +215,35 @@ class TestResult:
     path: str
     exit_code: int
     command: list[str]
+    duration_seconds: float = 0.0
+    log_path: str | None = None
+    evidence: dict | None = None
+    evidence_error: str | None = None
 
     @property
     def status(self) -> str:
         return "passed" if self.exit_code == 0 else "failed"
 
 
+def positive_integer(value: str) -> int:
+    try:
+        parsed = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("must be a positive integer") from exc
+    if parsed < 1:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return parsed
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run Meridian .NET CI test projects with aggregate reporting.")
     parser.add_argument("--configuration", default="Release", help="dotnet test configuration.")
+    parser.add_argument(
+        "--max-parallel",
+        type=positive_integer,
+        default=os.environ.get("MERIDIAN_CI_TEST_MAX_PARALLEL", "1"),
+        help="Maximum concurrent test processes (MERIDIAN_CI_TEST_MAX_PARALLEL; default: 1). Tests start after builds finish.",
+    )
     parser.add_argument(
         "--filter",
         default="Category!=Integration&Category!=Performance",
@@ -238,7 +277,9 @@ def parse_args() -> argparse.Namespace:
 
 def parse_project_entries(entries: Sequence[str]) -> list[TestProject]:
     if not entries:
-        return [TestProject(name=name, path=path, filter_expression=filter_expression) for name, path, filter_expression in DEFAULT_TEST_PROJECTS]
+        projects = [TestProject(name=name, path=path, filter_expression=filter_expression) for name, path, filter_expression in DEFAULT_TEST_PROJECTS]
+        validate_project_names(projects)
+        return projects
 
     projects: list[TestProject] = []
     for entry in entries:
@@ -250,7 +291,22 @@ def parse_project_entries(entries: Sequence[str]) -> list[TestProject]:
         if not name or not path:
             raise ValueError(f"Project entry '{entry}' must include non-empty NAME and PATH values.")
         projects.append(TestProject(name=name, path=path))
+    validate_project_names(projects)
     return projects
+
+
+def validate_project_names(projects: Sequence[TestProject]) -> None:
+    """Require portable, unique directory names before starting any processes."""
+    reserved = {"con", "prn", "aux", "nul"}
+    reserved.update(f"{prefix}{number}" for prefix in ("com", "lpt") for number in range(1, 10))
+    seen: set[str] = set()
+    for project in projects:
+        name = project.name
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}", name) or name.casefold() in reserved:
+            raise ValueError(f"Project name '{name}' must be a safe directory name of 1-64 letters, digits, '-' or '_'.")
+        if name.casefold() in seen:
+            raise ValueError(f"Duplicate project name '{name}'; each shard needs a unique output directory.")
+        seen.add(name.casefold())
 
 
 def combine_filters(base_filter: str, project_filter: str | None) -> str:
@@ -321,6 +377,95 @@ def get_unique_build_projects(projects: Sequence[TestProject]) -> list[TestProje
     return unique_projects
 
 
+def write_build_solution_filter(
+    projects: Sequence[TestProject], *, repo_root: Path, filter_path: Path,
+) -> None:
+    """Select Release build roots, retaining normal project-reference traversal."""
+    solution_path = (repo_root / "Meridian.sln").resolve()
+    solution_text = solution_path.read_text(encoding="utf-8-sig")
+    solution_projects = {
+        path.replace("\\", "/"): (path, project_id)
+        for path, project_id in re.findall(
+            r'^Project\("[^"]+"\)\s*=\s*"[^"]+",\s*"([^"]+)",\s*"([^"]+)"',
+            solution_text, re.MULTILINE,
+        )
+    }
+    selected_paths = []
+    for project in get_unique_build_projects(projects):
+        solution_project = solution_projects.get(project.path.replace("\\", "/"))
+        if solution_project is None:
+            raise ValueError(f"Default test project is missing from Meridian.sln: {project.path}")
+        solution_project_path, project_id = solution_project
+        for mapping in ("ActiveCfg", "Build.0"):
+            values = re.findall(
+                rf'^\s*{re.escape(project_id)}\.Release\|Any CPU\.{re.escape(mapping)}\s*=\s*([^\r\n]+)',
+                solution_text, re.MULTILINE,
+            )
+            if [value.strip() for value in values] != ["Release|Any CPU"]:
+                raise ValueError(
+                    f"Default test project requires Release|Any CPU.{mapping} = Release|Any CPU "
+                    f"in Meridian.sln: {project.path}"
+                )
+        selected_paths.append(solution_project_path)
+
+    # MSBuild resolves the solution relative to the filter, and project entries relative
+    # to the solution. Keep the latter exactly as declared in Meridian.sln.
+    try:
+        relative_solution = os.path.relpath(solution_path, filter_path.resolve().parent)
+    except ValueError:
+        # A custom results directory can live on another Windows drive.
+        relative_solution = str(solution_path)
+    filter_path.parent.mkdir(parents=True, exist_ok=True)
+    filter_path.write_text(json.dumps({
+        "solution": {"path": relative_solution, "projects": selected_paths},
+    }, indent=2) + "\n", encoding="utf-8")
+
+
+def run_default_build(
+    projects: Sequence[TestProject], *, repo_root: Path, configuration: str,
+    results_dir: Path, dry_run: bool,
+) -> TestResult:
+    """Build all default roots once, streaming output to a persistent log."""
+    filter_path = results_dir.resolve() / "ci-dotnet-test-build.slnf"
+    log_path = filter_path.parent / "dotnet-build.log"
+    project = TestProject("default-roster", str(filter_path))
+    command = build_dotnet_build_command(project, configuration=configuration)
+    print(f"Starting default test build; log: {log_path}", flush=True)
+    print(" ".join(command), flush=True)
+    started = time.perf_counter()
+    try:
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        with log_path.open("w", encoding="utf-8") as log:
+            log.write(" ".join(command) + "\n")
+            log.flush()
+            try:
+                write_build_solution_filter(projects, repo_root=repo_root, filter_path=filter_path)
+                if dry_run:
+                    exit_code = 0
+                else:
+                    completed = subprocess.run(command, check=False, stdout=log, stderr=subprocess.STDOUT)
+                    exit_code = completed.returncode
+            except (OSError, ValueError) as exc:
+                log.write(f"Unable to prepare or launch default test build: {exc}\n")
+                exit_code = 127
+    except OSError as exc:
+        print(f"Unable to prepare build log: {exc}", file=sys.stderr, flush=True)
+        exit_code = 127
+    duration = round(time.perf_counter() - started, 3)
+    result = TestResult(f"build:{project.name}", project.path, exit_code, command, duration, str(log_path))
+    print(f"Finished default test build: {result.status} (exit {exit_code}, {duration:.3f}s)", flush=True)
+    if exit_code != 0:
+        print(f"Last 16 KiB of {log_path}:", flush=True)
+        try:
+            with log_path.open("rb") as log:
+                log.seek(0, os.SEEK_END)
+                log.seek(max(0, log.tell() - 16 * 1024))
+                print(log.read(16 * 1024).decode("utf-8", errors="replace"), flush=True)
+        except OSError as exc:
+            print(f"Unable to read build log: {exc}", file=sys.stderr, flush=True)
+    return result
+
+
 def run_builds(
     projects: Sequence[TestProject],
     *,
@@ -332,13 +477,21 @@ def run_builds(
         command = build_dotnet_build_command(project, configuration=configuration)
         print(f"::group::dotnet build {project.path}", flush=True)
         print(" ".join(command), flush=True)
+        started = time.perf_counter()
         if dry_run:
             exit_code = 0
         else:
-            completed = subprocess.run(command, check=False)
-            exit_code = completed.returncode
+            try:
+                completed = subprocess.run(command, check=False)
+                exit_code = completed.returncode
+            except OSError as exc:
+                print(f"Unable to launch build: {exc}", file=sys.stderr, flush=True)
+                exit_code = 127
         print(f"::endgroup::", flush=True)
-        results.append(TestResult(f"build:{project.name}", project.path, exit_code, command))
+        results.append(TestResult(
+            f"build:{project.name}", project.path, exit_code, command,
+            duration_seconds=round(time.perf_counter() - started, 3),
+        ))
     return results
 
 
@@ -349,28 +502,117 @@ def run_tests(
     test_filter: str,
     results_dir: Path,
     dry_run: bool,
+    max_parallel: int = 1,
+    properties: Sequence[str] = (),
 ) -> list[TestResult]:
-    results: list[TestResult] = []
-    for project in projects:
+    if max_parallel < 1:
+        raise ValueError("max_parallel must be a positive integer")
+    validate_project_names(projects)
+    output_lock = Lock()
+
+    def run_project(project: TestProject) -> TestResult:
+        shard_dir = (results_dir / project.name).resolve()
+        log_path = shard_dir / "dotnet-test.log"
         command = build_dotnet_test_command(
             project,
             configuration=configuration,
             test_filter=test_filter,
-            results_dir=results_dir,
+            results_dir=shard_dir,
         )
-        print(f"::group::dotnet test {project.name}", flush=True)
-        print(" ".join(command), flush=True)
-        if dry_run:
-            exit_code = 0
-        else:
-            completed = subprocess.run(command, check=False)
-            exit_code = completed.returncode
-        print(f"::endgroup::", flush=True)
-        results.append(TestResult(project.name, project.path, exit_code, command))
-    return results
+        command.extend(properties)
+        filter_index = command.index("--filter") if "--filter" in command else -1
+        if filter_index >= 0 and not command[filter_index + 1]:
+            del command[filter_index:filter_index + 2]
+        with output_lock:
+            print(f"Starting {project.name}; log: {log_path}", flush=True)
+            if dry_run:
+                print(" ".join(command), flush=True)
+        started = time.perf_counter()
+        error: str | None = None
+        try:
+            shard_dir.mkdir(parents=True, exist_ok=True)
+            if not dry_run:
+                # Never accept evidence left by an earlier invocation of this shard.
+                for stale in shard_dir.glob("*.trx"):
+                    stale.unlink()
+            # Fixture data is isolated outside uploaded results and removed after exit.
+            temp_root = str(Path(tempfile.gettempdir()).resolve())
+            if os.name == "nt" and not temp_root.startswith("\\\\?\\"):
+                temp_root = (
+                    "\\\\?\\UNC\\" + temp_root[2:]
+                    if temp_root.startswith("\\\\") else "\\\\?\\" + temp_root
+                )
+            with tempfile.TemporaryDirectory(prefix=f"meridian-ci-{project.name}-", dir=temp_root) as temporary_dir:
+                child_env = os.environ.copy()
+                child_temp = str(Path(temporary_dir).resolve())
+                if os.name == "nt":
+                    # Keep Python's extended path for long-name cleanup, while application
+                    # URI, drive and relative-path APIs receive a normal Windows path.
+                    if child_temp.startswith("\\\\?\\UNC\\"):
+                        child_temp = "\\\\" + child_temp[8:]
+                    elif child_temp.startswith("\\\\?\\"):
+                        child_temp = child_temp[4:]
+                child_env.update({name: child_temp for name in ("TMPDIR", "TMP", "TEMP")})
+                # Send output straight to disk: a long-running/noisy shard must not consume
+                # unbounded memory or interleave GitHub workflow commands with another shard.
+                with log_path.open("w", encoding="utf-8") as log:
+                    log.write(" ".join(command) + "\n")
+                    log.flush()
+                    if dry_run:
+                        exit_code = 0
+                    else:
+                        try:
+                            completed = subprocess.run(
+                                command, check=False, stdout=log, stderr=subprocess.STDOUT, env=child_env,
+                            )
+                            exit_code = completed.returncode
+                        except OSError as exc:
+                            log.write(f"Unable to launch test process: {exc}\n")
+                            exit_code = 127
+        except OSError as exc:
+            error = f"Unable to prepare or clean shard output: {exc}"
+            exit_code = 127
+        evidence = None
+        evidence_error = None
+        if not dry_run:
+            try:
+                evidence = collect_trx(shard_dir, project.name)
+                if evidence["counts"]["failed"] or evidence["counts"]["other"]:
+                    exit_code = exit_code or 1
+            except (ValueError, OSError, ET.ParseError) as exc:
+                evidence_error = f"Invalid test evidence: {exc}"
+                exit_code = exit_code or 1
+                print(evidence_error, file=sys.stderr, flush=True)
+        duration = round(time.perf_counter() - started, 3)
+        result = TestResult(project.name, project.path, exit_code, command, duration, str(log_path), evidence, evidence_error)
+        with output_lock:
+            print(f"Finished {project.name}: {result.status} (exit {exit_code}, {duration:.3f}s)", flush=True)
+            if error:
+                print(error, file=sys.stderr, flush=True)
+            elif exit_code != 0:
+                print(f"Last 16 KiB of {log_path}:", flush=True)
+                try:
+                    with log_path.open("rb") as log:
+                        log.seek(0, os.SEEK_END)
+                        log.seek(max(0, log.tell() - 16 * 1024))
+                        print(log.read(16 * 1024).decode("utf-8", errors="replace"), flush=True)
+                except OSError as exc:
+                    print(f"Unable to read shard log: {exc}", file=sys.stderr, flush=True)
+        return result
+
+    # Start long shards first when parallel; local sequential runs retain their order.
+    # Every submitted shard runs, including after another process fails to launch.
+    scheduled = sorted(projects, key=lambda p: -SHARD_DURATION_HINTS.get(p.name, 0)) if max_parallel > 1 else projects
+    with ThreadPoolExecutor(max_workers=max_parallel) as executor:
+        by_name = {result.name: result for result in executor.map(run_project, scheduled)}
+    return [by_name[project.name] for project in projects]
 
 
-def write_summaries(results: Sequence[TestResult], *, summary_output: Path, json_output: Path) -> None:
+def write_summaries(
+    results: Sequence[TestResult], *, summary_output: Path, json_output: Path,
+    build_results: Sequence[TestResult] = (),
+    test_duration_seconds: float | None = None,
+) -> None:
     summary_output.parent.mkdir(parents=True, exist_ok=True)
     json_output.parent.mkdir(parents=True, exist_ok=True)
 
@@ -381,6 +623,21 @@ def write_summaries(results: Sequence[TestResult], *, summary_output: Path, json
         "failed": len(failed),
         "results": [asdict(result) | {"status": result.status} for result in results],
     }
+    identities = sorted(f"{r.path}|{identity}" for r in results if r.evidence
+                        for identity in r.evidence["testIdentities"])
+    payload.update({
+        "counts": {key: sum(r.evidence["counts"][key] for r in results if r.evidence)
+                   for key in ("passed", "failed", "skipped", "other")},
+        "testIdentityDigest": hashlib.sha256(json.dumps(identities, ensure_ascii=True).encode()).hexdigest() if identities else None,
+        "testSeconds": test_duration_seconds,
+        "commitSha": os.environ.get("GITHUB_SHA"), "runId": os.environ.get("GITHUB_RUN_ID"),
+        "runAttempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
+        "cacheHit": os.environ.get("MERIDIAN_DEPENDENCY_CACHE_HIT", "not reported"),
+        "queueSeconds": None,
+    })
+    if build_results:
+        # Keep successful test totals and results compatible with artifact consumers.
+        payload["build_results"] = [asdict(result) | {"status": result.status} for result in build_results]
     json_output.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
     lines = [
@@ -390,12 +647,37 @@ def write_summaries(results: Sequence[TestResult], *, summary_output: Path, json
         f"- Passed: {payload['passed']}",
         f"- Failed: {payload['failed']}",
         "",
-        "| Project | Status | Exit code |",
-        "| --- | --- | ---: |",
+        f"- Tests: {json.dumps(payload['counts'])}",
+        f"- Run attempt: {payload['runAttempt'] or 'local'}; cache hit: {payload['cacheHit']}",
+        "- Queue time is reported separately by ci-metrics.py from completed Actions jobs.",
+        "",
+        "| Shard | Project | Status | Exit code | Duration (s) | Passed / failed / skipped | Log |",
+        "| --- | --- | --- | ---: | ---: | --- | --- |",
     ]
     for result in results:
         icon = "✅" if result.exit_code == 0 else "❌"
-        lines.append(f"| `{result.path}` | {icon} {result.status} | {result.exit_code} |")
+        log = f"`{result.log_path}`" if result.log_path else "—"
+        counts = result.evidence["counts"] if result.evidence else {}
+        lines.append(
+            f"| `{result.name}` | `{result.path}` | {icon} {result.status} | "
+            f"{result.exit_code} | {result.duration_seconds:.3f} | "
+            f"{counts.get('passed', '?')} / {counts.get('failed', '?')} / {counts.get('skipped', '?')} | {log} |"
+        )
+    lines.extend(["", "#### Reproduce (after restore/build)", ""])
+    for result in results:
+        # list2cmdline targets the Windows argv parser, not a shell: filters containing
+        # &, |, parentheses and logger semicolons need PowerShell literal quoting.
+        shell = "powershell" if os.name == "nt" else "sh"
+        command = ("& " + " ".join("'" + arg.replace("'", "''") + "'" for arg in result.command)
+                   if os.name == "nt" else shlex.join(result.command))
+        lines.extend([f"{result.name}: {result.evidence_error or result.status}", "", f"```{shell}", command, "```", ""])
+    if build_results:
+        lines.extend(["", "#### Build evidence", "", "| Build | Status | Duration (s) | Log |",
+                      "| --- | --- | ---: | --- |"])
+        for result in build_results:
+            lines.append(
+                f"| `{result.name}` | {result.status} | {result.duration_seconds:.3f} | `{result.log_path}` |"
+            )
     summary_output.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
@@ -425,13 +707,20 @@ def main() -> int:
             return 2
 
     results_dir = Path(args.results_dir)
-    results_dir.mkdir(parents=True, exist_ok=True)
-
-    build_results = run_builds(
-        projects,
-        configuration=args.configuration,
-        dry_run=args.dry_run,
-    )
+    use_group_build = not args.project and args.configuration == "Release"
+    if not use_group_build:
+        # Overrides may target projects or configurations absent from Meridian.sln.
+        build_results = run_builds(projects, configuration=args.configuration, dry_run=args.dry_run)
+    else:
+        group_result = run_default_build(
+            projects, repo_root=repo_root, configuration=args.configuration,
+            results_dir=results_dir, dry_run=args.dry_run,
+        )
+        build_results = [group_result]
+        if group_result.exit_code != 0:
+            print("Default test build failed; building each project once for diagnostics.", file=sys.stderr)
+            # Diagnostic retries cannot turn the original failure green or permit tests.
+            build_results.extend(run_builds(projects, configuration=args.configuration, dry_run=args.dry_run))
     build_failures = [result for result in build_results if result.exit_code != 0]
     if build_failures:
         write_summaries(build_results, summary_output=Path(args.summary_output), json_output=Path(args.json_output))
@@ -440,14 +729,20 @@ def main() -> int:
             print(f"- {result.name}: {result.path} exited {result.exit_code}", file=sys.stderr)
         return 1
 
+    test_started = time.perf_counter()
     results = run_tests(
         projects,
         configuration=args.configuration,
         test_filter=args.filter,
         results_dir=results_dir,
         dry_run=args.dry_run,
+        max_parallel=args.max_parallel,
     )
-    write_summaries(results, summary_output=Path(args.summary_output), json_output=Path(args.json_output))
+    write_summaries(
+        results, summary_output=Path(args.summary_output), json_output=Path(args.json_output),
+        build_results=build_results if use_group_build else (),
+        test_duration_seconds=time.perf_counter() - test_started,
+    )
 
     failed = [result for result in results if result.exit_code != 0]
     if failed:

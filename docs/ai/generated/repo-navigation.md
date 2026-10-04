@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-08-31T06:37:41Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-09-28T04:47:55Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -10,7 +10,7 @@ Use this file when an assistant needs fast orientation before reading subsystem-
 |---|---|---|
 | Provider implementation and provider bugs | `Meridian.ProviderSdk`, `Meridian.Infrastructure`, `Meridian.Storage` | `docs/ai/claude/CLAUDE.providers.md`, `docs/development/provider-implementation.md`, `docs/ai/ai-known-errors.md` |
 | Browser workstation and dashboard UI issues | `Meridian.Ui.Dashboard`, `Meridian.Ui.Services`, `Meridian.Ui.Shared` | `docs/ai/navigation/README.md`, `docs/ai/ai-known-errors.md` |
-| WPF and workstation workflow issues | `Meridian.Wpf`, `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian` | `docs/development/wpf-web-ui-alignment-plan.md`, `docs/ai/ai-known-errors.md` |
+| WPF and workstation workflow issues | `Meridian.Wpf`, `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian` | `docs/engineering/plans/wpf-web-ui-alignment-plan.md`, `docs/ai/ai-known-errors.md` |
 | Storage and WAL investigations | `Meridian.Storage`, `Meridian.Application` | `docs/ai/claude/CLAUDE.storage.md`, `docs/ai/ai-known-errors.md` |
 | MCP tools, prompts, and resources | `Meridian.Mcp` | `docs/ai/navigation/README.md`, `docs/ai/README.md` |
 
@@ -44,7 +44,7 @@ WPF desktop shell, shared UI services, and browser-facing UI surfaces.
 - Entrypoints: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/app.tsx`
 - Key contracts: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/main.tsx`
 - Common tasks: wpf issue, viewmodel routing, workspace flow, ui polish
-- Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`, `docs/development/wpf-web-ui-alignment-plan.md`
+- Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`, `docs/engineering/plans/wpf-web-ui-alignment-plan.md`
 
 ### Backtesting and Strategy Analytics
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.FinancialOperations/README.md` | Unmapped | `7a40e6970` (2026-08-30T04:02:38Z) | 16 |
-| `src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs` | Unmapped | `7a40e6970` (2026-08-30T04:02:38Z) | 13 |
-| `src/Meridian.FinancialOperations/Reconciliation/Connectors/Alpaca/AlpacaActivityStatementConnector.cs` | Unmapped | `7a40e6970` (2026-08-30T04:02:38Z) | 7 |
-| `src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvStatementConnector.cs` | Unmapped | `b47f9df7a` (2026-08-30T03:37:39Z) | 10 |
-| `src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs` | Unmapped | `b47f9df7a` (2026-08-30T03:37:39Z) | 8 |
-| `src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs` | Unmapped | `4eac56733` (2026-08-30T03:17:20Z) | 11 |
-| `src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs` | Unmapped | `03a29b7f1` (2026-08-30T03:05:30Z) | 11 |
-| `src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs` | Unmapped | `73dd54ea9` (2026-08-29T23:33:52Z) | 6 |
-| `src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs` | Unmapped | `b37e3cea5` (2026-08-29T23:24:41Z) | 18 |
-| `src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs` | Unmapped | `b37e3cea5` (2026-08-29T23:24:41Z) | 5 |
-| `src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs` | Unmapped | `2f72a8f3a` (2026-08-29T17:23:14Z) | 1 |
-| `src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs` | Desktop and UI Workflows | `291695dcf` (2026-08-29T15:33:55Z) | 5 |
-| `src/Meridian.Wpf/App.xaml.cs` | Desktop and UI Workflows | `291695dcf` (2026-08-29T15:33:55Z) | 1 |
-| `src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs` | Unmapped | `8d2484482` (2026-08-29T15:32:03Z) | 3 |
-| `src/Meridian.Storage/Ledger/PostgresAccountingConfigurationStore.cs` | Providers and Storage | `22e39ea6d` (2026-08-29T15:25:46Z) | 4 |
+| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | `2d1621987` (2026-09-28T00:40:02+00:00) | 3 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `2d1621987` (2026-09-28T00:40:02+00:00) | 2 |
+| `src/Meridian.Backtesting/README.md` | Backtesting and Strategy Analytics | `2d1621987` (2026-09-28T00:40:02+00:00) | 1 |
+| `src/Meridian.QuantScript/README.md` | Backtesting and Strategy Analytics | `2d1621987` (2026-09-28T00:40:02+00:00) | 1 |
+| `src/Meridian.Execution/Adapters/PaperTradingGateway.cs` | Execution, Risk, and Strategies | `aff38fd00` (2026-09-25T19:49:41-07:00) | 1 |
+| `src/Meridian.Execution/Adapters/PaperTradingGatewaySupport.cs` | Execution, Risk, and Strategies | `aff38fd00` (2026-09-25T19:49:41-07:00) | 1 |
+| `src/Meridian.Execution/PaperTradingGateway.cs` | Execution, Risk, and Strategies | `aff38fd00` (2026-09-25T19:49:41-07:00) | 1 |
+| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | `aff38fd00` (2026-09-25T19:49:41-07:00) | 1 |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs` | Execution, Risk, and Strategies | `dcc87676c` (2026-09-25T18:37:15-07:00) | 1 |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | Execution, Risk, and Strategies | `dcc87676c` (2026-09-25T18:37:15-07:00) | 1 |
+| `src/Meridian.Identity/Application/UserProfileRegistry.cs` | Unmapped | `462d4da03` (2026-09-25T14:28:59-07:00) | 2 |
+| `src/Meridian.Identity/README.md` | Unmapped | `462d4da03` (2026-09-25T14:28:59-07:00) | 2 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `462d4da03` (2026-09-25T14:28:59-07:00) | 2 |
+| `src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs` | Desktop and UI Workflows | `462d4da03` (2026-09-25T14:28:59-07:00) | 2 |
+| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `462d4da03` (2026-09-25T14:28:59-07:00) | 2 |
 

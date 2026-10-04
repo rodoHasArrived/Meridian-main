@@ -399,6 +399,7 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
         var taxLotReliefProjections = await BuildTaxLotReliefProjectionsAsync(
                 book.LedgerBookId,
                 orderedHistory,
+                book.BaseCurrency,
                 cancellationToken)
             .ConfigureAwait(false);
 
@@ -411,16 +412,24 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
     /// <summary>
     /// Rebuilds realized-gain relief projections for the disposals recorded against
     /// <paramref name="journals"/>. A disposal whose retained economics cannot produce a well-formed
-    /// projection is omitted rather than failing the capture: an unreconstructable historical row
-    /// must not block a governed pack from being produced at all.
+    /// projection blocks capture until its canonical acquisition evidence and economics reconcile.
     /// </summary>
     private async Task<IReadOnlyList<LedgerTaxLotReliefProjection>> BuildTaxLotReliefProjectionsAsync(
         Guid ledgerBookId,
         IReadOnlyList<LedgerJournalEntryRecord> journals,
+        string functionalCurrency,
         CancellationToken cancellationToken)
     {
-        if (_taxLotDisposalHistory is null || journals.Count == 0)
+        if (journals.Count == 0)
         {
+            return [];
+        }
+        if (_taxLotDisposalHistory is null)
+        {
+            if (journals.Any(record => record.Entry.Lines.Any(line =>
+                line.Dimensions?.InstrumentId is not null || line.Dimensions?.PositionId is not null ||
+                line.Account.Name == LedgerAccounts.RealizedGain.Name || line.Account.Name == LedgerAccounts.RealizedLoss.Name)))
+                throw Unavailable("Canonical tax-lot history is required for investment journals; the acquisition backfill and disposal history authority are unavailable.");
             return [];
         }
 
@@ -434,9 +443,9 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
                     cancellationToken)
                 .ConfigureAwait(false);
         }
-        catch (NotSupportedException)
+        catch (Exception exception) when (exception is NotSupportedException or LedgerValidationException or ArgumentException or InvalidOperationException or JsonException)
         {
-            return [];
+            throw Unavailable($"Canonical tax-lot history is unavailable: {exception.Message}");
         }
 
         if (disposals.Count == 0)
@@ -452,53 +461,18 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
         foreach (var disposal in disposals)
         {
             if (!journalsById.TryGetValue(disposal.JournalEntryId, out var entry))
+                throw Unavailable("Retained tax-lot disposal is outside the certified journal scope.");
+            try
             {
-                continue;
+                projections.Add(CanonicalDisposalHistoryProjector.Project(disposal, entry, ledgerBookId, functionalCurrency));
             }
-
-            var projection = LedgerTaxLotReliefHistoryProjector.Project(new LedgerTaxLotDisposalHistory(
-                disposal.MutationBatchId,
-                disposal.JournalEntryId,
-                disposal.Account,
-                entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(entry.Timestamp.UtcDateTime),
-                disposal.ReliefMethod,
-                disposal.Lots,
-                ResolveRecognizedGainOrLoss(entry),
-                disposal.WashSaleBasisIncreases,
-                disposal.MatchedReplacementQuantity));
-
-            if (projection is not null)
+            catch (Exception exception) when (exception is LedgerValidationException or ArgumentException or InvalidOperationException)
             {
-                projections.Add(projection);
+                throw Unavailable($"Tax-lot disposal '{disposal.MutationBatchId:D}' blocks canonical reporting: {exception.Message}");
             }
         }
 
         return projections;
-    }
-
-    /// <summary>
-    /// The gain or loss this journal actually booked, read from its realized gain/loss lines. Any
-    /// wash-sale deferral is excluded by construction (only the allowed portion was ever posted),
-    /// which is why the rebuild adds the retained deferral back to recover economic proceeds.
-    /// Accounts are matched by name so both the unscoped and per-financial-account variants count.
-    /// </summary>
-    private static decimal ResolveRecognizedGainOrLoss(JournalEntry entry)
-    {
-        var gain = 0m;
-        var loss = 0m;
-        foreach (var line in entry.Lines)
-        {
-            if (string.Equals(line.Account.Name, LedgerAccounts.RealizedGain.Name, StringComparison.Ordinal))
-            {
-                gain += line.Credit - line.Debit;
-            }
-            else if (string.Equals(line.Account.Name, LedgerAccounts.RealizedLoss.Name, StringComparison.Ordinal))
-            {
-                loss += line.Debit - line.Credit;
-            }
-        }
-
-        return gain - loss;
     }
 
     private async Task<LedgerBookRecord> ResolveBookAsync(

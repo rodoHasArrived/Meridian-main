@@ -56,6 +56,9 @@
                                    Margin="0,4,0,0"
                                    TextWrapping="Wrap" />
                         <WrapPanel Margin="0,10,0,0">
+                            <Border Style="{StaticResource WorkstationFilterChipStyle}" Margin="0,0,8,0">
+                                <TextBlock Text="{Binding CloseReadiness.Label}" AutomationProperties.AutomationId="OperationsContinuityCloseReadiness" />
+                            </Border>
                             <Border Style="{StaticResource WorkstationFilterChipStyle}">
                                 <TextBlock Text="{Binding QueueRollup.StatusLabel}"
                                            FontSize="11"
@@ -67,6 +70,15 @@
                                            FontSize="11"
                                            Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                             </Border>
+                        </WrapPanel>
+                        <TextBlock Text="{Binding CloseReadiness.Detail}" TextWrapping="Wrap" Margin="0,8,0,0" />
+                        <WrapPanel Margin="0,8,0,0" AutomationProperties.Name="Selected close scope">
+                            <StackPanel Margin="0,0,8,0"><TextBlock Text="Fund" /><TextBox Text="{Binding FundProfileInput, UpdateSourceTrigger=PropertyChanged}" Width="130" AutomationProperties.Name="Close fund profile" /></StackPanel>
+                            <StackPanel Margin="0,0,8,0"><TextBlock Text="Ledger book ID" /><TextBox Text="{Binding LedgerBookInput, UpdateSourceTrigger=PropertyChanged}" Width="180" AutomationProperties.Name="Close ledger book" /></StackPanel>
+                            <StackPanel Margin="0,0,8,0"><TextBlock Text="Account ID" /><TextBox Text="{Binding AccountInput, UpdateSourceTrigger=PropertyChanged}" Width="180" AutomationProperties.Name="Close account" /></StackPanel>
+                            <StackPanel Margin="0,0,8,0"><TextBlock Text="Entity" /><TextBox Text="{Binding EntityInput, UpdateSourceTrigger=PropertyChanged}" Width="130" AutomationProperties.Name="Close entity" /></StackPanel>
+                            <StackPanel Margin="0,0,8,0"><TextBlock Text="Period" /><TextBox Text="{Binding PeriodInput, UpdateSourceTrigger=PropertyChanged}" Width="100" AutomationProperties.Name="Close period" /></StackPanel>
+                            <Button Content="Evaluate close" Command="{Binding EvaluateCloseScopeCommand}" Style="{StaticResource SecondaryButtonStyle}" VerticalAlignment="Bottom" />
                         </WrapPanel>
                     </StackPanel>
                     <StackPanel Grid.Column="1" HorizontalAlignment="Right">

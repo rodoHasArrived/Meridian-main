@@ -67,6 +67,48 @@ public sealed class AuditChainServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task AppendEntryAsync_CorruptedEarlierLink_LeavesChainUnchanged()
+    {
+        var dataPath = Path.Combine(_testRoot, "original.jsonl");
+        await File.WriteAllTextAsync(dataPath, "payload");
+        await _service.AppendEntryAsync(dataPath);
+        await _service.AppendEntryAsync(dataPath);
+        var chainPath = Path.Combine(_testRoot, "chain.log");
+        var lines = await File.ReadAllLinesAsync(chainPath);
+        lines[0] = lines[0].Replace("original.jsonl", "tampered.jsonl", StringComparison.Ordinal);
+        await File.WriteAllLinesAsync(chainPath, lines);
+        var retained = await File.ReadAllBytesAsync(chainPath);
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => new AuditChainService().AppendEntryAsync(dataPath));
+
+        Assert.Equal(retained, await File.ReadAllBytesAsync(chainPath));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("\n \n")]
+    [InlineData("{")]
+    [InlineData("{}")]
+    [InlineData("[]")]
+    [InlineData("{\"hash\":null}")]
+    [InlineData("{\"hash\":42}")]
+    [InlineData("{\"hash\":\"\"}")]
+    public async Task AppendEntryAsync_InvalidRetainedChain_ThrowsWithoutReplacingHistory(string retainedText)
+    {
+        var dataPath = Path.Combine(_testRoot, "next.jsonl");
+        await File.WriteAllTextAsync(dataPath, "payload");
+        var chainPath = Path.Combine(_testRoot, "chain.log");
+        await File.WriteAllTextAsync(chainPath, retainedText);
+        var retained = await File.ReadAllBytesAsync(chainPath);
+
+        var exception = await Record.ExceptionAsync(() => new AuditChainService().AppendEntryAsync(dataPath));
+
+        Assert.NotNull(exception);
+        Assert.True(exception is InvalidDataException or System.Text.Json.JsonException);
+        Assert.Equal(retained, await File.ReadAllBytesAsync(chainPath));
+    }
+
+    [Fact]
     public async Task AppendEntryAsync_ConcurrentServiceInstances_PreserveSingleChain()
     {
         var services = Enumerable.Range(0, 4).Select(_ => new AuditChainService()).ToArray();

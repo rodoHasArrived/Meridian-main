@@ -1,0 +1,33 @@
+- generic [ref=f1e2]:
+  - main [ref=f1e81]:
+    - generic [ref=f1e13]:
+      - generic [ref=f1e14]:
+        - generic [ref=f1e15]: Meridian
+        - list "Setup progress" [ref=f1e19]:
+          - listitem [ref=f1e20]: Welcome
+          - listitem [ref=f1e21]: Your goal
+          - listitem [ref=f1e22]: Starting data
+          - listitem [ref=f1e23]: Review
+          - listitem [ref=f1e24]: Ready
+      - generic [ref=f1e25]:
+        - heading "Review your setup" [level=1] [ref=f1e84]
+        - generic [ref=f1e85]:
+          - generic [ref=f1e86]:
+            - generic [ref=f1e87]: Starter workspace
+            - strong [ref=f1e88]: Fund Operations Desk
+          - generic [ref=f1e89]:
+            - generic [ref=f1e90]: Storage
+            - strong [ref=f1e91]: Meridian application data (outside the installation directory)
+          - generic [ref=f1e92]:
+            - generic [ref=f1e93]: Starting data
+            - strong [ref=f1e94]: Use sample data
+          - generic [ref=f1e95]:
+            - generic [ref=f1e96]: Trading and accounting
+            - strong [ref=f1e97]: Paper and sample only
+          - generic [ref=f1e98]:
+            - generic [ref=f1e99]: Credentials
+            - strong [ref=f1e100]: Encrypted credential store; never included in sample data
+      - generic [ref=f1e56]:
+        - button "Back" [ref=f1e57] [cursor=pointer]
+        - button "Create workspace" [active] [ref=f1e101] [cursor=pointer]
+  - region "Notifications"

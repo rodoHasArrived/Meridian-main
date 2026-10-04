@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { AlertTriangle, ArrowRight, CalendarDays, Gauge, GitBranch, ListChecks, Lock, RefreshCcw, Workflow } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1161,7 +1161,13 @@ const timelineColumns: DenseDataTableColumn<OperationsContinuityTimelineRow>[] =
 ];
 
 export function OperationsContinuityScreen() {
-  const vm = useOperationsContinuityScreenViewModel();
+  const [searchParams] = useSearchParams();
+  const closeScope = useMemo(() => ({
+    fundProfileId: searchParams.get("fundProfileId"), ledgerBookId: searchParams.get("ledgerBookId"),
+    fundAccountId: searchParams.get("fundAccountId"), entityId: searchParams.get("entityId"),
+    periodId: searchParams.get("periodId")
+  }), [searchParams]);
+  const vm = useOperationsContinuityScreenViewModel(undefined, closeScope);
   const [breakCommand, setBreakCommand] = useState<{
     pending: { breakId: string; kind: BreakCommandKind } | null;
     message: string | null;
@@ -1443,6 +1449,7 @@ export function OperationsContinuityScreen() {
         correlationId: `browser-close-package:${row.id}`,
         evidenceLinks: row.closeWorkflowEvidenceLinks,
         checklistControlApprovals: row.closeWorkflowChecklistControlApprovals,
+        closeScope,
         actionOrigin: "HumanOperator"
       });
 
@@ -1459,7 +1466,7 @@ export function OperationsContinuityScreen() {
         error: formatCloseWorkflowCommandError(err)
       });
     }
-  }, [vm.refresh]);
+  }, [closeScope, vm.refresh]);
 
   const reopenWorkflowCommandHandler = useCallback(async () => {
     const formDisabledReason = buildReopenWorkflowFormDisabledReason(reopenWorkflowForm);

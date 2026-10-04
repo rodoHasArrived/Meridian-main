@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -162,6 +163,9 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
             Positions,
             [
                 new("Symbol", nameof(AggregatedPositionRow.Symbol), 90),
+                new("Mark readiness", "Mark.Label", 125),
+                new("Observed on", "Mark.ObservedOn", 110),
+                new("Mark age", "Mark.Age", 90),
                 new("Net Qty", nameof(AggregatedPositionRow.TotalQuantity), 90, "{0:N2}"),
                 new("Long", nameof(AggregatedPositionRow.LongQuantity), 85, "{0:N2}"),
                 new("Short", nameof(AggregatedPositionRow.ShortQuantity), 85, "{0:N2}"),
@@ -271,7 +275,8 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
                     ShortQuantity: p.ShortQuantity,
                     WeightedAverageCost: p.WeightedAverageCost,
                     TotalUnrealisedPnl: p.TotalUnrealisedPnl,
-                    ContributingRuns: p.Contributions?.Count ?? 0));
+                    ContributingRuns: p.Contributions?.Count ?? 0,
+                    MarkFreshness: p.MarkFreshness));
             }
 
             SelectedPosition = Positions.FirstOrDefault();
@@ -369,19 +374,23 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
         {
             Title = selected.Symbol,
             Subtitle = "Cross-strategy netted position",
-            Detail = "Review net quantity, long and short contribution, weighted average cost, and run coverage before opening Security Master lookup.",
+            Detail = selected.Mark.Reason,
             Badge = new WorkstationBadgeModel(
-                "Runs",
-                selected.ContributingRuns.ToString("N0"),
+                "Mark readiness",
+                selected.Mark.Label,
                 "\uE8A5",
-                selected.ContributingRuns > 0 ? WorkspaceTone.Info : WorkspaceTone.Warning),
+                selected.Mark.Tone),
             Facts =
             [
                 new("Net quantity", selected.TotalQuantity.ToString("N2")),
                 new("Long quantity", selected.LongQuantity.ToString("N2")),
                 new("Short quantity", selected.ShortQuantity.ToString("N2")),
                 new("Weighted average cost", selected.WeightedAverageCost.ToString("C4")),
-                new("Unrealized P&L", selected.TotalUnrealisedPnl.ToString("C2")),
+                new("Recorded unrealized P&L", selected.Mark.RecordedValue(selected.TotalUnrealisedPnl)),
+                new("Mark observed on", selected.Mark.ObservedOn),
+                new("Mark age", selected.Mark.Age),
+                new("Valuation date", selected.Mark.ValuationDate),
+                new("Mark policy", selected.Mark.PolicyVersion),
                 new("Contributing runs", selected.ContributingRuns.ToString("N0")),
                 new("Source", "Aggregate portfolio")
             ]
@@ -407,6 +416,7 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
 
     private sealed class AggregatedPositionDto
     {
+        public MarkFreshnessAssessmentDto? MarkFreshness { get; set; }
         public string? Symbol { get; set; }
         public decimal TotalQuantity { get; set; }
         public decimal LongQuantity { get; set; }
@@ -433,6 +443,10 @@ public sealed record AggregatedPositionRow(
     decimal ShortQuantity,
     decimal WeightedAverageCost,
     decimal TotalUnrealisedPnl,
-    int ContributingRuns);
+    int ContributingRuns,
+    MarkFreshnessAssessmentDto? MarkFreshness = null)
+{
+    public MarkFreshnessPresentation Mark => new(MarkFreshness);
+}
 
 public sealed record AggregatePortfolioEmptyState(bool IsVisible, string Title, string Detail);

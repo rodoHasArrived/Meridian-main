@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using FluentAssertions;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
@@ -125,7 +126,7 @@ public sealed class StatementRunMatchArtifactUpgradeTests : IDisposable
         var replayed = await CreateWorkflow().CreateAsync(request, timeout.Token);
 
         replayed.Import.ImportId.Should().Be(runId);
-        var retained = await new FileStatementRunMatchArtifactStore(_root).GetAsync(runId, timeout.Token);
+        var retained = await new FileStatementRunMatchArtifactStore(_root, new AtomicFileWriterAdapter()).GetAsync(runId, timeout.Token);
         retained!.MatchGroups.Should().BeNull("a legacy artifact is adopted as written, never rewritten under its retained hash");
     }
 
@@ -157,7 +158,7 @@ public sealed class StatementRunMatchArtifactUpgradeTests : IDisposable
                 legacyArtifact,
                 StatementRunRecoveryJsonContext.Default.StatementRunMatchArtifact),
             "the replay must adopt the retained legacy artifact instead of overwriting it");
-        var retained = await new FileStatementRunMatchArtifactStore(_root).GetAsync(runId, timeout.Token);
+        var retained = await new FileStatementRunMatchArtifactStore(_root, new AtomicFileWriterAdapter()).GetAsync(runId, timeout.Token);
         retained!.MatchGroups.Should().BeNull();
     }
 
@@ -170,7 +171,7 @@ public sealed class StatementRunMatchArtifactUpgradeTests : IDisposable
         string runId,
         CancellationToken ct)
     {
-        var store = new FileStatementRunMatchArtifactStore(_root);
+        var store = new FileStatementRunMatchArtifactStore(_root, new AtomicFileWriterAdapter());
         var current = await store.GetAsync(runId, ct);
         current!.MatchGroups.Should().NotBeNull("new runs must retain match groups");
         var legacy = current with { MatchGroups = null };
@@ -193,17 +194,17 @@ public sealed class StatementRunMatchArtifactUpgradeTests : IDisposable
         var imports = new JsonCanonicalStatementStore(_root);
         return new StatementRunWorkflowService(
             imports,
-            new JsonReconciliationCaseStore(_root),
-            new JsonReconciliationBreakStore(_root),
+            new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()),
+            new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter()),
             new CsvBrokerStatementService(imports),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()),
             EmptyInternalReconciliationPopulationProvider.Instance,
             IdentityReconciliationFxRateProvider.Instance,
             new InMemoryStatementToleranceProfileProvider(),
             new FileStatementRunRecoveryRepository(_root),
-            new FileStatementRunMatchArtifactStore(_root),
+            new FileStatementRunMatchArtifactStore(_root, new AtomicFileWriterAdapter()),
             faultInjector,
-            new FileStatementCaseworkCommitStore(_root));
+            new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter()));
     }
 
     private async Task<string> WriteStatementAsync(string fileName)

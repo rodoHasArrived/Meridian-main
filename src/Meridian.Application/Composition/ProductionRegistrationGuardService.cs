@@ -8,8 +8,7 @@ namespace Meridian.Application.Composition;
 /// Final-graph production guard (ADR-019). The composition root inserts this as the first
 /// <see cref="IHostedService"/> so it runs before any other hosted service and re-validates the
 /// complete service collection — including registrations added after <c>AddMarketDataServices</c>
-/// — once the host starts. In production postures it additionally resolves non-keyed singleton
-/// factory descriptors so factory-hidden implementations are checked by their actual runtime
+/// — once the host starts. In production postures it additionally resolves closed factory descriptors of every lifetime and explicit service key so factory-hidden implementations are checked by their actual runtime
 /// type; any violation aborts startup with the full list of prohibited bindings.
 /// </summary>
 public sealed class ProductionRegistrationGuardService : IHostedService
@@ -23,20 +22,28 @@ public sealed class ProductionRegistrationGuardService : IHostedService
         _provider = provider ?? throw new ArgumentNullException(nameof(provider));
     }
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
-        if (!ProductionServiceRegistrationPolicy.IsProductionComposition(_services))
+        ValidateStatically(_services);
+        var production = ProductionServiceRegistrationPolicy.IsProductionComposition(_services);
+        var requireLocalDurability = ProductionServiceRegistrationPolicy.IsSupportedLocalComposition(_services)
+            && !(ProductionServiceRegistrationPolicy.TryResolveForcedProvenance(_services, out var forced)
+                 && forced.IsNonReal());
+        if (!production && !requireLocalDurability)
         {
-            ValidateStatically(_services);
-            return Task.CompletedTask;
+            return;
         }
 
-        var violations = new SortedSet<string>(StringComparer.Ordinal);
-        violations.UnionWith(ProductionServiceRegistrationPolicy.CollectStaticViolations(_services));
-        violations.UnionWith(CollectFactoryViolations(cancellationToken));
-
-        ProductionServiceRegistrationPolicy.ThrowIfViolations(violations);
-        return Task.CompletedTask;
+        var violations = await CollectFactoryViolationsAsync(
+            onlyDurableStores: !production, cancellationToken).ConfigureAwait(false);
+        if (production)
+        {
+            ProductionServiceRegistrationPolicy.ThrowIfViolations(violations);
+        }
+        else
+        {
+            ProductionServiceRegistrationPolicy.ThrowIfNonDurableStoreBindings(violations);
+        }
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
@@ -49,7 +56,7 @@ public sealed class ProductionRegistrationGuardService : IHostedService
     /// front of a shell. <c>ProductionServiceRegistrationPolicy</c> resolves nothing — every check
     /// it makes is a scan of <see cref="IServiceCollection"/> — so this half is cheap and answers
     /// immediately, which is what <c>IStartupRefusalGuard</c> requires. Only
-    /// <see cref="CollectFactoryViolations"/> is expensive, and it stays behind the window where
+    /// <see cref="CollectFactoryViolationsAsync"/> is expensive, and it stays behind the window where
     /// the ninth review round put it.</para>
     ///
     /// <para>W9-TRUTH-001: the supported local posture asserts durable money-path stores at startup
@@ -80,52 +87,75 @@ public sealed class ProductionRegistrationGuardService : IHostedService
         }
     }
 
-    private IEnumerable<string> CollectFactoryViolations(CancellationToken cancellationToken)
+    private async Task<IReadOnlyCollection<string>> CollectFactoryViolationsAsync(
+        bool onlyDurableStores, CancellationToken cancellationToken)
     {
-        // Keyed factory descriptors are excluded: their instances cannot be enumerated without
-        // knowing every key, and the static descriptor pass still covers keyed implementation
-        // types. Eager resolution is intentional fail-fast for production postures only.
-        var factorySingletonServiceTypes = _services
-            .Where(descriptor => descriptor.Lifetime == ServiceLifetime.Singleton
-                                 && !descriptor.IsKeyedService
-                                 && descriptor.ImplementationFactory is not null
-                                 && !descriptor.ServiceType.IsGenericTypeDefinition)
-            .Select(descriptor => descriptor.ServiceType)
-            .Distinct()
+        var factoryGroups = _services
+            .Where(descriptor => !descriptor.ServiceType.IsGenericTypeDefinition
+                && (!onlyDurableStores || ProductionServiceRegistrationPolicy.IsDurableStoreServiceType(descriptor.ServiceType))
+                && (descriptor.IsKeyedService
+                    ? descriptor.KeyedImplementationFactory is not null
+                    : descriptor.ImplementationFactory is not null))
+            .GroupBy(descriptor => (descriptor.ServiceType, descriptor.IsKeyedService, descriptor.ServiceKey))
             .ToArray();
+        var violations = new SortedSet<string>(StringComparer.Ordinal);
 
-        foreach (var serviceType in factorySingletonServiceTypes)
+        // Use the real provider so singleton ownership stays with the host. A validation scope
+        // permits scoped dependencies and releases scoped/transient resources, including async-only
+        // disposables, on success, refusal and cancellation.
+        await using var scope = _provider.CreateAsyncScope();
+        foreach (var group in factoryGroups)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            var (serviceType, keyed, key) = group.Key;
+            if (keyed && ReferenceEquals(key, KeyedService.AnyKey))
+            {
+                throw new StartupRefusedException(
+                    $"Startup policy cannot validate wildcard keyed factory service '{serviceType.FullName}'. " +
+                    "Register explicit service keys so every selected binding can be validated.");
+            }
 
             object?[] instances;
             try
             {
-                instances = _provider.GetServices(serviceType).ToArray();
+                instances = (keyed
+                    ? scope.ServiceProvider.GetKeyedServices(serviceType, key)
+                    : scope.ServiceProvider.GetServices(serviceType)).ToArray();
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
             }
             catch (Exception ex)
             {
-                // A refusal, not a component failure: production policy has decided this composition
-                // must not run. Raised as StartupRefusedException so a host that escalates refusals
-                // -- see HostStartupEscalation.IsRefusal -- does not degrade past it. The other
-                // refusal sites moved to the type; this one is inside the guard rather than the
-                // policy, and leaving it bare kept the WPF shell's tolerant catch swallowing it.
+                var lifetime = group.All(descriptor => descriptor.Lifetime == ServiceLifetime.Singleton)
+                    ? "singleton" : "factory";
                 throw new StartupRefusedException(
-                    $"Production startup policy could not construct singleton service '{serviceType.FullName}' " +
-                    "during final-graph validation; production postures require every registered binding to be constructible.",
-                    ex);
+                    $"Startup policy could not construct {lifetime} service '{serviceType.FullName}' " +
+                    "during final-graph validation; every checked binding must be constructible.", ex);
             }
 
             foreach (var instance in instances)
             {
-                var implementationType = instance?.GetType();
-                if (implementationType is not null &&
-                    ProductionServiceRegistrationPolicy.IsNonProductionOnlyImplementation(implementationType))
+                cancellationToken.ThrowIfCancellationRequested();
+                if (instance is null)
                 {
-                    yield return implementationType.FullName ?? implementationType.Name;
+                    throw new StartupRefusedException(
+                        $"Startup policy factory service '{serviceType.FullName}' returned null during final-graph validation.");
+                }
+
+                var implementationType = instance.GetType();
+                if (ProductionServiceRegistrationPolicy.IsNonProductionOnlyImplementation(implementationType))
+                {
+                    var implementation = implementationType.FullName ?? implementationType.Name;
+                    violations.Add(onlyDurableStores
+                        ? $"{serviceType.FullName ?? serviceType.Name} -> {implementation}"
+                        : implementation);
                 }
             }
         }
+
+        return violations;
     }
 }
 
@@ -150,7 +180,7 @@ public static class ProductionRegistrationGuardServiceCollectionExtensions
             sp => sp.GetRequiredService<ProductionRegistrationGuardService>()));
 
         // ProductionRegistrationGuardService itself is deliberately NOT an IStartupRefusalGuard. In
-        // a production composition it resolves every singleton registered by factory, to prove the
+        // a production composition it resolves every checked factory registration, to prove the
         // graph is constructible -- eager validation that is far too much work to put in front of a
         // shell, because a blocked constructor there would leave an authenticated operator with no
         // window at all. It keeps running as an ordinary hosted service, first in the chain.

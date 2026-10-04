@@ -404,7 +404,8 @@ public sealed record LockClosePeriodRequestDto(
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
     bool PrepareClosingEntriesOnly = false,
     [property: JsonIgnore]
-    string? ControllerRole = null)
+    string? ControllerRole = null,
+    CloseReadinessScopeDto? CloseScope = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
@@ -659,7 +660,11 @@ public sealed record ClosePeriodPlanDto(
     IReadOnlyList<CloseEvidenceReviewDto>? EvidenceReviews = null,
     IReadOnlyList<CloseOperatingCoverageItemDto>? OperatingCoverage = null,
     ClosePostingGateDto? ClosingEntriesGate = null,
-    long WorkflowVersion = 0)
+    long WorkflowVersion = 0,
+    Guid? WorkflowId = null,
+    Guid? FundAccountId = null,
+    string? EvidenceVersion = null,
+    DateTimeOffset? EvaluatedAtUtc = null)
 {
     public IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues { get; init; } =
         ValidationIssues ?? [];

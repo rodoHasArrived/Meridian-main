@@ -32,6 +32,10 @@ public sealed class ProviderInstrumentCapabilityMatrixService : IProviderInstrum
             .ToArray();
 
         var rows = ProviderCapabilityDescriptorCatalog.Descriptors
+            // The catalog also inventories symbol resolvers and compatibility-only sources.
+            // Only project families with a surface that this matrix can represent.
+            .Where(static provider => provider.HasStreaming || provider.HasHistorical || provider.HasSearch ||
+                provider.HasCorporateActions || provider.HasOptions || provider.HasBrokerage)
             .OrderBy(static descriptor => descriptor.ProviderId, StringComparer.OrdinalIgnoreCase)
             .Select(provider => new ProviderInstrumentCapabilityRowDto(
                 ProviderId: provider.ProviderId,
@@ -86,10 +90,10 @@ public sealed class ProviderInstrumentCapabilityMatrixService : IProviderInstrum
         return new ProviderInstrumentCapabilityCellDto(
             InstrumentType: instrument.InstrumentType.ToString(),
             Supported: supported,
-            Stream: supported && provider.HasStreaming,
+            Stream: supported && provider.HasStreaming && provider.SupportedStreamingInstrumentTypes.Contains(instrument.InstrumentType),
             Backfill: supported && provider.HasHistorical,
             CorporateActions: supported && provider.HasCorporateActions && carriesCorporateActions,
-            SymbolSearch: supported && provider.HasSearch,
+            SymbolSearch: supported && provider.HasSearch && provider.SupportedSearchInstrumentTypes.Contains(instrument.InstrumentType),
             OptionsChain: supported && provider.HasOptions && isOptionInstrument);
     }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Meridian.Infrastructure.Adapters.Core;
 using Serilog;
 using Timer = System.Timers.Timer;
 
@@ -89,7 +90,7 @@ public sealed class ProviderHealthService : IDisposable
     public async Task<ProviderHealthData?> GetProviderHealthAsync(string providerId, CancellationToken ct = default)
     {
         await RefreshHealthDataAsync(ct);
-        return _providerHealth.TryGetValue(providerId, out var health) ? health : null;
+        return _providerHealth.TryGetValue(ProviderIdentity.NormalizeId(providerId), out var health) ? health : null;
     }
 
     /// <summary>
@@ -97,7 +98,7 @@ public sealed class ProviderHealthService : IDisposable
     /// </summary>
     public List<HealthHistoryPoint> GetHealthHistory(string providerId, TimeSpan duration)
     {
-        if (_healthHistory.TryGetValue(providerId, out var history))
+        if (_healthHistory.TryGetValue(ProviderIdentity.NormalizeId(providerId), out var history))
         {
             var cutoff = DateTime.UtcNow - duration;
             lock (history)
@@ -187,9 +188,10 @@ public sealed class ProviderHealthService : IDisposable
         {
             foreach (var provider in response.Data.Providers)
             {
+                var providerId = ProviderIdentity.NormalizeId(provider.ProviderId);
                 var healthData = new ProviderHealthData
                 {
-                    ProviderId = provider.ProviderId,
+                    ProviderId = providerId,
                     ProviderName = provider.ProviderName,
                     IsConnected = provider.IsConnected,
                     LifecycleState = provider.LifecycleState,
@@ -218,10 +220,10 @@ public sealed class ProviderHealthService : IDisposable
                     Breakdown = CalculateBreakdown(provider)
                 };
 
-                _providerHealth[provider.ProviderId] = healthData;
+                _providerHealth[providerId] = healthData;
 
                 // Update history
-                var history = _healthHistory.GetOrAdd(provider.ProviderId, _ => new List<HealthHistoryPoint>());
+                var history = _healthHistory.GetOrAdd(providerId, _ => new List<HealthHistoryPoint>());
 
                 lock (history)
                 {
@@ -524,4 +526,3 @@ public sealed class FailoverThresholdsResponse
     public double MinDataCompletenessPercent { get; set; }
     public bool AutoFailoverEnabled { get; set; }
 }
-

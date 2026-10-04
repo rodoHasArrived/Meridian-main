@@ -166,6 +166,13 @@ command, which can prepare a case through `ReadyForApproval` but can never grant
    crash between the spine commit and the case record is recovered idempotently on retry, and a
    spine event posted outside the case's approval is refused rather than adopted.
 
+   The durable journal carries the Security Master provenance and ledger-mapping lineage the
+   period posting guard requires for instrument-bearing entries. The candidate builder stamps it
+   only under spine authority, after the spine resolves the event-recorded Security Master record
+   at its exact expected version and asserts it Active, effective, and in the event currency; a
+   generic candidate never receives it. `CorporateActionAccountingPostgresRoundTripTests` proves
+   the whole lane, post and replay included, against PostgreSQL.
+
 Journals and posted lot effects stay immutable. `Posted → RestatementRequired` opens the governed
 correction lane; corrections add reversal, rebook, or restatement lineage through the spine onto a
 fresh exact-version binding — a superseded binding can never be posted twice.

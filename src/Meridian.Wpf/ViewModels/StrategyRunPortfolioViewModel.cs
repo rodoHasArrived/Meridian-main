@@ -167,6 +167,9 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
             Positions,
             [
                 new("Symbol", nameof(PortfolioPositionSummary.Symbol), 90),
+                new("Mark readiness", "MarkFreshness.Status", 125),
+                new("Observed on", "MarkFreshness.ObservedOn", 110),
+                new("Mark age (days)", "MarkFreshness.AgeDays", 100),
                 new("Security", "Security.DisplayName", 180),
                 new("Asset Class", "Security.AssetClass", 105),
                 new("Identifier", "Security.PrimaryIdentifier", 125),
@@ -208,12 +211,18 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
         StatusText = portfolio.SecurityMissingCount > 0
             ? $"{portfolio.Positions.Count} positions captured for run {portfolio.RunId}. {portfolio.SecurityMissingCount} symbol(s) still need Security Master mapping."
             : $"{portfolio.Positions.Count} positions captured for run {portfolio.RunId}.";
-        EquityText = portfolio.TotalEquity.ToString("C2");
+        var blockedMarks = portfolio.Positions.Where(position => position.MarkFreshness?.Status != "Current").ToArray();
+        if (blockedMarks.Length > 0)
+        {
+            StatusText += $" Review required: {string.Join(", ", blockedMarks.Select(position => position.Symbol))}. Recorded valuation numbers require refreshed mark evidence before approval.";
+        }
+        var valuationMark = new MarkFreshnessPresentation(blockedMarks.Length > 0 ? blockedMarks[0].MarkFreshness : portfolio.Positions.FirstOrDefault()?.MarkFreshness);
+        EquityText = valuationMark.RecordedValue(portfolio.TotalEquity);
         CashText = portfolio.Cash.ToString("C2");
-        GrossExposureText = portfolio.GrossExposure.ToString("C2");
-        NetExposureText = portfolio.NetExposure.ToString("C2");
+        GrossExposureText = valuationMark.RecordedValue(portfolio.GrossExposure);
+        NetExposureText = valuationMark.RecordedValue(portfolio.NetExposure);
         RealizedPnlText = portfolio.RealizedPnl.ToString("C2");
-        UnrealizedPnlText = portfolio.UnrealizedPnl.ToString("C2");
+        UnrealizedPnlText = valuationMark.RecordedValue(portfolio.UnrealizedPnl);
         CommissionsText = portfolio.Commissions.ToString("C2");
         AsOfText = portfolio.AsOf.LocalDateTime.ToString("g");
         SecurityResolvedText = portfolio.SecurityResolvedCount.ToString("N0");
@@ -282,28 +291,31 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
 
     internal static InspectorPanelModel BuildPositionInspector(PortfolioPositionSummary selected)
     {
+        var mark = new MarkFreshnessPresentation(selected.MarkFreshness);
         var security = selected.Security;
         var securityTitle = security?.DisplayName ?? "Security mapping unavailable";
         var securityDetail = security is null
             ? "No Security Master record is attached to this retained position. Open Security Master lookup before relying on downstream asset coverage."
             : $"Security Master resolves this position to {security.DisplayName}.";
         var coverageValue = security is null ? "Mapping needed" : security.CoverageStatus.ToString();
-        var coverageTone = security is null || security.CoverageStatus != WorkstationSecurityCoverageStatus.Resolved
-            ? WorkspaceTone.Warning
-            : WorkspaceTone.Success;
 
         return new InspectorPanelModel
         {
             Title = selected.Symbol,
             Subtitle = securityTitle,
-            Detail = securityDetail,
-            Badge = new WorkstationBadgeModel("Coverage", coverageValue, "\uE8A5", coverageTone),
+            Detail = $"{mark.Reason} {securityDetail}",
+            Badge = new WorkstationBadgeModel("Mark readiness", mark.Label, "\uE8A5", mark.Tone),
             Facts =
             [
                 new("Quantity", selected.Quantity.ToString("N0"), selected.IsShort ? "Short exposure" : "Long exposure"),
                 new("Average cost", selected.AverageCostBasis.ToString("C2")),
                 new("Realized PnL", selected.RealizedPnl.ToString("C2")),
-                new("Unrealized PnL", selected.UnrealizedPnl.ToString("C2")),
+                new("Recorded unrealized PnL", mark.RecordedValue(selected.UnrealizedPnl)),
+                new("Mark observed on", mark.ObservedOn),
+                new("Mark age", mark.Age),
+                new("Valuation date", mark.ValuationDate),
+                new("Mark policy", mark.PolicyVersion),
+                new("Security coverage", coverageValue),
                 new("Asset class", security?.AssetClass ?? "-", security?.SubType ?? string.Empty),
                 new("Identifier", security?.PrimaryIdentifier ?? "-", security?.MatchedIdentifierKind ?? string.Empty),
                 new("Currency", security?.Currency ?? "-"),

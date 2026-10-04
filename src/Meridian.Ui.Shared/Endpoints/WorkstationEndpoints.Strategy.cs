@@ -5,6 +5,7 @@ using Meridian.Contracts.StrategyEngine;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.QuantScript.Compilation;
+using Meridian.Strategies.Live.Designer;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
@@ -266,6 +267,26 @@ public static partial class WorkstationEndpoints
                     statusCode: StatusCodes.Status400BadRequest);
             }
 
+            // Refused here rather than at activation: LiveStrategyCatalog resolves an exact built-in
+            // factory id before consulting any fallback, so a run recorded under one of these ids
+            // would trade the built-in strategy and never reach the designer source that carries
+            // this document's gates, sizing, and risk guards (PRD-020).
+            if (DesignerDocumentRevision.IsReservedDocumentId(document.DocumentId))
+            {
+                return Results.Json(
+                    CreateBacktestResponse(
+                        document,
+                        preview,
+                        null,
+                        metrics,
+                        $"Designer document id '{document.DocumentId}' collides with a built-in live strategy. A run "
+                        + "recorded under this id would activate the built-in strategy instead of this design, "
+                        + "bypassing its gates, sizing, and risk guards. Rename the document before running it.",
+                        biasDisclosure),
+                    jsonOptions,
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
             var runId = Guid.NewGuid().ToString("N");
             var entry = (StrategyRunEntry
                 .StartWithEvidence(
@@ -280,7 +301,19 @@ public static partial class WorkstationEndpoints
                     {
                         ["designerDocumentId"] = document.DocumentId,
                         ["datasetFingerprint"] = preview.Compiled.DatasetFingerprint,
-                        ["cellCount"] = document.Cells.Count.ToString(CultureInfo.InvariantCulture)
+                        ["cellCount"] = document.Cells.Count.ToString(CultureInfo.InvariantCulture),
+
+                        // The document's universe is carried as 'symbols' because promotion copies
+                        // this parameter set verbatim and LiveTradingEngine.ResolveUniverse reads
+                        // only 'symbol'/'symbols'. Without it a promoted designer run defers for
+                        // having no trading universe, or silently trades the host's DefaultSymbols
+                        // instead of the design's own (PRD-020).
+                        ["symbols"] = string.Join(",", document.Universe),
+
+                        // Pins activation to this exact revision: the design repository returns the
+                        // latest saved draft for a document id, so an edit made after this backtest
+                        // would otherwise become what a promoted run trades.
+                        [DesignerDocumentRevision.ParameterKey] = DesignerDocumentRevision.ComputeHash(document)
                     },
                     operatorAcceptanceCriteria: evidenceLoop.OperatorAcceptanceCriteria,
                     retainedEvidenceReferences: evidenceLoop.RetainedEvidenceReferences,

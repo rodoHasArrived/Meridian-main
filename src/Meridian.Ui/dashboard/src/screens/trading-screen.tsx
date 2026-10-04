@@ -1,5 +1,6 @@
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React from "react";
+import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -74,6 +75,7 @@ import {
   type TradingWorkflowCommandState,
   type TradingConfirmViewModel
 } from "@/screens/trading-screen.view-model";
+import { ExecutionControlsHeader } from "@/screens/trading-screen.execution-controls-header";
 import { LIVE_GOVERNED_APPROVAL_SERVICES, useGovernedApprovalsViewModel } from "@/screens/trading-screen.governed-approvals";
 import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
@@ -165,6 +167,7 @@ const tradingRouteViewCopy: Record<TradingRouteViewId, { title: string; descript
 
 function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTableColumn<TradingPositionRow>[] {
   return [
+    { id: "mark-readiness", label: "Mark readiness", render: (row) => <MarkFreshnessCell mark={row.markFreshness} /> },
     {
       id: "symbol",
       label: "Symbol",
@@ -193,7 +196,7 @@ function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTabl
     },
     {
       id: "mark",
-      label: "Mark",
+      label: "Recorded mark",
       align: "right",
       className: "font-mono text-muted-foreground",
       render: (position) => position.markPrice
@@ -686,33 +689,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               />
             </div>
             <div className="mt-3 rounded-xl border border-border/70 bg-background/80 p-4">
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                  {executionEvidence.controlsPanel?.title ?? "Execution controls snapshot"}
-                </p>
-                <div className="panel-action-zone">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => { void executionEvidence.refresh(); }}
-                    disabled={executionEvidence.refreshDisabled}
-                    disabledReason={executionEvidence.refreshDisabledReason}
-                    busy={executionEvidence.loading}
-                    busyLabel={executionEvidence.refreshBusyLabel}
-                    aria-label={executionEvidence.refreshAriaLabel}
-                  >
-                    {executionEvidence.refreshButtonLabel}
-                  </Button>
-                  <span
-                    className={cn(
-                      "text-xs font-semibold uppercase tracking-[0.14em]",
-                      executionEvidence.controlsPanel?.statusTone === "danger" ? "text-danger" : "text-success"
-                    )}
-                  >
-                    {executionEvidence.controlsPanel?.statusLabel ?? "Snapshot unavailable"}
-                  </span>
-                </div>
-              </div>
+              <ExecutionControlsHeader
+                executionEvidence={executionEvidence}
+                onConfirm={confirmVm.openConfirm}
+              />
               <span className="sr-only" aria-live="polite">{executionEvidence.statusAnnouncement}</span>
               {executionEvidence.errorText && (
                 <p role="alert" className="mb-2 rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-xs text-warning">

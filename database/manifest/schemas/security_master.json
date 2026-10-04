@@ -14,7 +14,50 @@
     }
   ],
   "comment": null,
-  "comments": [],
+  "comments": [
+    {
+      "comment": "Covenants declared by a projected direct loan, in terms-document order (ordinal). Threshold is text because the canonical covenant term is written prose (\"4.5x\"), not a number.",
+      "fingerprint": "d399b9d84a3b9df22253a6932e06bf3f5cb85a9d5bc820d539fe64449dd0c441",
+      "object": "security_master.direct_loan_covenant_projection",
+      "object_type": "table"
+    },
+    {
+      "comment": "Contractual principal instalments of a projected direct loan, in terms-document order (ordinal). Makes instalments-due-in-a-window answerable without parsing every security document.",
+      "fingerprint": "0aab7ab0852fe3fe2ef9d4d500d78af5004b626eafae07dc9745235fac8d029b",
+      "object": "security_master.direct_loan_principal_schedule_projection",
+      "object_type": "table"
+    },
+    {
+      "comment": "Relational projection of DirectLoan asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. Distinct from the loan_contract family in this same schema, which keys on loan_id and belongs to the direct-lending servicing aggregate.",
+      "fingerprint": "f14d101eec3bb407b7c63ff8463d8e8c8a2479f2a624ad1cb54ad1868ec6764b",
+      "object": "security_master.direct_loan_projection",
+      "object_type": "table"
+    },
+    {
+      "comment": "Immutable golden-copy evaluation result, exact hierarchy snapshot, and quote comparisons; scoped receipt replay is the reproducibility authority.",
+      "fingerprint": "721fd5347a8becbaad67b9d44e75f2ab5048b9041a9b8ca3c917f7d7c83edd15",
+      "object": "security_master.security_price_selection_receipts",
+      "object_type": "table"
+    },
+    {
+      "comment": "Dated account-specific pricing hierarchy evidence, retaining source priorities, effective timestamp, author, and recording timestamp for historical price selection.",
+      "fingerprint": "b95ee30c14fb99c2dee9b9e0ad019b38e1e49896fc94f015e6ab67eba91acc79",
+      "object": "security_master.security_pricing_hierarchy_history",
+      "object_type": "table"
+    },
+    {
+      "comment": "Dated pool-factor points of a projected structured-credit tranche, in terms-document order (ordinal). Serves the factor-as-of lookup used by amortization.",
+      "fingerprint": "610af3d7fc5cf5f50c921ed16a0f544597deca1d35797a9df8de3dcc00d3a3ff",
+      "object": "security_master.structured_credit_factor_schedule_projection",
+      "object_type": "table"
+    },
+    {
+      "comment": "Relational projection of StructuredCredit tranche terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. factor_schedule_reference is the free-text trustee-report pointer, never factor data.",
+      "fingerprint": "069ae4acbd98a072b592b757390fadb973d0dfa701a3379212e6a14f40500eee",
+      "object": "security_master.structured_credit_projection",
+      "object_type": "table"
+    }
+  ],
   "composite_types": [],
   "dependencies": [
     {
@@ -1590,6 +1633,54 @@
       "target_schema": "security_master"
     },
     {
+      "fingerprint": "2f43ecb512a93cba6e8f61b1f91ab6b3224eaefe1abb2adc5eebf11d5b585da9",
+      "kind": "normal",
+      "source": "security_master.direct_loan_covenant_projection_security_id_fkey on security_master.direct_loan_covenant_projection",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.direct_loan_projection.security_id",
+      "target_kind": "table column",
+      "target_name": "direct_loan_projection",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "658a26c659a052acefb24ac58803819d9888aeba8b64fa7975ba6ed9dafaeb92",
+      "kind": "normal",
+      "source": "security_master.direct_loan_covenant_projection_security_id_fkey on security_master.direct_loan_covenant_projection",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.direct_loan_projection_pkey",
+      "target_kind": "index",
+      "target_name": "direct_loan_projection_pkey",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "9b73f3723f05ff1dd74b4ceb892672143977ab809a06472843f3b8327ed52705",
+      "kind": "normal",
+      "source": "security_master.direct_loan_principal_schedule_projection_security_id_fkey on security_master.direct_loan_principal_schedule_projection",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.direct_loan_projection.security_id",
+      "target_kind": "table column",
+      "target_name": "direct_loan_projection",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "5c5bf2713721b7c568259cfe87dcf56c415ccacd5037adfc351a8033476d7a5d",
+      "kind": "normal",
+      "source": "security_master.direct_loan_principal_schedule_projection_security_id_fkey on security_master.direct_loan_principal_schedule_projection",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.direct_loan_projection_pkey",
+      "target_kind": "index",
+      "target_name": "direct_loan_projection_pkey",
+      "target_schema": "security_master"
+    },
+    {
       "fingerprint": "65b830e7706d6a2ea1bea37296f2c606d915d9ae954734bcec044a4c894cfba5",
       "kind": "normal",
       "source": "security_master.equity_projection_security_id_fkey on security_master.equity_projection",
@@ -2406,6 +2497,54 @@
       "target_schema": "security_master"
     },
     {
+      "fingerprint": "7e20c1d40569991101dc49447215f6ea85718cece656dee37d1de61add7583af",
+      "kind": "normal",
+      "source": "security_master.security_price_selection_receipts_security_id_fkey on security_master.security_price_selection_receipts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.securities.security_id",
+      "target_kind": "table column",
+      "target_name": "securities",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "c1c6748eb8dbb3c3e767bfd8bb934cd35d53b6a04a353481e9362442d4680bbc",
+      "kind": "normal",
+      "source": "security_master.security_price_selection_receipts_security_id_fkey on security_master.security_price_selection_receipts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.securities_pkey",
+      "target_kind": "index",
+      "target_name": "securities_pkey",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "862d5d7aa7ff349cd2c28206d9dd0681f1b631ab03a68db744292b5df683a5a6",
+      "kind": "normal",
+      "source": "security_master.security_pricing_hierarchy_history_security_id_fkey on security_master.security_pricing_hierarchy_history",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.securities.security_id",
+      "target_kind": "table column",
+      "target_name": "securities",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "159883937b4ce37464a126ab4f04e13bc3cf08af31b3087ca06a18e695d44367",
+      "kind": "normal",
+      "source": "security_master.security_pricing_hierarchy_history_security_id_fkey on security_master.security_pricing_hierarchy_history",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.securities_pkey",
+      "target_kind": "index",
+      "target_name": "securities_pkey",
+      "target_schema": "security_master"
+    },
+    {
       "fingerprint": "4efc35615df52a1b80724ad14b16031ffb4e60d8a3911bac77a30dd753ca9945",
       "kind": "normal",
       "source": "security_master.security_pricing_hierarchy_security_id_fkey on security_master.security_pricing_hierarchy",
@@ -2451,6 +2590,18 @@
       "target": "security_master.securities_pkey",
       "target_kind": "index",
       "target_name": "securities_pkey",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "263350868be1e26ae2b9a21d46a67176d929c9ac5b00df96d38019a12df1572a",
+      "kind": "normal",
+      "source": "security_master.security_raw_prices_unit_check on security_master.security_raw_prices",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_raw_prices.price_unit",
+      "target_kind": "table column",
+      "target_name": "security_raw_prices",
       "target_schema": "security_master"
     },
     {
@@ -2668,15 +2819,101 @@
       "target_kind": "index",
       "target_name": "servicer_report_batch_pkey",
       "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "f1ec68ca9a42832143f87d936d7e4d13e4135ca248b9097261eb6596dae73c70",
+      "kind": "normal",
+      "source": "security_master.structured_credit_factor_schedule_projection_security_id_fkey on security_master.structured_credit_factor_schedule_projection",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.structured_credit_projection.security_id",
+      "target_kind": "table column",
+      "target_name": "structured_credit_projection",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "db9dda2b4fa2ec061bfb8dd1dab62e0eb6badd1ac48f4668b729293513223622",
+      "kind": "normal",
+      "source": "security_master.structured_credit_factor_schedule_projection_security_id_fkey on security_master.structured_credit_factor_schedule_projection",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.structured_credit_projection_pkey",
+      "target_kind": "index",
+      "target_name": "structured_credit_projection_pkey",
+      "target_schema": "security_master"
     }
   ],
   "domains": [],
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "32c8fd26191586a9467aa702a359e5cd8a3d9e3243deba98e3a0ceabf2722fd8",
+  "fingerprint": "f32458671471af5b6a0636d4d61fceccb38abd95ba03086883bae93492bbae63",
   "foreign_tables": [],
   "functions": [
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "864e94c04ca58ab6371f895ee92b5952c9b97077dd4b8932388c7ad8123bb413",
+      "fingerprint": "f777ee25f8f726fe4227a6c78201b81c5a6f3d4b20b0929b06df46362c3597b4",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "reject_price_selection_receipt_mutation",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "security_master",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "reject_price_selection_receipt_mutation()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "b077153d8808055be76cfdf2019e6ea2381d0bbd20ba44928322a8286b82f2bb",
+      "fingerprint": "e3e3f6e3b8e0cea4de38dfc1498c2bbf9778dbcd603f1b8e264926a5017b2061",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "synchronize_cash_flow_identity",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "security_master",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "synchronize_cash_flow_identity()",
+      "strict": false,
+      "volatility": "volatile"
+    },
     {
       "acl": [
         {
@@ -13821,6 +14058,820 @@
           "comment": null,
           "data_type": "uuid",
           "default": null,
+          "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "e14e07b0e8a17e1109e97c6557db75add56ad26f5f5f75193e1b193b9c05ef60",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "ordinal",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "8112aa308e29c918bcefdc1b4163c12965d82f82ce1e2e43327554f642e9ad9b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "covenant_type",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "7636a8e8650583791ae95131b48de817b37df26d1a5ad04e396f0d1a18925bff",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "threshold",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "d2fc5a2d9b752a6c977aafb7ce847669e6cdfe68fb242781a88ebb27a426582a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "notes",
+          "nullable": true,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Covenants declared by a projected direct loan, in terms-document order (ordinal). Threshold is text because the canonical covenant term is written prose (\"4.5x\"), not a number.",
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (security_id) REFERENCES security_master.direct_loan_projection(security_id) ON DELETE CASCADE",
+          "delete_action": "cascade",
+          "fingerprint": "3f07b371346c286fabc32742841d422e272cb227f98f93281e4d7c732bd31474",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "direct_loan_covenant_projection_security_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "security_id"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "direct_loan_projection",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "security_id",
+            "ordinal"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (security_id, ordinal)",
+          "delete_action": null,
+          "fingerprint": "3e4a4c1c7d981c1eba864a5c34a87a3107e9dc68597711f46af1198763ad1f74",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "direct_loan_covenant_projection_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "e633ad899ee087a5c8b47e269b49c9c5519a75fd16486a2a99ad6e84d03036ef",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX direct_loan_covenant_projection_pkey ON security_master.direct_loan_covenant_projection USING btree (security_id, ordinal)",
+          "expression": null,
+          "fingerprint": "933ad96d55d58d593d21af4cddbf7331ebbaaa8bb45d0cbbe8b696bc96e6c603",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "ordinal"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "direct_loan_covenant_projection_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "direct_loan_covenant_projection",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "e14e07b0e8a17e1109e97c6557db75add56ad26f5f5f75193e1b193b9c05ef60",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "ordinal",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "date",
+          "default": null,
+          "fingerprint": "e8137c487e539090aee1e2b20f3811885b550377b7be19e9846e6652932c7703",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payment_date",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "date",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "numeric(28,10)",
+          "default": null,
+          "fingerprint": "4132ae7754430870d35f02da9c8d51aca4130be3be9ca94947b74ff5102966a3",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "amount",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "numeric",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Contractual principal instalments of a projected direct loan, in terms-document order (ordinal). Makes instalments-due-in-a-window answerable without parsing every security document.",
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (security_id) REFERENCES security_master.direct_loan_projection(security_id) ON DELETE CASCADE",
+          "delete_action": "cascade",
+          "fingerprint": "a0c128f5df3e1d6d9f5161def6e5ad7ac1dd3c47ea21f27a23a33d5c422deb5b",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "direct_loan_principal_schedule_projection_security_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "security_id"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "direct_loan_projection",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "security_id",
+            "ordinal"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (security_id, ordinal)",
+          "delete_action": null,
+          "fingerprint": "79f53b29fa4bd70a203ac9db29696c4650307f41d7380550536eb2a4c5e48f2e",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "direct_loan_principal_schedule_projection_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "f3440e495f31f914a52e7c344695a237d13697ca9cb66e4aefac6f300951ac98",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX direct_loan_principal_schedule_projection_payment_date_idx ON security_master.direct_loan_principal_schedule_projection USING btree (payment_date)",
+          "expression": null,
+          "fingerprint": "e956b627e22328f5e4e90a757d9abd25273f289f39547fcb6cab0a3355aadd03",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "payment_date"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "direct_loan_principal_schedule_projection_payment_date_idx",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX direct_loan_principal_schedule_projection_pkey ON security_master.direct_loan_principal_schedule_projection USING btree (security_id, ordinal)",
+          "expression": null,
+          "fingerprint": "9cbd3aa99ab1eea8ea0b6ad8f37b9802d46b93ebf5be7a10052310f6d184cccf",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "ordinal"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "direct_loan_principal_schedule_projection_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "direct_loan_principal_schedule_projection",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "141010d7466f67a298d7ad80e703e6e582df95653d220de04ae738936255609a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "display_name",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "d102a811e96c23130a499c96ce5a70b4c810b79ef53a6ae60e80d57788f6ff49",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "currency",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "0a33e33c70dfffac22e1d600df36b41d9e5ad94d9be65aeff8f63ee860b4c7a6",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "borrower",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "date",
+          "default": null,
+          "fingerprint": "49d0905bfd353e36ab9a075c20e5cae3030cab05b11a50545c08b9846d383444",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "maturity_date",
+          "nullable": true,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "date",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "34e8b2e430b0a94af2b89df2f2462d70343d94de95512087fd78f34718fec70b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "reference_index",
+          "nullable": true,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "numeric(18,8)",
+          "default": null,
+          "fingerprint": "980b221d27afd6a413d089da249c25694a9dd345765d364fa43e3e5b0b238e94",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "spread_bps",
+          "nullable": true,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "numeric",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "numeric(12,6)",
+          "default": null,
+          "fingerprint": "7c8c3349ce39c1d56415c2141f0dcb171ef53b6982ebb83a2ef9f1275081b808",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "current_coupon_rate",
+          "nullable": true,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "numeric",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "3d3037bfaaafd1facfd2458cb9bd99060b360c926863eda8db22035b46edd3ad",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "reset_frequency",
+          "nullable": true,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "ac0e3121ef4753f5373bdc58126d004361f514f0fe6fb809f44c42e4aa330042",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "pricing_source",
+          "nullable": true,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "e943c6cbd9ba4bd0995c6df7868a3dee13fea15ee6392d3756aca1b4b98d94a8",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "primary_identifier_value",
+          "nullable": false,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "03947445d564ae4fb9a4301b41fa56f59e36ad464333a172a664863e73af1917",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "version",
+          "nullable": false,
+          "ordinal_position": 12,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Relational projection of DirectLoan asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. Distinct from the loan_contract family in this same schema, which keys on loan_id and belongs to the direct-lending servicing aggregate.",
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (security_id)",
+          "delete_action": null,
+          "fingerprint": "9bf2a06944b956132f9f54733e47b98eed9217519ed964bd8c102e9e2885776d",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "direct_loan_projection_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "901d5f3c9cc924f4aaebce8b3768b7c037e97bfd64692662215e5436ce55abe6",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX direct_loan_projection_borrower_idx ON security_master.direct_loan_projection USING btree (lower(borrower))",
+          "expression": "lower(borrower)",
+          "fingerprint": "c2a085ccb564199d99cbbe8dd4cb6e92ffe337a18d38208e630c24d36082cac3",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(borrower)"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "direct_loan_projection_borrower_idx",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX direct_loan_projection_maturity_idx ON security_master.direct_loan_projection USING btree (maturity_date)",
+          "expression": null,
+          "fingerprint": "8d276805c43925d7c6b244d43070ecd560b450c2975e65134a97588af6f292b0",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "maturity_date"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "direct_loan_projection_maturity_idx",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX direct_loan_projection_pkey ON security_master.direct_loan_projection USING btree (security_id)",
+          "expression": null,
+          "fingerprint": "e0250f4b343a713692b1bb976ea0c8b5cda91432fe8b2171a222cdc5cd71cda6",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "direct_loan_projection_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX direct_loan_projection_reference_index_idx ON security_master.direct_loan_projection USING btree (lower(reference_index))",
+          "expression": "lower(reference_index)",
+          "fingerprint": "03e8d9fa52b5c447220f2ebb98202cc9f4e5d336cb193826a6871778765a0bed",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(reference_index)"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "direct_loan_projection_reference_index_idx",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "direct_loan_projection",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
           "fingerprint": "64def813a9a73bca72175925743f0eae4c3b34b873c71c08b2742f6d471cb1d0",
           "generated": null,
           "generated_expression": null,
@@ -21634,6 +22685,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "b54deb3b83df29320e992ef221bd9b9683c7ecfe0e104b158bcbfdce2aa46bfe",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "projected_cash_flow_id",
+          "nullable": true,
+          "ordinal_position": 15,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -21726,7 +22793,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "311d3818abf1a8a6ab84a6fe7995a899d032a3246847e098df564adda2a3daab",
+      "fingerprint": "8c04366590d6e04477a80e152e03d0bdaa74bf3650d02290b3464da5a4b00745",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -21811,7 +22878,26 @@
       "schema": "security_master",
       "security_labels": [],
       "sequence": null,
-      "triggers": []
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER synchronize_cash_flow_identity BEFORE INSERT OR UPDATE ON security_master.projected_cash_flow FOR EACH ROW EXECUTE FUNCTION security_master.synchronize_cash_flow_identity()",
+          "definition_hash": "5875f85a8d5211727ce93412e5b630cc5a61a9803f131ddb4a91ff06f69ca870",
+          "enabled": "origin",
+          "events": [
+            "insert",
+            "update"
+          ],
+          "fingerprint": "33a22e61a3f68f23ba64a3e6d192d81c5d15de432f5aec0887fbfcd426058f57",
+          "function_schema": "security_master",
+          "function_signature": "synchronize_cash_flow_identity()",
+          "level": "row",
+          "name": "synchronize_cash_flow_identity",
+          "relation": "projected_cash_flow",
+          "schema": "security_master",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -23211,6 +24297,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "fd2d8ce753ee4814b3acb8165c44da4b36b83932ae2e82e16a0136c04f619e9b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "projected_cash_flow_id",
+          "nullable": true,
+          "ordinal_position": 16,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -23326,7 +24428,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "f93e65287ca3e159e9deb77ddb18ffdfc48927450436b68cb36b4f18763f5a95",
+      "fingerprint": "53ff7040b61aa83c6e47e7577bcfd943c9532ab53730e491c5ac9045ad41358c",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -23388,7 +24490,26 @@
       "schema": "security_master",
       "security_labels": [],
       "sequence": null,
-      "triggers": []
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER synchronize_cash_flow_identity BEFORE INSERT OR UPDATE ON security_master.reconciliation_result FOR EACH ROW EXECUTE FUNCTION security_master.synchronize_cash_flow_identity()",
+          "definition_hash": "98a4eef916f96a62450ff0f7066e7d20e80062532cf8e338498c59063979229e",
+          "enabled": "origin",
+          "events": [
+            "insert",
+            "update"
+          ],
+          "fingerprint": "5beb2f255ceed9eba420f605ad5fbc33c77fde562fb64032c15e62d87efb0f8b",
+          "function_schema": "security_master",
+          "function_signature": "synchronize_cash_flow_identity()",
+          "level": "row",
+          "name": "synchronize_cash_flow_identity",
+          "relation": "reconciliation_result",
+          "schema": "security_master",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -27372,6 +28493,298 @@
           "comment": null,
           "data_type": "uuid",
           "default": null,
+          "fingerprint": "3aba477ac8e07704aaf9377b8f033cbd510922ab13621faed1006697d3417f5c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "receipt_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "27e31c58056faca7f94a6a53a21a37c23a294f9e50182a79c163b6c0a5521701",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "dd37657fb7b8c12d5d41f399d103fa41b7c1c5951aee020e2a5463bb24cb622c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "account_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "7ee3e245af1a2abe483180fb0b6e1543db0fac6d68ce05e726b1eaea67fca84e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "character(64)",
+          "default": null,
+          "fingerprint": "603d11889c59f4f8e4b47c8ab2f659c86f43beb3316147d4b6d1a51da54ff80d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload_sha256",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "bpchar",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "05e663a913cf9e98ebdf7d0bad03bd6b9d3c48c3ec6277a3d499ccdf7333a154",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Immutable golden-copy evaluation result, exact hierarchy snapshot, and quote comparisons; scoped receipt replay is the reproducibility authority.",
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (security_id) REFERENCES security_master.securities(security_id)",
+          "delete_action": "no_action",
+          "fingerprint": "f5dbf5ede2615f417b2c9bacf7a48390a44f82dd85496f85ad59aa604265b826",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "security_price_selection_receipts_security_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "security_id"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "securities",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "receipt_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (receipt_id)",
+          "delete_action": null,
+          "fingerprint": "80d05f1c14bcc1cfd4fed130577c3c8adcba1327866a5ca74bb2f9b278e1e29b",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_price_selection_receipts_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "663e0450e1a7ad74e2f8eaa89b3137cc5d5350a9531be34faf29912264407255",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_security_price_selection_receipts_scope ON security_master.security_price_selection_receipts USING btree (security_id, account_id, receipt_id)",
+          "expression": null,
+          "fingerprint": "c456937f5629582f6c8eaa31ddac0219775b9884ad92603eea110ed497bed241",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "account_id",
+            "receipt_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_security_price_selection_receipts_scope",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_price_selection_receipts_pkey ON security_master.security_price_selection_receipts USING btree (receipt_id)",
+          "expression": null,
+          "fingerprint": "204c44e19a9b6362b9cab28621d1ee1c84491e0073fffbfb71963e6263c83b2e",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "receipt_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_price_selection_receipts_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_price_selection_receipts",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_price_selection_receipts_immutable BEFORE DELETE OR UPDATE ON security_master.security_price_selection_receipts FOR EACH ROW EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+          "definition_hash": "fa472da90cb107a06a1a3abcee2670817a08dc4f3cafd46596f23e6275a93042",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "b34b65eb6dc61b5f3c65b55225b1c6f08a2f1af97d6113c0362a3d267aa249e7",
+          "function_schema": "security_master",
+          "function_signature": "reject_price_selection_receipt_mutation()",
+          "level": "row",
+          "name": "security_price_selection_receipts_immutable",
+          "relation": "security_price_selection_receipts",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_price_selection_receipts_no_truncate BEFORE TRUNCATE ON security_master.security_price_selection_receipts FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+          "definition_hash": "fd6dc846d02cdf35b39efa760815611e5fdf08cab90d14108a505e13b75bd27a",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "fb2dba0553e318e59c1181eb84ecdddb39a0d636a3bcde0e010db43f320e3695",
+          "function_schema": "security_master",
+          "function_signature": "reject_price_selection_receipt_mutation()",
+          "level": "statement",
+          "name": "security_price_selection_receipts_no_truncate",
+          "relation": "security_price_selection_receipts",
+          "schema": "security_master",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
           "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
           "generated": null,
           "generated_expression": null,
@@ -27446,6 +28859,22 @@
           "security_labels": [],
           "type_name": "text",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "05e663a913cf9e98ebdf7d0bad03bd6b9d3c48c3ec6277a3d499ccdf7333a154",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -27496,7 +28925,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "89f2b52e2600a4392efbed44d61e3aebf7293c93048513788528c06e7b464bfe",
+      "fingerprint": "97c4dfe304c108faed292157425a756ee874c3977cbe0ca8cce502cf5998ce22",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -27549,6 +28978,242 @@
       "is_partition": false,
       "kind": "table",
       "name": "security_pricing_hierarchy",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "2c32fcc0297c5fd069ae0ff4f3922efcf62a9ee567b6352432374c54f0aab659",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "account_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "ef3b4146e50b0b38e1a7f4a7c2fa6b427f78be4c4c1e1a1f5711833a2c865ece",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "entries",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "1da885ccfcea0b84e7399d33a885850b236922f7903f818db0c95235b47c05b7",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "as_of",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "bab802b59229fc4cf21c9adb00addf513b092b81fd38e35525c2f95349c3ca39",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "updated_by",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "05e663a913cf9e98ebdf7d0bad03bd6b9d3c48c3ec6277a3d499ccdf7333a154",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Dated account-specific pricing hierarchy evidence, retaining source priorities, effective timestamp, author, and recording timestamp for historical price selection.",
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (security_id) REFERENCES security_master.securities(security_id)",
+          "delete_action": "no_action",
+          "fingerprint": "3dfd06a52ea165524979527d84bd328737a46012cb1eccbcbda2037de8416781",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "security_pricing_hierarchy_history_security_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "security_id"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "securities",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "security_id",
+            "account_id",
+            "as_of"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (security_id, account_id, as_of)",
+          "delete_action": null,
+          "fingerprint": "4271e49b936f1370b85837c313aac213abe6b10d92d8ac7e1ae887919ff94009",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_pricing_hierarchy_history_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "b0fd8a0c12c9d6066f378db454b2b60be4769b4eca5905d06ad0e051b7765be7",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_pricing_hierarchy_history_pkey ON security_master.security_pricing_hierarchy_history USING btree (security_id, account_id, as_of)",
+          "expression": null,
+          "fingerprint": "734a803d38bf9b0ee16683526383c9def5ce48cff2532fb49e5eb58afe14a84f",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "account_id",
+            "as_of"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_pricing_hierarchy_history_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_pricing_hierarchy_history",
       "options": [],
       "owner": "meridian",
       "persistence": "permanent",
@@ -27702,10 +29367,46 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": "'Unspecified'::text",
+          "fingerprint": "c684376ef520a400a384a049aa1bdd0f30d2be98032349508f68512d1e758a98",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "price_unit",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
       "constraints": [
+        {
+          "columns": [
+            "price_unit"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (price_unit = ANY (ARRAY['Unspecified'::text, 'CurrencyPerUnit'::text, 'PercentOfPar'::text]))",
+          "delete_action": null,
+          "fingerprint": "2fd326fc1eee593bac70804200d44ebef8880791e2918b679632bda9db269f91",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_raw_prices_unit_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
         {
           "columns": [
             "security_id"
@@ -27731,13 +29432,14 @@
         {
           "columns": [
             "security_id",
-            "source_id"
+            "source_id",
+            "price_as_of"
           ],
           "comment": null,
           "deferrable": false,
-          "definition": "PRIMARY KEY (security_id, source_id)",
+          "definition": "PRIMARY KEY (security_id, source_id, price_as_of)",
           "delete_action": null,
-          "fingerprint": "cff73ef30cc979dcc0f70471a715b99794beb3f565a2a753a45459496388ed96",
+          "fingerprint": "9c6301c712828862ab58a9dfb10a7c4f4c256b85441d529a58ea3993a14e0419",
           "initially_deferred": false,
           "match_type": null,
           "name": "security_raw_prices_pkey",
@@ -27752,7 +29454,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "ffe7e8d6490b7e872c17f764df86607441fbed25129c774345b00f9319c6585a",
+      "fingerprint": "7d63ff569446a0cebd7b47574444696747bfcde9629c8236611f10b9a2fd0d7b",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -27780,14 +29482,15 @@
         },
         {
           "comment": null,
-          "definition": "CREATE UNIQUE INDEX security_raw_prices_pkey ON security_master.security_raw_prices USING btree (security_id, source_id)",
+          "definition": "CREATE UNIQUE INDEX security_raw_prices_pkey ON security_master.security_raw_prices USING btree (security_id, source_id, price_as_of)",
           "expression": null,
-          "fingerprint": "4a76a78b1c80450bb7cf7a17bdf7b31c2efdc9ab465436d011307b7806ae2555",
+          "fingerprint": "331735b12ffe3863cd4e488be8eeae9e2a45269d678407f432a43129ddaae1cb",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
             "security_id",
-            "source_id"
+            "source_id",
+            "price_as_of"
           ],
           "live": true,
           "method": "btree",
@@ -31841,6 +33544,597 @@
           "type_schema": "pg_catalog"
         },
         {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "e14e07b0e8a17e1109e97c6557db75add56ad26f5f5f75193e1b193b9c05ef60",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "ordinal",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "date",
+          "default": null,
+          "fingerprint": "eab12d90687a7c3caa4982a90264b9d1be04df5a0ddfd0ea829b3bd050758a78",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "as_of_date",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "date",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "numeric(18,10)",
+          "default": null,
+          "fingerprint": "2bfecffae9ec5ba5812e2b4669d34d003ccff2fce7c915e9c47179d5d70f0594",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "factor",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "numeric",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Dated pool-factor points of a projected structured-credit tranche, in terms-document order (ordinal). Serves the factor-as-of lookup used by amortization.",
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (security_id) REFERENCES security_master.structured_credit_projection(security_id) ON DELETE CASCADE",
+          "delete_action": "cascade",
+          "fingerprint": "6d48e2ac8e24f96f765468a515cdfe8a80d41e158361060ab3a437fbceedc683",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "structured_credit_factor_schedule_projection_security_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "security_id"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "structured_credit_projection",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "security_id",
+            "ordinal"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (security_id, ordinal)",
+          "delete_action": null,
+          "fingerprint": "c45a0c7c7be776919245f5fb14b2ebde0d25a61e36e0509b1f988e056d0ef968",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "structured_credit_factor_schedule_projection_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "c3d6243aa1021c82aafd421ccc1d69215c502a5b0218e4600184a99d74d003fc",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX structured_credit_factor_schedule_projection_as_of_idx ON security_master.structured_credit_factor_schedule_projection USING btree (security_id, as_of_date DESC)",
+          "expression": null,
+          "fingerprint": "b84f959d03698cec653c2bffe3ab2ada06042492106ad3626f2a5f2d9e104e3b",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "as_of_date"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "structured_credit_factor_schedule_projection_as_of_idx",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX structured_credit_factor_schedule_projection_pkey ON security_master.structured_credit_factor_schedule_projection USING btree (security_id, ordinal)",
+          "expression": null,
+          "fingerprint": "127db05d210d3eb0a3913b7c9c757dfae654fa5166fa1cca165685ff8d62ba0b",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "ordinal"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "structured_credit_factor_schedule_projection_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "structured_credit_factor_schedule_projection",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "141010d7466f67a298d7ad80e703e6e582df95653d220de04ae738936255609a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "display_name",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "d102a811e96c23130a499c96ce5a70b4c810b79ef53a6ae60e80d57788f6ff49",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "currency",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "a8bc6dd5d9920f16381e7d37fc1cc060ac53178aad99e2f644d4b4e035897452",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tranche",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "e3be67a73d32a53e70671e4c1483205d47b8f103ccdae35c6065db9df6fda347",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "pool_id",
+          "nullable": true,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "18f2fa4dca0a98e1be04a16c2de28a1c253b607b883c97121b4924c52c0fe6dc",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "collateral_type",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "numeric(28,10)",
+          "default": null,
+          "fingerprint": "e7bf64dee0c4279cad8635ce096aa42bf94570f35be1d4c7ca5209bbd0fc6570",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "original_face",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "numeric",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "numeric(18,10)",
+          "default": null,
+          "fingerprint": "556351c692a8c2c004afd52b84c22e8210a112f7f2086021b1f988447578e681",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "current_factor",
+          "nullable": true,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "numeric",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "5572cc8f04855b8bae16af700fc3acbaaa14c4aece9bd0011ee04336007483ef",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "coupon_or_index",
+          "nullable": false,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "830dfd501a8d9fe84deabcbd3d8231ce97858d6c6e44f79adeb52cda0b4f64b3",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "factor_schedule_reference",
+          "nullable": true,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "date",
+          "default": null,
+          "fingerprint": "badf5659aa8eadff03ce53a5fa786c4effcb775ffc10ab4f354e65afbaa73019",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "maturity_date",
+          "nullable": true,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "date",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "71095b798fc3296bd05daa9999f918e57fa8a262848337341f43c3b2782d2672",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "primary_identifier_value",
+          "nullable": false,
+          "ordinal_position": 12,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "a89e2a3c8ecabf80120518f414aeb5e374d0f195950f2b19bb36f05d15d0265b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "version",
+          "nullable": false,
+          "ordinal_position": 13,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Relational projection of StructuredCredit tranche terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. factor_schedule_reference is the free-text trustee-report pointer, never factor data.",
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (security_id)",
+          "delete_action": null,
+          "fingerprint": "e00f008f4aaf5f6b6192c149cd353bdafb153363ae5218dddb0bd2f238027a84",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "structured_credit_projection_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "2e64307c948acdb3698a2a88c0e320fd682ed01c36d95c7d562657877ca43c7b",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX structured_credit_projection_collateral_type_idx ON security_master.structured_credit_projection USING btree (lower(collateral_type))",
+          "expression": "lower(collateral_type)",
+          "fingerprint": "88ac12ed9b94d5bd1bfa8e8a14f220f141cb977289438e74208988fea9c08bf0",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(collateral_type)"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "structured_credit_projection_collateral_type_idx",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX structured_credit_projection_pkey ON security_master.structured_credit_projection USING btree (security_id)",
+          "expression": null,
+          "fingerprint": "62abca2562051815eaf9caa4a92b87653c0f1d54e2c80e44dbc1f531c31a17dd",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "structured_credit_projection_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX structured_credit_projection_pool_idx ON security_master.structured_credit_projection USING btree (lower(pool_id))",
+          "expression": "lower(pool_id)",
+          "fingerprint": "b9063a1972580d343b66b0a241646c92c853a22b6e457612be45d761a4cd9f69",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(pool_id)"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "structured_credit_projection_pool_idx",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "structured_credit_projection",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
           "collation": "pg_catalog.default",
           "comment": null,
           "data_type": "text",
@@ -32292,6 +34586,30 @@
     },
     {
       "enabled": false,
+      "fingerprint": "f27f670ce5d06efb50f3ec7cdd410d8b658f5a209fb807db629b7e8f7074f430",
+      "forced": false,
+      "policies": [],
+      "relation": "direct_loan_covenant_projection",
+      "schema": "security_master"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "8e52c5164d436cb11e683486d8315cb98913c05e1e99ecfa137bfd99db047b6e",
+      "forced": false,
+      "policies": [],
+      "relation": "direct_loan_principal_schedule_projection",
+      "schema": "security_master"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "70ae45ed467a99697677e5fd7ba472b44397c62079970f16afd9ca7d0c02fc2d",
+      "forced": false,
+      "policies": [],
+      "relation": "direct_loan_projection",
+      "schema": "security_master"
+    },
+    {
+      "enabled": false,
       "fingerprint": "35aef43c7e79314f744fd6086ec95a6451f1936a682082d864b0da4e62c5c289",
       "forced": false,
       "policies": [],
@@ -32604,10 +34922,26 @@
     },
     {
       "enabled": false,
+      "fingerprint": "d708bfa91e0157d54c498ccbbb5c57fd961dca8b3ab0642aaaaf7abdd800b356",
+      "forced": false,
+      "policies": [],
+      "relation": "security_price_selection_receipts",
+      "schema": "security_master"
+    },
+    {
+      "enabled": false,
       "fingerprint": "b25bf9abf979c5929a185c5bc016c8a3110d68041c337a8b9a4ff12b9b844eef",
       "forced": false,
       "policies": [],
       "relation": "security_pricing_hierarchy",
+      "schema": "security_master"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "0f8ee9344596a5dafc8dbd498eef7476771a58992b4eefc9e229a7d5944679f9",
+      "forced": false,
+      "policies": [],
+      "relation": "security_pricing_hierarchy_history",
       "schema": "security_master"
     },
     {
@@ -32704,6 +35038,22 @@
       "forced": false,
       "policies": [],
       "relation": "servicing_revision_source",
+      "schema": "security_master"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "784c911994766e5b2be5e88263c8d746794fecaac8c5496d0c3f5492b866a444",
+      "forced": false,
+      "policies": [],
+      "relation": "structured_credit_factor_schedule_projection",
+      "schema": "security_master"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "1d8a3510de7e417772b693b877cba7acee24bb4ef5fe427b1ef3faf7de780a9b",
+      "forced": false,
+      "policies": [],
+      "relation": "structured_credit_projection",
       "schema": "security_master"
     },
     {
@@ -44032,6 +46382,820 @@
           "comment": null,
           "data_type": "uuid",
           "default": null,
+          "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "e14e07b0e8a17e1109e97c6557db75add56ad26f5f5f75193e1b193b9c05ef60",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "ordinal",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "8112aa308e29c918bcefdc1b4163c12965d82f82ce1e2e43327554f642e9ad9b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "covenant_type",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "7636a8e8650583791ae95131b48de817b37df26d1a5ad04e396f0d1a18925bff",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "threshold",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "d2fc5a2d9b752a6c977aafb7ce847669e6cdfe68fb242781a88ebb27a426582a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "notes",
+          "nullable": true,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Covenants declared by a projected direct loan, in terms-document order (ordinal). Threshold is text because the canonical covenant term is written prose (\"4.5x\"), not a number.",
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (security_id) REFERENCES security_master.direct_loan_projection(security_id) ON DELETE CASCADE",
+          "delete_action": "cascade",
+          "fingerprint": "3f07b371346c286fabc32742841d422e272cb227f98f93281e4d7c732bd31474",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "direct_loan_covenant_projection_security_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "security_id"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "direct_loan_projection",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "security_id",
+            "ordinal"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (security_id, ordinal)",
+          "delete_action": null,
+          "fingerprint": "3e4a4c1c7d981c1eba864a5c34a87a3107e9dc68597711f46af1198763ad1f74",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "direct_loan_covenant_projection_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "e633ad899ee087a5c8b47e269b49c9c5519a75fd16486a2a99ad6e84d03036ef",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX direct_loan_covenant_projection_pkey ON security_master.direct_loan_covenant_projection USING btree (security_id, ordinal)",
+          "expression": null,
+          "fingerprint": "933ad96d55d58d593d21af4cddbf7331ebbaaa8bb45d0cbbe8b696bc96e6c603",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "ordinal"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "direct_loan_covenant_projection_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "direct_loan_covenant_projection",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "e14e07b0e8a17e1109e97c6557db75add56ad26f5f5f75193e1b193b9c05ef60",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "ordinal",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "date",
+          "default": null,
+          "fingerprint": "e8137c487e539090aee1e2b20f3811885b550377b7be19e9846e6652932c7703",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payment_date",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "date",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "numeric(28,10)",
+          "default": null,
+          "fingerprint": "4132ae7754430870d35f02da9c8d51aca4130be3be9ca94947b74ff5102966a3",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "amount",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "numeric",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Contractual principal instalments of a projected direct loan, in terms-document order (ordinal). Makes instalments-due-in-a-window answerable without parsing every security document.",
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (security_id) REFERENCES security_master.direct_loan_projection(security_id) ON DELETE CASCADE",
+          "delete_action": "cascade",
+          "fingerprint": "a0c128f5df3e1d6d9f5161def6e5ad7ac1dd3c47ea21f27a23a33d5c422deb5b",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "direct_loan_principal_schedule_projection_security_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "security_id"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "direct_loan_projection",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "security_id",
+            "ordinal"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (security_id, ordinal)",
+          "delete_action": null,
+          "fingerprint": "79f53b29fa4bd70a203ac9db29696c4650307f41d7380550536eb2a4c5e48f2e",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "direct_loan_principal_schedule_projection_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "f3440e495f31f914a52e7c344695a237d13697ca9cb66e4aefac6f300951ac98",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX direct_loan_principal_schedule_projection_payment_date_idx ON security_master.direct_loan_principal_schedule_projection USING btree (payment_date)",
+          "expression": null,
+          "fingerprint": "e956b627e22328f5e4e90a757d9abd25273f289f39547fcb6cab0a3355aadd03",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "payment_date"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "direct_loan_principal_schedule_projection_payment_date_idx",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX direct_loan_principal_schedule_projection_pkey ON security_master.direct_loan_principal_schedule_projection USING btree (security_id, ordinal)",
+          "expression": null,
+          "fingerprint": "9cbd3aa99ab1eea8ea0b6ad8f37b9802d46b93ebf5be7a10052310f6d184cccf",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "ordinal"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "direct_loan_principal_schedule_projection_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "direct_loan_principal_schedule_projection",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "141010d7466f67a298d7ad80e703e6e582df95653d220de04ae738936255609a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "display_name",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "d102a811e96c23130a499c96ce5a70b4c810b79ef53a6ae60e80d57788f6ff49",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "currency",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "0a33e33c70dfffac22e1d600df36b41d9e5ad94d9be65aeff8f63ee860b4c7a6",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "borrower",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "date",
+          "default": null,
+          "fingerprint": "49d0905bfd353e36ab9a075c20e5cae3030cab05b11a50545c08b9846d383444",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "maturity_date",
+          "nullable": true,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "date",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "34e8b2e430b0a94af2b89df2f2462d70343d94de95512087fd78f34718fec70b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "reference_index",
+          "nullable": true,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "numeric(18,8)",
+          "default": null,
+          "fingerprint": "980b221d27afd6a413d089da249c25694a9dd345765d364fa43e3e5b0b238e94",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "spread_bps",
+          "nullable": true,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "numeric",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "numeric(12,6)",
+          "default": null,
+          "fingerprint": "7c8c3349ce39c1d56415c2141f0dcb171ef53b6982ebb83a2ef9f1275081b808",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "current_coupon_rate",
+          "nullable": true,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "numeric",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "3d3037bfaaafd1facfd2458cb9bd99060b360c926863eda8db22035b46edd3ad",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "reset_frequency",
+          "nullable": true,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "ac0e3121ef4753f5373bdc58126d004361f514f0fe6fb809f44c42e4aa330042",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "pricing_source",
+          "nullable": true,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "e943c6cbd9ba4bd0995c6df7868a3dee13fea15ee6392d3756aca1b4b98d94a8",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "primary_identifier_value",
+          "nullable": false,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "03947445d564ae4fb9a4301b41fa56f59e36ad464333a172a664863e73af1917",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "version",
+          "nullable": false,
+          "ordinal_position": 12,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Relational projection of DirectLoan asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. Distinct from the loan_contract family in this same schema, which keys on loan_id and belongs to the direct-lending servicing aggregate.",
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (security_id)",
+          "delete_action": null,
+          "fingerprint": "9bf2a06944b956132f9f54733e47b98eed9217519ed964bd8c102e9e2885776d",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "direct_loan_projection_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "901d5f3c9cc924f4aaebce8b3768b7c037e97bfd64692662215e5436ce55abe6",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX direct_loan_projection_borrower_idx ON security_master.direct_loan_projection USING btree (lower(borrower))",
+          "expression": "lower(borrower)",
+          "fingerprint": "c2a085ccb564199d99cbbe8dd4cb6e92ffe337a18d38208e630c24d36082cac3",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(borrower)"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "direct_loan_projection_borrower_idx",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX direct_loan_projection_maturity_idx ON security_master.direct_loan_projection USING btree (maturity_date)",
+          "expression": null,
+          "fingerprint": "8d276805c43925d7c6b244d43070ecd560b450c2975e65134a97588af6f292b0",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "maturity_date"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "direct_loan_projection_maturity_idx",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX direct_loan_projection_pkey ON security_master.direct_loan_projection USING btree (security_id)",
+          "expression": null,
+          "fingerprint": "e0250f4b343a713692b1bb976ea0c8b5cda91432fe8b2171a222cdc5cd71cda6",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "direct_loan_projection_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX direct_loan_projection_reference_index_idx ON security_master.direct_loan_projection USING btree (lower(reference_index))",
+          "expression": "lower(reference_index)",
+          "fingerprint": "03e8d9fa52b5c447220f2ebb98202cc9f4e5d336cb193826a6871778765a0bed",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(reference_index)"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "direct_loan_projection_reference_index_idx",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "direct_loan_projection",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
           "fingerprint": "64def813a9a73bca72175925743f0eae4c3b34b873c71c08b2742f6d471cb1d0",
           "generated": null,
           "generated_expression": null,
@@ -51739,6 +54903,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "b54deb3b83df29320e992ef221bd9b9683c7ecfe0e104b158bcbfdce2aa46bfe",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "projected_cash_flow_id",
+          "nullable": true,
+          "ordinal_position": 15,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -51831,7 +55011,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "311d3818abf1a8a6ab84a6fe7995a899d032a3246847e098df564adda2a3daab",
+      "fingerprint": "8c04366590d6e04477a80e152e03d0bdaa74bf3650d02290b3464da5a4b00745",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -51916,7 +55096,26 @@
       "schema": "security_master",
       "security_labels": [],
       "sequence": null,
-      "triggers": []
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER synchronize_cash_flow_identity BEFORE INSERT OR UPDATE ON security_master.projected_cash_flow FOR EACH ROW EXECUTE FUNCTION security_master.synchronize_cash_flow_identity()",
+          "definition_hash": "5875f85a8d5211727ce93412e5b630cc5a61a9803f131ddb4a91ff06f69ca870",
+          "enabled": "origin",
+          "events": [
+            "insert",
+            "update"
+          ],
+          "fingerprint": "33a22e61a3f68f23ba64a3e6d192d81c5d15de432f5aec0887fbfcd426058f57",
+          "function_schema": "security_master",
+          "function_signature": "synchronize_cash_flow_identity()",
+          "level": "row",
+          "name": "synchronize_cash_flow_identity",
+          "relation": "projected_cash_flow",
+          "schema": "security_master",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -53316,6 +56515,22 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "fd2d8ce753ee4814b3acb8165c44da4b36b83932ae2e82e16a0136c04f619e9b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "projected_cash_flow_id",
+          "nullable": true,
+          "ordinal_position": 16,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -53431,7 +56646,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "f93e65287ca3e159e9deb77ddb18ffdfc48927450436b68cb36b4f18763f5a95",
+      "fingerprint": "53ff7040b61aa83c6e47e7577bcfd943c9532ab53730e491c5ac9045ad41358c",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -53493,7 +56708,26 @@
       "schema": "security_master",
       "security_labels": [],
       "sequence": null,
-      "triggers": []
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER synchronize_cash_flow_identity BEFORE INSERT OR UPDATE ON security_master.reconciliation_result FOR EACH ROW EXECUTE FUNCTION security_master.synchronize_cash_flow_identity()",
+          "definition_hash": "98a4eef916f96a62450ff0f7066e7d20e80062532cf8e338498c59063979229e",
+          "enabled": "origin",
+          "events": [
+            "insert",
+            "update"
+          ],
+          "fingerprint": "5beb2f255ceed9eba420f605ad5fbc33c77fde562fb64032c15e62d87efb0f8b",
+          "function_schema": "security_master",
+          "function_signature": "synchronize_cash_flow_identity()",
+          "level": "row",
+          "name": "synchronize_cash_flow_identity",
+          "relation": "reconciliation_result",
+          "schema": "security_master",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -57371,6 +60605,298 @@
           "comment": null,
           "data_type": "uuid",
           "default": null,
+          "fingerprint": "3aba477ac8e07704aaf9377b8f033cbd510922ab13621faed1006697d3417f5c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "receipt_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "27e31c58056faca7f94a6a53a21a37c23a294f9e50182a79c163b6c0a5521701",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "dd37657fb7b8c12d5d41f399d103fa41b7c1c5951aee020e2a5463bb24cb622c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "account_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "7ee3e245af1a2abe483180fb0b6e1543db0fac6d68ce05e726b1eaea67fca84e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "character(64)",
+          "default": null,
+          "fingerprint": "603d11889c59f4f8e4b47c8ab2f659c86f43beb3316147d4b6d1a51da54ff80d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload_sha256",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "bpchar",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "05e663a913cf9e98ebdf7d0bad03bd6b9d3c48c3ec6277a3d499ccdf7333a154",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Immutable golden-copy evaluation result, exact hierarchy snapshot, and quote comparisons; scoped receipt replay is the reproducibility authority.",
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (security_id) REFERENCES security_master.securities(security_id)",
+          "delete_action": "no_action",
+          "fingerprint": "f5dbf5ede2615f417b2c9bacf7a48390a44f82dd85496f85ad59aa604265b826",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "security_price_selection_receipts_security_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "security_id"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "securities",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "receipt_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (receipt_id)",
+          "delete_action": null,
+          "fingerprint": "80d05f1c14bcc1cfd4fed130577c3c8adcba1327866a5ca74bb2f9b278e1e29b",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_price_selection_receipts_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "663e0450e1a7ad74e2f8eaa89b3137cc5d5350a9531be34faf29912264407255",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_security_price_selection_receipts_scope ON security_master.security_price_selection_receipts USING btree (security_id, account_id, receipt_id)",
+          "expression": null,
+          "fingerprint": "c456937f5629582f6c8eaa31ddac0219775b9884ad92603eea110ed497bed241",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "account_id",
+            "receipt_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_security_price_selection_receipts_scope",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_price_selection_receipts_pkey ON security_master.security_price_selection_receipts USING btree (receipt_id)",
+          "expression": null,
+          "fingerprint": "204c44e19a9b6362b9cab28621d1ee1c84491e0073fffbfb71963e6263c83b2e",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "receipt_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_price_selection_receipts_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_price_selection_receipts",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_price_selection_receipts_immutable BEFORE DELETE OR UPDATE ON security_master.security_price_selection_receipts FOR EACH ROW EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+          "definition_hash": "fa472da90cb107a06a1a3abcee2670817a08dc4f3cafd46596f23e6275a93042",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "b34b65eb6dc61b5f3c65b55225b1c6f08a2f1af97d6113c0362a3d267aa249e7",
+          "function_schema": "security_master",
+          "function_signature": "reject_price_selection_receipt_mutation()",
+          "level": "row",
+          "name": "security_price_selection_receipts_immutable",
+          "relation": "security_price_selection_receipts",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_price_selection_receipts_no_truncate BEFORE TRUNCATE ON security_master.security_price_selection_receipts FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+          "definition_hash": "fd6dc846d02cdf35b39efa760815611e5fdf08cab90d14108a505e13b75bd27a",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "fb2dba0553e318e59c1181eb84ecdddb39a0d636a3bcde0e010db43f320e3695",
+          "function_schema": "security_master",
+          "function_signature": "reject_price_selection_receipt_mutation()",
+          "level": "statement",
+          "name": "security_price_selection_receipts_no_truncate",
+          "relation": "security_price_selection_receipts",
+          "schema": "security_master",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
           "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
           "generated": null,
           "generated_expression": null,
@@ -57445,6 +60971,22 @@
           "security_labels": [],
           "type_name": "text",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "05e663a913cf9e98ebdf7d0bad03bd6b9d3c48c3ec6277a3d499ccdf7333a154",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -57495,7 +61037,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "89f2b52e2600a4392efbed44d61e3aebf7293c93048513788528c06e7b464bfe",
+      "fingerprint": "97c4dfe304c108faed292157425a756ee874c3977cbe0ca8cce502cf5998ce22",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -57548,6 +61090,242 @@
       "is_partition": false,
       "kind": "table",
       "name": "security_pricing_hierarchy",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "2c32fcc0297c5fd069ae0ff4f3922efcf62a9ee567b6352432374c54f0aab659",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "account_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "ef3b4146e50b0b38e1a7f4a7c2fa6b427f78be4c4c1e1a1f5711833a2c865ece",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "entries",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "1da885ccfcea0b84e7399d33a885850b236922f7903f818db0c95235b47c05b7",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "as_of",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "bab802b59229fc4cf21c9adb00addf513b092b81fd38e35525c2f95349c3ca39",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "updated_by",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "05e663a913cf9e98ebdf7d0bad03bd6b9d3c48c3ec6277a3d499ccdf7333a154",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Dated account-specific pricing hierarchy evidence, retaining source priorities, effective timestamp, author, and recording timestamp for historical price selection.",
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (security_id) REFERENCES security_master.securities(security_id)",
+          "delete_action": "no_action",
+          "fingerprint": "3dfd06a52ea165524979527d84bd328737a46012cb1eccbcbda2037de8416781",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "security_pricing_hierarchy_history_security_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "security_id"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "securities",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "security_id",
+            "account_id",
+            "as_of"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (security_id, account_id, as_of)",
+          "delete_action": null,
+          "fingerprint": "4271e49b936f1370b85837c313aac213abe6b10d92d8ac7e1ae887919ff94009",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_pricing_hierarchy_history_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "b0fd8a0c12c9d6066f378db454b2b60be4769b4eca5905d06ad0e051b7765be7",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_pricing_hierarchy_history_pkey ON security_master.security_pricing_hierarchy_history USING btree (security_id, account_id, as_of)",
+          "expression": null,
+          "fingerprint": "734a803d38bf9b0ee16683526383c9def5ce48cff2532fb49e5eb58afe14a84f",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "account_id",
+            "as_of"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_pricing_hierarchy_history_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_pricing_hierarchy_history",
       "options": [],
       "owner": "meridian",
       "persistence": "permanent",
@@ -57701,10 +61479,46 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": "'Unspecified'::text",
+          "fingerprint": "c684376ef520a400a384a049aa1bdd0f30d2be98032349508f68512d1e758a98",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "price_unit",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
       "constraints": [
+        {
+          "columns": [
+            "price_unit"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (price_unit = ANY (ARRAY['Unspecified'::text, 'CurrencyPerUnit'::text, 'PercentOfPar'::text]))",
+          "delete_action": null,
+          "fingerprint": "2fd326fc1eee593bac70804200d44ebef8880791e2918b679632bda9db269f91",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_raw_prices_unit_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
         {
           "columns": [
             "security_id"
@@ -57730,13 +61544,14 @@
         {
           "columns": [
             "security_id",
-            "source_id"
+            "source_id",
+            "price_as_of"
           ],
           "comment": null,
           "deferrable": false,
-          "definition": "PRIMARY KEY (security_id, source_id)",
+          "definition": "PRIMARY KEY (security_id, source_id, price_as_of)",
           "delete_action": null,
-          "fingerprint": "cff73ef30cc979dcc0f70471a715b99794beb3f565a2a753a45459496388ed96",
+          "fingerprint": "9c6301c712828862ab58a9dfb10a7c4f4c256b85441d529a58ea3993a14e0419",
           "initially_deferred": false,
           "match_type": null,
           "name": "security_raw_prices_pkey",
@@ -57751,7 +61566,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "ffe7e8d6490b7e872c17f764df86607441fbed25129c774345b00f9319c6585a",
+      "fingerprint": "7d63ff569446a0cebd7b47574444696747bfcde9629c8236611f10b9a2fd0d7b",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -57779,14 +61594,15 @@
         },
         {
           "comment": null,
-          "definition": "CREATE UNIQUE INDEX security_raw_prices_pkey ON security_master.security_raw_prices USING btree (security_id, source_id)",
+          "definition": "CREATE UNIQUE INDEX security_raw_prices_pkey ON security_master.security_raw_prices USING btree (security_id, source_id, price_as_of)",
           "expression": null,
-          "fingerprint": "4a76a78b1c80450bb7cf7a17bdf7b31c2efdc9ab465436d011307b7806ae2555",
+          "fingerprint": "331735b12ffe3863cd4e488be8eeae9e2a45269d678407f432a43129ddaae1cb",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
             "security_id",
-            "source_id"
+            "source_id",
+            "price_as_of"
           ],
           "live": true,
           "method": "btree",
@@ -61840,6 +65656,597 @@
           "type_schema": "pg_catalog"
         },
         {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "e14e07b0e8a17e1109e97c6557db75add56ad26f5f5f75193e1b193b9c05ef60",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "ordinal",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "date",
+          "default": null,
+          "fingerprint": "eab12d90687a7c3caa4982a90264b9d1be04df5a0ddfd0ea829b3bd050758a78",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "as_of_date",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "date",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "numeric(18,10)",
+          "default": null,
+          "fingerprint": "2bfecffae9ec5ba5812e2b4669d34d003ccff2fce7c915e9c47179d5d70f0594",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "factor",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "numeric",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Dated pool-factor points of a projected structured-credit tranche, in terms-document order (ordinal). Serves the factor-as-of lookup used by amortization.",
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (security_id) REFERENCES security_master.structured_credit_projection(security_id) ON DELETE CASCADE",
+          "delete_action": "cascade",
+          "fingerprint": "6d48e2ac8e24f96f765468a515cdfe8a80d41e158361060ab3a437fbceedc683",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "structured_credit_factor_schedule_projection_security_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "security_id"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "structured_credit_projection",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "security_id",
+            "ordinal"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (security_id, ordinal)",
+          "delete_action": null,
+          "fingerprint": "c45a0c7c7be776919245f5fb14b2ebde0d25a61e36e0509b1f988e056d0ef968",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "structured_credit_factor_schedule_projection_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "c3d6243aa1021c82aafd421ccc1d69215c502a5b0218e4600184a99d74d003fc",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX structured_credit_factor_schedule_projection_as_of_idx ON security_master.structured_credit_factor_schedule_projection USING btree (security_id, as_of_date DESC)",
+          "expression": null,
+          "fingerprint": "b84f959d03698cec653c2bffe3ab2ada06042492106ad3626f2a5f2d9e104e3b",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "as_of_date"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "structured_credit_factor_schedule_projection_as_of_idx",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX structured_credit_factor_schedule_projection_pkey ON security_master.structured_credit_factor_schedule_projection USING btree (security_id, ordinal)",
+          "expression": null,
+          "fingerprint": "127db05d210d3eb0a3913b7c9c757dfae654fa5166fa1cca165685ff8d62ba0b",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "ordinal"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "structured_credit_factor_schedule_projection_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "structured_credit_factor_schedule_projection",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "141010d7466f67a298d7ad80e703e6e582df95653d220de04ae738936255609a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "display_name",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "d102a811e96c23130a499c96ce5a70b4c810b79ef53a6ae60e80d57788f6ff49",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "currency",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "a8bc6dd5d9920f16381e7d37fc1cc060ac53178aad99e2f644d4b4e035897452",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tranche",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "e3be67a73d32a53e70671e4c1483205d47b8f103ccdae35c6065db9df6fda347",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "pool_id",
+          "nullable": true,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "18f2fa4dca0a98e1be04a16c2de28a1c253b607b883c97121b4924c52c0fe6dc",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "collateral_type",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "numeric(28,10)",
+          "default": null,
+          "fingerprint": "e7bf64dee0c4279cad8635ce096aa42bf94570f35be1d4c7ca5209bbd0fc6570",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "original_face",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "numeric",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "numeric(18,10)",
+          "default": null,
+          "fingerprint": "556351c692a8c2c004afd52b84c22e8210a112f7f2086021b1f988447578e681",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "current_factor",
+          "nullable": true,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "numeric",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "5572cc8f04855b8bae16af700fc3acbaaa14c4aece9bd0011ee04336007483ef",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "coupon_or_index",
+          "nullable": false,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "830dfd501a8d9fe84deabcbd3d8231ce97858d6c6e44f79adeb52cda0b4f64b3",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "factor_schedule_reference",
+          "nullable": true,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "date",
+          "default": null,
+          "fingerprint": "badf5659aa8eadff03ce53a5fa786c4effcb775ffc10ab4f354e65afbaa73019",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "maturity_date",
+          "nullable": true,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "date",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "71095b798fc3296bd05daa9999f918e57fa8a262848337341f43c3b2782d2672",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "primary_identifier_value",
+          "nullable": false,
+          "ordinal_position": 12,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "a89e2a3c8ecabf80120518f414aeb5e374d0f195950f2b19bb36f05d15d0265b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "version",
+          "nullable": false,
+          "ordinal_position": 13,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Relational projection of StructuredCredit tranche terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. factor_schedule_reference is the free-text trustee-report pointer, never factor data.",
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (security_id)",
+          "delete_action": null,
+          "fingerprint": "e00f008f4aaf5f6b6192c149cd353bdafb153363ae5218dddb0bd2f238027a84",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "structured_credit_projection_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "2e64307c948acdb3698a2a88c0e320fd682ed01c36d95c7d562657877ca43c7b",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX structured_credit_projection_collateral_type_idx ON security_master.structured_credit_projection USING btree (lower(collateral_type))",
+          "expression": "lower(collateral_type)",
+          "fingerprint": "88ac12ed9b94d5bd1bfa8e8a14f220f141cb977289438e74208988fea9c08bf0",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(collateral_type)"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "structured_credit_projection_collateral_type_idx",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX structured_credit_projection_pkey ON security_master.structured_credit_projection USING btree (security_id)",
+          "expression": null,
+          "fingerprint": "62abca2562051815eaf9caa4a92b87653c0f1d54e2c80e44dbc1f531c31a17dd",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "structured_credit_projection_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX structured_credit_projection_pool_idx ON security_master.structured_credit_projection USING btree (lower(pool_id))",
+          "expression": "lower(pool_id)",
+          "fingerprint": "b9063a1972580d343b66b0a241646c92c853a22b6e457612be45d761a4cd9f69",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "lower(pool_id)"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "structured_credit_projection_pool_idx",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "structured_credit_projection",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
           "collation": "pg_catalog.default",
           "comment": null,
           "data_type": "text",
@@ -62083,6 +66490,42 @@
   "triggers": [
     {
       "comment": null,
+      "definition": "CREATE TRIGGER synchronize_cash_flow_identity BEFORE INSERT OR UPDATE ON security_master.projected_cash_flow FOR EACH ROW EXECUTE FUNCTION security_master.synchronize_cash_flow_identity()",
+      "definition_hash": "5875f85a8d5211727ce93412e5b630cc5a61a9803f131ddb4a91ff06f69ca870",
+      "enabled": "origin",
+      "events": [
+        "insert",
+        "update"
+      ],
+      "fingerprint": "33a22e61a3f68f23ba64a3e6d192d81c5d15de432f5aec0887fbfcd426058f57",
+      "function_schema": "security_master",
+      "function_signature": "synchronize_cash_flow_identity()",
+      "level": "row",
+      "name": "synchronize_cash_flow_identity",
+      "relation": "projected_cash_flow",
+      "schema": "security_master",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER synchronize_cash_flow_identity BEFORE INSERT OR UPDATE ON security_master.reconciliation_result FOR EACH ROW EXECUTE FUNCTION security_master.synchronize_cash_flow_identity()",
+      "definition_hash": "98a4eef916f96a62450ff0f7066e7d20e80062532cf8e338498c59063979229e",
+      "enabled": "origin",
+      "events": [
+        "insert",
+        "update"
+      ],
+      "fingerprint": "5beb2f255ceed9eba420f605ad5fbc33c77fde562fb64032c15e62d87efb0f8b",
+      "function_schema": "security_master",
+      "function_signature": "synchronize_cash_flow_identity()",
+      "level": "row",
+      "name": "synchronize_cash_flow_identity",
+      "relation": "reconciliation_result",
+      "schema": "security_master",
+      "timing": "before"
+    },
+    {
+      "comment": null,
       "definition": "CREATE TRIGGER trg_security_search_vector BEFORE INSERT OR UPDATE ON security_master.securities FOR EACH ROW EXECUTE FUNCTION security_master.update_security_search_vector()",
       "definition_hash": "bba262c96116c9d122c4f24e694792489e49d8f0fc29ee760bbf480a43cbce9f",
       "enabled": "origin",
@@ -62096,6 +66539,41 @@
       "level": "row",
       "name": "trg_security_search_vector",
       "relation": "securities",
+      "schema": "security_master",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER security_price_selection_receipts_immutable BEFORE DELETE OR UPDATE ON security_master.security_price_selection_receipts FOR EACH ROW EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+      "definition_hash": "fa472da90cb107a06a1a3abcee2670817a08dc4f3cafd46596f23e6275a93042",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "b34b65eb6dc61b5f3c65b55225b1c6f08a2f1af97d6113c0362a3d267aa249e7",
+      "function_schema": "security_master",
+      "function_signature": "reject_price_selection_receipt_mutation()",
+      "level": "row",
+      "name": "security_price_selection_receipts_immutable",
+      "relation": "security_price_selection_receipts",
+      "schema": "security_master",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER security_price_selection_receipts_no_truncate BEFORE TRUNCATE ON security_master.security_price_selection_receipts FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+      "definition_hash": "fd6dc846d02cdf35b39efa760815611e5fdf08cab90d14108a505e13b75bd27a",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "fb2dba0553e318e59c1181eb84ecdddb39a0d636a3bcde0e010db43f320e3695",
+      "function_schema": "security_master",
+      "function_signature": "reject_price_selection_receipt_mutation()",
+      "level": "statement",
+      "name": "security_price_selection_receipts_no_truncate",
+      "relation": "security_price_selection_receipts",
       "schema": "security_master",
       "timing": "before"
     }

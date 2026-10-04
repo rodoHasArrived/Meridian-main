@@ -116,13 +116,13 @@ public static class OperationsContinuityMapper
             .OrderByDescending(static workflow => workflow.UpdatedAtUtc)
             .Select(static workflow =>
             {
-                var tone = ToTone(workflow.Status);
+                var tone = workflow.Status == OperationsWorkflowStatusDto.ReadyForClose ? WorkstationReadinessTone.SignoffRequired : ToTone(workflow.Status);
                 var passedGates = workflow.Gates.Count(static gate => gate.Status == OperationsGateStatusDto.Passed);
                 var blockerCount = workflow.Gates.Sum(static gate => gate.Blockers.Count);
                 return new OperationsContinuityWorkflowRowModel(
                     workflow.WorkflowId,
                     $"{workflow.PeriodId} · {workflow.BrokerSource}",
-                    SettingsViewModel.FormatIdentifier(workflow.Status.ToString()),
+                    workflow.Status == OperationsWorkflowStatusDto.ReadyForClose ? "Close assessment required" : SettingsViewModel.FormatIdentifier(workflow.Status.ToString()),
                     $"{passedGates}/{workflow.Gates.Count} gates passed · {Pluralize(blockerCount, "blocker")}",
                     FormatTimestamp(workflow.UpdatedAtUtc),
                     tone,
@@ -278,7 +278,8 @@ public static class OperationsContinuityMapper
     public static OperationsContinuityNextActionModel ResolveNextAction(
         OperationsContinuityWorkflowDto? detail,
         bool isLoading,
-        string? detailError)
+        string? detailError,
+        OperationsContinuityClosePresentation? closeReadiness = null)
     {
         if (isLoading)
         {
@@ -310,6 +311,11 @@ public static class OperationsContinuityMapper
                 ? "This workflow is closed and locked; use the governed reopen command to make changes."
                 : "No server-recommended next action is available for this workflow.");
         }
+
+        if (candidates.Code.Contains("close", StringComparison.OrdinalIgnoreCase) &&
+            !candidates.Code.Contains("reopen", StringComparison.OrdinalIgnoreCase) && closeReadiness?.IsReady != true)
+            return new(candidates.Label, "Close blocked", candidates.Route ?? candidates.RouteHint ?? "-",
+                closeReadiness?.Detail ?? "Shared close readiness must be refreshed before closing.", WorkstationReadinessTone.Blocked, WorkspaceTone.Danger);
 
         var owningGateStatus = candidates.Gate is not null && gateStatusByKey.TryGetValue(candidates.Gate.Value, out var status)
             ? status
@@ -360,14 +366,12 @@ public static class OperationsContinuityMapper
                 var row = new SettingsOperationsCloseCalendarRow(item);
                 var tone = item.BlockerCount > 0
                     ? WorkstationReadinessTone.Blocked
-                    : item.IsReadyToClose
-                        ? WorkstationReadinessTone.EvidenceLinked
-                        : WorkstationReadinessTone.SignoffRequired;
+                    : WorkstationReadinessTone.SignoffRequired;
                 return new OperationsContinuityPanelRowModel(
                     item.WorkflowId.ToString("D"),
                     $"{row.PeriodId} close",
                     row.StatusLabel,
-                    $"{row.ReadinessLabel} · {row.BlockerLabel} · {row.ChecklistLabel}",
+                    $"Close readiness requires the selected shared scope. {row.BlockerLabel} · {row.ChecklistLabel}",
                     $"{row.DueLabel} · {row.OwnerLabel} · {row.ApprovalLabel}",
                     tone,
                     ToWorkspaceTone(tone));

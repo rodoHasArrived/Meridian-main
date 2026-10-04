@@ -12,11 +12,11 @@ export function KeyValueGrid({ items, columns = 2 }) {
           <div style={{
             fontFamily: "var(--font-body)", fontSize: 10, fontWeight: 600,
             fontVariant: "all-small-caps", letterSpacing: "0.03em",
-            color: "var(--text-muted, #59636F)"
+            color: "var(--text-muted, #5E666F)"
           }}>{it.label}</div>
           <div style={{
             fontFamily: "var(--font-data)", fontSize: 13,
-            fontVariantNumeric: "tabular-nums", color: "var(--text-primary, #22272E)"
+            fontVariantNumeric: "tabular-nums", color: "var(--text-primary, #22252A)"
           }}>{it.value}</div>
         </div>
       ))}

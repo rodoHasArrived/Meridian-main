@@ -132,7 +132,8 @@ public sealed record FundPortfolioPosition(
     string CoverageLabel = "Unresolved",
     IReadOnlyList<string>? ContributingRunIds = null,
     int SecurityResolvedContributions = 0,
-    int SecurityMissingContributions = 0);
+    int SecurityMissingContributions = 0,
+    MarkFreshnessAssessmentDto? MarkFreshness = null);
 
 /// <summary>
 /// Shared cash and financing rollup for Accounting and Trading capital-control surfaces.

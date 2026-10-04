@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Identity.Auth;
+using Meridian.Contracts.Tenancy;
 
 namespace Meridian.Identity;
 
@@ -18,6 +19,7 @@ public sealed class UserProfileRegistry
 
     private readonly IRolePermissionProfileStore? _roleProfileStore;
     private readonly IUserAccountStore? _accountStore;
+    private readonly TenantScopeEnforcementOptions _tenantScope;
 
     public UserProfileRegistry()
         : this(null, null)
@@ -29,16 +31,49 @@ public sealed class UserProfileRegistry
     {
     }
 
-    public UserProfileRegistry(IRolePermissionProfileStore? roleProfileStore, IUserAccountStore? accountStore)
+    public UserProfileRegistry(IRolePermissionProfileStore? roleProfileStore, IUserAccountStore? accountStore,
+        TenantScopeEnforcementOptions? tenantScope = null)
     {
         _roleProfileStore = roleProfileStore;
         _accountStore = accountStore;
+        _tenantScope = tenantScope ?? TenantScopeEnforcementOptions.DeploymentBoundary;
     }
 
     /// <summary>
     /// Returns <see langword="true"/> when at least one user account is configured.
     /// </summary>
     public bool IsConfigured => LoadAccounts().Length > 0;
+
+    /// <summary>
+    /// Companies configured by the same effective account source used for authentication.
+    /// Includes disabled accounts so re-enabling one cannot silently change a deployment's scope.
+    /// Governed accounts retain precedence over environment and demo fallbacks; no credential
+    /// material is exposed to deployment guards.
+    /// </summary>
+    public IReadOnlyList<string> GetConfiguredCompanyIds()
+        => LoadAccounts()
+            .Select(account => account.CompanyId)
+            .Where(companyId => !string.IsNullOrWhiteSpace(companyId))
+            .Select(companyId => companyId!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    /// <summary>Refuses multi-company access unless storage reads enforce tenant ownership.</summary>
+    public void ValidateDeploymentScope()
+        => ValidateDeploymentScope(LoadAccounts());
+
+    private void ValidateDeploymentScope(UserAccountConfig[] accounts)
+    {
+        if (!_tenantScope.IsFailClosed && accounts
+            .Select(account => account.CompanyId?.Trim())
+            .Where(company => !string.IsNullOrWhiteSpace(company))
+            .Distinct(StringComparer.OrdinalIgnoreCase).Take(2).Count() > 1)
+        {
+            throw new InvalidOperationException(
+                "Multiple companies require MERIDIAN_TENANT_SCOPE_ENFORCEMENT=fail-closed. " +
+                "The deployment-boundary posture permits only one company per isolated deployment.");
+        }
+    }
 
     /// <summary>
     /// Validates <paramref name="username"/> and <paramref name="password"/> against the
@@ -50,7 +85,9 @@ public sealed class UserProfileRegistry
     /// </returns>
     public UserProfile? Authenticate(string username, string password)
     {
-        var account = LoadAccounts()
+        var accounts = LoadAccounts();
+        ValidateDeploymentScope(accounts);
+        var account = accounts
             .FirstOrDefault(candidate => CryptographicEquals(username, candidate.Username));
         if (account is null ||
             account.IsDisabled ||
@@ -69,7 +106,9 @@ public sealed class UserProfileRegistry
             return null;
         }
 
-        var account = LoadAccounts()
+        var accounts = LoadAccounts();
+        ValidateDeploymentScope(accounts);
+        var account = accounts
             .FirstOrDefault(candidate => CryptographicEquals(username, candidate.Username));
         return account is null || account.IsDisabled ? null : CreateProfile(account);
     }
@@ -156,14 +195,18 @@ public sealed class UserProfileRegistry
                 CompanyId: account.CompanyId);
         }
 
-        if (!string.IsNullOrWhiteSpace(account.RoleProfileName) &&
-            _roleProfileStore is not null &&
-            _roleProfileStore.TryGetProfile(account.RoleProfileName, out var profile) &&
-            RolePermissions.TryParsePermissionNames(
+        if (!string.IsNullOrWhiteSpace(account.RoleProfileName))
+        {
+            if (_roleProfileStore is null ||
+                !_roleProfileStore.TryGetProfile(account.RoleProfileName, out var profile) ||
+                !RolePermissions.TryParsePermissionNames(
                 profile.Permissions,
                 out var roleProfilePermissions,
                 out var roleProfileInvalidPermissions))
-        {
+            {
+                // A missing/invalid selected profile must never restore a broader base role.
+                return null;
+            }
             return new UserProfile(
                 account.Username,
                 account.Role,

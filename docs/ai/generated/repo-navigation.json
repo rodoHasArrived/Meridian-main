@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-31T06:37:41Z",
+  "generatedAt": "2026-09-28T04:47:55Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -191,7 +191,7 @@
         "docs/ai/README.md",
         "docs/ai/ai-known-errors.md",
         "docs/ai/navigation/README.md",
-        "docs/development/wpf-web-ui-alignment-plan.md"
+        "docs/engineering/plans/wpf-web-ui-alignment-plan.md"
       ],
       "recommendedStart": "Meridian.Ui.Services",
       "docCoverageHint": "high"
@@ -1009,6 +1009,7 @@
       "projectReferences": [
         "Meridian.Contracts",
         "Meridian.Infrastructure",
+        "Meridian.Platform",
         "Meridian.Reporting",
         "Meridian.Storage",
         "Meridian.Ui.Shared"
@@ -1108,7 +1109,7 @@
         "Meridian.Workflow"
       ],
       "relatedDocs": [
-        "docs/development/wpf-web-ui-alignment-plan.md"
+        "docs/engineering/plans/wpf-web-ui-alignment-plan.md"
       ]
     },
     {
@@ -1353,7 +1354,7 @@
       ]
     },
     {
-      "path": "docs/development/wpf-web-ui-alignment-plan.md",
+      "path": "docs/engineering/plans/wpf-web-ui-alignment-plan.md",
       "title": "WPF web-UI alignment plan",
       "area": "ui",
       "whenToConsult": "When a task affects workflow-centric desktop or workspace experiences.",
@@ -1620,7 +1621,7 @@
         }
       ],
       "authoritativeDocs": [
-        "docs/development/wpf-web-ui-alignment-plan.md",
+        "docs/engineering/plans/wpf-web-ui-alignment-plan.md",
         "docs/ai/ai-known-errors.md"
       ],
       "recommendedSkill": "meridian-blueprint",
@@ -2225,323 +2226,323 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.FinancialOperations/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-30T04:02:38Z",
-      "lastCommit": "7a40e6970",
-      "lastSummary": "Index Flex account evidence instead of rescanning per anchor",
-      "touches": 16
+      "path": "src/Meridian.Strategies/README.md",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-09-28T00:40:02+00:00",
+      "lastCommit": "2d1621987",
+      "lastSummary": "docs: repair plain-text archive path mentions left by the 2026-09-11 cleanup",
+      "touches": 3
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-30T04:02:38Z",
-      "lastCommit": "7a40e6970",
-      "lastSummary": "Index Flex account evidence instead of rescanning per anchor",
-      "touches": 13
+      "path": "src/Meridian.Ui/dashboard/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-28T00:40:02+00:00",
+      "lastCommit": "2d1621987",
+      "lastSummary": "docs: repair plain-text archive path mentions left by the 2026-09-11 cleanup",
+      "touches": 2
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/Alpaca/AlpacaActivityStatementConnector.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-30T04:02:38Z",
-      "lastCommit": "7a40e6970",
-      "lastSummary": "Index Flex account evidence instead of rescanning per anchor",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvStatementConnector.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-30T03:37:39Z",
-      "lastCommit": "b47f9df7a",
-      "lastSummary": "Saturate the CSV discovery allowance, and depth-check OFX leaves",
-      "touches": 10
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-30T03:37:39Z",
-      "lastCommit": "b47f9df7a",
-      "lastSummary": "Saturate the CSV discovery allowance, and depth-check OFX leaves",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-30T03:17:20Z",
-      "lastCommit": "4eac56733",
-      "lastSummary": "Charge BAI2 newline padding to the line budget",
-      "touches": 11
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-30T03:05:30Z",
-      "lastCommit": "03a29b7f1",
-      "lastSummary": "Bound the objects Alpaca materializes before deserializing",
-      "touches": 11
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-29T23:33:52Z",
-      "lastCommit": "73dd54ea9",
-      "lastSummary": "Carry ingress codes through validate as well as commit",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-29T23:24:41Z",
-      "lastCommit": "b37e3cea5",
-      "lastSummary": "Charge the record cap on the append in camt, BAI2 and OFX",
-      "touches": 18
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-29T23:24:41Z",
-      "lastCommit": "b37e3cea5",
-      "lastSummary": "Charge the record cap on the append in camt, BAI2 and OFX",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-29T17:23:14Z",
-      "lastCommit": "2f72a8f3a",
-      "lastSummary": "Address the fourteenth Codex round: bound retained evidence rows at the seam",
+      "path": "src/Meridian.Backtesting/README.md",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-09-28T00:40:02+00:00",
+      "lastCommit": "2d1621987",
+      "lastSummary": "docs: repair plain-text archive path mentions left by the 2026-09-11 cleanup",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T15:33:55Z",
-      "lastCommit": "291695dcf",
-      "lastSummary": "fix(wpf): register the tenancy guard in the composition root, not the feature module",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Wpf/App.xaml.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T15:33:55Z",
-      "lastCommit": "291695dcf",
-      "lastSummary": "fix(wpf): register the tenancy guard in the composition root, not the feature module",
+      "path": "src/Meridian.QuantScript/README.md",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-09-28T00:40:02+00:00",
+      "lastCommit": "2d1621987",
+      "lastSummary": "docs: repair plain-text archive path mentions left by the 2026-09-11 cleanup",
       "touches": 1
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs",
+      "path": "src/Meridian.Execution/Adapters/PaperTradingGateway.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-09-25T19:49:41-07:00",
+      "lastCommit": "aff38fd00",
+      "lastSummary": "fix(paper): preserve fill bounds after tick rounding",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Execution/Adapters/PaperTradingGatewaySupport.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-09-25T19:49:41-07:00",
+      "lastCommit": "aff38fd00",
+      "lastSummary": "fix(paper): preserve fill bounds after tick rounding",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Execution/PaperTradingGateway.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-09-25T19:49:41-07:00",
+      "lastCommit": "aff38fd00",
+      "lastSummary": "fix(paper): preserve fill bounds after tick rounding",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Execution/README.md",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-09-25T19:49:41-07:00",
+      "lastCommit": "aff38fd00",
+      "lastSummary": "fix(paper): preserve fill bounds after tick rounding",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-09-25T18:37:15-07:00",
+      "lastCommit": "dcc87676c",
+      "lastSummary": "fix(reconciliation): retain provenance across save and replay",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-09-25T18:37:15-07:00",
+      "lastCommit": "dcc87676c",
+      "lastSummary": "fix(reconciliation): retain provenance across save and replay",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Identity/Application/UserProfileRegistry.cs",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-29T15:32:03Z",
-      "lastCommit": "8d2484482",
-      "lastSummary": "Address the seventh Codex round: measure and report the bounds honestly",
-      "touches": 3
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 2
     },
     {
-      "path": "src/Meridian.Storage/Ledger/PostgresAccountingConfigurationStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-29T15:25:46Z",
-      "lastCommit": "22e39ea6d",
-      "lastSummary": "fix(ledger): reuse the shared text primitive instead of a fourth copy of it",
-      "touches": 4
+      "path": "src/Meridian.Identity/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 2
     },
     {
-      "path": "src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs",
+      "path": "src/Meridian.Ui.Shared/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Identity/Application/AuthenticationMode.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Identity/Application/LoginSessionService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Identity/Infrastructure/LoginSessionStoreLock.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T15:16:36Z",
-      "lastCommit": "3753c6235",
-      "lastSummary": "fix(governance): close three more review findings, one a regression from the last round",
-      "touches": 3
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/FundProfileScopeEndpointFilters.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T15:16:36Z",
-      "lastCommit": "3753c6235",
-      "lastSummary": "fix(governance): close three more review findings, one a regression from the last round",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/FundStructure/PostgresFundStructureService.cs",
+      "path": "src/Meridian/UiServer.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T14:46:04Z",
-      "lastCommit": "af474b581",
-      "lastSummary": "fix(governance): close six defects the Codex review found in this PR",
+      "lastModified": "2026-09-25T14:28:59-07:00",
+      "lastCommit": "462d4da03",
+      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.DataIntegration/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-25T14:10:07-07:00",
+      "lastCommit": "4302179dd",
+      "lastSummary": "Retain rotated OAuth tokens in both recovery generations",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-25T14:10:07-07:00",
+      "lastCommit": "4302179dd",
+      "lastSummary": "Retain rotated OAuth tokens in both recovery generations",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-23T10:07:54-07:00",
+      "lastCommit": "ee60700ff",
+      "lastSummary": "fix: ignore storage-root dates during Parquet conversion",
       "touches": 3
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T14:46:04Z",
-      "lastCommit": "af474b581",
-      "lastSummary": "fix(governance): close six defects the Codex review found in this PR",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T14:46:04Z",
-      "lastCommit": "af474b581",
-      "lastSummary": "fix(governance): close six defects the Codex review found in this PR",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T14:46:04Z",
-      "lastCommit": "af474b581",
-      "lastSummary": "fix(governance): close six defects the Codex review found in this PR",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T14:46:04Z",
-      "lastCommit": "af474b581",
-      "lastSummary": "fix(governance): close six defects the Codex review found in this PR",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/FundStructure/Migrations/004_fund_structure_tenant_columns.sql",
+      "path": "src/Meridian.Storage/Services/ParquetConversionService.cs",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-29T09:17:06Z",
-      "lastCommit": "b5959430f",
-      "lastSummary": "chore(schema-control): refresh the schema snapshot for the new migrations",
-      "touches": 2
+      "lastModified": "2026-09-23T10:07:54-07:00",
+      "lastCommit": "ee60700ff",
+      "lastSummary": "fix: ignore storage-root dates during Parquet conversion",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_032__accounting_audit_chain.sql",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-29T09:17:06Z",
-      "lastCommit": "b5959430f",
-      "lastSummary": "chore(schema-control): refresh the schema snapshot for the new migrations",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiExceptionHandler.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T09:07:11Z",
-      "lastCommit": "87a19b955",
-      "lastSummary": "fix(tenancy): report a refused tenant scope as 403 rather than a server error",
+      "path": "src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-23T09:37:58-07:00",
+      "lastCommit": "db08ddece",
+      "lastSummary": "Fix dated-root historical reads and refresh W10 certification controls",
       "touches": 1
     },
     {
       "path": "src/Meridian.Application/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T09:00:33Z",
-      "lastCommit": "08d2fc28f",
-      "lastSummary": "docs(roadmap): map SRC-APP to W9-GOV-008 and regenerate the traced docs",
-      "touches": 4
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
+      "touches": 3
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T08:59:30Z",
-      "lastCommit": "5ffeef44d",
-      "lastSummary": "feat(governance): make the accounting mutation and its audit append recoverable as a pair",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs",
+      "path": "src/Meridian.Contracts/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T08:59:30Z",
-      "lastCommit": "5ffeef44d",
-      "lastSummary": "feat(governance): make the accounting mutation and its audit append recoverable as a pair",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T08:59:30Z",
-      "lastCommit": "5ffeef44d",
-      "lastSummary": "feat(governance): make the accounting mutation and its audit append recoverable as a pair",
+      "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
       "touches": 1
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-29T08:38:05Z",
-      "lastCommit": "c70a68e47",
-      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
+      "path": "src/Meridian.FSharp/Domain/SecurityMaster.fs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FSharp/Domain/SecurityMasterCommands.fs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FSharp/Interop.SecurityMaster.fs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FSharp/README.md",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-09-23T06:45:37-07:00",
+      "lastCommit": "1ee1c55fc",
+      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/ILedgerJournalStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-23T00:03:37+00:00",
+      "lastCommit": "f6df84d03",
+      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs",
+      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLots.cs",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-29T08:38:05Z",
-      "lastCommit": "c70a68e47",
-      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
+      "lastModified": "2026-09-23T00:03:37+00:00",
+      "lastCommit": "f6df84d03",
+      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-29T08:38:05Z",
-      "lastCommit": "c70a68e47",
-      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs",
+      "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T08:38:05Z",
-      "lastCommit": "c70a68e47",
-      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
+      "lastModified": "2026-09-23T00:03:37+00:00",
+      "lastCommit": "f6df84d03",
+      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T08:38:05Z",
-      "lastCommit": "c70a68e47",
-      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-29T08:38:05Z",
-      "lastCommit": "c70a68e47",
-      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T08:38:05Z",
-      "lastCommit": "c70a68e47",
-      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/FundStructure/FundStructureTenantScope.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T08:14:33Z",
-      "lastCommit": "e3a7378ac",
-      "lastSummary": "feat(fund-structure): scope reads and writes by tenant, and decide the in-memory posture",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/FundStructure/IFundStructureStore.cs",
+      "path": "src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-29T08:14:33Z",
-      "lastCommit": "e3a7378ac",
-      "lastSummary": "feat(fund-structure): scope reads and writes by tenant, and decide the in-memory posture",
+      "lastModified": "2026-09-23T00:03:37+00:00",
+      "lastCommit": "f6df84d03",
+      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs",
+      "path": "src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-29T08:14:33Z",
-      "lastCommit": "e3a7378ac",
-      "lastSummary": "feat(fund-structure): scope reads and writes by tenant, and decide the in-memory posture",
+      "lastModified": "2026-09-23T00:03:37+00:00",
+      "lastCommit": "f6df84d03",
+      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T08:14:33Z",
-      "lastCommit": "e3a7378ac",
-      "lastSummary": "feat(fund-structure): scope reads and writes by tenant, and decide the in-memory posture",
+      "path": "src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-23T00:03:37+00:00",
+      "lastCommit": "f6df84d03",
+      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-23T00:03:37+00:00",
+      "lastCommit": "f6df84d03",
+      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
       "touches": 1
     }
   ],

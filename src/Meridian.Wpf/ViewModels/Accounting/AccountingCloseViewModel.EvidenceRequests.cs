@@ -72,7 +72,8 @@ public sealed partial class AccountingCloseViewModel
         ClosePeriodPlanDto closePlan,
         string actor,
         bool prepareClosingEntriesOnly,
-        string? controllerRole = null)
+        string? controllerRole = null,
+        CloseReadinessScopeDto? closeScope = null)
     {
         var reportPackId = BuildCloseReportPackId(closePlan);
         var closePackageId = $"close-package-{closePlan.FundProfileId}-{closePlan.PeriodId}";
@@ -95,7 +96,8 @@ public sealed partial class AccountingCloseViewModel
             ClosePackageRetainedManifestRoute: $"/workstation/reporting/packages/{manifestId}",
             ActionOrigin: OperationsActionOriginDto.HumanOperator,
             PrepareClosingEntriesOnly: prepareClosingEntriesOnly,
-            ControllerRole: controllerRole);
+            ControllerRole: controllerRole,
+            CloseScope: closeScope);
     }
 
     private SignOffCloseTaskRequestDto BuildCloseTaskSignOffRequest(

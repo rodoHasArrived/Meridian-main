@@ -382,7 +382,10 @@ public sealed class StatementRunWorkflowService(
                     imported.Import.ExternalAccountId,
                     imported.Import.StatementPeriodStart,
                     imported.Import.StatementPeriodEnd,
-                    baseCurrency),
+                    baseCurrency)
+                {
+                    AccountingScope = imported.Import.AccountingScope
+                },
                 ct)
             .ConfigureAwait(false);
         var matchResult = StatementRunMatcher.Match(
@@ -401,7 +404,7 @@ public sealed class StatementRunWorkflowService(
             .ToArray();
         var breaks = linkedBreaks.Select(static item => item.Record).ToArray();
         var cases = BuildStatementCases(imported.Import, linkedBreaks, request.ImportedBy);
-        return new StatementRunMatchArtifact(
+        return StatementRunComparisonEvidence.Retain(new StatementRunMatchArtifact(
             imported.Import.ImportId,
             imported.Import.ImportId,
             breaks,
@@ -409,7 +412,7 @@ public sealed class StatementRunWorkflowService(
             matchResult.MatchCount)
         {
             MatchGroups = matchResult.MatchGroups
-        };
+        }, imported.Rows, populations, toleranceProfile);
     }
 
     private async Task<StatementRunMatchArtifact> LoadVerifiedMatchArtifactAsync(

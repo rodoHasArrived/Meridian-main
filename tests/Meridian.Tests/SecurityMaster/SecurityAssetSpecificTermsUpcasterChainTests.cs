@@ -114,6 +114,72 @@ public sealed class SecurityAssetSpecificTermsUpcasterChainTests
         upcaster.ToSchemaVersion.Should().Be(AssetSpecificTermsSchema.Legacy);
     }
 
+    // ── The shared integer key (version 2 is reserved) ──────────────────────────────────────────
+
+    [Fact]
+    public void AssetSpecificTermsSchema_ReservesTheEconomicTermsVersion_AndNeverAcceptsIt()
+    {
+        // The two payload families share one schemaVersion key and the chain dispatches on the
+        // bare integer, so the flat family can never use the economic family's number. The
+        // reservation is declared, not merely a gap between 1 and 3, and no accepted flat version
+        // may ever equal it — filling the gap would route every such payload into the flattener.
+        AssetSpecificTermsSchema.ReservedForEconomicTerms.Should().Be(EconomicTermsSchema.Current);
+        AssetSpecificTermsSchema.Legacy.Should().NotBe(EconomicTermsSchema.Current);
+        AssetSpecificTermsSchema.CustomAssetProfile.Should().NotBe(EconomicTermsSchema.Current);
+        AssetSpecificTermsSchema.Default.Should().NotBe(EconomicTermsSchema.Current);
+
+        AssetSpecificTermsSchema.Accepted(isProfileBacked: false).Should().NotContain(EconomicTermsSchema.Current);
+        AssetSpecificTermsSchema.Accepted(isProfileBacked: true).Should().NotContain(EconomicTermsSchema.Current);
+        AssetSpecificTermsSchema.IsAccepted(EconomicTermsSchema.Current, isProfileBacked: false).Should().BeFalse();
+        AssetSpecificTermsSchema.IsAccepted(EconomicTermsSchema.Current, isProfileBacked: true).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Normalize_ReservedVersionWithoutEconomicShape_PassesThroughForTheGuardInsteadOfEmptying()
+    {
+        // A flat document stamped with the reserved number is not an economic-terms document: it
+        // has no module objects. Before the shape check, the chain flattened it to an empty
+        // {"schemaVersion":1} — a total, silent loss of the record's economics stamped as valid
+        // legacy. Now it passes through with its version preserved so the acceptance guard refuses
+        // it with a precise "Unsupported schemaVersion '2'" diagnostic.
+        var result = SecurityAssetSpecificTermsUpcasterChain.Normalize(
+            Json($$"""{"schemaVersion":{{AssetSpecificTermsSchema.ReservedForEconomicTerms}},"shareClass":"Common","votingRightsCat":"FullVoting"}"""));
+
+        result.SchemaVersion.Should().Be(AssetSpecificTermsSchema.ReservedForEconomicTerms);
+        result.Payload.GetProperty("shareClass").GetString().Should().Be("Common");
+        result.Payload.GetProperty("votingRightsCat").GetString().Should().Be("FullVoting");
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.WasFlattenedFromEconomicTerms(result.Payload).Should().BeFalse();
+        AssetSpecificTermsSchema.IsAccepted(result.SchemaVersion, isProfileBacked: false).Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsEconomicTermsDocument_DiscriminatesOnModuleKeysNotOnTheIntegerAlone()
+    {
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsDocument(
+            Json("""{"schemaVersion":2,"maturity":{"maturityDate":"2030-01-15"}}""")).Should().BeTrue();
+        // The serializer writes every module key even when the module is null; a null module still
+        // identifies the family.
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsDocument(
+            Json("""{"schemaVersion":2,"maturity":null,"coupon":null}""")).Should().BeTrue();
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsDocument(
+            Json("""{"schemaVersion":2,"shareClass":"Common"}""")).Should().BeFalse("a flat document has no module keys");
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsDocument(
+            Json("""{"schemaVersion":1,"maturity":{"maturityDate":"2030-01-15"}}""")).Should().BeFalse("only the economic version is bridged");
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsDocument(
+            Json("""{"maturity":{"maturityDate":"2030-01-15"}}""")).Should().BeFalse("an unstamped payload is legacy flat");
+    }
+
+    [Fact]
+    public void Normalize_EconomicTermsV2_MarksTheFlattenedPayload()
+    {
+        var result = SecurityAssetSpecificTermsUpcasterChain.Normalize(
+            Json("""{"schemaVersion":2,"maturity":{"maturityDate":"2030-01-15"}}"""));
+
+        result.Payload.GetProperty(SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlattenedFromMarkerProperty)
+            .GetInt32().Should().Be(EconomicTermsSchema.Current);
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.WasFlattenedFromEconomicTerms(result.Payload).Should().BeTrue();
+    }
+
     // ── Adapter seam (the latent v2 trap) ───────────────────────────────────────────────────────
 
     [Fact]
@@ -156,6 +222,8 @@ public sealed class SecurityAssetSpecificTermsUpcasterChainTests
         AssetSpecificTermsSchema.IsAccepted(version, isProfileBacked: false).Should().BeTrue();
         projection.AssetSpecificTerms.GetProperty("maturityDate").GetString().Should().Be("2031-03-01");
         projection.AssetSpecificTerms.GetProperty("couponRate").GetDecimal().Should().Be(5.0m);
+        // The route is lossy, and the rebuilt payload says so.
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.WasFlattenedFromEconomicTerms(projection.AssetSpecificTerms).Should().BeTrue();
     }
 
     // ── Enum read tolerance ─────────────────────────────────────────────────────────────────────

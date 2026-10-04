@@ -504,6 +504,35 @@ public sealed partial class ManualJournalEntryWorkbenchService
         var chartByPath = BuildChartByPath(configuration.ChartOfAccounts);
         var issues = new List<AccountingConfigurationValidationIssueDto>();
         var lines = new List<ManualJournalEntryLineDto>(draft.Lines.Count);
+        if (draft.RequiresRecurringJournalEvidence || draft.RecurringJournalEvidenceJson is not null ||
+            RecurringJournalEvidenceGuard.IsRecurring(draft.TreasuryContext?.IdempotencyKey))
+        {
+            var recurringReason = RecurringJournalEvidenceGuard.Validate(draft);
+            if (_journalStore is null || !Guid.TryParse(draft.PeriodId, out _))
+                recurringReason ??= "Authoritative durable period state is unavailable for this recurring draft.";
+            if (recurringReason is not null)
+                issues.Add(Issue("manual-je.recurring-source-required",
+                    AccountingConfigurationValidationSeverityDto.Critical, recurringReason, "recurringJournalEvidence",
+                    "Restore the retained source evidence and accounting scope before human approval."));
+        }
+        if (draft.RequiresValuationMarkEvidence || ValuationMarkEvidenceGuard.IsValuation(draft.TreasuryContext?.IdempotencyKey) ||
+            draft.ValuationMarkEvidenceJson is not null)
+        {
+            var positions = draft.Lines.Where(static line => line.SecurityId.HasValue ||
+                !string.IsNullOrWhiteSpace(line.LedgerAccountSymbol)).ToArray();
+            var reason = positions.Length == 0 ? "Valuation has no identified position lines." : null;
+            foreach (var position in positions)
+            {
+                reason ??= ValuationMarkEvidenceGuard.Validate(draft.ValuationMarkEvidenceJson,
+                    fundProfileId, draft.AccountingDate, position.SecurityId,
+                    position.LedgerAccountFinancialAccountId, position.LedgerAccountSymbol, draft.ValuationMarkEvidenceDigest);
+            }
+            if (reason is not null)
+                issues.Add(Issue("manual-je.valuation-mark-review-required",
+                    AccountingConfigurationValidationSeverityDto.Critical, reason, "valuationMarkEvidence",
+                    "Resolve the mark evidence and rerun valuation; review notes cannot override freshness."));
+        }
+
         var attachments = NormalizeAttachments(draft.EvidenceAttachments, draft.PreparedBy);
         var evidenceLinks = MergeEvidenceLinks(draft.EvidenceLinks, attachments.Select(item => item.Uri).ToArray());
         var entryType = Enum.IsDefined(draft.EntryType)
@@ -816,35 +845,6 @@ public sealed partial class ManualJournalEntryWorkbenchService
         => draft.TreasuryContext?.IdempotencyKey?.StartsWith(
             "fair-value|",
             StringComparison.OrdinalIgnoreCase) == true;
-
-    private async Task AppendAuditAsync(
-        ManualJournalEntryDraftDto draft,
-        string action,
-        string actor,
-        string? correlationId,
-        IReadOnlyList<string> evidenceLinks,
-        IReadOnlyList<string>? reportGroupPrincipalIds,
-        CancellationToken ct)
-    {
-        var hash = Hash(draft);
-        await _auditStore.AppendAsync(
-            new AccountingActionAuditEventDto(
-                Guid.NewGuid(),
-                DateTimeOffset.UtcNow,
-                RequireText(actor, nameof(actor)),
-                action,
-                draft.FundProfileId,
-                draft.LedgerBookId,
-                NormalizeOptional(correlationId),
-                hash,
-                hash,
-                draft.ValidationIssues,
-                evidenceLinks,
-                draft.CompanyId,
-                NormalizePrincipalIds(reportGroupPrincipalIds),
-                draft.TenantId),
-            ct).ConfigureAwait(false);
-    }
 
     private static AccountingConfigurationValidationIssueDto Issue(
         string code,

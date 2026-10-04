@@ -385,7 +385,7 @@ public static class UiApiRoutes
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
 
-    // Passport Workbench governed-write surface (see docs/plans/security-master-passport-workbench.md).
+    // Passport Workbench governed-write surface (see docs/engineering/blueprints/security-master-passport-workbench.md).
     public const string SecurityMasterWorkbenchField = "/api/security-master/{securityId:guid}/workbench/field";
     public const string SecurityMasterWorkbenchResolveConflict = "/api/security-master/{securityId:guid}/workbench/resolve-conflict";
     public const string SecurityMasterWorkbenchSubmit = "/api/security-master/{securityId:guid}/workbench/submit";
@@ -851,14 +851,25 @@ public static class UiApiRoutes
     public const string LedgerManualJournalEntryEvidence = "/api/ledger/journal-entry-workbench/evidence";
     public const string LedgerManualJournalEntryLifecycleAction = "/api/ledger/journal-entry-workbench/lifecycle-action";
     public const string LedgerJournalAutomationDividendIntake = "/api/ledger/journal-automation/dividend-intake";
+    public const string LedgerOpenLotBackfillExceptions = "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/exceptions";
+    public const string LedgerOpenLotBackfillSurvey = "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/survey";
+    public const string LedgerOpenLotBackfillEvidence = "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/evidence";
+    public const string LedgerOpenLotBackfillEvidenceById = "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/evidence/{evidenceRecordId:guid}";
+    public const string LedgerOpenLotBackfillEvidenceReview = "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/evidence/{evidenceRecordId:guid}/review";
+    public const string LedgerOpenLotBackfillApply = "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/apply";
     public const string LedgerJournalAutomationFeeAccrualIntake = "/api/ledger/journal-automation/fee-accrual-intake";
     public const string LedgerJournalAutomationCapitalCallIssuanceIntake = "/api/ledger/journal-automation/capital-call-issuance-intake";
     public const string LedgerJournalAutomationCapitalCallFundingIntake = "/api/ledger/journal-automation/capital-call-funding-intake";
     public const string LedgerJournalAutomationPeriodCloseIntake = "/api/ledger/journal-automation/period-close-intake";
+    public const string LedgerJournalAutomationDailyMarkToMarketPreview = "/api/ledger/journal-automation/daily-mark-to-market-preview";
     public const string LedgerJournalAutomationDailyMarkToMarketIntake = "/api/ledger/journal-automation/daily-mark-to-market-intake";
     public const string LedgerJournalAutomationDailyMarkToMarketSchedules = "/api/ledger/journal-automation/daily-mark-to-market-schedules";
     public const string LedgerJournalAutomationDailyMarkToMarketRunDue = "/api/ledger/journal-automation/daily-mark-to-market-run-due";
     public const string LedgerJournalAutomationDailyMarkToMarketBatchLifecycle = "/api/ledger/journal-automation/daily-mark-to-market-batch-lifecycle";
+    public const string LedgerJournalAutomationRecurringOccurrences = "/api/ledger/journal-automation/recurring/occurrences";
+    public const string LedgerJournalAutomationRecurringSchedules = "/api/ledger/journal-automation/recurring/schedules";
+    public const string LedgerJournalAutomationRecurringRestore = "/api/ledger/journal-automation/recurring/restore-definitions";
+    public const string LedgerJournalAutomationRecurringInitialize = "/api/ledger/journal-automation/recurring/initialize";
     public const string LedgerJournalAutomationMonthlySchedules = "/api/ledger/journal-automation/monthly-schedules";
     public const string LedgerJournalAutomationMonthlyRunDue = "/api/ledger/journal-automation/monthly-schedules/run-due";
     public const string LedgerReportsTrialBalance = "/api/ledger/reports/trial-balance";
