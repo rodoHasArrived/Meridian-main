@@ -2,6 +2,10 @@
 
 This directory contains Python scripts for automating documentation tasks in the Meridian project.
 
+Repository structure generation excludes temporary schema-control inventory and candidate
+outputs under `build/schema-control`. Canonical manifests in `database/manifest` and schema
+tooling remain visible, so running schema validation does not change the published tree.
+
 ## Table of Contents
 
 - [Core Scripts](#core-scripts)
@@ -47,6 +51,32 @@ front matter, required sections, and generated block markers.
 ```bash
 python3 build/scripts/docs/validate-source-readmes.py --summary
 ```
+
+### validate-adapter-readiness.py and render-adapter-readiness.py
+
+Validate `docs/source/data/adapter-readiness.yml` against the canonical provider IDs and aliases,
+`ProviderCapabilityDescriptorCatalog`, direct adapter folders, declared implementation types,
+registration symbols, and targeted test/source evidence. The registry records implementation
+readiness; operator validation and release sign-off retain their existing owners.
+
+For intentionally unregistered excluded families, `registration: []` records the absence of runtime
+registration; exclusion sources and targeted tests remain in `evidence`. Catalogued providers must
+retain registration references.
+
+```bash
+python3 build/scripts/docs/validate-adapter-readiness.py --summary
+python3 build/scripts/docs/render-adapter-readiness.py
+python3 build/scripts/docs/render-source-docs.py --summary
+python3 build/scripts/docs/render-adapter-readiness.py --check
+python3 -m unittest tests/scripts/test_adapter_readiness.py tests/scripts/test_render_adapter_readiness.py
+```
+
+The matrix is generated under `docs/source/generated/`. Documentation automation's `quick`,
+`core`, and `full` profiles validate the registry and reject stale output without rewriting it.
+After a registry edit, run the source-docs renderer after the adapter renderer to refresh
+`docs/source/generated/MANIFEST.json`, which hashes every source registry including
+`adapter-readiness.yml`.
+The required `verify-docs` lane also runs the validator's regression tests.
 
 ### sync-source-readmes.py
 

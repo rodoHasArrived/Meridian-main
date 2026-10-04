@@ -2,7 +2,7 @@
 
 **Status:** supporting
 **Owner:** core-team
-**Reviewed:** 2026-07-19
+**Reviewed:** 2026-09-30
 
 Active architectural decisions are routed through:
 
@@ -24,4 +24,5 @@ This folder keeps only current material:
 - [020-lifecycle-control-plane.md](020-lifecycle-control-plane.md)
 - [021-verified-operation-outcomes-and-case-history.md](021-verified-operation-outcomes-and-case-history.md)
 - [022-canonical-asset-class-homes.md](022-canonical-asset-class-homes.md)
+- [023-host-wide-provider-credential-ownership.md](023-host-wide-provider-credential-ownership.md) (Proposed)
 - [_template.md](_template.md) — template for authoring new ADRs

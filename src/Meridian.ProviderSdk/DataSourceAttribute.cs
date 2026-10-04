@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 
 namespace Meridian.Infrastructure.DataSources;
@@ -59,6 +60,12 @@ public sealed class DataSourceAttribute : Attribute
     public bool EnabledByDefault { get; set; } = true;
 
     /// <summary>
+    /// Whether the implementation can be discovered for runtime registration. Copy-only
+    /// scaffolds set this to false; configuration cannot promote them into providers.
+    /// </summary>
+    public bool IsProductionProvider { get; set; } = true;
+
+    /// <summary>
     /// Optional description of the data source.
     /// </summary>
     public string? Description { get; set; }
@@ -116,7 +123,7 @@ public sealed record DataSourceMetadata(
     public static DataSourceMetadata FromAttribute(DataSourceAttribute attr, Type implementationType)
     {
         return new DataSourceMetadata(
-            attr.Id,
+            ProviderIdentity.NormalizeId(attr.Id),
             attr.DisplayName,
             attr.Description,
             attr.Type,
@@ -170,7 +177,7 @@ public static class DataSourceAttributeExtensions
     /// </summary>
     public static bool IsDataSource(this Type type)
     {
-        if (type.GetDataSourceAttribute() == null || type.IsAbstract || type.IsInterface)
+        if (type.GetDataSourceAttribute() is not { IsProductionProvider: true } || type.IsAbstract || type.IsInterface)
             return false;
 
         return DataSourceCapabilityContracts.Resolve(type).Length > 0;

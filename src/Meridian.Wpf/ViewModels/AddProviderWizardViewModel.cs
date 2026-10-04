@@ -1,4 +1,5 @@
 using Meridian.Ui.Services.Services;
+using ProviderIdentity = Meridian.Infrastructure.Adapters.Core.ProviderIdentity;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -323,7 +324,7 @@ public sealed class AddProviderWizardViewModel : BindableBase
     public ProviderCatalogEntry? FindProvider(string providerId)
     {
         return _providerCatalogEntries.FirstOrDefault(provider =>
-            string.Equals(provider.Id, providerId, StringComparison.OrdinalIgnoreCase));
+            ProviderIdentity.EqualsId(provider.Id, providerId));
     }
 
     /// <summary>Populates the right-panel detail properties from the selected provider entry.</summary>
@@ -375,7 +376,7 @@ public sealed class AddProviderWizardViewModel : BindableBase
         if (hasFields)
         {
             CredentialsInfoText = $"Enter your {providerName} credentials. " +
-                                       "These will be stored as user environment variables.";
+                                       "They are saved to the encrypted credential vault through the authenticated service.";
             NoCredentialsVisibility = Visibility.Collapsed;
         }
         else
@@ -386,24 +387,51 @@ public sealed class AddProviderWizardViewModel : BindableBase
     }
 
     /// <summary>Transitions the connection-test dot to the "testing" (warning) state.</summary>
+    /// <summary>
+    /// Explains that the credential service reported no vault schema for this provider, so the
+    /// wizard shows no editors instead of submitting field names the vault would reject.
+    /// </summary>
+    public void ApplyUnmanagedCredentialsInfo(string providerName, bool requiresCredentials)
+    {
+        CredentialsInfoText = requiresCredentials
+            ? $"{providerName} credentials are not managed by the authenticated credential service, or its status could not be read."
+            : $"{providerName} does not require API credentials.";
+        NoCredentialsVisibility = requiresCredentials ? Visibility.Collapsed : Visibility.Visible;
+    }
+
     public void SetConnectionTestTesting(string providerName)
     {
         ConnectionTestDotBrush = WarningBrush;
         ConnectionTestStatusText = $"Testing {providerName} connectivity...";
     }
 
-    /// <summary>Marks the connection test as successful.</summary>
+    /// <summary>Clears readiness when the provider or the credential editors change.</summary>
+    public void ResetConnectionTest(string message = "Not tested yet")
+    {
+        ConnectionTestDotBrush = MutedBrush;
+        ConnectionTestStatusText = message;
+    }
+
+    /// <summary>Marks the connection test as successful: verified by the service, or no credentials needed.</summary>
     public void SetConnectionTestSuccess()
     {
         ConnectionTestDotBrush = SuccessBrush;
-        ConnectionTestStatusText = "Credentials configured. Provider ready.";
+        ConnectionTestStatusText = "Credentials verified. Provider ready.";
     }
 
-    /// <summary>Marks the connection test as failed due to missing credentials.</summary>
-    public void SetConnectionTestError()
+    /// <summary>Marks credentials as saved but not verified by the authenticated service.</summary>
+    public void SetConnectionTestUnverified()
+    {
+        ConnectionTestDotBrush = WarningBrush;
+        ConnectionTestStatusText = "Credentials saved but not verified. Live verification failed or is unavailable for this provider.";
+    }
+
+    /// <summary>Marks the connection test as failed because the service did not confirm the save.</summary>
+    public void SetConnectionTestError(string? message = null)
     {
         ConnectionTestDotBrush = ErrorBrush;
-        ConnectionTestStatusText = "Missing credentials. Please fill in all required fields above.";
+        ConnectionTestStatusText = message
+            ?? "Credential save was not confirmed by the authenticated service. Check the required fields and try again.";
     }
 
     /// <summary>Sets a success message on the save-status line.</summary>
@@ -438,14 +466,14 @@ public sealed class AddProviderWizardViewModel : BindableBase
     private void RefreshProviderCatalog()
     {
         var statusesByProviderId = _providerCredentialStatuses
-            .GroupBy(status => status.ProviderId, StringComparer.OrdinalIgnoreCase)
+            .GroupBy(status => ProviderIdentity.NormalizeId(status.ProviderId), StringComparer.OrdinalIgnoreCase)
             .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
 
         var filtered = _providerCatalogEntries
             .Where(ProviderMatchesActiveFilter)
             .Select(provider =>
             {
-                statusesByProviderId.TryGetValue(provider.Id, out var status);
+                statusesByProviderId.TryGetValue(ProviderIdentity.NormalizeId(provider.Id), out var status);
                 return new ProviderCatalogViewModel(provider, status);
             })
             .ToArray();

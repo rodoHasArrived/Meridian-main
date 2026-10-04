@@ -13,6 +13,7 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Configuration;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
@@ -1162,6 +1163,42 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_DataOperationsPayload_ReportsTheTenantsScopedCredentialReadiness()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-tenant-readiness", Guid.NewGuid().ToString("N"));
+        var dataRoot = Path.Combine(root, "data");
+        Directory.CreateDirectory(dataRoot);
+        var configPath = Path.Combine(root, "appsettings.json");
+        await File.WriteAllTextAsync(configPath, JsonSerializer.Serialize(new { dataRoot }));
+        var vault = new FileProviderCredentialStore(dataRoot);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterConfigStores(services, configPath);
+            services.AddSingleton<IProviderCredentialStore>(vault);
+            services.AddSingleton(NullLogger<ProviderConnectionLifecycleService>.Instance);
+            services.AddSingleton<ProviderConnectionLifecycleService>();
+            services.AddSingleton<ProviderConnectionService>();
+        },
+            currentUserPermissions: UserPermission.ManageCredentials | UserPermission.ViewHistoricalData);
+        var connections = app.Services.GetRequiredService<ProviderConnectionService>();
+        await connections.UpsertForTenantAsync(new CreateProviderConnectionRequest(
+            ConnectionId: "polygon-owned", ProviderFamilyId: "polygon", DisplayName: "Owned Polygon",
+            ExternalAccountId: "account-owned"), "tenant-test", "default");
+        var scope = await connections.GetCredentialScopeForTenantAsync("polygon-owned", "tenant-test");
+        await vault.SaveScopedAsync(new ProviderCredentialSaveRequest("polygon",
+            new Dictionary<string, string?> { ["ApiKey"] = "owned-key" }, scope!.Environment), scope);
+
+        using var dataOperations = await ReadJsonAsync(app.GetTestClient(), "/api/workstation/data-operations");
+
+        var polygon = dataOperations.RootElement.GetProperty("providers").EnumerateArray()
+            .Single(provider => provider.GetProperty("providerId").GetString() == "polygon");
+        var summary = polygon.GetProperty("connectionSummary").Deserialize<ProviderConnectionRowDto>(ServerJsonOptions);
+        summary!.CredentialState.Should().Be(ProviderCredentialStateDto.Configured,
+            "the workstation reports the same tenant readiness as the providers endpoint and Settings");
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_DataOperationsPayload_ShouldAggregateMultipleRoutingConnectionsByProviderFamily()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-routing-summary", Guid.NewGuid().ToString("N"));
@@ -1185,18 +1222,39 @@ public sealed partial class WorkstationEndpointsTests
         var connectionService = app.Services.GetRequiredService<ProviderConnectionService>();
         var bindingService = app.Services.GetRequiredService<ProviderBindingService>();
 
-        await connectionService.UpsertAsync(new CreateProviderConnectionRequest(
+        // Routing summaries follow the direct /api/provider-routing reads: only connections retained
+        // for the request tenant contribute. The foreign and unassigned connections must not.
+        await connectionService.UpsertForTenantAsync(new CreateProviderConnectionRequest(
             ConnectionId: "alpaca-paper",
             ProviderFamilyId: "alpaca",
             DisplayName: "Alpaca Paper",
             ConnectionType: "DataVendor",
             ConnectionMode: "Paper",
             Enabled: true,
-            ProductionReady: false));
-        await connectionService.UpsertAsync(new CreateProviderConnectionRequest(
+            ExternalAccountId: "account-paper",
+            ProductionReady: false), "tenant-test", "paper");
+        await connectionService.UpsertForTenantAsync(new CreateProviderConnectionRequest(
             ConnectionId: "alpaca-live",
             ProviderFamilyId: "alpaca",
             DisplayName: "Alpaca Live",
+            ConnectionType: "DataVendor",
+            ConnectionMode: "Live",
+            Enabled: true,
+            ExternalAccountId: "account-live",
+            ProductionReady: true), "tenant-test", "live");
+        await connectionService.UpsertForTenantAsync(new CreateProviderConnectionRequest(
+            ConnectionId: "alpaca-foreign",
+            ProviderFamilyId: "alpaca",
+            DisplayName: "Foreign Alpaca",
+            ConnectionType: "DataVendor",
+            ConnectionMode: "Live",
+            Enabled: true,
+            ExternalAccountId: "account-foreign",
+            ProductionReady: true), "tenant-foreign", "live");
+        await connectionService.UpsertAsync(new CreateProviderConnectionRequest(
+            ConnectionId: "alpaca-unassigned",
+            ProviderFamilyId: "alpaca",
+            DisplayName: "Unassigned Alpaca",
             ConnectionType: "DataVendor",
             ConnectionMode: "Live",
             Enabled: true,
@@ -1211,8 +1269,18 @@ public sealed partial class WorkstationEndpointsTests
             BindingId: "alpaca-live-realtime",
             Capability: nameof(ProviderCapabilityKind.RealtimeMarketData),
             ConnectionId: "alpaca-live"));
+        await bindingService.UpsertAsync(new UpdateProviderBindingRequest(
+            BindingId: "alpaca-foreign-realtime",
+            Capability: nameof(ProviderCapabilityKind.RealtimeMarketData),
+            ConnectionId: "alpaca-foreign",
+            FailoverConnectionIds: ["alpaca-unassigned"]));
+        await bindingService.UpsertAsync(new UpdateProviderBindingRequest(
+            BindingId: "alpaca-unassigned-historical",
+            Capability: nameof(ProviderCapabilityKind.HistoricalBars),
+            ConnectionId: "alpaca-unassigned"));
 
         using var dataOperations = await ReadJsonAsync(client: app.GetTestClient(), "/api/workstation/data-operations");
+        dataOperations.RootElement.GetRawText().Should().NotContain("alpaca-foreign").And.NotContain("alpaca-unassigned");
         var providers = dataOperations.RootElement.GetProperty("providers").EnumerateArray().ToArray();
 
         providers.Count(provider => provider.GetProperty("providerId").GetString() == "alpaca").Should().Be(1);

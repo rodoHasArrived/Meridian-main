@@ -121,8 +121,9 @@ jobs:
 
         self.assertIn("Generate release evidence manifest", workflow)
         self.assertIn("--project desktop-installer", workflow)
-        self.assertIn("--output artifacts/release/${{ matrix.runtime }}/release-evidence.json", workflow)
-        self.assertIn("artifacts/release/**/release-evidence.json", workflow)
+        self.assertIn("--output artifacts/release/${{ matrix.runtime }}/desktop-installer-${{ matrix.runtime }}-release-evidence.json", workflow)
+        self.assertIn("verify-release-promotion.py", workflow)
+        self.assertIn("files: artifacts/publish-release/*", workflow)
 
     def test_robinhood_smoke_uses_named_powershell_splatting(self) -> None:
         workflow = ROBINHOOD_OPTIONS_SMOKE.read_text(encoding="utf-8")

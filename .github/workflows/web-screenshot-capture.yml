@@ -55,7 +55,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Always capture and propose the refresh from the canonical default branch so a
           # dispatch from a feature branch cannot publish that branch's commits into the
@@ -65,7 +65,7 @@ jobs:
           fetch-depth: 1
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6.4.0
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: 24
           cache: npm
@@ -77,7 +77,7 @@ jobs:
         run: npm ci --prefix src/Meridian.Ui/dashboard --include=optional
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v6.1.0
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('src/Meridian.Ui/dashboard/package-lock.json') }}
@@ -209,7 +209,7 @@ jobs:
         # Upload whatever screenshots were captured even when some routes failed
         # to render, so a partial run still surfaces the screens that worked.
         if: ${{ always() }}
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: web-screenshots-${{ github.run_number }}
           path: ${{ steps.validate_output_dir.outputs.safe_output_dir }}/*.png
@@ -222,7 +222,7 @@ jobs:
         # (including failures) makes a broken capture diagnosable without a
         # re-run.
         if: ${{ always() }}
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: web-screenshots-manifest-${{ github.run_number }}
           path: artifacts/web-screenshots/manifest.json
@@ -232,7 +232,7 @@ jobs:
       - name: Open screenshot refresh pull request
         if: ${{ steps.capture_web.outcome == 'success' }}
         continue-on-error: true
-        uses: peter-evans/create-pull-request@v8
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         with:
           branch: automation/web-screenshot-capture
           base: ${{ github.event.repository.default_branch }}
@@ -258,7 +258,7 @@ jobs:
 
     steps:
       - name: Check out pull request head
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # The pull request's own commit, not the merge ref. This job answers
           # "does this change still render", and the merge ref would fold in
@@ -269,7 +269,7 @@ jobs:
           fetch-depth: 1
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6.4.0
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: 24
           cache: npm
@@ -281,7 +281,7 @@ jobs:
         run: npm ci --prefix src/Meridian.Ui/dashboard --include=optional
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v6.1.0
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('src/Meridian.Ui/dashboard/package-lock.json') }}
@@ -370,7 +370,7 @@ jobs:
         # Uploaded even on failure: the PNGs that did render are how a reviewer
         # tells a broken route from a broken harness.
         if: ${{ always() }}
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: web-screenshots-pr${{ github.event.pull_request.number }}-${{ github.run_number }}
           path: docs/screenshots/web/*.png
@@ -382,7 +382,7 @@ jobs:
         # dev-server logs -- what makes a failed capture diagnosable without a
         # re-run.
         if: ${{ always() }}
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: web-screenshots-pr${{ github.event.pull_request.number }}-manifest-${{ github.run_number }}
           path: artifacts/web-screenshots/manifest.json

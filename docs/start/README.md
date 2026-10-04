@@ -236,3 +236,11 @@ The older pages below remain source material during migration. Prefer this page 
 - [Build, Test, Run](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer/build-test-run.md)
 - [Pilot Operator Quickstart](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/getting-started/pilot-operator-quickstart.md)
 - [HELP](../HELP.md)
+
+CI/CD validation ownership and administrator rollout are maintained in
+[CI/CD ownership and rollout](../engineering/ci-cd-optimization.md). Meridian CI owns the four canonical
+`scripts/ci.sh` lanes; legacy CI owns Secret Scan and nightly/manual coverage.
+The four-lane `Meridian CI / quality-gate` keeps its identity. The always-reported
+`Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with
+Production Certification, including pull requests and merge groups.
+All CI governance changes require human review.

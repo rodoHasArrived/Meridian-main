@@ -25,6 +25,7 @@ Reference content here must stay schema/procedure-neutral and claim-stable. Proc
 | Data fields and normalization | [Data Dictionary](data-dictionary.md), [Data Uniformity](data-uniformity.md), [Reconciliation Break Taxonomy](reconciliation-break-taxonomy.md) | Stable field/type definitions and cross-provider terminology. |
 | Environment and config | [Environment Variables](environment-variables.md), [Appsettings Schema Reference](appsettings-schema.md), [EDGAR Reference Data](edgar-reference-data.md) | Lookup details only; setup procedures belong in operators/start docs. |
 | Provider capability and readiness lookup | [Provider Capability Matrix](provider-capability-matrix.md), [Provider Validation Matrix](provider-validation-matrix.md), [Provider Integration Status](provider-integration-status.md) | Canonical lookup in this lane; keep procedure and rollout details in operators. |
+| Adapter implementation readiness | [Generated Adapter Readiness Matrix](../source/generated/adapter-readiness-matrix.md), [Adapter Readiness Registry](../source/data/adapter-readiness.yml) | Source-owned implementation inventory and targeted evidence; live-provider validation and operator sign-off remain separate gates. |
 | Contract compatibility and schemas | [Contract Compatibility Matrix](contract-compatibility-matrix.md), [Provider Validation Evidence Schema](provider-validation-evidence-schema.md), [Provider Validation Matrix](provider-validation-matrix.md) | Keep generated or matrix-owned content in place until moved through a focused migration. |
 | UFL and asset profiles | [UFL Supported Assets Index](ufl-supported-assets-index.md), [UFL Capability Model](ufl-capability-model.md), [UFL Conformance Matrix](ufl-conformance-matrix.md) | Target-state lookup material now lives in reference. |
 | Ledger, accounting, and reporting contracts | [Ledger Journal Store](ledger-journal-store.md), [Export Preflight Rules](export-preflight-rules.md), [Accounting Configuration](accounting-configuration.md), [Accounting Report Packs](accounting-report-packs.md) | Stable contracts and artifact layouts. |
@@ -39,6 +40,8 @@ Provider-selection claims belong in capability and validation matrices, not date
 - Procedures for credentials, setup, repair, and fallback operation belong in [Operators](../operators/README.md).
 - Capability, data-type, coverage, rate-limit, and validation lookup belongs in this reference lane or generated/matrix-owned status files.
 - Provider orchestration and fallback logic belongs in engineering/source docs and current source README files.
+- Adapter-family implementation readiness is owned by the [source registry](../source/data/adapter-readiness.yml)
+  and its [generated matrix](../source/generated/adapter-readiness-matrix.md); do not maintain a duplicate readiness inventory here.
 
 Do not treat old rate-limit, entitlement, or data-quality statements as current without checking live provider documentation or current validation evidence.
 

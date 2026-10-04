@@ -10,6 +10,7 @@ import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn 
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RecurringJournalQueue } from "@/components/accounting/RecurringJournalQueue";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -2410,7 +2411,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
       ) : null}
 
       {sectionVisibility.showJournalEntries ? (
-        <ManualJournalEntryWorkbenchPanel view={journalEntries} />
+        <ManualJournalEntryWorkbenchPanel view={journalEntries} search={search} />
       ) : null}
 
       {sectionVisibility.showCapitalAccounts ? (
@@ -4405,7 +4406,27 @@ function ManualJournalLineBadges({ badges }: { badges: ReturnType<ManualJournalE
   );
 }
 
-function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWorkbenchViewModel }) {
+function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJournalEntryWorkbenchViewModel; search: string }) {
+  const [recurringEntitySelection, setRecurringEntitySelection] = useState<{ scopeKey: string; entityId: string } | null>(null);
+  const scopeQuery = new URLSearchParams(search);
+  const recurringFund = scopeQuery.get("fundProfileId") || view.draft.fundProfileId;
+  const recurringBook = scopeQuery.get("ledgerBookId") || view.draft.ledgerBookId;
+  const recurringScopeKey = JSON.stringify([recurringFund, recurringBook, search]);
+  const recurringEntity = recurringEntitySelection?.scopeKey === recurringScopeKey
+    ? recurringEntitySelection.entityId : scopeQuery.get("entityId") || view.draft.entityId || "";
+  const recurringQueue = <div className="space-y-2">
+    <label className="block text-xs font-semibold">Recurring journal entity scope
+      <Input value={recurringEntity} placeholder="Select an entity ID" className="mt-1"
+        onChange={(event) => setRecurringEntitySelection({ scopeKey: recurringScopeKey, entityId: event.target.value })} />
+    </label>
+    <RecurringJournalQueue
+      scope={recurringFund && recurringBook && recurringEntity.trim()
+        ? { fundProfileId: recurringFund, ledgerBookId: recurringBook, entityId: recurringEntity.trim() }
+        : null}
+      availableDraftIds={view.drafts.map((draft) => draft.journalEntryId)}
+      onSelectDraft={view.selectDraft}
+    />
+  </div>;
   // While an amount input holds unparseable text, its raw string is kept here (keyed
   // `${lineId}:${side}`) and mirrored back as the controlled value. Mirroring what the DOM
   // reports means React never rewrites the node, so the user's in-progress text survives while
@@ -4473,6 +4494,7 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
             {view.loading ? "Loading" : "Retry"}
           </Button>
         </div>
+        {recurringQueue}
       </section>
     );
   }
@@ -4546,6 +4568,7 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
             </div>
           </section>
 
+          {recurringQueue}
           <ManualJournalPrivateCapitalActivityPanel activity={view.privateCapitalActivity} />
         </div>
 

@@ -11,9 +11,35 @@ namespace Meridian.Ui.Tests.Services;
 /// Tests for <see cref="ActivityFeedService"/> — activity logging, filtering,
 /// event notification, and model behavior.
 /// </summary>
-public sealed class ActivityFeedServiceTests
+public sealed class ActivityFeedServiceTests : IAsyncLifetime
 {
-    private static ActivityFeedService CreateService() => ActivityFeedService.Instance;
+    private readonly PathFixture _fixture = new("mdc-activity-behavior");
+    private ActivityFeedService? _service;
+
+    public async Task InitializeAsync()
+    {
+        SeedEmptyPrimaryActivityLog(_fixture);
+        _service = new ActivityFeedService(new FixedConfigService(
+            _fixture.ConfigPath,
+            new AppConfigDto { DataRoot = "data" }));
+        await _service.Initialization;
+    }
+
+    public async Task DisposeAsync()
+    {
+        try
+        {
+            if (_service is not null)
+                await _service.DisposeAsync();
+        }
+        finally
+        {
+            _fixture.Dispose();
+        }
+    }
+
+    private ActivityFeedService CreateService()
+        => _service ?? throw new InvalidOperationException("The test activity feed has not been initialized.");
 
     // ── Singleton ────────────────────────────────────────────────────
 

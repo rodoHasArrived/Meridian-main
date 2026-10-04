@@ -3,3 +3,10 @@
 
 # C# formatting is enforced with LF by .editorconfig and dotnet format.
 *.cs text eol=lf
+
+# Vite embeds SVG bytes and transforms HTML; keep tracked bundles identical on Windows.
+*.svg text eol=lf
+src/Meridian.Ui/dashboard/index.html text eol=lf
+src/Meridian.Ui/wwwroot/workstation/*.html text eol=lf
+src/Meridian.Ui/wwwroot/workstation/assets/*.js text eol=lf
+src/Meridian.Ui/wwwroot/workstation/assets/*.css text eol=lf

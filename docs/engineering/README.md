@@ -20,6 +20,7 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **Security Master architecture audit:** [Security Master Architecture Audit 2026-08-13](security-master-architecture-audit-2026-08-13.md) *(dated source-evidence review; verify findings against current source)*
 - **WPF performance and UI/UX audit:** [WPF Performance & UI/UX Refinement Audit 2026-06-14](wpf-perf-uiux-audit-2026-06-14.md) *(dated; its changes were not compiled or run when written)*
 - **Release-evidence working ledger:** [Production-Certification Evidence Chain](production-certification-evidence-chain.md)
+- **CI/CD ownership and rollout:** [CI/CD validation ownership](ci-cd-optimization.md)
 - **Docs regeneration automation constraints:** [Docs Regeneration Automation — Design Constraints](docs-regeneration-automation-design.md)
 - **Generated merge conflicts:** [Regenerate tracked output after a merge](generated-merge-recovery.md)
 - **Free development tools:** [Free Development Tools](free-development-tools.md)
@@ -72,6 +73,10 @@ GitHub Actions `Meridian CI / quality-gate` is the authoritative merge result. L
 happen on `main` when the user explicitly requests it or the checkout is intentionally operating
 there. Do not bypass GitHub branch protections; for PR-ready publishing, use a
 `codex/<short-task-name>` branch and a pull request targeting `main`.
+
+The four-lane `Meridian CI / quality-gate` keeps its identity. The always-reported
+`Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with
+Production Certification, including pull requests and merge groups.
 
 The .NET lane builds the web host, then all unique default test projects in one generated
 solution-filter build for the standard `Release` configuration. The filter follows shared

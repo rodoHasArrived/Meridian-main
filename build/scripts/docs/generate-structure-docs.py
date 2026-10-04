@@ -45,10 +45,11 @@ EXCLUDED_ROOT_DIR_NAMES = {
 }
 
 # Git-ignored directories that the filesystem merge in `_git_visible_files` would otherwise
-# pick up. These hold checkouts of the repository itself, so walking them injects thousands of
-# duplicate entries and makes the generated tree depend on local scratch state.
+# pick up. Scratch checkouts and schema-validation outputs must not make the generated
+# tree depend on which validation commands have already run in the checkout.
 EXCLUDED_RELATIVE_DIR_PATHS = {
     ".claude/worktrees",
+    "build/schema-control",
 }
 
 EXCLUDED_FILE_SUFFIXES = {
