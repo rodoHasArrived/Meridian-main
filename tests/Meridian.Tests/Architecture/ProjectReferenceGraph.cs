@@ -93,7 +93,8 @@ internal static class ProjectReferenceGraph
             .EnumerateArray()
             .Select(reference => new ProjectContext(
                 Path.GetFullPath(reference.GetProperty("FullPath").GetString()!),
-                GetReferenceProperties(project.Properties, reference, removals)))
+                GetReferenceProperties(project.Properties, reference, removals),
+                ReadMetadata(reference, "ToolsVersion") is { Length: > 0 } toolsVersion ? toolsVersion : null))
             .ToArray();
     }
 
@@ -118,6 +119,10 @@ internal static class ProjectReferenceGraph
         foreach (var argument in arguments)
         {
             startInfo.ArgumentList.Add(argument);
+        }
+        if (project.ToolsVersion is not null)
+        {
+            startInfo.ArgumentList.Add($"-toolsVersion:{project.ToolsVersion}");
         }
         foreach (var property in project.Properties)
         {
@@ -230,13 +235,14 @@ internal static class ProjectReferenceGraph
         return escaped.ToString();
     }
 
-    private sealed record ProjectContext(string Path, IReadOnlyDictionary<string, string> Properties);
+    private sealed record ProjectContext(string Path, IReadOnlyDictionary<string, string> Properties, string? ToolsVersion = null);
 
     private sealed class ProjectContextComparer : IEqualityComparer<ProjectContext>
     {
         public bool Equals(ProjectContext? x, ProjectContext? y) =>
             ReferenceEquals(x, y) || (x is not null && y is not null &&
-            PathComparer.Equals(x.Path, y.Path) && x.Properties.Count == y.Properties.Count &&
+            PathComparer.Equals(x.Path, y.Path) &&
+            StringComparer.OrdinalIgnoreCase.Equals(x.ToolsVersion, y.ToolsVersion) && x.Properties.Count == y.Properties.Count &&
             x.Properties.All(property => y.Properties.TryGetValue(property.Key, out var value) &&
                 StringComparer.Ordinal.Equals(property.Value, value)));
 
@@ -244,6 +250,7 @@ internal static class ProjectReferenceGraph
         {
             var hash = new HashCode();
             hash.Add(project.Path, PathComparer);
+            hash.Add(project.ToolsVersion, StringComparer.OrdinalIgnoreCase);
             foreach (var property in project.Properties.OrderBy(property => property.Key, StringComparer.OrdinalIgnoreCase))
             {
                 hash.Add(property.Key, StringComparer.OrdinalIgnoreCase);

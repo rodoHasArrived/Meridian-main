@@ -391,6 +391,29 @@ public sealed class ProjectReferenceGraphTests
         Assert.Contains("Infrastructure -> Shared -> Storage", failure.Message);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UnsupportedReferenceToolsVersion_ShouldFailClosed_LikeRealMSBuildTask(bool repeatPath)
+    {
+        using var fixture = new ProjectGraphFixture();
+        var storage = fixture.WriteProject("Storage");
+        fixture.WriteProject("Shared", "<Target Name=\"Probe\" />");
+        var infrastructure = fixture.WriteProject("Infrastructure", $"""
+            <ItemGroup>
+              {(repeatPath ? "<ProjectReference Include=\"../Shared/Shared.csproj\" ToolsVersion=\"Current\" />" : "")}
+              <ProjectReference Include="../Shared/Shared.csproj" ToolsVersion="BoundaryUnsupportedToolset" />
+            </ItemGroup>
+            <Target Name="Probe"><MSBuild Projects="@(ProjectReference)" Targets="Probe" /></Target>
+            """);
+        var taskFailure = await Assert.ThrowsAsync<TrueException>(() => AssertRealMSBuildProbeAsync(infrastructure));
+        Assert.Contains("MSB4132", taskFailure.Message);
+        var graphFailure = await Assert.ThrowsAsync<TrueException>(() =>
+            ProjectReferenceGraph.AssertNoDependencyAsync(infrastructure, storage, "Release"));
+        Assert.Contains("BoundaryUnsupportedToolset", graphFailure.Message);
+        Assert.Contains("MSBuild could not evaluate", graphFailure.Message);
+    }
+
     private static async Task AssertRealMSBuildProbeAsync(string project)
     {
         var start = new System.Diagnostics.ProcessStartInfo(Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet")
