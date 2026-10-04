@@ -1,13 +1,15 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using System.Xml.Linq;
 using Xunit;
 
 namespace Meridian.Tests.Architecture;
 
 /// <summary>
 /// Inspects MSBuild's evaluated ProjectReference items, including unused references and
-/// references supplied by imports/properties. Evaluation does not restore or compile projects.
+/// references supplied by imports/properties and prepared framework/platform metadata.
+/// Inspection does not restore or compile projects.
 /// </summary>
 internal static class ProjectReferenceGraph
 {
@@ -49,6 +51,12 @@ internal static class ProjectReferenceGraph
 
                 if (visited.Add(reference))
                 {
+                    // Context identity alone cannot bound a cycle that expands a property.
+                    // Fail closed rather than silently dropping a potentially forbidden edge.
+                    Assert.True(visited.Count <= 1024 &&
+                        visited.Count(context => PathComparer.Equals(context.Path, reference.Path)) <= 32,
+                        $"Project-reference context budget exceeded at {reference.Path}; " +
+                        "possible non-stabilizing property cycle: " + string.Join(" -> ", nextPath));
                     pending.Enqueue((reference, nextPath));
                 }
             }
@@ -58,6 +66,38 @@ internal static class ProjectReferenceGraph
     }
 
     private static async Task<IReadOnlyList<ProjectContext>> ReadReferencesAsync(ProjectContext project)
+    {
+        // Preprocessing discovers imported targets without running restore/build. Bare
+        // source-free projects have no PrepareProjectReferences target; SDK/Common
+        // projects must use its negotiated items, not evaluation-time metadata.
+        var preprocessed = await RunMSBuildAsync(project, "-preprocess");
+        var hasPreparation = XDocument.Parse(preprocessed).Descendants()
+            .Any(element => element.Name.LocalName == "Target" &&
+                (string?)element.Attribute("Name") == "PrepareProjectReferences");
+        var itemName = hasPreparation ? "_MSBuildProjectReferenceExistent" : "ProjectReference";
+        var arguments = new List<string>
+        {
+            $"-getItem:{itemName}",
+            "-getProperty:_GlobalPropertiesToRemoveFromProjectReferences"
+        };
+        if (hasPreparation)
+        {
+            arguments.Add("-target:PrepareProjectReferences");
+        }
+
+        var output = await RunMSBuildAsync(project, arguments.ToArray());
+        using var evaluation = JsonDocument.Parse(output);
+        var removals = evaluation.RootElement.GetProperty("Properties")
+            .GetProperty("_GlobalPropertiesToRemoveFromProjectReferences").GetString() ?? "";
+        return evaluation.RootElement.GetProperty("Items").GetProperty(itemName)
+            .EnumerateArray()
+            .Select(reference => new ProjectContext(
+                Path.GetFullPath(reference.GetProperty("FullPath").GetString()!),
+                GetReferenceProperties(project.Properties, reference, removals)))
+            .ToArray();
+    }
+
+    private static async Task<string> RunMSBuildAsync(ProjectContext project, params string[] arguments)
     {
         var projectPath = project.Path;
         var startInfo = new ProcessStartInfo
@@ -73,7 +113,12 @@ internal static class ProjectReferenceGraph
         startInfo.ArgumentList.Add(projectPath);
         startInfo.ArgumentList.Add("-nologo");
         startInfo.ArgumentList.Add("-verbosity:quiet");
-        startInfo.ArgumentList.Add("-getItem:ProjectReference");
+        startInfo.ArgumentList.Add("-maxcpucount:1");
+        startInfo.ArgumentList.Add("-nodeReuse:false");
+        foreach (var argument in arguments)
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
         foreach (var property in project.Properties)
         {
             startInfo.ArgumentList.Add($"-property:{property.Key}={EscapePropertyValue(property.Value)}");
@@ -102,17 +147,11 @@ internal static class ProjectReferenceGraph
             process.ExitCode == 0,
             $"MSBuild could not evaluate project references for {projectPath}: {output}{Environment.NewLine}{errors}");
 
-        using var evaluation = JsonDocument.Parse(output);
-        return evaluation.RootElement.GetProperty("Items").GetProperty("ProjectReference")
-            .EnumerateArray()
-            .Select(reference => new ProjectContext(
-                Path.GetFullPath(reference.GetProperty("FullPath").GetString()!),
-                GetReferenceProperties(project.Properties, reference)))
-            .ToArray();
+        return output;
     }
 
     private static Dictionary<string, string> GetReferenceProperties(
-        IReadOnlyDictionary<string, string> parentProperties, JsonElement reference)
+        IReadOnlyDictionary<string, string> parentProperties, JsonElement reference, string targetRemovals)
     {
         var properties = new Dictionary<string, string>(parentProperties, StringComparer.OrdinalIgnoreCase);
         var overrides = ReadMetadata(reference, "Properties");
@@ -127,7 +166,7 @@ internal static class ProjectReferenceGraph
         ApplyProperties(properties, overrides);
         ApplyProperties(properties, ReadMetadata(reference, "AdditionalProperties"));
         foreach (var name in (ReadMetadata(reference, "UndefineProperties") + ";" +
-            ReadMetadata(reference, "GlobalPropertiesToRemove"))
+            ReadMetadata(reference, "GlobalPropertiesToRemove") + ";" + targetRemovals)
             .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
             properties.Remove(name);
@@ -152,8 +191,8 @@ internal static class ProjectReferenceGraph
     private static void ApplyProperties(Dictionary<string, string> properties, string assignments)
     {
         string? previousName = null;
-        // Evaluated metadata is already unescaped. Like MSBuild's PropertyParser,
-        // preserve semicolon-separated value fragments that have no new assignment.
+        // Preserve residual escapes: the MSBuild task forwards them as literal values.
+        // Like PropertyParser, preserve semicolon-separated value fragments that have no new assignment.
         foreach (var assignment in assignments.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
             var equals = assignment.IndexOf('=');

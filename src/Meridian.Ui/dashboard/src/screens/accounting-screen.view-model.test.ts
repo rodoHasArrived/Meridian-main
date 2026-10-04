@@ -690,6 +690,7 @@ const securityTrustSnapshot: SecurityMasterTrustSnapshot = {
         costBasis: 99000,
         entryPrice: 99,
         unrealizedPnl: 1250,
+        isShort: false,
         currency: "USD",
         lotStatus: "Open",
         sourceSystem: "ledger",
@@ -2223,6 +2224,7 @@ describe("accounting-screen view model", () => {
       rowId: "lot-1",
       tradeDateLabel: "Apr 20, 2026",
       settleDateLabel: "Apr 22, 2026",
+      directionLabel: "Long",
       quantityLabel: "95,000",
       faceLabel: "95,000",
       factorAdjustedLabel: "85,500",
@@ -2245,9 +2247,24 @@ describe("accounting-screen view model", () => {
       ariaLabel: "Open lot detail for lot-1 on AAPL"
     });
     expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Direction", value: "Long" },
       { label: "Factor-adjusted exposure", value: "85,500", tone: "success" },
       { label: "Source", value: "ledger · LOT-1" }
     ]));
+
+    const shortReadModel = readModel
+      ? { ...readModel, lots: readModel.lots.map((lot) => ({ ...lot, isShort: true })) }
+      : null;
+    const shortState = buildSecurityOpenLotReadModelViewState({
+      securityId: "sec-1",
+      readModel: shortReadModel,
+      selectedRowId: "lot-1"
+    });
+    expect(shortState.rows[0]).toMatchObject({
+      directionLabel: "Short",
+      ariaLabel: expect.stringContaining("Short open lot lot-1")
+    });
+    expect(shortState.selectedDetail?.fields).toContainEqual({ label: "Direction", value: "Short" });
 
     expect(buildSecurityOpenLotReadModelViewState({
       securityId: "sec-1",
