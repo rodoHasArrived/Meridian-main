@@ -71,7 +71,7 @@ public sealed partial class PostgresLedgerJournalStore
         // An explicit quote is an opt-in source assertion. Support the defined cash/asset/realized
         // result posting shape, including a sibling replacement-basis debit, without guessing that
         // an arbitrary asset movement or expense is cash proceeds. Aggregate-only callers retain
-        // their prior journal convention and need no quote or new account classification.
+        // their prior non-result journal convention and need no source execution quote.
         if ((cashLines.Length == 0 && quotedProceeds != 0m) ||
             cashLines.Any(static line => line.Credit != 0m) ||
             entry.Lines.Any(line => !IsCash(line) && line.Account != assetAccount &&
