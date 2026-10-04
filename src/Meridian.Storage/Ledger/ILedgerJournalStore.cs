@@ -436,7 +436,9 @@ public sealed record AtomicTaxLotJournalCommand(
     IReadOnlyList<LedgerTaxLotDisposalSelection>? DisposalSelections = null,
     Guid? CorrectsMutationBatchId = null,
     string? ReliefMethod = null,
-    string? PolicyRevision = null)
+    string? PolicyRevision = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    decimal? DisposalSalePrice = null)
 {
     public static AtomicTaxLotJournalCommand Create(
         Guid mutationBatchId,
@@ -451,7 +453,8 @@ public sealed record AtomicTaxLotJournalCommand(
         IReadOnlyList<LedgerTaxLotDisposalSelection>? disposalSelections = null,
         Guid? correctsMutationBatchId = null,
         string? reliefMethod = null,
-        string? policyRevision = null)
+        string? policyRevision = null,
+        decimal? disposalSalePrice = null)
     {
         var command = new AtomicTaxLotJournalCommand(
             mutationBatchId,
@@ -467,7 +470,8 @@ public sealed record AtomicTaxLotJournalCommand(
             disposalSelections,
             correctsMutationBatchId,
             reliefMethod,
-            policyRevision);
+            policyRevision,
+            disposalSalePrice);
         return command.WithComputedFingerprint();
     }
 
