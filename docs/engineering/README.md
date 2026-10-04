@@ -74,6 +74,10 @@ happen on `main` when the user explicitly requests it or the checkout is intenti
 there. Do not bypass GitHub branch protections; for PR-ready publishing, use a
 `codex/<short-task-name>` branch and a pull request targeting `main`.
 
+The four-lane `Meridian CI / quality-gate` keeps its identity. The always-reported
+`Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with
+Production Certification, including pull requests and merge groups.
+
 The .NET lane builds the web host, then all unique default test projects in one generated
 solution-filter build for the standard `Release` configuration. The filter follows shared
 dependencies and verifies that the solution enables each selected test project in `Release`.

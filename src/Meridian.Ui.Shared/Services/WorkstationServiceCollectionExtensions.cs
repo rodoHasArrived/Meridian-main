@@ -1,3 +1,5 @@
+using Meridian.Storage.Archival;
+using Meridian.Core.IO;
 using Meridian.Application.Accounting;
 using Meridian.Application.Composition;
 using Meridian.Application.Config.Credentials;
@@ -79,6 +81,7 @@ public static class WorkstationServiceCollectionExtensions
 {
     public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services)
     {
+        services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
         // Unified persistence config must resolve before the reporting/scoped-access
         // registrations below read the per-domain connection-string variables.
         Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
@@ -326,7 +329,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<AccountingProductionReadinessService>();
         services.TryAddSingleton(ResolvePlaidOptions);
         services.TryAddSingleton<IPlaidConnectionRepository>(sp =>
-            new FilePlaidConnectionRepository(ResolveWorkstationDataDirectory(sp)));
+            new FilePlaidConnectionRepository(ResolveWorkstationDataDirectory(sp), sp.GetRequiredService<IAtomicFileWriter>()));
         services.TryAddSingleton<IPlaidClient>(sp =>
             new PlaidHttpClient(sp.GetRequiredService<IHttpClientFactory>().CreateClient(nameof(PlaidHttpClient))));
         services.TryAddSingleton<PlaidWorkstationService>();
@@ -920,6 +923,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
             new FileManualJournalEntryDraftStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "manual-journal-drafts.json")));
+        services.TryAddSingleton<IManualJournalMutationRecoveryStore>(sp =>
+            new FileManualJournalMutationRecoveryStore(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "manual-journal-drafts.json.mutations")));
         services.TryAddSingleton<FileDailyValuationPortfolioSource>(sp =>
             new FileDailyValuationPortfolioSource(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "daily-valuation-schedules.json")));
@@ -960,7 +966,9 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<ReportPackWorkflowService>(),
                 sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>(),
-                sp.GetService<IGovernedLedgerPostingTarget>()));
+                sp.GetService<IGovernedLedgerPostingTarget>(),
+                sp.GetRequiredService<IManualJournalMutationRecoveryStore>(),
+                sp.GetRequiredService<Meridian.FinancialOperations.FundAdministration.IRecurringJournalStore>()));
         services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
             (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
         services.TryAddSingleton<DailyValuationBatchLifecycleService>();
@@ -1010,6 +1018,15 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<DailyValuationScheduledWorker>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostedService, DailyValuationSchedulerHostedService>());
+        services.TryAddSingleton<Meridian.FinancialOperations.FundAdministration.FileRecurringJournalStore>(sp =>
+            new Meridian.FinancialOperations.FundAdministration.FileRecurringJournalStore(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "recurring-journals")));
+        services.TryAddSingleton<Meridian.FinancialOperations.FundAdministration.IRecurringJournalStore>(sp =>
+            sp.GetRequiredService<Meridian.FinancialOperations.FundAdministration.FileRecurringJournalStore>());
+        services.TryAddSingleton<IRecurringJournalSubjectAuthority, RecurringJournalSubjectAuthority>();
+        services.TryAddSingleton<IRecurringJournalPeriodAuthority, RecurringJournalPeriodAuthority>();
+        services.TryAddSingleton<RecurringJournalRunner>();
+        services.TryAddSingleton<IRecurringJournalQueueSource>(sp => sp.GetRequiredService<RecurringJournalRunner>());
         services.TryAddSingleton<AutomatedJournalScheduledWorker>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostedService, AutomatedJournalSchedulerHostedService>());

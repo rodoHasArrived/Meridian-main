@@ -17,6 +17,9 @@ stricter rules, add a closer `AGENTS.md` or `AGENTS.override.md` rather than exp
   GitHub protections; for PR-ready publishing, use a `codex/<short-task-name>` branch and PR, run
   `bash scripts/ci.sh` before representing completed work, and treat GitHub Actions
   `Meridian CI / quality-gate` as the merge authority.
+  Its four canonical lanes remain unchanged; the always-reported
+  `Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with
+  Production Certification, including pull requests and merge groups.
 - Read `.codex/skills/_shared/project-context.md` before changing Codex guidance that references
   product scope, active surfaces, commands, roadmap direction, or canonical terminology.
 - Read `docs/architecture/meridian-development-intelligence-framework.md`, `docs/domain/README.md`,

@@ -237,6 +237,11 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
         var account = string.IsNullOrWhiteSpace(snapshot.AccountId)
             ? document.ExternalAccountId ?? string.Empty
             : snapshot.AccountId;
+        var accountCurrency = snapshot.Portfolio?.Account is { } portfolioAccount
+            && AccountsMatch(account, portfolioAccount.AccountId?.Trim())
+            && string.Equals(portfolioAccount.Currency?.Trim(), "USD", StringComparison.OrdinalIgnoreCase)
+                ? portfolioAccount.Currency?.Trim().ToUpperInvariant()
+                : null;
         var activityCodeMap = StatementRecordMapper.BuildActivityCodeMap(profile);
         var reportedUnknownCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var records = new List<StatementCanonicalRecord>();
@@ -303,7 +308,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
             foreach (var activity in richActivities)
             {
                 rowNumber++;
-                if (!TryRetain(MapRichActivity(account, activity)))
+                if (!TryRetain(MapRichActivity(account, activity, accountCurrency)))
                 {
                     return EmptyResult(profileId, issues);
                 }
@@ -324,7 +329,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                     -signedQuantity * fill.Price,
                     "trade",
                     DateOnly.FromDateTime(fill.FilledAt.UtcDateTime),
-                    Currency: null,
+                    Currency: accountCurrency,
                     FeesCommission: fill.Commission,
                     ExternalTransactionId: fill.FillId,
                     ActivityCategory: BrokerageActivityCategory.Trade.ToString(),
@@ -416,7 +421,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                 position.MarketValue,
                 "position",
                 snapshotDate,
-                Currency: string.IsNullOrWhiteSpace(position.Currency) ? null : position.Currency!.ToUpperInvariant(),
+                Currency: position.Currency?.Trim().ToUpperInvariant(),
                 ExternalTransactionId: position.PositionId)))
             {
                 return EmptyResult(profileId, issues);
@@ -477,8 +482,17 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
 
     private static StatementCanonicalRecord MapRichActivity(
         string account,
-        BrokerageActivityEventDto activity)
+        BrokerageActivityEventDto activity,
+        string? accountCurrency)
     {
+        string? currency = activity.Currency;
+        if (string.IsNullOrWhiteSpace(currency)
+            && activity.Category == BrokerageActivityCategory.Trade
+            && activity.Subtype == BrokerageActivitySubtype.TradeFill)
+        {
+            currency = accountCurrency;
+        }
+
         var kind = activity.Category switch
         {
             BrokerageActivityCategory.Fee => StatementRecordKind.Fee,
@@ -513,7 +527,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
             CashAmount: cashAmount,
             ActivityType: StatementRecordMapper.ToArtifactActivityType(kind),
             TradeDate: DateOnly.FromDateTime(activity.EffectiveAt.UtcDateTime),
-            Currency: string.IsNullOrWhiteSpace(activity.Currency) ? null : activity.Currency.ToUpperInvariant(),
+            Currency: string.IsNullOrWhiteSpace(currency) ? null : currency.ToUpperInvariant(),
             FeesCommission: commission,
             ExternalTransactionId: activity.EventId,
             ActivityCategory: activity.Category.ToString(),

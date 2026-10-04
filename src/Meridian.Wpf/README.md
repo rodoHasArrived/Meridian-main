@@ -6,16 +6,31 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-09-28
+last_reviewed: 2026-10-01
 ---
 
 # src/Meridian.Wpf
+
+Accounting Configure shows recurring occurrences beside retained journal drafts through
+`WorkstationRecurringJournalQueueClient`, using the same server contract as the browser.
+The operator selects an exact entity scope; rows show schedule/template versions, the retained
+draft and approval status, source references, blockers, period lock owner and governed reopen
+path. Shared-state failures remain unavailable, and late responses cannot replace a newer scope.
+`RecurringJournalQueueViewModelTests` and `WorkstationRecurringJournalQueueClientTests` cover
+retained identity, scope checks, lock remediation, unavailable reads and retry recovery.
 
 The desktop workstation is installed as part of the single Meridian product and opened
 on demand from the browser workstation. It is not a separate end-user package or Start
 Menu product.
 
 ## Shared close and lot convergence
+
+The Accounting feature registers the same durable manual-journal mutation recovery store as
+the browser host. Draft, posting and correction commands keep their original actor and audit
+identities across restart; an unresolved handoff remains blocked in the shared service. The
+`.mutations` directory beside the draft snapshot must be retained with accounting backups.
+The editor retains new-draft IDs and client timestamps across failed saves, so retrying the same
+edit reaches its original intent. Later edits still carry the advanced draft version.
 
 Credential management saves, removal and verification use the shared authenticated service. Secret
 editors start blank; this page no longer reads or writes environment secrets or a separate local vault.
@@ -27,6 +42,8 @@ records as partial closes the editor and warns that required fields are still mi
 reporting a failed save.
 Credential commands expose asynchronous completion. Desktop regression tests exercise late status
 responses, selected-account saves, blank secret editors and loss of editable rows after refused discovery.
+Credential view-model fixtures use independent notification instances so production deduplication
+and rate limiting do not inherit another test's notification history.
 Conflicting credential commands are disabled during persistence or verification. Refused saves restore
 command availability and retain the current editor values for an explicit retry. Saves submit only the
 fields the operator filled in, because the vault treats a blank value as a deletion; rotating one secret
@@ -113,6 +130,26 @@ scope fails before any provider rows are read.
 
 ## Important workflows
 
+The desktop's independent host registers the shared tenant-enforcement setting through
+`AddDesktopTenantScopeServices`. An omitted setting selects strict enforcement, and the identity
+registry receives that same posture. Direct tenant-scoped reads resolve authority from the live
+authenticated desktop session; missing company scope or sign-out cannot borrow background-worker
+authority. The local fund-account and entity-setup services have no retained tenant attribution:
+strict enforcement refuses their reads and writes with a migration-required message while keeping
+the existing JSON files and the server-backed shell available. All account query and mutation
+aliases share this gate. A configured company cannot silently become the owner of old snapshots.
+The explicit deployment-boundary setting retains isolated single-company migration/demo access;
+the existing graph guard still refuses multiple configured companies in that posture.
+
+After authentication and the cheap composition preflight, `DesktopTenantStartup` prepares the
+registered ledger, fund-account, and fund-structure databases, including their existing legacy
+imports, then awaits retained-data tenant inspection. Only a successful result activates navigation,
+creates the strategy workspace, constructs `MainWindow`, and shows the shell. Preparation and
+inspection share a five-minute deadline; inspection keeps its own 60-second limit. Refusal,
+unavailable inspection, failed preparation, or shutdown cancellation prevents activation. Subsequent
+host startup reuses the cached result without repeating inspection. Unrelated workers still start
+after shell activation.
+
 **Startup refusals are fatal.** `App.StartHostServicesAsync` deliberately tolerates a hosted service
 that fails to start -- a database-backed projection or worker that cannot reach its store leaves the
 desktop running with reduced processing rather than not running at all. That tolerance does not
@@ -161,7 +198,9 @@ belongs behind the window. Its *static* half is marked, as the separate
 so the descriptor scan answers immediately, and postponing it too left a prohibited production graph
 interactive until hosted-service startup shut it down. Register a new guard against the interface as well as `IHostedService`
 -- mapping one singleton to both -- and the preflight picks it up without this shell being edited;
-if the guard cannot answer cheaply, leave it an ordinary hosted service instead.
+if the guard cannot answer cheaply, do not add it to this synchronous composition preflight.
+The retained-data tenant check instead uses the separately awaited `DesktopTenantStartup` gate
+described above, because serving retained workspaces requires its successful completion.
 
 Application startup now shows `StartupWindow` before the main shell. After authentication, the main shell defaults to `HomeWorkspace`, a source-backed WPF launch checkpoint that groups provider health, data freshness, reconciliation, approvals, accounting/reporting readiness, and recent activity before operators enter deeper task workspaces. The startup view model validates
 credentials through the Identity-owned `UserProfileRegistry` and `LoginSessionService`, keeps the
@@ -843,6 +882,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-WPF -->
 | Roadmap item | Title |
 | --- | --- |
+| `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |

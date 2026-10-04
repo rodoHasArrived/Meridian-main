@@ -14,6 +14,7 @@ public sealed partial class PostgresLedgerJournalStore
         Guid mutationBatchId,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
         if (mutationBatchId == Guid.Empty)
         {
             throw new ArgumentException("Tax-lot mutation batch id is required.", nameof(mutationBatchId));
@@ -31,6 +32,7 @@ public sealed partial class PostgresLedgerJournalStore
             return null;
         }
 
+        await EnsureBookWriteAuthorityAsync(connection, transaction, retained.LedgerBookId, ct).ConfigureAwait(false);
         var result = await LoadAtomicTaxLotResultAsync(
                 connection,
                 transaction,
@@ -46,12 +48,17 @@ public sealed partial class PostgresLedgerJournalStore
         AtomicTaxLotJournalCommand command,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
         command = NormalizeAndValidateAtomicTaxLotCommand(command);
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection
             .BeginTransactionAsync(IsolationLevel.Serializable, ct)
             .ConfigureAwait(false);
+
+        await EnsureBookWriteAuthorityAsync(connection, transaction, command.LedgerBookId, ct).ConfigureAwait(false);
+        await EnsureTenantRowAsync(connection, transaction, "accounting_periods", "period_id",
+            command.Journal.PeriodId, false, ct).ConfigureAwait(false);
 
         await AcquireAtomicTaxLotIdentityLocksAsync(connection, transaction, command, ct)
             .ConfigureAwait(false);
@@ -87,6 +94,7 @@ public sealed partial class PostgresLedgerJournalStore
                 transaction,
                 command.Journal.PeriodId,
                 forUpdate: true,
+                callerTenantId: _tenantScope.IsFailClosed ? ResolveCallerTenant() : null,
                 ct: ct)
             .ConfigureAwait(false);
         if (period is null)
@@ -148,6 +156,7 @@ public sealed partial class PostgresLedgerJournalStore
             }
 
             ValidateAtomicJournalLotEconomics(command, mutations);
+            ValidateDisposalProceedsAllocation(command, mutations);
             if (averageCostPlan is not null)
             {
                 mutations.AddRange(await RestateAverageCostSurvivorsAsync(
@@ -184,6 +193,10 @@ public sealed partial class PostgresLedgerJournalStore
         ArgumentNullException.ThrowIfNull(command.Journal);
         ArgumentNullException.ThrowIfNull(command.Journal.Entry);
         ArgumentNullException.ThrowIfNull(command.RetainedEvidence);
+
+        if (command.DisposalSalePrice is < 0m ||
+            (command.MutationKind != AtomicTaxLotMutationKind.Disposal && command.DisposalSalePrice is not null))
+            throw new LedgerValidationException("A nonnegative disposal sale price applies only to a disposal command.");
 
         if (command.MutationBatchId == Guid.Empty)
         {
@@ -911,7 +924,9 @@ public sealed partial class PostgresLedgerJournalStore
                 policy_revision,
                 created_at,
                 security_id,
-                book_position_id)
+                book_position_id,
+                proceeds_allocation_version,
+                disposal_sale_price)
             values (
                 @mutation_batch_id,
                 @ledger_book_id,
@@ -928,7 +943,9 @@ public sealed partial class PostgresLedgerJournalStore
                 @policy_revision,
                 @created_at,
                 @security_id,
-                @book_position_id);
+                @book_position_id,
+                @proceeds_allocation_version,
+                @disposal_sale_price);
             """;
         AddAtomicBatchIdentityParameters(insert, command);
         insert.Parameters.AddWithValue("period_id", command.Journal.PeriodId);
@@ -945,6 +962,11 @@ public sealed partial class PostgresLedgerJournalStore
         var assetScope = ResolveAtomicAssetScope(command.Journal);
         insert.Parameters.AddWithValue("security_id", assetScope.SecurityId);
         insert.Parameters.AddWithValue("book_position_id", assetScope.BookPositionId);
+        var disposal = command.MutationKind == AtomicTaxLotMutationKind.Disposal;
+        insert.Parameters.Add("proceeds_allocation_version", NpgsqlDbType.Integer).Value = disposal
+            ? LedgerTaxLotReliefProjector.CurrentProceedsAllocationVersion : DBNull.Value;
+        insert.Parameters.Add("disposal_sale_price", NpgsqlDbType.Numeric).Value = disposal
+            ? (object?)command.DisposalSalePrice ?? DBNull.Value : DBNull.Value;
         await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
