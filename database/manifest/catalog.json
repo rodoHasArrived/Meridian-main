@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "2e5dcd21c98236910e1d67f3e0355c1d40076c926043e014e52303db4546e9b4",
+  "database_fingerprint": "8e448fba69ac463b201f4f7b864123c6c415feefe0f2c862a9c6590dc05d721a",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -1389,6 +1389,42 @@
       "source_name": null,
       "source_schema": "ledger",
       "target": "ledger.atomic_tax_lot_posting_batches.expected_period_version",
+      "target_kind": "table column",
+      "target_name": "atomic_tax_lot_posting_batches",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "24b0b0c9ad1501ed9665e7feb423e45460eb4ab86d0988de6f71bbe92cc6bbc7",
+      "kind": "normal",
+      "source": "ledger.ck_atomic_tax_lot_batch_proceeds_allocation on ledger.atomic_tax_lot_posting_batches",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.atomic_tax_lot_posting_batches.disposal_sale_price",
+      "target_kind": "table column",
+      "target_name": "atomic_tax_lot_posting_batches",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "6533462c3018983dd3bd998690dc504465d110c53ea1491fee81b9dac6ccbba2",
+      "kind": "normal",
+      "source": "ledger.ck_atomic_tax_lot_batch_proceeds_allocation on ledger.atomic_tax_lot_posting_batches",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.atomic_tax_lot_posting_batches.mutation_kind",
+      "target_kind": "table column",
+      "target_name": "atomic_tax_lot_posting_batches",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "ea1343af19b657bd8911dce273c5eb4728e4c864c47cb617c22c148bf89f05a2",
+      "kind": "normal",
+      "source": "ledger.ck_atomic_tax_lot_batch_proceeds_allocation on ledger.atomic_tax_lot_posting_batches",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.atomic_tax_lot_posting_batches.proceeds_allocation_version",
       "target_kind": "table column",
       "target_name": "atomic_tax_lot_posting_batches",
       "target_schema": "ledger"
@@ -11265,6 +11301,10 @@
       "object": "column:ledger.atomic_tax_lot_posting_batches.created_at"
     },
     {
+      "fingerprint": "6f0e14eeb992910ab3178b0fcc291304b03ccb6ddb47af2259bd23fbbe93584b",
+      "object": "column:ledger.atomic_tax_lot_posting_batches.disposal_sale_price"
+    },
+    {
       "fingerprint": "9a831746a6b8db77ae0edb7ec63708d7ba2418c5382b4e97b66fc5b29b4b36a1",
       "object": "column:ledger.atomic_tax_lot_posting_batches.expected_period_version"
     },
@@ -11295,6 +11335,10 @@
     {
       "fingerprint": "155611890b64ff94b3e55048869c9a4eb373919727dbdb70ba76bc3220989a8d",
       "object": "column:ledger.atomic_tax_lot_posting_batches.policy_revision"
+    },
+    {
+      "fingerprint": "e0745c5ddaaee45fa7a9554fcef9c4e4fa1efe5ceb0fa883625eef27c7014c61",
+      "object": "column:ledger.atomic_tax_lot_posting_batches.proceeds_allocation_version"
     },
     {
       "fingerprint": "56d321cea89e93866cd212e9cc060fdfbf7e9d20c3848e5fa499b8de5754e38a",
@@ -17773,6 +17817,10 @@
       "object": "constraint:ledger.atomic_tax_lot_posting_batches.ck_atomic_tax_lot_batch_period_version"
     },
     {
+      "fingerprint": "5a0a700fda725d025c5cd8a8957d16447826ad16db4dc9a572afaa550f460bbd",
+      "object": "constraint:ledger.atomic_tax_lot_posting_batches.ck_atomic_tax_lot_batch_proceeds_allocation"
+    },
+    {
       "fingerprint": "d3a787a67d2f505c499aaf6eae81ef838757a15ca55765a29ddca2562c113e1c",
       "object": "constraint:ledger.fund_profile_tenancy.fund_profile_tenancy_pkey"
     },
@@ -20239,6 +20287,18 @@
     {
       "fingerprint": "9ee7f1caa6c72ee456298cebf854e0ad32778088caf362404ba192bfe7cf2b23",
       "object": "dependency:ledger.ck_atomic_tax_lot_batch_period_version on ledger.atomic_tax_lot_posting_batches->ledger.atomic_tax_lot_posting_batches.expected_period_version:normal"
+    },
+    {
+      "fingerprint": "24b0b0c9ad1501ed9665e7feb423e45460eb4ab86d0988de6f71bbe92cc6bbc7",
+      "object": "dependency:ledger.ck_atomic_tax_lot_batch_proceeds_allocation on ledger.atomic_tax_lot_posting_batches->ledger.atomic_tax_lot_posting_batches.disposal_sale_price:normal"
+    },
+    {
+      "fingerprint": "6533462c3018983dd3bd998690dc504465d110c53ea1491fee81b9dac6ccbba2",
+      "object": "dependency:ledger.ck_atomic_tax_lot_batch_proceeds_allocation on ledger.atomic_tax_lot_posting_batches->ledger.atomic_tax_lot_posting_batches.mutation_kind:normal"
+    },
+    {
+      "fingerprint": "ea1343af19b657bd8911dce273c5eb4728e4c864c47cb617c22c148bf89f05a2",
+      "object": "dependency:ledger.ck_atomic_tax_lot_batch_proceeds_allocation on ledger.atomic_tax_lot_posting_batches->ledger.atomic_tax_lot_posting_batches.proceeds_allocation_version:normal"
     },
     {
       "fingerprint": "bfe0cfce33497aa0bb6ace90ee4a43f86e1da199fa6c06dd742d8e782d6c0109",
@@ -25553,7 +25613,7 @@
       "object": "schema:identity_access"
     },
     {
-      "fingerprint": "0d2a930db5fcd7e00c01a4f85db6b1b043eed24550eed590ae2cc097d2c62830",
+      "fingerprint": "13a500b0e902e33592b213c547bd5a15f3320ea2f91189d84b9d7fa0a2a530b7",
       "object": "schema:ledger"
     },
     {
@@ -25825,7 +25885,7 @@
       "object": "table:ledger.accounting_policies"
     },
     {
-      "fingerprint": "8b20889eafb68381aa030bd9a963ddceb997e38eb1139b6d50b284811b7f772a",
+      "fingerprint": "f39eb5195d3b1b9ca3d1942ec226ed8a995954b7a0af0c537c2369ddf01105d3",
       "object": "table:ledger.atomic_tax_lot_posting_batches"
     },
     {
@@ -61312,6 +61372,42 @@
           "target_schema": "ledger"
         },
         {
+          "fingerprint": "24b0b0c9ad1501ed9665e7feb423e45460eb4ab86d0988de6f71bbe92cc6bbc7",
+          "kind": "normal",
+          "source": "ledger.ck_atomic_tax_lot_batch_proceeds_allocation on ledger.atomic_tax_lot_posting_batches",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.atomic_tax_lot_posting_batches.disposal_sale_price",
+          "target_kind": "table column",
+          "target_name": "atomic_tax_lot_posting_batches",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "6533462c3018983dd3bd998690dc504465d110c53ea1491fee81b9dac6ccbba2",
+          "kind": "normal",
+          "source": "ledger.ck_atomic_tax_lot_batch_proceeds_allocation on ledger.atomic_tax_lot_posting_batches",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.atomic_tax_lot_posting_batches.mutation_kind",
+          "target_kind": "table column",
+          "target_name": "atomic_tax_lot_posting_batches",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "ea1343af19b657bd8911dce273c5eb4728e4c864c47cb617c22c148bf89f05a2",
+          "kind": "normal",
+          "source": "ledger.ck_atomic_tax_lot_batch_proceeds_allocation on ledger.atomic_tax_lot_posting_batches",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.atomic_tax_lot_posting_batches.proceeds_allocation_version",
+          "target_kind": "table column",
+          "target_name": "atomic_tax_lot_posting_batches",
+          "target_schema": "ledger"
+        },
+        {
           "fingerprint": "bfe0cfce33497aa0bb6ace90ee4a43f86e1da199fa6c06dd742d8e782d6c0109",
           "kind": "normal",
           "source": "ledger.ck_journal_entries_adjustment_approval_metadata on ledger.journal_entries",
@@ -63068,7 +63164,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "0d2a930db5fcd7e00c01a4f85db6b1b043eed24550eed590ae2cc097d2c62830",
+      "fingerprint": "13a500b0e902e33592b213c547bd5a15f3320ea2f91189d84b9d7fa0a2a530b7",
       "foreign_tables": [],
       "functions": [
         {
@@ -67352,6 +67448,38 @@
               "security_labels": [],
               "type_name": "uuid",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "integer",
+              "default": null,
+              "fingerprint": "e0745c5ddaaee45fa7a9554fcef9c4e4fa1efe5ceb0fa883625eef27c7014c61",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "proceeds_allocation_version",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "int4",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric",
+              "default": null,
+              "fingerprint": "6f0e14eeb992910ab3178b0fcc291304b03ccb6ddb47af2259bd23fbbe93584b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "disposal_sale_price",
+              "nullable": true,
+              "ordinal_position": 18,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -67479,6 +67607,28 @@
             },
             {
               "columns": [
+                "proceeds_allocation_version",
+                "disposal_sale_price",
+                "mutation_kind"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (proceeds_allocation_version IS NULL AND disposal_sale_price IS NULL OR mutation_kind = 'Disposal'::text AND proceeds_allocation_version IS NOT NULL AND proceeds_allocation_version = 1 AND (disposal_sale_price IS NULL OR disposal_sale_price >= 0::numeric))",
+              "delete_action": null,
+              "fingerprint": "5a0a700fda725d025c5cd8a8957d16447826ad16db4dc9a572afaa550f460bbd",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_atomic_tax_lot_batch_proceeds_allocation",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
                 "corrects_mutation_batch_id"
               ],
               "comment": null,
@@ -67588,7 +67738,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "8b20889eafb68381aa030bd9a963ddceb997e38eb1139b6d50b284811b7f772a",
+          "fingerprint": "f39eb5195d3b1b9ca3d1942ec226ed8a995954b7a0af0c537c2369ddf01105d3",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -82478,6 +82628,38 @@
               "security_labels": [],
               "type_name": "uuid",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "integer",
+              "default": null,
+              "fingerprint": "e0745c5ddaaee45fa7a9554fcef9c4e4fa1efe5ceb0fa883625eef27c7014c61",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "proceeds_allocation_version",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "int4",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric",
+              "default": null,
+              "fingerprint": "6f0e14eeb992910ab3178b0fcc291304b03ccb6ddb47af2259bd23fbbe93584b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "disposal_sale_price",
+              "nullable": true,
+              "ordinal_position": 18,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -82605,6 +82787,28 @@
             },
             {
               "columns": [
+                "proceeds_allocation_version",
+                "disposal_sale_price",
+                "mutation_kind"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (proceeds_allocation_version IS NULL AND disposal_sale_price IS NULL OR mutation_kind = 'Disposal'::text AND proceeds_allocation_version IS NOT NULL AND proceeds_allocation_version = 1 AND (disposal_sale_price IS NULL OR disposal_sale_price >= 0::numeric))",
+              "delete_action": null,
+              "fingerprint": "5a0a700fda725d025c5cd8a8957d16447826ad16db4dc9a572afaa550f460bbd",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_atomic_tax_lot_batch_proceeds_allocation",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
                 "corrects_mutation_batch_id"
               ],
               "comment": null,
@@ -82714,7 +82918,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "8b20889eafb68381aa030bd9a963ddceb997e38eb1139b6d50b284811b7f772a",
+          "fingerprint": "f39eb5195d3b1b9ca3d1942ec226ed8a995954b7a0af0c537c2369ddf01105d3",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [

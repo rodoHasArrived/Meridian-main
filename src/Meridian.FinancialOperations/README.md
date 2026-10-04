@@ -105,6 +105,11 @@ tag and that fixture evidence marked as real cannot commit a journal or a succes
 
 ## Shared close and lot convergence
 
+Governed disposal posting forwards the approved instruction's optional `DisposalSalePrice` to the
+atomic tax-lot command. Storage validates that price against supported cash journal proceeds and
+retains the allocation convention; aggregate-only instructions retain no quote and reporting derives
+their canonical price from the journal and retained wash-sale deferrals.
+
 Factor-paydown candidates require lot quantity as of the event effective date, reconstructed by
 the journal store from retained mutation history. Missing or inconsistent historical quantity
 evidence returns a critical candidate issue and cannot fall back to today's holdings.

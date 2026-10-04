@@ -811,11 +811,20 @@
       "sha256": "f835222dbf6b329b2a90b39df0d40d58cfba85912739bdf31634650663e00fcc"
     },
     {
-      "filename": "V_ledger_039__canonical_lot_amortization.sql",
+      "filename": "V_ledger_039__tax_lot_proceeds_allocation.sql",
       "immutable": true,
       "migration_set_id": "ledger",
       "ordinal": null,
-      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_039__canonical_lot_amortization.sql",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_039__tax_lot_proceeds_allocation.sql",
+      "schema": "ledger",
+      "sha256": "5c93eecf9b44bc469430164ac3bd4e2bbd7818a57c75cd25d29a4e8609249a24"
+    },
+    {
+      "filename": "V_ledger_040__canonical_lot_amortization.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_040__canonical_lot_amortization.sql",
       "schema": "ledger",
       "sha256": "2c355e21469f47d0595dca1a55a6bce4fed6df56937229e1bec2f65213249092"
     },
@@ -1064,7 +1073,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "d9b8ed817d69eab160f4a5db90de8fcb5056a552f3a1365b1ae4032826ee33be",
+  "fingerprint": "467a423f0b7d92d7a7f96a1cec108230eb01f7cd4b22a0e2b17d16ce08d79d31",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1302,7 +1311,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 118,
+    "files": 119,
     "migration_sets": 10,
     "waivers": 12,
     "warnings": 0
@@ -1359,7 +1368,7 @@
     },
     {
       "category": "destructive_changes",
-      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_039__canonical_lot_amortization.sql",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_040__canonical_lot_amortization.sql",
       "reason": "Requires human schema/storage review. Replaces only four check constraints transactionally with strict supersets admitting basis-only Amortization. Existing acquisition, disposal and average-cost rules remain intact; every previously valid row stays valid. No table, column, row or acquisition fact is removed. The migration runner rolls back the constraint replacement on failure. Validate fresh and upgrade databases before release.",
       "review_after": "2027-04-02",
       "rule_id": "migration-drop-table-member"

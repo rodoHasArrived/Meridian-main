@@ -181,6 +181,7 @@ classDiagram
         +LedgerAdjustmentApprovalMetadataDto? CorrectionApproval
         +Guid? CorrectsJournalEntryId
         +Guid? CorrectsMutationBatchId
+        +decimal? DisposalSalePrice
         +IReadOnlyList~AssetDisposalLotSelectionDto~ DisposalSelections
         +AssetLotMutationIntentDto Intent
         +string? PolicyRevision

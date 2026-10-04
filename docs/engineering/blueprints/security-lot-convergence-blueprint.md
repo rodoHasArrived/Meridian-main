@@ -367,7 +367,7 @@ A later discrete disposal whose acquisition unit cost differs from its restated 
 continues to fail closed through `CanonicalOpenLotDisposalGuard`; extending relief of an amortized
 basis remains separate lot-convergence work.
 
-Migration `V_ledger_039` widens existing mutation constraints without replacing acquisition facts or
+Migration `V_ledger_040` widens existing mutation constraints without replacing acquisition facts or
 backfilling legacy rows. Exact command retries return the retained journal and mutation before
 current period/version checks, including after restart and later period close. A different command
 at the same identity, stale lot/reference state, unproved historical partial holdings, earlier

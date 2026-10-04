@@ -797,6 +797,100 @@ public sealed class LedgerTaxLotReliefWashSaleTests
         projection.IsBalanced.Should().BeTrue();
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public void WashSale_TinyPriceGainParcels_ReserveRoundedBasisRegardlessOfReliefPosition(int basisIndex)
+    {
+        // PR #3043: four one-share gains must not become an eligible loss when the
+        // final parcel's half-cent basis rounds up after earlier proceeds consumed the pool.
+        var input = new LedgerTaxLotReliefInput(
+            Account, new DateOnly(2026, 3, 1), 4m, 0.006m, LedgerTaxLotReliefMethod.Fifo,
+            Enumerable.Range(0, 4).Select(index => new LedgerTaxLot(
+                $"lot-{index}", new DateOnly(2026, 1, index + 1), 1m,
+                index == basisIndex ? 0.005m : 0m, SecurityId)).ToArray(),
+            washSalePolicy: WashSalePolicy.UnitedStates,
+            replacementAcquisitions: [new("replacement", new DateOnly(2026, 3, 5), 4m, SecurityId)]);
+
+        var projection = LedgerTaxLotReliefProjector.Project(input);
+
+        projection.Proceeds.Should().Be(0.02m);
+        projection.CostBasis.Should().Be(0.01m);
+        projection.Selections.Should().OnlyContain(selection => selection.RealizedGainOrLoss >= 0m);
+        projection.Selections.Sum(selection => selection.Proceeds).Should().Be(projection.Proceeds);
+        projection.Selections.Sum(selection => selection.RealizedGainOrLoss).Should().Be(0.01m);
+        projection.WashSale.Should().BeNull();
+        projection.RecognizedGainOrLoss.Should().Be(0.01m);
+        RealizedGainLine(projection).Should().Be(0.01m);
+        projection.IsBalanced.Should().BeTrue();
+    }
+
+    [Fact]
+    public void WashSale_TinyPriceLossParcel_ResidualCannotReverseEconomicLoss()
+    {
+        var input = new LedgerTaxLotReliefInput(
+            Account, new DateOnly(2026, 3, 1), 4m, 0.004m, LedgerTaxLotReliefMethod.Fifo,
+            Enumerable.Range(0, 4).Select(index => new LedgerTaxLot(
+                $"lot-{index}", new DateOnly(2026, 1, index + 1), 1m,
+                index == 3 ? 0.006m : 0m, SecurityId)).ToArray(),
+            washSalePolicy: WashSalePolicy.UnitedStates,
+            replacementAcquisitions: [new("replacement", new DateOnly(2026, 3, 5), 4m, SecurityId)]);
+
+        var projection = LedgerTaxLotReliefProjector.Project(input);
+
+        projection.Selections[^1].RealizedGainOrLoss.Should().BeLessThanOrEqualTo(0m);
+        projection.Selections.Take(3).Should().OnlyContain(selection => selection.RealizedGainOrLoss >= 0m);
+        projection.Selections.Sum(selection => selection.Proceeds).Should().Be(0.02m);
+        projection.IsBalanced.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(0.005, 0.006)]
+    [InlineData(0.004, 0.003)]
+    public void DiscreteRounding_InfeasibleCentAllocation_RejectsSignReversal(decimal cost, decimal price)
+    {
+        var input = new LedgerTaxLotReliefInput(
+            Account, new DateOnly(2026, 3, 1), 4m, price, LedgerTaxLotReliefMethod.Fifo,
+            Enumerable.Range(1, 4).Select(index => new LedgerTaxLot(
+                $"lot-{index}", new DateOnly(2026, 1, index), 1m, cost, SecurityId)).ToArray());
+
+        var project = () => LedgerTaxLotReliefProjector.Project(input);
+
+        project.Should().Throw<InvalidOperationException>().WithMessage("*cannot preserve*sign*");
+    }
+
+    [Theory]
+    [InlineData(WashSaleReplacementScope.LedgerBook, 2000)]
+    [InlineData(WashSaleReplacementScope.DisposingAccount, 0)]
+    public void WashSale_SameLotIdAcrossAccounts_ExcludesOnlyDisposingAccount(
+        WashSaleReplacementScope scope, decimal expectedDeferred)
+    {
+        var siblingAccount = LedgerAccounts.Securities("AAPL", "broker-2");
+        var input = LossSaleInput(WashSalePolicy.UnitedStates with { Scope = scope },
+            [
+                new("LOT-A", new DateOnly(2026, 3, 5), 100m, SecurityId),
+                new("lot-a", new DateOnly(2026, 3, 5), 100m, SecurityId, Account),
+                new("LOT-A", new DateOnly(2026, 3, 5), 100m, SecurityId, siblingAccount),
+            ]);
+
+        var projection = LedgerTaxLotReliefProjector.Project(input);
+
+        projection.DisallowedWashSaleLoss.Should().Be(expectedDeferred);
+        if (scope == WashSaleReplacementScope.LedgerBook)
+        {
+            var increase = projection.WashSale!.BasisIncreases.Should().ContainSingle().Which;
+            increase.ReplacementAccount.Should().Be(siblingAccount);
+            projection.WashSale.MatchedReplacementQuantity.Should().Be(100m);
+        }
+        else
+        {
+            projection.WashSale.Should().BeNull();
+        }
+        projection.IsBalanced.Should().BeTrue();
+    }
+
     [Fact]
     public void AverageCost_RoundingCannotCreateNegativeBasisOrLossOnBreakEvenSale()
     {

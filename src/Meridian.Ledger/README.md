@@ -129,11 +129,23 @@ prepares balanced cash, security cost-basis, and realized gain/loss lines before
 For `AverageCost` it pools every open lot into a single average unit cost while still depleting lots
 oldest-first for deterministic lot closing. Pooled proceeds preserve the sign of the pooled result
 so independent cent residuals cannot manufacture a loss inside a gain-producing pool.
+Discrete proceeds reserve rounded basis for gain/break-even parcels and cap loss parcels at their
+basis, preserving pre-rounding result signs while conserving the rounded sale proceeds. If the
+independently rounded bases make those sign bounds infeasible, projection fails explicitly.
+Unversioned retained disposal history uses the frozen legacy final-residual allocator, including
+when sign-preserving allocation would also succeed. Versioned history uses its explicit retained
+sale price when available, preserving per-lot results and tax character without recovering a
+different source quote from rounded proceeds. Aggregate-only current-version history retains no
+quote and derives its canonical price from journal proceeds after retained wash-sale deferrals.
+Unknown versions or inconsistent retained economics fail closed. The
+history compatibility path does not relax the sign bounds for new projections.
 When a `WashSalePolicy` and replacement acquisitions are
 supplied, it evaluates each negative-result relief parcel even when the disposal has an aggregate
 gain or zero result. Loss parcels consume one shared replacement-quantity pool in relief order;
 replacements are ordered by acquisition date and lot/account identity. Inclusive policy windows,
-security matching, account scope and relieved-lot exclusions remain in force. Duplicate candidate
+security matching, account scope and relieved-lot exclusions remain in force. Self-exclusion compares
+both account and lot ID; sibling-account acquisitions with the same ID remain eligible in LedgerBook
+scope. Duplicate candidate
 identities count once (conflicting facts are rejected). Each source loss is rounded once, with the
 residual assigned to its final replacement, so quantities and basis adjustments conserve exactly.
 `WashSaleOutcome` reports total disallowed loss and the remaining individual loss-lot losses before

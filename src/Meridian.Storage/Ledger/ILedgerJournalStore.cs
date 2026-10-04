@@ -439,6 +439,8 @@ public sealed record AtomicTaxLotJournalCommand(
     string? ReliefMethod = null,
     string? PolicyRevision = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    decimal? DisposalSalePrice = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? Amortization = null)
 {
     public static AtomicTaxLotJournalCommand Create(
@@ -455,6 +457,7 @@ public sealed record AtomicTaxLotJournalCommand(
         Guid? correctsMutationBatchId = null,
         string? reliefMethod = null,
         string? policyRevision = null,
+        decimal? disposalSalePrice = null,
         Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? amortization = null)
     {
         var command = new AtomicTaxLotJournalCommand(
@@ -472,6 +475,7 @@ public sealed record AtomicTaxLotJournalCommand(
             correctsMutationBatchId,
             reliefMethod,
             policyRevision,
+            disposalSalePrice,
             amortization);
         return command.WithComputedFingerprint();
     }
