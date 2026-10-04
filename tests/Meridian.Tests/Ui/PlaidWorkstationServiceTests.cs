@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -279,7 +280,7 @@ public sealed class PlaidWorkstationServiceTests
                 },
                 Environment: "sandbox",
                 Actor: "test"));
-            var repository = new FilePlaidConnectionRepository(dataRoot);
+            var repository = new FilePlaidConnectionRepository(dataRoot, new AtomicFileWriterAdapter());
             var fundAccounts = new InMemoryFundAccountService();
             var banking = new InMemoryBankingService();
             var client = new FakePlaidClient();

@@ -116,6 +116,7 @@ public sealed class ProviderCompositionTests : IDisposable
         var services = new ServiceCollection();
         services.AddSingleton<IMarketEventPublisher, TestMarketEventPublisher>();
         new CollectorFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+        services.AddSingleton<Meridian.Core.IO.IAtomicFileWriter, Meridian.Storage.Archival.AtomicFileWriterAdapter>();
         services.AddProviderServices(config, new FixedCredentialResolver(), sidecars: new Dictionary<string, IReadOnlyDictionary<string, string>>
         {
             ["alpaca"] = new Dictionary<string, string> { ["keyId"] = "composition-sidecar-key", ["secretKey"] = "composition-sidecar-secret" }

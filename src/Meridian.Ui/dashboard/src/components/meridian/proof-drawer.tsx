@@ -239,4 +239,3 @@ function toneTextClass(tone?: FinancialRecordExplorerTone): string {
       return "text-foreground";
   }
 }
-

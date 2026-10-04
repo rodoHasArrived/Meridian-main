@@ -11,6 +11,9 @@ last_reviewed: 2026-10-01
 
 # src/Meridian.Contracts
 
+`Etl/IEtlStagingStore.cs` lets source adapters retain imported streams through an injected
+persistence port without referencing the Storage implementation.
+
 `Workstation/RecurringJournalDtos.cs` publishes one exact-scope occurrence projection for browser
 and WPF Accounting queues. It carries retained schedule/template versions, source evidence
 references, authoritative draft approval status, blockers, lock owner and governed reopen path.
@@ -59,6 +62,10 @@ command. Omitted marks remain `Real`; seeded or simulated evidence must be expli
 and the governed ledger boundary rejects mismatches.
 
 ## Shared close and lot convergence
+
+`AssetLotMutationInstructionDto.DisposalSalePrice` optionally retains the original disposal quote
+through governed drafting and posting. It is omitted from JSON when absent so existing retained
+event payloads keep their shape. Aggregate-only instructions do not claim an original quote.
 
 `Workstation/CloseReadinessDtos.cs` defines the declared five-dimension close scope, required contributor posture, and owner/record-linked blockers. `Accounting/Lots/` defines security-identified decimal lot views with retained acquisition currency, FX, basis, and evidence; this is an additive migration contract, not a legacy-writer cutover.
 

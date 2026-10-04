@@ -134,6 +134,7 @@ public sealed class ProviderCatalogCompositionTests : IDisposable
         new CollectorFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
         // The public application registration owns every adapter and factory. Only the
         // external credential source is replaced with a deterministic fixture.
+        services.AddSingleton<Meridian.Core.IO.IAtomicFileWriter, Meridian.Storage.Archival.AtomicFileWriterAdapter>();
         services.AddProviderServices(config, new FixedCredentialResolver());
         return services;
     }

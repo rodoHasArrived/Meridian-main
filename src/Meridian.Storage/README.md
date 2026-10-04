@@ -11,9 +11,28 @@ last_reviewed: 2026-10-01
 
 # src/Meridian.Storage
 
+`Archival/AtomicFileWriterAdapter.cs`, `EtlStagingStore` in `Etl/EtlStores.cs`, and `Backfill/JsonlBackfillBarWriter.cs`
+implement lower-level persistence ports consumed by Infrastructure. Application/host composition
+owns their construction; atomic durability, staging and JSONL naming policies remain in Storage.
+
 `LedgerAccountTaxLotPolicyRecord.EffectiveWashSalePolicy` carries the existing `PolicyId` revision
 into wash-sale projection evidence together with the configured window, scope and activation date.
 This adds no persisted policy field or schema migration.
+
+The durable replacement resolver excludes relieved lot IDs only within the disposing account's
+complete identity. LedgerBook scope retains same-ID acquisitions in sibling accounts. Prior-deferral
+basis adjustments use that same full account identity (name, type, symbol and financial account ID),
+so a sibling account's same-ID lot cannot change the disposing lot's basis or holding-period start.
+
+Ledger migration `039` adds nullable disposal allocation-version and sale-price evidence to immutable
+atomic batches without backfilling existing rows. New disposal inserts retain the current convention
+after the exact-replay check, leaving legacy retries and absent-price command fingerprints unchanged.
+An explicit original quote must reproduce supported, account-scoped cash journal proceeds; fees and
+other unsupported expense shapes cannot supply that assertion. Aggregate-only governed commands
+retain the current version with a null price, deriving their canonical price at reporting from the
+journal and retained wash-sale deferrals. They do not invent a source execution quote. History replays
+an explicit retained quote exactly, while old unversioned batches keep the legacy allocator.
+Unsupported versions or inconsistent retained economics block reporting.
 
 `PostgresLedgerJournalStore.GetPeriodLockOwnerAsync` reads the retained close actor under the same
 tenant guard as the period. Recurring journal generation consumes the existing PostgreSQL period

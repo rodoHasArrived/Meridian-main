@@ -1883,6 +1883,7 @@ Meridian-main
 │   ├── operators
 │   │   ├── browser-workstation-installer.md
 │   │   ├── deployment-packaging.md
+│   │   ├── distributed-tracing.md
 │   │   ├── external-gl-providers.md
 │   │   ├── failover-and-recovery.md
 │   │   ├── fund-ops-persistence-cutover.md
@@ -2318,7 +2319,6 @@ Meridian-main
 │   │   ├── ROADMAP_SUMMARY.md
 │   │   ├── rules-report.md
 │   │   ├── run-contract.schema.json
-│   │   ├── todo-scan-results.json
 │   │   ├── TODO.md
 │   │   ├── ui-route-wiring-report.json
 │   │   ├── ui-route-wiring-report.md
@@ -3977,6 +3977,7 @@ Meridian-main
 │   │   ├── Etl
 │   │   │   ├── EtlModels.cs
 │   │   │   ├── IEtlJobDefinitionStore.cs
+│   │   │   ├── IEtlStagingStore.cs
 │   │   │   └── ISftpFilePublisher.cs
 │   │   ├── Export
 │   │   │   ├── AnalysisExportModels.cs
@@ -4222,6 +4223,7 @@ Meridian-main
 │   │   │   ├── SensitiveKeyRegistry.cs
 │   │   │   ├── SensitiveValueMasker.cs
 │   │   │   ├── SyntheticMarketDataConfig.cs
+│   │   │   ├── TracingConfig.cs
 │   │   │   └── ValidatedConfig.cs
 │   │   ├── Contracts
 │   │   │   └── IProviderCredentialStore.cs
@@ -4239,6 +4241,7 @@ Meridian-main
 │   │   │   ├── UnsupportedAssetClassException.cs
 │   │   │   └── ValidationException.cs
 │   │   ├── IO
+│   │   │   ├── IAtomicFileWriter.cs
 │   │   │   └── RootedPathGuard.cs
 │   │   ├── Logging
 │   │   │   └── LoggingSetup.cs
@@ -5390,7 +5393,8 @@ Meridian-main
 │   │   │   ├── IAccountingSystemExportValidator.cs
 │   │   │   └── IAccountingSystemProvider.cs
 │   │   ├── Backfill
-│   │   │   └── BackfillJob.cs
+│   │   │   ├── BackfillJob.cs
+│   │   │   └── IBackfillBarWriter.cs
 │   │   ├── AttributeCredentialResolver.cs
 │   │   ├── ConfigurableProviderModuleBase.cs
 │   │   ├── ConnectionDiagnosticsContracts.cs
@@ -5552,6 +5556,7 @@ Meridian-main
 │   │   ├── Archival
 │   │   │   ├── ArchivalStorageService.cs
 │   │   │   ├── AtomicFileWriter.cs
+│   │   │   ├── AtomicFileWriterAdapter.cs
 │   │   │   ├── CompressionProfileManager.cs
 │   │   │   └── WriteAheadLog.cs
 │   │   ├── AssetOperations
@@ -5573,7 +5578,8 @@ Meridian-main
 │   │   │   └── PostgresAssetOperationsProjectionStore.Locks.cs
 │   │   ├── Backfill
 │   │   │   ├── BackfillStatusStore.cs
-│   │   │   └── BackfillStatusStoreJsonContext.cs
+│   │   │   ├── BackfillStatusStoreJsonContext.cs
+│   │   │   └── JsonlBackfillBarWriter.cs
 │   │   ├── Banking
 │   │   │   ├── Migrations
 │   │   │   │   ├── 001_banking.sql
@@ -5707,7 +5713,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_035__open_lot_backfill.sql
 │   │   │   │   ├── V_ledger_036__ledger_event_audit_chain.sql
 │   │   │   │   ├── V_ledger_037__open_lot_basis_adjustment.sql
-│   │   │   │   └── V_ledger_038__audit_safe_tenant_attribution.sql
+│   │   │   │   ├── V_ledger_038__audit_safe_tenant_attribution.sql
+│   │   │   │   └── V_ledger_039__tax_lot_proceeds_allocation.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -5739,6 +5746,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.HistoricalTaxLots.cs
 │   │   │   ├── PostgresLedgerJournalStore.OpenLotBackfill.cs
 │   │   │   ├── PostgresLedgerJournalStore.PeriodLockOwner.cs
+│   │   │   ├── PostgresLedgerJournalStore.ProceedsAllocation.cs
 │   │   │   ├── PostgresLedgerJournalStore.Serialization.cs
 │   │   │   ├── PostgresLedgerJournalStore.TaxLotDisposalHistory.cs
 │   │   │   ├── PostgresLedgerJournalStore.TaxLots.cs
@@ -9206,10 +9214,12 @@ Meridian-main
 │   │   │   ├── Backfill
 │   │   │   │   ├── AdditionalProviderContractTests.cs
 │   │   │   │   ├── AutoGapRemediationServiceTests.cs
+│   │   │   │   ├── BackfillCancellationTracingTests.cs
 │   │   │   │   ├── BackfillCoordinatorPreviewTests.cs
 │   │   │   │   ├── BackfillCoordinatorStorageOptionsTests.cs
 │   │   │   │   ├── BackfillCostEstimatorTests.cs
 │   │   │   │   ├── BackfillExecutionHistoryTests.cs
+│   │   │   │   ├── BackfillRequestTraceContextTests.cs
 │   │   │   │   ├── BackfillScheduleManagerDurabilityTests.cs
 │   │   │   │   ├── BackfillSourceAttributionTests.cs
 │   │   │   │   ├── BackfillWorkerServiceLifecycleTests.cs
@@ -9423,7 +9433,9 @@ Meridian-main
 │   │   ├── Architecture
 │   │   │   ├── AccountingSemanticsBoundaryTests.cs
 │   │   │   ├── LayerBoundaryTests.cs
-│   │   │   └── LedgerNetBalanceCentralizationTests.cs
+│   │   │   ├── LedgerNetBalanceCentralizationTests.cs
+│   │   │   ├── ProjectReferenceGraph.cs
+│   │   │   └── ProjectReferenceGraphTests.cs
 │   │   ├── AssetOperations
 │   │   │   ├── AssetAccountingEventSpineContractTests.cs
 │   │   │   ├── AssetAccountingEvidenceSubjectContractTests.cs
@@ -9904,6 +9916,7 @@ Meridian-main
 │   │   │   ├── StatementImportCaseworkEvidenceTests.cs
 │   │   │   ├── StatementLedgerReconciliationPostgresTests.cs
 │   │   │   ├── StatementLedgerReconciliationPostgresTests.Harness.cs
+│   │   │   ├── TracingIntegrationTests.cs
 │   │   │   └── YahooFinancePcgPreferredIntegrationTests.cs
 │   │   ├── Ledger
 │   │   │   ├── AutomatedJournalPostingTargetTests.cs
@@ -9986,6 +9999,7 @@ Meridian-main
 │   │   │   │   └── TradingCalendarTests.cs
 │   │   │   ├── Tracing
 │   │   │   │   ├── DefaultEventMetricsTests.cs
+│   │   │   │   ├── OpenTelemetrySetupTests.cs
 │   │   │   │   └── TracedEventMetricsTests.cs
 │   │   │   └── EventTraceContextTests.cs
 │   │   ├── PortfolioRecords
@@ -10216,6 +10230,7 @@ Meridian-main
 │   │   │   ├── AtomicTaxLotJournalStoreTests.AverageCost.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.HistoricalQuantity.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.ProceedsAllocation.cs
 │   │   │   ├── AuditChainProcessTests.cs
 │   │   │   ├── AuditChainServiceTests.cs
 │   │   │   ├── CanonicalOpenLotConsumerTests.cs
@@ -10242,6 +10257,7 @@ Meridian-main
 │   │   │   ├── JsonFileIBDataResultStoreTests.cs
 │   │   │   ├── JsonFileSnapshotStoreTests.cs
 │   │   │   ├── JsonlAppendStreamTests.cs
+│   │   │   ├── JsonlBackfillBarWriterTests.cs
 │   │   │   ├── JsonlBatchWriteTests.cs
 │   │   │   ├── JsonlMarketDataStoreCorruptionTests.cs
 │   │   │   ├── JsonlMarketDataStoreSymbolPathTests.cs

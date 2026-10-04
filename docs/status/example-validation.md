@@ -24,7 +24,7 @@
 | `csharp` | 325 | 325 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
 | `fsharp` | 54 | 0 | 0 | 54 |
-| `json` | 64 | 64 | 0 | 0 |
+| `json` | 66 | 66 | 0 | 0 |
 | `jsonc` | 2 | 2 | 0 | 0 |
 | `jsonl` | 1 | 0 | 0 | 1 |
 | `makefile` | 1 | 0 | 0 | 1 |
@@ -128,6 +128,7 @@ No invalid code examples found.
 | `docs/integrations/fsharp-integration.md` | 7 |
 | `docs/integrations/language-strategy.md` | 4 |
 | `docs/integrations/lean-integration.md` | 17 |
+| `docs/operators/distributed-tracing.md` | 2 |
 | `docs/operators/provider-backfill-operations.md` | 1 |
 | `docs/operators/statement-reconciliation-report-operations.md` | 1 |
 | `docs/product/adversarial-program-review-2026-08-25.md` | 3 |
