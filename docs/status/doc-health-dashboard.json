@@ -1,6 +1,6 @@
 {
   "total_files": 681,
-  "total_lines": 150428,
+  "total_lines": 150456,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2427,7 +2427,7 @@
     },
     {
       "path": "docs/generated/database/contracts/asset-operations-contracts-page-01.md",
-      "line_count": 683,
+      "line_count": 684,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2659,7 +2659,7 @@
     },
     {
       "path": "docs/generated/database/modules/ledger.md",
-      "line_count": 548,
+      "line_count": 550,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2755,7 +2755,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11170,
+      "line_count": 11173,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5355,7 +5355,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1580,
+      "line_count": 1584,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5419,7 +5419,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 869,
+      "line_count": 874,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5499,7 +5499,7 @@
     },
     {
       "path": "src/Meridian.Ledger/README.md",
-      "line_count": 315,
+      "line_count": 318,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5587,7 +5587,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 759,
+      "line_count": 769,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
