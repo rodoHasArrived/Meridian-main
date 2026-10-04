@@ -219,53 +219,53 @@ public sealed partial class AtomicTaxLotJournalStoreTests
     public async Task DisposalAllocation_ResultScopeAndSideAreRequiredForInferredAndExplicitPrices()
     {
         foreach (var explicitPrice in new[] { false, true })
-        foreach (var gain in new[] { false, true })
-        foreach (var defect in new[] { "sibling", "unscoped", "side", "type", "symbol" })
-        {
-            await using var database = await LedgerPostgresTestDatabase.CreateAsync();
-            var (command, lots, _) = await PrepareProceedsDisposalAsync(database, precisePrice: false,
-                financialAccountId: "broker-1");
-            var entry = command.Journal.Entry;
-            var resultAccount = gain ? LedgerAccounts.RealizedGainFor("broker-1")
-                : LedgerAccounts.RealizedLossFor("broker-1");
-            var wrongSide = defect == "side";
-            var debitResult = gain == wrongSide;
-            var cash = debitResult ? 0.05m : 0.07m;
-            resultAccount = defect switch
-            {
-                "sibling" => resultAccount with { FinancialAccountId = "broker-2" },
-                "unscoped" => resultAccount with { FinancialAccountId = null },
-                "type" => resultAccount with { AccountType = LedgerAccountType.Asset },
-                "symbol" => resultAccount with { Symbol = "OTHER" },
-                _ => resultAccount
-            };
-            LedgerEntry Line(LedgerAccount account, decimal debit, decimal credit) => new(
-                Guid.NewGuid(), entry.JournalEntryId, entry.Timestamp, account, debit, credit,
-                entry.Description, entry.Lines[0].Dimensions,
-                new LedgerEntryCurrency("USD", "USD", debit, credit, 1m));
-            command = (command with
-            {
-                DisposalSalePrice = explicitPrice ? cash / 5m : null,
-                Journal = command.Journal with
+            foreach (var gain in new[] { false, true })
+                foreach (var defect in new[] { "sibling", "unscoped", "side", "type", "symbol" })
                 {
-                    Entry = new JournalEntry(entry.JournalEntryId, entry.Timestamp, entry.Description,
-                    [
-                        Line(LedgerAccounts.CashAccount("broker-1"), cash, 0m),
+                    await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+                    var (command, lots, _) = await PrepareProceedsDisposalAsync(database, precisePrice: false,
+                        financialAccountId: "broker-1");
+                    var entry = command.Journal.Entry;
+                    var resultAccount = gain ? LedgerAccounts.RealizedGainFor("broker-1")
+                        : LedgerAccounts.RealizedLossFor("broker-1");
+                    var wrongSide = defect == "side";
+                    var debitResult = gain == wrongSide;
+                    var cash = debitResult ? 0.05m : 0.07m;
+                    resultAccount = defect switch
+                    {
+                        "sibling" => resultAccount with { FinancialAccountId = "broker-2" },
+                        "unscoped" => resultAccount with { FinancialAccountId = null },
+                        "type" => resultAccount with { AccountType = LedgerAccountType.Asset },
+                        "symbol" => resultAccount with { Symbol = "OTHER" },
+                        _ => resultAccount
+                    };
+                    LedgerEntry Line(LedgerAccount account, decimal debit, decimal credit) => new(
+                        Guid.NewGuid(), entry.JournalEntryId, entry.Timestamp, account, debit, credit,
+                        entry.Description, entry.Lines[0].Dimensions,
+                        new LedgerEntryCurrency("USD", "USD", debit, credit, 1m));
+                    command = (command with
+                    {
+                        DisposalSalePrice = explicitPrice ? cash / 5m : null,
+                        Journal = command.Journal with
+                        {
+                            Entry = new JournalEntry(entry.JournalEntryId, entry.Timestamp, entry.Description,
+                            [
+                                Line(LedgerAccounts.CashAccount("broker-1"), cash, 0m),
                         Line(lots[0].Account, 0m, 0.06m),
                         Line(resultAccount, debitResult ? 0.01m : 0m, debitResult ? 0m : 0.01m)
-                    ], entry.Metadata)
+                            ], entry.Metadata)
+                        }
+                    }).WithComputedFingerprint();
+                    var auditBefore = (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents;
+                    var post = () => database.JournalStore.AppendAssetPostingAsync(command);
+                    await post.Should().ThrowAsync<LedgerValidationException>()
+                        .WithMessage("*disposing account's exact*");
+                    (await database.JournalStore.GetAtomicTaxLotPostingAsync(command.MutationBatchId)).Should().BeNull();
+                    (await database.JournalStore.GetByPeriodAsync(command.Journal.PeriodId)).Should().BeEmpty();
+                    (await database.JournalStore.GetTaxLotsByIdsAsync(command.LedgerBookId,
+                        lots.Select(static lot => lot.TaxLotRecordId).ToArray())).Should().BeEquivalentTo(lots);
+                    (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(auditBefore);
                 }
-            }).WithComputedFingerprint();
-            var auditBefore = (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents;
-            var post = () => database.JournalStore.AppendAssetPostingAsync(command);
-            await post.Should().ThrowAsync<LedgerValidationException>()
-                .WithMessage("*disposing account's exact*");
-            (await database.JournalStore.GetAtomicTaxLotPostingAsync(command.MutationBatchId)).Should().BeNull();
-            (await database.JournalStore.GetByPeriodAsync(command.Journal.PeriodId)).Should().BeEmpty();
-            (await database.JournalStore.GetTaxLotsByIdsAsync(command.LedgerBookId,
-                lots.Select(static lot => lot.TaxLotRecordId).ToArray())).Should().BeEquivalentTo(lots);
-            (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(auditBefore);
-        }
     }
 
     [LedgerDatabaseFact]
