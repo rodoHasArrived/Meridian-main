@@ -2,12 +2,13 @@ using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Plaid;
-using Meridian.Storage.Archival;
+using Meridian.Core.IO;
 
 namespace Meridian.Infrastructure.Adapters.Plaid;
 
 public sealed class FilePlaidConnectionRepository : IPlaidConnectionRepository
 {
+    private readonly IAtomicFileWriter _atomicFileWriter;
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true
@@ -19,8 +20,9 @@ public sealed class FilePlaidConnectionRepository : IPlaidConnectionRepository
     private readonly string _webhookPath;
     private readonly string _transferPath;
 
-    public FilePlaidConnectionRepository(string dataRoot)
+    public FilePlaidConnectionRepository(string dataRoot, IAtomicFileWriter atomicFileWriter)
     {
+        _atomicFileWriter = atomicFileWriter ?? throw new ArgumentNullException(nameof(atomicFileWriter));
         ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
         _directory = Path.Combine(Path.GetFullPath(dataRoot), "plaid");
         _statePath = Path.Combine(_directory, "connections.json");
@@ -134,7 +136,7 @@ public sealed class FilePlaidConnectionRepository : IPlaidConnectionRepository
             }
         }
 
-        await AtomicFileWriter.AppendLinesAsync(
+        await _atomicFileWriter.AppendLinesAsync(
             _webhookPath,
             [JsonSerializer.Serialize(webhook, JsonOptions)],
             ct).ConfigureAwait(false);
@@ -151,7 +153,7 @@ public sealed class FilePlaidConnectionRepository : IPlaidConnectionRepository
     public async Task RecordTransferAsync(PlaidTransferResult result, CancellationToken ct = default)
     {
         Directory.CreateDirectory(_directory);
-        await AtomicFileWriter.AppendLinesAsync(
+        await _atomicFileWriter.AppendLinesAsync(
             _transferPath,
             [JsonSerializer.Serialize(result, JsonOptions)],
             ct).ConfigureAwait(false);
@@ -196,7 +198,7 @@ public sealed class FilePlaidConnectionRepository : IPlaidConnectionRepository
         Directory.CreateDirectory(_directory);
         await using var stream = new MemoryStream();
         await JsonSerializer.SerializeAsync(stream, state, JsonOptions, ct).ConfigureAwait(false);
-        await AtomicFileWriter.WriteAsync(_statePath, stream.ToArray(), ct).ConfigureAwait(false);
+        await _atomicFileWriter.WriteAsync(_statePath, stream.ToArray(), ct).ConfigureAwait(false);
     }
 
     private static PlaidItemStatusDto ResolveStatus(string webhookCode)

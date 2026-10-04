@@ -10,7 +10,7 @@ using ArchModel = ArchUnitNET.Domain.Architecture;
 namespace Meridian.Tests.Architecture;
 
 /// <summary>
-/// ArchUnitNET tests that enforce the layer-boundary rules defined in
+/// Architecture tests that enforce the layer-boundary rules defined in
 /// <c>docs/architecture/layer-boundaries.md</c> and the ADR quick-reference table.
 ///
 /// Rules enforced:
@@ -18,11 +18,26 @@ namespace Meridian.Tests.Architecture;
 ///   <item>Contracts is a leaf — it must not depend on any other project (including Domain and Infrastructure).</item>
 ///   <item>ProviderSdk must only depend on Contracts.</item>
 ///   <item>Domain must not depend on Infrastructure.</item>
+///   <item>Infrastructure must not reference Storage, directly or transitively, in the evaluated project graph.</item>
 ///   <item>Adapter namespaces must not cross-reference peer adapters.</item>
 /// </list>
 /// </summary>
 public sealed class LayerBoundaryTests
 {
+    // Assembly/type inspection cannot see an unused ProjectReference. Evaluate the
+    // source project graph separately, including imported and transitive edges.
+    [Theory]
+    [InlineData("Debug")]
+    [InlineData("Release")]
+    public async Task Infrastructure_ShouldNot_Reference_Storage_DirectlyOrTransitively(string configuration)
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        await ProjectReferenceGraph.AssertNoDependencyAsync(
+            Path.Combine(repositoryRoot, "src", "Meridian.Infrastructure", "Meridian.Infrastructure.csproj"),
+            Path.Combine(repositoryRoot, "src", "Meridian.Storage", "Meridian.Storage.csproj"),
+            configuration);
+    }
+
     // Build the architecture model once per test class.
     private static readonly Lazy<ArchModel> Architecture = new(() => new ArchLoader()
         .LoadAssemblies(
@@ -234,6 +249,22 @@ public sealed class LayerBoundaryTests
                 type.IsVisible,
                 $"{type.FullName} must stay internal because provider-local constants and endpoint strings are implementation details that must not leak into the public API.");
         }
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "Meridian.sln")))
+            {
+                return directory.FullName;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new InvalidOperationException("Unable to locate Meridian repository root from test output directory.");
     }
 
     [Fact]

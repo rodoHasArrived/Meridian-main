@@ -22,6 +22,26 @@ authority. Consolidation removes duplicate execution, never a validation purpose
 | Golden Path, schema control, providers and deterministic integrations/recovery | Existing specialist owners; production certification also callable by releases |
 | Workflow syntax, hygiene, manifest, skips and script tests | Meridian CI `verify-workflows` |
 
+Meridian CI retains exactly its four canonical `scripts/ci.sh` lanes and the existing
+`quality-gate` aggregation. Its additional `service-backed-integrations` job calls the same
+`service-backed-integrations.yml` implementation used by Production Certification. The
+always-reported `integration-gate` companion requires success and fails for failed, cancelled
+or skipped integration execution. It runs without path filters on pull requests (including
+forks), merge groups, main pushes and manual/reusable calls.
+
+The shared implementation uses the certification `postgres:17` service, health checks and
+eight domain connection strings. The database and credentials are disposable within each
+job; no production secrets or privileged PR event are used. Checkout uses the event SHA with
+credentials persistence disabled and `contents: read`. Both project restores and test runs
+are attempted independently, so one failure cannot hide the other's result. TRX validation
+runs after failures and rejects missing required suite prefixes, failed/skipped/unknown
+outcomes and every file with zero discovered tests. Coverage and schema evidence retain the
+existing certification artifact contract (90 days); CI companion evidence is retained 14 days.
+
+Administrators may add `integration-gate` as a required companion check after human governance
+review and a successful PR/merge-group rollout. This change does not alter repository rulesets
+or replace the existing `quality-gate` requirement.
+
 ## Measurement and promotion
 
 Export Actions run metadata with embedded `jobs` from the attempt-specific jobs endpoint.

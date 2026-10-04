@@ -1,6 +1,8 @@
 using FluentAssertions;
 using Meridian.Application.Reconciliation;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
+using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
@@ -22,6 +24,82 @@ public sealed class LedgerJournalInternalTransactionSourceTests
     private const string AccountLabel = "EXT-1";
     private static readonly DateOnly PeriodStart = new(2026, 5, 1);
     private static readonly DateOnly PeriodEnd = new(2026, 5, 31);
+
+    [Fact]
+    public async Task GetTransactionsAsync_ExactScopeBoundsQueryAndExcludesForeignPeriodBeforeReversalProjection()
+    {
+        var scope = new StatementAccountingScope(Guid.NewGuid().ToString("D"), Guid.NewGuid(), Guid.NewGuid(), PeriodEnd);
+        var deposit = Journal(Timestamp(2026, 5, 20), "Scoped deposit",
+            new JournalEntryMetadata(FinancialAccountId: AccountLabel),
+            (LedgerAccounts.CashAccount(AccountLabel), 2500m, 0m),
+            (LedgerAccounts.CapitalAccountFor(AccountLabel), 0m, 2500m));
+        var foreignReversal = Journal(Timestamp(2026, 5, 20), "Other period reversal",
+            new JournalEntryMetadata(FinancialAccountId: AccountLabel,
+                Tags: new Dictionary<string, string> { ["reversal.of"] = deposit.JournalEntryId.ToString("D") }),
+            (LedgerAccounts.CapitalAccountFor(AccountLabel), 2500m, 0m),
+            (LedgerAccounts.CashAccount(AccountLabel), 0m, 2500m));
+        var store = new QueryRecordingLedgerJournalStore(
+            [Record(deposit) with { PeriodId = scope.AccountingPeriodId }, Record(foreignReversal)])
+        {
+            Book = ScopedBook(scope) with { BaseCurrency = "EUR" },
+            Period = ScopedPeriod(scope)
+        };
+
+        var transactions = await new LedgerJournalInternalTransactionSource(store)
+            .GetTransactionsAsync(Query() with { AccountingScope = scope });
+
+        store.LastQuery!.LedgerBookId.Should().Be(scope.LedgerBookId);
+        store.LastQuery.PeriodId.Should().Be(scope.AccountingPeriodId);
+        store.LastQuery.EffectiveFrom.Should().Be(PeriodStart);
+        store.LastQuery.EffectiveTo.Should().Be(PeriodEnd);
+        var transaction = transactions.Should().ContainSingle().Subject;
+        transaction.EvidenceReference.Should().Be($"internal:journal:{deposit.JournalEntryId:D}");
+        transaction.Currency.Should().Be("EUR", "legacy cash legs inherit the retained book currency");
+    }
+
+    [Theory]
+    [InlineData("fund")]
+    [InlineData("book")]
+    [InlineData("period")]
+    [InlineData("window")]
+    [InlineData("as-of")]
+    [InlineData("basis")]
+    public async Task GetTransactionsAsync_MismatchedAccountingAuthorityDoesNotQueryJournals(string mismatch)
+    {
+        var scope = new StatementAccountingScope(Guid.NewGuid().ToString("D"), Guid.NewGuid(), Guid.NewGuid(), PeriodEnd);
+        var store = new QueryRecordingLedgerJournalStore([])
+        {
+            Book = ScopedBook(scope),
+            Period = ScopedPeriod(scope)
+        };
+        switch (mismatch)
+        {
+            case "fund":
+                store.Book = store.Book with { FundProfileId = Guid.NewGuid().ToString("D") };
+                break;
+            case "book":
+                store.Period = store.Period with { LedgerBookId = Guid.NewGuid() };
+                break;
+            case "period":
+                store.Period = store.Period with { PeriodId = Guid.NewGuid() };
+                break;
+            case "window":
+                store.Period = store.Period with { StartDate = PeriodStart.AddDays(1) };
+                break;
+            case "as-of":
+                scope = scope with { AsOfDate = PeriodEnd.AddDays(1) };
+                break;
+            case "basis":
+                store.Book = store.Book with { AccountingBasis = AccountingBasisKindDto.Tax };
+                break;
+        }
+
+        var transactions = await new LedgerJournalInternalTransactionSource(store)
+            .GetTransactionsAsync(Query() with { AccountingScope = scope });
+
+        transactions.Should().BeEmpty();
+        store.LastQuery.Should().BeNull("a mismatched accounting authority must not read a wider journal population");
+    }
 
     [Fact]
     public async Task GetTransactionsAsync_ProjectsRepresentativeJournalsAndExcludesInternalPostings()
@@ -460,6 +538,14 @@ public sealed class LedgerJournalInternalTransactionSourceTests
     private static InternalLedgerTransactionQuery Query() =>
         new(AccountLabel, [AccountLabel], PeriodStart, PeriodEnd, "USD");
 
+    private static LedgerBookRecord ScopedBook(StatementAccountingScope scope) => new(
+        scope.LedgerBookId, scope.FundProfileId, Guid.NewGuid(), FundStructureNodeKindDto.Fund,
+        "Statement primary book", "USD", DateTimeOffset.UnixEpoch, DateTimeOffset.UnixEpoch);
+
+    private static LedgerAccountingPeriod ScopedPeriod(StatementAccountingScope scope) => new(
+        scope.AccountingPeriodId, scope.LedgerBookId, 2026, 5, "May", PeriodStart, PeriodEnd,
+        "Open", DateTimeOffset.UnixEpoch, null, 1);
+
     private static DateTimeOffset Timestamp(int year, int month, int day) =>
         new(year, month, day, 14, 30, 0, TimeSpan.Zero);
 
@@ -500,6 +586,8 @@ public sealed class LedgerJournalInternalTransactionSourceTests
         : ILedgerJournalStore
     {
         public LedgerJournalEntryQuery? LastQuery { get; private set; }
+        public LedgerBookRecord? Book { get; set; }
+        public LedgerAccountingPeriod? Period { get; set; }
 
         public Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(
             LedgerJournalEntryQuery query,
@@ -519,7 +607,7 @@ public sealed class LedgerJournalInternalTransactionSourceTests
             throw new NotSupportedException();
 
         public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default) =>
-            throw new NotSupportedException();
+            Task.FromResult(Period);
 
         public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
             Guid? ledgerBookId = null,
@@ -537,7 +625,7 @@ public sealed class LedgerJournalInternalTransactionSourceTests
             throw new NotSupportedException();
 
         public Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default) =>
-            throw new NotSupportedException();
+            Task.FromResult(Book);
 
         public Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(
             string? fundProfileId = null,

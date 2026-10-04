@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using FluentAssertions;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
@@ -190,33 +191,79 @@ public sealed class Bai2StatementConnectorTests
         result.Issues.Should().Contain(issue => issue.Code == "BAI2_MISSING_ACCOUNT_SECTION");
     }
 
-    [Fact]
-    public async Task Parse_Bai2_ScalesAmountsByDeclaredCurrencyExponent()
+    [Theory]
+    [InlineData("JPY", "10000", "25000")]
+    [InlineData("UYI", "10000", "25000")]
+    [InlineData("USD", "100", "250")]
+    [InlineData("USN", "100", "250")]
+    [InlineData("BOV", "100", "250")]
+    [InlineData("CHE", "100", "250")]
+    [InlineData("CHW", "100", "250")]
+    [InlineData("COU", "100", "250")]
+    [InlineData("MXV", "100", "250")]
+    [InlineData("XAD", "100", "250")]
+    [InlineData("KWD", "10", "25")]
+    [InlineData("CLF", "1", "2.5")]
+    [InlineData("UYW", "1", "2.5")]
+    public async Task Parse_Bai2_ScalesAmountsByDeclaredCurrencyExponent(
+        string currency, string expectedBalance, string expectedCredit)
     {
-        // JPY has no minor unit, so a BAI2 amount of 10000 is 10000 yen, not 100. Assuming cents would
-        // understate every balance and transaction by two orders of magnitude for zero-decimal currencies.
-        const string bai2 = """
+        // The same source integers represent different amounts for zero-, two-, three-, and
+        // four-decimal ISO currencies and fund units. Both balance and activity must retain that scale.
+        var bai2 = $"""
             01,CITIBANK,MERIDIAN,260531,0800,1,,,2/
-            02,MERIDIAN,CITIBANK,1,260531,,JPY,2/
-            03,0975312468,JPY,015,10000,,/
+            02,MERIDIAN,CITIBANK,1,260531,,{currency},2/
+            03,0975312468,{currency},015,10000,,/
             16,115,25000,,BANKREF01,CUSTREF01,Incoming wire/
             49,10000,3/
             98,10000,1,3/
             99,10000,1,5/
             """;
-        var document = new StatementSourceDocument("jpy.bai", Encoding.UTF8.GetBytes(bai2));
+        var document = new StatementSourceDocument($"{currency}.bai", Encoding.UTF8.GetBytes(bai2));
 
         _connector.CanHandle(document).Should().BeTrue();
         var result = await _connector.ParseAsync(document);
 
         result.HasErrors.Should().BeFalse();
-        result.Records.Should().OnlyContain(record => record.Currency == "JPY");
+        result.Records.Should().OnlyContain(record => record.Currency == currency);
 
         var balance = result.Records.Single(record => record.Kind == StatementRecordKind.CashBalance);
-        balance.CashAmount.Should().Be(10000m, "JPY amounts carry no minor unit and must not be divided by 100");
+        balance.CashAmount.Should().Be(decimal.Parse(expectedBalance, CultureInfo.InvariantCulture));
 
         var transaction = result.Records.Single(record => record.Kind == StatementRecordKind.Transaction);
-        transaction.CashAmount.Should().Be(25000m, "type code 115 is a JPY credit expressed in whole yen");
+        transaction.CashAmount.Should().Be(decimal.Parse(expectedCredit, CultureInfo.InvariantCulture));
+    }
+
+    [Theory]
+    [InlineData("XAG")]
+    [InlineData("XAU")]
+    [InlineData("XBA")]
+    [InlineData("XBB")]
+    [InlineData("XBC")]
+    [InlineData("XBD")]
+    [InlineData("XDR")]
+    [InlineData("XPD")]
+    [InlineData("XPT")]
+    [InlineData("XSU")]
+    [InlineData("XUA")]
+    public async Task Parse_Bai2_WithUndefinedMinorUnitScale_IsRejected(string currency)
+    {
+        var bai2 = $"""
+            01,CITIBANK,MERIDIAN,260531,0800,1,,,2/
+            02,MERIDIAN,CITIBANK,1,260531,,{currency},2/
+            03,0975312468,{currency},015,10000,,/
+            16,115,25000,,BANKREF01,CUSTREF01,Incoming wire/
+            49,10000,3/
+            98,10000,1,3/
+            99,10000,1,5/
+            """;
+        var document = new StatementSourceDocument($"{currency}.bai", Encoding.UTF8.GetBytes(bai2));
+
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("an undefined minor-unit scale cannot establish monetary amounts");
+        result.Issues.Should().Contain(issue => issue.Code == "BAI2_UNSUPPORTED_MINOR_UNITS");
     }
 
     [Fact]

@@ -2,7 +2,7 @@
 
 **Status:** archive
 **Owner:** core-team
-**Reviewed:** 2026-09-29
+**Reviewed:** 2026-09-28
 
 Finished or superseded planning documents, kept for history. Nothing here is active guidance or
 status. Active plans are listed in the
@@ -14,7 +14,7 @@ status. Active plans are listed in the
 | [Tooling & Workflow Backlog](tooling-workflow-backlog.md) | 2026-09-28 | Completed; all nine items verified delivered in source (closure record inside) |
 | [What To Work On Next (2026-09-20)](next-work-determination-2026-09-20.md) | 2026-09-28 | Superseded by the 2026-09-23 determination |
 | [What To Work On Next (2026-09-23)](next-work-determination-2026-09-23.md) | 2026-09-28 | Superseded by the 2026-09-27 determination |
-| [What To Work On Next (2026-09-27)](next-work-determination-2026-09-27.md) | 2026-09-29 | Superseded by the 2026-09-29 determination |
+| [What To Work On Next (2026-09-29)](next-work-determination-2026-09-29.md) | 2026-10-04 | Historical proposal superseded by the [2026-10-02 determination](../../../docs/product/plans/next-work-determination-2026-10-02.md) |
 
 Plans archived before the 2026-09-11 archive cleanup (`982eea2d`) were removed from the tree. Their
 last copies are at

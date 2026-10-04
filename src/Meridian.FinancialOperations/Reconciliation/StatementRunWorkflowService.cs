@@ -382,7 +382,10 @@ public sealed class StatementRunWorkflowService(
                     imported.Import.ExternalAccountId,
                     imported.Import.StatementPeriodStart,
                     imported.Import.StatementPeriodEnd,
-                    baseCurrency),
+                    baseCurrency)
+                {
+                    AccountingScope = imported.Import.AccountingScope
+                },
                 ct)
             .ConfigureAwait(false);
         var matchResult = StatementRunMatcher.Match(

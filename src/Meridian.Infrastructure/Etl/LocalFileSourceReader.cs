@@ -1,14 +1,13 @@
 using Meridian.Contracts.Etl;
 using Meridian.Contracts.Integrity;
-using Meridian.Storage.Etl;
 
 namespace Meridian.Infrastructure.Etl;
 
 public sealed class LocalFileSourceReader : IEtlSourceReader
 {
-    private readonly EtlStagingStore _stagingStore;
+    private readonly IEtlStagingStore _stagingStore;
 
-    public LocalFileSourceReader(EtlStagingStore stagingStore)
+    public LocalFileSourceReader(IEtlStagingStore stagingStore)
     {
         _stagingStore = stagingStore;
     }
