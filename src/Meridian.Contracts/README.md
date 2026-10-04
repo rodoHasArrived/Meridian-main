@@ -11,6 +11,12 @@ last_reviewed: 2026-10-01
 
 # src/Meridian.Contracts
 
+The source-lineage contract separates optional `IdentityScopeId` (business identity) from
+`ComparisonScopeId` (executed comparison policy). Presence preserves an occurrence across policy
+changes; absence clears only its current comparison policy. Verified legacy receipts preserve
+original lineage IDs, reject changed replays, and refuse ambiguous historical forks. Optional fields
+are omitted from legacy JSON. Source clearing never resolves governed casework.
+
 `Etl/IEtlStagingStore.cs` lets source adapters retain imported streams through an injected
 persistence port without referencing the Storage implementation.
 

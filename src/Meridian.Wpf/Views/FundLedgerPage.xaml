@@ -1200,7 +1200,17 @@
                                                     <DataGridTextColumn Header="Owner" Binding="{Binding AssignedToLabel}" Width="120" />
                                                     <DataGridTextColumn Header="Priority" Binding="{Binding PriorityLabel}" Width="90" />
                                                     <DataGridTextColumn Header="SLA" Binding="{Binding SlaBadge}" Width="160" />
-                                                    <DataGridTextColumn Header="Age" Binding="{Binding AgeBandLabel}" Width="80" />
+                                                    <DataGridTextColumn Header="SLA age" Binding="{Binding AgeBandLabel}" Width="80" />
+                                                    <DataGridTemplateColumn Header="Source observation" Width="155">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <StackPanel ToolTip="{Binding SourceObservationDetail}">
+                                                                    <TextBlock Text="{Binding SourceObservationLabel}" />
+                                                                    <TextBlock Text="{Binding ObservedOccurrenceAge}" />
+                                                                </StackPanel>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
                                                     <DataGridTextColumn Header="Breach" Binding="{Binding BreachStateLabel}" Width="100" />
                                                     <DataGridTextColumn Header="Root cause" Binding="{Binding RootCauseCodeLabel}" Width="120" />
                                                     <DataGridTextColumn Header="Resolution" Binding="{Binding ResolutionCodeLabel}" Width="120" />

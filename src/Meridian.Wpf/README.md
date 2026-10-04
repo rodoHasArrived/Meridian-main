@@ -11,6 +11,8 @@ last_reviewed: 2026-10-01
 
 # src/Meridian.Wpf
 
+Fund Ledger defaults and resets to all reconciliation cases, includes explicitly fund-scoped statement cases without strategy runs, and shows retained source observation and occurrence age separately from case status. Exact lineage evidence is available in the source-observation disclosure. Missing strategy comparison detail preserves the selected case and reports unknown counts.
+
 Accounting Configure shows recurring occurrences beside retained journal drafts through
 `WorkstationRecurringJournalQueueClient`, using the same server contract as the browser.
 The operator selects an exact entity scope; rows show schedule/template versions, the retained

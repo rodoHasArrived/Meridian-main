@@ -226,6 +226,7 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
             SourceFileHash = sourceFileHash,
             CanonicalArtifactHash = canonicalArtifactHash,
             DuplicateKey = duplicateKey,
+            ExecutedMappingFingerprint = StatementExecutedMappingEvidence.Capture(normalizedRequest, "ib-flex-parser-v1"),
             AccountingScope = normalizedRequest.AccountingScope
         };
 

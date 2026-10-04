@@ -31,6 +31,9 @@ public sealed record CanonicalStatementImport(
     public string ToleranceProfileId { get; init; } = string.Empty;
     public string ImportedBy { get; init; } = "system";
     public string SourceFileHash { get; init; } = SourceChecksum;
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ExecutedMappingFingerprint { get; init; }
+
     public string CanonicalArtifactHash { get; init; } = SourceChecksum;
     public string DuplicateKey { get; init; } = string.Empty;
     public StatementAccountingScope? AccountingScope { get; init; }

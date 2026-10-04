@@ -19,6 +19,19 @@ public sealed class CsvStatementConnectorTests : IDisposable
     }
 
     [Fact]
+    public async Task Executed_mapping_proof_tracks_semantics_but_not_display_metadata()
+    {
+        var profile = (await _catalog.FindAsync(StatementMappingProfileRegistry.CanonicalCsvV1ProfileId))!;
+        var proof = StatementMappingExecutionEvidence.ForProfile("csv", profile);
+        proof.Should().Be(StatementMappingExecutionEvidence.ForProfile("csv", profile with { DisplayName = "Renamed", Notes = "Reviewed" }));
+        proof.Should().NotBe(StatementMappingExecutionEvidence.ForProfile("csv", profile with { Culture = "fr-FR" }));
+        proof.Should().NotBe(StatementMappingExecutionEvidence.ForProfile("csv", profile with { DateFormats = ["yyyyMMdd"] }));
+        var parsed = await _connector.ParseAsync(new StatementSourceDocument("csv-mixed-kinds.csv",
+            StatementConnectorTestData.ReadFixture("csv-mixed-kinds.csv")));
+        parsed.ExecutedMappingFingerprint.Should().Be(StatementMappingExecutionEvidence.ForProfile(parsed.ConnectorId, profile));
+    }
+
+    [Fact]
     public async Task Parse_MixedKindStatement_ClassifiesEveryKind()
     {
         var document = new StatementSourceDocument(

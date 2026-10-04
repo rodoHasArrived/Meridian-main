@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1033 |
-| Valid | 591 |
+| Total code blocks | 1034 |
+| Valid | 592 |
 | Invalid | 0 |
 | Skipped | 442 |
 
@@ -24,7 +24,7 @@
 | `csharp` | 325 | 325 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
 | `fsharp` | 54 | 0 | 0 | 54 |
-| `json` | 66 | 66 | 0 | 0 |
+| `json` | 67 | 67 | 0 | 0 |
 | `jsonc` | 2 | 2 | 0 | 0 |
 | `jsonl` | 1 | 0 | 0 | 1 |
 | `makefile` | 1 | 0 | 0 | 1 |
@@ -130,6 +130,7 @@ No invalid code examples found.
 | `docs/integrations/lean-integration.md` | 17 |
 | `docs/operators/distributed-tracing.md` | 2 |
 | `docs/operators/provider-backfill-operations.md` | 1 |
+| `docs/operators/reconciliation-operations.md` | 1 |
 | `docs/operators/statement-reconciliation-report-operations.md` | 1 |
 | `docs/product/adversarial-program-review-2026-08-25.md` | 3 |
 | `docs/product/functionality-deepening-brainstorm-2026-07.md` | 1 |

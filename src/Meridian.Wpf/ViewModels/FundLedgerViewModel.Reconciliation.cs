@@ -397,7 +397,7 @@ public sealed partial class FundLedgerViewModel
     }
 
     public bool HasActiveReconciliationFilters =>
-        ReconciliationSection.SelectedBreakQueueFilter != FundReconciliationBreakQueueFilter.Open ||
+        ReconciliationSection.SelectedBreakQueueFilter != FundReconciliationBreakQueueFilter.All ||
         ReconciliationSection.SelectedScopeFilter != FundReconciliationScopeFilter.All ||
         !string.IsNullOrWhiteSpace(ReconciliationSearchText);
 
@@ -833,6 +833,20 @@ public sealed partial class FundLedgerViewModel
         if (detail is null)
         {
             ClearReconciliationDetail();
+            if (SelectedBreakQueueItem is { } selected)
+            {
+                ReconciliationDetailTitle = selected.DisplayLabel;
+                ReconciliationDetailSubtitle = selected.SourceObservationDetail;
+                ReconciliationDetailStatusText = selected.StatusLabel;
+                ReconciliationDetailCoverageText = "Comparison detail is unavailable; retained case evidence remains visible.";
+                ReconciliationDetailGuidanceText = "Source clearing does not resolve governed casework or remove close blockers.";
+                ReconciliationDetailLastUpdatedText = selected.LastUpdatedAtText;
+                ReconciliationDetailTotalChecksText = "Unknown";
+                ReconciliationDetailMatchedText = "Unknown";
+                ReconciliationDetailBreaksText = "Unknown";
+                ReconciliationDetailSecurityIssuesText = "Unknown";
+                UpdateReconciliationOperatorGuidance();
+            }
             return;
         }
 
@@ -898,7 +912,7 @@ public sealed partial class FundLedgerViewModel
         try
         {
             ReconciliationSection.SelectedQueueView = FundReconciliationQueueView.BreakQueue;
-            ReconciliationSection.SelectedBreakQueueFilter = FundReconciliationBreakQueueFilter.Open;
+            ReconciliationSection.SelectedBreakQueueFilter = FundReconciliationBreakQueueFilter.All;
             ReconciliationSection.SelectedScopeFilter = FundReconciliationScopeFilter.All;
             ReconciliationSection.SelectedDetailTabIndex = 0;
             ReconciliationSection.SearchText = string.Empty;
@@ -1046,7 +1060,7 @@ public sealed partial class FundLedgerViewModel
         }
 
         var previousActiveKey = GetActiveReconciliationSelectionKey();
-        ReconciliationSection.SelectedBreakQueueFilter = FundReconciliationBreakQueueFilter.Open;
+        ReconciliationSection.SelectedBreakQueueFilter = FundReconciliationBreakQueueFilter.All;
         ReconciliationSection.SelectedScopeFilter = FundReconciliationScopeFilter.All;
         ReconciliationSection.SearchText = string.Empty;
 

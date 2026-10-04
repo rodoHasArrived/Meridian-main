@@ -11,6 +11,8 @@ last_reviewed: 2026-10-01
 
 # src/Meridian.Ui.Shared
 
+Source comparison requires a completed recovery checkpoint with matching run/import IDs, artifact hashes and counts, plus executed mapping proof shared by the import and match artifact. Failed or running recovery cannot clear observations. Named SLA calendars load once per host from DataRoot/reconciliation/sla-calendars.json; see the reconciliation operating procedure.
+
 `RecurringJournalRunner` joins `AutomatedJournalScheduledWorker` and the existing journal-intake
 path to create one retained human-review draft per recurring occurrence. It holds the durable
 claim lease through intake recovery, preserves exact definitions and evidence, and projects both

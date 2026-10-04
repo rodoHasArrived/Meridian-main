@@ -177,7 +177,7 @@ public sealed class FundLedgerReconciliationSectionViewModel : BindableBase
         "Statement Reconciliation");
 
     private FundReconciliationQueueView _selectedQueueView = FundReconciliationQueueView.BreakQueue;
-    private FundReconciliationBreakQueueFilter _selectedBreakQueueFilter = FundReconciliationBreakQueueFilter.Open;
+    private FundReconciliationBreakQueueFilter _selectedBreakQueueFilter = FundReconciliationBreakQueueFilter.All;
     private FundReconciliationScopeFilter _selectedScopeFilter = FundReconciliationScopeFilter.All;
     private int _selectedDetailTabIndex;
     private string _searchText = string.Empty;

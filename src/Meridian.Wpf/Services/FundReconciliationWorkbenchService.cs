@@ -95,7 +95,9 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
         var breakQueueRead = await breakQueueTask.ConfigureAwait(false);
         var breakQueue = breakQueueRead.Value;
         var scopedBreakQueue = breakQueue
-            .Where(item => runIds.Contains(item.RunId))
+            .Where(item => string.IsNullOrWhiteSpace(item.FundProfileId)
+                ? runIds.Contains(item.RunId)
+                : string.Equals(item.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase))
             .ToArray();
         var breakQueueItems = scopedBreakQueue
             .Select(item => MapBreakQueueRow(item, runNames))
@@ -392,7 +394,8 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             CommentCount: item.CommentCount,
              EvidenceCount: item.EvidenceCount,
              LastActivityText: item.LastActivityAt.HasValue ? FormatTimestamp(item.LastActivityAt.Value) : FormatTimestamp(item.LastUpdatedAt),
-             SignOffChecklist: BuildSignOffChecklist(item));
+             SignOffChecklist: BuildSignOffChecklist(item))
+        { Lineage = item.Lineage };
     }
 
     private static string JoinOrDefault(IReadOnlyList<string>? values, string fallback)

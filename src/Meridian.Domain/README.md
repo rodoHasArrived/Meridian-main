@@ -11,6 +11,9 @@ last_reviewed: 2026-07-25
 
 # src/Meridian.Domain
 
+Statement requests and canonical imports retain optional executed mapping fingerprints. Null is omitted from JSON to preserve legacy checkpoint hashes; absent evidence is unknown, never agreement with a current mapping catalog.
+
+
 ## Purpose
 
 Domain contains market-data collectors, domain events, models, reconciliation concepts, and telemetry primitives used by higher-level workflows.

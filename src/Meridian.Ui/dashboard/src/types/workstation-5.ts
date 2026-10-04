@@ -19,6 +19,7 @@ import type {
 } from "../types";
 
 export interface ReconciliationBreakLineage {
+  identityScopeId?: string | null;
   lineageId: string;
   comparisonScopeId: string;
   occurrenceId: string;

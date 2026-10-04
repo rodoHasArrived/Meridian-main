@@ -22,6 +22,33 @@ namespace Meridian.Wpf.Tests.Services;
 
 public sealed class FundReconciliationWorkbenchServiceTests
 {
+    [Theory]
+    [InlineData("alpha-fund", "statement-run", true)]
+    [InlineData("other-fund", "run-fund-ops", false)]
+    [InlineData(null, "run-fund-ops", true)]
+    [InlineData(null, "statement-run", false)]
+    public async Task Explicit_fund_scope_controls_statement_queue_membership(string? fund, string runId, bool included)
+    {
+        var start = new DateTimeOffset(2026, 9, 1, 0, 0, 0, TimeSpan.Zero);
+        var lineage = new ReconciliationBreakLineageDto("line", "scope", "occ", 1, "Cleared", start, start,
+            start.AddDays(1), "last", start.AddDays(2), "clearing");
+        var item = new ReconciliationBreakQueueItem("statement-break", runId, "Statement",
+            ReconciliationBreakCategory.CashMismatch, ReconciliationBreakQueueStatus.InReview, 10m,
+            "Cash variance", null, start, start) { FundProfileId = fund, Lineage = lineage };
+        var context = await CreateContextAsync(new FakeWorkstationReconciliationApiClient([item]));
+        var snapshot = await context.Service.GetSnapshotAsync("alpha-fund");
+        snapshot.BreakQueueItems.Should().HaveCount(included ? 1 : 0);
+        if (included)
+        {
+            var row = snapshot.BreakQueueItems.Single();
+            row.Lineage.Should().Be(lineage);
+            row.SourceObservationLabel.Should().Be("Source cleared");
+            row.ObservedOccurrenceAge.Should().Contain("48");
+            row.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
+            row.SourceObservationDetail.Should().Contain("does not resolve governed casework");
+        }
+    }
+
     [Fact]
     public async Task GetSnapshotAsync_SortsBreakQueue_AndBuildsRunRowsFromServerApiOnly()
     {

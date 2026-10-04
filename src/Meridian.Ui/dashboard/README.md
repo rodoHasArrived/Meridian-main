@@ -11,6 +11,8 @@ last_reviewed: 2026-08-04
 
 # src/Meridian.Ui/dashboard
 
+The reconciliation queue shows source observation and retained occurrence age directly. Clearing is labeled Source cleared and never implies case resolution. Legacy rows explicitly show identity/age unavailable. Queue refresh compares lineage metadata; inspector details include business and comparison scopes.
+
 Accounting's draft queue reads retained recurring occurrences through the shared scoped
 `/api/ledger/journal-automation/recurring/occurrences` contract. Rows retain schedule/template
 versions, draft identity, human approval status and source evidence references. Blocked rows

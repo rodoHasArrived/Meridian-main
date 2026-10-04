@@ -11,6 +11,8 @@ last_reviewed: 2026-10-01
 
 # src/Meridian.FinancialOperations
 
+All six shipped statement connectors capture executed mapping semantics at parse time. Display labels and review notes do not change that fingerprint; fields, activity mappings, culture, date formats and CSV options do. The retained import supplies comparison proof on replay. Legacy artifact upgrade verifies the original shape and adopts retained bytes without inventing mapping evidence.
+
 `FundAdministration/RecurringJournalState.cs` and `FileRecurringJournalStore` own versioned
 recurring schedules and templates, exact source evidence, one claim per schedule/effective date,
 and retained outcome history. A process-independent filesystem lease spans claim, intake and

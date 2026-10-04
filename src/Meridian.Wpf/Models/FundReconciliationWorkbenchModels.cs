@@ -119,7 +119,20 @@ public sealed record FundReconciliationBreakQueueRow(
     int CommentCount = 0,
     int EvidenceCount = 0,
     string LastActivityText = "No activity",
-    string SignOffChecklist = "Resolution, evidence, and dual-control sign-off required");
+    string SignOffChecklist = "Resolution, evidence, and dual-control sign-off required")
+{
+    public ReconciliationBreakLineageDto? Lineage { get; init; }
+    public string SourceObservationLabel => Lineage is null ? "Identity not established"
+        : Lineage.ObservationState == "Cleared" ? "Source cleared" : Lineage.ObservationState;
+    public string ObservedOccurrenceAge => Lineage is null ? "Age not tracked"
+        : (Lineage.ClearedAt ?? Lineage.LastObservedAt) < Lineage.OccurrenceFirstObservedAt ? "Age unavailable"
+        : $"{((Lineage.ClearedAt ?? Lineage.LastObservedAt) - Lineage.OccurrenceFirstObservedAt).TotalHours:F1}h observed";
+    public string SourceObservationDetail => Lineage is null ? "No stable source identity retained."
+        : $"{SourceObservationLabel}; {ObservedOccurrenceAge}. Source clearing does not resolve governed casework. "
+            + $"Lineage {Lineage.LineageId}; occurrence {Lineage.OccurrenceNumber} ({Lineage.OccurrenceId}); "
+            + $"identity scope {Lineage.IdentityScopeId ?? Lineage.ComparisonScopeId}; comparison scope {Lineage.ComparisonScopeId}; "
+            + $"last observed run {Lineage.LastObservedRunId}; clearing run {Lineage.ClearedByRunId ?? "not established"}.";
+}
 
 public sealed record FundReconciliationRunRow(
     string RowKey,

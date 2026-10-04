@@ -11,6 +11,8 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Infrastructure
 
+Statement importers retain parser revision and upstream executed mapping proof; pre-normalized imports without upstream proof remain non-comparable. Immutable match artifacts retain that mapping fingerprint. Source-generated import and match hashing supports exact completed-checkpoint verification without rewriting legacy bytes.
+
 Persistence is supplied through `Core.IO.IAtomicFileWriter`, `Contracts.Etl.IEtlStagingStore`, and
 ProviderSdk `IBackfillBarWriter`. Infrastructure has no project-reference path to Storage;
 application/host composition supplies Storage implementations. See the PRD-108 inventory in
