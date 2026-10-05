@@ -6,10 +6,18 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-02
 ---
 
 # src/Meridian.FinancialOperations
+
+`CanonicalLotAmortizationService` prepares read-only canonical face-lot projections from authoritative lot/reference records. Optional workstation postures may construct the service with absent stores, but preview requires ledger, Security Master, and book-position authority and refuses missing stores before any read. `AccountingPostingCandidatePostService` carries an `Amortize` instruction through the existing event-spine and independent approval rail to atomic journal/basis posting; the service itself cannot approve or post.
+
+The governed event-spine path retains its existing requirement that the Security Master currency
+equal the event's functional currency. The atomic lot boundary preserves acquisition currency and
+FX, but this delivery does not extend the event spine's cross-currency workflow. A later discrete
+disposal of a restated lot continues to fail closed when acquisition unit cost differs from its
+canonical basis; relief of an amortized basis remains a separate lot-convergence slice.
 
 `FundAdministration/RecurringJournalState.cs` and `FileRecurringJournalStore` own versioned
 recurring schedules and templates, exact source evidence, one claim per schedule/effective date,
@@ -764,8 +772,9 @@ identity and balanced posted amounts returned by that boundary.
 For this spine, a same-source journal is a replay only when its deterministic journal identity,
 complete Drafted candidate/result fingerprints, policy/rule pack, approval evidence, amounts,
 lines, currencies, and dimensions all match. Lots retain Security Master and book-position scope;
-disposal rechecks selected unit cost and aggregate cost basis against the exact asset-relief journal
-line under the same serializable transaction. A mismatch is a collision and blocks posting.
+disposal retains selected acquisition unit cost as a snapshot assertion, certifies current canonical
+relief basis across the scoped pool, and rechecks the exact asset-relief journal line under the same
+serializable transaction and effective policy revision. A mismatch is a collision and blocks posting.
 External accounting-system providers remain read-only import, reconciliation, and export-package
 surfaces; this service appends only Meridian-owned ledger facts.
 The retained approval evidence for generated candidate append must name approval intent, fund,

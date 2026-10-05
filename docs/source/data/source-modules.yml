@@ -84,7 +84,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-09-28
+    last_reviewed: 2026-10-02
 
   - id: SRC-CONTRACTS
     path: src/Meridian.Contracts
@@ -141,7 +141,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-09-28
+    last_reviewed: 2026-10-02
 
   - id: SRC-CORE
     path: src/Meridian.Core
@@ -276,7 +276,7 @@ modules:
       - DIA-ASSURANCE-LOOP
       - DIA-STORAGE-TOPOLOGY
     todos: []
-    last_reviewed: 2026-10-01
+    last_reviewed: 2026-10-02
 
   - id: SRC-EXECUTION
     path: src/Meridian.Execution
@@ -804,7 +804,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-09-28
+    last_reviewed: 2026-10-02
 
   - id: SRC-DESIGN-WORKFLOW
     path: src/Meridian.Workflow
@@ -1007,7 +1007,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-09-28
+    last_reviewed: 2026-10-02
 
   - id: SRC-UI-DASHBOARD
     path: src/Meridian.Ui/dashboard
