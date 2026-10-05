@@ -11,7 +11,7 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Application
 
-Ledger composition registers the read-only `CanonicalLotAmortizationService` alongside existing governed candidate services. Its registration preserves workstation startup when amortization stores are absent; preview requires the authoritative ledger, Security Master, and book-position stores and rejects missing authority before any read. Amortization posting remains on the shared Asset Accounting Event Spine approval and atomic ledger path.
+Ledger composition registers the read-only `CanonicalLotAmortizationService` alongside existing governed candidate services. Its registration preserves workstation startup when amortization stores are absent; preview requires the authoritative ledger, Security Master, and book-position stores and rejects missing authority before any read. Primary storage composition supplies deferred Security Master and book-position resolvers to the durable ledger without creating a constructor cycle. Amortization posting remains on the shared Asset Accounting Event Spine approval and atomic ledger path.
 
 Governed statement reconciliation carries its resolved fund, primary ledger book, and exact period
 through the retained population provider into journal queries. The journal source validates that

@@ -1,6 +1,6 @@
 {
   "total_files": 689,
-  "total_lines": 151859,
+  "total_lines": 151866,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2227,7 +2227,7 @@
     },
     {
       "path": "docs/engineering/blueprints/security-lot-convergence-blueprint.md",
-      "line_count": 380,
+      "line_count": 382,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2755,7 +2755,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11273,
+      "line_count": 11274,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5483,7 +5483,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 882,
+      "line_count": 884,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5651,7 +5651,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 775,
+      "line_count": 777,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

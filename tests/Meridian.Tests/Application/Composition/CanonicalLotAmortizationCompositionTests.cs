@@ -4,16 +4,72 @@ using Meridian.Application.Composition.Features;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
 using Meridian.FinancialOperations.Ledger;
+using Meridian.Storage;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using AuthEnvironmentScope = Meridian.Tests.Identity.EnvironmentVariableScope;
 
 namespace Meridian.Tests.Application.Composition;
 
+[Collection("Sequential")]
 public sealed class CanonicalLotAmortizationCompositionTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PrimaryStorage_WithCompleteAmortizationAuthority_ResolvesSharedStoresWithoutDependencyCycle(
+        bool resolvePositionsFirst)
+    {
+        using var environment = ConfigurePrimaryStorageEnvironment(configuredAuthorities: 3);
+        var services = new ServiceCollection();
+        new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
+
+        if (resolvePositionsFirst)
+            provider.GetRequiredService<IInstrumentPositionProjectionStore>()
+                .Should().BeOfType<PostgresAssetOperationsProjectionStore>();
+
+        var ledger = provider.GetRequiredService<PostgresLedgerJournalStore>();
+        provider.GetRequiredService<ILedgerJournalStore>().Should().BeSameAs(ledger);
+        provider.GetRequiredService<ITransactionalLedgerJournalStore>().Should().BeSameAs(ledger);
+        var resolveSecurities = provider.GetRequiredService<Func<ISecurityMasterStore?>>();
+        var resolvePositions = provider.GetRequiredService<Func<IInstrumentPositionProjectionStore?>>();
+        resolveSecurities().Should().BeOfType<PostgresSecurityMasterStore>()
+            .Which.Should().BeSameAs(provider.GetRequiredService<ISecurityMasterStore>());
+        resolvePositions().Should().BeOfType<PostgresAssetOperationsProjectionStore>()
+            .Which.Should().BeSameAs(provider.GetRequiredService<IInstrumentPositionProjectionStore>());
+
+        var options = provider.GetRequiredService<LedgerJournalStoreOptions>();
+        options.RequireGovernedPostingCommand.Should().BeTrue();
+        options.RequireExpectedVersion.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void PrimaryStorage_WithIncompleteAmortizationAuthority_DoesNotInventPostingAuthorities(
+        int configuredAuthorities)
+    {
+        using var environment = ConfigurePrimaryStorageEnvironment(configuredAuthorities);
+        var services = new ServiceCollection();
+        new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
+
+        provider.GetRequiredService<ILedgerJournalStore>().Should().BeOfType<PostgresLedgerJournalStore>();
+        var securities = provider.GetRequiredService<Func<ISecurityMasterStore?>>()();
+        var positions = provider.GetRequiredService<Func<IInstrumentPositionProjectionStore?>>()();
+        (securities is PostgresSecurityMasterStore).Should().Be((configuredAuthorities & 1) != 0);
+        (positions is PostgresAssetOperationsProjectionStore).Should().Be((configuredAuthorities & 2) != 0);
+        if ((configuredAuthorities & 1) == 0)
+            securities.Should().BeNull();
+        if ((configuredAuthorities & 2) == 0)
+            positions.Should().BeOfType<InMemoryAssetOperationsProjectionStore>();
+    }
+
     [Theory]
     [InlineData(0, "ledger journal")]
     [InlineData(1, "Security Master")]
@@ -87,6 +143,28 @@ public sealed class CanonicalLotAmortizationCompositionTests
             Arg.Is<IReadOnlyList<Guid>>(ids => ids.Count == 1 && ids[0] == lotId), Arg.Any<CancellationToken>());
         securities.ReceivedCalls().Should().BeEmpty();
         positions.ReceivedCalls().Should().BeEmpty();
+    }
+
+    private static AuthEnvironmentScope ConfigurePrimaryStorageEnvironment(int configuredAuthorities)
+    {
+        const string connectionString = "Host=composition-db;Database=meridian;Username=postgres;Password=fixture";
+        var environment = new AuthEnvironmentScope();
+        environment.Set(MeridianDatabaseEnvironment.UnifiedVariable, null)
+            .Set("DOTNET_ENVIRONMENT", "Production")
+            .Set("ASPNETCORE_ENVIRONMENT", "Production")
+            .Set("MERIDIAN_USE_INMEMORY_GOVERNANCE", null)
+            .Set(DirectLendingStartup.ConnectionStringVariable, null)
+            .Set(DirectLendingStartup.SchemaVariable, "security_master");
+        foreach (var variable in MeridianDatabaseEnvironment.PropagatedConnectionStringVariables)
+        {
+            environment.Set(variable, connectionString);
+            environment.Set(variable.Replace("_CONNECTION_STRING", "_SCHEMA", StringComparison.Ordinal), "composition_test");
+        }
+        environment.Set(SecurityMasterStartup.ConnectionStringVariable,
+                (configuredAuthorities & 1) != 0 ? connectionString : null)
+            .Set(AssetOperationsStartup.ConnectionStringVariable,
+                (configuredAuthorities & 2) != 0 ? connectionString : null);
+        return environment;
     }
 
     private static RetainedEvidenceIdentityDto SecurityEvidence()

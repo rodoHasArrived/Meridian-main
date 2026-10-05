@@ -13,6 +13,8 @@ last_reviewed: 2026-10-02
 
 `CanonicalLotAmortizationService` prepares read-only canonical face-lot projections from authoritative lot/reference records. Optional workstation postures may construct the service with absent stores, but preview requires ledger, Security Master, and book-position authority and refuses missing stores before any read. `AccountingPostingCandidatePostService` carries an `Amortize` instruction through the existing event-spine and independent approval rail to atomic journal/basis posting; the service itself cannot approve or post.
 
+`PreviewReversalAsync` derives an inverse from the immutable original lot mutation and refuses intervening lot changes. Drafting verifies the original snapshot and requires rebooks to reference a retained atomic reversal; independent approval remains mandatory. Reversals after reference changes require newly reviewed current Security Master evidence; original retained journal lines and the prior lot snapshot determine the inverse economics. Historical snapshot selection for ordinary amortization remains a separate review finding.
+
 The governed event-spine path retains its existing requirement that the Security Master currency
 equal the event's functional currency. The atomic lot boundary preserves acquisition currency and
 FX, but this delivery does not extend the event spine's cross-currency workflow. A later discrete

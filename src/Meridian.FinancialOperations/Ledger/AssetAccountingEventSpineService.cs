@@ -922,6 +922,39 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             RequireAssertion(retained.Account.AccountType == LedgerAccountType.Asset
                 && PayloadEquals(retained.ToOpenLot(), amortization.ExpectedLot),
                 "The reviewed amortization lot version, quantity or carrying basis changed; rebuild the projection.");
+            if (requested.CorrectsMutationBatchId is { } correctedId)
+            {
+                var corrected = await _journalStore.GetAtomicTaxLotPostingAsync(correctedId, ct).ConfigureAwait(false)
+                    ?? throw new InvalidOperationException("The corrected amortization receipt is unavailable.");
+                RequireAssertion(corrected.MutationKind == AtomicTaxLotMutationKind.Amortization
+                    && corrected.Mutations.Count == 1 && corrected.Mutations[0].LotBefore is not null
+                    && corrected.Journal.Entry.JournalEntryId == requested.CorrectsJournalEntryId
+                    && corrected.Journal.Entry.Metadata.EffectiveDate == amortization.AsOfDate
+                    && retained.LastMutationBatchId == correctedId
+                    && PayloadEquals(retained, corrected.Mutations[0].LotAfter),
+                    "Amortization correction requires the latest unchanged lot and exact original journal/date.");
+                var mutation = corrected.Mutations[0];
+                if (amortization.Reversal is { } reversal)
+                {
+                    var originalInputs = mutation.LotAfter.BasisAdjustment?.Amortization;
+                    RequireAssertion(mutation.LotAfter.BasisAdjustment?.MutationBatchId == correctedId
+                        && originalInputs is { Reversal: null }
+                        && OpenLotAmortization.SameLot(reversal.RestoresLot, mutation.LotBefore!.ToOpenLot()),
+                        "Amortization reversal must restore the exact retained original basis.");
+                }
+                else
+                    RequireAssertion(corrected.CorrectsMutationBatchId is not null
+                        && mutation.LotAfter.BasisAdjustment?.MutationBatchId != correctedId
+                        && mutation.LotBefore!.BasisAdjustment?.MutationBatchId == corrected.CorrectsMutationBatchId,
+                        "Amortization rebook requires an atomic reversal receipt; reverse the original posting first.");
+            }
+            else if (retained.LastMutationBatchId is { } lastId && retained.BasisAdjustment?.MutationBatchId != lastId)
+            {
+                var last = await _journalStore.GetAtomicTaxLotPostingAsync(lastId, ct).ConfigureAwait(false);
+                RequireAssertion(last is not { MutationKind: AtomicTaxLotMutationKind.Amortization, CorrectsMutationBatchId: not null }
+                    || last.Journal.Entry.Metadata.EffectiveDate != amortization.AsOfDate,
+                    "Same-date amortization after reversal requires approved rebook lineage to the reversal receipt.");
+            }
             var assetLines = source.ProjectedEffect!.Lines.Where(line => line.AccountId == requested.AssetAccountId).ToArray();
             RequireAssertion(assetLines.Length == 1
                 && assetLines[0].Debit == Math.Max(projection.FunctionalMovement, 0m)

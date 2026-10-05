@@ -226,6 +226,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         if (LedgerStartup.IsConfigured())
         {
             services.AddSingleton(ledgerOptions);
+            // Resolve posting authorities on use: the position store itself consumes the ledger.
+            services.AddSingleton<Func<ISecurityMasterStore?>>(sp =>
+                () => sp.GetService<ISecurityMasterStore>());
+            services.AddSingleton<Func<IInstrumentPositionProjectionStore?>>(sp =>
+                () => sp.GetService<IInstrumentPositionProjectionStore>());
             services.AddSingleton<PostgresLedgerJournalStore>();
             services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());

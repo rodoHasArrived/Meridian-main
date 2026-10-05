@@ -374,6 +374,8 @@ at the same identity, stale lot/reference state, unproved historical partial hol
 amortization date or another basis treatment is refused. PostgreSQL Security Master and position
 stores must share the ledger database so reference locks remain held through commit.
 
+The post-merge correction adds primary-host authority resolvers and an explicit reviewed reversal. It restores the latest unchanged amortization's pre-posting basis adjustment (including earlier amortization), reverses all original financial lines, and appends journal/lot correction evidence atomically. A same-date rebook references that reversal and retains independent approval. Later lot mutations block reversal. This does not duplicate PR #3050's current-basis disposal work. Historical reference-version selection, term normalization, and acquisition residual governance remain open review findings; the governed event spine still requires its existing Security Master version checks.
+
 This is a partial W10-LOT-002 delivery. Corporate-action successors, advance refunding, active
 wash-sale correction, cross-consumer parity and live shadow-operation acceptance remain separate.
 Automated evidence is recorded with the implementation test results; no operator acceptance or
