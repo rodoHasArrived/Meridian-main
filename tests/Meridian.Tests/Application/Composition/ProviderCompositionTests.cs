@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Features;
+using Meridian.Application.UI;
 using Meridian.Contracts.Api;
 using Meridian.Core.Config;
 using Meridian.Domain.Events;
@@ -26,6 +27,67 @@ public sealed class ProviderCompositionTests : IDisposable
     private const string TokenVariable = "MERIDIAN_COMPOSITION_TEST_TOKEN";
     private readonly string? _originalToken = Environment.GetEnvironmentVariable(TokenVariable);
     private readonly string _configPath = Path.Combine(Path.GetTempPath(), $"provider-composition-{Guid.NewGuid():N}.json");
+
+    public static IEnumerable<object[]> ConfiguredAliases()
+    {
+        var runtimeFamilies = ProviderCapabilityDescriptorCatalog.Descriptors
+            .Where(descriptor => descriptor.Registrations().Any())
+            .Select(descriptor => descriptor.ProviderId)
+            .ToHashSet(StringComparer.Ordinal);
+        foreach (var (alias, family) in ProviderIdentity.Aliases.OrderBy(pair => pair.Key, StringComparer.Ordinal))
+        {
+            if (!runtimeFamilies.Contains(family))
+                continue;
+
+            yield return [alias, family, true];
+            yield return [alias, family, false];
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(ConfiguredAliases))]
+    public async Task Every_configured_alias_controls_all_of_its_declared_capabilities(
+        string alias, string family, bool enabled)
+    {
+        var configuredAlias = $" {alias.ToUpperInvariant()} ";
+        var services = CreateApplicationServices(configuredFamily: configuredAlias, configuredFamilyEnabled: enabled);
+        var registrationCount = services.Count;
+        await using var provider = services.BuildServiceProvider();
+        var config = provider.GetRequiredService<ConfigStore>().Load();
+        config.ProviderModules!.Modules.Should().ContainKey(configuredAlias,
+            "the alias must come from the host's JSON configuration, not just a registry lookup");
+        var registry = provider.GetRequiredService<ProviderRegistry>();
+        var descriptor = ProviderCapabilityDescriptorCatalog.Descriptors.Single(candidate => candidate.ProviderId == family);
+
+        foreach (var registration in descriptor.Registrations())
+        {
+            var instance = registry.GetCapability(configuredAlias, registration.Contract);
+            if (enabled)
+            {
+                instance.Should().NotBeNull($"configured alias '{alias}' declares {registration.Contract.Name}");
+                registration.Implementation.IsInstanceOfType(instance).Should().BeTrue();
+                if (instance is IProviderMetadata metadata)
+                    ProviderIdentity.NormalizeId(metadata.ProviderId).Should().Be(family);
+                if (instance is IBrokerageGateway brokerage)
+                    ProviderIdentity.NormalizeId(brokerage.GatewayId).Should().Be(family);
+                if (registration.Contract == typeof(IMarketDataClient) && instance is IMarketDataClient streaming)
+                    await streaming.DisposeAsync();
+                else
+                    registry.GetCapability(family, registration.Contract).Should().BeSameAs(instance);
+            }
+            else
+            {
+                instance.Should().BeNull($"disabling configured alias '{alias}' disables its whole family");
+                registry.GetCapability(family, registration.Contract).Should().BeNull();
+                provider.GetService(registration.Implementation).Should().BeNull(
+                    "concrete DI resolution must not bypass a disabled family's configuration");
+            }
+        }
+
+        if (descriptor.HasStreaming)
+            registry.SupportedStreamingSources.Contains(family).Should().Be(enabled);
+        services.Count.Should().Be(registrationCount, "provider resolution must not mutate the built service graph");
+    }
 
     public static IEnumerable<object[]> ConfiguredAliasVariants()
     {
@@ -85,6 +147,8 @@ public sealed class ProviderCompositionTests : IDisposable
     [Theory]
     [InlineData("template-brokerage", false)]
     [InlineData("template-brokerage", true)]
+    [InlineData("template", false)]
+    [InlineData("template", true)]
     [InlineData("templates", false)]
     [InlineData("templates", true)]
     [InlineData("tradier", false)]
@@ -98,9 +162,27 @@ public sealed class ProviderCompositionTests : IDisposable
         await using var provider = services.BuildServiceProvider();
         var registry = provider.GetRequiredService<ProviderRegistry>();
 
-        foreach (var contract in ProviderCapabilityDescriptorCatalog.Descriptors
-                     .SelectMany(d => d.Registrations()).Select(r => r.Contract).Distinct())
+        var contracts = ProviderCapabilityDescriptorCatalog.Descriptors
+            .SelectMany(d => d.Registrations()).Select(r => r.Contract).Distinct().ToArray();
+        foreach (var contract in contracts)
+        {
             registry.GetCapability(family, contract).Should().BeNull();
+            provider.GetServices(contract).Should().NotContain(instance =>
+                instance is IProviderMetadata && ProviderIdentity.EqualsId(((IProviderMetadata)instance).ProviderId, family)
+                || instance is IBrokerageGateway && ProviderIdentity.EqualsId(((IBrokerageGateway)instance).GatewayId, family));
+        }
+
+        var excludedNamespaces = new[]
+        {
+            "Meridian.Infrastructure.Adapters.Templates",
+            "Meridian.Infrastructure.Adapters.Tradier",
+            "Meridian.Infrastructure.Adapters.TradeStation"
+        };
+        var excludedTypes = typeof(ProviderFactory).Assembly.GetTypes()
+            .Where(type => type.Namespace is not null && excludedNamespaces.Contains(type.Namespace)
+                && contracts.Any(contract => contract.IsAssignableFrom(type)));
+        foreach (var type in excludedTypes)
+            provider.GetService(type).Should().BeNull($"{type.Name} belongs to a template-only or mapper-only family");
 
         var createStreaming = () => registry.CreateStreamingClient(family);
         createStreaming.Should().Throw<InvalidOperationException>();
@@ -120,6 +202,10 @@ public sealed class ProviderCompositionTests : IDisposable
         var services = CreateApplicationServices(attributeDiscovery, aliasVariant: aliasVariant, disableAllFamilies: true);
         await using var provider = services.BuildServiceProvider();
         var registry = provider.GetRequiredService<ProviderRegistry>();
+        var config = provider.GetRequiredService<ConfigStore>().Load();
+        foreach (var descriptor in ProviderCapabilityDescriptorCatalog.Descriptors)
+            config.ProviderModules!.Modules.Should().ContainKey($" {ConfiguredName(descriptor.ProviderId, aliasVariant).ToUpperInvariant()} ",
+                "aliases must be loaded from the host JSON configuration");
 
         foreach (var descriptor in ProviderCapabilityDescriptorCatalog.Descriptors)
         {
@@ -128,6 +214,8 @@ public sealed class ProviderCompositionTests : IDisposable
                 foreach (var name in AcceptedNames(descriptor.ProviderId))
                     registry.GetCapability(name, capability.Contract).Should().BeNull(
                         $"disabling configured alias {ConfiguredName(descriptor.ProviderId, aliasVariant)} disables {name}");
+                provider.GetService(capability.Implementation).Should().BeNull(
+                    "concrete DI resolution must not bypass a disabled family");
             }
         }
 
@@ -234,7 +322,8 @@ public sealed class ProviderCompositionTests : IDisposable
 
     private ServiceCollection CreateApplicationServices(
         bool attributeDiscovery = false, string? extraFamily = null,
-        int? aliasVariant = null, bool disableAllFamilies = false)
+        int? aliasVariant = null, bool disableAllFamilies = false,
+        string? configuredFamily = null, bool configuredFamilyEnabled = true)
     {
         Environment.SetEnvironmentVariable(TokenVariable, "composition-fixture-token");
         var modules = new Dictionary<string, ProviderModuleSettings>
@@ -255,6 +344,15 @@ public sealed class ProviderCompositionTests : IDisposable
         }
         if (extraFamily is not null)
             modules[extraFamily] = new();
+
+        if (configuredFamily is not null)
+        {
+            var existing = modules.Keys.SingleOrDefault(key => ProviderIdentity.EqualsId(key, configuredFamily));
+            var settings = existing is null ? new ProviderModuleSettings() : modules[existing];
+            if (existing is not null)
+                modules.Remove(existing);
+            modules[configuredFamily] = settings with { Enabled = configuredFamilyEnabled };
+        }
 
         var config = new AppConfig(
             IB: new IBOptions(),
