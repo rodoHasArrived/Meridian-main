@@ -8,7 +8,6 @@ using Xunit;
 namespace Meridian.Tests.Integration.EndpointTests;
 
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class RiskEndpointTests : EndpointIntegrationTestBase, IDisposable
 {
     private readonly HttpClient _riskClient;

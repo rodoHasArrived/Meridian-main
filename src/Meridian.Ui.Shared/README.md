@@ -11,6 +11,11 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Ui.Shared
 
+Shared endpoint composition accepts an explicit `IConfiguration` for authentication, persistence,
+rate limiting and LEAN settings. Each host retains its own provider catalog and LEAN result records;
+fixture hosts can coexist without publishing configuration or endpoint state to the process.
+Omitting configuration retains the production environment-based startup contract.
+
 `RecurringJournalRunner` joins `AutomatedJournalScheduledWorker` and the existing journal-intake
 path to create one retained human-review draft per recurring occurrence. It holds the durable
 claim lease through intake recovery, preserves exact definitions and evidence, and projects both

@@ -79,12 +79,25 @@ namespace Meridian.Ui.Shared.Services;
 /// </summary>
 public static class WorkstationServiceCollectionExtensions
 {
-    public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services)
+    public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null)
     {
         services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
+        services.TryAddSingleton<Meridian.Ui.Shared.Endpoints.ReplayScanLifetime>();
+        services.AddHostedService(sp => sp.GetRequiredService<Meridian.Ui.Shared.Endpoints.ReplayScanLifetime>());
         // Unified persistence config must resolve before the reporting/scoped-access
         // registrations below read the per-domain connection-string variables.
-        Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+        var configuration = hostConfiguration is null
+            ? CompositionConfiguration.Resolve(services)
+            : new CompositionConfiguration(hostConfiguration);
+        services.TryAddSingleton(configuration);
+        if (configuration.HostConfiguration is { } authenticationConfiguration)
+            services.TryAddSingleton(new AuthenticationConfiguration(authenticationConfiguration));
+        if (configuration.UsesEnvironment)
+            Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+        services.TryAddSingleton<Meridian.Contracts.Api.IProviderCatalog>(sp =>
+            sp.GetService<ProviderRegistry>() is { } registry
+                ? new Meridian.Contracts.Api.RuntimeProviderCatalog(registry.GetProviderCatalog, registry.GetProviderCatalogEntry)
+                : new Meridian.Contracts.Api.RuntimeProviderCatalog());
         services.TryAddSingleton<ProviderDataReadModelService>();
         // Persisted evidence does not enable live IB access in a guidance/non-vendor build.
         services.TryAddSingleton<IBDurableResultStore>(sp =>
@@ -117,7 +130,8 @@ public static class WorkstationServiceCollectionExtensions
             var configStore = sp.GetRequiredService<ConfigStore>();
             var registry = sp.GetService<ProviderRegistry>();
             var factory = sp.GetService<ProviderFactory>();
-            return new BackfillCoordinator(configStore, registry, factory);
+            return new BackfillCoordinator(configStore, registry, factory,
+                providerCatalog: sp.GetService<Meridian.Contracts.Api.IProviderCatalog>());
         });
 
         services.AddHttpClient();
@@ -141,7 +155,7 @@ public static class WorkstationServiceCollectionExtensions
         // tighten the single-company migration posture, but cannot weaken the strict posture.
         services.TryAddSingleton(sp => new FundScopedWriteTenantOptions(
             Enforce: sp.GetRequiredService<Meridian.Contracts.Tenancy.TenantScopeEnforcementOptions>().IsFailClosed || string.Equals(
-                Environment.GetEnvironmentVariable("MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED"),
+                configuration["MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED"],
                 "true",
                 StringComparison.OrdinalIgnoreCase)));
         // W9-GOV-008 criterion 2: the fund-structure implementation with no tenant partition must not
@@ -155,7 +169,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IComplianceApprovalResolver>(sp =>
             sp.GetRequiredService<IComplianceApprovalStore>());
         services.TryAddSingleton<ICompliancePolicyEngine, CompliancePolicyEngine>();
-        if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")))
+        if (!string.IsNullOrWhiteSpace(configuration.GetConnectionString("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")))
         {
             var hasProcessWideScopedAccessMigration = services.Any(
                 static descriptor =>
@@ -166,8 +180,8 @@ public static class WorkstationServiceCollectionExtensions
                         StringComparison.Ordinal));
             services.TryAddSingleton(new ScopedAccessStoreOptions
             {
-                ConnectionString = Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")!,
-                Schema = Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_SCHEMA") ?? "identity_access"
+                ConnectionString = configuration.GetConnectionString("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")!,
+                Schema = configuration["MERIDIAN_SCOPED_ACCESS_SCHEMA"] ?? "identity_access"
             });
             services.TryAddSingleton<PostgresScopedAccessAssignmentStore>(sp =>
                 new PostgresScopedAccessAssignmentStore(
@@ -280,7 +294,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<StrategyRunContinuityService>();
         services.TryAddSingleton<IBacktestPreflightService, BacktestPreflightService>();
 
-        services.TryAddSingleton(BrokerageConnectionOptions.RobinhoodFromEnvironment());
+        services.TryAddSingleton(BrokerageConnectionOptions.RobinhoodFromConfiguration(configuration));
         services.TryAddSingleton<BrokerageConnectionService>();
         services.TryAddSingleton<AlpacaBrokerageConnectionService>();
         services.AddDefaultProviderSetupHandlers();
@@ -339,7 +353,12 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<IFundAccountService>(),
             sp.GetServices<IEtlSourceReader>(),
             sp.GetService<IPlaidIngestionService>()));
-        services.TryAddSingleton(BrokeragePortfolioSyncOptions.Default);
+        services.TryAddSingleton(sp => configuration.UsesEnvironment
+            ? BrokeragePortfolioSyncOptions.Default
+            : BrokeragePortfolioSyncOptions.Default with
+            {
+                RootDirectory = Path.Combine(ResolveWorkstationDataDirectory(sp), "brokerage-sync")
+            });
         services.TryAddSingleton<BrokeragePortfolioSyncService>();
         services.TryAddSingleton<ProviderLedgerReconciliationService>();
         services.TryAddSingleton(sp => new MarginCertificationStore(ResolveWorkstationDataDirectory(sp)));
@@ -605,8 +624,8 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ReportGenerationService>();
         services.TryAddSingleton<InvestmentAccountingTransactionLabService>();
         services.TryAddSingleton<ReportPackValidationService>();
-        var reportingConnectionString = Environment.GetEnvironmentVariable("MERIDIAN_REPORTING_CONNECTION_STRING")
-            ?? Environment.GetEnvironmentVariable("MERIDIAN_LEDGER_CONNECTION_STRING");
+        var reportingConnectionString = configuration["MERIDIAN_REPORTING_CONNECTION_STRING"]
+            ?? configuration.GetConnectionString("MERIDIAN_LEDGER_CONNECTION_STRING");
         if (isProductionComposition && string.IsNullOrWhiteSpace(reportingConnectionString))
         {
             throw new InvalidOperationException(
@@ -620,7 +639,7 @@ public static class WorkstationServiceCollectionExtensions
             services.TryAddSingleton(new ReportingArtifactStoreOptions
             {
                 ConnectionString = reportingConnectionString,
-                Schema = Environment.GetEnvironmentVariable("MERIDIAN_REPORTING_SCHEMA") ?? "reporting"
+                Schema = configuration["MERIDIAN_REPORTING_SCHEMA"] ?? "reporting"
             });
             services.TryAddSingleton<ReportingMigrationRunner>();
             services.TryAddSingleton<IReportingMigrationStartup, ReportingMigrationStartup>();
@@ -1160,21 +1179,24 @@ public static class WorkstationServiceCollectionExtensions
     private static PlaidOptions ResolvePlaidOptions(IServiceProvider sp)
     {
         var configuration = sp.GetService<IConfiguration>();
-        var section = configuration?.GetSection("Plaid");
+        var hostConfiguration = sp.GetService<CompositionConfiguration>() ?? new CompositionConfiguration();
+        string? ReadSection(string name) => hostConfiguration.UsesEnvironment
+            ? configuration?["Plaid:" + name]
+            : hostConfiguration["Plaid:" + name];
         var environment = ParsePlaidEnvironment(
-            section?["Environment"] ??
-            Environment.GetEnvironmentVariable("PLAID_ENV") ??
-            Environment.GetEnvironmentVariable("PLAID_ENVIRONMENT"));
-        var products = ParsePlaidProducts(section?["DefaultProducts"]);
+            ReadSection("Environment") ??
+            hostConfiguration["PLAID_ENV"] ??
+            hostConfiguration["PLAID_ENVIRONMENT"]);
+        var products = ParsePlaidProducts(ReadSection("DefaultProducts"));
         return new PlaidOptions(
             Environment: environment,
-            ClientId: section?["ClientId"] ?? Environment.GetEnvironmentVariable("PLAID_CLIENT_ID"),
-            Secret: section?["Secret"] ?? Environment.GetEnvironmentVariable("PLAID_SECRET"),
-            WebhookBaseUrl: section?["WebhookBaseUrl"] ?? Environment.GetEnvironmentVariable("PLAID_WEBHOOK_BASE_URL"),
-            EnableTransfers: ParseBoolean(section?["EnableTransfers"]) || ParseBoolean(Environment.GetEnvironmentVariable("PLAID_ENABLE_TRANSFERS")),
-            EnableInvestments: !ParseBoolean(section?["DisableInvestments"]) && !ParseBoolean(Environment.GetEnvironmentVariable("PLAID_DISABLE_INVESTMENTS")),
+            ClientId: ReadSection("ClientId") ?? hostConfiguration["PLAID_CLIENT_ID"],
+            Secret: ReadSection("Secret") ?? hostConfiguration["PLAID_SECRET"],
+            WebhookBaseUrl: ReadSection("WebhookBaseUrl") ?? hostConfiguration["PLAID_WEBHOOK_BASE_URL"],
+            EnableTransfers: ParseBoolean(ReadSection("EnableTransfers")) || ParseBoolean(hostConfiguration["PLAID_ENABLE_TRANSFERS"]),
+            EnableInvestments: !ParseBoolean(ReadSection("DisableInvestments")) && !ParseBoolean(hostConfiguration["PLAID_DISABLE_INVESTMENTS"]),
             DefaultProducts: products.Length == 0 ? PlaidOptions.Default.DefaultProducts : products,
-            EnableLiveTransfers: ParseBoolean(section?["EnableLiveTransfers"]) || ParseBoolean(Environment.GetEnvironmentVariable("PLAID_ENABLE_LIVE_TRANSFERS")));
+            EnableLiveTransfers: ParseBoolean(ReadSection("EnableLiveTransfers")) || ParseBoolean(hostConfiguration["PLAID_ENABLE_LIVE_TRANSFERS"]));
     }
 
     private static PlaidEnvironmentDto ParsePlaidEnvironment(string? value)
