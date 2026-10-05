@@ -10,40 +10,169 @@ from pathlib import Path
 from statistics import median
 
 
-def seconds(start: str | None, end: str | None) -> float | None:
-    if not start or not end:
+def timestamp(value: str | None) -> datetime | None:
+    """Only timezone-qualified, usable API timestamps constitute timing evidence."""
+    if not isinstance(value, str) or not value:
         return None
-    value = (datetime.fromisoformat(end.replace("Z", "+00:00")) -
-             datetime.fromisoformat(start.replace("Z", "+00:00"))).total_seconds()
-    return max(0.0, value)
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo is not None and parsed.year > 1 else None
+
+
+def seconds(start: str | None, end: str | None) -> float | None:
+    first, last = timestamp(start), timestamp(end)
+    if first is None or last is None or last < first:
+        return None
+    return (last - first).total_seconds()
+
+
+def measured_sum(values) -> float | None:
+    measured = [value for value in values if value is not None]
+    return sum(measured) if measured else None
+
+
+def job_record(job: dict, attempt: int, observed_at: str | None) -> dict:
+    """Separate runner execution from synthetic starts and carried-forward results."""
+    job_attempt = job.get("run_attempt", attempt)
+    if job_attempt != attempt:
+        raise ValueError("Job run_attempt differs from its containing run; export attempt-specific jobs.")
+    created, started, completed = (job.get(key) for key in
+                                   ("created_at", "started_at", "completed_at"))
+    status, conclusion = job.get("status"), job.get("conclusion")
+    queued = status in {"queued", "waiting", "pending", "requested"}
+    step_started = any(
+        step.get("conclusion") != "skipped" and
+        (timestamp(step.get("started_at")) is not None or step.get("status") == "in_progress"
+         or step.get("conclusion") in {"success", "failure", "timed_out"})
+        for step in job.get("steps", [])
+    )
+    assigned = bool(job.get("runner_id") or job.get("runner_name"))
+    unassigned = ("runner_id" in job and job["runner_id"] in (None, 0)
+                  and not assigned and not step_started)
+    valid_start = timestamp(started)
+    if queued or conclusion == "skipped" or unassigned:
+        state = "not_started"
+    elif valid_start is not None:
+        state = "started"
+    else:
+        # Missing start metadata alone cannot prove that a terminal job never ran.
+        state = "unknown"
+
+    issue = None
+    if state == "started" and timestamp(created) is not None and valid_start < timestamp(created):
+        # Partial reruns can copy successful jobs with NEW creation times/job IDs but
+        # OLD execution timestamps. Their duration is not execution in this attempt.
+        issue = "started_before_created"
+    elif started and valid_start is None and state != "not_started":
+        issue = "invalid_started_at"
+
+    queue = seconds(created, started) if state == "started" and not issue else None
+    execution = seconds(started, completed) if state == "started" and not issue else None
+    wait, wait_end = None, None
+    if state == "started" and not issue:
+        wait, wait_end = queue, "started"
+    elif state == "not_started":
+        terminal = status == "completed" or conclusion is not None
+        if terminal:
+            wait, wait_end = seconds(created, completed), "completed"
+        elif queued:
+            wait, wait_end = seconds(created, observed_at), "observed"
+    if wait is None:
+        wait_end = None
+
+    return {
+        "jobId": job.get("id"), "name": job["name"], "status": status,
+        "conclusion": conclusion, "runAttempt": attempt,
+        "runnerId": job.get("runner_id"), "runnerName": job.get("runner_name"),
+        "runnerGroupName": job.get("runner_group_name"), "labels": job.get("labels"),
+        "createdAt": created, "startedAt": started, "completedAt": completed,
+        "startState": state, "timingIssue": issue,
+        "queueSeconds": queue, "waitSeconds": wait, "waitEnd": wait_end,
+        "executionSeconds": execution,
+    }
+
+
+def summarize_records(runs: list[dict]) -> dict:
+    jobs = [job for run in runs for job in run["jobs"]]
+    distributions = {}
+    for metric, field in (("queue", "queueSeconds"), ("execution", "executionSeconds"),
+                          ("wait", "waitSeconds")):
+        values = [job[field] for job in jobs if job[field] is not None]
+        distributions[f"{metric}Samples"] = len(values)
+        distributions[f"median{metric.capitalize()}Seconds"] = median(values) if values else None
+    return {
+        **distributions,
+        "runAttempts": len(runs), "uniqueRuns": len({run["runId"] for run in runs}),
+        "retryAttempts": sum(run["isRetry"] for run in runs),
+        "cancelledRunAttempts": sum(run["conclusion"] == "cancelled" for run in runs),
+        "jobs": len(jobs),
+        "notStartedJobs": sum(job["startState"] == "not_started" for job in jobs),
+        "cancelledJobs": sum(job["conclusion"] == "cancelled" for job in jobs),
+        "cancelledBeforeStartJobs": sum(job["conclusion"] == "cancelled" and
+                                        job["startState"] == "not_started" for job in jobs),
+        "queuedJobs": sum(job["status"] in {"queued", "waiting", "pending", "requested"}
+                          for job in jobs),
+        "unavailableExecutionJobs": sum(job["executionSeconds"] is None for job in jobs),
+        "knownRunnerSeconds": measured_sum(run["knownRunnerSeconds"] for run in runs),
+        "cancelledRunKnownRunnerSeconds": measured_sum(
+            run["knownRunnerSeconds"] for run in runs if run["conclusion"] == "cancelled"),
+        "retryKnownRunnerSeconds": measured_sum(
+            run["knownRunnerSeconds"] for run in runs if run["isRetry"]),
+    }
 
 
 def summarize(payload: dict) -> dict:
-    """Input: runs with event, run_attempt, head_sha, conclusion and embedded jobs."""
+    """One row per run attempt, with all pages of attempt-specific embedded jobs.
+
+    observed_at is an optional fixed export timestamp for still-queued jobs. The
+    system clock is never substituted: rerunning an export gives the same result.
+    """
     groups: dict[str, list[dict]] = {}
+    history: dict[int, set[int]] = {}
+    all_runs = []
     for run in payload["workflow_runs"]:
-        key = f"{run['name']} / {run['event']} / attempt {run.get('run_attempt', 1)}"
-        jobs = run.get("jobs", [])
-        records = []
-        for job in jobs:
-            records.append({
-                "name": job["name"], "conclusion": job.get("conclusion"),
-                "queueSeconds": seconds(job.get("created_at"), job.get("started_at")),
-                "executionSeconds": seconds(job.get("started_at"), job.get("completed_at")),
-            })
-        complete = bool(records) and all(j["executionSeconds"] is not None for j in records)
-        groups.setdefault(key, []).append({
+        attempt = run.get("run_attempt", 1)
+        if not isinstance(attempt, int) or isinstance(attempt, bool) or attempt < 1:
+            raise ValueError("run_attempt must be a positive integer.")
+        attempts = history.setdefault(run["id"], set())
+        if attempt in attempts:
+            raise ValueError(f"Duplicate run attempt: {run['id']} / {attempt}")
+        attempts.add(attempt)
+        key = f"{run['name']} / {run['event']} / attempt {attempt}"
+        jobs = run.get("jobs")
+        if jobs is not None and not isinstance(jobs, list):
+            raise ValueError("Embedded jobs must be a list containing every page for this attempt.")
+        records = [job_record(job, attempt, payload.get("observed_at")) for job in jobs or []]
+        complete = bool(records) and all(job["executionSeconds"] is not None for job in records)
+        known = measured_sum(job["executionSeconds"] for job in records)
+        record = {
             "runId": run["id"], "commitSha": run["head_sha"],
-            "conclusion": run.get("conclusion"), "jobs": records,
-            "runnerSeconds": sum(j["executionSeconds"] for j in records) if complete else None,
-        })
+            "runAttempt": attempt, "isRetry": attempt > 1,
+            "status": run.get("status"), "conclusion": run.get("conclusion"),
+            "jobsAvailable": jobs is not None, "jobs": records,
+            "runnerSeconds": known if complete else None, "knownRunnerSeconds": known,
+        }
+        groups.setdefault(key, []).append(record)
+        all_runs.append(record)
     result = {}
     for name, runs in groups.items():
-        eligible = [r["runnerSeconds"] for r in runs
-                    if r["conclusion"] == "success" and r["runnerSeconds"] is not None]
+        eligible = [run["runnerSeconds"] for run in runs
+                    if run["conclusion"] == "success" and run["runnerSeconds"] is not None
+                    and all(job["conclusion"] == "success" for job in run["jobs"])]
         result[name] = {"runs": runs, "successfulSamples": len(eligible),
-                        "medianRunnerSeconds": median(eligible) if eligible else None}
-    return {"schemaVersion": 1, "groups": result}
+                        "medianRunnerSeconds": median(eligible) if eligible else None,
+                        "summary": summarize_records(runs)}
+    return {
+        "schemaVersion": 2, "observedAt": payload.get("observed_at"),
+        "groups": result, "summary": summarize_records(all_runs),
+        "retryHistory": [
+            {"runId": run_id, "observedAttempts": sorted(attempts),
+             "missingAttempts": sorted(set(range(1, max(attempts) + 1)) - attempts)}
+            for run_id, attempts in history.items()
+        ],
+    }
 
 
 def evaluate_pairs(pairs: list[dict]) -> dict:
