@@ -64,6 +64,7 @@ public static class ProviderIdentity
             ["robinhood-live"] = "robinhood",
             ["robinhood-options"] = "robinhood",
             ["robinhood-symbols"] = "robinhood",
+            ["ssharp"] = "stocksharp",
             ["synthetic-options"] = "synthetic",
             ["template-brokerage"] = "templates",
             ["tiingo-corp-actions"] = "tiingo",

@@ -90,9 +90,13 @@ Provider readiness resolves configuration, credential and telemetry aliases thro
 ProviderSdk family identity map before joining evidence. Accepted names such as `ib` and
 `interactive-brokers` project one `ibkr` readiness row. An explicitly disabled module family
 overrides enabled source rows and retained healthy connection evidence, so configuration aliases
-cannot promote a disabled factory to readiness. Configured source IDs remain connection keys for
-joining retained metrics and do not create additional provider-family readiness rows. Health and
-diagnostic lookups resolve the same aliases before joining runtime connection snapshots.
+cannot promote a disabled factory to readiness. Named data-source connection IDs do not create
+extra provider families or override another family's source settings. Provider setup navigation
+resolves the same shared aliases before choosing a family-specific settings route.
+Telemetry joins resolve a recognized provider-family type, then exact configured source ownership,
+before falling back to a legacy family-valued metric ID (including records whose type is `Streaming`).
+A connection named `alpaca` for the IB family therefore cannot contribute IB failures to Alpaca readiness.
+Health and diagnostic lookups resolve the same aliases before joining runtime connection snapshots.
 
 The shared workstation registers credentialed Xero and NetSuite accounting
 providers alongside the existing fixtures. Their HTTP client disables redirects;
