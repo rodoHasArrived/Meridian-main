@@ -1,11 +1,11 @@
 {
   "total_files": 693,
-  "total_lines": 153259,
+  "total_lines": 153380,
   "orphaned_count": 233,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 295,
-  "average_lines": 221.2,
+  "average_lines": 221.3,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2252,7 +2252,7 @@
     },
     {
       "path": "docs/engineering/ci-cd-optimization.md",
-      "line_count": 188,
+      "line_count": 309,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
