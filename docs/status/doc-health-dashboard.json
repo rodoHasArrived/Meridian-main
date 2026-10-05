@@ -1,11 +1,11 @@
 {
   "total_files": 691,
-  "total_lines": 152595,
+  "total_lines": 152644,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 291,
-  "average_lines": 220.8,
+  "average_lines": 220.9,
   "health_score": 81,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2363,7 +2363,7 @@
     },
     {
       "path": "docs/engineering/production-certification-evidence-chain.md",
-      "line_count": 563,
+      "line_count": 579,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2771,7 +2771,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11318,
+      "line_count": 11322,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2883,7 +2883,7 @@
     },
     {
       "path": "docs/operators/browser-workstation-installer.md",
-      "line_count": 73,
+      "line_count": 102,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
