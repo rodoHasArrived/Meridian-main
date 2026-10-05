@@ -162,6 +162,17 @@ class ValidationRunnerTests(unittest.TestCase):
             self.assertEqual(phases, ["prune", "restore", "build"])
             self.assertIsNone(self.buildctl._read_validation_lock())
 
+    def test_diagnostic_build_and_restore_commands_share_the_writer_lock(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir, patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)), \
+                patch.object(self.buildctl, "_run") as run:
+            self.assertTrue(self.buildctl._acquire_validation_lock(Path(temp_dir), run_id="owner", command="owner", queue=False, timeout_seconds=0))
+            self.assertEqual(self.buildctl.cmd_build_profile(self._args()), 3)
+            self.assertEqual(self.buildctl.cmd_build_graph(self._args()), 3)
+            success, _, detail = self.buildctl._check_solution_restore(quick=False)
+            self.assertFalse(success)
+            self.assertIn("locked", detail)
+            run.assert_not_called()
+
     def test_invalid_and_conflicting_output_options_fail_before_commands(self) -> None:
         with patch.object(self.buildctl, "_run_passthrough") as run:
             for updates in ({"run_id": "../escape"}, {"isolation_key": "../escape"},

@@ -222,6 +222,20 @@ def _release_validation_lock(repo_root: Path, run_id: str) -> None:
         print(f"WARN: Failed to release validation lock '{lock_path}': {exc}", file=sys.stderr)
 
 
+def _run_dotnet_writer(cmd: list[str], *, capture: bool = True) -> subprocess.CompletedProcess[str]:
+    """Keep legacy diagnostic builds/restores in the same writer protocol."""
+    run_id = _new_run_id("diagnostic")
+    if not _acquire_validation_lock(REPO_ROOT, run_id=run_id, command=" ".join(cmd), queue=False, timeout_seconds=0):
+        message = "Build outputs are locked; wait for the current build/test run to finish."
+        if not capture:
+            print(message, file=sys.stderr)
+        return subprocess.CompletedProcess(cmd, 3, "", message)
+    try:
+        return _run(cmd, capture=capture)
+    finally:
+        _release_validation_lock(REPO_ROOT, run_id)
+
+
 def _find_powershell() -> str | None:
     return shutil.which("pwsh") or shutil.which("powershell")
 
@@ -710,7 +724,7 @@ def _check_solution_restore(quick: bool) -> tuple[bool, bool, str]:
         if sln.exists():
             return True, False, "Meridian.sln found (restore skipped in quick mode)"
         return False, False, "Meridian.sln not found"
-    result = _run(
+    result = _run_dotnet_writer(
         [
             "dotnet",
             "restore",
@@ -1451,7 +1465,7 @@ def cmd_collect_debug(args: argparse.Namespace) -> int:
 def cmd_build_profile(_args: argparse.Namespace) -> int:
     print("Building with timing information...")
     start = datetime.now(timezone.utc)
-    result = _run(
+    result = _run_dotnet_writer(
         [
             "dotnet",
             "build",
@@ -1548,7 +1562,7 @@ def cmd_analyze_errors(_args: argparse.Namespace) -> int:
 def cmd_build_graph(args: argparse.Namespace) -> int:
     project: str = getattr(args, "project", "Meridian.sln")
     print(f"Generating dependency graph for {project}...")
-    result = _run(
+    result = _run_dotnet_writer(
         ["dotnet", "build", project, "/p:EnableWindowsTargeting=true", "--graph", "--verbosity", "quiet"],
         capture=False,
     )

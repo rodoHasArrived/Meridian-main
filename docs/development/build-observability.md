@@ -137,7 +137,8 @@ Reused output makes the development loop incremental; retain a fresh isolated va
 final evidence. Fresh output roots still use the machine's installed SDK and package cache.
 
 Build and test serialize through `.ai/locks/validation.lock` before retention, restore, build, or
-test work. `--queue` waits for the lock; without it a busy runner fails. The test command's
+test work. Diagnostic `doctor` restores, `build-profile`, and `build-graph` also acquire this lock.
+`--queue` waits for the lock on build/test; without it a busy runner fails. The test command's
 `--allow-concurrent` option only skips the additional external build-process guard and never
 bypasses this lock. The lock protects shared observability outputs as well as generated build
 files. Direct `dotnet` commands and other tools must coordinate with this runner; they do not
