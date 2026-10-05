@@ -9,6 +9,7 @@ using Meridian.Domain.Events;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Infrastructure.Adapters.Templates;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
@@ -26,12 +27,25 @@ public sealed class ProviderCompositionTests : IDisposable
     private readonly string? _originalToken = Environment.GetEnvironmentVariable(TokenVariable);
     private readonly string _configPath = Path.Combine(Path.GetTempPath(), $"provider-composition-{Guid.NewGuid():N}.json");
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task Application_path_resolves_every_declared_capability_through_configured_aliases(bool attributeDiscovery)
+    public static IEnumerable<object[]> ConfiguredAliasVariants()
     {
-        var services = CreateApplicationServices(attributeDiscovery);
+        // Rotate each family's accepted names together so every alias is read from a
+        // configuration file without requiring a separate application host per alias.
+        var variants = ProviderCapabilityDescriptorCatalog.Descriptors
+            .Max(descriptor => AcceptedNames(descriptor.ProviderId).Length);
+        for (var variant = 0; variant < variants; variant++)
+        {
+            yield return [false, variant];
+            yield return [true, variant];
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(ConfiguredAliasVariants))]
+    public async Task Application_path_resolves_every_declared_capability_through_configured_aliases(
+        bool attributeDiscovery, int aliasVariant)
+    {
+        var services = CreateApplicationServices(attributeDiscovery, aliasVariant: aliasVariant);
         var registrationCount = services.Count;
         await using var provider = services.BuildServiceProvider();
         var registry = provider.GetRequiredService<ProviderRegistry>();
@@ -39,8 +53,7 @@ public sealed class ProviderCompositionTests : IDisposable
 
         foreach (var descriptor in ProviderCapabilityDescriptorCatalog.Descriptors)
         {
-            var ids = ProviderIdentity.Aliases.Where(pair => pair.Value == descriptor.ProviderId)
-                .Select(pair => pair.Key).Append(descriptor.ProviderId).ToArray();
+            var ids = AcceptedNames(descriptor.ProviderId);
             foreach (var registration in descriptor.Registrations())
             {
                 foreach (var id in ids)
@@ -70,13 +83,18 @@ public sealed class ProviderCompositionTests : IDisposable
     }
 
     [Theory]
-    [InlineData("template-brokerage")]
-    [InlineData("templates")]
-    [InlineData("tradier")]
-    [InlineData("tradestation")]
-    public async Task Configuring_nonproduction_families_does_not_create_production_providers(string family)
+    [InlineData("template-brokerage", false)]
+    [InlineData("template-brokerage", true)]
+    [InlineData("templates", false)]
+    [InlineData("templates", true)]
+    [InlineData("tradier", false)]
+    [InlineData("tradier", true)]
+    [InlineData("tradestation", false)]
+    [InlineData("tradestation", true)]
+    public async Task Configuring_nonproduction_families_does_not_create_production_providers(
+        string family, bool attributeDiscovery)
     {
-        var services = CreateApplicationServices(attributeDiscovery: true, extraFamily: family);
+        var services = CreateApplicationServices(attributeDiscovery, extraFamily: $" {family.ToUpperInvariant()} ");
         await using var provider = services.BuildServiceProvider();
         var registry = provider.GetRequiredService<ProviderRegistry>();
 
@@ -88,22 +106,36 @@ public sealed class ProviderCompositionTests : IDisposable
         createStreaming.Should().Throw<InvalidOperationException>();
         provider.GetService<TemplateBrokerageGateway>().Should().BeNull();
         provider.GetServices<IBrokerageGateway>().Should().NotContain(g => g is TemplateBrokerageGateway);
+        registry.GetAllProviderMetadata().Should().NotContain(metadata => ProviderIdentity.EqualsId(metadata.ProviderId, family));
+        ProviderCatalog.Get(family).Should().BeNull("configuration cannot promote scaffolds or mapper assets into runtime inventory");
         provider.GetRequiredService<DataSourceRegistry>().Sources.Should().NotContain(
             source => source.ImplementationType == typeof(TemplateBrokerageGateway) || ProviderIdentity.EqualsId(source.Id, family));
     }
 
-    [Fact]
-    public async Task Alias_disable_applies_to_all_capabilities_of_the_family()
+    [Theory]
+    [MemberData(nameof(ConfiguredAliasVariants))]
+    public async Task Configured_alias_disable_applies_to_every_declared_capability(
+        bool attributeDiscovery, int aliasVariant)
     {
-        var services = CreateApplicationServices(disabledFamily: "interactive-brokers");
+        var services = CreateApplicationServices(attributeDiscovery, aliasVariant: aliasVariant, disableAllFamilies: true);
         await using var provider = services.BuildServiceProvider();
         var registry = provider.GetRequiredService<ProviderRegistry>();
-        var ib = ProviderCapabilityDescriptorCatalog.Descriptors.Single(d => d.ProviderId == "ibkr");
 
-        foreach (var capability in ib.Registrations())
-            registry.GetCapability(" IB ", capability.Contract).Should().BeNull();
-        registry.SupportedStreamingSources.Should().NotContain("ibkr");
-        provider.GetServices<IBrokerageGateway>().Should().NotContain(g => g.GatewayId == "ibkr");
+        foreach (var descriptor in ProviderCapabilityDescriptorCatalog.Descriptors)
+        {
+            foreach (var capability in descriptor.Registrations())
+            {
+                foreach (var name in AcceptedNames(descriptor.ProviderId))
+                    registry.GetCapability(name, capability.Contract).Should().BeNull(
+                        $"disabling configured alias {ConfiguredName(descriptor.ProviderId, aliasVariant)} disables {name}");
+            }
+        }
+
+        registry.SupportedStreamingSources.Should().BeEmpty();
+        registry.GetAllProviderMetadata().Should().BeEmpty();
+        provider.GetServices<IBrokerageGateway>().Should().BeEmpty();
+        provider.GetServices<ICorporateActionProvider>().Should().BeEmpty();
+        provider.GetServices<IOptionsChainProvider>().Should().BeEmpty();
     }
 
     [Fact]
@@ -170,14 +202,23 @@ public sealed class ProviderCompositionTests : IDisposable
         registry.GetCapability<IHistoricalDataProvider>("interactive-brokers").Should().NotBeNull();
     }
 
-    [Fact]
-    public async Task Streaming_factories_are_distinct_from_search_and_runtime_alias_disable_covers_both()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Streaming_factories_are_distinct_from_search_and_runtime_alias_disable_covers_both(bool resolveConcreteFirst)
     {
         await using var provider = CreateApplicationServices().BuildServiceProvider();
+        var concrete = resolveConcreteFirst ? provider.GetRequiredService<SyntheticMarketDataClient>() : null;
         var registry = provider.GetRequiredService<ProviderRegistry>();
         var search = registry.GetCapability<ISymbolSearchProvider>("synthetic");
+        concrete ??= provider.GetRequiredService<SyntheticMarketDataClient>();
+        concrete.Should().BeSameAs(search,
+            "the shared implementation's concrete service must reuse the registry-owned search singleton");
+        provider.GetRequiredService<SyntheticMarketDataClient>().Should().BeSameAs(concrete);
         await using var streaming = registry.GetCapability<IMarketDataClient>("synthetic");
+        await using var anotherStreaming = registry.CreateStreamingClient("synthetic");
         streaming.Should().NotBeSameAs(search);
+        anotherStreaming.Should().NotBeSameAs(streaming).And.NotBeSameAs(search);
         var first = await provider.InitializeProvidersAsync();
         var second = await provider.InitializeProvidersAsync();
         first.TotalProviders.Should().Be(second.TotalProviders);
@@ -192,7 +233,8 @@ public sealed class ProviderCompositionTests : IDisposable
     }
 
     private ServiceCollection CreateApplicationServices(
-        bool attributeDiscovery = false, string? extraFamily = null, string? disabledFamily = null)
+        bool attributeDiscovery = false, string? extraFamily = null,
+        int? aliasVariant = null, bool disableAllFamilies = false)
     {
         Environment.SetEnvironmentVariable(TokenVariable, "composition-fixture-token");
         var modules = new Dictionary<string, ProviderModuleSettings>
@@ -201,10 +243,18 @@ public sealed class ProviderCompositionTests : IDisposable
             ["nasdaq-data-link"] = new(),
             ["robinhood-live"] = new(Credentials: new() { ["accessToken"] = TokenVariable })
         };
+        if (aliasVariant is { } variant)
+        {
+            modules = ProviderCapabilityDescriptorCatalog.Descriptors.ToDictionary(
+                descriptor => $" {ConfiguredName(descriptor.ProviderId, variant).ToUpperInvariant()} ",
+                descriptor => new ProviderModuleSettings(
+                    Enabled: !disableAllFamilies,
+                    Credentials: descriptor.ProviderId == "robinhood"
+                        ? new() { ["accessToken"] = TokenVariable }
+                        : null));
+        }
         if (extraFamily is not null)
             modules[extraFamily] = new();
-        if (disabledFamily is not null)
-            modules[disabledFamily] = new(Enabled: false);
 
         var config = new AppConfig(
             IB: new IBOptions(),
@@ -222,6 +272,19 @@ public sealed class ProviderCompositionTests : IDisposable
         json["providerRegistry"] = new JsonObject { ["useAttributeDiscovery"] = attributeDiscovery };
         File.WriteAllText(_configPath, json.ToJsonString());
         return CreateApplicationServicesWithExistingConfig();
+    }
+
+    private static string[] AcceptedNames(string providerId) => ProviderIdentity.Aliases
+        .Where(pair => pair.Value == providerId)
+        .Select(pair => pair.Key)
+        .Append(providerId)
+        .OrderBy(name => name, StringComparer.Ordinal)
+        .ToArray();
+
+    private static string ConfiguredName(string providerId, int variant)
+    {
+        var names = AcceptedNames(providerId);
+        return names[variant % names.Length];
     }
 
     private ServiceCollection CreateApplicationServicesWithExistingConfig()

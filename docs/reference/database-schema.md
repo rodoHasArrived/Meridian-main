@@ -98,12 +98,26 @@ approval boundary for migration and generated-artifact changes.
 For a normal migration change:
 
 ```powershell
+# Resolve and retain the intended comparison baseline.
+$baselineSha = git rev-parse --verify 'origin/main^{commit}'
+
 # Fast local proof, without PostgreSQL
-python build/scripts/schema-control.py inventory --base-ref origin/main
+python build/scripts/schema-control.py inventory --base-ref $baselineSha
 
 # Generate a candidate in GitHub-hosted PostgreSQL
-gh workflow run schema-control.yml --ref <branch> -f mode=snapshot
+gh workflow run schema-control.yml --ref <branch> -f mode=snapshot -f baseline_ref=$baselineSha
 ```
+
+Pull-request checks use the event's base SHA. Manual `check` and `snapshot` runs require an explicit
+`baseline_ref`, which is resolved once to a commit SHA. The artifact's `revisions.json` and run
+summary record the baseline and the actual checked-out candidate SHA; a pull-request candidate is
+normally GitHub's merge commit. The CLI also records these identities in
+`candidate/reports/revisions.json` and the candidate summary. This evidence stays outside the
+tracked generated outputs.
+
+Reproduce a comparison with a clean checkout of the recorded candidate, the recorded baseline SHA
+as `--base-ref`, and a fresh disposable database. A later advance of `origin/main` does not affect
+that fixed comparison.
 
 Download and inspect the snapshot artifact, promote its `candidate` directory with
 `build/scripts/schema-control.py promote`, and commit the resulting `database/manifest/**` and

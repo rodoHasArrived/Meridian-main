@@ -38,6 +38,47 @@ public sealed class DiagnosticsEndpointsTests : IDisposable
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly string _tempRoot = Path.Combine(Path.GetTempPath(), $"meridian-diagnostics-endpoints-{Guid.NewGuid():N}");
 
+    [Theory]
+    [InlineData("GET", "/api/health/providers/interactive-brokers/diagnostics")]
+    [InlineData("POST", "/api/health/providers/interactive-brokers/test")]
+    [InlineData("POST", "/api/diagnostics/providers/interactive-brokers/test")]
+    [InlineData("POST", "/api/providers/interactive-brokers/test")]
+    public async Task ProviderDiagnostics_AliasResolvesCanonicalRuntimeProvider(string method, string path)
+    {
+        using var registry = new ProviderRegistry();
+        registry.Register(new DiagnosticProvider("ibkr", "Interactive Brokers", new WebSocketConnectionDiagnostics(
+            ProviderName: "ibkr",
+            LifecycleState: ProviderConnectionLifecycleState.Reconnecting,
+            WebSocketState: WebSocketState.Aborted,
+            IsConnected: false,
+            IsReconnecting: true,
+            ReconnectAttempts: 1,
+            LastConnectedAt: null,
+            LastDisconnectedAt: null,
+            LastHeartbeatReceivedAt: null,
+            LastMessageReceivedAt: null,
+            LastReconnectAttemptAt: null,
+            LastError: null,
+            LastFailureKind: ProviderFailureKind.TransientNetworkFailure,
+            ConnectionAge: null,
+            IdleDuration: null)));
+        await using var app = await CreateAppAsync(
+            services => services.AddSingleton(registry),
+            app =>
+            {
+                app.MapHealthEndpoints(JsonOptions);
+                app.MapProviderExtendedEndpoints(JsonOptions);
+            });
+
+        using var request = new HttpRequestMessage(new HttpMethod(method), path);
+        var response = await app.GetTestClient().SendAsync(request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        payload.RootElement.GetProperty("diagnosticsAvailable").GetBoolean().Should().BeTrue();
+        payload.RootElement.GetProperty("connectionState").GetString().Should().Be("reconnecting");
+    }
+
     [Fact]
     public async Task DiagnosticsMetrics_IncludesPipelineAndMarketDataSnapshots()
     {
@@ -442,7 +483,9 @@ public sealed class DiagnosticsEndpointsTests : IDisposable
         return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade, source: "TEST");
     }
 
-    private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection> configureServices)
+    private static async Task<WebApplication> CreateAppAsync(
+        Action<IServiceCollection> configureServices,
+        Action<WebApplication>? mapAdditionalEndpoints = null)
     {
         var applicationBuilder = WebApplication.CreateBuilder();
         applicationBuilder.WebHost.UseTestServer();
@@ -471,6 +514,7 @@ public sealed class DiagnosticsEndpointsTests : IDisposable
             return next();
         });
         app.MapDiagnosticsEndpoints(JsonOptions);
+        mapAdditionalEndpoints?.Invoke(app);
         await app.StartAsync();
         return app;
     }
