@@ -1,11 +1,11 @@
 {
-  "total_files": 689,
-  "total_lines": 151927,
+  "total_files": 690,
+  "total_lines": 152282,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 291,
-  "average_lines": 220.5,
+  "average_lines": 220.7,
   "health_score": 81,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1579,7 +1579,7 @@
     },
     {
       "path": "docs/architecture/provider-integration-manifest-runtime.md",
-      "line_count": 798,
+      "line_count": 864,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2154,6 +2154,14 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/actions-storage-audit-2026-10-05.md",
+      "line_count": 154,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/blueprints/accounting/commitment-and-capital-call-engine.md",
       "line_count": 1033,
       "has_heading": true,
@@ -2259,7 +2267,7 @@
     },
     {
       "path": "docs/engineering/ci-cd-optimization.md",
-      "line_count": 184,
+      "line_count": 188,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2371,7 +2379,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 325,
+      "line_count": 334,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2755,7 +2763,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11277,
+      "line_count": 11290,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2899,7 +2907,7 @@
     },
     {
       "path": "docs/operators/failover-and-recovery.md",
-      "line_count": 418,
+      "line_count": 432,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3427,7 +3435,7 @@
     },
     {
       "path": "docs/reference/database-schema.md",
-      "line_count": 146,
+      "line_count": 160,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5387,7 +5395,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 922,
+      "line_count": 928,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5419,7 +5427,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1589,
+      "line_count": 1597,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5539,7 +5547,7 @@
     },
     {
       "path": "src/Meridian.Infrastructure/README.md",
-      "line_count": 379,
+      "line_count": 387,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5603,7 +5611,7 @@
     },
     {
       "path": "src/Meridian.ProviderSdk/README.md",
-      "line_count": 134,
+      "line_count": 147,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5651,7 +5659,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 784,
+      "line_count": 792,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5675,7 +5683,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2562,
+      "line_count": 2564,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5683,7 +5691,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1439,
+      "line_count": 1445,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5875,7 +5883,7 @@
     },
     {
       "path": "tools/schema_control/README.md",
-      "line_count": 93,
+      "line_count": 123,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

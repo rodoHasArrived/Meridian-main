@@ -195,7 +195,7 @@ public static class ProviderExtendedEndpoints
         group.MapPost(UiApiRoutes.ProviderTest, (string providerName, [FromServices] ProviderRegistry? registry) =>
         {
             var provider = registry?.GetAllProviders()
-                .FirstOrDefault(p => string.Equals(p.Name, providerName, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(p => ProviderIdentity.EqualsId(p.Name, providerName));
             var diagnostics = provider is null
                 ? null
                 : ProviderConnectionDiagnosticsProjection.Find(

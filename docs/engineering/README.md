@@ -157,18 +157,27 @@ metadata, inventories public C# DTOs and related data objects, evaluates databas
 checks the generated manifests and Mermaid diagrams for drift.
 
 ```powershell
+# Resolve and retain the intended comparison baseline.
+$baselineSha = git rev-parse --verify 'origin/main^{commit}'
+
 # Local, database-free migration inventory and safety checks
-python build/scripts/schema-control.py inventory --base-ref origin/main
+python build/scripts/schema-control.py inventory --base-ref $baselineSha
 
 # Rebuild and verify against a disposable PostgreSQL database
 python -m pip install --requirement tools/schema_control/requirements.txt
 python build/scripts/schema-control.py verify `
   --database-url "postgresql://meridian:meridian@localhost:5432/meridian_schema_control" `
-  --base-ref origin/main
+  --base-ref $baselineSha
 
 # Generate a hosted snapshot artifact for review
-gh workflow run schema-control.yml --ref <branch> -f mode=snapshot
+gh workflow run schema-control.yml --ref <branch> -f mode=snapshot -f baseline_ref=$baselineSha
 ```
+
+PR checks compare against the pull-request event's base SHA. Both manual modes require an explicit
+`baseline_ref`, resolved once to a commit. Run evidence records the baseline and the actual
+checked-out candidate SHA (normally the GitHub merge commit for PRs). Use that same pair to
+reproduce a comparison independently of later `origin/main` advances; see the schema-control guide
+for evidence paths and local working-tree details.
 
 Never point `snapshot` or `verify` at a shared or production database. The workflow's check mode is
 read-only with respect to the repository and fails when `database/manifest/**` or
