@@ -194,6 +194,29 @@ public sealed class EvidenceStorageQuotaCoordinatorTests : IDisposable
         }
     }
 
+    [Theory]
+    [InlineData("reservedBytes")]
+    [InlineData("writtenBytes")]
+    [InlineData("preparedBytes")]
+    [InlineData("artifactCount")]
+    public async Task LiveReservation_MissingAccountingField_BlocksAdmissionWithoutReleasingCharge(string missingField)
+    {
+        var coordinator = Coordinator();
+        await using var active = await coordinator.ReserveAsync("tenant", 80, 1);
+        var path = Path.Combine(Journal, active.Id + ".json");
+        var record = System.Text.Json.Nodes.JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        record.Remove(missingField).Should().BeTrue();
+        var malformed = record.ToJsonString();
+        await File.WriteAllTextAsync(path, malformed);
+
+        var reserve = async () =>
+        {
+            await using var other = await Coordinator().ReserveAsync("tenant", missingField == "reservedBytes" ? 21 : 20, 1);
+        };
+        await reserve.Should().ThrowAsync<InvalidDataException>();
+        (await File.ReadAllTextAsync(path)).Should().Be(malformed);
+    }
+
     private EvidenceStorageQuotaCoordinator Coordinator(
         EvidenceStorageQuotaOptions? options = null,
         Func<string, long>? published = null,

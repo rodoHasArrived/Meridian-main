@@ -15,7 +15,11 @@ public sealed class EvidenceStorageQuotaCoordinator
     private readonly Func<string, long> _publishedTenantBytes;
     private readonly Func<string, long> _availableDiskBytes;
     private readonly Func<string, CancellationToken, Task<bool>> _recoverAttempt;
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        // Missing accounting fields must not silently become zero and release reserved capacity.
+        RespectRequiredConstructorParameters = true
+    };
 
     /// <summary>
     /// Creates a coordinator for one data root. The recovery callback must preserve published

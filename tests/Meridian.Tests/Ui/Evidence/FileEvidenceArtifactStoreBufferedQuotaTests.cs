@@ -49,6 +49,79 @@ public sealed class FileEvidenceArtifactStoreBufferedQuotaTests : IDisposable
         (await copy).SizeBytes.Should().Be(8 * KiB);
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task DestinationFailure_RetainsPreparedChargeUntilCleanupCompletes(bool failFlush, bool cancel)
+    {
+        var cleaned = false;
+        var coordinator = new EvidenceStorageQuotaCoordinator(_root, new EvidenceStorageQuotaOptions
+        {
+            MaxPackageBytes = 100,
+            DefaultTenantBudgetBytes = 100,
+            MinimumDiskHeadroomBytes = 0
+        }, _ => 0, _ => long.MaxValue, (_, _) => Task.FromResult(cleaned));
+        await using var reservation = await coordinator.ReserveAsync("tenant", 80, 1);
+        using var source = new MemoryStream(new byte[80]);
+        using var destination = new FailingDestination(failFlush, cancel);
+        var copy = () => FileEvidenceArtifactStore.CopyExportArtifactAsync(source, destination, "partial", reservation: reservation);
+        if (cancel)
+        {
+            await copy.Should().ThrowAsync<OperationCanceledException>();
+        }
+        else
+        {
+            await copy.Should().ThrowAsync<IOException>();
+        }
+        destination.Length.Should().Be(failFlush ? 80 : 3);
+        var path = Path.Combine(_root, "workstation", "evidence-quota", reservation.Id + ".json");
+        using (var record = System.Text.Json.JsonDocument.Parse(await File.ReadAllTextAsync(path)))
+        {
+            record.RootElement.GetProperty("reservedBytes").GetInt64().Should().Be(80);
+            record.RootElement.GetProperty("preparedBytes").GetInt64().Should().Be(80);
+            record.RootElement.GetProperty("writtenBytes").GetInt64().Should().Be(0);
+        }
+        await reservation.DisposeAsync();
+        var competing = async () =>
+        {
+            await using var other = await coordinator.ReserveAsync("tenant", 21, 1);
+        };
+        (await competing.Should().ThrowAsync<EvidenceStorageQuotaExceededException>()).Which.Reason.Should().Be("tenant-bytes");
+        File.Exists(path).Should().BeTrue();
+        cleaned = true;
+        (await coordinator.RecoverAbandonedAsync()).Should().Be(1);
+        await using var retry = await coordinator.ReserveAsync("tenant", 100, 1);
+    }
+
+    private sealed class FailingDestination(bool failFlush, bool cancel) : MemoryStream
+    {
+        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken ct = default)
+        {
+            await base.WriteAsync(failFlush ? buffer : buffer[..3], ct);
+            if (!failFlush)
+            {
+                ThrowFailure();
+            }
+        }
+
+        public override Task FlushAsync(CancellationToken ct)
+        {
+            ThrowFailure();
+            return Task.CompletedTask;
+        }
+
+        private void ThrowFailure()
+        {
+            if (cancel)
+            {
+                throw new OperationCanceledException("Injected destination cancellation.");
+            }
+            throw new IOException("Injected destination failure.");
+        }
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_root))

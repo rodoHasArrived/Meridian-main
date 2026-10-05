@@ -70,7 +70,9 @@ Evidence storage reservations are persisted outside the readable vault under
 `workstation/evidence-quota`. Each attempt holds an exclusive filesystem lease until publication or
 cleanup. A root-wide filesystem gate serializes admission, actual-byte reconciliation, and
 publication; recovery reclaims only attempts whose owner lease is available. Failed cleanup keeps
-its reservation charged for a later retry. Package accounting includes artifact, UTF-8 manifest,
+its reservation charged for a later retry. Active or unreclaimed journals must contain every
+accounting field; incomplete records block admission instead of treating missing byte counts as zero.
+Package accounting includes artifact, UTF-8 manifest,
 and index bytes; disk admission includes every tenant's unwritten reserved capacity. Publication
 callbacks must write the scoped index last and preserve complete retained evidence during cleanup.
 Recovery runs on the next intake/export admission, or explicitly through

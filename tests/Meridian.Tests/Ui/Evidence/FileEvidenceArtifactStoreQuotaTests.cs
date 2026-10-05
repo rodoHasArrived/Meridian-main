@@ -316,8 +316,11 @@ public sealed class FileEvidenceArtifactStoreQuotaTests : IDisposable
             .Should().NotBeNull();
     }
 
-    [Fact]
-    public async Task Restart_AbandonedPartiallyMovedPackage_ReclaimsCapacityAndOnlyFailedAttemptFiles()
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task Restart_InterruptedPublication_ReclaimsCapacityAndOnlyFailedAttemptFiles(int completedMoves)
     {
         var source = await SourceAsync("published.dat", 8 * KiB);
         await Store(Options()).WriteManifestAsync(Packet(Artifact("published", source)), Request, _timeout.Token);
@@ -330,6 +333,16 @@ public sealed class FileEvidenceArtifactStoreQuotaTests : IDisposable
         await File.WriteAllTextAsync(Path.Combine(packagePath, "artifacts", "partial.dat"), "unpublished bytes", _timeout.Token);
         await File.WriteAllTextAsync(manifestPath, "unpublished manifest", _timeout.Token);
         var attemptId = await SeedAbandonedAttemptAsync(packagePath, manifestPath);
+        var stage = Path.Combine(EvidenceRoot, "_staging", attemptId);
+        await File.WriteAllTextAsync(Path.Combine(stage, "index.json"), "unpublished index", _timeout.Token);
+        if (completedMoves < 2)
+        {
+            File.Move(manifestPath, Path.Combine(stage, "manifest.json"));
+        }
+        if (completedMoves < 1)
+        {
+            Directory.Move(packagePath, Path.Combine(stage, "package"));
+        }
 
         var admitted = await Store(Options()).WriteIntakeArtifactAsync(Intake(16 * KiB), _timeout.Token);
 
@@ -366,6 +379,25 @@ public sealed class FileEvidenceArtifactStoreQuotaTests : IDisposable
         StagingFiles().Should().BeEmpty();
         (await restarted.TryGetVaultIdentityAsync(identity.VaultId, Request.TenantId!, Request.Scope!, _timeout.Token))
             .Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task Restart_UnreadablePublishedIndex_PreservesEvidenceAndBlocksAdmission()
+    {
+        var source = await SourceAsync("published.dat", 8 * KiB);
+        var published = await Store(Options()).WriteManifestAsync(Packet(Artifact("published", source)), Request, _timeout.Token);
+        var identity = published.VaultIdentity!;
+        var packagePath = Path.Combine(EvidenceRoot, "_vault", identity.VaultId);
+        await File.WriteAllTextAsync(packagePath + ".json", "{ interrupted index", _timeout.Token);
+        var before = PublishedFiles().ToDictionary(path => path, File.ReadAllBytes);
+        var attemptId = await SeedAbandonedAttemptAsync(packagePath, Path.Combine(_root, identity.ManifestPath));
+
+        var admit = () => Store(Options()).WriteIntakeArtifactAsync(Intake(16 * KiB), _timeout.Token);
+        await admit.Should().ThrowAsync<JsonException>();
+
+        AssertPublishedUnchanged(before);
+        File.Exists(JournalPath(attemptId)).Should().BeFalse("published bytes remain authoritative after reservation cleanup");
+        StagingFiles().Should().BeEmpty();
     }
 
     private string JournalPath(string attemptId) => Path.Combine(_root, "workstation", "evidence-quota", $"{attemptId}.json");

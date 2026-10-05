@@ -58,8 +58,8 @@
       "id": "SRC-DESIGN-DOCUMENTS",
       "path": "src/Meridian.Documents",
       "readme": "src/Meridian.Documents/README.md",
-      "readme_hash": "61ba90a2bd516eab197fa06b242b87f96c1264ade15575204271404cd610ee1d",
-      "source_hash": "24c1e177ad640ebf6c377a1dc9fbf9d44c42241f3a22966e6f65ef85f36c2ac1"
+      "readme_hash": "e0c2f256d4f878547099f112300e7920712789ce7b3d3fba709c057c56df6e41",
+      "source_hash": "b670478142fca733176ac75b2cbe21d90f391f70b476a9aba40ed25da072bec6"
     },
     {
       "id": "SRC-DESIGN-ENTITIES",
