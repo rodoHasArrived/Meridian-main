@@ -261,6 +261,13 @@ python3 build/scripts/docs/generate-workflow-manifest.py
 - Test lanes that enable hang diagnostics upload uniquely named evidence artifacts for reruns so passing and failing runs both leave inspectable logs.
 - Generated outputs stay under ignored `artifacts/`, `bin/`, `obj/`, `publish/`, `dist/`, or `TestResults/` paths.
 - Publish smoke artifacts are uploaded for inspection, and desktop installer tag runs publish packaged installer assets to GitHub Releases.
+- Routine Windows Desktop Build smoke binaries are retained for 7 days when the job is successful at upload time,
+  or 14 days when failure/cancellation is already known; WPF validation remains 14 days.
+  Desktop Screenshot Capture retains one complete 14-day archive containing `catalog/`,
+  `workflow-runs/`, and the screenshot manifest. Certification, recovery, installed-startup,
+  and release lifecycle retention remains unchanged. See the
+  [Actions storage audit](../../docs/engineering/actions-storage-audit-2026-10-05.md)
+  for measured sizes, protected evidence, and further candidates.
 
 CI/CD validation ownership and administrator rollout are maintained in
 [CI/CD ownership and rollout](../../docs/engineering/ci-cd-optimization.md). Meridian CI owns the four canonical

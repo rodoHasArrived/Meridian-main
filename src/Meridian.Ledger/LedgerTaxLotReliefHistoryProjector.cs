@@ -97,7 +97,8 @@ public static class LedgerTaxLotReliefHistoryProjector
         try
         {
             projection = LedgerTaxLotReliefProjector.ReconstructRetainedDisposal(
-                BuildInput(history, quantitySold, salePrice), history.ProceedsAllocationVersion);
+                BuildInput(history, quantitySold, salePrice), history.ProceedsAllocationVersion,
+                history.ProceedsAllocationVersion is not null && history.SalePrice is null ? proceeds : null);
         }
         catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
         {
@@ -139,7 +140,7 @@ public static class LedgerTaxLotReliefHistoryProjector
             salePrice,
             history.ReliefMethod,
             history.Lots
-                .Select(static lot => new LedgerTaxLot(
+                .Select(lot => new LedgerTaxLot(
                     lot.LotId,
                     lot.AcquiredDate,
                     lot.Quantity,
@@ -149,7 +150,10 @@ public static class LedgerTaxLotReliefHistoryProjector
                     // acquisition would throw, and it can only mean the row predates the carry.
                     holdingPeriodStartDate: lot.HoldingPeriodStart <= lot.AcquiredDate
                         ? lot.HoldingPeriodStart
-                        : null))
+                        : null,
+                    // Versioned rows certify the exact retained basis; legacy rows keep their
+                    // original unit-cost recalculation.
+                    costBasis: history.ProceedsAllocationVersion is null ? null : lot.CostBasis))
                 .ToArray(),
             financialAccountId: history.Account.FinancialAccountId,
             // Every retained lot is fully consumed by this disposal, so lot-discrete methods all
