@@ -1127,6 +1127,7 @@ Meridian-main
 │       │   ├── inline-sha256-baseline.json
 │       │   ├── release-preflight.py
 │       │   ├── requirements.txt
+│       │   ├── resolve-consumer-predecessor.py
 │       │   ├── run-dotnet-ci-tests.py
 │       │   ├── run-script-tests.py
 │       │   ├── run-windows-ci-tests.py
@@ -1225,6 +1226,7 @@ Meridian-main
 │       │   └── pre-commit
 │       ├── install
 │       │   ├── build-consumer-setup.ps1
+│       │   ├── certify-consumer-install-lifecycle.ps1
 │       │   ├── certify-desktop-install-lifecycle.ps1
 │       │   ├── install-web-workstation.ps1
 │       │   ├── install.ps1
@@ -11084,6 +11086,8 @@ Meridian-main
 │   │   ├── test_ci_workflow_contract.py
 │   │   ├── test_cleanup_generated_script.py
 │   │   ├── test_compare_run_contract.py
+│   │   ├── test_consumer_certification_processes.py
+│   │   ├── test_consumer_predecessor.py
 │   │   ├── test_dashboard_package_lock.py
 │   │   ├── test_desktop_msix_packaging.py
 │   │   ├── test_desktop_screen_blueprint_checklist.py
