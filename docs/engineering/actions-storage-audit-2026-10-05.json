@@ -1,0 +1,1339 @@
+{
+  "baseline_commit": "600cde87be9de99c615594cb1a2b09f507cd2b2f",
+  "observed_date_utc": "2026-10-05",
+  "scope": "Bounded run-level sample; not repository/account-wide storage or billing. 100-entry pages of success/failure/main-push results plus manual runs; selected recent completed runs by workflow, excluding cancelled runs. Four successful mainline Windows runs added to measure smoke binaries.",
+  "limitations": [
+    "Repository-wide artifact listing not supported by connector",
+    "Wrapper returns first artifact page only; selected responses at most 5 artifacts",
+    "No billing dashboard, Packages inventory, caches, or dollar attribution",
+    "Publish Smoke, release packaging, nightly coverage and several manual workflows not represented"
+  ],
+  "totals": {
+    "runs": 26,
+    "artifacts": 63,
+    "bytes": 900914434,
+    "expired": 0
+  },
+  "runs": [
+    {
+      "id": 37354888647,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37354888647",
+      "workflow": "Windows Desktop Build",
+      "event": "pull_request",
+      "head_sha": "56be6473720b5a9327b9ef1474f17accff9c496e",
+      "created_at": "2026-10-05T18:17:57Z",
+      "conclusion": "success",
+      "artifacts": [
+        {
+          "id": 11363934701,
+          "name": "windows-desktop-validation-4631",
+          "size_in_bytes": 738999,
+          "expired": false,
+          "created_at": "2026-10-05T18:32:09Z",
+          "expires_at": "2026-10-19T18:32:08Z",
+          "digest": "sha256:76cf51ab70d21ed81f56fdb9ef50e4024ffb2841b3fee48c56f1d6c70ea010dd"
+        }
+      ]
+    },
+    {
+      "id": 37353845896,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37353845896",
+      "workflow": "Windows Desktop Build",
+      "event": "pull_request",
+      "head_sha": "b00c90aad649c650b6413d24774ef5611f48e429",
+      "created_at": "2026-10-05T18:09:40Z",
+      "conclusion": "success",
+      "artifacts": [
+        {
+          "id": 11364955111,
+          "name": "windows-desktop-validation-4630",
+          "size_in_bytes": 739421,
+          "expired": false,
+          "created_at": "2026-10-05T18:24:18Z",
+          "expires_at": "2026-10-19T18:24:17Z",
+          "digest": "sha256:e5516c3305b67053c4033cf2eb100a6690327ebb7ad9e42682ca4c430689dc81"
+        }
+      ]
+    },
+    {
+      "id": 37353716478,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37353716478",
+      "workflow": "Windows Desktop Build",
+      "event": "pull_request",
+      "head_sha": "6770f1458decd39ef039969bac2c163186a0d485",
+      "created_at": "2026-10-05T18:08:37Z",
+      "conclusion": "success",
+      "artifacts": [
+        {
+          "id": 11363794250,
+          "name": "windows-desktop-validation-4628",
+          "size_in_bytes": 739041,
+          "expired": false,
+          "created_at": "2026-10-05T18:26:33Z",
+          "expires_at": "2026-10-19T18:26:33Z",
+          "digest": "sha256:931a5e79831c12262cb78492c8a35d60c0e24094211c4b99b1eb6c19202d73c7"
+        }
+      ]
+    },
+    {
+      "id": 37353121623,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37353121623",
+      "workflow": "Windows Desktop Build",
+      "event": "pull_request",
+      "head_sha": "43a9bb0d3ec5ef362392a4f8e4240e8474050b22",
+      "created_at": "2026-10-05T18:03:50Z",
+      "conclusion": "success",
+      "artifacts": [
+        {
+          "id": 11363797524,
+          "name": "windows-desktop-validation-4626",
+          "size_in_bytes": 739041,
+          "expired": false,
+          "created_at": "2026-10-05T18:15:34Z",
+          "expires_at": "2026-10-19T18:15:33Z",
+          "digest": "sha256:c06c46934eb7bc5190e224b9e038ad1187f7d698ebb39bbbd4f7cc0e6e9f3eef"
+        }
+      ]
+    },
+    {
+      "id": 37354889075,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37354889075",
+      "workflow": "Meridian CI",
+      "event": "pull_request",
+      "head_sha": "56be6473720b5a9327b9ef1474f17accff9c496e",
+      "created_at": "2026-10-05T18:17:57Z",
+      "conclusion": "failure",
+      "artifacts": [
+        {
+          "id": 11365685047,
+          "name": "meridian-ci-browser-4852-1",
+          "size_in_bytes": 1575160,
+          "expired": false,
+          "created_at": "2026-10-05T18:35:01Z",
+          "expires_at": "2026-10-19T18:34:59Z",
+          "digest": "sha256:79fff1c17fa41a7f21a102e2fc4c7584c05a0f4d0fe4d02cc53c60be3cb650bf"
+        },
+        {
+          "id": 11365545569,
+          "name": "meridian-ci-integrations-4852-1",
+          "size_in_bytes": 1699226,
+          "expired": false,
+          "created_at": "2026-10-05T18:35:58Z",
+          "expires_at": "2026-10-19T18:35:57Z",
+          "digest": "sha256:d1272332eda1ca0bb3d7b9c9164974a1024fb26e344cabf647b5c7f644843b3d"
+        },
+        {
+          "id": 11365160296,
+          "name": "meridian-ci-docs-4852-1",
+          "size_in_bytes": 25378,
+          "expired": false,
+          "created_at": "2026-10-05T18:26:33Z",
+          "expires_at": "2026-10-19T18:26:33Z",
+          "digest": "sha256:28387f05f99d6dbd62a3215eed70e696d89a88e2cf3f4f6c08ab7ef90acf7306"
+        },
+        {
+          "id": 11364717610,
+          "name": "meridian-ci-dotnet-4852-1",
+          "size_in_bytes": 824,
+          "expired": false,
+          "created_at": "2026-10-05T18:31:22Z",
+          "expires_at": "2026-10-19T18:31:21Z",
+          "digest": "sha256:4c9cd1bf547bf8d240e856514f0038228eb6474e6dbab28c381676935d9399ec"
+        },
+        {
+          "id": 11364349163,
+          "name": "meridian-ci-workflows-4852-1",
+          "size_in_bytes": 1202,
+          "expired": false,
+          "created_at": "2026-10-05T18:31:07Z",
+          "expires_at": "2026-10-19T18:31:06Z",
+          "digest": "sha256:ad65e3d3e9ebecc6a3c2d4c5c9716662eac278c95971f87035ab6deb87be138d"
+        }
+      ]
+    },
+    {
+      "id": 37353846238,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37353846238",
+      "workflow": "Meridian CI",
+      "event": "pull_request",
+      "head_sha": "b00c90aad649c650b6413d24774ef5611f48e429",
+      "created_at": "2026-10-05T18:09:40Z",
+      "conclusion": "success",
+      "artifacts": [
+        {
+          "id": 11365016656,
+          "name": "meridian-ci-browser-4848-1",
+          "size_in_bytes": 1574720,
+          "expired": false,
+          "created_at": "2026-10-05T18:32:43Z",
+          "expires_at": "2026-10-19T18:32:42Z",
+          "digest": "sha256:91f7b6fa55691afead3e35ecc11524933b73eac0635892d8f0aa845dbe3d0748"
+        },
+        {
+          "id": 11364885678,
+          "name": "meridian-ci-dotnet-4848-1",
+          "size_in_bytes": 5779323,
+          "expired": false,
+          "created_at": "2026-10-05T18:27:26Z",
+          "expires_at": "2026-10-19T18:27:24Z",
+          "digest": "sha256:ad8b8da769060929703806b4a92c01af34484738970ca8d9ff77ec55413b7a88"
+        },
+        {
+          "id": 11364816718,
+          "name": "meridian-ci-docs-4848-1",
+          "size_in_bytes": 25381,
+          "expired": false,
+          "created_at": "2026-10-05T18:28:44Z",
+          "expires_at": "2026-10-19T18:28:43Z",
+          "digest": "sha256:fae9d30d081cc54dbb0ce1cf9d7825d9df3acf6fc5fe5240756adb14f87d0bb6"
+        },
+        {
+          "id": 11364531485,
+          "name": "meridian-ci-integrations-4848-1",
+          "size_in_bytes": 1688608,
+          "expired": false,
+          "created_at": "2026-10-05T18:22:21Z",
+          "expires_at": "2026-10-19T18:22:20Z",
+          "digest": "sha256:7c4c143020ee6d66a89f5c5127a4f0c1ab4f6c42eb70956c75d634d3fdc31107"
+        },
+        {
+          "id": 11364498025,
+          "name": "meridian-ci-workflows-4848-1",
+          "size_in_bytes": 1210,
+          "expired": false,
+          "created_at": "2026-10-05T18:27:21Z",
+          "expires_at": "2026-10-19T18:27:20Z",
+          "digest": "sha256:61535884cea49d5577b1bcd08bb4f4f31c7b9d62305f4048c8a9e4811d129866"
+        }
+      ]
+    },
+    {
+      "id": 37353213977,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37353213977",
+      "workflow": "Meridian CI",
+      "event": "pull_request",
+      "head_sha": "471c13f530e5b46b1763d6fdfc86e700e854028c",
+      "created_at": "2026-10-05T18:04:36Z",
+      "conclusion": "success",
+      "artifacts": [
+        {
+          "id": 11364550394,
+          "name": "meridian-ci-docs-4844-1",
+          "size_in_bytes": 25374,
+          "expired": false,
+          "created_at": "2026-10-05T18:15:21Z",
+          "expires_at": "2026-10-19T18:15:20Z",
+          "digest": "sha256:fcbd729868f7fae215ad3725c33745931feb5769cd66f3c51da7c8b36d5466f1"
+        },
+        {
+          "id": 11364426065,
+          "name": "meridian-ci-integrations-4844-1",
+          "size_in_bytes": 1689801,
+          "expired": false,
+          "created_at": "2026-10-05T18:15:29Z",
+          "expires_at": "2026-10-19T18:15:27Z",
+          "digest": "sha256:69e2ef82b61ad7aebfc5af22829f07f1f3ef1081994cada69024f598bf22e19d"
+        },
+        {
+          "id": 11364350279,
+          "name": "meridian-ci-workflows-4844-1",
+          "size_in_bytes": 1201,
+          "expired": false,
+          "created_at": "2026-10-05T18:11:33Z",
+          "expires_at": "2026-10-19T18:11:33Z",
+          "digest": "sha256:c5ea526aec324aca6aa876f9e700a1c288d531cc138a8702d0ee7d3a92204cf6"
+        },
+        {
+          "id": 11363972521,
+          "name": "meridian-ci-dotnet-4844-1",
+          "size_in_bytes": 5768262,
+          "expired": false,
+          "created_at": "2026-10-05T18:19:31Z",
+          "expires_at": "2026-10-19T18:19:30Z",
+          "digest": "sha256:00a506b136bf06a849c05b557527201478e317df5f31f11dba3c67bc3d27cf99"
+        },
+        {
+          "id": 11363777108,
+          "name": "meridian-ci-browser-4844-1",
+          "size_in_bytes": 1573621,
+          "expired": false,
+          "created_at": "2026-10-05T18:12:01Z",
+          "expires_at": "2026-10-19T18:12:00Z",
+          "digest": "sha256:b7e437197099420f813ebf39aad19372747c494a9f81a40b0d121d34dda7c59c"
+        }
+      ]
+    },
+    {
+      "id": 37353122264,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37353122264",
+      "workflow": "Meridian CI",
+      "event": "pull_request",
+      "head_sha": "43a9bb0d3ec5ef362392a4f8e4240e8474050b22",
+      "created_at": "2026-10-05T18:03:50Z",
+      "conclusion": "success",
+      "artifacts": [
+        {
+          "id": 11364995056,
+          "name": "meridian-ci-browser-4843-1",
+          "size_in_bytes": 1575139,
+          "expired": false,
+          "created_at": "2026-10-05T18:23:55Z",
+          "expires_at": "2026-10-19T18:23:54Z",
+          "digest": "sha256:4eeb869cc806eab112e6d60b34612808fbd59da2f2dec668ffc191ffc8f9eb4c"
+        },
+        {
+          "id": 11364177391,
+          "name": "meridian-ci-integrations-4843-1",
+          "size_in_bytes": 1691387,
+          "expired": false,
+          "created_at": "2026-10-05T18:18:56Z",
+          "expires_at": "2026-10-19T18:18:55Z",
+          "digest": "sha256:307dd9de49351ff1f34659bc76e4992d238241d3c7fc1dff9b0b2101615e3536"
+        },
+        {
+          "id": 11363718560,
+          "name": "meridian-ci-workflows-4843-1",
+          "size_in_bytes": 1204,
+          "expired": false,
+          "created_at": "2026-10-05T18:19:56Z",
+          "expires_at": "2026-10-19T18:19:55Z",
+          "digest": "sha256:b2ab9578cf214552f042ab4f400a7b36b0c3a76daf13b7add1264dc697be7583"
+        },
+        {
+          "id": 11363184786,
+          "name": "meridian-ci-dotnet-4843-1",
+          "size_in_bytes": 5791999,
+          "expired": false,
+          "created_at": "2026-10-05T18:22:25Z",
+          "expires_at": "2026-10-19T18:22:23Z",
+          "digest": "sha256:60abdc8cc357eda309b48fe2f9aa731fc94ded989b9bfe574a1ab7cdd985348c"
+        },
+        {
+          "id": 11363079245,
+          "name": "meridian-ci-docs-4843-1",
+          "size_in_bytes": 25395,
+          "expired": false,
+          "created_at": "2026-10-05T18:17:31Z",
+          "expires_at": "2026-10-19T18:17:31Z",
+          "digest": "sha256:955d3a68e943eacfdd79d1b40802e8b730b8e579eaff88427f7962bcac668d48"
+        }
+      ]
+    },
+    {
+      "id": 37351972283,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283",
+      "workflow": "Production Certification",
+      "event": "push",
+      "head_sha": "e3bf60bae577c132d8444a827ca4dc3181cc48a1",
+      "created_at": "2026-10-05T17:54:45Z",
+      "conclusion": "failure",
+      "artifacts": [
+        {
+          "id": 11363630198,
+          "name": "production-recovery-drill-37351972283",
+          "size_in_bytes": 6351,
+          "expired": false,
+          "created_at": "2026-10-05T17:55:38Z",
+          "expires_at": "2027-01-03T17:54:46Z",
+          "digest": "sha256:b17922ac9958bb374bc017d021128d395a5deaa37c2bc02984515caf83fe5f9e"
+        },
+        {
+          "id": 11363466966,
+          "name": "production-certification-147-1",
+          "size_in_bytes": 1690422,
+          "expired": false,
+          "created_at": "2026-10-05T18:04:49Z",
+          "expires_at": "2027-01-03T17:54:46Z",
+          "digest": "sha256:924ea1b49defb949e4d0dbc63d6dd6f2bfe3efd72a546c602250ce1f9a25d624"
+        },
+        {
+          "id": 11363151426,
+          "name": "production-documentation-evidence-147-1",
+          "size_in_bytes": 2088,
+          "expired": false,
+          "created_at": "2026-10-05T17:55:32Z",
+          "expires_at": "2027-01-03T17:54:46Z",
+          "digest": "sha256:7a979cd71d6ebacb0ba4e755bc84151e3e71e75ccb6165edf5a432938b93b58d"
+        },
+        {
+          "id": 11362468562,
+          "name": "production-dependency-evidence-147-1",
+          "size_in_bytes": 2242,
+          "expired": false,
+          "created_at": "2026-10-05T17:56:19Z",
+          "expires_at": "2027-01-03T17:54:46Z",
+          "digest": "sha256:478075a50b84e225b37581089a9e2f28aad6d9ad95b29b811b3297e179a02d11"
+        }
+      ]
+    },
+    {
+      "id": 37346187307,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37346187307",
+      "workflow": "Production Certification",
+      "event": "push",
+      "head_sha": "e1b19b7814806b54c2b3049a6831e569b4d0e472",
+      "created_at": "2026-10-05T17:08:28Z",
+      "conclusion": "failure",
+      "artifacts": [
+        {
+          "id": 11360791910,
+          "name": "production-recovery-drill-37346187307",
+          "size_in_bytes": 6358,
+          "expired": false,
+          "created_at": "2026-10-05T17:09:18Z",
+          "expires_at": "2027-01-03T17:08:28Z",
+          "digest": "sha256:24f19d8b839a9c90b0a87cf8e7ce25f2cf19519d28d1ed40a80b49bb2fb351c5"
+        },
+        {
+          "id": 11359989485,
+          "name": "production-certification-146-1",
+          "size_in_bytes": 1689229,
+          "expired": false,
+          "created_at": "2026-10-05T17:16:01Z",
+          "expires_at": "2027-01-03T17:08:28Z",
+          "digest": "sha256:8ff4480bc1102e4e797ebc11f240df1032e83c2b944ea89f990d2ce5b711e205"
+        },
+        {
+          "id": 11359939649,
+          "name": "production-dependency-evidence-146-1",
+          "size_in_bytes": 2242,
+          "expired": false,
+          "created_at": "2026-10-05T17:10:22Z",
+          "expires_at": "2027-01-03T17:08:28Z",
+          "digest": "sha256:9010e42bd45a716db2a0759b4586d668c5a7b41d73bbdbb01a7cdd42a0b3eda5"
+        },
+        {
+          "id": 11359424735,
+          "name": "production-documentation-evidence-146-1",
+          "size_in_bytes": 2088,
+          "expired": false,
+          "created_at": "2026-10-05T17:09:14Z",
+          "expires_at": "2027-01-03T17:08:28Z",
+          "digest": "sha256:2cd37ee172477ea21c8f9e98e49e185377b01670cb04d1d4ba8ebb65702ad0ba"
+        }
+      ]
+    },
+    {
+      "id": 37341837534,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37341837534",
+      "workflow": "Production Certification",
+      "event": "push",
+      "head_sha": "0384d7d1ad926b8d0438a93f53f29a772e8c6999",
+      "created_at": "2026-10-05T16:34:09Z",
+      "conclusion": "failure",
+      "artifacts": [
+        {
+          "id": 11359176471,
+          "name": "production-recovery-drill-37341837534",
+          "size_in_bytes": 6357,
+          "expired": false,
+          "created_at": "2026-10-05T16:34:53Z",
+          "expires_at": "2027-01-03T16:34:10Z",
+          "digest": "sha256:d58795a264708274edc774e54e8634b4e08a3b0269f58cd6f6bef9d6e52a39d9"
+        },
+        {
+          "id": 11358592484,
+          "name": "production-documentation-evidence-145-1",
+          "size_in_bytes": 2088,
+          "expired": false,
+          "created_at": "2026-10-05T16:34:45Z",
+          "expires_at": "2027-01-03T16:34:10Z",
+          "digest": "sha256:81806a7fb220f2928e9b57824902c9a416d38f0f7094b3ed2010c4fdb9c6ce2c"
+        },
+        {
+          "id": 11358519727,
+          "name": "production-certification-145-1",
+          "size_in_bytes": 1670418,
+          "expired": false,
+          "created_at": "2026-10-05T16:43:40Z",
+          "expires_at": "2027-01-03T16:34:10Z",
+          "digest": "sha256:2f6efb8b8b91ef2a3fa750005b230891145f0e73e8b137482e70b29d9e7db30f"
+        },
+        {
+          "id": 11358154533,
+          "name": "production-dependency-evidence-145-1",
+          "size_in_bytes": 2242,
+          "expired": false,
+          "created_at": "2026-10-05T16:36:09Z",
+          "expires_at": "2027-01-03T16:34:10Z",
+          "digest": "sha256:1282b3e191bef91aaf7e8df1eb2a3387780a9c1f0ac2144648543bbcbe2c46be"
+        }
+      ]
+    },
+    {
+      "id": 37336412357,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37336412357",
+      "workflow": "Production Certification",
+      "event": "push",
+      "head_sha": "bf4a6a987856f4119d7d23aa161c6d4e654324b2",
+      "created_at": "2026-10-05T15:53:06Z",
+      "conclusion": "failure",
+      "artifacts": [
+        {
+          "id": 11357675290,
+          "name": "production-certification-144-1",
+          "size_in_bytes": 1671107,
+          "expired": false,
+          "created_at": "2026-10-05T16:02:35Z",
+          "expires_at": "2027-01-03T15:53:06Z",
+          "digest": "sha256:e765d504ff784a28d58d29f6dcffeaae322faf1efccb1bcb7f4dee4e13b69a54"
+        },
+        {
+          "id": 11357035283,
+          "name": "production-documentation-evidence-144-1",
+          "size_in_bytes": 2088,
+          "expired": false,
+          "created_at": "2026-10-05T15:53:37Z",
+          "expires_at": "2027-01-03T15:53:06Z",
+          "digest": "sha256:937ffd60d15c24ac8946912ad662dbc3b3219fc9d11a86b8d69cdda0305615be"
+        },
+        {
+          "id": 11356930474,
+          "name": "production-recovery-drill-37336412357",
+          "size_in_bytes": 3951,
+          "expired": false,
+          "created_at": "2026-10-05T15:53:46Z",
+          "expires_at": "2027-01-03T15:53:06Z",
+          "digest": "sha256:bd3da4b152cbb3eaccb793629dc5c50953653c672232dded29f6dac9c4f41e40"
+        },
+        {
+          "id": 11356855852,
+          "name": "production-dependency-evidence-144-1",
+          "size_in_bytes": 2242,
+          "expired": false,
+          "created_at": "2026-10-05T15:54:35Z",
+          "expires_at": "2027-01-03T15:53:06Z",
+          "digest": "sha256:6725dc0ceec659e0c42865bb038aff45aebc8df94f3598db5650b30fd7f2be16"
+        }
+      ]
+    },
+    {
+      "id": 37353716625,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37353716625",
+      "workflow": "Web Screenshot Capture",
+      "event": "pull_request",
+      "head_sha": "6770f1458decd39ef039969bac2c163186a0d485",
+      "created_at": "2026-10-05T18:08:37Z",
+      "conclusion": "success",
+      "artifacts": [
+        {
+          "id": 11363658760,
+          "name": "web-screenshots-pr2896-736",
+          "size_in_bytes": 24749049,
+          "expired": false,
+          "created_at": "2026-10-05T18:18:16Z",
+          "expires_at": "2026-10-19T18:18:14Z",
+          "digest": "sha256:e41a968395f9e865952e1796b8f3e0f261e2818d6a632de848b02d7b0aa3ec52"
+        },
+        {
+          "id": 11363573914,
+          "name": "web-screenshots-pr2896-manifest-736",
+          "size_in_bytes": 6643,
+          "expired": false,
+          "created_at": "2026-10-05T18:18:18Z",
+          "expires_at": "2026-10-19T18:18:17Z",
+          "digest": "sha256:f75c39b4337f0ac681f6fab4afaed928d5001f842df47eccd6cef12b8c96a6b8"
+        }
+      ]
+    },
+    {
+      "id": 36920291078,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/36920291078",
+      "workflow": "Web Screenshot Capture",
+      "event": "workflow_dispatch",
+      "head_sha": "2b6321056329cfa7cf6a55742c00a8749f2b176d",
+      "created_at": "2026-10-01T20:15:52Z",
+      "conclusion": "success",
+      "artifacts": [
+        {
+          "id": 11192091852,
+          "name": "web-screenshots-710",
+          "size_in_bytes": 24716580,
+          "expired": false,
+          "created_at": "2026-10-01T20:24:57Z",
+          "expires_at": "2026-10-15T20:24:55Z",
+          "digest": "sha256:b98bb426bf64f38d051a4fac6fee9c21022158a596e9c9828e9a8f9a9f95303e"
+        },
+        {
+          "id": 11192036901,
+          "name": "web-screenshots-manifest-710",
+          "size_in_bytes": 6638,
+          "expired": false,
+          "created_at": "2026-10-01T20:24:58Z",
+          "expires_at": "2026-10-15T20:24:57Z",
+          "digest": "sha256:a2be40749db57d430924ec9461ef755d0abbddc14ffdf95ee4ad8a82299fb268"
+        }
+      ]
+    },
+    {
+      "id": 35870133393,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/35870133393",
+      "workflow": "Desktop Screenshot Capture",
+      "event": "workflow_dispatch",
+      "head_sha": "75c4791c9592893594cc05c2268bb69876a4802f",
+      "created_at": "2026-09-23T13:52:33Z",
+      "conclusion": "success",
+      "artifacts": [
+        {
+          "id": 10755857555,
+          "name": "desktop-screenshots-62",
+          "size_in_bytes": 14734871,
+          "expired": false,
+          "created_at": "2026-09-23T14:11:24Z",
+          "expires_at": "2026-10-07T14:11:21Z",
+          "digest": "sha256:8c0581b985858775983ff20f1f890691a4eae90649f5bb351a6e38f2259af2ff"
+        },
+        {
+          "id": 10755592720,
+          "name": "desktop-screenshots-complete-62",
+          "size_in_bytes": 30278005,
+          "expired": false,
+          "created_at": "2026-09-23T14:11:28Z",
+          "expires_at": "2026-10-07T14:11:24Z",
+          "digest": "sha256:1ca965c23d37371598b7ea9ed9ff01f9d027da9ac6609c8864647f75b0aad65c"
+        }
+      ]
+    },
+    {
+      "id": 37354888581,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37354888581",
+      "workflow": "PostgreSQL Schema Control",
+      "event": "pull_request",
+      "head_sha": "56be6473720b5a9327b9ef1474f17accff9c496e",
+      "created_at": "2026-10-05T18:17:57Z",
+      "conclusion": "failure",
+      "artifacts": [
+        {
+          "id": 11364577984,
+          "name": "schema-control-811-1",
+          "size_in_bytes": 2502785,
+          "expired": false,
+          "created_at": "2026-10-05T18:29:28Z",
+          "expires_at": "2026-10-19T18:29:27Z",
+          "digest": "sha256:b0bd5dff9ee393a4e7bc8298e69470c33a42dedf717f5a3e51d63a37421817a5"
+        }
+      ]
+    },
+    {
+      "id": 37353121612,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37353121612",
+      "workflow": "PostgreSQL Schema Control",
+      "event": "pull_request",
+      "head_sha": "43a9bb0d3ec5ef362392a4f8e4240e8474050b22",
+      "created_at": "2026-10-05T18:03:50Z",
+      "conclusion": "success",
+      "artifacts": [
+        {
+          "id": 11363771300,
+          "name": "schema-control-810-1",
+          "size_in_bytes": 2263969,
+          "expired": false,
+          "created_at": "2026-10-05T18:06:17Z",
+          "expires_at": "2026-10-19T18:06:15Z",
+          "digest": "sha256:f2da63770393c22dfaa318b1185ab07f0929ee39e67572b6b53d4b6eeaeaa482"
+        }
+      ]
+    },
+    {
+      "id": 37357563971,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37357563971",
+      "workflow": "CI",
+      "event": "pull_request",
+      "head_sha": "9f6555c3f0faed13c15553b95dc0f6417d9f668b",
+      "created_at": "2026-10-05T18:39:12Z",
+      "conclusion": "success",
+      "artifacts": [
+        {
+          "id": 11364624796,
+          "name": "gitleaks-results.sarif",
+          "size_in_bytes": 6854,
+          "expired": false,
+          "created_at": "2026-10-05T18:41:27Z",
+          "expires_at": "2027-01-03T18:39:12Z",
+          "digest": "sha256:8ca380742fc87134cdcc26d50edd1a28b104a0d1993db8d512f839f5b00e18b6"
+        }
+      ]
+    },
+    {
+      "id": 37357348054,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37357348054",
+      "workflow": "CI",
+      "event": "pull_request",
+      "head_sha": "18495c079deca0347848d52373170a538d47931f",
+      "created_at": "2026-10-05T18:37:28Z",
+      "conclusion": "success",
+      "artifacts": [
+        {
+          "id": 11365511047,
+          "name": "gitleaks-results.sarif",
+          "size_in_bytes": 6854,
+          "expired": false,
+          "created_at": "2026-10-05T18:40:44Z",
+          "expires_at": "2027-01-03T18:37:28Z",
+          "digest": "sha256:361d336e9972c1966a86a467556b780d48f0f4e50869ba862425204c7f1e5405"
+        }
+      ]
+    },
+    {
+      "id": 37353845663,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37353845663",
+      "workflow": "Golden Path Validation",
+      "event": "pull_request",
+      "head_sha": "b00c90aad649c650b6413d24774ef5611f48e429",
+      "created_at": "2026-10-05T18:09:40Z",
+      "conclusion": "success",
+      "artifacts": [
+        {
+          "id": 11364123418,
+          "name": "pilot-acceptance-evidence",
+          "size_in_bytes": 14599,
+          "expired": false,
+          "created_at": "2026-10-05T18:27:44Z",
+          "expires_at": "2026-11-04T18:27:43Z",
+          "digest": "sha256:2728d3f04b5558209c9be9416678031cddece112994062c7301d288b9b0675ef"
+        },
+        {
+          "id": 11363563630,
+          "name": "wpf-w4-acceptance-evidence",
+          "size_in_bytes": 2176,
+          "expired": false,
+          "created_at": "2026-10-05T18:16:08Z",
+          "expires_at": "2026-11-04T18:16:07Z",
+          "digest": "sha256:ce91e6d5b90ed693a6d2b311b5ef899529478919cb2fd686ca76a495c83910b4"
+        }
+      ]
+    },
+    {
+      "id": 37353716436,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37353716436",
+      "workflow": "Golden Path Validation",
+      "event": "pull_request",
+      "head_sha": "6770f1458decd39ef039969bac2c163186a0d485",
+      "created_at": "2026-10-05T18:08:37Z",
+      "conclusion": "success",
+      "artifacts": [
+        {
+          "id": 11364740939,
+          "name": "pilot-acceptance-evidence",
+          "size_in_bytes": 14563,
+          "expired": false,
+          "created_at": "2026-10-05T18:22:02Z",
+          "expires_at": "2026-11-04T18:22:02Z",
+          "digest": "sha256:82891a5f2d0e4a5b86da59a9f9fb450d6625a52246dda2a47dde31523c40b474"
+        },
+        {
+          "id": 11364142905,
+          "name": "wpf-w4-acceptance-evidence",
+          "size_in_bytes": 2184,
+          "expired": false,
+          "created_at": "2026-10-05T18:21:30Z",
+          "expires_at": "2026-11-04T18:21:29Z",
+          "digest": "sha256:6cb2eda82a3fade3e9c94e58c49501bb1e0796fd71128510c75aee3085abfe0b"
+        }
+      ]
+    },
+    {
+      "id": 37353716681,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37353716681",
+      "workflow": "Demo Smoke",
+      "event": "pull_request",
+      "head_sha": "6770f1458decd39ef039969bac2c163186a0d485",
+      "created_at": "2026-10-05T18:08:37Z",
+      "conclusion": "success",
+      "artifacts": [
+        {
+          "id": 11364980714,
+          "name": "demo-smoke-evidence",
+          "size_in_bytes": 7239,
+          "expired": false,
+          "created_at": "2026-10-05T18:26:53Z",
+          "expires_at": "2026-11-04T18:26:52Z",
+          "digest": "sha256:aeec2482641bdeecd68bd31c326ee2d7f5dbdef10268854b91c48fe477324d63"
+        }
+      ]
+    },
+    {
+      "id": 37351971803,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351971803",
+      "workflow": "Windows Desktop Build",
+      "event": "push",
+      "head_sha": "e3bf60bae577c132d8444a827ca4dc3181cc48a1",
+      "created_at": "2026-10-05T17:54:45Z",
+      "conclusion": "success",
+      "artifacts": [
+        {
+          "id": 11364215498,
+          "name": "windows-desktop-validation-4623",
+          "size_in_bytes": 738790,
+          "expired": false,
+          "created_at": "2026-10-05T18:12:07Z",
+          "expires_at": "2026-10-19T18:12:05Z",
+          "digest": "sha256:6d6d1d803cd830b291e75284fd8569c066015e237c5a02a4fc50104b6ed60df7"
+        },
+        {
+          "id": 11363294415,
+          "name": "windows-desktop-smoke-4623",
+          "size_in_bytes": 189683068,
+          "expired": false,
+          "created_at": "2026-10-05T18:12:26Z",
+          "expires_at": "2026-10-19T18:12:07Z",
+          "digest": "sha256:6225d3690f261dac620510d19411c7b322c119e74d08321616471d783a635164"
+        }
+      ]
+    },
+    {
+      "id": 37346186937,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37346186937",
+      "workflow": "Windows Desktop Build",
+      "event": "push",
+      "head_sha": "e1b19b7814806b54c2b3049a6831e569b4d0e472",
+      "created_at": "2026-10-05T17:08:28Z",
+      "conclusion": "success",
+      "artifacts": [
+        {
+          "id": 11362005726,
+          "name": "windows-desktop-smoke-4619",
+          "size_in_bytes": 189683955,
+          "expired": false,
+          "created_at": "2026-10-05T17:25:33Z",
+          "expires_at": "2026-10-19T17:25:15Z",
+          "digest": "sha256:6e3bf84b044bc1726a32ebdc8c8a86566eeac88140fdc4649e01a077825d6c9d"
+        },
+        {
+          "id": 11361087692,
+          "name": "windows-desktop-validation-4619",
+          "size_in_bytes": 738282,
+          "expired": false,
+          "created_at": "2026-10-05T17:25:14Z",
+          "expires_at": "2026-10-19T17:25:10Z",
+          "digest": "sha256:f7f151ae2f89b5e011812900753080d57bd2baca60aa77bfea7de3ded7e6f2e5"
+        }
+      ]
+    },
+    {
+      "id": 37336411334,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37336411334",
+      "workflow": "Windows Desktop Build",
+      "event": "push",
+      "head_sha": "bf4a6a987856f4119d7d23aa161c6d4e654324b2",
+      "created_at": "2026-10-05T15:53:05Z",
+      "conclusion": "success",
+      "artifacts": [
+        {
+          "id": 11357796189,
+          "name": "windows-desktop-validation-4611",
+          "size_in_bytes": 739431,
+          "expired": false,
+          "created_at": "2026-10-05T16:10:48Z",
+          "expires_at": "2026-10-19T16:10:46Z",
+          "digest": "sha256:f5f0d5fb91be7756ca19f993fb06742c35f77756a2a6540e1bc21e8e303676e5"
+        },
+        {
+          "id": 11357632076,
+          "name": "windows-desktop-smoke-4611",
+          "size_in_bytes": 189523421,
+          "expired": false,
+          "created_at": "2026-10-05T16:11:08Z",
+          "expires_at": "2026-10-19T16:10:49Z",
+          "digest": "sha256:38ec89f35a973da7961d1ca3378591b4f30e8799cf59315ab5629dea9c9ab86e"
+        }
+      ]
+    },
+    {
+      "id": 37332730385,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37332730385",
+      "workflow": "Windows Desktop Build",
+      "event": "push",
+      "head_sha": "aaa91a4b770b8bb793dc230183b2f3b7949d8056",
+      "created_at": "2026-10-05T15:25:36Z",
+      "conclusion": "success",
+      "artifacts": [
+        {
+          "id": 11355942879,
+          "name": "windows-desktop-validation-4607",
+          "size_in_bytes": 739340,
+          "expired": false,
+          "created_at": "2026-10-05T15:43:27Z",
+          "expires_at": "2026-10-19T15:43:25Z",
+          "digest": "sha256:414bdbb51fa2e1ebb2f407803ffa8ff0694723ffddb07347aedfc7d4da5ede6d"
+        },
+        {
+          "id": 11355129325,
+          "name": "windows-desktop-smoke-4607",
+          "size_in_bytes": 189522708,
+          "expired": false,
+          "created_at": "2026-10-05T15:43:47Z",
+          "expires_at": "2026-10-19T15:43:28Z",
+          "digest": "sha256:7a6aad1ad50aab627b26a4fc286949e1198a313a5c5b682eef05f668197884f7"
+        }
+      ]
+    }
+  ],
+  "workflow_upload_inventory_at_baseline": [
+    {
+      "workflow": "ci-concurrency-benchmark.yml",
+      "job": "pairs",
+      "step": null,
+      "condition": "always()",
+      "name": "benchmark-${{ matrix.subject }}-${{ matrix.pair }}-${{ github.run_attempt }}",
+      "path": "artifacts/benchmark/",
+      "if-no-files-found": "error"
+    },
+    {
+      "workflow": "ci-concurrency-benchmark.yml",
+      "job": "evaluate",
+      "step": null,
+      "condition": "success()",
+      "name": "benchmark-decisions-${{ github.run_attempt }}",
+      "path": "artifacts/benchmark/*-decision.json",
+      "if-no-files-found": "error"
+    },
+    {
+      "workflow": "ci.yml",
+      "job": "secret-scan",
+      "step": "Retain commit secret-scan evidence",
+      "condition": "always() && (github.event_name == 'merge_group' || startsWith(github.ref, 'refs/tags/'))",
+      "name": "commit-secret-scan-${{ github.run_id }}-${{ github.run_attempt }}",
+      "path": "artifacts/security/commit-secrets.sarif",
+      "if-no-files-found": "error",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "ci.yml",
+      "job": "verify-full",
+      "step": "Upload coverage results",
+      "condition": "always()",
+      "name": "verify-full-coverage-${{ github.run_number }}-${{ github.run_attempt }}",
+      "path": "artifacts/test-results/full/\ndocs/status/coverage-report.md\n",
+      "if-no-files-found": "ignore",
+      "retention-days": "30"
+    },
+    {
+      "workflow": "demo-smoke.yml",
+      "job": "demo-smoke",
+      "step": "Upload demo-smoke evidence",
+      "condition": "always()",
+      "name": "demo-smoke-evidence",
+      "path": "artifacts/test-results/demo-smoke/",
+      "if-no-files-found": "ignore",
+      "retention-days": "30"
+    },
+    {
+      "workflow": "desktop-evaluation-prerelease.yml",
+      "job": "package",
+      "step": "Upload desktop packaging diagnostics",
+      "condition": "failure()",
+      "name": "evaluation-packaging-diagnostics-${{ matrix.runtime }}-${{ github.run_id }}",
+      "path": "diagnostic-logs/",
+      "if-no-files-found": "warn",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "desktop-evaluation-prerelease.yml",
+      "job": "package",
+      "step": "Upload the evaluation artifact",
+      "condition": "success()",
+      "name": "meridian-evaluation-${{ matrix.runtime }}-${{ github.run_id }}",
+      "path": "artifacts/evaluation/${{ matrix.runtime }}/",
+      "if-no-files-found": "error",
+      "retention-days": "30"
+    },
+    {
+      "workflow": "desktop-evaluation-prerelease.yml",
+      "job": "package-consumer-setup",
+      "step": "Upload the consumer setup artifact",
+      "condition": "success()",
+      "name": "meridian-evaluation-consumer-setup-${{ github.run_id }}",
+      "path": "artifacts/evaluation/consumer-setup/",
+      "if-no-files-found": "error",
+      "retention-days": "30"
+    },
+    {
+      "workflow": "desktop-installer-packaging.yml",
+      "job": "release-preflight",
+      "step": "Upload release preflight test results",
+      "condition": "always()",
+      "name": "desktop-release-preflight-test-results-${{ github.run_number }}",
+      "path": "artifacts/test-results/desktop-release-preflight/",
+      "if-no-files-found": "ignore",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "desktop-installer-packaging.yml",
+      "job": "build-msix",
+      "step": "Upload desktop packaging diagnostics",
+      "condition": "failure()",
+      "name": "desktop-packaging-diagnostics-${{ matrix.runtime }}-${{ github.run_id }}",
+      "path": "diagnostic-logs/",
+      "if-no-files-found": "warn",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "desktop-installer-packaging.yml",
+      "job": "build-msix",
+      "step": "Upload packaged installer artifact",
+      "condition": "success()",
+      "name": "meridian-desktop-installer-${{ matrix.runtime }}-${{ github.run_id }}-${{ github.run_attempt }}",
+      "path": "artifacts/release/${{ matrix.runtime }}/",
+      "if-no-files-found": "error",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "desktop-installer-packaging.yml",
+      "job": "build-consumer-setup",
+      "step": "Upload consumer setup artifact",
+      "condition": "success()",
+      "name": "meridian-consumer-setup-${{ github.run_id }}-${{ github.run_attempt }}",
+      "path": "artifacts/consumer-setup/Meridian-Setup.exe\nartifacts/consumer-setup/consumer-setup-win-x64-release-evidence.json\nartifacts/consumer-setup/consumer-setup-win-x64-sbom.spdx.json\nartifacts/consumer-setup/consumer-setup-win-x64-SHA256SUMS\n",
+      "if-no-files-found": "error",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "desktop-installer-packaging.yml",
+      "job": "certify-installed-desktop",
+      "step": "Upload clean-machine lifecycle evidence",
+      "condition": "always()",
+      "name": "desktop-install-certification-${{ matrix.runtime }}-${{ github.run_id }}-${{ github.run_attempt }}",
+      "path": "artifacts/install-certification/${{ matrix.runtime }}/",
+      "if-no-files-found": "error",
+      "retention-days": "90"
+    },
+    {
+      "workflow": "desktop-installer-packaging.yml",
+      "job": "certify-installed-consumer",
+      "step": "Retain consumer lifecycle receipt and diagnostics",
+      "condition": "always()",
+      "name": "consumer-install-certification-win-x64-${{ github.run_id }}-${{ github.run_attempt }}",
+      "path": "artifacts/consumer-certification/",
+      "if-no-files-found": "error",
+      "retention-days": "90"
+    },
+    {
+      "workflow": "desktop-installer-packaging.yml",
+      "job": "release",
+      "step": "Retain validated release or rehearsal evidence",
+      "condition": "success()",
+      "name": "validated-release-${{ github.run_id }}-${{ github.run_attempt }}",
+      "path": "artifacts/publish-release/",
+      "if-no-files-found": "error",
+      "retention-days": "90"
+    },
+    {
+      "workflow": "desktop-screenshot-capture.yml",
+      "job": "capture-screenshots",
+      "step": "Upload screenshot artifacts",
+      "condition": "${{ steps.capture_desktop.outcome == 'success' }}",
+      "name": "desktop-screenshots-${{ github.run_number }}",
+      "path": "${{ steps.validate_output_dir.outputs.safe_output_dir }}/*.png",
+      "if-no-files-found": "ignore",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "desktop-screenshot-capture.yml",
+      "job": "capture-screenshots",
+      "step": "Upload complete screenshot artifact",
+      "condition": "${{ always() }}",
+      "name": "desktop-screenshots-complete-${{ github.run_number }}",
+      "path": "artifacts/desktop-screenshot-capture/all-screenshots/",
+      "if-no-files-found": "ignore",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "desktop-standalone-publish.yml",
+      "job": "publish-desktop-standalone",
+      "step": "Upload desktop standalone publish artifacts",
+      "condition": "success()",
+      "name": "desktop-standalone-win-x64-${{ github.run_number }}",
+      "path": "artifacts/publish/local-desktop/",
+      "if-no-files-found": "error",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "desktop-user-manual.yml",
+      "job": "generate-manual",
+      "step": "Upload manual artifacts",
+      "condition": "success()",
+      "name": "desktop-user-manual-${{ github.run_number }}",
+      "path": "${{ inputs.output_path }}\n${{ inputs.screenshot_root }}\n",
+      "if-no-files-found": "ignore",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "desktop-workflow-runner.yml",
+      "job": "run-workflow",
+      "step": "Upload run artifacts",
+      "condition": "always()",
+      "name": "desktop-workflow-run-${{ inputs.workflow }}-${{ github.run_number }}",
+      "path": "artifacts/desktop-workflows/",
+      "if-no-files-found": "ignore",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "golden-path-validation.yml",
+      "job": "wpf-w4-acceptance",
+      "step": "Upload WPF W4 acceptance evidence",
+      "condition": "always()",
+      "name": "wpf-w4-acceptance-evidence",
+      "path": "artifacts/test-results/wpf-w4-acceptance/",
+      "if-no-files-found": "ignore",
+      "retention-days": "30"
+    },
+    {
+      "workflow": "golden-path-validation.yml",
+      "job": "pilot-harness",
+      "step": "Upload pilot acceptance evidence",
+      "condition": "always()",
+      "name": "pilot-acceptance-evidence",
+      "path": "artifacts/pilot-acceptance/latest/pilot-readiness.json\nartifacts/pilot-acceptance/latest/pilot-readiness.md\nartifacts/pilot-acceptance/latest/pilot-readiness-dashboard.md\nartifacts/pilot-acceptance/latest/pilot-readiness-dashboard.json\nartifacts/test-results/pilot-acceptance/\n",
+      "if-no-files-found": "ignore",
+      "retention-days": "30"
+    },
+    {
+      "workflow": "meridian-ci.yml",
+      "job": "verify-dotnet",
+      "step": "Upload .NET lane artifacts",
+      "condition": "always()",
+      "name": "meridian-ci-dotnet-${{ github.run_number }}-${{ github.run_attempt }}",
+      "path": "artifacts/build-logs/\nartifacts/test-results/dotnet/\nartifacts/ci-summary/\n",
+      "if-no-files-found": "ignore",
+      "compression-level": "1",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "meridian-ci.yml",
+      "job": "verify-browser",
+      "step": "Upload browser lane artifacts",
+      "condition": "always()",
+      "name": "meridian-ci-browser-${{ github.run_number }}-${{ github.run_attempt }}",
+      "path": "src/Meridian.Ui/wwwroot/workstation/\nartifacts/test-results/browser/\nartifacts/build-logs/\nartifacts/ci-summary/\n",
+      "if-no-files-found": "ignore",
+      "compression-level": "1",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "meridian-ci.yml",
+      "job": "verify-docs",
+      "step": "Upload docs lane artifacts",
+      "condition": "always()",
+      "name": "meridian-ci-docs-${{ github.run_number }}-${{ github.run_attempt }}",
+      "path": "docs/status/docs-automation-summary.md\ndocs/status/docs-automation-summary.json\ndocs/status/todo-scan-results.json\nartifacts/ci-summary/\n",
+      "if-no-files-found": "ignore",
+      "compression-level": "1",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "meridian-ci.yml",
+      "job": "verify-workflows",
+      "step": "Upload workflow lane artifacts",
+      "condition": "always()",
+      "name": "meridian-ci-workflows-${{ github.run_number }}-${{ github.run_attempt }}",
+      "path": "artifacts/build-logs/\nartifacts/ci-summary/\n",
+      "if-no-files-found": "ignore",
+      "compression-level": "1",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "production-certification.yml",
+      "job": "dependency-evidence",
+      "step": "Upload dependency evidence",
+      "condition": "always()",
+      "name": "production-dependency-evidence-${{ github.run_number }}-${{ github.run_attempt }}",
+      "path": "artifacts/security/",
+      "if-no-files-found": "error",
+      "retention-days": "90"
+    },
+    {
+      "workflow": "production-certification.yml",
+      "job": "recovery-drill",
+      "step": "Upload dated recovery evidence",
+      "condition": "always()",
+      "name": "production-recovery-drill-${{ github.run_id }}",
+      "path": "artifacts/recovery/",
+      "if-no-files-found": "error",
+      "retention-days": "90"
+    },
+    {
+      "workflow": "production-certification.yml",
+      "job": "documentation-evidence",
+      "step": "Upload documentation evidence",
+      "condition": "always()",
+      "name": "production-documentation-evidence-${{ github.run_number }}-${{ github.run_attempt }}",
+      "path": "artifacts/docs/",
+      "if-no-files-found": "error",
+      "retention-days": "90"
+    },
+    {
+      "workflow": "provider-validation.yml",
+      "job": "run-validation",
+      "step": "Upload provider validation artifacts",
+      "condition": "always()",
+      "name": "provider-validation-evidence-${{ github.run_number }}",
+      "path": "artifacts/provider-validation/_automation/",
+      "if-no-files-found": "ignore",
+      "retention-days": "30"
+    },
+    {
+      "workflow": "publish-smoke.yml",
+      "job": "publish",
+      "step": "Upload publish artifact",
+      "condition": "always()",
+      "name": "meridian-${{ inputs.project }}-${{ inputs.runtime }}-${{ github.run_number }}-${{ github.run_attempt }}",
+      "path": "artifacts/publish/publish-smoke/",
+      "if-no-files-found": "warn",
+      "retention-days": "90"
+    },
+    {
+      "workflow": "roadmap-tools-manual.yml",
+      "job": "roadmap-tools",
+      "step": "Upload render output",
+      "condition": "${{ inputs.script == 'render' || inputs.script == 'all' }}",
+      "name": "roadmap-normalized",
+      "path": "${{ inputs.render_output }}",
+      "if-no-files-found": "warn"
+    },
+    {
+      "workflow": "robinhood-options-smoke.yml",
+      "job": "robinhood-smoke",
+      "step": "Upload smoke artifacts",
+      "condition": "always()",
+      "name": "robinhood-options-smoke-${{ github.run_number }}",
+      "path": "artifacts/desktop-workflows/robinhood-options-smoke/",
+      "if-no-files-found": "ignore",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "schema-control.yml",
+      "job": "schema-control",
+      "step": "Upload schema control artifacts",
+      "condition": "always()",
+      "name": "schema-control-${{ github.run_number }}-${{ github.run_attempt }}",
+      "path": "build/schema-control/",
+      "if-no-files-found": "ignore",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "service-backed-integrations.yml",
+      "job": "deterministic-integrations",
+      "step": "Upload deterministic integration evidence",
+      "condition": "always()",
+      "name": "${{ inputs.artifact-name }}-${{ github.run_number }}-${{ github.run_attempt }}",
+      "path": "artifacts/test-results/production-certification/",
+      "if-no-files-found": "error",
+      "retention-days": "${{ inputs.retention-days }}"
+    },
+    {
+      "workflow": "targeted-test.yml",
+      "job": "targeted",
+      "step": "Upload targeted validation artifacts",
+      "condition": "always()",
+      "name": "targeted-${{ inputs.mode }}-${{ github.run_number }}-${{ github.run_attempt }}",
+      "path": "artifacts/test-results/targeted-dotnet/\nartifacts/targeted-browser/\nartifacts/targeted-docs/\nartifacts/wpf-validation/\nartifacts/publish/targeted-desktop-smoke/\n",
+      "if-no-files-found": "ignore",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "web-screenshot-capture.yml",
+      "job": "capture-web-screenshots",
+      "step": "Upload screenshot artifacts",
+      "condition": "${{ always() }}",
+      "name": "web-screenshots-${{ github.run_number }}",
+      "path": "${{ steps.validate_output_dir.outputs.safe_output_dir }}/*.png",
+      "if-no-files-found": "ignore",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "web-screenshot-capture.yml",
+      "job": "capture-web-screenshots",
+      "step": "Upload capture manifest",
+      "condition": "${{ always() }}",
+      "name": "web-screenshots-manifest-${{ github.run_number }}",
+      "path": "artifacts/web-screenshots/manifest.json",
+      "if-no-files-found": "warn",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "web-screenshot-capture.yml",
+      "job": "validate-pull-request-screenshots",
+      "step": "Upload rendered screenshots",
+      "condition": "${{ always() }}",
+      "name": "web-screenshots-pr${{ github.event.pull_request.number }}-${{ github.run_number }}",
+      "path": "docs/screenshots/web/*.png",
+      "if-no-files-found": "ignore",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "web-screenshot-capture.yml",
+      "job": "validate-pull-request-screenshots",
+      "step": "Upload capture manifest",
+      "condition": "${{ always() }}",
+      "name": "web-screenshots-pr${{ github.event.pull_request.number }}-manifest-${{ github.run_number }}",
+      "path": "artifacts/web-screenshots/manifest.json",
+      "if-no-files-found": "warn",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "windows-desktop-build.yml",
+      "job": "desktop",
+      "step": "Upload WPF validation artifacts",
+      "condition": "always()",
+      "name": "windows-desktop-validation-${{ github.run_number }}",
+      "path": "artifacts/wpf-validation/windows-desktop-build/",
+      "if-no-files-found": "ignore",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "windows-desktop-build.yml",
+      "job": "desktop",
+      "step": "Upload desktop smoke publish artifacts",
+      "condition": "always()",
+      "name": "windows-desktop-smoke-${{ github.run_number }}",
+      "path": "artifacts/publish/desktop-smoke/",
+      "if-no-files-found": "ignore",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "wpf-dev-validation.yml",
+      "job": "wpf-dev-loop",
+      "step": "Upload validation artifacts",
+      "condition": "always()",
+      "name": "wpf-dev-validation-${{ github.run_number }}",
+      "path": "artifacts/wpf-validation/dev-loop/",
+      "if-no-files-found": "ignore",
+      "retention-days": "14"
+    },
+    {
+      "workflow": "wpf-route-validation.yml",
+      "job": "route-validation",
+      "step": "Upload test results",
+      "condition": "always()",
+      "name": "wpf-route-results-${{ github.run_number }}-${{ github.run_attempt }}",
+      "path": "artifacts/wpf-validation/routes/",
+      "if-no-files-found": "error",
+      "retention-days": "14"
+    }
+  ],
+  "separate_older_cleanup_candidate": {
+    "run_id": 36456258519,
+    "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/36456258519",
+    "head_sha": "80219e323061a2a511c2121ea923bcc066918d93",
+    "conclusion": "success",
+    "artifacts": [
+      {
+        "id": 10987075441,
+        "name": "windows-desktop-smoke-4413",
+        "size_in_bytes": 187805797,
+        "created_at": "2026-09-28T17:25:04Z",
+        "expires_at": "2026-10-12T17:24:48Z",
+        "expired": false
+      },
+      {
+        "id": 10986666700,
+        "name": "windows-desktop-validation-4413",
+        "size_in_bytes": 24357,
+        "created_at": "2026-09-28T17:24:47Z",
+        "expires_at": "2026-10-12T17:24:46Z",
+        "expired": false
+      }
+    ]
+  }
+}
