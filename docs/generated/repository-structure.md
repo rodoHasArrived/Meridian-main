@@ -2334,8 +2334,86 @@ Meridian-main
 │   │   ├── wpf-screen-development-tracker.json
 │   │   └── wpf-screen-development-tracker.md
 │   ├── testing
+│   │   ├── evidence
+│   │   │   └── w10-615abde9
+│   │   │       ├── browser
+│   │   │       │   ├── evidence
+│   │   │       │   │   ├── screenshots
+│   │   │       │   │   │   ├── M-refusal-repair.png
+│   │   │       │   │   │   ├── M-refusal.png
+│   │   │       │   │   │   ├── M1-fresh-1366x768.png
+│   │   │       │   │   │   ├── M1-fresh.png
+│   │   │       │   │   │   ├── M10-unsupported-override-simulation-repair.png
+│   │   │       │   │   │   ├── M10-unsupported-override-simulation.png
+│   │   │       │   │   │   ├── M2-stale-repair.png
+│   │   │       │   │   │   ├── M2-stale.png
+│   │   │       │   │   │   ├── M3-future-repair.png
+│   │   │       │   │   │   ├── M3-future.png
+│   │   │       │   │   │   ├── M4-missing-date-repair.png
+│   │   │       │   │   │   ├── M4-missing-date.png
+│   │   │       │   │   │   ├── M5-coverage-repair.png
+│   │   │       │   │   │   ├── M5-coverage.png
+│   │   │       │   │   │   ├── M6-confidence-repair.png
+│   │   │       │   │   │   ├── M6-confidence.png
+│   │   │       │   │   │   ├── M8-delayed-old-preview.png
+│   │   │       │   │   │   ├── S1-current-scope-1366x768.png
+│   │   │       │   │   │   ├── S1-current-scope.png
+│   │   │       │   │   │   ├── S2-missing-entityId.png
+│   │   │       │   │   │   ├── S2-missing-fundAccountId.png
+│   │   │       │   │   │   ├── S2-missing-fundProfileId.png
+│   │   │       │   │   │   ├── S2-missing-ledgerBookId.png
+│   │   │       │   │   │   ├── S2-missing-periodId.png
+│   │   │       │   │   │   ├── S3-foreign-scope.png
+│   │   │       │   │   │   ├── S4-accounting-details.png
+│   │   │       │   │   │   ├── S4-missing-context.png
+│   │   │       │   │   │   ├── S4-missing-repair-context.png
+│   │   │       │   │   │   ├── S4-missing-repair.png
+│   │   │       │   │   │   ├── S4-missing.png
+│   │   │       │   │   │   ├── S5-accounting-details.png
+│   │   │       │   │   │   ├── S5-stale-context.png
+│   │   │       │   │   │   ├── S5-stale-repair-context.png
+│   │   │       │   │   │   ├── S5-stale-repair.png
+│   │   │       │   │   │   ├── S5-stale.png
+│   │   │       │   │   │   ├── S6-repair.png
+│   │   │       │   │   │   ├── S6-unavailable.png
+│   │   │       │   │   │   ├── S7-refusal-context.png
+│   │   │       │   │   │   ├── S7-refusal.png
+│   │   │       │   │   │   ├── S7-repair-context.png
+│   │   │       │   │   │   ├── S7-repair.png
+│   │   │       │   │   │   ├── S8-delayed-old-response.png
+│   │   │       │   │   │   └── S8-repair.png
+│   │   │       │   │   ├── cases.json
+│   │   │       │   │   ├── findings.json
+│   │   │       │   │   ├── network-observations.json
+│   │   │       │   │   ├── provenance.json
+│   │   │       │   │   └── requests-responses.json
+│   │   │       │   ├── attempts.json
+│   │   │       │   ├── browser-evidence.md
+│   │   │       │   ├── capture.mjs
+│   │   │       │   └── vitest.log.gz
+│   │   │       ├── desktop
+│   │   │       │   ├── desktop-evidence.md
+│   │   │       │   ├── inspect_desktop_support.py
+│   │   │       │   ├── source-inventory.json
+│   │   │       │   └── wpf-finance-ux-static.md
+│   │   │       ├── server
+│   │   │       │   ├── acceptance-support.trx.gz
+│   │   │       │   ├── server-evidence.md
+│   │   │       │   └── summary.json
+│   │   │       ├── case-records.json
+│   │   │       ├── criteria-review.md
+│   │   │       ├── docs-ci.log.gz
+│   │   │       ├── full-ci.log.gz
+│   │   │       ├── hosted-checks.json
+│   │   │       ├── integrity-validation.json
+│   │   │       ├── manifest.json
+│   │   │       ├── population.json
+│   │   │       ├── README.md
+│   │   │       ├── validation.json
+│   │   │       └── verify_packet.py
 │   │   ├── accounting-trust-corrections.md
 │   │   ├── README.md
+│   │   ├── w10-mark-seam-operator-acceptance.md
 │   │   ├── wave2-cockpit-reliability-evidence-runbook.md
 │   │   ├── WAVE2_ACCEPTANCE_GATE_CHECKLIST.md
 │   │   └── WAVE2_ACCEPTANCE_TESTS.md
@@ -3825,6 +3903,7 @@ Meridian-main
 │   ├── Meridian.Contracts
 │   │   ├── Accounting
 │   │   │   └── Lots
+│   │   │       ├── OpenLotAmortization.cs
 │   │   │       ├── OpenLotBackfillDtos.cs
 │   │   │       ├── OpenLotDto.cs
 │   │   │       └── OpenLotValidation.cs
@@ -4615,6 +4694,7 @@ Meridian-main
 │   │   │   ├── AccountingPostingCandidateService.cs
 │   │   │   ├── AssetAccountingCandidateCanonicalizer.cs
 │   │   │   ├── AssetAccountingEventSpineService.cs
+│   │   │   ├── CanonicalLotAmortizationService.cs
 │   │   │   ├── LedgerJournalConstruction.cs
 │   │   │   └── SpineAcquisitionLotFacts.cs
 │   │   ├── MiddleOffice
@@ -5578,7 +5658,8 @@ Meridian-main
 │   │   │   ├── PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs
 │   │   │   ├── PostgresAssetOperationsProjectionStore.cs
 │   │   │   ├── PostgresAssetOperationsProjectionStore.InstrumentPositions.cs
-│   │   │   └── PostgresAssetOperationsProjectionStore.Locks.cs
+│   │   │   ├── PostgresAssetOperationsProjectionStore.Locks.cs
+│   │   │   └── PostgresAssetOperationsProjectionStore.LotPostingAuthority.cs
 │   │   ├── Backfill
 │   │   │   ├── BackfillStatusStore.cs
 │   │   │   ├── BackfillStatusStoreJsonContext.cs
@@ -5717,7 +5798,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_036__ledger_event_audit_chain.sql
 │   │   │   │   ├── V_ledger_037__open_lot_basis_adjustment.sql
 │   │   │   │   ├── V_ledger_038__audit_safe_tenant_attribution.sql
-│   │   │   │   └── V_ledger_039__tax_lot_proceeds_allocation.sql
+│   │   │   │   ├── V_ledger_039__tax_lot_proceeds_allocation.sql
+│   │   │   │   └── V_ledger_040__canonical_lot_amortization.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -5742,6 +5824,7 @@ Meridian-main
 │   │   │   ├── PostgresFundProfileTenancyRegistry.cs
 │   │   │   ├── PostgresLedgerBookService.cs
 │   │   │   ├── PostgresLedgerCurrencyBackfill.cs
+│   │   │   ├── PostgresLedgerJournalStore.Amortization.cs
 │   │   │   ├── PostgresLedgerJournalStore.AtomicTaxLots.cs
 │   │   │   ├── PostgresLedgerJournalStore.Audit.cs
 │   │   │   ├── PostgresLedgerJournalStore.AverageCostRelief.cs
@@ -5922,6 +6005,7 @@ Meridian-main
 │   │   │   ├── PostgresSecurityMasterStore.Aliases.cs
 │   │   │   ├── PostgresSecurityMasterStore.cs
 │   │   │   ├── PostgresSecurityMasterStore.IdentifierCandidates.cs
+│   │   │   ├── PostgresSecurityMasterStore.PostingAuthority.cs
 │   │   │   ├── PostgresSecurityMasterStore.TermsProjection.cs
 │   │   │   ├── PostgresStructuredCreditReferenceProjectionStore.cs
 │   │   │   ├── PostgresSwapReferenceProjectionStore.cs
@@ -7397,6 +7481,7 @@ Meridian-main
 │   │   │   ├── EvidenceWorkflowServiceCollectionExtensions.cs
 │   │   │   ├── FileEvidenceArtifactStore.cs
 │   │   │   ├── FileEvidenceArtifactStore.DocumentReview.cs
+│   │   │   ├── FileEvidenceArtifactStore.Export.cs
 │   │   │   ├── FileEvidenceArtifactStore.Models.cs
 │   │   │   ├── FileEvidenceArtifactStore.VaultAccess.cs
 │   │   │   ├── FileStatementReconciliationReportAuthorityStore.cs
@@ -9252,6 +9337,7 @@ Meridian-main
 │   │   │   │   │   │   └── CommandModeRunnerTests.cs
 │   │   │   │   │   └── SharedStartupBootstrapperTests.cs
 │   │   │   │   ├── BackfillFeatureRegistrationTests.cs
+│   │   │   │   ├── CanonicalLotAmortizationCompositionTests.cs
 │   │   │   │   ├── DiagnosticsFeatureRegistrationTests.cs
 │   │   │   │   ├── DirectLendingStartupTests.cs
 │   │   │   │   ├── HostStartupLifecycleTests.cs
@@ -9429,9 +9515,12 @@ Meridian-main
 │   │   │   ├── ProjectReferenceGraph.cs
 │   │   │   └── ProjectReferenceGraphTests.cs
 │   │   ├── AssetOperations
+│   │   │   ├── AmortizationHistoricalEvidenceTests.cs
+│   │   │   ├── AmortizationLotInstructionContractTests.cs
 │   │   │   ├── AssetAccountingEventSpineContractTests.cs
 │   │   │   ├── AssetAccountingEvidenceSubjectContractTests.cs
 │   │   │   ├── AssetAcquisitionLotPostgresRoundTripTests.cs
+│   │   │   ├── AssetAmortizationPostgresRoundTripTests.cs
 │   │   │   ├── AssetObligationProjectionServiceTests.cs
 │   │   │   ├── AssetOperationsMigrationRunnerTests.cs
 │   │   │   ├── AssetOperationsReadServiceTests.cs
@@ -9443,6 +9532,7 @@ Meridian-main
 │   │   │   ├── InMemoryAssetAccountingEventProjectionStoreTests.cs
 │   │   │   ├── InMemoryInstrumentPositionProjectionStoreSlice3Tests.cs
 │   │   │   ├── InstrumentPositionProjectionStoreTests.cs
+│   │   │   ├── OpenLotAmortizationPrecisionTests.cs
 │   │   │   ├── PortfolioCashLadderEngineTests.cs
 │   │   │   ├── PortfolioCashLadderReadServiceTests.cs
 │   │   │   └── RetainedEvidenceIdentityValidatorTests.cs
@@ -10219,6 +10309,7 @@ Meridian-main
 │   │   │   ├── AssetAccountingPostingEvidenceValidatorTests.cs
 │   │   │   ├── AtomicFileWriterTests.cs
 │   │   │   ├── AtomicSnapshotTestWriter.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.Amortization.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.AverageCost.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.HistoricalQuantity.cs
@@ -10390,6 +10481,7 @@ Meridian-main
 │   │   │   ├── Evidence
 │   │   │   │   ├── EvidenceDocumentExtractionTests.cs
 │   │   │   │   ├── EvidenceProofChainBuilderTests.cs
+│   │   │   │   ├── FileEvidenceArtifactStoreExportTests.cs
 │   │   │   │   ├── JournalEntryEvidenceTests.cs
 │   │   │   │   ├── ReconciliationEvidenceContributorTests.cs
 │   │   │   │   └── SecurityMasterAndVaultEvidenceContributorTests.cs
@@ -10963,6 +11055,7 @@ Meridian-main
 │   │   ├── test_artifact_retention_module.py
 │   │   ├── test_buildctl_artifact_retention.py
 │   │   ├── test_buildctl_validation_runner.py
+│   │   ├── test_canonical_roadmap_yaml.py
 │   │   ├── test_central_package_versions.py
 │   │   ├── test_check_action_origin_derivation.py
 │   │   ├── test_check_apiclient_callers.py

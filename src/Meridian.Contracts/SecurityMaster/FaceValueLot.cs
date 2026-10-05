@@ -157,10 +157,24 @@ public sealed record FaceValueLot
         DateOnly maturity,
         DateOnly asOf,
         decimal annualCouponRatePercent,
-        int paymentsPerYear = 2)
+        int paymentsPerYear = 2,
+        decimal? retainedAnnualEffectiveYield = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(paymentsPerYear);
         ArgumentOutOfRangeException.ThrowIfNegative(annualCouponRatePercent);
+
+        // Canonical acquisitions retain annual yield as a decimal (0.05 = 5%). Verify that
+        // it prices these level contractual cash flows before using it, including at maturity.
+        if (retainedAnnualEffectiveYield is { } retainedYield)
+        {
+            if (retainedYield <= -1m || maturity <= AcquiredDate)
+                throw new ArgumentException("Retained effective yield or maturity is invalid.");
+            var periods = DayCountConventions.Fraction(convention, AcquiredDate, maturity) * paymentsPerYear;
+            if (periods < 1m || periods > 1200m || periods != decimal.Truncate(periods)
+                || Math.Abs(PricePerUnitAtYield(annualCouponRatePercent / 100m / paymentsPerYear,
+                    (int)periods, retainedYield / paymentsPerYear) - PricePercentOfPar / ParBasis) > 0.0000000001m)
+                throw new ArgumentException("Retained effective yield does not reconcile to acquisition price and level contractual periods.");
+        }
 
         if (maturity <= AcquiredDate || PremiumDiscount == 0m)
             return CostBasis;
@@ -179,7 +193,9 @@ public sealed record FaceValueLot
 
         var pricePerUnit = PricePercentOfPar / ParBasis;
         var couponPerPeriod = annualCouponRatePercent / 100m / paymentsPerYear;
-        var yieldPerPeriod = SolveYieldPerPeriod(pricePerUnit, couponPerPeriod, totalPeriods);
+        var yieldPerPeriod = retainedAnnualEffectiveYield is { } annualYield
+            ? annualYield / paymentsPerYear
+            : SolveYieldPerPeriod(pricePerUnit, couponPerPeriod, totalPeriods);
 
         // Elapsed holding scaled into period space, capped at the final period boundary.
         var elapsedYears = DayCountConventions.Fraction(convention, AcquiredDate, asOf);

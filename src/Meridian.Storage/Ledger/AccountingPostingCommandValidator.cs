@@ -269,7 +269,29 @@ public static class AccountingPostingCommandValidator
                 "Asset accounting posting evidence must include the economic event source content hash.");
         }
 
-        if (command.Evidence.Any(item => item.EffectiveDate != command.EffectiveDate))
+        AssetAccountingEventTypeNames.TryParse(command.SourceEventType, out var eventKind);
+        if (command.LotAmortization is { } amortization)
+        {
+            try
+            { _ = Meridian.Contracts.Accounting.Lots.OpenLotAmortization.Project(amortization); }
+            catch (ArgumentException exception) { throw new LedgerValidationException(exception.Message); }
+            if (eventKind != AssetAccountingEventKindDto.DepreciationAmortization
+                || amortization.AsOfDate != command.EffectiveDate
+                || amortization.ExpectedLot.SecurityId != command.EconomicEvent.SecurityId
+                || amortization.ExpectedLot.BookPositionId != command.BookPositionId
+                || amortization.ExpectedLot.LedgerBookId != command.LedgerBookId)
+                throw new LedgerValidationException("Canonical lot amortization inputs must match the governed posting scope and date.");
+        }
+
+        if (command.Evidence.Any(item => item.EffectiveDate != command.EffectiveDate
+            && (item.Kind != AccountingPostingEvidenceKindDto.Source || !AssetAccountingEvidenceSubjects.MatchesEventEvidenceDate(
+            eventKind, command.EffectiveDate, command.EconomicEvent.SecurityId ?? Guid.Empty,
+            command.LotAmortization?.Security.Version ?? 0,
+            new RetainedEvidenceIdentityDto(item.EvidenceId, item.Uri, item.ContentHash!, item.SourceSystem,
+                item.SourceReference!, item.ReviewStatus!, item.Reviewer!, item.ReviewedAtUtc!.Value,
+                item.EffectiveDate!.Value, item.EvidenceVersion!.Value, item.RetainedAtUtc, item.RetainedBy,
+                item.SubjectType!, item.SubjectId!),
+            command.LotAmortization, requireInstruction: true))))
         {
             throw new LedgerValidationException(
                 "Asset accounting posting evidence effective date must match the economic event effective date.");
