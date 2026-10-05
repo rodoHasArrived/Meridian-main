@@ -54,6 +54,31 @@ dotnet run --project src/Meridian/Meridian.csproj -- --quickstart
 
 `--quickstart` delegates to the configuration pipeline and prepares the app for a local workstation launch. Use `config/appsettings.sample.json` as the template for local runtime configuration. Do not commit local `appsettings*.json`, secrets, provider credentials, logs, or generated data.
 
+### Dev Container
+
+Open the repository with VS Code **Reopen in Container** or GitHub Codespaces and wait for the
+creation hooks to finish. The [dev container](../../.devcontainer/devcontainer.json) uses Node.js 24
+to match browser CI and installs the root and dashboard dependencies from their lockfiles,
+including the optional native packages needed by Vite.
+
+Start browser development from the repository root:
+
+```bash
+npm run dev
+```
+
+This starts the seeded backend in watch mode and Vite together. For browser fixtures without a
+backend, use `npm run dev:fixtures`. See the [browser development launcher guide](../engineering/web-development.md)
+for modes, readiness checks, and shutdown behavior.
+
+Open `http://localhost:5173/workstation/` through the forwarded **Browser Workstation (Vite)** port.
+The existing host/API port 8080 and PostgreSQL port 5432 are also forwarded.
+Run a focused browser component test in another terminal; no additional dependency install is needed:
+
+```bash
+npm --prefix src/Meridian.Ui/dashboard run test -- src/components/ui/button.test.tsx
+```
+
 ## See It Working: One-Command Demo
 
 To evaluate Meridian end-to-end without wiring up providers or a database, seed a demo workspace and
@@ -145,7 +170,8 @@ If `where.exe make` finds nothing, skip Make and use the underlying `dotnet`, `n
 | Seeded end-to-end demo (fastest evaluation) | `dotnet run --project src/Meridian/Meridian.csproj -- --seed-demo` | Seeds an isolated, durable, `Seeded`-labelled demo workspace and opens the populated workstation. See [See It Working](#see-it-working-one-command-demo). |
 | Local host and browser-served workstation | `dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080` | Requires a persistence decision first — see [Persistence and simulation defaults](#persistence-and-simulation-defaults); bare, it fails closed at startup. Once configured, serves the host and `http://localhost:8080/workstation/` from the tracked canonical bundle (`src/Meridian.Ui/wwwroot/workstation`), independent of launch directory. |
 | Desktop-local host mode | `dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080` | Use when intentionally running the desktop-local host and streaming collector together. |
-| Browser workstation development | `npm --prefix src/Meridian.Ui/dashboard run dev` | Use for active React/TypeScript workstation work. |
+| Browser development with seeded backend | `npm run dev` | Coordinates seeding, backend watch/restarts, and Vite hot reload. See [browser development](../engineering/web-development.md) for prerequisites and options. |
+| Browser fixture-only development | `npm run dev:fixtures` | Starts Vite with explicit demo fixtures and no backend requests; .NET is not required. See [browser development](../engineering/web-development.md). |
 | WPF desktop development shell | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development` | Builds Debug artifacts and explicitly opts into the local Development/in-memory governance profile. |
 | WPF deterministic fixture shell | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development -Fixture` | Use for offline UI inspection with fixture data. |
 | WPF production build | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly` | Builds Release host and desktop artifacts without starting the host. |
@@ -156,9 +182,10 @@ If `where.exe make` finds nothing, skip Make and use the underlying `dotnet`, `n
 
 Two defaults matter before you trust what a local launch shows you:
 
-- **Persistence.** `--seed-demo` is the only launch that works with zero configuration — it
-  opts into a database-less local profile for you. Every other launch, including
-  `--mode workstation`, requires a persistence decision first and **fails closed at startup**
+- **Persistence.** The demo commands (`--seed-demo`, then `--demo`) and the seeded
+  `npm run dev` launcher opt into a database-less local profile when settings are unset.
+  Non-demo host launches, including
+  `--mode workstation`, require a persistence decision first and **fail closed at startup**
   (`StorageFeatureRegistration` throws, naming the missing variable) rather than silently
   running in-memory. Either point Meridian at PostgreSQL —
   `MERIDIAN_DATABASE_URL=postgres://user:password@localhost:5432/meridian` covers all store
@@ -200,6 +227,12 @@ python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian
 npm --prefix src/Meridian.Ui/dashboard run test
 python build/scripts/docs/check-ai-inventory.py --summary
 ```
+
+For a repeated .NET edit/test loop, add `--profile worktree` or `--profile session:<name>` to
+`buildctl.py test` to reuse compatible build outputs. Reports remain unique to each run. Before
+handing off a change, omit `--profile` or use `--fresh` for fresh isolated test validation. See
+[persistent build profiles](../development/build-observability.md#persistent-build-profiles)
+for the matching build command and compatibility rules.
 
 For completed PR-ready work, run the canonical repository gate, `bash scripts/ci.sh`; GitHub Actions
 `Meridian CI / quality-gate` remains the authoritative merge result.
