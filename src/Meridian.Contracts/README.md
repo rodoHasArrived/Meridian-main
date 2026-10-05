@@ -6,10 +6,12 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-02
 ---
 
 # src/Meridian.Contracts
+
+Canonical amortization adds an optional `Amortization` input to lot instructions and basis adjustments, omitted when absent to preserve retained fingerprints. `OpenLotAmortization` binds reviewed canonical lot and versioned Security Master evidence, delegates shared straight-line/constant-yield kernels, and retains annual decimal yield and acquisition FX. Unsupported structures and missing terms fail closed.
 
 `Etl/IEtlStagingStore.cs` lets source adapters retain imported streams through an injected
 persistence port without referencing the Storage implementation.
