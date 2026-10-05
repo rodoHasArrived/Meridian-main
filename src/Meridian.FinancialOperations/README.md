@@ -772,8 +772,9 @@ identity and balanced posted amounts returned by that boundary.
 For this spine, a same-source journal is a replay only when its deterministic journal identity,
 complete Drafted candidate/result fingerprints, policy/rule pack, approval evidence, amounts,
 lines, currencies, and dimensions all match. Lots retain Security Master and book-position scope;
-disposal rechecks selected unit cost and aggregate cost basis against the exact asset-relief journal
-line under the same serializable transaction. A mismatch is a collision and blocks posting.
+disposal retains selected acquisition unit cost as a snapshot assertion, certifies current canonical
+relief basis across the scoped pool, and rechecks the exact asset-relief journal line under the same
+serializable transaction and effective policy revision. A mismatch is a collision and blocks posting.
 External accounting-system providers remain read-only import, reconciliation, and export-package
 surfaces; this service appends only Meridian-owned ledger facts.
 The retained approval evidence for generated candidate append must name approval intent, fund,
