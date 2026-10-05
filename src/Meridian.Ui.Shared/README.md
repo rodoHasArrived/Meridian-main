@@ -1413,6 +1413,9 @@ Documents owns policy, durable reservations, and concurrent admission. Source gr
 reservation before additional writes; publication reconciles to actual bytes. Exclusive attempt
 leases protect live writers, and the next write reclaims abandoned reservations while preserving
 published evidence. Failed cleanup retains the charge until recovery succeeds.
+`AddEvidenceArtifactStorage` binds these limits and registers the shared store for both the
+browser workflow fabric and WPF Accounting feature. Direct consumers without host configuration
+retain the same default limits.
 
 [`Meridian.Documents/README.md`](../Meridian.Documents/README.md#evidence-storage-quota-configuration)
 documents `EvidenceVault:StorageQuota`, defaults, tenant budgets across company scopes, and the

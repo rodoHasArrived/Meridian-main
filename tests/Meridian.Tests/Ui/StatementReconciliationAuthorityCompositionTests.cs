@@ -83,8 +83,10 @@ public sealed class StatementReconciliationAuthorityCompositionTests : IDisposab
             .IsDurablyComposed.Should().BeFalse();
     }
 
-    [Fact]
-    public async Task EvidenceWorkflowFabric_HostConfiguration_EnforcesConfiguredTenantBudget()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EvidenceStorage_HostConfiguration_EnforcesConfiguredTenantBudget(bool registerWorkflowFabric)
     {
         var services = CreateMinimalWorkstationServices();
         services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection(
@@ -93,7 +95,14 @@ public sealed class StatementReconciliationAuthorityCompositionTests : IDisposab
                 ["EvidenceVault:StorageQuota:DefaultTenantBudgetBytes"] = "0",
                 ["EvidenceVault:StorageQuota:MinimumDiskHeadroomBytes"] = "0"
             }).Build());
-        services.AddEvidenceWorkflowFabric();
+        if (registerWorkflowFabric)
+        {
+            services.AddEvidenceWorkflowFabric();
+        }
+        else
+        {
+            services.AddEvidenceArtifactStorage();
+        }
         using var provider = services.BuildServiceProvider();
         provider.GetRequiredService<IOptions<EvidenceStorageQuotaOptions>>().Value.DefaultTenantBudgetBytes
             .Should().Be(0);
@@ -105,6 +114,30 @@ public sealed class StatementReconciliationAuthorityCompositionTests : IDisposab
             Scope = "company-config"
         });
         (await intake.Should().ThrowAsync<EvidenceStorageQuotaExceededException>()).Which.Reason.Should().Be("tenant-bytes");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void EvidenceStorage_WithoutHostConfiguration_ResolvesSharedStoreWithDefaultLimits(bool registerWorkflowFabric)
+    {
+        var services = CreateMinimalWorkstationServices();
+        if (registerWorkflowFabric)
+        {
+            services.AddEvidenceWorkflowFabric();
+        }
+        else
+        {
+            services.AddEvidenceArtifactStorage();
+        }
+        using var provider = services.BuildServiceProvider();
+
+        provider.GetService<IConfiguration>().Should().BeNull();
+        provider.GetRequiredService<IOptions<EvidenceStorageQuotaOptions>>().Value
+            .Should().BeEquivalentTo(new EvidenceStorageQuotaOptions());
+        var store = provider.GetRequiredService<IEvidenceArtifactStore>();
+        store.Should().BeOfType<FileEvidenceArtifactStore>();
+        provider.GetRequiredService<IEvidenceArtifactStore>().Should().BeSameAs(store);
     }
 
     [Fact]

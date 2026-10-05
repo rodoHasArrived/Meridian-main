@@ -12,25 +12,33 @@ namespace Meridian.Ui.Shared.Evidence;
 
 public static class EvidenceWorkflowServiceCollectionExtensions
 {
-    public static IServiceCollection AddEvidenceWorkflowFabric(
-        this IServiceCollection services,
-        bool isProductionComposition = false)
+    /// <summary>Registers the shared evidence store and host-configured storage limits for browser and desktop hosts.</summary>
+    public static IServiceCollection AddEvidenceArtifactStorage(this IServiceCollection services)
     {
+        ArgumentNullException.ThrowIfNull(services);
         // Direct service-collection consumers have no host IConfiguration; retain defaults
         // there while binding the same section for browser and desktop hosts that provide it.
         services.AddOptions<EvidenceStorageQuotaOptions>()
             .Configure<IServiceProvider>((options, provider) => provider.GetService<IConfiguration>()?
                 .GetSection("EvidenceVault:StorageQuota").Bind(options));
-        services.TryAddSingleton<EvidenceTemplateRegistry>();
-        services.TryAddSingleton<EvidenceSubjectResolver>();
-        services.TryAddSingleton<EvidencePacketValidationService>();
-        services.TryAddSingleton<EvidenceGraphService>();
-        services.TryAddSingleton<IEvidenceDocumentExtractor, ManualEvidenceDocumentExtractor>();
         services.TryAddSingleton<IEvidenceArtifactStore>(sp =>
             new FileEvidenceArtifactStore(
                 FileEvidenceArtifactStore.ResolveDataRoot(sp),
                 sp.GetRequiredService<ILogger<FileEvidenceArtifactStore>>(),
                 sp.GetRequiredService<IOptions<EvidenceStorageQuotaOptions>>().Value));
+        return services;
+    }
+
+    public static IServiceCollection AddEvidenceWorkflowFabric(
+        this IServiceCollection services,
+        bool isProductionComposition = false)
+    {
+        services.AddEvidenceArtifactStorage();
+        services.TryAddSingleton<EvidenceTemplateRegistry>();
+        services.TryAddSingleton<EvidenceSubjectResolver>();
+        services.TryAddSingleton<EvidencePacketValidationService>();
+        services.TryAddSingleton<EvidenceGraphService>();
+        services.TryAddSingleton<IEvidenceDocumentExtractor, ManualEvidenceDocumentExtractor>();
         var hasKnownDurableStatementAuthority =
             HasKnownDurableStatementAuthority(services);
 
