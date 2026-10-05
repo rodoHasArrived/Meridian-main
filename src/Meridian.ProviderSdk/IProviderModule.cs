@@ -6,8 +6,8 @@ namespace Meridian.Infrastructure.Adapters.Core;
 
 /// <summary>
 /// Defines a self-describing provider module that bundles all capability types for a single
-/// external data provider (streaming, historical, symbol search, brokerage) behind one DI
-/// registration entry point.
+/// external data provider (streaming, historical, symbol search, corporate actions,
+/// options, brokerage) behind one DI registration entry point.
 /// </summary>
 /// <remarks>
 /// Implement once per external provider (e.g., <c>AlpacaProviderModule</c>).
@@ -81,13 +81,18 @@ public interface IProviderModule
         => ValueTask.FromResult(ModuleValidationResult.Valid);
 
     /// <summary>
-    /// Register provider services into the DI container.
+    /// Register provider services into the DI container. This module is the authoritative
+    /// factory for its provider family unless application composition explicitly owns it.
     /// </summary>
     /// <remarks>
-    /// The module owns construction and lifetime for its configured capability factories.
-    /// Register each concrete attributed provider service to publish its implemented contracts
-    /// through <see cref="DataSourceRegistry.ModuleCapabilityRegistrations"/>. Module loaders
-    /// stage service changes and publish this inventory only after registration succeeds.
+    /// Register each exposed, attributed implementation under its concrete type. Optional
+    /// interface registrations must forward to that concrete instance. Discovery publishes
+    /// only those concrete factories; interface-only registration is rejected because it
+    /// cannot identify a provider family unambiguously when several modules share a contract.
+    /// Concrete factories must use singleton or transient lifetime. Scoped capabilities are
+    /// rejected because the host's provider registry cannot honor a request service scope.
+    /// Registration is transactional: a failure publishes no services, discovered metadata or
+    /// capability factories through <see cref="DataSourceRegistry.ModuleCapabilityRegistrations"/>.
     /// </remarks>
     void Register(IServiceCollection services, DataSourceRegistry registry);
 }

@@ -73,6 +73,7 @@ resolves the same shared aliases before choosing a family-specific settings rout
 Telemetry joins resolve a recognized provider-family type, then exact configured source ownership,
 before falling back to a legacy family-valued metric ID (including records whose type is `Streaming`).
 A connection named `alpaca` for the IB family therefore cannot contribute IB failures to Alpaca readiness.
+Health and diagnostic lookups resolve the same aliases before joining runtime connection snapshots.
 
 The shared workstation registers credentialed Xero and NetSuite accounting
 providers alongside the existing fixtures. Their HTTP client disables redirects;

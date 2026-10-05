@@ -48,11 +48,8 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     private readonly ConcurrentDictionary<string, RegisteredProvider> _allProviders
         = new(StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>
-    /// Factories keyed by canonical family and contract. Streaming compatibility methods use
-    /// this same map so replacing a factory through either API updates every resolution path.
-    /// Contracts without IProviderMetadata participate without requiring a metadata wrapper.
-    /// </summary>
+    // All capability factories, including streaming, use one canonical family/contract key.
+    // Streaming results are caller-owned; other factory results retain their DI lifetime.
     private readonly ConcurrentDictionary<(string ProviderId, Type Contract), Func<object?>> _capabilityFactories = new();
     private readonly ConcurrentDictionary<string, byte> _disabledFamilies = new(StringComparer.Ordinal);
 
@@ -61,7 +58,16 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(providerId);
         ArgumentNullException.ThrowIfNull(contract);
         ArgumentNullException.ThrowIfNull(factory);
-        _capabilityFactories[(ProviderIdentity.NormalizeId(providerId), contract)] = factory;
+        var key = ProviderIdentity.NormalizeId(providerId);
+        var added = _capabilityFactories.TryAdd((key, contract), factory);
+        if (!added)
+            _capabilityFactories[(key, contract)] = factory;
+        if (contract == typeof(IMarketDataClient))
+        {
+            if (added)
+                MigrationDiagnostics.IncStreamingFactoryRegistered();
+            _log.Information("Registered streaming factory for {DataSource}", key);
+        }
     }
 
     /// <summary>Resolves any declared capability using its canonical family ID or a configured alias.</summary>
@@ -149,19 +155,7 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(providerId);
         ArgumentNullException.ThrowIfNull(factory);
 
-        var key = ProviderIdentity.NormalizeId(providerId);
-        Func<object?> capabilityFactory = () => factory();
-        var registrationKey = (key, typeof(IMarketDataClient));
-        if (_capabilityFactories.TryAdd(registrationKey, capabilityFactory))
-        {
-            MigrationDiagnostics.IncStreamingFactoryRegistered();
-            _log.Information("Registered streaming factory for {DataSource}", key);
-        }
-        else
-        {
-            _capabilityFactories[registrationKey] = capabilityFactory;
-            _log.Information("Replaced streaming factory for {DataSource}", key);
-        }
+        RegisterCapabilityFactory(providerId, typeof(IMarketDataClient), factory);
     }
 
     /// <summary>
@@ -185,8 +179,7 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     public IMarketDataClient CreateStreamingClient(string providerId)
     {
         var key = ProviderIdentity.NormalizeId(providerId);
-        if (!_disabledFamilies.ContainsKey(key) &&
-            _capabilityFactories.TryGetValue((key, typeof(IMarketDataClient)), out var factory))
+        if (!_disabledFamilies.ContainsKey(key) && _capabilityFactories.TryGetValue((key, typeof(IMarketDataClient)), out var factory))
         {
             MigrationDiagnostics.IncStreamingFactoryHit(key);
             _log.Information("Creating streaming client for {DataSource}", key);
@@ -217,14 +210,11 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
         => CreateStreamingClient(kind.ToString().ToLowerInvariant());
 
     /// <summary>
-    /// Gets all provider IDs that have a registered streaming factory (lower-case, sorted).
+    /// Gets enabled provider IDs that have a registered streaming factory (canonical, sorted).
     /// </summary>
     public IReadOnlyList<string> SupportedStreamingSources =>
-        _capabilityFactories.Keys
-            .Where(key => key.Contract == typeof(IMarketDataClient))
-            .Select(key => key.ProviderId)
-            .OrderBy(key => key, StringComparer.Ordinal)
-            .ToList();
+        _capabilityFactories.Keys.Where(key => key.Contract == typeof(IMarketDataClient) && !_disabledFamilies.ContainsKey(key.ProviderId))
+            .Select(key => key.ProviderId).OrderBy(id => id, StringComparer.Ordinal).ToList();
 
 
 

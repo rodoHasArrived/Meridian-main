@@ -7,8 +7,8 @@ namespace Meridian.Infrastructure.DataSources;
 /// </summary>
 /// <param name="ProviderId">Canonical provider-family identifier.</param>
 /// <param name="Contract">Recognized capability contract implemented by the provider.</param>
-/// <param name="Implementation">Concrete service type registered by the module.</param>
+/// <param name="ImplementationType">Concrete service type registered by the module.</param>
 public sealed record ProviderModuleCapabilityRegistration(
     string ProviderId,
     Type Contract,
-    Type Implementation);
+    Type ImplementationType);

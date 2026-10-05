@@ -136,6 +136,7 @@ public sealed class ProviderModuleLoader
             try
             {
                 moduleId = ProviderIdentity.NormalizeId(module.ModuleId);
+                registry.ClaimModuleFamily(moduleId);
 
                 if (!module.IsProductionProvider)
                     continue;
@@ -181,7 +182,7 @@ public sealed class ProviderModuleLoader
                 }
 
                 _log.LogDebug("Registering provider module {ModuleId}", moduleId);
-                registry.RegisterModuleServices(module, services);
+                registry.RegisterModuleServices(services, module);
 
                 loaded.Add(new LoadedModuleInfo(moduleId, module.ModuleDisplayName, module.Capabilities));
 

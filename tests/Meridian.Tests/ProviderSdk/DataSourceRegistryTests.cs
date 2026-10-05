@@ -289,6 +289,44 @@ public sealed class DataSourceRegistryTests
         services.Should().ContainSingle(descriptor => descriptor.ServiceType == implementation);
     }
 
+    [Theory]
+    [InlineData(DataSourceCapabilityContracts.MarketDataClient)]
+    [InlineData(DataSourceCapabilityContracts.HistoricalDataProvider)]
+    [InlineData(DataSourceCapabilityContracts.SymbolSearchProvider)]
+    [InlineData(DataSourceCapabilityContracts.CorporateActionProvider)]
+    [InlineData(DataSourceCapabilityContracts.OptionsChainProvider)]
+    [InlineData(DataSourceCapabilityContracts.BrokerageGateway)]
+    public void RegisterServices_DerivesEveryCapabilityInterfaceFromDiscoveredMetadata(string contractName)
+    {
+        var registry = new DataSourceRegistry();
+        registry.DiscoverFromAssemblies(CreateDataSourceAssembly(
+            new DynamicDataSource("discovered-provider", "Discovered provider", contractName)));
+        var source = registry.Sources.Single();
+        var contract = source.ImplementationType.GetInterfaces().Single();
+        var services = new ServiceCollection();
+
+        registry.RegisterServices(services);
+
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService(contract).Should().BeSameAs(provider.GetRequiredService(source.ImplementationType));
+    }
+
+    [Fact]
+    public void RegisterServices_DisabledAliasedModuleCannotFallBackToAttributeConstruction()
+    {
+        var registry = new DataSourceRegistry();
+        registry.DiscoverFromAssemblies(CreateDataSourceAssembly(
+            new DynamicDataSource("ibkr", "Discovered IB capability", DataSourceCapabilityContracts.MarketDataClient)));
+        registry.ConfigureModule("interactive-brokers", new ProviderModuleContext { Enabled = false });
+        var services = new ServiceCollection();
+
+        registry.RegisterModules(services, typeof(CanonicalAliasTestModule).Assembly);
+        registry.RegisterServices(services);
+
+        services.Should().NotContain(descriptor => descriptor.ServiceType == registry.Sources.Single().ImplementationType);
+        registry.ModuleCapabilityRegistrations.Should().BeEmpty();
+    }
+
     [Fact]
     public void RegisterServices_NullServiceCollection_ThrowsArgumentNullException()
     {

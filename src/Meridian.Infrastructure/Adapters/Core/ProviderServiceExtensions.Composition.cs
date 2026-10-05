@@ -87,7 +87,11 @@ public static partial class ProviderServiceExtensions
 
             if (registration.Contract == typeof(IMarketDataClient))
             {
-                services.TryAddTransient(registration.Implementation, Create);
+                // A shared streaming/search type has one concrete DI service: the registry's
+                // search singleton. Streaming remains a fresh, explicitly selected factory.
+                if (!registrations.Any(other => other.Implementation == registration.Implementation &&
+                        (other.Contract == typeof(IHistoricalDataProvider) || other.Contract == typeof(ISymbolSearchProvider))))
+                    services.TryAddTransient(registration.Implementation, Create);
                 continue;
             }
 
@@ -106,13 +110,12 @@ public static partial class ProviderServiceExtensions
         var pluginInventory = registry.Sources
             .Where(source => !ownedFamilies.Contains(source.Id) && pluginModules.Contains(source.ImplementationType.Module.ModuleVersionId))
             .ToArray();
-        // Discovery advertises inventory, while successful modules authoritatively publish
-        // factories. An unrelated service or a failed module must not create a provider merely
-        // because an implementation type happens to exist in the container.
-        var pluginImplementations = pluginInventory.Select(source => source.ImplementationType).ToHashSet();
+        // Discovery publishes factory descriptors only after the owning module successfully
+        // registers. Attribute metadata or an unrelated DI service cannot grant a factory.
         var pluginRegistrations = registry.ModuleCapabilityRegistrations
             .Where(registration => registrationFactory.IsFamilyEnabled(registration.ProviderId)
-                && pluginImplementations.Contains(registration.Implementation))
+                && pluginInventory.Any(source => source.Id == registration.ProviderId &&
+                    source.ImplementationType == registration.ImplementationType))
             .ToArray();
         services.AddSingleton(registry);
 
@@ -125,7 +128,7 @@ public static partial class ProviderServiceExtensions
             return registrations.Where(r => r.Contract == typeof(IOptionsChainProvider) && factory.IsCapabilityEnabled(r))
                 .Select(r => (IOptionsChainProvider)sp.GetRequiredService(r.Implementation))
                 .Concat(pluginRegistrations.Where(r => r.Contract == typeof(IOptionsChainProvider))
-                    .Select(r => (IOptionsChainProvider)sp.GetRequiredService(r.Implementation)))
+                    .Select(r => (IOptionsChainProvider)sp.GetRequiredService(r.ImplementationType)))
                 .ToArray();
         });
         services.AddSingleton<IOptionsChainProvider>(sp =>
@@ -160,14 +163,10 @@ public static partial class ProviderServiceExtensions
             factory.CreateAndRegisterAllAsync(providers).GetAwaiter().GetResult();
             foreach (var registration in pluginRegistrations)
             {
-                if (registration.Contract == typeof(IMarketDataClient))
-                    providers.RegisterStreamingFactory(registration.ProviderId,
-                        () => (IMarketDataClient)sp.GetRequiredService(registration.Implementation));
-                else
-                    providers.RegisterCapabilityFactory(registration.ProviderId, registration.Contract,
-                        () => sp.GetRequiredService(registration.Implementation));
+                providers.RegisterCapabilityFactory(registration.ProviderId, registration.Contract,
+                    () => sp.GetRequiredService(registration.ImplementationType));
             }
-            foreach (var implementation in pluginRegistrations.Select(r => r.Implementation).Distinct())
+            foreach (var implementation in pluginRegistrations.Select(r => r.ImplementationType).Distinct())
             {
                 if (sp.GetRequiredService(implementation) is IProviderMetadata metadata)
                     providers.Register(metadata, ownsLifetime: false);

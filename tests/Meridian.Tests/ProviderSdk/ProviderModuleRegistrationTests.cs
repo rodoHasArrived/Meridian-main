@@ -12,6 +12,7 @@ public sealed class ProviderModuleRegistrationTests
     public async Task Successful_module_publishes_its_factory_contracts_without_constructing_adapters()
     {
         var registry = new DataSourceRegistry();
+        registry.DiscoverFromAssemblies(typeof(StooqHistoricalDataProvider).Assembly);
         var services = new ServiceCollection();
         var module = new RegistrationMutationModule((collection, _) =>
             collection.AddSingleton<StooqHistoricalDataProvider>(_ =>
@@ -64,10 +65,40 @@ public sealed class ProviderModuleRegistrationTests
         registry.Sources.Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Invalid_capability_factory_rolls_back_sources_discovered_during_registration(bool interfaceOnly)
+    {
+        var registry = new DataSourceRegistry();
+        var services = new ServiceCollection();
+        services.AddSingleton(new ModuleMarker());
+        var originalDescriptors = services.ToArray();
+        var module = new RegistrationMutationModule((collection, dataSources) =>
+        {
+            dataSources.DiscoverFromAssemblies(typeof(StooqHistoricalDataProvider).Assembly);
+            if (interfaceOnly)
+                collection.AddSingleton<IHistoricalDataProvider>(_ =>
+                    throw new InvalidOperationException("The invalid factory must never run."));
+            else
+                collection.AddScoped<StooqHistoricalDataProvider>();
+        });
+
+        var report = await new ProviderModuleLoader().LoadModulesAsync(services, registry, [module]);
+
+        report.Failed.Should().ContainSingle().Which.FailureReason.Should().Contain(
+            interfaceOnly ? "without its concrete factory" : "scoped concrete factory");
+        services.Should().Equal(originalDescriptors);
+        registry.ModuleCapabilityRegistrations.Should().BeEmpty();
+        registry.Sources.Should().BeEmpty();
+    }
+
     private sealed class ModuleMarker;
 
     private sealed class RegistrationMutationModule(Action<IServiceCollection, DataSourceRegistry> register) : IProviderModule
     {
+        public string ModuleId => "stooq";
+
         public void Register(IServiceCollection services, DataSourceRegistry registry) => register(services, registry);
     }
 }
