@@ -23,6 +23,7 @@ LIBRARY = REPO_ROOT / "build/scripts/install/postgresql-payload.ps1"
 WRAPPER = REPO_ROOT / "build/scripts/install/resolve-postgresql-payload.ps1"
 BUILDER = REPO_ROOT / "build/scripts/install/build-consumer-setup.ps1"
 TOOLS = ("postgres", "pg_ctl", "initdb", "psql", "pg_dump", "pg_restore")
+NOTICE_FILES = ("commandlinetools_3rd_party_licenses.txt", "server_license.txt")
 
 
 class PostgreSqlPayloadTests(unittest.TestCase):
@@ -39,6 +40,8 @@ class PostgreSqlPayloadTests(unittest.TestCase):
             (self.source / "bin" / f"{tool}.exe").write_text("17.11\n", encoding="utf-8")
         (self.source / "lib" / "postgres.dll").write_bytes(b"fixture library")
         (self.source / "share" / "postgresql.conf.sample").write_bytes(b"fixture configuration")
+        for notice in NOTICE_FILES:
+            (self.source / notice).write_text(f"Fixture notice: {notice}\n", encoding="utf-8")
         self.approval = self.root / "approved.json"
         self.policy = {
             "schemaVersion": 1,
@@ -51,6 +54,7 @@ class PostgreSqlPayloadTests(unittest.TestCase):
                 + "/images/windows/Windows2025-Readme.md#postgresql",
             },
             "components": ["bin", "lib", "share"],
+            "noticeFiles": list(NOTICE_FILES),
         }
         self.write_approval()
         self.output = self.root / "staged"
@@ -114,11 +118,13 @@ class PostgreSqlPayloadTests(unittest.TestCase):
         self.assertEqual(receipt["source"], self.policy["source"])
         self.assertEqual(receipt["approvalSha256"], hashlib.sha256(self.approval.read_bytes()).hexdigest())
         expected = [
-            {"path": path.relative_to(self.payload).as_posix(), "sizeBytes": path.stat().st_size,
+            {"path": path.relative_to(self.source).as_posix(), "sizeBytes": path.stat().st_size,
              "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
-            for path in sorted(self.payload.rglob("*")) if path.is_file()
+            for path in sorted(self.source.rglob("*")) if path.is_file()
         ]
         self.assertEqual(receipt["files"], expected)
+        for notice in NOTICE_FILES:
+            self.assertEqual((self.payload / notice).read_bytes(), (self.source / notice).read_bytes())
         canonical = "".join(f"{entry['sha256']}  {entry['path']}\n" for entry in expected)
         self.assertEqual(receipt["payloadSha256"], hashlib.sha256(canonical.encode("utf-8")).hexdigest())
         self.assertEqual((self.payload / "bin/postgres.exe").read_text(encoding="utf-8"), "17.11\n")
@@ -159,6 +165,19 @@ class PostgreSqlPayloadTests(unittest.TestCase):
 
     def test_unapproved_runtime_fails_before_staging(self) -> None:
         self.assert_rejected_before_staging(self.resolve(runtime="win-arm64"))
+
+    def test_missing_distribution_notice_fails_before_staging(self) -> None:
+        for notice in NOTICE_FILES:
+            with self.subTest(notice=notice):
+                path = self.source / notice
+                displaced = path.with_name(path.name + ".removed")
+                path.rename(displaced)
+                try:
+                    result = self.resolve()
+                    self.assert_rejected_before_staging(result)
+                    self.assertIn(notice, result.stdout + result.stderr)
+                finally:
+                    displaced.rename(path)
 
     def test_payload_tree_addition_removal_and_modification_invalidate_receipt(self) -> None:
         for change in ("add", "remove", "modify"):

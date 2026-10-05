@@ -7,5 +7,6 @@
     "path": "C:\\Program Files\\PostgreSQL\\17",
     "reference": "https://github.com/actions/runner-images/blob/413dcb5e5b4c397e81a2520584e621beed02e963/images/windows/Windows2025-Readme.md#postgresql"
   },
-  "components": ["bin", "lib", "share"]
+  "components": ["bin", "lib", "share"],
+  "noticeFiles": ["commandlinetools_3rd_party_licenses.txt", "server_license.txt"]
 }

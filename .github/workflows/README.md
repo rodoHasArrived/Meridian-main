@@ -130,7 +130,8 @@ The declaration selects PostgreSQL 17.11 for win-x64 from the Windows 2025 runne
 `C:\Program Files\PostgreSQL\17` source. Human governance review of this change accepts the
 version/source declaration; it does not establish historical approval or certification.
 
-The resolver stages `bin`, `lib`, and `share`, verifies the exact version, and records version,
+The resolver stages `bin`, `lib`, `share`, and the declared distribution notices, verifies the exact
+version, and records version,
 source, runner identity, per-file hashes, and the canonical payload-tree SHA-256 in
 `artifacts/postgresql-payload/win-x64-payload.json`. Release manifests embed this receipt in
 `postgresqlPayloads`. The consumer builder verifies the staged receipt before npm or dotnet;

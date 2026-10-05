@@ -57,8 +57,8 @@ not assert that an earlier payload approval or release certification exists.
 
 Installer packaging, installed-startup smoke, and evaluation packaging use the shared
 [`resolve-postgresql-payload.ps1`](../../build/scripts/install/resolve-postgresql-payload.ps1)
-resolver. It validates the declared version and source, stages only `bin`, `lib`, and `share`
-under `artifacts/postgresql-payload/win-x64`, and writes
+resolver. It validates the declared version and source, stages `bin`, `lib`, `share`, and the
+declared `server_license.txt` / `commandlinetools_3rd_party_licenses.txt` distribution notices under `artifacts/postgresql-payload/win-x64`, and writes
 `artifacts/postgresql-payload/win-x64-payload.json`. This receipt records the resolved version,
 source, runner identity, per-file SHA-256 hashes, and a canonical payload-tree SHA-256 hash.
 Release evidence embeds it in `postgresqlPayloads`.

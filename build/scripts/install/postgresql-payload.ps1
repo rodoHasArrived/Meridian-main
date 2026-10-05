@@ -10,7 +10,8 @@ function Read-PostgreSqlApproval {
         $approval.source.kind -cne 'github-hosted-runner' -or
         [string]::IsNullOrWhiteSpace($approval.source.path) -or
         $approval.source.reference -cnotmatch '^https://github.com/actions/runner-images/blob/[a-f0-9]{40}/images/windows/Windows2025-Readme.md#postgresql$' -or
-        (@($approval.components) -join ',') -cne 'bin,lib,share') {
+        (@($approval.components) -join ',') -cne 'bin,lib,share' -or
+        (@($approval.noticeFiles) -join ',') -cne 'commandlinetools_3rd_party_licenses.txt,server_license.txt') {
         throw 'Invalid PostgreSQL payload approval. Review build/config/postgresql-payload.json.'
     }
     return $approval
@@ -25,6 +26,16 @@ function Get-PostgreSqlToolVersion {
         throw "Cannot identify PostgreSQL tool version: $Path ($output)"
     }
     return $Matches[1]
+}
+
+function Assert-PostgreSqlLayout {
+    param([string]$PayloadPath, [object]$Approval)
+    foreach ($component in $Approval.components) {
+        if (-not (Test-Path -LiteralPath (Join-Path $PayloadPath $component) -PathType Container)) { throw "Missing approved PostgreSQL component: $component" }
+    }
+    foreach ($notice in $Approval.noticeFiles) {
+        if (-not (Test-Path -LiteralPath (Join-Path $PayloadPath $notice) -PathType Leaf)) { throw "Missing PostgreSQL distribution notice: $notice" }
+    }
 }
 
 function Assert-PostgreSqlTools {
@@ -63,7 +74,11 @@ function Get-PostgreSqlPayloadFiles {
 function Get-PostgreSqlPayloadHash {
     param([Parameter(Mandatory)][object[]]$Files)
     # UTF-8, no BOM, ordinal path order, lowercase SHA256 + two spaces + path + LF.
-    $canonical = ($Files | ForEach-Object { "$($_.sha256)  $($_.path)`n" }) -join ''
+    $byPath = [Collections.Generic.Dictionary[string, object]]::new([StringComparer]::Ordinal)
+    foreach ($file in $Files) { $byPath.Add($file.path, $file) }
+    $paths = [string[]]@($byPath.Keys)
+    [Array]::Sort($paths, [StringComparer]::Ordinal)
+    $canonical = ($paths | ForEach-Object { "$($byPath[$_].sha256)  $_`n" }) -join ''
     return [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($canonical))).ToLowerInvariant()
 }
 
@@ -77,9 +92,7 @@ function Resolve-PostgreSqlPayload {
     if ($RuntimeIdentifier -cne $approval.runtime) { throw "No approved PostgreSQL payload for $RuntimeIdentifier." }
     $source = $approval.source.path
     if (-not (Test-Path -LiteralPath $source -PathType Container)) { throw "Approved PostgreSQL source is unavailable: $source. No fallback is allowed." }
-    foreach ($component in $approval.components) {
-        if (-not (Test-Path -LiteralPath (Join-Path $source $component) -PathType Container)) { throw "Missing approved PostgreSQL component: $component" }
-    }
+    Assert-PostgreSqlLayout -PayloadPath $source -Approval $approval
     $tools = @(Assert-PostgreSqlTools -PayloadPath $source -Version $approval.version)
     # Validate the complete source before creating any output. Only immutable distribution
     # components are bundled; the runner's data cluster and service configuration are excluded.
@@ -90,6 +103,15 @@ function Resolve-PostgreSqlPayload {
         foreach ($file in Get-PostgreSqlPayloadFiles -PayloadPath $item.FullName) {
             $file.path = "$component/$($file.path)"
             $file
+        }
+      }
+      foreach ($notice in $approval.noticeFiles) {
+        $item = Get-Item -LiteralPath (Join-Path $source $notice)
+        if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'PostgreSQL distribution notice must not be a link.' }
+        [ordered]@{
+            path = $notice
+            sizeBytes = $item.Length
+            sha256 = (Get-FileHash -LiteralPath $item.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
         }
       }
     )
@@ -103,6 +125,9 @@ function Resolve-PostgreSqlPayload {
     try {
         foreach ($component in $approval.components) {
             Copy-Item -LiteralPath (Join-Path $source $component) -Destination $target -Recurse -Force -ErrorAction Stop
+        }
+        foreach ($notice in $approval.noticeFiles) {
+            Copy-Item -LiteralPath (Join-Path $source $notice) -Destination $target -ErrorAction Stop
         }
         $files = @(Get-PostgreSqlPayloadFiles -PayloadPath $target)
         if ((Get-PostgreSqlPayloadHash -Files $files) -cne $sourceHash) {
@@ -149,6 +174,7 @@ function Assert-PostgreSqlPayload {
         $receipt.source.kind -cne $approval.source.kind -or $receipt.source.path -cne $approval.source.path -or
         $receipt.source.reference -cne $approval.source.reference) { throw 'PostgreSQL payload receipt does not match the approved version and source.' }
     $payloadPath = Join-Path $PayloadRoot $RuntimeIdentifier
+    Assert-PostgreSqlLayout -PayloadPath $payloadPath -Approval $approval
     $files = @(Get-PostgreSqlPayloadFiles -PayloadPath $payloadPath)
     if ($files.Count -ne @($receipt.files).Count -or
         (Get-PostgreSqlPayloadHash -Files $files) -cne $receipt.payloadSha256 -or
