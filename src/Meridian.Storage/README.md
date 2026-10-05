@@ -11,6 +11,10 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Storage
 
+Reporting governance supports bounded run-ID batches within one tenant transaction. Bulk state and
+audit reads preserve the same checksum, row binding, audit-chain, and restatement verification as
+individual reads, avoiding a separate transaction for every retained comparison candidate.
+
 `Archival/AtomicFileWriterAdapter.cs`, `EtlStagingStore` in `Etl/EtlStores.cs`, and `Backfill/JsonlBackfillBarWriter.cs`
 implement lower-level persistence ports consumed by Infrastructure. Application/host composition
 owns their construction; atomic durability, staging and JSONL naming policies remain in Storage.

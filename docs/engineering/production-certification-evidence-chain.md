@@ -171,6 +171,22 @@ promotion even when both MSIX lifecycles pass. The implementation and static tes
 this gate's mechanism; PRD-014 consumer certification remains pending until a protected signed
 Windows run produces that successful receipt on the frozen release commit.
 
+#### PostgreSQL payload review and evidence
+
+The checked-in [`postgresql-payload.json`](../../build/config/postgresql-payload.json) declares
+PostgreSQL 17.11 / win-x64 from the explicit Windows 2025 hosted-runner installation. Human
+governance review of the pull request accepts that version/source declaration; no prior approval
+or successful certification of this declaration is asserted here. Packaging and installed-startup
+smoke share one resolver, with missing or mismatched inputs rejected before consumer packaging.
+Release evidence retains `postgresqlPayloads`, including the exact version/source, runner identity,
+per-file SHA-256 hashes and canonical payload-tree hash from `win-x64-payload.json`.
+
+For each payload change, review the source and declaration together, retain negative-resolution
+test results, and rerun installed-startup plus the existing native upgrade/rollback certification
+on the reviewed commit. Record their run links and receipts before claiming release evidence.
+The [operator payload procedure](../operators/browser-workstation-installer.md#postgresql-payload-declaration)
+describes resolution and the review steps. This entry changes no tracker row or certification result.
+
 ### PRD-015: recovery-drill operator review
 
 **Actor:** operations owner. This review also supplies the recovery portion of open `PRD-111`.
