@@ -1121,6 +1121,7 @@ Meridian-main
 │       │   ├── check-warning-suppressions.py
 │       │   ├── check-workflow-hygiene.py
 │       │   ├── ci-metrics.py
+│       │   ├── collect-actions.py
 │       │   ├── dispatch-targeted-test.py
 │       │   ├── duplicate-helper-baseline.json
 │       │   ├── generate-release-evidence-manifest.py
@@ -1759,6 +1760,11 @@ Meridian-main
 │   │   │   ├── README.md
 │   │   │   ├── web-ui-improvements-implementation-plan-2026-07.md
 │   │   │   └── wpf-web-ui-alignment-plan.md
+│   │   ├── actions-local-benchmarks-2026-10-05.json
+│   │   ├── actions-rollout-measurement-2026-10-05.md
+│   │   ├── actions-rollout-policy-2026-10-05.json
+│   │   ├── actions-rollout-report-2026-10-05.json.gz
+│   │   ├── actions-rollout-source-2026-10-05.json.gz
 │   │   ├── actions-storage-audit-2026-10-05.json
 │   │   ├── actions-storage-audit-2026-10-05.md
 │   │   ├── ci-cd-optimization.md
@@ -11065,11 +11071,13 @@ Meridian-main
 │   │   │       └── unordered-mixed-unicode.yaml
 │   │   ├── README.md
 │   │   ├── setup-verification.sh
+│   │   ├── test_actions_collector.py
 │   │   ├── test_adapter_readiness.py
 │   │   ├── test_ai_setup_dotnet_channel.py
 │   │   ├── test_api_contract_coverage_dashboard.py
 │   │   ├── test_archive_code_tombstones.py
 │   │   ├── test_artifact_retention_module.py
+│   │   ├── test_benchmark_ci.py
 │   │   ├── test_buildctl_artifact_retention.py
 │   │   ├── test_buildctl_validation_runner.py
 │   │   ├── test_canonical_roadmap_yaml.py
