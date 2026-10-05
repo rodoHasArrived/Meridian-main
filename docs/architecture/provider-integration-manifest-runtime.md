@@ -298,9 +298,10 @@ Replay has two explicit meanings:
   together with the source run and replay identity. It does not rewrite the source run or claim
   that the repaired mapping produced the original result.
 
-Replay durably claims its run identity before writing any payload, staging, or quarantine rows.
-Two requests using the same replay run ID cannot mix outputs from different sources or mappings.
-An interrupted claimed run remains visible with its retained provenance; a retry uses a new run ID.
+CSV ingestion, REST ingestion, and replay durably claim their run identity before writing any
+payload, staging, or quarantine rows; REST also claims before calling the provider. Requests using
+the same run ID cannot mix ingestion and replay outputs or outputs from different sources or mappings.
+An interrupted claimed run remains visible as Received with its retained provenance; a retry uses a new run ID.
 
 Migration lazily preserves the single revision actually present in a legacy manifest file and
 replaces that file with a tagged current pointer after retaining the revision. It cannot reconstruct

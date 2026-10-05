@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Integrations;
 using Meridian.Contracts.Integrations;
@@ -264,6 +265,51 @@ public sealed class ProviderIntegrationDryRunServiceTests : IDisposable
         var retainedPayload = await store.GetRawPayloadAsync(result.SyncRunId, result.RawPayloadId);
         retainedPayload!.ManifestReference.Should().Be(expected);
         retainedPayload.OriginalManifestReference.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RunManualCsvDryRunAsync_RejectsReusedRunIdBeforeAppendingEvidence(bool replayOwnsRunId)
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = CreateManifest();
+        var connection = CreateConnection(manifest);
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(connection);
+        var service = new ProviderIntegrationDryRunService(store);
+        var request = CreateRequest(manifest, connection,
+            "account_id,cusip,quantity,as_of,source_id\nA-100,,100,2026-06-16,POS-1");
+        var source = await service.RunManualCsvDryRunAsync(request);
+        var retainedRunId = source.SyncRunId;
+        if (replayOwnsRunId)
+        {
+            var sourceRecord = (await store.ListQuarantinedRecordsAsync(source.SyncRunId)).Single();
+            var replay = await new ProviderIntegrationQuarantineReplayService(store).ReplayAsync(
+                new ProviderIntegrationQuarantineReplayRequestDto(
+                    "replay-owned-run", source.SyncRunId, manifest.ManifestId, connection.ConnectionId,
+                    request.Capability, [sourceRecord.QuarantineRecordId], request.RequestedBy, request.RequestedAt));
+            retainedRunId = replay.ReplaySyncRunId;
+        }
+
+        var retainedRun = await store.GetSyncRunAsync(retainedRunId);
+        var retainedPayload = await store.GetRawPayloadAsync(retainedRunId, retainedRun!.RawPayloadId!);
+        var retainedQuarantine = await store.ListQuarantinedRecordsAsync(retainedRunId);
+        var evidenceFiles = Directory.GetFiles(testRoot, "*.json", SearchOption.AllDirectories);
+        var act = () => service.RunManualCsvDryRunAsync(request with
+        {
+            SyncRunId = retainedRunId,
+            FileName = "different-payload.csv"
+        });
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*unused sync run id*");
+        (await store.GetSyncRunAsync(retainedRunId)).Should().BeEquivalentTo(retainedRun);
+        JsonSerializer.Serialize(await store.GetRawPayloadAsync(retainedRunId, retainedRun.RawPayloadId!))
+            .Should().Be(JsonSerializer.Serialize(retainedPayload));
+        JsonSerializer.Serialize(await store.ListQuarantinedRecordsAsync(retainedRunId))
+            .Should().Be(JsonSerializer.Serialize(retainedQuarantine));
+        (await store.ListStagingRecordsAsync(retainedRunId)).Should().BeEmpty();
+        Directory.GetFiles(testRoot, "*.json", SearchOption.AllDirectories).Should().BeEquivalentTo(evidenceFiles);
     }
 
     [Fact]

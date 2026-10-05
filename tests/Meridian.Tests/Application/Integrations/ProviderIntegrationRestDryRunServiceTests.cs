@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Integrations;
 using Meridian.Contracts.Integrations;
@@ -411,6 +412,90 @@ public sealed class ProviderIntegrationRestDryRunServiceTests : IDisposable
         var retainedPayload = await store.GetRawPayloadAsync(result.SyncRunId, result.RawPayloadId);
         retainedPayload!.ManifestReference.Should().Be(expected);
         retainedPayload.OriginalManifestReference.Should().Be(expected);
+    }
+
+    [Fact]
+    public async Task RunRestDryRunAsync_RejectsReplayRunIdBeforeTransportOrEvidence()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-custodian-positions-v1")!;
+        var connection = CreateConnection(manifest);
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(connection);
+        var transport = new RecordingTransport(new ProviderIntegrationHttpResponse(
+            200, new Dictionary<string, string>(), """{"positions":[{"account_id":"A-100"}]}"""));
+        var service = new ProviderIntegrationRestDryRunService(store, transport);
+        var request = CreateRequest(manifest, connection);
+        var source = await service.RunRestDryRunAsync(request with { SyncRunId = "source-run" });
+        var sourceRecord = (await store.ListQuarantinedRecordsAsync(source.SyncRunId)).Single();
+        var replay = await new ProviderIntegrationQuarantineReplayService(store).ReplayAsync(
+            new ProviderIntegrationQuarantineReplayRequestDto(
+                request.SyncRunId, source.SyncRunId, manifest.ManifestId, connection.ConnectionId,
+                request.Capability, [sourceRecord.QuarantineRecordId], request.RequestedBy, request.RequestedAt));
+        var retainedRun = await store.GetSyncRunAsync(replay.ReplaySyncRunId);
+        var retainedQuarantine = await store.ListQuarantinedRecordsAsync(replay.ReplaySyncRunId);
+        var evidenceFiles = Directory.GetFiles(testRoot, "*.json", SearchOption.AllDirectories);
+
+        var act = () => service.RunRestDryRunAsync(request);
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*unused sync run id*");
+        transport.Requests.Should().ContainSingle();
+        (await store.GetSyncRunAsync(replay.ReplaySyncRunId)).Should().BeEquivalentTo(retainedRun);
+        JsonSerializer.Serialize(await store.ListQuarantinedRecordsAsync(replay.ReplaySyncRunId))
+            .Should().Be(JsonSerializer.Serialize(retainedQuarantine));
+        (await store.ListStagingRecordsAsync(replay.ReplaySyncRunId)).Should().BeEmpty();
+        Directory.GetFiles(testRoot, "*.json", SearchOption.AllDirectories).Should().BeEquivalentTo(evidenceFiles);
+    }
+
+    [Fact]
+    public async Task RunRestDryRunAsync_ClaimsRunBeforeTransportAndRejectsConcurrentIngestion()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-custodian-positions-v1")!;
+        var connection = CreateConnection(manifest);
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(connection);
+        var enteredTransport = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseTransport = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var transport = new RecordingTransport(new ProviderIntegrationHttpResponse(
+            200, new Dictionary<string, string>(), """{"positions":[]}"""))
+        {
+            BeforeSendAsync = async () =>
+            {
+                enteredTransport.SetResult();
+                await releaseTransport.Task;
+            }
+        };
+        var service = new ProviderIntegrationRestDryRunService(store, transport);
+        var request = CreateRequest(manifest, connection);
+        var winningRun = service.RunRestDryRunAsync(request);
+        try
+        {
+            await enteredTransport.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            var claimedRun = await store.GetSyncRunAsync(request.SyncRunId);
+            claimedRun!.Status.Should().Be(ProviderIntegrationProcessingStatusDto.Received);
+            claimedRun.CompletedAt.Should().BeNull();
+            claimedRun.ManifestReference.Should().Be(ProviderIntegrationManifestIdentity.Create(manifest));
+            var competingTransport = new RecordingTransport();
+            var competingService = new ProviderIntegrationRestDryRunService(
+                new FileProviderIntegrationManifestStore(testRoot), competingTransport);
+
+            var act = () => competingService.RunRestDryRunAsync(request);
+
+            await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*unused sync run id*");
+            competingTransport.Requests.Should().BeEmpty();
+            (await store.GetSyncRunAsync(request.SyncRunId)).Should().BeEquivalentTo(claimedRun);
+            (await store.ListStagingRecordsAsync(request.SyncRunId)).Should().BeEmpty();
+            (await store.ListQuarantinedRecordsAsync(request.SyncRunId)).Should().BeEmpty();
+        }
+        finally
+        {
+            releaseTransport.TrySetResult();
+            await winningRun;
+        }
+
+        (await store.GetSyncRunAsync(request.SyncRunId))!.Status.Should().Be(ProviderIntegrationProcessingStatusDto.Validated);
+        transport.Requests.Should().ContainSingle();
     }
 
     [Fact]

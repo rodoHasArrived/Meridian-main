@@ -1,6 +1,6 @@
 {
   "total_files": 689,
-  "total_lines": 152016,
+  "total_lines": 152017,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -1579,7 +1579,7 @@
     },
     {
       "path": "docs/architecture/provider-integration-manifest-runtime.md",
-      "line_count": 863,
+      "line_count": 864,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
