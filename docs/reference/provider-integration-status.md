@@ -1,12 +1,22 @@
 # Provider Integration Status Board
 
-**Status:** canonical  
+**Status:** archived
+**Scope:** historical evidence snapshot
 **Owner:** core-team  
 **Reviewed:** 2026-05-20
 
 **Run Date:** 2026-05-20  
-**Source snapshots:** `docs/reference/provider-validation-matrix.md` plus current broker inventory/runbook docs, [`archive/docs/reference/kernel-readiness-dashboard.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/reference/kernel-readiness-dashboard.md) (snapshot moved to archive for traceability; Last Updated 2026-04-27)
-**Purpose:** single status document that shows each broker/provider phase, blockers, latest evidence timestamp, and refresh ownership/cadence for active integrations.
+**Source snapshots:** `docs/reference/provider-validation-matrix.md` plus the broker inventory/runbook docs referenced at the snapshot date, [`archive/docs/reference/kernel-readiness-dashboard.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/reference/kernel-readiness-dashboard.md) (snapshot moved to archive for traceability; Last Updated 2026-04-27)
+**Purpose:** preserve the recorded provider phases, blockers, and evidence dates without presenting them as current registration or release truth.
+
+Use the [adapter readiness registry](../source/data/adapter-readiness.yml) and its
+[generated matrix](../source/generated/adapter-readiness-matrix.md) for current implementation
+coverage, and the [provider validation matrix](provider-validation-matrix.md) for operator evidence
+requirements. Registration has changed since this board: the current
+[`AddHostedBrokerageGateways`](../../src/Meridian/HostedBrokerageGatewayServiceCollectionExtensions.cs)
+registers `ib`/`ibkr` and contains an optional StockSharp gateway hook. The older absence claims
+below are retained as dated observations; they must not drive new implementation work without a
+fresh source review. Registration alone does not establish live-provider or production acceptance.
 
 ## How to read this board
 
@@ -19,7 +29,7 @@
 
 ## Unified Provider Status
 
-| Provider/Broker | Current phase | DI registration completeness | Resolution behavior (factory / runtime) | Blockers to next phase | Latest evidence timestamp (UTC) | Evidence sources |
+| Provider/Broker | Recorded phase | DI registration completeness at review | Resolution behavior at review (factory / runtime) | Recorded blockers to next phase | Latest evidence timestamp (UTC) | Evidence sources |
 | --- | --- | --- | --- | --- | --- | --- |
 | Alpaca | Paper | Complete for hosted brokerage gateway and factory-created backfill/search providers | Resolves via `AddHostedBrokerageGateways` (`"alpaca"`) plus `ProviderFactory.CreateAlpacaBackfillProvider` and `CreateAlpacaSearchProvider`; missing credentials short-circuit factory creation to `null` | Production promotion checklist not yet represented in the active DK2 gate set and operator sign-off packet flow | 2026-04-27 | Wave 1 closure row in provider validation matrix; DI paths in `HostedBrokerageGatewayServiceCollectionExtensions` + `ProviderFactory` |
 | Robinhood | Paper (bounded) | Partial: hosted brokerage gateway is wired; no ProviderFactory backfill/symbol-search registration path | Runtime execution/account sync resolves from `AddHostedBrokerageGateways` (`"robinhood"`); historical/search resolution is unavailable through `ProviderFactory` lists | Unofficial API posture plus required manual broker-session/runtime evidence (`auth-session`, `quote-polling`, `order-submit-cancel`, `throttling-reconnect`) must be regenerated/attached for the review run | 2026-04-27 (latest signed Wave 1 packet set); bounded scenario packet noted as not retained in current repo | Robinhood bounded row in provider validation matrix; hosted gateway registration + missing factory row linkage |
@@ -30,7 +40,7 @@
 | NYSE | Read-only (deferred from active Wave 1 gate) | Dedicated service extension exists, but no root hosted registration/factory wiring in the reviewed paths | Resolution requires explicit `AddNYSEDataSource(...)` call path; provider is not created by `ProviderFactory` and no hosted gateway identifier is registered | Deferred-provider status in active gate; no current Wave 1 closure claim | 2026-04-27 snapshot date for current gate posture | Deferred-provider note in provider validation matrix; NYSE service extension vs root DI wiring |
 | StockSharp | Read-only (deferred from active Wave 1 gate) | Missing in both hosted gateway DI and ProviderFactory creation paths | No registration identifier branch or factory creation path was found in reviewed infrastructure registration/factory files | Deferred-provider status in active gate; no current Wave 1 closure claim | 2026-04-27 snapshot date for current gate posture | Deferred-provider note in provider validation matrix; infrastructure registration/factory inspection |
 
-## DI/Factory mismatch remediation queue
+## Recorded DI/Factory mismatch remediation queue
 
 | Provider | Locating context (module path / registration method / provider identifier) | Mismatch summary | Remediation next action | Target sprint |
 | --- | --- | --- | --- | --- |
@@ -40,7 +50,7 @@
 | NYSE | `src/Meridian.Infrastructure/Adapters/NYSE/NYSEServiceExtensions.cs` / `AddNYSEDataSource` / NYSE data-source registration path; root DI path lacks invocation | NYSE has local service-extension registration API but is not connected from reviewed root registration/factory entry points | Add or reject root composition call to `AddNYSEDataSource` in startup composition; document decision in status board and provider roadmap | Wave 2 Sprint 35 |
 | StockSharp | Reviewed root wiring paths: `HostedBrokerageGatewayServiceCollectionExtensions` + `ProviderFactory` / *(no stocksharp identifier branch)* | Deferred provider has no active DI/factory branch in current infrastructure wiring | Confirm deferment contract by adding explicit “not wired” assertion/diagnostic in provider readiness checks to avoid silent expectation drift | Wave 2 Sprint 35 |
 
-## Ownership and refresh cadence (active integrations)
+## Recorded ownership and refresh cadence
 
 | Surface | Primary owner | Backup owner | Minimum refresh cadence | Refresh trigger |
 | --- | --- | --- | --- | --- |
@@ -48,7 +58,11 @@
 | `provider-validation-matrix.md` | Data & Provider Reliability owner | Shared Platform Interop owner | Weekly minimum (or same-day when evidence changes) | New `run-wave1-provider-validation.ps1` output, DK1 packet/sign-off updates, or deferred-provider scope changes |
 | `../status/kernel-readiness-dashboard.md` | Trading Workstation owner | Accounting/Fund Ops owner | Weekly minimum (Mon cadence rule already defined) | Any gate-status/readiness change, operator-sign-off movement, or milestone target-date update |
 
-## Refresh workflow
+## Recorded refresh workflow
+
+The workflow below records how this board was maintained. New implementation changes belong in the
+source registry and generated matrix; release and evidence decisions belong in their canonical
+records. Do not advance this historical board's run date to imply that old provider checks were rerun.
 
 1. Run provider evidence generation for the current run date (`yyyy-mm-dd`) and collect artifacts under `artifacts/provider-validation/_automation/<yyyy-mm-dd>/`.
 2. Update `provider-validation-matrix.md` with new evidence references and bounded/manual notes.

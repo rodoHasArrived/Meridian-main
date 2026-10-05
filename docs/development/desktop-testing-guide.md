@@ -6,6 +6,19 @@
 
 Use this guide for the current WPF desktop validation loop.
 
+**Maintenance check (2026-10-05):** commands and platform/startup requirements below were checked
+against the launcher and validation scripts; this is not new WPF runtime test evidence.
+
+## Prerequisites and expected result
+
+Use Windows, PowerShell 7 (`pwsh`), the .NET SDK selected by `global.json`, and a restored checkout.
+Run commands from the repository root. Start with `-Restore` on a fresh checkout or after dependency
+changes. GNU Make is optional; the PowerShell scripts are the direct entrypoints.
+
+The WPF project and its tests compile as empty `net10.0` stubs on non-Windows hosts. A successful
+Linux/macOS solution build does not verify the desktop UI; run WPF validation on Windows or use
+the hosted Windows validation lane linked from [Engineering](../engineering/README.md#desktop-slices).
+
 ## Quick commands
 
 ```bash
@@ -40,9 +53,11 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/run-desktop.ps1 -Launc
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly
 ```
 
-Production launch without `-BuildOnly` requires `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and
-`MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING`; development launch sets the local Development
-environment and in-memory governance opt-in only for the launched processes.
+Production launch without `-BuildOnly` requires `MERIDIAN_DATABASE_URL`, or both
+`MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING`.
+This satisfies the launcher's governance configuration gate; the backend must still pass its
+startup checks. Development launch sets the local Development environment and in-memory
+governance opt-in for the launch and restores the caller's settings afterward.
 
 Common variants:
 
@@ -52,6 +67,14 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -AllowConcurrentDotnet
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -Filter "Category!=Integration&FullyQualifiedName!~Integration"
 ```
+
+## Results and recovery
+
+Successful validation exits zero and writes logs/results beneath
+`artifacts/wpf-validation/dev-loop/`. If validation refuses concurrent work, let the repo-owned
+build finish and retry; use [process lifecycle diagnostics](process-lifecycle-diagnostics.md) to
+identify stale processes. Restore missing assets with `-Restore` instead of treating a skipped
+build or an empty non-Windows test run as desktop evidence.
 
 ## Related references
 

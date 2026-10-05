@@ -390,7 +390,7 @@ Multi-provider router for historical data with automatic failover. Chains provid
 
 ### PriorityBackfillQueue
 
-**Location:** `src/Meridian.Infrastructure/Adapters/Queue/PriorityBackfillQueue.cs`
+**Location:** `src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs`
 
 Backfill job queue with priority-based ordering:
 
@@ -401,7 +401,7 @@ Backfill job queue with priority-based ordering:
 
 ### BackfillWorkerService
 
-**Location:** `src/Meridian.Infrastructure/Adapters/Queue/BackfillWorkerService.cs`
+**Location:** `src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs`
 
 Background service that dequeues jobs from `PriorityBackfillQueue` (or `BackfillRequestQueue`) and executes them through `CompositeHistoricalDataProvider`.
 
@@ -451,7 +451,7 @@ operator-governed closure flow, not autonomous SLA enforcement.
 
 ### Rate Limiting
 
-**`ProviderRateLimitTracker`** and **`RateLimiter`** (`Infrastructure/Adapters/RateLimiting/`) enforce per-provider request pacing derived from provider metadata. The `IRateLimitAwareProvider` interface allows providers to report real-time rate limit status and emit `OnRateLimitHit` events.
+**`ProviderRateLimitTracker`** and **`RateLimiter`** (`src/Meridian.Infrastructure/Adapters/Core/RateLimiting/`) enforce per-provider request pacing derived from provider metadata. The `IRateLimitAwareProvider` interface allows providers to report real-time rate limit status and emit `OnRateLimitHit` events.
 
 ---
 
@@ -459,7 +459,7 @@ operator-governed closure flow, not autonomous SLA enforcement.
 
 ### DataGapAnalyzer
 
-**Location:** `src/Meridian.Infrastructure/Adapters/GapAnalysis/DataGapAnalyzer.cs`
+**Location:** `src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs`
 
 Analyzes expected vs. stored data periods and classifies gaps:
 
@@ -470,13 +470,13 @@ Analyzes expected vs. stored data periods and classifies gaps:
 
 ### DataGapRepair
 
-**Location:** `src/Meridian.Infrastructure/Adapters/GapAnalysis/DataGapRepair.cs`
+**Location:** `src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs`
 
 Attempts automated repair using the preferred provider chain. Writes repaired bars through `IHistoricalBarWriter` (defined in `ProviderSdk` to break the Infrastructure-Storage circular dependency).
 
 ### DataQualityMonitor
 
-**Location:** `src/Meridian.Infrastructure/Adapters/GapAnalysis/DataQualityMonitor.cs`
+**Location:** `src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs`
 
 Computes weighted quality scores across dimensions: completeness, accuracy, timeliness, consistency, and validity. Scores drive follow-up repair flows and operational dashboards.
 
@@ -574,8 +574,8 @@ Aggregates provider metrics for the `/api/providers/metrics` endpoint.
 
 ### Shared encrypted provider store
 
-**Locations:** `src/Meridian.Application/Config/Credentials/IProviderCredentialStore.cs`,
-`src/Meridian.Application/Config/Credentials/FileProviderCredentialStore.cs`
+**Locations:** `src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs`,
+`src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs`
 
 Provider credentials are managed through `IProviderCredentialStore`. The default implementation
 stores encrypted per-user provider records below the resolved Meridian data root:
@@ -589,10 +589,18 @@ The vault uses the current Windows user profile on Windows and a local profile k
 hosts. Audit records include provider id, action, actor, state, source, verification posture, field
 names, environment, and external account id. Audit records do not include raw credential values.
 
-Runtime provider construction resolves through `StoredProviderCredentialResolver` first and then
-falls back to the legacy config/environment resolver. Environment variables remain read-only
-compatibility fallback; new browser flows must not write process, user, or machine environment
-variables.
+Runtime provider construction uses
+[`StoredProviderCredentialResolver`](../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs).
+Catalog-managed providers resolve one complete credential-store record; missing fields and storage
+failures do not fall through to configured values or the legacy resolver. Only unmanaged provider
+types use that legacy resolver. A scoped runtime requires a catalog-managed provider and never
+falls back to provider-wide, config, or environment credentials when its scoped record is missing.
+The credential store owns any permitted provider-wide environment fallback policy. Browser and WPF
+credential flows must not write process, user, or machine environment variables.
+
+Maintenance check 2026-10-05: the source locations and credential ownership rules in this section
+were verified against the current store and resolver. Provider readiness remains owned by the
+capability and validation references above.
 
 ### ProviderSetupService
 

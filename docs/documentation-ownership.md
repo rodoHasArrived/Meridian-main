@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-07-19
+**Reviewed:** 2026-10-05
 
 This contract defines where Meridian documentation belongs in the current model and during the
 remaining compatibility-lane cleanup.
@@ -13,7 +13,7 @@ remaining compatibility-lane cleanup.
 | --- | --- | --- |
 | First-run orientation | `docs/start/` | Keep short, current, and command-oriented. |
 | Stakeholder/product narrative | `docs/product/` | Explain product direction, capability posture, and roadmap interpretation without duplicating registry truth. |
-| Developer and agent workflow | `docs/engineering/` and `docs/ai/` | Route coding work through architecture, module maps, source registry, and AI contracts. |
+| Developer and agent workflow | `docs/engineering/` and `docs/ai/` | Engineering owns contributor entrypoints and the shortest current build/test/run and validation path; AI owns assistant contracts. Link detailed techniques from their supporting owners. |
 | Architecture and domain guidance | `docs/architecture/`, `docs/domain/`, and `docs/adr/` | Keep current system design, MDIF context, business vocabulary, and active decisions explicit and linked from Engineering. |
 | Operator procedures | `docs/operators/` | Link to setup, provider, runbook, deployment, troubleshooting, and support procedures. |
 | Lookup material | `docs/reference/` | Keep APIs, environment variables, CLI flags, schemas, glossary, and matrices discoverable. |
@@ -21,7 +21,7 @@ remaining compatibility-lane cleanup.
 | Source-module truth | `docs/source/data/*.yml` and registered `src/**/README.md` | Update with source behavior, ownership, validation, TODO, and diagram changes. |
 | Generated output | `docs/generated/`, `docs/roadmap/generated/`, `docs/source/generated/`, `docs/ai/generated/` | Update generators or inputs, not emitted files by hand. |
 | Automation-owned status output | `docs/status/` | Keep generated reports and compatibility artifacts at the paths consumed by tooling; do not create competing roadmap truth. |
-| Detailed supporting guidance | `docs/development/`, `docs/security/`, `docs/testing/`, `docs/integrations/`, and related specialist folders | Link from the canonical owner and avoid duplicating current commands or product status. |
+| Detailed supporting guidance | `docs/development/`, `docs/security/`, `docs/testing/`, `docs/integrations/`, and related specialist folders | Development holds active implementation, extension, testing, and tooling guides reached from Engineering. Link specialist material from its canonical owner and avoid duplicating entrypoint commands or product status. |
 | Transitional compatibility paths | `docs/operations/` and `docs/plans/` | Retain only when active code, tests, tooling, or strong links require the path; do not add new durable guidance. |
 | Historical or superseded material | `archive/docs/` | Preserve useful history with replacement links or explicit archive rationale. |
 
@@ -45,6 +45,15 @@ remaining compatibility-lane cleanup.
 - Keep AI workflow rules synchronized through `docs/ai/assistant-workflow-contract.md` and assistant-specific indexes.
 - Use repository-relative paths in committed docs. Machine-specific checkout paths belong in local
   environment instructions, not portable project guidance.
+
+Placement and lifecycle are separate: `supporting` describes where a guide fits, not whether it is
+obsolete. Mark maintained guidance `active`, proposals `draft`, replacement-linked compatibility
+guidance `deprecated`, and historical records `archived`. Preserve the evidence date and commit in
+historical reviews. Keep these meanings consistent in the document header and in index link labels.
+
+Use the [Documentation Contribution Guide](development/documentation-contribution-guide.md) for
+writing and lifecycle conventions, and the [Operator Runbook Template](operators/runbook-template.md)
+for executable procedures.
 
 ## Review Rules
 
