@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -46,18 +47,226 @@ class ReleasePromotionTests(unittest.TestCase):
                 receipt.write_text(json.dumps(dict(status='passed', sourceCommit='abc', workflowRunId='42', workflowRunAttempt='2', architecture=runtime[4:], mode='first-release', publisherTrust='pre-trusted-certificate-chain',
                                                    currentPackage=dict(name=package.name, sha256=self.gate.digest(package)),
                                                    steps=[dict(name=name, status='passed') for name in ('trust-publisher', 'install-current', 'launch-current', 'repair-current', 'launch-after-repair', 'uninstall')])) )
+            else:
+                self.consumer_receipt = self.receipts / 'consumer-setup-win-x64-lifecycle.json'
+                self.consumer_receipt.write_text(json.dumps(dict(
+                    schemaVersion=1, project='consumer-setup', runtime='win-x64', architecture='x64',
+                    status='passed', sourceCommit='abc', workflowRunId='42', workflowRunAttempt='2',
+                    mode='first-release', publisherTrust='pre-trusted-certificate-chain',
+                    currentPackage=dict(name=package.name, sha256=self.gate.digest(package)), priorPackage=None, priorReleaseTag=None,
+                    predecessor=dict(schemaVersion=1, project='consumer-setup', runtime='win-x64', sourceCommit='abc',
+                                     workflowRunId='42', workflowRunAttempt='2', currentTag='v1.0.0', firstRelease=True,
+                                     priorReleaseTag=None, priorPackage=None, eligibleReleaseCount=2, consumerReleaseCount=0,
+                                     reason='No eligible production release has a consumer EXE.'),
+                    steps=[dict(name=name, status='passed') for name in (
+                        'verify-signature', 'verify-payload', 'clean-runner', 'install-current', 'launch-current',
+                        'bundled-database-ready', 'repair-current', 'launch-after-repair', 'restart-current',
+                        'launch-after-restart', 'uninstall', 'preserve-data')]
+                        + [dict(name=name, status='not-applicable', detail='First consumer release: no published consumer EXE exists.')
+                           for name in ('install-prior', 'launch-prior', 'update-current', 'rollback-prior', 'launch-after-rollback')],
+                )))
         self.smoke = self.root / 'startup.json'
         self.smoke.write_text(json.dumps(dict(commitSha='abc', workflowRunId='42', workflowRunAttempt='2', project='web-workstation', runtime='win-x64', validationLanes=['web-workstation-installed-startup'])))
 
     def verify(self):
         return self.gate.verify(self.root, self.receipts, self.smoke, 'abc', '42', '2', self.needs)
 
+    def n_minus_one_consumer_receipt(self):
+        receipt = json.loads(self.consumer_receipt.read_text())
+        receipt['mode'] = 'n-1-update'
+        receipt['priorPackage'] = dict(name='Meridian-Setup.exe', sha256='a' * 64)
+        receipt['priorReleaseTag'] = 'v0.9.0'
+        receipt['predecessor'].update(firstRelease=False, consumerReleaseCount=1, priorReleaseTag='v0.9.0',
+                                      priorPackage=dict(receipt['priorPackage'], path='prior/Meridian-Setup.exe'))
+        receipt['steps'].extend(dict(name=name, status='passed') for name in ('restore-current', 'launch-after-restore'))
+        return receipt
+
     def test_success_promotes_exact_digest_evidence_for_both_architectures_and_consumer(self):
         assets, receipts, startup = self.verify()
         self.assertEqual(len(assets), 12)
-        self.assertEqual(len(receipts), 2)
+        self.assertEqual(len(receipts), 3)
         self.assertIn('Meridian-Setup.exe', assets)
+        consumer = next(receipt for receipt in receipts if receipt.get('project') == 'consumer-setup')
+        self.assertEqual(consumer['currentPackage']['sha256'], assets['Meridian-Setup.exe']['sha256'])
         self.assertEqual(startup['runtime'], 'win-x64')
+
+    def test_msix_only_lifecycle_and_web_startup_evidence_cannot_promote_consumer_exe(self):
+        self.consumer_receipt.unlink()
+        with self.assertRaisesRegex(ValueError, 'consumer lifecycle certification receipt'):
+            self.verify()
+
+    def test_consumer_receipt_cannot_be_replaced_with_msix_evidence(self):
+        desktop = next(self.receipts.glob('desktop-installer-*.json'))
+        self.consumer_receipt.write_text(desktop.read_text())
+        with self.assertRaisesRegex(ValueError, 'Consumer lifecycle evidence'):
+            self.verify()
+
+    def test_consumer_receipt_identity_and_attempt_are_bound_to_publication(self):
+        original = json.loads(self.consumer_receipt.read_text())
+        mismatches = {
+            'schemaVersion': (None, 2, True, '1'), 'project': (None, 'desktop-installer'),
+            'runtime': (None, 'win-arm64'), 'architecture': (None, 'arm64'),
+            'status': (None, 'failed', 'skipped'), 'sourceCommit': (None, 'other-commit'),
+            'workflowRunId': (None, 'other-run'), 'workflowRunAttempt': (None, '1'),
+            'publisherTrust': (None, 'runner-trusted-self-signed (validation only)'),
+            'mode': (None, 'manual-skip'),
+        }
+        for field, values in mismatches.items():
+            for value in values:
+                with self.subTest(field=field, value=value):
+                    self.consumer_receipt.write_text(json.dumps(dict(original, **{field: value})))
+                    with self.assertRaises(ValueError):
+                        self.verify()
+
+    def test_consumer_receipt_requires_exact_exe_digest_and_artifact_name(self):
+        original = json.loads(self.consumer_receipt.read_text())
+        desktop = next(self.root.rglob('*.msix'))
+        sbom = next(self.root.rglob('consumer-setup-*-sbom.spdx.json'))
+        for package in (None, {}, dict(name='Meridian-Setup.exe', sha256='uncertified'),
+                        dict(name=desktop.name, sha256=self.gate.digest(desktop)),
+                        dict(name=sbom.name, sha256=self.gate.digest(sbom))):
+            with self.subTest(package=package):
+                self.consumer_receipt.write_text(json.dumps(dict(original, currentPackage=package)))
+                with self.assertRaisesRegex(ValueError, 'exact package'):
+                    self.verify()
+
+    def test_consumer_failed_missing_or_duplicate_lifecycle_steps_block_promotion(self):
+        original = json.loads(self.consumer_receipt.read_text())
+        for required in (step['name'] for step in original['steps'] if step['status'] == 'passed'):
+            for change in ('missing', 'failed', 'skipped', 'not-applicable', 'duplicate'):
+                with self.subTest(required=required, change=change):
+                    value = json.loads(json.dumps(original))
+                    row = next(step for step in value['steps'] if step['name'] == required)
+                    if change == 'missing':
+                        value['steps'].remove(row)
+                    elif change == 'duplicate':
+                        value['steps'].append(dict(row, status='failed'))
+                    else:
+                        row['status'] = change
+                    self.consumer_receipt.write_text(json.dumps(value))
+                    with self.assertRaises(ValueError):
+                        self.verify()
+
+    def test_consumer_first_release_requires_explicit_predecessor_exceptions(self):
+        original = json.loads(self.consumer_receipt.read_text())
+        for prior_step in (step['name'] for step in original['steps'] if step['status'] == 'not-applicable'):
+            for change in ('missing', 'passed', 'failed', 'no-reason', 'blank-reason'):
+                with self.subTest(prior_step=prior_step, change=change):
+                    value = json.loads(json.dumps(original))
+                    row = next(step for step in value['steps'] if step['name'] == prior_step)
+                    if change == 'missing':
+                        value['steps'].remove(row)
+                    elif change == 'no-reason':
+                        row.pop('detail')
+                    elif change == 'blank-reason':
+                        row['detail'] = ' '
+                    else:
+                        row['status'] = change
+                    self.consumer_receipt.write_text(json.dumps(value))
+                    with self.assertRaises(ValueError):
+                        self.verify()
+
+    def test_consumer_n_minus_one_mode_requires_upgrade_and_rollback_to_pass(self):
+        receipt = self.n_minus_one_consumer_receipt()
+        self.consumer_receipt.write_text(json.dumps(receipt))
+        with self.assertRaisesRegex(ValueError, 'first-release exception'):
+            self.verify()
+        for step in receipt['steps']:
+            step['status'] = 'passed'
+        self.consumer_receipt.write_text(json.dumps(receipt))
+        self.assertEqual(len(self.verify()[1]), 3)
+        receipt['steps'] = [step for step in receipt['steps'] if step['name'] != 'rollback-prior']
+        self.consumer_receipt.write_text(json.dumps(receipt))
+        with self.assertRaisesRegex(ValueError, 'predecessor evidence'):
+            self.verify()
+
+    def test_consumer_predecessor_resolution_is_bound_to_family_commit_and_attempt(self):
+        original = json.loads(self.consumer_receipt.read_text())
+        mismatches = {'schemaVersion': (None, True, 2), 'project': (None, 'desktop-installer'),
+                      'runtime': (None, 'win-arm64'), 'sourceCommit': (None, 'other-commit'),
+                      'workflowRunId': (None, 'other-run'), 'workflowRunAttempt': (None, '1'),
+                      'firstRelease': (None, False, 'true'), 'eligibleReleaseCount': (None, -1, True),
+                      'consumerReleaseCount': (None, -1, True, 1), 'reason': (None, '', ' '),
+                      'priorReleaseTag': ('v0.9.0',), 'priorPackage': ({'name': 'Meridian-Setup.exe'},)}
+        for field, values in mismatches.items():
+            for value in values:
+                with self.subTest(field=field, value=value):
+                    receipt = json.loads(json.dumps(original))
+                    receipt['predecessor'][field] = value
+                    self.consumer_receipt.write_text(json.dumps(receipt))
+                    with self.assertRaises(ValueError):
+                        self.verify()
+        for field in ('priorPackage', 'priorReleaseTag'):
+            receipt = dict(original, **{field: 'unexpected predecessor'})
+            self.consumer_receipt.write_text(json.dumps(receipt))
+            with self.assertRaisesRegex(ValueError, 'first-release exception'):
+                self.verify()
+
+    def test_consumer_n_minus_one_requires_the_resolved_prior_package_and_release_tag(self):
+        original = self.n_minus_one_consumer_receipt()
+        for step in original['steps']:
+            step['status'] = 'passed'
+        changes = (
+            ('priorPackage', None), ('priorReleaseTag', None), ('priorReleaseTag', 'eval-v0.9.0'),
+            ('priorReleaseTag', 'v0.8.0'), ('priorPackage', dict(name='desktop.msix', sha256='a' * 64)),
+            ('priorPackage', dict(name='Meridian-Setup.exe', sha256='b' * 64)),
+            ('priorPackage', dict(name='Meridian-Setup.exe', sha256='invalid')),
+        )
+        for field, value in changes:
+            with self.subTest(field=field, value=value):
+                self.consumer_receipt.write_text(json.dumps(dict(original, **{field: value})))
+                with self.assertRaisesRegex(ValueError, 'exact resolved predecessor'):
+                    self.verify()
+        for field, value in (('consumerReleaseCount', 0), ('consumerReleaseCount', 3),
+                             ('priorPackage', None), ('priorReleaseTag', 'v0.8.0')):
+            receipt = json.loads(json.dumps(original))
+            receipt['predecessor'][field] = value
+            self.consumer_receipt.write_text(json.dumps(receipt))
+            with self.assertRaises(ValueError):
+                self.verify()
+
+    def test_consumer_n_minus_one_must_restore_current_before_uninstall(self):
+        original = self.n_minus_one_consumer_receipt()
+        for step in original['steps']:
+            step['status'] = 'passed'
+        for required in ('restore-current', 'launch-after-restore'):
+            for change in ('missing', 'failed', 'not-applicable'):
+                with self.subTest(required=required, change=change):
+                    receipt = json.loads(json.dumps(original))
+                    row = next(step for step in receipt['steps'] if step['name'] == required)
+                    if change == 'missing':
+                        receipt['steps'].remove(row)
+                    else:
+                        row['status'] = change
+                    self.consumer_receipt.write_text(json.dumps(receipt))
+                    with self.assertRaises(ValueError):
+                        self.verify()
+
+    def test_promoted_evidence_retains_consumer_receipt_and_resolved_predecessor(self):
+        output = self.root / 'publish'
+        environment = {'RELEASE_NEEDS': json.dumps(self.needs), 'GITHUB_SHA': 'abc',
+                       'GITHUB_RUN_ID': '42', 'GITHUB_RUN_ATTEMPT': '2', 'GITHUB_REPOSITORY': 'test/repo'}
+        args = ['verify-release-promotion.py', '--root', str(self.root), '--receipts', str(self.receipts),
+                '--smoke', str(self.smoke), '--output', str(output)]
+        with patch.dict(os.environ, environment), patch('sys.argv', args):
+            self.gate.main()
+        evidence = json.loads((output / 'release-gate-evidence.json').read_text())
+        consumer = next(receipt for receipt in evidence['lifecycle'] if receipt.get('project') == 'consumer-setup')
+        self.assertEqual(consumer, json.loads(self.consumer_receipt.read_text()))
+        self.assertEqual(self.gate.digest(output / 'Meridian-Setup.exe'), consumer['currentPackage']['sha256'])
+
+    def test_consumer_receipt_rejects_malformed_evidence_and_unexpected_exceptions(self):
+        original = json.loads(self.consumer_receipt.read_text())
+        for receipt in ([], None, dict(original, steps=None), dict(original, steps=[None]),
+                        dict(original, predecessor=None),
+                        dict(original, steps=original['steps'] + [dict(name='optional', status='not-applicable', detail='skip')])):
+            with self.subTest(receipt=receipt):
+                self.consumer_receipt.write_text(json.dumps(receipt))
+                with self.assertRaises(ValueError):
+                    self.verify()
+        self.consumer_receipt.write_text('{invalid json')
+        with self.assertRaisesRegex(ValueError, 'invalid consumer lifecycle'):
+            self.verify()
 
     def test_each_failed_cancelled_skipped_or_missing_dependency_blocks_publication(self):
         for name in self.gate.GATES:
@@ -129,6 +338,9 @@ class ReleasePromotionTests(unittest.TestCase):
         publish = jobs['release']['steps'][-1]
         self.assertIn("github.event_name == 'push'", publish['if'])
         self.assertNotIn('if', jobs['certify-installed-desktop'])
+        self.assertNotIn('if', jobs['certify-installed-consumer'])
+        self.assertEqual(jobs['certify-installed-consumer']['runs-on'], 'windows-latest')
+        self.assertEqual(set(jobs['certify-installed-consumer']['needs']), {'eligibility', 'build-consumer-setup'})
         signing = next(s for s in jobs['eligibility']['steps'] if s.get('name') == 'Validate signing prerequisites before builds')
         self.assertIn('IsNullOrWhiteSpace($env:SIGNING_PFX)', signing['run'])
         self.assertIn('IsNullOrWhiteSpace($env:SIGNING_PASSWORD)', signing['run'])

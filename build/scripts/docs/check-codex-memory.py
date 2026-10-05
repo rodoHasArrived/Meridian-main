@@ -16,7 +16,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from common import _parse_yaml_subset, load_data, repo_path, write_text_if_changed  # noqa: E402
+from common import load_data, load_yaml_text, repo_path, write_text_if_changed  # noqa: E402
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -126,15 +126,6 @@ def rel(root: Path, path: Path | str) -> str:
     return repo_path(path, root)
 
 
-def parse_yaml_text(text: str) -> Any:
-    try:
-        import yaml  # type: ignore
-
-        return yaml.safe_load(text) or {}
-    except Exception:
-        return _parse_yaml_subset(text)
-
-
 def dump_yaml(data: Any, indent: int = 0) -> str:
     try:
         import yaml  # type: ignore
@@ -215,7 +206,10 @@ def parse_front_matter(path: Path) -> tuple[dict[str, Any], list[Finding]]:
         return {}, [Finding("error", display_path, "Memory entry front matter is missing a closing delimiter.")]
 
     front_matter_text = text[4:end]
-    parsed = parse_yaml_text(front_matter_text)
+    try:
+        parsed = load_yaml_text(front_matter_text, path, line_offset=1)
+    except (ValueError, RuntimeError) as exc:
+        return {}, [Finding("error", display_path, str(exc))]
     if not isinstance(parsed, dict):
         return {}, [Finding("error", display_path, "Memory entry front matter must be a mapping.")]
     return parsed, []

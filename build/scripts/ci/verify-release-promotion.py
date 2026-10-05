@@ -6,16 +6,111 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 
 FAMILIES = {('desktop-installer', 'win-x64'), ('desktop-installer', 'win-arm64'), ('consumer-setup', 'win-x64')}
 GATES = {'eligibility', 'ci', 'secrets', 'codeql', 'production', 'smoke', 'release-preflight',
-         'build-msix', 'build-consumer-setup', 'certify-installed-desktop'}
+         'build-msix', 'build-consumer-setup', 'certify-installed-desktop', 'certify-installed-consumer'}
+
+CONSUMER_REQUIRED_STEPS = {
+    'verify-signature', 'verify-payload', 'clean-runner', 'install-current', 'launch-current',
+    'bundled-database-ready', 'repair-current', 'launch-after-repair', 'restart-current',
+    'launch-after-restart', 'uninstall', 'preserve-data',
+}
+CONSUMER_PREDECESSOR_STEPS = {
+    'install-prior', 'launch-prior', 'update-current', 'rollback-prior', 'launch-after-rollback',
+}
+CONSUMER_RESTORE_STEPS = {'restore-current', 'launch-after-restore'}
 
 
 def digest(file):
     with file.open('rb') as stream:
         return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def verify_consumer_predecessor(receipt: dict, commit: str, run_id: str, attempt: str):
+    predecessor = receipt.get('predecessor')
+    if (not isinstance(predecessor, dict) or type(predecessor.get('schemaVersion')) is not int
+            or predecessor['schemaVersion'] != 1):
+        raise ValueError('Consumer lifecycle receipt requires a bound predecessor resolution receipt.')
+    identity = {'project': 'consumer-setup', 'runtime': 'win-x64', 'sourceCommit': commit}
+    if (any(predecessor.get(field) != expected for field, expected in identity.items())
+            or str(predecessor.get('workflowRunId')) != run_id
+            or str(predecessor.get('workflowRunAttempt')) != attempt):
+        raise ValueError('Consumer predecessor resolution belongs to another family, commit or run attempt.')
+    for field in ('eligibleReleaseCount', 'consumerReleaseCount'):
+        if type(predecessor.get(field)) is not int or predecessor[field] < 0:
+            raise ValueError('Consumer predecessor resolution requires nonnegative release counts.')
+    if predecessor['consumerReleaseCount'] > predecessor['eligibleReleaseCount']:
+        raise ValueError('Consumer predecessor release counts are inconsistent.')
+    first_release = receipt['mode'] == 'first-release'
+    if predecessor.get('firstRelease') is not first_release:
+        raise ValueError('Consumer lifecycle mode does not match resolved predecessor availability.')
+    if first_release:
+        if (predecessor['consumerReleaseCount'] != 0 or receipt.get('priorPackage') is not None
+                or receipt.get('priorReleaseTag') is not None or predecessor.get('priorPackage') is not None
+                or predecessor.get('priorReleaseTag') is not None
+                or not isinstance(predecessor.get('reason'), str) or not predecessor['reason'].strip()):
+            raise ValueError('Consumer first-release exception requires explicit evidence that no predecessor exists.')
+    else:
+        prior, resolved = receipt.get('priorPackage'), predecessor.get('priorPackage')
+        tag = receipt.get('priorReleaseTag')
+        if (predecessor['consumerReleaseCount'] == 0 or not isinstance(tag, str) or not tag.startswith('v')
+                or len(tag) <= 1 or tag != predecessor.get('priorReleaseTag')
+                or not isinstance(prior, dict) or not isinstance(resolved, dict)
+                or prior.get('name') != 'Meridian-Setup.exe' or resolved.get('name') != 'Meridian-Setup.exe'
+                or not isinstance(prior.get('sha256'), str) or not re.fullmatch('[0-9a-f]{64}', prior['sha256'])
+                or prior['sha256'] != resolved.get('sha256')):
+            raise ValueError('Consumer N-1 certification requires the exact resolved predecessor tag and package digest.')
+
+
+def verify_consumer_receipt(receipts: Path, tracked: dict, assets: dict,
+                            commit: str, run_id: str, attempt: str):
+    file = receipts / 'consumer-setup-win-x64-lifecycle.json'
+    try:
+        receipt = json.loads(file.read_text(encoding='utf-8'))
+    except (OSError, json.JSONDecodeError) as error:
+        raise ValueError('Missing or invalid consumer lifecycle certification receipt.') from error
+    if not isinstance(receipt, dict) or type(receipt.get('schemaVersion')) is not int or receipt['schemaVersion'] != 1:
+        raise ValueError('Consumer lifecycle evidence has an unsupported receipt schema.')
+    identity = {'project': 'consumer-setup', 'runtime': 'win-x64', 'architecture': 'x64',
+                'sourceCommit': commit, 'status': 'passed',
+                'publisherTrust': 'pre-trusted-certificate-chain'}
+    if any(receipt.get(field) != expected for field, expected in identity.items()):
+        raise ValueError('Failed or mismatched consumer lifecycle certification identity.')
+    if str(receipt.get('workflowRunId')) != run_id or str(receipt.get('workflowRunAttempt')) != attempt:
+        raise ValueError('Consumer lifecycle evidence belongs to another run attempt.')
+    mode = receipt.get('mode')
+    if mode not in ('first-release', 'n-1-update'):
+        raise ValueError('Consumer lifecycle evidence requires an explicit certification mode.')
+    verify_consumer_predecessor(receipt, commit, run_id, attempt)
+    current = receipt.get('currentPackage')
+    package_name = 'Meridian-Setup.exe'
+    if (not isinstance(current, dict) or current.get('name') != package_name or package_name not in tracked
+            or assets[package_name]['sha256'] != current.get('sha256')):
+        raise ValueError('Published consumer EXE differs from the exact package that passed lifecycle certification.')
+    rows = receipt.get('steps')
+    if not isinstance(rows, list):
+        raise ValueError('Consumer lifecycle receipt omits its step evidence.')
+    steps = {}
+    for row in rows:
+        if not isinstance(row, dict) or not isinstance(row.get('name'), str) or not row['name'] or row['name'] in steps:
+            raise ValueError('Consumer lifecycle step names must be present and unique.')
+        name, status = row['name'], row.get('status')
+        if status != 'passed':
+            if (mode != 'first-release' or name not in CONSUMER_PREDECESSOR_STEPS or status != 'not-applicable'
+                    or not isinstance(row.get('detail'), str) or not row['detail'].strip()):
+                raise ValueError('Consumer lifecycle steps must pass or record an explicit first-release exception.')
+        steps[name] = status
+    if any(steps.get(name) != 'passed' for name in CONSUMER_REQUIRED_STEPS):
+        raise ValueError('Consumer lifecycle receipt omits required successful steps.')
+    if mode == 'n-1-update' and any(steps.get(name) != 'passed' for name in CONSUMER_RESTORE_STEPS):
+        raise ValueError('Consumer N-1 receipt must restore and launch the certified current EXE before uninstall.')
+    prior_status = 'not-applicable' if mode == 'first-release' else 'passed'
+    if any(steps.get(name) != prior_status for name in CONSUMER_PREDECESSOR_STEPS):
+        raise ValueError('Consumer lifecycle receipt omits required predecessor evidence or first-release exceptions.')
+    return receipt
 
 
 def verify(root: Path, receipts: Path, smoke: Path, commit: str, run_id: str, attempt: str, needs: dict):
@@ -80,6 +175,8 @@ def verify(root: Path, receipts: Path, smoke: Path, commit: str, run_id: str, at
             if not required <= passed:
                 raise ValueError('Lifecycle receipt omits required successful steps.')
             certified.append(receipt)
+        else:
+            certified.append(verify_consumer_receipt(receipts, tracked, assets, commit, run_id, attempt))
     if found != FAMILIES:
         raise ValueError('Missing required release package families/runtimes.')
     if 'Meridian-Setup.exe' not in assets:
