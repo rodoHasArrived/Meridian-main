@@ -2257,6 +2257,35 @@ Meridian-main
 │   │   │   ├── soc2-roadmap.md
 │   │   │   └── soc2-scope.md
 │   │   ├── evidence
+│   │   │   ├── 2026-10-05-braces
+│   │   │   │   ├── hosted
+│   │   │   │   │   ├── npm-audit-gate.json
+│   │   │   │   │   ├── npm-audit.json
+│   │   │   │   │   ├── nuget-vulnerabilities.txt
+│   │   │   │   │   └── production-dependency-evidence-147-1.zip
+│   │   │   │   ├── hosted-148
+│   │   │   │   │   ├── npm-audit-gate.json
+│   │   │   │   │   ├── npm-audit.json
+│   │   │   │   │   ├── nuget-vulnerabilities.txt
+│   │   │   │   │   └── production-dependency-evidence-148-1.zip
+│   │   │   │   ├── hosted-151
+│   │   │   │   │   ├── npm-audit-gate.json
+│   │   │   │   │   ├── npm-audit.json
+│   │   │   │   │   ├── nuget-vulnerabilities.txt
+│   │   │   │   │   └── production-dependency-evidence-151-1.zip
+│   │   │   │   ├── local
+│   │   │   │   │   ├── braces-registry.json
+│   │   │   │   │   ├── chokidar-latest.json
+│   │   │   │   │   ├── dependency-graph.json
+│   │   │   │   │   ├── fast-glob-latest.json
+│   │   │   │   │   ├── micromatch-latest.json
+│   │   │   │   │   ├── npm-audit-gate.json
+│   │   │   │   │   ├── npm-audit-production.json
+│   │   │   │   │   ├── npm-audit.json
+│   │   │   │   │   └── tailwind3-dependencies.json
+│   │   │   │   ├── main-recheck-433ff.json
+│   │   │   │   ├── main-recheck.json
+│   │   │   │   └── manifest.json
 │   │   │   └── 2026-10-05-dependency-certification
 │   │   │       ├── braces-advisory-source.json
 │   │   │       ├── braces-bounded-reachability.json
