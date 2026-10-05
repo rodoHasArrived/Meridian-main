@@ -218,10 +218,17 @@ dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore --no-d
 ## Local Run
 
 ```powershell
-dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080
-npm --prefix src/Meridian.Ui/dashboard run dev
+npm run dev
+npm run dev:fixtures
 pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development
 ```
+
+For browser development, `npm run dev` coordinates the seeded host, backend watch mode, and
+Vite; `npm run dev:fixtures` selects fixture-only API responses. See the
+[browser development launcher](web-development.md) for prerequisites, port/data options,
+readiness, process ownership, and hot-reload/restart/shutdown acceptance checks. To serve the
+tracked browser bundle directly with a configured host, use
+`dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080`.
 
 Use `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly` for a Release
 host/desktop build that does not require database connectivity. Use `-LaunchMode Production`
@@ -234,7 +241,7 @@ launched processes, then restores the caller's environment.
 
 ### Persistence
 
-Every launch except `--seed-demo` needs a persistence decision and **fails closed at startup**
+Non-demo host launches need a persistence decision and **fail closed at startup**
 without one: `StorageFeatureRegistration` throws, naming the missing variable, rather than silently
 running in-memory. Set `MERIDIAN_DATABASE_URL` to persist every store domain to one PostgreSQL
 database; per-domain `MERIDIAN_*_CONNECTION_STRING` variables take precedence over it, so

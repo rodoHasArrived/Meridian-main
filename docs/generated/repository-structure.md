@@ -1773,6 +1773,7 @@ Meridian-main
 │   │   ├── production-readiness-audit-2026-07-27.md
 │   │   ├── README.md
 │   │   ├── security-master-architecture-audit-2026-08-13.md
+│   │   ├── web-development.md
 │   │   └── wpf-perf-uiux-audit-2026-06-14.md
 │   ├── examples
 │   │   ├── agent-improvement-loop
@@ -3361,6 +3362,8 @@ Meridian-main
 │   │   ├── generate-desktop-user-manual.ps1
 │   │   ├── generate-dk1-pilot-parity-packet.ps1
 │   │   ├── install-git-hooks.sh
+│   │   ├── owned-process-windows.ps1
+│   │   ├── owned-process.mjs
 │   │   ├── preflight_runner.py
 │   │   ├── prepare-dk1-operator-signoff.ps1
 │   │   ├── robinhood-options-smoke.ps1
@@ -3384,6 +3387,8 @@ Meridian-main
 │   │   ├── validate-workflow-profile.ps1
 │   │   ├── validate-wpf-dev.ps1
 │   │   ├── validate_workstation_cockpit_acceptance_matrix.py
+│   │   ├── web-dev.mjs
+│   │   ├── web-dev.test.mjs
 │   │   ├── web-screenshot-fixtures.json
 │   │   └── web-screenshot-routes.json
 │   ├── lib
@@ -5608,6 +5613,10 @@ Meridian-main
 │   │   ├── ReportingGovernanceCanonicalValidation.cs
 │   │   ├── ReportingGovernanceContracts.cs
 │   │   ├── ReportingGovernanceService.cs
+│   │   ├── ReportingIncomeComparisonContracts.cs
+│   │   ├── ReportingIncomeComparisonEngine.cs
+│   │   ├── ReportingIncomeComparisonJsonContext.cs
+│   │   ├── ReportingIncomeDecimalJsonConverter.cs
 │   │   ├── ReportingNumberFormat.cs
 │   │   ├── ReportingOperationalStoreContracts.cs
 │   │   ├── ReportingOrchestrationService.cs
@@ -5914,6 +5923,7 @@ Meridian-main
 │   │   │   ├── PostgresReportingDeliveryStore.cs
 │   │   │   ├── PostgresReportingDeploymentProbe.cs
 │   │   │   ├── PostgresReportingGovernanceRepository.cs
+│   │   │   ├── PostgresReportingGovernanceRepository.RunBatches.cs
 │   │   │   ├── PostgresReportingReconciliationEvidenceStore.cs
 │   │   │   ├── PostgresReportingReleaseConsistencyGate.cs
 │   │   │   ├── PostgresReportingRunStore.cs
@@ -6602,6 +6612,7 @@ Meridian-main
 │   │   │   │   │   │   ├── payoff.test.ts
 │   │   │   │   │   │   └── payoff.ts
 │   │   │   │   │   ├── dev-fixtures
+│   │   │   │   │   │   ├── bootstrap-fixtures.ts
 │   │   │   │   │   │   ├── fixture-resolver.ts
 │   │   │   │   │   │   └── market-data-fixtures.ts
 │   │   │   │   │   ├── first-run
@@ -6642,6 +6653,7 @@ Meridian-main
 │   │   │   │   │   ├── api-errors.test.ts
 │   │   │   │   │   ├── api-errors.ts
 │   │   │   │   │   ├── api.corporate-actions.test.ts
+│   │   │   │   │   ├── api.development-modes.test.ts
 │   │   │   │   │   ├── api.extensibility.test.ts
 │   │   │   │   │   ├── api.operations-continuity.test.ts
 │   │   │   │   │   ├── api.private-capital.test.ts
@@ -6702,6 +6714,8 @@ Meridian-main
 │   │   │   │   │   ├── reporting-hub.ts
 │   │   │   │   │   ├── reporting-impact.test.ts
 │   │   │   │   │   ├── reporting-impact.ts
+│   │   │   │   │   ├── reporting-income-comparison-api.test.ts
+│   │   │   │   │   ├── reporting-income-comparison-api.ts
 │   │   │   │   │   ├── reporting-lifecycle.test.ts
 │   │   │   │   │   ├── reporting-lifecycle.ts
 │   │   │   │   │   ├── reporting-link-safety.test.ts
@@ -6971,12 +6985,15 @@ Meridian-main
 │   │   │   │   │   ├── report-library-screen.test.tsx
 │   │   │   │   │   ├── report-library-screen.tsx
 │   │   │   │   │   ├── report-run-governance-client-package.ts
+│   │   │   │   │   ├── report-run-governance-parameters.ts
 │   │   │   │   │   ├── report-run-governance-screen.test.tsx
 │   │   │   │   │   ├── report-run-governance-screen.tsx
 │   │   │   │   │   ├── report-run-parameters-screen.test.tsx
 │   │   │   │   │   ├── report-run-parameters-screen.tsx
 │   │   │   │   │   ├── report-run-parameters-screen.view-model.test.ts
 │   │   │   │   │   ├── report-run-parameters-screen.view-model.ts
+│   │   │   │   │   ├── reporting-income-comparison.test.tsx
+│   │   │   │   │   ├── reporting-income-comparison.tsx
 │   │   │   │   │   ├── reporting-screen.a11y.test.tsx
 │   │   │   │   │   ├── reporting-screen.branding-access.tsx
 │   │   │   │   │   ├── reporting-screen.client-package.ts
@@ -7099,6 +7116,7 @@ Meridian-main
 │   │   │   │   ├── test
 │   │   │   │   │   ├── fixtures.ts
 │   │   │   │   │   ├── render.tsx
+│   │   │   │   │   ├── reporting-income-comparison-fixtures.ts
 │   │   │   │   │   ├── setup.ts
 │   │   │   │   │   └── verified-operation-outcome.ts
 │   │   │   │   ├── types
@@ -7124,6 +7142,7 @@ Meridian-main
 │   │   │   │   │   ├── provider-setup.ts
 │   │   │   │   │   ├── reconciliation-readiness.types.ts
 │   │   │   │   │   ├── reporting-governance.ts
+│   │   │   │   │   ├── reporting-income-comparison.ts
 │   │   │   │   │   ├── statement-run-detail.types.ts
 │   │   │   │   │   ├── workstation-1.ts
 │   │   │   │   │   ├── workstation-2.ts
@@ -7378,6 +7397,7 @@ Meridian-main
 │   │   │   ├── FundStructureEndpoints.cs
 │   │   │   ├── FundStructureEndpoints.ReportingCompatibility.cs
 │   │   │   ├── FundStructureEndpoints.ReportingGovernance.cs
+│   │   │   ├── FundStructureEndpoints.ReportingIncomeComparison.cs
 │   │   │   ├── FundStructureEndpoints.ReportingRunStream.cs
 │   │   │   ├── FundStructureEndpoints.ReportingScheduleAuthority.cs
 │   │   │   ├── FundStructureEndpoints.ReportingTombstones.cs
@@ -7669,6 +7689,7 @@ Meridian-main
 │   │   │   ├── ReportingGovernanceCoordinatorService.ArtifactValidation.cs
 │   │   │   ├── ReportingGovernanceCoordinatorService.cs
 │   │   │   ├── ReportingGovernanceReleaseAuthorizationVerifier.cs
+│   │   │   ├── ReportingIncomeComparisonService.cs
 │   │   │   ├── ReportingPartnersCapitalSource.cs
 │   │   │   ├── ReportingPrimaryDocumentRenderer.cs
 │   │   │   ├── ReportingReconciliationEvidenceSource.cs
@@ -10169,9 +10190,11 @@ Meridian-main
 │   │   │   └── SecurityMaster
 │   │   │       └── SecurityKindMappingTests.cs
 │   │   ├── Reporting
+│   │   │   ├── InvestmentIncomeComparisonEngineTests.cs
 │   │   │   ├── NavAttributionServiceTests.cs
 │   │   │   ├── ReportGenerationServiceTests.cs
 │   │   │   ├── ReportingGovernanceCanonicalValidationTests.cs
+│   │   │   ├── ReportingIncomeComparisonSerializationTests.cs
 │   │   │   ├── ReportingOrchestrationServiceTests.cs
 │   │   │   ├── ReportingSecureDistributionAuthorizationTests.cs
 │   │   │   ├── ReportingSecureDistributionTests.cs
@@ -10628,6 +10651,7 @@ Meridian-main
 │   │   │   ├── ReportingDeploymentReadinessServiceTests.cs
 │   │   │   ├── ReportingFileStoreLegacyCompatibilityTests.cs
 │   │   │   ├── ReportingGovernanceEndpointTests.cs
+│   │   │   ├── ReportingIncomeComparisonServiceTests.cs
 │   │   │   ├── ReportingOperationalConcurrencyTests.cs
 │   │   │   ├── ReportingPersistenceFailClosedTests.cs
 │   │   │   ├── ReportingProductionCompositionReadinessTests.cs
@@ -10668,6 +10692,7 @@ Meridian-main
 │   │   │   ├── StatementReconciliationReportFetchIngestionAuthorityTests.cs
 │   │   │   ├── StatementReconciliationReportWorkflowServiceTests.cs
 │   │   │   ├── StatementToDeliveryAuthorityTests.cs
+│   │   │   ├── StatusDevelopmentSessionTests.cs
 │   │   │   ├── StrategyDesignerWorkstationEndpointsTests.cs
 │   │   │   ├── StrategyLifecycleEndpointsTests.cs
 │   │   │   ├── SupportedPostureStartupIntegrationTests.cs
@@ -11070,9 +11095,12 @@ Meridian-main
 │   │   └── xunit.runner.json
 │   ├── scripts
 │   │   ├── fixtures
-│   │   │   └── roadmap
-│   │   │       ├── ambiguous-input.yaml
-│   │   │       └── unordered-mixed-unicode.yaml
+│   │   │   ├── roadmap
+│   │   │   │   ├── ambiguous-input.yaml
+│   │   │   │   └── unordered-mixed-unicode.yaml
+│   │   │   └── web-dev
+│   │   │       ├── launcher.mjs
+│   │   │       └── process-tree.mjs
 │   │   ├── README.md
 │   │   ├── setup-verification.sh
 │   │   ├── test_adapter_readiness.py
