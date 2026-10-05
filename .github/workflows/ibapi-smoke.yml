@@ -10,6 +10,8 @@ on:
       - "tests/Meridian.Tests/Meridian.Tests.csproj"
       - "scripts/dev/build-ibapi-smoke.ps1"
       - "build/scripts/ci/validate-test-results.py"
+      - "tests/scripts/test_ibapi_smoke_workflow.py"
+      - "tests/scripts/test_validate_test_results.py"
       - ".github/workflows/ibapi-smoke.yml"
   push:
     branches:
@@ -22,6 +24,8 @@ on:
       - "tests/Meridian.Tests/Meridian.Tests.csproj"
       - "scripts/dev/build-ibapi-smoke.ps1"
       - "build/scripts/ci/validate-test-results.py"
+      - "tests/scripts/test_ibapi_smoke_workflow.py"
+      - "tests/scripts/test_validate_test_results.py"
       - ".github/workflows/ibapi-smoke.yml"
   workflow_dispatch:
     inputs:
@@ -105,7 +109,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ibapi-reconnect-smoke-${{ github.run_number }}
+          name: ibapi-reconnect-smoke-${{ github.run_number }}-${{ github.run_attempt }}
           path: artifacts/test-results/ibapi-smoke/
           if-no-files-found: error
           retention-days: 14
