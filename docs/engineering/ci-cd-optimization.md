@@ -145,14 +145,33 @@ and retains `validated-release-<run>-<attempt>` without publishing. The old unsi
 lifecycle shortcut is replaced by this full signed rehearsal; the standalone evaluation channel
 still provides self-signed evaluation packages.
 
-Publication verifies every gate, both native architecture receipts, installed-startup evidence,
+Publication verifies every gate, both native MSIX architecture receipts, the consumer EXE receipt, installed-startup evidence,
 source commits, run IDs, run attempts and SHA-256 digests, then copies the certified MSIX files
-and verified consumer package into a fresh flat directory. It performs no builds or signing.
+and certified consumer package into a fresh flat directory. It performs no builds or signing.
 Each package family/runtime has its own SBOM, checksum file and release manifest. The gate
-manifest links validation results and native lifecycle receipts to the exact promoted bytes.
-Consumer setup retains its embedded-payload verification and the separate required
-web-workstation installed-startup proof; native MSIX lifecycle receipts explicitly describe
-only the desktop MSIX packages.
+manifest links validation results and each package's lifecycle receipt to the exact promoted bytes.
+`certify-installed-consumer` downloads `Meridian-Setup.exe` from the current run attempt onto a
+fresh Windows x64 runner. It validates its production Authenticode publisher and payload, installs
+that EXE, exercises authenticated startup and the installed bundled PostgreSQL process, damages
+and repairs the installed payload, restarts, uninstalls, and verifies preserved configuration,
+file data and database state. Existing PostgreSQL installations on the runner cannot supply the
+bundled-database proof.
+
+`consumer-setup-win-x64-lifecycle.json` must pass and match the consumer family, x64 runtime,
+EXE SHA-256, source commit, workflow run and attempt. Promotion rejects a missing, failed,
+incomplete or mismatched consumer receipt even when both MSIX receipts and publish smoke pass.
+MSIX-only lifecycle evidence cannot promote the EXE.
+
+The consumer predecessor lookup includes published production `v*` releases, including signed
+release candidates, and excludes the evaluation channel. It downloads the previous consumer
+EXE and verifies its release checksum before exercising upgrade and rollback. If no published
+consumer predecessor exists (including a history containing only MSIX releases), it records an
+explicit first-consumer-release exception for each N-1 leg and retains the repository lookup
+receipt. Failed queries, downloads or checksum verification remain fatal. A configured prior tag
+must identify an eligible published consumer release; it cannot force a first-release exception.
+
+The consumer certification workflow and promotion dependency changes are designated for human
+governance review. Human approval of the workflow changes precedes signed rehearsal activation.
 
 The administrator should dispatch a signed rehearsal after human review and before enabling
 publication for a new production tag. A successful rehearsal is required operational evidence;

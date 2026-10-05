@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       prior_release_tag:
-        description: Optional N-1 release tag used by installed lifecycle certification.
+        description: Optional published N-1 production release tag for MSIX and consumer EXE certification.
         required: false
         type: string
       rehearsal_version:
@@ -587,9 +587,78 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
+  # PRD-014: the consumer EXE needs its own installed evidence. MSIX receipts and
+  # publish-smoke cannot certify its bootstrapper or its bundled database.
+  # Governance: this release graph change requires human review before activation.
+  certify-installed-consumer:
+    name: clean consumer EXE lifecycle (win-x64)
+    needs: [eligibility, build-consumer-setup]
+    runs-on: windows-latest
+    timeout-minutes: 90
+    environment:
+      name: desktop-release-signing
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the coordinator commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Download the exact signed consumer EXE
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          name: meridian-consumer-setup-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/current-consumer
+
+      - name: Resolve the consumer N-1 package or explicit first-release exception
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CONFIGURED_PRIOR_TAG: ${{ inputs.prior_release_tag }}
+          CURRENT_RELEASE_TAG: v${{ needs.eligibility.outputs.version }}
+        run: |
+          $resolverArgs = @(
+            '--repository', $env:GITHUB_REPOSITORY,
+            '--current-tag', $env:CURRENT_RELEASE_TAG,
+            '--current-commit', $env:GITHUB_SHA,
+            '--output-dir', 'artifacts/prior-consumer',
+            '--evidence', 'artifacts/consumer-certification/consumer-predecessor.json'
+          )
+          if (-not [string]::IsNullOrWhiteSpace($env:CONFIGURED_PRIOR_TAG)) {
+            $resolverArgs += @('--prior-release-tag', $env:CONFIGURED_PRIOR_TAG)
+          }
+          python build/scripts/ci/resolve-consumer-predecessor.py @resolverArgs
+          if ($LASTEXITCODE -ne 0) { throw 'Consumer predecessor resolution failed.' }
+
+      - name: Certify the installed consumer EXE and bundled database
+        shell: pwsh
+        run: |
+          & ./build/scripts/install/certify-consumer-install-lifecycle.ps1 `
+            -CurrentPackage artifacts/current-consumer/Meridian-Setup.exe `
+            -PredecessorEvidencePath artifacts/consumer-certification/consumer-predecessor.json `
+            -ReceiptPath artifacts/consumer-certification/consumer-setup-win-x64-lifecycle.json `
+            -TimeoutSeconds 600
+
+      - name: Retain consumer lifecycle receipt and diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: consumer-install-certification-win-x64-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/consumer-certification/
+          if-no-files-found: error
+          retention-days: 90
+
   release:
     name: verify-and-publish-release-evidence
-    needs: [eligibility, ci, secrets, codeql, production, smoke, release-preflight, build-msix, build-consumer-setup, certify-installed-desktop]
+    needs: [eligibility, ci, secrets, codeql, production, smoke, release-preflight, build-msix, build-consumer-setup, certify-installed-desktop, certify-installed-consumer]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -618,6 +687,11 @@ jobs:
           pattern: desktop-install-certification-*-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/certification
           merge-multiple: true
+      - name: Download consumer EXE lifecycle evidence
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          name: consumer-install-certification-win-x64-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/certification
       - name: Download installed startup evidence
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
