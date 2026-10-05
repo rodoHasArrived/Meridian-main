@@ -205,6 +205,7 @@ The commands below are generated from `docs/status/workflow-manifest.json`.
 - Owners: @provider-infra, @desktop-shell
 - Commands:
   - `pwsh ./scripts/dev/build-ibapi-smoke.ps1 -Configuration Release`
+  - `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release -p:EnableWindowsTargeting=true -p:EnableIbApiSmoke=true -maxcpucount:1 --filter "FullyQualifiedName~IBMarketDataClientRuntimeReconnectTests" --logger "trx;LogFileName=ibapi-runtime-reconnect.trx" --results-directory artifacts/test-results/ibapi-smoke`
 
 #### `wpf-route-validation-position-blotter`
 
