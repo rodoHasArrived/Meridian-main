@@ -41898,6 +41898,12 @@
       "kind": "normal",
       "label": "",
       "source": "database:ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.lot_snapshot_before"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
       "target": "database:ledger.tax_lot_mutations.mutation_kind"
     },
     {
@@ -47479,7 +47485,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "0773d2e0bd8f8a3ffd53982f3a7c3a742c152d75d3ca2b97b79df5a72b4c8538",
+  "fingerprint": "537c109fb5df2832a1f1de28bdc2a6764bf7cd75c217175496e5e6099ecf61b4",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -69614,7 +69620,7 @@
   "summary": {
     "contract_references": 3114,
     "contract_set_memberships": 3696,
-    "edges": 7888,
+    "edges": 7889,
     "foreign_keys": 134,
     "logical_references": 6,
     "nodes": 3836

@@ -238,6 +238,14 @@ bash scripts/ci.sh --lane verify-docs
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
 
+- **2026-10-05 — concurrent main refresh.** Main advanced to
+  `600cde87be9de99c615594cb1a2b09f507cd2b2f`; [certification #150](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37357037036)
+  was pending with no jobs/artifacts at the refresh observation. The
+  [recorded byte comparison](../security/evidence/2026-10-05-braces/main-recheck.json) confirms the
+  npm graph, acceptance register, validator and certification workflow match the #147 baseline.
+  The bounded proposal remains pending and the earlier evidence retains its original commit
+  binding. NuGet updates do not establish a new dependency-certification result.
+
 - **2026-10-05 — dependency failure rechecked; human decision pending.** Main
   `e3bf60bae577c132d8444a827ca4dc3181cc48a1` / [Production Certification #147, attempt 1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283)
   failed its dependency job on unaccepted `braces` advisory `GHSA-vfj7-8cjw-p6xm`; NuGet passed.

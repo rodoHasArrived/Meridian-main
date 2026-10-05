@@ -23,7 +23,7 @@ finding until a supported remediation passes or an authorized human records a bo
   from deeply nested patterns. The advisory covers `<=3.0.3` and lists no patched version.
   npm reports CVSS 3.1 **7.5**; the current GitHub advisory reports CVSS 4.0 **8.7**. These are
   different scoring versions, not evidence of a severity downgrade.
-- **Latest observed main:** `e3bf60bae577c132d8444a827ca4dc3181cc48a1`.
+- **Audited baseline main:** `e3bf60bae577c132d8444a827ca4dc3181cc48a1`.
   [Production Certification #147, attempt 1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283)
   [dependency job 111904784527](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283/job/111904784527)
   fails with `UNACCEPTED GHSA-vfj7-8cjw-p6xm (braces, high): no acceptance entry`.
@@ -36,6 +36,20 @@ finding until a supported remediation passes or an authorized human records a bo
   A clean local `npm ci` and full `npm audit --json` reproduce the same high-severity root cause.
   Five high package entries resolve to this one advisory. The separate low-severity
   `postcss-selector-parser` finding is not covered by this proposal.
+
+**Main refresh:** `600cde87be9de99c615594cb1a2b09f507cd2b2f` was integrated after concurrent
+lot-basis and NuGet updates. The npm manifest/lockfile, acceptance register, validator, and
+certification workflow are byte-identical to the audited baseline; the
+[refresh receipt](evidence/2026-10-05-braces/main-recheck.json) records that comparison.
+[Production Certification #150](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37357037036)
+was pending with no jobs/artifacts at the refresh observation. No passing dependency or complete
+certification result is inferred for that new main commit. Earlier NuGet evidence also stays bound
+to its original commit.
+The newest completed dependency job at recheck was
+[#148 / job 111920179861](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37356520129/job/111920179861)
+on `8b382db63dd4b47fb32b8f4a199bcb0845700dee`: it failed on the same unaccepted advisory.
+Its [raw gate decision](evidence/2026-10-05-braces/hosted-148/npm-audit-gate.json) and verified
+artifact are also retained; the overall workflow was still unfinished at that observation.
 
 The installed graph has these paths, all marked development dependencies in the lockfile:
 
