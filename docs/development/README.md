@@ -1,8 +1,8 @@
 # Development Guides
 
-**Status:** supporting
+**Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-07-19
+**Reviewed:** 2026-10-05
 **Scope:** Engineering and contributor-facing guidance
 **Review Cadence:** As tooling, workflows, or implementation conventions evolve
 
@@ -34,8 +34,8 @@ For a broader docs map, return to the main [docs index](../README.md).
 
 ## What Belongs Here
 
-- Contributor onboarding and repository conventions
-- Developer workflow, testing, CI, and build guidance
+- Detailed repository conventions reached from contributor onboarding
+- Supporting developer workflow, testing, CI, and build techniques; Engineering owns the entrypoint and shortest current command path
 - Desktop and WPF implementation and fixture-mode guides
 - Provider implementation and extension guidance
 - Documentation tooling, script expansion, and custom rule authoring
@@ -137,6 +137,6 @@ When you add, remove, or supersede a guide in this folder:
 ## Related
 
 - [Architecture Documentation](../architecture/README.md)
-- [Operations Documentation](../operations/README.md)
+- [Operator Documentation](../operators/README.md)
 - [Assessment archive](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/assessments/README.md)
 - [Status Docs](../status/README.md)

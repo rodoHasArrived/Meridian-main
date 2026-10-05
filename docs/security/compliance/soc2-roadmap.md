@@ -2,6 +2,11 @@
 
 **Last Updated:** 2026-05-27
 
+The windows below are the plan recorded on 2026-05-27. They are targets, not evidence that an
+assessment, audit, or observation period has completed. Confirm progress with the named control
+owners and retained audit records before using this schedule in diligence. See the
+[security index](../README.md) for the maintained evidence and remediation paths.
+
 ## Program timeline
 
 | Milestone | Target window | Outcome |

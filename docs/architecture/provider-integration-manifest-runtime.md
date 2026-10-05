@@ -2,7 +2,8 @@
 
 **Status:** accepted planning baseline
 **Owner:** core-team
-**Reviewed:** 2026-10-05 (PRD-102 manifest versioning and replay scope)
+**Reviewed:** 2026-10-05
+**Review scope:** PRD-102 manifest versioning and replay scope
 
 ## Summary
 
