@@ -14,6 +14,12 @@ This is the canonical operator entry for packaging and distribution posture for 
 
 ## Canonical Flow
 
+This is release-maintainer guidance for Windows artifacts. End-user installation starts at
+[Browser Workstation Installer](browser-workstation-installer.md). Run build scripts in PowerShell 7
+from the repository root with the pinned .NET SDK, Node/npm, Windows SDK packaging/signing tools,
+and the PostgreSQL payload for every requested runtime. Use the selected workflow's protected
+signing environment; credentials are not command examples or repository inputs.
+
 1. Verify host/build command set used in the environment is current.
 2. Build and validate package contents and manifest metadata against release profile.
 3. Apply signing in the supported deployment path.
@@ -39,6 +45,10 @@ The ARM64 job intentionally targets a native self-hosted `Windows`/`ARM64` runne
 x64 `-SkipInstall` build cannot satisfy this gate. A tag is not releasable while either architecture's
 installed lifecycle job is queued, failed, or missing.
 
+These are the production workflow's required evidence outputs, not an assertion that a particular
+tag passed. Inspect the selected release commit and workflow results. Evaluation `eval-v*`
+artifacts have a separate signing/support posture and do not satisfy these production gates.
+
 The `Publish Smoke` workflow's `web-workstation`/`win-x64` lane copies the just-published host into an
 isolated installer root, starts that exact artifact through the lifecycle supervisor with required
 authentication and a dedicated PostgreSQL payload, then fetches `/startupz`, `/healthz`,
@@ -54,6 +64,18 @@ authentication and a dedicated PostgreSQL payload, then fetches `/startupz`, `/h
 - `.github/workflows/desktop-installer-packaging.yml` for signed artifacts, SBOM/checksum/provenance,
   and clean-machine install lifecycle evidence.
 - `.github/workflows/publish-smoke.yml` for actual published-host startup and browser asset proof.
+
+## Expected result and failure handling
+
+- A candidate has the expected architecture payloads, signature, checksum/SBOM/provenance, and
+  installed lifecycle receipts for the same source commit. Archive those before rebuilding because
+  packaging scripts recreate their output directories.
+- On a missing payload, build/signing error, queued native runner, failed smoke, or missing receipt,
+  keep the candidate unpromoted and correct the named input or failed workflow stage. Packaging
+  success alone is insufficient when installed lifecycle evidence is absent.
+- When an installed candidate fails, collect [startup/lifecycle diagnostics](operator-runbook.md#diagnostics-bundle)
+  and follow the release's tested repair/rollback procedure. Preserve the database/data-root recovery
+  unit described in [Failover and Recovery](failover-and-recovery.md).
 
 ## Deployment Entry Points
 

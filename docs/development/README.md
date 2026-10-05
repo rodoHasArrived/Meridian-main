@@ -137,6 +137,6 @@ When you add, remove, or supersede a guide in this folder:
 ## Related
 
 - [Architecture Documentation](../architecture/README.md)
-- [Operations Documentation](../operations/README.md)
+- [Operator Documentation](../operators/README.md)
 - [Assessment archive](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/assessments/README.md)
 - [Status Docs](../status/README.md)
