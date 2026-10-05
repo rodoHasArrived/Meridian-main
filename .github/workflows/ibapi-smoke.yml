@@ -5,6 +5,11 @@ on:
     paths:
       - "src/Meridian.Infrastructure/Adapters/InteractiveBrokers/**"
       - "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj"
+      - "src/Meridian.IbApi.SmokeStub/**"
+      - "tests/Meridian.Tests/Infrastructure/Providers/IB*.cs"
+      - "tests/Meridian.Tests/Meridian.Tests.csproj"
+      - "scripts/dev/build-ibapi-smoke.ps1"
+      - "build/scripts/ci/validate-test-results.py"
       - ".github/workflows/ibapi-smoke.yml"
   push:
     branches:
@@ -12,6 +17,11 @@ on:
     paths:
       - "src/Meridian.Infrastructure/Adapters/InteractiveBrokers/**"
       - "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj"
+      - "src/Meridian.IbApi.SmokeStub/**"
+      - "tests/Meridian.Tests/Infrastructure/Providers/IB*.cs"
+      - "tests/Meridian.Tests/Meridian.Tests.csproj"
+      - "scripts/dev/build-ibapi-smoke.ps1"
+      - "build/scripts/ci/validate-test-results.py"
       - ".github/workflows/ibapi-smoke.yml"
   workflow_dispatch:
     inputs:
@@ -69,3 +79,33 @@ jobs:
         run: >
           scripts/dev/build-ibapi-smoke.ps1
           -Configuration ${{ inputs.configuration || 'Release' }}
+
+      - name: Run IB API runtime reconnect smoke tests
+        shell: pwsh
+        run: >
+          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj
+          -c ${{ inputs.configuration || 'Release' }}
+          -p:EnableWindowsTargeting=true
+          -p:EnableIbApiSmoke=true
+          -maxcpucount:1
+          --filter "FullyQualifiedName~IBMarketDataClientRuntimeReconnectTests"
+          --logger "trx;LogFileName=ibapi-runtime-reconnect.trx"
+          --results-directory artifacts/test-results/ibapi-smoke
+
+      - name: Require nonempty passing reconnect TRX evidence
+        if: always()
+        shell: pwsh
+        run: >
+          python build/scripts/ci/validate-test-results.py
+          --results-dir artifacts/test-results/ibapi-smoke
+          --require-trx-prefix ibapi-runtime-reconnect
+          --output artifacts/test-results/ibapi-smoke/test-evidence.json
+
+      - name: Upload IB API reconnect smoke evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ibapi-reconnect-smoke-${{ github.run_number }}
+          path: artifacts/test-results/ibapi-smoke/
+          if-no-files-found: error
+          retention-days: 14
