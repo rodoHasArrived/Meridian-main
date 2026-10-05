@@ -82,7 +82,8 @@ that do not honor exclusive file sharing.
 ### Evidence storage quota configuration
 
 Shared workstation composition binds `EvidenceVault:StorageQuota` to
-`EvidenceStorageQuotaOptions`. Direct callers can supply those options to
+`EvidenceStorageQuotaOptions`. Direct service collections without an `IConfiguration` registration
+use the defaults below. Direct callers can supply those options to
 `FileEvidenceArtifactStore`; each store validates and freezes its own copy at construction.
 Recreate stores or restart their hosts to apply changes consistently to all writers sharing a root.
 

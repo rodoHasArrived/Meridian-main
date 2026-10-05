@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.Reporting;
 using Meridian.Ui.Shared.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -15,8 +16,11 @@ public static class EvidenceWorkflowServiceCollectionExtensions
         this IServiceCollection services,
         bool isProductionComposition = false)
     {
+        // Direct service-collection consumers have no host IConfiguration; retain defaults
+        // there while binding the same section for browser and desktop hosts that provide it.
         services.AddOptions<EvidenceStorageQuotaOptions>()
-            .BindConfiguration("EvidenceVault:StorageQuota");
+            .Configure<IServiceProvider>((options, provider) => provider.GetService<IConfiguration>()?
+                .GetSection("EvidenceVault:StorageQuota").Bind(options));
         services.TryAddSingleton<EvidenceTemplateRegistry>();
         services.TryAddSingleton<EvidenceSubjectResolver>();
         services.TryAddSingleton<EvidencePacketValidationService>();

@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Documents;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.Infrastructure.Reconciliation;
@@ -6,7 +7,9 @@ using Meridian.Reporting;
 using Meridian.Storage.Reporting;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using CoreConfigStore = Meridian.Application.UI.ConfigStore;
 
@@ -78,6 +81,30 @@ public sealed class StatementReconciliationAuthorityCompositionTests : IDisposab
             .Should().BeSameAs(provider.GetRequiredService<StatementImportEvidenceBridge>());
         provider.GetRequiredService<StatementReconciliationReportWorkflowService>()
             .IsDurablyComposed.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task EvidenceWorkflowFabric_HostConfiguration_EnforcesConfiguredTenantBudget()
+    {
+        var services = CreateMinimalWorkstationServices();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?>
+            {
+                ["EvidenceVault:StorageQuota:DefaultTenantBudgetBytes"] = "0",
+                ["EvidenceVault:StorageQuota:MinimumDiskHeadroomBytes"] = "0"
+            }).Build());
+        services.AddEvidenceWorkflowFabric();
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<IOptions<EvidenceStorageQuotaOptions>>().Value.DefaultTenantBudgetBytes
+            .Should().Be(0);
+        var store = provider.GetRequiredService<IEvidenceArtifactStore>();
+        var intake = () => store.WriteIntakeArtifactAsync(new Meridian.Contracts.Workstation.EvidenceVaultIntakeRequestDto(
+            "report-pack", "quota-config", "api", "evidence.txt", Convert.ToBase64String([1]))
+        {
+            TenantId = "tenant-config",
+            Scope = "company-config"
+        });
+        (await intake.Should().ThrowAsync<EvidenceStorageQuotaExceededException>()).Which.Reason.Should().Be("tenant-bytes");
     }
 
     [Fact]
