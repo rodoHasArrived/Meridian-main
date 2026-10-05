@@ -194,7 +194,25 @@ same split hit `meridian-ci.yml` — `status: completed` returned #4606 from 202
 `event: push` returned **#4823** from today.
 
 **Cross-check the newest run's `created_at` against the head commit's date before trusting any
-conclusion drawn from a run listing.** This compounds the predecessor's correction — read **check
+conclusion drawn from a run listing.**
+
+**A determination PR must declare a phase, and a body edit will not deliver it.** Any PR touching
+`docs/status/**` or `build/scripts/docs/**` triggers `Roadmap Source Docs`, whose `scope-gate` job
+requires an explicit phase from `tools/roadmap/enforce_phase_scope.py` — a `phase:PRx` label, a
+`<!-- phase:PRx -->` body marker, or a dispatch input. Two things are easy to get wrong:
+
+1. **Once a phase is declared the gate checks every changed file, not just the governed ones.** A
+   determination that also edits a script under `build/` needs **PR6** (`build/**`); `docs/**` alone
+   is PR1 and `tests/**` is PR4. Take the minimum that passes — the gate's own hint says to widen
+   only when roadmap governance allows. Generated artifacts (`docs/generated/**`,
+   `doc-health-dashboard.*`, `example-validation.md`) are exempt, so a docs-only determination needs
+   no marker at all.
+2. **Adding the marker to the PR body does not re-deliver it.** The job reads
+   `github.event.pull_request.body`, and the workflow's `pull_request` trigger does not include
+   `edited` or `labeled`, so a body edit fires nothing. Re-running the failed job replays the
+   *original* event payload, so the gate still reads the pre-edit body and fails identically. Only a
+   new commit (a `synchronize` event) carries the updated body. Declare the phase **when the PR is
+   opened**, or expect to spend a commit on it. This compounds the predecessor's correction — read **check
 runs**, not commit statuses — and the one before it: in this lane read step **`outcome`**, not
 `conclusion`. In run #144 both gate steps report `conclusion: success` while the job fails, because
 they are `continue-on-error`; the only reliable source is the job **log**.
