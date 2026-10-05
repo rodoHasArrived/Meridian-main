@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1055 |
-| Valid | 603 |
+| Total code blocks | 1056 |
+| Valid | 604 |
 | Invalid | 0 |
 | Skipped | 452 |
 
@@ -18,7 +18,7 @@
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 115 | 0 | 0 | 115 |
-| `bash` | 179 | 179 | 0 | 0 |
+| `bash` | 180 | 180 | 0 | 0 |
 | `cmd` | 1 | 0 | 0 | 1 |
 | `cpp` | 1 | 0 | 0 | 1 |
 | `csharp` | 325 | 325 | 0 | 0 |
@@ -90,7 +90,7 @@ No invalid code examples found.
 | `docs/architecture/security-master-extensibility-review.md` | 4 |
 | `docs/architecture/storage-design.md` | 77 |
 | `docs/development/adding-custom-rules.md` | 6 |
-| `docs/development/build-observability.md` | 3 |
+| `docs/development/build-observability.md` | 4 |
 | `docs/development/central-package-management.md` | 9 |
 | `docs/development/desktop-testing-guide.md` | 5 |
 | `docs/development/desktop-workflow-automation.md` | 1 |

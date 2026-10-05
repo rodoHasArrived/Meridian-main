@@ -1065,6 +1065,7 @@ Meridian-main
 │   │   │   ├── metrics.py
 │   │   │   └── profile.py
 │   │   ├── cli
+│   │   │   ├── build_profiles.py
 │   │   │   └── buildctl.py
 │   │   ├── core
 │   │   │   ├── __init__.py
@@ -11111,6 +11112,7 @@ Meridian-main
 │   │   ├── test_api_contract_coverage_dashboard.py
 │   │   ├── test_archive_code_tombstones.py
 │   │   ├── test_artifact_retention_module.py
+│   │   ├── test_build_profiles.py
 │   │   ├── test_buildctl_artifact_retention.py
 │   │   ├── test_buildctl_validation_runner.py
 │   │   ├── test_canonical_roadmap_yaml.py
