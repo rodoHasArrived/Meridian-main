@@ -44,6 +44,10 @@ or replace the existing `quality-gate` requirement.
 
 ## Measurement and promotion
 
+The [October 5 Actions storage audit](actions-storage-audit-2026-10-05.md) inventories workflow
+uploads, measures recent artifacts, and separates routine retention savings from protected
+certification/recovery evidence. Its snapshot is bounded and does not reconcile account billing.
+
 Export Actions run metadata with embedded `jobs` from the attempt-specific jobs endpoint.
 `python build/scripts/ci/ci-metrics.py --input runs.json --output artifacts/ci-metrics.json`
 separates job queue time, execution time, workflow/event and run attempt. Missing job timestamps
