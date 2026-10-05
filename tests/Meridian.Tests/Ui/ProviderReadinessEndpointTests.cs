@@ -47,6 +47,12 @@ public sealed class ProviderReadinessEndpointTests
         await File.WriteAllTextAsync(Path.Combine(statusDirectory, "providers.json"),
             System.Text.Json.JsonSerializer.Serialize(metrics, JsonOptions));
 
+        var connections = await app.Services.GetRequiredService<ProviderConnectionLifecycleService>().GetConnectionsAsync();
+        connections.Should().ContainSingle(row => row.ProviderId == "ibkr").Subject.Health
+            .Should().Be(ProviderContinuityHealthDto.Degraded);
+        connections.Should().ContainSingle(row => row.ProviderId == "alpaca").Subject.Health
+            .Should().NotBe(ProviderContinuityHealthDto.Degraded);
+
         var readiness = await app.GetTestClient().GetFromJsonAsync<ProviderReadinessSummaryDto>(UiApiRoutes.ProviderReadiness, JsonOptions);
 
         var row = readiness!.Providers.Should().ContainSingle(provider => provider.ProviderId == "ibkr").Subject;
@@ -89,6 +95,12 @@ public sealed class ProviderReadinessEndpointTests
         Directory.CreateDirectory(statusDirectory);
         await File.WriteAllTextAsync(Path.Combine(statusDirectory, "providers.json"),
             System.Text.Json.JsonSerializer.Serialize(metrics, JsonOptions));
+
+        var connections = await app.Services.GetRequiredService<ProviderConnectionLifecycleService>().GetConnectionsAsync();
+        connections.Should().ContainSingle(row => row.ProviderId == "ibkr").Subject.Health
+            .Should().Be(ProviderContinuityHealthDto.Degraded);
+        connections.Should().ContainSingle(row => row.ProviderId == "alpaca").Subject.Health
+            .Should().NotBe(ProviderContinuityHealthDto.Degraded);
 
         var readiness = await app.GetTestClient().GetFromJsonAsync<ProviderReadinessSummaryDto>(UiApiRoutes.ProviderReadiness, JsonOptions);
 

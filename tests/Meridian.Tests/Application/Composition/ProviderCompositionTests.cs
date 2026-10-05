@@ -202,6 +202,10 @@ public sealed class ProviderCompositionTests : IDisposable
         var services = CreateApplicationServices(attributeDiscovery, aliasVariant: aliasVariant, disableAllFamilies: true);
         await using var provider = services.BuildServiceProvider();
         var registry = provider.GetRequiredService<ProviderRegistry>();
+        var config = provider.GetRequiredService<ConfigStore>().Load();
+        foreach (var descriptor in ProviderCapabilityDescriptorCatalog.Descriptors)
+            config.ProviderModules!.Modules.Should().ContainKey($" {ConfiguredName(descriptor.ProviderId, aliasVariant).ToUpperInvariant()} ",
+                "aliases must be loaded from the host JSON configuration");
 
         foreach (var descriptor in ProviderCapabilityDescriptorCatalog.Descriptors)
         {
@@ -210,6 +214,8 @@ public sealed class ProviderCompositionTests : IDisposable
                 foreach (var name in AcceptedNames(descriptor.ProviderId))
                     registry.GetCapability(name, capability.Contract).Should().BeNull(
                         $"disabling configured alias {ConfiguredName(descriptor.ProviderId, aliasVariant)} disables {name}");
+                provider.GetService(capability.Implementation).Should().BeNull(
+                    "concrete DI resolution must not bypass a disabled family");
             }
         }
 
@@ -338,6 +344,7 @@ public sealed class ProviderCompositionTests : IDisposable
         }
         if (extraFamily is not null)
             modules[extraFamily] = new();
+
         if (configuredFamily is not null)
         {
             var existing = modules.Keys.SingleOrDefault(key => ProviderIdentity.EqualsId(key, configuredFamily));
