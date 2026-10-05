@@ -3858,7 +3858,7 @@
       ]
     }
   ],
-  "fingerprint": "fcd8bd420182e6aa14cbaafdbec3447fde94ce0b118d4dcb711427c22a71bfea",
+  "fingerprint": "c6fbdec58a2b4ee9c6fbf79cf5d0d5c9fb86da7107272551d9d10678a2261a84",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -3869,7 +3869,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "2e0a498f5cf3ed9ec703ae5ee70481b356d782548deb84ae4d89eb9c4e105791",
+      "fingerprint": "af11383547061e34915644f266a6b7284bc2e6446dd537d0ff37ff0d1a19b1a7",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Accounting.Lots",
       "object_ids": [
@@ -7519,7 +7519,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "d3faeec910ba003f9c042aaf72dcae58d26d2b7de19c8fa3cb3b109b35a34898",
+      "fingerprint": "7e06e8bf3d206cb996920530f87ee0129ac67fc9e61410aec6d8b36ee8df04ec",
       "full_name": "Meridian.Contracts.Accounting.Lots.IOpenLotReliefService",
       "id": "Meridian.Contracts.Accounting.Lots.IOpenLotReliefService",
       "kind": "interface",
@@ -7531,12 +7531,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.IOpenLotReliefService",
       "references": [],
       "source": {
-        "line": 72,
+        "line": 75,
         "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
       },
       "sources": [
         {
-          "line": 72,
+          "line": 75,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
         }
       ],
@@ -9046,7 +9046,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "4e541db6965075e6dbf465716409fd149d6f920ce4fb16845eea64617ba1e73e",
+      "fingerprint": "d8939d46920a09c7e0aeccd8f90dc54566a3f0ca27484e3c3c4bc41e950a8f6c",
       "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotDto",
       "id": "Meridian.Contracts.Accounting.Lots.OpenLotDto",
       "kind": "record",
@@ -9063,7 +9063,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 58,
+          "source_line": 61,
           "type": "DateOnly"
         },
         {
@@ -9077,7 +9077,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OpenLotAcquisitionDto",
-          "source_line": 64,
+          "source_line": 67,
           "type": "OpenLotAcquisitionDto"
         },
         {
@@ -9091,7 +9091,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 55,
+          "source_line": 58,
           "type": "Guid"
         },
         {
@@ -9105,7 +9105,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 56,
+          "source_line": 59,
           "type": "Guid"
         },
         {
@@ -9119,7 +9119,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 57,
+          "source_line": 60,
           "type": "string"
         },
         {
@@ -9133,7 +9133,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 62,
+          "source_line": 65,
           "type": "decimal"
         },
         {
@@ -9147,7 +9147,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 60,
+          "source_line": 63,
           "type": "decimal"
         },
         {
@@ -9161,7 +9161,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 61,
+          "source_line": 64,
           "type": "decimal"
         },
         {
@@ -9175,7 +9175,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 59,
+          "source_line": 62,
           "type": "decimal"
         },
         {
@@ -9189,7 +9189,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 54,
+          "source_line": 57,
           "type": "Guid"
         },
         {
@@ -9203,7 +9203,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 53,
+          "source_line": 56,
           "type": "Guid"
         },
         {
@@ -9217,7 +9217,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 63,
+          "source_line": 66,
           "type": "long"
         }
       ],
@@ -9229,12 +9229,12 @@
         "Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto"
       ],
       "source": {
-        "line": 52,
+        "line": 55,
         "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
       },
       "sources": [
         {
-          "line": 52,
+          "line": 55,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
         }
       ],
@@ -9314,7 +9314,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "c3c7df4e9f2804e5db551cd9d11a6bbf416ecbabe9f1507452f0e880d3af7c72",
+      "fingerprint": "227c9f2fc280ba39668bbf4f280945b35ef2930f8319e7c272e9ee52e56d51bb",
       "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotReliefResultDto",
       "id": "Meridian.Contracts.Accounting.Lots.OpenLotReliefResultDto",
       "kind": "record",
@@ -9331,7 +9331,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 70,
+          "source_line": 73,
           "type": "decimal"
         },
         {
@@ -9345,7 +9345,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 70,
+          "source_line": 73,
           "type": "decimal"
         },
         {
@@ -9359,7 +9359,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OpenLotReliefSelectionDto>",
-          "source_line": 69,
+          "source_line": 72,
           "type": "IReadOnlyList<OpenLotReliefSelectionDto>"
         },
         {
@@ -9373,7 +9373,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 70,
+          "source_line": 73,
           "type": "decimal"
         }
       ],
@@ -9385,12 +9385,12 @@
         "Meridian.Contracts.Accounting.Lots.OpenLotReliefSelectionDto"
       ],
       "source": {
-        "line": 69,
+        "line": 72,
         "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
       },
       "sources": [
         {
-          "line": 69,
+          "line": 72,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
         }
       ],
@@ -9406,7 +9406,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "b20ecb296c13a33bdf67e0ff2ac718f59c3dad6b70233952b968cc7a9b8d68cf",
+      "fingerprint": "6ded6e3e470c36bb4c2f87b2e6743b7a233375e671365e44e889d453931b313a",
       "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotReliefSelectionDto",
       "id": "Meridian.Contracts.Accounting.Lots.OpenLotReliefSelectionDto",
       "kind": "record",
@@ -9423,7 +9423,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 66,
+          "source_line": 69,
           "type": "long"
         },
         {
@@ -9437,7 +9437,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 67,
+          "source_line": 70,
           "type": "decimal"
         },
         {
@@ -9451,7 +9451,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 66,
+          "source_line": 69,
           "type": "string"
         },
         {
@@ -9465,7 +9465,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 67,
+          "source_line": 70,
           "type": "decimal"
         },
         {
@@ -9479,7 +9479,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 66,
+          "source_line": 69,
           "type": "Guid"
         },
         {
@@ -9493,7 +9493,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 67,
+          "source_line": 70,
           "type": "decimal"
         }
       ],
@@ -9503,12 +9503,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.OpenLotReliefSelectionDto",
       "references": [],
       "source": {
-        "line": 66,
+        "line": 69,
         "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
       },
       "sources": [
         {
-          "line": 66,
+          "line": 69,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
         }
       ],

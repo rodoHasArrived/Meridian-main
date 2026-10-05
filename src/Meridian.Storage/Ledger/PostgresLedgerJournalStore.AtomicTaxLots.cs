@@ -502,12 +502,21 @@ public sealed partial class PostgresLedgerJournalStore
                 selection.SelectionOrdinal < 0 ||
                 string.IsNullOrWhiteSpace(selection.SelectionEvidenceId) ||
                 selection.ExpectedUnitCost <= 0m ||
-                selection.ExpectedCostBasis <= 0m ||
-                (!IsAverageCostRelief(command) &&
-                 selection.ExpectedCostBasis != selection.Quantity * selection.ExpectedUnitCost))
+                selection.ExpectedCostBasis <= 0m)
             {
                 throw new LedgerValidationException(
                     "Atomic disposal selections require lot identity, positive version/quantities, exact expected cost basis, ordinal, and evidence.");
+            }
+
+            // Durable numeric columns retain twelve decimal places. Refuse a movement that would
+            // silently round the certified quantity or basis when its mutation is persisted.
+            if (decimal.Round(selection.Quantity, 12) != selection.Quantity ||
+                decimal.Round(selection.ExpectedOpenQuantity, 12) != selection.ExpectedOpenQuantity ||
+                decimal.Round(selection.ExpectedUnitCost, 12) != selection.ExpectedUnitCost ||
+                decimal.Round(selection.ExpectedCostBasis, 12) != selection.ExpectedCostBasis)
+            {
+                throw new LedgerValidationException(
+                    "Atomic disposal quantity and basis must be exactly representable at durable twelve-decimal precision.");
             }
 
             if (!evidenceIds.Contains(selection.SelectionEvidenceId.Trim()))
@@ -1189,7 +1198,9 @@ public sealed partial class PostgresLedgerJournalStore
         update.Parameters.AddWithValue("quantity", selection.Quantity);
         update.Parameters.AddWithValue("last_mutation_batch_id", command.MutationBatchId);
         update.Parameters.AddWithValue("updated_at", recordedAt.UtcDateTime);
-        AddBasisAdjustmentParameter(update, averageCostPlan?.AdjustmentFor(selection.TaxLotRecordId));
+        AddBasisAdjustmentParameter(update, averageCostPlan is not null
+            ? averageCostPlan.AdjustmentFor(selection.TaxLotRecordId)
+            : RetainDiscreteReliefRemainder(command.MutationBatchId, before, selection));
 
         await using var reader = await update.ExecuteReaderAsync(ct).ConfigureAwait(false);
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
@@ -1208,8 +1219,9 @@ public sealed partial class PostgresLedgerJournalStore
             selection.ExpectedVersion,
             selection.SelectionEvidenceId.Trim(),
             recordedAt,
-            // Average-cost relief books the pooled slice the guard certified, not the lot's own basis.
-            costBasis: averageCostPlan is null ? null : selection.ExpectedCostBasis);
+            // Every method books the canonical current basis certified under the locked policy.
+            // UnitCost remains the immutable acquisition snapshot used for stale-selection checks.
+            costBasis: selection.ExpectedCostBasis);
     }
 
     private static void ValidateDisposalSelectionSnapshot(
@@ -1224,7 +1236,6 @@ public sealed partial class PostgresLedgerJournalStore
             lot.BookPositionId != assetScope.BookPositionId ||
             !string.Equals(lot.Currency, functionalCurrency, StringComparison.OrdinalIgnoreCase) ||
             lot.UnitCost != selection.ExpectedUnitCost ||
-            (!IsAverageCostRelief(command) && selection.ExpectedCostBasis != selection.Quantity * lot.UnitCost) ||
             lot.Version != selection.ExpectedVersion ||
             lot.OpenQuantity != selection.ExpectedOpenQuantity ||
             lot.OpenQuantity < selection.Quantity)
