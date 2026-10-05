@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
@@ -899,6 +900,33 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
                              acquisitionAssetLines[0].Debit == source.EventAmount &&
                              acquisitionAssetLines[0].Credit == 0m,
                 "Acquisition projected accounting must contain exactly one authorized asset-account debit for the lot cost.");
+            return requested;
+        }
+
+        if (source.EventKind == AssetAccountingEventKindDto.DepreciationAmortization && requested is not null)
+        {
+            var amortization = requested.Amortization
+                ?? throw new InvalidOperationException("Canonical lot amortization requires retained reviewed inputs.");
+            var projection = OpenLotAmortization.Project(amortization);
+            RequireAssertion(amortization.ExpectedLot.SecurityId == source.Scope.SecurityId
+                && amortization.ExpectedLot.BookPositionId == source.Scope.BookPositionId
+                && amortization.ExpectedLot.LedgerBookId == book.LedgerBookId
+                && amortization.Security.Version == source.Scope.ExpectedSecurityVersion
+                && amortization.ExpectedBookPositionVersion == position.Version
+                && amortization.AsOfDate == source.EffectiveDate
+                && Math.Abs(projection.FunctionalMovement) == source.EventAmount,
+                "Amortization inputs must match the authoritative event, book, position, reference version, date and carrying movement.");
+            var retained = (await _journalStore.GetTaxLotsByIdsAsync(book.LedgerBookId,
+                [amortization.ExpectedLot.TaxLotRecordId], ct).ConfigureAwait(false)).SingleOrDefault()
+                ?? throw new InvalidOperationException("The reviewed amortization lot is missing from the authoritative book.");
+            RequireAssertion(retained.Account.AccountType == LedgerAccountType.Asset
+                && PayloadEquals(retained.ToOpenLot(), amortization.ExpectedLot),
+                "The reviewed amortization lot version, quantity or carrying basis changed; rebuild the projection.");
+            var assetLines = source.ProjectedEffect!.Lines.Where(line => line.AccountId == requested.AssetAccountId).ToArray();
+            RequireAssertion(assetLines.Length == 1
+                && assetLines[0].Debit == Math.Max(projection.FunctionalMovement, 0m)
+                && assetLines[0].Credit == Math.Max(-projection.FunctionalMovement, 0m),
+                "Amortization projected accounting must contain the exact reviewed asset carrying-value movement.");
             return requested;
         }
 

@@ -820,6 +820,15 @@
       "sha256": "5c93eecf9b44bc469430164ac3bd4e2bbd7818a57c75cd25d29a4e8609249a24"
     },
     {
+      "filename": "V_ledger_040__canonical_lot_amortization.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_040__canonical_lot_amortization.sql",
+      "schema": "ledger",
+      "sha256": "2c355e21469f47d0595dca1a55a6bce4fed6df56937229e1bec2f65213249092"
+    },
+    {
       "filename": "V_ledger_041__current_basis_disposal.sql",
       "immutable": true,
       "migration_set_id": "ledger",
@@ -1073,7 +1082,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "4de191f4d5a422aa5764bc8625c10abbe6e5354f33bdbb23784697f62df0088a",
+  "fingerprint": "75563c4e9ab6f5feb3ec17f350b01b36f6b4b3a6e80117bd08f51dd19c889109",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1311,9 +1320,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 119,
+    "files": 120,
     "migration_sets": 10,
-    "waivers": 12,
+    "waivers": 13,
     "warnings": 0
   },
   "waivers": [
@@ -1368,8 +1377,15 @@
     },
     {
       "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_040__canonical_lot_amortization.sql",
+      "reason": "Requires human schema/storage review. Replaces only four check constraints transactionally with strict supersets admitting basis-only Amortization. Existing acquisition, disposal and average-cost rules remain intact; every previously valid row stays valid. No table, column, row or acquisition fact is removed. The migration runner rolls back the constraint replacement on failure. Validate fresh and upgrade databases before release.",
+      "review_after": "2027-04-02",
+      "rule_id": "migration-drop-table-member"
+    },
+    {
+      "category": "destructive_changes",
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_041__current_basis_disposal.sql",
-      "reason": "Requires human schema/storage review. The cost check is dropped and immediately recreated transactionally as a superset: canonical discrete disposals retain current basis in their pre-relief acquisition and governed-adjustment snapshot, while acquisition-cost, AverageCost and PR #3048 amortization cases remain admitted. No columns or data are removed. Migration 039 from PR #3048 must land before this ordinal 040 slice.",
+      "reason": "Requires human schema/storage review. The cost check is dropped and immediately recreated transactionally as a superset: canonical discrete disposals retain current basis in their pre-relief acquisition and governed-adjustment snapshot, while acquisition-cost, AverageCost and PR #3048 amortization cases remain admitted. No columns or data are removed. Follows PR #3048's ordinal 040 amortization migration.",
       "review_after": "2027-04-02",
       "rule_id": "migration-drop-table-member"
     },

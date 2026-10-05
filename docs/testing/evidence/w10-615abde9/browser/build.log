@@ -1,0 +1,135 @@
+
+> @meridian/workstation-dashboard@0.1.0 build
+> tsc --noEmit && vite build
+
+vite v8.0.16 building client environment for production...
+[2Ktransforming...[33m[PLUGIN_TIMINGS] [0mYour build spent significant time in plugin `vite:asset`. See https://rolldown.rs/options/checks#plugintimings for more details.
+
+✓ 2080 modules transformed.
+rendering chunks...
+computing gzip size...
+../wwwroot/workstation/assets/indicators.worker-C_UlHkED.js                             1.20 kB
+../wwwroot/workstation/index.html                                                       7.29 kB │ gzip:   2.19 kB
+../wwwroot/workstation/assets/meridian-tile-256-BGIUuxvd.png                            9.65 kB
+../wwwroot/workstation/assets/operations-record-release-screen-BNbr9YRQ.css             2.03 kB │ gzip:   0.47 kB
+../wwwroot/workstation/assets/workspace-primitives-DXxnawaZ.css                         3.05 kB │ gzip:   0.83 kB
+../wwwroot/workstation/assets/ui-kit-primitives-BfPWbdfN.css                            8.41 kB │ gzip:   1.81 kB
+../wwwroot/workstation/assets/accounting-screen-DH5VwHe8.css                           13.31 kB │ gzip:   2.68 kB
+../wwwroot/workstation/assets/index-rCxriOT0.css                                      137.27 kB │ gzip:  22.94 kB
+../wwwroot/workstation/assets/play-DuQso8Vc.js                                          0.12 kB │ gzip:   0.14 kB
+../wwwroot/workstation/assets/dense-table-virtualization-BtTrN8dj.js                    0.15 kB │ gzip:   0.13 kB
+../wwwroot/workstation/assets/chart-line-l0-KJOd0.js                                    0.17 kB │ gzip:   0.16 kB
+../wwwroot/workstation/assets/circle-play-Qjh8EGYg.js                                   0.18 kB │ gzip:   0.16 kB
+../wwwroot/workstation/assets/trending-up-CT0vwtBQ.js                                   0.19 kB │ gzip:   0.17 kB
+../wwwroot/workstation/assets/circle-x-8B8lWcxc.js                                      0.19 kB │ gzip:   0.17 kB
+../wwwroot/workstation/assets/table-2-BDb4Lwyx.js                                       0.20 kB │ gzip:   0.17 kB
+../wwwroot/workstation/assets/briefcase-ezIC81SE.js                                     0.21 kB │ gzip:   0.19 kB
+../wwwroot/workstation/assets/activity-BgHnClfj.js                                      0.22 kB │ gzip:   0.19 kB
+../wwwroot/workstation/assets/copy-BZCUVLKh.js                                          0.22 kB │ gzip:   0.20 kB
+../wwwroot/workstation/assets/circle-alert-CD8jz5wM.js                                  0.23 kB │ gzip:   0.18 kB
+../wwwroot/workstation/assets/file-check-2-C22aY_PL.js                                  0.24 kB │ gzip:   0.19 kB
+../wwwroot/workstation/assets/eye-BXq9m-tt.js                                           0.24 kB │ gzip:   0.19 kB
+../wwwroot/workstation/assets/upload-CMh8g8IZ.js                                        0.24 kB │ gzip:   0.21 kB
+../wwwroot/workstation/assets/download-C42wxR-A.js                                      0.25 kB │ gzip:   0.21 kB
+../wwwroot/workstation/assets/workflow-DqVq-cU5.js                                      0.25 kB │ gzip:   0.19 kB
+../wwwroot/workstation/assets/table-properties-BJKvW4b1.js                              0.25 kB │ gzip:   0.20 kB
+../wwwroot/workstation/assets/pencil-Bzh08mK3.js                                        0.26 kB │ gzip:   0.22 kB
+../wwwroot/workstation/assets/wallet-ButbAKx-.js                                        0.27 kB │ gzip:   0.19 kB
+../wwwroot/workstation/assets/label-DW7iB4Yb.js                                         0.28 kB │ gzip:   0.23 kB
+../wwwroot/workstation/assets/refresh-cw-Cx1Ohqvo.js                                    0.31 kB │ gzip:   0.22 kB
+../wwwroot/workstation/assets/save-CdYITpXX.js                                          0.31 kB │ gzip:   0.22 kB
+../wwwroot/workstation/assets/wallet-cards-ClvpFi_1.js                                  0.31 kB │ gzip:   0.24 kB
+../wwwroot/workstation/assets/file-text-BwFXsWwX.js                                     0.32 kB │ gzip:   0.20 kB
+../wwwroot/workstation/assets/database-zap-achw0My5.js                                  0.32 kB │ gzip:   0.24 kB
+../wwwroot/workstation/assets/shield-alert-BMGS9Fyr.js                                  0.34 kB │ gzip:   0.25 kB
+../wwwroot/workstation/assets/file-spreadsheet-Ccp8OST_.js                              0.36 kB │ gzip:   0.22 kB
+../wwwroot/workstation/assets/network-bR6yoFbK.js                                       0.37 kB │ gzip:   0.23 kB
+../wwwroot/workstation/assets/landmark-qKRsgtMM.js                                      0.39 kB │ gzip:   0.23 kB
+../wwwroot/workstation/assets/clipboard-list-CY5CZQOp.js                                0.40 kB │ gzip:   0.25 kB
+../wwwroot/workstation/assets/layers-zaKtBpAh.js                                        0.41 kB │ gzip:   0.23 kB
+../wwwroot/workstation/assets/eye-off-DCTSy9Y-.js                                       0.41 kB │ gzip:   0.26 kB
+../wwwroot/workstation/assets/radio-tower-DgmOA96X.js                                   0.44 kB │ gzip:   0.29 kB
+../wwwroot/workstation/assets/send-BKazgAo2.js                                          0.48 kB │ gzip:   0.31 kB
+../wwwroot/workstation/assets/sparkles-BZUZBT4V.js                                      0.49 kB │ gzip:   0.29 kB
+../wwwroot/workstation/assets/field-support-BORYgCCX.js                                 0.50 kB │ gzip:   0.31 kB
+../wwwroot/workstation/assets/monitor-check-BebUiCjs.js                                 0.55 kB │ gzip:   0.35 kB
+../wwwroot/workstation/assets/palette-DZxxNbOH.js                                       0.60 kB │ gzip:   0.33 kB
+../wwwroot/workstation/assets/freshness-chip-CaEIR4mw.js                                0.65 kB │ gzip:   0.42 kB
+../wwwroot/workstation/assets/settings-vN1O6ft5.js                                      0.71 kB │ gzip:   0.33 kB
+../wwwroot/workstation/assets/form-DLw7GHM6.js                                          0.73 kB │ gzip:   0.42 kB
+../wwwroot/workstation/assets/concrete-Bt7INx9p.js                                      0.82 kB │ gzip:   0.49 kB
+../wwwroot/workstation/assets/stat-strip-CskICwql.js                                    0.89 kB │ gzip:   0.45 kB
+../wwwroot/workstation/assets/technical-details-nMXuAl7W.js                             0.91 kB │ gzip:   0.51 kB
+../wwwroot/workstation/assets/select-p7FWsFnC.js                                        1.17 kB │ gzip:   0.67 kB
+../wwwroot/workstation/assets/mark-freshness-W_lEbdUe.js                                1.18 kB │ gzip:   0.59 kB
+../wwwroot/workstation/assets/card-DXJ-KjLl.js                                          1.20 kB │ gzip:   0.52 kB
+../wwwroot/workstation/assets/freshness-chip.view-model-IEH4aaUz.js                     1.25 kB │ gzip:   0.60 kB
+../wwwroot/workstation/assets/status-ngYnknmL.js                                        1.28 kB │ gzip:   0.53 kB
+../wwwroot/workstation/assets/metric-card-CvyLV80X.js                                   1.30 kB │ gzip:   0.66 kB
+../wwwroot/workstation/assets/error-boundary-BRng3gwO.js                                1.39 kB │ gzip:   0.74 kB
+../wwwroot/workstation/assets/chrome-bridge-B4RO-XWV.js                                 1.64 kB │ gzip:   0.70 kB
+../wwwroot/workstation/assets/metric-card-CUxteaz2.js                                   2.07 kB │ gzip:   0.93 kB
+../wwwroot/workstation/assets/operational-trust-summary-C-8l4z1l.js                     2.07 kB │ gzip:   0.85 kB
+../wwwroot/workstation/assets/tabs-CXK8RevM.js                                          2.20 kB │ gzip:   1.10 kB
+../wwwroot/workstation/assets/checkbox-RJyCutA9.js                                      2.63 kB │ gzip:   1.07 kB
+../wwwroot/workstation/assets/empty-state-BCT0JIGb.js                                   2.77 kB │ gzip:   1.19 kB
+../wwwroot/workstation/assets/context-menu-qizjQaIR.js                                  2.95 kB │ gzip:   1.46 kB
+../wwwroot/workstation/assets/shared-tone-mappings-DN58IkIO.js                          2.97 kB │ gzip:   0.64 kB
+../wwwroot/workstation/assets/pagination-CFl94JGn.js                                    3.24 kB │ gzip:   1.35 kB
+../wwwroot/workstation/assets/workspace-primitives-DoH65Mdf.js                          3.34 kB │ gzip:   1.22 kB
+../wwwroot/workstation/assets/screen-layout-Dg4znaqH.js                                 4.64 kB │ gzip:   1.68 kB
+../wwwroot/workstation/assets/reporting-hub-obbMhdqk.js                                 6.76 kB │ gzip:   2.46 kB
+../wwwroot/workstation/assets/loan-book-screen-LAzYrztU.js                              7.41 kB │ gzip:   2.72 kB
+../wwwroot/workstation/assets/report-library-screen-BVVUjbPV.js                         8.71 kB │ gzip:   2.80 kB
+../wwwroot/workstation/assets/LedgerTable-dXTIi75N.js                                   8.85 kB │ gzip:   3.13 kB
+../wwwroot/workstation/assets/strategy-run-ledger-screen-DJLPS7wC.js                    9.11 kB │ gzip:   3.02 kB
+../wwwroot/workstation/assets/ui-kit-primitives-CVngWie8.js                             9.58 kB │ gzip:   3.66 kB
+../wwwroot/workstation/assets/operations-Ds0j81aC.js                                   10.82 kB │ gzip:   2.90 kB
+../wwwroot/workstation/assets/entity-setup-wizard-DgAW2nbb.js                          11.38 kB │ gzip:   3.39 kB
+../wwwroot/workstation/assets/accounting-screen.posted-ledger.view-model-BS0B7902.js   11.47 kB │ gzip:   4.08 kB
+../wwwroot/workstation/assets/margin-control-center-screen-CukJTyVv.js                 12.07 kB │ gzip:   3.41 kB
+../wwwroot/workstation/assets/daily-control-tower-screen-B4Pfr3tU.js                   13.26 kB │ gzip:   4.30 kB
+../wwwroot/workstation/assets/asset-detail-screen-DiEkVsMy.js                          14.35 kB │ gzip:   3.86 kB
+../wwwroot/workstation/assets/journal-entry-detail-screen-UdOFxjvM.js                  15.42 kB │ gzip:   4.23 kB
+../wwwroot/workstation/assets/TrialBalanceRowDetail-CZh3oTln.js                        16.05 kB │ gzip:   4.55 kB
+../wwwroot/workstation/assets/cash-ladder-screen-COSGm9mf.js                           17.16 kB │ gzip:   5.59 kB
+../wwwroot/workstation/assets/capital-call-issuance-screen-DHqSpcTc.js                 19.81 kB │ gzip:   5.74 kB
+../wwwroot/workstation/assets/charts-c3AR-6a6.js                                       22.52 kB │ gzip:   7.17 kB
+../wwwroot/workstation/assets/family-office-screen-Dr4RVHAA.js                         22.64 kB │ gzip:   7.09 kB
+../wwwroot/workstation/assets/financial-record-explorer-q5MDRUZk.js                    25.26 kB │ gzip:   7.44 kB
+../wwwroot/workstation/assets/operations-record-release-screen-DgTGee15.js             25.67 kB │ gzip:   6.51 kB
+../wwwroot/workstation/assets/report-run-parameters-screen-B1iGXD1d.js                 33.01 kB │ gzip:   8.02 kB
+../wwwroot/workstation/assets/market-data-screen-DJOWxk2p.js                           34.63 kB │ gzip:   9.10 kB
+../wwwroot/workstation/assets/accounting-CGoZWmqD.js                                   37.23 kB │ gzip:   8.74 kB
+../wwwroot/workstation/assets/watchlist-screen-B_A5VZfG.js                             38.74 kB │ gzip:  11.49 kB
+../wwwroot/workstation/assets/quant-lab-screen-EMRdzPM1.js                             41.60 kB │ gzip:  11.93 kB
+../wwwroot/workstation/assets/portfolio-screen.view-model-DafGvaN0.js                  43.51 kB │ gzip:  12.14 kB
+../wwwroot/workstation/assets/security-passport-editor-launcher-CivnZC_X.js            45.72 kB │ gzip:  13.07 kB
+../wwwroot/workstation/assets/portfolio-screen-DoS7AUS4.js                             48.37 kB │ gzip:   9.46 kB
+../wwwroot/workstation/assets/operator-readiness-console-DPJh-nMo.js                   49.49 kB │ gzip:  12.66 kB
+../wwwroot/workstation/assets/reporting-screen.view-model-BmWwStJz.js                  54.80 kB │ gzip:  16.49 kB
+../wwwroot/workstation/assets/covered-call-screen-DKoOr5o4.js                          55.57 kB │ gzip:  15.15 kB
+../wwwroot/workstation/assets/statement-import-screen-DmQA-vn0.js                      60.22 kB │ gzip:  14.39 kB
+../wwwroot/workstation/assets/strategy-designer-screen-DHYKly2r.js                     67.16 kB │ gzip:  17.15 kB
+../wwwroot/workstation/assets/operations-continuity-screen-BX0CnTFJ.js                 69.02 kB │ gzip:   9.18 kB
+../wwwroot/workstation/assets/operations-continuity-screen.view-model-DBGI6MTB.js      78.00 kB │ gzip:  18.40 kB
+../wwwroot/workstation/assets/button-CUGYoCqe.js                                       78.95 kB │ gzip:  26.07 kB
+../wwwroot/workstation/assets/evidence-workbench-screen-B1h5HYeY.js                    96.82 kB │ gzip:  19.95 kB
+../wwwroot/workstation/assets/finance-standard-pages-screen-BrleJY3I.js                99.08 kB │ gzip:  23.94 kB
+../wwwroot/workstation/assets/workstation-endpoints-CWz2Dqeo.js                       101.95 kB │ gzip:  20.99 kB
+../wwwroot/workstation/assets/live-quotes-screen-DcMyahEg.js                          106.25 kB │ gzip:  28.89 kB
+../wwwroot/workstation/assets/strategy-screen-CaeBkoL1.js                             128.25 kB │ gzip:  31.09 kB
+../wwwroot/workstation/assets/trading-screen-C_5Y3E7r.js                              194.54 kB │ gzip:  47.54 kB
+../wwwroot/workstation/assets/reporting-screen-DwDqBRuJ.js                            269.92 kB │ gzip:  57.46 kB
+../wwwroot/workstation/assets/settings-screen-8HRdyi8o.js                             288.35 kB │ gzip:  64.85 kB
+../wwwroot/workstation/assets/data-screen-BboTgQy9.js                                 305.91 kB │ gzip:  74.80 kB
+../wwwroot/workstation/assets/accounting-screen.basis-bridge.view-model-CPfEik3M.js   347.85 kB │ gzip:  87.88 kB
+../wwwroot/workstation/assets/accounting-screen-CZc3bWNy.js                           441.55 kB │ gzip:  76.79 kB
+../wwwroot/workstation/assets/index-DTRYIhn_.js                                       485.10 kB │ gzip: 140.78 kB
+
+✓ built in 9.78s
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

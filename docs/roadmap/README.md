@@ -17,9 +17,10 @@ Human-facing status pages may summarize it, but durable roadmap truth belongs in
 
 ## Maintenance
 
-Run the roadmap validation and render lane after editing roadmap data:
+Install the standard YAML parser, then run the validation and render lane after editing roadmap data:
 
 ```bash
+python3 -m pip install --requirement build/scripts/docs/requirements.txt
 python3 build/scripts/docs/validate-roadmap-registry.py --summary
 python3 build/scripts/docs/render-roadmap-docs.py --summary
 ```
@@ -37,8 +38,7 @@ is why a PR that only regenerates dashboards passes without one. Note that the g
 from the triggering event, so adding the marker to an open PR takes effect on the next push rather
 than on the edit itself.
 
-**Write single-line scalars.** `data/roadmap-items.yml` is not valid YAML — a very long line in it
-carries colon-space sequences that break the parser — so `build/scripts/docs/common.py` falls back to
-a hand-rolled subset parser for this file. That parser has no folded-scalar (`>-`) support and splits
-each line on its first colon, so an ordinary multi-line YAML block crashes the loader. Keep
-`current_summary` and each `exit_criteria` entry on one line, as the existing rows do.
+**Write valid YAML.** Canonical registries are parsed by PyYAML. Quote text containing colon-space
+sequences or use a standard folded/block scalar; quote literal hash signs when they belong to the
+text. Malformed input fails validation and rendering with its file path and available line/column
+details. A missing parser dependency is an error. No subset-parser recovery applies to these files.
