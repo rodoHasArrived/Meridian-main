@@ -1,13 +1,21 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Workstation;
 using Meridian.Documents;
+using Meridian.Ui.Shared.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Evidence;
 
 public sealed partial class FileEvidenceArtifactStore
 {
+    private WorkstationOperationsJsonContext? _quotaIndexJsonContext;
     private sealed record StoragePublicationIntent(string PackagePath, string ManifestPath, string IndexPath);
+
+    [JsonSerializable(typeof(StoragePublicationIntent))]
+    private sealed partial class StoragePublicationJsonContext : JsonSerializerContext
+    {
+    }
 
     private (long Bytes, int Count) EstimateExportStorage(EvidencePacketDto packet)
     {
@@ -87,11 +95,15 @@ public sealed partial class FileEvidenceArtifactStore
             return 0;
         }
         long bytes = 0;
+        // Quota usage is measured under the coordinator gate; reuse metadata with the exact
+        // retained-index options, independently of whether legacy writes already froze them.
+        var jsonContext = _quotaIndexJsonContext ??=
+            new WorkstationOperationsJsonContext(new JsonSerializerOptions(_jsonOptions));
         foreach (var index in Directory.EnumerateFiles(vault, "*.json", SearchOption.TopDirectoryOnly))
         {
             // Fail closed on unreadable indexes: treating corrupt evidence as zero usage would
             // admit new writes against a budget whose retained usage is unknown.
-            var identity = JsonSerializer.Deserialize<EvidenceVaultIdentityDto>(File.ReadAllText(index), _jsonOptions)
+            var identity = JsonSerializer.Deserialize(File.ReadAllText(index), jsonContext.EvidenceVaultIdentityDto)
                 ?? throw new InvalidDataException("Evidence quota could not read a published index.");
             if (!string.Equals(identity.TenantId, tenantId, StringComparison.OrdinalIgnoreCase))
             {
@@ -150,7 +162,8 @@ public sealed partial class FileEvidenceArtifactStore
             {
                 continue;
             }
-            var intent = JsonSerializer.Deserialize<StoragePublicationIntent>(File.ReadAllText(intentPath))
+            var intent = JsonSerializer.Deserialize(File.ReadAllText(intentPath),
+                StoragePublicationJsonContext.Default.StoragePublicationIntent)
                 ?? throw new InvalidDataException("Invalid evidence publication intent.");
             var comparison = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
             if (targets.Intersect([intent.PackagePath, intent.ManifestPath, intent.IndexPath], comparison).Any())
@@ -178,7 +191,8 @@ public sealed partial class FileEvidenceArtifactStore
             var intentPath = Path.Combine(stage, "publication.json");
             if (File.Exists(intentPath))
             {
-                var intent = JsonSerializer.Deserialize<StoragePublicationIntent>(File.ReadAllText(intentPath))
+                var intent = JsonSerializer.Deserialize(File.ReadAllText(intentPath),
+                    StoragePublicationJsonContext.Default.StoragePublicationIntent)
                     ?? throw new InvalidDataException("Invalid evidence publication intent.");
                 var package = RequireQuotaChildPath(intent.PackagePath);
                 var manifest = RequireQuotaChildPath(intent.ManifestPath);

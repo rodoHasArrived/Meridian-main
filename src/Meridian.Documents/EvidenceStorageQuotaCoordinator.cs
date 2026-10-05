@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Storage.Archival;
 
 namespace Meridian.Documents;
@@ -7,7 +8,7 @@ namespace Meridian.Documents;
 /// Durable, filesystem-coordinated Evidence Vault admission. Published usage is supplied by the
 /// vault adapter; quota policy and reservation ownership are independent of UI contracts.
 /// </summary>
-public sealed class EvidenceStorageQuotaCoordinator
+public sealed partial class EvidenceStorageQuotaCoordinator
 {
     private readonly string _dataRoot;
     private readonly string _journalDirectory;
@@ -15,11 +16,6 @@ public sealed class EvidenceStorageQuotaCoordinator
     private readonly Func<string, long> _publishedTenantBytes;
     private readonly Func<string, long> _availableDiskBytes;
     private readonly Func<string, CancellationToken, Task<bool>> _recoverAttempt;
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
-    {
-        // Missing accounting fields must not silently become zero and release reserved capacity.
-        RespectRequiredConstructorParameters = true
-    };
 
     /// <summary>
     /// Creates a coordinator for one data root. The recovery callback must preserve published
@@ -252,7 +248,7 @@ public sealed class EvidenceStorageQuotaCoordinator
         ReservationRecord record;
         try
         {
-            record = JsonSerializer.Deserialize<ReservationRecord>(File.ReadAllBytes(path), JsonOptions)
+            record = JsonSerializer.Deserialize(File.ReadAllBytes(path), ReservationJsonContext.Default.ReservationRecord)
                 ?? throw new InvalidDataException("Evidence storage reservation is empty.");
         }
         catch (JsonException ex)
@@ -273,7 +269,8 @@ public sealed class EvidenceStorageQuotaCoordinator
     }
 
     private Task SaveAsync(ReservationRecord record, CancellationToken ct) =>
-        AtomicFileWriter.WriteAsync(RecordPath(record.Id), JsonSerializer.Serialize(record, JsonOptions), ct);
+        AtomicFileWriter.WriteAsync(RecordPath(record.Id),
+            JsonSerializer.Serialize(record, ReservationJsonContext.Default.ReservationRecord), ct);
 
     private async Task DeleteRecordAsync(string id)
     {
@@ -331,7 +328,9 @@ public sealed class EvidenceStorageQuotaCoordinator
     private static bool IsLockContention(IOException exception) =>
         // Unix EAGAIN/EWOULDBLOCK and Windows sharing/lock violations. Disk-full or other I/O
         // failures are not contention and must propagate instead of entering an endless retry.
-        (exception.HResult & 0xffff) is 11 or 32 or 33;
+        OperatingSystem.IsWindows()
+            ? (exception.HResult & 0xffff) is 32 or 33
+            : exception.HResult is 11 or 35;
 
     private static string? TemporaryRecordOwner(string path)
     {
@@ -362,4 +361,9 @@ public sealed class EvidenceStorageQuotaCoordinator
 
     private sealed record ReservationRecord(
         string Id, string TenantId, long ReservedBytes, long WrittenBytes, long PreparedBytes, int ArtifactCount);
+
+    // Missing accounting fields must not silently become zero and release reserved capacity.
+    [JsonSourceGenerationOptions(JsonSerializerDefaults.Web, RespectRequiredConstructorParameters = true)]
+    [JsonSerializable(typeof(ReservationRecord))]
+    private sealed partial class ReservationJsonContext : JsonSerializerContext;
 }

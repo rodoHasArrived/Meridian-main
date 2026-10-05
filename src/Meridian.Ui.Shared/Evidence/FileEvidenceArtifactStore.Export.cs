@@ -160,7 +160,8 @@ public sealed partial class FileEvidenceArtifactStore
                 Directory.CreateDirectory(Path.GetDirectoryName(_manifestPath)!);
             }
             await AtomicFileWriter.WriteAsync(Path.Combine(_stagingDirectory, "publication.json"),
-                JsonSerializer.Serialize(new StoragePublicationIntent(_packageDirectory, _manifestPath, _indexPath)), ct)
+                JsonSerializer.Serialize(new StoragePublicationIntent(_packageDirectory, _manifestPath, _indexPath),
+                    StoragePublicationJsonContext.Default.StoragePublicationIntent), ct)
                 .ConfigureAwait(false);
             Directory.Move(_stagedPackageDirectory, _packageDirectory);
             await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(_packageDirectory)!, CancellationToken.None)

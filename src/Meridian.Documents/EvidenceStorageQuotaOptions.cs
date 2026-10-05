@@ -1,3 +1,5 @@
+using Meridian.Core.Exceptions;
+
 namespace Meridian.Documents;
 
 /// <summary>Resource limits for retained Evidence Vault packages.</summary>
@@ -69,7 +71,7 @@ public sealed class EvidenceStorageQuotaOptions
 
 /// <summary>A retained package cannot fit within a configured storage limit.</summary>
 public sealed class EvidenceStorageQuotaExceededException(string reason, string message)
-    : InvalidOperationException(message)
+    : MeridianException(message)
 {
     /// <summary>The violated limit: artifact-bytes, package-bytes, package-count, tenant-bytes, or disk-headroom.</summary>
     public string Reason { get; } = reason;
