@@ -145,6 +145,7 @@ import type {
   ProviderIntegrationEndpointDefinition,
   ProviderIntegrationFieldMapping,
   ProviderIntegrationManifest,
+  ProviderIntegrationManifestReference,
   ProviderIntegrationOpenApiImportResult,
   ProviderIntegrationProcessingStatus,
   ProviderIntegrationPromotionReadinessPreview,
@@ -368,6 +369,7 @@ interface ProviderIntegrationWorkbenchState {
   templates: ProviderIntegrationTemplateCatalogEntry[] | null;
   selectedManifestId: string;
   manifest: ProviderIntegrationManifest | null;
+  manifestReference: ProviderIntegrationManifestReference | null;
   connection: ProviderIntegrationConnection | null;
   draftManifestJson: string;
   draftConnectionJson: string;
@@ -1356,6 +1358,9 @@ export function SettingsScreen({
         openApiDocumentJson: formState.openApiDocumentJson,
         importedBy: session?.displayName ?? "settings-operator",
         importedAt: importedAt.toISOString(),
+        expectedManifestReference: formState.result?.manifestReference?.manifestId === formState.manifestId.trim()
+          ? formState.result.manifestReference
+          : undefined,
         changeReason: formState.changeReason.trim() || "Imported from the Settings Provider Connection Center."
       });
 
@@ -1544,7 +1549,8 @@ export function SettingsScreen({
         capability: replaySeed.capability,
         quarantineRecordIds,
         requestedBy: session?.displayName ?? "settings-operator",
-        requestedAt: requestedAt.toISOString()
+        requestedAt: requestedAt.toISOString(),
+        mode: "Original"
       });
 
       setProviderRuntimeState((current) => ({
@@ -4298,7 +4304,7 @@ export function SettingsScreen({
                         onReplayQuarantine={() => setMutationConfirmation({
                           id: `provider-replay-${row.providerId}`,
                           title: `Replay quarantined records for ${row.displayName}?`,
-                          description: "Request replay for the retained eligible quarantine batch. Existing decisions and source evidence remain retained.",
+                          description: "Replay the retained eligible quarantine batch using its original manifest version. Mapping updates are not applied; remediation requires an explicitly selected newer version. Existing decisions and source evidence remain retained.",
                           confirmLabel: "Confirm replay",
                           confirmAriaLabel: `Confirm quarantine replay for ${row.displayName}`,
                           destructive: true,
@@ -6006,7 +6012,7 @@ function ProviderIntegrationWorkbenchPanel({
   const mappingPreview = providerIntegrationWorkbenchMappings(state, state.capability);
   const latestRawPayload = providerIntegrationLatestRawPayload(state, runtimeState);
   const canCheckDrift = Boolean(manifestId && connectionId && latestRawPayload && state.endpointKey.trim());
-  const activationReady = state.readiness?.isReady ?? false;
+  const activationReady = Boolean(state.readiness?.isReady && state.manifestReference?.manifestId === manifestId);
 
   const updateField = <K extends keyof ProviderIntegrationWorkbenchState>(
     field: K,
@@ -6098,12 +6104,24 @@ function ProviderIntegrationWorkbenchPanel({
         connection: connectionDraft.value,
         savedBy: operatorName,
         savedAt,
+        expectedManifestReference: state.manifestReference?.manifestId === manifestDraft.value.manifestId
+          ? state.manifestReference
+          : undefined,
         changeReason: manifestDraft.value.changeReason ?? "Saved from the Settings Provider Connection Center guided workbench."
       });
+      const savedManifest = {
+        ...manifestDraft.value,
+        manifestVersion: result.manifestReference?.manifestVersion ?? manifestDraft.value.manifestVersion,
+        state: result.manifestState
+      };
+      const savedConnection = { ...connectionDraft.value, state: result.connectionState, updatedAt: savedAt };
       setState((current) => ({
         ...current,
-        manifest: manifestDraft.value,
-        connection: connectionDraft.value,
+        manifest: savedManifest,
+        manifestReference: result.manifestReference ?? null,
+        connection: savedConnection,
+        draftManifestJson: providerIntegrationFormatJson(savedManifest),
+        draftConnectionJson: providerIntegrationFormatJson(savedConnection),
         selectedManifestId: result.manifestId,
         setupResult: result,
         readiness: result.readiness,
@@ -6260,7 +6278,7 @@ function ProviderIntegrationWorkbenchPanel({
 
   const activateSetup = async () => {
     if (!manifestId || !activationReady) {
-      setState((current) => ({ ...current, message: "Activation is blocked until readiness passes.", details: providerIntegrationReadinessDetails(current.readiness), tone: "warning" }));
+      setState((current) => ({ ...current, message: "Save the manifest version and pass readiness before activation.", details: providerIntegrationReadinessDetails(current.readiness), tone: "warning" }));
       return;
     }
 
@@ -6272,18 +6290,39 @@ function ProviderIntegrationWorkbenchPanel({
         connectionId,
         approvedBy: operatorName,
         approvedAt: approvedAt.toISOString(),
+        expectedManifestReference: state.manifestReference?.manifestId === manifestId
+          ? state.manifestReference
+          : undefined,
         approvalEvidenceId: providerIntegrationWorkbenchEvidenceId(row.integrationConnectionId, "activation", approvedAt),
         changeReason: "Activated from the Settings Provider Connection Center guided workbench."
       });
-      setState((current) => ({
-        ...current,
-        activationResult: result,
-        readiness: result.readiness,
-        busyAction: null,
-        message: result.message ?? `Provider integration ${result.activated ? "activated" : "activation reviewed"}.`,
-        details: providerIntegrationReadinessDetails(result.readiness),
-        tone: result.activated ? "success" : "warning"
-      }));
+      setState((current) => {
+        const manifest = result.activated && current.manifest
+          ? {
+            ...current.manifest,
+            manifestVersion: result.manifestReference?.manifestVersion ?? current.manifest.manifestVersion,
+            state: result.manifestState,
+            approvedBy: operatorName,
+            approvedAt: approvedAt.toISOString(),
+            changeReason: "Activated from the Settings Provider Connection Center guided workbench."
+          }
+          : current.manifest;
+        const draft = parseProviderIntegrationWorkbenchJson<ProviderIntegrationManifest>(current.draftManifestJson, "Manifest draft JSON");
+        return {
+          ...current,
+          manifest,
+          manifestReference: result.manifestReference ?? current.manifestReference,
+          draftManifestJson: result.activated && manifest && draft.ok
+            ? providerIntegrationFormatJson({ ...draft.value, manifestVersion: manifest.manifestVersion, state: manifest.state, approvedBy: manifest.approvedBy, approvedAt: manifest.approvedAt })
+            : current.draftManifestJson,
+          activationResult: result,
+          readiness: result.readiness,
+          busyAction: null,
+          message: result.message ?? `Provider integration ${result.activated ? "activated" : "activation reviewed"}.`,
+          details: providerIntegrationReadinessDetails(result.readiness),
+          tone: result.activated ? "success" : "warning"
+        };
+      });
     } catch (error) {
       const display = describeApiError(error, "Provider integration activation failed.");
       setState((current) => ({ ...current, busyAction: null, message: display.summary, details: display.details, tone: "danger" }));
@@ -6340,7 +6379,7 @@ function ProviderIntegrationWorkbenchPanel({
           <Save className="h-3.5 w-3.5" aria-hidden="true" />
           Save setup draft
         </Button>
-        <Button type="button" variant="outline" size="sm" onClick={() => setActivationConfirmationOpen(true)} disabled={busy || !activationReady} busy={state.busyAction === "activate"} disabledReason={!activationReady ? "Activation readiness must pass before activation." : undefined} aria-label={`Activate provider integration setup for ${row.displayName}`}>
+        <Button type="button" variant="outline" size="sm" onClick={() => setActivationConfirmationOpen(true)} disabled={busy || !activationReady} busy={state.busyAction === "activate"} disabledReason={!activationReady ? "Save the manifest version and pass readiness before activation." : undefined} aria-label={`Activate provider integration setup for ${row.displayName}`}>
           <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
           Activate when ready
         </Button>
@@ -6863,6 +6902,7 @@ function createProviderIntegrationWorkbenchState(row: SettingsProviderConnection
     templates: null,
     selectedManifestId: providerIntegrationDefaultManifestId(row),
     manifest: null,
+    manifestReference: null,
     connection: null,
     draftManifestJson: "",
     draftConnectionJson: "",
@@ -6955,6 +6995,7 @@ function providerIntegrationWorkbenchWithDraft(
     ...state,
     selectedManifestId: manifest.manifestId,
     manifest,
+    manifestReference: null,
     connection,
     draftManifestJson: providerIntegrationFormatJson(manifest),
     draftConnectionJson: providerIntegrationFormatJson(connection),

@@ -5,7 +5,7 @@ using Meridian.Storage.Integrations;
 
 namespace Meridian.Tests.Storage.Integrations;
 
-public sealed class FileProviderIntegrationManifestStoreTests : IDisposable
+public sealed partial class FileProviderIntegrationManifestStoreTests : IDisposable
 {
     private readonly string _testRoot;
 
@@ -78,6 +78,9 @@ public sealed class FileProviderIntegrationManifestStoreTests : IDisposable
     public async Task SaveRawPayloadQuarantineAndStaging_KeepRunScopedEvidence()
     {
         var store = new FileProviderIntegrationManifestStore(_testRoot);
+        var manifest = CreateManifest();
+        await store.SaveManifestAsync(manifest);
+        var manifestReference = ProviderIntegrationManifestIdentity.Create(manifest);
         var syncRun = new ProviderIntegrationSyncRunDto(
             "sync-run-1",
             "manifest-custodian-abc-v1",
@@ -100,7 +103,11 @@ public sealed class FileProviderIntegrationManifestStoreTests : IDisposable
                     "Security identifier is required.",
                     "security",
                     "Map CUSIP, ISIN, ticker, or provider security id.")
-            ]);
+            ])
+        {
+            ManifestReference = manifestReference,
+            OriginalManifestReference = manifestReference
+        };
         var rawPayload = new RawIngestionPayloadDto(
             "payload-1",
             "custodian-abc",
@@ -112,7 +119,11 @@ public sealed class FileProviderIntegrationManifestStoreTests : IDisposable
             new Dictionary<string, string> { ["method"] = "GET", ["path"] = "/v1/positions" },
             Json("""{"positions":[{"account_id":"A1","quantity":"100"}]}"""),
             "manifest-custodian-abc-v1",
-            ProviderIntegrationProcessingStatusDto.Received);
+            ProviderIntegrationProcessingStatusDto.Received)
+        {
+            ManifestReference = manifestReference,
+            OriginalManifestReference = manifestReference
+        };
         var quarantineRecord = new QuarantinedRecordDto(
             "quarantine-1",
             "sync-run-1",

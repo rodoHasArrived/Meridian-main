@@ -191,13 +191,13 @@ Total items: **239**
 | `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1672 | `NOTE` | ❌ | note: "Marked from the Settings Provider Connection Center for replay after mapping changes." |
 | `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1682 | `NOTE` | ❌ | note: "Ignored from the Settings Provider Connection Center after operator review." |
 | `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1804 | `NOTE` | ❌ | note: "Approved after identity review.", |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1904 | `NOTE` | ❌ | note: "Reviewed from the Settings Provider Connection Center runtime evidence panel." |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1989 | `NOTE` | ❌ | note: "Approved from the Settings Provider Connection Center promotion readiness panel.", |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 2007 | `NOTE` | ❌ | note: "Reviewed from the Settings Provider Connection Center runtime evidence panel." |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 2057 | `NOTE` | ❌ | note: "Marked from the Settings Provider Connection Center for replay after mapping changes." |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 2078 | `NOTE` | ❌ | note: "Ignored from the Settings Provider Connection Center after operator review." |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | 1474 | `NOTE` | ❌ | note: "Approved from the Settings Provider Connection Center promotion readiness panel.", |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | 1601 | `NOTE` | ❌ | note: providerRuntimeQuarantineActionNote(action) |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1905 | `NOTE` | ❌ | note: "Reviewed from the Settings Provider Connection Center runtime evidence panel." |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1996 | `NOTE` | ❌ | note: "Approved from the Settings Provider Connection Center promotion readiness panel.", |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 2014 | `NOTE` | ❌ | note: "Reviewed from the Settings Provider Connection Center runtime evidence panel." |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 2065 | `NOTE` | ❌ | note: "Marked from the Settings Provider Connection Center for replay after mapping changes." |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 2086 | `NOTE` | ❌ | note: "Ignored from the Settings Provider Connection Center after operator review." |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | 1479 | `NOTE` | ❌ | note: "Approved from the Settings Provider Connection Center promotion readiness panel.", |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | 1607 | `NOTE` | ❌ | note: providerRuntimeQuarantineActionNote(action) |
 | `src/Meridian.Ui/dashboard/src/screens/w4-acceptance-parity.test.ts` | 429 | `NOTE` | ❌ | note: "Close evidence reviewed." |
 | `src/Meridian.Ui/dashboard/src/screens/w4-acceptance-parity.test.ts` | 437 | `NOTE` | ❌ | note: "Published to investor portal." |
 | `src/Meridian.Ui/dashboard/src/types/reporting-governance.ts` | 124 | `NOTE` | ❌ | note: string \| null; |

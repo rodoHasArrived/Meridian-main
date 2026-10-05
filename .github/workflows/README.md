@@ -106,7 +106,7 @@ hosted job and shard timings separately from runner queue delays before claiming
 | WPF Dev Loop Validation | `wpf-dev-validation.yml` | Manual only | Calls the shared Windows runner for the dev-loop slice, with optional filter/build-only input. | WPF dev-loop evidence |
 | WPF Route Validation | `wpf-route-validation.yml` | Manual only | Calls the shared Windows runner for both retained route filters, reusing one build. | Route validation evidence |
 | Documentation Automation | `documentation.yml` | Documentation, Codex memory, **Claude agent definitions (`.claude/agents/**`)**, docs-script, workflow, WPF navigation, diagram changes, or manual | Runs docs automation checks, validates AI inventory, validates Claude agent definitions against the host tool vocabulary and frontmatter schema, Codex memory summary/receipt commands and focused memory-checker tests, regenerates tracked documentation outputs, refreshes Mermaid/UI diagrams using root lockfile-backed `npm ci`, renders UML artifacts through the PlantUML container, excludes version-specific UML render binaries from the final freshness diff, and gates severe dashboard regressions when a previous baseline exists. | Docs dashboard delta summary on failure |
-| PostgreSQL Schema Control | `schema-control.yml` | PostgreSQL migrations, public contracts, schema-control registry/policies/tooling, generated database docs, or manual | Applies all registered SQL migrations to disposable PostgreSQL 16, extracts `pg_catalog`, inventories public C# data objects, evaluates policy and migration safety rules, and rejects stale deterministic manifests or diagrams. Manual `snapshot` mode uploads refresh candidates without writing to the repository. | Candidate manifests, generated docs/diagrams, policy report, schema diff, and run summary |
+| PostgreSQL Schema Control | `schema-control.yml` | PostgreSQL migrations, public contracts, schema-control registry/policies/tooling, generated database docs, or manual | Applies all registered SQL migrations to disposable PostgreSQL 16, extracts `pg_catalog`, inventories public C# data objects, evaluates policy and migration safety rules, and rejects stale deterministic manifests or diagrams. PRs compare against the event's base SHA; manual runs require `baseline_ref`. Manual `snapshot` mode uploads refresh candidates without writing to the repository. | Candidate manifests, generated docs/diagrams, policy report, schema diff, resolved baseline/candidate SHAs, and run summary |
 | Roadmap Source Docs | `roadmap-source-docs.yml` | Roadmap/source/status/architecture/source-README changes or manual | Enforces PR phase scope for roadmap/source-doc changes, validates roadmap and source registries, renders generated outputs, and checks for drift. | None |
 | Roadmap Tools (Manual) | `roadmap-tools-manual.yml` | Manual only | Runs individual roadmap tooling operations on demand — fixture-enum validation, roadmap evidence-file validation, normalized render, or phase-scope enforcement — selected through the `script` dispatch input. | Normalized roadmap render output when `render`/`all` is selected |
 | Maintenance | `maintenance.yml` | Workflow/docs/tooling changes, weekly schedule, manual | Runs repository workflow hygiene checks, validates tooling metadata, validates workflow syntax with `actionlint`, and checks AI contract/navigation drift. | None |
@@ -229,9 +229,17 @@ python build/scripts/ci/check-lane-manifest.py --summary
 PostgreSQL schema control:
 
 ```powershell
-python build/scripts/schema-control.py inventory --base-ref origin/main
-gh workflow run schema-control.yml --ref <branch> -f mode=snapshot
+$baselineSha = git rev-parse --verify 'origin/main^{commit}'
+python build/scripts/schema-control.py inventory --base-ref $baselineSha
+gh workflow run schema-control.yml --ref <branch> -f mode=snapshot -f baseline_ref=$baselineSha
 ```
+
+Both manual modes require an explicit baseline ref or SHA, resolved once before checks. PR runs
+resolve the pull-request event's base SHA. `build/schema-control/revisions.json` and the step summary
+record the resolved baseline and checked-out candidate SHA before tests; for PRs the candidate is
+normally GitHub's merge commit. Candidate reports repeat those identities. Reproduce with the same
+candidate and baseline SHAs so a later `origin/main` advance cannot affect the comparison. Revision
+evidence is run-specific and stays outside tracked generated manifests and documentation.
 
 Documentation automation:
 

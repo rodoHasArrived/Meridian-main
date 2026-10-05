@@ -43,6 +43,75 @@ public sealed class ProviderIntegrationOpenApiImportServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ImportAsync_ReimportAdvancesFromSelectedCurrentVersionAndPreservesHistory()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var service = new ProviderIntegrationOpenApiImportService(store);
+        var request = CreateRequest();
+        var original = (await service.ImportAsync(request)).Manifest;
+        var current = original with { ManifestVersion = 7, DisplayName = "Reviewed provider draft" };
+        await store.SaveManifestVersionAsync(current);
+        (await store.CompareExchangeCurrentManifestAsync(
+            current.ManifestId,
+            ProviderIntegrationManifestIdentity.Create(original),
+            ProviderIntegrationManifestIdentity.Create(current))).Should().BeTrue();
+
+        var result = await service.ImportAsync(request with
+        {
+            DisplayName = "Reimported provider draft",
+            ExpectedManifestReference = ProviderIntegrationManifestIdentity.Create(current)
+        });
+
+        result.Imported.Should().BeTrue();
+        result.Manifest.ManifestVersion.Should().Be(8);
+        result.Manifest.DisplayName.Should().Be("Reimported provider draft");
+        (await store.GetManifestAsync(request.ManifestId)).Should().BeEquivalentTo(result.Manifest);
+        (await store.GetManifestVersionAsync(request.ManifestId, 1)).Should().BeEquivalentTo(original);
+        (await store.GetManifestVersionAsync(request.ManifestId, 7)).Should().BeEquivalentTo(current);
+        (await store.GetManifestVersionAsync(request.ManifestId, 2)).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ImportAsync_ReimportRequiresExpectedCurrentReference()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var service = new ProviderIntegrationOpenApiImportService(store);
+        var request = CreateRequest();
+        var original = (await service.ImportAsync(request)).Manifest;
+
+        var act = () => service.ImportAsync(request with { DisplayName = "Unreviewed replacement" });
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*current manifest reference*");
+        (await store.GetManifestAsync(request.ManifestId)).Should().BeEquivalentTo(original);
+        (await store.GetManifestVersionAsync(request.ManifestId, 2)).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ImportAsync_ReimportRejectsStaleExpectedReference()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var service = new ProviderIntegrationOpenApiImportService(store);
+        var request = CreateRequest();
+        var original = (await service.ImportAsync(request)).Manifest;
+        var originalReference = ProviderIntegrationManifestIdentity.Create(original);
+        var current = (await service.ImportAsync(request with
+        {
+            DisplayName = "Updated provider draft",
+            ExpectedManifestReference = originalReference
+        })).Manifest;
+
+        var act = () => service.ImportAsync(request with
+        {
+            DisplayName = "Stale provider draft",
+            ExpectedManifestReference = originalReference
+        });
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*manifest changed*");
+        (await store.GetManifestAsync(request.ManifestId)).Should().BeEquivalentTo(current);
+        (await store.GetManifestVersionAsync(request.ManifestId, 3)).Should().BeNull();
+    }
+
+    [Fact]
     public async Task ImportAsync_ReturnsCriticalIssueAndDoesNotSaveInvalidDocument()
     {
         var store = new FileProviderIntegrationManifestStore(testRoot);
