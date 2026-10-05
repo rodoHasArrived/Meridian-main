@@ -18,6 +18,7 @@ public sealed class ProviderIdentityTests
     [InlineData("alpaca-options", "alpaca")]
     [InlineData("twelve_data", "twelvedata")]
     [InlineData("YahooFinance", "yahoo")]
+    [InlineData(" SSHARP ", "stocksharp")]
     public void NormalizeId_AcceptedAliasesResolveToCanonicalFamily(string alias, string expected)
     {
         ProviderIdentity.NormalizeId(alias).Should().Be(expected);

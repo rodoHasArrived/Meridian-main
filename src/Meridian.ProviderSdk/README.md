@@ -56,7 +56,9 @@ its concrete type using singleton or transient lifetime; scoped capability facto
 because the provider registry belongs to the host. Optional interface aliases resolve that same instance. Interface-only factories for
 discovered capabilities fail with an explicit registration diagnostic because they cannot identify
 the family unambiguously among providers sharing a contract. Both module-loading entry points
-honor module validation, stage service-collection changes, and publish them only after successful registration.
+honor module validation, stage service-collection changes, and publish them only after successful
+registration. A failed registration also rolls back metadata discovered by the module while
+preserving its family ownership so attribute fallback cannot recreate a failed provider.
 `DataSourceRegistry.ModuleCapabilityRegistrations` exposes the successfully registered concrete
 factories and derives their contracts from discovered metadata; application composition consumes
 this inventory instead of inferring factories from all services in the container. A module must add
