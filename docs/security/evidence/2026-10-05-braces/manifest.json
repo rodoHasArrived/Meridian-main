@@ -1,0 +1,82 @@
+{
+  "schema": "meridian.dependency-investigation-evidence.v1",
+  "observed_at_utc": "2026-10-05T18:01:06.536425+00:00",
+  "investigated_commit": "e3bf60bae577c132d8444a827ca4dc3181cc48a1",
+  "scope": "Baseline investigation evidence; not certification of the containing or any later commit. Proposal is pending, no risk accepted.",
+  "hosted": {
+    "workflow": "Production Certification",
+    "run_id": 37351972283,
+    "run_number": 147,
+    "attempt": 1,
+    "head_sha": "e3bf60bae577c132d8444a827ca4dc3181cc48a1",
+    "run_url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283",
+    "dependency_job_id": 111904784527,
+    "dependency_conclusion": "failure",
+    "nuget_outcome": "success",
+    "npm_outcome": "failure",
+    "artifact_id": 11362468562,
+    "artifact_name": "production-dependency-evidence-147-1",
+    "artifact_expires_at_utc": "2027-01-03T17:54:46Z",
+    "artifact_sha256": "478075a50b84e225b37581089a9e2f28aad6d9ad95b29b811b3297e179a02d11"
+  },
+  "local": {
+    "node": "24.19.0",
+    "npm": "11.9.0",
+    "commands": [
+      {
+        "command": "npm ci",
+        "exit_code": 0
+      },
+      {
+        "command": "npm ls braces micromatch fast-glob chokidar tailwindcss --all --json",
+        "exit_code": 0
+      },
+      {
+        "command": "npm audit --json",
+        "exit_code": 1
+      },
+      {
+        "command": "python build/scripts/ci/validate-npm-audit.py --audit-json <local/npm-audit.json> --accepted build/config/security/npm-audit-accepted-advisories.json --fail-level high --output <local/npm-audit-gate.json>",
+        "exit_code": 1
+      },
+      {
+        "command": "npm audit --omit=dev --json",
+        "exit_code": 0,
+        "purpose": "Exposure analysis only; never a substitute for the full audit gate."
+      },
+      {
+        "command": "npm view braces versions dist-tags time --json",
+        "exit_code": 0
+      },
+      {
+        "command": "npm view micromatch version dependencies --json; npm view fast-glob version dependencies --json; npm view tailwindcss@3.4.19 dependencies --json; npm view chokidar version dependencies --json",
+        "exit_code": 0
+      }
+    ]
+  },
+  "source_sha256": {
+    "src/Meridian.Ui/dashboard/package.json": "17a4a582d9890c9ab89808b6f4114101c913894539f97e02f7f39f1cd8a35ea0",
+    "src/Meridian.Ui/dashboard/package-lock.json": "7f0d4034ab6cc9a3be9d805a3bca15278df7e82959ac113539de3fbf86062772",
+    "src/Meridian.Ui/dashboard/tailwind.config.ts": "3dbe1875c20796e85f924ca116e3d41d569b75d00bae9592edbfc44c66841ad1",
+    "src/Meridian.Ui/dashboard/postcss.config.cjs": "c3275e0c1ab2639ab056915eac2a806b997a7879c31edce8898ec443a4823a06",
+    "src/Meridian.Ui/dashboard/vite.config.ts": "bdcb640415687a13987ae35d51eb06f1200ff93939c67c936d0e3381af21dacb",
+    "build/config/security/npm-audit-accepted-advisories.json": "8895a530e09ef1631eed36c0a09b45cc8569485701ab5070da072a064c5c3720",
+    "build/scripts/ci/validate-npm-audit.py": "f162b0b997a736b727af38419345a6bc063697df945649be2c7d5994bf53244f",
+    ".github/workflows/production-certification.yml": "d72da85954d1912976a8ddae619b851f5bded6c47a9f3d5968346af966052885"
+  },
+  "retained_file_sha256": {
+    "hosted/npm-audit-gate.json": "aa671ecceac22cbcbe8d4ccd0da6e83a0602bd7370420bfcffefa785b1ee7d0b",
+    "hosted/npm-audit.json": "7d064a03f1e2368f5ce043d075570e9ea8e670ac9b55424c1e093e3c1dbcd71e",
+    "hosted/nuget-vulnerabilities.txt": "400ff536ba9d8d6acab157751b7cff02f4bf3e2268325bfdd9aebd038019202b",
+    "hosted/production-dependency-evidence-147-1.zip": "478075a50b84e225b37581089a9e2f28aad6d9ad95b29b811b3297e179a02d11",
+    "local/braces-registry.json": "3b123e9d6cb8500812bfde4fcc827fe599678101c572509e66a2294f08c01af5",
+    "local/chokidar-latest.json": "a709f6fe96545a30563a133344908d7a8e594923e8e696b682ed9f74266a3723",
+    "local/dependency-graph.json": "646cf36675e8617cff9314c4f477282ef7f27efa87594f39e38fc57867eceacf",
+    "local/fast-glob-latest.json": "f39aeb30eb1ddb57202f3efb353148c330bd6f70bdccb5a6b47e8b6c60f9366f",
+    "local/micromatch-latest.json": "91679e5604a1cc6114353099e4495a1e7b8c033f312257359cc6dafc5360c3eb",
+    "local/npm-audit-gate.json": "aa671ecceac22cbcbe8d4ccd0da6e83a0602bd7370420bfcffefa785b1ee7d0b",
+    "local/npm-audit-production.json": "900bbaac9b0793f0baa08615c8d2508d1d9623b192cd0201536e5501611cc0fd",
+    "local/npm-audit.json": "b3133ef1722e50fa3ba9d608d665f891885144bd693bfbb76abaa87e9e4cf6a1",
+    "local/tailwind3-dependencies.json": "f013d9b123e671b39976f5d122fbc8720111f53c42e2bc7c85284dd1d3cbcb37"
+  }
+}

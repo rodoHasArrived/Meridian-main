@@ -10,6 +10,107 @@ This document is the central registry for dependency vulnerabilities that have b
 - **Review cadence:** Accepted vulnerabilities must be reviewed at least quarterly and removed promptly when an upstream fix becomes available.
 - **Workflow integration:** the `dependency-evidence` job in `.github/workflows/production-certification.yml` is the enforcing gate. npm findings route through `build/scripts/ci/validate-npm-audit.py` against `build/config/security/npm-audit-accepted-advisories.json`, which fails closed on both unaccepted and stale entries. `Directory.Build.props` may suppress a NuGet restore-audit finding only by exact advisory URL after the same accepted-risk review; note that `NuGetAuditSuppress` does not affect `dotnet list package --vulnerable`, so a suppressed NuGet advisory still reds the gate.
 
+## Pending decision: braces stack exhaustion (2026-10-05)
+
+**Status: proposed, not accepted.** This investigation authorizes no exception. The active
+machine register remains `"accepted": []`; Production Certification must remain red for this
+finding until a supported remediation passes or an authorized human records a bounded decision.
+
+### Evidence and dependency exposure
+
+- **Finding:** `braces` 3.0.3, [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)
+  / CVE-2026-93687, high severity, uncontrolled recursion / stack-exhaustion denial of service
+  from deeply nested patterns. The advisory covers `<=3.0.3` and lists no patched version.
+  npm reports CVSS 3.1 **7.5**; the current GitHub advisory reports CVSS 4.0 **8.7**. These are
+  different scoring versions, not evidence of a severity downgrade.
+- **Latest observed main:** `e3bf60bae577c132d8444a827ca4dc3181cc48a1`.
+  [Production Certification #147, attempt 1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283)
+  [dependency job 111904784527](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283/job/111904784527)
+  fails with `UNACCEPTED GHSA-vfj7-8cjw-p6xm (braces, high): no acceptance entry`.
+  NuGet passed; the npm step's `continue-on-error` allows evidence collection, but its failed
+  outcome correctly fails the final assertion. A successful step conclusion alone is not a pass.
+- **Retained evidence:** [manifest and checksums](evidence/2026-10-05-braces/manifest.json),
+  [hosted audit](evidence/2026-10-05-braces/hosted/npm-audit.json),
+  [hosted gate decision](evidence/2026-10-05-braces/hosted/npm-audit-gate.json), and
+  [fresh installed graph](evidence/2026-10-05-braces/local/dependency-graph.json).
+  A clean local `npm ci` and full `npm audit --json` reproduce the same high-severity root cause.
+  Five high package entries resolve to this one advisory. The separate low-severity
+  `postcss-selector-parser` finding is not covered by this proposal.
+
+The installed graph has these paths, all marked development dependencies in the lockfile:
+
+```text
+tailwindcss 3.4.15 -> chokidar 3.6.0 -> braces 3.0.3
+tailwindcss 3.4.15 -> micromatch 4.0.8 -> braces 3.0.3
+tailwindcss 3.4.15 -> fast-glob 3.3.3 -> micromatch 4.0.8 -> braces 3.0.3
+```
+
+`tailwind.config.ts` uses the repository literals `./index.html` and `./src/**/*.{ts,tsx}`;
+PostCSS invokes Tailwind during compilation. No application-source imports of these packages
+were identified. The current production dependency audit reports zero findings and the publish
+layout copies static `wwwroot` assets. This supports a build/development/publishing exposure
+assessment, not a claim that the package is unexploitable. Publishing can build a missing bundle;
+a malicious repository/configuration change or future untrusted pattern input can still crash
+the Node process. `npm audit --omit=dev` is exposure evidence only and must not replace the full gate.
+
+### Available remediation and rejected shortcuts
+
+Registry metadata rechecked on 2026-10-05 still ends at `braces` **3.0.3**. The latest
+`micromatch` **4.0.8** and `fast-glob` **3.3.3** retain the affected chain; latest Tailwind 3
+**3.4.19** still uses `chokidar ^3.6.0`, `fast-glob ^3.3.2`, and `micromatch ^4.0.8`.
+There is no evidenced compatible patch or override today. Upgrading only Chokidar across majors
+would leave the Micromatch path and would change its glob API contract. `brace-expansion` is a
+different package; [PR #3031](https://github.com/rodoHasArrived/Meridian-main/pull/3031) currently
+has zero changed files and cannot remediate this finding.
+
+npm suggests **Tailwind 4.3.3**, a supported major-version migration using the
+[official upgrade guide](https://tailwindcss.com/docs/upgrade-guide) and the matching
+`@tailwindcss/vite` or `@tailwindcss/postcss` integration. This is the durable remediation
+candidate. It requires reviewing configuration/CSS utility and Preflight changes, confirming
+browser support (the guide requires Safari 16.4, Chrome 111, Firefox 128), testing the workstation
+and published asset build, and re-auditing the complete resulting graph. A version-only forced
+audit fix is not validated remediation. No migration or dependency override is applied here.
+
+### Proposed bounded exception for human decision
+
+| Field | Proposed decision terms |
+| --- | --- |
+| Scope | Only GHSA-vfj7-8cjw-p6xm in `braces` 3.0.3 through the documented Tailwind 3 development graph; severity ceiling **high**. No other advisory or runtime path is accepted. |
+| Rationale | No compatible published patch; current inputs are repository-controlled build patterns and no shipped application runtime path was identified. Residual build availability risk remains. |
+| Named decision owner | **@rodoHasArrived**, repository owner and default/CI CODEOWNER in `.github/CODEOWNERS`. Must explicitly approve these terms, reject them and keep certification blocked, or commission the Tailwind 4 migration. A delegate must be named in the human decision record. |
+| Decision point | Before any exception is added to the active register or used for release certification. Record a dated human decision linked to the exact candidate commit and evidence. No approval, approver signature, or `accepted_on` date is recorded by this proposal. |
+| Expiry | Fixed hard stop **2026-10-19 00:00 UTC** (2026-10-18 17:00 America/Phoenix), at most 14 days from this proposal; late approval does not extend it. Under the existing inclusive `review_by` logic, use **2026-10-18**, so the gate fails from 2026-10-19 UTC. |
+| Review | Owner rechecks by **2026-10-12** and before every release, plus immediately for an upstream fix, new dependency path, severity increase, exploit evidence, or changed input/runtime exposure. No automatic renewal. |
+| Exit | Prefer the supported migration or a newly published compatible fix; validate the complete graph and remove any now-stale acceptance in the same change. Without a validated fix or new explicit decision, expiry leaves certification blocked. |
+
+Approval is conditional on the human owner verifying these mitigations on the candidate:
+
+The current validator matches advisory, package, severity ceiling, and date; it does **not**
+enforce package version, dependency path, development/runtime status, or candidate SHA. The
+proposed graph/exposure boundary therefore depends on reviewed lockfile and candidate evidence.
+Any new dependency path, runtime reachability, or untrusted-pattern input invalidates this scope:
+remove the active mirror and keep certification blocked pending a new explicit human decision.
+
+1. Keep glob/configuration inputs as reviewed repository literals; do not feed uploads, API data,
+   or other untrusted patterns into Tailwind/Chokidar/Micromatch. Review changes to Tailwind,
+   PostCSS, Vite, dependency manifests, and the lockfile for altered exposure.
+2. Use disposable, time-bounded build runners. The current certification job has a 35-minute
+   timeout, read-only contents permission, and checkout credentials are not persisted. A timeout
+   limits runner exposure; it does not prevent a stack-exhaustion crash. Review other build and
+   publish lanes separately before treating these controls as universal.
+3. Preserve the full dependency audit, high-severity threshold, NuGet check, final two-gate
+   assertion, and failure-time evidence upload. Do not omit development dependencies, suppress
+   findings, substitute a package name, force a version, or edit the validator to get green.
+4. After an explicit approval only, add a narrowly scoped record here and its machine mirror
+   with the real approval date, named owner/approver, decision URL, rationale, and the fixed
+   `review_by` above. Test expiry, severity escalation, stale entries and new advisories, then run
+   the unchanged complete Production Certification workflow on the resulting commit. Retain the
+   run/attempt, all four job results, raw audits, gate JSON, artifact IDs/digests/expiry, and exact
+   commit. Local success or a prior main run does not certify that new commit.
+
+Until that decision is recorded, this section remains a proposal and the active register stays
+empty. A green certification workflow would still not supply separate release/operator approvals.
+
 ## Accepted Vulnerabilities
 
 None at this commit. Retired acceptances are kept below for traceability.

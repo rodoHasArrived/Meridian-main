@@ -238,6 +238,18 @@ bash scripts/ci.sh --lane verify-docs
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
 
+- **2026-10-05 — dependency failure rechecked; human decision pending.** Main
+  `e3bf60bae577c132d8444a827ca4dc3181cc48a1` / [Production Certification #147, attempt 1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283)
+  failed its dependency job on unaccepted `braces` advisory `GHSA-vfj7-8cjw-p6xm`; NuGet passed.
+  The [security registry investigation and bounded proposal](../security/known-vulnerabilities.md#pending-decision-braces-stack-exhaustion-2026-10-05)
+  retains the raw audits, graph, registry recheck, artifact digest and expiry. No compatible
+  published patch was found; Tailwind 4 is a supported migration candidate requiring validation.
+  **@rodoHasArrived** is the named human decision point; no risk was accepted and no gate changed.
+  Any approved exception has a proposed hard expiry of 2026-10-19 00:00 UTC and requires fresh
+  certification evidence for its own commit. This failed main run cannot certify a proposal or
+  later implementation commit. Last verified green remains [#130 / 37073985831](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37073985831)
+  on `2dbd8723acdb209b250a4416a87f64ae0271d611` (2026-10-02).
+
 - **2026-10-02 — recovery-evidence correction** (source reviewed at `0feac3d50`; no new hosted run or
   operator acceptance): `PRD-015` and the recovery portion of `PRD-111` previously treated archive
   timers as objective measurements. Schema-version-1 `measuredRpoSeconds` was backup duration and
