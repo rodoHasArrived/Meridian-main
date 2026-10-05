@@ -758,6 +758,12 @@ Core workstation host. Do not introduce a second listener or independent monitor
 Use this module when changing command behavior, workflow orchestration, feature registration, or
 application service contracts consumed by host and UI surfaces.
 
+`ApplicationLifecycleCoordinator` routes POSIX SIGTERM through the same cooperative stop-work,
+drain, and flush lifecycle as external cancellation. This lets `dotnet watch` restart the host
+without leaving its listener behind. The signal registration is disposed with the coordinator;
+Windows retains the existing console-cancellation path. Signal callback coverage lives in
+`tests/Meridian.Lifecycle.Tests/ApplicationLifecycleCoordinatorTests.cs`.
+
 Shared host composition registers the Platform tracing provider only when `AppConfig.Tracing.Enabled`
 or the legacy code option `CompositionOptions.EnableOpenTelemetry` explicitly opts in. Registration
 is idempotent, and a desktop child graph reuses its parent host's ownership. `PipelineFeatureRegistration`

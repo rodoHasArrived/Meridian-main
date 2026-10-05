@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** Accounting / Fund Operations
-**Reviewed:** 2026-07-27
+**Reviewed:** 2026-10-05
 
 This runbook is the production operator procedure for certified reporting runs, hard-close evidence,
 immutable reporting state, schedules, access grants, and secure delivery. Contract fields and wire
@@ -149,6 +149,37 @@ Use an authenticated operator in the intended tenant and company scope.
    binding. Confirm one durable job, a non-secret grant record, relay acceptance with a bounded
    provider message id, and an authenticated terminal receipt. Do not paste the one-time link into
    logs, tickets, screenshots, or retained notes.
+
+## Explain retained investment-income movements
+
+Open **Explain investment-income movement** from the Reporting run or governed run detail. Choose the baseline
+explicitly, then select the retained grid and income measure shared by both runs. Candidate labels
+distinguish originally published and restated published results using governed release receipts;
+there is no automatic substitution of the latest run for the selected baseline.
+
+Review period, population, accounting basis, currency, and book differences before reading the
+movement bridge. Journal contributions open the exact retained journal lines. Population changes
+require evidence of exclusion by the opposite run's scope. A retained metric/filter definition
+change opens both definitions and the quantified effect on continuing unchanged journal lines;
+it does not represent a separate human methodology approval. Unsupported changes remain visible,
+including offsetting positive and negative amounts with a zero net residual. An incompatible
+comparison cannot appear reconciled.
+Displayed comparison amounts preserve all retained decimal digits, including large balances and
+very small nonzero residuals.
+
+The comparison link identifies an immutable retained artifact. Reopening it or a contribution uses
+the saved manifests, explanations, and support, even after source data changes. Access requires
+current authorization for both retained report scopes. The shared API is:
+
+- `GET /api/fund-structure/reporting/comparisons/candidates`
+- `POST /api/fund-structure/reporting/comparisons` with `baselineRunId`, `currentRunId`, `gridId`, and `metricColumn`
+- `GET /api/fund-structure/reporting/comparisons/{comparisonId}`
+- `GET /api/fund-structure/reporting/comparisons/{comparisonId}/contributions/{contributionId}`
+
+Formula, Top-N, and cross-tab measures without an additive retained mapping stay unexplained.
+New or removed journal lines under a changed methodology also remain unexplained until their
+combined effect can be supported separately. A zero residual is insufficient when any unsupported
+line, rendered cell, missing parameter, or compatibility blocker remains.
 
 ## Canonical statement-to-delivery handoff
 

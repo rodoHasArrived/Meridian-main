@@ -121,6 +121,25 @@ hosted job and shard timings separately from runner queue delays before claiming
 | Provider Smoke Checks | `ibapi-smoke.yml`, `ibapi-runtime.yml`, `robinhood-options-smoke.yml` | Path-filtered/manual for compile smoke; scheduled/manual protected environment for official IB runtime | Runs provider smoke checks that are too specialized for the normal PR fast path. `IB API Official Runtime` builds against the official SDK on the protected paper runner and verifies paper socket reachability; it never receives credentials or runs on pull requests. | Smoke evidence artifacts and protected-run logs |
 | Copilot Setup Steps | `copilot-setup-steps.yml` | Copilot setup, relevant pushes/PRs, manual | Validates the GitHub Copilot hosted setup path for repository dependencies. | None |
 
+### Declared PostgreSQL release payload
+
+Consumer installer packaging, `web-workstation`/`win-x64` installed-startup smoke, and evaluation
+packaging resolve the same checked-in [`postgresql-payload.json`](../../build/config/postgresql-payload.json)
+declaration through [`resolve-postgresql-payload.ps1`](../../build/scripts/install/resolve-postgresql-payload.ps1).
+The declaration selects PostgreSQL 17.11 for win-x64 from the Windows 2025 runner's explicit
+`C:\Program Files\PostgreSQL\17` source. Human governance review of this change accepts the
+version/source declaration; it does not establish historical approval or certification.
+
+The resolver stages `bin`, `lib`, `share`, and the declared distribution notices, verifies the exact
+version, and records version,
+source, runner identity, per-file hashes, and the canonical payload-tree SHA-256 in
+`artifacts/postgresql-payload/win-x64-payload.json`. Release manifests embed this receipt in
+`postgresqlPayloads`. The consumer builder verifies the staged receipt before npm or dotnet;
+missing or mismatched payloads fail before packaging without selecting another installed major.
+Payload updates require a reviewed declaration/source update plus negative-resolution tests,
+installed-startup smoke, and the existing native upgrade/rollback certification. See the
+[operator payload procedure](../../docs/operators/browser-workstation-installer.md#postgresql-payload-declaration).
+
 ## Local Equivalents
 
 When local CPU, memory, disk, package restore, or MSBuild lock contention makes testing unreliable,
