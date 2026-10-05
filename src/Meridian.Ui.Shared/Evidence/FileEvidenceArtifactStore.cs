@@ -150,6 +150,7 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
     private readonly ILogger<FileEvidenceArtifactStore> _logger;
     private readonly long _documentVerificationByteLimit;
     private readonly int _documentLocatorInspectionLimit;
+    private readonly Func<string, Stream> _openExportArtifact;
     // Serializes read-modify-write cycles on a vault's manifest/index pair. AtomicFileWriter
     // only makes each single write atomic; without this, concurrent document reviews on the
     // same vault could read the same snapshot and silently clobber each other's updates.
@@ -170,7 +171,8 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         string dataRoot,
         ILogger<FileEvidenceArtifactStore> logger,
         long documentVerificationByteLimit,
-        int documentLocatorInspectionLimit = MaxDocumentLocatorInspections)
+        int documentLocatorInspectionLimit = MaxDocumentLocatorInspections,
+        Func<string, Stream>? exportArtifactSourceFactory = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
         if (documentVerificationByteLimit <= 0
@@ -189,6 +191,7 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         _rootDirectory = Path.Combine(dataRoot, "workstation", "evidence");
         _documentVerificationByteLimit = documentVerificationByteLimit;
         _documentLocatorInspectionLimit = documentLocatorInspectionLimit;
+        _openExportArtifact = exportArtifactSourceFactory ?? OpenExportArtifact;
     }
     public async Task<EvidencePacketExportResponse> WriteManifestAsync(
         EvidencePacketDto packet,
@@ -236,7 +239,10 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         var manifestPath = Path.Combine(directory, fileName);
         var relativePath = Path.Combine("workstation", "evidence", subjectKind, subjectId, fileName);
         var manifestRoute = $"/workstation/evidence/{RouteSegment(subjectKind)}/{RouteSegment(subjectId)}/{RouteSegment(fileName)}";
-        var retainedArtifacts = await RetainLocalArtifactsAsync(packet, vaultId, generatedAt, ct).ConfigureAwait(false);
+        await using var publication = new ExportPublication(this, vaultId, manifestPath);
+        var retainedArtifacts = await RetainLocalArtifactsAsync(
+                packet, vaultId, generatedAt, publication.ArtifactDirectory, ct)
+            .ConfigureAwait(false);
         var vaultIdentity = new EvidenceVaultIdentityDto(
             VaultId: vaultId,
             SubjectKind: packet.Subject.SubjectKind,
@@ -268,10 +274,10 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         vaultIdentity = RefreshVaultIdentityContentHash(vaultIdentity, manifest);
         manifest = manifest with { VaultIdentity = vaultIdentity };
 
-        await AtomicFileWriter
-            .WriteAsync(manifestPath, JsonSerializer.Serialize(manifest, _jsonOptions), ct)
+        await publication.PublishAsync(
+                JsonSerializer.Serialize(manifest, _jsonOptions),
+                JsonSerializer.Serialize(vaultIdentity, _jsonOptions), ct)
             .ConfigureAwait(false);
-        await WriteVaultIndexAsync(vaultIdentity, ct).ConfigureAwait(false);
 
         _logger.LogInformation(
             "Wrote evidence manifest for {SubjectKind}/{SubjectId} to {ManifestPath}.",
@@ -2212,6 +2218,7 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         EvidencePacketDto packet,
         string vaultId,
         DateTimeOffset retainedAt,
+        string artifactDirectory,
         CancellationToken ct)
     {
         var retainedArtifacts = packet.Nodes
@@ -2225,7 +2232,6 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
             return [];
         }
 
-        var artifactDirectory = Path.Combine(_rootDirectory, "_vault", vaultId, "artifacts");
         var copied = new List<EvidenceVaultArtifactDto>(retainedArtifacts.Length);
         foreach (var artifact in retainedArtifacts)
         {
@@ -2248,24 +2254,31 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
                 throw new InvalidOperationException($"Retained artifact '{artifact.ArtifactId}' exceeds the 100 MB vault artifact limit.");
             }
 
-            var bytes = await File.ReadAllBytesAsync(sourcePath, ct).ConfigureAwait(false);
-            var hash = Sha256Digest.Compute(bytes);
-            if (!string.IsNullOrWhiteSpace(artifact.Hash) &&
-                !string.Equals(NormalizeHash(artifact.Hash), hash, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidOperationException($"Retained artifact '{artifact.ArtifactId}' hash does not match source content.");
-            }
-
             var safeFileName = BuildArtifactFileName(artifact, sourcePath);
             var targetPath = Path.Combine(artifactDirectory, safeFileName);
-            await AtomicFileWriter.WriteAsync(targetPath, bytes, ct).ConfigureAwait(false);
+            if (File.Exists(targetPath))
+            {
+                throw new InvalidOperationException($"Retained artifact '{artifact.ArtifactId}' collides with another artifact in this export.");
+            }
+            await using var source = _openExportArtifact(sourcePath);
+            ExportArtifactCopyResult? copy = null;
+            await AtomicFileWriter.WriteStreamAsync(targetPath, async destination =>
+            {
+                copy = await CopyExportArtifactAsync(source, destination, artifact.ArtifactId, ct).ConfigureAwait(false);
+                if (!string.IsNullOrWhiteSpace(artifact.Hash) &&
+                    !Sha256Digest.FixedEquals(NormalizeHash(artifact.Hash), copy.ContentHashSha256))
+                {
+                    throw new InvalidOperationException($"Retained artifact '{artifact.ArtifactId}' hash does not match source content.");
+                }
+            }, ct).ConfigureAwait(false);
+            var completedCopy = copy ?? throw new InvalidOperationException("Evidence artifact copying did not produce a retained digest.");
             copied.Add(new EvidenceVaultArtifactDto(
                 ArtifactId: artifact.ArtifactId,
                 Kind: artifact.Kind,
                 RelativePath: Path.Combine("workstation", "evidence", "_vault", vaultId, "artifacts", safeFileName)
                     .Replace(Path.DirectorySeparatorChar, '/'),
-                ContentHashSha256: hash,
-                SizeBytes: bytes.LongLength,
+                ContentHashSha256: completedCopy.ContentHashSha256,
+                SizeBytes: completedCopy.SizeBytes,
                 RetainedAt: retainedAt,
                 SourcePath: sourcePath,
                 SourceRoute: artifact.Route,

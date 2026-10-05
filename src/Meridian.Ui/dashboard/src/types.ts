@@ -7,6 +7,7 @@ export * from "./types/mark-freshness";
 export * from "./types/market-data";
 export * from "./types/canonical-symbol";
 export * from "./types/provider-accounting";
+export * from "./types/provider-integration-provenance";
 export * from "./types/reporting-governance";
 export * from "./types/workstation-1";
 export * from "./types/workstation-2";

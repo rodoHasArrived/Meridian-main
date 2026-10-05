@@ -820,6 +820,24 @@
       "sha256": "5c93eecf9b44bc469430164ac3bd4e2bbd7818a57c75cd25d29a4e8609249a24"
     },
     {
+      "filename": "V_ledger_040__canonical_lot_amortization.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_040__canonical_lot_amortization.sql",
+      "schema": "ledger",
+      "sha256": "2c355e21469f47d0595dca1a55a6bce4fed6df56937229e1bec2f65213249092"
+    },
+    {
+      "filename": "V_ledger_041__current_basis_disposal.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_041__current_basis_disposal.sql",
+      "schema": "ledger",
+      "sha256": "fa5bb6af9f5ac1b4d66c59a7e345b12bea59d7990381c2d9c496e30ec5ac0672"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1064,7 +1082,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "0850ae599ffc52ab3643c100e3675b46034f4a3eae458aad9f675015772743ae",
+  "fingerprint": "75563c4e9ab6f5feb3ec17f350b01b36f6b4b3a6e80117bd08f51dd19c889109",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1302,9 +1320,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 118,
+    "files": 120,
     "migration_sets": 10,
-    "waivers": 11,
+    "waivers": 13,
     "warnings": 0
   },
   "waivers": [
@@ -1355,6 +1373,20 @@
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_037__open_lot_basis_adjustment.sql",
       "reason": "Constraint widening, not data loss: ck_tax_lot_mutations_kind, ck_tax_lot_mutations_quantities, and ck_tax_lot_mutations_cost are dropped and immediately re-created in the same transaction as strict supersets that admit the governed AverageCost BasisRedistribution mutation kind and pooled relief basis. Every existing row still satisfies the re-created checks, and no column or data is removed.",
       "review_after": "2027-03-01",
+      "rule_id": "migration-drop-table-member"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_040__canonical_lot_amortization.sql",
+      "reason": "Requires human schema/storage review. Replaces only four check constraints transactionally with strict supersets admitting basis-only Amortization. Existing acquisition, disposal and average-cost rules remain intact; every previously valid row stays valid. No table, column, row or acquisition fact is removed. The migration runner rolls back the constraint replacement on failure. Validate fresh and upgrade databases before release.",
+      "review_after": "2027-04-02",
+      "rule_id": "migration-drop-table-member"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_041__current_basis_disposal.sql",
+      "reason": "Requires human schema/storage review. The cost check is dropped and immediately recreated transactionally as a superset: canonical discrete disposals retain current basis in their pre-relief acquisition and governed-adjustment snapshot, while acquisition-cost, AverageCost and PR #3048 amortization cases remain admitted. No columns or data are removed. Follows PR #3048's ordinal 040 amortization migration.",
+      "review_after": "2027-04-02",
       "rule_id": "migration-drop-table-member"
     },
     {

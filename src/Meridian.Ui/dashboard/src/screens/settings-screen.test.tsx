@@ -1836,6 +1836,7 @@ describe("SettingsScreen", () => {
     apiMocks.getProviderIntegrationStagingReview.mockResolvedValue(staging);
     apiMocks.importProviderIntegrationOpenApi.mockResolvedValue({
       imported: true,
+      manifestReference: { manifestId: "draft-polygon-openapi-v1", manifestVersion: 2, contentDigest: "sha256:imported-manifest" },
       manifest: {
         manifestId: "draft-polygon-openapi-v1",
         integrationType: "OpenApiRest",
@@ -1972,6 +1973,12 @@ describe("SettingsScreen", () => {
     });
     expect(await within(openApiForm).findByText("OpenAPI import draft manifest saved.")).toBeInTheDocument();
     expect(within(openApiForm).getByText("2 endpoints seeded.")).toBeInTheDocument();
+    await user.click(within(openApiForm).getByRole("button", { name: "Import OpenAPI draft manifest for Polygon.io" }));
+    await waitFor(() => {
+      expect(apiMocks.importProviderIntegrationOpenApi).toHaveBeenNthCalledWith(2, expect.objectContaining({
+        expectedManifestReference: { manifestId: "draft-polygon-openapi-v1", manifestVersion: 2, contentDigest: "sha256:imported-manifest" }
+      }));
+    });
 
     await user.click(within(panel).getByRole("button", {
       name: "Create reconciliation handoff for 1 provider integration staging rows for Polygon.io"
@@ -2031,6 +2038,7 @@ describe("SettingsScreen", () => {
     await waitFor(() => {
       expect(apiMocks.replayProviderIntegrationQuarantineRecords).toHaveBeenCalledWith(expect.objectContaining({
         sourceSyncRunId: "sync-positions-2",
+        mode: "Original",
         manifestId: "manifest-polygon",
         connectionId: "provider-reference",
         capability: "Positions",
@@ -2157,6 +2165,8 @@ describe("SettingsScreen", () => {
       ]
     };
     const readyReadiness = { isReady: true, requiredEvidence: ["dry-run-result"], issues: [] };
+    const savedReference = { manifestId: manifest.manifestId, manifestVersion: 2, contentDigest: "sha256:saved-manifest" };
+    const activatedReference = { manifestId: manifest.manifestId, manifestVersion: 3, contentDigest: "sha256:activated-manifest" };
     apiMocks.getProviderIntegrationTemplates.mockResolvedValue([
       {
         manifestId: manifest.manifestId,
@@ -2171,6 +2181,7 @@ describe("SettingsScreen", () => {
     apiMocks.getProviderIntegrationTemplate.mockResolvedValue(manifest);
     apiMocks.saveProviderIntegrationSetup.mockResolvedValue({
       saved: true,
+      manifestReference: savedReference,
       manifestId: manifest.manifestId,
       connectionId: "provider-reference",
       manifestState: "Draft",
@@ -2214,6 +2225,7 @@ describe("SettingsScreen", () => {
     });
     apiMocks.activateProviderIntegration.mockResolvedValue({
       activated: true,
+      manifestReference: activatedReference,
       manifestId: manifest.manifestId,
       connectionId: "provider-reference",
       manifestState: "Active",
@@ -2251,6 +2263,15 @@ describe("SettingsScreen", () => {
       }));
     });
     expect(await within(workbench).findByText("Provider integration setup draft saved.")).toBeInTheDocument();
+    const manifestEditor = within(workbench).getByRole("textbox", { name: "Polygon.io provider integration manifest draft JSON" });
+    expect(JSON.parse((manifestEditor as HTMLTextAreaElement).value).manifestVersion).toBe(2);
+    await user.click(within(workbench).getByRole("button", { name: "Save provider integration setup draft for Polygon.io" }));
+    await waitFor(() => {
+      expect(apiMocks.saveProviderIntegrationSetup).toHaveBeenNthCalledWith(2, expect.objectContaining({
+        manifest: expect.objectContaining({ manifestVersion: 2 }),
+        expectedManifestReference: savedReference
+      }));
+    });
 
     await user.click(within(workbench).getByRole("button", { name: "Check provider integration activation readiness for Polygon.io" }));
     await waitFor(() => {
@@ -2300,10 +2321,19 @@ describe("SettingsScreen", () => {
         manifestId: manifest.manifestId,
         connectionId: "provider-reference",
         approvedBy: "Andrew Rowden",
+        expectedManifestReference: savedReference,
         approvalEvidenceId: expect.stringMatching(/^settings-provider-activation-provider-reference-/)
       }));
     });
     expect(await within(workbench).findByText("Provider integration activated.")).toBeInTheDocument();
+    expect(JSON.parse((manifestEditor as HTMLTextAreaElement).value).manifestVersion).toBe(3);
+    await user.click(within(workbench).getByRole("button", { name: "Save provider integration setup draft for Polygon.io" }));
+    await waitFor(() => {
+      expect(apiMocks.saveProviderIntegrationSetup).toHaveBeenNthCalledWith(3, expect.objectContaining({
+        manifest: expect.objectContaining({ manifestVersion: 3 }),
+        expectedManifestReference: activatedReference
+      }));
+    });
   });
   it("blocks provider integration setup drafts with field-level issues before calling the API", async () => {
     const user = userEvent.setup();

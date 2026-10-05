@@ -10,6 +10,7 @@ This folder contains release-gate and acceptance-test references.
 - [Wave 2 Acceptance Tests](WAVE2_ACCEPTANCE_TESTS.md)
 - [Accounting Trust Correction Acceptance](accounting-trust-corrections.md)
 - [W10 Posted Amount Provenance](w10-amount-provenance.md)
+- [W10 Close-Readiness and Mark-Freshness Operator Acceptance](w10-mark-seam-operator-acceptance.md)
 
 For current developer commands, use [Engineering](../engineering/README.md) and
 [Start](../start/README.md). Keep scenario-specific checklists here and avoid

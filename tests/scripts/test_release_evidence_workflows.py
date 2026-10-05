@@ -125,6 +125,30 @@ jobs:
         self.assertIn("verify-release-promotion.py", workflow)
         self.assertIn("files: artifacts/publish-release/*", workflow)
 
+    def test_consumer_certification_is_a_separate_required_promotion_gate(self) -> None:
+        workflow = DESKTOP_INSTALLER.read_text(encoding="utf-8")
+        consumer = self._job_block(workflow, "certify-installed-consumer")
+        release = self._job_block(workflow, "release")
+
+        self.assertIn("needs: [eligibility, build-consumer-setup]", consumer)
+        self.assertIn("runs-on: windows-latest", consumer)
+        self.assertIn("ref: ${{ github.sha }}", consumer)
+        self.assertIn("name: meridian-consumer-setup-${{ github.run_id }}-${{ github.run_attempt }}", consumer)
+        self.assertIn("-CurrentPackage artifacts/current-consumer/Meridian-Setup.exe", consumer)
+        self.assertIn("certify-consumer-install-lifecycle.ps1", consumer)
+        self.assertIn("resolve-consumer-predecessor.py", consumer)
+        self.assertIn("-PredecessorEvidencePath artifacts/consumer-certification/consumer-predecessor.json", consumer)
+        self.assertIn("consumer-setup-win-x64-lifecycle.json", consumer)
+        self.assertIn("if: always()", consumer)
+        self.assertIn("retention-days: 90", consumer)
+        self.assertNotIn("TrustSelfSignedRoot", consumer)
+        for block in self._shell_blocks(consumer):
+            self.assertNotIn("${{", block)
+        needs_line = next(line for line in release.splitlines() if line.strip().startswith("needs:"))
+        self.assertIn("certify-installed-consumer", needs_line)
+        self.assertIn("name: consumer-install-certification-win-x64-${{ github.run_id }}-${{ github.run_attempt }}", release)
+        self.assertIn("path: artifacts/certification", release)
+
     def test_robinhood_smoke_uses_named_powershell_splatting(self) -> None:
         workflow = ROBINHOOD_OPTIONS_SMOKE.read_text(encoding="utf-8")
 

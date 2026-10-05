@@ -1,0 +1,69 @@
+{
+  "applicationCandidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+  "fullLocalCi": {
+    "command": "timeout 900s bash scripts/ci.sh",
+    "exitCode": 124,
+    "result": "incomplete; fifteen-minute attempt timed out",
+    "completedGroups": [
+      {
+        "name": "default test build",
+        "exitCode": 0,
+        "seconds": 39.218
+      },
+      {
+        "name": "core-application",
+        "exitCode": 0,
+        "seconds": 47.013
+      },
+      {
+        "name": "core-ui-workstation-endpoints",
+        "exitCode": 0,
+        "seconds": 327.998
+      },
+      {
+        "name": "core-ui-other",
+        "exitCode": 0,
+        "seconds": 239.421
+      },
+      {
+        "name": "core-infrastructure",
+        "exitCode": 0,
+        "seconds": 18.945
+      },
+      {
+        "name": "core-storage",
+        "exitCode": 0,
+        "seconds": 27.783
+      },
+      {
+        "name": "core-data",
+        "exitCode": 0,
+        "seconds": 14.754
+      }
+    ],
+    "log": "full-ci.log.gz",
+    "cleanup": "buildctl validation-status: blocked=false, active_processes=0; dotnet build-server shutdown succeeded"
+  },
+  "docsLane": {
+    "command": "bash scripts/ci.sh --lane verify-docs",
+    "result": "passed",
+    "exitCode": 0,
+    "log": "docs-ci.log.gz",
+    "limitations": [
+      "promtool unavailable: validation skipped by maintained lane",
+      "10 provider-validation script tests skipped by maintained lane"
+    ],
+    "tests": {
+      "run": 229,
+      "passed": 219,
+      "skipped": 10,
+      "failed": 0
+    }
+  },
+  "packetIntegrity": {
+    "result": "passed; acceptance pending",
+    "negativeChecks": "changed bytes and rehashed unsupplied accept state rejected; see integrity-validation.json"
+  },
+  "hostedCandidateChecks": "failed/cancelled; see hosted-checks.json",
+  "operatorAcceptance": "pending"
+}

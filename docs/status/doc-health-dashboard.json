@@ -1,11 +1,11 @@
 {
-  "total_files": 719,
-  "total_lines": 162670,
+  "total_files": 727,
+  "total_lines": 164229,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 288,
-  "average_lines": 226.2,
+  "todo_count": 291,
+  "average_lines": 225.9,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -971,7 +971,7 @@
     },
     {
       "path": "build/schema-control/oct5-combined-candidate/docs/contracts/asset-operations-contracts-page-01.md",
-      "line_count": 684,
+      "line_count": 685,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1259,7 +1259,7 @@
     },
     {
       "path": "build/scripts/docs/README.md",
-      "line_count": 850,
+      "line_count": 854,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1867,7 +1867,7 @@
     },
     {
       "path": "docs/architecture/provider-integration-manifest-runtime.md",
-      "line_count": 798,
+      "line_count": 864,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2442,6 +2442,14 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/actions-storage-audit-2026-10-05.md",
+      "line_count": 154,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/blueprints/accounting/commitment-and-capital-call-engine.md",
       "line_count": 1033,
       "has_heading": true,
@@ -2515,7 +2523,7 @@
     },
     {
       "path": "docs/engineering/blueprints/security-lot-convergence-blueprint.md",
-      "line_count": 334,
+      "line_count": 419,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2547,7 +2555,7 @@
     },
     {
       "path": "docs/engineering/ci-cd-optimization.md",
-      "line_count": 165,
+      "line_count": 188,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2643,9 +2651,9 @@
     },
     {
       "path": "docs/engineering/production-certification-evidence-chain.md",
-      "line_count": 504,
+      "line_count": 563,
       "has_heading": true,
-      "todo_count": 2,
+      "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -2659,7 +2667,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 325,
+      "line_count": 334,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2715,7 +2723,7 @@
     },
     {
       "path": "docs/generated/database/contracts/asset-operations-contracts-page-01.md",
-      "line_count": 684,
+      "line_count": 685,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3043,7 +3051,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11190,
+      "line_count": 11307,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3187,7 +3195,7 @@
     },
     {
       "path": "docs/operators/failover-and-recovery.md",
-      "line_count": 315,
+      "line_count": 432,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3307,7 +3315,7 @@
     },
     {
       "path": "docs/operators/service-level-objectives.md",
-      "line_count": 281,
+      "line_count": 306,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3459,7 +3467,7 @@
     },
     {
       "path": "docs/product/implementation-todo-list.md",
-      "line_count": 657,
+      "line_count": 667,
       "has_heading": true,
       "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3715,7 +3723,7 @@
     },
     {
       "path": "docs/reference/database-schema.md",
-      "line_count": 146,
+      "line_count": 160,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4210,8 +4218,56 @@
       "stale": false
     },
     {
+      "path": "docs/testing/evidence/w10-615abde9/browser/browser-evidence.md",
+      "line_count": 95,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/w10-615abde9/criteria-review.md",
+      "line_count": 102,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/w10-615abde9/desktop/desktop-evidence.md",
+      "line_count": 109,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/w10-615abde9/desktop/wpf-finance-ux-static.md",
+      "line_count": 17,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/w10-615abde9/README.md",
+      "line_count": 79,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/w10-615abde9/server/server-evidence.md",
+      "line_count": 47,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/testing/README.md",
-      "line_count": 16,
+      "line_count": 17,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4222,6 +4278,14 @@
       "line_count": 126,
       "has_heading": true,
       "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/w10-mark-seam-operator-acceptance.md",
+      "line_count": 309,
+      "has_heading": true,
+      "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -5627,7 +5691,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 920,
+      "line_count": 928,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5659,7 +5723,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1582,
+      "line_count": 1592,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5723,7 +5787,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 874,
+      "line_count": 883,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5803,7 +5867,7 @@
     },
     {
       "path": "src/Meridian.Ledger/README.md",
-      "line_count": 318,
+      "line_count": 321,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5891,7 +5955,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 773,
+      "line_count": 792,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5915,7 +5979,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2570,
+      "line_count": 2583,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5923,7 +5987,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1444,
+      "line_count": 1450,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6019,7 +6083,7 @@
     },
     {
       "path": "tests/scripts/README.md",
-      "line_count": 46,
+      "line_count": 55,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6107,7 +6171,7 @@
     },
     {
       "path": "tools/roadmap/README.md",
-      "line_count": 46,
+      "line_count": 54,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6115,7 +6179,7 @@
     },
     {
       "path": "tools/schema_control/README.md",
-      "line_count": 93,
+      "line_count": 123,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
