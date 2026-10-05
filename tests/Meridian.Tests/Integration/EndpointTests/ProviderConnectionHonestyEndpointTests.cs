@@ -6,7 +6,6 @@ using Meridian.Identity.Auth;
 namespace Meridian.Tests.Integration.EndpointTests;
 
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class ProviderConnectionHonestyEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;

@@ -15,6 +15,7 @@ This folder owns scenario-specific acceptance procedures and retained evidence.
 | Verify accounting trust corrections | [Accounting trust acceptance](accounting-trust-corrections.md) | Scenario checklist; operator decisions remain explicit. |
 | Evaluate close readiness and mark freshness | [W10 operator acceptance](w10-mark-seam-operator-acceptance.md) | Candidate, population, criterion decisions, and validation limits. |
 | Inspect retained W10 evidence | [Candidate evidence packet](evidence/w10-615abde9/README.md) | Results bound to its recorded commit and environment. |
+| Validate endpoint isolation and concurrency | [Endpoint fixture isolation](endpoint-fixture-isolation.md) | Reproducible benchmark and recorded isolation evidence. |
 
 A procedure describes what to verify; a retained packet records what was actually observed. Keep
 packet dates, commits, and unresolved findings intact. Readiness and release acceptance remain in
