@@ -228,6 +228,12 @@ npm --prefix src/Meridian.Ui/dashboard run test
 python build/scripts/docs/check-ai-inventory.py --summary
 ```
 
+For a repeated .NET edit/test loop, add `--profile worktree` or `--profile session:<name>` to
+`buildctl.py test` to reuse compatible build outputs. Reports remain unique to each run. Before
+handing off a change, omit `--profile` or use `--fresh` for fresh isolated test validation. See
+[persistent build profiles](../development/build-observability.md#persistent-build-profiles)
+for the matching build command and compatibility rules.
+
 For completed PR-ready work, run the canonical repository gate, `bash scripts/ci.sh`; GitHub Actions
 `Meridian CI / quality-gate` remains the authoritative merge result.
 

@@ -35,8 +35,12 @@ import socket
 import subprocess
 import sys
 import time
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from build_profiles import prepare_profile, mark_profile_built, mark_profile_build_started, normalize_properties
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -112,7 +116,7 @@ def _build_msbuild_args(args: argparse.Namespace) -> list[str]:
     for prop in getattr(args, "property", []) or []:
         if not prop:
             continue
-        if prop.startswith(("/p:", "-p:")):
+        if prop.lower().startswith(("/p:", "-p:")):
             msbuild_args.append(prop)
         else:
             msbuild_args.append(f"/p:{prop}")
@@ -143,12 +147,17 @@ def _safe_slug(value: str) -> str:
 
 def _new_run_id(prefix: str) -> str:
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
-    return f"{_safe_slug(prefix)}-{os.getpid()}-{timestamp}"
+    return f"{_safe_slug(prefix)}-{timestamp}-{uuid.uuid4().hex}"
 
 
 def _write_json(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
+    try:
+        temporary.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        temporary.replace(path)
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def _validation_lock_path(repo_root: Path | None = None) -> Path:
@@ -211,6 +220,20 @@ def _release_validation_lock(repo_root: Path, run_id: str) -> None:
         lock_path.unlink(missing_ok=True)
     except OSError as exc:
         print(f"WARN: Failed to release validation lock '{lock_path}': {exc}", file=sys.stderr)
+
+
+def _run_dotnet_writer(cmd: list[str], *, capture: bool = True) -> subprocess.CompletedProcess[str]:
+    """Keep legacy diagnostic builds/restores in the same writer protocol."""
+    run_id = _new_run_id("diagnostic")
+    if not _acquire_validation_lock(REPO_ROOT, run_id=run_id, command=" ".join(cmd), queue=False, timeout_seconds=0):
+        message = "Build outputs are locked; wait for the current build/test run to finish."
+        if not capture:
+            print(message, file=sys.stderr)
+        return subprocess.CompletedProcess(cmd, 3, "", message)
+    try:
+        return _run(cmd, capture=capture)
+    finally:
+        _release_validation_lock(REPO_ROOT, run_id)
 
 
 def _find_powershell() -> str | None:
@@ -299,8 +322,65 @@ def _resolve_isolation_key(raw_key: str | None, *, run_id: str, disabled: bool) 
     if disabled:
         return None
     if not raw_key or raw_key == "auto":
+        _validate_output_name(run_id, "run ID")
+        if run_id.lower().startswith("profile-"):
+            raise ValueError("The profile- prefix is reserved and cannot be used for a fresh run ID.")
         return run_id
+    _validate_output_name(raw_key, "isolation key")
+    if raw_key.lower().startswith("profile-"):
+        raise ValueError("The profile- isolation-key prefix is reserved; select --profile instead.")
     return raw_key
+
+
+def _validate_output_name(value: str, label: str) -> None:
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,179}", value) or value.endswith("."):
+        raise ValueError(f"Invalid {label}: use a portable name containing letters, digits, '.', '_' or '-'.")
+
+
+def _validate_output_options(args: argparse.Namespace) -> None:
+    # Output overrides must not bypass fresh isolation or a persistent manifest.
+    normalize_properties(getattr(args, "property", []))
+    for option in ("configuration", "framework", "runtime"):
+        value = getattr(args, option, None)
+        if value and any(char in value for char in (";", ",", "\n", "\r")):
+            raise ValueError(f"--{option} requires a single value, not compound build-property assignments.")
+    for logger in getattr(args, "logger", None) or []:
+        for parameter in logger.split(";")[1:]:
+            name, separator, value = parameter.partition("=")
+            if separator and name.casefold() in ("logfilename", "logfileprefix"):
+                # VSTest accepts absolute filenames that escape --results-directory.
+                if not value or value in (".", "..") or any(char in value for char in ("/", "\\", ":")):
+                    raise ValueError("Logger LogFileName/LogFilePrefix must be a filename inside the unique run directory.")
+    profile = getattr(args, "profile", None)
+    fresh = getattr(args, "fresh", False)
+    key = getattr(args, "isolation_key", None)
+    if (profile or fresh) and (getattr(args, "no_isolation", False) or key not in (None, "auto")):
+        raise ValueError("--profile/--fresh cannot be combined with --no-isolation or an explicit --isolation-key.")
+    if profile and fresh:
+        raise ValueError("--profile and --fresh are mutually exclusive.")
+
+
+def _prepare_outputs(args: argparse.Namespace, run_id: str, command: str = "test") -> tuple[argparse.Namespace, dict | None]:
+    effective = argparse.Namespace(**vars(args))
+    effective.property = [f"{name}={value}" for name, value in normalize_properties(getattr(args, "property", []))]
+    profile = None
+    if getattr(args, "profile", None):
+        sdk = _run(["dotnet", "--version"])
+        if sdk.returncode != 0 or not sdk.stdout.strip():
+            raise ValueError("Unable to resolve the .NET SDK for profile compatibility.")
+        profile = prepare_profile(REPO_ROOT, args, sdk.stdout.strip())
+        effective.isolation_key = profile["isolationKey"]
+    elif getattr(args, "fresh", False) or command == "test":
+        effective.isolation_key = _resolve_isolation_key(
+            getattr(args, "isolation_key", "auto"), run_id=run_id,
+            disabled=getattr(args, "no_isolation", False),
+        )
+    elif getattr(args, "isolation_key", None):
+        effective.isolation_key = _resolve_isolation_key(args.isolation_key, run_id=run_id, disabled=False)
+    if getattr(effective, "isolation_key", None) == run_id:
+        if any((REPO_ROOT / "artifacts" / root / run_id).exists() for root in ("bin", "obj")):
+            raise ValueError("Fresh output already exists; choose a new run ID for independent validation.")
+    return effective, profile
 
 
 def _prune_for_isolation(args: argparse.Namespace, isolation_key: str | None) -> None:
@@ -450,6 +530,9 @@ def _prune_isolated_build_artifacts(
         active_bytes = 0
         for directory in artifact_root.iterdir():
             if not directory.is_dir() or directory.is_symlink():
+                continue
+            # Persistent profile outputs have an explicit lifecycle, outside run retention.
+            if directory.name.casefold().startswith("profile-"):
                 continue
 
             candidate_path = directory.resolve()
@@ -641,7 +724,7 @@ def _check_solution_restore(quick: bool) -> tuple[bool, bool, str]:
         if sln.exists():
             return True, False, "Meridian.sln found (restore skipped in quick mode)"
         return False, False, "Meridian.sln not found"
-    result = _run(
+    result = _run_dotnet_writer(
         [
             "dotnet",
             "restore",
@@ -1033,43 +1116,60 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 
 
 def cmd_build(args: argparse.Namespace) -> int:
-    project: str = getattr(args, "project", "Meridian.sln")
-    configuration: str = getattr(args, "configuration", "Release")
-    verbosity: str = getattr(args, "verbosity", os.environ.get("BUILD_VERBOSITY", "normal"))
-    msbuild_args = _build_msbuild_args(args)
-    isolation_key = getattr(args, "isolation_key", None)
-
-    _prune_for_isolation(args, isolation_key)
-
-    if getattr(args, "shutdown_build_servers", False):
-        print("Shutting down dotnet build servers...")
-        shutdown_code = _run_passthrough(["dotnet", "build-server", "shutdown"])
-        if shutdown_code != 0:
-            return shutdown_code
-
-    if not getattr(args, "skip_restore", False):
-        print(f"Restoring {project}...")
-        restore_code = _run_passthrough(
-            ["dotnet", "restore", project, "--verbosity", verbosity, *msbuild_args]
+    project = getattr(args, "project", "Meridian.sln")
+    configuration = getattr(args, "configuration", "Release")
+    verbosity = getattr(args, "verbosity", "normal")
+    run_id = _new_run_id(f"build-{Path(project).stem}")
+    try:
+        _validate_output_options(args)
+        if getattr(args, "fresh", False) and getattr(args, "skip_restore", False):
+            raise ValueError("--fresh requires restore; remove --skip-restore.")
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+    if not _acquire_validation_lock(
+        REPO_ROOT, run_id=run_id, command=f"buildctl build --project {project}",
+        queue=getattr(args, "queue", False),
+        timeout_seconds=getattr(args, "queue_timeout_seconds", 300),
+    ):
+        print("Build outputs are locked; rerun with --queue to wait.", file=sys.stderr)
+        return 3
+    try:
+        active = _wait_for_no_active_repo_build_processes(
+            getattr(args, "queue_timeout_seconds", 300) if getattr(args, "queue", False) else 0
         )
-        if restore_code != 0:
-            return restore_code
-
-    print(f"Building {project} ({configuration})...")
-    return _run_passthrough(
-        [
-            "dotnet",
-            "build",
-            project,
-            "-c",
-            configuration,
-            "--verbosity",
-            verbosity,
-            "-nologo",
-            "--no-restore",
-            *msbuild_args,
-        ]
-    )
+        if active:
+            print("Active repo-owned build processes detected; refusing overlapping writes.", file=sys.stderr)
+            return 3
+        effective, profile = _prepare_outputs(args, run_id, command="build")
+        msbuild_args = _build_serialized_msbuild_args(effective)
+        _prune_for_isolation(args, getattr(effective, "isolation_key", None))
+        if profile:
+            print(f"Build profile: {profile['profileName']} ({profile['isolationKey']})")
+            mark_profile_build_started(profile)
+        if getattr(args, "shutdown_build_servers", False):
+            code = _run_passthrough(["dotnet", "build-server", "shutdown"])
+            if code != 0:
+                return code
+        if not getattr(args, "skip_restore", False):
+            code = _run_passthrough([
+                "dotnet", "restore", project, "--verbosity", verbosity,
+                f"/p:Configuration={configuration}", *msbuild_args,
+            ])
+            if code != 0:
+                return code
+        code = _run_passthrough([
+            "dotnet", "build", project, "-c", configuration,
+            "--verbosity", verbosity, "-nologo", "--no-restore", *msbuild_args,
+        ])
+        if code == 0 and profile:
+            mark_profile_built(profile)
+        return code
+    except (ValueError, OSError) as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+    finally:
+        _release_validation_lock(REPO_ROOT, run_id)
 
 
 # ---------------------------------------------------------------------------
@@ -1122,16 +1222,21 @@ def cmd_test(args: argparse.Namespace) -> int:
     verbosity: str = getattr(args, "verbosity", os.environ.get("BUILD_VERBOSITY", "normal"))
     no_build = getattr(args, "no_build", False)
     run_id = getattr(args, "run_id", None) or _new_run_id(f"test-{Path(project).stem}")
-    isolation_key = _resolve_isolation_key(
-        getattr(args, "isolation_key", "auto"),
-        run_id=run_id,
-        disabled=getattr(args, "no_isolation", False),
-    )
+    try:
+        _validate_output_options(args)
+        _validate_output_name(run_id, "run ID")
+        isolation_key = None if getattr(args, "profile", None) else _resolve_isolation_key(
+            getattr(args, "isolation_key", "auto"), run_id=run_id,
+            disabled=getattr(args, "no_isolation", False),
+        )
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
 
-    if no_build and getattr(args, "isolation_key", "auto") == "auto" and not getattr(args, "no_isolation", False):
+    if (no_build or getattr(args, "skip_restore", False)) and isolation_key == run_id:
         print(
-            "--no-build requires an existing --isolation-key or --no-isolation; "
-            "the default auto isolation key creates a new output location. "
+            "--no-build/--skip-restore requires an existing --isolation-key or --no-isolation, "
+            "or a compatible --profile. Fresh isolation requires restore and build. "
             "Build first with the same project, configuration, framework, runtime, and properties.",
             file=sys.stderr,
         )
@@ -1146,35 +1251,41 @@ def cmd_test(args: argparse.Namespace) -> int:
         "filter": getattr(args, "filter", ""),
         "configuration": configuration,
         "isolationKey": isolation_key,
+        "profile": getattr(args, "profile", None),
         "startedAt": _utc_now(),
         "status": "started",
         "steps": [],
     }
-    _write_json(run_path, run_payload)
+    try:
+        run_path.parent.mkdir(parents=True, exist_ok=True)
+        # Reserve the evidence ID atomically, including explicitly supplied IDs.
+        with run_path.open("x", encoding="utf-8") as handle:
+            handle.write(json.dumps(run_payload, indent=2, sort_keys=True) + "\n")
+    except FileExistsError:
+        print(f"Run ID already exists: {run_id}; choose a new --run-id.", file=sys.stderr)
+        return 2
 
-    lock_acquired = False
-    if not getattr(args, "allow_concurrent", False):
-        lock_acquired = _acquire_validation_lock(
-            REPO_ROOT,
-            run_id=run_id,
-            command=f"buildctl test --project {project}",
-            queue=getattr(args, "queue", False),
-            timeout_seconds=getattr(args, "queue_timeout_seconds", 300),
+    lock_acquired = _acquire_validation_lock(
+        REPO_ROOT,
+        run_id=run_id,
+        command=f"buildctl test --project {project}",
+        queue=getattr(args, "queue", False),
+        timeout_seconds=getattr(args, "queue_timeout_seconds", 300),
+    )
+    if not lock_acquired:
+        lock = _read_validation_lock()
+        _record_validation_run(
+            run_path,
+            run_payload,
+            status="blocked",
+            finishedAt=_utc_now(),
+            blockReason="validation lock is held by another run",
+            lock=lock,
         )
-        if not lock_acquired:
-            lock = _read_validation_lock()
-            _record_validation_run(
-                run_path,
-                run_payload,
-                status="blocked",
-                finishedAt=_utc_now(),
-                blockReason="validation lock is held by another run",
-                lock=lock,
-            )
-            print("Validation is already running; rerun with --queue to wait or --allow-concurrent to override.", file=sys.stderr)
-            if lock:
-                print(json.dumps(lock, indent=2, sort_keys=True), file=sys.stderr)
-            return 3
+        print("Build outputs are locked; rerun with --queue to wait.", file=sys.stderr)
+        if lock:
+            print(json.dumps(lock, indent=2, sort_keys=True), file=sys.stderr)
+        return 3
 
     try:
         active_processes = _wait_for_no_active_repo_build_processes(
@@ -1201,15 +1312,16 @@ def cmd_test(args: argparse.Namespace) -> int:
                 )
             return 3
 
+        effective_args, profile = _prepare_outputs(args, run_id)
+        isolation_key = effective_args.isolation_key
+        _record_validation_run(run_path, run_payload, isolationKey=isolation_key)
         _prune_for_isolation(args, isolation_key)
-
-        effective_args = argparse.Namespace(**vars(args))
-        effective_args.isolation_key = isolation_key
         msbuild_args = _build_serialized_msbuild_args(effective_args)
-        results_directory = Path(getattr(args, "results_directory", "") or (REPO_ROOT / ".ai/test-results" / run_id))
+        results_directory = Path(getattr(args, "results_directory", "") or (REPO_ROOT / ".ai/test-results")) / run_id
         if not results_directory.is_absolute():
             results_directory = REPO_ROOT / results_directory
-        results_directory.mkdir(parents=True, exist_ok=True)
+        results_directory.mkdir(parents=True, exist_ok=False)
+        _record_validation_run(run_path, run_payload, resultsDirectory=str(results_directory))
 
         step_results: list[dict[str, object]] = []
 
@@ -1234,8 +1346,10 @@ def cmd_test(args: argparse.Namespace) -> int:
                 _record_validation_run(run_path, run_payload, status="failed", finishedAt=_utc_now(), exitCode=shutdown_code)
                 return shutdown_code
 
+        if profile and not no_build:
+            mark_profile_build_started(profile)
         if not no_build and not getattr(args, "skip_restore", False):
-            restore_code = run_step("restore", ["dotnet", "restore", project, "--verbosity", verbosity, *msbuild_args])
+            restore_code = run_step("restore", ["dotnet", "restore", project, "--verbosity", verbosity, f"/p:Configuration={configuration}", *msbuild_args])
             if restore_code != 0:
                 _record_validation_run(run_path, run_payload, status="failed", finishedAt=_utc_now(), exitCode=restore_code)
                 return restore_code
@@ -1259,6 +1373,8 @@ def cmd_test(args: argparse.Namespace) -> int:
             if build_code != 0:
                 _record_validation_run(run_path, run_payload, status="failed", finishedAt=_utc_now(), exitCode=build_code)
                 return build_code
+            if profile:
+                mark_profile_built(profile)
 
         test_command = [
             "dotnet",
@@ -1303,6 +1419,13 @@ def cmd_test(args: argparse.Namespace) -> int:
         )
         print(f"Validation run artifact: {run_path}")
         return test_code
+    except (ValueError, OSError) as exc:
+        _record_validation_run(run_path, run_payload, status="failed", finishedAt=_utc_now(), exitCode=2, error=str(exc))
+        print(str(exc), file=sys.stderr)
+        return 2
+    except KeyboardInterrupt:
+        _record_validation_run(run_path, run_payload, status="interrupted", finishedAt=_utc_now(), exitCode=130)
+        return 130
     finally:
         if lock_acquired:
             _release_validation_lock(REPO_ROOT, run_id)
@@ -1352,7 +1475,7 @@ def cmd_collect_debug(args: argparse.Namespace) -> int:
 def cmd_build_profile(_args: argparse.Namespace) -> int:
     print("Building with timing information...")
     start = datetime.now(timezone.utc)
-    result = _run(
+    result = _run_dotnet_writer(
         [
             "dotnet",
             "build",
@@ -1449,7 +1572,7 @@ def cmd_analyze_errors(_args: argparse.Namespace) -> int:
 def cmd_build_graph(args: argparse.Namespace) -> int:
     project: str = getattr(args, "project", "Meridian.sln")
     print(f"Generating dependency graph for {project}...")
-    result = _run(
+    result = _run_dotnet_writer(
         ["dotnet", "build", project, "/p:EnableWindowsTargeting=true", "--graph", "--verbosity", "quiet"],
         capture=False,
     )
@@ -1707,6 +1830,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_build.add_argument("--full-wpf-build", action="store_true")
     p_build.add_argument("--shutdown-build-servers", action="store_true")
     p_build.add_argument("--isolation-key")
+    build_output = p_build.add_mutually_exclusive_group()
+    build_output.add_argument("--profile", help="Persistent worktree or session:<name> build outputs.")
+    build_output.add_argument("--fresh", action="store_true", help="Build with a fresh isolation key.")
+    p_build.add_argument("--queue", action="store_true", help="Wait for the shared output lock.")
+    p_build.add_argument("--queue-timeout-seconds", type=int, default=300)
     p_build.add_argument(
         "--isolation-retention-days",
         type=int,
@@ -1749,17 +1877,20 @@ def build_parser() -> argparse.ArgumentParser:
     p_test.add_argument(
         "--no-build",
         action="store_true",
-        help="Skip restore and build; reuse compatible outputs with an existing --isolation-key or --no-isolation.",
+        help="Skip restore and build; reuse compatible outputs with --profile, an existing --isolation-key, or --no-isolation.",
     )
     p_test.add_argument("--no-isolation", action="store_true")
     p_test.add_argument("--full-wpf-build", action="store_true")
     p_test.add_argument("--shutdown-build-servers", action="store_true")
-    p_test.add_argument("--allow-concurrent", action="store_true")
+    p_test.add_argument("--allow-concurrent", action="store_true", help="Ignore external process detection; the shared output lock remains mandatory.")
     p_test.add_argument("--queue", action="store_true", help="Wait for the validation lock and active repo build processes.")
     p_test.add_argument("--queue-timeout-seconds", type=int, default=300)
     p_test.add_argument("--run-id")
     p_test.add_argument("--isolation-key", default="auto")
-    p_test.add_argument("--results-directory")
+    test_output = p_test.add_mutually_exclusive_group()
+    test_output.add_argument("--profile", help="Persistent worktree or session:<name> build outputs.")
+    test_output.add_argument("--fresh", action="store_true", help="Use fresh isolation (the default) for independent validation.")
+    p_test.add_argument("--results-directory", help="Report root; each run writes a unique run-ID subdirectory.")
     p_test.add_argument("--settings")
     p_test.add_argument("--logger", action="append", default=None)
     p_test.add_argument("--collect", action="append", default=[])
