@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1014 |
-| Valid | 575 |
+| Total code blocks | 1015 |
+| Valid | 576 |
 | Invalid | 0 |
 | Skipped | 439 |
 
@@ -18,7 +18,7 @@
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 106 | 0 | 0 | 106 |
-| `bash` | 173 | 173 | 0 | 0 |
+| `bash` | 174 | 174 | 0 | 0 |
 | `cpp` | 1 | 0 | 0 | 1 |
 | `csharp` | 304 | 304 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
@@ -119,6 +119,7 @@ No invalid code examples found.
 | `docs/engineering/blueprints/security-master-passport-workbench.md` | 4 |
 | `docs/engineering/blueprints/w10-mark-001-fail-closed-marks.md` | 17 |
 | `docs/engineering/blueprints/web-ui-report-run-stream-blueprint-2026-07.md` | 7 |
+| `docs/engineering/ci-cd-optimization.md` | 1 |
 | `docs/engineering/live-trading-engine.md` | 1 |
 | `docs/engineering/plans/god-file-burn-down-plan.md` | 6 |
 | `docs/engineering/plans/wpf-web-ui-alignment-plan.md` | 1 |
