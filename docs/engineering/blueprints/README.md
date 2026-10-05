@@ -2,11 +2,11 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-09-28
+**Reviewed:** 2026-10-05
 
 This README is the **single register for every planning document in the repository**: code-ready
 blueprints, working delivery plans, prioritization inputs, and domain-owned backlogs. Each plan has
-one home folder, listed below; this register is the one place that lists them all. Live roadmap
+one home folder, listed below; this register routes to each plan or its owning collection. Live roadmap
 status is never recorded here. It stays in the roadmap registry (`docs/roadmap/README.md`,
 `docs/roadmap/data/*.yml`), and every row below is a documentation-coherence marker only.
 
@@ -22,7 +22,7 @@ status is never recorded here. It stays in the roadmap registry (`docs/roadmap/R
 
 `docs/plans/` is not a home for new plans. It keeps only redirect stubs whose paths are read by
 tooling; see [its index](../../plans/README.md). Brainstorms and adversarial reviews are ideation and
-assessment inputs, not plans, and stay listed in the [Product index](../../product/README.md).
+assessment inputs, not plans, and stay listed in [Product Review History](../../product/review-history.md).
 
 ## Blueprints
 
@@ -51,8 +51,7 @@ grounded in Meridian's actual stack.
 | [W9 Close-Out Delivery Plan (2026-08)](../../product/plans/w9-close-out-delivery-plan-2026-08.md) | `docs/product/plans/` | Program | Accepted planning input (`DEC-W9-CLOSEOUT-001`); sequences `W9-SAFETY-007`, `W9-GOV-008`, `W9-INGEST-009` |
 | [2026-07 First-Order Improvement Slate](../../product/plans/product-roadmap-priorities-2026-07.md) | `docs/product/plans/` | Program | Accepted planning input (`DEC-PRIORITY-SLATE-001`); ranked W9 rationale |
 | [2026-07 Depth Slate](../../product/plans/w10-depth-slate-2026-07.md) | `docs/product/plans/` | Program | Accepted planning input (`DEC-DEPTH-SLATE-001`); W10 rationale |
-| [What To Work On Next (2026-10-02)](../../product/plans/next-work-determination-2026-10-02.md) | `docs/product/plans/` | Program | Latest prioritization input; supersedes the 2026-09-27 determination and the unmerged 2026-09-28/2026-09-29 proposals |
-| [What To Work On Next (2026-09-27)](../../product/plans/next-work-determination-2026-09-27.md) | `docs/product/plans/` | Program | Superseded by the 2026-10-02 determination; retained in place because `program-state.yml` and the readiness tracker cite it as the recorded operator-session plan |
+| [Next-Work Determinations](../../product/plans/README.md#next-work-determinations) | `docs/product/plans/` | Program | The owning index identifies the latest prioritization input and retained superseded determinations; no duplicate latest-date pointer is maintained here |
 | [Adversarial Review 2026-08 Remediation Plan](../../product/plans/adversarial-review-2026-08-remediation-plan.md) | `docs/product/plans/` | Program | Active working plan |
 | [Production-Readiness Backlog (2026-08)](../../product/plans/production-readiness-backlog-2026-08.md) | `docs/product/plans/` | Release readiness | Active working plan; the [Implementation and Readiness Tracker](../../product/implementation-todo-list.md) remains the P0 release gate |
 | [WPF / Web-UI Alignment Plan](../plans/wpf-web-ui-alignment-plan.md) | `docs/engineering/plans/` | Desktop workstation | Active; drives `W8-WPF-PARITY-001` |

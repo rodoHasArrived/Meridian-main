@@ -2,7 +2,7 @@
 title: Operator Documentation
 status: active
 owner: core-team
-reviewed: 2026-07-20
+reviewed: 2026-10-05
 audience: operators
 ---
 
@@ -165,10 +165,16 @@ Use this simple status model for operator-facing claims:
 
 ### Command entry points
 
-- `dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080`
-- `dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080`
-- `pwsh ./scripts/dev/run-desktop.ps1 -Fixture`
-- `npm --prefix src/Meridian.Ui/dashboard run dev`
+- [Operator Preflight Checklist](preflight-checklist.md) for persistence prerequisites, host launch,
+  authenticated checks, expected results, and failure handling.
+- [Start](../start/README.md) for first-run browser and desktop setup.
+- [UI Fixture Mode Guide](../development/ui-fixture-mode-guide.md) for isolated desktop development.
+
+### Writing a procedure
+
+Use the [Operator Runbook Template](runbook-template.md). State the supported platform and shell,
+working directory, prerequisites, complete commands, expected results, failure recovery, and evidence
+handoff. Keep option definitions in Reference and link them instead of duplicating their defaults.
 
 ## Operator Rules
 
