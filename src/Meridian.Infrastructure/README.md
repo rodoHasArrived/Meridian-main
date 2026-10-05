@@ -370,6 +370,10 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 
 ## Change rules
 
+Provider composition registers an instance-owned `IProviderCatalog` for application and endpoint
+consumers. The legacy `ProviderCatalog` callback publication remains a process-startup compatibility
+path; ordinary endpoint fixtures replace the registry and catalog with their own dependencies.
+
 Do not add an Infrastructure to Application dependency. Provider abstractions should remain in ProviderSdk or Contracts.
 
 ## Related docs

@@ -1,7 +1,9 @@
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
+using Meridian.Identity;
 using Meridian.Identity.Auth;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -9,7 +11,7 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 /// <summary>
 /// Middleware that enforces API key authentication on /api/* endpoints.
-/// The API key is read from the MDC_API_KEY environment variable and supports
+/// The API key is read from host-owned settings, or the MDC_API_KEY environment variable, and supports
 /// key rotation (re-reads the variable on each request).
 /// When no key is configured, requests pass through so other auth layers can decide access.
 /// Requests already authenticated by a login session (the browser workstation) are exempt —
@@ -45,16 +47,18 @@ public sealed class ApiKeyMiddleware
     private const UserRole DefaultApiKeyRole = UserRole.ReadOnly;
 
     private readonly RequestDelegate _next;
+    private readonly AuthenticationConfiguration _configuration;
 
-    public ApiKeyMiddleware(RequestDelegate next)
+    public ApiKeyMiddleware(RequestDelegate next, AuthenticationConfiguration? configuration = null)
     {
         _next = next;
+        _configuration = configuration ?? AuthenticationConfiguration.FromEnvironment();
     }
 
     public async Task InvokeAsync(HttpContext context)
     {
         // Re-read on each request to support key rotation without restart
-        var expectedApiKey = Environment.GetEnvironmentVariable(ApiKeyEnvVar);
+        var expectedApiKey = _configuration[ApiKeyEnvVar];
 
         // If no API key is configured, defer to other authentication layers.
         if (string.IsNullOrWhiteSpace(expectedApiKey))
@@ -161,8 +165,9 @@ public sealed class ApiKeyMiddleware
     /// judgment on such requests to this middleware instead of rejecting them for
     /// lacking a session. Non-API routes remain protected by session authentication.
     /// </summary>
-    internal static bool IsApiKeyCandidate(HttpContext context) =>
-        !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(ApiKeyEnvVar)) &&
+    internal static bool IsApiKeyCandidate(HttpContext context, AuthenticationConfiguration? configuration = null) =>
+        !string.IsNullOrWhiteSpace((configuration ?? context.RequestServices?.GetService<AuthenticationConfiguration>()
+            ?? AuthenticationConfiguration.FromEnvironment())[ApiKeyEnvVar]) &&
         context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase) &&
         context.Request.Headers.ContainsKey(ApiKeyHeaderName);
 
@@ -172,9 +177,9 @@ public sealed class ApiKeyMiddleware
     /// quietly applying a different permission set than the operator configured is the kind of
     /// authorization drift the governed surface exists to prevent.
     /// </summary>
-    private static bool TryResolveApiKeyRole(out UserRole role)
+    private bool TryResolveApiKeyRole(out UserRole role)
     {
-        var configured = Environment.GetEnvironmentVariable(ApiKeyRoleEnvVar);
+        var configured = _configuration[ApiKeyRoleEnvVar];
         if (string.IsNullOrWhiteSpace(configured))
         {
             role = DefaultApiKeyRole;

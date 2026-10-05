@@ -10,51 +10,62 @@ This document is the central registry for dependency vulnerabilities that have b
 - **Review cadence:** Accepted vulnerabilities must be reviewed at least quarterly and removed promptly when an upstream fix becomes available.
 - **Workflow integration:** the `dependency-evidence` job in `.github/workflows/production-certification.yml` is the enforcing gate. npm findings route through `build/scripts/ci/validate-npm-audit.py` against `build/config/security/npm-audit-accepted-advisories.json`, which fails closed on both unaccepted and stale entries. `Directory.Build.props` may suppress a NuGet restore-audit finding only by exact advisory URL after the same accepted-risk review; note that `NuGetAuditSuppress` does not affect `dotnet list package --vulnerable`, so a suppressed NuGet advisory still reds the gate.
 
-## Pending decision: KV-2026-003 — braces stack exhaustion
+## Pending decision: braces stack exhaustion (2026-10-05)
 
-**Status: proposed, not approved or active.** Investigation date: 2026-10-05.
-The requested decision-maker and proposed accountable owner is **@rodoHasArrived**, the
-repository's named [CODEOWNER](../../.github/CODEOWNERS). Ownership is not approval.
-`build/config/security/npm-audit-accepted-advisories.json` remains empty; the dependency gate
-must remain red for this advisory until a supported fix passes or a human explicitly approves
-and records a bounded acceptance. Merging this investigation alone does not accept the risk.
+**Status: proposed, not accepted (KV-2026-003).** This investigation authorizes no exception. The active
+machine register remains `"accepted": []`; Production Certification must remain red for this
+finding until a supported remediation passes or an authorized human records a bounded decision.
+Merging this investigation alone does not accept the risk.
 
-### Finding and evidence
+### Evidence and dependency exposure
 
-- **Package:** `braces` 3.0.3; **advisory:**
-  [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) /
-  CVE-2026-93687; **severity:** high, CVSS 3.1 7.5; **affected:** `<=3.0.3`.
-  Recursive AST traversal can exhaust the Node.js stack on deeply nested brace patterns,
-  including patterns below the package's character limit. An uncaught `RangeError` can
-  terminate the build/watch process.
-- **Initial hosted baseline checked:** `main` commit
-  `e3bf60bae577c132d8444a827ca4dc3181cc48a1`, Production Certification
-  [run #147, attempt 1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283),
-  [dependency job 111904784527](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283/job/111904784527).
-  NuGet reports no vulnerable packages across the solution. npm reports five high affected
-  package nodes from this one GHSA, plus a separate low advisory. The final assertion correctly
-  fails on the unaccepted npm finding; step conclusions masked by `continue-on-error` are not
-  the job verdict.
-- **Retained baseline:**
-  [production-dependency-evidence-147-1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283/artifacts/11362468562),
-  artifact ID `11362468562`, ZIP SHA-256
-  `478075a50b84e225b37581089a9e2f28aad6d9ad95b29b811b3297e179a02d11`,
-  expires `2027-01-03T17:54:46Z`. The downloaded ZIP digest was verified. Its three scan files
-  are retained under [evidence/2026-10-05-dependency-certification](evidence/2026-10-05-dependency-certification/manifest.json),
-  alongside fresh npm graph, audit, upstream metadata and bounded reachability evidence.
-- **Latest completed hosted recheck:** [run #151, attempt 1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37360660094)
-  on `main` commit `433ff014b51244daeab8deca5fba812f9bb5fe6a` confirms the same result:
-  all 56 NuGet projects clean, five high npm nodes from this unaccepted GHSA, and the final
-  dependency assertion failed. Artifact `production-dependency-evidence-151-1` (ID `11367836066`)
-  was downloaded and its ZIP SHA-256 verified as
-  `80d7d434e508dbf5d4df3edfa5dfc6c354ed7706a9c343072fd742f4cd3ce4d1`.
-  Its raw reports are retained with the proposal PR's commit-specific evidence bundle.
-- **Fresh recheck:** Node 24.19.0 / npm 11.9.0, clean `npm ci`, then `npm audit --json`
-  reproduces the same finding. The unchanged validator with the empty registry returns 1.
-  `npm audit --omit=dev --json` reports zero findings; this scoped result supplements the
-  full scan and does not replace the all-dependencies gate.
+- **Finding:** `braces` 3.0.3, [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)
+  / CVE-2026-93687, high severity, uncontrolled recursion / stack-exhaustion denial of service
+  from deeply nested patterns. The advisory covers `<=3.0.3` and lists no patched version.
+  npm reports CVSS 3.1 **7.5**; the current GitHub advisory reports CVSS 4.0 **8.7**. These are
+  different scoring versions, not evidence of a severity downgrade.
+- **Audited baseline main:** `e3bf60bae577c132d8444a827ca4dc3181cc48a1`.
+  [Production Certification #147, attempt 1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283)
+  [dependency job 111904784527](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283/job/111904784527)
+  fails with `UNACCEPTED GHSA-vfj7-8cjw-p6xm (braces, high): no acceptance entry`.
+  NuGet passed; the npm step's `continue-on-error` allows evidence collection, but its failed
+  outcome correctly fails the final assertion. A successful step conclusion alone is not a pass.
+- **Retained evidence:** [manifest and checksums](evidence/2026-10-05-braces/manifest.json),
+  [hosted audit](evidence/2026-10-05-braces/hosted/npm-audit.json),
+  [hosted gate decision](evidence/2026-10-05-braces/hosted/npm-audit-gate.json), and
+  [fresh installed graph](evidence/2026-10-05-braces/local/dependency-graph.json).
+  A clean local `npm ci` and full `npm audit --json` reproduce the same high-severity root cause.
+  Five high package entries resolve to this one advisory. The separate low-severity
+  `postcss-selector-parser` finding in that baseline is not covered by this proposal; the
+  current lockfile has since advanced that package to 6.1.4.
+  The independently retained [parallel investigation manifest](evidence/2026-10-05-dependency-certification/manifest.json)
+  preserves the same hosted baseline plus source, registry and bounded reachability evidence.
 
-The resolved development dependency paths are:
+**Main refresh:** `600cde87be9de99c615594cb1a2b09f507cd2b2f` was integrated after concurrent
+lot-basis and NuGet updates. The npm manifest/lockfile, acceptance register, validator, and
+certification workflow are byte-identical to the audited baseline; the
+[refresh receipt](evidence/2026-10-05-braces/main-recheck.json) records that comparison.
+[Production Certification #150](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37357037036)
+was pending with no jobs/artifacts at the refresh observation. No passing dependency or complete
+certification result is inferred for that new main commit. Earlier NuGet evidence also stays bound
+to its original commit.
+The newest completed dependency job at recheck was
+[#148 / job 111920179861](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37356520129/job/111920179861)
+on `8b382db63dd4b47fb32b8f4a199bcb0845700dee`: it failed on the same unaccepted advisory.
+Its [raw gate decision](evidence/2026-10-05-braces/hosted-148/npm-audit-gate.json) and verified
+artifact are also retained; the overall workflow was still unfinished at that observation.
+
+**Retained later baseline:** `433ff014b51244daeab8deca5fba812f9bb5fe6a` was integrated after
+its Actions artifact-retention update. [Certification #151](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37360660094)
+completed with only [dependency job 111937908247](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37360660094/job/111937908247)
+failing on the same unaccepted braces advisory; NuGet, integrations, recovery, and documentation
+passed. The [new main receipt](evidence/2026-10-05-braces/main-recheck-433ff.json) verifies all
+eight dependency/build/gate source hashes still match the original baseline. The
+[raw gate result](evidence/2026-10-05-braces/hosted-151/npm-audit-gate.json), audit, NuGet report,
+and checksum-verified dependency artifact are retained. These main results do not certify the
+containing proposal commit or imply a human risk decision.
+
+The installed graph has these paths, all marked development dependencies in the lockfile:
 
 ```text
 tailwindcss 3.4.15 -> chokidar 3.6.0 -> braces 3.0.3
@@ -62,78 +73,83 @@ tailwindcss 3.4.15 -> micromatch 4.0.8 -> braces 3.0.3
 tailwindcss 3.4.15 -> fast-glob 3.3.3 -> micromatch 4.0.8 -> braces 3.0.3
 ```
 
-### Supported remediation options, rechecked 2026-10-05
+`tailwind.config.ts` uses the repository literals `./index.html` and `./src/**/*.{ts,tsx}`;
+PostCSS invokes Tailwind during compilation. No application-source imports of these packages
+were identified. The current production dependency audit reports zero findings and the publish
+layout copies static `wwwroot` assets. This supports a build/development/publishing exposure
+assessment, not a claim that the package is unexploitable. Publishing can build a missing bundle;
+a malicious repository/configuration change or future untrusted pattern input can still crash
+the Node process. `npm audit --omit=dev` is exposure evidence only and must not replace the full gate.
 
-| Option | Current evidence and disposition |
+The parallel investigation's [bounded probes](evidence/2026-10-05-dependency-certification/braces-bounded-reachability.json)
+at baseline `e3bf60bae577c132d8444a827ca4dc3181cc48a1` produced caught `RangeError` results for
+deep nesting, including a fast-glob call, under five-second timeouts and 128-MiB Node old-space
+limits. The baseline literal globs expanded without pathological nesting. Exact failure depth varies with runtime;
+these library-level results establish neither a remotely exploitable workstation route nor
+its impossibility. A compromised contributor, dependency, plugin or build configuration remains
+relevant. The [upstream maintainer's dispute](https://github.com/micromatch/braces/issues/70#issuecomment-5995348316)
+does not withdraw the active advisory.
+
+### Available remediation and rejected shortcuts
+
+Registry metadata rechecked on 2026-10-05 still ends at `braces` **3.0.3**. The latest
+`micromatch` **4.0.8** and `fast-glob` **3.3.3** retain the affected chain; latest Tailwind 3
+**3.4.19** still uses `chokidar ^3.6.0`, `fast-glob ^3.3.2`, and `micromatch ^4.0.8`.
+There is no evidenced compatible patch or override today. Upgrading only Chokidar across majors
+would leave the Micromatch path and would change its glob API contract. `brace-expansion` is a
+different package; [PR #3031](https://github.com/rodoHasArrived/Meridian-main/pull/3031) currently
+has zero changed files and cannot remediate this finding.
+
+npm suggests **Tailwind 4.3.3**, a supported major-version migration using the
+[official upgrade guide](https://tailwindcss.com/docs/upgrade-guide) and the matching
+`@tailwindcss/vite` or `@tailwindcss/postcss` integration. This is the durable remediation
+candidate. It requires reviewing configuration/CSS utility and Preflight changes, confirming
+browser support (the guide requires Safari 16.4, Chrome 111, Firefox 128), testing the workstation
+and published asset build, dashboard tests/strict typecheck and visual regression across the seven
+operator navigation surfaces, and re-auditing the complete resulting graph. A version-only forced
+audit fix is not validated remediation. No migration or dependency override is applied here.
+
+### Proposed bounded exception for human decision
+
+| Field | Proposed decision terms |
 | --- | --- |
-| Compatible `braces` update | npm still publishes 3.0.3 as latest; the reviewed advisory lists no fixed release. An override to 3.0.3 does not remediate this finding. Recheck upstream weekly and retire any acceptance promptly when a tested patch exists. |
-| Tailwind 3.x update | Latest `v3-lts` 3.4.19 still requires chokidar 3, fast-glob 3 and micromatch 4; these retain `braces`. Updating within 3.x cannot clear this GHSA. |
-| Tailwind 4 migration | npm identifies 4.3.3 as a semver-major fix. Use the [upstream migration guide](https://tailwindcss.com/docs/upgrade-guide) and `@tailwindcss/vite` or `@tailwindcss/postcss` 4.3.3, migrate the CSS entry/configuration and verify supported browsers. This is the supported removal path, but it is not implemented or certified by this proposal. |
-| Unrelated low advisory | `postcss-selector-parser` 6.1.2 has GHSA-w9m9-85wc-3x92; 6.1.3 is a compatible patch. It is below the existing high gate threshold and outside this proposed acceptance. A routine lockfile update can address it separately. |
+| Scope | Only GHSA-vfj7-8cjw-p6xm in `braces` 3.0.3 through the documented Tailwind 3 development graph; severity ceiling **high**. No other advisory or runtime path is accepted. |
+| Rationale | No compatible published patch; current inputs are repository-controlled build patterns and no shipped application runtime path was identified. Residual build availability risk remains. |
+| Named decision owner | **@rodoHasArrived**, repository owner and default/CI CODEOWNER in `.github/CODEOWNERS`. Must explicitly approve these terms, reject them and keep certification blocked, or commission the Tailwind 4 migration. A delegate must be named in the human decision record. |
+| Decision point | Requested by **2026-10-07 17:00 America/Phoenix** (`2026-10-08T00:00:00Z`), and before any exception is added to the active register or used for release certification. Record a dated human decision linked to the exact candidate commit and evidence. No response means no acceptance. No approval, approver signature, or `accepted_on` date is recorded by this proposal. |
+| Expiry | Fixed hard stop **2026-10-19 00:00 UTC** (2026-10-18 17:00 America/Phoenix), at most 14 days from this proposal; late approval does not extend it. Under the existing inclusive `review_by` logic, use **2026-10-18**, so the gate fails from 2026-10-19 UTC. |
+| Review | Owner rechecks by **2026-10-12** and before every release, plus immediately for an upstream fix, new dependency path, severity increase, exploit evidence, or changed input/runtime exposure. No automatic renewal. |
+| Exit | Prefer the supported migration or a newly published compatible fix; validate the complete graph and remove any now-stale acceptance in the same change. Without a validated fix or new explicit decision, expiry leaves certification blocked. |
 
-The migration must demonstrate a fresh full audit and dependency graph with this GHSA absent,
-dashboard tests/build/strict typecheck, and visual/browser regression checks for the seven
-operator navigation surfaces. Tailwind 4 changes configuration, utility semantics and browser
-requirements; an unreviewed `npm audit fix --force`, a major transitive override, or an
-unreleased fork is not a validated remediation. Re-run `bash scripts/ci.sh` and hosted
-Production Certification on the resulting commit, retaining both ecosystems' evidence.
+Approval is conditional on the human owner verifying these mitigations on the candidate:
 
-### Exposure, mitigation and residual risk
+The current validator matches advisory, package, severity ceiling, and date; it does **not**
+enforce package version, dependency path, development/runtime status, or candidate SHA. The
+proposed graph/exposure boundary therefore depends on reviewed lockfile and candidate evidence.
+Any new dependency path, runtime reachability, or untrusted-pattern input invalidates this scope:
+remove the active mirror and keep certification blocked pending a new explicit human decision.
 
-Verified at the baseline commit: the affected packages are marked development-only in the
-lockfile. `tailwind.config.ts` supplies `./index.html` and `./src/**/*.{ts,tsx}` as content globs.
-`postcss.config.cjs` runs Tailwind during the Vite build; fast-glob calls micromatch brace
-expansion. These current globs do not exercise pathological nesting. Bounded isolated probes
-of the installed packages nevertheless produced `RangeError` for deep nesting, including a
-fast-glob call. Exact failure depth varies with runtime; these are library-level results, not
-proof of a remotely exploitable workstation route or proof of impossibility.
+1. Keep glob/configuration inputs as reviewed repository literals; do not feed uploads, API data,
+   or other untrusted patterns into Tailwind/Chokidar/Micromatch. Review changes to Tailwind,
+   PostCSS, Vite, dependency manifests, and the lockfile for altered exposure.
+2. Use isolated development/watch processes and disposable, time-bounded build runners without
+   production credentials; distribute prebuilt assets and do not expose a failed watcher as an
+   operator service. The current certification job has a 35-minute
+   timeout, read-only contents permission, and checkout credentials are not persisted. A timeout
+   limits runner exposure; it does not prevent a stack-exhaustion crash. Review other build and
+   publish lanes separately before treating these controls as universal.
+3. Preserve the full dependency audit, high-severity threshold, NuGet check, final two-gate
+   assertion, and failure-time evidence upload. Do not omit development dependencies, suppress
+   findings, substitute a package name, force a version, or edit the validator to get green.
+4. After an explicit approval only, add a narrowly scoped record here and its machine mirror
+   with the real approval date, named owner/approver, decision URL, rationale, and the fixed
+   `review_by` above. Test expiry, severity escalation, stale entries and new advisories, then run
+   the unchanged complete Production Certification workflow on the resulting commit. Retain the
+   run/attempt, all four job results, raw audits, gate JSON, artifact IDs/digests/expiry, and exact
+   commit. Local success or a prior main run does not certify that new commit.
 
-The assessed consequence is loss of build/watch availability if attacker-controlled nested
-patterns reach these tools. A compromised contributor, dependency, plugin or build configuration
-remains relevant. A clean production-only audit is not a complete artifact reachability proof,
-and the [upstream maintainer's dispute](https://github.com/micromatch/braces/issues/70#issuecomment-5995348316)
-of the advisory does not withdraw the active finding.
-
-**Conditions the human owner must verify before any acceptance is activated:**
-
-1. Keep content/glob configuration repository-controlled and reviewed. Do not pass operator,
-   provider, uploaded-file or other untrusted patterns to Tailwind, chokidar or micromatch.
-   Reassess immediately if build inputs, plugins or glob sources change.
-2. Run builds/watchers only in isolated development or CI processes with finite resource/time
-   budgets, without production credentials; distribute prebuilt assets. The dependency evidence
-   job already uses `ubuntu-latest`, read-only repository permissions, nonpersistent checkout
-   credentials and a 35-minute timeout. These facts do not establish controls for every local,
-   signing or release build; verify those separately. Stop/restart a failed watcher rather than
-   exposing it as an operator service.
-3. Continue the full NuGet/npm scans, high/critical threshold, final assertion, required checks,
-   and 90-day hosted evidence retention. No suppression, severity downgrade or gate bypass is
-   part of this proposal. New findings, severity escalation or changed exposure require review.
-
-### Bounded proposal and named human decision
-
-- **Requested decision:** @rodoHasArrived should choose and record either the Tailwind 4
-  remediation work, rejection/continued blocking, or explicit temporary acceptance after
-  verifying the conditions above. Requested decision deadline: **2026-10-07 17:00
-  America/Phoenix** (`2026-10-08T00:00:00Z`). No response means no acceptance.
-- **Proposed scope:** only `braces` / GHSA-vfj7-8cjw-p6xm at a maximum severity of `high`, in
-  the reviewed dashboard development graph. Rationale: limited build-time exposure and no
-  compatible upstream patch while a supported major migration is evaluated. Residual build
-  availability risk remains; this is a human risk decision, not a claim of safety.
-- **Fixed expiry:** proposed machine `review_by: 2026-10-19` (UTC). The existing validator
-  accepts through that UTC date and fails from **2026-10-20T00:00:00Z**, which is
-  **2026-10-19 17:00 America/Phoenix**. This is an upper bound, not 14 days from delayed
-  approval. If the deadline or exposure changes, recheck the evidence before deciding.
-- **Review cadence:** proposed owner @rodoHasArrived, weekly on October 12 and October 19,
-  and immediately on an upstream patch, advisory change, incident, new runtime path or
-  dependency/configuration change. Remove the acceptance as soon as a verified fix lands;
-  no automatic renewal. The validator also rejects a stale acceptance that no longer matches
-  a reported advisory.
-- **Activation is a separate human-approved change:** record the attributable decision URL,
-  actual approval date, mitigation verification, owner and expiry in this registry; then mirror
-  exactly that decision in the machine registry with `id`, `ghsa`, `package`, `max_severity`,
-  `reason`, `owner`, `accepted_on` and `review_by`. Do not fill an approval date or approver
-  on the human's behalf. Re-run the unchanged gate, its tests and hosted certification on that
-  resulting commit. A green dependency result would not itself approve a production release.
+Until that decision is recorded, this section remains a proposal and the active register stays
+empty. A green certification workflow would still not supply separate release/operator approvals.
 
 ## Accepted Vulnerabilities
 
