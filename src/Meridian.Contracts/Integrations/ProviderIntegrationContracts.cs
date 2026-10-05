@@ -301,7 +301,18 @@ public sealed record RawIngestionPayloadDto(
     IReadOnlyDictionary<string, string> RequestMetadata,
     JsonElement RawPayload,
     string MappingVersion,
-    ProviderIntegrationProcessingStatusDto ProcessingStatus);
+    ProviderIntegrationProcessingStatusDto ProcessingStatus)
+{
+    /// <summary>Exact immutable manifest applied to this evidence; null for unverified legacy records.</summary>
+    public ProviderIntegrationManifestReferenceDto? ManifestReference { get; init; }
+
+    /// <summary>Original ingestion mapping, preserved through remediation and subsequent replay.</summary>
+    public ProviderIntegrationManifestReferenceDto? OriginalManifestReference { get; init; }
+
+    public string? SourceSyncRunId { get; init; }
+
+    public ProviderIntegrationReplayModeDto? ReplayMode { get; init; }
+}
 
 public sealed record ValidationIssueDto(
     string Code,
@@ -377,7 +388,14 @@ public sealed record ProviderIntegrationQuarantineReplayRequestDto(
     ProviderCapabilityKindDto Capability,
     IReadOnlyList<string> QuarantineRecordIds,
     string RequestedBy,
-    DateTimeOffset RequestedAt);
+    DateTimeOffset RequestedAt)
+{
+    public ProviderIntegrationReplayModeDto Mode { get; init; } = ProviderIntegrationReplayModeDto.Original;
+
+    public int? TargetManifestVersion { get; init; }
+
+    public string? TargetManifestDigest { get; init; }
+}
 
 public sealed record ProviderIntegrationQuarantineReplayResultDto(
     string ReplaySyncRunId,
@@ -534,7 +552,18 @@ public sealed record ProviderIntegrationSyncRunDto(
     int RecordsAccepted,
     int RecordsQuarantined,
     string? RawPayloadId,
-    IReadOnlyList<ValidationIssueDto> Issues);
+    IReadOnlyList<ValidationIssueDto> Issues)
+{
+    /// <summary>Exact immutable manifest applied to this evidence; null for unverified legacy records.</summary>
+    public ProviderIntegrationManifestReferenceDto? ManifestReference { get; init; }
+
+    /// <summary>Original ingestion mapping, preserved through remediation and subsequent replay.</summary>
+    public ProviderIntegrationManifestReferenceDto? OriginalManifestReference { get; init; }
+
+    public string? SourceSyncRunId { get; init; }
+
+    public ProviderIntegrationReplayModeDto? ReplayMode { get; init; }
+}
 
 public sealed record ProviderIntegrationSyncRunEvidenceDto(
     string SyncRunId,
@@ -551,7 +580,16 @@ public sealed record ProviderIntegrationSyncRunEvidenceDto(
     int CriticalIssueCount,
     int WarningIssueCount,
     string? RawPayloadId,
-    IReadOnlyList<ValidationIssueDto> Issues);
+    IReadOnlyList<ValidationIssueDto> Issues)
+{
+    public ProviderIntegrationManifestReferenceDto? ManifestReference { get; init; }
+
+    public ProviderIntegrationManifestReferenceDto? OriginalManifestReference { get; init; }
+
+    public string? SourceSyncRunId { get; init; }
+
+    public ProviderIntegrationReplayModeDto? ReplayMode { get; init; }
+}
 
 public sealed record ProviderIntegrationConnectionMonitorDto(
     string ConnectionId,
@@ -665,14 +703,20 @@ public sealed record ProviderIntegrationOpenApiImportRequestDto(
     string OpenApiDocumentJson,
     string ImportedBy,
     DateTimeOffset ImportedAt,
-    string? ChangeReason);
+    string? ChangeReason)
+{
+    public ProviderIntegrationManifestReferenceDto? ExpectedManifestReference { get; init; }
+}
 
 public sealed record ProviderIntegrationOpenApiImportResultDto(
     bool Imported,
     ProviderIntegrationManifestDto Manifest,
     ProviderIntegrationActivationReadinessDto Readiness,
     IReadOnlyList<ValidationIssueDto> Issues,
-    string? Message);
+    string? Message)
+{
+    public ProviderIntegrationManifestReferenceDto? ManifestReference { get; init; }
+}
 
 public sealed record ProviderIntegrationSchemaDriftIssueDto(
     string Code,
@@ -720,7 +764,10 @@ public sealed record ProviderIntegrationSetupSaveRequestDto(
     ProviderConnectionDto Connection,
     string SavedBy,
     DateTimeOffset SavedAt,
-    string? ChangeReason);
+    string? ChangeReason)
+{
+    public ProviderIntegrationManifestReferenceDto? ExpectedManifestReference { get; init; }
+}
 
 public sealed record ProviderIntegrationSetupSaveResultDto(
     bool Saved,
@@ -729,7 +776,10 @@ public sealed record ProviderIntegrationSetupSaveResultDto(
     ProviderIntegrationActivationStateDto ManifestState,
     ProviderIntegrationActivationStateDto ConnectionState,
     ProviderIntegrationActivationReadinessDto Readiness,
-    string? Message);
+    string? Message)
+{
+    public ProviderIntegrationManifestReferenceDto? ManifestReference { get; init; }
+}
 
 public sealed record ProviderIntegrationActivationRequestDto(
     string ManifestId,
@@ -737,7 +787,10 @@ public sealed record ProviderIntegrationActivationRequestDto(
     string ApprovedBy,
     DateTimeOffset ApprovedAt,
     string ApprovalEvidenceId,
-    string? ChangeReason);
+    string? ChangeReason)
+{
+    public ProviderIntegrationManifestReferenceDto? ExpectedManifestReference { get; init; }
+}
 
 public sealed record ProviderIntegrationActivationResultDto(
     bool Activated,
@@ -747,11 +800,27 @@ public sealed record ProviderIntegrationActivationResultDto(
     ProviderIntegrationActivationStateDto ConnectionState,
     ProviderIntegrationActivationReadinessDto Readiness,
     string? ApprovalEvidenceId,
-    string? Message);
+    string? Message)
+{
+    public ProviderIntegrationManifestReferenceDto? ManifestReference { get; init; }
+}
 
 public interface IProviderIntegrationManifestStore
 {
+    /// <summary>Creates an initial current manifest, or accepts an identical current manifest.</summary>
     Task SaveManifestAsync(ProviderIntegrationManifestDto manifest, CancellationToken ct = default);
+
+    /// <summary>Retains immutable content without changing the current pointer.</summary>
+    Task SaveManifestVersionAsync(ProviderIntegrationManifestDto manifest, CancellationToken ct = default);
+
+    Task<ProviderIntegrationManifestDto?> GetManifestVersionAsync(string manifestId, int manifestVersion, CancellationToken ct = default);
+
+    /// <summary>Promotes a retained candidate only if the complete current reference matches expected.</summary>
+    Task<bool> CompareExchangeCurrentManifestAsync(
+        string manifestId,
+        ProviderIntegrationManifestReferenceDto? expected,
+        ProviderIntegrationManifestReferenceDto next,
+        CancellationToken ct = default);
 
     Task<ProviderIntegrationManifestDto?> GetManifestAsync(string manifestId, CancellationToken ct = default);
 
@@ -782,6 +851,9 @@ public interface IProviderIntegrationManifestStore
     Task<IReadOnlyList<ProviderIntegrationReconciliationHandoffRecordDto>> ListReconciliationHandoffRecordsAsync(string connectionId, CancellationToken ct = default);
 
     Task SaveSyncRunAsync(ProviderIntegrationSyncRunDto syncRun, CancellationToken ct = default);
+
+    /// <summary>Durably claims a new run identity before publishing any replay payloads or rows.</summary>
+    Task<bool> TryCreateSyncRunAsync(ProviderIntegrationSyncRunDto syncRun, CancellationToken ct = default);
 
     Task<ProviderIntegrationSyncRunDto?> GetSyncRunAsync(string syncRunId, CancellationToken ct = default);
 
