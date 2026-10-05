@@ -3,6 +3,8 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
+import yaml
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW_PATH = REPO_ROOT / ".github" / "workflows" / "windows-desktop-build.yml"
@@ -33,6 +35,27 @@ class WindowsDesktopBuildWorkflowTests(unittest.TestCase):
         self.assertIn("Upload WPF validation artifacts", self.workflow)
         self.assertIn("if: always()", self.workflow)
         self.assertIn("windows-desktop-validation-${{ github.run_number }}", self.workflow)
+
+    def test_only_successful_smoke_binaries_have_shorter_retention(self) -> None:
+        workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
+        steps = workflow["jobs"]["desktop"]["steps"]
+        uploads = {
+            step["name"]: step for step in steps
+            if step.get("uses", "").startswith("actions/upload-artifact@")
+        }
+        validation = uploads["Upload WPF validation artifacts"]
+        smoke = uploads["Upload desktop smoke publish artifacts"]
+        self.assertEqual(validation["if"], "always()")
+        self.assertEqual(validation["with"]["retention-days"], "14")
+        self.assertEqual(smoke["if"], "always()")
+        self.assertEqual(smoke["with"]["path"], "artifacts/publish/desktop-smoke/")
+        self.assertEqual(smoke["with"]["retention-days"], "${{ job.status == 'success' && 7 || 14 }}")
+        # Retention must not replace publishing or the executable existence gate.
+        for name in ("Restore WPF publish graph", "Smoke publish WPF app", "Confirm desktop executable"):
+            step = next(step for step in steps if step.get("name") == name)
+            self.assertEqual(step["if"], "steps.desktop-smoke.outputs.run == 'true'")
+            self.assertNotIn("continue-on-error", step)
+            self.assertLess(steps.index(step), steps.index(smoke))
 
     def test_path_filters_include_workflow_and_validation_scripts(self) -> None:
         self.assertIn('"scripts/dev/validate-wpf-dev.ps1"', self.workflow)
