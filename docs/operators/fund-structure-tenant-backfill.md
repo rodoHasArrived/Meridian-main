@@ -94,6 +94,19 @@ with explicit reasons in the plan and receipt, rather than being discarded.
 
 ## Preview and review
 
+Run the following command templates from the repository root with the .NET 10 SDK and a Release
+build of the reviewed source revision. Prepare that build once with
+`dotnet build src/Meridian/Meridian.csproj -c Release` before preview; the maintenance invocations
+use `--no-build` to keep the same output. Replace every `<...>` value before execution. For an installed release,
+use its matching `Meridian` executable (for example, `./Meridian` in Bash or `.\Meridian.exe` in
+PowerShell) in place of `dotnet run --no-build -c Release --project src/Meridian/Meridian.csproj --`; do not rebuild or
+change versions between preview and apply. These are one-shot maintenance commands, not requests
+to a running workstation, and their authority is the configured database role.
+
+Use absolute output paths in an existing restricted evidence directory. The relative filenames
+below are examples resolved from the current directory, not a recommendation to retain sensitive
+plans in the checkout. Record each exit code and inspect the JSON before the next step.
+
 Use a maintenance window: even preview temporarily locks the retained graph and ledger evidence.
 Configure these existing environment settings through your approved secret-injection mechanism:
 
@@ -111,7 +124,7 @@ and the ledger migrations. The command does not run migrations or accept credent
 Use the same deployed binary and configuration for preview and apply.
 
 ```text
-Meridian --fund-tenant-backfill --action preview --output tenant-plan.json --timeout-seconds 60
+dotnet run --no-build -c Release --project src/Meridian/Meridian.csproj -- --fund-tenant-backfill --action preview --output tenant-plan.json --timeout-seconds 60
 ```
 
 Review the complete evidence and proposed stamps, the separate CompanyId/TenantId values, every
@@ -134,7 +147,7 @@ produce previews but are blocked from apply. A future coordinated migration prot
 for those deployments; there is no override that pretends separate transactions are atomic.
 
 ```text
-Meridian --fund-tenant-backfill --action apply --run-id <uuid> --plan-hash <reviewed-hash> --operator <operator-id> --review-reference <decision-reference> --output tenant-receipt.json --timeout-seconds 60
+dotnet run --no-build -c Release --project src/Meridian/Meridian.csproj -- --fund-tenant-backfill --action apply --run-id <uuid> --plan-hash <reviewed-hash> --operator <operator-id> --review-reference <decision-reference> --output tenant-receipt.json --timeout-seconds 60
 ```
 
 The command locks the ledger registry and audit evidence in SHARE mode, ledger books, periods,
@@ -172,8 +185,8 @@ Once governed source evidence has been corrected, ordinary preview/apply still r
 an earlier unresolved quarantine decision. Review a resolution plan using:
 
 ```text
-Meridian --fund-tenant-backfill --action preview-resolution --output tenant-resolution-plan.json
-Meridian --fund-tenant-backfill --action resolve --run-id <new-uuid> --plan-hash <reviewed-resolution-hash> --operator <operator-id> --review-reference <decision-reference> --output tenant-resolution-receipt.json
+dotnet run --no-build -c Release --project src/Meridian/Meridian.csproj -- --fund-tenant-backfill --action preview-resolution --output tenant-resolution-plan.json
+dotnet run --no-build -c Release --project src/Meridian/Meridian.csproj -- --fund-tenant-backfill --action resolve --run-id <new-uuid> --plan-hash <reviewed-resolution-hash> --operator <operator-id> --review-reference <decision-reference> --output tenant-resolution-receipt.json
 ```
 
 Only rows whose current retained evidence derives exactly one owner can be released. The command
@@ -184,6 +197,18 @@ stale evidence, or a conflicting prior resolution refuses the transaction. Quara
 after an uncertain response to recover the retained receipt.
 
 ## Evidence and remaining deployment work
+
+### Command checkpoints
+
+| Result | Meaning and next action |
+| --- | --- |
+| Exit `0`, `Preview <hash>` | The plan was written. Inspect proposed stamps, exceptions, and apply blockers; success does not mean attribution is complete. |
+| Exit `0`, `Receipt <run-id>` | The receipt was written. Verify its reviewed hash/run identity and counts, then preview again before strict-mode acceptance. |
+| Exit `2` | The action or output argument is missing or unsupported; correct the invocation before doing maintenance. |
+| Exit `6` | A configuration, validation, timeout, storage, or output-write failure occurred. Preserve the exception type; for apply/resolve recover the exact retained run before creating any new run identity. |
+
+Connection and schema changes, database restart, or changed source evidence require a new preview
+and review. A successful receipt with quarantined rows is not a strict-startup acceptance result.
 
 `FundStructureTenantBackfillTests` covers deterministic planning, conflicting components,
 separate-database refusal, stale review, prior quarantine, cancellation, and receipt retries.
@@ -202,3 +227,10 @@ Strict host composition respects the final tenant posture even if a host overrid
 core services are registered. Direct-lending accrual and outbox workers currently lack retained
 authority per loan; strict hosts withhold these workers and log the reason. Tenant attribution is
 required before enabling them under strict scope, and this procedure does not enable them.
+
+## Related references
+
+- [Fund Operations Persistence Cutover](fund-ops-persistence-cutover.md)
+- [Operator Preflight Checklist](preflight-checklist.md)
+- [Database Persistence Configuration](../reference/environment-variables.md#database-persistence)
+- [Maintenance command contract](../../src/Meridian.Application/Commands/FundStructureTenantBackfillCommand.cs)

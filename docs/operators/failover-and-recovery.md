@@ -6,6 +6,26 @@
 
 This page is the canonical operator guide for Meridian recovery posture and failover response.
 
+## Prerequisites and execution context
+
+- Run the recovery scripts in PowerShell 7 from the repository root on the Windows recovery host.
+  The commands below use example backup/restore paths; replace them with approved locations and
+  use a new receipt path for each attempt.
+- Have `pg_dump`, `pg_restore`, and `psql` available, or supply their full paths with `-PgDumpPath`,
+  `-PgRestorePath`, and `-PsqlPath`. Use PostgreSQL client tools compatible with the database being
+  backed up and restored.
+- Load the encryption key and source/target connection strings through the deployment's secret
+  process. The script parses **keyword connection strings** containing `Database` and `Username`
+  (or `User ID`), such as `Host=...;Database=...;Username=...;Password=...`. It does not accept the
+  application host's `postgres://...` shorthand. Installed-host environment values are not
+  automatically present in a separately opened PowerShell session.
+- Resolve the actual data root from lifecycle configuration, verify access to both recovery stores,
+  and prepare a clean target database/root. Record the committed-work boundary and retain the
+  existing evidence before changing any writer or restore target.
+- Use the [lifecycle supervisor](../reference/lifecycle-control-plane.md) to stop/drain the owned
+  workload. Verification reads use the [operator session](preflight-checklist.md#authenticated-evidence-collection)
+  with the restored company's permissions and scope.
+
 ## Supported Recovery Unit
 
 The supported local-workstation topology is recovered as one unit:
@@ -45,7 +65,7 @@ then identify the last committed-work boundary verified recoverable across both 
 the retained verification reference, then run:
 
 ```powershell
-$env:MDC_RECOVERY_ENCRYPTION_KEY_BASE64 = '<secret-manager-value>'
+if (-not $env:MDC_RECOVERY_ENCRYPTION_KEY_BASE64) { throw 'Load the approved recovery key first.' }
 pwsh ./build/scripts/recovery/invoke-production-recovery.ps1 `
   -Mode Backup `
   -ConnectionString $env:MERIDIAN_LEDGER_CONNECTION_STRING `
@@ -390,13 +410,15 @@ one the books should reflect rather than deleting either.
 
 ## Verification Commands
 
-Use the same host mode as affected service surface (desktop or workstation host):
+Start the restored source host in terminal 1 using [preflight](preflight-checklist.md#mandatory-command-set),
+or start the installed host through its supervisor, with the intended restored database and data
+root. In terminal 2, complete [operator sign-in](preflight-checklist.md#authenticated-evidence-collection)
+to define `$meridianBaseUrl` and `$operatorSession`, then inspect:
 
 ```powershell
-dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080
-curl http://localhost:8080/api/workstation/operator/inbox
-curl http://localhost:8080/api/workstation/reconciliation/queue
-curl http://localhost:8080/api/config/effective
+Invoke-RestMethod "$meridianBaseUrl/api/workstation/operator/inbox" -WebSession $operatorSession
+Invoke-RestMethod "$meridianBaseUrl/api/workstation/reconciliation/queue-status" -WebSession $operatorSession
+Invoke-RestMethod "$meridianBaseUrl/api/config/effective" -WebSession $operatorSession
 ```
 
 Before declaring recovery complete, retain the actual reconciliation and operator acceptance
@@ -409,7 +431,21 @@ pwsh ./build/scripts/recovery/validate-recovery-receipt.ps1 `
 if ($LASTEXITCODE -ne 0) { throw 'Recovery objectives remain unproven or breached.' }
 ```
 
-If a service is unstable, switch to service-safe mode, re-run provider validation, and recheck operator inbox for recovery state changes before promoting.
+If the host remains unstable, keep write-producing workflows stopped, retain the failing receipt
+and logs, and repair the named dependency before retrying. A successful HTTP read is not completed
+recovery: compare restored business totals, exact scope, and the accepted recovery boundary.
+
+## Failure and recovery
+
+| Failure | Diagnostic and next action |
+| --- | --- |
+| PostgreSQL tool missing or connection parse failure | Check the tool path and keyword connection-string fields from the prerequisites before retrying. |
+| Receipt already exists or conflicts with a data root | Preserve the existing receipt and choose a unique path outside both roots and their ancestors. |
+| Manifest/HMAC/hash verification fails | Stop the restore. Preserve the original archive and receipt; verify the selected key and complete archive through the backup owner. |
+| Restore target is non-empty | Use the intended clean target or the documented, deliberate quarantine path; do not remove data merely to bypass the guard. |
+| Archive passed but objective status is `unproven` | Complete the actual reconciliation and operator acceptance, then evaluate their bound evidence. Do not substitute archive timings for the missing milestones. |
+| Objective status is `breached` or business state disagrees | Keep recovery unaccepted and escalate with the evaluated receipt, reconciliation result, and remaining gap. |
+
 
 ## Evidence and Handoff
 

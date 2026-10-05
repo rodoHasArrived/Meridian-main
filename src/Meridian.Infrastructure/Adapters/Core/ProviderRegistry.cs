@@ -55,6 +55,7 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
 
     public void RegisterCapabilityFactory(string providerId, Type contract, Func<object?> factory)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(providerId);
         ArgumentNullException.ThrowIfNull(contract);
         ArgumentNullException.ThrowIfNull(factory);
         var key = ProviderIdentity.NormalizeId(providerId);
@@ -144,7 +145,7 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
 
     /// <summary>
     /// Registers a factory function for creating a streaming client for the specified provider ID.
-    /// Provider IDs are case-insensitive strings (e.g. "alpaca", "ib", "polygon").
+    /// Provider IDs are canonical family names (e.g. "alpaca", "ibkr", "polygon") or accepted aliases.
     /// This is the primary registration path; it does not require extending <see cref="DataSourceKind"/>.
     /// </summary>
     /// <param name="providerId">The provider ID to register (case-insensitive).</param>

@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-02
+**Reviewed:** 2026-10-05
 **Scope:** the six evidence-gated P0 rows in the
 [production-readiness tracker](../product/implementation-todo-list.md) — what evidence exists,
 what an agent can still generate, and exactly which decisions and activations require a human.
@@ -171,6 +171,22 @@ promotion even when both MSIX lifecycles pass. The implementation and static tes
 this gate's mechanism; PRD-014 consumer certification remains pending until a protected signed
 Windows run produces that successful receipt on the frozen release commit.
 
+#### PostgreSQL payload review and evidence
+
+The checked-in [`postgresql-payload.json`](../../build/config/postgresql-payload.json) declares
+PostgreSQL 17.11 / win-x64 from the explicit Windows 2025 hosted-runner installation. Human
+governance review of the pull request accepts that version/source declaration; no prior approval
+or successful certification of this declaration is asserted here. Packaging and installed-startup
+smoke share one resolver, with missing or mismatched inputs rejected before consumer packaging.
+Release evidence retains `postgresqlPayloads`, including the exact version/source, runner identity,
+per-file SHA-256 hashes and canonical payload-tree hash from `win-x64-payload.json`.
+
+For each payload change, review the source and declaration together, retain negative-resolution
+test results, and rerun installed-startup plus the existing native upgrade/rollback certification
+on the reviewed commit. Record their run links and receipts before claiming release evidence.
+The [operator payload procedure](../operators/browser-workstation-installer.md#postgresql-payload-declaration)
+describes resolution and the review steps. This entry changes no tracker row or certification result.
+
 ### PRD-015: recovery-drill operator review
 
 **Actor:** operations owner. This review also supplies the recovery portion of open `PRD-111`.
@@ -237,6 +253,34 @@ bash scripts/ci.sh --lane verify-docs
 ## Evidence Log
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
+
+- **2026-10-05 — later dependency recheck confirms continued blocking.** Production Certification
+  [#151 / 37360660094, attempt 1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37360660094)
+  checked `main` at `433ff014b51244daeab8deca5fba812f9bb5fe6a`. Dependency job `111937908247`
+  again reported all 56 NuGet projects clean and rejected the unaccepted high braces advisory;
+  the explicit final assertion failed. Artifact `production-dependency-evidence-151-1`
+  (ID `11367836066`) was retained with the proposal PR evidence bundle and its ZIP SHA-256
+  verified as `80d7d434e508dbf5d4df3edfa5dfc6c354ed7706a9c343072fd742f4cd3ce4d1`.
+  This recheck does not activate the pending proposal or certify a later commit.
+
+- **2026-10-05 — dependency failure rechecked; human decision pending.** Production Certification
+  [#147 / 37351972283, attempt 1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283)
+  checked `main` at `e3bf60bae577c132d8444a827ca4dc3181cc48a1`. Dependency job
+  `111904784527` failed on `braces` 3.0.3 / GHSA-vfj7-8cjw-p6xm (high); NuGet was clean.
+  The npm scan has five high affected nodes from this advisory plus one separate low finding.
+  The final assertion stayed red and all three evidence files were uploaded in
+  [production-dependency-evidence-147-1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283/artifacts/11362468562)
+  (ID `11362468562`, verified ZIP SHA-256
+  `478075a50b84e225b37581089a9e2f28aad6d9ad95b29b811b3297e179a02d11`,
+  hosted expiry `2027-01-03T17:54:46Z`). The
+  [retained evidence manifest](../security/evidence/2026-10-05-dependency-certification/manifest.json)
+  preserves the scan files and fresh graph/upstream evidence beyond that hosted retention window.
+  The [KV-2026-003 proposal](../security/known-vulnerabilities.md)
+  names @rodoHasArrived as the requested human decision-maker, documents the supported Tailwind 4
+  migration and proposes expiry at `2026-10-20T00:00:00Z`. **No acceptance or release approval has
+  been recorded; the machine registry is empty and the gate remains unchanged.** Proposal
+  validation is not successful dependency certification. Candidate-commit validation receipts
+  belong with the proposal PR; a future accepted/fixed release commit needs its own hosted run.
 
 - **2026-10-02 — recovery-evidence correction** (source reviewed at `0feac3d50`; no new hosted run or
   operator acceptance): `PRD-015` and the recovery portion of `PRD-111` previously treated archive

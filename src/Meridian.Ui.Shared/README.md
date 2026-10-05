@@ -6,10 +6,33 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-05
 ---
 
 # src/Meridian.Ui.Shared
+
+`ReportingIncomeComparisonService` and the `/api/fund-structure/reporting/comparisons` endpoints
+provide explicit baseline/current retained-run selection, including governed original/restated
+publication labels. Candidate discovery pages through retained history and applies both tenant and
+immutable report access policy. The shared Reporting engine supplies all movement explanations;
+workstations consume those results without recalculating causality. Authorized candidates load
+governed publication evidence in batches of at most 200 within one transaction per batch; comparison
+creation reads both governed inputs together. Complete retained history remains discoverable.
+
+Creating a comparison retains both complete manifests, exact supporting rows, methodology
+explanation, compatibility decisions, and an explanation-version identifier in the existing
+`IReportingArtifactStore`. The response is returned only after the tenant/hash/length receipt and
+readback content verify. Reads and contribution drilldowns authorize both retained manifest scopes
+against the current caller's claims, verify the content address and envelope format, and use the
+retained bytes even if source rows or live run history later change. The endpoint deployment gate
+is the existing authoritative Reporting capability. The comparison service is registered only with
+configured durable Reporting artifact/governance stores, so local hosts without Reporting authority
+still start while comparison routes remain unavailable; no in-memory production fallback is added.
+
+`LedgerReportingAuthoritativeSource` also retains functional currency, optional transaction
+currency/FX values, dimensional account ID, journal recording time, activity, and accounting-policy
+references with the exact journal/line IDs. Explicit functional currency inconsistent with the
+certified book blocks capture; missing transaction FX metadata is never invented.
 
 `RecurringJournalRunner` joins `AutomatedJournalScheduledWorker` and the existing journal-intake
 path to create one retained human-review draft per recurring occurrence. It holds the durable
@@ -67,9 +90,13 @@ Provider readiness resolves configuration, credential and telemetry aliases thro
 ProviderSdk family identity map before joining evidence. Accepted names such as `ib` and
 `interactive-brokers` project one `ibkr` readiness row. An explicitly disabled module family
 overrides enabled source rows and retained healthy connection evidence, so configuration aliases
-cannot promote a disabled factory to readiness. Configured source IDs remain connection keys for
-joining retained metrics and do not create additional provider-family readiness rows. Health and
-diagnostic lookups resolve the same aliases before joining runtime connection snapshots.
+cannot promote a disabled factory to readiness. Named data-source connection IDs do not create
+extra provider families or override another family's source settings. Provider setup navigation
+resolves the same shared aliases before choosing a family-specific settings route.
+Telemetry joins resolve a recognized provider-family type, then exact configured source ownership,
+before falling back to a legacy family-valued metric ID (including records whose type is `Streaming`).
+A connection named `alpaca` for the IB family therefore cannot contribute IB failures to Alpaca readiness.
+Health and diagnostic lookups resolve the same aliases before joining runtime connection snapshots.
 
 The shared workstation registers credentialed Xero and NetSuite accounting
 providers alongside the existing fixtures. Their HTTP client disables redirects;
@@ -309,6 +336,12 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 - Project metadata - UI shared dependencies and build settings.
 
 ## Important workflows
+
+The seeded development launcher identifies its host through the `/readyz`
+`x-meridian-dev-session` response header. `StatusEndpoints` captures `MERIDIAN_DEV_SESSION`
+at route registration only when `MERIDIAN_DEMO=true`; ordinary hosts and unmarked demos omit
+the header. Readiness status and access policy are unchanged. Focused coverage lives in
+`tests/Meridian.Tests/Ui/StatusDevelopmentSessionTests.cs`.
 
 `RiskRuleRuntimeService` reports rule status to the workstation *and* supplies the limits the
 enforced rules read, so the dashboard and the gate cannot disagree. `DrawdownGuardrailRule` takes

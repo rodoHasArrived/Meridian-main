@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { resolveDevFixture } from "@/lib/dev-fixtures";
 import {
   SYMBOL_API_ENDPOINTS,
+  WORKSTATION_API_ENDPOINTS,
   brokerageConnectionStatusEndpoint,
   historicalBarsEndpoint,
   marketDataQuotesSnapshotEndpoint,
@@ -14,8 +15,25 @@ import type {
   BrokerageConnectionStatus,
   SymbolStatistics
 } from "@/types";
+import type { FirstRunStatus } from "@/features/first-run/types";
 
 describe("dev fixtures", () => {
+  it("opens an explicitly labeled sample workstation without a first-run host", () => {
+    const fixture = resolveDevFixture<FirstRunStatus>(WORKSTATION_API_ENDPOINTS.firstRunStatus);
+
+    expect(fixture).toMatchObject({
+      isComplete: true,
+      dataChoice: "sample",
+      workspace: { isSample: true, badge: "SAMPLE · PAPER" }
+    });
+    expect(fixture?.outcomes).toHaveLength(5);
+    expect(fixture?.outcomes.every((outcome) => outcome.isComplete)).toBe(true);
+    expect(resolveDevFixture("/api/workstation/first-run")).toEqual(fixture);
+    expect(resolveDevFixture("/api/demo/mode")).toEqual({ enabled: true, provenance: "seeded" });
+    expect(resolveDevFixture(WORKSTATION_API_ENDPOINTS.firstRunComplete)).toBeUndefined();
+    expect(resolveDevFixture(WORKSTATION_API_ENDPOINTS.firstRunOutcomeComplete)).toBeUndefined();
+  });
+
   it("serves the portfolio financial record explorer for no-host previews", () => {
     const fixture = resolveDevFixture<FinancialRecordExplorerDto>(
       workstationFinancialRecordExplorerEndpoint("portfolio")

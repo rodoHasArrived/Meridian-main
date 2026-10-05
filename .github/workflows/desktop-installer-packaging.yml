@@ -325,7 +325,7 @@ jobs:
   build-consumer-setup:
     name: package-consumer-setup
     needs: [eligibility, ci, secrets, codeql, production, smoke, release-preflight]
-    runs-on: windows-latest
+    runs-on: windows-2025
     timeout-minutes: 120
     environment:
       name: desktop-release-signing
@@ -373,35 +373,11 @@ jobs:
           [IO.File]::WriteAllBytes($certPath, [Convert]::FromBase64String($env:MDC_SIGNING_CERT_PFX_BASE64))
           "cert_path=$certPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      # Meridian-Setup.exe embeds a PostgreSQL server per bundled runtime. The hosted image ships
-      # one under C:\Program Files\PostgreSQL (x64 only) — the same source publish-smoke uses.
-      # PostgreSQL publishes no Windows ARM64 server build, so the one-click consumer setup is
-      # x64-only until an ARM64 payload is supplied out of band. The ARM64 *desktop MSIX* is
-      # unaffected and is still built and certified: it does not embed a database.
+      # The reviewed declaration fixes the runtime, exact version, and source. No fallback.
       - name: Materialize the PostgreSQL payload
-        id: pgpayload
         shell: pwsh
         run: |
-          # Runner PostgreSQL directories are major-only names like '17', which [version] refuses
-          # to parse; sort on the leading integer instead.
-          $postgres = Get-ChildItem 'C:\Program Files\PostgreSQL' -Directory -ErrorAction Stop |
-            Where-Object { $_.Name -match '^\d+' } |
-            Sort-Object { [int]($_.Name -replace '^(\d+).*$', '$1') } -Descending | Select-Object -First 1
-          if ($null -eq $postgres) { throw 'The hosted Windows runner has no PostgreSQL runtime to bundle.' }
-
-          $payload = 'artifacts/postgresql-payload/win-x64'
-          New-Item -ItemType Directory -Path $payload -Force | Out-Null
-          Copy-Item -Path (Join-Path $postgres.FullName '*') -Destination $payload -Recurse -Force
-
-          $bundled = @('win-x64')
-          $armPayload = 'artifacts/postgresql-payload/win-arm64/bin/postgres.exe'
-          if (Test-Path -LiteralPath $armPayload) { $bundled += 'win-arm64' }
-
-          $excluded = @('win-x64', 'win-arm64') | Where-Object { $_ -notin $bundled }
-          if ($excluded.Count -gt 0) {
-            Write-Host "::warning::Consumer setup excludes $($excluded -join ', '): no PostgreSQL server payload is available for that runtime on this runner."
-          }
-          "runtimes=$($bundled -join ',')" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          & ./build/scripts/install/resolve-postgresql-payload.ps1
 
       - name: Build the consumer package
         shell: pwsh
@@ -410,7 +386,7 @@ jobs:
         run: |
           pwsh ./build/scripts/install/build-consumer-setup.ps1 `
             -PostgreSqlPayloadRoot artifacts/postgresql-payload `
-            -Runtimes ('${{ steps.pgpayload.outputs.runtimes }}'.Split(',')) `
+            -Runtimes @('win-x64') `
             -SigningCertificate '${{ steps.signing.outputs.cert_path }}' `
             -SigningCertificatePassword $env:MDC_SIGNING_CERT_PASSWORD
 
@@ -432,6 +408,7 @@ jobs:
         run: |
           python build/scripts/ci/generate-release-evidence-manifest.py `
             --project consumer-setup `
+            --postgresql-payload-receipt artifacts/consumer-setup/consumer-setup-win-x64-postgresql-payload.json `
             --runtime win-x64 `
             --artifact-root artifacts/consumer-setup `
             --output artifacts/consumer-setup/consumer-setup-win-x64-release-evidence.json `
@@ -443,7 +420,9 @@ jobs:
       - name: Generate consumer checksums
         shell: pwsh
         run: |
-          Get-ChildItem artifacts/consumer-setup -File | Where-Object { $_.Name -eq 'Meridian-Setup.exe' -or $_.Name -like 'consumer-setup-win-x64-*.json' } |
+          # The payload receipt is embedded in release evidence. Hash only published assets;
+          # intermediate JSON receipts are not separate release-promotion subjects.
+          Get-ChildItem artifacts/consumer-setup -File | Where-Object { $_.Name -in @('Meridian-Setup.exe', 'consumer-setup-win-x64-sbom.spdx.json', 'consumer-setup-win-x64-release-evidence.json') } |
             Sort-Object Name |
             ForEach-Object { "{0}  {1}" -f (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant(), $_.Name } |
             Set-Content -LiteralPath artifacts/consumer-setup/consumer-setup-win-x64-SHA256SUMS -Encoding ascii
