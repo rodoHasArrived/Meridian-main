@@ -11,7 +11,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// Part of B2/#7 endpoint integration test suite.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class HealthEndpointTests : EndpointIntegrationTestBase, IDisposable
 {
     // The probes below are open reads, but the runtime status family -- status, errors,

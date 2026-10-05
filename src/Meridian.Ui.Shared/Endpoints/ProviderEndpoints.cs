@@ -616,44 +616,36 @@ public static class ProviderEndpoints
         .Produces<ProviderMetricsResponse>(200)
         .Produces(404);
 
-        // Provider catalog endpoint - centralized metadata for UI consumption
-        // Uses ProviderRegistry when available for runtime-derived catalog data,
-        // otherwise falls back to static ProviderCatalog
+        // Provider catalog metadata belongs to this host's service provider.
         group.MapGet(UiApiRoutes.ProviderCatalog, (
-            HttpContext ctx,
             string? type,
+            [FromServices] IProviderCatalog? catalog,
             [FromServices] ProviderRegistry? registry,
             [FromServices] DataSourceRegistry? dataSourceRegistry) =>
         {
-            IReadOnlyList<ProviderCatalogEntry> catalogEntries;
-
-            if (registry != null)
-            {
-                // Use runtime-derived catalog from ProviderRegistry via ProviderTemplateFactory
-                catalogEntries = type?.ToLowerInvariant() switch
+            // Keep this endpoint's registered-adapter inventory and filtering semantics. The
+            // broader family catalog also includes declared but unconfigured provider factories.
+            catalog ??= new RuntimeProviderCatalog();
+            var catalogEntries = registry is not null
+                ? type?.ToLowerInvariant() switch
                 {
                     "streaming" => registry.GetProviderCatalogByType(ProviderType.Streaming),
                     "backfill" => registry.GetProviderCatalogByType(ProviderType.Backfill),
                     _ => registry.GetProviderCatalog()
-                };
-            }
-            else
-            {
-                // Fall back to static catalog
-                catalogEntries = type?.ToLowerInvariant() switch
+                }
+                : type?.ToLowerInvariant() switch
                 {
-                    "streaming" => ProviderCatalog.GetStreamingProviders(),
-                    "backfill" => ProviderCatalog.GetBackfillProviders(),
-                    _ => ProviderCatalog.GetAll()
+                    "streaming" => catalog.GetByType(ProviderTypeKind.Streaming),
+                    "backfill" => catalog.GetByType(ProviderTypeKind.Backfill),
+                    _ => catalog.GetAll()
                 };
-            }
 
             return Results.Json(
                 new ProviderCatalogResponse(
                     catalogEntries,
                     catalogEntries.Count,
                     DateTimeOffset.UtcNow,
-                    registry != null ? "registry" : "static",
+                    registry is not null ? "registry" : catalog.Source,
                     dataSourceRegistry is null
                         ? null
                         : CreateRegistrationReportDto(dataSourceRegistry.GetRegistrationReport())),
@@ -664,12 +656,14 @@ public static class ProviderEndpoints
         .Produces<ProviderCatalogResponse>(200);
 
         // Single provider catalog entry
-        // Uses ProviderRegistry when available for runtime-derived catalog data
-        group.MapGet(UiApiRoutes.ProviderCatalogById, (string providerId, [FromServices] ProviderRegistry? registry) =>
+        group.MapGet(UiApiRoutes.ProviderCatalogById, (
+            string providerId,
+            [FromServices] IProviderCatalog? catalog,
+            [FromServices] ProviderRegistry? registry) =>
         {
-            ProviderCatalogEntry? entry = registry != null
+            var entry = registry is not null
                 ? registry.GetProviderCatalogEntry(providerId)
-                : ProviderCatalog.Get(providerId);
+                : (catalog ?? new RuntimeProviderCatalog()).Get(providerId);
 
             if (entry is null)
                 return Results.NotFound(new { error = $"Provider '{providerId}' not found in catalog" });

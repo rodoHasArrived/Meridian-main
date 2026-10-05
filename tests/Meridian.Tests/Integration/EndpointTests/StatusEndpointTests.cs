@@ -11,7 +11,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// Tests actual HTTP request/response cycles through the full middleware pipeline.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;

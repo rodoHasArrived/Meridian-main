@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Application.Composition;
 using Meridian.Documents;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
@@ -109,6 +110,47 @@ public sealed class StatementReconciliationAuthorityCompositionTests : IDisposab
         var store = provider.GetRequiredService<IEvidenceArtifactStore>();
         var intake = () => store.WriteIntakeArtifactAsync(new Meridian.Contracts.Workstation.EvidenceVaultIntakeRequestDto(
             "report-pack", "quota-config", "api", "evidence.txt", Convert.ToBase64String([1]))
+        {
+            TenantId = "tenant-config",
+            Scope = "company-config"
+        });
+        (await intake.Should().ThrowAsync<EvidenceStorageQuotaExceededException>()).Which.Reason.Should().Be("tenant-bytes");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EvidenceStorage_ExplicitCompositionConfiguration_EnforcesBudgetBeforeFallbackConfiguration(
+        bool registerFallbackConfiguration)
+    {
+        var services = CreateMinimalWorkstationServices();
+        var explicitConfiguration = new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?>
+            {
+                ["DOTNET_ENVIRONMENT"] = "Test",
+                ["EvidenceVault:StorageQuota:DefaultTenantBudgetBytes"] = "0",
+                ["EvidenceVault:StorageQuota:MinimumDiskHeadroomBytes"] = "0"
+            }).Build();
+        if (registerFallbackConfiguration)
+        {
+            services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["EvidenceVault:StorageQuota:DefaultTenantBudgetBytes"] = "1000000"
+                }).Build());
+            services.AddSingleton(new CompositionConfiguration(explicitConfiguration));
+            services.AddWorkstationSharedServices();
+        }
+        else
+        {
+            services.AddWorkstationSharedServices(explicitConfiguration);
+        }
+        using var provider = services.BuildServiceProvider();
+
+        (provider.GetService<IConfiguration>() is not null).Should().Be(registerFallbackConfiguration);
+        var store = provider.GetRequiredService<IEvidenceArtifactStore>();
+        var intake = () => store.WriteIntakeArtifactAsync(new Meridian.Contracts.Workstation.EvidenceVaultIntakeRequestDto(
+            "report-pack", "explicit-quota-config", "api", "evidence.txt", Convert.ToBase64String([1]))
         {
             TenantId = "tenant-config",
             Scope = "company-config"

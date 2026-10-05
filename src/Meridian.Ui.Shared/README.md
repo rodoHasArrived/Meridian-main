@@ -11,6 +11,11 @@ last_reviewed: 2026-10-05
 
 # src/Meridian.Ui.Shared
 
+Shared endpoint composition accepts an explicit `IConfiguration` for authentication, persistence,
+rate limiting and LEAN settings. Each host retains its own provider catalog and LEAN result records;
+fixture hosts can coexist without publishing configuration or endpoint state to the process.
+Omitting configuration retains the production environment-based startup contract.
+
 `ReportingIncomeComparisonService` and the `/api/fund-structure/reporting/comparisons` endpoints
 provide explicit baseline/current retained-run selection, including governed original/restated
 publication labels. Candidate discovery pages through retained history and applies both tenant and
@@ -1448,7 +1453,9 @@ leases protect live writers, and the next write reclaims abandoned reservations 
 published evidence. Failed cleanup retains the charge until recovery succeeds.
 `AddEvidenceArtifactStorage` binds these limits and registers the shared store for both the
 browser workflow fabric and WPF Accounting feature. Direct consumers without host configuration
-retain the same default limits.
+retain the same default limits. Explicit `CompositionConfiguration.HostConfiguration` settings
+take precedence over a registered `IConfiguration`, including hosts composed from a plain
+`ServiceCollection` without an `IConfiguration` registration.
 
 [`Meridian.Documents/README.md`](../Meridian.Documents/README.md#evidence-storage-quota-configuration)
 documents `EvidenceVault:StorageQuota`, defaults, tenant budgets across company scopes, and the

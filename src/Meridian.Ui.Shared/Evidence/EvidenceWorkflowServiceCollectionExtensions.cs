@@ -1,3 +1,4 @@
+using Meridian.Application.Composition;
 using Meridian.Documents;
 using Microsoft.Extensions.Options;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
@@ -16,10 +17,12 @@ public static class EvidenceWorkflowServiceCollectionExtensions
     public static IServiceCollection AddEvidenceArtifactStorage(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-        // Direct service-collection consumers have no host IConfiguration; retain defaults
-        // there while binding the same section for browser and desktop hosts that provide it.
+        // Explicit per-host composition settings take precedence over the generic host
+        // configuration. Direct consumers without either retain the default limits.
         services.AddOptions<EvidenceStorageQuotaOptions>()
-            .Configure<IServiceProvider>((options, provider) => provider.GetService<IConfiguration>()?
+            .Configure<IServiceProvider>((options, provider) =>
+                (provider.GetService<CompositionConfiguration>()?.HostConfiguration
+                    ?? provider.GetService<IConfiguration>())?
                 .GetSection("EvidenceVault:StorageQuota").Bind(options));
         services.TryAddSingleton<IEvidenceArtifactStore>(sp =>
             new FileEvidenceArtifactStore(

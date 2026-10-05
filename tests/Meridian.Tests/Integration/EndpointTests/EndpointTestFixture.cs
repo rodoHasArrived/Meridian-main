@@ -19,7 +19,6 @@ using Meridian.Infrastructure.Adapters.Stooq;
 using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Infrastructure.Adapters.YahooFinance;
 using Meridian.Storage;
-using Meridian.TestSupport;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
@@ -29,6 +28,8 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
+using Meridian.Identity;
 using Xunit;
 using Meridian.Contracts.Monitoring;
 using Meridian.Contracts.Pipeline;
@@ -42,33 +43,24 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 public sealed class EndpointTestFixture : IAsyncLifetime
 {
-    private static readonly object ProviderCatalogBindingLock = new();
-    private static EndpointTestFixture? s_activeProviderCatalogOwner;
-
-    private readonly Action? _afterProviderCatalogBound;
+    private readonly Action? _afterServicesConfigured;
     private readonly Action<IServiceCollection>? _configureTestServices;
-    private Microsoft.AspNetCore.Builder.WebApplication? _app;
+    private WebApplication? _app;
     private bool _appStopped;
     private string? _tempConfigDir;
-    private string? _originalAuthMode;
-    private string? _originalApiKey;
-    private string? _originalUsername;
-    private string? _originalPasswordHash;
-    private string? _originalUsers;
-    private string? _originalDisableRateLimit;
-    private string? _originalUseInMemoryGovernance;
-    private string? _originalDotnetEnvironment;
-    private string? _originalAspNetCoreEnvironment;
-    private string? _originalLeanPath;
-    private string? _originalLeanDataPath;
-    private string? _originalLeanExportIntervalSeconds;
-    private EndpointTestFixture? _previousProviderCatalogOwner;
-    private Func<IReadOnlyList<ProviderCatalogEntry>>? _ownedRuntimeCatalogProvider;
-    private Func<string, ProviderCatalogEntry?>? _ownedRuntimeCatalogEntryProvider;
-    private bool _providerCatalogBindingActive;
-    private readonly List<PostgresTestSchemaEnvironmentScope> _databaseSchemaScopes = [];
-    private readonly Dictionary<string, string?> _databaseConnectionEnvironment =
-        new(StringComparer.Ordinal);
+
+    // This configuration deliberately has no environment provider. Missing settings remain
+    // missing even if another host (or a developer's shell) configures the process differently.
+    public IConfigurationRoot Configuration { get; } = new ConfigurationBuilder()
+        .AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["MDC_AUTH_MODE"] = "optional",
+            ["MDC_DISABLE_RATE_LIMIT"] = "true",
+            ["MERIDIAN_USE_INMEMORY_GOVERNANCE"] = "true",
+            ["DOTNET_ENVIRONMENT"] = "Test",
+            ["ASPNETCORE_ENVIRONMENT"] = "Test"
+        })
+        .Build();
 
     public HttpClient Client { get; private set; } = null!;
     public string DataRoot { get; private set; } = null!;
@@ -78,13 +70,25 @@ public sealed class EndpointTestFixture : IAsyncLifetime
     {
     }
 
-    internal EndpointTestFixture(Action afterProviderCatalogBound)
+    internal EndpointTestFixture(Action afterServicesConfigured)
     {
-        _afterProviderCatalogBound = afterProviderCatalogBound;
+        _afterServicesConfigured = afterServicesConfigured;
     }
 
     internal EndpointTestFixture(Action<IServiceCollection> configureTestServices)
     {
+        _configureTestServices = configureTestServices;
+    }
+
+    internal EndpointTestFixture(
+        IReadOnlyDictionary<string, string?> settings,
+        Action<IServiceCollection>? configureTestServices = null)
+    {
+        foreach (var (key, value) in settings)
+        {
+            Configuration[key] = value;
+        }
+
         _configureTestServices = configureTestServices;
     }
 
@@ -156,40 +160,11 @@ public sealed class EndpointTestFixture : IAsyncLifetime
 
     private async Task InitializeCoreAsync()
     {
-        _originalAuthMode = Environment.GetEnvironmentVariable("MDC_AUTH_MODE");
-        _originalApiKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        _originalUsername = Environment.GetEnvironmentVariable("MDC_USERNAME");
-        _originalPasswordHash = Environment.GetEnvironmentVariable("MDC_PASSWORD_HASH");
-        _originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
-        _originalDisableRateLimit = Environment.GetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT");
-        _originalUseInMemoryGovernance = Environment.GetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE");
-        _originalDotnetEnvironment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
-        _originalAspNetCoreEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-        _originalLeanPath = Environment.GetEnvironmentVariable("LEAN_PATH");
-        _originalLeanDataPath = Environment.GetEnvironmentVariable("LEAN_DATA_PATH");
-        _originalLeanExportIntervalSeconds = Environment.GetEnvironmentVariable("LEAN_EXPORT_INTERVAL_SECONDS");
-        CaptureDatabaseConnectionEnvironment();
-        MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
-        Environment.SetEnvironmentVariable("MDC_AUTH_MODE", "optional");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", null);
-        Environment.SetEnvironmentVariable("MDC_USERNAME", null);
-        Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", null);
-        Environment.SetEnvironmentVariable("MDC_USERS", null);
-        Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", "true");
-        // All TestServer requests share a null RemoteIpAddress which maps to the "unknown"
-        // partition key; 10 requests would exhaust the production limit immediately.
-        Environment.SetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT", "true");
-        Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Test");
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
-        Environment.SetEnvironmentVariable("LEAN_PATH", null);
-        Environment.SetEnvironmentVariable("LEAN_DATA_PATH", null);
-        Environment.SetEnvironmentVariable("LEAN_EXPORT_INTERVAL_SECONDS", null);
-
-        await ConfigureIsolatedDatabaseSchemasAsync().ConfigureAwait(false);
-
         _tempConfigDir = Path.Combine(Path.GetTempPath(), $"mdc-endpoint-tests-{Guid.NewGuid():N}");
         Directory.CreateDirectory(_tempConfigDir);
         DataRoot = Path.Combine(_tempConfigDir, "data");
+        Configuration["MERIDIAN_DATA_UPLOAD_ROOT"] ??= Path.Combine(DataRoot, "data-uploads");
+        Configuration["Strategies:CoveredCall:DataRootOverride"] ??= DataRoot;
 
         var configPath = Path.Combine(_tempConfigDir, "appsettings.json");
         File.WriteAllText(configPath, GetMinimalConfig());
@@ -197,27 +172,34 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         // Create the status endpoint handlers with test data
         var statusHandlers = CreateTestStatusHandlers();
 
-        var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder();
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            EnvironmentName = "Test",
+            ContentRootPath = _tempConfigDir,
+            Args = []
+        });
         builder.WebHost.UseTestServer();
-        builder.Environment.EnvironmentName = "Test";
+        builder.Configuration.Sources.Clear();
+        builder.Configuration.AddConfiguration(Configuration);
+        builder.Services.AddSingleton(new AuthenticationConfiguration(Configuration));
 
         // Register the Ui.Shared ConfigStore wrapper (endpoints resolve this type).
         // The core ConfigStore (Application.UI.ConfigStore) is registered separately by AddMarketDataServices.
         builder.Services.AddSingleton(new Meridian.Ui.Shared.Services.ConfigStore(configPath));
-        // This host deliberately exercises file/in-memory workstation seams. A non-null whitespace
-        // sentinel prevents AddWorkstationSharedServices from falling back to the process-wide
-        // ledger database for Reporting while leaving production configuration semantics unchanged.
-        Environment.SetEnvironmentVariable("MERIDIAN_REPORTING_CONNECTION_STRING", " ");
-        builder.Services.AddUiSharedServices(statusHandlers, configPath);
+        builder.Services.AddUiSharedServices(statusHandlers, configPath, Configuration);
         builder.Services.RemoveAll<Meridian.Ui.Shared.Services.RiskRuleRuntimeOptions>();
         builder.Services.AddSingleton(new Meridian.Ui.Shared.Services.RiskRuleRuntimeOptions(
             Path.Combine(DataRoot, "risk-rules.json")));
         builder.Services.TryAddSingleton<StreamingFailoverRegistry>();
         builder.Services.RemoveAll<ProviderRegistry>();
-        var testProviderRegistry = CreateTestProviderRegistry();
-        builder.Services.AddSingleton(testProviderRegistry);
-        BindProviderCatalogToTestRegistry(testProviderRegistry);
-        _afterProviderCatalogBound?.Invoke();
+        builder.Services.AddSingleton(_ => CreateTestProviderRegistry());
+        builder.Services.RemoveAll<IProviderCatalog>();
+        builder.Services.AddSingleton<IProviderCatalog>(services =>
+        {
+            var registry = services.GetRequiredService<ProviderRegistry>();
+            return new RuntimeProviderCatalog(registry.GetProviderCatalog, registry.GetProviderCatalogEntry);
+        });
+        _afterServicesConfigured?.Invoke();
         builder.Services.RemoveAll<IDirectLendingService>();
         builder.Services.AddSingleton<IDirectLendingService, InMemoryDirectLendingService>();
         // Endpoint behavior uses explicit fixture-owned account/structure fakes. Keep the host's
@@ -237,7 +219,6 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         _configureTestServices?.Invoke(builder.Services);
 
         _app = builder.Build();
-        await EnsureDatabaseSchemasReadyAsync(_app.Services).ConfigureAwait(false);
 
         // Mirror the production UiServer pipeline order: session auth first so the API-key
         // gate can exempt session-authenticated browser requests. The X-Test-Auth marker
@@ -335,8 +316,8 @@ public sealed class EndpointTestFixture : IAsyncLifetime
             {
                 if (!applicationLifetime.ApplicationStopped.IsCancellationRequested)
                 {
-                    // The host may still be using schemas, files, ambient configuration, and the
-                    // catalog binding. Retaining those resources is safer than destroying them
+                    // The host may still be using its files and services. Retaining those
+                    // resources is safer than destroying them
                     // beneath live hosted services; fail closed instead of poisoning cleanup order.
                     throw new AggregateException(
                         "Endpoint test fixture host did not stop; owned resources were retained.",
@@ -350,8 +331,6 @@ public sealed class EndpointTestFixture : IAsyncLifetime
                 cleanupErrors.Add(stopError);
             }
         }
-
-        RestoreProviderCatalogCallbacksIfOwned();
 
         try
         {
@@ -375,28 +354,6 @@ public sealed class EndpointTestFixture : IAsyncLifetime
             }
         }
 
-        for (var index = _databaseSchemaScopes.Count - 1; index >= 0; index--)
-        {
-            try
-            {
-                await _databaseSchemaScopes[index].DisposeAsync().ConfigureAwait(false);
-                _databaseSchemaScopes.RemoveAt(index);
-            }
-            catch (Exception ex)
-            {
-                cleanupErrors.Add(ex);
-            }
-        }
-
-        try
-        {
-            RestoreProcessEnvironment();
-        }
-        catch (Exception ex)
-        {
-            cleanupErrors.Add(ex);
-        }
-
         if (_tempConfigDir != null && Directory.Exists(_tempConfigDir))
         {
             try
@@ -413,118 +370,6 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         if (cleanupErrors.Count > 0)
         {
             throw new AggregateException("Endpoint test fixture cleanup failed.", cleanupErrors);
-        }
-    }
-
-    private async Task ConfigureIsolatedDatabaseSchemasAsync()
-    {
-        await AddDatabaseSchemaScopeAsync(
-            "MERIDIAN_LEDGER_CONNECTION_STRING",
-            "MERIDIAN_LEDGER_SCHEMA",
-            "endpoint_ledger").ConfigureAwait(false);
-        await AddDatabaseSchemaScopeAsync(
-            "MERIDIAN_ASSET_OPERATIONS_CONNECTION_STRING",
-            "MERIDIAN_ASSET_OPERATIONS_SCHEMA",
-            "endpoint_asset_ops").ConfigureAwait(false);
-        await AddDatabaseSchemaScopeAsync(
-            "MERIDIAN_DIRECT_LENDING_CONNECTION_STRING",
-            "MERIDIAN_DIRECT_LENDING_SCHEMA",
-            "endpoint_direct_lending",
-            "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING").ConfigureAwait(false);
-        await AddDatabaseSchemaScopeAsync(
-            "MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING",
-            "MERIDIAN_FUND_ACCOUNTS_SCHEMA",
-            "endpoint_fund_accounts").ConfigureAwait(false);
-        await AddDatabaseSchemaScopeAsync(
-            "MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING",
-            "MERIDIAN_FUND_STRUCTURE_SCHEMA",
-            "endpoint_fund_structure").ConfigureAwait(false);
-        await AddDatabaseSchemaScopeAsync(
-            "MERIDIAN_REPORTING_CONNECTION_STRING",
-            "MERIDIAN_REPORTING_SCHEMA",
-            "endpoint_reporting",
-            "MERIDIAN_LEDGER_CONNECTION_STRING").ConfigureAwait(false);
-        await AddDatabaseSchemaScopeAsync(
-            "MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING",
-            "MERIDIAN_SCOPED_ACCESS_SCHEMA",
-            "endpoint_scoped_access").ConfigureAwait(false);
-        await AddDatabaseSchemaScopeAsync(
-            "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING",
-            "MERIDIAN_SECURITY_MASTER_SCHEMA",
-            "endpoint_security").ConfigureAwait(false);
-        await AddDatabaseSchemaScopeAsync(
-            "MERIDIAN_BANKING_CONNECTION_STRING",
-            "MERIDIAN_BANKING_SCHEMA",
-            "endpoint_banking").ConfigureAwait(false);
-        await AddDatabaseSchemaScopeAsync(
-            "MERIDIAN_MONEY_MARKET_CONNECTION_STRING",
-            "MERIDIAN_MONEY_MARKET_SCHEMA",
-            "endpoint_money_market").ConfigureAwait(false);
-    }
-
-    private static async Task EnsureDatabaseSchemasReadyAsync(IServiceProvider services)
-    {
-        // A direct TestServer host does not run HostStartup's database-initialization hosted
-        // service. Mirror its production order so every PostgreSQL adapter selected by
-        // AddUiSharedServices uses a migrated fixture-owned schema.
-        await LedgerStartup.EnsureDatabaseReadyAsync(services).ConfigureAwait(false);
-        await SecurityMasterStartup.EnsureDatabaseReadyAsync(services).ConfigureAwait(false);
-        await DirectLendingStartup.EnsureDatabaseReadyAsync(services).ConfigureAwait(false);
-        await AssetOperationsStartup.EnsureDatabaseReadyAsync(services).ConfigureAwait(false);
-        await FundAccountsStartup.EnsureDatabaseReadyAsync(services).ConfigureAwait(false);
-        await FundStructureStartup.EnsureDatabaseReadyAsync(services).ConfigureAwait(false);
-        await BankingStartup.EnsureDatabaseReadyAsync(services).ConfigureAwait(false);
-        await MoneyMarketStartup.EnsureDatabaseReadyAsync(services).ConfigureAwait(false);
-    }
-
-    private async Task AddDatabaseSchemaScopeAsync(
-        string connectionStringEnvironmentVariable,
-        string schemaEnvironmentVariable,
-        string schemaPrefix,
-        string? fallbackConnectionStringEnvironmentVariable = null)
-    {
-        var scope = await PostgresTestSchemaEnvironmentScope.CreateIfConfiguredAsync(
-                connectionStringEnvironmentVariable,
-                schemaEnvironmentVariable,
-                schemaPrefix,
-                fallbackConnectionStringEnvironmentVariable)
-            .ConfigureAwait(false);
-        if (scope is not null)
-        {
-            _databaseSchemaScopes.Add(scope);
-        }
-    }
-
-    private void CaptureDatabaseConnectionEnvironment()
-    {
-        foreach (var variable in MeridianDatabaseEnvironment.PropagatedConnectionStringVariables.Concat(
-                     [
-                         "MERIDIAN_DIRECT_LENDING_CONNECTION_STRING",
-                         "MERIDIAN_REPORTING_CONNECTION_STRING"
-                     ]))
-        {
-            _databaseConnectionEnvironment[variable] =
-                Environment.GetEnvironmentVariable(variable);
-        }
-    }
-
-    private void RestoreProcessEnvironment()
-    {
-        Environment.SetEnvironmentVariable("MDC_AUTH_MODE", _originalAuthMode);
-        Environment.SetEnvironmentVariable("MDC_API_KEY", _originalApiKey);
-        Environment.SetEnvironmentVariable("MDC_USERNAME", _originalUsername);
-        Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", _originalPasswordHash);
-        Environment.SetEnvironmentVariable("MDC_USERS", _originalUsers);
-        Environment.SetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT", _originalDisableRateLimit);
-        Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", _originalUseInMemoryGovernance);
-        Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", _originalDotnetEnvironment);
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", _originalAspNetCoreEnvironment);
-        Environment.SetEnvironmentVariable("LEAN_PATH", _originalLeanPath);
-        Environment.SetEnvironmentVariable("LEAN_DATA_PATH", _originalLeanDataPath);
-        Environment.SetEnvironmentVariable("LEAN_EXPORT_INTERVAL_SECONDS", _originalLeanExportIntervalSeconds);
-        foreach (var pair in _databaseConnectionEnvironment)
-        {
-            Environment.SetEnvironmentVariable(pair.Key, pair.Value);
         }
     }
 
@@ -565,103 +410,11 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         return registry;
     }
 
-    private void BindProviderCatalogToTestRegistry(ProviderRegistry registry)
-    {
-        // ProviderCatalog is process-wide. Production composition binds it to the host's
-        // IServiceProvider, but this fixture replaces ProviderRegistry after composition.
-        // Use an immutable catalog snapshot so a preceding host cannot leave callbacks that
-        // resolve services from its disposed container, and so this fixture does not publish
-        // callbacks tied to its own disposable registry.
-        var entries = registry.GetProviderCatalog().ToArray();
-        _ownedRuntimeCatalogProvider = () => entries;
-        _ownedRuntimeCatalogEntryProvider = providerId => entries.FirstOrDefault(entry =>
-            string.Equals(entry.ProviderId, providerId, StringComparison.OrdinalIgnoreCase));
-        lock (ProviderCatalogBindingLock)
-        {
-            var candidateOwner = s_activeProviderCatalogOwner;
-            var candidateStillOwnsPair =
-                candidateOwner is { _providerCatalogBindingActive: true } &&
-                ReferenceEquals(
-                    ProviderCatalog.RuntimeCatalogProvider,
-                    candidateOwner._ownedRuntimeCatalogProvider) &&
-                ReferenceEquals(
-                    ProviderCatalog.RuntimeCatalogEntryProvider,
-                    candidateOwner._ownedRuntimeCatalogEntryProvider);
-            if (!candidateStillOwnsPair && candidateOwner is not null)
-            {
-                candidateOwner._providerCatalogBindingActive = false;
-                s_activeProviderCatalogOwner = null;
-            }
-
-            _previousProviderCatalogOwner = candidateStillOwnsPair
-                ? candidateOwner
-                : null;
-            ProviderCatalog.InitializeFromRegistry(
-                _ownedRuntimeCatalogProvider,
-                _ownedRuntimeCatalogEntryProvider);
-            _providerCatalogBindingActive = true;
-            s_activeProviderCatalogOwner = this;
-        }
-    }
-
-    private void RestoreProviderCatalogCallbacksIfOwned()
-    {
-        lock (ProviderCatalogBindingLock)
-        {
-            if (!_providerCatalogBindingActive)
-            {
-                return;
-            }
-
-            _providerCatalogBindingActive = false;
-            if (!ReferenceEquals(s_activeProviderCatalogOwner, this))
-            {
-                return;
-            }
-
-            var callbacksStillOwned =
-                ReferenceEquals(ProviderCatalog.RuntimeCatalogProvider, _ownedRuntimeCatalogProvider) &&
-                ReferenceEquals(ProviderCatalog.RuntimeCatalogEntryProvider, _ownedRuntimeCatalogEntryProvider);
-            if (!callbacksStillOwned)
-            {
-                // A later non-fixture owner replaced the process-wide callbacks. Do not clobber it.
-                s_activeProviderCatalogOwner = null;
-                return;
-            }
-
-            var priorOwner = _previousProviderCatalogOwner;
-            while (priorOwner is not null && !priorOwner._providerCatalogBindingActive)
-            {
-                priorOwner = priorOwner._previousProviderCatalogOwner;
-            }
-
-            if (priorOwner is not null)
-            {
-                ProviderCatalog.InitializeFromRegistry(
-                    priorOwner._ownedRuntimeCatalogProvider!,
-                    priorOwner._ownedRuntimeCatalogEntryProvider!);
-                s_activeProviderCatalogOwner = priorOwner;
-            }
-            else
-            {
-                // Never resurrect arbitrary callbacks from a predecessor host: they may close over
-                // a disposed service provider. Only another active EndpointTestFixture is restorable.
-                ProviderCatalog.RuntimeCatalogProvider = null;
-                ProviderCatalog.RuntimeCatalogEntryProvider = null;
-                s_activeProviderCatalogOwner = null;
-            }
-
-            _ownedRuntimeCatalogProvider = null;
-            _ownedRuntimeCatalogEntryProvider = null;
-            _previousProviderCatalogOwner = null;
-        }
-    }
-
-    private static string GetMinimalConfig()
+    private string GetMinimalConfig()
     {
         var config = new
         {
-            DataRoot = "data",
+            DataRoot,
             Compress = false,
             DataSource = "IB",
             Symbols = new[]
