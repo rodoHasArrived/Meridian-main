@@ -161,19 +161,44 @@ public sealed class FileBrokerageOrderRecoveryStoreTests
         var tombstone = tombstones[0]!.AsObject();
         switch (invalidity)
         {
-            case "blank-id": tombstone["orderId"] = " "; break;
-            case "zero-quantity": tombstone["quantity"] = 0; break;
-            case "negative-fill": tombstone["filledQuantity"] = -1; break;
-            case "excess-fill": tombstone["filledQuantity"] = 11; break;
-            case "partial-filled-status": tombstone["filledQuantity"] = 4; break;
-            case "rejected-with-fill": tombstone["status"] = "Rejected"; break;
-            case "nonterminal-status": tombstone["status"] = "Accepted"; break;
-            case "undefined-status": tombstone["status"] = 12345; break;
-            case "duplicate": tombstones.Add(tombstone.DeepClone()); break;
-            case "overlap": snapshot["orders"]!.AsArray().Add(fullOrder); break;
-            case "null-entry": tombstones.Add((JsonNode?)null); break;
-            case "missing-collection": snapshot.Remove("tombstones"); break;
-            default: throw new InvalidOperationException();
+            case "blank-id":
+                tombstone["orderId"] = " ";
+                break;
+            case "zero-quantity":
+                tombstone["quantity"] = 0;
+                break;
+            case "negative-fill":
+                tombstone["filledQuantity"] = -1;
+                break;
+            case "excess-fill":
+                tombstone["filledQuantity"] = 11;
+                break;
+            case "partial-filled-status":
+                tombstone["filledQuantity"] = 4;
+                break;
+            case "rejected-with-fill":
+                tombstone["status"] = "Rejected";
+                break;
+            case "nonterminal-status":
+                tombstone["status"] = "Accepted";
+                break;
+            case "undefined-status":
+                tombstone["status"] = 12345;
+                break;
+            case "duplicate":
+                tombstones.Add(tombstone.DeepClone());
+                break;
+            case "overlap":
+                snapshot["orders"]!.AsArray().Add(fullOrder);
+                break;
+            case "null-entry":
+                tombstones.Add((JsonNode?)null);
+                break;
+            case "missing-collection":
+                snapshot.Remove("tombstones");
+                break;
+            default:
+                throw new InvalidOperationException();
         }
         File.WriteAllText(directory.Path, snapshot.ToJsonString());
 

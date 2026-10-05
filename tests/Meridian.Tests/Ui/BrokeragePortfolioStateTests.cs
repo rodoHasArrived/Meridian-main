@@ -105,8 +105,12 @@ public sealed class BrokeragePortfolioStateTests
         snapshot.NetExposure.Should().Be(net);
         (await new BrokeragePortfolioStateRule(exposure).EvaluateAsync(new OrderRequest
         {
-            Symbol = "AAPL", Side = OrderSide.Buy, Type = Meridian.Execution.Sdk.OrderType.Limit,
-            Quantity = 1m, LimitPrice = 100m, FundAccountId = accountId
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = Meridian.Execution.Sdk.OrderType.Limit,
+            Quantity = 1m,
+            LimitPrice = 100m,
+            FundAccountId = accountId
         })).Code.Should().Be("BROKER_PORTFOLIO_BLOCKED");
     }
 
