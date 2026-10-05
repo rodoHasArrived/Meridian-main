@@ -1,4 +1,6 @@
 using FluentAssertions;
+using Meridian.Application.Composition;
+using Meridian.Documents;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.Infrastructure.Reconciliation;
@@ -6,7 +8,9 @@ using Meridian.Reporting;
 using Meridian.Storage.Reporting;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using CoreConfigStore = Meridian.Application.UI.ConfigStore;
 
@@ -78,6 +82,104 @@ public sealed class StatementReconciliationAuthorityCompositionTests : IDisposab
             .Should().BeSameAs(provider.GetRequiredService<StatementImportEvidenceBridge>());
         provider.GetRequiredService<StatementReconciliationReportWorkflowService>()
             .IsDurablyComposed.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EvidenceStorage_HostConfiguration_EnforcesConfiguredTenantBudget(bool registerWorkflowFabric)
+    {
+        var services = CreateMinimalWorkstationServices();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?>
+            {
+                ["EvidenceVault:StorageQuota:DefaultTenantBudgetBytes"] = "0",
+                ["EvidenceVault:StorageQuota:MinimumDiskHeadroomBytes"] = "0"
+            }).Build());
+        if (registerWorkflowFabric)
+        {
+            services.AddEvidenceWorkflowFabric();
+        }
+        else
+        {
+            services.AddEvidenceArtifactStorage();
+        }
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<IOptions<EvidenceStorageQuotaOptions>>().Value.DefaultTenantBudgetBytes
+            .Should().Be(0);
+        var store = provider.GetRequiredService<IEvidenceArtifactStore>();
+        var intake = () => store.WriteIntakeArtifactAsync(new Meridian.Contracts.Workstation.EvidenceVaultIntakeRequestDto(
+            "report-pack", "quota-config", "api", "evidence.txt", Convert.ToBase64String([1]))
+        {
+            TenantId = "tenant-config",
+            Scope = "company-config"
+        });
+        (await intake.Should().ThrowAsync<EvidenceStorageQuotaExceededException>()).Which.Reason.Should().Be("tenant-bytes");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EvidenceStorage_ExplicitCompositionConfiguration_EnforcesBudgetBeforeFallbackConfiguration(
+        bool registerFallbackConfiguration)
+    {
+        var services = CreateMinimalWorkstationServices();
+        var explicitConfiguration = new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?>
+            {
+                ["DOTNET_ENVIRONMENT"] = "Test",
+                ["EvidenceVault:StorageQuota:DefaultTenantBudgetBytes"] = "0",
+                ["EvidenceVault:StorageQuota:MinimumDiskHeadroomBytes"] = "0"
+            }).Build();
+        if (registerFallbackConfiguration)
+        {
+            services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["EvidenceVault:StorageQuota:DefaultTenantBudgetBytes"] = "1000000"
+                }).Build());
+            services.AddSingleton(new CompositionConfiguration(explicitConfiguration));
+            services.AddWorkstationSharedServices();
+        }
+        else
+        {
+            services.AddWorkstationSharedServices(explicitConfiguration);
+        }
+        using var provider = services.BuildServiceProvider();
+
+        (provider.GetService<IConfiguration>() is not null).Should().Be(registerFallbackConfiguration);
+        var store = provider.GetRequiredService<IEvidenceArtifactStore>();
+        var intake = () => store.WriteIntakeArtifactAsync(new Meridian.Contracts.Workstation.EvidenceVaultIntakeRequestDto(
+            "report-pack", "explicit-quota-config", "api", "evidence.txt", Convert.ToBase64String([1]))
+        {
+            TenantId = "tenant-config",
+            Scope = "company-config"
+        });
+        (await intake.Should().ThrowAsync<EvidenceStorageQuotaExceededException>()).Which.Reason.Should().Be("tenant-bytes");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void EvidenceStorage_WithoutHostConfiguration_ResolvesSharedStoreWithDefaultLimits(bool registerWorkflowFabric)
+    {
+        var services = CreateMinimalWorkstationServices();
+        if (registerWorkflowFabric)
+        {
+            services.AddEvidenceWorkflowFabric();
+        }
+        else
+        {
+            services.AddEvidenceArtifactStorage();
+        }
+        using var provider = services.BuildServiceProvider();
+
+        provider.GetService<IConfiguration>().Should().BeNull();
+        provider.GetRequiredService<IOptions<EvidenceStorageQuotaOptions>>().Value
+            .Should().BeEquivalentTo(new EvidenceStorageQuotaOptions());
+        var store = provider.GetRequiredService<IEvidenceArtifactStore>();
+        store.Should().BeOfType<FileEvidenceArtifactStore>();
+        provider.GetRequiredService<IEvidenceArtifactStore>().Should().BeSameAs(store);
     }
 
     [Fact]
