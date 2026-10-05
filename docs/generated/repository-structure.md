@@ -1241,7 +1241,9 @@ Meridian-main
 │       │   ├── publish.ps1
 │       │   └── publish.sh
 │       ├── recovery
-│       │   └── invoke-production-recovery.ps1
+│       │   ├── invoke-production-recovery.ps1
+│       │   ├── recovery-evidence.ps1
+│       │   └── validate-recovery-receipt.ps1
 │       ├── run
 │       │   ├── start-collector.ps1
 │       │   ├── start-collector.sh
@@ -11013,8 +11015,10 @@ Meridian-main
 │   │   ├── test_mixed_credit_status_set.py
 │   │   ├── test_prepare_dk1_operator_signoff.py
 │   │   ├── test_production_certification_workflow.py
+│   │   ├── test_production_recovery.py
 │   │   ├── test_project_target_framework_alignment.py
 │   │   ├── test_python_package_conda_dependencies.py
+│   │   ├── test_recovery_evidence.py
 │   │   ├── test_refresh_screenshots_workflow.py
 │   │   ├── test_release_evidence_manifest.py
 │   │   ├── test_release_evidence_workflows.py
