@@ -27,6 +27,10 @@ so a sibling account's same-ID lot cannot change the disposing lot's basis or ho
 Ledger migration `039` adds nullable disposal allocation-version and sale-price evidence to immutable
 atomic batches without backfilling existing rows. New disposal inserts retain the current convention
 after the exact-replay check, leaving legacy retries and absent-price command fingerprints unchanged.
+New disposal validation requires exact disposing-account realized gain credits and realized loss debits
+for both aggregate inferred proceeds and explicit quotes; sibling, incorrectly typed/symbol-scoped,
+and incorrectly sided result lines are rejected transactionally. Retained exact retries bypass this
+new-insert validation without rewriting immutable history or fingerprints.
 An explicit original quote must reproduce supported, account-scoped cash journal proceeds; fees and
 other unsupported expense shapes cannot supply that assertion. Aggregate-only governed commands
 retain the current version with a null price, deriving their canonical price at reporting from the
@@ -217,10 +221,14 @@ lookup paths, and evidence trails those layers rely on.
 - `Interfaces/` and `Sinks/` - contracts and implementations that receive data to be saved.
 - `Store/`, `Policies/`, and `Replay/` - JSONL market-data storage, rules for using it, and readers
   that can play saved data back. `JsonlReplayer` external-sorts physical partitions by full UTC
-  timestamp with ordinal file and physical-line tie-breakers, fails closed on malformed or null
-  records, and closes bounded replay-page handles before yielding events. Atomic preparation
-  admission prevents concurrent merge batches from deadlocking while keeping reader/writer use
-  bounded. `JsonFileIBDataResultStore` requires tenant/company scope on writes
+  timestamp with ordinal file and physical-line tie-breakers, or explicit symbol ranks for grouped
+  backtests. Every source event requires a valid persisted envelope and a payload matching its event
+  type before symbol filtering. Replay
+  takes an exclusive closed-capture lease; active writers report unavailable input instead of false
+  corruption at a partial tail. Same-process readers of a source serialize preparation. Owner-only
+  Unix spools retain one final run, read in bounded UTF-8 pages by offset without duplicate page
+  files. Handles and admission close before each public yield. Atomic preparation admission keeps
+  merge reader/writer use bounded. Sorting still scans the capture before first yield. `JsonFileIBDataResultStore` requires tenant/company scope on writes
   and queries, keys matching result identities by that scope, and excludes unscoped legacy rows
   during restart hydration.
 - `Services/CanonicalSymbolRegistry.cs` - storage-backed canonical symbol resolver implementing

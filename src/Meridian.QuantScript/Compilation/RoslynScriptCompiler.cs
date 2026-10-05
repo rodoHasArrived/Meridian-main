@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Scripting;
 
 namespace Meridian.QuantScript.Compilation;
@@ -274,8 +275,13 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var syntaxTree = CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(kind: SourceCodeKind.Script));
         var root = syntaxTree.GetRoot();
+        var externalDirective = root.DescendantTrivia(descendIntoTrivia: true)
+            .FirstOrDefault(trivia => trivia.IsKind(SyntaxKind.LoadDirectiveTrivia)
+                || trivia.IsKind(SyntaxKind.ReferenceDirectiveTrivia));
+        if (externalDirective.GetStructure() is { } directive)
+            throw IncompleteParameter(directive, "External source and reference directives are not supported by static parameter discovery");
 
-        AddDescriptors(result, seen, ExtractParamCallDescriptors(root));
+        AddDescriptors(result, seen, ExtractParamCallDescriptors(source, root));
         AddDescriptors(result, seen, ExtractScriptParamDescriptors(root));
         AddDescriptors(result, seen, ExtractScriptParamDescriptorsFallback(source));
         AddDescriptors(result, seen, ExtractLegacyCommentDescriptors(source));
@@ -299,43 +305,103 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
         }
     }
 
-    private static IEnumerable<ParameterDescriptor> ExtractParamCallDescriptors(SyntaxNode root)
+    private IEnumerable<ParameterDescriptor> ExtractParamCallDescriptors(string source, SyntaxNode root)
     {
-        foreach (var invocation in root.DescendantNodes().OfType<InvocationExpressionSyntax>())
+        if (!root.DescendantNodes().OfType<SimpleNameSyntax>().Any(IsParamName))
+            return [];
+
+        // Resolve actual globals calls instead of guessing from argument positions or generic
+        // syntax. This handles inferred type arguments, named arguments and optional defaults
+        // without executing source. Unknown metadata must never authorize a partial sidebar.
+        var compilation = BuildScript(source).GetCompilation();
+        var tree = compilation.SyntaxTrees.Single();
+        var model = compilation.GetSemanticModel(tree);
+        var descriptors = new Dictionary<string, ParameterDescriptor>(StringComparer.OrdinalIgnoreCase);
+        foreach (var name in tree.GetRoot().DescendantNodes().OfType<SimpleNameSyntax>().Where(IsParamName))
         {
-            if (!TryGetParamInvocation(invocation, out var genericName))
+            var expression = name.Parent is MemberAccessExpressionSyntax or MemberBindingExpressionSyntax
+                ? name.Parent
+                : name;
+            var invocation = expression.Parent as InvocationExpressionSyntax;
+            var symbol = model.GetSymbolInfo(name).Symbol;
+            if (symbol is not null && !IsGlobalsParam(symbol))
                 continue;
 
-            if (genericName.TypeArgumentList.Arguments.Count != 1)
-                continue;
+            if (invocation is null || model.GetOperation(invocation) is not IInvocationOperation operation
+                || !IsGlobalsParam(operation.TargetMethod))
+            {
+                throw IncompleteParameter(name, "Param must be a directly bound globals call with statically known metadata");
+            }
 
-            var arguments = invocation.ArgumentList.Arguments;
-            if (arguments.Count == 0 || !TryReadStringLiteral(arguments[0].Expression, out var name))
-                continue;
+            var parameterType = operation.TargetMethod.TypeArguments.Single();
+            var typeName = parameterType.SpecialType switch
+            {
+                SpecialType.System_Int32 => "int",
+                SpecialType.System_Int64 => "long",
+                SpecialType.System_Single => "float",
+                SpecialType.System_Double => "double",
+                SpecialType.System_Decimal => "decimal",
+                SpecialType.System_Boolean => "bool",
+                SpecialType.System_String => "string",
+                _ => throw IncompleteParameter(name, "Param type must be a supported scalar type")
+            };
+            var arguments = operation.Arguments.ToDictionary(argument => argument.Parameter!.Ordinal);
+            if (arguments.Count != 5 || !arguments.Keys.Order().SequenceEqual(Enumerable.Range(0, 5)))
+                throw IncompleteParameter(name, "Param arguments could not be resolved completely");
 
-            var typeName = NormalizeTypeName(genericName.TypeArgumentList.Arguments[0]);
-            var defaultValue = arguments.Count > 1
-                ? ConvertLiteralValue(arguments[1].Expression, typeName)
-                : null;
-            var min = arguments.Count > 2 && TryReadDouble(arguments[2].Expression, out var minValue)
-                ? minValue
-                : double.MinValue;
-            var max = arguments.Count > 3 && TryReadDouble(arguments[3].Expression, out var maxValue)
-                ? maxValue
-                : double.MaxValue;
-            var description = arguments.Count > 4 && TryReadStringLiteral(arguments[4].Expression, out var descriptionText)
-                ? descriptionText
-                : null;
+            object? ReadConstant(int ordinal)
+            {
+                var argument = arguments[ordinal];
+                if (!argument.Value.ConstantValue.HasValue)
+                    throw IncompleteParameter(name, $"Param argument '{argument.Parameter!.Name}' must be a compile-time constant");
+                return argument.Value.ConstantValue.Value;
+            }
 
-            yield return new ParameterDescriptor(
-                Name: name!,
-                TypeName: typeName,
-                Label: name!,
-                DefaultValue: defaultValue,
-                Min: min,
-                Max: max,
-                Description: string.IsNullOrWhiteSpace(description) ? null : description);
+            if (ReadConstant(0) is not string parameterName || string.IsNullOrWhiteSpace(parameterName)
+                || parameterName != parameterName.Trim())
+                throw IncompleteParameter(name, "Param name must be a nonempty constant string without surrounding whitespace");
+            var defaultValue = arguments[1].ArgumentKind == ArgumentKind.DefaultValue
+                ? typeName switch
+                {
+                    "int" => (object)0,
+                    "long" => 0L,
+                    "float" => 0f,
+                    "double" => 0d,
+                    "decimal" => 0m,
+                    "bool" => false,
+                    _ => null
+                }
+                : ReadConstant(1);
+            if (defaultValue is double doubleValue && !double.IsFinite(doubleValue)
+                || defaultValue is float floatValue && !float.IsFinite(floatValue))
+                throw IncompleteParameter(name, "Param default must be finite");
+
+            if (ReadConstant(2) is not double min || !double.IsFinite(min)
+                || ReadConstant(3) is not double max || !double.IsFinite(max) || min > max)
+                throw IncompleteParameter(name, "Param bounds must be finite constants with min <= max");
+            var description = ReadConstant(4) as string;
+            var descriptor = new ParameterDescriptor(parameterName, typeName, parameterName, defaultValue,
+                min, max, string.IsNullOrWhiteSpace(description) ? null : description.Trim());
+            if (descriptors.TryGetValue(parameterName, out var existing) && existing != descriptor)
+                throw IncompleteParameter(name, $"Param '{parameterName}' has conflicting declarations");
+            descriptors[parameterName] = descriptor;
         }
+
+        return descriptors.Values;
+    }
+
+    private static bool IsParamName(SimpleNameSyntax name) =>
+        string.Equals(name.Identifier.ValueText, "Param", StringComparison.Ordinal);
+
+    private static bool IsGlobalsParam(ISymbol symbol) =>
+        symbol is IMethodSymbol { Name: "Param" } method
+        && method.ContainingType.ToDisplayString() == typeof(QuantScriptGlobals).FullName;
+
+    private static ParameterExtractionException IncompleteParameter(SyntaxNode node, string reason)
+    {
+        var location = node.GetLocation().GetLineSpan().StartLinePosition;
+        return new ParameterExtractionException(
+            $"Parameter extraction is incomplete at line {location.Line + 1}, column {location.Character + 1}: {reason}.");
     }
 
     private static IEnumerable<ParameterDescriptor> ExtractScriptParamDescriptors(SyntaxNode root)
@@ -471,24 +537,6 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
         }
 
         return result;
-    }
-
-    private static bool TryGetParamInvocation(
-        InvocationExpressionSyntax invocation,
-        out GenericNameSyntax genericName)
-    {
-        genericName = invocation.Expression switch
-        {
-            GenericNameSyntax directGeneric => directGeneric,
-            IdentifierNameSyntax => null!,
-            MemberAccessExpressionSyntax { Name: GenericNameSyntax memberGeneric } => memberGeneric,
-            _ => null!
-        };
-
-        if (genericName is null || !string.Equals(genericName.Identifier.ValueText, "Param", StringComparison.Ordinal))
-            return false;
-
-        return true;
     }
 
     private static bool IsScriptParamAttribute(AttributeSyntax attribute)

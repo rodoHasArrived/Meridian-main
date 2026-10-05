@@ -11,6 +11,11 @@ last_reviewed: 2026-10-01
 
 # src/Meridian.Ui.Shared
 
+Replay file previews return an explicit empty JSON error response for malformed persisted events,
+including source file/line evidence, and distinguish active/unavailable captures from corruption.
+Quant Lab parameter discovery returns HTTP 400 when any globals `Param` metadata is incomplete;
+partial extraction cannot authorize the browser run command.
+
 `RecurringJournalRunner` joins `AutomatedJournalScheduledWorker` and the existing journal-intake
 path to create one retained human-review draft per recurring occurrence. It holds the durable
 claim lease through intake recovery, preserves exact definitions and evidence, and projects both
@@ -403,6 +408,13 @@ posting or close controls, reporting certification or approval, client PDF/XLSX 
 delivery, or delivery-receipt retention. Those actions remain owned by the existing Operations
 Continuity, reconciliation casework, Reporting governance, document, and distribution services, and
 statement workflow `Completed` is not a posted, closed, certified, released, or delivered outcome.
+
+Security Master open-lot projection resolves each lot against its account-scoped snapshot position
+before falling back to an aggregate position. It transports explicit `IsShort` direction and, for
+legacy snapshots that predate the additive field, recovers direction from the signed account
+position. That effective direction owns lot P&L, so mixed-account long/short books cannot silently
+invert a short lot's economics in the workstation read model.
+
 The lower-level
 `POST /api/workstation/reconciliation/statement-runs` mutation derives `ImportedBy` from the
 authenticated session and fails closed unless `FundAccountId` resolves to an active account whose

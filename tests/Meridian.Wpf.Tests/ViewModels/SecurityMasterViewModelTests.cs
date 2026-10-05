@@ -968,7 +968,9 @@ public sealed class SecurityMasterViewModelTests
             viewModel.OpenLotReadModelFields.Should().Contain(field =>
                 field.Label == "Quantity model" &&
                 field.Value == "FactorAdjustedFace");
-            viewModel.OpenLotRows.Should().ContainSingle().Which.LotId.Should().Be("lot-1");
+            var openLot = viewModel.OpenLotRows.Should().ContainSingle().Subject;
+            openLot.LotId.Should().Be("lot-1");
+            openLot.IsShort.Should().BeTrue();
             viewModel.OpenLotProvenanceHistory.Should().ContainSingle();
             viewModel.ValidationIssuesStatusText.Should().Contain("blocking issue");
             viewModel.ValidationIssues.Should().ContainSingle().Which.Code.Should().Be("SM_IDENTIFIER_DUPLICATE_ACTIVE");
@@ -1094,6 +1096,7 @@ public sealed class SecurityMasterViewModelTests
         xaml.Should().Contain("{Binding OpenLotReadModelStatusText}");
         xaml.Should().Contain("ItemsSource=\"{Binding ScheduleBookEvents}\"");
         xaml.Should().Contain("ItemsSource=\"{Binding OpenLotRows}\"");
+        xaml.Should().Contain("Header=\"Short\" Binding=\"{Binding IsShort}\"");
         viewModel.Should().Contain("ObservableCollection<SecurityValidationIssueDto> ValidationIssues");
         viewModel.Should().Contain("ObservableCollection<SecurityMasterChangeHistoryItemDto> ChangeHistoryItems");
         viewModel.Should().Contain("ObservableCollection<SecurityMasterScheduleEventDto> ScheduleBookEvents");
@@ -2061,6 +2064,9 @@ public sealed class SecurityMasterViewModelTests
                         SourceReason: "Latest ledger lot read model.",
                         IsLongTerm: false,
                         Notes: "Primary scoped lot.")
+                    {
+                        IsShort = true
+                    }
                 ],
                 ProvenanceHistory:
                 [

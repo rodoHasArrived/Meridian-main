@@ -4,7 +4,7 @@
 
 **Owner:** Backtesting + Strategy Analytics
 
-**Reviewed:** 2026-09-02
+**Reviewed:** 2026-10-05
 **Candidate branch:** `codex/replay-parameter-fail-closed`
 
 ## Scope and claim boundary
@@ -23,14 +23,22 @@ reopens that row nor broadens it into a general Backtesting Studio completion cl
 
 - JSONL and supported compressed JSONL partitions are external-sorted by full UTC timestamp, then
   ordinal file position and physical line number.
-- Sort preparation takes whole-operation admission before opening a merge batch. No admission or
-  file handle is retained across a public replay yield; bounded pages are materialized and closed
-  before their events are emitted.
-- Malformed and null source records fail closed with file and line evidence. Cancellation and early
+- Shared roots are read/sorted once for their selected symbols. Full UTC ticks and requested symbol
+  ranks survive the grouped-source and outer merges; default file/line ties remain stable.
+- Sort preparation takes whole-operation admission before opening a merge batch. The final run is
+  paged by UTF-8 byte offset without duplicate page files. No admission or file handle survives a
+  public yield. Spool directories/files use owner-only Unix permissions.
+- Sources must be closed captures. Exclusive source leases reject active writers as unavailable,
+  including a transient partial tail; same-process readers serialize through bounded path gates.
+  The sorted run is unaffected by later source changes. Sorting scans the capture before first
+  yield to validate and establish chronology; this is not a live-tail endpoint.
+- Malformed, null, or incomplete persisted event envelopes fail closed with file and line evidence. Cancellation and early
   consumer disposal release admission, close readers, and attempt spool cleanup.
 - Quant Lab ties parameter metadata to the exact current editor source. Run is disabled while
   extraction is pending or unavailable, and the command path independently rejects an attempted
   launch without current-source metadata.
+- Roslyn-bound discovery supports inferred types, named arguments and constant metadata; unsupported
+  or incomplete globals `Param` references reject the entire extraction with HTTP 400.
 - A failed parameter refresh may display the last usable descriptors and overrides as stale
   reference data, but it cannot submit them or silently fall back to inline defaults. A successful
   refresh replaces removed descriptors and retains only matching overrides.
@@ -55,10 +63,9 @@ change. A result from an earlier #2789 head or a superseded re-cut SHA is not re
 
 | Workflow | Required jobs/checks |
 | --- | --- |
-| Meridian CI | `verify-dotnet`, `verify-browser`, `verify-docs`, and `quality-gate` |
+| Meridian CI | `verify-dotnet`, `verify-browser`, `verify-docs`, `verify-workflows`, `quality-gate`, and `integration-gate` |
 | Windows Desktop Build | `verify-desktop (build/test WPF)` |
-| WPF Dev Loop Validation | `WPF Dev Loop (DesktopWorkflowScriptTests)` |
-| WPF Route Validation | `Position Blotter Route Validation` and `Operator Inbox Route Validation` |
+| Windows Desktop Build consolidated slices | dev-loop, position-blotter route, and operator-inbox route in the same `verify-desktop` run |
 | CodeQL | `Analyze csharp` and `Analyze javascript-typescript` |
 | Documentation Automation | `validate-docs` and `regenerate-docs` |
 | Roadmap Source Docs | `scope-gate` and `schema` |

@@ -60,6 +60,16 @@ budget can be materialized. These controls do not remove the launching user's fi
 permissions. `EnableUnsafeScripts` remains a trust decision, and production/customer composition
 continues to reject Quant Lab pending certification of a hardened deployment profile.
 
+### Static parameter discovery
+
+Quant Lab describes globals `Param(...)` calls using Roslyn binding, including inferred scalar
+argument types, named arguments, constant expressions and omitted defaults. Names, defaults,
+bounds and descriptions must be statically known; unsupported types, indirect or unresolved
+calls, external source/reference directives, dynamic metadata and conflicting declarations fail extraction as a whole. The shared
+parameter endpoint returns HTTP 400 for incomplete extraction, so the workstation cannot treat
+an empty or partial descriptor list as authoritative. Legacy attributes and comments retain
+lower priority than successfully described globals calls.
+
 ### Configuration
 
 `QuantLab:Enabled` controls route registration and defaults off. Runtime controls bind from the

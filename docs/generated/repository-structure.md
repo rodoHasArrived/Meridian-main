@@ -1241,7 +1241,9 @@ Meridian-main
 │       │   ├── publish.ps1
 │       │   └── publish.sh
 │       ├── recovery
-│       │   └── invoke-production-recovery.ps1
+│       │   ├── invoke-production-recovery.ps1
+│       │   ├── recovery-evidence.ps1
+│       │   └── validate-recovery-receipt.ps1
 │       ├── run
 │       │   ├── start-collector.ps1
 │       │   ├── start-collector.sh
@@ -1916,6 +1918,7 @@ Meridian-main
 │   │   │   ├── adversarial-review-2026-08-remediation-plan.md
 │   │   │   ├── next-work-determination-2026-09-27.md
 │   │   │   ├── next-work-determination-2026-10-02.md
+│   │   │   ├── next-work-determination-2026-10-04.md
 │   │   │   ├── product-roadmap-priorities-2026-07.md
 │   │   │   ├── production-readiness-backlog-2026-08.md
 │   │   │   ├── README.md
@@ -2279,6 +2282,7 @@ Meridian-main
 │   │   │   ├── dk1-baseline-trust-thresholds.md
 │   │   │   ├── dk1-pilot-parity-runbook.md
 │   │   │   ├── dk1-trust-rationale-mapping.md
+│   │   │   ├── prd-106-portfolio-snapshot-hardening.md
 │   │   │   ├── prd-106-replay-parameter-recut-review-packet.md
 │   │   │   ├── wave2-cockpit-evidence-packet.md
 │   │   │   └── wave4-evidence-template.md
@@ -8529,6 +8533,7 @@ Meridian-main
 │   │   ├── MeridianNativeBacktestStudioEngineTests.cs
 │   │   ├── MultiSymbolMergeEnumeratorTests.cs
 │   │   ├── OptionsOverwriteStrategyTests.cs
+│   │   ├── PortfolioCorporateActionSnapshotTests.cs
 │   │   ├── SimulatedPortfolioCacheTests.cs
 │   │   ├── SimulatedPortfolioTests.cs
 │   │   ├── StageTelemetryTests.cs
@@ -10489,6 +10494,7 @@ Meridian-main
 │   │   │   ├── ProviderLedgerReconciliationServiceTests.cs
 │   │   │   ├── ProviderReadinessEndpointTests.cs
 │   │   │   ├── ProviderRoutingEndpointsTests.cs
+│   │   │   ├── QuantLabParameterExtractionEndpointTests.cs
 │   │   │   ├── QuantLabParameterSetTests.cs
 │   │   │   ├── ReconciliationApiServiceTests.cs
 │   │   │   ├── ReconciliationBreakQueueProjectionTests.cs
@@ -10498,6 +10504,7 @@ Meridian-main
 │   │   │   ├── RecurringJournalSubjectAuthorityTests.cs
 │   │   │   ├── ReferenceDataEndpointAuthorizationTests.cs
 │   │   │   ├── RegistryFundProfileTenantGuardTests.cs
+│   │   │   ├── ReplayPreviewEndpointsTests.cs
 │   │   │   ├── ReportingArtifactVaultServiceTests.cs
 │   │   │   ├── ReportingDeliveryReadinessRaceTests.cs
 │   │   │   ├── ReportingDeliveryReleaseGateTests.cs
@@ -11011,8 +11018,10 @@ Meridian-main
 │   │   ├── test_mixed_credit_status_set.py
 │   │   ├── test_prepare_dk1_operator_signoff.py
 │   │   ├── test_production_certification_workflow.py
+│   │   ├── test_production_recovery.py
 │   │   ├── test_project_target_framework_alignment.py
 │   │   ├── test_python_package_conda_dependencies.py
+│   │   ├── test_recovery_evidence.py
 │   │   ├── test_refresh_screenshots_workflow.py
 │   │   ├── test_release_evidence_manifest.py
 │   │   ├── test_release_evidence_workflows.py

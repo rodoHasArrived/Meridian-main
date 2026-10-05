@@ -1,5 +1,8 @@
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text;
+using Meridian.Contracts.Domain.Enums;
+using Meridian.Contracts.Domain.Models;
 using System.Text.Json;
 using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
@@ -26,16 +29,31 @@ public sealed class JsonlReplayer
         MaxConcurrentReplaySorts,
         MaxConcurrentReplaySorts);
 
+    // Same-process replay readers serialize before taking an exclusive source lease. Bounded
+    // stripes avoid retaining a semaphore for each historical path.
+    private static readonly SemaphoreSlim[] SourceReadGates = Enumerable.Range(0, 64)
+        .Select(static _ => new SemaphoreSlim(1, 1)).ToArray();
+
     private readonly string _path;
     private readonly int _sortRunRecordLimit;
     private readonly int _maxMergeReaders;
+    private readonly IReadOnlyDictionary<string, int>? _symbolOrder;
+    private readonly string _spoolRoot;
 
     public JsonlReplayer(string path)
         : this(path, SortRunRecordLimit, MaxMergeReaders)
     {
     }
 
-    internal JsonlReplayer(string path, int sortRunRecordLimit, int maxMergeReaders)
+    /// <summary>Replays only these effective symbols, using their ranks for equal timestamps.</summary>
+    public JsonlReplayer(string path, IReadOnlyDictionary<string, int> symbolOrder)
+        : this(path)
+    {
+        ArgumentNullException.ThrowIfNull(symbolOrder);
+        _symbolOrder = new Dictionary<string, int>(symbolOrder, StringComparer.OrdinalIgnoreCase);
+    }
+
+    internal JsonlReplayer(string path, int sortRunRecordLimit, int maxMergeReaders, string? spoolRoot = null)
     {
         _path = path ?? throw new ArgumentNullException(nameof(path));
         if (sortRunRecordLimit <= 0)
@@ -45,6 +63,7 @@ public sealed class JsonlReplayer
 
         _sortRunRecordLimit = sortRunRecordLimit;
         _maxMergeReaders = maxMergeReaders;
+        _spoolRoot = spoolRoot ?? Path.GetTempPath();
     }
 
     public async IAsyncEnumerable<MarketEvent> ReadEventsAsync(
@@ -62,7 +81,7 @@ public sealed class JsonlReplayer
         if (files.Count == 0)
             yield break;
 
-        var spoolDirectory = Path.Combine(Path.GetTempPath(), $"meridian-replay-sort-{Guid.NewGuid():N}");
+        var spoolDirectory = Path.Combine(_spoolRoot, $"meridian-replay-sort-{Guid.NewGuid():N}");
         var runs = new List<string>();
         var replayCompleted = false;
 
@@ -70,7 +89,11 @@ public sealed class JsonlReplayer
         var admissionHeld = true;
         try
         {
-            Directory.CreateDirectory(spoolDirectory);
+            if (OperatingSystem.IsWindows())
+                Directory.CreateDirectory(spoolDirectory);
+            else
+                Directory.CreateDirectory(spoolDirectory,
+                    UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
 
             // Storage sinks retain arrival order, which can include late provider events. Produce
             // fixed-size sorted runs while opening only one physical source partition at a time.
@@ -80,6 +103,9 @@ public sealed class JsonlReplayer
                 ct.ThrowIfCancellationRequested();
                 await foreach (var record in ReadFileAsync(files[fileIndex], ct).ConfigureAwait(false))
                 {
+                    // Validate every source record before filtering by the requested symbols.
+                    if (_symbolOrder is not null && !_symbolOrder.ContainsKey(record.Event.EffectiveSymbol))
+                        continue;
                     chunk.Add(record with { FileIndex = fileIndex });
                     if (chunk.Count == _sortRunRecordLimit)
                         await FlushRunAsync(chunk, runs, spoolDirectory, ct).ConfigureAwait(false);
@@ -111,26 +137,19 @@ public sealed class JsonlReplayer
                 runs = nextRuns;
             }
 
-            // Convert the final run to small pages before releasing admission. Each page is loaded
-            // and its handle closed before any event is yielded. This is essential when an outer
-            // multi-symbol merge primes many replayers: no global permit or reader handle may be
-            // retained across a yield while the next replayer waits to start.
-            var replayPages = await WriteReplayPagesAsync(
-                runs[0],
-                spoolDirectory,
-                ReplayPageRecordLimit,
-                ct).ConfigureAwait(false);
-            File.Delete(runs[0]);
-
+            // Retain one final run, load a bounded page by byte offset, close its handle and
+            // release admission before yielding. Do not duplicate the run into page files.
             ReplayIoAdmissions.Release();
             admissionHeld = false;
 
-            foreach (var page in replayPages)
+            long pageOffset = 0;
+            while (true)
             {
-                ct.ThrowIfCancellationRequested();
-                var records = await ReadSpoolPageAsync(page, ct).ConfigureAwait(false);
-                File.Delete(page);
-                foreach (var record in records)
+                var page = await ReadSpoolPageAsync(runs[0], pageOffset, ct).ConfigureAwait(false);
+                if (page.Records.Count == 0)
+                    break;
+                pageOffset = page.NextOffset;
+                foreach (var record in page.Records)
                 {
                     ct.ThrowIfCancellationRequested();
                     yield return record.Event;
@@ -163,65 +182,25 @@ public sealed class JsonlReplayer
         }
     }
 
-    private static async Task<IReadOnlyList<string>> WriteReplayPagesAsync(
-        string inputRun,
-        string spoolDirectory,
-        int pageRecordLimit,
-        CancellationToken ct)
-    {
-        var pages = new List<string>();
-        StreamWriter? writer = null;
-        var recordsInPage = 0;
-        try
-        {
-            await foreach (var record in ReadSpoolRunAsync(inputRun, ct).ConfigureAwait(false))
-            {
-                if (writer is null || recordsInPage == pageRecordLimit)
-                {
-                    if (writer is not null)
-                        await writer.DisposeAsync().ConfigureAwait(false);
-
-                    var page = Path.Combine(spoolDirectory, $"page-{pages.Count:D8}.jsonl");
-                    writer = new StreamWriter(new FileStream(
-                        page,
-                        FileMode.CreateNew,
-                        FileAccess.Write,
-                        FileShare.None,
-                        bufferSize: 4096,
-                        useAsync: true));
-                    pages.Add(page);
-                    recordsInPage = 0;
-                }
-
-                await WriteSpoolRecordAsync(writer, record, ct).ConfigureAwait(false);
-                recordsInPage++;
-            }
-        }
-        finally
-        {
-            if (writer is not null)
-                await writer.DisposeAsync().ConfigureAwait(false);
-        }
-
-        return pages;
-    }
-
-    private static async Task<IReadOnlyList<ReplayRecord>> ReadSpoolPageAsync(
-        string path,
-        CancellationToken ct)
+    private static async Task<(IReadOnlyList<ReplayRecord> Records, long NextOffset)> ReadSpoolPageAsync(
+        string path, long offset, CancellationToken ct)
     {
         await ReplayIoAdmissions.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var lines = await File.ReadAllLinesAsync(path, ct).ConfigureAwait(false);
-            var records = new ReplayRecord[lines.Length];
-            for (var index = 0; index < lines.Length; index++)
+            await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read,
+                FileShare.Read, bufferSize: 4096, useAsync: true);
+            stream.Position = offset;
+            using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: false);
+            var records = new List<ReplayRecord>(ReplayPageRecordLimit);
+            while (records.Count < ReplayPageRecordLimit &&
+                   await reader.ReadLineAsync(ct).ConfigureAwait(false) is { } line)
             {
-                ct.ThrowIfCancellationRequested();
-                records[index] = ParseSpoolRecord(lines[index], path);
+                records.Add(ParseSpoolRecord(line, path));
+                // Writers use BOM-free UTF-8 and LF. StreamReader.Position includes read-ahead.
+                offset += Encoding.UTF8.GetByteCount(line) + 1L;
             }
-
-            return records;
+            return (records, offset);
         }
         finally
         {
@@ -229,7 +208,22 @@ public sealed class JsonlReplayer
         }
     }
 
-    private static async Task FlushRunAsync(
+    private static StreamWriter CreateSpoolWriter(string path)
+    {
+        var options = new FileStreamOptions
+        {
+            Mode = FileMode.CreateNew,
+            Access = FileAccess.Write,
+            Share = FileShare.None,
+            BufferSize = 4096,
+            Options = FileOptions.Asynchronous
+        };
+        if (!OperatingSystem.IsWindows())
+            options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+        return new StreamWriter(new FileStream(path, options), new UTF8Encoding(false)) { NewLine = "\n" };
+    }
+
+    private async Task FlushRunAsync(
         List<ReplayRecord> chunk,
         List<string> runs,
         string spoolDirectory,
@@ -242,18 +236,12 @@ public sealed class JsonlReplayer
         chunk.Clear();
     }
 
-    private static async Task WriteMergedRunAsync(
+    private async Task WriteMergedRunAsync(
         IReadOnlyList<string> inputRuns,
         string output,
         CancellationToken ct)
     {
-        await using var writer = new StreamWriter(new FileStream(
-            output,
-            FileMode.CreateNew,
-            FileAccess.Write,
-            FileShare.None,
-            bufferSize: 4096,
-            useAsync: true));
+        await using var writer = CreateSpoolWriter(output);
         await foreach (var record in MergeRunsAsync(inputRuns, ct).ConfigureAwait(false))
             await WriteSpoolRecordAsync(writer, record, ct).ConfigureAwait(false);
     }
@@ -263,13 +251,7 @@ public sealed class JsonlReplayer
         string output,
         CancellationToken ct)
     {
-        await using var writer = new StreamWriter(new FileStream(
-            output,
-            FileMode.CreateNew,
-            FileAccess.Write,
-            FileShare.None,
-            bufferSize: 4096,
-            useAsync: true));
+        await using var writer = CreateSpoolWriter(output);
         foreach (var record in records)
             await WriteSpoolRecordAsync(writer, record, ct).ConfigureAwait(false);
     }
@@ -291,7 +273,7 @@ public sealed class JsonlReplayer
             .ConfigureAwait(false);
     }
 
-    private static async IAsyncEnumerable<ReplayRecord> MergeRunsAsync(
+    private async IAsyncEnumerable<ReplayRecord> MergeRunsAsync(
         IReadOnlyList<string> runs,
         [EnumeratorCancellation] CancellationToken ct)
     {
@@ -299,7 +281,7 @@ public sealed class JsonlReplayer
             yield break;
 
         var enumerators = new IAsyncEnumerator<ReplayRecord>?[runs.Count];
-        var heap = new PriorityQueue<int, ReplayRecord>(runs.Count, ReplayRecordComparer.Instance);
+        var heap = new PriorityQueue<int, ReplayRecord>(runs.Count, new ReplayRecordComparer(this));
         try
         {
             for (var index = 0; index < runs.Count; index++)
@@ -387,69 +369,125 @@ public sealed class JsonlReplayer
         return new ReplayRecord(evt, lineNumber, fileIndex);
     }
 
+    private static bool HasMatchingPayload(MarketEvent evt) => evt.Type switch
+    {
+        MarketEventType.Trade => evt.Payload is Trade,
+        MarketEventType.L2Snapshot or MarketEventType.Depth => evt.Payload is LOBSnapshot or L2SnapshotPayload,
+        MarketEventType.BboQuote or MarketEventType.Quote => evt.Payload is BboQuotePayload,
+        MarketEventType.OrderFlow => evt.Payload is OrderFlowStatistics,
+        MarketEventType.Integrity => evt.Payload is IntegrityEvent or DepthIntegrityEvent,
+        MarketEventType.Heartbeat => evt.Payload is Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload,
+        MarketEventType.HistoricalBar => evt.Payload is HistoricalBar,
+        MarketEventType.HistoricalQuote => evt.Payload is HistoricalQuote,
+        MarketEventType.HistoricalTrade => evt.Payload is HistoricalTrade,
+        MarketEventType.HistoricalAuction => evt.Payload is HistoricalAuction,
+        MarketEventType.AggregateBar => evt.Payload is AggregateBarPayload,
+        MarketEventType.OptionQuote => evt.Payload is OptionQuote,
+        MarketEventType.OptionTrade => evt.Payload is OptionTrade,
+        MarketEventType.OptionGreeks => evt.Payload is GreeksSnapshot,
+        MarketEventType.OptionChain => evt.Payload is OptionChainSnapshot,
+        MarketEventType.OpenInterest => evt.Payload is OpenInterestUpdate,
+        MarketEventType.OrderAdd => evt.Payload is OrderAdd,
+        MarketEventType.OrderModify => evt.Payload is OrderModify,
+        MarketEventType.OrderCancel => evt.Payload is OrderCancel,
+        MarketEventType.OrderExecute => evt.Payload is OrderExecute,
+        MarketEventType.OrderReplace => evt.Payload is OrderReplace,
+        _ => false
+    };
+
     private static async IAsyncEnumerable<ReplayRecord> ReadFileAsync(
         string file,
         [EnumeratorCancellation] CancellationToken ct)
     {
-        await using var fs = new FileStream(
-            file,
-            FileMode.Open,
-            FileAccess.Read,
-            FileShare.ReadWrite | FileShare.Delete,
-            bufferSize: 4096,
-            useAsync: true);
-        var stream = CompressedJsonlStream.Decompress(fs, file);
-        using var reader = new StreamReader(stream);
-        long lineNumber = 0;
-        while (true)
+        var comparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        var gate = SourceReadGates[(uint)comparer.GetHashCode(Path.GetFullPath(file)) % (uint)SourceReadGates.Length];
+        await gate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            ct.ThrowIfCancellationRequested();
-            var line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
-            if (line is null)
-                yield break;
-
-            lineNumber++;
-            if (string.IsNullOrWhiteSpace(line))
-                continue;
-
-            MarketEvent? evt;
-            try
+            await using var fs = new FileStream(
+                file,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.None,
+                bufferSize: 4096,
+                useAsync: true);
+            // Closed-capture lease: an active sink returns IOException instead of exposing a partial
+            // tail to the parser. No source lease survives sort preparation or a public replay yield.
+            var stream = CompressedJsonlStream.Decompress(fs, file);
+            using var reader = new StreamReader(stream);
+            long lineNumber = 0;
+            while (true)
             {
-                evt = JsonSerializer.Deserialize<MarketEvent>(line, MarketDataJsonContext.HighPerformanceOptions);
-            }
-            catch (JsonException ex)
-            {
-                throw new InvalidDataException(
-                    $"Malformed JSONL record in replay file '{file}' at line {lineNumber}.",
-                    ex);
-            }
+                ct.ThrowIfCancellationRequested();
+                var line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
+                if (line is null)
+                    yield break;
 
-            if (evt is null)
-            {
-                throw new InvalidDataException(
-                    $"Null JSONL record in replay file '{file}' at line {lineNumber}.");
-            }
+                lineNumber++;
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
 
-            yield return new ReplayRecord(evt, lineNumber, FileIndex: 0);
+                MarketEvent? evt;
+                try
+                {
+                    using var document = JsonDocument.Parse(line);
+                    if (document.RootElement.ValueKind == JsonValueKind.Object)
+                    {
+                        var fields = document.RootElement.EnumerateObject()
+                            .Select(static property => property.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                        if (!fields.IsSupersetOf(["timestamp", "symbol", "type", "schemaVersion", "payload"]))
+                            throw new JsonException("Missing required persisted event fields.");
+                    }
+                    evt = document.RootElement.Deserialize<MarketEvent>(MarketDataJsonContext.HighPerformanceOptions);
+                    if (evt is not null && (evt.Timestamp == default || string.IsNullOrWhiteSpace(evt.Symbol) ||
+                        evt.CanonicalSymbol is not null && string.IsNullOrWhiteSpace(evt.CanonicalSymbol) ||
+                        evt.Type == MarketEventType.Unknown || !Enum.IsDefined(evt.Type) ||
+                        evt.SchemaVersion != 1 || !HasMatchingPayload(evt)))
+                        throw new JsonException("Invalid persisted event timestamp, symbol, type, schema version, or payload.");
+                }
+                catch (Exception ex) when (ex is JsonException or ArgumentException or NotSupportedException)
+                {
+                    throw new InvalidDataException(
+                        $"Malformed JSONL record in replay file '{file}' at line {lineNumber}.",
+                        ex);
+                }
+
+                if (evt is null)
+                {
+                    throw new InvalidDataException(
+                        $"Null JSONL record in replay file '{file}' at line {lineNumber}.");
+                }
+
+                yield return new ReplayRecord(evt, lineNumber, FileIndex: 0);
+            }
+        }
+        finally
+        {
+            gate.Release();
         }
     }
 
-    private static int CompareRecords(ReplayRecord left, ReplayRecord right)
+    private int CompareRecords(ReplayRecord left, ReplayRecord right)
     {
         var timestampComparison = left.Event.Timestamp.UtcTicks.CompareTo(right.Event.Timestamp.UtcTicks);
         if (timestampComparison != 0)
             return timestampComparison;
 
+        if (_symbolOrder is not null)
+        {
+            var symbolComparison = _symbolOrder[left.Event.EffectiveSymbol]
+                .CompareTo(_symbolOrder[right.Event.EffectiveSymbol]);
+            if (symbolComparison != 0)
+                return symbolComparison;
+        }
         var fileComparison = left.FileIndex.CompareTo(right.FileIndex);
         return fileComparison != 0 ? fileComparison : left.LineNumber.CompareTo(right.LineNumber);
     }
 
     private readonly record struct ReplayRecord(MarketEvent Event, long LineNumber, int FileIndex);
 
-    private sealed class ReplayRecordComparer : IComparer<ReplayRecord>
+    private sealed class ReplayRecordComparer(JsonlReplayer owner) : IComparer<ReplayRecord>
     {
-        internal static ReplayRecordComparer Instance { get; } = new();
-
-        public int Compare(ReplayRecord x, ReplayRecord y) => CompareRecords(x, y);
+        public int Compare(ReplayRecord x, ReplayRecord y) => owner.CompareRecords(x, y);
     }
 }

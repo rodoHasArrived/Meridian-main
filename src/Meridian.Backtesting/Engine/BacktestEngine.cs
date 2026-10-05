@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.FillModels;
 using Meridian.Backtesting.Metrics;
@@ -6,6 +7,7 @@ using Meridian.Backtesting.Portfolio;
 using Meridian.Contracts.Backtesting;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
+using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
 using Meridian.Storage.Replay;
 using Meridian.Storage.Services;
@@ -132,9 +134,11 @@ public sealed class BacktestEngine(
         strategy.Initialize(ctx);
         ApplyScheduledAssetEvents(request.From, assetEventsByDate, portfolio, ctx);
 
-        // 4. Build per-symbol replay streams (with corporate action adjustments if enabled)
+        // 4. Build one replay stream per storage root (with corporate action adjustments if enabled)
         stageTimer.Transition(BacktestStage.LoadingData);
         var replaySymbols = ResolveReplaySymbolOrder(universe, request.Symbols);
+        var symbolOrder = replaySymbols.Select((symbol, rank) => (symbol, rank))
+            .ToDictionary(static pair => pair.symbol, static pair => pair.rank, StringComparer.OrdinalIgnoreCase);
         var streams = await BuildSymbolStreamsAsync(replaySymbols, request, ct).ConfigureAwait(false);
 
         // 5. Replay loop — multi-symbol chronological merge
@@ -145,7 +149,7 @@ public sealed class BacktestEngine(
         var rollingState = new RollingMetricsState(portfolio.ComputeCurrentEquity());
         var lastEventTimestamps = new Dictionary<string, DateTimeOffset>(StringComparer.OrdinalIgnoreCase);
 
-        await foreach (var evt in MultiSymbolMergeEnumerator.MergeAsync(streams, ct))
+        await foreach (var evt in MultiSymbolMergeEnumerator.MergeAsync(streams, ct, symbolOrder))
         {
             ct.ThrowIfCancellationRequested();
 
@@ -245,34 +249,209 @@ public sealed class BacktestEngine(
             .ToArray();
     }
 
-    private Task<IReadOnlyList<IAsyncEnumerable<MarketEvent>>> BuildSymbolStreamsAsync(
+    internal Task<IReadOnlyList<IAsyncEnumerable<MarketEvent>>> BuildSymbolStreamsAsync(
         IReadOnlyList<string> replaySymbols,
         BacktestRequest request,
-        CancellationToken ct)
+        CancellationToken ct,
+        Func<string, IReadOnlyDictionary<string, int>, CancellationToken, IAsyncEnumerable<MarketEvent>>? sourceFactory = null)
     {
-        var streams = new List<IAsyncEnumerable<MarketEvent>>();
-        foreach (var symbol in replaySymbols)
+        sourceFactory ??= static (root, symbols, token) => new JsonlReplayer(root, symbols).ReadEventsAsync(token);
+        var sourceSymbols = new Dictionary<string, Dictionary<string, int>>(
+            OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        for (var rank = 0; rank < replaySymbols.Count; rank++)
         {
-            var symbolRoot = Path.Combine(request.DataRoot, symbol.ToUpperInvariant());
+            ct.ThrowIfCancellationRequested();
+            var symbol = replaySymbols[rank];
+            var symbolRoot = Path.GetFullPath(Path.Combine(request.DataRoot, symbol.ToUpperInvariant()));
             if (!Directory.Exists(symbolRoot))
-                symbolRoot = request.DataRoot;  // flat layout fallback
+                symbolRoot = Path.GetFullPath(request.DataRoot); // flat or provider/date layout fallback
 
-            var reader = new JsonlReplayer(symbolRoot);
-            var symbolStream = FilterBySymbolAndDate(reader.ReadEventsAsync(), symbol, request.From, request.To);
+            if (!sourceSymbols.TryGetValue(symbolRoot, out var symbols))
+                sourceSymbols.Add(symbolRoot, symbols = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase));
+            symbols.TryAdd(symbol, rank);
+        }
 
-            // Apply corporate action adjustments if enabled
+        var streams = new List<IAsyncEnumerable<MarketEvent>>();
+        foreach (var (sourceRoot, symbols) in sourceSymbols)
+        {
+            // JsonlReplayer filters selected symbols before sorting and uses the same ranks as the
+            // outer merge. Shared roots are therefore captured once, rather than once per symbol.
+            var source = FilterBySymbolsAndDate(sourceFactory(sourceRoot, symbols, ct), symbols, request.From, request.To, ct);
             if (request.AdjustForCorporateActions && corporateActionAdjustment != null)
             {
-                symbolStream = ApplyCorporateActionAdjustmentsAsync(symbolStream, symbol, corporateActionAdjustment, ct);
+                streams.Add(CapturePrepareAndReplayAsync(source, symbols, request, ct));
+                continue;
             }
 
-            streams.Add(symbolStream);
+            streams.Add(source);
         }
         return Task.FromResult<IReadOnlyList<IAsyncEnumerable<MarketEvent>>>(streams);
     }
 
     /// <summary>
-    /// Wraps a symbol stream to apply corporate action adjustments incrementally to HistoricalBar events.
+    /// Captures the exact filtered replay used to prepare a corporate-action plan, then executes
+    /// from that immutable snapshot. Preparation and execution therefore cannot observe different
+    /// market data when a source partition is concurrently appended or replaced.
+    /// </summary>
+    private async IAsyncEnumerable<MarketEvent> CapturePrepareAndReplayAsync(
+        IAsyncEnumerable<MarketEvent> source,
+        IReadOnlyDictionary<string, int> symbols,
+        BacktestRequest request,
+        [EnumeratorCancellation] CancellationToken ct)
+    {
+        var snapshotPath = Path.Combine(
+            Path.GetTempPath(),
+            $"meridian-backtest-snapshot-{Guid.NewGuid():N}.jsonl");
+
+        try
+        {
+            var historicalBars = symbols.Keys.ToDictionary(
+                static symbol => symbol, static _ => new List<HistoricalBar>(), StringComparer.OrdinalIgnoreCase);
+            var snapshotOptions = new FileStreamOptions
+            {
+                Mode = FileMode.CreateNew,
+                Access = FileAccess.Write,
+                Share = FileShare.None,
+                Options = FileOptions.Asynchronous | FileOptions.SequentialScan
+            };
+            if (!OperatingSystem.IsWindows())
+                snapshotOptions.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+            await using (var writer = new StreamWriter(new FileStream(snapshotPath, snapshotOptions)))
+            {
+                await foreach (var evt in source.WithCancellation(ct).ConfigureAwait(false))
+                {
+                    if (evt.Payload is HistoricalBar bar)
+                        historicalBars[evt.EffectiveSymbol].Add(bar);
+
+                    var json = JsonSerializer.Serialize(
+                        evt,
+                        MarketDataJsonContext.HighPerformanceOptions);
+                    await writer.WriteLineAsync(json.AsMemory(), ct).ConfigureAwait(false);
+                }
+
+                await writer.FlushAsync(ct).ConfigureAwait(false);
+            }
+
+            var effectiveThroughUtc = new DateTimeOffset(
+                request.To.ToDateTime(TimeOnly.MaxValue),
+                TimeSpan.Zero);
+            var plans = new Dictionary<string, CorporateActionAdjustmentPlan>(StringComparer.OrdinalIgnoreCase);
+            foreach (var symbol in symbols.OrderBy(static pair => pair.Value).Select(static pair => pair.Key))
+            {
+                var adjustmentPlan = await corporateActionAdjustment!
+                    .PrepareAsync(historicalBars[symbol], symbol, effectiveThroughUtc, ct)
+                    .ConfigureAwait(false);
+                plans.Add(symbol, adjustmentPlan);
+                logger.LogInformation(
+                    "Prepared corporate-action plan {ContentVersion} for {Symbol}: {BarCount} bars through {EffectiveThroughUtc}",
+                    adjustmentPlan.ContentVersion,
+                    symbol,
+                    adjustmentPlan.BarCount,
+                    adjustmentPlan.EffectiveThroughUtc);
+            }
+
+            await foreach (var evt in ReadCapturedSnapshotAsync(snapshotPath, ct).ConfigureAwait(false))
+            {
+                if (evt.Payload is HistoricalBar bar)
+                {
+                    var plan = plans[evt.EffectiveSymbol];
+                    yield return evt with { Symbol = plan.Ticker, Payload = plan.Apply(bar) };
+                }
+                else
+                {
+                    yield return evt;
+                }
+            }
+        }
+        finally
+        {
+            if (File.Exists(snapshotPath))
+                File.Delete(snapshotPath);
+        }
+    }
+
+    /// <summary>
+    /// Replays an engine-owned capture. Any blank, malformed, or null event makes the adjusted run
+    /// fail closed because preparation and execution must observe the same complete snapshot.
+    /// </summary>
+    internal static async IAsyncEnumerable<MarketEvent> ReadCapturedSnapshotAsync(
+        string snapshotPath,
+        [EnumeratorCancellation] CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(snapshotPath);
+
+        await using var stream = new FileStream(
+            snapshotPath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            4096,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
+        using var reader = new StreamReader(stream);
+        var lineNumber = 0L;
+
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            var line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
+            if (line is null)
+                yield break;
+
+            lineNumber++;
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                throw new InvalidDataException(
+                    $"Captured backtest snapshot '{snapshotPath}' contains a blank event at line {lineNumber}.");
+            }
+
+            MarketEvent? evt;
+            try
+            {
+                evt = JsonSerializer.Deserialize<MarketEvent>(
+                    line,
+                    MarketDataJsonContext.HighPerformanceOptions);
+            }
+            catch (JsonException ex)
+            {
+                throw new InvalidDataException(
+                    $"Captured backtest snapshot '{snapshotPath}' contains invalid JSON at line {lineNumber}.",
+                    ex);
+            }
+
+            if (evt is null)
+            {
+                throw new InvalidDataException(
+                    $"Captured backtest snapshot '{snapshotPath}' contains a null event at line {lineNumber}.");
+            }
+
+            yield return evt;
+        }
+    }
+
+    /// <summary>
+    /// Applies a prepared immutable corporate-action plan to HistoricalBar events while preserving
+    /// streaming for the execution pass.
+    /// </summary>
+    internal static async IAsyncEnumerable<MarketEvent> ApplyCorporateActionPlanAsync(
+        IAsyncEnumerable<MarketEvent> source,
+        string symbol,
+        CorporateActionAdjustmentPlan adjustmentPlan,
+        [EnumeratorCancellation] CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(adjustmentPlan);
+
+        await foreach (var evt in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            if (evt.Payload is HistoricalBar bar)
+                yield return evt with { Symbol = symbol, Payload = adjustmentPlan.Apply(bar) };
+            else
+                yield return evt;
+        }
+    }
+
+    /// <summary>
+    /// Compatibility wrapper for callers that explicitly exercise the legacy per-bar seam.
     /// </summary>
     internal static async IAsyncEnumerable<MarketEvent> ApplyCorporateActionAdjustmentsAsync(
         IAsyncEnumerable<MarketEvent> source,
@@ -393,16 +572,16 @@ public sealed class BacktestEngine(
     private static BacktestStageTelemetryDto BuildStageTelemetry(StageTimer stageTimer, string? stageMessage = null)
         => new(stageTimer.CurrentStage, stageTimer.StageElapsed, stageTimer.TotalElapsed, stageMessage);
 
-    private static async IAsyncEnumerable<MarketEvent> FilterBySymbolAndDate(
+    private static async IAsyncEnumerable<MarketEvent> FilterBySymbolsAndDate(
         IAsyncEnumerable<MarketEvent> source,
-        string symbol,
+        IReadOnlyDictionary<string, int> symbols,
         DateOnly from,
         DateOnly to,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
         await foreach (var evt in source.WithCancellation(ct))
         {
-            if (!evt.EffectiveSymbol.Equals(symbol, StringComparison.OrdinalIgnoreCase))
+            if (!symbols.ContainsKey(evt.EffectiveSymbol))
                 continue;
             var date = DateOnly.FromDateTime(evt.Timestamp.UtcDateTime);
             if (date < from || date > to)
@@ -741,7 +920,7 @@ public sealed class BacktestEngine(
                 maximumPerOrder: request.CommissionMaximum)
         };
 
-    private static IReadOnlyList<TradeTicket> BuildTradeTickets(IReadOnlyList<CashFlowEntry> cashFlows)
+    internal static IReadOnlyList<TradeTicket> BuildTradeTickets(IReadOnlyList<CashFlowEntry> cashFlows)
     {
         var tickets = new List<TradeTicket>(cashFlows.Count);
 
@@ -781,7 +960,8 @@ public sealed class BacktestEngine(
                         BuildAssetEventNarrative(assetEvent),
                         assetEvent.Amount,
                         assetEvent.UnitsImpacted,
-                        assetEvent.CashPerShare));
+                        assetEvent.CashPerShare,
+                        AccountId: assetEvent.AccountId));
                     break;
                 case DividendCashFlow dividend:
                     tickets.Add(new TradeTicket(
