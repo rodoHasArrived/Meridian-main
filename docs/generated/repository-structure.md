@@ -11146,6 +11146,7 @@ Meridian-main
 │   │   ├── test_run_provider_validation_evidence_bundle.py
 │   │   ├── test_run_script_tests.py
 │   │   ├── test_scan_commit_secrets.py
+│   │   ├── test_schema_control_baselines.py
 │   │   ├── test_schema_control_catalog.py
 │   │   ├── test_schema_control_cli.py
 │   │   ├── test_schema_control_contracts.py

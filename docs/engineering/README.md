@@ -103,6 +103,15 @@ python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian
 The runner serializes local validation, detects active repo-owned build/test/compiler processes,
 builds before testing to avoid stale `--no-build` assemblies, uses isolated `artifacts/bin` and
 `artifacts/obj` roots by default, and writes run evidence under `.ai/validation-runs/`.
+Each normal run restores, builds once, then invokes `dotnet test --no-build --no-restore`.
+To explicitly reuse outputs, pass `--no-build --isolation-key <existing-key>` (the prior run's
+`isolationKey` in its evidence JSON), or `--no-build --no-isolation` for shared outputs.
+Reuse skips both restore and compilation and requires the same project, configuration, framework,
+runtime, and MSBuild properties used to produce the outputs. It does not check source freshness;
+rerun without `--no-build` after source changes or when outputs are missing or incompatible.
+The default `auto` isolation key is rejected with `--no-build` because it selects a new output
+location. Missing outputs fail the test step without falling back to a build.
+
 After a timed-out generation, build, or test attempt, run `python build/python/cli/buildctl.py
 validation-status --summary`, then `dotnet build-server shutdown`. Stop only abandoned repo-owned
 `dotnet`, `MSBuild`, `testhost`, `csc`, or `VBCSCompiler` PIDs after confirming their command lines
