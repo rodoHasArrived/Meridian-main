@@ -2,7 +2,7 @@
 
 **Status:** accepted planning baseline
 **Owner:** core-team
-**Reviewed:** 2026-06-16
+**Reviewed:** 2026-10-05 (PRD-102 manifest versioning and replay scope)
 
 ## Summary
 
@@ -260,6 +260,64 @@ Durable local storage should use existing Meridian durability patterns such as W
 `AtomicFileWriter`; source-generated JSON contexts must be added for any new retained manifest or
 payload DTOs.
 
+### Immutable Manifest Revisions And Replay Provenance
+
+The manifest portion of `PRD-102` retains each `(manifestId, manifestVersion)` as immutable content
+with a SHA-256 digest. Repeating a save with the same content is idempotent; changing content under
+an existing version is a conflict. A separate current-version pointer selects the revision used by
+new runs. Publishing a revision compares the caller's expected current revision with the retained
+pointer, so concurrent editors cannot silently overwrite each other. Setup edits and activation
+changes must publish a new revision instead of mutating an earlier approval or mapping snapshot.
+
+The file store writes and flushes revision content before promoting the pointer. A cross-process
+lock protects the comparison and promotion. Readers resolve the durable pointer rather than
+selecting the highest version on disk: an interrupted or unsuccessful promotion can leave a
+retained candidate without making it current. Storage errors propagate to the caller; restart must
+preserve the last successfully promoted revision and every readable retained revision.
+
+Manual CSV intake, REST intake, and replay bind retained raw payloads and sync runs to the exact
+manifest id, version, and digest used for execution. The human-readable mapping-version label is
+not sufficient proof by itself. Digest verification uses the shared `Sha256Digest` contract, and
+an unavailable revision or mismatched digest blocks execution instead of falling back to current.
+`ProviderIntegrationManifestReferenceDto` carries this identity. Each payload and sync run retains
+`ManifestReference` for its execution and `OriginalManifestReference` for the first ingestion
+mapping; replay also retains `SourceSyncRunId` and `ReplayMode`.
+New payloads and runs without these references are rejected. Existing legacy evidence may be read
+or have its processing status updated without retroactively assigning provenance. Manifest digests
+use a frozen v1 projection, guarded by fixed-digest and schema-inventory tests, so serializer or DTO
+evolution cannot silently change retained identities.
+
+Replay has two explicit meanings:
+
+- Original-mapping replay is the default `Mode: Original`. It resolves the original ingestion
+  revision retained by the source run, even if that source is itself a remediation, and verifies
+  its digest. Updating the current mapping does not change the revision used by this replay.
+- Remediation requires `Mode: Remediation`, `TargetManifestVersion`, and `TargetManifestDigest`
+  to intentionally select a revision newer than the original ingestion mapping. Its evidence
+  retains both the source manifest provenance and the selected execution manifest provenance,
+  together with the source run and replay identity. It does not rewrite the source run or claim
+  that the repaired mapping produced the original result.
+
+CSV ingestion, REST ingestion, and replay durably claim their run identity before writing any
+payload, staging, or quarantine rows; REST also claims before calling the provider. Requests using
+the same run ID cannot mix ingestion and replay outputs or outputs from different sources or mappings.
+An interrupted claimed run remains visible as Received with its retained provenance; a retry uses a new run ID.
+
+Migration lazily preserves the single revision actually present in a legacy manifest file and
+replaces that file with a tagged current pointer after retaining the revision. It cannot reconstruct
+overwritten versions, historical mapping content, or missing payload/run digests. Historical
+evidence lacking exact provenance remains unknown; replay and remediation both report that
+limitation rather than attach today's digest to an earlier run. Migration and restart must handle
+partially written migration state and preserve conflicts for investigation.
+
+This integration-manifest boundary is independent of provider composition work in
+[#3064](https://github.com/rodoHasArrived/Meridian-main/pull/3064) and
+[#3066](https://github.com/rodoHasArrived/Meridian-main/pull/3066). Those changes own provider-family
+aliases, capability factories, module registration, and readiness projections. Integration manifest
+ids remain configuration identities; ProviderSdk capability-registration manifests do not replace
+these retained mapping revisions. Catalog and broader metadata/lineage acceptance under
+`PRD-102` remain separate work.
+
 ## Manifest Shape
 
 The manifest should be declarative and versioned. Operators edit it through guided UI screens, not
@@ -476,8 +534,9 @@ Rejected records move to quarantine rather than silently entering canonical stor
 groups issues by fix path, such as missing security identifier, unmapped transaction type, invalid
 date format, unexpected enum value, duplicate source key, or unmatched account.
 
-Replay must run from the retained raw payload and the selected manifest version so an operator can
-repair mappings without reacquiring source data.
+Replay must run from retained source records with verified manifest provenance. Original-mapping
+replay uses the source revision; remediation explicitly selects a newer revision and retains both
+sets of provenance, so an operator can repair mappings without reacquiring source data.
 
 ## Identity Resolution
 
@@ -742,6 +801,8 @@ Contract tests:
 - Manifest round-trip serialization through source-generated JSON.
 - Validation of required fields, enum values, and activation issue codes.
 - Backward-compatible manifest version migration.
+- Exact manifest id, version, and digest round trips on retained payloads and sync runs.
+- Explicit original-replay and remediation provenance round trips.
 
 Runtime tests:
 
@@ -751,7 +812,12 @@ Runtime tests:
 - Mapping preview with confidence scores.
 - Transform library behavior for dates, decimals, currency defaults, enum maps, and amount signs.
 - Validation split into accepted and quarantined records.
-- Replay from raw payload using a new mapping version.
+- Original-version replay after a current-version update and a store restart.
+- Remediation using a selected newer mapping while retaining original and execution provenance.
+- Concurrent manifest edits with one successful CAS promotion and a stale-editor conflict.
+- Identical revision retries and rejection of changed content under an existing version.
+- Migration of the known legacy revision without inventing overwritten history or missing digests.
+- Restart after an interrupted promotion, retaining the old pointer and readable candidate.
 - Schema drift detection for missing fields, path changes, enum changes, and date-format changes.
 
 UI service tests:

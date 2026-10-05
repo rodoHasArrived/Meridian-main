@@ -190,6 +190,10 @@ public sealed class ProviderIntegrationSchemaDriftServiceTests : IDisposable
                 new Dictionary<string, string> { ["source"] = "schema-drift-test" },
                 document.RootElement.Clone(),
                 $"{manifest.ManifestId}:v{manifest.ManifestVersion}",
-                ProviderIntegrationProcessingStatusDto.Received));
+                ProviderIntegrationProcessingStatusDto.Received)
+            {
+                ManifestReference = ProviderIntegrationManifestIdentity.Create(manifest),
+                OriginalManifestReference = ProviderIntegrationManifestIdentity.Create(manifest)
+            });
     }
 }

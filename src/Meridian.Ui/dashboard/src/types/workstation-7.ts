@@ -2,6 +2,9 @@ import type {
   MetricSnapshot,
   ProviderCredentialSource,
   ProviderCredentialState,
+  ProviderIntegrationManifestProvenance,
+  ProviderIntegrationManifestReference,
+  ProviderIntegrationReplayMode,
   SecurityMasterFactorPoint,
   SecurityMasterScheduleEvent,
   SecurityMasterScheduleProvenance,
@@ -653,6 +656,9 @@ export interface ProviderIntegrationQuarantineReplayRequest {
   quarantineRecordIds: string[];
   requestedBy: string;
   requestedAt: string;
+  mode?: ProviderIntegrationReplayMode;
+  targetManifestVersion?: number | null;
+  targetManifestDigest?: string | null;
 }
 
 export interface ProviderIntegrationQuarantineReplayResult {
@@ -809,7 +815,7 @@ export interface ProviderIntegrationReconciliationHandoffHistory {
   lastRequestedAt?: string | null;
 }
 
-export interface ProviderIntegrationSyncRunEvidence {
+export interface ProviderIntegrationSyncRunEvidence extends ProviderIntegrationManifestProvenance {
   syncRunId: string;
   capability: ProviderIntegrationCapabilityKind;
   endpointKey: string;
@@ -956,6 +962,7 @@ export interface ProviderIntegrationOpenApiImportRequest {
   importedBy: string;
   importedAt: string;
   changeReason?: string | null;
+  expectedManifestReference?: ProviderIntegrationManifestReference | null;
 }
 
 export interface ProviderIntegrationOpenApiImportResult {
@@ -964,6 +971,7 @@ export interface ProviderIntegrationOpenApiImportResult {
   readiness: ProviderIntegrationActivationReadiness;
   issues: ProviderIntegrationValidationIssue[];
   message?: string | null;
+  manifestReference?: ProviderIntegrationManifestReference | null;
 }
 
 export interface ProviderIntegrationSchemaDriftIssue {
@@ -1006,6 +1014,7 @@ export interface ProviderIntegrationSetupSaveRequest {
   savedBy: string;
   savedAt: string;
   changeReason?: string | null;
+  expectedManifestReference?: ProviderIntegrationManifestReference | null;
 }
 
 export interface ProviderIntegrationSetupSaveResult {
@@ -1017,6 +1026,7 @@ export interface ProviderIntegrationSetupSaveResult {
   readiness: ProviderIntegrationActivationReadiness;
   approvalEvidenceId?: string | null;
   message?: string | null;
+  manifestReference?: ProviderIntegrationManifestReference | null;
 }
 
 export interface ProviderIntegrationActivationRequest {
@@ -1026,6 +1036,7 @@ export interface ProviderIntegrationActivationRequest {
   approvedAt: string;
   approvalEvidenceId: string;
   changeReason?: string | null;
+  expectedManifestReference?: ProviderIntegrationManifestReference | null;
 }
 
 export interface ProviderIntegrationActivationResult {
@@ -1036,6 +1047,7 @@ export interface ProviderIntegrationActivationResult {
   connectionState: ProviderIntegrationActivationState;
   readiness: ProviderIntegrationActivationReadiness;
   message?: string | null;
+  manifestReference?: ProviderIntegrationManifestReference | null;
 }
 
 export interface ProviderRoutePreviewRequest {
