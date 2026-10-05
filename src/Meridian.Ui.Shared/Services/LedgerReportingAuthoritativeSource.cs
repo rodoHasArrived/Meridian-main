@@ -954,6 +954,13 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
         {
             foreach (var line in record.Entry.Lines.OrderBy(static line => line.EntryId))
             {
+                if (line.Currency is not null
+                    && !string.Equals(line.Currency.FunctionalCurrency, book.BaseCurrency.Trim(), StringComparison.OrdinalIgnoreCase))
+                {
+                    throw Unavailable(
+                        $"Ledger line '{line.EntryId:D}' uses functional currency '{line.Currency.FunctionalCurrency}', not certified book currency '{book.BaseCurrency}'.");
+                }
+
                 var dimensions = line.Dimensions!;
                 var row = new SortedDictionary<string, string>(StringComparer.Ordinal)
                 {
@@ -965,6 +972,9 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
                     ["bookId"] = book.LedgerBookId.ToString("D"),
                     ["companyFundId"] = fundId,
                     ["credit"] = line.Credit.ToString("G29", CultureInfo.InvariantCulture),
+                    // The monetary columns are functional amounts, even when the originating
+                    // transaction used another currency. Legacy legs inherit the certified book.
+                    ["currency"] = line.Currency?.FunctionalCurrency ?? book.BaseCurrency.Trim().ToUpperInvariant(),
                     ["debit"] = line.Debit.ToString("G29", CultureInfo.InvariantCulture),
                     ["description"] = record.Entry.Description,
                     ["entryId"] = line.EntryId.ToString("D"),
@@ -975,10 +985,22 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
                     ["organizationId"] = organizationId.ToString("D"),
                     ["periodId"] = period.PeriodId.ToString("D"),
                     ["postingKind"] = record.PostingKind.ToString(),
+                    ["recordedAtUtc"] = record.CreatedAt.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture),
                     ["timestampUtc"] = record.Entry.Timestamp.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture)
                 };
                 AddOptional(row, "symbol", line.Account.Symbol);
                 AddOptional(row, "financialAccountId", line.Account.FinancialAccountId);
+                AddOptional(row, "accountId", dimensions.AccountId);
+                AddOptional(row, "activityType", record.Entry.Metadata.ActivityType);
+                AddOptional(row, "accountingPolicyId", record.AccountingPolicyId);
+                AddOptional(row, "accountingPolicyVersion", record.AccountingPolicyVersion);
+                if (line.Currency is { } currency)
+                {
+                    row["transactionCurrency"] = currency.TransactionCurrency;
+                    row["transactionDebit"] = currency.TransactionDebit.ToString("G29", CultureInfo.InvariantCulture);
+                    row["transactionCredit"] = currency.TransactionCredit.ToString("G29", CultureInfo.InvariantCulture);
+                    row["fxRateToFunctional"] = currency.FxRateToFunctional.ToString("G29", CultureInfo.InvariantCulture);
+                }
                 AddOptional(row, "entityId", dimensions.EntityId);
                 AddOptional(row, "portfolioId", dimensions.PortfolioId);
                 AddOptional(row, "investorId", dimensions.InvestorId);
