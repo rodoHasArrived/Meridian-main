@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1050 |
-| Valid | 598 |
+| Total code blocks | 1052 |
+| Valid | 600 |
 | Invalid | 0 |
 | Skipped | 452 |
 
@@ -18,7 +18,7 @@
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 115 | 0 | 0 | 115 |
-| `bash` | 174 | 174 | 0 | 0 |
+| `bash` | 176 | 176 | 0 | 0 |
 | `cmd` | 1 | 0 | 0 | 1 |
 | `cpp` | 1 | 0 | 0 | 1 |
 | `csharp` | 325 | 325 | 0 | 0 |
@@ -154,6 +154,7 @@ No invalid code examples found.
 | `docs/source/generated/adapter-readiness-matrix.md` | 1 |
 | `docs/source/source-documentation-standard.md` | 3 |
 | `docs/source/source-todo-standard.md` | 1 |
+| `docs/start/README.md` | 2 |
 | `docs/status/README.md` | 1 |
 | `docs/status/evidence/dk1-pilot-parity-runbook.md` | 1 |
 | `docs/status/evidence/prd-106-portfolio-snapshot-hardening.md` | 1 |

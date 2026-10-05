@@ -40,7 +40,8 @@ public static class ProviderCapabilityDescriptorCatalog
             SearchInstrumentTypes: [InstrumentType.Equity],
             StreamingFactory: static f => f.CreateSyntheticStreamingClient(),
             HistoricalFactory: static f => f.CreateSyntheticBackfillProvider(f.Config.Backfill?.Providers?.Synthetic),
-            SearchFactory: static f => f.CreateSyntheticSearchProvider(f.Config.Backfill?.Providers?.Synthetic)),
+            SearchFactory: static f => f.CreateSyntheticSearchProvider(f.Config.Backfill?.Providers?.Synthetic),
+            OptionsFactory: static f => f.CreateAdapter<SyntheticOptionsChainProvider>()),
         new("ibkr", Streaming: typeof(IBMarketDataClient), Historical: typeof(IBHistoricalDataProvider), Brokerage: typeof(IBBrokerageGateway),
             ExecutionMode: IBProviderCapabilityExecutionMode.SimulationWhenVendorSdkUnavailable,
             InstrumentTypes:
@@ -186,7 +187,8 @@ public sealed record ProviderCapabilityDescriptor(
     Func<ProviderFactory, ICorporateActionProvider?>? CorporateActionsFactory = null,
     Func<ProviderFactory, IOptionsChainProvider?>? OptionsFactory = null,
     Func<ProviderFactory, IBrokerageGateway?>? BrokerageFactory = null,
-    Func<ProviderFactory, bool>? OptionsEnabled = null)
+    Func<ProviderFactory, bool>? OptionsEnabled = null,
+    ProviderCapabilityFactoryOwner FactoryOwner = ProviderCapabilityFactoryOwner.Descriptor)
 {
     /// <summary>
     /// The same slots that advertise capabilities supply their construction functions.
@@ -195,6 +197,11 @@ public sealed record ProviderCapabilityDescriptor(
     /// </summary>
     public IEnumerable<ProviderCapabilityRegistration> Registrations()
     {
+        // Module inventory describes contracts; only successful module registration can
+        // publish factories. Never infer a production factory from an attributed type.
+        if (FactoryOwner == ProviderCapabilityFactoryOwner.Module)
+            yield break;
+
         if (Streaming is not null)
             yield return Create<IMarketDataClient>(Streaming, StreamingFactory);
         if (Historical is not null)
@@ -214,8 +221,14 @@ public sealed record ProviderCapabilityDescriptor(
 
     private ProviderCapabilityRegistration Create<T>(Type implementation, Func<ProviderFactory, T?>? factory)
         where T : class
-        => new(ProviderId, typeof(T), implementation,
-            context => factory is null ? context.CreateAdapter(implementation) : factory(context));
+    {
+        if (!typeof(T).IsAssignableFrom(implementation))
+            throw new InvalidOperationException($"Provider '{ProviderId}' declares {implementation.Name} for incompatible contract {typeof(T).Name}.");
+        if (factory is null)
+            throw new InvalidOperationException($"Provider '{ProviderId}' must declare a {typeof(T).Name} factory or designate module ownership.");
+
+        return new(ProviderIdentity.NormalizeId(ProviderId), typeof(T), implementation, context => factory(context));
+    }
 
     /// <summary>
     /// Instrument types this provider is declared to cover. Declared here, next to the adapter
@@ -277,6 +290,13 @@ public sealed record ProviderCapabilityRegistration(
 public sealed record ProviderCapabilityExclusion(string Capability, string Reason);
 
 public sealed record ProviderAdapterFamilyExclusion(string FolderName, string Reason);
+
+/// <summary>Identifies the authority that supplies configured capability factories.</summary>
+public enum ProviderCapabilityFactoryOwner
+{
+    Descriptor,
+    Module
+}
 
 /// <summary>Catalog-level readiness signal; inventory cannot promote a guidance build to live routing.</summary>
 public enum IBProviderCapabilityExecutionMode
