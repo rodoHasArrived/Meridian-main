@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-09-28
+**Reviewed:** 2026-10-05
 
 This is the canonical developer and agent entrypoint for Meridian engineering and contribution work.
 It replaces hand-built planning and historical engineering prose with active operating guidance.
@@ -15,6 +15,8 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **Source ownership:** [Source registry](../source/README.md)
 - **Roadmap truth:** [Roadmap registry](../roadmap/README.md)
 - **Generated output rules:** [Documentation ownership](../documentation-ownership.md)
+- **Detailed implementation and tooling guides:** [Development](../development/README.md)
+- **Writing or moving docs:** [Documentation Contribution Guide](../development/documentation-contribution-guide.md)
 - **Dead-code cleanup inventory:** [Dead-Code Inventory](dead-code-inventory.md)
 - **Production readiness and test debt:** [Production Readiness Audit 2026-07-27](production-readiness-audit-2026-07-27.md)
 - **Security Master architecture audit:** [Security Master Architecture Audit 2026-08-13](security-master-architecture-audit-2026-08-13.md) *(dated source-evidence review; verify findings against current source)*
@@ -33,8 +35,8 @@ Use the source-module registry and source README workflow before changing code:
 - [Source module registry](../source/data/source-modules.yml) *(canonical for engineering ownership)*
 - [Source ownership and validation](../source/README.md) *(canonical ownership workflow)*
 - [Architecture](../architecture/README.md) *(canonical system design and rationale)*
-- [Module map](../architecture/module-map.md) *(legacy source material; verify against `source/data/source-modules.yml`)*
-- [Project structure](../architecture/project-structure.md) *(legacy source material)*
+- [Module map](../architecture/module-map.md) *(maintained boundary reference; module ownership is registered in `source/data/source-modules.yml`)*
+- [Project structure](../architecture/project-structure.md) *(maintained repository overview)*
 - [Live trading engine](live-trading-engine.md) *(promotion → execution loop: feed tap, strategy sessions, OMS routing)*
 - [ETL execution ownership](etl-execution-ownership.md) *(single-run admission, guarded publication, takeover, and commit ordering)*
 

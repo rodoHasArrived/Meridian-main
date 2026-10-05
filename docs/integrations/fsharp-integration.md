@@ -10,6 +10,11 @@
 
 The `Meridian.FSharp` library provides type-safe domain models, validation logic, and pure functional calculations for market data processing. It leverages F#'s discriminated unions, pattern matching, and Railway-Oriented Programming to eliminate entire categories of bugs while maintaining seamless C# interoperability.
 
+The examples below focus on the original market-data slice. Current ownership, domain/operations
+kernels, and validation slices are documented in the [F# source README](../../src/Meridian.FSharp/README.md).
+The library and its tests target .NET 10; use the SDK selected by [`global.json`](../../global.json).
+The project tree below is an excerpt, not a complete inventory of the current library.
+
 ## Project Structure
 
 ```
@@ -329,24 +334,18 @@ The `Interop.fs` module provides C#-friendly wrappers and extension methods for 
 
 ### Using F# Types from C#
 
-All F# types are designed for easy C# consumption:
+Use the C#-friendly wrappers, following the production
+[`FSharpEventValidator`](../../src/Meridian.Application/Pipeline/FSharpEventValidator.cs).
+Alias the nested wrapper types explicitly rather than treating the F# `Interop` module as a
+C# namespace:
 
 ```csharp
-using Meridian.FSharp.Domain.MarketEvents;
-using Meridian.FSharp.Domain.Sides;
+using TradeEventWrapper = Meridian.FSharp.Interop.TradeEventWrapper;
 
-// Create events using static methods
-var trade = MarketEvent.CreateTrade("AAPL", 150.00m, 100L,
-    AggressorSide.Buyer, 1L, DateTimeOffset.UtcNow);
-
-// Pattern match using Is* methods
-if (MarketEvent.IsTrade(event))
-{
-    var symbol = MarketEvent.GetSymbol(event);  // FSharpOption<string>
-}
-
-// Get event type
-var eventType = MarketEvent.GetEventType(event);  // MarketEventType
+// Side codes: 0 = Unknown, 1 = Buyer, 2 = Seller.
+var wrapper = TradeEventWrapper.Create(
+    "AAPL", 150.00m, 100L, 1, 1L, DateTimeOffset.UtcNow);
+var trade = wrapper.ToFSharpEvent();
 ```
 
 ### Using Wrapper Classes
@@ -354,7 +353,7 @@ var eventType = MarketEvent.GetEventType(event);  // MarketEventType
 For a more C#-idiomatic experience, use the Interop wrappers:
 
 ```csharp
-using Meridian.FSharp.Interop;
+using TradeValidator = Meridian.FSharp.Interop.TradeValidator;
 
 // Validation with C#-friendly result
 var result = TradeValidator.Validate(trade);
@@ -376,14 +375,21 @@ bool isValid = TradeValidator.IsValid(trade);
 
 ### Generated C# DTOs
 
-Build-time generation produces C# DTO wrappers in `src/Meridian.FSharp/Generated` for
-core market event records. These files are regenerated during builds via
-`tools/FSharpInteropGenerator` while preserving the existing public API.
+The [`GenerateCSharpInterop` target](../../src/Meridian.FSharp/Meridian.FSharp.fsproj) creates
+`src/Meridian.FSharp/Generated/Meridian.FSharp.Interop.g.cs` only when that file is missing.
+It invokes [`build/dotnet/FSharpInteropGenerator`](../../build/dotnet/FSharpInteropGenerator/Program.cs);
+an ordinary rebuild does not refresh an existing generated file. The F# project packages the C#
+source as content rather than compiling it into the F# assembly. Runtime callers should use the
+wrappers in [`Interop.fs`](../../src/Meridian.FSharp/Interop.fs) unless they explicitly compile the
+generated C# content in their own project.
 
 ### Calculation Helpers
 
 ```csharp
-using Meridian.FSharp.Interop;
+using SpreadCalculator = Meridian.FSharp.Interop.SpreadCalculator;
+using ImbalanceCalculator = Meridian.FSharp.Interop.ImbalanceCalculator;
+using AggregationFunctions = Meridian.FSharp.Interop.AggregationFunctions;
+using AggressorInference = Meridian.FSharp.Interop.AggressorInference;
 
 // Spread calculations (return Nullable<decimal>)
 decimal? spread = SpreadCalculator.Calculate(bidPrice, askPrice);
@@ -405,10 +411,12 @@ int aggressorSide = AggressorInference.InferFromQuote(tradePrice, quote);
 
 ### Working with F# Options
 
-F# `Option<T>` types are converted to `Nullable<T>` or null for reference types:
+The interop wrappers explicitly convert F# `Option<T>` values to `Nullable<T>` or null for
+reference types; direct F# module calls still return F# options where declared:
 
 ```csharp
-using Meridian.FSharp.Interop;
+using SpreadCalculator = Meridian.FSharp.Interop.SpreadCalculator;
+using OptionExtensions = Meridian.FSharp.Interop.OptionExtensions;
 
 // Option extension methods
 var spread = SpreadCalculator.Calculate(bid, ask);
@@ -423,7 +431,7 @@ if (spread.HasValue)
 decimal spreadValue = spread.GetValueOrDefault(0m);
 
 // Convert Option<string> to string (or null)
-string? symbol = MarketEvent.GetSymbol(event).ToNullableRef();
+string? symbol = OptionExtensions.ToNullableRef(fsharpSymbol);
 ```
 
 ---
@@ -433,15 +441,19 @@ string? symbol = MarketEvent.GetSymbol(event).ToNullableRef();
 ### Running F# Tests
 
 ```bash
-# Run all F# tests
-dotnet test tests/Meridian.FSharp.Tests
+# Domain and validation rules, from the repository root
+dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj -p:FSharpTestSlice=Domain
 
-# Run specific test category
-dotnet test --filter "FullyQualifiedName~ValidationTests"
+# Narrow to validation tests within that compiled slice
+dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj -p:FSharpTestSlice=Domain --filter "FullyQualifiedName~ValidationTests"
 
-# Run with verbose output
-dotnet test -v detailed
+# Calculations and stream transformations
+dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj -p:FSharpTestSlice=MarketData
 ```
+
+Use `FSharpTestSlice=Operations` for workflow kernels. Reserve `FSharpTestSlice=All` for changes
+that cross slices; the [source README](../../src/Meridian.FSharp/README.md#validation) owns the
+current test routing. Omitting the project path can invoke unrelated solution tests.
 
 ### Test Coverage
 

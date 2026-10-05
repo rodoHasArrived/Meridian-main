@@ -32,7 +32,10 @@ Meridian's long-term module map centers on:
 - Data and Provider Operations
 - Strategy and paper-governed execution support where it strengthens the operational record
 
-The active product baseline should keep these modules anchored to W1-W5 operational records before broad platform expansion:
+The W1-W5 baseline establishes the operational-record invariants these modules preserve. Current
+scope and expansion decisions belong to the [design charter](../product/meridian-design-document.md),
+[roadmap registry](../roadmap/README.md), current source evidence, and explicit user direction; the
+earlier baseline is not a ceiling on development. Its foundations are:
 
 - data confidence and retained source evidence;
 - reconciliation and exception casework;
