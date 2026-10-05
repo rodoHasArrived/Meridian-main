@@ -24,7 +24,7 @@ public sealed class ProviderIntegrationRestDryRunServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task RunRestDryRunAsync_PaginatesRetainsRawPayloadsAndStagesAcceptedRows()
+    public async Task RunRestDryRunAsync_PinsManifestAcrossPagesWhenCurrentVersionChanges()
     {
         var store = new FileProviderIntegrationManifestStore(testRoot);
         var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-custodian-positions-v1")!;
@@ -67,6 +67,25 @@ public sealed class ProviderIntegrationRestDryRunServiceTests : IDisposable
                   ]
                 }
                 """));
+        var expectedManifest = ProviderIntegrationManifestIdentity.Create(manifest);
+        var updatedManifest = manifest with
+        {
+            ManifestVersion = manifest.ManifestVersion + 1,
+            FieldMappings = manifest.FieldMappings.Select(mapping => mapping with
+            {
+                SourcePath = "new_response_field"
+            }).ToArray()
+        };
+        transport.BeforeSendAsync = async () =>
+        {
+            if (transport.Requests.Count == 1)
+            {
+                await store.SaveManifestVersionAsync(updatedManifest);
+                (await store.CompareExchangeCurrentManifestAsync(
+                    manifest.ManifestId, expectedManifest,
+                    ProviderIntegrationManifestIdentity.Create(updatedManifest))).Should().BeTrue();
+            }
+        };
         var service = new ProviderIntegrationRestDryRunService(store, transport);
 
         var result = await service.RunRestDryRunAsync(CreateRequest(manifest, connection));
@@ -93,11 +112,20 @@ public sealed class ProviderIntegrationRestDryRunServiceTests : IDisposable
         syncRun.RecordsReceived.Should().Be(2);
         syncRun.RecordsAccepted.Should().Be(2);
         syncRun.RawPayloadId.Should().Be(result.RawPayloadId);
+        syncRun.ManifestReference.Should().Be(expectedManifest);
+        syncRun.OriginalManifestReference.Should().Be(expectedManifest);
+        (await store.GetManifestAsync(manifest.ManifestId))!.ManifestVersion.Should().Be(updatedManifest.ManifestVersion);
         (await store.ListSyncRunsAsync(connection.ConnectionId)).Should().ContainSingle()
             .Which.SyncRunId.Should().Be(result.SyncRunId);
 
         var staged = await store.ListStagingRecordsAsync(result.SyncRunId);
         staged.Should().HaveCount(2);
+        foreach (var payloadId in staged.Select(record => record.RawPayloadId).Distinct())
+        {
+            var payload = await store.GetRawPayloadAsync(result.SyncRunId, payloadId);
+            payload!.ManifestReference.Should().Be(expectedManifest);
+            payload.OriginalManifestReference.Should().Be(expectedManifest);
+        }
         staged.Select(record => record.SourceRecordId).Should().BeEquivalentTo("POS-1", "POS-2");
         staged.Select(record => record.MappedRecord.GetProperty("marketValue").GetProperty("currency").GetString())
             .Should()
@@ -337,6 +365,55 @@ public sealed class ProviderIntegrationRestDryRunServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task RunRestDryRunAsync_RetainsManifestReferenceWhenMissingMappingBlocksRun()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-custodian-positions-v1")! with
+        {
+            FieldMappings = []
+        };
+        var connection = CreateConnection(manifest);
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(connection);
+        var transport = new RecordingTransport();
+        var service = new ProviderIntegrationRestDryRunService(store, transport);
+
+        var result = await service.RunRestDryRunAsync(CreateRequest(manifest, connection));
+
+        result.Status.Should().Be(ProviderIntegrationProcessingStatusDto.Blocked);
+        var expected = ProviderIntegrationManifestIdentity.Create(manifest);
+        var retainedRun = await store.GetSyncRunAsync(result.SyncRunId);
+        retainedRun!.ManifestReference.Should().Be(expected);
+        retainedRun.OriginalManifestReference.Should().Be(expected);
+        retainedRun.RawPayloadId.Should().BeNull();
+        transport.Requests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task RunRestDryRunAsync_RetainsManifestReferenceForHttpFailureEvidence()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-custodian-positions-v1")!;
+        var connection = CreateConnection(manifest);
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(connection);
+        var transport = new RecordingTransport(new ProviderIntegrationHttpResponse(
+            503, new Dictionary<string, string>(), "{}"));
+        var service = new ProviderIntegrationRestDryRunService(store, transport);
+
+        var result = await service.RunRestDryRunAsync(CreateRequest(manifest, connection));
+
+        result.Issues.Should().Contain(issue => issue.Code == "http.status.failed");
+        var expected = ProviderIntegrationManifestIdentity.Create(manifest);
+        var retainedRun = await store.GetSyncRunAsync(result.SyncRunId);
+        retainedRun!.ManifestReference.Should().Be(expected);
+        retainedRun.OriginalManifestReference.Should().Be(expected);
+        var retainedPayload = await store.GetRawPayloadAsync(result.SyncRunId, result.RawPayloadId);
+        retainedPayload!.ManifestReference.Should().Be(expected);
+        retainedPayload.OriginalManifestReference.Should().Be(expected);
+    }
+
+    [Fact]
     public async Task RunRestDryRunAsync_ObservesCancellationBeforeTransportAndEvidence()
     {
         var store = new FileProviderIntegrationManifestStore(testRoot);
@@ -417,18 +494,24 @@ public sealed class ProviderIntegrationRestDryRunServiceTests : IDisposable
 
         public List<ProviderIntegrationHttpRequest> Requests { get; } = [];
 
-        public Task<ProviderIntegrationHttpResponse> SendAsync(
+        public Func<Task>? BeforeSendAsync { get; set; }
+
+        public async Task<ProviderIntegrationHttpResponse> SendAsync(
             ProviderIntegrationHttpRequest request,
             CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
             Requests.Add(request);
+            if (BeforeSendAsync is not null)
+            {
+                await BeforeSendAsync();
+            }
             if (responses.Count == 0)
             {
                 throw new InvalidOperationException("No recorded provider response is available.");
             }
 
-            return Task.FromResult(responses.Dequeue());
+            return responses.Dequeue();
         }
     }
 }

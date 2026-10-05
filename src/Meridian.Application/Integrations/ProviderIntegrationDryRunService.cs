@@ -66,6 +66,7 @@ public sealed class ProviderIntegrationDryRunService
             ?? throw new KeyNotFoundException($"Provider integration connection '{request.ConnectionId}' was not found.");
 
         ValidateRequestScope(request, manifest, connection);
+        var manifestReference = ProviderIntegrationManifestIdentity.Create(manifest);
 
         var csvRecords = ParseCsv(request.CsvContent);
         var payloadId = StableId("raw-payload", request.SyncRunId, request.FileName);
@@ -86,7 +87,11 @@ public sealed class ProviderIntegrationDryRunService
             },
             ToJsonElement(new ManualCsvRawPayload(request.FileName, "text/csv", csvRecords.Count, csvRecords)),
             mappingVersion,
-            ProviderIntegrationProcessingStatusDto.Received);
+            ProviderIntegrationProcessingStatusDto.Received)
+        {
+            ManifestReference = manifestReference,
+            OriginalManifestReference = manifestReference
+        };
 
         await scopedStore.SaveRawPayloadAsync(rawPayload, ct).ConfigureAwait(false);
 
@@ -111,7 +116,7 @@ public sealed class ProviderIntegrationDryRunService
                 RecordsQuarantined: 0,
                 ProviderIntegrationProcessingStatusDto.Blocked,
                 [issue]);
-            await SaveSyncRunAsync(scopedStore, request, manifest, connection, payloadId, blockedResult, ct).ConfigureAwait(false);
+            await SaveSyncRunAsync(scopedStore, request, manifest, manifestReference, connection, payloadId, blockedResult, ct).ConfigureAwait(false);
             return blockedResult;
         }
 
@@ -231,7 +236,7 @@ public sealed class ProviderIntegrationDryRunService
             quarantined,
             status,
             allIssues);
-        await SaveSyncRunAsync(scopedStore, request, manifest, connection, payloadId, result, ct).ConfigureAwait(false);
+        await SaveSyncRunAsync(scopedStore, request, manifest, manifestReference, connection, payloadId, result, ct).ConfigureAwait(false);
         return result;
     }
 
@@ -239,6 +244,7 @@ public sealed class ProviderIntegrationDryRunService
         IProviderIntegrationManifestStore scopedStore,
         ManualCsvProviderIntegrationDryRunRequestDto request,
         ProviderIntegrationManifestDto manifest,
+        ProviderIntegrationManifestReferenceDto manifestReference,
         ProviderConnectionDto connection,
         string rawPayloadId,
         ProviderIntegrationDryRunResultDto result,
@@ -258,7 +264,11 @@ public sealed class ProviderIntegrationDryRunService
                 result.RecordsAccepted,
                 result.RecordsQuarantined,
                 rawPayloadId,
-                result.Issues),
+                result.Issues)
+            {
+                ManifestReference = manifestReference,
+                OriginalManifestReference = manifestReference
+            },
             ct);
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)

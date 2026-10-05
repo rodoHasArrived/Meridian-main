@@ -57,6 +57,13 @@ public sealed class ProviderIntegrationRestDryRunService
         string? tenantId,
         ProviderIntegrationRestDryRunRequestDto request,
         CancellationToken ct = default)
+        => await RunRestDryRunAsync(tenantId, request, null, ct).ConfigureAwait(false);
+
+    internal async Task<ProviderIntegrationDryRunResultDto> RunRestDryRunAsync(
+        string? tenantId,
+        ProviderIntegrationRestDryRunRequestDto request,
+        ProviderIntegrationManifestDto? pinnedManifest,
+        CancellationToken ct = default)
         => await ProviderIntegrationServiceBoundary.RunAsync(
             logger,
             "rest-dry-run",
@@ -67,11 +74,12 @@ public sealed class ProviderIntegrationRestDryRunService
                 Capability: request is null ? null : request.Capability.ToString(),
                 EndpointKey: request?.EndpointKey,
                 SyncRunId: request?.SyncRunId),
-            () => RunRestDryRunCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
+            () => RunRestDryRunCoreAsync(tenantId, request, pinnedManifest, ct)).ConfigureAwait(false);
 
     private async Task<ProviderIntegrationDryRunResultDto> RunRestDryRunCoreAsync(
         string? tenantId,
         ProviderIntegrationRestDryRunRequestDto request,
+        ProviderIntegrationManifestDto? pinnedManifest,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -83,12 +91,13 @@ public sealed class ProviderIntegrationRestDryRunService
         ct.ThrowIfCancellationRequested();
 
         var scopedStore = ResolveStore(tenantId);
-        var manifest = await scopedStore.GetManifestAsync(request.ManifestId, ct).ConfigureAwait(false)
+        var manifest = pinnedManifest ?? await scopedStore.GetManifestAsync(request.ManifestId, ct).ConfigureAwait(false)
             ?? throw new KeyNotFoundException($"Provider integration manifest '{request.ManifestId}' was not found.");
         var connection = await scopedStore.GetConnectionAsync(request.ConnectionId, ct).ConfigureAwait(false)
             ?? throw new KeyNotFoundException($"Provider integration connection '{request.ConnectionId}' was not found.");
 
         ValidateRequestScope(request, manifest, connection);
+        var manifestReference = ProviderIntegrationManifestIdentity.Create(manifest);
         var endpoint = manifest.Endpoints.FirstOrDefault(candidate =>
                 StringComparer.OrdinalIgnoreCase.Equals(candidate.EndpointKey, request.EndpointKey) &&
                 candidate.Capability == request.Capability)
@@ -114,7 +123,7 @@ public sealed class ProviderIntegrationRestDryRunService
                 RecordsQuarantined: 0,
                 ProviderIntegrationProcessingStatusDto.Blocked,
                 [issue]);
-            await SaveSyncRunAsync(scopedStore, request, manifest, connection, endpoint.EndpointKey, null, blockedResult, ct).ConfigureAwait(false);
+            await SaveSyncRunAsync(scopedStore, request, manifest, manifestReference, connection, endpoint.EndpointKey, null, blockedResult, ct).ConfigureAwait(false);
             return blockedResult;
         }
 
@@ -167,7 +176,11 @@ public sealed class ProviderIntegrationRestDryRunService
                     },
                     responseBody,
                     $"{manifest.ManifestId}:v{manifest.ManifestVersion.ToString(CultureInfo.InvariantCulture)}",
-                    ProviderIntegrationProcessingStatusDto.Received),
+                    ProviderIntegrationProcessingStatusDto.Received)
+                {
+                    ManifestReference = manifestReference,
+                    OriginalManifestReference = manifestReference
+                },
                 ct).ConfigureAwait(false);
 
             if (response.StatusCode < 200 || response.StatusCode >= 300)
@@ -299,7 +312,7 @@ public sealed class ProviderIntegrationRestDryRunService
             quarantined,
             status,
             allIssues);
-        await SaveSyncRunAsync(scopedStore, request, manifest, connection, endpoint.EndpointKey, firstPayloadId, result, ct).ConfigureAwait(false);
+        await SaveSyncRunAsync(scopedStore, request, manifest, manifestReference, connection, endpoint.EndpointKey, firstPayloadId, result, ct).ConfigureAwait(false);
         return result;
     }
 
@@ -307,6 +320,7 @@ public sealed class ProviderIntegrationRestDryRunService
         IProviderIntegrationManifestStore scopedStore,
         ProviderIntegrationRestDryRunRequestDto request,
         ProviderIntegrationManifestDto manifest,
+        ProviderIntegrationManifestReferenceDto manifestReference,
         ProviderConnectionDto connection,
         string endpointKey,
         string? rawPayloadId,
@@ -327,7 +341,11 @@ public sealed class ProviderIntegrationRestDryRunService
                 result.RecordsAccepted,
                 result.RecordsQuarantined,
                 rawPayloadId,
-                result.Issues),
+                result.Issues)
+            {
+                ManifestReference = manifestReference,
+                OriginalManifestReference = manifestReference
+            },
             ct);
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
@@ -342,7 +360,8 @@ public sealed class ProviderIntegrationRestDryRunService
         ProviderIntegrationManifestDto manifest,
         ProviderConnectionDto connection)
     {
-        if (!StringComparer.Ordinal.Equals(connection.ManifestId, manifest.ManifestId))
+        if (!StringComparer.Ordinal.Equals(request.ManifestId, manifest.ManifestId) ||
+            !StringComparer.Ordinal.Equals(connection.ManifestId, manifest.ManifestId))
         {
             throw new InvalidOperationException("The provider connection is not linked to the requested manifest.");
         }

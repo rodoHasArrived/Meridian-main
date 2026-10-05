@@ -55,10 +55,15 @@ public sealed class ProviderIntegrationDryRunServiceTests : IDisposable
         syncRun.RecordsQuarantined.Should().Be(0);
         syncRun.RawPayloadId.Should().Be(result.RawPayloadId);
         syncRun.EndpointKey.Should().Be("manual-csv-upload");
+        var expectedManifest = ProviderIntegrationManifestIdentity.Create(manifest);
+        syncRun.ManifestReference.Should().Be(expectedManifest);
+        syncRun.OriginalManifestReference.Should().Be(expectedManifest);
 
         var rawPayload = await store.GetRawPayloadAsync(result.SyncRunId, result.RawPayloadId);
         rawPayload.Should().NotBeNull();
         rawPayload!.RawPayload.GetProperty("recordCount").GetInt32().Should().Be(1);
+        rawPayload.ManifestReference.Should().Be(expectedManifest);
+        rawPayload.OriginalManifestReference.Should().Be(expectedManifest);
 
         var staged = await store.ListStagingRecordsAsync(result.SyncRunId);
         staged.Should().ContainSingle();
@@ -236,6 +241,29 @@ public sealed class ProviderIntegrationDryRunServiceTests : IDisposable
         (await store.ListStagingRecordsAsync(result.SyncRunId)).Should().BeEmpty();
         (await store.ListQuarantinedRecordsAsync(result.SyncRunId)).Should().ContainSingle()
             .Which.ValidationErrors.Should().Contain(error => error.Code == "money.currency.missing");
+    }
+
+    [Fact]
+    public async Task RunManualCsvDryRunAsync_RetainsManifestReferenceWhenMissingMappingBlocksRun()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = CreateManifest() with { FieldMappings = [] };
+        var connection = CreateConnection(manifest);
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(connection);
+        var service = new ProviderIntegrationDryRunService(store);
+
+        var result = await service.RunManualCsvDryRunAsync(CreateRequest(
+            manifest, connection, "account_id,quantity\nA-100,100"));
+
+        result.Status.Should().Be(ProviderIntegrationProcessingStatusDto.Blocked);
+        var expected = ProviderIntegrationManifestIdentity.Create(manifest);
+        var retainedRun = await store.GetSyncRunAsync(result.SyncRunId);
+        retainedRun!.ManifestReference.Should().Be(expected);
+        retainedRun.OriginalManifestReference.Should().Be(expected);
+        var retainedPayload = await store.GetRawPayloadAsync(result.SyncRunId, result.RawPayloadId);
+        retainedPayload!.ManifestReference.Should().Be(expected);
+        retainedPayload.OriginalManifestReference.Should().Be(expected);
     }
 
     [Fact]
