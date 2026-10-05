@@ -9,33 +9,33 @@
     "endpoint_count": 656,
     "documented_endpoint_count": 207,
     "undocumented_endpoint_count": 449,
-    "workstation_contract_count": 930,
+    "workstation_contract_count": 934,
     "documented_workstation_contract_count": 36,
-    "undocumented_workstation_contract_count": 894
+    "undocumented_workstation_contract_count": 898
   },
   "endpoints": [
     {
       "method": "GET",
       "path": "/api/system/lifecycle",
-      "source": "src/Meridian/UiServer.cs:671",
+      "source": "src/Meridian/UiServer.cs:664",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/system/shutdown",
-      "source": "src/Meridian/UiServer.cs:705",
+      "source": "src/Meridian/UiServer.cs:698",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/system/shutdown/{operationId}",
-      "source": "src/Meridian/UiServer.cs:759",
+      "source": "src/Meridian/UiServer.cs:752",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/system/shutdown/receipts/latest",
-      "source": "src/Meridian/UiServer.cs:780",
+      "source": "src/Meridian/UiServer.cs:773",
       "documented": true
     },
     {
@@ -3533,49 +3533,49 @@
     {
       "method": "GET",
       "path": "/api/health",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:42",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:48",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/status",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:116",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:127",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/errors",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:134",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:145",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backpressure",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:148",
-      "documented": true
-    },
-    {
-      "method": "GET",
-      "path": "/api/providers/latency",
       "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:159",
       "documented": true
     },
     {
       "method": "GET",
+      "path": "/api/providers/latency",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:170",
+      "documented": true
+    },
+    {
+      "method": "GET",
       "path": "/api/connections",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:174",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:185",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/health/detailed",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:212",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:223",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/events/stream",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:240",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:251",
       "documented": true
     },
     {
@@ -3941,13 +3941,13 @@
     {
       "method": "GET",
       "path": "/api/strategies/{strategyId}/runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2809",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2857",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/strategies/runs/compare",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2950",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2998",
       "documented": false
     }
   ],
@@ -7948,6 +7948,26 @@
       "documented": false
     },
     {
+      "name": "TradingBrokerageRecoveryDto",
+      "source": "src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs:4",
+      "documented": false
+    },
+    {
+      "name": "TradingBrokerageRecoveryPortfolioDto",
+      "source": "src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs:13",
+      "documented": false
+    },
+    {
+      "name": "TradingBrokerageAffectedRunDto",
+      "source": "src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs:28",
+      "documented": false
+    },
+    {
+      "name": "TradingBrokerageRecoveryRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs:36",
+      "documented": false
+    },
+    {
       "name": "OperatorWorkItemKindDto",
       "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:6",
       "documented": true
@@ -8079,7 +8099,7 @@
     },
     {
       "name": "StrategyRunReviewPacketDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:385",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:387",
       "documented": false
     },
     {

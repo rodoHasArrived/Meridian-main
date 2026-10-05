@@ -73,6 +73,14 @@ public sealed class ProviderIntegrationOpenApiImportService
 
         ct.ThrowIfCancellationRequested();
 
+        var scopedStore = ResolveStore(tenantId);
+        var current = await scopedStore.GetManifestAsync(request.ManifestId, ct).ConfigureAwait(false);
+        ProviderIntegrationManifestPromotion.ValidateExpected(current, request.ExpectedManifestReference);
+        if (current is not null && request.ExpectedManifestReference is null)
+        {
+            throw new InvalidOperationException("Reimport requires the current manifest reference. Reload the current version before importing again.");
+        }
+
         var issues = new List<ValidationIssueDto>();
         using var document = JsonDocument.Parse(request.OpenApiDocumentJson);
         var root = document.RootElement;
@@ -99,7 +107,7 @@ public sealed class ProviderIntegrationOpenApiImportService
 
         var manifest = new ProviderIntegrationManifestDto(
             request.ManifestId,
-            ManifestVersion: 1,
+            ManifestVersion: current is null ? 1 : checked(current.ManifestVersion + 1),
             request.ProviderId,
             request.DisplayName,
             IntegrationTypeDto.OpenApiRest,
@@ -142,6 +150,8 @@ public sealed class ProviderIntegrationOpenApiImportService
             ApprovedAt: null,
             request.ChangeReason ?? "Imported from OpenAPI specification.");
 
+        manifest = await ProviderIntegrationManifestPromotion.SelectAvailableVersionAsync(scopedStore, manifest, ct).ConfigureAwait(false);
+
         var readiness = ProviderIntegrationActivationReadinessService.Evaluate(manifest);
         var result = new ProviderIntegrationOpenApiImportResultDto(
             Imported: !issues.Any(issue => issue.Severity == ProviderIntegrationIssueSeverityDto.Critical),
@@ -154,11 +164,11 @@ public sealed class ProviderIntegrationOpenApiImportService
 
         if (result.Imported)
         {
-            var scopedStore = ResolveStore(tenantId);
-            await scopedStore.SaveManifestAsync(manifest, ct).ConfigureAwait(false);
+            await ProviderIntegrationManifestPromotion.SaveAsync(
+                scopedStore, manifest, current is null ? null : ProviderIntegrationManifestIdentity.Create(current), ct).ConfigureAwait(false);
         }
 
-        return result;
+        return result with { ManifestReference = result.Imported ? ProviderIntegrationManifestIdentity.Create(manifest) : null };
     }
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)

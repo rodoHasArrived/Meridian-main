@@ -23,6 +23,23 @@ repeated delivery of the same snapshot cannot extend its lifetime. Recovery neve
 or resumes runs. Focused coverage lives in
 `trading-screen.brokerage-recovery.test.tsx`, `trading-screen.view-model.test.ts`, and `api.trading.test.ts`.
 
+Reporting run status and governed run detail expose an investment-income comparison over two
+explicit retained run identities. Baseline options distinguish originally published and restated
+results. The shared service retains the manifests, snapshot diff, explanation, and supporting
+records; the browser never reattributes from live journals. Period, population, accounting basis,
+currency, unsupported residuals, and incompatibility remain visible. Each contribution opens its
+retained record in the shared accessible sheet. `incomeComparison` and `incomeContribution`
+query parameters preserve the comparison and drill-through across reloads; selection parameters
+retain both runs and the measure. Authoritative requests disable development fallback.
+Monetary values stay canonical decimal strings from the API through display and residual checks;
+the browser groups digits directly and rejects already-rounded JSON numbers.
+
+Provider integration setup retains the server's immutable manifest version and digest after saving
+or activating, and forwards that reference on later edits and activation. OpenAPI reimports retain
+the same compare-and-set guard. Quarantine replay explicitly uses the original retained mapping;
+applying an updated mapping requires an explicit remediation request with a selected version and digest.
+Legacy evidence leaves unavailable provenance absent rather than deriving historical mappings in React.
+
 Accounting's draft queue reads retained recurring occurrences through the shared scoped
 `/api/ledger/journal-automation/recurring/occurrences` contract. Rows retain schedule/template
 versions, draft identity, human approval status and source evidence references. Blocked rows
@@ -140,6 +157,12 @@ SLA tier and deadline. Live provider-attempt progress remains a separate bounded
 dropped transient notification cannot erase the retained execution/SLA record.
 
 ## Important workflows
+
+From the repository root, use `npm run dev` for the seeded backend with watch/restarts and Vite
+hot reload, or `npm run dev:fixtures` for explicit fixture-only responses without a backend.
+Backend-connected errors never fall back to fixtures. See the
+[browser development launcher](../../../docs/engineering/web-development.md) for prerequisites,
+port options, readiness, shutdown, and manual acceptance checks.
 
 The browser workstation exposes `/accounting/entity-setup` for the shared fund-structure setup wizard. The feature posts drafts to `/api/fund-structure/setup-drafts/validate` for validation and preview, then `/api/fund-structure/setup-drafts/create` for review-and-create instead of reimplementing setup orchestration in React.
 
@@ -1412,6 +1435,10 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 <!-- source-todos:end -->
 
 ## Validation
+
+Launcher/process ownership coverage runs from the repository root with
+`node --test scripts/dev/web-dev.test.mjs`. Focused Vite/API mode coverage is in
+`src/vite-config.test.ts` and `src/lib/api.development-modes.test.ts`.
 
 ```bash
 npm --prefix src/Meridian.Ui/dashboard run lint

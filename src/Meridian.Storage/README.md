@@ -11,6 +11,10 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Storage
 
+Reporting governance supports bounded run-ID batches within one tenant transaction. Bulk state and
+audit reads preserve the same checksum, row binding, audit-chain, and restatement verification as
+individual reads, avoiding a separate transaction for every retained comparison candidate.
+
 `Archival/AtomicFileWriterAdapter.cs`, `EtlStagingStore` in `Etl/EtlStores.cs`, and `Backfill/JsonlBackfillBarWriter.cs`
 implement lower-level persistence ports consumed by Infrastructure. Application/host composition
 owns their construction; atomic durability, staging and JSONL naming policies remain in Storage.
@@ -600,6 +604,14 @@ quarantined records, staging records, and sync-run summaries under the resolved 
 source payloads without reacquiring provider data. Workstation-hosted flows can request a
 tenant-scoped store partition so provider manifests, connections, dry-run evidence, and activation
 state remain isolated by the authenticated tenant session.
+Manifest revisions are immutable by id and version; identical saves are idempotent and changed
+content under an existing version is rejected. A cross-process compare-and-set promotion updates
+the durable current pointer only after revision content has been written. Restart follows that
+pointer, preserving unpromoted candidates without treating the highest stored version as current.
+Payloads and sync runs retain exact manifest version/digest bindings. Legacy migration preserves
+only the revision actually available and does not manufacture overwritten versions or backfill
+unprovable historical provenance. This store owns integration configuration persistence; provider
+alias and capability-factory composition remain in their existing ProviderSdk/Infrastructure owners.
 
 Accounting configuration persistence keeps rich posting-rule payloads and saved Accounting Rules
 Studio regression cases as durable workspace-owned records. PostgreSQL stores saved rule test cases

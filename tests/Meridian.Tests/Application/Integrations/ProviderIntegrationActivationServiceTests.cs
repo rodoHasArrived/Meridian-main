@@ -49,14 +49,71 @@ public sealed class ProviderIntegrationActivationServiceTests : IDisposable
         result.ApprovalEvidenceId.Should().Be("approval-evidence-activation-1");
         var savedManifest = await store.GetManifestAsync(manifest.ManifestId);
         savedManifest.Should().NotBeNull();
+        savedManifest!.ManifestVersion.Should().Be(manifest.ManifestVersion + 1);
         savedManifest!.State.Should().Be(ProviderIntegrationActivationStateDto.Active);
         savedManifest.ApprovedBy.Should().Be("approver@example.com");
         savedManifest.ApprovedAt.Should().Be(DateTimeOffset.Parse("2026-06-16T14:00:00Z"));
         savedManifest.ChangeReason.Should().Be("Approved after dry-run evidence review.");
+        result.ManifestReference.Should().Be(ProviderIntegrationManifestIdentity.Create(savedManifest));
+        (await store.GetManifestVersionAsync(manifest.ManifestId, manifest.ManifestVersion)).Should()
+            .BeEquivalentTo(manifest);
+        (await store.GetManifestVersionAsync(savedManifest.ManifestId, savedManifest.ManifestVersion)).Should()
+            .BeEquivalentTo(savedManifest);
         var savedConnection = await store.GetConnectionAsync(connection.ConnectionId);
         savedConnection.Should().NotBeNull();
         savedConnection!.State.Should().Be(ProviderIntegrationActivationStateDto.Active);
         savedConnection.ApprovalEvidenceId.Should().Be("approval-evidence-activation-1");
+    }
+
+    [Fact]
+    public async Task ActivateAsync_RejectsApprovalForStaleManifestReference()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = CreateManifest(
+            requiredFields: ["providerAccountId", "quantity"],
+            mappings: [Mapping("providerAccountId"), Mapping("quantity")]);
+        var connection = CreateConnection(manifest);
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(connection);
+        var updatedManifest = manifest with { ManifestVersion = 2, ChangeReason = "Mapping review completed." };
+        await store.SaveManifestVersionAsync(updatedManifest);
+        (await store.CompareExchangeCurrentManifestAsync(
+            manifest.ManifestId,
+            ProviderIntegrationManifestIdentity.Create(manifest),
+            ProviderIntegrationManifestIdentity.Create(updatedManifest))).Should().BeTrue();
+        var service = new ProviderIntegrationActivationService(store);
+        var request = CreateRequest(manifest, connection) with
+        {
+            ExpectedManifestReference = ProviderIntegrationManifestIdentity.Create(manifest)
+        };
+
+        var act = () => service.ActivateAsync(request);
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*manifest changed*");
+        (await store.GetManifestAsync(manifest.ManifestId)).Should().BeEquivalentTo(updatedManifest);
+        (await store.GetManifestVersionAsync(manifest.ManifestId, 3)).Should().BeNull();
+        (await store.GetConnectionAsync(connection.ConnectionId)).Should().BeEquivalentTo(connection);
+    }
+
+    [Fact]
+    public async Task ActivateAsync_RequiresReviewedManifestReference()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = CreateManifest(
+            requiredFields: ["providerAccountId", "quantity"],
+            mappings: [Mapping("providerAccountId"), Mapping("quantity")]);
+        var connection = CreateConnection(manifest);
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(connection);
+        var service = new ProviderIntegrationActivationService(store);
+        var request = CreateRequest(manifest, connection) with { ExpectedManifestReference = null };
+
+        var act = () => service.ActivateAsync(request);
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*manifest reference that was reviewed*");
+        (await store.GetManifestAsync(manifest.ManifestId)).Should().BeEquivalentTo(manifest);
+        (await store.GetManifestVersionAsync(manifest.ManifestId, 2)).Should().BeNull();
+        (await store.GetConnectionAsync(connection.ConnectionId)).Should().BeEquivalentTo(connection);
     }
 
     [Fact]
@@ -113,7 +170,10 @@ public sealed class ProviderIntegrationActivationServiceTests : IDisposable
             "approver@example.com",
             DateTimeOffset.Parse("2026-06-16T14:00:00Z"),
             "approval-evidence-activation-1",
-            "Approved after dry-run evidence review.");
+            "Approved after dry-run evidence review.")
+        {
+            ExpectedManifestReference = ProviderIntegrationManifestIdentity.Create(manifest)
+        };
 
     private static ProviderIntegrationManifestDto CreateManifest(
         IReadOnlyList<string> requiredFields,

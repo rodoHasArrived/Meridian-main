@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** Accounting / Fund Operations
-**Reviewed:** 2026-07-27
+**Reviewed:** 2026-10-05
 
 This runbook is the production operator procedure for certified reporting runs, hard-close evidence,
 immutable reporting state, schedules, access grants, and secure delivery. Contract fields and wire
@@ -19,6 +19,36 @@ formats are defined in [Governed Accounting Reporting](../reference/accounting-r
 
 This runbook does not make legacy report-pack mutation routes authoritative. Those routes remain
 retired, and fixture or caller-supplied rows are not a production recovery mechanism.
+
+## Execution context and access
+
+Start the intended host and establish the PowerShell 7 `$operatorSession` and `$meridianBaseUrl`
+using [authenticated preflight](preflight-checklist.md#authenticated-evidence-collection). For an
+installed release, use the existing supervisor-managed loopback URL. Run API checks in the second
+terminal while that host remains running; repository-root context is needed only for source-host
+commands. The session must carry the intended company/tenant and Reporting group membership.
+An API key alone cannot supply workstation tenant scope.
+
+The Reporting workspace read requires `ViewReporting` or `AdminMaintenance`; run readiness
+requires `ManageReporting` or `AdminMaintenance`. The distribution transport catalog requires
+`ViewReporting`, and queueing delivery requires `DeliverReporting`. Certification, approval,
+release, and recipient scope have their own governance checks; passing one read does not authorize
+the remaining actions.
+
+These initial checks are read-only:
+
+```powershell
+$reportingWorkspace = Invoke-RestMethod "$meridianBaseUrl/api/workstation/reporting" `
+    -WebSession $operatorSession -ErrorAction Stop
+$reportingWorkspace.deploymentCapability
+Invoke-RestMethod "$meridianBaseUrl/api/fund-structure/reporting/distribution/transports" `
+    -WebSession $operatorSession -ErrorAction Stop
+```
+
+Require HTTP `200` and inspect capability/transport fields as described below. For `401`, restore
+the operator session; for `403`, correct permission or scope through account governance; for `503`,
+preserve the component blockers and restore their dependencies. Do not substitute local files or
+create a new reporting run to bypass a deployment failure.
 
 ## Reporting capability gate
 
@@ -74,11 +104,11 @@ Before enabling governed reporting, confirm all of the following:
 4. An authenticated `GET /api/workstation/reporting` returns `200` with
    `deploymentCapability.isReady = true`. Preserve its component summaries with deployment
    evidence. A `503` is a deployment blocker, not an empty Reporting workspace.
-5. The resolved `DataRoot` is durable and backed up. Include any explicitly enabled
-   local/development `<DataRoot>/workstation/reporting/` compatibility state and any retained
-   `<DataRoot>/reporting/statement-reconciliation-report/` preprocessing workflows, plus the
-   `<DataRoot>/workstation/reconciliation-break-queue.json` snapshot and adjacent queue sidecars,
-   in the coordinated reporting recovery set.
+5. The resolved `DataRoot` is durable and backed up for the authoritative reconciliation files and
+   queue snapshot/sidecars. Production statement workflows use PostgreSQL document mappings,
+   revisions, and artifact blobs; their process runtime workspace is disposable cache. Include
+   local Reporting and statement directories only when the environment explicitly uses their
+   development compatibility authority. Follow the [recovery inventory](#backup-and-recovery).
 6. Production does not run fixture or in-memory governance, or file-backed run, schedule,
    custom-template, starter-kit, workflow, or delivery compatibility stores, in place of the
    durable ledger, fund-structure, reporting, and fund-account dependencies.
@@ -149,6 +179,37 @@ Use an authenticated operator in the intended tenant and company scope.
    binding. Confirm one durable job, a non-secret grant record, relay acceptance with a bounded
    provider message id, and an authenticated terminal receipt. Do not paste the one-time link into
    logs, tickets, screenshots, or retained notes.
+
+## Explain retained investment-income movements
+
+Open **Explain investment-income movement** from the Reporting run or governed run detail. Choose the baseline
+explicitly, then select the retained grid and income measure shared by both runs. Candidate labels
+distinguish originally published and restated published results using governed release receipts;
+there is no automatic substitution of the latest run for the selected baseline.
+
+Review period, population, accounting basis, currency, and book differences before reading the
+movement bridge. Journal contributions open the exact retained journal lines. Population changes
+require evidence of exclusion by the opposite run's scope. A retained metric/filter definition
+change opens both definitions and the quantified effect on continuing unchanged journal lines;
+it does not represent a separate human methodology approval. Unsupported changes remain visible,
+including offsetting positive and negative amounts with a zero net residual. An incompatible
+comparison cannot appear reconciled.
+Displayed comparison amounts preserve all retained decimal digits, including large balances and
+very small nonzero residuals.
+
+The comparison link identifies an immutable retained artifact. Reopening it or a contribution uses
+the saved manifests, explanations, and support, even after source data changes. Access requires
+current authorization for both retained report scopes. The shared API is:
+
+- `GET /api/fund-structure/reporting/comparisons/candidates`
+- `POST /api/fund-structure/reporting/comparisons` with `baselineRunId`, `currentRunId`, `gridId`, and `metricColumn`
+- `GET /api/fund-structure/reporting/comparisons/{comparisonId}`
+- `GET /api/fund-structure/reporting/comparisons/{comparisonId}/contributions/{contributionId}`
+
+Formula, Top-N, and cross-tab measures without an additive retained mapping stay unexplained.
+New or removed journal lines under a changed methodology also remain unexplained until their
+combined effect can be supported separately. A zero residual is insufficient when any unsupported
+line, rendered cell, missing parameter, or compatibility blocker remains.
 
 ## Canonical statement-to-delivery handoff
 
@@ -255,12 +316,16 @@ headers are deliberately rejected on that endpoint.
 The coordinated reporting recovery set crosses the production authority and auxiliary local state:
 
 - the configured PostgreSQL reporting schema, including governance, artifact, run, schedule,
-  access-grant, delivery-job, and receipt state
+  access-grant, delivery-job, and receipt state, plus statement-reconciliation document mappings,
+  append-only document revisions, and all referenced `reporting_artifact_blobs`
 - any explicitly enabled local/development `<DataRoot>/workstation/reporting/` compatibility
   directory, including custom templates, starter-kit state, and retained compatibility history;
   production does not register those file repositories
-- `<DataRoot>/reporting/statement-reconciliation-report/` when statement preprocessing workflows
-  are in use
+- the immutable reconciliation match artifacts, statement-run recovery records, and source
+  casework retained by their durable file stores; use the same configured paths and recovery point
+  as the [statement workflow](statement-reconciliation-report-operations.md#executable-postgresql-workflow-evidence)
+- `<DataRoot>/reporting/statement-reconciliation-report/` only when the environment intentionally
+  uses local/development file authority, including retained legacy statement-workflow directories
 - `<DataRoot>/workstation/reconciliation-break-queue.json`, whose current integrity-validated
   snapshot includes queue items, audit and idempotency receipts, plus the durable `Closing` or
   `HardClosed` close-scope checkpoint
@@ -271,6 +336,11 @@ The coordinated reporting recovery set crosses the production authority and auxi
 Production run and schedule authority does not come from `FileReportingRunStore` or
 `FileReportingScheduleStore`. Do not restore their local snapshots as a substitute for the
 PostgreSQL `reporting_run_snapshots` and `reporting_schedule_snapshots` state.
+Production statement workspaces under
+`<DataRoot>/runtime/statement-reconciliation-authority-workspace/<process-id>/` are hydrated from
+verified PostgreSQL authority bytes. They are not a backup source or a way to repair missing
+statement authority; recovery must preserve document mappings, revisions, and referenced blobs
+together.
 
 Back up those locations at one approved recovery point. Encrypt the backup and restrict it as
 financial-reporting evidence: the files contain certified rows, parameters, scope, schedules, and

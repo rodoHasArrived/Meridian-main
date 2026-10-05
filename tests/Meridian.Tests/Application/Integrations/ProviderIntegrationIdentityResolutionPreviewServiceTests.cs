@@ -73,7 +73,9 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewServiceTests : I
         IProviderIntegrationManifestStore store,
         bool includeMissingRecord)
     {
-        await store.SaveManifestAsync(CreateManifest()).ConfigureAwait(false);
+        var manifest = CreateManifest();
+        var manifestReference = ProviderIntegrationManifestIdentity.Create(manifest);
+        await store.SaveManifestAsync(manifest).ConfigureAwait(false);
         await store.SaveConnectionAsync(CreateConnection()).ConfigureAwait(false);
         await store.SaveSyncRunAsync(new ProviderIntegrationSyncRunDto(
             "sync-run-identity-1",
@@ -89,7 +91,11 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewServiceTests : I
             RecordsAccepted: includeMissingRecord ? 2 : 1,
             RecordsQuarantined: 0,
             RawPayloadId: "payload-1",
-            Issues: [])).ConfigureAwait(false);
+            Issues: [])
+        {
+            ManifestReference = manifestReference,
+            OriginalManifestReference = manifestReference
+        }).ConfigureAwait(false);
         await store.SaveStagingRecordAsync(new IntegrationStagingRecordDto(
             "staging-resolved",
             "sync-run-identity-1",

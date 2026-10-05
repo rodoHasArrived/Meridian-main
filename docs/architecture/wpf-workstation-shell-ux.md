@@ -173,8 +173,12 @@ Changes to workstation shells should continue to validate:
 Use the workstation-shell checker for fast structural validation before running broader WPF build or test commands:
 
 - `python scripts/wpf_finance_ux_checks.py --root . --paths src/Meridian.Wpf`
-- `dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj`
-- `dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj -p:EnableFullWpfBuild=true -p:BuildProjectReferences=false --no-restore`
+- On Windows: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -Restore`
+
+The development runner restores and builds the full WPF target. A bare project build on
+non-Windows can validate only a stub and is not shell/XAML proof. Use
+[Engineering validation](../engineering/README.md#desktop-slices) for current desktop build/test
+options and select focused view-model tests for the changed behavior.
 
 Run the checker with `src/Meridian.Contracts`, `src/Meridian.Ui.Shared`, and `src/Meridian.Ui/dashboard` included when workflow route or shared-contract parity is in scope. That expanded mode verifies shared accounting, operations-continuity, trading, report-pack target tags, and structured reconciliation "Explain the Break" fields across contracts, shared services, WPF navigation/projections, and browser route/view-model code.
 

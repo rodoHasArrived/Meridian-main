@@ -157,7 +157,9 @@ public sealed class ProviderIntegrationQuarantineReviewServiceTests : IDisposabl
         string connectionId,
         int recordCount = 2)
     {
-        await store.SaveManifestAsync(CreateManifest()).ConfigureAwait(false);
+        var manifest = CreateManifest();
+        var manifestReference = ProviderIntegrationManifestIdentity.Create(manifest);
+        await store.SaveManifestAsync(manifest).ConfigureAwait(false);
         await store.SaveConnectionAsync(CreateConnection(connectionId)).ConfigureAwait(false);
         await store.SaveSyncRunAsync(new ProviderIntegrationSyncRunDto(
             "sync-run-quarantine-1",
@@ -181,7 +183,11 @@ public sealed class ProviderIntegrationQuarantineReviewServiceTests : IDisposabl
                     "Security identifier is required.",
                     "security",
                     "Map CUSIP, ISIN, ticker, or provider security id.")
-            ])).ConfigureAwait(false);
+            ])
+        {
+            ManifestReference = manifestReference,
+            OriginalManifestReference = manifestReference
+        }).ConfigureAwait(false);
         for (var index = 1; index <= recordCount; index++)
         {
             await store.SaveQuarantinedRecordAsync(new QuarantinedRecordDto(

@@ -107,7 +107,7 @@ public static class HealthEndpoints
                 return Results.NotFound(new { error = "Provider registry not available" });
 
             var info = registry.GetAllProviders()
-                .FirstOrDefault(p => string.Equals(p.Name, provider, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(p => ProviderIdentity.EqualsId(p.Name, provider));
 
             if (info is null)
                 return Results.NotFound(new { error = $"Provider '{provider}' not found" });
@@ -224,7 +224,7 @@ public static class HealthEndpoints
                 return Results.Json(new { success = false, error = "Provider registry not available" }, jsonOptions);
 
             var info = registry.GetAllProviders()
-                .FirstOrDefault(p => string.Equals(p.Name, provider, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(p => ProviderIdentity.EqualsId(p.Name, provider));
 
             if (info is null)
                 return Results.NotFound(new { error = $"Provider '{provider}' not found" });
