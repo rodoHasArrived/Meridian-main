@@ -8,6 +8,10 @@ Use this page for the first 10 minutes of a Codex task in Meridian. It compresse
 workflow into a task routing checklist, proof matrix, and dirty-worktree protocol. Shared policy
 still lives in `../assistant-workflow-contract.md`.
 
+For browser development, use the [cross-platform launcher](../../engineering/web-development.md):
+root `npm run dev` coordinates a seeded backend, watch restarts, and Vite; `npm run dev:fixtures`
+selects explicit offline fixtures. The guide includes readiness and shutdown acceptance checks.
+
 ## Startup Checklist
 
 1. Run `git status --short` and separate existing user-owned changes from the task. For PR-bound
