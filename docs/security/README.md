@@ -14,7 +14,7 @@ Operator procedures live in `docs/operators/`; stable configuration lookup belon
 | --- | --- | --- |
 | Review threats and trust boundaries | [Threat model](threat-model-current-state.md) | Maintained model; check its review date and source evidence for the release under review. |
 | Track remediation | [Security remediation backlog](security-remediation-backlog.md) | Finding owners, required proof, and recorded dispositions. |
-| Check dependency risk decisions | [Known vulnerabilities](known-vulnerabilities.md) | Accepted, retired, and fixed advisory records; fresh scans still apply to each release. |
+| Check dependency risk decisions | [Known vulnerabilities](known-vulnerabilities.md) | Pending human risk decisions, accepted, retired, and fixed advisory records; fresh scans still apply to each release. |
 | Plan compliance evidence | [SOC 2 scope](compliance/soc2-scope.md), [control matrix](compliance/soc2-control-matrix.md), and [evidence calendar](compliance/soc2-evidence-calendar.md) | Program guidance and evidence responsibilities. |
 | Review proposed audit milestones | [SOC 2 roadmap](compliance/soc2-roadmap.md) | Dated target windows; elapsed dates do not establish audit completion. |
 | Prepare buyer diligence | [Buyer packet index](buyer-packet/document-index.md) | Versioned draft with its own review dates and refresh checklist. |
