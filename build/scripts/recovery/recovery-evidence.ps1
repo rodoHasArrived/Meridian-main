@@ -51,6 +51,13 @@ function Test-RecoveryNumber {
     return [Type]::GetTypeCode($Value.GetType()).ToString() -in $numericTypes -and [double]::IsFinite([double]$Value)
 }
 
+function Test-RecoveryCommit {
+    param($Value)
+    # Keep the input untyped so JSON arrays/numbers cannot be coerced to strings.
+    # Absolute anchors also reject a trailing newline accepted by the $ anchor.
+    return $Value -is [string] -and $Value -cmatch '\A(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})\z'
+}
+
 function Get-RecoveryObjectiveEvidence {
     [CmdletBinding()]
     param(
@@ -78,7 +85,12 @@ function Get-RecoveryObjectiveEvidence {
     if ($Receipt['manifestSha256'] -isnot [string] -or $Receipt['manifestSha256'] -cnotmatch '^[0-9a-fA-F]{64}$') {
         $issues.Add(@{ scope = 'common'; message = 'manifestSha256 must identify the authenticated manifest bytes.' })
     }
-    foreach ($field in @('sourceCommit', 'drillSourceCommit', 'backupId', 'recoverablePointEvidence', 'reconciliationEvidence', 'operatorAcceptedBy', 'operatorAcceptanceEvidence')) {
+    foreach ($field in @('sourceCommit', 'drillSourceCommit')) {
+        if (-not (Test-RecoveryCommit $Receipt[$field])) {
+            $issues.Add(@{ scope = 'common'; message = "$field must be a full 40- or 64-character hexadecimal commit identifier." })
+        }
+    }
+    foreach ($field in @('backupId', 'recoverablePointEvidence', 'reconciliationEvidence', 'operatorAcceptedBy', 'operatorAcceptanceEvidence')) {
         $scope = switch ($field) {
             'recoverablePointEvidence' { 'rpo' }
             { $_ -in @('reconciliationEvidence', 'operatorAcceptedBy', 'operatorAcceptanceEvidence') } { 'rto' }

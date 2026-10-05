@@ -27,7 +27,7 @@ and records a bounded acceptance. Merging this investigation alone does not acce
   Recursive AST traversal can exhaust the Node.js stack on deeply nested brace patterns,
   including patterns below the package's character limit. An uncaught `RangeError` can
   terminate the build/watch process.
-- **Latest hosted baseline checked:** `main` commit
+- **Initial hosted baseline checked:** `main` commit
   `e3bf60bae577c132d8444a827ca4dc3181cc48a1`, Production Certification
   [run #147, attempt 1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283),
   [dependency job 111904784527](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283/job/111904784527).
@@ -42,6 +42,13 @@ and records a bounded acceptance. Merging this investigation alone does not acce
   expires `2027-01-03T17:54:46Z`. The downloaded ZIP digest was verified. Its three scan files
   are retained under [evidence/2026-10-05-dependency-certification](evidence/2026-10-05-dependency-certification/manifest.json),
   alongside fresh npm graph, audit, upstream metadata and bounded reachability evidence.
+- **Latest completed hosted recheck:** [run #151, attempt 1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37360660094)
+  on `main` commit `433ff014b51244daeab8deca5fba812f9bb5fe6a` confirms the same result:
+  all 56 NuGet projects clean, five high npm nodes from this unaccepted GHSA, and the final
+  dependency assertion failed. Artifact `production-dependency-evidence-151-1` (ID `11367836066`)
+  was downloaded and its ZIP SHA-256 verified as
+  `80d7d434e508dbf5d4df3edfa5dfc6c354ed7706a9c343072fd742f4cd3ce4d1`.
+  Its raw reports are retained with the proposal PR's commit-specific evidence bundle.
 - **Fresh recheck:** Node 24.19.0 / npm 11.9.0, clean `npm ci`, then `npm audit --json`
   reproduces the same finding. The unchanged validator with the empty registry returns 1.
   `npm audit --omit=dev --json` reports zero findings; this scoped result supplements the

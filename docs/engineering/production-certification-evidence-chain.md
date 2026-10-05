@@ -238,6 +238,15 @@ bash scripts/ci.sh --lane verify-docs
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
 
+- **2026-10-05 — later dependency recheck confirms continued blocking.** Production Certification
+  [#151 / 37360660094, attempt 1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37360660094)
+  checked `main` at `433ff014b51244daeab8deca5fba812f9bb5fe6a`. Dependency job `111937908247`
+  again reported all 56 NuGet projects clean and rejected the unaccepted high braces advisory;
+  the explicit final assertion failed. Artifact `production-dependency-evidence-151-1`
+  (ID `11367836066`) was retained with the proposal PR evidence bundle and its ZIP SHA-256
+  verified as `80d7d434e508dbf5d4df3edfa5dfc6c354ed7706a9c343072fd742f4cd3ce4d1`.
+  This recheck does not activate the pending proposal or certify a later commit.
+
 - **2026-10-05 — dependency failure rechecked; human decision pending.** Production Certification
   [#147 / 37351972283, attempt 1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283)
   checked `main` at `e3bf60bae577c132d8444a827ca4dc3181cc48a1`. Dependency job
