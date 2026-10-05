@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-02
+**Reviewed:** 2026-10-05
 
 This page is the canonical operator guide for Meridian recovery posture and failover response.
 
@@ -30,6 +30,12 @@ location or repository.
 Receipts are created exclusively before backup or restore work begins. An existing `-ReceiptPath`
 is rejected without changing it or starting recovery work. Omit that option for a unique per-run
 receipt, or choose a new explicit path for every attempt, including failed attempts.
+Both explicit and default receipt paths must be outside `DataRoot` and `RestoreDataRoot`, and
+cannot be an ancestor of either root. This includes Restore's fallback to `DataRoot` when no
+`RestoreDataRoot` is supplied. Conflicting paths are rejected before creating receipt directories
+or files, taking a backup, quarantining a target, or invoking PostgreSQL tools; directory symlinks
+and normalized path segments do not bypass this check.
+Use ordinary drive or UNC paths on Windows; device namespace paths are rejected by preflight.
 
 ## Backup
 
@@ -98,6 +104,14 @@ authenticated backup-creation commit; `drillSourceCommit` separately identifies 
 the drill. Drilling a backup from commit A on commit B does not relabel that backup as B. An
 unauthenticated schema-2 manifest is rejected; schema-1 backups remain archive-only and cannot
 supply trusted checkpoint metadata.
+
+All producer modes validate the execution `SourceCommit`, including drills of retained backups.
+When `-SourceCommit` is omitted, `GITHUB_SHA` supplies the value or the script falls back to the
+checkout's `HEAD`; an explicitly supplied blank value is rejected. Commit identifiers must be
+exactly 40 or 64 hexadecimal characters, without whitespace or a trailing newline. The authenticated
+manifest and standalone receipt validator use the same rule for backup provenance; the validator
+also checks `drillSourceCommit`. Matching
+completion evidence cannot make a malformed commit identifier valid.
 
 ```powershell
 pwsh ./build/scripts/recovery/invoke-production-recovery.ps1 `
