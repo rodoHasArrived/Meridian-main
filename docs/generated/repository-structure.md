@@ -1147,10 +1147,12 @@ Meridian-main
 │       │   │   ├── test_check_ai_handoff.py
 │       │   │   ├── test_check_ai_inventory.py
 │       │   │   ├── test_check_codex_memory.py
+│       │   │   ├── test_check_docfx_navigation.py
 │       │   │   ├── test_generate_api_contract_coverage_dashboard.py
 │       │   │   ├── test_generate_structure_docs.py
 │       │   │   ├── test_markdown_generation_lint.py
 │       │   │   ├── test_pilot_readiness_dashboard.py
+│       │   │   ├── test_repair_links.py
 │       │   │   ├── test_run_docs_automation_pilot_optin.py
 │       │   │   ├── test_scan_todos.py
 │       │   │   └── test_validate_docs_structure.py
@@ -1165,6 +1167,7 @@ Meridian-main
 │       │   ├── check-ai-routing-parity.py
 │       │   ├── check-codex-memory.py
 │       │   ├── check-codex-skills.py
+│       │   ├── check-docfx-navigation.py
 │       │   ├── check-handoff-packet-schema.py
 │       │   ├── check-known-lanes.py
 │       │   ├── check-mode-escalation.py
@@ -1910,6 +1913,7 @@ Meridian-main
 │   │   ├── provider-onboarding-interactive-brokers.md
 │   │   ├── README.md
 │   │   ├── reconciliation-operations.md
+│   │   ├── runbook-template.md
 │   │   ├── security-master-normalized-identifier-migration.md
 │   │   ├── service-level-objectives.md
 │   │   ├── statement-reconciliation-report-operations.md
@@ -1947,6 +1951,7 @@ Meridian-main
 │   │   ├── meridian-design-document.md
 │   │   ├── README.md
 │   │   ├── reporting-operating-model-2026-09.md
+│   │   ├── review-history.md
 │   │   ├── w9-demo-002-closure-2026-09-16.md
 │   │   ├── w9-operator-acceptance-2026-08-29.md
 │   │   └── web-ui-improvements-brainstorm-2026-07.md
@@ -2249,6 +2254,20 @@ Meridian-main
 │   │   │   ├── soc2-evidence-calendar.md
 │   │   │   ├── soc2-roadmap.md
 │   │   │   └── soc2-scope.md
+│   │   ├── evidence
+│   │   │   └── 2026-10-05-dependency-certification
+│   │   │       ├── braces-advisory-source.json
+│   │   │       ├── braces-bounded-reachability.json
+│   │   │       ├── dependency-source-evidence.json
+│   │   │       ├── hosted-npm-audit-gate.json
+│   │   │       ├── hosted-npm-audit.json
+│   │   │       ├── hosted-nuget-vulnerabilities.txt
+│   │   │       ├── manifest.json
+│   │   │       ├── npm-audit-gate.json
+│   │   │       ├── npm-audit-production.json
+│   │   │       ├── npm-audit.json
+│   │   │       ├── npm-graph.json
+│   │   │       └── upstream-registry-metadata.json
 │   │   ├── codex-security-remediation-2026-05-20.md
 │   │   ├── known-vulnerabilities.md
 │   │   ├── README.md
@@ -5528,6 +5547,7 @@ Meridian-main
 │   │   ├── PluginLoaderService.cs
 │   │   ├── ProviderHttpUtilities.cs
 │   │   ├── ProviderIdentity.cs
+│   │   ├── ProviderModuleCapabilityRegistration.cs
 │   │   ├── ProviderModuleContext.cs
 │   │   ├── ProviderModuleLoader.cs
 │   │   ├── ProviderRoutingModels.cs
@@ -7667,6 +7687,7 @@ Meridian-main
 │   │   │   ├── ProviderLedgerReconciliationService.cs
 │   │   │   ├── ProviderLedgerReconciliationService.Outcomes.cs
 │   │   │   ├── ProviderLedgerReconciliationService.SecurityCoverage.cs
+│   │   │   ├── ProviderMetricsLookup.cs
 │   │   │   ├── ProviderModuleSetupModels.cs
 │   │   │   ├── ProviderModuleSetupService.cs
 │   │   │   ├── ProviderNavigationRouteMapper.cs
@@ -10142,7 +10163,8 @@ Meridian-main
 │   │   │   ├── OptionalProviderCapabilityContractsTests.cs
 │   │   │   ├── PluginLoaderServiceTests.cs
 │   │   │   ├── ProviderIdentityTests.cs
-│   │   │   └── ProviderModuleLoaderTests.cs
+│   │   │   ├── ProviderModuleLoaderTests.cs
+│   │   │   └── ProviderModuleRegistrationTests.cs
 │   │   ├── Reconciliation
 │   │   │   ├── Connectors
 │   │   │   │   ├── AlpacaActivityStatementConnectorTests.cs
