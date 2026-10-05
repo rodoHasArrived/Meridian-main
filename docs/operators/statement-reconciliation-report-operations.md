@@ -8,10 +8,6 @@ audience: operators
 
 # Statement Reconciliation Report Operations
 
-**Status:** active
-**Owner:** Financial Operations
-**Reviewed:** 2026-07-27
-
 Use this authoritative intake adapter for retained broker or custodian statement ingestion,
 server-resolved accounting scope, Evidence Vault linkage, publication into the canonical
 reconciliation queue, Operations Continuity linkage, and hash-verifiable JSON/CSV reconciliation
@@ -23,6 +19,23 @@ accounting posting, ledger or close controls, reporting certification, maker-che
 client PDF/XLSX rendering, release, distribution, or delivery-receipt retention. A `Completed`
 response proves the bounded intake and casework handoff described below; it does not prove any of
 those downstream outcomes.
+
+## Prerequisites and execution context
+
+- Start the intended host and sign in using [Operator Preflight](preflight-checklist.md#authenticated-evidence-collection).
+  The examples below use PowerShell 7 in that procedure's second terminal, with its
+  `$meridianBaseUrl` and in-memory `$operatorSession`. For an installed release, use the existing
+  host URL; do not launch a second process against the same data root.
+- Start/resume requires one of `AdminMaintenance`, `ManageDirectLending`, or
+  `ModifySecurityMaster`. Status/artifact reads also accept `ViewDirectLending` or
+  `ViewSecurityMaster`. The account must have the intended tenant and company, and own the
+  referenced fund-account scope. An API key alone does not establish those identities.
+- Confirm the active account/institution/external-account binding, exactly one primary ledger
+  book, and the exact open accounting period before upload. Collect the original statement and
+  approved connector/mapping/tolerance choices; do not modify the file to force an import.
+- For production, satisfy the [statement authority prerequisites](#production-persistence-and-restart-authority)
+  and retain the coordinated database/file recovery set. Identify a restricted evidence directory
+  and the operator responsible for resolving the resulting queue items.
 
 ## Start the workflow
 
@@ -66,6 +79,42 @@ unavailable production authority returns `503` without falling back to local fil
 Operations workflow or incomplete queue publication fails after retention and returns the retained
 `Failed` projection with `500`. Record `workflowId`, `statusRoute`, and `resumeRoute` from the
 response when a workflow was retained.
+
+### Authenticated upload example
+
+This request retains the submitted statement and can create reconciliation casework. Use the
+reviewed statement and exact account/period values from the prerequisites. The HTTP client builds
+the multipart boundary; do not set `Content-Type` manually. Cookie-authenticated mutations also
+require the `mdc-csrf` cookie value in `X-CSRF-Token`; keep both session and token in memory.
+
+```powershell
+$statementCsrfToken = $operatorSession.Cookies.GetCookies([uri]$meridianBaseUrl)['mdc-csrf'].Value
+if (-not $statementCsrfToken) { throw 'Sign in again to obtain the CSRF cookie.' }
+$statementForm = @{
+    file = Get-Item -LiteralPath (Read-Host 'Approved statement file path') -ErrorAction Stop
+    sourceInstitution = Read-Host 'Retained institution name'
+    fundAccountId = Read-Host 'Meridian fund-account ID'
+    externalAccountId = Read-Host 'Provider account ID'
+    periodStart = Read-Host 'Exact period start (YYYY-MM-DD)'
+    periodEnd = Read-Host 'Exact period end (YYYY-MM-DD)'
+}
+$statementWorkflow = Invoke-RestMethod `
+    "$meridianBaseUrl/api/workstation/reconciliation/statement-reconciliation-report" `
+    -Method Post -WebSession $operatorSession -Form $statementForm `
+    -Headers @{ 'X-CSRF-Token' = $statementCsrfToken } `
+    -SkipHttpErrorCheck -StatusCodeVariable statementHttpStatus -ErrorAction Stop
+$statementHttpStatus
+$statementWorkflow
+```
+
+Add optional connector/mapping/tolerance or complete exact-scope fields to `$statementForm` before
+sending when the review requires them. `-SkipHttpErrorCheck` preserves a retained `Failed` response
+for inspection; it does not make an HTTP error successful. For `400`, correct the named form or
+ingress-policy error. For `401/403`, check the current session, matching CSRF token, permission, and scope. For `409/503`,
+follow the authority recovery steps below. After `500`, inspect the returned workflow and use its
+recorded resume route once the failure is corrected. For `429`, respect the retry interval. A lost
+response leaves the outcome uncertain: repeat the exact original content and scope so identity
+reuse can recover retained state; do not change the file or business identity to force a new run.
 
 ## Use compatibility ingress and fetch schedules
 
@@ -152,6 +201,20 @@ restore, inspect, or repair this runtime cache as workflow truth.
 - Read current state with `GET {statusRoute}`.
 - Resume a paused or failed workflow with `POST {resumeRoute}`.
 - Download an artifact from the `downloadRoute` in each `retainedArtifacts` entry.
+
+For a retained start response in the same PowerShell session, poll with:
+
+```powershell
+if (-not $statementWorkflow.statusRoute) { throw 'No retained workflow status route was returned.' }
+$statementWorkflow = Invoke-RestMethod "$meridianBaseUrl$($statementWorkflow.statusRoute)" `
+    -WebSession $operatorSession -ErrorAction Stop
+$statementWorkflow
+```
+
+Use only routes returned by this host and retain the workflow ID for later sessions. Resume is a
+mutation; send the current CSRF header with the session and invoke it only after the named
+reconciliation or dependency blocker is resolved. A status
+read returning HTTP `200` can still describe an incomplete or failed workflow.
 
 Artifact downloads are served only inside the authenticated tenant/company scope. The server hashes
 the retained bytes again and refuses delivery if their length or hash differs from the current
@@ -265,8 +328,10 @@ casework use their production durable file stores. Preserve both authorities for
 the statement/report runtime workspace tests cache hydration; it does not establish recovery from
 loss of the durable reconciliation files.
 
-With an isolated PostgreSQL endpoint configured in `MERIDIAN_LEDGER_CONNECTION_STRING` and
-`MERIDIAN_REPORTING_CONNECTION_STRING`, run:
+From the repository root in Bash, with the .NET 10 SDK and an isolated PostgreSQL endpoint
+configured in `MERIDIAN_LEDGER_CONNECTION_STRING` and `MERIDIAN_REPORTING_CONNECTION_STRING`, run
+the following engineering verification. Do not point this integration test at retained operator
+data; it is separate from production acceptance:
 
 ```bash
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release \

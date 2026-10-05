@@ -1,17 +1,23 @@
 # Desktop Support Policy
 
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-10-05
+
 ## Scope
 
 This policy defines contribution and validation expectations for desktop surfaces:
 
 - `src/Meridian.Wpf` (**primary desktop surface**)
 - `src/Meridian.Ui.Services` (shared services used by the desktop client)
+- `src/Meridian.Ui.Shared` and shared workstation contracts consumed by both UI lanes
 
 ## Support Level
 
 ### WPF (Primary)
 
-WPF is the sole desktop implementation. All new features and developer workflow improvements target this platform.
+WPF is the sole desktop implementation and is co-equal with the browser workstation. Desktop
+workflow improvements target WPF; shared business behavior and read models must serve both clients.
 
 Expected for WPF-affecting changes:
 - Build validation of WPF project
@@ -21,12 +27,22 @@ Expected for WPF-affecting changes:
 ## Required checks by change type
 
 ### WPF-only change
-- `make desktop-build`
-- `make desktop-test`
+
+On Windows, from the repository root with PowerShell 7 and the SDK selected by `global.json`:
+
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -Restore
+```
+
+The default filter covers the desktop workflow slice. Select additional tests for the affected
+feature, as described in the [desktop testing guide](../desktop-testing-guide.md). Non-Windows stub
+builds do not validate WPF sources or rendering. GNU Make aliases are optional convenience wrappers.
 
 ### Shared desktop services change (`Ui.Services` or shared contracts)
-- `make desktop-build`
-- `make desktop-test`
+
+Run the affected shared-service tests and Windows desktop checks, plus browser tests/build when its
+contracts or behavior change. Use [Engineering](../../engineering/README.md#buildtestrun) for the
+current commands and the full PR gate; WPF-only validation is insufficient for a shared API change.
 
 ## Ownership and maintenance expectations
 
