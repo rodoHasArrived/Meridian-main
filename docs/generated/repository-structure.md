@@ -1917,6 +1917,7 @@ Meridian-main
 │   │   │   ├── next-work-determination-2026-09-27.md
 │   │   │   ├── next-work-determination-2026-10-02.md
 │   │   │   ├── next-work-determination-2026-10-04.md
+│   │   │   ├── next-work-determination-2026-10-05.md
 │   │   │   ├── product-roadmap-priorities-2026-07.md
 │   │   │   ├── production-readiness-backlog-2026-08.md
 │   │   │   ├── README.md
@@ -11021,6 +11022,7 @@ Meridian-main
 │   │   ├── test_release_promotion.py
 │   │   ├── test_render_adapter_readiness.py
 │   │   ├── test_render_roadmap_diagrams.py
+│   │   ├── test_repair_links_anchors.py
 │   │   ├── test_resolve_generated_merge_conflicts.py
 │   │   ├── test_roadmap_source_docs.py
 │   │   ├── test_roadmap_validator_compatibility.py
