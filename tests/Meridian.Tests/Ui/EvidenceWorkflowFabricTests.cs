@@ -3056,7 +3056,7 @@ public sealed class EvidenceWorkflowFabricTests
     }
 
     [Fact]
-    public async Task EvidenceEndpoints_DeclareReportingPermissionsAndTenantCompanyScope()
+    public async Task EvidenceEndpoints_DeclareSubjectAwarePermissionsAndTenantCompanyScope()
     {
         var root = Path.Combine(Path.GetTempPath(), $"evidence-route-authority-{Guid.NewGuid():N}");
         await using var app = await CreateEvidenceAppAsync(root);
@@ -3077,6 +3077,21 @@ public sealed class EvidenceWorkflowFabricTests
             ["ReviewWorkstationEvidenceVaultDocument"] = UserPermission.ApproveReporting
         };
         var endpoints = app.Services.GetRequiredService<EndpointDataSource>().Endpoints;
+        var subjectAwareReadEndpoints = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "GetWorkstationEvidenceManifest",
+            "GetWorkstationEvidenceVaultManifest",
+            "GetWorkstationEvidencePacket",
+            "GetWorkstationEvidenceGraph"
+        };
+        UserPermission[] subjectReadPermissions =
+        [
+            UserPermission.ViewReporting,
+            UserPermission.ViewLedgerReports,
+            UserPermission.ManageLedgerReports,
+            UserPermission.ManageDirectLending,
+            UserPermission.AdminMaintenance
+        ];
 
         foreach (var (endpointName, permission) in expected)
         {
@@ -3086,9 +3101,18 @@ public sealed class EvidenceWorkflowFabricTests
                 StringComparison.Ordinal));
             var authorization = endpoint.Metadata.GetMetadata<EndpointAuthorizationMetadata>();
 
-            authorization.Should().NotBeNull($"{endpointName} must declare an explicit reporting permission");
-            authorization!.RequireAll.Should().BeTrue();
-            authorization.Permissions.Should().ContainSingle().Which.Should().Be(permission);
+            authorization.Should().NotBeNull($"{endpointName} must declare explicit permissions");
+            if (subjectAwareReadEndpoints.Contains(endpointName))
+            {
+                authorization!.RequireAll.Should().BeFalse($"{endpointName} gates reporting or ledger access before checking the subject");
+                authorization.Permissions.Should().HaveCount(5)
+                    .And.BeEquivalentTo(subjectReadPermissions);
+            }
+            else
+            {
+                authorization!.RequireAll.Should().BeTrue();
+                authorization.Permissions.Should().ContainSingle().Which.Should().Be(permission);
+            }
             endpoint.Metadata.GetMetadata<WorkstationTenantScopeMetadata>()
                 .Should().NotBeNull($"{endpointName} must retain tenant-and-company scope metadata");
         }
