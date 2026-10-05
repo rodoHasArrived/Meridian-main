@@ -37,8 +37,8 @@ public sealed class ProviderRegistryDeterministicSelectionTests
         registry.GetCapability<IMarketDataClient>("ib").Should().BeNull();
         var createDisabled = () => registry.CreateStreamingClient("ibkr");
         createDisabled.Should().Throw<InvalidOperationException>();
-        registry.SupportedStreamingSources.Should().Equal("ibkr",
-            "registered factory inventory remains available while runtime resolution is disabled");
+        registry.SupportedStreamingSources.Should().Equal(["ibkr"],
+            because: "registered factory inventory remains available while runtime resolution is disabled");
 
         registry.Enable(" IB ");
         registry.GetCapability<IMarketDataClient>("ibkr").Should().BeSameAs(replacement);
