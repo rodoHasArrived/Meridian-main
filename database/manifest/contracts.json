@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "09f7709b38644f58ea2a3d0242a9ce4d3d3ab58ed3c03426e1d86a36ee086c3f",
+      "fingerprint": "0f2340a7cb97a8701295290ca1f5de94cc640938b2ee2a37b371366a086238d8",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -2588,6 +2588,10 @@
         "Meridian.Contracts.Workstation.ThresholdBreachDto",
         "Meridian.Contracts.Workstation.TradingAcceptanceGateDto",
         "Meridian.Contracts.Workstation.TradingAcceptanceGateStatusDto",
+        "Meridian.Contracts.Workstation.TradingBrokerageAffectedRunDto",
+        "Meridian.Contracts.Workstation.TradingBrokerageRecoveryDto",
+        "Meridian.Contracts.Workstation.TradingBrokerageRecoveryPortfolioDto",
+        "Meridian.Contracts.Workstation.TradingBrokerageRecoveryRequestDto",
         "Meridian.Contracts.Workstation.TradingControlEvidenceDto",
         "Meridian.Contracts.Workstation.TradingControlReadinessDto",
         "Meridian.Contracts.Workstation.TradingExecutionReconciliationBreakDto",
@@ -3861,7 +3865,7 @@
       ]
     }
   ],
-  "fingerprint": "71596c5cd877ba6137ec7d97f203699c415eac344db443952a5ccf152227a8e0",
+  "fingerprint": "3c917ac508d03a83582f78089acbef6f4e68787e7c6d1048135e1674e279338e",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6199,7 +6203,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "aef4fdf6fb7cb197dd60823e47fc015c440191ed0cd7a1a9cdb4d350c925de66",
+      "fingerprint": "c4171c370a6d5042746c24338e9364dd5d11dd5e4924e375c77aba683dd52e63",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Workstation",
       "object_ids": [
@@ -7021,6 +7025,10 @@
         "Meridian.Contracts.Workstation.ThresholdBreachDto",
         "Meridian.Contracts.Workstation.TradingAcceptanceGateDto",
         "Meridian.Contracts.Workstation.TradingAcceptanceGateStatusDto",
+        "Meridian.Contracts.Workstation.TradingBrokerageAffectedRunDto",
+        "Meridian.Contracts.Workstation.TradingBrokerageRecoveryDto",
+        "Meridian.Contracts.Workstation.TradingBrokerageRecoveryPortfolioDto",
+        "Meridian.Contracts.Workstation.TradingBrokerageRecoveryRequestDto",
         "Meridian.Contracts.Workstation.TradingControlEvidenceDto",
         "Meridian.Contracts.Workstation.TradingControlReadinessDto",
         "Meridian.Contracts.Workstation.TradingExecutionReconciliationBreakDto",
@@ -364233,7 +364241,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "b91dec41c60660a0e5f250a2f2473bf3e32fc7af7c8edcdc3ca93ec15d9778c7",
+      "fingerprint": "2aa22418972b40174bb1e4c44b749efc4f1b05a221172af42152b844723b1edd",
       "full_name": "Meridian.Contracts.Workstation.StrategyRunReviewPacketDto",
       "id": "Meridian.Contracts.Workstation.StrategyRunReviewPacketDto",
       "kind": "record",
@@ -364250,7 +364258,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "RunAttributionSummary?",
-          "source_line": 392,
+          "source_line": 394,
           "type": "RunAttributionSummary?"
         },
         {
@@ -364264,7 +364272,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "WorkstationBrokerageSyncStatusDto?",
-          "source_line": 393,
+          "source_line": 395,
           "type": "WorkstationBrokerageSyncStatusDto?"
         },
         {
@@ -364278,7 +364286,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "StrategyRunContinuityDetail?",
-          "source_line": 390,
+          "source_line": 392,
           "type": "StrategyRunContinuityDetail?"
         },
         {
@@ -364292,7 +364300,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "RunFillSummary?",
-          "source_line": 391,
+          "source_line": 393,
           "type": "RunFillSummary?"
         },
         {
@@ -364306,7 +364314,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 388,
+          "source_line": 390,
           "type": "DateTimeOffset"
         },
         {
@@ -364320,7 +364328,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "StrategyRunDetail",
-          "source_line": 389,
+          "source_line": 391,
           "type": "StrategyRunDetail"
         },
         {
@@ -364334,7 +364342,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 387,
+          "source_line": 389,
           "type": "string"
         },
         {
@@ -364348,7 +364356,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 395,
+          "source_line": 397,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -364362,7 +364370,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OperatorWorkItemDto>",
-          "source_line": 394,
+          "source_line": 396,
           "type": "IReadOnlyList<OperatorWorkItemDto>"
         }
       ],
@@ -364379,12 +364387,12 @@
         "Meridian.Contracts.Workstation.WorkstationBrokerageSyncStatusDto"
       ],
       "source": {
-        "line": 386,
+        "line": 388,
         "path": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs"
       },
       "sources": [
         {
-          "line": 386,
+          "line": 388,
           "path": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs"
         }
       ],
@@ -367841,6 +367849,510 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
+      "fingerprint": "7ee0300d568adb833c586ec3e4236aa14be930cd9b917e3c9c30de4d16537bdd",
+      "full_name": "Meridian.Contracts.Workstation.TradingBrokerageAffectedRunDto",
+      "id": "Meridian.Contracts.Workstation.TradingBrokerageAffectedRunDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Detail",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 33,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RunId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 30,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Status",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 32,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "StrategyId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 31,
+          "type": "string"
+        }
+      ],
+      "name": "TradingBrokerageAffectedRunDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.TradingBrokerageAffectedRunDto",
+      "references": [],
+      "source": {
+        "line": 29,
+        "path": "src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 29,
+          "path": "src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "f39093b9291c29b36f49150c216964b10a908d726b26eb9b37778fc7bb0a8f3a",
+      "full_name": "Meridian.Contracts.Workstation.TradingBrokerageRecoveryDto",
+      "id": "Meridian.Contracts.Workstation.TradingBrokerageRecoveryDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "TradingBrokerageAffectedRunDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AffectedRuns",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<TradingBrokerageAffectedRunDto>",
+          "source_line": 12,
+          "type": "IReadOnlyList<TradingBrokerageAffectedRunDto>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BlockingReasons",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 11,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Detail",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 9,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExternalAccountId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 7,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FundAccountId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "Guid?",
+          "source_line": 5,
+          "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Portfolio",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "TradingBrokerageRecoveryPortfolioDto?",
+          "source_line": 10,
+          "type": "TradingBrokerageRecoveryPortfolioDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProviderId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 6,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Status",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 8,
+          "type": "string"
+        }
+      ],
+      "name": "TradingBrokerageRecoveryDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.TradingBrokerageRecoveryDto",
+      "references": [
+        "Meridian.Contracts.Workstation.TradingBrokerageAffectedRunDto",
+        "Meridian.Contracts.Workstation.TradingBrokerageRecoveryPortfolioDto"
+      ],
+      "source": {
+        "line": 4,
+        "path": "src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 4,
+          "path": "src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "d61bbc22a0cde2b74d8f160721631abe7948d344705c4d1ba50f349ee6c4ab8b",
+      "full_name": "Meridian.Contracts.Workstation.TradingBrokerageRecoveryPortfolioDto",
+      "id": "Meridian.Contracts.Workstation.TradingBrokerageRecoveryPortfolioDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BuyingPower",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 16,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Cash",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 15,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Currency",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 18,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExpiresAt",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 27,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsComplete",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 23,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsConsistent",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 25,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsFresh",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 24,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LastAttemptedAt",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 21,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LastSuccessfulAt",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 22,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ObservedAt",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 20,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PortfolioValue",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 17,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PositionCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 19,
+          "type": "int"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Warnings",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 26,
+          "type": "IReadOnlyList<string>"
+        }
+      ],
+      "name": "TradingBrokerageRecoveryPortfolioDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.TradingBrokerageRecoveryPortfolioDto",
+      "references": [],
+      "source": {
+        "line": 14,
+        "path": "src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 14,
+          "path": "src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "dc497e89995ad8a874338979e449d31022b7e14964eae298bc1632b353562b1d",
+      "full_name": "Meridian.Contracts.Workstation.TradingBrokerageRecoveryRequestDto",
+      "id": "Meridian.Contracts.Workstation.TradingBrokerageRecoveryRequestDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FundAccountId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 36,
+          "type": "Guid"
+        }
+      ],
+      "name": "TradingBrokerageRecoveryRequestDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.TradingBrokerageRecoveryRequestDto",
+      "references": [],
+      "source": {
+        "line": 36,
+        "path": "src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 36,
+          "path": "src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
       "fingerprint": "feb4f07c4636927d4baf9bf9715bc11dd687d8b6bf865117f59eb6be9846d151",
       "full_name": "Meridian.Contracts.Workstation.TradingControlEvidenceDto",
       "id": "Meridian.Contracts.Workstation.TradingControlEvidenceDto",
@@ -368751,7 +369263,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "7b69f519f0e8bd34ce79c3869c4f4e26be3d9ae81aa05cd8e4638601ef2a1140",
+      "fingerprint": "13c525fb83b3fb0391c9fe40c0d0a770bd614001a857ca0d382ab26ccef39a53",
       "full_name": "Meridian.Contracts.Workstation.TradingOperatorReadinessDto",
       "id": "Meridian.Contracts.Workstation.TradingOperatorReadinessDto",
       "kind": "record",
@@ -368798,6 +369310,20 @@
           "raw_type": "DateTimeOffset",
           "source_line": 348,
           "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BrokerageRecovery",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "TradingBrokerageRecoveryDto?",
+          "source_line": 385,
+          "type": "TradingBrokerageRecoveryDto?"
         },
         {
           "collection": false,
@@ -369091,6 +369617,7 @@
         "Meridian.Contracts.Workstation.ProviderPromotionChecklistDto",
         "Meridian.Contracts.Workstation.TradingAcceptanceGateDto",
         "Meridian.Contracts.Workstation.TradingAcceptanceGateStatusDto",
+        "Meridian.Contracts.Workstation.TradingBrokerageRecoveryDto",
         "Meridian.Contracts.Workstation.TradingControlReadinessDto",
         "Meridian.Contracts.Workstation.TradingExecutionReconciliationReadinessDto",
         "Meridian.Contracts.Workstation.TradingLiveOperationRequirementDto",

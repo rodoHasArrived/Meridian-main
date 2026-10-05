@@ -15466,6 +15466,30 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.TradingBrokerageAffectedRunDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.TradingBrokerageRecoveryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.TradingBrokerageRecoveryPortfolioDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.TradingBrokerageRecoveryRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.TradingControlEvidenceDto"
     },
     {
@@ -39765,6 +39789,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.TradingBrokerageRecoveryDto",
+      "target": "contract:Meridian.Contracts.Workstation.TradingBrokerageAffectedRunDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.TradingBrokerageRecoveryDto",
+      "target": "contract:Meridian.Contracts.Workstation.TradingBrokerageRecoveryPortfolioDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.TradingControlReadinessDto",
       "target": "contract:Meridian.Contracts.Workstation.TradingControlEvidenceDto"
     },
@@ -39821,6 +39857,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.TradingOperatorReadinessDto",
       "target": "contract:Meridian.Contracts.Workstation.TradingAcceptanceGateStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.TradingOperatorReadinessDto",
+      "target": "contract:Meridian.Contracts.Workstation.TradingBrokerageRecoveryDto"
     },
     {
       "kind": "contract-reference",
@@ -47581,7 +47623,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "0c934d6e4202f71b35ddafbbba264492aa84b3fc81d53cba1661c914e3a9f6b4",
+  "fingerprint": "c704924f6f47ae1321a387548f45aa171052b065673f308574f929ad7303779d",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -63098,6 +63140,30 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.TradingBrokerageAffectedRunDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.TradingBrokerageAffectedRunDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.TradingBrokerageRecoveryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.TradingBrokerageRecoveryDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.TradingBrokerageRecoveryPortfolioDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.TradingBrokerageRecoveryPortfolioDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.TradingBrokerageRecoveryRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.TradingBrokerageRecoveryRequestDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.TradingControlEvidenceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.TradingControlEvidenceDto"
@@ -69732,11 +69798,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3127,
-    "contract_set_memberships": 3699,
-    "edges": 7905,
+    "contract_references": 3130,
+    "contract_set_memberships": 3703,
+    "edges": 7912,
     "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3839
+    "nodes": 3843
   }
 }
