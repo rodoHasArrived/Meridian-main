@@ -11,7 +11,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 ## Overall Health Score
 
 ```text
-  [########################------] 81/100
+  [#########################-----] 82/100
   Rating: Good
 ```
 
@@ -19,14 +19,14 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 682 |
-| Total lines | 150,463 |
-| Average file size (lines) | 220.6 |
+| Total documentation files | 719 |
+| Total lines | 162,670 |
+| Average file size (lines) | 226.2 |
 | Orphaned files | 248 |
 | Files without headings | 148 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 284 |
-| **Health score** | **81/100** |
+| TODO/FIXME markers | 288 |
+| **Health score** | **82/100** |
 
 ### Score Breakdown
 
@@ -93,7 +93,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 81 | 682 | 248 | 0 |
+| 1970-01-01 | 82 | 719 | 248 | 0 |
 
 ---
 

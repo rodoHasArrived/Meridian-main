@@ -224,6 +224,8 @@ artifact path, and exposes a retry command after the operator corrects file acce
 configuration failure no longer terminates the entire desktop process.
 
 The Accounting workspace includes a dedicated `FundStructureSetupPage` and `FundStructureSetupViewModel` for operator entity setup. It uses the shared `FundStructureSetupWorkflowService` so desktop setup validation, graph preview, review-and-create, and account handoff behavior match `/api/fund-structure`.
+Security Master open-lot rows expose the shared `IsShort` direction beside their always-positive
+quantity, keeping desktop lot review aligned with the browser and shared read model.
 `FundAccountingConfigure` now routes to `AccountingConfigurePage` and `AccountingConfigureViewModel`
 instead of a generic ledger page. The page opens on compact action chrome instead of a duplicate
 hero, preserving status, storage posture, active-fund context, and command readiness beside the

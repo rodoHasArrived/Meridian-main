@@ -403,6 +403,13 @@ posting or close controls, reporting certification or approval, client PDF/XLSX 
 delivery, or delivery-receipt retention. Those actions remain owned by the existing Operations
 Continuity, reconciliation casework, Reporting governance, document, and distribution services, and
 statement workflow `Completed` is not a posted, closed, certified, released, or delivered outcome.
+
+Security Master open-lot projection resolves each lot against its account-scoped snapshot position
+before falling back to an aggregate position. It transports explicit `IsShort` direction and, for
+legacy snapshots that predate the additive field, recovers direction from the signed account
+position. That effective direction owns lot P&L, so mixed-account long/short books cannot silently
+invert a short lot's economics in the workstation read model.
+
 The lower-level
 `POST /api/workstation/reconciliation/statement-runs` mutation derives `ImportedBy` from the
 authenticated session and fails closed unless `FundAccountId` resolves to an active account whose
