@@ -62,7 +62,8 @@ public sealed class ReportingGovernanceRepositoryTests :
         var released = await CreateReleasedRunAsync(_database.Repository, scenario);
         var draft = await NewService(_database.Repository).CreateRunAsync(scenario.CreationRequest with
         {
-            RunId = $"draft-{Guid.NewGuid():N}", SeriesId = $"draft-series-{Guid.NewGuid():N}"
+            RunId = $"draft-{Guid.NewGuid():N}",
+            SeriesId = $"draft-series-{Guid.NewGuid():N}"
         }, scenario.Creator);
         var foreign = NewScenario();
         var sameIdInOtherTenant = await NewService(_database.Repository).CreateRunAsync(

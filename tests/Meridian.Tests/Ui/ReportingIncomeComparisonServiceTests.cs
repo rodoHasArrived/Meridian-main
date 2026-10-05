@@ -348,7 +348,8 @@ public sealed class ReportingIncomeComparisonServiceTests
         };
         fixture.Manifests.Add("without-retained-grid", fixture.Manifests[CurrentRun] with
         {
-            RunId = "without-retained-grid", RenderedReportWriterGrids = []
+            RunId = "without-retained-grid",
+            RenderedReportWriterGrids = []
         });
         var outsider = Owner with { ActorPrincipalId = "another-user" };
 
