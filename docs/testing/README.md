@@ -13,6 +13,7 @@ This folder owns scenario-specific acceptance procedures and retained evidence.
 | Capture paper-session continuity evidence | [Wave 2 reliability runbook](wave2-cockpit-reliability-evidence-runbook.md) | Automated and manual evidence sequence. |
 | Understand the original Wave 2 gates | [Wave 2 gate checklist](WAVE2_ACCEPTANCE_GATE_CHECKLIST.md) | Historical requirements and implementation snapshot. |
 | Verify accounting trust corrections | [Accounting trust acceptance](accounting-trust-corrections.md) | Scenario checklist; operator decisions remain explicit. |
+| Verify posted amount provenance | [W10 amount provenance](w10-amount-provenance.md) | Scoped evidence selection, review regressions, and validation limits. |
 | Evaluate close readiness and mark freshness | [W10 operator acceptance](w10-mark-seam-operator-acceptance.md) | Candidate, population, criterion decisions, and validation limits. |
 | Inspect retained W10 evidence | [Candidate evidence packet](evidence/w10-615abde9/README.md) | Results bound to its recorded commit and environment. |
 | Validate endpoint isolation and concurrency | [Endpoint fixture isolation](endpoint-fixture-isolation.md) | Reproducible benchmark and recorded isolation evidence. |
