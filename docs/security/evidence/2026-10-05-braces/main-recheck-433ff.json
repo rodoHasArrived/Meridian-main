@@ -1,0 +1,30 @@
+{
+  "observed_at_utc": "2026-10-05T20:16:00.960503+00:00",
+  "main_commit": "433ff014b51244daeab8deca5fba812f9bb5fe6a",
+  "baseline_commit": "e3bf60bae577c132d8444a827ca4dc3181cc48a1",
+  "scope": "Investigation/main evidence only; does not certify the containing proposal commit or activate risk acceptance.",
+  "workflow_run_id": 37360660094,
+  "run_number": 151,
+  "overall_conclusion": "failure",
+  "dependency_job_id": 111937908247,
+  "dependency_conclusion": "failure",
+  "nuget_outcome": "success",
+  "npm_outcome": "failure",
+  "other_jobs": {
+    "documentation": "success",
+    "recovery": "success",
+    "integrations": "success"
+  },
+  "artifact_id": 11367836066,
+  "artifact_sha256": "80d7d434e508dbf5d4df3edfa5dfc6c354ed7706a9c343072fd742f4cd3ce4d1",
+  "source_sha256": {
+    "src/Meridian.Ui/dashboard/package.json": "17a4a582d9890c9ab89808b6f4114101c913894539f97e02f7f39f1cd8a35ea0",
+    "src/Meridian.Ui/dashboard/package-lock.json": "7f0d4034ab6cc9a3be9d805a3bca15278df7e82959ac113539de3fbf86062772",
+    "src/Meridian.Ui/dashboard/tailwind.config.ts": "3dbe1875c20796e85f924ca116e3d41d569b75d00bae9592edbfc44c66841ad1",
+    "src/Meridian.Ui/dashboard/postcss.config.cjs": "c3275e0c1ab2639ab056915eac2a806b997a7879c31edce8898ec443a4823a06",
+    "src/Meridian.Ui/dashboard/vite.config.ts": "bdcb640415687a13987ae35d51eb06f1200ff93939c67c936d0e3381af21dacb",
+    "build/config/security/npm-audit-accepted-advisories.json": "8895a530e09ef1631eed36c0a09b45cc8569485701ab5070da072a064c5c3720",
+    "build/scripts/ci/validate-npm-audit.py": "f162b0b997a736b727af38419345a6bc063697df945649be2c7d5994bf53244f",
+    ".github/workflows/production-certification.yml": "d72da85954d1912976a8ddae619b851f5bded6c47a9f3d5968346af966052885"
+  }
+}

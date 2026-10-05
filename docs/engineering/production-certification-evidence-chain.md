@@ -238,6 +238,15 @@ bash scripts/ci.sh --lane verify-docs
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
 
+- **2026-10-05 — GitHub reconnection recheck and main refresh.** Integrated current main
+  `433ff014b51244daeab8deca5fba812f9bb5fe6a` and regenerated the conflicting documentation
+  health reports. [Certification #151](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37360660094)
+  is now terminal: dependency evidence failed on the same unaccepted braces advisory; NuGet,
+  integrations, recovery, and documentation passed. The
+  [main receipt](../security/evidence/2026-10-05-braces/main-recheck-433ff.json) and
+  [retained gate report](../security/evidence/2026-10-05-braces/hosted-151/npm-audit-gate.json)
+  preserve the result and unchanged dependency/gate hashes. No exception or human approval
+  is activated. These are main results; the refreshed proposal commit needs its own evidence.
 - **2026-10-05 — concurrent main refresh.** Main advanced to
   `600cde87be9de99c615594cb1a2b09f507cd2b2f`; [certification #150](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37357037036)
   was pending with no jobs/artifacts at the refresh observation. The

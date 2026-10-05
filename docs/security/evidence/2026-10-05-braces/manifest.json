@@ -82,6 +82,11 @@
     "hosted-148/production-dependency-evidence-148-1.zip": "408087207edd3cfbab16f630ee9b58ee7393b2bb64d5fd7db87cedd1fc769261",
     "hosted-148/npm-audit-gate.json": "aa671ecceac22cbcbe8d4ccd0da6e83a0602bd7370420bfcffefa785b1ee7d0b",
     "hosted-148/npm-audit.json": "7d064a03f1e2368f5ce043d075570e9ea8e670ac9b55424c1e093e3c1dbcd71e",
-    "hosted-148/nuget-vulnerabilities.txt": "400ff536ba9d8d6acab157751b7cff02f4bf3e2268325bfdd9aebd038019202b"
+    "hosted-148/nuget-vulnerabilities.txt": "400ff536ba9d8d6acab157751b7cff02f4bf3e2268325bfdd9aebd038019202b",
+    "hosted-151/npm-audit.json": "7d064a03f1e2368f5ce043d075570e9ea8e670ac9b55424c1e093e3c1dbcd71e",
+    "hosted-151/npm-audit-gate.json": "aa671ecceac22cbcbe8d4ccd0da6e83a0602bd7370420bfcffefa785b1ee7d0b",
+    "hosted-151/nuget-vulnerabilities.txt": "400ff536ba9d8d6acab157751b7cff02f4bf3e2268325bfdd9aebd038019202b",
+    "hosted-151/production-dependency-evidence-151-1.zip": "80d7d434e508dbf5d4df3edfa5dfc6c354ed7706a9c343072fd742f4cd3ce4d1",
+    "main-recheck-433ff.json": "cdc730d823e26c651c0e5bbff78c1276691d70ca7cabd04da1b92ff338204981"
   }
 }

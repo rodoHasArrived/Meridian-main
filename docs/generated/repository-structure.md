@@ -1759,6 +1759,8 @@ Meridian-main
 │   │   │   ├── README.md
 │   │   │   ├── web-ui-improvements-implementation-plan-2026-07.md
 │   │   │   └── wpf-web-ui-alignment-plan.md
+│   │   ├── actions-storage-audit-2026-10-05.json
+│   │   ├── actions-storage-audit-2026-10-05.md
 │   │   ├── ci-cd-optimization.md
 │   │   ├── dead-code-inventory.md
 │   │   ├── docs-regeneration-automation-design.md
@@ -2254,6 +2256,11 @@ Meridian-main
 │   │   │       │   ├── npm-audit.json
 │   │   │       │   ├── nuget-vulnerabilities.txt
 │   │   │       │   └── production-dependency-evidence-148-1.zip
+│   │   │       ├── hosted-151
+│   │   │       │   ├── npm-audit-gate.json
+│   │   │       │   ├── npm-audit.json
+│   │   │       │   ├── nuget-vulnerabilities.txt
+│   │   │       │   └── production-dependency-evidence-151-1.zip
 │   │   │       ├── local
 │   │   │       │   ├── braces-registry.json
 │   │   │       │   ├── chokidar-latest.json
@@ -2264,6 +2271,7 @@ Meridian-main
 │   │   │       │   ├── npm-audit-production.json
 │   │   │       │   ├── npm-audit.json
 │   │   │       │   └── tailwind3-dependencies.json
+│   │   │       ├── main-recheck-433ff.json
 │   │   │       ├── main-recheck.json
 │   │   │       └── manifest.json
 │   │   ├── codex-security-remediation-2026-05-20.md

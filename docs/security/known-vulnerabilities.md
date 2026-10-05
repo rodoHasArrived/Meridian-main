@@ -51,6 +51,16 @@ on `8b382db63dd4b47fb32b8f4a199bcb0845700dee`: it failed on the same unaccepted 
 Its [raw gate decision](evidence/2026-10-05-braces/hosted-148/npm-audit-gate.json) and verified
 artifact are also retained; the overall workflow was still unfinished at that observation.
 
+**Latest main recheck:** `433ff014b51244daeab8deca5fba812f9bb5fe6a` was integrated after
+its Actions artifact-retention update. [Certification #151](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37360660094)
+completed with only [dependency job 111937908247](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37360660094/job/111937908247)
+failing on the same unaccepted braces advisory; NuGet, integrations, recovery, and documentation
+passed. The [new main receipt](evidence/2026-10-05-braces/main-recheck-433ff.json) verifies all
+eight dependency/build/gate source hashes still match the original baseline. The
+[raw gate result](evidence/2026-10-05-braces/hosted-151/npm-audit-gate.json), audit, NuGet report,
+and checksum-verified dependency artifact are retained. These main results do not certify the
+containing proposal commit or imply a human risk decision.
+
 The installed graph has these paths, all marked development dependencies in the lockfile:
 
 ```text
