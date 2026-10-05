@@ -7,12 +7,16 @@ using Meridian.Identity.Auth;
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>Creates the first local administrator through a loopback-only, one-use launcher token.</summary>
-public sealed class InitialAccountBootstrapService(IUserAccountStore accountStore, LoginSessionService sessions)
+public sealed class InitialAccountBootstrapService(
+    IUserAccountStore accountStore,
+    LoginSessionService sessions,
+    AuthenticationConfiguration? configuration = null)
 {
     public const string TokenEnvironmentVariable = "MDC_BOOTSTRAP_TOKEN";
     private readonly SemaphoreSlim _gate = new(1, 1);
+    private readonly AuthenticationConfiguration _configuration = configuration ?? AuthenticationConfiguration.FromEnvironment();
 
-    public bool IsAvailable => !accountStore.HasAccounts && !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(TokenEnvironmentVariable));
+    public bool IsAvailable => !accountStore.HasAccounts && !string.IsNullOrWhiteSpace(_configuration[TokenEnvironmentVariable]);
 
     public async Task<string?> CreateAsync(IPAddress? remoteAddress, string? suppliedToken, string username, string password, CancellationToken ct)
     {
@@ -26,7 +30,7 @@ public sealed class InitialAccountBootstrapService(IUserAccountStore accountStor
         {
             if (accountStore.HasAccounts)
                 return null;
-            var expected = Environment.GetEnvironmentVariable(TokenEnvironmentVariable);
+            var expected = _configuration[TokenEnvironmentVariable];
             if (!TokenEquals(expected, suppliedToken))
                 return null;
 
@@ -36,7 +40,7 @@ public sealed class InitialAccountBootstrapService(IUserAccountStore accountStor
                     "local-installer", "Create the first local Meridian administrator.", "initial-account-bootstrap", "local"),
                 "local-installer", ct).ConfigureAwait(false);
 
-            Environment.SetEnvironmentVariable(TokenEnvironmentVariable, null);
+            _configuration[TokenEnvironmentVariable] = null;
             return sessions.CreateSession(username.Trim(), password);
         }
         finally { _gate.Release(); }

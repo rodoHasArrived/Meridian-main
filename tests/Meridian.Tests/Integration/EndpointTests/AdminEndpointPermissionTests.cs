@@ -19,7 +19,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// "no session at all" from "session without this permission". Both refuse the request.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class AdminEndpointPermissionTests : IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;
