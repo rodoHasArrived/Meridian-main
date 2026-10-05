@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-02
+**Reviewed:** 2026-10-05
 **Scope:** the six evidence-gated P0 rows in the
 [production-readiness tracker](../product/implementation-todo-list.md) — what evidence exists,
 what an agent can still generate, and exactly which decisions and activations require a human.
@@ -237,6 +237,25 @@ bash scripts/ci.sh --lane verify-docs
 ## Evidence Log
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
+
+- **2026-10-05 — dependency failure rechecked; human decision pending.** Production Certification
+  [#147 / 37351972283, attempt 1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283)
+  checked `main` at `e3bf60bae577c132d8444a827ca4dc3181cc48a1`. Dependency job
+  `111904784527` failed on `braces` 3.0.3 / GHSA-vfj7-8cjw-p6xm (high); NuGet was clean.
+  The npm scan has five high affected nodes from this advisory plus one separate low finding.
+  The final assertion stayed red and all three evidence files were uploaded in
+  [production-dependency-evidence-147-1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283/artifacts/11362468562)
+  (ID `11362468562`, verified ZIP SHA-256
+  `478075a50b84e225b37581089a9e2f28aad6d9ad95b29b811b3297e179a02d11`,
+  hosted expiry `2027-01-03T17:54:46Z`). The
+  [retained evidence manifest](../security/evidence/2026-10-05-dependency-certification/manifest.json)
+  preserves the scan files and fresh graph/upstream evidence beyond that hosted retention window.
+  The [KV-2026-003 proposal](../security/known-vulnerabilities.md)
+  names @rodoHasArrived as the requested human decision-maker, documents the supported Tailwind 4
+  migration and proposes expiry at `2026-10-20T00:00:00Z`. **No acceptance or release approval has
+  been recorded; the machine registry is empty and the gate remains unchanged.** Proposal
+  validation is not successful dependency certification. Candidate-commit validation receipts
+  belong with the proposal PR; a future accepted/fixed release commit needs its own hosted run.
 
 - **2026-10-02 — recovery-evidence correction** (source reviewed at `0feac3d50`; no new hosted run or
   operator acceptance): `PRD-015` and the recovery portion of `PRD-111` previously treated archive

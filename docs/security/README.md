@@ -12,7 +12,7 @@ Operator procedures live in `docs/operators/`; stable configuration lookup belon
 
 | Document | Description |
 |----------|-------------|
-| [Known Vulnerabilities](known-vulnerabilities.md) | Assessed and accepted dependency vulnerabilities with documented mitigations |
+| [Known Vulnerabilities](known-vulnerabilities.md) | Dependency findings, pending human risk decisions, accepted risks and documented mitigations |
 | [Threat Model (Current State)](threat-model-current-state.md) | Current trust boundaries, attack surfaces, mitigations, and severity calibration |
 | [SOC 2 Compliance Workspace](compliance/) | SOC 2 program scope, control matrix, evidence calendar, and roadmap for procurement/audit reviewers |
 | [SOC 2 Scope](compliance/soc2-scope.md) | In-scope systems and trust-boundary coverage for SOC 2 readiness |
