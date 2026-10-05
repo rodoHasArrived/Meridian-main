@@ -1,6 +1,6 @@
 {
-  "total_files": 690,
-  "total_lines": 152192,
+  "total_files": 691,
+  "total_lines": 152419,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -1219,7 +1219,7 @@
     },
     {
       "path": "docs/ai/codex/quickstart.md",
-      "line_count": 262,
+      "line_count": 266,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2379,7 +2379,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 325,
+      "line_count": 341,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2388,6 +2388,14 @@
     {
       "path": "docs/engineering/security-master-architecture-audit-2026-08-13.md",
       "line_count": 230,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/web-development.md",
+      "line_count": 128,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2763,7 +2771,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11288,
+      "line_count": 11299,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3435,7 +3443,7 @@
     },
     {
       "path": "docs/reference/database-schema.md",
-      "line_count": 146,
+      "line_count": 160,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3915,7 +3923,7 @@
     },
     {
       "path": "docs/start/README.md",
-      "line_count": 246,
+      "line_count": 248,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5395,7 +5403,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 928,
+      "line_count": 934,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5683,7 +5691,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2562,
+      "line_count": 2568,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5691,7 +5699,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1445,
+      "line_count": 1455,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5883,7 +5891,7 @@
     },
     {
       "path": "tools/schema_control/README.md",
-      "line_count": 93,
+      "line_count": 123,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

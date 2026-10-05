@@ -308,6 +308,12 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 
 ## Important workflows
 
+The seeded development launcher identifies its host through the `/readyz`
+`x-meridian-dev-session` response header. `StatusEndpoints` captures `MERIDIAN_DEV_SESSION`
+at route registration only when `MERIDIAN_DEMO=true`; ordinary hosts and unmarked demos omit
+the header. Readiness status and access policy are unchanged. Focused coverage lives in
+`tests/Meridian.Tests/Ui/StatusDevelopmentSessionTests.cs`.
+
 `RiskRuleRuntimeService` reports rule status to the workstation *and* supplies the limits the
 enforced rules read, so the dashboard and the gate cannot disagree. `DrawdownGuardrailRule` takes
 this service directly; the order-rate rule is bound the other way round, through

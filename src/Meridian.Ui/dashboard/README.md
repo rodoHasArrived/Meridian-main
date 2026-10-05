@@ -135,6 +135,12 @@ dropped transient notification cannot erase the retained execution/SLA record.
 
 ## Important workflows
 
+From the repository root, use `npm run dev` for the seeded backend with watch/restarts and Vite
+hot reload, or `npm run dev:fixtures` for explicit fixture-only responses without a backend.
+Backend-connected errors never fall back to fixtures. See the
+[browser development launcher](../../../docs/engineering/web-development.md) for prerequisites,
+port options, readiness, shutdown, and manual acceptance checks.
+
 The browser workstation exposes `/accounting/entity-setup` for the shared fund-structure setup wizard. The feature posts drafts to `/api/fund-structure/setup-drafts/validate` for validation and preview, then `/api/fund-structure/setup-drafts/create` for review-and-create instead of reimplementing setup orchestration in React.
 
 
@@ -1406,6 +1412,10 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 <!-- source-todos:end -->
 
 ## Validation
+
+Launcher/process ownership coverage runs from the repository root with
+`node --test scripts/dev/web-dev.test.mjs`. Focused Vite/API mode coverage is in
+`src/vite-config.test.ts` and `src/lib/api.development-modes.test.ts`.
 
 ```bash
 npm --prefix src/Meridian.Ui/dashboard run lint
