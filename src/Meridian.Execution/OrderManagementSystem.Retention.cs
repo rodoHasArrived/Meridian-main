@@ -38,6 +38,7 @@ public sealed partial class OrderManagementSystem
             // the submitter can no longer withdraw. Retain it until the escalation
             // resolves, which is exactly when its reservation is dropped.
             .Where(order => !_parkedOrderIds.ContainsKey(order.OrderId))
+            .Where(order => !_dispatchedOrderIds.ContainsKey(order.OrderId))
             .Where(order => !pendingFillOrderIds.Contains(order.OrderId))
             .OrderBy(static order => order.LastUpdatedAt ?? order.CreatedAt)
             .Take(_orders.Count - _options.ValidatedMaxRetainedOrders)

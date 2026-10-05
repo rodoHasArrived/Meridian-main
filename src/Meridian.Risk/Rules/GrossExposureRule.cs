@@ -43,7 +43,7 @@ public sealed class GrossExposureRule : IRiskRule
             return Task.FromResult(RiskValidationResult.Approved());
         }
 
-        var snapshot = _exposureProvider.GetSnapshot();
+        var snapshot = _exposureProvider.GetSnapshot(request.FundAccountId);
         var symbolExposure = snapshot.GetSymbolExposure(request.Symbol);
 
         // An order pays the touch, not the midpoint: with a bid of $1 and an ask of $100 a

@@ -11,6 +11,15 @@ last_reviewed: 2026-09-25
 
 # src/Meridian.Execution
 
+Broker-dispatched client IDs, run/account ownership and processed fill watermarks are retained by
+`FileBrokerageOrderRecoveryStore` before dispatch. An ambiguous acknowledgement keeps exposure
+reserved and requires authoritative lookup; the ID cannot be reused after restart or a terminal
+outcome. `BrokerageExecutionReconciliationService.RecoverOrdersAsync` applies working and uncertain
+order snapshots through the serialized OMS fill path, including cumulative partial-fill pricing.
+Open-order reconciliation is account-scoped and reports missing, conflicting, duplicate and pending
+handoff evidence. Recovery never submits a replacement order. Exactly one execution host may write
+each recovery directory; scope changes and unreadable state fail closed.
+
 ## Purpose
 
 Broker reconciliation propagates caller cancellation from health and open-order queries so cancelled requests do not become unhealthy-broker or query-failure evidence.
@@ -51,8 +60,10 @@ boundary:
 - gateway submission **throws after dispatch was attempted** — commit. The dispatch is ambiguous and
   the order may still execute, so a rate limiter has to over-count; under-counting would let a
   runaway algorithm bypass the ceiling by producing ambiguous submissions. That path is audited with
-  `Reason = OrderManagementSystem.AmbiguousSubmissionReason`, the only `OrderRejected` entry that
-  keeps its slot, and is persisted with `CancellationToken.None` so a cancelled caller cannot erase
+  `Action = OrderSubmissionUncertain`, `Outcome = RecoveryRequired`, and
+  `Reason = OrderManagementSystem.AmbiguousSubmissionReason`. Rate-status reconstruction also
+  recognizes retained legacy `OrderRejected` entries carrying that reason. The audit is persisted
+  with `CancellationToken.None` so a cancelled caller cannot erase
   the record of capacity the throttle still holds;
 - submission fails **before** the gateway call — roll back. Cancellation observed at the dispatch
   boundary is provably pre-dispatch, so it is not ambiguous and must not consume capacity.
@@ -61,6 +72,22 @@ The ambiguous path merges rather than overwrites the tracked order state. The re
 a fill before the acknowledgement throws, and replacing that with a rejected state built from the
 original request would erase a confirmed execution, make the client order id terminal and reusable,
 and contradict an accounting handoff that already happened. An order that executed stays executed.
+
+Broker-backed dispatches also retain their client identity and account-scoped order state through
+`FileBrokerageOrderRecoveryStore` before the broker call. Persistence failure prevents submission;
+corrupt recovery records fail startup closed. The store binds to the gateway's verified account and
+paper/live environment before dispatch or recovery. Broker-dispatched client IDs remain reserved
+after completion and restart, while generated IDs include a process-independent random identity.
+An ambiguous submission stays pending (or keeps confirmed fills), and incomplete recovery remains
+visible through `GetRecoveryOrders`. Pending cancellations continue reserving exposure. Late fills
+after cancellation advance actual exposure without reopening the cancelled remainder.
+
+Explicit synchronization uses `BrokerageExecutionReconciliationService.RecoverOrdersAsync` to look
+up retained client IDs, including terminal broker orders, and applies authoritative evidence through
+the existing idempotent fill path. A missing order, mismatched identity, regressive fill quantity, or
+unverifiable account/environment leaves recovery blocked; recovery never resubmits an order.
+Read-only reconciliation compares account-scoped exposure with the broker and reports duplicate
+client IDs, foreign-account matches, pending fill handoffs, and missing or inconsistent orders.
 
 Every path between the gate and the venue must settle exactly once; a leaked reservation
 permanently consumes capacity and eventually blocks every later order.

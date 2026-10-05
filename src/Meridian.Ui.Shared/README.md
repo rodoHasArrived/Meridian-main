@@ -11,6 +11,16 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Ui.Shared
 
+Trading recovery uses `LiveBrokeragePortfolioSyncService` to publish account-scoped Alpaca
+holdings, cash, buying power, currency and completeness to the existing exposure provider.
+Broker holdings replace local projections for that account; remaining OMS exposure stays reserved.
+The mandatory brokerage risk rule blocks missing, stale, interrupted or inconsistent evidence.
+An order/fill change, reconnect or restart requires synchronization again. The shared readiness
+payload exposes recovery evidence and affected authorized strategy runs; the recovery POST resolves
+the retained account link and requires scoped trade-write authority before broker I/O.
+See [Alpaca recovery](../../docs/operators/provider-onboarding-alpaca.md#account-portfolio-recovery)
+for the fixture and paper-sandbox procedure.
+
 `RecurringJournalRunner` joins `AutomatedJournalScheduledWorker` and the existing journal-intake
 path to create one retained human-review draft per recurring occurrence. It holds the durable
 claim lease through intake recovery, preserves exact definitions and evidence, and projects both

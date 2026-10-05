@@ -38,19 +38,24 @@ public sealed class RiskRuleRuntimeOrderRateStatusTests : IDisposable
     }
 
     /// <summary>
-    /// A submission that threw after dispatch is recorded as rejected, but the OMS commits its
-    /// reservation because the order may still have reached the venue. Skipping it here would show
+    /// A submission that threw after dispatch is uncertain and the OMS commits its reservation
+    /// because the order may still have reached the venue. Skipping it here would show
     /// room the throttle does not have — the opposite error to counting a clean rejection.
+    /// Retained legacy audit files used OrderRejected plus an explicit ambiguity reason.
     /// </summary>
-    [Fact]
-    public async Task OrderRateStatus_CountsAmbiguousSubmissionsThatKeptTheirSlot()
+    [Theory]
+    [InlineData("OrderSubmissionUncertain", "RecoveryRequired", null)]
+    [InlineData("OrderSubmissionUncertain", "RecoveryRequired", OrderManagementSystem.AmbiguousSubmissionReason)]
+    [InlineData("OrderRejected", "Rejected", OrderManagementSystem.AmbiguousSubmissionReason)]
+    public async Task OrderRateStatus_CountsAmbiguousSubmissionsThatKeptTheirSlot(
+        string action, string outcome, string? reason)
     {
         await using var audit = new ExecutionAuditTrailService(
             Path.Combine(_root, "audit"),
             NullLogger<ExecutionAuditTrailService>.Instance);
 
-        await audit.RecordAsync(RejectedEntry(reason: OrderManagementSystem.AmbiguousSubmissionReason));
-        await audit.RecordAsync(RejectedEntry(reason: OrderManagementSystem.AmbiguousSubmissionReason));
+        await audit.RecordAsync(RejectedEntry(reason) with { Action = action, Outcome = outcome });
+        await audit.RecordAsync(RejectedEntry(reason) with { Action = action, Outcome = outcome });
         // An ordinary rejection released its slot and must stay uncounted.
         await audit.RecordAsync(RejectedEntry(reason: null));
 

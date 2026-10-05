@@ -1121,6 +1121,10 @@ export function getTradingReadiness(options: ApiRequestOptions & { fundAccountId
   return getJson<TradingOperatorReadiness>(workstationTradingReadinessEndpoint(fundAccountId), requestOptions);
 }
 
+export function synchronizeTradingBrokerage(fundAccountId: string, options: ApiRequestOptions = {}) {
+  return postJson<TradingOperatorReadiness>(WORKSTATION_API_ENDPOINTS.tradingBrokerageRecovery, { fundAccountId }, options);
+}
+
 export function getOperatorInbox(fundAccountId?: string, options: ApiRequestOptions = {}) {
   return getJson<OperatorInbox>(workstationOperatorInboxEndpoint(fundAccountId), options);
 }

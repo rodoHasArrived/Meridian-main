@@ -108,7 +108,8 @@ public static class BrokerageServiceRegistration
                 options: orderManagementOptions,
                 tradeEventPublisher: sp.GetService<ITradeEventPublisher>(),
                 tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>(),
-                escalationQueue: sp.GetService<RiskEscalationQueueService>());
+                escalationQueue: sp.GetService<RiskEscalationQueueService>(),
+                recoveryStore: gateway is IBrokerageGateway ? sp.GetService<FileBrokerageOrderRecoveryStore>() : null);
         });
 
         services.TryAddSingleton<BrokerageExecutionReconciliationService>();
