@@ -123,6 +123,7 @@ import {
   type DynamicFixturePattern
 } from "./dev-fixtures/fixture-resolver";
 import { marketDataFixturePatterns, marketDataFixtureRoutes } from "./dev-fixtures/market-data-fixtures";
+import { bootstrapFixtureRoutes } from "./dev-fixtures/bootstrap-fixtures";
 
 const fixtureSession: SessionInfo = {
   displayName: "Ops Desk",
@@ -6516,7 +6517,8 @@ const fixtures = {
   [`${SECURITY_MASTER_API_ENDPOINTS.base}/conflicts`]: fixtureSecurityConflicts,
   [RISK_API_ENDPOINTS.rules]: fixtureRiskRules,
   [riskRuleConfigEndpoint("DrawdownCircuitBreaker")]: fixtureDrawdownRiskRuleConfig,
-  ...marketDataFixtureRoutes
+  ...marketDataFixtureRoutes,
+  ...bootstrapFixtureRoutes
 } satisfies Record<string, unknown>;
 
 const financialRecordExplorerFixtureBase = WORKSTATION_API_ENDPOINTS.financialRecordExplorer.replace("/{explorerId}", "");

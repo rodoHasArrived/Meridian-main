@@ -11,18 +11,15 @@ namespace Meridian.Storage.Integrations;
 /// </summary>
 /// <remarks>
 /// <para>
-/// <b>Concurrency posture: per-entity atomic replace, last write wins.</b> Every mutation is a
-/// whole-entity <c>Save*</c> that writes one file at that entity's own path through
-/// <c>AtomicFileWriter</c>, so a reader never observes a partially written entity and two writers
-/// touching different entities never contend. No read-modify-write of a shared collection happens
-/// here, so there is no sequence for a cross-process lease to protect (#2697).
+/// Manifest versions are immutable, digest-verified records. A per-manifest operating-system
+/// file lock serializes version creation, legacy migration, and compare-and-set pointer updates
+/// across store instances and processes. The lock remains held throughout durable writes.
 /// </para>
 /// <para>
-/// The consequence to know: two concurrent writers of the <i>same</i> entity resolve last-write-wins
-/// rather than merging. Callers needing compare-and-set semantics must carry their own version guard.
+/// Other entity saves use per-entity atomic replacement through <c>AtomicFileWriter</c>.
 /// </para>
 /// </remarks>
-public sealed class FileProviderIntegrationManifestStore :
+public sealed partial class FileProviderIntegrationManifestStore :
     IProviderIntegrationManifestStore,
     IProviderIntegrationTenantManifestStoreFactory
 {
@@ -51,23 +48,6 @@ public sealed class FileProviderIntegrationManifestStore :
             useResolvedRootPath: true);
     }
 
-    public Task SaveManifestAsync(ProviderIntegrationManifestDto manifest, CancellationToken ct = default)
-    {
-        ArgumentNullException.ThrowIfNull(manifest);
-        ArgumentException.ThrowIfNullOrWhiteSpace(manifest.ManifestId);
-
-        return WriteAsync(GetManifestPath(manifest.ManifestId), manifest, ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationManifestDto, ct);
-    }
-
-    public Task<ProviderIntegrationManifestDto?> GetManifestAsync(string manifestId, CancellationToken ct = default)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(manifestId);
-        return ReadAsync(GetManifestPath(manifestId), ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationManifestDto, ct);
-    }
-
-    public Task<IReadOnlyList<ProviderIntegrationManifestDto>> ListManifestsAsync(CancellationToken ct = default)
-        => ListAsync(GetDirectory("manifests"), ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationManifestDto, ct);
-
     public Task SaveConnectionAsync(ProviderConnectionDto connection, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(connection);
@@ -80,19 +60,6 @@ public sealed class FileProviderIntegrationManifestStore :
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
         return ReadAsync(GetConnectionPath(connectionId), ProviderIntegrationContractsJsonContext.Default.ProviderConnectionDto, ct);
-    }
-
-    public Task SaveRawPayloadAsync(RawIngestionPayloadDto payload, CancellationToken ct = default)
-    {
-        ArgumentNullException.ThrowIfNull(payload);
-        ArgumentException.ThrowIfNullOrWhiteSpace(payload.SyncRunId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(payload.PayloadId);
-
-        return WriteAsync(
-            GetSyncRunScopedPath("raw-payloads", payload.SyncRunId, payload.PayloadId),
-            payload,
-            ProviderIntegrationContractsJsonContext.Default.RawIngestionPayloadDto,
-            ct);
     }
 
     public Task<RawIngestionPayloadDto?> GetRawPayloadAsync(string syncRunId, string payloadId, CancellationToken ct = default)
@@ -194,19 +161,6 @@ public sealed class FileProviderIntegrationManifestStore :
         return ListAsync(
             GetConnectionScopedDirectory("reconciliation-handoffs", connectionId),
             ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationReconciliationHandoffRecordDto,
-            ct);
-    }
-
-    public Task SaveSyncRunAsync(ProviderIntegrationSyncRunDto syncRun, CancellationToken ct = default)
-    {
-        ArgumentNullException.ThrowIfNull(syncRun);
-        ArgumentException.ThrowIfNullOrWhiteSpace(syncRun.SyncRunId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(syncRun.ConnectionId);
-
-        return WriteAsync(
-            GetSyncRunPath(syncRun.SyncRunId),
-            syncRun,
-            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationSyncRunDto,
             ct);
     }
 

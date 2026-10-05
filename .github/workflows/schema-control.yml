@@ -30,6 +30,10 @@ on:
         options:
           - check
           - snapshot
+      baseline_ref:
+        description: "Explicit baseline commit SHA or Git ref (resolved once per run)"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -69,6 +73,37 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
+      - name: Resolve schema control revisions
+        id: revisions
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          MANUAL_BASELINE_REF: ${{ inputs.baseline_ref }}
+        run: |
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            BASELINE_REF="$PR_BASE_SHA"
+          else
+            BASELINE_REF="$MANUAL_BASELINE_REF"
+          fi
+          if [[ -z "$BASELINE_REF" ]]; then
+            echo "An explicit schema-control baseline is required." >&2
+            exit 1
+          fi
+          baseline_sha="$(git rev-parse --verify --end-of-options "${BASELINE_REF}^{commit}")"
+          candidate_sha="$(git rev-parse --verify "HEAD^{commit}")"
+          echo "baseline_sha=$baseline_sha" >> "$GITHUB_OUTPUT"
+          echo "candidate_sha=$candidate_sha" >> "$GITHUB_OUTPUT"
+          mkdir -p build/schema-control
+          printf '{"format":"meridian.schema-control-revisions.v1","baseline_sha":"%s","candidate_sha":"%s"}\n' \
+            "$baseline_sha" "$candidate_sha" > build/schema-control/revisions.json
+          {
+            echo "### Schema-control revisions"
+            echo ""
+            echo "- Baseline SHA: $baseline_sha"
+            echo "- Candidate SHA (checked-out commit): $candidate_sha"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
@@ -82,18 +117,22 @@ jobs:
 
       - name: Verify schema control artifacts
         if: ${{ github.event_name == 'pull_request' || inputs.mode == 'check' }}
+        env:
+          BASELINE_SHA: ${{ steps.revisions.outputs.baseline_sha }}
         run: >-
           python build/scripts/schema-control.py verify
           --database-url "$DATABASE_URL"
-          --base-ref "origin/main"
+          --base-ref "$BASELINE_SHA"
           --candidate-root build/schema-control/candidate
 
       - name: Refresh schema control snapshot
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'snapshot' }}
+        env:
+          BASELINE_SHA: ${{ steps.revisions.outputs.baseline_sha }}
         run: >-
           python build/scripts/schema-control.py snapshot
           --database-url "$DATABASE_URL"
-          --base-ref "origin/main"
+          --base-ref "$BASELINE_SHA"
           --candidate-root build/schema-control/candidate
 
       - name: Append schema control summary

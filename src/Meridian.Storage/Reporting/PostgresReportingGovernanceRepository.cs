@@ -16,7 +16,7 @@ namespace Meridian.Storage.Reporting;
 /// state is versioned optimistically while audit events are appended to a separately protected
 /// hash chain in the same database transaction.
 /// </summary>
-public sealed class PostgresReportingGovernanceRepository : IReportingGovernanceRepository
+public sealed partial class PostgresReportingGovernanceRepository : IReportingGovernanceRepository
 {
     private readonly ReportingArtifactStoreOptions _options;
     private readonly string _runsTable;
@@ -82,7 +82,7 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
         }
     }
 
-    private sealed class PostgresReportingGovernanceTransaction : IReportingGovernanceTransaction
+    private sealed partial class PostgresReportingGovernanceTransaction : IReportingGovernanceTransaction
     {
         private const int MaximumKeyLength = 256;
         private const short LegacyFormatVersion = (short)ReportingGovernancePersistenceFormat.LegacyV1;
@@ -703,7 +703,8 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
         private async Task<GovernedReportingRun> HydrateRunAsync(
             PersistedRunRow row,
             CancellationToken cancellationToken,
-            bool validateRestatementBinding = true)
+            bool validateRestatementBinding = true,
+            ImmutableArray<ReportingGovernanceAuditEntry>? retainedAudit = null)
         {
             if (row.StateFormatVersion == LegacyFormatVersion)
             {
@@ -740,7 +741,7 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
                 throw Integrity("reporting run", row.RunId, "identity or version columns do not match the retained state payload");
             }
 
-            var audit = await ReadAuditAsync(
+            var audit = retainedAudit ?? await ReadAuditAsync(
                 row.TenantId,
                 ReportingGovernanceAuditAggregateKind.Run,
                 row.RunId,
@@ -918,12 +919,21 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
             string aggregateId,
             CancellationToken cancellationToken)
         {
-            var entries = ImmutableArray.CreateBuilder<ReportingGovernanceAuditEntry>();
             var rows = await ReadAuditRowsAsync(
                 tenantId,
                 aggregateKind,
                 aggregateId,
                 cancellationToken).ConfigureAwait(false);
+            return VerifyAuditRows(tenantId, aggregateKind, aggregateId, rows);
+        }
+
+        private static ImmutableArray<ReportingGovernanceAuditEntry> VerifyAuditRows(
+            string tenantId,
+            ReportingGovernanceAuditAggregateKind aggregateKind,
+            string aggregateId,
+            IEnumerable<PersistedAuditRow> rows)
+        {
+            var entries = ImmutableArray.CreateBuilder<ReportingGovernanceAuditEntry>();
             foreach (var row in rows)
             {
                 if (row.HashFormatVersion != CurrentFormatVersion)

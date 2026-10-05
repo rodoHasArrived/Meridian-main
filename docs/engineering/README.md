@@ -103,6 +103,26 @@ python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian
 The runner serializes local validation, detects active repo-owned build/test/compiler processes,
 builds before testing to avoid stale `--no-build` assemblies, uses isolated `artifacts/bin` and
 `artifacts/obj` roots by default, and writes run evidence under `.ai/validation-runs/`.
+For repeated local edits, add `--profile worktree` or `--profile session:<name>` to a `build` or
+`test` command to reuse compatible restore/build outputs. Keep the same project, SDK, framework,
+configuration, runtime, and build properties for that profile; incompatible reuse fails before
+building. Every test invocation still gets a separate report directory. Omit the profile (the test
+default) or use `--fresh` for fresh isolated validation before handing off a change. Both build and
+test commands acquire the validation lock; the test command's `--allow-concurrent` flag only
+skips detection of external build processes and keeps the lock. See
+[persistent build profiles](../development/build-observability.md#persistent-build-profiles)
+for compatibility, retention, and reset details.
+
+Each normal run restores, builds once, then invokes `dotnet test --no-build --no-restore`.
+To explicitly reuse outputs, pass `--no-build --isolation-key <existing-key>` (the prior run's
+`isolationKey` in its evidence JSON), `--no-build --no-isolation` for shared outputs, or
+`--no-build --profile <profile>` after a successful compatible profile build.
+Reuse skips both restore and compilation and requires the same project, configuration, framework,
+runtime, and MSBuild properties used to produce the outputs. It does not check source freshness;
+rerun without `--no-build` after source changes or when outputs are missing or incompatible.
+The default `auto` isolation key is rejected with `--no-build` because it selects a new output
+location. Missing outputs fail the test step without falling back to a build.
+
 After a timed-out generation, build, or test attempt, run `python build/python/cli/buildctl.py
 validation-status --summary`, then `dotnet build-server shutdown`. Stop only abandoned repo-owned
 `dotnet`, `MSBuild`, `testhost`, `csc`, or `VBCSCompiler` PIDs after confirming their command lines
@@ -157,18 +177,27 @@ metadata, inventories public C# DTOs and related data objects, evaluates databas
 checks the generated manifests and Mermaid diagrams for drift.
 
 ```powershell
+# Resolve and retain the intended comparison baseline.
+$baselineSha = git rev-parse --verify 'origin/main^{commit}'
+
 # Local, database-free migration inventory and safety checks
-python build/scripts/schema-control.py inventory --base-ref origin/main
+python build/scripts/schema-control.py inventory --base-ref $baselineSha
 
 # Rebuild and verify against a disposable PostgreSQL database
 python -m pip install --requirement tools/schema_control/requirements.txt
 python build/scripts/schema-control.py verify `
   --database-url "postgresql://meridian:meridian@localhost:5432/meridian_schema_control" `
-  --base-ref origin/main
+  --base-ref $baselineSha
 
 # Generate a hosted snapshot artifact for review
-gh workflow run schema-control.yml --ref <branch> -f mode=snapshot
+gh workflow run schema-control.yml --ref <branch> -f mode=snapshot -f baseline_ref=$baselineSha
 ```
+
+PR checks compare against the pull-request event's base SHA. Both manual modes require an explicit
+`baseline_ref`, resolved once to a commit. Run evidence records the baseline and the actual
+checked-out candidate SHA (normally the GitHub merge commit for PRs). Use that same pair to
+reproduce a comparison independently of later `origin/main` advances; see the schema-control guide
+for evidence paths and local working-tree details.
 
 Never point `snapshot` or `verify` at a shared or production database. The workflow's check mode is
 read-only with respect to the repository and fails when `database/manifest/**` or
@@ -209,10 +238,17 @@ dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore --no-d
 ## Local Run
 
 ```powershell
-dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080
-npm --prefix src/Meridian.Ui/dashboard run dev
+npm run dev
+npm run dev:fixtures
 pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development
 ```
+
+For browser development, `npm run dev` coordinates the seeded host, backend watch mode, and
+Vite; `npm run dev:fixtures` selects fixture-only API responses. See the
+[browser development launcher](web-development.md) for prerequisites, port/data options,
+readiness, process ownership, and hot-reload/restart/shutdown acceptance checks. To serve the
+tracked browser bundle directly with a configured host, use
+`dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080`.
 
 Use `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly` for a Release
 host/desktop build that does not require database connectivity. Use `-LaunchMode Production`
@@ -225,7 +261,7 @@ launched processes, then restores the caller's environment.
 
 ### Persistence
 
-Every launch except `--seed-demo` needs a persistence decision and **fails closed at startup**
+Non-demo host launches need a persistence decision and **fail closed at startup**
 without one: `StorageFeatureRegistration` throws, naming the missing variable, rather than silently
 running in-memory. Set `MERIDIAN_DATABASE_URL` to persist every store domain to one PostgreSQL
 database; per-domain `MERIDIAN_*_CONNECTION_STRING` variables take precedence over it, so
