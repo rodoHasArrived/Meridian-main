@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-09-28
+**Reviewed:** 2026-10-05
 
 Use this page for the fastest safe orientation in a fresh Meridian checkout. Run commands from the
 repository root unless a command says otherwise.
@@ -28,8 +28,8 @@ For the current product framing and capability thesis, use the [Meridian Design 
 
 - .NET SDK pinned by [global.json](../../global.json)
 - PowerShell 7 for Windows helper scripts
-- Node.js and npm for the browser workstation in `src/Meridian.Ui/dashboard`
-- Python 3 for build and documentation automation
+- Node.js 24 and npm for browser development, matching the dev container and browser CI
+- Python 3.11 or newer for build and documentation automation
 - Git
 - Optional: GNU Make. On Windows, use the explicit commands below when `make` is unavailable.
 - Optional: one configured data provider for live or credentialed historical data.
@@ -47,12 +47,37 @@ Plain Windows/PowerShell path:
 
 ```powershell
 dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
-npm install
-npm --prefix src/Meridian.Ui/dashboard install
+npm ci
+npm --prefix src/Meridian.Ui/dashboard ci
 dotnet run --project src/Meridian/Meridian.csproj -- --quickstart
 ```
 
-`--quickstart` delegates to the configuration pipeline and prepares the app for a local workstation launch. Use `config/appsettings.sample.json` as the template for local runtime configuration. Do not commit local `appsettings*.json`, secrets, provider credentials, logs, or generated data.
+`--quickstart` prepares application configuration. It does not prove that persistence, operator authentication, or provider connectivity is ready; complete [operator preflight](../operators/preflight-checklist.md) before a non-demo launch. Use `config/appsettings.sample.json` as the template for local runtime configuration. Do not commit local `appsettings*.json`, secrets, provider credentials, logs, or generated data.
+
+### Dev Container
+
+Open the repository with VS Code **Reopen in Container** or GitHub Codespaces and wait for the
+creation hooks to finish. The [dev container](../../.devcontainer/devcontainer.json) uses Node.js 24
+to match browser CI and installs the root and dashboard dependencies from their lockfiles,
+including the optional native packages needed by Vite.
+
+Start browser development from the repository root:
+
+```bash
+npm run dev
+```
+
+This starts the seeded backend in watch mode and Vite together. For browser fixtures without a
+backend, use `npm run dev:fixtures`. See the [browser development launcher guide](../engineering/web-development.md)
+for modes, readiness checks, and shutdown behavior.
+
+Open `http://localhost:5173/workstation/` through the forwarded **Browser Workstation (Vite)** port.
+The host/API port 8080 and PostgreSQL port 5432 are also forwarded. The coordinated launcher starts the backend; it does not provision PostgreSQL. If using Vite directly, start the configured host separately. A forwarded port alone does not establish a running service.
+Run a focused browser component test in another terminal; no additional dependency install is needed:
+
+```bash
+npm --prefix src/Meridian.Ui/dashboard run test -- src/components/ui/button.test.tsx
+```
 
 ## See It Working: One-Command Demo
 
@@ -145,8 +170,9 @@ If `where.exe make` finds nothing, skip Make and use the underlying `dotnet`, `n
 | Seeded end-to-end demo (fastest evaluation) | `dotnet run --project src/Meridian/Meridian.csproj -- --seed-demo` | Seeds an isolated, durable, `Seeded`-labelled demo workspace and opens the populated workstation. See [See It Working](#see-it-working-one-command-demo). |
 | Local host and browser-served workstation | `dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080` | Requires a persistence decision first — see [Persistence and simulation defaults](#persistence-and-simulation-defaults); bare, it fails closed at startup. Once configured, serves the host and `http://localhost:8080/workstation/` from the tracked canonical bundle (`src/Meridian.Ui/wwwroot/workstation`), independent of launch directory. |
 | Desktop-local host mode | `dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080` | Use when intentionally running the desktop-local host and streaming collector together. |
-| Browser workstation development | `npm --prefix src/Meridian.Ui/dashboard run dev` | Use for active React/TypeScript workstation work. |
-| WPF desktop development shell | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development` | Builds Debug artifacts and explicitly opts into the local Development/in-memory governance profile. |
+| Browser development with seeded backend | `npm run dev` | Coordinates seeding, backend watch/restarts, and Vite hot reload. See [browser development](../engineering/web-development.md) for prerequisites and options. |
+| Browser fixture-only development | `npm run dev:fixtures` | Starts Vite with explicit demo fixtures and no backend requests; .NET is not required. See [browser development](../engineering/web-development.md). |
+| WPF desktop development shell | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development` | Builds Debug artifacts and explicitly opts into the local Development/file-backed governance profile. |
 | WPF deterministic fixture shell | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development -Fixture` | Use for offline UI inspection with fixture data. |
 | WPF production build | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly` | Builds Release host and desktop artifacts without starting the host. |
 | WPF production shell | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production` | Requires persistence-backed governance connection strings before host startup. |
@@ -156,20 +182,16 @@ If `where.exe make` finds nothing, skip Make and use the underlying `dotnet`, `n
 
 Two defaults matter before you trust what a local launch shows you:
 
-- **Persistence.** `--seed-demo` is the only launch that works with zero configuration — it
-  opts into a database-less local profile for you. Every other launch, including
-  `--mode workstation`, requires a persistence decision first and **fails closed at startup**
-  (`StorageFeatureRegistration` throws, naming the missing variable) rather than silently
-  running in-memory. Either point Meridian at PostgreSQL —
-  `MERIDIAN_DATABASE_URL=postgres://user:password@localhost:5432/meridian` covers all store
-  domains, with per-domain `MERIDIAN_*_CONNECTION_STRING` variables overriding it
-  individually — or, for local/dev fixture scenarios only, opt in explicitly with
-  `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` in a non-production environment (the in-memory
-  profile is forbidden when the environment is `Production`, the default when none is named).
-  When the in-memory opt-in is active, journal entries, reconciliations, and approvals are
-  lost on restart; hosts log `PERSISTENCE: NONE`/`PARTIAL` at startup, report it on
-  `/readyz`, and the browser workstation shows a persistent red banner until persistence is
-  configured.
+- **Persistence.** `--seed-demo`, `--demo`, and the seeded `npm run dev` launcher select a
+  database-less local profile when settings are unset. Normal
+  launches require configured fund-account and fund-structure stores and fail closed when those
+  connections are missing. `MERIDIAN_DATABASE_URL` can supply PostgreSQL across store domains;
+  per-domain connection variables take precedence. The explicitly non-production
+  `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` option selects **file-backed** governance stores,
+  despite its name. Other money-path stores still need PostgreSQL for durability. See the
+  [environment reference](../reference/environment-variables.md) for exact precedence, affected
+  stores, and startup behavior. Confirm the persistence summary and `/readyz` before relying on
+  a configured host.
 - **Market data.** The default `ib` streaming source runs as a random-walk **simulator** in
   standard builds (no IBAPI reference), and the `synthetic` source is always simulated.
   Simulated data is flagged in `/api/status` (`degradedMode.marketDataMode`) and by the same
@@ -201,6 +223,12 @@ npm --prefix src/Meridian.Ui/dashboard run test
 python build/scripts/docs/check-ai-inventory.py --summary
 ```
 
+For a repeated .NET edit/test loop, add `--profile worktree` or `--profile session:<name>` to
+`buildctl.py test` to reuse compatible build outputs. Reports remain unique to each run. Before
+handing off a change, omit `--profile` or use `--fresh` for fresh isolated test validation. See
+[persistent build profiles](../development/build-observability.md#persistent-build-profiles)
+for the matching build command and compatibility rules.
+
 For completed PR-ready work, run the canonical repository gate, `bash scripts/ci.sh`; GitHub Actions
 `Meridian CI / quality-gate` remains the authoritative merge result.
 
@@ -227,15 +255,14 @@ integration, or performance lanes only when the changed layer requires it.
 | API/config/provider lookup | [Reference](../reference/README.md) |
 | Assistant-safe execution | [AI workflow](../ai/assistant-workflow-contract.md) |
 
-## Legacy Source Material
+## Historical Setup Material
 
-The older pages below remain source material during migration. Prefer this page and the canonical lanes above for new links.
+The pinned pages below preserve earlier setup guidance. Use this page and the audience paths above for current commands. The active [command help](../HELP.md) is maintained separately.
 
 - [Getting Started](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/getting-started/README.md)
 - [Developer Setup](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer/setup.md)
 - [Build, Test, Run](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer/build-test-run.md)
 - [Pilot Operator Quickstart](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/getting-started/pilot-operator-quickstart.md)
-- [HELP](../HELP.md)
 
 CI/CD validation ownership and administrator rollout are maintained in
 [CI/CD ownership and rollout](../engineering/ci-cd-optimization.md). Meridian CI owns the four canonical

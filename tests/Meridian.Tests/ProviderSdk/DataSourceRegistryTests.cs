@@ -289,6 +289,44 @@ public sealed class DataSourceRegistryTests
         services.Should().ContainSingle(descriptor => descriptor.ServiceType == implementation);
     }
 
+    [Theory]
+    [InlineData(DataSourceCapabilityContracts.MarketDataClient)]
+    [InlineData(DataSourceCapabilityContracts.HistoricalDataProvider)]
+    [InlineData(DataSourceCapabilityContracts.SymbolSearchProvider)]
+    [InlineData(DataSourceCapabilityContracts.CorporateActionProvider)]
+    [InlineData(DataSourceCapabilityContracts.OptionsChainProvider)]
+    [InlineData(DataSourceCapabilityContracts.BrokerageGateway)]
+    public void RegisterServices_DerivesEveryCapabilityInterfaceFromDiscoveredMetadata(string contractName)
+    {
+        var registry = new DataSourceRegistry();
+        registry.DiscoverFromAssemblies(CreateDataSourceAssembly(
+            new DynamicDataSource("discovered-provider", "Discovered provider", contractName)));
+        var source = registry.Sources.Single();
+        var contract = source.ImplementationType.GetInterfaces().Single();
+        var services = new ServiceCollection();
+
+        registry.RegisterServices(services);
+
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService(contract).Should().BeSameAs(provider.GetRequiredService(source.ImplementationType));
+    }
+
+    [Fact]
+    public void RegisterServices_DisabledAliasedModuleCannotFallBackToAttributeConstruction()
+    {
+        var registry = new DataSourceRegistry();
+        registry.DiscoverFromAssemblies(CreateDataSourceAssembly(
+            new DynamicDataSource("ibkr", "Discovered IB capability", DataSourceCapabilityContracts.MarketDataClient)));
+        registry.ConfigureModule("interactive-brokers", new ProviderModuleContext { Enabled = false });
+        var services = new ServiceCollection();
+
+        registry.RegisterModules(services, typeof(CanonicalAliasTestModule).Assembly);
+        registry.RegisterServices(services);
+
+        services.Should().NotContain(descriptor => descriptor.ServiceType == registry.Sources.Single().ImplementationType);
+        registry.ModuleCapabilityRegistrations.Should().BeEmpty();
+    }
+
     [Fact]
     public void RegisterServices_NullServiceCollection_ThrowsArgumentNullException()
     {
@@ -550,6 +588,8 @@ public sealed class DataSourceRegistryTests
             f.ModuleId == "ds-registry-register-throws" &&
             f.ErrorType == nameof(InvalidOperationException),
             "Register failures must be surfaced with the module identity");
+        services.Should().NotContain(descriptor => descriptor.ServiceType == typeof(FailedModuleMarker),
+            "failed modules must not leave their provisional services resolvable");
     }
 
     [Fact]
@@ -633,5 +673,10 @@ internal sealed class DataSourceRegistryRegisterThrowsModule : IProviderModule
     public bool RequiresExternalConfig => true;
 
     public void Register(IServiceCollection services, DataSourceRegistry registry)
-        => throw new InvalidOperationException("Simulated registration failure.");
+    {
+        services.AddSingleton<FailedModuleMarker>();
+        throw new InvalidOperationException("Simulated registration failure.");
+    }
 }
+
+internal sealed class FailedModuleMarker;

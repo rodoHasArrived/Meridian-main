@@ -1,4 +1,5 @@
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Contracts.Api;
 using BackfillPreviewResult = Meridian.Application.Backfill.BackfillPreviewResult;
 using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
 using BackfillResult = Meridian.Contracts.Backfill.BackfillResult;
@@ -23,11 +24,13 @@ public sealed class BackfillCoordinator : IDisposable
     /// <param name="store">UI configuration store.</param>
     /// <param name="registry">Optional provider registry for unified provider discovery.</param>
     /// <param name="factory">Optional provider factory for creating providers if registry is empty.</param>
-    public BackfillCoordinator(ConfigStore store, ProviderRegistry? registry = null, ProviderFactory? factory = null)
+    /// <param name="providerCatalog">Optional host-owned provider metadata.</param>
+    public BackfillCoordinator(ConfigStore store, ProviderRegistry? registry = null, ProviderFactory? factory = null,
+        IProviderCatalog? providerCatalog = null)
     {
         // Convert Ui.Shared.ConfigStore wrapper to the core ConfigStore for the core coordinator
         var coreStore = new Meridian.Application.UI.ConfigStore(store.ConfigPath);
-        _core = new CoreBackfillCoordinator(coreStore, registry, factory);
+        _core = new CoreBackfillCoordinator(coreStore, registry, factory, providerCatalog: providerCatalog);
         _ownsCore = true;
     }
 

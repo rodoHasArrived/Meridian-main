@@ -15,6 +15,10 @@ The checked-in workstation bundle includes retained manual-journal amount proof 
 reconciliation lineage display. Regenerate it from the dashboard after related source changes;
 close and report authority remains in the shared endpoint and service layer.
 
+Reporting's retained investment-income comparison is included in the host-served bundle. Both
+run status and governed run detail provide explicit published/restated baseline selection and
+retained contribution drill-through; comparison persistence and compatibility remain server-owned.
+
 ## Purpose
 
 Meridian.Ui contains the browser workstation source folder and built host-served workstation assets.

@@ -22,8 +22,8 @@ FAILURES = {"failure", "timed_out", "startup_failure", "action_required"}
 def timestamp(value: str | None) -> datetime | None:
     try:
         result = datetime.fromisoformat(value.replace("Z", "+00:00")) if value else None
-        return result.astimezone(timezone.utc) if result and result.tzinfo else None
-    except (TypeError, ValueError, AttributeError):
+        return result.astimezone(timezone.utc) if result and result.tzinfo and result.year > 1 else None
+    except (TypeError, ValueError, AttributeError, OverflowError):
         return None
 
 
@@ -55,8 +55,11 @@ def active_execution_seconds(jobs: list[dict], completed_at: str | None) -> floa
     for job in jobs:
         if job.get("conclusion") == "skipped":
             continue
+        timing = job_record({"name": "", **job})
+        if timing["inheritedFromAttempt"] is not None or timing["startState"] == "not_started":
+            continue
         start, finish = timestamp(job.get("started_at")), timestamp(job.get("completed_at"))
-        if start is None:
+        if start is None or timing["timingIssue"] or timing["executionSeconds"] is None:
             return None
         if start >= end:
             continue
@@ -76,16 +79,109 @@ def active_execution_seconds(jobs: list[dict], completed_at: str | None) -> floa
             last = max(last, finish)
     return elapsed + (last - first).total_seconds()
 
-def job_record(job: dict) -> dict:
-    execution = seconds(job.get("started_at"), job.get("completed_at"))
-    # Explicitly skipped jobs never occupied a runner; other missing times stay unknown.
-    if job.get("conclusion") == "skipped":
-        execution = 0.0
-    return {"id": job.get("id"), "name": job["name"], "conclusion": job.get("conclusion"),
-            "queueSeconds": seconds(job.get("created_at"), job.get("started_at")),
-            "executionSeconds": execution, "labels": sorted(job.get("labels") or []),
-            "created_at": job.get("created_at"), "started_at": job.get("started_at"),
-            "completed_at": job.get("completed_at")}
+def measured_sum(values) -> float | None:
+    measured = [value for value in values if value is not None]
+    return sum(measured) if measured else None
+
+
+def job_record(job: dict, attempt: int | None = None, observed_at: str | None = None) -> dict:
+    """Separate runner execution from synthetic starts and carried-forward results."""
+    if "_metricsRecord" in job:
+        return job["_metricsRecord"]
+    attempt = job.get("run_attempt", 1) if attempt is None else attempt
+    job_attempt = job.get("run_attempt", attempt)
+    if job_attempt != attempt:
+        raise ValueError("Job run_attempt differs from its containing run; export attempt-specific jobs.")
+    created, started, completed = (job.get(key) for key in
+                                   ("created_at", "started_at", "completed_at"))
+    status, conclusion = job.get("status"), job.get("conclusion")
+    queued = status in {"queued", "waiting", "pending", "requested"}
+    step_started = any(
+        step.get("conclusion") != "skipped" and
+        (timestamp(step.get("started_at")) is not None or step.get("status") == "in_progress"
+         or step.get("conclusion") in {"success", "failure", "timed_out"})
+        for step in job.get("steps", [])
+    )
+    assigned = bool(job.get("runner_id") or job.get("runner_name"))
+    unassigned = ("runner_id" in job and job["runner_id"] in (None, 0)
+                  and not assigned and not step_started)
+    valid_start = timestamp(started)
+    if queued or conclusion == "skipped" or unassigned:
+        state = "not_started"
+    elif valid_start is not None:
+        state = "started"
+    else:
+        # Missing start metadata alone cannot prove that a terminal job never ran.
+        state = "unknown"
+
+    issue = None
+    if state == "started" and timestamp(created) is not None and valid_start < timestamp(created):
+        # Partial reruns can copy successful jobs with NEW creation times/job IDs but
+        # OLD execution timestamps. Their duration is not execution in this attempt.
+        issue = "started_before_created"
+    elif started and valid_start is None and state != "not_started":
+        issue = "invalid_started_at"
+
+    queue = seconds(created, started) if state == "started" and not issue else None
+    execution = seconds(started, completed) if state == "started" and not issue else None
+    wait, wait_end = None, None
+    if state == "started" and not issue:
+        wait, wait_end = queue, "started"
+    elif state == "not_started":
+        terminal = status == "completed" or conclusion is not None
+        if terminal:
+            wait, wait_end = seconds(created, completed), "completed"
+        elif queued:
+            wait, wait_end = seconds(created, observed_at), "observed"
+    if wait is None:
+        wait_end = None
+
+    record = {
+        "jobId": job.get("id"), "name": job["name"], "status": status,
+        "conclusion": conclusion, "runAttempt": attempt,
+        "runnerId": job.get("runner_id"), "runnerName": job.get("runner_name"),
+        "runnerGroupName": job.get("runner_group_name"), "labels": job.get("labels"),
+        "createdAt": created, "startedAt": started, "completedAt": completed,
+        "startState": state, "timingIssue": issue,
+        "queueSeconds": queue, "waitSeconds": wait, "waitEnd": wait_end,
+        "executionSeconds": execution,
+    }
+    # Raw execution remains unavailable for skipped/unstarted jobs. Cost is a
+    # separate quantity: a terminal job proven never to start occupied no runner.
+    cost = 0.0 if state == "not_started" and (status == "completed" or conclusion is not None) else execution
+    record.update(id=job.get("id"), created_at=created, started_at=started, completed_at=completed,
+                  accountedExecutionSeconds=cost, inheritedFromAttempt=None)
+    return record
+
+
+def summarize_records(runs: list[dict]) -> dict:
+    jobs = [job for run in runs for job in run["jobs"]]
+    distributions = {}
+    for metric, field in (("queue", "queueSeconds"), ("execution", "executionSeconds"),
+                          ("wait", "waitSeconds")):
+        values = [job[field] for job in jobs if job[field] is not None]
+        distributions[f"{metric}Samples"] = len(values)
+        distributions[f"median{metric.capitalize()}Seconds"] = median(values) if values else None
+    return {
+        **distributions,
+        "runAttempts": len(runs), "uniqueRuns": len({run["runId"] for run in runs}),
+        "retryAttempts": sum(run["isRetry"] for run in runs),
+        "cancelledRunAttempts": sum(run["conclusion"] == "cancelled" for run in runs),
+        "jobs": len(jobs),
+        "notStartedJobs": sum(job["startState"] == "not_started" for job in jobs),
+        "cancelledJobs": sum(job["conclusion"] == "cancelled" for job in jobs),
+        "cancelledBeforeStartJobs": sum(job["conclusion"] == "cancelled" and
+                                        job["startState"] == "not_started" for job in jobs),
+        "queuedJobs": sum(job["status"] in {"queued", "waiting", "pending", "requested"}
+                          for job in jobs),
+        "unavailableExecutionJobs": sum(job["executionSeconds"] is None for job in jobs),
+        "knownRunnerSeconds": measured_sum(run["knownRunnerSeconds"] for run in runs),
+        "cancelledRunKnownRunnerSeconds": measured_sum(
+            run["knownRunnerSeconds"] for run in runs if run["conclusion"] == "cancelled"),
+        "retryKnownRunnerSeconds": measured_sum(
+            run["knownRunnerSeconds"] for run in runs if run["isRetry"]),
+    }
+
 
 
 def change_category(run: dict) -> str | None:
@@ -135,17 +231,65 @@ def checks_from(value: list) -> list[dict]:
 
 
 def attempt_summary(run: dict) -> dict:
-    jobs = [job_record(j) for j in run.get("jobs", [])]
-    runner = total([j["executionSeconds"] for j in jobs])
+    attempt = run.get("run_attempt", 1)
+    available = run.get("_jobsAvailable", run.get("jobs") is not None)
+    jobs = [job_record(j, attempt, run.get("_observedAt")) for j in run.get("jobs") or []]
+    measured = total([j["executionSeconds"] for j in jobs])
+    cost = total([j["accountedExecutionSeconds"] for j in jobs])
     if run.get("collectionComplete") is False:
-        runner = None
-    return {"runId": run["id"], "attempt": run.get("run_attempt", 1),
+        measured = cost = None
+    known_cost = sum(j["accountedExecutionSeconds"] for j in jobs if j["accountedExecutionSeconds"] is not None)
+    return {"runId": run["id"], "attempt": attempt, "runAttempt": attempt, "isRetry": attempt > 1,
             "workflow": run["name"], "event": event_name(run), "commitSha": run["head_sha"],
             "conclusion": run.get("conclusion"), "status": run.get("status"), "jobs": jobs,
-            "queueSeconds": total([j["queueSeconds"] for j in jobs]),
-            "knownRunnerSeconds": sum(j["executionSeconds"] for j in jobs if j["executionSeconds"] is not None),
-            "knownRunnerMinutes": sum(j["executionSeconds"] for j in jobs if j["executionSeconds"] is not None) / 60,
-            "runnerSeconds": runner, "runnerMinutes": runner / 60 if runner is not None else None}
+            "jobsAvailable": available, "queueSeconds": total([j["queueSeconds"] for j in jobs]),
+            "knownRunnerSeconds": measured_sum(j["executionSeconds"] for j in jobs),
+            "accountedKnownRunnerSeconds": known_cost, "knownRunnerMinutes": known_cost / 60,
+            "runnerSeconds": measured, "accountedRunnerSeconds": cost,
+            "runnerMinutes": cost / 60 if cost is not None else None}
+
+
+def prepare_jobs(run: dict, prior: list[dict], observed_at: str | None) -> list[dict]:
+    """Retain timing rows; deduct only inherited execution proved by prior evidence."""
+    attempt = run.get("run_attempt", 1)
+    prepared = []
+    job_ids = set()
+    for original in run.get("jobs") or []:
+        job = dict(original)
+        job.pop("_metricsRecord", None)
+        if job.get("id") is not None:
+            if job["id"] in job_ids:
+                raise ValueError("Duplicate job ID within one workflow attempt.")
+            job_ids.add(job["id"])
+        claimed = job.get("run_attempt", attempt)
+        if not isinstance(claimed, int) or isinstance(claimed, bool) or claimed < 1 or claimed > attempt:
+            raise ValueError("Job run_attempt must identify this or a prior observed attempt.")
+        same_execution = [old for old in prior if old["name"] == job["name"] and
+                          all(old.get(field) == job.get(field) for field in
+                              ("started_at", "completed_at", "conclusion", "runner_id", "runner_name",
+                               "runner_group_name", "labels", "steps")) and
+                          (old.get("runner_group_id") or None) == (job.get("runner_group_id") or None) and
+                          old["_metricsRecord"]["accountedExecutionSeconds"] is not None]
+        id_match = [old for old in same_execution if job.get("id") is not None and old.get("id") == job["id"]]
+        if claimed != attempt and not any(old["_sourceAttempt"] == claimed for old in id_match):
+            raise ValueError("Job run_attempt differs without matching prior-attempt evidence.")
+        measured_job = dict(job, run_attempt=attempt)
+        record = job_record(measured_job, attempt, observed_at)
+        # Explicit source attempts/IDs prove repeated API rows; old timestamps on
+        # new IDs additionally require an exact earlier successful execution.
+        inherited = id_match if "run_attempt" in job else []
+        if record["timingIssue"] == "started_before_created":
+            inherited = [old for old in same_execution if old.get("conclusion") == "success"
+                         and seconds(old.get("completed_at"), job.get("created_at")) is not None]
+        if inherited:
+            record = dict(record, inheritedFromAttempt=min(old["_sourceAttempt"] for old in inherited),
+                          executionSeconds=None, accountedExecutionSeconds=0.0,
+                          queueSeconds=None, waitSeconds=None, waitEnd=None,
+                          timingIssue=record["timingIssue"] or "inherited_previous_attempt")
+        job["_metricsRecord"] = record
+        job["_sourceAttempt"] = attempt
+        prepared.append(job)
+    return prepared
 
 
 def waste_summary(attempts: list[dict]) -> dict:
@@ -203,11 +347,12 @@ def change_summary(key: str, runs: list[dict], required: list[dict], quality_gat
             reasons.append("Workflow/attempt/job collection is incomplete or unverified.")
         effective[run_id] = {}
         for attempt in attempts:
-            names = [j["name"] for j in attempt.get("jobs", [])]
+            current_jobs = [j for j in attempt.get("jobs", []) if job_record(j)["inheritedFromAttempt"] is None]
+            names = [j["name"] for j in current_jobs]
             if len(names) != len(set(names)):
                 reasons.append("Duplicate job names cannot be resolved unambiguously.")
                 ambiguous_checks.update((workflow_name(attempt), name) for name, count in Counter(names).items() if count > 1)
-            for job in attempt.get("jobs", []):
+            for job in current_jobs:
                 effective[run_id][job["name"]] = job
         workflow = workflow_name(last)
         if workflow in latest_runs:
@@ -240,14 +385,14 @@ def change_summary(key: str, runs: list[dict], required: list[dict], quality_gat
     if len(gates) == 1 and gates[0][1].get("conclusion") == "success":
         gate_run, gate = gates[0]
         gate_latency = seconds(origin, gate.get("completed_at"))
-        gate_job = seconds(gate.get("started_at"), gate.get("completed_at"))
+        gate_job = job_record(gate)["executionSeconds"]
         gate_jobs = [j for a in run_groups[gate_run["id"]] for j in a.get("jobs", [])]
         execution_jobs = quality_gate.get("executionJobs")
         missing_execution_jobs = False
         if execution_jobs is not None:
             missing_execution_jobs = not execution_jobs or bool(set(execution_jobs) - {j["name"] for j in gate_jobs})
             gate_jobs = [j for j in gate_jobs if j["name"] in execution_jobs]
-        job_starts = [j.get("started_at") for j in gate_jobs if j.get("conclusion") != "skipped"]
+        job_starts = [j.get("started_at") for j in gate_jobs if job_record(j)["executionSeconds"] is not None]
         first = min(job_starts, key=lambda v: timestamp(v)) if job_starts and all(timestamp(v) for v in job_starts) else None
         gate_elapsed = seconds(first, gate.get("completed_at"))
         if missing_execution_jobs:
@@ -258,16 +403,16 @@ def change_summary(key: str, runs: list[dict], required: list[dict], quality_gat
     runner = total([a["runnerMinutes"] for a in attempts])
     queues = [j["queueSeconds"] for a in attempts for j in a["jobs"] if j["conclusion"] != "skipped"]
     labels = [tuple(j.get("labels") or []) for r in runs for j in r.get("jobs", []) if j.get("conclusion") != "skipped"]
-    runner_signature = sorted(set(labels)) if labels and all(labels) else None
+    runner_signature = [list(label) for label in sorted(set(labels))] if labels and all(labels) else None
     if runner_signature is None:
         reasons.append("Runner labels are unavailable.")
-    check_signature = sorted((workflow_name(r), j["name"]) for r, j in required_jobs)
-    attempt_signature = sorted((workflow_name(r), r.get("run_attempt", 1)) for r in latest_runs.values())
+    check_signature = sorted([workflow_name(r), j["name"]] for r, j in required_jobs)
+    attempt_signature = sorted([workflow_name(r), r.get("run_attempt", 1)] for r in latest_runs.values())
     # Required workflow internals can shed duplicate jobs. Unrelated specialist
     # workflows must retain their executed job roster; fewer validators are not savings.
     required_workflows = {workflow_name(r) for r, _ in required_jobs}
-    optional_signature = sorted((workflow_name(r), sorted(j["name"] for j in effective[r["id"]].values()
-                                                         if j.get("conclusion") != "skipped"))
+    optional_signature = sorted([workflow_name(r), sorted(j["name"] for j in effective[r["id"]].values()
+                                                         if j.get("conclusion") != "skipped")]
                                 for r in latest_runs.values() if workflow_name(r) not in required_workflows)
     if any(v is None for v in (runner, all_required, gate_execution)):
         reasons.append("Required latency, execution or runner duration is unavailable.")
@@ -365,24 +510,23 @@ def summarize(payload: dict, policy: dict | None = None) -> dict:
     required_set_complete = bool((policy or {}).get("requiredChecks")) or collection.get("requiredChecksComplete") is True
     metric_required = required if required_set_complete else []
     groups, changes, events = defaultdict(list), defaultdict(list), defaultdict(list)
-    seen, jobs_seen, errors = {}, set(), []
+    seen, history, prior_jobs, errors = set(), defaultdict(set), defaultdict(list), []
+    observed_at = payload.get("observed_at", payload.get("collectedAt"))
+    for run in payload["workflow_runs"]:
+        attempt = run.get("run_attempt", 1)
+        if not isinstance(attempt, int) or isinstance(attempt, bool) or attempt < 1:
+            raise ValueError("run_attempt must be a positive integer.")
+        if run.get("jobs") is not None and not isinstance(run["jobs"], list):
+            raise ValueError("Embedded jobs must be a list containing every page for this attempt.")
     for original in sorted(payload["workflow_runs"], key=lambda r: (r["id"], r.get("run_attempt", 1))):
         identity = (original["id"], original.get("run_attempt", 1))
         if identity in seen:
-            if seen[identity] != original:
-                errors.append("Conflicting duplicate workflow attempt records.")
-            continue
-        seen[identity] = original
-        run = dict(original)
-        run["jobs"] = []
-        for job in original.get("jobs", []):
-            job_id = job.get("id")
-            # Attempt endpoints can carry inherited jobs. Count a real job ID once.
-            if job_id is not None and job_id in jobs_seen:
-                continue
-            if job_id is not None:
-                jobs_seen.add(job_id)
-            run["jobs"].append(job)
+            raise ValueError(f"Duplicate run attempt: {identity[0]} / {identity[1]}")
+        seen.add(identity)
+        history[identity[0]].add(identity[1])
+        run = dict(original, _jobsAvailable=original.get("jobs") is not None, _observedAt=observed_at)
+        run["jobs"] = prepare_jobs(run, prior_jobs[run["id"]], observed_at)
+        prior_jobs[run["id"]].extend(run["jobs"])
         attempt = attempt_summary(run)
         group = f"{run['name']} / {run['event']} / attempt {run.get('run_attempt', 1)}"
         groups[group].append(attempt)
@@ -391,8 +535,10 @@ def summarize(payload: dict, policy: dict | None = None) -> dict:
         changes[(event_name(run), change_key)].append(run)
     result_groups = {}
     for key, attempts in groups.items():
-        values = [a["runnerSeconds"] for a in attempts if a["conclusion"] == "success" and a["runnerSeconds"] is not None]
-        result_groups[key] = {"runs": attempts, "successfulSamples": len(values), "medianRunnerSeconds": median(values) if values else None}
+        values = [a["runnerSeconds"] for a in attempts if a["conclusion"] == "success" and a["runnerSeconds"] is not None
+                  and all(j["conclusion"] == "success" for j in a["jobs"])]
+        result_groups[key] = {"runs": attempts, "successfulSamples": len(values), "medianRunnerSeconds": median(values) if values else None,
+                              "summary": summarize_records(attempts)}
     observations = [change_summary(key, runs, metric_required, quality_gate) for (_, key), runs in sorted(changes.items())]
     event_reports = {}
     for event, attempts in sorted(events.items()):
@@ -403,6 +549,7 @@ def summarize(payload: dict, policy: dict | None = None) -> dict:
                                 "metrics": {m: distribution([c[m] for c in success]) for m in METRICS},
                                 "terminalRequiredCheckLatencySeconds": distribution([c["allRequiredChecksSeconds"] for c in members if c["completed"]]),
                                 "jobQueueSeconds": distribution([j["queueSeconds"] for a in attempts for j in a["jobs"] if j["conclusion"] != "skipped"]),
+                                "jobWaitSeconds": distribution([j["waitSeconds"] for a in attempts for j in a["jobs"]]),
                                 "categories": dict(Counter(c["category"] or "unavailable" for c in members)),
                                 "runnerAccounting": waste_summary(attempts)}
     if policy:
@@ -430,7 +577,12 @@ def summarize(payload: dict, policy: dict | None = None) -> dict:
         errors.append("App-bound required-check evidence collection is incomplete or unverified.")
     if collection.get("runDataComplete", collection.get("complete")) is not True:
         errors.append("Workflow/attempt/job collection completeness is unverified or false.")
-    return {"schemaVersion": 2, "source": {k: payload.get(k) for k in ("repository", "collectedAt", "window", "sourceCollectionWindows", "collection")},
+    all_attempts = [attempt for attempts in groups.values() for attempt in attempts]
+    return {"schemaVersion": 2, "observedAt": observed_at, "summary": summarize_records(all_attempts),
+            "retryHistory": [{"runId": run_id, "observedAttempts": sorted(attempts),
+                              "missingAttempts": sorted(set(range(1, max(attempts) + 1)) - attempts)}
+                             for run_id, attempts in history.items()],
+            "source": {k: payload.get(k) for k in ("repository", "collectedAt", "window", "sourceCollectionWindows", "collection")},
             "definitions": {
                 "allRequiredChecksSeconds": "Earliest relevant workflow creation to final terminal required-check completion across workflows, including queues and retries. Event metrics use successful changes; terminalRequiredCheckLatencySeconds additionally includes unsuccessful changes. Actions creation is the observable trigger proxy, not PR opening time.",
                 "qualityGateLatencySeconds": "Same origin to quality-gate completion.",
@@ -438,7 +590,8 @@ def summarize(payload: dict, policy: dict | None = None) -> dict:
                 "qualityGateElapsedSeconds": "First executing job in quality-gate workflow to gate completion, including dependency queues and idle retry gaps.",
                 "qualityGateJobExecutionSeconds": "Aggregator job started_at to completed_at; not the 25% pipeline-execution target.",
                 "queueSeconds": "Sum of observed created_at-to-started_at job waits; includes dependency waiting, not a pure runner-scheduler measure. Null when any timestamp is missing.",
-                "runnerMinutes": "Sum of job execution minutes across every relevant workflow and attempt for a change; explicit skipped jobs consumed zero execution, even when GitHub supplies synthetic timestamps. Other missing/reversed timestamps remain unknown. No billing multiplier, rounding or cache inference.",
+                "runnerMinutes": "Accounted runner cost across every workflow and attempt; separate from raw executionSeconds/runnerSeconds. Proven terminal unstarted/skipped jobs and verified inherited jobs contribute zero cost, while raw execution remains null. Missing or synthetic execution without sufficient evidence remains unknown. No billing multiplier, rounding or cache inference.",
+                "waitSeconds": "Created-to-started wait for measured starts; created-to-completed for proven unstarted terminal jobs; created-to-observedAt for queued jobs. Uses only the fixed export timestamp.",
                 "p95": "Nearest-rank percentile, ceil(0.95 * n); missing evidence excluded and counted.",
                 "comparison": "Observational matched successful-change cohorts, not certified billing savings or causal proof. Prior unsuccessful attempts on matched changes are included; unsuccessful-only changes are reported separately, outside target estimates. Optional specialist roster changes require reviewed coverage equivalence and currently remain unmatched. Separate PR and main-push targets; benchmark promotion still requires five reliable pairs and 15% improvement."},
             "requiredChecks": required, "requiredCheckSetComplete": required_set_complete,

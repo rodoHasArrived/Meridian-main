@@ -93,8 +93,13 @@ public sealed class LoginSessionMiddleware
     public const string CurrentUserPermissionsKey = "CurrentUserPermissions";
 
     private readonly RequestDelegate _next;
+    private readonly AuthenticationConfiguration _configuration;
 
-    public LoginSessionMiddleware(RequestDelegate next) => _next = next;
+    public LoginSessionMiddleware(RequestDelegate next, AuthenticationConfiguration? configuration = null)
+    {
+        _next = next;
+        _configuration = configuration ?? AuthenticationConfiguration.FromEnvironment();
+    }
 
     public async Task InvokeAsync(HttpContext context, LoginSessionService sessionService)
     {
@@ -138,7 +143,7 @@ public sealed class LoginSessionMiddleware
                 // one-use token checks still decide the request, and a failed resolve leaves the
                 // anonymous principal unset either way.
                 if (!TryResolveAnonymousRole(out var anonymousRole) &&
-                    !ApiKeyMiddleware.IsApiKeyCandidate(context) &&
+                    !ApiKeyMiddleware.IsApiKeyCandidate(context, _configuration) &&
                     !IsInitialAccountBootstrapRequest(trimmedPath))
                 {
                     await WriteAnonymousRoleConfigurationErrorAsync(context, path);
@@ -160,7 +165,7 @@ public sealed class LoginSessionMiddleware
                     // initial-account bootstrap is gated by its own loopback and one-use token
                     // checks, which are stronger than a role and must stay reachable or a fresh
                     // install with an anonymous role can never create its first account.
-                    if (!ApiKeyMiddleware.IsApiKeyCandidate(context) &&
+                    if (!ApiKeyMiddleware.IsApiKeyCandidate(context, _configuration) &&
                         !IsInitialAccountBootstrapRequest(trimmedPath) &&
                         EndpointAuthorization.IsReadOnlyRoleMutation(context, role))
                     {
@@ -185,7 +190,7 @@ public sealed class LoginSessionMiddleware
                         context.Items[CurrentUserCompanyIdKey] = configuredTenant;
                         context.Items[CurrentTenantIdKey] = configuredTenant;
                     }
-                    else if (DemoWorkspaceLayout.IsDemoModeRequested(Array.Empty<string>()))
+                    else if (IsDemoModeRequested())
                     {
                         context.Items[CurrentUserCompanyIdKey] = DemoTenantBlueprint.CompanyId;
                         context.Items[CurrentTenantIdKey] = DemoTenantBlueprint.TenantId;
@@ -213,7 +218,7 @@ public sealed class LoginSessionMiddleware
             }
 
             // API-key clients authenticate downstream via ApiKeyMiddleware, not sessions.
-            if (ApiKeyMiddleware.IsApiKeyCandidate(context))
+            if (ApiKeyMiddleware.IsApiKeyCandidate(context, _configuration))
             {
                 await _next(context);
                 return;
@@ -281,7 +286,7 @@ public sealed class LoginSessionMiddleware
 
         // Defer to the API-key middleware when API-key auth is configured and the caller
         // presented a key: out-of-band API clients authenticate with X-Api-Key, not sessions.
-        if (ApiKeyMiddleware.IsApiKeyCandidate(context))
+        if (ApiKeyMiddleware.IsApiKeyCandidate(context, _configuration))
         {
             await _next(context);
             return;
@@ -327,10 +332,10 @@ public sealed class LoginSessionMiddleware
     /// all, so the governed surface keeps refusing anonymous callers; a value naming no known role
     /// fails closed rather than silently applying a different permission set than was configured.
     /// </summary>
-    private static bool TryResolveAnonymousRole(out UserRole? role)
+    private bool TryResolveAnonymousRole(out UserRole? role)
     {
         role = null;
-        var configured = Environment.GetEnvironmentVariable(AnonymousRoleEnvironmentVariable);
+        var configured = _configuration[AnonymousRoleEnvironmentVariable];
         if (string.IsNullOrWhiteSpace(configured))
         {
             return true;
@@ -350,11 +355,15 @@ public sealed class LoginSessionMiddleware
     /// named none. This is a deployment-chosen identifier matched against stored records rather than
     /// a member of a closed set, so non-empty values are normalized but not enum-validated here.
     /// </summary>
-    private static string? ResolveAnonymousTenant()
+    private string? ResolveAnonymousTenant()
     {
-        var configured = Environment.GetEnvironmentVariable(AnonymousTenantEnvironmentVariable);
+        var configured = _configuration[AnonymousTenantEnvironmentVariable];
         return string.IsNullOrWhiteSpace(configured) ? null : configured.Trim();
     }
+
+    private bool IsDemoModeRequested()
+        => _configuration[DemoWorkspaceLayout.DemoModeEnvironmentVariable]?.Trim().ToLowerInvariant()
+            is "true" or "1" or "yes" or "on";
 
     private static async Task WriteAnonymousRoleConfigurationErrorAsync(HttpContext context, string path)
     {
@@ -377,7 +386,7 @@ public sealed class LoginSessionMiddleware
         => trimmedPath.Equals("/setup/account", StringComparison.OrdinalIgnoreCase)
         || trimmedPath.Equals("/api/auth/bootstrap", StringComparison.OrdinalIgnoreCase);
 
-    private static bool IsLifecycleTokenRequest(HttpContext context, string trimmedPath)
+    private bool IsLifecycleTokenRequest(HttpContext context, string trimmedPath)
     {
         if (!trimmedPath.Equals("/api/system/lifecycle", StringComparison.OrdinalIgnoreCase) &&
             !trimmedPath.Equals("/api/system/shutdown", StringComparison.OrdinalIgnoreCase) &&
@@ -390,7 +399,7 @@ public sealed class LoginSessionMiddleware
         if (remoteIp is not null && !IPAddress.IsLoopback(remoteIp))
             return false;
 
-        var expected = Environment.GetEnvironmentVariable(LocalShutdownTokenEnvironmentVariable);
+        var expected = _configuration[LocalShutdownTokenEnvironmentVariable];
         if (string.IsNullOrWhiteSpace(expected))
             return false;
 

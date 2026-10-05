@@ -127,6 +127,139 @@ independent integration companion from quality-gate execution. `requiredChecksEv
 must cite verified historical check equivalence. Omit it when that equivalence is unknown:
 the report still shows observations and match counts but does not evaluate savings targets.
 
+### Queue, execution, retries and cancellations
+
+`python build/scripts/ci/ci-metrics.py --input runs.json --output artifacts/ci-metrics.json`
+accepts `{"observed_at": "<UTC export timestamp>", "workflow_runs": [...]}`. Embed a `jobs`
+array on **each run attempt**, retaining the original API fields, including job `status`,
+`conclusion`, timestamps, `run_attempt`, `labels`, runner identity and `steps`. Export all job
+pages from `/repos/{owner}/{repo}/actions/runs/{id}/attempts/{attempt}/jobs`; pair them with
+metadata from `/actions/runs/{id}/attempts/{attempt}`. Enumerate attempts 1 through the latest
+`run_attempt` for each selected run. Do not attach latest-attempt jobs to earlier attempts or
+assume the default jobs endpoint contains retry history. Use a bounded creation window and
+record its limits; GitHub's run search can cap matching results at 1,000, so split larger windows.
+
+For example, collect one attempt with an authenticated, read-only GitHub CLI session:
+
+```bash
+gh api repos/rodoHasArrived/Meridian-main/actions/runs/RUN_ID/attempts/ATTEMPT > attempt.json
+gh api --paginate --slurp \
+  'repos/rodoHasArrived/Meridian-main/actions/runs/RUN_ID/attempts/ATTEMPT/jobs?per_page=100' \
+  > job-pages.json
+```
+
+Flatten each page's `jobs` array, verify its length against `total_count`, and attach it to the
+attempt metadata before adding that object to `workflow_runs`. Failed API reads are missing
+evidence, never an empty successful export. Include cancelled, skipped, pending and zero-job
+runs. `jobs: []` records an explicitly empty API result; omitted/null `jobs` means unavailable.
+A fixed, timezone-qualified `observed_at` permits repeatable waiting-time measurements for
+still-queued jobs. No system clock is substituted when it is absent.
+
+The timing report is **schema version 2**; the independent `--paired-benchmark` report stays at
+version 1. Existing workflow/event/attempt groups, `runs`, `successfulSamples` and
+`medianRunnerSeconds` remain, with these semantics:
+
+| Evidence | Interpretation |
+| --- | --- |
+| `queueSeconds` | Job creation to an evidenced start. This observed interval can include scheduling and dependency waits; it is not a pure runner-scheduler delay or proof of runner saturation. |
+| `waitSeconds`, `waitEnd` | Creation to an evidenced start, completion of a never-started job, or fixed observation for a still-queued job. `waitEnd` distinguishes `started`, `completed` and `observed`; these populations must not be treated as interchangeable queue samples. |
+| `executionSeconds` | Valid start-to-completion time for fresh execution in this attempt. In-progress, never-started, invalid and carried-forward execution is null. |
+| `startState`, `timingIssue` | Distinguish `started`, `not_started` and `unknown`, and preserve invalid-start or start-before-creation evidence. GitHub can synthesize `started_at` for jobs with no assigned runner and no executed steps. |
+| `runnerSeconds` | Sum only when every job has measurable execution; otherwise null, including empty jobs. This is aggregate job time, not wall-clock latency or billed runner time. |
+| `knownRunnerSeconds` | Sum of available fresh execution, or null when none is measurable. Partial evidence, never a complete-cost claim. |
+| `summary` | Top-level and per-group sample counts/medians for queue, wait and execution; run-attempt/retry/cancellation counts; job, queued, never-started and unavailable-execution counts. Mixed-outcome descriptive distributions are separate from the successful performance cohort. |
+| `cancelledRunKnownRunnerSeconds`, `retryKnownRunnerSeconds` | Available fresh execution in cancelled run attempts or attempts numbered above 1. These can overlap; neither is a complete waste total or an attribution of cancellation cause. |
+| `retryHistory` | Observed and missing attempt numbers per run. `retryAttempts` counts exported retry attempts, not inferred missing attempts, retried steps or job retries. |
+
+The rollout cost ledger is separate from raw measured execution. `accountedExecutionSeconds`,
+`accountedRunnerSeconds` and `accountedKnownRunnerSeconds` feed `runnerMinutes` and
+`knownRunnerMinutes`. Proven terminal jobs that never started, explicit skips, and verified
+inherited work add zero new runner cost while their raw execution timing remains null.
+An inherited row retains `inheritedFromAttempt` and must match prior execution evidence;
+missing evidence never becomes measured execution or a zero-cost assertion.
+
+Rows retain job IDs, raw timestamps, status, conclusion, runner identity and requested labels.
+Legacy timestamp-only exports remain readable but cannot distinguish synthetic starts; use the
+original runner/step metadata before drawing availability or waste conclusions.
+Partial reruns can copy successful results under **new job IDs and the new attempt number**,
+with their execution timestamps before their new creation timestamp. These rows remain visible
+as `started_before_created` and contribute no timing to the new attempt. Missing, malformed,
+timezone-naive or reversed timestamps remain unavailable; they are never clamped to zero.
+Duplicate run/attempt rows are rejected. Earlier-attempt jobs must be bound to matching prior-attempt evidence before being treated as inherited; other mismatches are rejected. The tool cannot
+prove that an externally prepared job list is fully paginated or that later attempts were not
+omitted: retain export coverage alongside the report. Successful medians require a successful
+run and successful, measurable jobs; cancelled/incomplete/inherited rows cannot improve them.
+
+### Runner and concurrency review — October 5, 2026
+
+Read-only review of workflow declarations at `73030f0634d045faf65fc5ef6ab3dfe2b93f46ee`,
+with separate Actions queries around 20:28–20:29 UTC (13:28–13:29 Arizona time):
+
+- The queued-run endpoint returned all **58 queued runs**; a separate query returned four
+  in-progress runs. These are workflow statuses, not counts of active or available runners,
+  and the requests are not an atomic snapshot.
+- [IB runtime run 37269613950](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37269613950)
+  had an unassigned `self-hosted, Windows` job created at 05:51:16 UTC, about **14h38m waiting**.
+  Its runner service health, labels/group access and protected-environment eligibility require
+  administrator inspection; the queue alone does not identify the cause.
+- Two March 27 queued runs,
+  [23662997318](https://github.com/rodoHasArrived/Meridian-main/actions/runs/23662997318) and
+  [23662972493](https://github.com/rodoHasArrived/Meridian-main/actions/runs/23662972493),
+  returned zero job rows. They remain run-only evidence and merit separate inspection.
+- Runner inventory and account-wide hosted concurrency/usage were unavailable through the
+  authorized interfaces. The connector does not support the runners endpoint, and shell API
+  access was unavailable. No runner outage, purchased capacity or binding quota is established.
+
+A bounded sample selected the first 20 completed runs from the latest-100 listing (API creation
+order), then fetched every latest-attempt job page and verified the returned counts. Those runs
+were created between 19:07:42 and 20:20:19 UTC: nine succeeded, seven failed and four were
+cancelled. This includes only latest attempts, so historical retry coverage is incomplete.
+
+| Completed-sample evidence | Observed value |
+| --- | --- |
+| Job rows | 42: 20 fresh executions, one carried-forward success, 15 cancelled without a runner/steps, six skipped |
+| Queue, fresh executions | n=20; median 618.5s, minimum 45s, maximum 2,370s |
+| Ubuntu fresh executions | n=17; median queue 820s; median execution 98s |
+| Windows fresh executions | n=3; median queue 125s; median execution 812s |
+| Available fresh execution | 6,759s across the mixed-outcome sample |
+
+This small selected cohort shows queue delay and cancellations before assignment. It is neither
+an account-capacity measurement nor the successful benchmark cohort needed to promote tuning.
+API edge cases were verified against
+[cancelled run 37366708311](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37366708311)
+(992s waiting with a synthetic start) and
+[partial retry 37361146289](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37361146289/attempts/2)
+(five copied successful jobs). Its attempt-1 `integration-gate` queued 759s and executed for 4s;
+the required gate remains necessary even when its scheduling delay dominates its execution.
+
+Configured scheduling explains demand, without establishing available capacity:
+
+- Meridian CI can make four Ubuntu validation lanes and one reusable Ubuntu integration job
+  runnable together. Secret Scan and two CodeQL language jobs can bring the ordinary CI/security
+  graph to eight initial Ubuntu jobs, before path-filtered specialists. The two Meridian gates
+  are additional dependent jobs.
+- PR/ref concurrency groups with `cancel-in-progress: true` cancel superseded work within each
+  group. They neither add runners nor cap repository/owner-wide demand. Legacy CI's main push,
+  scheduled and manual invocations share a group: a main push can cancel nightly/manual coverage.
+  This is a configuration risk, not an established cause for the sampled cancellations.
+- IB runtime is the sole self-hosted Windows requirement and retains its protected paper
+  environment. Production release serialization across tags and certification's non-interruption
+  policy must be preserved. Cancellation disabled does not imply durable FIFO queuing of every
+  pending request. Hosted `windows-11-arm` availability also needs administrator confirmation
+  before signed release rehearsals.
+- Benchmark `max-parallel: 2` applies within one dispatch; repeated benchmark dispatches can
+  overlap. Targeted Test and Roadmap Tools include `github.run_id` in their concurrency keys, so
+  separate dispatches are not serialized. In-runner .NET/Vitest parallelism is a different layer
+  and does not resolve scheduler waits.
+
+**Human governance follow-up:** inspect the unassigned IB job and effective owner-wide hosted
+capacity first; review the two stale queued records; gather attempt-complete metrics by workflow,
+event and runner label. Consider event-specific legacy coverage groups and repeated-dispatch
+limits only as separate reviewed scheduling changes. This metrics change does not alter runner
+configuration, workflow fan-out, concurrency, required checks, protections or release policy.
+
+### Benchmark promotion
+
 Hosted defaults remain two .NET test processes and eight browser files per batch; local .NET
 remains sequential. Compare 2/4 processes and 8/16 files using five distinct paired runs on
 identical commits, runners and selected test identities. Record passed/skipped/failed counts,

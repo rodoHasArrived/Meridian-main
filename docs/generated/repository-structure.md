@@ -1043,7 +1043,8 @@ Meridian-main
 │   │   │   └── npm-audit-accepted-advisories.json
 │   │   ├── testing
 │   │   │   └── test-skip-register.json
-│   │   └── file-size-baseline.json
+│   │   ├── file-size-baseline.json
+│   │   └── postgresql-payload.json
 │   ├── dotnet
 │   │   ├── DocGenerator
 │   │   │   ├── DocGenerator.csproj
@@ -1064,6 +1065,7 @@ Meridian-main
 │   │   │   ├── metrics.py
 │   │   │   └── profile.py
 │   │   ├── cli
+│   │   │   ├── build_profiles.py
 │   │   │   └── buildctl.py
 │   │   ├── core
 │   │   │   ├── __init__.py
@@ -1103,6 +1105,7 @@ Meridian-main
 │       ├── ci
 │       │   ├── apiclient-caller-baseline.json
 │       │   ├── benchmark-ci.py
+│       │   ├── benchmark-endpoints.py
 │       │   ├── check-action-origin-derivation.py
 │       │   ├── check-apiclient-callers.py
 │       │   ├── check-contract-type-parity.py
@@ -1146,10 +1149,12 @@ Meridian-main
 │       │   │   ├── test_check_ai_handoff.py
 │       │   │   ├── test_check_ai_inventory.py
 │       │   │   ├── test_check_codex_memory.py
+│       │   │   ├── test_check_docfx_navigation.py
 │       │   │   ├── test_generate_api_contract_coverage_dashboard.py
 │       │   │   ├── test_generate_structure_docs.py
 │       │   │   ├── test_markdown_generation_lint.py
 │       │   │   ├── test_pilot_readiness_dashboard.py
+│       │   │   ├── test_repair_links.py
 │       │   │   ├── test_run_docs_automation_pilot_optin.py
 │       │   │   ├── test_scan_todos.py
 │       │   │   └── test_validate_docs_structure.py
@@ -1164,6 +1169,7 @@ Meridian-main
 │       │   ├── check-ai-routing-parity.py
 │       │   ├── check-codex-memory.py
 │       │   ├── check-codex-skills.py
+│       │   ├── check-docfx-navigation.py
 │       │   ├── check-handoff-packet-schema.py
 │       │   ├── check-known-lanes.py
 │       │   ├── check-mode-escalation.py
@@ -1233,6 +1239,8 @@ Meridian-main
 │       │   ├── install.ps1
 │       │   ├── install.sh
 │       │   ├── package-desktop-msix.ps1
+│       │   ├── postgresql-payload.ps1
+│       │   ├── resolve-postgresql-payload.ps1
 │       │   ├── smoke-web-workstation-install.ps1
 │       │   └── windows-sdk-tools.ps1
 │       ├── lib
@@ -1779,6 +1787,7 @@ Meridian-main
 │   │   ├── production-readiness-audit-2026-07-27.md
 │   │   ├── README.md
 │   │   ├── security-master-architecture-audit-2026-08-13.md
+│   │   ├── web-development.md
 │   │   └── wpf-perf-uiux-audit-2026-06-14.md
 │   ├── examples
 │   │   ├── agent-improvement-loop
@@ -1911,6 +1920,7 @@ Meridian-main
 │   │   ├── provider-onboarding-interactive-brokers.md
 │   │   ├── README.md
 │   │   ├── reconciliation-operations.md
+│   │   ├── runbook-template.md
 │   │   ├── security-master-normalized-identifier-migration.md
 │   │   ├── service-level-objectives.md
 │   │   ├── statement-reconciliation-report-operations.md
@@ -1948,6 +1958,7 @@ Meridian-main
 │   │   ├── meridian-design-document.md
 │   │   ├── README.md
 │   │   ├── reporting-operating-model-2026-09.md
+│   │   ├── review-history.md
 │   │   ├── w9-demo-002-closure-2026-09-16.md
 │   │   ├── w9-operator-acceptance-2026-08-29.md
 │   │   └── web-ui-improvements-brainstorm-2026-07.md
@@ -2250,6 +2261,49 @@ Meridian-main
 │   │   │   ├── soc2-evidence-calendar.md
 │   │   │   ├── soc2-roadmap.md
 │   │   │   └── soc2-scope.md
+│   │   ├── evidence
+│   │   │   ├── 2026-10-05-braces
+│   │   │   │   ├── hosted
+│   │   │   │   │   ├── npm-audit-gate.json
+│   │   │   │   │   ├── npm-audit.json
+│   │   │   │   │   ├── nuget-vulnerabilities.txt
+│   │   │   │   │   └── production-dependency-evidence-147-1.zip
+│   │   │   │   ├── hosted-148
+│   │   │   │   │   ├── npm-audit-gate.json
+│   │   │   │   │   ├── npm-audit.json
+│   │   │   │   │   ├── nuget-vulnerabilities.txt
+│   │   │   │   │   └── production-dependency-evidence-148-1.zip
+│   │   │   │   ├── hosted-151
+│   │   │   │   │   ├── npm-audit-gate.json
+│   │   │   │   │   ├── npm-audit.json
+│   │   │   │   │   ├── nuget-vulnerabilities.txt
+│   │   │   │   │   └── production-dependency-evidence-151-1.zip
+│   │   │   │   ├── local
+│   │   │   │   │   ├── braces-registry.json
+│   │   │   │   │   ├── chokidar-latest.json
+│   │   │   │   │   ├── dependency-graph.json
+│   │   │   │   │   ├── fast-glob-latest.json
+│   │   │   │   │   ├── micromatch-latest.json
+│   │   │   │   │   ├── npm-audit-gate.json
+│   │   │   │   │   ├── npm-audit-production.json
+│   │   │   │   │   ├── npm-audit.json
+│   │   │   │   │   └── tailwind3-dependencies.json
+│   │   │   │   ├── main-recheck-433ff.json
+│   │   │   │   ├── main-recheck.json
+│   │   │   │   └── manifest.json
+│   │   │   └── 2026-10-05-dependency-certification
+│   │   │       ├── braces-advisory-source.json
+│   │   │       ├── braces-bounded-reachability.json
+│   │   │       ├── dependency-source-evidence.json
+│   │   │       ├── hosted-npm-audit-gate.json
+│   │   │       ├── hosted-npm-audit.json
+│   │   │       ├── hosted-nuget-vulnerabilities.txt
+│   │   │       ├── manifest.json
+│   │   │       ├── npm-audit-gate.json
+│   │   │       ├── npm-audit-production.json
+│   │   │       ├── npm-audit.json
+│   │   │       ├── npm-graph.json
+│   │   │       └── upstream-registry-metadata.json
 │   │   ├── codex-security-remediation-2026-05-20.md
 │   │   ├── known-vulnerabilities.md
 │   │   ├── README.md
@@ -2345,83 +2399,85 @@ Meridian-main
 │   │   └── wpf-screen-development-tracker.md
 │   ├── testing
 │   │   ├── evidence
-│   │   │   └── w10-615abde9
-│   │   │       ├── browser
-│   │   │       │   ├── evidence
-│   │   │       │   │   ├── screenshots
-│   │   │       │   │   │   ├── M-refusal-repair.png
-│   │   │       │   │   │   ├── M-refusal.png
-│   │   │       │   │   │   ├── M1-fresh-1366x768.png
-│   │   │       │   │   │   ├── M1-fresh.png
-│   │   │       │   │   │   ├── M10-unsupported-override-simulation-repair.png
-│   │   │       │   │   │   ├── M10-unsupported-override-simulation.png
-│   │   │       │   │   │   ├── M2-stale-repair.png
-│   │   │       │   │   │   ├── M2-stale.png
-│   │   │       │   │   │   ├── M3-future-repair.png
-│   │   │       │   │   │   ├── M3-future.png
-│   │   │       │   │   │   ├── M4-missing-date-repair.png
-│   │   │       │   │   │   ├── M4-missing-date.png
-│   │   │       │   │   │   ├── M5-coverage-repair.png
-│   │   │       │   │   │   ├── M5-coverage.png
-│   │   │       │   │   │   ├── M6-confidence-repair.png
-│   │   │       │   │   │   ├── M6-confidence.png
-│   │   │       │   │   │   ├── M8-delayed-old-preview.png
-│   │   │       │   │   │   ├── S1-current-scope-1366x768.png
-│   │   │       │   │   │   ├── S1-current-scope.png
-│   │   │       │   │   │   ├── S2-missing-entityId.png
-│   │   │       │   │   │   ├── S2-missing-fundAccountId.png
-│   │   │       │   │   │   ├── S2-missing-fundProfileId.png
-│   │   │       │   │   │   ├── S2-missing-ledgerBookId.png
-│   │   │       │   │   │   ├── S2-missing-periodId.png
-│   │   │       │   │   │   ├── S3-foreign-scope.png
-│   │   │       │   │   │   ├── S4-accounting-details.png
-│   │   │       │   │   │   ├── S4-missing-context.png
-│   │   │       │   │   │   ├── S4-missing-repair-context.png
-│   │   │       │   │   │   ├── S4-missing-repair.png
-│   │   │       │   │   │   ├── S4-missing.png
-│   │   │       │   │   │   ├── S5-accounting-details.png
-│   │   │       │   │   │   ├── S5-stale-context.png
-│   │   │       │   │   │   ├── S5-stale-repair-context.png
-│   │   │       │   │   │   ├── S5-stale-repair.png
-│   │   │       │   │   │   ├── S5-stale.png
-│   │   │       │   │   │   ├── S6-repair.png
-│   │   │       │   │   │   ├── S6-unavailable.png
-│   │   │       │   │   │   ├── S7-refusal-context.png
-│   │   │       │   │   │   ├── S7-refusal.png
-│   │   │       │   │   │   ├── S7-repair-context.png
-│   │   │       │   │   │   ├── S7-repair.png
-│   │   │       │   │   │   ├── S8-delayed-old-response.png
-│   │   │       │   │   │   └── S8-repair.png
-│   │   │       │   │   ├── cases.json
-│   │   │       │   │   ├── findings.json
-│   │   │       │   │   ├── network-observations.json
-│   │   │       │   │   ├── provenance.json
-│   │   │       │   │   └── requests-responses.json
-│   │   │       │   ├── attempts.json
-│   │   │       │   ├── browser-evidence.md
-│   │   │       │   ├── capture.mjs
-│   │   │       │   └── vitest.log.gz
-│   │   │       ├── desktop
-│   │   │       │   ├── desktop-evidence.md
-│   │   │       │   ├── inspect_desktop_support.py
-│   │   │       │   ├── source-inventory.json
-│   │   │       │   └── wpf-finance-ux-static.md
-│   │   │       ├── server
-│   │   │       │   ├── acceptance-support.trx.gz
-│   │   │       │   ├── server-evidence.md
-│   │   │       │   └── summary.json
-│   │   │       ├── case-records.json
-│   │   │       ├── criteria-review.md
-│   │   │       ├── docs-ci.log.gz
-│   │   │       ├── full-ci.log.gz
-│   │   │       ├── hosted-checks.json
-│   │   │       ├── integrity-validation.json
-│   │   │       ├── manifest.json
-│   │   │       ├── population.json
-│   │   │       ├── README.md
-│   │   │       ├── validation.json
-│   │   │       └── verify_packet.py
+│   │   │   ├── w10-615abde9
+│   │   │   │   ├── browser
+│   │   │   │   │   ├── evidence
+│   │   │   │   │   │   ├── screenshots
+│   │   │   │   │   │   │   ├── M-refusal-repair.png
+│   │   │   │   │   │   │   ├── M-refusal.png
+│   │   │   │   │   │   │   ├── M1-fresh-1366x768.png
+│   │   │   │   │   │   │   ├── M1-fresh.png
+│   │   │   │   │   │   │   ├── M10-unsupported-override-simulation-repair.png
+│   │   │   │   │   │   │   ├── M10-unsupported-override-simulation.png
+│   │   │   │   │   │   │   ├── M2-stale-repair.png
+│   │   │   │   │   │   │   ├── M2-stale.png
+│   │   │   │   │   │   │   ├── M3-future-repair.png
+│   │   │   │   │   │   │   ├── M3-future.png
+│   │   │   │   │   │   │   ├── M4-missing-date-repair.png
+│   │   │   │   │   │   │   ├── M4-missing-date.png
+│   │   │   │   │   │   │   ├── M5-coverage-repair.png
+│   │   │   │   │   │   │   ├── M5-coverage.png
+│   │   │   │   │   │   │   ├── M6-confidence-repair.png
+│   │   │   │   │   │   │   ├── M6-confidence.png
+│   │   │   │   │   │   │   ├── M8-delayed-old-preview.png
+│   │   │   │   │   │   │   ├── S1-current-scope-1366x768.png
+│   │   │   │   │   │   │   ├── S1-current-scope.png
+│   │   │   │   │   │   │   ├── S2-missing-entityId.png
+│   │   │   │   │   │   │   ├── S2-missing-fundAccountId.png
+│   │   │   │   │   │   │   ├── S2-missing-fundProfileId.png
+│   │   │   │   │   │   │   ├── S2-missing-ledgerBookId.png
+│   │   │   │   │   │   │   ├── S2-missing-periodId.png
+│   │   │   │   │   │   │   ├── S3-foreign-scope.png
+│   │   │   │   │   │   │   ├── S4-accounting-details.png
+│   │   │   │   │   │   │   ├── S4-missing-context.png
+│   │   │   │   │   │   │   ├── S4-missing-repair-context.png
+│   │   │   │   │   │   │   ├── S4-missing-repair.png
+│   │   │   │   │   │   │   ├── S4-missing.png
+│   │   │   │   │   │   │   ├── S5-accounting-details.png
+│   │   │   │   │   │   │   ├── S5-stale-context.png
+│   │   │   │   │   │   │   ├── S5-stale-repair-context.png
+│   │   │   │   │   │   │   ├── S5-stale-repair.png
+│   │   │   │   │   │   │   ├── S5-stale.png
+│   │   │   │   │   │   │   ├── S6-repair.png
+│   │   │   │   │   │   │   ├── S6-unavailable.png
+│   │   │   │   │   │   │   ├── S7-refusal-context.png
+│   │   │   │   │   │   │   ├── S7-refusal.png
+│   │   │   │   │   │   │   ├── S7-repair-context.png
+│   │   │   │   │   │   │   ├── S7-repair.png
+│   │   │   │   │   │   │   ├── S8-delayed-old-response.png
+│   │   │   │   │   │   │   └── S8-repair.png
+│   │   │   │   │   │   ├── cases.json
+│   │   │   │   │   │   ├── findings.json
+│   │   │   │   │   │   ├── network-observations.json
+│   │   │   │   │   │   ├── provenance.json
+│   │   │   │   │   │   └── requests-responses.json
+│   │   │   │   │   ├── attempts.json
+│   │   │   │   │   ├── browser-evidence.md
+│   │   │   │   │   ├── capture.mjs
+│   │   │   │   │   └── vitest.log.gz
+│   │   │   │   ├── desktop
+│   │   │   │   │   ├── desktop-evidence.md
+│   │   │   │   │   ├── inspect_desktop_support.py
+│   │   │   │   │   ├── source-inventory.json
+│   │   │   │   │   └── wpf-finance-ux-static.md
+│   │   │   │   ├── server
+│   │   │   │   │   ├── acceptance-support.trx.gz
+│   │   │   │   │   ├── server-evidence.md
+│   │   │   │   │   └── summary.json
+│   │   │   │   ├── case-records.json
+│   │   │   │   ├── criteria-review.md
+│   │   │   │   ├── docs-ci.log.gz
+│   │   │   │   ├── full-ci.log.gz
+│   │   │   │   ├── hosted-checks.json
+│   │   │   │   ├── integrity-validation.json
+│   │   │   │   ├── manifest.json
+│   │   │   │   ├── population.json
+│   │   │   │   ├── README.md
+│   │   │   │   ├── validation.json
+│   │   │   │   └── verify_packet.py
+│   │   │   └── endpoint-fixture-concurrency.json
 │   │   ├── accounting-trust-corrections.md
+│   │   ├── endpoint-fixture-isolation.md
 │   │   ├── README.md
 │   │   ├── w10-mark-seam-operator-acceptance.md
 │   │   ├── wave2-cockpit-reliability-evidence-runbook.md
@@ -3367,6 +3423,8 @@ Meridian-main
 │   │   ├── generate-desktop-user-manual.ps1
 │   │   ├── generate-dk1-pilot-parity-packet.ps1
 │   │   ├── install-git-hooks.sh
+│   │   ├── owned-process-windows.ps1
+│   │   ├── owned-process.mjs
 │   │   ├── preflight_runner.py
 │   │   ├── prepare-dk1-operator-signoff.ps1
 │   │   ├── robinhood-options-smoke.ps1
@@ -3390,6 +3448,8 @@ Meridian-main
 │   │   ├── validate-workflow-profile.ps1
 │   │   ├── validate-wpf-dev.ps1
 │   │   ├── validate_workstation_cockpit_acceptance_matrix.py
+│   │   ├── web-dev.mjs
+│   │   ├── web-dev.test.mjs
 │   │   ├── web-screenshot-fixtures.json
 │   │   └── web-screenshot-routes.json
 │   ├── lib
@@ -3532,6 +3592,7 @@ Meridian-main
 │   │   │   ├── AssetOperationsStartup.cs
 │   │   │   ├── BankingStartup.cs
 │   │   │   ├── CircuitBreakerCallbackRouter.cs
+│   │   │   ├── CompositionConfiguration.cs
 │   │   │   ├── DatabaseMigrationReadinessReceipt.cs
 │   │   │   ├── DefaultProviderSetupHandlerRegistration.cs
 │   │   │   ├── DirectLendingStartup.cs
@@ -3929,6 +3990,7 @@ Meridian-main
 │   │   │   ├── DataIngestionContracts.cs
 │   │   │   ├── ErrorResponse.cs
 │   │   │   ├── ExecutionApiModels.cs
+│   │   │   ├── IProviderCatalog.cs
 │   │   │   ├── LeanApiModels.cs
 │   │   │   ├── LiveDataModels.cs
 │   │   │   ├── OptionsModels.cs
@@ -4922,6 +4984,7 @@ Meridian-main
 │   │   └── README.md
 │   ├── Meridian.Identity
 │   │   ├── Application
+│   │   │   ├── AuthenticationConfiguration.cs
 │   │   │   ├── AuthenticationMode.cs
 │   │   │   ├── FundStructureAccessScopeLineageProvider.cs
 │   │   │   ├── IdentityGovernanceNormalization.cs
@@ -5525,6 +5588,7 @@ Meridian-main
 │   │   ├── PluginLoaderService.cs
 │   │   ├── ProviderHttpUtilities.cs
 │   │   ├── ProviderIdentity.cs
+│   │   ├── ProviderModuleCapabilityRegistration.cs
 │   │   ├── ProviderModuleContext.cs
 │   │   ├── ProviderModuleLoader.cs
 │   │   ├── ProviderRoutingModels.cs
@@ -5611,6 +5675,10 @@ Meridian-main
 │   │   ├── ReportingGovernanceCanonicalValidation.cs
 │   │   ├── ReportingGovernanceContracts.cs
 │   │   ├── ReportingGovernanceService.cs
+│   │   ├── ReportingIncomeComparisonContracts.cs
+│   │   ├── ReportingIncomeComparisonEngine.cs
+│   │   ├── ReportingIncomeComparisonJsonContext.cs
+│   │   ├── ReportingIncomeDecimalJsonConverter.cs
 │   │   ├── ReportingNumberFormat.cs
 │   │   ├── ReportingOperationalStoreContracts.cs
 │   │   ├── ReportingOrchestrationService.cs
@@ -5917,6 +5985,7 @@ Meridian-main
 │   │   │   ├── PostgresReportingDeliveryStore.cs
 │   │   │   ├── PostgresReportingDeploymentProbe.cs
 │   │   │   ├── PostgresReportingGovernanceRepository.cs
+│   │   │   ├── PostgresReportingGovernanceRepository.RunBatches.cs
 │   │   │   ├── PostgresReportingReconciliationEvidenceStore.cs
 │   │   │   ├── PostgresReportingReleaseConsistencyGate.cs
 │   │   │   ├── PostgresReportingRunStore.cs
@@ -6605,6 +6674,7 @@ Meridian-main
 │   │   │   │   │   │   ├── payoff.test.ts
 │   │   │   │   │   │   └── payoff.ts
 │   │   │   │   │   ├── dev-fixtures
+│   │   │   │   │   │   ├── bootstrap-fixtures.ts
 │   │   │   │   │   │   ├── fixture-resolver.ts
 │   │   │   │   │   │   └── market-data-fixtures.ts
 │   │   │   │   │   ├── first-run
@@ -6645,6 +6715,7 @@ Meridian-main
 │   │   │   │   │   ├── api-errors.test.ts
 │   │   │   │   │   ├── api-errors.ts
 │   │   │   │   │   ├── api.corporate-actions.test.ts
+│   │   │   │   │   ├── api.development-modes.test.ts
 │   │   │   │   │   ├── api.extensibility.test.ts
 │   │   │   │   │   ├── api.operations-continuity.test.ts
 │   │   │   │   │   ├── api.private-capital.test.ts
@@ -6705,6 +6776,8 @@ Meridian-main
 │   │   │   │   │   ├── reporting-hub.ts
 │   │   │   │   │   ├── reporting-impact.test.ts
 │   │   │   │   │   ├── reporting-impact.ts
+│   │   │   │   │   ├── reporting-income-comparison-api.test.ts
+│   │   │   │   │   ├── reporting-income-comparison-api.ts
 │   │   │   │   │   ├── reporting-lifecycle.test.ts
 │   │   │   │   │   ├── reporting-lifecycle.ts
 │   │   │   │   │   ├── reporting-link-safety.test.ts
@@ -6974,12 +7047,15 @@ Meridian-main
 │   │   │   │   │   ├── report-library-screen.test.tsx
 │   │   │   │   │   ├── report-library-screen.tsx
 │   │   │   │   │   ├── report-run-governance-client-package.ts
+│   │   │   │   │   ├── report-run-governance-parameters.ts
 │   │   │   │   │   ├── report-run-governance-screen.test.tsx
 │   │   │   │   │   ├── report-run-governance-screen.tsx
 │   │   │   │   │   ├── report-run-parameters-screen.test.tsx
 │   │   │   │   │   ├── report-run-parameters-screen.tsx
 │   │   │   │   │   ├── report-run-parameters-screen.view-model.test.ts
 │   │   │   │   │   ├── report-run-parameters-screen.view-model.ts
+│   │   │   │   │   ├── reporting-income-comparison.test.tsx
+│   │   │   │   │   ├── reporting-income-comparison.tsx
 │   │   │   │   │   ├── reporting-screen.a11y.test.tsx
 │   │   │   │   │   ├── reporting-screen.branding-access.tsx
 │   │   │   │   │   ├── reporting-screen.client-package.ts
@@ -7102,6 +7178,7 @@ Meridian-main
 │   │   │   │   ├── test
 │   │   │   │   │   ├── fixtures.ts
 │   │   │   │   │   ├── render.tsx
+│   │   │   │   │   ├── reporting-income-comparison-fixtures.ts
 │   │   │   │   │   ├── setup.ts
 │   │   │   │   │   └── verified-operation-outcome.ts
 │   │   │   │   ├── types
@@ -7127,6 +7204,7 @@ Meridian-main
 │   │   │   │   │   ├── provider-setup.ts
 │   │   │   │   │   ├── reconciliation-readiness.types.ts
 │   │   │   │   │   ├── reporting-governance.ts
+│   │   │   │   │   ├── reporting-income-comparison.ts
 │   │   │   │   │   ├── statement-run-detail.types.ts
 │   │   │   │   │   ├── workstation-1.ts
 │   │   │   │   │   ├── workstation-2.ts
@@ -7381,6 +7459,7 @@ Meridian-main
 │   │   │   ├── FundStructureEndpoints.cs
 │   │   │   ├── FundStructureEndpoints.ReportingCompatibility.cs
 │   │   │   ├── FundStructureEndpoints.ReportingGovernance.cs
+│   │   │   ├── FundStructureEndpoints.ReportingIncomeComparison.cs
 │   │   │   ├── FundStructureEndpoints.ReportingRunStream.cs
 │   │   │   ├── FundStructureEndpoints.ReportingScheduleAuthority.cs
 │   │   │   ├── FundStructureEndpoints.ReportingTombstones.cs
@@ -7430,6 +7509,7 @@ Meridian-main
 │   │   │   ├── QuantLabEndpoints.cs
 │   │   │   ├── RegistryFundProfileTenantGuard.cs
 │   │   │   ├── ReplayEndpoints.cs
+│   │   │   ├── ReplayScanLifetime.cs
 │   │   │   ├── ResilienceEndpoints.cs
 │   │   │   ├── RiskEndpoints.cs
 │   │   │   ├── SamplingEndpoints.cs
@@ -7649,6 +7729,7 @@ Meridian-main
 │   │   │   ├── ProviderLedgerReconciliationService.cs
 │   │   │   ├── ProviderLedgerReconciliationService.Outcomes.cs
 │   │   │   ├── ProviderLedgerReconciliationService.SecurityCoverage.cs
+│   │   │   ├── ProviderMetricsLookup.cs
 │   │   │   ├── ProviderModuleSetupModels.cs
 │   │   │   ├── ProviderModuleSetupService.cs
 │   │   │   ├── ProviderNavigationRouteMapper.cs
@@ -7671,6 +7752,7 @@ Meridian-main
 │   │   │   ├── ReportingGovernanceCoordinatorService.ArtifactValidation.cs
 │   │   │   ├── ReportingGovernanceCoordinatorService.cs
 │   │   │   ├── ReportingGovernanceReleaseAuthorizationVerifier.cs
+│   │   │   ├── ReportingIncomeComparisonService.cs
 │   │   │   ├── ReportingPartnersCapitalSource.cs
 │   │   │   ├── ReportingPrimaryDocumentRenderer.cs
 │   │   │   ├── ReportingReconciliationEvidenceSource.cs
@@ -9360,6 +9442,7 @@ Meridian-main
 │   │   │   │   ├── DirectLendingStartupTests.cs
 │   │   │   │   ├── HostStartupLifecycleTests.cs
 │   │   │   │   ├── HostTenantScopeCompositionTests.cs
+│   │   │   │   ├── InstanceCompositionConfigurationTests.cs
 │   │   │   │   ├── LedgerFeatureRegistrationTests.cs
 │   │   │   │   ├── LegacySnapshotStartupTests.cs
 │   │   │   │   ├── LocalTenantCapabilityCompositionTests.cs
@@ -9918,6 +10001,7 @@ Meridian-main
 │   │   │   │   ├── ProviderHealthTrackerTests.cs
 │   │   │   │   ├── ProviderMarketDataCapabilityTests.cs
 │   │   │   │   ├── ProviderRateLimitTrackerTests.cs
+│   │   │   │   ├── ProviderRegistryCapabilityFactoryTests.cs
 │   │   │   │   ├── ProviderResilienceTests.cs
 │   │   │   │   ├── ProviderTemplateFactoryCredentialTests.cs
 │   │   │   │   ├── RobinhoodBrokerageGatewayTests.cs
@@ -9972,6 +10056,8 @@ Meridian-main
 │   │   │   │   ├── EndpointReadDeclarationTests.cs
 │   │   │   │   ├── EndpointTestCollection.cs
 │   │   │   │   ├── EndpointTestFixture.cs
+│   │   │   │   ├── EndpointTestFixtureDataIsolationTests.cs
+│   │   │   │   ├── EndpointTestFixtureProcessCompatibilityTests.cs
 │   │   │   │   ├── EndpointTestFixtureProviderCatalogLifetimeTests.cs
 │   │   │   │   ├── EnvironmentDesignerEndpointTests.cs
 │   │   │   │   ├── FailoverEndpointTests.cs
@@ -10122,7 +10208,8 @@ Meridian-main
 │   │   │   ├── OptionalProviderCapabilityContractsTests.cs
 │   │   │   ├── PluginLoaderServiceTests.cs
 │   │   │   ├── ProviderIdentityTests.cs
-│   │   │   └── ProviderModuleLoaderTests.cs
+│   │   │   ├── ProviderModuleLoaderTests.cs
+│   │   │   └── ProviderModuleRegistrationTests.cs
 │   │   ├── Reconciliation
 │   │   │   ├── Connectors
 │   │   │   │   ├── AlpacaActivityStatementConnectorTests.cs
@@ -10167,9 +10254,11 @@ Meridian-main
 │   │   │   └── SecurityMaster
 │   │   │       └── SecurityKindMappingTests.cs
 │   │   ├── Reporting
+│   │   │   ├── InvestmentIncomeComparisonEngineTests.cs
 │   │   │   ├── NavAttributionServiceTests.cs
 │   │   │   ├── ReportGenerationServiceTests.cs
 │   │   │   ├── ReportingGovernanceCanonicalValidationTests.cs
+│   │   │   ├── ReportingIncomeComparisonSerializationTests.cs
 │   │   │   ├── ReportingOrchestrationServiceTests.cs
 │   │   │   ├── ReportingSecureDistributionAuthorizationTests.cs
 │   │   │   ├── ReportingSecureDistributionTests.cs
@@ -10542,6 +10631,7 @@ Meridian-main
 │   │   │   ├── BankFeedTransportServiceTests.cs
 │   │   │   ├── BondReferenceEndpointsTests.cs
 │   │   │   ├── BrokerageConnectionEndpointsTests.cs
+│   │   │   ├── BrokerageConnectionIsolationTests.cs
 │   │   │   ├── BrokeragePortfolioSyncServiceTests.cs
 │   │   │   ├── CapitalAccountWorkbenchServiceTests.cs
 │   │   │   ├── CapitalCallFundingIntakeTests.cs
@@ -10617,6 +10707,7 @@ Meridian-main
 │   │   │   ├── RecurringJournalSubjectAuthorityTests.cs
 │   │   │   ├── ReferenceDataEndpointAuthorizationTests.cs
 │   │   │   ├── RegistryFundProfileTenantGuardTests.cs
+│   │   │   ├── ReplayScanLifetimeTests.cs
 │   │   │   ├── ReportingArtifactVaultServiceTests.cs
 │   │   │   ├── ReportingDeliveryReadinessRaceTests.cs
 │   │   │   ├── ReportingDeliveryReleaseGateTests.cs
@@ -10624,6 +10715,7 @@ Meridian-main
 │   │   │   ├── ReportingDeploymentReadinessServiceTests.cs
 │   │   │   ├── ReportingFileStoreLegacyCompatibilityTests.cs
 │   │   │   ├── ReportingGovernanceEndpointTests.cs
+│   │   │   ├── ReportingIncomeComparisonServiceTests.cs
 │   │   │   ├── ReportingOperationalConcurrencyTests.cs
 │   │   │   ├── ReportingPersistenceFailClosedTests.cs
 │   │   │   ├── ReportingProductionCompositionReadinessTests.cs
@@ -10664,6 +10756,7 @@ Meridian-main
 │   │   │   ├── StatementReconciliationReportFetchIngestionAuthorityTests.cs
 │   │   │   ├── StatementReconciliationReportWorkflowServiceTests.cs
 │   │   │   ├── StatementToDeliveryAuthorityTests.cs
+│   │   │   ├── StatusDevelopmentSessionTests.cs
 │   │   │   ├── StrategyDesignerWorkstationEndpointsTests.cs
 │   │   │   ├── StrategyLifecycleEndpointsTests.cs
 │   │   │   ├── SupportedPostureStartupIntegrationTests.cs
@@ -11066,9 +11159,12 @@ Meridian-main
 │   │   └── xunit.runner.json
 │   ├── scripts
 │   │   ├── fixtures
-│   │   │   └── roadmap
-│   │   │       ├── ambiguous-input.yaml
-│   │   │       └── unordered-mixed-unicode.yaml
+│   │   │   ├── roadmap
+│   │   │   │   ├── ambiguous-input.yaml
+│   │   │   │   └── unordered-mixed-unicode.yaml
+│   │   │   └── web-dev
+│   │   │       ├── launcher.mjs
+│   │   │       └── process-tree.mjs
 │   │   ├── README.md
 │   │   ├── setup-verification.sh
 │   │   ├── test_actions_collector.py
@@ -11078,6 +11174,7 @@ Meridian-main
 │   │   ├── test_archive_code_tombstones.py
 │   │   ├── test_artifact_retention_module.py
 │   │   ├── test_benchmark_ci.py
+│   │   ├── test_build_profiles.py
 │   │   ├── test_buildctl_artifact_retention.py
 │   │   ├── test_buildctl_validation_runner.py
 │   │   ├── test_canonical_roadmap_yaml.py
@@ -11116,6 +11213,7 @@ Meridian-main
 │   │   ├── test_direct_lending_outbox_claim_sql.py
 │   │   ├── test_doc_render_determinism.py
 │   │   ├── test_documentation_workflow.py
+│   │   ├── test_endpoint_benchmark.py
 │   │   ├── test_export_project_artifact_workflow.py
 │   │   ├── test_generate_contract_review_packet.py
 │   │   ├── test_generate_dependency_graph.py
@@ -11133,6 +11231,7 @@ Meridian-main
 │   │   ├── test_meridian_ci_workflow.py
 │   │   ├── test_meridian_code_review_run_eval.py
 │   │   ├── test_mixed_credit_status_set.py
+│   │   ├── test_postgresql_payload.py
 │   │   ├── test_prepare_dk1_operator_signoff.py
 │   │   ├── test_production_certification_workflow.py
 │   │   ├── test_production_recovery.py
@@ -11154,6 +11253,7 @@ Meridian-main
 │   │   ├── test_run_provider_validation_evidence_bundle.py
 │   │   ├── test_run_script_tests.py
 │   │   ├── test_scan_commit_secrets.py
+│   │   ├── test_schema_control_baselines.py
 │   │   ├── test_schema_control_catalog.py
 │   │   ├── test_schema_control_cli.py
 │   │   ├── test_schema_control_contracts.py

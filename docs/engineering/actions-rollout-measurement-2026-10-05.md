@@ -57,29 +57,31 @@ Counts below include all outcomes, not just the successful comparison cohort. A 
 
 | Period / event | Completed changes | All-workflow successful changes | Comparable changes | Attempts | Known runner minutes | Attempts with unknown total |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| baseline / pull_request | 78 | 35 | 32 | 646 | 4,798.67 | 0 |
-| baseline / main_push | 15 | 11 | 0 | 129 | 1,679.27 | 0 |
-| rollout / pull_request | 47 | 24 | 24 | 290 | 2,587.50 | 6 |
+| baseline / pull_request | 78 | 35 | 32 | 646 | 4,769.27 | 0 |
+| baseline / main_push | 15 | 11 | 0 | 129 | 1,675.70 | 0 |
+| rollout / pull_request | 47 | 24 | 24 | 290 | 2,454.82 | 4 |
 | rollout / main_push | 5 | 0 | 0 | 38 | 423.67 | 0 |
 
 | Period / event | Outcome bucket | Attempts | Runner minutes | Known minutes (lower bound) |
 | --- | --- | ---: | ---: | ---: |
 | baseline / pull_request | failures | 46 | 237.15 | 237.15 |
-| baseline / pull_request | cancellations | 112 | 851.00 | 851.00 |
+| baseline / pull_request | cancellations | 112 | 821.60 | 821.60 |
 | baseline / pull_request | retries | 1 | 0.80 | 0.80 |
-| baseline / pull_request | failureCancellationOrRetry | 158 | 1,088.15 | 1,088.15 |
+| baseline / pull_request | failureCancellationOrRetry | 158 | 1,058.75 | 1,058.75 |
 | baseline / main_push | failures | 4 | 64.45 | 64.45 |
 | baseline / main_push | cancellations | 4 | 68.43 | 68.43 |
-| baseline / main_push | retries | 1 | 13.28 | 13.28 |
-| baseline / main_push | failureCancellationOrRetry | 9 | 146.17 | 146.17 |
+| baseline / main_push | retries | 1 | 9.72 | 9.72 |
+| baseline / main_push | failureCancellationOrRetry | 9 | 142.60 | 142.60 |
 | rollout / pull_request | failures | 28 | 276.63 | 276.63 |
-| rollout / pull_request | cancellations | 46 | unavailable | 334.98 |
+| rollout / pull_request | cancellations | 46 | unavailable | 202.30 |
 | rollout / pull_request | retries | 1 | 0.90 | 0.90 |
-| rollout / pull_request | failureCancellationOrRetry | 74 | unavailable | 611.62 |
+| rollout / pull_request | failureCancellationOrRetry | 74 | unavailable | 478.93 |
 | rollout / main_push | failures | 6 | 71.78 | 71.78 |
 | rollout / main_push | cancellations | 0 | 0.00 | 0.00 |
 | rollout / main_push | retries | 1 | 17.62 | 17.62 |
 | rollout / main_push | failureCancellationOrRetry | 7 | 89.40 | 89.40 |
+
+Runner assignment and full step metadata distinguish synthetic starts from actual execution. Confirmed terminal jobs that never started, explicit skips and verified copied retry receipts add zero new runner cost while raw execution timing remains unavailable. Three copied baseline main-push receipts match their original execution under different job IDs; that execution is charged only once. These accounting corrections do not establish rollout savings.
 
 Retry minutes overlap failures and cancellations. Use `failureCancellationOrRetry` for their union; do not add those three buckets. The machine report also retains individual unsuccessful attempts, pending/unknown outcomes and other events. Successful main-push latency can be inspected there; absent whole-push boundaries prevent category-matched main-push comparison.
 
@@ -135,7 +137,7 @@ Each link opens its Meridian CI workflow run. The source snapshot retains all co
 
 [Benchmark evidence](actions-local-benchmarks-2026-10-05.json) retains all 20 measured variants, exact discovery digests, counts, timing, provenance, decisions and both unsuccessful setup attempts.
 
-The five .NET pairs (2/4 processes) and five browser pairs (8/16 files per batch) ran on one local Linux executor at test-source commit `e5783987f743bea998aaa59c53c44490a7c1f3ce`. The executor had a four-CPU quota and 16 GiB memory limit, .NET SDK 10.0.100 and Node v24.19.0. Vitest retained two workers. Pair order alternated, and measured variants ran sequentially. The working tree contained this collector/report change; selected .NET and browser test sources were unchanged.
+The five .NET pairs (2/4 processes) and five browser pairs (8/16 files per batch) ran on one local Linux executor at test-source commit `e5783987f743bea998aaa59c53c44490a7c1f3ce`. The executor had a four-CPU quota and 16 GiB memory limit, .NET SDK 10.0.100 and Node v24.19.0. Vitest retained two workers. Pair order alternated, and measured variants ran sequentially. The benchmark working tree contained this collector/report change; selected .NET and browser test sources matched the recorded commit. These benchmarks measure that fixed commit; canonical CI validates subsequent integration with main.
 
 GitHub-hosted benchmark dispatch was unavailable in this session. These local measurements cannot authorize hosted-default promotion or establish the hosted rollout targets. `testSeconds` excludes .NET build/restore; the JSON separately preserves complete command durations. Browser dependencies were restored once with `npm ci` outside every measured interval.
 
@@ -189,7 +191,7 @@ Adoption eligible: **no**.
 
 The complete five-pair series used `DOTNET_ROOT` and `tini -s` as a child subreaper. A focused seven-test process-runner check passed before restarting the full series. Neither unsuccessful setup was silently replaced with a successful sample; both remain outside the comparable pairs.
 
-Focused collector, metrics, benchmark and related CI checks passed **132 tests**. Actionlint, workflow hygiene, lane-manifest and skip-register checks also passed. Independent review reproduced the archived Actions report exactly from its saved source and policy. The accompanying pull request records the canonical `bash scripts/ci.sh` and hosted integration-check results.
+Focused collector, metrics, benchmark and related CI checks passed **166 tests**. Actionlint, workflow hygiene, lane-manifest and skip-register checks also passed. Independent review reproduced the archived Actions report exactly from its saved source and policy. The accompanying pull request records the canonical `bash scripts/ci.sh` and hosted integration-check results.
 
 Hosted .NET concurrency remains **2**, local .NET concurrency **1**, browser batch size **8**, and Vitest workers **2**. No production tuning default was changed.
 
