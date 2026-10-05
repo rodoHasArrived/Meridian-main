@@ -77,13 +77,14 @@
 ## ibapi-smoke-build
 
 - Owners: @provider-infra, @desktop-shell
-- Expected artifacts: artifacts/bin/ibapi-smoke
+- Expected artifacts: artifacts/test-results/ibapi-smoke/ibapi-runtime-reconnect.trx, artifacts/test-results/ibapi-smoke/test-evidence.json
 - Owner lane: Provider Infrastructure and Desktop Validation
 - Refresh trigger: ibapi smoke build workflow run
-- Canonical output roots: artifacts/bin/ibapi-smoke
+- Canonical output roots: artifacts/test-results/ibapi-smoke
 - Retention: smoke-build-retention (maxAgeDays=14, retainLatest=20)
 - Commands:
   - `pwsh ./scripts/dev/build-ibapi-smoke.ps1 -Configuration Release`
+  - `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release -p:EnableWindowsTargeting=true -p:EnableIbApiSmoke=true -maxcpucount:1 --filter "FullyQualifiedName~IBMarketDataClientRuntimeReconnectTests" --logger "trx;LogFileName=ibapi-runtime-reconnect.trx" --results-directory artifacts/test-results/ibapi-smoke`
 
 ## wpf-route-validation-position-blotter
 
