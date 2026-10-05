@@ -266,7 +266,27 @@ public static class ReplayEndpoints
                 }
             }
             catch (OperationCanceledException) { /* request cancelled */ }
-            catch (JsonException) { /* malformed data */ }
+            catch (Exception ex) when (ex is InvalidDataException or JsonException)
+            {
+                return Results.Json(new
+                {
+                    events = Array.Empty<object>(),
+                    total = 0,
+                    filePath = resolvedFilePath,
+                    error = "Malformed replay data",
+                    detail = ex.Message
+                }, jsonOptions);
+            }
+            catch (IOException)
+            {
+                return Results.Json(new
+                {
+                    events = Array.Empty<object>(),
+                    total = 0,
+                    filePath = resolvedFilePath,
+                    error = "Replay input unavailable. Close the capture writer before retrying."
+                }, jsonOptions);
+            }
 
             return Results.Json(new { events, total = events.Count, filePath = resolvedFilePath }, jsonOptions);
         })

@@ -3029,7 +3029,7 @@
     {
       "method": "GET",
       "path": "/api/quant/templates",
-      "source": "src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:129",
+      "source": "src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:140",
       "documented": false
     },
     {
@@ -3089,7 +3089,7 @@
     {
       "method": "GET",
       "path": "/api/replay/stats",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:277",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:297",
       "documented": false
     },
     {

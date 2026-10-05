@@ -477,8 +477,9 @@ function ParametersSidePanel({ rows, panel, onChange, onReset }: ParametersSideP
                       id={row.inputId}
                       type="checkbox"
                       checked={row.checked}
+                      disabled={panel.controlsDisabled}
                       onChange={(e) => onChange(row.name, e.target.checked ? "true" : "false")}
-                      className="h-4 w-4 rounded border border-border accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                      className="h-4 w-4 rounded border border-border accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
                       aria-label={row.ariaLabel}
                       aria-describedby={row.descriptionId ?? undefined}
                     />
@@ -492,8 +493,9 @@ function ParametersSidePanel({ rows, panel, onChange, onReset }: ParametersSideP
                     min={row.min}
                     max={row.max}
                     step={row.step}
+                    disabled={panel.controlsDisabled}
                     onChange={(e) => onChange(row.name, e.target.value)}
-                    className="w-full rounded-md border border-border/70 bg-background/60 px-2 py-1.5 font-mono text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    className="w-full rounded-md border border-border/70 bg-background/60 px-2 py-1.5 font-mono text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
                     aria-label={row.ariaLabel}
                     aria-describedby={row.descriptionId ?? undefined}
                   />
@@ -504,8 +506,9 @@ function ParametersSidePanel({ rows, panel, onChange, onReset }: ParametersSideP
                 {row.resetLabel ? (
                   <button
                     type="button"
+                    disabled={panel.controlsDisabled}
                     onClick={() => onReset(row.name)}
-                    className="text-[10px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    className="text-[10px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
                     aria-label={row.resetLabel}
                   >
                     {row.resetText}

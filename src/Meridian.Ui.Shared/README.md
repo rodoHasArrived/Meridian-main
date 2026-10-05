@@ -11,6 +11,11 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Ui.Shared
 
+Replay file previews return an explicit empty JSON error response for malformed persisted events,
+including source file/line evidence, and distinguish active/unavailable captures from corruption.
+Quant Lab parameter discovery returns HTTP 400 when any globals `Param` metadata is incomplete;
+partial extraction cannot authorize the browser run command.
+
 `RecurringJournalRunner` joins `AutomatedJournalScheduledWorker` and the existing journal-intake
 path to create one retained human-review draft per recurring occurrence. It holds the durable
 claim lease through intake recovery, preserves exact definitions and evidence, and projects both

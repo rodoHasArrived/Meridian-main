@@ -39,8 +39,15 @@ public interface IQuantScriptCompiler
 
     /// <summary>
     /// Extracts parameter descriptors from static script source using, in order,
-    /// literal <c>Param&lt;T&gt;(...)</c> calls, <c>[ScriptParam]</c> declarations, and legacy
+    /// statically bound <c>Param(...)</c> calls, <c>[ScriptParam]</c> declarations, and legacy
     /// <c>// @param</c> comments.
     /// </summary>
+    /// <exception cref="ParameterExtractionException">
+    /// A globals Param reference or its metadata cannot be described completely without execution.
+    /// No partial descriptor set is returned.
+    /// </exception>
     IReadOnlyList<ParameterDescriptor> ExtractParameters(string source);
 }
+
+/// <summary>Static parameter discovery cannot safely describe every globals Param reference.</summary>
+public sealed class ParameterExtractionException(string message) : InvalidOperationException(message);

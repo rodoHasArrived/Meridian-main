@@ -148,6 +148,79 @@ public sealed class MultiSymbolMergeEnumeratorTests
     }
 
     [Fact]
+    public async Task MergeAsync_PrimingCancellation_DisposesPrimedAndCancellingStreams()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var first = new TrackingAsyncEnumerable([MakeTradeEvent("AAPL", DateTimeOffset.UnixEpoch)]);
+        var cancellingDisposed = false;
+        var unopened = new TrackingAsyncEnumerable([MakeTradeEvent("MSFT", DateTimeOffset.UnixEpoch)]);
+
+        async IAsyncEnumerable<MarketEvent> CancellingStream()
+        {
+            try
+            {
+                cancellation.Cancel();
+                await Task.FromCanceled(cancellation.Token);
+                yield break;
+            }
+            finally
+            {
+                cancellingDisposed = true;
+            }
+        }
+
+        Func<Task> act = async () =>
+        {
+            await foreach (var _ in MultiSymbolMergeEnumerator.MergeAsync(
+                               [first, CancellingStream(), unopened], cancellation.Token))
+            {
+            }
+        };
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        first.DisposeCount.Should().Be(1);
+        cancellingDisposed.Should().BeTrue();
+        unopened.DisposeCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task MergeAsync_SubMillisecondEvents_UsesFullUtcTicksBeforeStreamOrder()
+    {
+        var instant = new DateTimeOffset(2024, 1, 2, 14, 30, 0, TimeSpan.Zero);
+        var laterFirstStream = MakeTradeEvent("AAPL", instant.AddTicks(9000));
+        var earlierSecondStream = MakeTradeEvent("MSFT", instant.AddTicks(1000).ToOffset(TimeSpan.FromHours(-7)));
+        var equalSecondStream = MakeTradeEvent("MSFT", laterFirstStream.Timestamp.ToOffset(TimeSpan.FromHours(2)));
+        var merged = new List<MarketEvent>();
+
+        await foreach (var evt in MultiSymbolMergeEnumerator.MergeAsync(
+                           [ToAsync([laterFirstStream]), ToAsync([earlierSecondStream, equalSecondStream])]))
+            merged.Add(evt);
+
+        merged.Should().Equal(earlierSecondStream, laterFirstStream, equalSecondStream);
+    }
+
+    [Fact]
+    public async Task MergeAsync_SharedRootAndSymbolRoot_PreserveRequestedSymbolTies()
+    {
+        var first = MakeTradeEvent("MSFT", DateTimeOffset.UnixEpoch);
+        var second = MakeTradeEvent("NVDA", DateTimeOffset.UnixEpoch);
+        var third = MakeTradeEvent("AAPL", DateTimeOffset.UnixEpoch);
+        var order = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["MSFT"] = 0,
+            ["NVDA"] = 1,
+            ["AAPL"] = 2
+        };
+        var merged = new List<MarketEvent>();
+
+        await foreach (var evt in MultiSymbolMergeEnumerator.MergeAsync(
+                           [ToAsync([first, third]), ToAsync([second])], symbolOrder: order))
+            merged.Add(evt);
+
+        merged.Should().Equal(first, second, third);
+    }
+
+    [Fact]
     public async Task ApplyCorporateActionAdjustmentsAsync_MixedStream_YieldsWithoutBufferingFutureBars()
     {
         var adjustment = new TrackingCorporateActionAdjustmentService();

@@ -10,9 +10,8 @@ namespace Meridian.Backtesting.Engine;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Determinism contract: if two events have the same timestamp (at millisecond precision), the
-/// event from the lower stream index (earlier position in <paramref name="streams"/>) is always
-/// dequeued first.
+/// Determinism contract: compare full UTC ticks, then the optional symbol rank, then the stream
+/// index. Without symbol ranks, equal instants retain the caller's stream order.
 /// </para>
 /// <para>
 /// Callers that require repeatable equal-timestamp ordering must pass streams in a stable order
@@ -24,7 +23,8 @@ internal static class MultiSymbolMergeEnumerator
     /// <summary>Merge all streams into a single chronological sequence.</summary>
     public static async IAsyncEnumerable<MarketEvent> MergeAsync(
         IReadOnlyList<IAsyncEnumerable<MarketEvent>> streams,
-        [EnumeratorCancellation] CancellationToken ct = default)
+        [EnumeratorCancellation] CancellationToken ct = default,
+        IReadOnlyDictionary<string, int>? symbolOrder = null)
     {
         if (streams.Count == 0)
             yield break;
@@ -41,13 +41,18 @@ internal static class MultiSymbolMergeEnumerator
         }
 
         // Initialise enumerators and prime the heap.
-        // Heap priority is (timestampMs, streamIndex), so equal timestamps are deterministically
-        // ordered by stream index.
+        // Shared-root streams can contain several symbols. Their symbol ranks preserve the same
+        // equal-instant order as distinct per-symbol streams, including mixed storage layouts.
         var enumerators = new IAsyncEnumerator<MarketEvent>?[streams.Count];
-        var heap = new PriorityQueue<int, (long TimestampMs, int StreamIndex)>(
+        var heap = new PriorityQueue<int, (long TimestampTicks, int SymbolRank, int StreamIndex)>(
             streams.Count,
-            Comparer<(long TimestampMs, int StreamIndex)>.Default);
+            Comparer<(long TimestampTicks, int SymbolRank, int StreamIndex)>.Default);
         Exception? initializationError = null;
+
+        (long TimestampTicks, int SymbolRank, int StreamIndex) Priority(MarketEvent evt, int streamIndex) =>
+            (evt.Timestamp.UtcTicks,
+                symbolOrder is not null && symbolOrder.TryGetValue(evt.EffectiveSymbol, out var rank) ? rank : streamIndex,
+                streamIndex);
 
         try
         {
@@ -55,13 +60,14 @@ internal static class MultiSymbolMergeEnumerator
             {
                 for (var i = 0; i < streams.Count; i++)
                 {
+                    ct.ThrowIfCancellationRequested();
                     var enumerator = streams[i].GetAsyncEnumerator(ct);
                     enumerators[i] = enumerator;
                     if (await enumerator.MoveNextAsync().ConfigureAwait(false))
                     {
                         heap.Enqueue(
                             i,
-                            (enumerator.Current.Timestamp.ToUnixTimeMilliseconds(), i));
+                            Priority(enumerator.Current, i));
                     }
                 }
             }
@@ -83,7 +89,7 @@ internal static class MultiSymbolMergeEnumerator
                 {
                     heap.Enqueue(
                         idx,
-                        (enumerator.Current.Timestamp.ToUnixTimeMilliseconds(), idx));
+                        Priority(enumerator.Current, idx));
                 }
             }
         }
