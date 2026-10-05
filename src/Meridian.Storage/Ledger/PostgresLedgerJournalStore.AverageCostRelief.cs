@@ -22,6 +22,10 @@ public sealed partial class PostgresLedgerJournalStore
         basis_adjustment
         """;
 
+    private static bool IsAverageCostRelief(AtomicTaxLotJournalCommand command)
+        => Enum.TryParse<LedgerTaxLotReliefMethod>(command.ReliefMethod, ignoreCase: true, out var method) &&
+           method == LedgerTaxLotReliefMethod.AverageCost;
+
     private static void AddBasisAdjustmentParameter(NpgsqlCommand command, OpenLotBasisAdjustmentDto? adjustment)
         => command.Parameters.AddWithValue(
             "basis_adjustment",
