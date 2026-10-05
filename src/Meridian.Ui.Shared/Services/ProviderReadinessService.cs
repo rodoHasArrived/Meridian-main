@@ -42,7 +42,8 @@ public sealed class ProviderReadinessService
 
         foreach (var source in configuredProviders)
         {
-            providerIds.Add(ProviderCredentialCatalog.NormalizeProviderId(source.Id));
+            // Source IDs identify configured connections. Readiness projects provider families;
+            // keep the source ID only for joining that connection's retained metrics below.
             providerIds.Add(ProviderCredentialCatalog.NormalizeProviderId(source.Provider.ToString()));
         }
 
@@ -184,7 +185,6 @@ public sealed class ProviderReadinessService
 
     private static DataSourceConfig? FindSource(IReadOnlyList<DataSourceConfig> sources, string providerId)
         => sources.FirstOrDefault(source =>
-            string.Equals(ProviderCredentialCatalog.NormalizeProviderId(source.Id), providerId, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(ProviderCredentialCatalog.NormalizeProviderId(source.Provider.ToString()), providerId, StringComparison.OrdinalIgnoreCase));
 
     private static ProviderMetrics? FindMetrics(ProviderMetricsStatus? metrics, string providerId, DataSourceConfig? source)

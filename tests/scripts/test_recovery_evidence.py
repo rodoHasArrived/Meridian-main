@@ -331,6 +331,74 @@ class RecoveryEvidenceTests(unittest.TestCase):
                 receipt[field] = value
                 self.assert_unproven(receipt, field)
 
+    def test_both_commit_identifiers_require_full_hex_strings(self):
+        invalid = (
+            None, True, 123, [], ["a" * 40], {"commit": "a" * 40},
+            "", "  ", "abcdef0", "not-a-commit", "g" * 40, "g" * 64,
+            "a" * 39, "a" * 41, "a" * 63, "a" * 65,
+            " " + "a" * 40, "a" * 40 + " ", "a" * 40 + "\n", "a" * 64 + "\n",
+        )
+        for field in ("sourceCommit", "drillSourceCommit"):
+            for value in invalid:
+                with self.subTest(field=field, value=value):
+                    receipt = complete_receipt()
+                    receipt[field] = value
+                    evaluated = self.assert_unproven(receipt, field)
+                    self.assertEqual(evaluated["rpoStatus"], "unproven")
+                    self.assertEqual(evaluated["rtoStatus"], "unproven")
+
+    def test_matching_completion_cannot_prove_malformed_commit_identifiers(self):
+        completion_fields = (
+            "reconciliationCompletedAtUtc", "reconciliationEvidence", "operatorAcceptedAtUtc",
+            "operatorAcceptedBy", "operatorAcceptanceEvidence",
+        )
+        for field in ("sourceCommit", "drillSourceCommit"):
+            for value in ("abcdef0", "not-a-commit", "g" * 40, "a" * 41, "a" * 40 + " ",
+                          "a" * 40 + "\n", "a" * 64 + "\n"):
+                with self.subTest(field=field, value=value):
+                    receipt = complete_receipt()
+                    receipt[field] = value
+                    completion = {key: receipt[key] for key in (
+                        "sourceCommit", "drillSourceCommit", "manifestSha256", "backupId",
+                        "simulatedLossAtUtc", "lossDeclaredAtUtc",
+                    ) + completion_fields}
+                    for key in completion_fields:
+                        receipt[key] = None
+                    result, evaluated = self.validate(receipt, completion)
+                    self.assertNotEqual(result.returncode, 0, result.stderr)
+                    self.assertIsNotNone(evaluated, result.stderr)
+                    self.assertEqual(evaluated["objectiveStatus"], "unproven")
+                    self.assertEqual(evaluated["rpoStatus"], "unproven")
+                    self.assertEqual(evaluated["rtoStatus"], "unproven")
+                    self.assertTrue(any(field in error for error in evaluated["objectiveErrors"]))
+
+    def test_matching_completion_cannot_legalize_non_string_commit_identifiers(self):
+        for field in ("sourceCommit", "drillSourceCommit"):
+            for value in (None, True, 123, [], ["a" * 40], {"commit": "a" * 40}):
+                with self.subTest(field=field, value=value):
+                    receipt = complete_receipt()
+                    receipt[field] = value
+                    completion = {key: receipt[key] for key in (
+                        "sourceCommit", "drillSourceCommit", "manifestSha256", "backupId",
+                        "simulatedLossAtUtc", "lossDeclaredAtUtc",
+                    )}
+                    result, evaluated = self.validate(receipt, completion)
+                    self.assertNotEqual(result.returncode, 0, result.stderr)
+                    self.assertIsNone(evaluated)
+                    self.assertIn(field + " must exactly match", result.stderr)
+
+    def test_full_sha1_and_sha256_commit_identifiers_accept_either_hex_case(self):
+        for commit in ("a1" * 20, "A1" * 20, "b2" * 32, "B2" * 32):
+            with self.subTest(commit=commit):
+                receipt = complete_receipt()
+                receipt["sourceCommit"] = commit
+                receipt["drillSourceCommit"] = commit
+                result, evaluated = self.validate(receipt)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(evaluated["objectiveStatus"], "proven")
+                self.assertEqual(evaluated["sourceCommit"], commit)
+                self.assertEqual(evaluated["drillSourceCommit"], commit)
+
     def test_completion_cannot_relabel_retained_backup_as_drill_commit(self):
         receipt = complete_receipt()
         completion = {key: receipt[key] for key in ("sourceCommit", "drillSourceCommit", "manifestSha256", "backupId", "simulatedLossAtUtc", "lossDeclaredAtUtc")}
