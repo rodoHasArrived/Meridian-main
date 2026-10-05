@@ -5,6 +5,7 @@ using FluentAssertions;
 using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
@@ -102,6 +103,38 @@ public sealed class ProviderReadinessEndpointTests
         row.IsEnabled.Should().BeFalse();
         readiness.Providers.Should().NotContain(provider =>
             provider.ProviderId == "ib" || provider.ProviderId == "interactive-brokers" || provider.ProviderId == "interactivebrokers");
+    }
+
+    [Fact]
+    public async Task GetProviderReadiness_NamedConnectionJoinsMetricsWithoutCreatingAnotherProviderFamily()
+    {
+        using var env = ProviderConnectionEnvironmentScope.Clear();
+        await using var app = await CreateAppAsync();
+        var configStore = app.Services.GetRequiredService<ConfigStore>();
+        const string connectionId = "paper-trading-session-1";
+        var timestamp = new DateTimeOffset(2026, 10, 1, 12, 0, 0, TimeSpan.Zero);
+        await configStore.SaveAsync(configStore.Load() with
+        {
+            DataSources = new DataSourcesConfig(Sources:
+            [
+                new DataSourceConfig(connectionId, "Configured IB connection", DataSourceKind.IB, Enabled: true)
+            ])
+        });
+        var metricsPath = new Meridian.Application.UI.ConfigStore(configStore.ConfigPath).GetProviderMetricsPath();
+        Directory.CreateDirectory(Path.GetDirectoryName(metricsPath)!);
+        var metrics = new ProviderMetricsStatus(timestamp,
+        [
+            new ProviderMetrics(connectionId, "Streaming", true, 0, 0, 0, 1, 0, 0, 1, 5, 5, 5, 1, 1, timestamp)
+        ], 1, 1);
+        await File.WriteAllTextAsync(metricsPath, System.Text.Json.JsonSerializer.Serialize(metrics, JsonOptions));
+
+        var readiness = await app.GetTestClient().GetFromJsonAsync<ProviderReadinessSummaryDto>(UiApiRoutes.ProviderReadiness, JsonOptions);
+
+        var row = readiness!.Providers.Should().ContainSingle(provider => provider.ProviderId == "ibkr").Subject;
+        row.IsConnected.Should().BeTrue();
+        row.LastSuccessfulAt.Should().Be(timestamp);
+        readiness.Providers.Should().NotContain(provider => provider.ProviderId == connectionId);
+        configStore.Load().DataSources!.Sources!.Should().ContainSingle().Subject.Id.Should().Be(connectionId);
     }
 
     [Fact]

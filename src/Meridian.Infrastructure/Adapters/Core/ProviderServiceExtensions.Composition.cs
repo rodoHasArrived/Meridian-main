@@ -87,7 +87,11 @@ public static partial class ProviderServiceExtensions
 
             if (registration.Contract == typeof(IMarketDataClient))
             {
-                services.TryAddTransient(registration.Implementation, Create);
+                // A shared streaming/search type has one concrete DI service: the registry's
+                // search singleton. Streaming remains a fresh, explicitly selected factory.
+                if (!registrations.Any(other => other.Implementation == registration.Implementation &&
+                        (other.Contract == typeof(IHistoricalDataProvider) || other.Contract == typeof(ISymbolSearchProvider))))
+                    services.TryAddTransient(registration.Implementation, Create);
                 continue;
             }
 
@@ -106,14 +110,12 @@ public static partial class ProviderServiceExtensions
         var pluginInventory = registry.Sources
             .Where(source => !ownedFamilies.Contains(source.Id) && pluginModules.Contains(source.ImplementationType.Module.ModuleVersionId))
             .ToArray();
-        // Plugin modules own construction and lifetime. Only bridge implementations actually
-        // registered by a module; attribute metadata alone must not bypass its configuration.
-        var pluginRegistrations = pluginInventory
-            .Where(source => registrationFactory.IsFamilyEnabled(source.Id)
-                && services.Any(service => service.ServiceType == source.ImplementationType))
-            .SelectMany(source => source.ImplementationType.GetInterfaces()
-                .Where(contract => source.CapabilityKeys.Contains(contract.FullName!))
-                .Select(contract => (source.Id, Contract: contract, Implementation: source.ImplementationType)))
+        // Discovery publishes factory descriptors only after the owning module successfully
+        // registers. Attribute metadata or an unrelated DI service cannot grant a factory.
+        var pluginRegistrations = registry.ModuleCapabilityRegistrations
+            .Where(registration => registrationFactory.IsFamilyEnabled(registration.ProviderId)
+                && pluginInventory.Any(source => source.Id == registration.ProviderId &&
+                    source.ImplementationType == registration.ImplementationType))
             .ToArray();
         services.AddSingleton(registry);
 
@@ -126,7 +128,7 @@ public static partial class ProviderServiceExtensions
             return registrations.Where(r => r.Contract == typeof(IOptionsChainProvider) && factory.IsCapabilityEnabled(r))
                 .Select(r => (IOptionsChainProvider)sp.GetRequiredService(r.Implementation))
                 .Concat(pluginRegistrations.Where(r => r.Contract == typeof(IOptionsChainProvider))
-                    .Select(r => (IOptionsChainProvider)sp.GetRequiredService(r.Implementation)))
+                    .Select(r => (IOptionsChainProvider)sp.GetRequiredService(r.ImplementationType)))
                 .ToArray();
         });
         services.AddSingleton<IOptionsChainProvider>(sp =>
@@ -150,7 +152,6 @@ public static partial class ProviderServiceExtensions
                 {
                     IMarketDataClient Create() => (IMarketDataClient)registration.Factory(factory)!;
                     providers.RegisterStreamingFactory(registration.ProviderId, Create);
-                    providers.RegisterCapabilityFactory(registration.ProviderId, registration.Contract, Create);
                 }
                 else if (registration.Contract != typeof(IHistoricalDataProvider) && registration.Contract != typeof(ISymbolSearchProvider))
                 {
@@ -162,13 +163,10 @@ public static partial class ProviderServiceExtensions
             factory.CreateAndRegisterAllAsync(providers).GetAwaiter().GetResult();
             foreach (var registration in pluginRegistrations)
             {
-                providers.RegisterCapabilityFactory(registration.Id, registration.Contract,
-                    () => sp.GetRequiredService(registration.Implementation));
-                if (registration.Contract == typeof(IMarketDataClient))
-                    providers.RegisterStreamingFactory(registration.Id,
-                        () => (IMarketDataClient)sp.GetRequiredService(registration.Implementation));
+                providers.RegisterCapabilityFactory(registration.ProviderId, registration.Contract,
+                    () => sp.GetRequiredService(registration.ImplementationType));
             }
-            foreach (var implementation in pluginRegistrations.Select(r => r.Implementation).Distinct())
+            foreach (var implementation in pluginRegistrations.Select(r => r.ImplementationType).Distinct())
             {
                 if (sp.GetRequiredService(implementation) is IProviderMetadata metadata)
                     providers.Register(metadata, ownsLifetime: false);

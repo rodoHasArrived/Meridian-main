@@ -89,8 +89,11 @@ and `AddProviderServices` consume those same descriptors; the merged catalog der
 factory flags from them without constructing disabled adapters. Module discovery runs before
 `BuildServiceProvider` and excludes descriptor-owned families, so a discovered Alpaca module
 cannot replace configured built-in factories. Explicit plugin assemblies retain ownership of
-their module-registered concrete factories and lifetimes. Attribute metadata alone cannot bypass
-module configuration. External discovery metadata projects module-only corporate-action and
+their module-registered concrete factories and lifetimes. Every built-in capability slot must
+declare a factory; metadata-only descriptors explicitly designate module ownership instead of
+falling back to reflection-based construction. Composition consumes the SDK's successful module
+capability registrations, so attribute metadata and unrelated DI registrations cannot bypass
+module configuration or failed registration. External discovery metadata projects module-only corporate-action and
 brokerage families into inventory without constructing them, including when disabled or awaiting
 configuration. Synthetic, Polygon and NYSE compatibility data sources are also recorded.
 OpenFIGI's `ISymbolResolver` remains in the adapter inventory, while the operator matrix
@@ -104,7 +107,12 @@ Polygon's corporate-action fetcher, EDGAR reference-data ingestion, and NYSE com
 history retain their explicit exclusions from unsupported shared contracts. `ProviderCompositionTests`, `ProviderCatalogCompositionTests`, and
 `ProviderModuleCompositionTests` exercise application features or the public registration method,
 configured aliases, every declared capability, module factory precedence, and template/mapper
-exclusions. Catalog presence alone does not establish live-provider readiness, and merged granular
+exclusions. Tests load every accepted family alias from serialized configuration, including
+disabled families, and verify all six contracts through the actual application registration path.
+The registry keeps streaming in the same family/contract factory store as other capabilities;
+both streaming entry points share replacement and disable behavior. If streaming and search use
+the same implementation type, concrete DI resolution reuses the search singleton while streaming
+factory calls create independent clients. Catalog presence alone does not establish live-provider readiness, and merged granular
 product metadata retains feed, entitlement, pacing, source timestamp, and quality declarations.
 Search instrument coverage is also independent of options coverage. The NYSE registration helper
 can bind configuration from the final host service provider; its compatibility interfaces resolve
