@@ -1,6 +1,8 @@
 import unittest
 from pathlib import Path
 
+import yaml
+
 from tests.scripts.workflow_assertions import assert_pinned_action
 
 
@@ -27,6 +29,12 @@ class DocumentationWorkflowTests(unittest.TestCase):
         checkout = assert_pinned_action(self, self.workflow, "regenerate-docs", "actions/checkout")
         self.assertEqual(checkout.get("with", {}).get("persist-credentials"), "false")
         self.assertEqual(checkout.get("with", {}).get("fetch-depth"), "0")
+        steps = yaml.load(self.workflow, Loader=yaml.BaseLoader)["jobs"]["regenerate-docs"]["steps"]
+        comparison = next(
+            step for step in steps
+            if step.get("name") == "Compare dashboard readiness deltas vs previous commit"
+        )
+        self.assertLess(steps.index(checkout), steps.index(comparison))
 
     def test_diagram_dependencies_use_root_lockfile(self) -> None:
         self.assertIn('"package-lock.json"', self.workflow)

@@ -162,6 +162,17 @@ class WorkflowPinContractRegressionTests(unittest.TestCase):
         with patch.object(Path, 'read_text', return_value=workflow):
             getattr(case, method_name)()
 
+    def test_documentation_requires_checkout_before_history_comparison(self):
+        contract = next(item for item in CONTRACTS if item.filename == 'documentation.yml')
+        original = (ROOT / '.github/workflows' / contract.filename).read_text(encoding='utf-8')
+        document = yaml.load(original, Loader=yaml.BaseLoader)
+        steps = document['jobs'][contract.job]['steps']
+        checkout = next(step for step in steps if step.get('uses', '').startswith('actions/checkout@'))
+        steps.remove(checkout)
+        steps.append(checkout)
+        with self.assertRaises(AssertionError):
+            self.check_contract(contract, yaml.safe_dump(document))
+
     def test_contracts_accept_replacement_full_sha(self):
         for contract in CONTRACTS:
             original = (ROOT / '.github/workflows' / contract.filename).read_text(encoding='utf-8')
