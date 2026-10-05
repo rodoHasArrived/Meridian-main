@@ -103,6 +103,16 @@ python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian
 The runner serializes local validation, detects active repo-owned build/test/compiler processes,
 builds before testing to avoid stale `--no-build` assemblies, uses isolated `artifacts/bin` and
 `artifacts/obj` roots by default, and writes run evidence under `.ai/validation-runs/`.
+For repeated local edits, add `--profile worktree` or `--profile session:<name>` to a `build` or
+`test` command to reuse compatible restore/build outputs. Keep the same project, SDK, framework,
+configuration, runtime, and build properties for that profile; incompatible reuse fails before
+building. Every test invocation still gets a separate report directory. Omit the profile (the test
+default) or use `--fresh` for fresh isolated validation before handing off a change. Both build and
+test commands acquire the validation lock; the test command's `--allow-concurrent` flag only
+skips detection of external build processes and keeps the lock. See
+[persistent build profiles](../development/build-observability.md#persistent-build-profiles)
+for compatibility, retention, and reset details.
+
 After a timed-out generation, build, or test attempt, run `python build/python/cli/buildctl.py
 validation-status --summary`, then `dotnet build-server shutdown`. Stop only abandoned repo-owned
 `dotnet`, `MSBuild`, `testhost`, `csc`, or `VBCSCompiler` PIDs after confirming their command lines

@@ -10,8 +10,14 @@ For runtime OTLP collector setup and trace visualization, see [otlp-trace-visual
 # Build with structured events + metrics
 make build
 
-# Build with isolated output for automation or concurrent local runs
-python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Release --isolation-key automation-run
+# Build with isolated output for automation
+python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Release --isolation-key automation-run --queue
+
+# Reuse compatible outputs during a local edit/test loop
+python3 build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --profile worktree --queue
+
+# Obtain fresh isolated test evidence before handoff
+python3 build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --fresh --queue
 
 # Run environment doctor
 make doctor
@@ -85,6 +91,104 @@ window with `--isolation-retention-days <days>`, the count guard with
 Retention skips symlink, junction, and other reparse-point artifact roots or child directories before
 recursive deletion. It also verifies resolved Python build roots remain inside the repository so a
 count-based or size-based cleanup cannot follow a linked artifact route to an external target.
+The reserved `profile-*` directories described below are excluded from automatic age, count, and
+size retention in both `buildctl.py` and `scripts/dev/SharedBuild.ps1`; retention budgets cover
+temporary isolated runs. Persistent profiles therefore need explicit cleanup when no longer used.
+
+## Persistent Build Profiles
+
+Use one profile for repeated builds and tests of the same project and build settings:
+
+```bash
+# Stable outputs for this checkout/worktree
+python3 build/python/cli/buildctl.py build --project tests/Meridian.Tests/Meridian.Tests.csproj --profile worktree --queue
+python3 build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --profile worktree --filter "FullyQualifiedName~<TestClassOrMethod>" --queue
+
+# A separate named development session within this worktree
+python3 build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --profile session:accounting --queue
+
+# Fresh validation uses a new isolation key and never reuses a profile
+python3 build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --fresh --queue
+```
+
+`--profile worktree` uses a stable key scoped to the checkout path. `--profile session:<name>` adds
+a stable session name within that worktree; use different names for separate projects or build
+settings. Both keep outputs in `artifacts/bin/profile-<hash>/` and
+`artifacts/obj/profile-<hash>/`, backed by `.ai/build-profiles/profile-<hash>.json`. These files are
+local generated state. The `profile-` isolation-key prefix is reserved for the profile runner.
+
+Before reuse, the runner compares the selected .NET SDK, project and build definitions (including
+framework declarations), configuration, target framework, runtime, and effective build properties
+with the saved manifest. A mismatch fails with a diagnostic before restore/build/test; choose a
+new session profile or explicitly reset the old one. Ordinary source edits do not invalidate the
+profile: MSBuild decides what needs recompilation. Changing a test filter does not require another
+profile. Build and test can share a profile when they use the same project and compatible settings.
+Normal profile runs still execute restore and build incrementally. `--skip-restore` and
+`--no-build` require a previously successful profile build and existing output roots. For tests,
+`--no-build` also skips restore and runs the existing assemblies; use the normal profile command
+after source edits. Use the dedicated configuration/framework/runtime options and
+`--full-wpf-build` for those settings; `--property Name=Value` arguments cannot override managed
+output paths or combine multiple assignments in one value, in any build/test mode (including
+fresh validation).
+
+Profiles are opt-in. `test` continues to allocate fresh isolated outputs by default; `--fresh`
+explicitly requests that behavior for `build` or `test`. Do not combine `--fresh` with `--profile`.
+Reused output makes the development loop incremental; retain a fresh isolated validation run for
+final evidence. Fresh output roots still use the machine's installed SDK and package cache.
+
+Build and test serialize through `.ai/locks/validation.lock` before retention, restore, build, or
+test work. `--queue` waits for the lock; without it a busy runner fails. The test command's
+`--allow-concurrent` option only skips the additional external build-process guard and never
+bypasses this lock. The lock protects shared observability outputs as well as generated build
+files. Direct `dotnet` commands and other tools must coordinate with this runner; they do not
+automatically acquire its lock.
+
+Test evidence is per invocation even when compiled outputs are reused:
+
+- Run metadata: `.ai/validation-runs/<run-id>.json`.
+- Test reports: `.ai/test-results/<run-id>/`, or `<custom-root>/<run-id>/` when passing
+  `--results-directory <custom-root>`.
+- A supplied `--run-id` names that invocation exactly and must be unused; existing run IDs are
+  rejected to preserve earlier evidence.
+- Logger `LogFileName` and `LogFilePrefix` values must be filenames within that run directory;
+  absolute paths and traversal are rejected. Build properties cannot redirect VSTest reports.
+
+To reset a profile, first wait for all repo-owned build/test work to stop and inspect
+`python3 build/python/cli/buildctl.py validation-status --summary`. Remove that profile's manifest
+and both corresponding `artifacts/bin/profile-<hash>/` and `artifacts/obj/profile-<hash>/`
+directories together. Removing only the manifest leaves incompatible output behind. Automatic
+retention never removes a persistent profile, even if it is old or exceeds the temporary-run size
+budget.
+
+To measure the development loop, warm a profile once, then record two unchanged invocations and a
+third after a reversible single-source-file edit using identical command options. Report restore,
+build, test, and total duration from each run's evidence alongside the selected SDK and project.
+Restore the source edit, then run `--fresh` separately and keep that evidence as the final isolated
+check; it is a different measurement from profile reuse.
+
+### Measured incremental loop
+
+On 2026-10-05, a Linux x64 workspace with .NET SDK 10.0.100 ran
+`buildctl.py build --project src/Meridian.Contracts/Meridian.Contracts.csproj --configuration Release
+--framework net10.0 --verbosity normal`, using one named session profile for the first four runs
+and `--fresh` for the final run. Each measurement includes runner startup, compatibility checks,
+restore, and build; the NuGet package cache remained available.
+
+| Run | Elapsed | Assembly observation |
+| --- | ---: | --- |
+| Profile seed | 15.09 s | New output |
+| Unchanged 1 | 1.97 s | Same assembly timestamp and hash |
+| Unchanged 2 | 2.03 s | Same assembly timestamp and hash |
+| One source-file edit | 15.00 s | Assembly recompiled |
+| Fresh isolated build | 15.30 s | New independent output root |
+
+The edit appended a temporary comment to `src/Meridian.Contracts/Text/TextPrimitives.cs`; the
+original bytes were restored before the fresh build. This is one local sample, not a CI performance
+threshold. Independent test validation used `Meridian.Setup.Tests`: 13 tests passed in each of two
+persistent runs and a separate fresh run, with three distinct TRX directories. The persistent test
+build step fell from 7.89 s to 0.97 s; the fresh test build took 7.43 s.
+
+## Other Generated Output Retention
 
 `build/scripts/publish/publish.ps1` keeps the default `./dist` publish behavior unchanged. When
 automation points `-OutputDir` under `artifacts/publish/<run-name>`, the script prunes sibling
