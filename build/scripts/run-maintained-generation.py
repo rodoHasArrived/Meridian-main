@@ -272,7 +272,7 @@ def run_generation(root: Path, steps: list[Step], policy: dict, max_passes: int 
             break
         previous = current
     if not report["converged"]:
-        report["error"] = ("Generation failed or changed protected content" if report["failed_steps"]
+        report["error"] = ("Generation failed or changed protected content" if any(not step["optional"] for step in report["failed_steps"])
                            or report["protection_violations"] else f"No fixed point after {max_passes} passes")
     return report
 

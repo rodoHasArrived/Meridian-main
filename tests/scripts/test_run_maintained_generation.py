@@ -243,6 +243,29 @@ class MaintainedGenerationTests(unittest.TestCase):
         self.assertFalse(report["converged"], report)
         self.assertEqual(2, len(report["passes"]))
 
+    def test_advisory_failure_does_not_mask_nonconvergence_at_the_iteration_cap(self) -> None:
+        self.write(STRUCTURE, "a\n")
+
+        def runner(root: Path, step) -> int:
+            if step.optional:
+                return 9
+            old = (root / STRUCTURE).read_text(encoding="utf-8")
+            self.write(STRUCTURE, "b\n" if old == "a\n" else "a\n")
+            return 0
+
+        report = generation.run_generation(
+            self.repo, [self.step("uml", optional=True), self.step("oscillating")],
+            self.policy, max_passes=2, runner=runner,
+        )
+
+        self.assertFalse(report["successful"], report)
+        self.assertFalse(report["converged"], report)
+        self.assertEqual(2, len(report["passes"]))
+        self.assertEqual("No fixed point after 2 passes", report["error"])
+        self.assertEqual(1, len(report["failed_steps"]))
+        self.assertEqual("uml", report["failed_steps"][0]["name"])
+        self.assertTrue(report["failed_steps"][0]["optional"])
+
     def test_successful_build_reports_obsolete_hash_removal_and_is_repeatable(self) -> None:
         self.write(OLD_ASSET, "stale bytes\n")
         self.git("add", "--all")
