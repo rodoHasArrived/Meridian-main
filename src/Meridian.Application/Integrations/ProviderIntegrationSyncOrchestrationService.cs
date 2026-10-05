@@ -191,6 +191,7 @@ public sealed class ProviderIntegrationSyncOrchestrationService
                         request.RequestedBy,
                         request.RequestedAt,
                         request.MaxPages <= 0 ? 1 : request.MaxPages),
+                    manifest,
                     ct)
                 .ConfigureAwait(false);
             completedDryRunsByEndpoint[planItem.EndpointKey] = dryRun;
@@ -282,6 +283,7 @@ public sealed class ProviderIntegrationSyncOrchestrationService
                         request.RequestedBy,
                         request.RequestedAt,
                         request.MaxPages <= 0 ? 1 : request.MaxPages),
+                    manifest,
                     ct)
                 .ConfigureAwait(false);
             completedDryRunsByEndpoint[dependency.EndpointKey] = dependencyDryRun;
@@ -336,6 +338,7 @@ public sealed class ProviderIntegrationSyncOrchestrationService
                         request.RequestedBy,
                         request.RequestedAt,
                         request.MaxPages <= 0 ? 1 : request.MaxPages),
+                    manifest,
                     ct)
                 .ConfigureAwait(false);
             childResults.Add(childResult);
