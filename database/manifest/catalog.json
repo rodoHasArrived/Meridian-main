@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "8e448fba69ac463b201f4f7b864123c6c415feefe0f2c862a9c6590dc05d721a",
+  "database_fingerprint": "b79a9de0befd8cfa764ec4238283197d3f8e6e9014b368cf1766600de61c83d6",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -1701,6 +1701,18 @@
       "source_name": null,
       "source_schema": "ledger",
       "target": "ledger.tax_lot_mutations.cost_basis",
+      "target_kind": "table column",
+      "target_name": "tax_lot_mutations",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "a171ea0ba99e17188a210394c2ed9727f476821087e19bae3b8e2c4c01b6f0f8",
+      "kind": "normal",
+      "source": "ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lot_mutations.lot_snapshot_before",
       "target_kind": "table column",
       "target_name": "tax_lot_mutations",
       "target_schema": "ledger"
@@ -18101,7 +18113,7 @@
       "object": "constraint:ledger.tax_lot_mutations.ck_tax_lot_mutations_asset_scope"
     },
     {
-      "fingerprint": "c82f4ae1a89e1298ceca7a2d12e732f0802f1c7e49fc7550310badf69e01fdce",
+      "fingerprint": "6daea88c6bab1afd50cc53b088678c14aef1d8a2bff4b10bd92515304b44b157",
       "object": "constraint:ledger.tax_lot_mutations.ck_tax_lot_mutations_cost"
     },
     {
@@ -20391,6 +20403,10 @@
     {
       "fingerprint": "1ebc773476ec84ffa70edd7b41ccd7ddd29e68ec50c7f74572b2fc44bfe1c903",
       "object": "dependency:ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations->ledger.tax_lot_mutations.cost_basis:normal"
+    },
+    {
+      "fingerprint": "a171ea0ba99e17188a210394c2ed9727f476821087e19bae3b8e2c4c01b6f0f8",
+      "object": "dependency:ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations->ledger.tax_lot_mutations.lot_snapshot_before:normal"
     },
     {
       "fingerprint": "b09535555a594918b1a435651590fd676d918713f10bf33547fcc3f463452a33",
@@ -25613,7 +25629,7 @@
       "object": "schema:identity_access"
     },
     {
-      "fingerprint": "13a500b0e902e33592b213c547bd5a15f3320ea2f91189d84b9d7fa0a2a530b7",
+      "fingerprint": "157f36fdc4699c37422c06f3a7564755774e883d135747cfe7fb8e453facadf1",
       "object": "schema:ledger"
     },
     {
@@ -25961,7 +25977,7 @@
       "object": "table:ledger.period_close_events"
     },
     {
-      "fingerprint": "62bf1a06df97f42b845c74ae944e364b5cc7912fb6b99099b86dc5614d234d62",
+      "fingerprint": "b2ff294ce0a18744c7126245cf0a23add9b0851352b2d8bf3783d6a1b48cd1bf",
       "object": "table:ledger.tax_lot_mutations"
     },
     {
@@ -61684,6 +61700,18 @@
           "target_schema": "ledger"
         },
         {
+          "fingerprint": "a171ea0ba99e17188a210394c2ed9727f476821087e19bae3b8e2c4c01b6f0f8",
+          "kind": "normal",
+          "source": "ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.tax_lot_mutations.lot_snapshot_before",
+          "target_kind": "table column",
+          "target_name": "tax_lot_mutations",
+          "target_schema": "ledger"
+        },
+        {
           "fingerprint": "b09535555a594918b1a435651590fd676d918713f10bf33547fcc3f463452a33",
           "kind": "normal",
           "source": "ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
@@ -63164,7 +63192,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "13a500b0e902e33592b213c547bd5a15f3320ea2f91189d84b9d7fa0a2a530b7",
+      "fingerprint": "157f36fdc4699c37422c06f3a7564755774e883d135747cfe7fb8e453facadf1",
       "foreign_tables": [],
       "functions": [
         {
@@ -75974,13 +76002,14 @@
                 "cost_basis",
                 "quantity_delta",
                 "relief_method",
-                "mutation_kind"
+                "mutation_kind",
+                "lot_snapshot_before"
               ],
               "comment": null,
               "deferrable": false,
-              "definition": "CHECK (unit_cost >= 0::numeric AND cost_basis >= 0::numeric AND (cost_basis = (abs(quantity_delta) * unit_cost) OR lower(COALESCE(relief_method, ''::text)) = 'averagecost'::text OR mutation_kind = 'Amortization'::text AND cost_basis > 0::numeric))",
+              "definition": "CHECK (unit_cost >= 0::numeric AND cost_basis >= 0::numeric AND (cost_basis = (abs(quantity_delta) * unit_cost) OR lower(COALESCE(relief_method, ''::text)) = 'averagecost'::text OR mutation_kind = 'Amortization'::text AND cost_basis > 0::numeric OR mutation_kind = 'Disposal'::text AND (lower(COALESCE(relief_method, ''::text)) = ANY (ARRAY['fifo'::text, 'lifo'::text, 'hifo'::text, 'specificid'::text])) AND COALESCE(jsonb_typeof(lot_snapshot_before -> 'acquisition'::text) = 'object'::text, false) AND COALESCE(jsonb_typeof(lot_snapshot_before -> 'basisAdjustment'::text) = 'object'::text, false)))",
               "delete_action": null,
-              "fingerprint": "c82f4ae1a89e1298ceca7a2d12e732f0802f1c7e49fc7550310badf69e01fdce",
+              "fingerprint": "6daea88c6bab1afd50cc53b088678c14aef1d8a2bff4b10bd92515304b44b157",
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_tax_lot_mutations_cost",
@@ -76231,7 +76260,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "62bf1a06df97f42b845c74ae944e364b5cc7912fb6b99099b86dc5614d234d62",
+          "fingerprint": "b2ff294ce0a18744c7126245cf0a23add9b0851352b2d8bf3783d6a1b48cd1bf",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -90903,13 +90932,14 @@
                 "cost_basis",
                 "quantity_delta",
                 "relief_method",
-                "mutation_kind"
+                "mutation_kind",
+                "lot_snapshot_before"
               ],
               "comment": null,
               "deferrable": false,
-              "definition": "CHECK (unit_cost >= 0::numeric AND cost_basis >= 0::numeric AND (cost_basis = (abs(quantity_delta) * unit_cost) OR lower(COALESCE(relief_method, ''::text)) = 'averagecost'::text OR mutation_kind = 'Amortization'::text AND cost_basis > 0::numeric))",
+              "definition": "CHECK (unit_cost >= 0::numeric AND cost_basis >= 0::numeric AND (cost_basis = (abs(quantity_delta) * unit_cost) OR lower(COALESCE(relief_method, ''::text)) = 'averagecost'::text OR mutation_kind = 'Amortization'::text AND cost_basis > 0::numeric OR mutation_kind = 'Disposal'::text AND (lower(COALESCE(relief_method, ''::text)) = ANY (ARRAY['fifo'::text, 'lifo'::text, 'hifo'::text, 'specificid'::text])) AND COALESCE(jsonb_typeof(lot_snapshot_before -> 'acquisition'::text) = 'object'::text, false) AND COALESCE(jsonb_typeof(lot_snapshot_before -> 'basisAdjustment'::text) = 'object'::text, false)))",
               "delete_action": null,
-              "fingerprint": "c82f4ae1a89e1298ceca7a2d12e732f0802f1c7e49fc7550310badf69e01fdce",
+              "fingerprint": "6daea88c6bab1afd50cc53b088678c14aef1d8a2bff4b10bd92515304b44b157",
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_tax_lot_mutations_cost",
@@ -91160,7 +91190,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "62bf1a06df97f42b845c74ae944e364b5cc7912fb6b99099b86dc5614d234d62",
+          "fingerprint": "b2ff294ce0a18744c7126245cf0a23add9b0851352b2d8bf3783d6a1b48cd1bf",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
