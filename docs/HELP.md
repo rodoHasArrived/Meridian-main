@@ -172,9 +172,9 @@ The commands below are generated from `docs/status/workflow-manifest.json`.
 
 - Owners: @storage-platform, @developer-experience
 - Commands:
-  - `python3 build/scripts/schema-control.py inventory --base-ref origin/main`
-  - `python3 build/scripts/schema-control.py verify --database-url "$DATABASE_URL" --base-ref origin/main`
-  - `gh workflow run schema-control.yml --ref <branch> -f mode=snapshot`
+  - `python3 build/scripts/schema-control.py inventory --base-ref <baseline-sha>`
+  - `python3 build/scripts/schema-control.py verify --database-url "$DATABASE_URL" --base-ref <baseline-sha>`
+  - `gh workflow run schema-control.yml --ref <branch> -f mode=snapshot -f baseline_ref=<baseline-sha>`
 
 #### `desktop-screenshot-catalog`
 
