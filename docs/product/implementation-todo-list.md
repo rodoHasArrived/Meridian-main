@@ -665,3 +665,24 @@ last. Failed attempts remove only their owned paths and retain previously publis
 Tenant quotas, aggregate package reservations, retention policy and broader document-runtime
 ownership remain open PRD-105 work. Focused regression results are retained with the change; this
 receipt does not close the parent item.
+
+### Partial PRD-105 storage quotas - 2026-10-05
+
+Evidence Vault intake/export now uses configurable artifact/package/count limits, tenant budgets
+across company scopes, and disk-headroom checks. `Meridian.Documents` owns admission policy and
+durable reservations; the shared vault adapter supplies retained usage and attempt-specific
+publication/recovery. Capacity is reserved before intake/export writes, extended before growth,
+and reconciled against actual artifact, UTF-8 manifest, and index bytes. Shared-root filesystem
+locks serialize admission/publication, while lifetime leases prevent reclaiming live operations.
+The next write recovers abandoned attempts; failed cleanup retains its capacity charge. Streaming
+copy, index-last publication, and preservation of published evidence remain intact.
+
+Configuration and defaults are documented in `src/Meridian.Documents/README.md`. Regression
+coverage is added in `EvidenceStorageQuotaCoordinatorTests`,
+`FileEvidenceArtifactStoreQuotaTests`, and `FileEvidenceArtifactStoreBufferedQuotaTests` for
+concurrent near-limit requests, underestimated sources, disk pressure, cancellation/retry,
+actual-byte reconciliation, and restart recovery. Focused validation on implementation commit
+`fb7fe807d` passed 162 tests with zero skips. Broader local CI and required hosted checks remain
+pending and are tracked in [PR #3071](https://github.com/rodoHasArrived/Meridian-main/pull/3071).
+Retention policy, broader document-runtime ownership, and quota admission for document-review
+metadata rewrites remain open; the parent PRD-105 item is not closed by this slice.

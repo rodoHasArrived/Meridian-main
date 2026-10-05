@@ -4524,6 +4524,9 @@ Meridian-main
 │   │   ├── DesignModule.cs
 │   │   ├── DeterministicDocumentPackaging.cs
 │   │   ├── DocumentsServiceCollectionExtensions.cs
+│   │   ├── EvidenceStorageQuotaCoordinator.cs
+│   │   ├── EvidenceStorageQuotaOptions.cs
+│   │   ├── EvidenceStorageReservation.cs
 │   │   ├── FinancialReportDocumentRenderer.cs
 │   │   ├── Meridian.Documents.csproj
 │   │   ├── README.md
@@ -7574,6 +7577,7 @@ Meridian-main
 │   │   │   ├── FileEvidenceArtifactStore.DocumentReview.cs
 │   │   │   ├── FileEvidenceArtifactStore.Export.cs
 │   │   │   ├── FileEvidenceArtifactStore.Models.cs
+│   │   │   ├── FileEvidenceArtifactStore.StorageQuota.cs
 │   │   │   ├── FileEvidenceArtifactStore.VaultAccess.cs
 │   │   │   ├── FileStatementReconciliationReportAuthorityStore.cs
 │   │   │   ├── JournalEntryEvidenceContributor.cs
@@ -8786,6 +8790,7 @@ Meridian-main
 │   │   ├── Meridian.ProcessTestHelper.runtimeconfig.json
 │   │   ├── Program.cs
 │   │   ├── Program.Etl.cs
+│   │   ├── Program.EvidenceQuota.cs
 │   │   ├── Program.Identity.cs
 │   │   └── Program.ManifestLock.cs
 │   ├── Meridian.QuantScript.Tests
@@ -9755,6 +9760,8 @@ Meridian-main
 │   │   │   └── DepositProjectionServiceTests.cs
 │   │   ├── Derivatives
 │   │   │   └── SwapProjectionServiceTests.cs
+│   │   ├── Documents
+│   │   │   └── EvidenceStorageQuotaCoordinatorTests.cs
 │   │   ├── Domain
 │   │   │   ├── Collectors
 │   │   │   │   ├── CollectorSourceProvenanceTests.cs
@@ -10587,7 +10594,9 @@ Meridian-main
 │   │   │   ├── Evidence
 │   │   │   │   ├── EvidenceDocumentExtractionTests.cs
 │   │   │   │   ├── EvidenceProofChainBuilderTests.cs
+│   │   │   │   ├── FileEvidenceArtifactStoreBufferedQuotaTests.cs
 │   │   │   │   ├── FileEvidenceArtifactStoreExportTests.cs
+│   │   │   │   ├── FileEvidenceArtifactStoreQuotaTests.cs
 │   │   │   │   ├── JournalEntryEvidenceTests.cs
 │   │   │   │   ├── ReconciliationEvidenceContributorTests.cs
 │   │   │   │   └── SecurityMasterAndVaultEvidenceContributorTests.cs
