@@ -58,7 +58,7 @@ env:
 jobs:
   publish:
     name: verify-release (publish ${{ inputs.project }} ${{ inputs.runtime }})
-    runs-on: windows-latest
+    runs-on: windows-2025
     timeout-minutes: 60
 
     steps:
@@ -103,6 +103,12 @@ jobs:
           if ($env:RUNTIME -notin @('win-x64', 'win-arm64')) { throw 'Unsupported runtime.' }
           if ($env:VERSION -notmatch '^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$') { throw 'Invalid version.' }
 
+      - name: Resolve approved PostgreSQL before publishing
+        if: inputs.project == 'web-workstation' && inputs.runtime == 'win-x64'
+        shell: pwsh
+        run: |
+          & ./build/scripts/install/resolve-postgresql-payload.ps1
+
       - name: Run publish script
         shell: pwsh
         run: |
@@ -127,15 +133,10 @@ jobs:
             -c Release -r win-x64 -o $installSmokeHost --self-contained true `
             -p:PublishSingleFile=true -p:PublishReadyToRun=false -p:PublishTrimmed=false
 
-          # Runner PostgreSQL directories are major-only names like '17', which
-          # [version] refuses to parse; sort on the leading integer instead.
-          $postgres = Get-ChildItem 'C:\Program Files\PostgreSQL' -Directory -ErrorAction Stop |
-            Where-Object { $_.Name -match '^\d+' } |
-            Sort-Object { [int]($_.Name -replace '^(\d+).*$', '$1') } -Descending | Select-Object -First 1
-          if ($null -eq $postgres) { throw 'GitHub Windows runner has no PostgreSQL runtime for installed startup smoke.' }
+          . ./build/scripts/install/postgresql-payload.ps1
+          $null = Assert-PostgreSqlPayload -PayloadRoot artifacts/postgresql-payload `
+            -RuntimeIdentifier win-x64 -ApprovalPath build/config/postgresql-payload.json
           $payload = 'artifacts/postgresql-payload/win-x64'
-          New-Item -ItemType Directory -Path $payload -Force | Out-Null
-          Copy-Item -Path (Join-Path $postgres.FullName '*') -Destination $payload -Recurse -Force
           Copy-Item -LiteralPath $payload -Destination (Join-Path $installSmokeHost 'database') -Recurse -Force
 
       - name: Start the published WebWorkstation artifact with required authentication
@@ -160,6 +161,9 @@ jobs:
           $lanes = @('--validation-lane', 'publish-smoke')
           if ('${{ steps.installed_startup.outcome }}' -eq 'success') {
             $lanes += @('--validation-lane', 'web-workstation-installed-startup')
+            Copy-Item -LiteralPath artifacts/postgresql-payload/win-x64-payload.json `
+              -Destination artifacts/publish/publish-smoke/postgresql-payload.json
+            $lanes += @('--postgresql-payload-receipt', 'artifacts/publish/publish-smoke/postgresql-payload.json')
           } else {
             Write-Host "::notice::This dispatch did not run installed startup; it is publish evidence only, not PRD-013 installed-startup evidence."
           }

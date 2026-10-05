@@ -103,6 +103,15 @@ python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian
 The runner serializes local validation, detects active repo-owned build/test/compiler processes,
 builds before testing to avoid stale `--no-build` assemblies, uses isolated `artifacts/bin` and
 `artifacts/obj` roots by default, and writes run evidence under `.ai/validation-runs/`.
+Each normal run restores, builds once, then invokes `dotnet test --no-build --no-restore`.
+To explicitly reuse outputs, pass `--no-build --isolation-key <existing-key>` (the prior run's
+`isolationKey` in its evidence JSON), or `--no-build --no-isolation` for shared outputs.
+Reuse skips both restore and compilation and requires the same project, configuration, framework,
+runtime, and MSBuild properties used to produce the outputs. It does not check source freshness;
+rerun without `--no-build` after source changes or when outputs are missing or incompatible.
+The default `auto` isolation key is rejected with `--no-build` because it selects a new output
+location. Missing outputs fail the test step without falling back to a build.
+
 After a timed-out generation, build, or test attempt, run `python build/python/cli/buildctl.py
 validation-status --summary`, then `dotnet build-server shutdown`. Stop only abandoned repo-owned
 `dotnet`, `MSBuild`, `testhost`, `csc`, or `VBCSCompiler` PIDs after confirming their command lines
@@ -218,10 +227,17 @@ dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore --no-d
 ## Local Run
 
 ```powershell
-dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080
-npm --prefix src/Meridian.Ui/dashboard run dev
+npm run dev
+npm run dev:fixtures
 pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development
 ```
+
+For browser development, `npm run dev` coordinates the seeded host, backend watch mode, and
+Vite; `npm run dev:fixtures` selects fixture-only API responses. See the
+[browser development launcher](web-development.md) for prerequisites, port/data options,
+readiness, process ownership, and hot-reload/restart/shutdown acceptance checks. To serve the
+tracked browser bundle directly with a configured host, use
+`dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080`.
 
 Use `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly` for a Release
 host/desktop build that does not require database connectivity. Use `-LaunchMode Production`
@@ -234,7 +250,7 @@ launched processes, then restores the caller's environment.
 
 ### Persistence
 
-Every launch except `--seed-demo` needs a persistence decision and **fails closed at startup**
+Non-demo host launches need a persistence decision and **fail closed at startup**
 without one: `StorageFeatureRegistration` throws, naming the missing variable, rather than silently
 running in-memory. Set `MERIDIAN_DATABASE_URL` to persist every store domain to one PostgreSQL
 database; per-domain `MERIDIAN_*_CONNECTION_STRING` variables take precedence over it, so

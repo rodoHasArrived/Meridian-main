@@ -241,7 +241,7 @@ jobs:
   package-consumer-setup:
     name: package-evaluation-consumer-setup (win-x64)
     needs: preflight
-    runs-on: windows-latest
+    runs-on: windows-2025
     timeout-minutes: 90
 
     steps:
@@ -274,17 +274,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-v1-
 
-      # Same payload source as the production installer lane: the hosted image's own PostgreSQL.
+      # Evaluation uses the same reviewed payload as production and installed startup.
       - name: Materialize the PostgreSQL payload
         shell: pwsh
         run: |
-          $postgres = Get-ChildItem 'C:\Program Files\PostgreSQL' -Directory -ErrorAction Stop |
-            Where-Object { $_.Name -match '^\d+' } |
-            Sort-Object { [int]($_.Name -replace '^(\d+).*$', '$1') } -Descending | Select-Object -First 1
-          if ($null -eq $postgres) { throw 'The hosted Windows runner has no PostgreSQL runtime to bundle.' }
-          $payload = 'artifacts/postgresql-payload/win-x64'
-          New-Item -ItemType Directory -Path $payload -Force | Out-Null
-          Copy-Item -Path (Join-Path $postgres.FullName '*') -Destination $payload -Recurse -Force
+          & ./build/scripts/install/resolve-postgresql-payload.ps1
 
       # Unsigned on purpose: this is the same posture the MSIX discloses. An evaluation build has
       # no verified publisher identity, and pretending otherwise with a throwaway Authenticode
@@ -304,7 +298,8 @@ jobs:
         run: |
           python build/scripts/ci/generate-release-evidence-manifest.py `
             --project consumer-setup `
-            --runtime windows `
+            --postgresql-payload-receipt artifacts/consumer-setup/consumer-setup-win-x64-postgresql-payload.json `
+            --runtime win-x64 `
             --artifact-root artifacts/consumer-setup `
             --output artifacts/consumer-setup/release-evidence.json `
             --workflow-run-id $env:WORKFLOW_RUN_ID `
