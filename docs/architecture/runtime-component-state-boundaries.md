@@ -2,51 +2,76 @@
 
 ## Purpose
 
-This document inventories Meridian runtime components and classifies each component as **stateless service** or **stateful dependency** so scaling, resiliency, and failover designs can be implemented consistently.
+This document distinguishes reusable processing services from the state and ownership controls
+that determine restart, failover, and deployment safety. Meridian's current architecture is a
+[modular operational monolith](../adr/017-modular-operational-monolith.md); a service interface does
+not imply an independently deployable or automatically scalable service.
+
+Maintenance check 2026-10-05: state classification and write boundaries were checked against the
+[host source guide](../../src/Meridian/README.md),
+[UI Services guide](../../src/Meridian.Ui.Services/README.md), and
+[credential-store contract](../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs).
+This check does not certify multi-instance deployment or failover.
 
 ## Classification rubric
 
-- **Stateless service**: no durable business state retained in-process between requests/events. Can be replaced or scaled horizontally without data migration.
-- **Stateful dependency**: owns durable state, mutable checkpoints, or ordered logs that affect correctness and recovery.
+- **Stateless computation**: business results derive from explicit inputs and owned dependencies;
+  no independent durable authority lives in the computation itself.
+- **Stateful dependency**: retains authoritative records, checkpoints, credentials, ordered logs,
+  or ownership needed for correctness and recovery.
+- **Stateful runtime**: coordinates in-flight work, subscriptions, queues, locks, or sessions.
+  Some state can be rebuilt, but restart and concurrent ownership still require explicit rules.
 
 ## Stateless services
 
-| Component | Runtime role | Notes |
+These are logical responsibilities, not a claim that their containing process can be replicated:
+
+| Component | Runtime role | State and ownership limits |
 | --- | --- | --- |
-| `src/Meridian/Meridian.csproj` host process | API + orchestration host | Stateless when pointed at externalized storage/checkpoints. |
-| `src/Meridian.Ui.Shared` endpoint surface | HTTP route composition, DTO projection | Stateless; sources state from services/providers. |
-| `src/Meridian.Ui.Services` API adapters | UI/host connection and transport logic | Stateless transport + mapping layer. |
-| `src/Meridian.Wpf` desktop shell process | Operator shell and workflow execution | Treat as stateless client runtime; critical state is server-side. |
-| Provider adapters (`IMarketDataClient`, `IHistoricalDataProvider`) | Feed and backfill connectors | Keep sessions ephemeral; reconnect-safe through persisted checkpoints. |
-| Pipeline processors (bounded channels and handlers) | Normalize/transform market events | Must remain replayable from durable input + checkpoints. |
+| `Meridian.Ui.Shared` endpoint surface | HTTP dispatch, DTO projection, and governed command admission | Reads and writes delegate to owned services; authentication, scoped authority, idempotency, and persistence guards still apply. |
+| Pure domain rules and projections | Validate inputs and derive results | Keep correctness independent of UI state; authoritative inputs and retained outputs belong to their owning stores. |
+| API transport adapters | Send authorized commands and read shared results | Session, retry, and client cache state are not a second source of financial truth. |
 
 ## Stateful dependencies
 
 | Dependency | State ownership | Boundary contract |
 | --- | --- | --- |
-| Write-ahead log (WAL) / event archives | Ordered ingest history and recovery source | Producers append-only; consumers replay idempotently. |
-| Storage sinks (`IStorageSink`) | Durable bars/trades/depth datasets | Versioned schema and integrity validation required. |
-| Checkpoint stores | Cursor/offset progression and replay continuity | Updates must be monotonic and atomic. |
-| Reconciliation and accounting ledgers | Fund accounting truth and break queues | Strict consistency + audit traceability required. |
-| Secrets/config stores | Runtime credentials and environment overlays | Read-only to app at runtime; rotate without rebuild. |
-| Metrics/time-series backend | SLO, latency, backlog, and burn-rate evidence | Centralized sink for autoscaling and dashboarding. |
+| Host process and local data root | Coordinates workers and retains file-backed state, including identity/session data | Externalizing one database does not make the host stateless; inventory every store, worker, and ownership boundary before running concurrent instances. |
+| WAL and event archives | Ordered ingest history and recovery source | Append durably and replay idempotently. |
+| Storage sinks and checkpoint stores | Datasets, cursor progression, and replay continuity | Preserve versioned schemas and integrity checks; checkpoint updates must be atomic and monotonic within their replay/job contract. |
+| Reconciliation and accounting stores | Governed records, journal truth, break queues, and evidence | Preserve transactions, scoped authority, optimistic concurrency, and audit lineage. |
+| Credential/configuration stores | Encrypted secrets, ownership, verification, and configuration | Authorized runtime APIs can save, rotate, verify, and remove records; environment fallback is a separate store-owned policy. |
+| Metrics and time-series backend | Operational telemetry and SLO evidence | Use the retained application record for financial or workflow authority. |
+
+Provider adapters also hold connections and subscriptions. Pipelines and worker services retain
+in-flight queues and ownership. Reconnect or replay capability must not be mistaken for safe
+concurrent execution. WPF and browser clients have presentation/session state; financial authority
+belongs to the shared governed service and store.
 
 ## Service boundaries
 
-1. **Ingress boundary**: provider adapters -> bounded ingress queues.
-2. **Processing boundary**: processor workers -> normalized event stream.
-3. **Persistence boundary**: storage sink + WAL append with checkpoint updates.
-4. **Operator boundary**: workstation endpoints aggregate read-models only.
-5. **Control boundary**: health/readiness/metrics endpoints expose runtime posture but do not mutate domain state.
+1. **Ingress boundary**: provider adapters feed bounded queues under their subscription owner.
+2. **Processing boundary**: workers normalize events with explicit overload and cancellation policy.
+3. **Persistence boundary**: writers coordinate durable data, evidence, and checkpoints under the
+   relevant [write-path invariants](write-path-invariants.md).
+4. **Operator boundary**: workstation endpoints expose both read models and governed mutations;
+   commands must preserve authorization, scope, concurrency, idempotency, and evidence controls.
+5. **Control boundary**: health/readiness/metrics reads report runtime posture. Separate lifecycle
+   commands can change process state and have their own authorization and ownership requirements.
 
 ## Required reliability controls by boundary
 
-- Ingress: bounded queues + overload shedding + retry with jitter for transient transport errors.
-- Processing: worker concurrency caps + circuit breaker on repeated downstream failures.
-- Persistence: dead-letter capture for non-retriable records and explicit replay tooling.
-- Operator: degraded dependency surfacing in readiness payload and workstation status panels.
+- Ingress: bounded queues and an explicit, observable overload policy.
+- Processing: bounded worker concurrency, cancellation, transient retry with jitter, and circuit
+  breakers for repeated downstream failures.
+- Persistence: dead-letter or other durable failure evidence and bounded replay or recovery for the
+  owning operation.
+- Operator: visible dependency failures, blocked outcomes, and supported recovery actions.
 
 ## Scaling policy anchors
 
-- Horizontal scale **stateless services** based on queue depth, p95 processing latency, CPU%, memory%, and error budget burn.
-- Scale or fail over **stateful dependencies** only through runbook-governed promotion and verified checkpoints.
+Queue depth, latency, CPU, and error-budget data can inform capacity planning. Before adding a host
+or worker, establish shared-store support, leader/job ownership, replay/idempotency behavior, and
+session/credential continuity for that deployment. Use the [deployment guide](../operators/deployment-packaging.md)
+and [failover runbook](../operators/failover-and-recovery.md); a high queue-depth reading alone does
+not authorize additional concurrent owners.

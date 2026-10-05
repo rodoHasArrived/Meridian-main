@@ -23,16 +23,6 @@ public sealed record DataSourceDiscoveryFailure(
     string ErrorMessage);
 
 /// <summary>
-/// A discovered capability whose concrete factory was published by a successful provider module.
-/// Resolve <see cref="ImplementationType"/> from the application container to preserve the
-/// module's configuration and container-owned singleton or transient lifetime.
-/// </summary>
-public sealed record ProviderModuleCapabilityRegistration(
-    string ProviderId,
-    Type Contract,
-    Type ImplementationType);
-
-/// <summary>
 /// Immutable cumulative snapshot of provider discovery and module registration activity.
 /// </summary>
 public sealed record ProviderRegistrationReport(
@@ -416,55 +406,75 @@ public sealed class DataSourceRegistry
             _moduleOwnedFamilies.Add(ProviderIdentity.NormalizeId(moduleId));
     }
 
+    /// <summary>
+    /// Publishes a module's services, discovered metadata and capability inventory together.
+    /// Both loading entry points use this transaction after module validation succeeds.
+    /// </summary>
     internal void RegisterModuleServices(IServiceCollection services, IProviderModule module)
     {
-        var moduleId = ProviderIdentity.NormalizeId(module.ModuleId);
-        IServiceCollection staged = new ServiceCollection();
-        foreach (var descriptor in services)
-            staged.Add(descriptor);
-
-        module.Register(staged, this);
-
-        var added = staged.Where(descriptor => !services.Contains(descriptor)).ToArray();
-        var registrations = new List<ProviderModuleCapabilityRegistration>();
-        foreach (var source in Sources.Where(source => source.Id == moduleId))
-        {
-            var contracts = GetCapabilityContracts(source).ToArray();
-            var concreteFactory = staged.LastOrDefault(descriptor =>
-                !descriptor.IsKeyedService && descriptor.ServiceType == source.ImplementationType);
-            if (concreteFactory is null || !added.Contains(concreteFactory))
-            {
-                if (added.Any(descriptor => !descriptor.IsKeyedService && contracts.Contains(descriptor.ServiceType)))
-                {
-                    throw new InvalidOperationException(
-                        $"Provider module '{moduleId}' registered a capability interface without its concrete factory '{source.ImplementationType.FullName}'. " +
-                        "Register the concrete implementation and forward interface registrations to that instance.");
-                }
-                continue;
-            }
-
-            if (concreteFactory.Lifetime == ServiceLifetime.Scoped)
-            {
-                throw new InvalidOperationException(
-                    $"Provider module '{moduleId}' registered a scoped concrete factory '{source.ImplementationType.FullName}'. " +
-                    "Provider capability factories must be singleton or transient because the provider registry belongs to the application host.");
-            }
-
-            registrations.AddRange(contracts.Select(contract =>
-                new ProviderModuleCapabilityRegistration(moduleId, contract, source.ImplementationType)));
-        }
-
-        // Publish only after every capability registration is valid. An exception above or in
-        // Register leaves the caller's service collection and capability inventory unchanged.
-        services.Clear();
-        foreach (var descriptor in staged)
-            services.Add(descriptor);
         lock (_sync)
         {
-            foreach (var registration in registrations)
+            var moduleId = ProviderIdentity.NormalizeId(module.ModuleId);
+            IServiceCollection staged = new ServiceCollection();
+            foreach (var descriptor in services)
+                staged.Add(descriptor);
+
+            var originalSources = _sources.ToArray();
+            var originalRegistrations = _moduleCapabilityRegistrations.ToArray();
+            try
             {
-                if (!_moduleCapabilityRegistrations.Contains(registration))
-                    _moduleCapabilityRegistrations.Add(registration);
+                module.Register(staged, this);
+
+                var added = staged.Where(descriptor => !services.Contains(descriptor)).ToArray();
+                var registrations = new List<ProviderModuleCapabilityRegistration>();
+                foreach (var source in Sources.Where(source => source.Id == moduleId))
+                {
+                    var contracts = GetCapabilityContracts(source).ToArray();
+                    var concreteFactory = staged.LastOrDefault(descriptor =>
+                        !descriptor.IsKeyedService && descriptor.ServiceType == source.ImplementationType);
+                    if (concreteFactory is null || !added.Contains(concreteFactory))
+                    {
+                        if (added.Any(descriptor => !descriptor.IsKeyedService && contracts.Contains(descriptor.ServiceType)))
+                        {
+                            throw new InvalidOperationException(
+                                $"Provider module '{moduleId}' registered a capability interface without its concrete factory '{source.ImplementationType.FullName}'. " +
+                                "Register the concrete implementation and forward interface registrations to that instance.");
+                        }
+                        continue;
+                    }
+
+                    if (concreteFactory.Lifetime == ServiceLifetime.Scoped)
+                    {
+                        throw new InvalidOperationException(
+                            $"Provider module '{moduleId}' registered a scoped concrete factory '{source.ImplementationType.FullName}'. " +
+                            "Provider capability factories must be singleton or transient because the provider registry belongs to the application host.");
+                    }
+
+                    registrations.AddRange(contracts.Select(contract =>
+                        new ProviderModuleCapabilityRegistration(moduleId, contract, source.ImplementationType)));
+                }
+
+                // Publish only after every capability registration is valid. An exception above or in
+                // Register leaves the caller's service collection and capability inventory unchanged.
+                services.Clear();
+                foreach (var descriptor in staged)
+                    services.Add(descriptor);
+                foreach (var registration in registrations)
+                {
+                    if (!_moduleCapabilityRegistrations.Contains(registration))
+                        _moduleCapabilityRegistrations.Add(registration);
+                }
+            }
+            catch
+            {
+                // A module can discover sources during Register. Roll that provisional
+                // inventory back if registration or capability validation fails, while
+                // preserving family ownership so attribute fallback stays disabled.
+                _sources.Clear();
+                _sources.AddRange(originalSources);
+                _moduleCapabilityRegistrations.Clear();
+                _moduleCapabilityRegistrations.AddRange(originalRegistrations);
+                throw;
             }
         }
     }

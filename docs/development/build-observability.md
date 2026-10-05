@@ -1,84 +1,80 @@
-# Build Observability System
+# Build Observability and Diagnostics
 
-This repository includes a build observability toolkit that turns local and CI builds into structured, diagnosable workflows.
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-10-05
 
-For runtime OTLP collector setup and trace visualization, see [otlp-trace-visualization.md](otlp-trace-visualization.md).
+Use the repository's build controller for local build/test diagnostics and the workflow artifacts
+for hosted evidence. For runtime OTLP setup, see [OTLP trace visualization](otlp-trace-visualization.md).
 
-## Quick Start
+## Prerequisites and working directory
+
+Run from the repository root with Python 3.11 or newer, Git, and the .NET SDK selected by
+`global.json`. Platform-specific WPF validation requires Windows; see the
+[desktop testing guide](desktop-testing-guide.md). GNU Make is optional.
+
+## Check and run the relevant operation
 
 ```bash
-# Build with structured events + metrics
-make build
+# Inspect validation ownership before starting another local test run
+python build/python/cli/buildctl.py validation-status --summary
 
-# Build with isolated output for automation
-python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Release --isolation-key automation-run --queue
-
+# Inspect environment requirements
+python build/python/cli/buildctl.py doctor --quick
 # Reuse compatible outputs during a local edit/test loop
 python3 build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --profile worktree --queue
 
 # Obtain fresh isolated test evidence before handoff
 python3 build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --fresh --queue
 
-# Run environment doctor
-make doctor
+# Restore and build with isolated output
+python build/python/cli/buildctl.py build --project Meridian.sln --configuration Release --isolation-key automation-run --queue
 
-# Generate dependency graph
-make build-graph
+# Run a focused test slice through the serialized local runner
+python build/python/cli/buildctl.py test --project tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj --filter "FullyQualifiedName~FixtureDataServiceTests" --queue
 
-# Generate build fingerprint
-make fingerprint
-
-# Collect a debug bundle
-make collect-debug
+# Capture local tool/checkout metadata for diagnosis
+python build/python/cli/buildctl.py collect-debug --project Meridian.sln --configuration Release
 ```
 
-## CI Workflow
+A successful build/test command exits zero. The test runner prints its run-receipt path and result
+location; preserve those with the command and commit when reporting a failure. If another validation
+owns the checkout, wait for it or inspect [process lifecycle diagnostics](process-lifecycle-diagnostics.md)
+before retrying. A missing SDK/package restore or Windows runtime is a validation limitation, not a
+passing test.
 
-Use the GitHub Actions workflow to run the same observability toolkit in CI and upload artifacts for debugging:
+## Current outputs
 
-Build observability is now local tooling rather than a dedicated GitHub Actions workflow. Use the
-commands in this guide directly when diagnostics are needed.
+These paths/behaviors follow `build/python/cli/buildctl.py` and the current workflow scripts:
 
-The workflow executes:
+| Operation | Evidence produced |
+| --- | --- |
+| `build --isolation-key <key>` | Build stdout/stderr and isolated `artifacts/bin/<key>/`, `artifacts/obj/<key>/` outputs |
+| `test` | `.ai/validation-runs/` JSON receipts plus the result/log paths printed for that run |
+| `collect-debug` | `debug-bundle/debug-info.json`, containing tool/platform/checkout metadata |
+| `fingerprint` | Tool/checkout fingerprint printed to stdout |
+| `build-profile` | A new timed build; it does not analyze a previous build |
+| `build-graph` | The underlying .NET graph-build command's output and exit status |
+| `metrics` | A stdout summary of source/test file and recent-commit counts |
+| `history` | Recent Git commits printed to stdout |
 
-- `make doctor`
-- `make build`
-- `make build-graph`
-- `make fingerprint`
-- `make metrics`
-- `make collect-debug-minimal`
+The reusable emitter in `build/python/core/events.py` can write `build-events.jsonl` and
+`build-events.log` when explicitly used. The current CLI does not promise those files, a
+`.build-system/` telemetry directory, Prometheus metrics, or a historical build database for every
+command. Consult the invoked command's output before looking for artifacts.
 
-Artifacts are uploaded from `.build-system/` for each run.
+Use `python build/python/cli/buildctl.py --help` and subcommand `--help` for current options.
+Review captured diagnostics before sharing them outside the repository's normal review process.
 
-## Output Artifacts
+## Hosted CI evidence
 
-Artifacts are written to `.build-system/`:
+The canonical local gate is `bash scripts/ci.sh`; [CI/CD ownership](../engineering/ci-cd-optimization.md)
+identifies the hosted gate owners. `Meridian CI` uploads lane-specific logs/results from locations
+such as `artifacts/build-logs/`, `artifacts/test-results/`, and `artifacts/ci-summary/`. There is no
+separate build-observability workflow that automatically runs every diagnostic command above.
+Use the [workflow guide](../../.github/workflows/README.md) for exact artifact names and retention.
 
-- `build-events.jsonl` – machine-readable event stream
-- `build-events.log` – human-readable event log
-- `build-fingerprint.json` – deterministic fingerprint
-- `dependency-graph.json` / `dependency-graph.dot` – dependency graph
-- `metrics.json` / `metrics.prom` – build metrics
-- `history.db` – build history database
-- `logs/` – raw build logs
-
-## CLI Commands
-
-All commands are available via `make` or `python3 build/python/cli/buildctl.py`.
-
-```bash
-make doctor                  # Environment validation
-make build                   # Build with observability
-make build-profile           # Profile the last build
-make build-graph             # Dependency graph
-make collect-debug           # Debug bundle
-make env-capture NAME=local  # Snapshot environment
-make env-diff ENV1=local ENV2=ci  # Compare environments
-make impact FILE=path/to/file.cs  # Impact analysis
-make bisect GOOD=x BAD=y     # Automated build bisect
-make metrics                 # Build metrics
-make history                 # Build history summary
-```
+## Output retention
 
 When `buildctl.py build` runs with `--isolation-key`, it writes generated MSBuild output under
 `artifacts/bin/<key>/` and `artifacts/obj/<key>/` and prunes stale isolated output directories older
@@ -210,28 +206,9 @@ not treated as .NET build output. Add `-IncludeNodeModules` only when you explic
 repo-local dependency installs such as `src/Meridian.Ui/dashboard/node_modules` in the preview or
 execution pass.
 
-## Event Schema
+## Extending diagnostics
 
-Each event follows the schema below, stored in `build-events.jsonl`:
-
-```json
-{
-  "event_id": "uuid",
-  "timestamp": "2026-01-08T12:34:56.789Z",
-  "phase": "restore|build|test|custom",
-  "project": "src/Meridian/Meridian.csproj",
-  "event_type": "started|completed|failed|warning|skipped",
-  "duration_ms": 1234,
-  "context": {"key": "value"},
-  "error_code": "exit-1",
-  "error_message": "Build phase failed",
-  "tags": ["restore"]
-}
-```
-
-## Extending the System
-
-- Add error definitions in `build-system/knowledge/errors/*.json`.
-- Add new diagnostics in `build-system/diagnostics/`.
-- Extend adapters in `build-system/adapters/`.
-- Keep outputs inside `.build-system/` for easy cleanup.
+The CLI entrypoint is `build/python/cli/buildctl.py`; reusable support lives under
+`build/python/core/`. Update the owning command's tests and this guide when its output contract
+changes. Keep diagnostics distinct from the tracked generated documentation and browser bundle;
+follow [documentation ownership](../documentation-ownership.md) for those outputs.
