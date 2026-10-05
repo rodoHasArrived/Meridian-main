@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-02
+**Reviewed:** 2026-10-05
 **Scope:** the six evidence-gated P0 rows in the
 [production-readiness tracker](../product/implementation-todo-list.md) — what evidence exists,
 what an agent can still generate, and exactly which decisions and activations require a human.
@@ -261,7 +261,10 @@ Append-only; newest first. Every entry names the commit, the run or decision, an
   integrations, recovery, and documentation passed. The
   [main receipt](../security/evidence/2026-10-05-braces/main-recheck-433ff.json) and
   [retained gate report](../security/evidence/2026-10-05-braces/hosted-151/npm-audit-gate.json)
-  preserve the result and unchanged dependency/gate hashes. No exception or human approval
+  preserve the result and unchanged dependency/gate hashes. Dependency artifact
+  `production-dependency-evidence-151-1` (ID `11367836066`) has verified ZIP SHA-256
+  `80d7d434e508dbf5d4df3edfa5dfc6c354ed7706a9c343072fd742f4cd3ce4d1`.
+  No exception or human approval
   is activated. These are main results; the refreshed proposal commit needs its own evidence.
 - **2026-10-05 — concurrent main refresh.** Main advanced to
   `600cde87be9de99c615594cb1a2b09f507cd2b2f`; [certification #150](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37357037036)
@@ -275,7 +278,12 @@ Append-only; newest first. Every entry names the commit, the run or decision, an
   `e3bf60bae577c132d8444a827ca4dc3181cc48a1` / [Production Certification #147, attempt 1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283)
   failed its dependency job on unaccepted `braces` advisory `GHSA-vfj7-8cjw-p6xm`; NuGet passed.
   The [security registry investigation and bounded proposal](../security/known-vulnerabilities.md#pending-decision-braces-stack-exhaustion-2026-10-05)
-  retains the raw audits, graph, registry recheck, artifact digest and expiry. No compatible
+  (KV-2026-003) retains the raw audits, graph, registry recheck, artifact digest and expiry.
+  The [parallel retained manifest](../security/evidence/2026-10-05-dependency-certification/manifest.json)
+  also preserves source and bounded reachability evidence from this baseline. Hosted artifact
+  [production-dependency-evidence-147-1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283/artifacts/11362468562)
+  has verified ZIP SHA-256 `478075a50b84e225b37581089a9e2f28aad6d9ad95b29b811b3297e179a02d11`
+  and hosted expiry `2027-01-03T17:54:46Z`. No compatible
   published patch was found; Tailwind 4 is a supported migration candidate requiring validation.
   **@rodoHasArrived** is the named human decision point; no risk was accepted and no gate changed.
   Any approved exception has a proposed hard expiry of 2026-10-19 00:00 UTC and requires fresh

@@ -2255,35 +2255,48 @@ Meridian-main
 │   │   │   ├── soc2-roadmap.md
 │   │   │   └── soc2-scope.md
 │   │   ├── evidence
-│   │   │   └── 2026-10-05-braces
-│   │   │       ├── hosted
-│   │   │       │   ├── npm-audit-gate.json
-│   │   │       │   ├── npm-audit.json
-│   │   │       │   ├── nuget-vulnerabilities.txt
-│   │   │       │   └── production-dependency-evidence-147-1.zip
-│   │   │       ├── hosted-148
-│   │   │       │   ├── npm-audit-gate.json
-│   │   │       │   ├── npm-audit.json
-│   │   │       │   ├── nuget-vulnerabilities.txt
-│   │   │       │   └── production-dependency-evidence-148-1.zip
-│   │   │       ├── hosted-151
-│   │   │       │   ├── npm-audit-gate.json
-│   │   │       │   ├── npm-audit.json
-│   │   │       │   ├── nuget-vulnerabilities.txt
-│   │   │       │   └── production-dependency-evidence-151-1.zip
-│   │   │       ├── local
-│   │   │       │   ├── braces-registry.json
-│   │   │       │   ├── chokidar-latest.json
-│   │   │       │   ├── dependency-graph.json
-│   │   │       │   ├── fast-glob-latest.json
-│   │   │       │   ├── micromatch-latest.json
-│   │   │       │   ├── npm-audit-gate.json
-│   │   │       │   ├── npm-audit-production.json
-│   │   │       │   ├── npm-audit.json
-│   │   │       │   └── tailwind3-dependencies.json
-│   │   │       ├── main-recheck-433ff.json
-│   │   │       ├── main-recheck.json
-│   │   │       └── manifest.json
+│   │   │   ├── 2026-10-05-braces
+│   │   │   │   ├── hosted
+│   │   │   │   │   ├── npm-audit-gate.json
+│   │   │   │   │   ├── npm-audit.json
+│   │   │   │   │   ├── nuget-vulnerabilities.txt
+│   │   │   │   │   └── production-dependency-evidence-147-1.zip
+│   │   │   │   ├── hosted-148
+│   │   │   │   │   ├── npm-audit-gate.json
+│   │   │   │   │   ├── npm-audit.json
+│   │   │   │   │   ├── nuget-vulnerabilities.txt
+│   │   │   │   │   └── production-dependency-evidence-148-1.zip
+│   │   │   │   ├── hosted-151
+│   │   │   │   │   ├── npm-audit-gate.json
+│   │   │   │   │   ├── npm-audit.json
+│   │   │   │   │   ├── nuget-vulnerabilities.txt
+│   │   │   │   │   └── production-dependency-evidence-151-1.zip
+│   │   │   │   ├── local
+│   │   │   │   │   ├── braces-registry.json
+│   │   │   │   │   ├── chokidar-latest.json
+│   │   │   │   │   ├── dependency-graph.json
+│   │   │   │   │   ├── fast-glob-latest.json
+│   │   │   │   │   ├── micromatch-latest.json
+│   │   │   │   │   ├── npm-audit-gate.json
+│   │   │   │   │   ├── npm-audit-production.json
+│   │   │   │   │   ├── npm-audit.json
+│   │   │   │   │   └── tailwind3-dependencies.json
+│   │   │   │   ├── main-recheck-433ff.json
+│   │   │   │   ├── main-recheck.json
+│   │   │   │   └── manifest.json
+│   │   │   └── 2026-10-05-dependency-certification
+│   │   │       ├── braces-advisory-source.json
+│   │   │       ├── braces-bounded-reachability.json
+│   │   │       ├── dependency-source-evidence.json
+│   │   │       ├── hosted-npm-audit-gate.json
+│   │   │       ├── hosted-npm-audit.json
+│   │   │       ├── hosted-nuget-vulnerabilities.txt
+│   │   │       ├── manifest.json
+│   │   │       ├── npm-audit-gate.json
+│   │   │       ├── npm-audit-production.json
+│   │   │       ├── npm-audit.json
+│   │   │       ├── npm-graph.json
+│   │   │       └── upstream-registry-metadata.json
 │   │   ├── codex-security-remediation-2026-05-20.md
 │   │   ├── known-vulnerabilities.md
 │   │   ├── README.md
@@ -5563,6 +5576,7 @@ Meridian-main
 │   │   ├── PluginLoaderService.cs
 │   │   ├── ProviderHttpUtilities.cs
 │   │   ├── ProviderIdentity.cs
+│   │   ├── ProviderModuleCapabilityRegistration.cs
 │   │   ├── ProviderModuleContext.cs
 │   │   ├── ProviderModuleLoader.cs
 │   │   ├── ProviderRoutingModels.cs
@@ -7702,6 +7716,7 @@ Meridian-main
 │   │   │   ├── ProviderLedgerReconciliationService.cs
 │   │   │   ├── ProviderLedgerReconciliationService.Outcomes.cs
 │   │   │   ├── ProviderLedgerReconciliationService.SecurityCoverage.cs
+│   │   │   ├── ProviderMetricsLookup.cs
 │   │   │   ├── ProviderModuleSetupModels.cs
 │   │   │   ├── ProviderModuleSetupService.cs
 │   │   │   ├── ProviderNavigationRouteMapper.cs
@@ -10177,7 +10192,8 @@ Meridian-main
 │   │   │   ├── OptionalProviderCapabilityContractsTests.cs
 │   │   │   ├── PluginLoaderServiceTests.cs
 │   │   │   ├── ProviderIdentityTests.cs
-│   │   │   └── ProviderModuleLoaderTests.cs
+│   │   │   ├── ProviderModuleLoaderTests.cs
+│   │   │   └── ProviderModuleRegistrationTests.cs
 │   │   ├── Reconciliation
 │   │   │   ├── Connectors
 │   │   │   │   ├── AlpacaActivityStatementConnectorTests.cs

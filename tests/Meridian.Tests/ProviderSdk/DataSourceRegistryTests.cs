@@ -588,6 +588,8 @@ public sealed class DataSourceRegistryTests
             f.ModuleId == "ds-registry-register-throws" &&
             f.ErrorType == nameof(InvalidOperationException),
             "Register failures must be surfaced with the module identity");
+        services.Should().NotContain(descriptor => descriptor.ServiceType == typeof(FailedModuleMarker),
+            "failed modules must not leave their provisional services resolvable");
     }
 
     [Fact]
@@ -671,5 +673,10 @@ internal sealed class DataSourceRegistryRegisterThrowsModule : IProviderModule
     public bool RequiresExternalConfig => true;
 
     public void Register(IServiceCollection services, DataSourceRegistry registry)
-        => throw new InvalidOperationException("Simulated registration failure.");
+    {
+        services.AddSingleton<FailedModuleMarker>();
+        throw new InvalidOperationException("Simulated registration failure.");
+    }
 }
+
+internal sealed class FailedModuleMarker;
