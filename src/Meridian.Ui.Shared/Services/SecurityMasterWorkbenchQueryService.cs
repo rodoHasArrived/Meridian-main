@@ -3394,11 +3394,9 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                     CostBasis: costBasis,
                     EntryPrice: price,
                     UnrealizedPnl: impliedMarketPrice.HasValue
-                        ? isShort == snapshotLot.Lot.IsShort
-                            ? snapshotLot.Lot.UnrealizedPnl(impliedMarketPrice.Value)
-                            : quantity * (isShort
-                                ? price - impliedMarketPrice.Value
-                                : impliedMarketPrice.Value - price)
+                        ? isShort
+                            ? costBasis - (quantity * impliedMarketPrice.Value)
+                            : (quantity * impliedMarketPrice.Value) - costBasis
                         : null,
                     Currency: detail.Currency,
                     LotStatus: "Open",
