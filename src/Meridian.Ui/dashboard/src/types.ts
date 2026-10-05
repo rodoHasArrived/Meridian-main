@@ -8,6 +8,7 @@ export * from "./types/canonical-symbol";
 export * from "./types/provider-accounting";
 export * from "./types/provider-integration-provenance";
 export * from "./types/reporting-governance";
+export * from "./types/reporting-income-comparison";
 export * from "./types/workstation-1";
 export * from "./types/workstation-2";
 export * from "./types/workstation-3";

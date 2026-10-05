@@ -140,7 +140,12 @@ public sealed record ReportingOutputManifest(
     ReportingCertifiedSnapshotScope? CertifiedSnapshot = null,
     ReportingAuthoritativeSourceCheckpoint? AuthoritativeSource = null,
     ImmutableArray<IReadOnlyDictionary<string, string>> CertifiedDatasetRows = default,
-    CertifiedPartnersCapitalProjection? CertifiedPartnersCapital = null);
+    CertifiedPartnersCapitalProjection? CertifiedPartnersCapital = null)
+{
+    /// <summary>Optional documented, quantified methodology effects retained with this run.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    public ImmutableArray<ReportingIncomeMethodologyEvidence> IncomeMethodologyEvidence { get; init; }
+}
 
 public sealed record ReportingRunReportWriterGridArtifact(
     string GridId,
