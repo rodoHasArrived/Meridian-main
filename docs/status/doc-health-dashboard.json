@@ -1,11 +1,11 @@
 {
   "total_files": 682,
-  "total_lines": 150731,
+  "total_lines": 150911,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 288,
-  "average_lines": 221.0,
+  "todo_count": 289,
+  "average_lines": 221.3,
   "health_score": 81,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2355,9 +2355,9 @@
     },
     {
       "path": "docs/engineering/production-certification-evidence-chain.md",
-      "line_count": 520,
+      "line_count": 563,
       "has_heading": true,
-      "todo_count": 2,
+      "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -2755,7 +2755,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11176,
+      "line_count": 11180,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2899,7 +2899,7 @@
     },
     {
       "path": "docs/operators/failover-and-recovery.md",
-      "line_count": 315,
+      "line_count": 418,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3019,7 +3019,7 @@
     },
     {
       "path": "docs/operators/service-level-objectives.md",
-      "line_count": 281,
+      "line_count": 306,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5723,7 +5723,7 @@
     },
     {
       "path": "tests/scripts/README.md",
-      "line_count": 50,
+      "line_count": 55,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
