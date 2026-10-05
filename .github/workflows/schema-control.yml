@@ -91,7 +91,7 @@ jobs:
             exit 1
           fi
           baseline_sha="$(git rev-parse --verify --end-of-options "${BASELINE_REF}^{commit}")"
-          candidate_sha="$(git rev-parse --verify HEAD^{commit})"
+          candidate_sha="$(git rev-parse --verify "HEAD^{commit}")"
           echo "baseline_sha=$baseline_sha" >> "$GITHUB_OUTPUT"
           echo "candidate_sha=$candidate_sha" >> "$GITHUB_OUTPUT"
           mkdir -p build/schema-control
