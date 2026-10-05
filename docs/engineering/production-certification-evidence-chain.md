@@ -155,6 +155,22 @@ drain/flush ordering, and lifecycle receipts.
    rollback/uninstall receipts for x64 and ARM64 are the PRD-014 evidence. Record the run link
    here.
 
+The consumer EXE has an additional mandatory certification gate. After human governance review
+of the workflow changes, run a signed rehearsal on the reviewed commit. Retain
+`consumer-setup-win-x64-lifecycle.json` from `consumer-install-certification-win-x64-<run>-<attempt>`:
+it must prove installation of the exact signed `Meridian-Setup.exe`, authenticated startup,
+installed bundled PostgreSQL readiness, repair, restart, uninstall and data preservation.
+Published consumer predecessors require upgrade and rollback proof; the first consumer release
+records explicit `not-applicable` N-1 steps backed by the successful repository lookup receipt.
+Existing MSIX-only releases do not constitute a consumer predecessor. Lookup and checksum
+failures cannot establish first-release mode.
+
+Promotion verifies that the successful consumer receipt matches the EXE digest, source commit,
+workflow run and attempt. Missing, failed, incomplete or mismatched consumer evidence blocks
+promotion even when both MSIX lifecycles pass. The implementation and static tests establish
+this gate's mechanism; PRD-014 consumer certification remains pending until a protected signed
+Windows run produces that successful receipt on the frozen release commit.
+
 ### PRD-015: recovery-drill operator review
 
 **Actor:** operations owner. This review also supplies the recovery portion of open `PRD-111`.
