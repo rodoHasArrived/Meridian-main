@@ -1064,6 +1064,7 @@ Meridian-main
 │   │   │   ├── metrics.py
 │   │   │   └── profile.py
 │   │   ├── cli
+│   │   │   ├── build_profiles.py
 │   │   │   └── buildctl.py
 │   │   ├── core
 │   │   │   ├── __init__.py
@@ -9912,6 +9913,7 @@ Meridian-main
 │   │   │   │   ├── ProviderHealthTrackerTests.cs
 │   │   │   │   ├── ProviderMarketDataCapabilityTests.cs
 │   │   │   │   ├── ProviderRateLimitTrackerTests.cs
+│   │   │   │   ├── ProviderRegistryCapabilityFactoryTests.cs
 │   │   │   │   ├── ProviderResilienceTests.cs
 │   │   │   │   ├── ProviderTemplateFactoryCredentialTests.cs
 │   │   │   │   ├── RobinhoodBrokerageGatewayTests.cs
@@ -11070,6 +11072,7 @@ Meridian-main
 │   │   ├── test_api_contract_coverage_dashboard.py
 │   │   ├── test_archive_code_tombstones.py
 │   │   ├── test_artifact_retention_module.py
+│   │   ├── test_build_profiles.py
 │   │   ├── test_buildctl_artifact_retention.py
 │   │   ├── test_buildctl_validation_runner.py
 │   │   ├── test_canonical_roadmap_yaml.py
@@ -11146,6 +11149,7 @@ Meridian-main
 │   │   ├── test_run_provider_validation_evidence_bundle.py
 │   │   ├── test_run_script_tests.py
 │   │   ├── test_scan_commit_secrets.py
+│   │   ├── test_schema_control_baselines.py
 │   │   ├── test_schema_control_catalog.py
 │   │   ├── test_schema_control_cli.py
 │   │   ├── test_schema_control_contracts.py

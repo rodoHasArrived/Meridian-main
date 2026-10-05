@@ -74,7 +74,7 @@ internal static class ProviderConnectionDiagnosticsProjection
         foreach (var key in keys)
         {
             if (!string.IsNullOrWhiteSpace(key) &&
-                diagnosticsByProviderId.TryGetValue(key, out var diagnostics))
+                diagnosticsByProviderId.TryGetValue(ProviderIdentity.NormalizeId(key), out var diagnostics))
             {
                 return diagnostics;
             }
@@ -112,7 +112,7 @@ internal static class ProviderConnectionDiagnosticsProjection
     {
         if (!string.IsNullOrWhiteSpace(key))
         {
-            diagnostics[key] = summary;
+            diagnostics[ProviderIdentity.NormalizeId(key)] = summary;
         }
     }
 }

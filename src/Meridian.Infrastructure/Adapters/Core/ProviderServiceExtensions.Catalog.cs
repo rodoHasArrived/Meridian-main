@@ -85,7 +85,8 @@ public static partial class ProviderServiceExtensions
                 Search: Implementation(DataSourceCapabilityContracts.SymbolSearchProvider),
                 CorporateActions: Implementation(DataSourceCapabilityContracts.CorporateActionProvider),
                 Options: Implementation(DataSourceCapabilityContracts.OptionsChainProvider),
-                Brokerage: Implementation(DataSourceCapabilityContracts.BrokerageGateway));
+                Brokerage: Implementation(DataSourceCapabilityContracts.BrokerageGateway),
+                FactoryOwner: ProviderCapabilityFactoryOwner.Module);
             MergeInventory(descriptor, sources[0]);
         }
 
