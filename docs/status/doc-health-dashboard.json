@@ -1,11 +1,11 @@
 {
-  "total_files": 689,
-  "total_lines": 151929,
+  "total_files": 690,
+  "total_lines": 152089,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 291,
-  "average_lines": 220.5,
+  "average_lines": 220.4,
   "health_score": 81,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2154,6 +2154,14 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/actions-storage-audit-2026-10-05.md",
+      "line_count": 154,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/blueprints/accounting/commitment-and-capital-call-engine.md",
       "line_count": 1033,
       "has_heading": true,
@@ -2259,7 +2267,7 @@
     },
     {
       "path": "docs/engineering/ci-cd-optimization.md",
-      "line_count": 184,
+      "line_count": 188,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2755,7 +2763,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11277,
+      "line_count": 11279,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
