@@ -14,7 +14,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// negative-path behaviour verification.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;

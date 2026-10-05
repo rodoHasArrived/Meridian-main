@@ -15,6 +15,7 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Documents;
 using Meridian.Identity.Auth;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
@@ -4300,6 +4301,35 @@ public sealed class EvidenceWorkflowFabricTests
     }
 
     [Fact]
+    public async Task EvidenceEndpoints_VaultIntake_QuotaRejectionRemainsBadRequestWithoutPublishing()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-quota-endpoint-{Guid.NewGuid():N}");
+        await using var app = await CreateEvidenceAppAsync(root, evidenceArtifactByteLimit: 4);
+        var client = app.GetTestClient();
+        var request = new EvidenceVaultIntakeRequestDto(
+            SubjectKind: EvidenceSubjectResolver.PaymentIntentKind,
+            SubjectId: "payment:quota-check",
+            IntakeChannel: "api",
+            FileName: "receipt.txt",
+            ContentBase64: Convert.ToBase64String(Encoding.UTF8.GetBytes("12345")));
+
+        var response = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/intake", request, ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var error = await response.Content.ReadFromJsonAsync<EvidenceEndpointErrorDto>(ServerJsonOptions);
+        error!.Code.Should().Be("invalid-evidence-vault-intake");
+        error.Message.Should().Contain("configured artifact byte limit");
+        Directory.Exists(Path.Combine(root, "workstation", "evidence")).Should().BeFalse();
+
+        var accepted = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/intake",
+            request with { ContentBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes("1234")) },
+            ServerJsonOptions);
+        accepted.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    [Fact]
     public async Task EvidenceEndpoints_VaultIntake_RetainsAdapterSeamSourceRecord()
     {
         var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-adapter-intake-endpoint-{Guid.NewGuid():N}");
@@ -5120,7 +5150,8 @@ public sealed class EvidenceWorkflowFabricTests
         string? requestCompanyId = "company-test",
         StrategyRunReadService? strategyRunReadService = null,
         IEvidenceContributor? additionalContributor = null,
-        UserPermission? requestPermissions = null)
+        UserPermission? requestPermissions = null,
+        long? evidenceArtifactByteLimit = null)
     {
         Directory.CreateDirectory(root);
         var configPath = Path.Combine(root, "appsettings.json");
@@ -5165,6 +5196,10 @@ public sealed class EvidenceWorkflowFabricTests
         }
 
         builder.Services.AddEvidenceWorkflowFabric();
+        if (evidenceArtifactByteLimit is { } byteLimit)
+        {
+            builder.Services.Configure<EvidenceStorageQuotaOptions>(options => options.MaxArtifactBytes = byteLimit);
+        }
 
         var app = builder.Build();
         app.Use(async (context, next) =>

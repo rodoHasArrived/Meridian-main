@@ -101,6 +101,9 @@ pending the required hosted integration checks.
 The Accounting feature registers the same retained report-package authority as the browser.
 Close publication revalidates scoped report support through the shared guard; a client readiness
 flag cannot stand in for the retained package. Windows execution remains a separate acceptance gate.
+Desktop-local certification evidence uses the shared `AddEvidenceArtifactStorage` registration,
+so `EvidenceVault:StorageQuota` configures the same package, tenant, and disk-headroom limits as
+the browser host. Standalone feature-module consumers without host configuration retain defaults.
 
 ## Purpose
 

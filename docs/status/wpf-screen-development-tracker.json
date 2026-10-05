@@ -7,7 +7,7 @@
     "name": "scripts/generate-diagrams.mjs --tracker-only",
     "version": "1.0.0"
   },
-  "sourceFingerprint": "425fe0e07e60",
+  "sourceFingerprint": "79ac7b4c1129",
   "baselineDate": "2026-06-17",
   "summary": {
     "screenCount": 98,
@@ -2597,6 +2597,7 @@
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs",
@@ -2616,7 +2617,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs, +3 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, +4 more."
         }
       ],
       "openTaskCount": 0

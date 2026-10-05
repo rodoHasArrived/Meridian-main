@@ -928,6 +928,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.IProviderCatalog"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.IProviderInstrumentCapabilityMatrixService"
     },
     {
@@ -1613,6 +1619,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.RunCertificationRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.RuntimeProviderCatalog"
     },
     {
       "kind": "contract-set-member",
@@ -18580,6 +18592,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:identity-access-contracts",
+      "target": "contract:Meridian.Identity.AuthenticationConfiguration"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:identity-access-contracts",
       "target": "contract:Meridian.Identity.AuthenticationMode"
     },
     {
@@ -23639,6 +23657,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Api.RoutePreviewResponse",
       "target": "contract:Meridian.Contracts.Api.RoutePreviewCandidateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Api.RuntimeProviderCatalog",
+      "target": "contract:Meridian.Contracts.Api.IProviderCatalog"
     },
     {
       "kind": "contract-reference",
@@ -47665,7 +47689,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "4e48da8ac83f9790d5a9fee696a97c3fe56fceddbacc856e3885875ae2e82af8",
+  "fingerprint": "fa918b025a529aef87400dca603fec69e4cc406c46c7f63281f177be35c598ad",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -48644,6 +48668,12 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Api.IProviderCatalog",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.IProviderCatalog"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.Api.IProviderInstrumentCapabilityMatrixService",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Api.IProviderInstrumentCapabilityMatrixService"
@@ -49331,6 +49361,12 @@
       "id": "contract:Meridian.Contracts.Api.RunCertificationRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Api.RunCertificationRequest"
+    },
+    {
+      "classification": "catalog",
+      "id": "contract:Meridian.Contracts.Api.RuntimeProviderCatalog",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.RuntimeProviderCatalog"
     },
     {
       "classification": "response",
@@ -64123,6 +64159,12 @@
       "label": "Meridian.Identity.Auth.UserSessionRevokeResultDto"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Identity.AuthenticationConfiguration",
+      "kind": "contract-type",
+      "label": "Meridian.Identity.AuthenticationConfiguration"
+    },
+    {
       "classification": "enum",
       "id": "contract:Meridian.Identity.AuthenticationMode",
       "kind": "contract-type",
@@ -69840,11 +69882,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3137,
-    "contract_set_memberships": 3703,
-    "edges": 7919,
+    "contract_references": 3138,
+    "contract_set_memberships": 3706,
+    "edges": 7923,
     "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3843
+    "nodes": 3846
   }
 }

@@ -508,15 +508,18 @@ public interface IProviderFamilyCatalogService
 internal sealed class ProviderFamilyCatalogService : IProviderFamilyCatalogService
 {
     private readonly ProviderRegistry _providerRegistry;
+    private readonly IProviderCatalog _providerCatalog;
     private readonly IEnumerable<IOptionsChainProvider> _optionsProviders;
     private readonly IEnumerable<ICorporateActionProvider> _corporateActionProviders;
 
     public ProviderFamilyCatalogService(
         ProviderRegistry providerRegistry,
         IEnumerable<IOptionsChainProvider> optionsProviders,
-        IEnumerable<ICorporateActionProvider> corporateActionProviders)
+        IEnumerable<ICorporateActionProvider> corporateActionProviders,
+        IProviderCatalog? providerCatalog = null)
     {
         _providerRegistry = providerRegistry;
+        _providerCatalog = providerCatalog ?? new RuntimeProviderCatalog();
         _optionsProviders = optionsProviders;
         _corporateActionProviders = corporateActionProviders;
     }
@@ -525,7 +528,7 @@ internal sealed class ProviderFamilyCatalogService : IProviderFamilyCatalogServi
     {
         var families = new Dictionary<string, MutableProviderFamilyAdapter>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var entry in ProviderCatalog.GetAll())
+        foreach (var entry in _providerCatalog.GetAll())
         {
             var family = GetOrCreate(families, entry.ProviderId, entry.DisplayName, entry.Description);
             foreach (var descriptor in Describe(entry))
@@ -536,7 +539,7 @@ internal sealed class ProviderFamilyCatalogService : IProviderFamilyCatalogServi
 
         foreach (var sourceId in _providerRegistry.SupportedStreamingSources)
         {
-            var entry = ProviderCatalog.Get(sourceId);
+            var entry = _providerCatalog.Get(sourceId);
             var family = GetOrCreate(
                 families,
                 sourceId,

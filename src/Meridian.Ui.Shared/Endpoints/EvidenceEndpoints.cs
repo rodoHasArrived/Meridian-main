@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
+using Meridian.Documents;
 using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
@@ -354,7 +355,7 @@ public static class EvidenceEndpoints
                     request.SubjectKind,
                     request.SubjectId));
             }
-            catch (InvalidOperationException ex)
+            catch (Exception ex) when (ex is InvalidOperationException or EvidenceStorageQuotaExceededException)
             {
                 return Results.BadRequest(Error(
                     "invalid-evidence-vault-intake",
