@@ -1,11 +1,11 @@
 {
   "total_files": 694,
-  "total_lines": 153600,
+  "total_lines": 153654,
   "orphaned_count": 233,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 295,
-  "average_lines": 221.3,
+  "average_lines": 221.4,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2348,7 +2348,7 @@
     },
     {
       "path": "docs/engineering/production-certification-evidence-chain.md",
-      "line_count": 607,
+      "line_count": 616,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2756,7 +2756,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11367,
+      "line_count": 11396,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3812,7 +3812,7 @@
     },
     {
       "path": "docs/security/known-vulnerabilities.md",
-      "line_count": 265,
+      "line_count": 281,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
