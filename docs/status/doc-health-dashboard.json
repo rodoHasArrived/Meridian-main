@@ -1,11 +1,11 @@
 {
   "total_files": 689,
-  "total_lines": 151859,
+  "total_lines": 151960,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 291,
-  "average_lines": 220.4,
+  "average_lines": 220.6,
   "health_score": 81,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2123,7 +2123,7 @@
     },
     {
       "path": "docs/domain/operational-evidence-graph.md",
-      "line_count": 35,
+      "line_count": 36,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2755,7 +2755,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11273,
+      "line_count": 11286,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2923,7 +2923,7 @@
     },
     {
       "path": "docs/operators/governed-reporting-operations.md",
-      "line_count": 365,
+      "line_count": 394,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5627,7 +5627,7 @@
     },
     {
       "path": "src/Meridian.Reporting/README.md",
-      "line_count": 254,
+      "line_count": 278,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5675,7 +5675,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2562,
+      "line_count": 2583,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5683,7 +5683,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1439,
+      "line_count": 1448,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5707,7 +5707,7 @@
     },
     {
       "path": "src/Meridian.Ui/README.md",
-      "line_count": 108,
+      "line_count": 112,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

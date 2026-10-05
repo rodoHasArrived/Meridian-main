@@ -23,7 +23,9 @@ explanation, compatibility decisions, and an explanation-version identifier in t
 readback content verify. Reads and contribution drilldowns authorize both retained manifest scopes
 against the current caller's claims, verify the content address and envelope format, and use the
 retained bytes even if source rows or live run history later change. The endpoint deployment gate
-is the existing authoritative Reporting capability; no in-memory production fallback is added.
+is the existing authoritative Reporting capability. The comparison service is registered only with
+configured durable Reporting artifact/governance stores, so local hosts without Reporting authority
+still start while comparison routes remain unavailable; no in-memory production fallback is added.
 
 `LedgerReportingAuthoritativeSource` also retains functional currency, optional transaction
 currency/FX values, dimensional account ID, journal recording time, activity, and accounting-policy

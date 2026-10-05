@@ -651,6 +651,9 @@ public static class WorkstationServiceCollectionExtensions
             services.TryAddSingleton<IReportingGovernanceRepository>(sp =>
                 new PostgresReportingGovernanceRepository(
                     sp.GetRequiredService<ReportingArtifactStoreOptions>()));
+            // Retained comparisons require both the durable artifact store and governance graph.
+            // Local hosts still start without Reporting authority; readiness-gated routes stay unavailable.
+            services.TryAddSingleton<ReportingIncomeComparisonService>();
             services.TryAddSingleton<PostgresReportingReleaseConsistencyGate>(sp =>
                 new PostgresReportingReleaseConsistencyGate(
                     sp.GetRequiredService<ReportingArtifactStoreOptions>()));
@@ -792,7 +795,6 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ReportingRunReadinessService>();
         services.TryAddSingleton<ReportingRunCertificationService>();
         services.TryAddSingleton<ReportingRunCommandService>();
-        services.TryAddSingleton<ReportingIncomeComparisonService>();
         services.TryAddSingleton(sp =>
             new ReportingScheduleService(
                 sp.GetRequiredService<IReportingOrchestrationService>(),
