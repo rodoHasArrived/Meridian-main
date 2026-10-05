@@ -137,7 +137,10 @@ when sign-preserving allocation would also succeed. Versioned history uses its e
 sale price when available, preserving per-lot results and tax character without recovering a
 different source quote from rounded proceeds. Aggregate-only current-version history retains no
 quote and derives its canonical price from journal proceeds after retained wash-sale deferrals.
-Unknown versions or inconsistent retained economics fail closed. The
+A `LedgerTaxLot` may carry an exact `CostBasis`; discrete or pooled relief that consumes the whole
+lot relieves that amount instead of a rounded unit-cost recalculation. Versioned history supplies
+each retained lot's exact basis and, without an explicit quote, its exact journal proceeds, so a
+governed current basis with fractional cents reconstructs as booked. Unknown versions or inconsistent retained economics fail closed. The
 history compatibility path does not relax the sign bounds for new projections.
 When a `WashSalePolicy` and replacement acquisitions are
 supplied, it evaluates each negative-result relief parcel even when the disposal has an aggregate
