@@ -1,23 +1,11 @@
 using System.Collections.ObjectModel;
+using Meridian.Infrastructure.Adapters.Core;
 
 namespace Meridian.Ui.Shared.Services;
 
 internal static class ProviderNavigationRouteMapper
 {
     private const string FallbackRoute = "/settings#provider-connection-center";
-
-    private static readonly IReadOnlyDictionary<string, string> CanonicalProviderByNormalizedId =
-        new ReadOnlyDictionary<string, string>(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["alpaca"] = "alpaca",
-            ["ib"] = "ibkr",
-            ["ibkr"] = "ibkr",
-            ["interactivebrokers"] = "ibkr",
-            ["interactive-brokers"] = "ibkr",
-            ["stocksharp"] = "stocksharp",
-            ["ssharp"] = "stocksharp",
-            ["robinhood"] = "robinhood"
-        });
 
     private static readonly IReadOnlyDictionary<string, string> RouteByCanonicalProvider =
         new ReadOnlyDictionary<string, string>(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -35,12 +23,7 @@ internal static class ProviderNavigationRouteMapper
             return FallbackRoute;
         }
 
-        var normalizedProviderId = providerId.Trim().ToLowerInvariant();
-        if (!CanonicalProviderByNormalizedId.TryGetValue(normalizedProviderId, out var canonicalProvider))
-        {
-            return FallbackRoute;
-        }
-
+        var canonicalProvider = ProviderIdentity.NormalizeId(providerId);
         return RouteByCanonicalProvider.TryGetValue(canonicalProvider, out var route)
             ? route
             : FallbackRoute;

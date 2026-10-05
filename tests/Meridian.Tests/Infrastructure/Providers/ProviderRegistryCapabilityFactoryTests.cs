@@ -8,6 +8,18 @@ namespace Meridian.Tests.Infrastructure.Providers;
 public sealed class ProviderRegistryCapabilityFactoryTests
 {
     [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void Capability_registration_rejects_blank_provider_identity(string providerId)
+    {
+        using var registry = new ProviderRegistry();
+        var register = () => registry.RegisterCapabilityFactory(providerId, typeof(IMarketDataClient), () => Mock.Of<IMarketDataClient>());
+
+        register.Should().Throw<ArgumentException>();
+        registry.SupportedStreamingSources.Should().BeEmpty();
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void Streaming_registration_paths_share_alias_lookup_replacement_and_runtime_enablement(bool streamingFirst)

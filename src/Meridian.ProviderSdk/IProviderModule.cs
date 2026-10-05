@@ -91,7 +91,8 @@ public interface IProviderModule
     /// cannot identify a provider family unambiguously when several modules share a contract.
     /// Concrete factories must use singleton or transient lifetime. Scoped capabilities are
     /// rejected because the host's provider registry cannot honor a request service scope.
-    /// Registration is transactional: a failure publishes no services or capability factories.
+    /// Registration is transactional: a failure publishes no services, discovered metadata or
+    /// capability factories through <see cref="DataSourceRegistry.ModuleCapabilityRegistrations"/>.
     /// </remarks>
     void Register(IServiceCollection services, DataSourceRegistry registry);
 }

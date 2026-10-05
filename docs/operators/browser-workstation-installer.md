@@ -14,9 +14,9 @@ This is the canonical operator entry for browser workstation installation and va
 
 ## Deployment Sequence
 
-For end users, the supported release artifact is the production-signed
-`Meridian-Setup.exe`. No production (`v*`) release exists yet; until one does, the
-download channel is the evaluation prerelease (`eval-v*`), whose
+For end users, production releases use a signed `Meridian-Setup.exe`. Check the selected
+[release's label, architecture, and attached evidence](https://github.com/rodoHasArrived/Meridian-main/releases)
+before installing: the evaluation prerelease (`eval-v*`) is a different channel, whose
 `Desktop Evaluation Prerelease` workflow attaches an **unsigned** x64
 `Meridian-Setup.exe` with a `Meridian-Setup.exe.sha256` checksum alongside the
 self-signed MSIX packages. The consumer setup supports x64; the separate desktop MSIX also
@@ -36,6 +36,18 @@ supervisor-managed cooperative shutdown and refuse to replace files when that bo
 fails. Uninstall removes application binaries but preserves data unless a separately governed data
 removal flow is used.
 
+For an installed Windows workstation:
+
+1. Compare the downloaded file's SHA-256 with the checksum attached to that same release and
+   verify its stated signing posture. An unsigned evaluation artifact is not production certification.
+2. Run the matching setup artifact as the intended local operator and complete browser-first
+   account setup. Keep the supervisor-generated setup token out of screenshots and support packets.
+3. Confirm the workstation opens at the generated loopback URL and sign in. Run
+   [authenticated preflight](preflight-checklist.md#authenticated-evidence-collection) against that URL.
+4. Retain the selected release/commit, checksum, architecture, and startup outcome receipt.
+
+## Build context for release maintainers
+
 Developer and operator scripts under `build/scripts/install/` are release-pipeline
 machinery, not end-user instructions. After resolving the declared payload, release packaging uses:
 
@@ -45,6 +57,11 @@ pwsh ./build/scripts/install/build-consumer-setup.ps1 `
   -PostgreSqlPayloadRoot artifacts/postgresql-payload `
   -Runtimes win-x64
 ```
+
+Run these release-maintainer commands in PowerShell 7 from the repository root on the declared
+Windows runner, with the pinned .NET SDK, Node/npm, and release Windows SDK tooling available.
+The builder recreates `artifacts/consumer-setup`; retain earlier release evidence outside that
+output before rebuilding.
 
 ### PostgreSQL payload declaration
 
@@ -89,6 +106,15 @@ Release workflow. Workflow changes require explicit human governance review.
 - For support artifacts, include API readiness and operator inbox verification before handoff:
   - `GET /api/workstation/operator/inbox`
   - `GET /api/workstation/trading/readiness`
+
+## Expected result and recovery
+
+The supervisor reaches `Ready` and accepting work before it opens the workstation; startup
+receipts identify the outcome and log locations. If setup is blocked, retain its receipt and use
+[Verified Outcome Recovery](verified-outcome-recovery.md). If the package is missing the required
+architecture/database payload, select the correct artifact or repair the packaging input.
+If repair/uninstall cannot stop the owned processes, resolve the supervisor's reported failure
+before rerunning setup. Preserve application data and credentials during repair.
 
 ## Legacy Migration
 
