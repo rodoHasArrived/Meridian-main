@@ -18,6 +18,13 @@ The mandatory brokerage risk rule blocks missing, stale, interrupted or inconsis
 An order/fill change, reconnect or restart requires synchronization again. The shared readiness
 payload exposes recovery evidence and affected authorized strategy runs; the recovery POST resolves
 the retained account link and requires scoped trade-write authority before broker I/O.
+Synchronization reconciles the complete broker order book before and after its final portfolio
+read. Both reconciliations must be clean and their canonical order fingerprints must match, so an
+unfilled external order or changed price cannot hide behind unchanged holdings and cash. Failed
+final reads revoke readiness and retain the latest discrepancy report for inspection.
+Malformed duplicate-symbol observations remain readable in legacy symbol-keyed portfolio views,
+which aggregate their net quantities and P&L. Risk still consumes the original rows and gross
+exposure; duplicate evidence remains inconsistent and cannot authorize trading.
 See [Alpaca recovery](../../docs/operators/provider-onboarding-alpaca.md#account-portfolio-recovery)
 for the fixture and paper-sandbox procedure.
 

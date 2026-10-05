@@ -9820,13 +9820,16 @@ Meridian-main
 │   │   │   │   └── InMemoryFxRateProviderTests.cs
 │   │   │   ├── AlpacaStreamedFillLoopTests.cs
 │   │   │   ├── BrokerageExecutionReconciliationServiceTests.cs
+│   │   │   ├── BrokerageExecutionRegistrationRecoveryTests.cs
 │   │   │   ├── BrokerageGatewayAdapterTests.cs
 │   │   │   ├── BrokerageOrderPlacementGateTests.cs
 │   │   │   ├── BrokerageOrderRecoveryTests.cs
+│   │   │   ├── BrokerageOrderRecoveryTests.Retention.cs
 │   │   │   ├── BrokerageValidationEvaluatorTests.cs
 │   │   │   ├── DurableFillDeliveryBoundaryTests.cs
 │   │   │   ├── ExecutionAuditTrailServiceTests.cs
 │   │   │   ├── ExecutionOrderMetadataPolicyTests.cs
+│   │   │   ├── FileBrokerageOrderRecoveryStoreTests.cs
 │   │   │   ├── FixedIncomeFillBookingTests.cs
 │   │   │   ├── HostedBrokerageGatewayRegistrationTests.cs
 │   │   │   ├── KillSwitchBrokerTruthTests.cs

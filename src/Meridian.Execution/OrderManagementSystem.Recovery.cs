@@ -69,6 +69,7 @@ public sealed partial class OrderManagementSystem
     private readonly FileBrokerageOrderRecoveryStore? _recoveryStore;
     private readonly ConcurrentDictionary<string, byte> _dispatchedOrderIds = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, byte> _recoveryOrderIds = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, BrokerageOrderTombstone> _compactedBrokerageOrders = new(StringComparer.Ordinal);
     private readonly object _brokerageRecoveryStateSync = new();
     private readonly Dictionary<string, long> _brokerageRecoveryVersions = new(StringComparer.Ordinal);
     // Recovery lookups and the live report stream share the same cumulative-fill watermark.
@@ -85,6 +86,7 @@ public sealed partial class OrderManagementSystem
         finally
         {
             _brokerageRecoveryReportGate.Release();
+            TrimRetainedOrdersIfNeeded();
         }
     }
 
@@ -106,6 +108,11 @@ public sealed partial class OrderManagementSystem
             return;
         if (!string.Equals(_recoveryStore.GatewayId, _gateway.GatewayId, StringComparison.Ordinal))
             throw new InvalidOperationException("Brokerage recovery store does not match the active gateway.");
+        foreach (var tombstone in _recoveryStore.LoadTombstones())
+        {
+            _compactedBrokerageOrders[tombstone.OrderId] = tombstone;
+            _dispatchedOrderIds[tombstone.OrderId] = 0;
+        }
         foreach (var retained in _recoveryStore.Load())
         {
             var state = retained.State;
@@ -121,6 +128,7 @@ public sealed partial class OrderManagementSystem
             if (state.UsesFaceValuePercentageOfPar)
                 _orderFaceValueSizing[state.OrderId] = true;
         }
+        TrimRetainedOrdersIfNeeded();
     }
 
     private void RetainBrokerageDispatch(OrderState state)
@@ -228,6 +236,7 @@ public sealed partial class OrderManagementSystem
         finally
         {
             _brokerageRecoveryReportGate.Release();
+            TrimRetainedOrdersIfNeeded();
         }
     }
 }

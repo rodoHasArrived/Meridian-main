@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Meridian.Tests.Execution;
 
-public sealed class BrokerageOrderRecoveryTests
+public sealed partial class BrokerageOrderRecoveryTests
 {
     private static readonly Guid FundAccountId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(5);
@@ -446,11 +446,13 @@ public sealed class BrokerageOrderRecoveryTests
         RecoveryGateway gateway,
         PaperTradingPortfolio? portfolio = null,
         string? recoveryPath = null,
-        ITradeEventPublisher? publisher = null) => new(
+        ITradeEventPublisher? publisher = null,
+        OrderManagementSystemOptions? options = null) => new(
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio,
             tradeEventPublisher: publisher,
+            options: options,
             recoveryStore: recoveryPath is null
                 ? null
                 : new FileBrokerageOrderRecoveryStore(recoveryPath, gateway.GatewayId));

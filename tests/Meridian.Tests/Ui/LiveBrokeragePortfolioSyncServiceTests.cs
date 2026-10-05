@@ -15,6 +15,92 @@ namespace Meridian.Tests.Ui;
 public sealed class LiveBrokeragePortfolioSyncServiceTests
 {
     [Fact]
+    public async Task UnknownBrokerOrderAppearingDuringFinalPortfolioRead_RemainsVisiblyBlocked()
+    {
+        var fixture = new Fixture();
+        var originalPortfolio = fixture.Current;
+        var reads = 0;
+        fixture.Gateway.As<IBrokeragePortfolioSync>()
+            .Setup(gateway => gateway.GetPortfolioSnapshotAsync("broker-a", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                if (++reads == 2)
+                    fixture.BrokerOrders = [Broker(fixture.Order() with { OrderId = "externally-accepted-order" })];
+                return originalPortfolio;
+            });
+
+        var result = await fixture.Service.SynchronizeAsync(fixture.AccountId, "broker-a");
+
+        fixture.LocalOrders.Should().BeEmpty("no stream notification has reached the OMS");
+        result.Snapshot.Should().BeSameAs(originalPortfolio, "an unfilled broker order leaves holdings and cash unchanged");
+        result.IsReady.Should().BeFalse();
+        result.IsReconciled.Should().BeFalse();
+        result.Reconciliation!.BrokerOpenOrderCount.Should().Be(1);
+        result.Reconciliation.Breaks.Should().Contain(breakItem =>
+            breakItem.Kind == BrokerageExecutionReconciliationBreakKind.MissingInOrderManager
+            && breakItem.ClientOrderId == "externally-accepted-order");
+        result.BlockingReasons.Should().Contain(reason => reason.Contains("Broker open orders changed"));
+        fixture.Gateway.Verify(gateway => gateway.GetOpenOrdersAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
+        fixture.Gateway.Verify(gateway => gateway.SubmitOrderAsync(It.IsAny<OrderRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task BrokerOrderPriceChangesDuringFinalPortfolioRead_RemainBlocked()
+    {
+        var fixture = new Fixture();
+        fixture.LocalOrders = [fixture.Order()];
+        fixture.BrokerOrders = [Broker(fixture.LocalOrders[0])];
+        var reads = 0;
+        fixture.Gateway.As<IBrokeragePortfolioSync>()
+            .Setup(gateway => gateway.GetPortfolioSnapshotAsync("broker-a", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                if (++reads == 2)
+                    fixture.BrokerOrders = [fixture.BrokerOrders[0] with { LimitPrice = 110m }];
+                return fixture.Current;
+            });
+
+        var result = await fixture.Service.SynchronizeAsync(fixture.AccountId, "broker-a");
+
+        result.IsReady.Should().BeFalse();
+        result.IsReconciled.Should().BeFalse();
+        result.BlockingReasons.Should().Contain(reason => reason.Contains("Broker open orders changed"));
+        fixture.LocalOrders.Single().LimitPrice.Should().Be(100m);
+    }
+
+    [Fact]
+    public async Task FinalBrokerOrderReadFails_CannotReuseEarlierCleanReconciliation()
+    {
+        var fixture = new Fixture();
+        fixture.Gateway.SetupSequence(gateway => gateway.GetOpenOrdersAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<BrokerOrder>())
+            .ThrowsAsync(new HttpRequestException("The final broker observation is unavailable."));
+
+        var result = await fixture.Service.SynchronizeAsync(fixture.AccountId, "broker-a");
+
+        result.IsReady.Should().BeFalse();
+        result.IsReconciled.Should().BeFalse();
+        result.LastSuccessfulSyncAt.Should().BeNull();
+        result.Reconciliation!.BrokerOrderSnapshotFingerprint.Should().BeNull();
+        result.Reconciliation.Breaks.Should().Contain(breakItem =>
+            breakItem.Kind == BrokerageExecutionReconciliationBreakKind.BrokerOpenOrderQueryFailed);
+    }
+
+    [Fact]
+    public async Task StableBrokerOrdersReturnedInDifferentEnumerationOrder_StillReconcile()
+    {
+        var fixture = new Fixture();
+        fixture.LocalOrders = [fixture.Order(), fixture.Order() with { OrderId = "second-order" }];
+        var brokerOrders = fixture.LocalOrders.Select(Broker).ToArray();
+        var reads = 0;
+        fixture.Gateway.Setup(gateway => gateway.GetOpenOrdersAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() => ++reads == 1 ? brokerOrders : brokerOrders.Reverse().ToArray());
+
+        (await fixture.Service.SynchronizeAsync(fixture.AccountId, "broker-a")).IsReady.Should().BeTrue();
+        reads.Should().Be(2);
+    }
+
+    [Fact]
     public async Task AcknowledgedWorkingOrder_MissedTerminalFillIsRecoveredWithoutRestartOrResubmission()
     {
         var fixture = new Fixture();

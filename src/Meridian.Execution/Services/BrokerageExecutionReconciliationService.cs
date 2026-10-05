@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 using static Meridian.Contracts.Text.TextPrimitives;
@@ -272,7 +274,7 @@ public sealed class BrokerageExecutionReconciliationService
                 gateway.GatewayId);
         }
 
-        return BuildReport(gateway, health, matches, breaks, reconciledAt, fundAccountId, localOrders.Length, brokerOrders.Count);
+        return BuildReport(gateway, health, matches, breaks, reconciledAt, fundAccountId, localOrders.Length, brokerOrders);
     }
 
     private async Task<BrokerHealthStatus> CheckHealthAsync(IBrokerageGateway gateway, CancellationToken ct)
@@ -300,7 +302,7 @@ public sealed class BrokerageExecutionReconciliationService
         DateTimeOffset reconciledAt,
         Guid? fundAccountId,
         int localOpenOrderCount,
-        int? brokerOpenOrderCount) => new(
+        IReadOnlyList<BrokerOrder>? brokerOrders) => new(
             GatewayId: gateway.GatewayId,
             BrokerDisplayName: gateway.BrokerDisplayName,
             Health: health,
@@ -310,7 +312,14 @@ public sealed class BrokerageExecutionReconciliationService
         {
             FundAccountId = fundAccountId,
             LocalOpenOrderCount = localOpenOrderCount,
-            BrokerOpenOrderCount = brokerOpenOrderCount
+            BrokerOpenOrderCount = brokerOrders?.Count,
+            // Hash the complete observed rows, not just successful matches: an unknown order
+            // or a price change can leave holdings, balances and the local OMS unchanged.
+            // Sorting serialized rows makes provider enumeration order irrelevant while
+            // preserving duplicates and every broker-reported economic field.
+            BrokerOrderSnapshotFingerprint = brokerOrders is null ? null : Sha256Digest.ComputeUtf8(
+                JsonSerializer.Serialize(brokerOrders.Select(static order => JsonSerializer.Serialize(order))
+                    .Order(StringComparer.Ordinal)))
         };
 
     private static void CompareOrder(
@@ -442,6 +451,9 @@ public sealed record BrokerageExecutionReconciliationReport(
 
     /// <summary>Broker rows returned, including duplicates; unknown when the broker query fails.</summary>
     public int? BrokerOpenOrderCount { get; init; }
+
+    /// <summary>Canonical fingerprint of all observed broker order rows; unavailable when the query fails.</summary>
+    public string? BrokerOrderSnapshotFingerprint { get; init; }
     public bool IsClean => Health.IsHealthy && Breaks.Count == 0;
 }
 

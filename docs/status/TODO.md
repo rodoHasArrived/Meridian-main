@@ -24,7 +24,7 @@ Total items: **238**
 | `src/Meridian.Backtesting/Portfolio/SimulatedPortfolio.cs` | 1444 | `NOTE` | ❌ | /// NOTE: This must stay consistent with <c>BacktestMetricsEngine.ComputeRealisedPnl</c>, |
 | `src/Meridian.Core/Monitoring/MigrationDiagnostics.cs` | 17 | `NOTE` | ❌ | /// NOTE: This class lives in the Core project (not Application) so that |
 | `src/Meridian.Core/Serialization/MarketDataJsonContext.cs` | 177 | `NOTE` | ❌ | /// NOTE: Alpaca payloads use both "T" and "t" keys in the same object. |
-| `src/Meridian.Execution/BrokerageServiceRegistration.cs` | 284 | `NOTE` | ❌ | // NOTE: We intentionally use GetRequiredKeyedService here rather than |
+| `src/Meridian.Execution/BrokerageServiceRegistration.cs` | 286 | `NOTE` | ❌ | // NOTE: We intentionally use GetRequiredKeyedService here rather than |
 | `src/Meridian.Reporting/ReportingGovernanceService.cs` | 100 | `NOTE` | ❌ | note: ReportingGovernanceCanonicalValidation.BuildInitialRunAuditNote(run), |
 | `src/Meridian.Reporting/ReportingGovernanceService.cs` | 588 | `NOTE` | ❌ | note: ReportingGovernanceCanonicalValidation.BuildRestatementDraftAuditNote(draftRun), |
 | `src/Meridian.Reporting/ReportingGovernanceService.cs` | 617 | `NOTE` | ❌ | note: ReportingGovernanceCanonicalValidation.BuildRestatementApprovalAuditNote(approvedRequest), |

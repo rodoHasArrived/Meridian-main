@@ -230,8 +230,14 @@ public sealed class LiveBrokeragePortfolioSyncService
                     beforeOrders = Fingerprint(oms, fundAccountId);
                     before = await portfolioSync.GetPortfolioSnapshotAsync(externalAccountId, ct).ConfigureAwait(false);
                 }
-                var report = await _reconciliation.ReconcileOpenOrdersAsync(gateway, oms, fundAccountId, ct).ConfigureAwait(false);
+                var initialReport = await _reconciliation.ReconcileOpenOrdersAsync(gateway, oms, fundAccountId, ct).ConfigureAwait(false);
                 var snapshot = await portfolioSync.GetPortfolioSnapshotAsync(externalAccountId, ct).ConfigureAwait(false);
+                // Holdings and cash do not reflect an unfilled order that appears while the
+                // portfolio is being read. Bracket that read with the same reconciliation
+                // service and require the entire observed broker order book to remain stable.
+                var report = await _reconciliation.ReconcileOpenOrdersAsync(gateway, oms, fundAccountId, ct).ConfigureAwait(false);
+                var brokerOrdersUnchanged = initialReport.BrokerOrderSnapshotFingerprint is { } initialBrokerOrders
+                    && string.Equals(initialBrokerOrders, report.BrokerOrderSnapshotFingerprint, StringComparison.Ordinal);
                 var capturedOrders = ReadOrders(oms).Where(o => o.FundAccountId == fundAccountId).ToArray();
                 var capturedExposure = oms.GetExposureReservingOrders().Where(o => o.FundAccountId == fundAccountId).ToArray();
                 var afterOrders = Fingerprint(oms, fundAccountId);
@@ -245,8 +251,10 @@ public sealed class LiveBrokeragePortfolioSyncService
                     issues.Add("Retained orders or fills changed during synchronization; retry reconciliation.");
                 if (oms is OrderManagementSystem concrete && concrete.GetRecoveryOrders(fundAccountId).Count > 0)
                     issues.Add("Retained orders still require authoritative broker recovery.");
-                if (!report.IsClean)
+                if (!initialReport.IsClean || !report.IsClean)
                     issues.Add("Broker order reconciliation has unresolved discrepancies or unhealthy connectivity.");
+                if (!brokerOrdersUnchanged)
+                    issues.Add("Broker open orders changed during portfolio synchronization; retry reconciliation.");
                 if ((_bindings.GetValueOrDefault(fundAccountId)?.Generation ?? 0L) != bindingGeneration)
                     issues.Add("Account binding changed during synchronization; reconcile the current link.");
                 if (!ReferenceEquals(gateway, _gatewayAccessor()) || !gateway.IsConnected
@@ -257,7 +265,7 @@ public sealed class LiveBrokeragePortfolioSyncService
                 var consistent = issues.Count == 0;
                 var status = new LiveBrokeragePortfolioStatus(
                     fundAccountId, gateway.GatewayId, externalAccountId, gateway.IsConnected,
-                    IsFresh(snapshot), snapshot.IsComplete, consistent, report.IsClean,
+                    IsFresh(snapshot), snapshot.IsComplete, consistent, initialReport.IsClean && report.IsClean && brokerOrdersUnchanged,
                     pending.LastAttemptAt, consistent ? _timeProvider.GetUtcNow() : previous.LastSuccessfulSyncAt,
                     snapshot, report, issues.ToArray());
                 _entries[fundAccountId] = consistent

@@ -32,7 +32,7 @@ public sealed class BrokeragePortfolioState(LiveBrokeragePortfolioSyncService sy
             if (observation?.Snapshot is not { } snapshot)
                 return new Dictionary<string, IPosition>(StringComparer.OrdinalIgnoreCase);
 
-            return snapshot.Positions.ToDictionary(position => position.Symbol, position => (IPosition)new ExecutionPosition(
+            return ProjectPositions(snapshot).ToDictionary(position => position.Symbol, position => (IPosition)new ExecutionPosition(
                 position.Symbol, (long)position.Quantity, position.AverageEntryPrice,
                 position.UnrealizedPnl, 0m)
             {
@@ -50,8 +50,10 @@ public sealed class BrokeragePortfolioState(LiveBrokeragePortfolioSyncService sy
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
         var observation = Observation();
-        var position = observation?.Snapshot?.Positions.FirstOrDefault(position =>
-            string.Equals(position.Symbol, symbol, StringComparison.OrdinalIgnoreCase));
+        var position = observation?.Snapshot is { } snapshot
+            ? ProjectPositions(snapshot).FirstOrDefault(position =>
+                string.Equals(position.Symbol, symbol, StringComparison.OrdinalIgnoreCase))
+            : null;
         return position is null
             ? new PositionState { Symbol = symbol, LastUpdated = observation?.Snapshot?.RetrievedAt ?? DateTimeOffset.MinValue }
             : Project(position, observation!.Snapshot!.RetrievedAt);
@@ -62,7 +64,7 @@ public sealed class BrokeragePortfolioState(LiveBrokeragePortfolioSyncService sy
         var snapshot = Observation()?.Snapshot;
         return snapshot is null
             ? new Dictionary<string, PositionState>(StringComparer.OrdinalIgnoreCase)
-            : snapshot.Positions.ToDictionary(position => position.Symbol,
+            : ProjectPositions(snapshot).ToDictionary(position => position.Symbol,
                 position => Project(position, snapshot.RetrievedAt), StringComparer.OrdinalIgnoreCase);
     }
 
@@ -70,6 +72,37 @@ public sealed class BrokeragePortfolioState(LiveBrokeragePortfolioSyncService sy
     public decimal GetCash() => Cash;
     public decimal GetUnrealizedPnl() => UnrealisedPnl;
     public decimal GetRealizedPnl() => RealisedPnl;
+
+    private static IEnumerable<BrokeragePositionSnapshotDto> ProjectPositions(BrokeragePortfolioSnapshotDto snapshot)
+    {
+        // Invalid snapshots remain readable while the operator investigates them. These legacy
+        // symbol-keyed views can express only net holdings, so aggregate every duplicate row
+        // rather than selecting one or throwing. In particular, retain a zero-net row when
+        // opposing observations offset. The authoritative risk feed still reads the original
+        // rows, preserves their gross exposure, and blocks the inconsistent snapshot.
+        foreach (var group in snapshot.Positions.GroupBy(position => position.Symbol, StringComparer.OrdinalIgnoreCase))
+        {
+            var rows = group.ToArray();
+            var first = rows[0];
+            if (rows.Length == 1)
+            {
+                yield return first;
+                continue;
+            }
+
+            var quantity = rows.Sum(position => position.Quantity);
+            yield return first with
+            {
+                Quantity = quantity,
+                AverageEntryPrice = quantity == 0m ? 0m
+                    : rows.Sum(position => position.Quantity * position.AverageEntryPrice) / quantity,
+                MarketPrice = quantity == 0m ? rows.Max(position => position.MarketPrice)
+                    : rows.Sum(position => position.Quantity * position.MarketPrice) / quantity,
+                MarketValue = rows.Sum(position => position.MarketValue),
+                UnrealizedPnl = rows.Sum(position => position.UnrealizedPnl)
+            };
+        }
+    }
 
     private static PositionState Project(BrokeragePositionSnapshotDto position, DateTimeOffset observedAt) => new()
     {

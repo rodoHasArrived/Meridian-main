@@ -21,6 +21,14 @@ handoff evidence. Recovery never submits a replacement order. Exactly one execut
 each recovery directory; scope changes and unreadable state fail closed.
 Report checkpoints preserve newer submission uncertainty: a fill that began processing before a
 dispatch failure cannot clear the later recovery requirement in memory or in the retained store.
+`AddBrokerageExecution` requires the recovery store for every broker-backed gateway, including
+sandbox accounts; only in-process paper execution can omit it. At the configured retained-order
+limit, fully processed fills and definitive rejections without a broker identity become compact
+durable tombstones before their full state and sidecars are removed. These identities remain
+reserved across restart and duplicate callbacks cannot be adopted as new external fills. Version 1
+recovery files remain readable; new writes use version 2 with tombstones. Active orders, ambiguous
+outcomes, pending fill handoffs, and cancelled/expired orders retain their complete evidence for
+recovery and may exceed the display-cache limit. The permanent minimal identity index is not expired.
 
 ## Purpose
 

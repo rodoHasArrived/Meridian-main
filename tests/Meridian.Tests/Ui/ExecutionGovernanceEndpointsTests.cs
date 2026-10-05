@@ -314,6 +314,7 @@ public sealed class ExecutionGovernanceEndpointsTests
                 new Meridian.Core.Config.AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret"),
                 NullLogger<AlpacaBrokerageGateway>.Instance));
             services.AddBrokerageGateway("alpaca", sp => sp.GetRequiredService<AlpacaBrokerageGateway>());
+            services.AddSingleton(new FileBrokerageOrderRecoveryStore(Path.Combine(tempRoot, "broker-orders.json"), "alpaca"));
             services.AddBrokerageExecution(config => ConfigureReadyBrokerage(config, "alpaca"));
         });
 
@@ -393,6 +394,7 @@ public sealed class ExecutionGovernanceEndpointsTests
                 NullLogger<RobinhoodBrokerageGateway>.Instance,
                 accessToken: "test-token"));
             services.AddHostedBrokerageGateways();
+            services.AddSingleton(new FileBrokerageOrderRecoveryStore(Path.Combine(tempRoot, "broker-orders.json"), "robinhood"));
             services.AddBrokerageExecution(config => ConfigureReadyBrokerage(config, "robinhood"));
         });
 

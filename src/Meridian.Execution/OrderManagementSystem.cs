@@ -624,6 +624,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             _preTradeReservationGate.Release();
         }
 
+        using var retentionLease = TrackBrokerageSubmissionForRetention(orderId);
         try
         {
             ct.ThrowIfCancellationRequested();
@@ -1358,6 +1359,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     private async Task ProcessGatewayReportCoreAsync(ExecutionReport report, CancellationToken ct)
     {
         var orderId = report.ClientOrderId ?? report.OrderId;
+        if (IsCompactedBrokerageReport(report))
+            return;
         var recoveryVersion = string.IsNullOrWhiteSpace(orderId) ? 0L : GetBrokerageRecoveryVersion(orderId);
         if (!string.IsNullOrWhiteSpace(orderId))
         {
