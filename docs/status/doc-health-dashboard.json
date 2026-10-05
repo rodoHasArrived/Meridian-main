@@ -1,11 +1,11 @@
 {
   "total_files": 690,
-  "total_lines": 152175,
+  "total_lines": 152189,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 291,
-  "average_lines": 220.5,
+  "average_lines": 220.6,
   "health_score": 81,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2907,7 +2907,7 @@
     },
     {
       "path": "docs/operators/failover-and-recovery.md",
-      "line_count": 418,
+      "line_count": 432,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
