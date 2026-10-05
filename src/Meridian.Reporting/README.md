@@ -81,6 +81,10 @@ journal or rendered-cell changes remain explicit `Unexplained` contributions eve
 these contributions are excluded from explained movement. Top-N, formula, and cross-tab measures
 without a supported additive mapping remain unexplained. UI Shared persists the complete envelope
 through the existing tenant-scoped content-addressed artifact store and serves retained support.
+Comparison monetary values cross the browser API as canonical decimal strings, preserving every
+retained digit without binary floating-point conversion. Generated JSON metadata covers manifest
+cloning, methodology definitions, retained envelopes, and endpoint responses; earlier numeric
+comparison artifacts remain readable without rewriting their content addresses.
 
 Use this README to understand the module before editing source files. Update the registry when
 validation, roadmap links, diagrams, or ownership changes. Reporting owns the immutable run,

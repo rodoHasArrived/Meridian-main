@@ -1,5 +1,8 @@
 import type { ReportWriterGridDiff } from "@/types";
 
+/** Exact invariant decimal text supplied by retained server evidence; never parse as a JS number. */
+export type IncomeComparisonAmount = string;
+
 export interface IncomeComparisonMetric { column: string; label: string; sourceField: string | null }
 export interface IncomeComparisonGrid { gridId: string; title: string; metrics: IncomeComparisonMetric[] }
 export interface IncomeComparisonRun {
@@ -27,7 +30,7 @@ export interface IncomeContribution {
   contributionId: string;
   kind: string;
   label: string;
-  amount: number;
+  amount: IncomeComparisonAmount;
   recordId: string;
   sourceRunId: string;
   detail: string;
@@ -42,11 +45,11 @@ export interface IncomeComparison {
   metricColumn: string;
   status: string;
   compatible: boolean;
-  baselineAmount: number | null;
-  currentAmount: number | null;
-  movement: number | null;
-  explainedAmount: number;
-  residualAmount: number | null;
+  baselineAmount: IncomeComparisonAmount | null;
+  currentAmount: IncomeComparisonAmount | null;
+  movement: IncomeComparisonAmount | null;
+  explainedAmount: IncomeComparisonAmount;
+  residualAmount: IncomeComparisonAmount | null;
   differences: { dimension: string; baseline: string; current: string; compatible: boolean; detail: string }[];
   contributions: IncomeContribution[];
   warnings: string[];

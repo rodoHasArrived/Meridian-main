@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useLocation, useNavigationType, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
@@ -15,6 +15,29 @@ const cellClass = "px-3 py-2 text-left align-top";
 /** Server-owned explanation; the URL retains selection and drill-through context. */
 export function ReportingIncomeComparisonPanel({ currentRunId = "" }: { currentRunId?: string }) {
   const [query, setQuery] = useSearchParams();
+  const location = useLocation();
+  const navigationType = useNavigationType();
+  const queryUpdates = useRef({ params: query, pending: new Set<string>() });
+  useLayoutEffect(() => {
+    const updates = queryUpdates.current;
+    const committed = query.toString();
+    // Adopt external/history navigation, but an intermediate commit must not replace
+    // later selections already submitted while React Router was rendering.
+    if (navigationType === "POP" || !updates.pending.has(committed) || committed === updates.params.toString()) {
+      updates.params = query;
+      updates.pending.clear();
+    }
+  }, [query, location.key, navigationType]);
+
+  function updateQuery(change: (next: URLSearchParams) => void) {
+    // setSearchParams functional callbacks are not queued like React state updates.
+    const next = new URLSearchParams(queryUpdates.current.params);
+    change(next);
+    queryUpdates.current.params = next;
+    queryUpdates.current.pending.add(next.toString());
+    setQuery(next);
+  }
+
   const baselineId = query.get("incomeBaseline") ?? "";
   const currentId = query.get("incomeCurrent") ?? currentRunId;
   const gridId = query.get("incomeGrid") ?? "";
@@ -28,6 +51,16 @@ export function ReportingIncomeComparisonPanel({ currentRunId = "" }: { currentR
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const mutation = useRef<AbortController | null>(null);
+
+  useLayoutEffect(() => {
+    // History can change only the saved comparison identity while keeping the pair.
+    // A late retention response must not navigate over that operator choice.
+    if (mutation.current) {
+      mutation.current.abort();
+      mutation.current = null;
+      setBusy(false);
+    }
+  }, [location.key]);
 
   useEffect(() => {
     mutation.current?.abort();
@@ -78,14 +111,12 @@ export function ReportingIncomeComparisonPanel({ currentRunId = "" }: { currentR
     setBusy(false);
     setComparison(null);
     setError(null);
-    setQuery((previous) => {
-      const next = new URLSearchParams(previous);
+    updateQuery((next) => {
       next.set(key, value);
       next.delete("incomeComparison");
       next.delete("incomeContribution");
       if (key === "incomeCurrent") { next.delete("incomeGrid"); next.delete("incomeMetric"); }
       if (key === "incomeGrid") next.delete("incomeMetric");
-      return next;
     });
   }
 
@@ -102,22 +133,21 @@ export function ReportingIncomeComparisonPanel({ currentRunId = "" }: { currentR
       if (result.baseline.runId !== baselineId || result.current.runId !== currentId || result.gridId !== gridId || result.metricColumn !== metric) {
         throw new Error("Comparison inputs do not match the requested pair");
       }
-      setQuery((previous) => {
-        const next = new URLSearchParams(previous);
+      updateQuery((next) => {
         next.set("incomeComparison", result.comparisonId);
         next.delete("incomeContribution");
-        return next;
       });
     } catch {
       if (!controller.signal.aborted) setError("The comparison could not be confirmed. Check access and retained inputs, then retry. No retained explanation was confirmed.");
-    } finally { if (!controller.signal.aborted) setBusy(false); }
+    } finally {
+      if (mutation.current === controller) mutation.current = null;
+      if (!controller.signal.aborted) setBusy(false);
+    }
   }
 
   function selectContribution(id: string) {
-    setQuery((previous) => {
-      const next = new URLSearchParams(previous);
+    updateQuery((next) => {
       if (id) next.set("incomeContribution", id); else next.delete("incomeContribution");
-      return next;
     });
   }
 
@@ -175,16 +205,23 @@ function runLabel(run: IncomeComparisonRun) {
   return `${run.publicationLabel} · ${run.periodId} · ${run.currency} · ${run.runId}`;
 }
 
-function amount(value: number | null, currency: string) {
+function isZeroAmount(value: string | null) {
+  return value !== null && /^-?0(?:\.0+)?$/.test(value);
+}
+
+function amount(value: string | null, currency: string) {
   if (value === null) return "Not comparable";
-  const formatted = value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 20 });
-  // An unsupported amount must not visually disappear beneath a display precision cutoff.
-  const visible = value !== 0 && Number(formatted.replaceAll(",", "")) === 0 ? String(value) : formatted;
-  return `${visible} ${currency}`;
+  const negative = value.startsWith("-");
+  const [integer, retainedFraction = ""] = (negative ? value.slice(1) : value).split(".");
+  const groupedInteger = integer.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  // Group and pad decimal text directly: every significant retained digit remains visible.
+  const fraction = retainedFraction.replace(/0+$/, "").padEnd(2, "0");
+  const sign = negative && !isZeroAmount(value) ? "-" : "";
+  return `${sign}${groupedInteger}.${fraction} ${currency}`;
 }
 
 function ComparisonExplanation({ comparison: c, onSupport }: { comparison: IncomeComparison; onSupport: (id: string) => void }) {
-  const reconciled = c.compatible && c.status === "Reconciled" && c.residualAmount === 0;
+  const reconciled = c.compatible && c.status === "Reconciled" && isZeroAmount(c.residualAmount);
   const currency = c.baseline.currency === c.current.currency ? c.current.currency : "(different currencies)";
   return (
     <section aria-label="Retained income explanation" className="space-y-4">

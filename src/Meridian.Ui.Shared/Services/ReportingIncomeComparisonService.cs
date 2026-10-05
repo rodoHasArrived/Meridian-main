@@ -10,17 +10,20 @@ public sealed class ReportingIncomeComparisonService(
     IReportingArtifactStore artifacts,
     IReportingGovernanceRepository governance)
 {
-    private static readonly JsonSerializerOptions RetentionJson = new(JsonSerializerDefaults.Web);
+    private static readonly ReportingIncomeComparisonJsonContext RetentionJson = ReportingIncomeComparisonJsonContext.Default;
 
     public async Task<IReadOnlyList<ReportingIncomeComparisonRunDto>> ListCandidatesAsync(
         ReportAccessQueryContext access, CancellationToken ct = default)
     {
         RequireBound(access);
-        var candidates = new List<ReportingOutputManifest>();
+        var result = new List<ReportingIncomeComparisonRunDto>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
-        for (var offset = 0; ; offset += 200)
+        const int pageSize = IReportingGovernanceTransaction.MaximumRunReadBatchSize;
+        for (var offset = 0; ; offset += pageSize)
         {
-            var page = runs.ListRuns(access.TenantId!, access.CompanyId, offset, limit: 200);
+            ct.ThrowIfCancellationRequested();
+            var page = runs.ListRuns(access.TenantId!, access.CompanyId, offset, limit: pageSize);
+            var candidates = new List<ReportingOutputManifest>(page.Count);
             foreach (var snapshot in page)
             {
                 var manifest = snapshot.Manifest;
@@ -29,14 +32,12 @@ public sealed class ReportingIncomeComparisonService(
                 if (!manifest.RenderedReportWriterGrids.IsDefaultOrEmpty && ReportAccessPolicyEvaluator.Evaluate(manifest, access).IsAccessible)
                     candidates.Add(manifest);
             }
-            if (page.Count < 200)
+            var governed = await GovernedAsync(access.TenantId!, candidates.Select(manifest => manifest.RunId).ToArray(), ct)
+                .ConfigureAwait(false);
+            foreach (var manifest in candidates)
+                result.Add(ReportingIncomeComparisonEngine.Describe(manifest, governed.GetValueOrDefault(manifest.RunId)));
+            if (page.Count < pageSize)
                 break;
-        }
-        var result = new List<ReportingIncomeComparisonRunDto>();
-        foreach (var manifest in candidates)
-        {
-            var governed = await GovernedAsync(access.TenantId!, manifest.RunId, ct).ConfigureAwait(false);
-            result.Add(ReportingIncomeComparisonEngine.Describe(manifest, governed));
         }
         return result;
     }
@@ -48,12 +49,11 @@ public sealed class ReportingIncomeComparisonService(
         RequireBound(access);
         var baseline = AuthorizedManifest(request.BaselineRunId, access);
         var current = AuthorizedManifest(request.CurrentRunId, access);
-        var baselineState = await GovernedAsync(access.TenantId!, baseline.RunId, ct).ConfigureAwait(false);
-        var currentState = await GovernedAsync(access.TenantId!, current.RunId, ct).ConfigureAwait(false);
+        var governed = await GovernedAsync(access.TenantId!, [baseline.RunId, current.RunId], ct).ConfigureAwait(false);
         var retained = ReportingIncomeComparisonEngine.Compare(baseline, current, request.GridId, request.MetricColumn,
-            ReportingIncomeComparisonEngine.Describe(baseline, baselineState),
-            ReportingIncomeComparisonEngine.Describe(current, currentState));
-        var bytes = JsonSerializer.SerializeToUtf8Bytes(retained, RetentionJson);
+            ReportingIncomeComparisonEngine.Describe(baseline, governed.GetValueOrDefault(baseline.RunId)),
+            ReportingIncomeComparisonEngine.Describe(current, governed.GetValueOrDefault(current.RunId)));
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(retained, RetentionJson.RetainedReportingIncomeComparison);
         var written = await artifacts.StoreAsync(new(access.TenantId!, bytes), ct).ConfigureAwait(false);
         var expectedHash = Sha256Digest.Compute(bytes);
         if (written.Identity.TenantId != access.TenantId || written.ByteSize != bytes.Length
@@ -91,7 +91,7 @@ public sealed class ReportingIncomeComparisonService(
         RetainedReportingIncomeComparison retained;
         try
         {
-            retained = JsonSerializer.Deserialize<RetainedReportingIncomeComparison>(artifact.Content, RetentionJson)
+            retained = JsonSerializer.Deserialize(artifact.Content, RetentionJson.RetainedReportingIncomeComparison)
                 ?? throw new JsonException("Empty comparison.");
         }
         catch (JsonException)
@@ -137,8 +137,15 @@ public sealed class ReportingIncomeComparisonService(
             throw new UnauthorizedAccessException(evaluation.Reason);
     }
 
-    private ValueTask<GovernedReportingRun?> GovernedAsync(string tenant, string runId, CancellationToken ct) =>
-        governance.ExecuteTransactionAsync((transaction, token) => transaction.GetRunAsync(tenant, runId, token), ct);
+    private async ValueTask<IReadOnlyDictionary<string, GovernedReportingRun>> GovernedAsync(
+        string tenant, IReadOnlyCollection<string> runIds, CancellationToken ct)
+    {
+        if (runIds.Count == 0)
+            return new Dictionary<string, GovernedReportingRun>(StringComparer.Ordinal);
+        var retained = await governance.ExecuteTransactionAsync(
+            (transaction, token) => transaction.GetRunsAsync(tenant, runIds, token), ct).ConfigureAwait(false);
+        return retained.ToDictionary(run => run.RunId, StringComparer.Ordinal);
+    }
 
     private static void RequireBound(ReportAccessQueryContext access)
     {

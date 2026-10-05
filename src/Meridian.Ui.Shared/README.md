@@ -15,7 +15,9 @@ last_reviewed: 2026-10-05
 provide explicit baseline/current retained-run selection, including governed original/restated
 publication labels. Candidate discovery pages through retained history and applies both tenant and
 immutable report access policy. The shared Reporting engine supplies all movement explanations;
-workstations consume those results without recalculating causality.
+workstations consume those results without recalculating causality. Authorized candidates load
+governed publication evidence in batches of at most 200 within one transaction per batch; comparison
+creation reads both governed inputs together. Complete retained history remains discoverable.
 
 Creating a comparison retains both complete manifests, exact supporting rows, methodology
 explanation, compatibility decisions, and an explanation-version identifier in the existing

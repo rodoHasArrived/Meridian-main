@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.Text.Json;
 using Meridian.Contracts.Workstation;
+using Meridian.Contracts.Ledger;
 
 namespace Meridian.Reporting;
 
@@ -12,7 +13,7 @@ namespace Meridian.Reporting;
 public static class ReportingIncomeComparisonEngine
 {
     public const string ExplanationVersion = "investment-income-comparison/v1";
-    private static readonly JsonSerializerOptions RetentionJson = new(JsonSerializerDefaults.Web);
+    private static readonly ReportingIncomeComparisonJsonContext RetentionJson = ReportingIncomeComparisonJsonContext.Default;
 
     public static RetainedReportingIncomeComparison Compare(
         ReportingOutputManifest baseline, ReportingOutputManifest current, string gridId, string metricColumn,
@@ -161,8 +162,8 @@ public static class ReportingIncomeComparisonEngine
                         {
                             ["recordType"] = "Retained methodology impact",
                             ["entryId"] = id,
-                            ["baselineAmount"] = prior.GetValueOrDefault(id).ToString("G29", CultureInfo.InvariantCulture),
-                            ["currentAmount"] = next.GetValueOrDefault(id).ToString("G29", CultureInfo.InvariantCulture)
+                            ["baselineAmount"] = ReportingIncomeDecimalJsonConverter.Format(prior.GetValueOrDefault(id)),
+                            ["currentAmount"] = ReportingIncomeDecimalJsonConverter.Format(next.GetValueOrDefault(id))
                         }).ToArray();
                         Add("Methodology", "Retained metric/filter definition change",
                             methodIds.Sum(id => next.GetValueOrDefault(id) - prior.GetValueOrDefault(id)),
@@ -213,8 +214,8 @@ public static class ReportingIncomeComparisonEngine
                 {
                     ["recordType"] = "Retained rendered-cell validation",
                     ["rowKey"] = key,
-                    ["baselineSourceAmount"] = oldExpected.ToString("G29", CultureInfo.InvariantCulture),
-                    ["currentSourceAmount"] = newExpected.ToString("G29", CultureInfo.InvariantCulture)
+                    ["baselineSourceAmount"] = ReportingIncomeDecimalJsonConverter.Format(oldExpected),
+                    ["currentSourceAmount"] = ReportingIncomeDecimalJsonConverter.Format(newExpected)
                 };
                 Add("Unexplained", $"Unsupported rendered row {key}",
                     (newActual ?? 0m) - newExpected - ((oldActual ?? 0m) - oldExpected),
@@ -278,7 +279,7 @@ public static class ReportingIncomeComparisonEngine
     }
 
     private static ReportingOutputManifest Clone(ReportingOutputManifest manifest) =>
-        JsonSerializer.Deserialize<ReportingOutputManifest>(JsonSerializer.Serialize(manifest with
+        JsonSerializer.Deserialize(JsonSerializer.SerializeToUtf8Bytes(manifest with
         {
             Sections = manifest.Sections.IsDefault ? [] : manifest.Sections,
             Artifacts = manifest.Artifacts.IsDefault ? [] : manifest.Artifacts,
@@ -286,7 +287,7 @@ public static class ReportingIncomeComparisonEngine
             RenderedReportWriterGrids = manifest.RenderedReportWriterGrids.IsDefault ? [] : manifest.RenderedReportWriterGrids,
             ReportWriterGridDiffs = manifest.ReportWriterGridDiffs.IsDefault ? [] : manifest.ReportWriterGridDiffs,
             CertifiedDatasetRows = manifest.CertifiedDatasetRows.IsDefault ? [] : manifest.CertifiedDatasetRows
-        }, RetentionJson), RetentionJson)!;
+        }, RetentionJson.ReportingOutputManifest), RetentionJson.ReportingOutputManifest)!;
 
     private static ReportWriterGridRenderDto Grid(ReportingOutputManifest manifest, string gridId) =>
         (manifest.RenderedReportWriterGrids.IsDefault ? [] : manifest.RenderedReportWriterGrids)
@@ -398,8 +399,8 @@ public static class ReportingIncomeComparisonEngine
     private static bool Known(string? value) => !string.IsNullOrWhiteSpace(value)
         && !string.Equals(value, "Unknown", StringComparison.OrdinalIgnoreCase);
 
-    private static string DimensionSummary(object dimensions) => string.Join("; ",
-        JsonSerializer.SerializeToElement(dimensions, RetentionJson).EnumerateObject()
+    private static string DimensionSummary(LedgerDimensionSetDto dimensions) => string.Join("; ",
+        JsonSerializer.SerializeToElement(dimensions, RetentionJson.LedgerDimensionSetDto).EnumerateObject()
             .Where(p => p.Value.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(p.Value.GetString())
                 || p.Value.ValueKind == JsonValueKind.Object && p.Value.EnumerateObject().Any())
             .Select(p => $"{p.Name}: {p.Value}"));
@@ -437,7 +438,7 @@ public static class ReportingIncomeComparisonEngine
             return false;
         // These are the retained explicit scope predicates. Missing row dimensions do not prove
         // exclusion, and a newly seen instrument inside the continuing entity is still a journal.
-        foreach (var property in JsonSerializer.SerializeToElement(scope.Dimensions, RetentionJson).EnumerateObject())
+        foreach (var property in JsonSerializer.SerializeToElement(scope.Dimensions, RetentionJson.LedgerDimensionSetDto).EnumerateObject())
         {
             if (property.Value.ValueKind == JsonValueKind.String && Different(property.Name, property.Value.GetString()))
                 return true;
@@ -470,12 +471,10 @@ public static class ReportingIncomeComparisonEngine
     }
     private static bool RowsEqual(IReadOnlyDictionary<string, string> a, IReadOnlyDictionary<string, string> b) =>
         a.Count == b.Count && a.All(pair => b.TryGetValue(pair.Key, out var value) && value == pair.Value);
-    private static string Method(ReportWriterGridRenderDto grid, string metric) => JsonSerializer.Serialize(new
-    {
+    private static string Method(ReportWriterGridRenderDto grid, string metric) => JsonSerializer.Serialize(new ReportingIncomeMethodologyDefinition(
         grid.Kind,
-        Metric = grid.Lineage?.Metrics.FirstOrDefault(m => m.Name == metric),
-        Formula = grid.Lineage?.Formulas.FirstOrDefault(f => f.Name == metric),
-        Filters = grid.Lineage?.Filters
-    }, RetentionJson);
+        grid.Lineage?.Metrics.FirstOrDefault(m => m.Name == metric),
+        grid.Lineage?.Formulas.FirstOrDefault(f => f.Name == metric),
+        grid.Lineage?.Filters), RetentionJson.ReportingIncomeMethodologyDefinition);
     private static bool SameMethod(ReportWriterGridRenderDto a, ReportWriterGridRenderDto b, string metric) => Method(a, metric) == Method(b, metric);
 }

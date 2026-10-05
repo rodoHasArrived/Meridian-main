@@ -2,7 +2,7 @@ import { useState } from "react";
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
-import { useLocation, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as api from "@/lib/reporting-income-comparison-api";
 import { ReportingIncomeComparisonPanel } from "@/screens/reporting-income-comparison";
@@ -24,11 +24,13 @@ const savedQuery = `${selectionQuery}&incomeComparison=${retained.comparisonId}`
 function Harness() {
   const [hostRun, setHostRun] = useState(currentIncomeRun.runId);
   const location = useLocation();
+  const navigate = useNavigate();
   const [, setQuery] = useSearchParams();
   return <>
     <ReportingIncomeComparisonPanel currentRunId={hostRun} />
     <output data-testid="route-context">{location.search}</output>
     <button onClick={() => setHostRun("income-another-scope")}>Change host run</button>
+    <button onClick={() => navigate(-1)}>Back in comparison history</button>
     <button onClick={() => setQuery((query) => { const next = new URLSearchParams(query); next.set("incomeComparison", "comparison-2"); return next; })}>Open another saved comparison</button>
   </>;
 }
@@ -76,6 +78,97 @@ describe("ReportingIncomeComparisonPanel", () => {
     fireEvent.change(baseline, { target: { value: restatedIncomeRun.runId } });
     expect(screen.getByRole("button", { name: "Compare and retain explanation" })).toBeEnabled();
     expect(queryContext().get("incomeBaseline")).toBe(restatedIncomeRun.runId);
+  });
+
+  it("preserves rapid baseline and grid selections made before the router commits a render", async () => {
+    renderComparison();
+    const baseline = screen.getByRole("combobox", { name: "Baseline run" });
+    const grid = screen.getByRole("combobox", { name: "Report grid" });
+    await waitFor(() => expect(baseline).toBeEnabled());
+
+    act(() => {
+      fireEvent.change(baseline, { target: { value: publishedIncomeRun.runId } });
+      fireEvent.change(grid, { target: { value: "investment-income" } });
+    });
+    fireEvent.change(screen.getByRole("combobox", { name: "Income measure" }), { target: { value: "Income" } });
+
+    expect(baseline).toHaveValue(publishedIncomeRun.runId);
+    expect(queryContext().get("incomeBaseline")).toBe(publishedIncomeRun.runId);
+    expect(queryContext().get("incomeGrid")).toBe("investment-income");
+    expect(queryContext().get("incomeMetric")).toBe("Income");
+    expect(queryContext().get("runId")).toBe(currentIncomeRun.runId);
+    expect(queryContext().get("tab")).toBe("retained");
+    const compare = screen.getByRole("button", { name: "Compare and retain explanation" });
+    expect(compare).toBeEnabled();
+    fireEvent.click(compare);
+    await waitFor(() => expect(api.createIncomeComparison).toHaveBeenCalledWith(
+      { baselineRunId: publishedIncomeRun.runId, currentRunId: currentIncomeRun.runId, gridId: "investment-income", metricColumn: "Income" },
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    ));
+  });
+
+  it("adopts browser history before applying further rapid selection changes", async () => {
+    renderComparison();
+    const baseline = screen.getByRole("combobox", { name: "Baseline run" });
+    const grid = screen.getByRole("combobox", { name: "Report grid" });
+    await waitFor(() => expect(baseline).toBeEnabled());
+    act(() => {
+      fireEvent.change(baseline, { target: { value: publishedIncomeRun.runId } });
+      fireEvent.change(grid, { target: { value: "investment-income" } });
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Back in comparison history" }));
+    expect(baseline).toHaveValue(publishedIncomeRun.runId);
+    expect(grid).toHaveValue("");
+
+    act(() => {
+      fireEvent.change(baseline, { target: { value: restatedIncomeRun.runId } });
+      fireEvent.change(grid, { target: { value: "investment-income" } });
+    });
+    fireEvent.change(screen.getByRole("combobox", { name: "Income measure" }), { target: { value: "Income" } });
+    expect(queryContext().get("incomeBaseline")).toBe(restatedIncomeRun.runId);
+    expect(queryContext().get("incomeGrid")).toBe("investment-income");
+    expect(queryContext().get("incomeMetric")).toBe("Income");
+    expect(queryContext().get("runId")).toBe(currentIncomeRun.runId);
+    expect(screen.getByRole("button", { name: "Compare and retain explanation" })).toBeEnabled();
+  });
+
+  it("adopts a history entry after rapid selections return to the same query", async () => {
+    renderComparison(`incomeBaseline=${publishedIncomeRun.runId}`);
+    const baseline = screen.getByRole("combobox", { name: "Baseline run" });
+    await waitFor(() => expect(baseline).toBeEnabled());
+    act(() => {
+      fireEvent.change(baseline, { target: { value: restatedIncomeRun.runId } });
+      fireEvent.change(baseline, { target: { value: publishedIncomeRun.runId } });
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Back in comparison history" }));
+    expect(baseline).toHaveValue(restatedIncomeRun.runId);
+    fireEvent.change(screen.getByRole("combobox", { name: "Report grid" }), { target: { value: "investment-income" } });
+
+    expect(baseline).toHaveValue(restatedIncomeRun.runId);
+    expect(queryContext().get("incomeBaseline")).toBe(restatedIncomeRun.runId);
+    expect(queryContext().get("incomeGrid")).toBe("investment-income");
+  });
+
+  it("does not let a pending retention replace browser history for the same selected pair", async () => {
+    const stale = deferred<IncomeComparison>();
+    renderComparison(selectionQuery);
+    const compare = screen.getByRole("button", { name: "Compare and retain explanation" });
+    await waitFor(() => expect(compare).toBeEnabled());
+    fireEvent.click(compare);
+    await screen.findByText("Movement reconciled to retained evidence");
+    expect(queryContext().get("incomeComparison")).toBe(retained.comparisonId);
+
+    vi.mocked(api.createIncomeComparison).mockReturnValue(stale.promise);
+    fireEvent.click(screen.getByRole("button", { name: "Compare and retain explanation" }));
+    const signal = vi.mocked(api.createIncomeComparison).mock.calls[1][1]?.signal;
+    fireEvent.click(screen.getByRole("button", { name: "Back in comparison history" }));
+    expect(queryContext().get("incomeComparison")).toBeNull();
+    expect(signal?.aborted).toBe(true);
+
+    await act(async () => stale.resolve(retained));
+    expect(queryContext().get("incomeComparison")).toBeNull();
+    expect(queryContext().get("incomeBaseline")).toBe(publishedIncomeRun.runId);
+    expect(screen.getByRole("button", { name: "Compare and retain explanation" })).toBeEnabled();
   });
 
   it("retains the selected pair then reads the saved identity before displaying its explanation", async () => {
@@ -154,7 +247,7 @@ describe("ReportingIncomeComparisonPanel", () => {
   });
 
   it("keeps an unsupported residual visible beside supported journal contributions", async () => {
-    vi.mocked(api.getIncomeComparison).mockResolvedValue(buildIncomeComparison({ currentAmount: 1192, movement: 192, residualAmount: 42, status: "Unexplained", warnings: ["42 USD has no retained supporting record."] }));
+    vi.mocked(api.getIncomeComparison).mockResolvedValue(buildIncomeComparison({ currentAmount: "1192", movement: "192", residualAmount: "42", status: "Unexplained", warnings: ["42 USD has no retained supporting record."] }));
     renderComparison(savedQuery);
 
     expect(await screen.findByText("Unexplained differences remain")).toBeInTheDocument();
@@ -165,17 +258,18 @@ describe("ReportingIncomeComparisonPanel", () => {
   });
 
   it.each([
-    { residual: 1e-10, visible: "0.0000000001 USD" },
-    { residual: -1e-24, visible: "-1e-24 USD" }
+    { residual: "0.0000000001", visible: "0.0000000001 USD" },
+    { residual: "-0.000000000000000000000001", visible: "-0.000000000000000000000001 USD" },
+    { residual: "0.0000000000000000000000000001", visible: "0.0000000000000000000000000001 USD" }
   ])("keeps a nonzero unsupported residual of $residual visible instead of rounding it to zero", async ({ residual, visible }) => {
     vi.mocked(api.getIncomeComparison).mockResolvedValue(buildIncomeComparison({
-      baselineAmount: 0,
+      baselineAmount: "0",
       currentAmount: residual,
       movement: residual,
-      explainedAmount: 0,
+      explainedAmount: "0",
       residualAmount: residual,
       contributions: [],
-      status: "Unexplained"
+      status: "Reconciled"
     }));
     renderComparison(savedQuery);
 
@@ -185,15 +279,71 @@ describe("ReportingIncomeComparisonPanel", () => {
     expect(screen.queryByText("Movement reconciled to retained evidence")).not.toBeInTheDocument();
   });
 
+  it.each([
+    { retainedAmount: "9007199254740993", visible: "9,007,199,254,740,993.00 USD" },
+    { retainedAmount: "9007199254740993.123456789012", visible: "9,007,199,254,740,993.123456789012 USD" },
+    { retainedAmount: "-79228162514264337593543950335", visible: "-79,228,162,514,264,337,593,543,950,335.00 USD" },
+    { retainedAmount: "7.9228162514264337593543950335", visible: "7.9228162514264337593543950335 USD" }
+  ])("preserves every retained digit of $retainedAmount in totals, contributions, and exact journal support", async ({ retainedAmount, visible }) => {
+    const exact = buildIncomeComparison({
+      baselineAmount: "0",
+      currentAmount: retainedAmount,
+      movement: retainedAmount,
+      explainedAmount: retainedAmount,
+      contributions: [{ ...retained.contributions[0], amount: retainedAmount }]
+    });
+    vi.mocked(api.getIncomeComparison).mockResolvedValue(exact);
+    vi.mocked(api.getIncomeContributionSupport).mockResolvedValue(buildIncomeContributionSupport(exact));
+    renderComparison(savedQuery);
+
+    expect(await screen.findByText("Movement reconciled to retained evidence")).toBeInTheDocument();
+    for (const label of ["Current income", "Total movement", "Supported contributions"]) {
+      expect(screen.getByText(label).parentElement?.querySelector("dd")?.textContent).toBe(visible);
+    }
+    expect(within(screen.getByText("Late June interest accrual").closest("li")!).getByText(visible)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Open retained support for Late June interest accrual" }));
+    const dialog = await screen.findByRole("dialog");
+    expect(await within(dialog).findByText(retainedAmount, { exact: true })).toBeInTheDocument();
+  });
+
+  it("normalizes signed decimal zero consistently and reconciles only the server-confirmed exact zero", async () => {
+    vi.mocked(api.getIncomeComparison).mockResolvedValue(buildIncomeComparison({
+      baselineAmount: "-0.000",
+      currentAmount: "0.0000",
+      movement: "-0",
+      explainedAmount: "-0.00",
+      residualAmount: "-0.0000",
+      contributions: [{ ...retained.contributions[0], amount: "-0.00" }]
+    }));
+    renderComparison(savedQuery);
+
+    expect(await screen.findByText("Movement reconciled to retained evidence")).toBeInTheDocument();
+    for (const label of ["Baseline income", "Current income", "Total movement", "Supported contributions", "Unexplained residual"]) {
+      expect(screen.getByText(label).parentElement?.querySelector("dd")?.textContent).toBe("0.00 USD");
+    }
+    expect(within(screen.getByText("Late June interest accrual").closest("li")!).getByText("0.00 USD", { exact: true })).toBeInTheDocument();
+    expect(screen.queryByText("-0.00 USD", { exact: true })).not.toBeInTheDocument();
+  });
+
+  it("does not treat a missing retained residual as exact zero", async () => {
+    vi.mocked(api.getIncomeComparison).mockResolvedValue(buildIncomeComparison({ residualAmount: null, status: "Reconciled" }));
+    renderComparison(savedQuery);
+
+    expect(await screen.findByText("Unexplained differences remain")).toBeInTheDocument();
+    expect(screen.getByText("Unexplained residual").parentElement).toHaveTextContent("Not comparable");
+    expect(screen.queryByText("Movement reconciled to retained evidence")).not.toBeInTheDocument();
+  });
+
   it("does not call offsetting unsupported movements reconciled when the net residual is zero", async () => {
     const unsupported = buildIncomeComparison({
       status: "Unexplained",
-      residualAmount: 0,
+      residualAmount: "0",
       warnings: ["Unsupported positive and negative movements offset."],
       contributions: [
         ...retained.contributions,
-        { contributionId: "unexplained:credit", kind: "Unexplained", label: "Unsupported credit movement", amount: 25, recordId: "unexplained-income-credit", sourceRunId: currentIncomeRun.runId, detail: "Retained row has no exact supporting journal." },
-        { contributionId: "unexplained:debit", kind: "Unexplained", label: "Unsupported debit movement", amount: -25, recordId: "unexplained-income-debit", sourceRunId: currentIncomeRun.runId, detail: "Retained row has no documented methodology change." }
+        { contributionId: "unexplained:credit", kind: "Unexplained", label: "Unsupported credit movement", amount: "25", recordId: "unexplained-income-credit", sourceRunId: currentIncomeRun.runId, detail: "Retained row has no exact supporting journal." },
+        { contributionId: "unexplained:debit", kind: "Unexplained", label: "Unsupported debit movement", amount: "-25", recordId: "unexplained-income-debit", sourceRunId: currentIncomeRun.runId, detail: "Retained row has no documented methodology change." }
       ]
     });
     vi.mocked(api.getIncomeComparison).mockResolvedValue(unsupported);
@@ -213,7 +363,7 @@ describe("ReportingIncomeComparisonPanel", () => {
   });
 
   it("cannot present incompatible zero movement as reconciled even when the server status says Reconciled", async () => {
-    vi.mocked(api.getIncomeComparison).mockResolvedValue(buildIncomeComparison({ compatible: false, status: "Reconciled", movement: 0, residualAmount: 0, current: { ...currentIncomeRun, currency: "EUR" }, differences: [{ dimension: "Currency", baseline: "USD", current: "EUR", compatible: false, detail: "No retained conversion basis." }] }));
+    vi.mocked(api.getIncomeComparison).mockResolvedValue(buildIncomeComparison({ compatible: false, status: "Reconciled", movement: "0", residualAmount: "0", current: { ...currentIncomeRun, currency: "EUR" }, differences: [{ dimension: "Currency", baseline: "USD", current: "EUR", compatible: false, detail: "No retained conversion basis." }] }));
     renderComparison(savedQuery);
 
     expect(await screen.findByText("Incompatible comparison — not reconciled")).toBeInTheDocument();
@@ -290,7 +440,7 @@ describe("ReportingIncomeComparisonPanel", () => {
 
   it("ignores a late retained comparison response after another saved identity is selected", async () => {
     const stale = deferred<IncomeComparison>();
-    vi.mocked(api.getIncomeComparison).mockReturnValueOnce(stale.promise).mockResolvedValue(buildIncomeComparison({ comparisonId: "comparison-2", status: "Unexplained", residualAmount: 9 }));
+    vi.mocked(api.getIncomeComparison).mockReturnValueOnce(stale.promise).mockResolvedValue(buildIncomeComparison({ comparisonId: "comparison-2", status: "Unexplained", residualAmount: "9" }));
     renderComparison(savedQuery);
     await waitFor(() => expect(api.getIncomeComparison).toHaveBeenCalledTimes(1));
     const oldSignal = vi.mocked(api.getIncomeComparison).mock.calls[0][1]?.signal;

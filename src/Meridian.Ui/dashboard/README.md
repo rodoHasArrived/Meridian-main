@@ -19,6 +19,14 @@ currency, unsupported residuals, and incompatibility remain visible. Each contri
 retained record in the shared accessible sheet. `incomeComparison` and `incomeContribution`
 query parameters preserve the comparison and drill-through across reloads; selection parameters
 retain both runs and the measure. Authoritative requests disable development fallback.
+Monetary values stay canonical decimal strings from the API through display and residual checks;
+the browser groups digits directly and rejects already-rounded JSON numbers.
+
+Provider integration setup retains the server's immutable manifest version and digest after saving
+or activating, and forwards that reference on later edits and activation. OpenAPI reimports retain
+the same compare-and-set guard. Quarantine replay explicitly uses the original retained mapping;
+applying an updated mapping requires an explicit remediation request with a selected version and digest.
+Legacy evidence leaves unavailable provenance absent rather than deriving historical mappings in React.
 
 Accounting's draft queue reads retained recurring occurrences through the shared scoped
 `/api/ledger/journal-automation/recurring/occurrences` contract. Rows retain schedule/template

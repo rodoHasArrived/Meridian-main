@@ -322,12 +322,62 @@ public sealed class ReportingIncomeComparisonServiceTests
             fixture.Manifests.Add(id, baseline with { RunId = id });
         }
         fixture.Manifests.Add(BaselineRun, baseline);
+        fixture.GovernedRuns.Add(BaselineRun, Published(baseline, revision: 1));
+        fixture.GovernedRuns.Add("restated-0", Published(fixture.Manifests["restated-0"], revision: 2, restatementOf: BaselineRun));
 
         var candidates = await fixture.Service().ListCandidatesAsync(Owner);
 
         candidates.Should().HaveCount(202);
         candidates.Should().ContainSingle(candidate => candidate.RunId == BaselineRun);
+        candidates.Single(candidate => candidate.RunId == BaselineRun).PublicationLabel.Should().Be("Originally published");
+        candidates.Single(candidate => candidate.RunId == "restated-0").PublicationLabel.Should().Be("Restated published");
         fixture.RequestedOffsets.Should().Equal(0, 200);
+        fixture.GovernanceTransactions.Should().Be(2);
+        fixture.GovernanceReadBatches.Select(batch => batch.RunIds.Length).Should().Equal(200, 2);
+        fixture.GovernanceReadBatches.Should().OnlyContain(batch => batch.TenantId == Tenant);
+        fixture.GovernanceSingleReads.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ListCandidates_BatchesOnlyAuthorizedRenderedRunsAndSkipsEmptyPages()
+    {
+        var fixture = new Fixture();
+        fixture.Manifests[BaselineRun] = fixture.Manifests[BaselineRun] with
+        {
+            ImmutableAccessScope = Access(ReportingGovernanceAccessMode.Private)
+        };
+        fixture.Manifests.Add("without-retained-grid", fixture.Manifests[CurrentRun] with
+        {
+            RunId = "without-retained-grid", RenderedReportWriterGrids = []
+        });
+        var outsider = Owner with { ActorPrincipalId = "another-user" };
+
+        var candidates = await fixture.Service().ListCandidatesAsync(outsider);
+
+        candidates.Should().ContainSingle(candidate => candidate.RunId == CurrentRun);
+        fixture.GovernanceTransactions.Should().Be(1);
+        fixture.GovernanceReadBatches.Should().ContainSingle().Subject.RunIds.Should().Equal(CurrentRun);
+        fixture.GovernanceSingleReads.Should().Be(0);
+
+        fixture.Manifests.Remove(CurrentRun);
+        (await fixture.Service().ListCandidatesAsync(outsider)).Should().BeEmpty();
+        fixture.GovernanceTransactions.Should().Be(1, "a page without visible retained grids needs no governance transaction");
+    }
+
+    [Fact]
+    public async Task Create_ReadsBothExplicitPublicationStatesInOneBoundedTransaction()
+    {
+        var fixture = new Fixture();
+        fixture.GovernedRuns.Add(BaselineRun, Published(fixture.Manifests[BaselineRun], revision: 1));
+        fixture.GovernedRuns.Add(CurrentRun, Published(fixture.Manifests[CurrentRun], revision: 2, restatementOf: BaselineRun));
+
+        var comparison = await fixture.Service().CreateAsync(Request, Owner);
+
+        comparison.Baseline.PublicationLabel.Should().Be("Originally published");
+        comparison.Current.PublicationLabel.Should().Be("Restated published");
+        fixture.GovernanceTransactions.Should().Be(1);
+        fixture.GovernanceReadBatches.Should().ContainSingle().Subject.RunIds.Should().Equal(BaselineRun, CurrentRun);
+        fixture.GovernanceSingleReads.Should().Be(0);
     }
 
     [Fact]
@@ -451,6 +501,9 @@ public sealed class ReportingIncomeComparisonServiceTests
         public Dictionary<string, string> LateAccrual { get; } = IncomeLine("late-accrual-journal", "late-accrual-line", -125m);
         public MemoryArtifactStore Artifacts { get; } = new();
         public List<int> RequestedOffsets { get; } = [];
+        public int GovernanceTransactions => _governance.TransactionCount;
+        public int GovernanceSingleReads => _governance.SingleReadCount;
+        public List<(string TenantId, string[] RunIds)> GovernanceReadBatches => _governance.ReadBatches;
 
         public Fixture()
         {
@@ -482,17 +535,36 @@ public sealed class ReportingIncomeComparisonServiceTests
     {
         private readonly IReportingGovernanceTransaction _transaction = Substitute.For<IReportingGovernanceTransaction>();
         public Dictionary<string, GovernedReportingRun> Runs { get; } = new(StringComparer.Ordinal);
+        public int TransactionCount { get; private set; }
+        public int SingleReadCount { get; private set; }
+        public List<(string TenantId, string[] RunIds)> ReadBatches { get; } = [];
 
         public StubGovernanceRepository()
         {
             _transaction.GetRunAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(call =>
-                ValueTask.FromResult(Runs.TryGetValue(call.ArgAt<string>(1), out var run)
-                    && run.Scope.TenantId == call.ArgAt<string>(0) ? run : null));
+            {
+                SingleReadCount++;
+                return ValueTask.FromResult(Runs.TryGetValue(call.ArgAt<string>(1), out var run)
+                    && run.Scope.TenantId == call.ArgAt<string>(0) ? run : null);
+            });
+            _transaction.GetRunsAsync(Arg.Any<string>(), Arg.Any<IReadOnlyCollection<string>>(), Arg.Any<CancellationToken>()).Returns(call =>
+            {
+                var tenantId = call.ArgAt<string>(0);
+                var ids = call.ArgAt<IReadOnlyCollection<string>>(1).ToArray();
+                ids.Length.Should().BeLessThanOrEqualTo(IReportingGovernanceTransaction.MaximumRunReadBatchSize);
+                ReadBatches.Add((tenantId, ids));
+                return ValueTask.FromResult<IReadOnlyList<GovernedReportingRun>>(Runs.Values
+                    .Where(run => run.Scope.TenantId == tenantId && ids.Contains(run.RunId, StringComparer.Ordinal)).ToArray());
+            });
         }
 
         public ValueTask<TResult> ExecuteTransactionAsync<TResult>(
             Func<IReportingGovernanceTransaction, CancellationToken, ValueTask<TResult>> operation,
-            CancellationToken cancellationToken = default) => operation(_transaction, cancellationToken);
+            CancellationToken cancellationToken = default)
+        {
+            TransactionCount++;
+            return operation(_transaction, cancellationToken);
+        }
     }
 
     private sealed class MemoryArtifactStore : IReportingArtifactStore

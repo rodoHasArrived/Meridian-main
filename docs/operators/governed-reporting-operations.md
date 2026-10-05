@@ -164,6 +164,8 @@ change opens both definitions and the quantified effect on continuing unchanged 
 it does not represent a separate human methodology approval. Unsupported changes remain visible,
 including offsetting positive and negative amounts with a zero net residual. An incompatible
 comparison cannot appear reconciled.
+Displayed comparison amounts preserve all retained decimal digits, including large balances and
+very small nonzero residuals.
 
 The comparison link identifies an immutable retained artifact. Reopening it or a contribution uses
 the saved manifests, explanations, and support, even after source data changes. Access requires

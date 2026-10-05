@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Reporting;
@@ -21,15 +22,19 @@ public sealed record ReportingIncomeComparisonDifferenceDto(
     string Dimension, string Baseline, string Current, bool Compatible, string Detail);
 
 public sealed record ReportingIncomeContributionDto(
-    string ContributionId, string Kind, string Label, decimal Amount,
+    string ContributionId, string Kind, string Label,
+    [property: JsonConverter(typeof(ReportingIncomeDecimalJsonConverter))] decimal Amount,
     string RecordId, string SourceRunId, string Detail);
 
 public sealed record ReportingIncomeComparisonDto(
     string ComparisonId, string ExplanationVersion, DateTimeOffset RetainedAtUtc,
     ReportingIncomeComparisonRunDto Baseline, ReportingIncomeComparisonRunDto Current,
     string GridId, string MetricColumn, string Status, bool Compatible,
-    decimal? BaselineAmount, decimal? CurrentAmount, decimal? Movement,
-    decimal ExplainedAmount, decimal? ResidualAmount,
+    [property: JsonConverter(typeof(ReportingIncomeNullableDecimalJsonConverter))] decimal? BaselineAmount,
+    [property: JsonConverter(typeof(ReportingIncomeNullableDecimalJsonConverter))] decimal? CurrentAmount,
+    [property: JsonConverter(typeof(ReportingIncomeNullableDecimalJsonConverter))] decimal? Movement,
+    [property: JsonConverter(typeof(ReportingIncomeDecimalJsonConverter))] decimal ExplainedAmount,
+    [property: JsonConverter(typeof(ReportingIncomeNullableDecimalJsonConverter))] decimal? ResidualAmount,
     IReadOnlyList<ReportingIncomeComparisonDifferenceDto> Differences,
     IReadOnlyList<ReportingIncomeContributionDto> Contributions,
     IReadOnlyList<string> Warnings, ReportWriterGridDiffDto GridDiff);

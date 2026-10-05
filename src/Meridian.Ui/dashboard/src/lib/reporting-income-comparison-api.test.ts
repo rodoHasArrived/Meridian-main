@@ -79,8 +79,8 @@ describe("retained investment-income comparison API", () => {
   it.each([
     { payload: null },
     { payload: {} },
-    { payload: buildIncomeComparison({ residualAmount: Number.NaN }) },
-    { payload: buildIncomeComparison({ explainedAmount: Number.POSITIVE_INFINITY }) }
+    { payload: { ...buildIncomeComparison(), residualAmount: Number.NaN } },
+    { payload: { ...buildIncomeComparison(), explainedAmount: Number.POSITIVE_INFINITY } }
   ])("rejects malformed or non-finite retained comparison evidence", async ({ payload }) => {
     vi.mocked(apiGetJson).mockResolvedValue(payload);
     vi.mocked(apiPostJson).mockResolvedValue(payload);
@@ -88,9 +88,59 @@ describe("retained investment-income comparison API", () => {
     await expect(createIncomeComparison(request)).rejects.toThrow("Invalid retained income comparison");
   });
 
+  it("preserves exact decimal text through comparison and support JSON responses", async () => {
+    const exact = buildIncomeComparison({
+      baselineAmount: "9007199254740993",
+      currentAmount: "9007199254740993.123456789012",
+      movement: "0.123456789012",
+      explainedAmount: "0.123456789012",
+      residualAmount: "0",
+      contributions: [{ ...buildIncomeComparison().contributions[0], amount: "0.123456789012" }]
+    });
+    vi.mocked(apiGetJson).mockResolvedValue(JSON.parse(JSON.stringify(exact)));
+    vi.mocked(apiPostJson).mockResolvedValue(JSON.parse(JSON.stringify(exact)));
+    expect(await getIncomeComparison(exact.comparisonId)).toEqual(exact);
+    expect(await createIncomeComparison(request)).toEqual(exact);
+
+    const support = {
+      ...buildIncomeContributionSupport(exact),
+      currentRecords: [{ Income: "9007199254740993.123456789012", TinyResidual: "-0.0000000000000000000000000001" }]
+    };
+    vi.mocked(apiGetJson).mockResolvedValue(JSON.parse(JSON.stringify(support)));
+    expect(await getIncomeContributionSupport(exact.comparisonId, support.contribution.contributionId)).toEqual(support);
+  });
+
+  it.each(["baselineAmount", "currentAmount", "movement", "explainedAmount", "residualAmount"])(
+    "rejects a numeric %s instead of accepting an already-rounded JSON value", async (field) => {
+      const payload = { ...buildIncomeComparison(), [field]: JSON.parse("9007199254740993") };
+      vi.mocked(apiGetJson).mockResolvedValue(payload);
+      vi.mocked(apiPostJson).mockResolvedValue(payload);
+      await expect(getIncomeComparison("comparison-1")).rejects.toThrow("Invalid retained income comparison");
+      await expect(createIncomeComparison(request)).rejects.toThrow("Invalid retained income comparison");
+    }
+  );
+
+  it.each(["", "NaN", "Infinity", "1e-28", "+1", " 1", "1,000", "01"])(
+    "rejects non-decimal wire text %j without coercing it", async (invalid) => {
+      vi.mocked(apiGetJson).mockResolvedValue(buildIncomeComparison({ residualAmount: invalid }));
+      await expect(getIncomeComparison("comparison-1")).rejects.toThrow("Invalid retained income comparison");
+    }
+  );
+
+  it.each([0, 1e-28, "1e-28"])("rejects a contribution amount %j that is not exact plain decimal text", async (invalid) => {
+    const comparison = buildIncomeComparison();
+    const contribution = { ...comparison.contributions[0], amount: invalid };
+    vi.mocked(apiGetJson).mockResolvedValue({ ...comparison, contributions: [contribution] });
+    await expect(getIncomeComparison(comparison.comparisonId)).rejects.toThrow("Invalid retained income comparison");
+
+    vi.mocked(apiGetJson).mockResolvedValue({ ...buildIncomeContributionSupport(comparison), contribution });
+    await expect(getIncomeContributionSupport(comparison.comparisonId, contribution.contributionId)).rejects.toThrow("Invalid retained contribution support");
+  });
+
   it.each([
     { payload: {} },
     { payload: { ...buildIncomeContributionSupport(), currentRecords: [{ Income: { unsupported: "nested value" } }] } },
+    { payload: { ...buildIncomeContributionSupport(), currentRecords: [{ Income: JSON.parse("9007199254740993") }] } },
     { payload: { ...buildIncomeContributionSupport(), evidenceReferences: [null] } }
   ])("rejects malformed supporting records without replacing them with live evidence", async ({ payload }) => {
     vi.mocked(apiGetJson).mockResolvedValue(payload);

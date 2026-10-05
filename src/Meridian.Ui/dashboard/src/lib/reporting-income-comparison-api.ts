@@ -1,5 +1,5 @@
 import { apiGetJson, apiPostJson, type ApiRequestOptions } from "@/lib/api";
-import type { IncomeComparison, IncomeComparisonRequest, IncomeComparisonRun, IncomeContributionSupport } from "@/types/reporting-income-comparison";
+import type { IncomeComparison, IncomeComparisonAmount, IncomeComparisonRequest, IncomeComparisonRun, IncomeContribution, IncomeContributionSupport } from "@/types/reporting-income-comparison";
 
 const root = "/api/fund-structure/reporting/comparisons";
 const authoritative = (options: ApiRequestOptions): ApiRequestOptions => ({ ...options, allowDevelopmentFallback: false });
@@ -21,7 +21,7 @@ export function getIncomeContributionSupport(comparisonId: string, contributionI
     `${root}/${encodeURIComponent(comparisonId)}/contributions/${encodeURIComponent(contributionId)}`,
     authoritative(options)
   ).then((support) => {
-    if (!support || !support.contribution || !Array.isArray(support.baselineRecords) || !Array.isArray(support.currentRecords)
+    if (!support || !validContribution(support.contribution) || !Array.isArray(support.baselineRecords) || !Array.isArray(support.currentRecords)
       || ![...support.baselineRecords, ...support.currentRecords].every((record) => !!record && typeof record === "object" && Object.values(record).every((value) => typeof value === "string"))
       || !Array.isArray(support.evidenceReferences) || !support.evidenceReferences.every((value) => typeof value === "string")) {
       throw new Error("Invalid retained contribution support");
@@ -37,13 +37,22 @@ function validRun(run: IncomeComparisonRun | null | undefined): run is IncomeCom
       && Array.isArray(grid.metrics) && grid.metrics.every((metric) => !!metric && typeof metric.column === "string"));
 }
 
+function validAmount(value: unknown): value is IncomeComparisonAmount {
+  // JSON numbers have already lost decimal precision before this boundary; refuse to coerce them.
+  return typeof value === "string" && /^-?(?:0|[1-9]\d*)(?:\.\d+)?$/.test(value);
+}
+
+function validContribution(item: IncomeContribution | null | undefined): item is IncomeContribution {
+  return !!item && typeof item.contributionId === "string" && typeof item.kind === "string" && validAmount(item.amount);
+}
+
 function validateComparison(value: IncomeComparison): IncomeComparison {
   if (!value || typeof value.comparisonId !== "string" || !validRun(value.baseline) || !validRun(value.current)
     || typeof value.compatible !== "boolean" || typeof value.status !== "string"
-    || ![value.baselineAmount, value.currentAmount, value.movement, value.residualAmount].every((amount) => amount === null || (typeof amount === "number" && Number.isFinite(amount)))
-    || typeof value.explainedAmount !== "number" || !Number.isFinite(value.explainedAmount)
+    || ![value.baselineAmount, value.currentAmount, value.movement, value.residualAmount].every((amount) => amount === null || validAmount(amount))
+    || !validAmount(value.explainedAmount)
     || !Array.isArray(value.differences) || !value.differences.every((item) => !!item && typeof item.dimension === "string" && typeof item.compatible === "boolean")
-    || !Array.isArray(value.contributions) || !value.contributions.every((item) => !!item && typeof item.contributionId === "string" && typeof item.kind === "string" && typeof item.amount === "number" && Number.isFinite(item.amount))
+    || !Array.isArray(value.contributions) || !value.contributions.every(validContribution)
     || !Array.isArray(value.warnings) || !value.warnings.every((warning) => typeof warning === "string")
     || !value.gridDiff || !Array.isArray(value.gridDiff.rows) || !value.gridDiff.rows.every((row) => !!row && Array.isArray(row.cells))
     || !Array.isArray(value.gridDiff.columns) || !Array.isArray(value.gridDiff.warnings)) {
