@@ -90,7 +90,9 @@ Provider readiness resolves configuration, credential and telemetry aliases thro
 ProviderSdk family identity map before joining evidence. Accepted names such as `ib` and
 `interactive-brokers` project one `ibkr` readiness row. An explicitly disabled module family
 overrides enabled source rows and retained healthy connection evidence, so configuration aliases
-cannot promote a disabled factory to readiness.
+cannot promote a disabled factory to readiness. Configured source IDs remain connection keys for
+joining retained metrics and do not create additional provider-family readiness rows. Health and
+diagnostic lookups resolve the same aliases before joining runtime connection snapshots.
 
 The shared workstation registers credentialed Xero and NetSuite accounting
 providers alongside the existing fixtures. Their HTTP client disables redirects;
