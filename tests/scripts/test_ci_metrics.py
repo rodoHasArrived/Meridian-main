@@ -790,6 +790,23 @@ class UpstreamCiMetricsTests(unittest.TestCase):
 
 
 class TimingAccountingIntegrationTests(unittest.TestCase):
+    def test_legacy_same_job_id_without_job_attempt_is_charged_once(self):
+        fixture = UpstreamCiMetricsTests()
+        first = fixture.run_record()
+        retry = copy.deepcopy(first)
+        retry["run_attempt"] = 2
+        self.assertNotIn("run_attempt", first["jobs"][0])
+        self.assertNotIn("run_attempt", retry["jobs"][0])
+        result = metrics.summarize({"workflow_runs": [retry, first]})
+        original = result["groups"]["CI / pull_request / attempt 1"]["runs"][0]
+        inherited = result["groups"]["CI / pull_request / attempt 2"]["runs"][0]
+        self.assertEqual(60, original["jobs"][0]["executionSeconds"])
+        self.assertEqual(1, inherited["jobs"][0]["inheritedFromAttempt"])
+        self.assertIsNone(inherited["jobs"][0]["executionSeconds"])
+        self.assertEqual(0, inherited["runnerMinutes"])
+        self.assertEqual(60, result["summary"]["knownRunnerSeconds"])
+        self.assertEqual(1, result["events"]["pull_request"]["runnerAccounting"]["total"]["runnerMinutes"])
+
     def test_new_id_carried_success_requires_prior_execution_and_costs_zero(self):
         fixture = UpstreamCiMetricsTests()
         first = fixture.run_record(jobs=[fixture.job(run_attempt=1, runner_group_id=0)])

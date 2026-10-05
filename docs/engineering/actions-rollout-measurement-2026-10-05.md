@@ -191,7 +191,7 @@ Adoption eligible: **no**.
 
 The complete five-pair series used `DOTNET_ROOT` and `tini -s` as a child subreaper. A focused seven-test process-runner check passed before restarting the full series. Neither unsuccessful setup was silently replaced with a successful sample; both remain outside the comparable pairs.
 
-Focused collector, metrics, benchmark and related CI checks passed **166 tests**. Actionlint, workflow hygiene, lane-manifest and skip-register checks also passed. Independent review reproduced the archived Actions report exactly from its saved source and policy. The accompanying pull request records the canonical `bash scripts/ci.sh` and hosted integration-check results.
+Focused collector, metrics, benchmark and related CI checks passed **167 tests**. Actionlint, workflow hygiene, lane-manifest and skip-register checks also passed. Independent review reproduced the archived Actions report exactly from its saved source and policy. The accompanying pull request records the canonical `bash scripts/ci.sh` and hosted integration-check results.
 
 Hosted .NET concurrency remains **2**, local .NET concurrency **1**, browser batch size **8**, and Vitest workers **2**. No production tuning default was changed.
 

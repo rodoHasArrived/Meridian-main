@@ -275,9 +275,10 @@ def prepare_jobs(run: dict, prior: list[dict], observed_at: str | None) -> list[
             raise ValueError("Job run_attempt differs without matching prior-attempt evidence.")
         measured_job = dict(job, run_attempt=attempt)
         record = job_record(measured_job, attempt, observed_at)
-        # Explicit source attempts/IDs prove repeated API rows; old timestamps on
-        # new IDs additionally require an exact earlier successful execution.
-        inherited = id_match if "run_attempt" in job else []
+        # An immutable job ID plus exact prior execution/runner evidence proves
+        # inheritance even when a legacy export omits per-job run_attempt.
+        # New IDs additionally require an exact earlier successful execution.
+        inherited = id_match
         if record["timingIssue"] == "started_before_created":
             inherited = [old for old in same_execution if old.get("conclusion") == "success"
                          and seconds(old.get("completed_at"), job.get("created_at")) is not None]
