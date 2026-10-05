@@ -678,9 +678,11 @@ The next write recovers abandoned attempts; failed cleanup retains its capacity 
 copy, index-last publication, and preservation of published evidence remain intact.
 
 Configuration and defaults are documented in `src/Meridian.Documents/README.md`. Regression
-coverage is added in `EvidenceStorageQuotaCoordinatorTests` and
-`FileEvidenceArtifactStoreQuotaTests` for concurrent near-limit requests, underestimated sources,
-disk pressure, cancellation/retry, actual-byte reconciliation, and restart recovery. This receipt
-records implementation and added coverage, not a passing validation result. Retention policy,
-broader document-runtime ownership, and quota admission for document-review metadata rewrites
-remain open; the parent PRD-105 item is not closed by this slice.
+coverage is added in `EvidenceStorageQuotaCoordinatorTests`,
+`FileEvidenceArtifactStoreQuotaTests`, and `FileEvidenceArtifactStoreBufferedQuotaTests` for
+concurrent near-limit requests, underestimated sources, disk pressure, cancellation/retry,
+actual-byte reconciliation, and restart recovery. Focused validation on implementation commit
+`fb7fe807d` passed 162 tests with zero skips. Broader local CI and required hosted checks remain
+pending and are tracked in [PR #3071](https://github.com/rodoHasArrived/Meridian-main/pull/3071).
+Retention policy, broader document-runtime ownership, and quota admission for document-review
+metadata rewrites remain open; the parent PRD-105 item is not closed by this slice.
