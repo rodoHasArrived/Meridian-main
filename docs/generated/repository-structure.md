@@ -3602,6 +3602,7 @@ Meridian-main
 │   │   │   ├── ProviderIntegrationFieldTransforms.cs
 │   │   │   ├── ProviderIntegrationHttpClientTransport.cs
 │   │   │   ├── ProviderIntegrationIdentityResolutionPreviewService.cs
+│   │   │   ├── ProviderIntegrationManifestPromotion.cs
 │   │   │   ├── ProviderIntegrationMappedRecordIdentity.cs
 │   │   │   ├── ProviderIntegrationMappedRecordValidation.cs
 │   │   │   ├── ProviderIntegrationMonitoringService.cs
@@ -4090,7 +4091,8 @@ Meridian-main
 │   │   │   └── FxSpotReferenceDtos.cs
 │   │   ├── Integrations
 │   │   │   ├── ProviderIntegrationContracts.cs
-│   │   │   └── ProviderIntegrationContractsJsonContext.cs
+│   │   │   ├── ProviderIntegrationContractsJsonContext.cs
+│   │   │   └── ProviderIntegrationManifestIdentity.cs
 │   │   ├── Integrity
 │   │   │   └── Sha256Digest.cs
 │   │   ├── Ledger
@@ -5756,7 +5758,9 @@ Meridian-main
 │   │   │   ├── PostgresFundStructureStore.cs
 │   │   │   └── PostgresFundStructureTenantBackfillStore.cs
 │   │   ├── Integrations
-│   │   │   └── FileProviderIntegrationManifestStore.cs
+│   │   │   ├── FileProviderIntegrationManifestStore.cs
+│   │   │   ├── FileProviderIntegrationManifestStore.Manifests.cs
+│   │   │   └── FileProviderIntegrationManifestStore.Provenance.cs
 │   │   ├── Interfaces
 │   │   │   ├── IMarketDataStore.cs
 │   │   │   ├── ISourceRegistry.cs
@@ -7116,6 +7120,7 @@ Meridian-main
 │   │   │   │   │   ├── market-data.ts
 │   │   │   │   │   ├── portfolio-cash-ladder.types.ts
 │   │   │   │   │   ├── provider-accounting.ts
+│   │   │   │   │   ├── provider-integration-provenance.ts
 │   │   │   │   │   ├── provider-setup.ts
 │   │   │   │   │   ├── reconciliation-readiness.types.ts
 │   │   │   │   │   ├── reporting-governance.ts
@@ -8704,7 +8709,8 @@ Meridian-main
 │   │   ├── Program.cs
 │   │   ├── Program.Etl.cs
 │   │   ├── Program.EvidenceQuota.cs
-│   │   └── Program.Identity.cs
+│   │   ├── Program.Identity.cs
+│   │   └── Program.ManifestLock.cs
 │   ├── Meridian.QuantScript.Tests
 │   │   ├── Helpers
 │   │   │   ├── FakeQuantDataContext.cs
@@ -9576,6 +9582,7 @@ Meridian-main
 │   │   │   ├── LedgerReconciliationContractCompatibilityTests.cs
 │   │   │   ├── OperationalFinanceContractTests.cs
 │   │   │   ├── ProviderIntegrationContractsTests.cs
+│   │   │   ├── ProviderIntegrationManifestIdentityTests.cs
 │   │   │   └── VerifiedOperationOutcomeTests.cs
 │   │   ├── Core
 │   │   │   ├── Config
@@ -10298,7 +10305,9 @@ Meridian-main
 │   │   │   ├── FundStructure
 │   │   │   │   └── PostgresFundStructureStoreTests.cs
 │   │   │   ├── Integrations
-│   │   │   │   └── FileProviderIntegrationManifestStoreTests.cs
+│   │   │   │   ├── FileProviderIntegrationManifestStoreTests.cs
+│   │   │   │   ├── FileProviderIntegrationManifestStoreTests.ManifestVersions.cs
+│   │   │   │   └── FileProviderIntegrationManifestStoreTests.Provenance.cs
 │   │   │   ├── Ledger
 │   │   │   │   └── RetainedPostingEquivalenceTests.cs
 │   │   │   ├── Maintenance

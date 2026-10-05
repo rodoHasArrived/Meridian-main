@@ -6070,6 +6070,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationManifestIdentity"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationManifestReferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationOpenApiImportRequestDto"
     },
     {
@@ -6179,6 +6191,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationReconciliationHandoffResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationReplayModeDto"
     },
     {
       "kind": "contract-set-member",
@@ -27885,6 +27903,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationActivationRequestDto",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationManifestReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationActivationResultDto",
       "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationActivationReadinessDto"
     },
@@ -27893,6 +27917,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationActivationResultDto",
       "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationActivationStateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationActivationResultDto",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationManifestReferenceDto"
     },
     {
       "kind": "contract-reference",
@@ -28011,6 +28041,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationOpenApiImportRequestDto",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationManifestReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationOpenApiImportResultDto",
       "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationActivationReadinessDto"
     },
@@ -28019,6 +28055,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationOpenApiImportResultDto",
       "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationManifestDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationOpenApiImportResultDto",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationManifestReferenceDto"
     },
     {
       "kind": "contract-reference",
@@ -28067,6 +28109,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationQuarantineReplayRequestDto",
       "target": "contract:Meridian.Contracts.Integrations.ProviderCapabilityKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationQuarantineReplayRequestDto",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationReplayModeDto"
     },
     {
       "kind": "contract-reference",
@@ -28227,6 +28275,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationSetupSaveRequestDto",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationManifestReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationSetupSaveResultDto",
       "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationActivationReadinessDto"
     },
@@ -28235,6 +28289,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationSetupSaveResultDto",
       "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationActivationStateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationSetupSaveResultDto",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationManifestReferenceDto"
     },
     {
       "kind": "contract-reference",
@@ -28324,7 +28384,19 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationSyncRunDto",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationManifestReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationSyncRunDto",
       "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationProcessingStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationSyncRunDto",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationReplayModeDto"
     },
     {
       "kind": "contract-reference",
@@ -28342,7 +28414,19 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationSyncRunEvidenceDto",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationManifestReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationSyncRunEvidenceDto",
       "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationProcessingStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationSyncRunEvidenceDto",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationReplayModeDto"
     },
     {
       "kind": "contract-reference",
@@ -28396,7 +28480,19 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Integrations.RawIngestionPayloadDto",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationManifestReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Integrations.RawIngestionPayloadDto",
       "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationProcessingStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Integrations.RawIngestionPayloadDto",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationReplayModeDto"
     },
     {
       "kind": "contract-reference",
@@ -47485,7 +47581,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "537c109fb5df2832a1f1de28bdc2a6764bf7cd75c217175496e5e6099ecf61b4",
+  "fingerprint": "0c934d6e4202f71b35ddafbbba264492aa84b3fc81d53cba1661c914e3a9f6b4",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -53605,6 +53701,18 @@
       "label": "Meridian.Contracts.Integrations.ProviderIntegrationManifestDto"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Integrations.ProviderIntegrationManifestIdentity",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Integrations.ProviderIntegrationManifestIdentity"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Integrations.ProviderIntegrationManifestReferenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Integrations.ProviderIntegrationManifestReferenceDto"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Integrations.ProviderIntegrationOpenApiImportRequestDto",
       "kind": "contract-type",
@@ -53717,6 +53825,12 @@
       "id": "contract:Meridian.Contracts.Integrations.ProviderIntegrationReconciliationHandoffResultDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Integrations.ProviderIntegrationReconciliationHandoffResultDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Integrations.ProviderIntegrationReplayModeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Integrations.ProviderIntegrationReplayModeDto"
     },
     {
       "classification": "dto",
@@ -69618,11 +69732,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3114,
-    "contract_set_memberships": 3696,
-    "edges": 7889,
+    "contract_references": 3127,
+    "contract_set_memberships": 3699,
+    "edges": 7905,
     "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3836
+    "nodes": 3839
   }
 }
