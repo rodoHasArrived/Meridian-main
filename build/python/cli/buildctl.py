@@ -1120,6 +1120,7 @@ def cmd_test(args: argparse.Namespace) -> int:
     project: str = getattr(args, "project", "tests/Meridian.Tests/Meridian.Tests.csproj")
     configuration: str = getattr(args, "configuration", "Release")
     verbosity: str = getattr(args, "verbosity", os.environ.get("BUILD_VERBOSITY", "normal"))
+    no_build = getattr(args, "no_build", False)
     run_id = getattr(args, "run_id", None) or _new_run_id(f"test-{Path(project).stem}")
     isolation_key = _resolve_isolation_key(
         getattr(args, "isolation_key", "auto"),
@@ -1127,9 +1128,11 @@ def cmd_test(args: argparse.Namespace) -> int:
         disabled=getattr(args, "no_isolation", False),
     )
 
-    if getattr(args, "no_build", False) and getattr(args, "isolation_key", "auto") == "auto" and not getattr(args, "no_isolation", False):
+    if no_build and getattr(args, "isolation_key", "auto") == "auto" and not getattr(args, "no_isolation", False):
         print(
-            "--no-build cannot be used with the default auto isolation key because no matching build output exists.",
+            "--no-build requires an existing --isolation-key or --no-isolation; "
+            "the default auto isolation key creates a new output location. "
+            "Build first with the same project, configuration, framework, runtime, and properties.",
             file=sys.stderr,
         )
         return 2
@@ -1231,13 +1234,13 @@ def cmd_test(args: argparse.Namespace) -> int:
                 _record_validation_run(run_path, run_payload, status="failed", finishedAt=_utc_now(), exitCode=shutdown_code)
                 return shutdown_code
 
-        if not getattr(args, "skip_restore", False):
+        if not no_build and not getattr(args, "skip_restore", False):
             restore_code = run_step("restore", ["dotnet", "restore", project, "--verbosity", verbosity, *msbuild_args])
             if restore_code != 0:
                 _record_validation_run(run_path, run_payload, status="failed", finishedAt=_utc_now(), exitCode=restore_code)
                 return restore_code
 
-        if not getattr(args, "no_build", False):
+        if not no_build:
             build_code = run_step(
                 "build",
                 [
@@ -1266,12 +1269,11 @@ def cmd_test(args: argparse.Namespace) -> int:
             "--verbosity",
             verbosity,
             "-nologo",
+            "--no-build",
             "--no-restore",
             "--results-directory",
             str(results_directory),
         ]
-        if not getattr(args, "no_build", False):
-            test_command.append("--no-build")
         if getattr(args, "filter", ""):
             test_command.extend(["--filter", getattr(args, "filter")])
         if getattr(args, "settings", None):
@@ -1283,6 +1285,13 @@ def cmd_test(args: argparse.Namespace) -> int:
         test_command.extend(msbuild_args)
 
         test_code = run_step("test", test_command)
+        if test_code != 0 and no_build:
+            print(
+                "Tests failed while reusing outputs (--no-build --no-restore). "
+                "If outputs are missing or incompatible, rerun without --no-build using the same "
+                "project, configuration, framework, runtime, properties, and isolation selection.",
+                file=sys.stderr,
+            )
         status = "passed" if test_code == 0 else "failed"
         _record_validation_run(
             run_path,
@@ -1737,7 +1746,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_test.add_argument("--filter", default="")
     p_test.add_argument("--verbosity", default=os.environ.get("BUILD_VERBOSITY", "normal"))
     p_test.add_argument("--skip-restore", action="store_true")
-    p_test.add_argument("--no-build", action="store_true")
+    p_test.add_argument(
+        "--no-build",
+        action="store_true",
+        help="Skip restore and build; reuse compatible outputs with an existing --isolation-key or --no-isolation.",
+    )
     p_test.add_argument("--no-isolation", action="store_true")
     p_test.add_argument("--full-wpf-build", action="store_true")
     p_test.add_argument("--shutdown-build-servers", action="store_true")
