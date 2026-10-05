@@ -22,7 +22,7 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **Release-evidence working ledger:** [Production-Certification Evidence Chain](production-certification-evidence-chain.md)
 - **CI/CD ownership and rollout:** [CI/CD validation ownership](ci-cd-optimization.md)
 - **Docs regeneration automation constraints:** [Docs Regeneration Automation — Design Constraints](docs-regeneration-automation-design.md)
-- **Generated merge conflicts:** [Regenerate tracked output after a merge](generated-merge-recovery.md)
+- **Browser/docs regeneration and generated merge conflicts:** [Run the complete maintained generation sequence](generated-merge-recovery.md)
 - **Free development tools:** [Free Development Tools](free-development-tools.md)
 - **C#/WPF market study companion:** [Practical C# and WPF for Financial Markets](practical-csharp-wpf-financial-markets.md)
 
