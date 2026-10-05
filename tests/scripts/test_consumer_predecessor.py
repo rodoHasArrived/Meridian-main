@@ -285,6 +285,27 @@ class ConsumerPredecessorTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "malformed"):
                     self.resolver.resolve(self.args, self.environment)
 
+    def test_malformed_asset_names_cannot_imply_consumer_first_release(self):
+        release = self.release(consumer=False)
+        for asset in ({}, {"name": None}, {"name": ""}, {"name": " "}, {"name": 123}):
+            with self.subTest(asset=asset):
+                self.asset_pages[release["id"]] = [[asset], []]
+                with self.assertRaisesRegex(ValueError, "availability is unknown"):
+                    self.resolve()
+
+    def test_missing_publication_state_cannot_imply_first_release(self):
+        release = self.release()
+        del release["published_at"]
+        with self.assertRaisesRegex(ValueError, "missing a publication state"):
+            self.resolve()
+
+    def test_explicit_null_publication_state_is_unpublished(self):
+        release = self.release()
+        release["published_at"] = None
+        evidence = self.resolve()
+        self.assertTrue(evidence["firstRelease"])
+        self.assertEqual(evidence["eligibleReleaseCount"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()

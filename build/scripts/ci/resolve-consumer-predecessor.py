@@ -55,7 +55,11 @@ def all_pages(endpoint: str) -> list[dict]:
 def production_version(release: dict) -> tuple | None:
     if not isinstance(release.get("draft"), bool):
         raise ValueError("Release history contains an invalid draft state")
-    if release["draft"] or not release.get("published_at"):
+    if release["draft"]:
+        return None
+    if "published_at" not in release:
+        raise ValueError("Release history is missing a publication state")
+    if release["published_at"] is None:
         return None
     tag = release.get("tag_name")
     if not isinstance(tag, str):
@@ -147,6 +151,8 @@ def resolve(args: argparse.Namespace, environment: Mapping[str, str] | None = No
             raise ValueError(f"Invalid release identity for {tag}")
         # Read every asset page instead of trusting the embedded release listing.
         assets = all_pages(f"repos/{args.repository}/releases/{release['id']}/assets")
+        if any(not isinstance(asset.get("name"), str) or not asset["name"].strip() for asset in assets):
+            raise ValueError(f"Invalid asset name in release {tag}; consumer package availability is unknown")
         eligible.append((previous_version, release, assets))
 
     consumer = [item for item in eligible if any(asset.get("name") == PACKAGE_NAME for asset in item[2])]
