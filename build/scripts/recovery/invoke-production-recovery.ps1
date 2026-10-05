@@ -74,11 +74,12 @@ function Resolve-FullPath([string]$Value) {
     return [IO.Path]::GetFullPath($Value)
 }
 
-function Resolve-RecoveryLocation([string]$Value, [int]$LinkDepth = 0) {
+function Resolve-RecoveryLocation([string]$Value, [int]$LinkDepth = 0, [Collections.Generic.List[string]]$Locations = $null) {
     if ($IsWindows -and $Value -match '^(\\\\[?.]\\|\\\?\?\\)') {
         throw "Recovery receipt path checks require ordinary drive or UNC paths, not device namespace paths: $Value"
     }
     $resolved = [IO.Path]::GetPathRoot($Value)
+    if ($null -ne $Locations) { $Locations.Add($resolved) }
     # Resolve existing links one component at a time, retaining any not-yet-created
     # suffix. Lexical normalization alone misses receipt parents aliased into a root.
     $parts = $Value.Substring($resolved.Length).Split(
@@ -89,10 +90,12 @@ function Resolve-RecoveryLocation([string]$Value, [int]$LinkDepth = 0) {
         if ($part -eq '..') {
             $parent = [IO.Directory]::GetParent($resolved)
             if ($null -ne $parent) { $resolved = $parent.FullName }
+            if ($null -ne $Locations) { $Locations.Add($resolved) }
             continue
         }
         $parentPath = $resolved
         $resolved = Join-Path $resolved $part
+        if ($null -ne $Locations) { $Locations.Add($resolved) }
         $directory = [IO.DirectoryInfo]::new($resolved)
         if ($null -ne $directory.LinkTarget) {
             if ($LinkDepth -ge 40) { throw "Recovery path contains too many symbolic links: $Value" }
@@ -103,7 +106,7 @@ function Resolve-RecoveryLocation([string]$Value, [int]$LinkDepth = 0) {
                 if ([IO.Path]::IsPathRooted($target)) { throw "Recovery path contains an unsupported link target: $target" }
                 $target = Join-Path $parentPath $target
             }
-            $resolved = Resolve-RecoveryLocation $target ($LinkDepth + 1)
+            $resolved = Resolve-RecoveryLocation $target ($LinkDepth + 1) $Locations
         }
     }
     return [IO.Path]::TrimEndingDirectorySeparator($resolved)
@@ -117,13 +120,24 @@ function Test-RecoveryPathWithin([string]$Path, [string]$Root) {
 }
 
 function Assert-RecoveryReceiptLocation([string]$Path) {
-    $location = Resolve-RecoveryLocation (Resolve-FullPath $Path)
+    $fullPath = [IO.Path]::TrimEndingDirectorySeparator((Resolve-FullPath $Path))
+    $locations = [Collections.Generic.List[string]]::new()
+    $location = Resolve-RecoveryLocation $fullPath 0 $locations
     foreach ($root in @($DataRoot, $RestoreDataRoot)) {
         if ([string]::IsNullOrWhiteSpace($root)) { continue }
-        $rootLocation = Resolve-RecoveryLocation (Resolve-FullPath $root)
+        $fullRoot = [IO.Path]::TrimEndingDirectorySeparator((Resolve-FullPath $root))
+        $rootLocation = Resolve-RecoveryLocation $fullRoot
+        foreach ($visited in $locations) {
+            if (Test-RecoveryPathWithin $visited $rootLocation) {
+                throw "ReceiptPath must not traverse DataRoot or RestoreDataRoot: $Path"
+            }
+        }
         # A receipt cannot be captured/quarantined with a recovery root, nor can
         # creating it as a file prevent a missing root from becoming a directory.
-        if ((Test-RecoveryPathWithin $location $rootLocation) -or (Test-RecoveryPathWithin $rootLocation $location)) {
+        # Check both names and resolved locations: an outward-pointing link inside
+        # a root is still captured by backup or moved away during quarantine.
+        if ((Test-RecoveryPathWithin $fullPath $fullRoot) -or (Test-RecoveryPathWithin $fullRoot $fullPath) -or
+            (Test-RecoveryPathWithin $location $rootLocation) -or (Test-RecoveryPathWithin $rootLocation $location)) {
             throw "ReceiptPath must not overlap DataRoot or RestoreDataRoot: $Path"
         }
     }

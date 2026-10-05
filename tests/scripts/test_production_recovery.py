@@ -550,6 +550,27 @@ class ProductionRecoveryReceiptTests(unittest.TestCase):
                             root_flag, str(recovery_root), "-AllowDataOverwrite",
                         )
 
+    def test_receipts_inside_roots_cannot_escape_through_outward_symlinks(self):
+        result, backup, _ = self.invoke("Backup", "backup-receipt.json")
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.restored.mkdir()
+        outside = self.root / "outside"
+        outside.mkdir()
+        for protected_root in (self.source, self.restored):
+            (protected_root / "alias").symlink_to(outside, target_is_directory=True)
+            (self.root / f"{protected_root.name}-alias").symlink_to(protected_root, target_is_directory=True)
+        for mode, retained in (("Backup", False), ("Drill", False), ("Restore", True), ("Drill", True)):
+            extra = ("-BackupPath", backup["backupPath"]) if retained else ()
+            for protected_root in (self.source, self.restored):
+                with self.subTest(mode=mode, retained=retained, root=protected_root):
+                    self.assert_receipt_preflight_rejected(
+                        mode, str(protected_root / "alias" / "receipt.json"), *extra, "-AllowDataOverwrite",
+                    )
+                    self.assert_receipt_preflight_rejected(
+                        mode, str(self.root / f"{protected_root.name}-alias" / "alias" / "receipt.json"),
+                        *extra, "-AllowDataOverwrite",
+                    )
+
     def test_receipt_conflicts_follow_symlinks_in_other_link_targets(self):
         nested_source = self.source / "nested"
         nested_source.mkdir()
