@@ -31,6 +31,36 @@ public static class AssetAccountingEvidenceSubjects
     public const string Reconciliation = "AssetAccountingReconciliation";
     public const string Report = "AssetAccountingReport";
 
+    /// <summary>
+    /// Amortization retains acquisition/reference observation dates instead of rewriting them to
+    /// the posting period. Before Drafted, only typed historical references may be projected;
+    /// from Drafted onward each must be one of the exact reviewed instruction identities.
+    /// Event and approval evidence continue to require the event's date.
+    /// </summary>
+    public static bool MatchesEventEvidenceDate(
+        AssetAccountingEventKindDto eventKind, DateOnly eventDate, Guid securityId, long securityVersion,
+        RetainedEvidenceIdentityDto evidence,
+        Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? instruction,
+        bool requireInstruction)
+    {
+        if (evidence.EffectiveDate == eventDate)
+            return true;
+        if (eventKind != AssetAccountingEventKindDto.DepreciationAmortization || evidence.EffectiveDate > eventDate)
+            return false;
+        var canonicalSubject = evidence.SubjectType switch
+        {
+            "OpenLotAcquisition" => Guid.TryParseExact(evidence.SubjectId, "D", out var lotId) && lotId != Guid.Empty,
+            "SecurityMasterProjection" => evidence.SubjectId == securityId.ToString("D")
+                && evidence.EvidenceVersion == securityVersion,
+            _ => false
+        };
+        if (!canonicalSubject)
+            return false;
+        if (instruction is null)
+            return !requireInstruction;
+        return evidence == instruction.SecurityEvidence || instruction.ExpectedLot?.Acquisition?.Evidence?.Contains(evidence) == true;
+    }
+
     public static string PostingApprovalSubjectId(
         Guid eventId,
         long eventVersion,
