@@ -48,8 +48,21 @@ Interactive Brokers family, while `ib-flex` and `ib-sim` remain distinct integra
 `DataSourceAttribute.IsProductionProvider` and `IProviderModule.IsProductionProvider` exclude
 copy-only scaffolds even when configuration enables them. `DataSourceRegistry.RegisterModules`
 can exclude families already owned by an application catalog. Module and attribute registrations
-must run before the service provider is built; attribute registration preserves a module's existing
-factory for each implementation type.
+must run before the service provider is built. Each discovered module owns construction for its
+canonical family: disabled, skipped, or failed module registrations cannot be recreated by the
+attribute-registration fallback. Run module discovery before `RegisterServices` so this ownership
+is established before attribute-only fallback. Modules register each exposed implementation under
+its concrete type using singleton or transient lifetime; scoped capability factories are rejected
+because the provider registry belongs to the host. Optional interface aliases resolve that same instance. Interface-only factories for
+discovered capabilities fail with an explicit registration diagnostic because they cannot identify
+the family unambiguously among providers sharing a contract. Both module-loading entry points
+honor module validation, stage service-collection changes, and publish them only after successful registration.
+`DataSourceRegistry.ModuleCapabilityRegistrations` exposes the successfully registered concrete
+factories and derives their contracts from discovered metadata; application composition consumes
+this inventory instead of inferring factories from all services in the container. A module must add
+or replace a concrete factory to claim it; unrelated services already in the collection do not
+grant the module a capability. Attribute-only registration derives all recognized capability
+interfaces from that same metadata.
 `IProviderConnectionHealthSource.GetConnectionHealthAsync` reports health for exactly one connection;
 tenant-scoped routing, trust and selection use it so family-wide telemetry shared with other owners
 cannot rank a tenant's connection. Its default delegates to `GetHealthAsync`, so sources that fall back

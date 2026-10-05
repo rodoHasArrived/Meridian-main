@@ -578,6 +578,14 @@ requests/results, sync-run history payloads, run-due sync requests/results, prom
 reconciliation handoff request/result/history records, activation state, mapping confidence,
 validation issues, endpoint definitions, and sync schedules as shared contracts before browser or
 WPF surfaces render setup, monitoring, reconciliation handoff, or scheduled execution state.
+Manifest persistence distinguishes immutable revisions from the compare-and-set current pointer.
+Retained payloads and sync runs carry exact manifest id, version, and digest provenance. Replay
+contracts distinguish the original mapping from intentional remediation with a selected newer
+mapping and preserve both source and execution provenance. Missing historical provenance remains
+unknown rather than being inferred from the current manifest.
+`ProviderIntegrationManifestReferenceDto` supplies the shared identity; `ManifestReference` and
+`OriginalManifestReference` distinguish the applied and original mappings. Replay defaults to
+`Original`; `Remediation` requires an explicit target version and digest.
 Handoff result payloads include duplicate-record counts so clients can show idempotent retry
 failures from retained history rather than issuing another downstream reconciliation input.
 `IProviderIntegrationTenantManifestStoreFactory`

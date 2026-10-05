@@ -3616,6 +3616,7 @@ Meridian-main
 │   │   │   ├── ProviderIntegrationFieldTransforms.cs
 │   │   │   ├── ProviderIntegrationHttpClientTransport.cs
 │   │   │   ├── ProviderIntegrationIdentityResolutionPreviewService.cs
+│   │   │   ├── ProviderIntegrationManifestPromotion.cs
 │   │   │   ├── ProviderIntegrationMappedRecordIdentity.cs
 │   │   │   ├── ProviderIntegrationMappedRecordValidation.cs
 │   │   │   ├── ProviderIntegrationMonitoringService.cs
@@ -4104,7 +4105,8 @@ Meridian-main
 │   │   │   └── FxSpotReferenceDtos.cs
 │   │   ├── Integrations
 │   │   │   ├── ProviderIntegrationContracts.cs
-│   │   │   └── ProviderIntegrationContractsJsonContext.cs
+│   │   │   ├── ProviderIntegrationContractsJsonContext.cs
+│   │   │   └── ProviderIntegrationManifestIdentity.cs
 │   │   ├── Integrity
 │   │   │   └── Sha256Digest.cs
 │   │   ├── Ledger
@@ -5767,7 +5769,9 @@ Meridian-main
 │   │   │   ├── PostgresFundStructureStore.cs
 │   │   │   └── PostgresFundStructureTenantBackfillStore.cs
 │   │   ├── Integrations
-│   │   │   └── FileProviderIntegrationManifestStore.cs
+│   │   │   ├── FileProviderIntegrationManifestStore.cs
+│   │   │   ├── FileProviderIntegrationManifestStore.Manifests.cs
+│   │   │   └── FileProviderIntegrationManifestStore.Provenance.cs
 │   │   ├── Interfaces
 │   │   │   ├── IMarketDataStore.cs
 │   │   │   ├── ISourceRegistry.cs
@@ -7127,6 +7131,7 @@ Meridian-main
 │   │   │   │   │   ├── market-data.ts
 │   │   │   │   │   ├── portfolio-cash-ladder.types.ts
 │   │   │   │   │   ├── provider-accounting.ts
+│   │   │   │   │   ├── provider-integration-provenance.ts
 │   │   │   │   │   ├── provider-setup.ts
 │   │   │   │   │   ├── reconciliation-readiness.types.ts
 │   │   │   │   │   ├── reporting-governance.ts
@@ -8713,7 +8718,8 @@ Meridian-main
 │   │   ├── Meridian.ProcessTestHelper.runtimeconfig.json
 │   │   ├── Program.cs
 │   │   ├── Program.Etl.cs
-│   │   └── Program.Identity.cs
+│   │   ├── Program.Identity.cs
+│   │   └── Program.ManifestLock.cs
 │   ├── Meridian.QuantScript.Tests
 │   │   ├── Helpers
 │   │   │   ├── FakeQuantDataContext.cs
@@ -9585,6 +9591,7 @@ Meridian-main
 │   │   │   ├── LedgerReconciliationContractCompatibilityTests.cs
 │   │   │   ├── OperationalFinanceContractTests.cs
 │   │   │   ├── ProviderIntegrationContractsTests.cs
+│   │   │   ├── ProviderIntegrationManifestIdentityTests.cs
 │   │   │   └── VerifiedOperationOutcomeTests.cs
 │   │   ├── Core
 │   │   │   ├── Config
@@ -9919,6 +9926,7 @@ Meridian-main
 │   │   │   │   ├── ProviderHealthTrackerTests.cs
 │   │   │   │   ├── ProviderMarketDataCapabilityTests.cs
 │   │   │   │   ├── ProviderRateLimitTrackerTests.cs
+│   │   │   │   ├── ProviderRegistryCapabilityFactoryTests.cs
 │   │   │   │   ├── ProviderResilienceTests.cs
 │   │   │   │   ├── ProviderTemplateFactoryCredentialTests.cs
 │   │   │   │   ├── RobinhoodBrokerageGatewayTests.cs
@@ -10305,7 +10313,9 @@ Meridian-main
 │   │   │   ├── FundStructure
 │   │   │   │   └── PostgresFundStructureStoreTests.cs
 │   │   │   ├── Integrations
-│   │   │   │   └── FileProviderIntegrationManifestStoreTests.cs
+│   │   │   │   ├── FileProviderIntegrationManifestStoreTests.cs
+│   │   │   │   ├── FileProviderIntegrationManifestStoreTests.ManifestVersions.cs
+│   │   │   │   └── FileProviderIntegrationManifestStoreTests.Provenance.cs
 │   │   │   ├── Ledger
 │   │   │   │   └── RetainedPostingEquivalenceTests.cs
 │   │   │   ├── Maintenance
@@ -11151,6 +11161,7 @@ Meridian-main
 │   │   ├── test_run_provider_validation_evidence_bundle.py
 │   │   ├── test_run_script_tests.py
 │   │   ├── test_scan_commit_secrets.py
+│   │   ├── test_schema_control_baselines.py
 │   │   ├── test_schema_control_catalog.py
 │   │   ├── test_schema_control_cli.py
 │   │   ├── test_schema_control_contracts.py
