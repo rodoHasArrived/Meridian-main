@@ -1,3 +1,5 @@
+using Meridian.Documents;
+using Microsoft.Extensions.Options;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.Reporting;
 using Meridian.Ui.Shared.Services;
@@ -13,6 +15,8 @@ public static class EvidenceWorkflowServiceCollectionExtensions
         this IServiceCollection services,
         bool isProductionComposition = false)
     {
+        services.AddOptions<EvidenceStorageQuotaOptions>()
+            .BindConfiguration("EvidenceVault:StorageQuota");
         services.TryAddSingleton<EvidenceTemplateRegistry>();
         services.TryAddSingleton<EvidenceSubjectResolver>();
         services.TryAddSingleton<EvidencePacketValidationService>();
@@ -21,7 +25,8 @@ public static class EvidenceWorkflowServiceCollectionExtensions
         services.TryAddSingleton<IEvidenceArtifactStore>(sp =>
             new FileEvidenceArtifactStore(
                 FileEvidenceArtifactStore.ResolveDataRoot(sp),
-                sp.GetRequiredService<ILogger<FileEvidenceArtifactStore>>()));
+                sp.GetRequiredService<ILogger<FileEvidenceArtifactStore>>(),
+                sp.GetRequiredService<IOptions<EvidenceStorageQuotaOptions>>().Value));
         var hasKnownDurableStatementAuthority =
             HasKnownDurableStatementAuthority(services);
 

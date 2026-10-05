@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
+using Meridian.Documents;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -146,6 +147,8 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
     private readonly long _documentVerificationByteLimit;
     private readonly int _documentLocatorInspectionLimit;
     private readonly Func<string, Stream> _openExportArtifact;
+    private readonly EvidenceStorageQuotaOptions _quotaOptions;
+    private readonly EvidenceStorageQuotaCoordinator _storageQuota;
     // Serializes read-modify-write cycles on a vault's manifest/index pair. AtomicFileWriter
     // only makes each single write atomic; without this, concurrent document reviews on the
     // same vault could read the same snapshot and silently clobber each other's updates.
@@ -162,12 +165,20 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
     {
     }
 
+    public FileEvidenceArtifactStore(
+        string dataRoot, ILogger<FileEvidenceArtifactStore> logger, EvidenceStorageQuotaOptions quotaOptions)
+        : this(dataRoot, logger, MaxDocumentVerificationBytesPerRequest, quotaOptions: quotaOptions)
+    {
+    }
+
     internal FileEvidenceArtifactStore(
         string dataRoot,
         ILogger<FileEvidenceArtifactStore> logger,
         long documentVerificationByteLimit,
         int documentLocatorInspectionLimit = MaxDocumentLocatorInspections,
-        Func<string, Stream>? exportArtifactSourceFactory = null)
+        Func<string, Stream>? exportArtifactSourceFactory = null,
+        EvidenceStorageQuotaOptions? quotaOptions = null,
+        Func<string, long>? availableDiskBytes = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
         if (documentVerificationByteLimit <= 0
@@ -183,10 +194,13 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         }
 
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _rootDirectory = Path.Combine(dataRoot, "workstation", "evidence");
+        _rootDirectory = Path.GetFullPath(Path.Combine(dataRoot, "workstation", "evidence"));
         _documentVerificationByteLimit = documentVerificationByteLimit;
         _documentLocatorInspectionLimit = documentLocatorInspectionLimit;
         _openExportArtifact = exportArtifactSourceFactory ?? OpenExportArtifact;
+        _quotaOptions = (quotaOptions ?? new EvidenceStorageQuotaOptions()).ValidateAndSnapshot();
+        _storageQuota = new EvidenceStorageQuotaCoordinator(
+            dataRoot, _quotaOptions, MeasurePublishedTenantBytes, availableDiskBytes, RecoverStorageAttemptAsync);
     }
     public async Task<EvidencePacketExportResponse> WriteManifestAsync(
         EvidencePacketDto packet,
@@ -234,9 +248,12 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         var manifestPath = Path.Combine(directory, fileName);
         var relativePath = Path.Combine("workstation", "evidence", subjectKind, subjectId, fileName);
         var manifestRoute = $"/workstation/evidence/{RouteSegment(subjectKind)}/{RouteSegment(subjectId)}/{RouteSegment(fileName)}";
-        await using var publication = new ExportPublication(this, vaultId, manifestPath);
+        var (estimatedBytes, artifactCount) = EstimateExportStorage(packet);
+        await using var reservation = await _storageQuota.ReserveAsync(tenantId, estimatedBytes, artifactCount, ct)
+            .ConfigureAwait(false);
+        await using var publication = new ExportPublication(this, vaultId, manifestPath, reservation);
         var retainedArtifacts = await RetainLocalArtifactsAsync(
-                packet, vaultId, generatedAt, publication.ArtifactDirectory, ct)
+                packet, vaultId, generatedAt, publication.ArtifactDirectory, reservation, ct)
             .ConfigureAwait(false);
         var vaultIdentity = new EvidenceVaultIdentityDto(
             VaultId: vaultId,
@@ -313,6 +330,8 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
                 nameof(request));
         }
 
+        await using var reservation = await _storageQuota.ReserveAsync(
+            tenantId, EstimateIntakeStorage(request), 1, ct).ConfigureAwait(false);
         var intakeContent = await ResolveIntakeContentAsync(request, ct).ConfigureAwait(false);
         var content = intakeContent.Content;
         var contentHash = intakeContent.ContentHashSha256;
@@ -329,9 +348,15 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         var manifestPath = Path.Combine(_rootDirectory, "_vault", vaultId, manifestFileName);
         var manifestRoute = $"/workstation/evidence/_vault/{RouteSegment(vaultId)}/{RouteSegment(manifestFileName)}";
         var safeFileName = BuildIntakeArtifactFileName(fileName, contentHash);
-        var artifactDirectory = Path.Combine(_rootDirectory, "_vault", vaultId, "artifacts");
-        var artifactPath = Path.Combine(artifactDirectory, safeFileName);
+        await using var publication = new ExportPublication(this, vaultId, manifestPath, reservation);
+        var artifactPath = Path.Combine(publication.ArtifactDirectory, safeFileName);
+        if (content.LongLength > _quotaOptions.MaxArtifactBytes)
+        {
+            throw new EvidenceStorageQuotaExceededException("artifact-bytes", "Intake exceeds the configured artifact byte limit.");
+        }
+        await reservation.BeforeWriteAsync(content.LongLength, ct).ConfigureAwait(false);
         await AtomicFileWriter.WriteAsync(artifactPath, content, ct).ConfigureAwait(false);
+        await reservation.AfterWriteAsync(content.LongLength, CancellationToken.None).ConfigureAwait(false);
 
         var artifactRelativePath = Path.Combine("workstation", "evidence", "_vault", vaultId, "artifacts", safeFileName)
             .Replace(Path.DirectorySeparatorChar, '/');
@@ -484,10 +509,9 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         vaultIdentity = RefreshVaultIdentityContentHash(vaultIdentity, manifest);
         manifest = manifest with { VaultIdentity = vaultIdentity };
 
-        await AtomicFileWriter
-            .WriteAsync(manifestPath, JsonSerializer.Serialize(manifest, _jsonOptions), ct)
-            .ConfigureAwait(false);
-        await WriteVaultIndexAsync(vaultIdentity, ct).ConfigureAwait(false);
+        await publication.PublishAsync(
+            JsonSerializer.Serialize(manifest, _jsonOptions),
+            JsonSerializer.Serialize(vaultIdentity, _jsonOptions), ct).ConfigureAwait(false);
 
         _logger.LogInformation(
             "Retained evidence vault intake {VaultId} for {SubjectKind}/{SubjectId}.",
@@ -2214,6 +2238,7 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         string vaultId,
         DateTimeOffset retainedAt,
         string artifactDirectory,
+        EvidenceStorageReservation reservation,
         CancellationToken ct)
     {
         var retainedArtifacts = packet.Nodes
@@ -2259,7 +2284,7 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
             ExportArtifactCopyResult? copy = null;
             await AtomicFileWriter.WriteStreamAsync(targetPath, async destination =>
             {
-                copy = await CopyExportArtifactAsync(source, destination, artifact.ArtifactId, ct).ConfigureAwait(false);
+                copy = await CopyExportArtifactAsync(source, destination, artifact.ArtifactId, ct, reservation, _quotaOptions.MaxArtifactBytes).ConfigureAwait(false);
                 if (!string.IsNullOrWhiteSpace(artifact.Hash) &&
                     !Sha256Digest.FixedEquals(NormalizeHash(artifact.Hash), copy.ContentHashSha256))
                 {

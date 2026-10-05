@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-05
 ---
 
 # src/Meridian.Ui.Shared
@@ -1403,10 +1403,23 @@ file-size check. Source hash mismatches, read failures, and cancellation abort t
 Artifacts, manifest, and index are staged before publication; no-overwrite moves publish the
 scoped index last, which is the visibility boundary used by vault readers. Failure cleanup removes
 only the attempt's private stage and paths it successfully moved, preserving existing packages.
-The shared `AtomicFileWriter` continues to own file flushing and directory durability. This is a
-bounded PRD-105 export-retention slice; tenant storage quotas and retention policies remain open.
-Focused evidence is in `FileEvidenceArtifactStoreExportTests`, including restart reads, streamed
-size checks, cancellation, hash mismatch, later-artifact failure, and publication collisions.
+The shared `AtomicFileWriter` continues to own file flushing and directory durability.
+Intake and export now reserve package/count, tenant, and disk capacity through
+`Meridian.Documents.EvidenceStorageQuotaCoordinator` before writing. The shared adapter measures
+published artifact/manifest/index bytes and owns attempt-specific publication and recovery;
+Documents owns policy, durable reservations, and concurrent admission. Source growth extends a
+reservation before additional writes; publication reconciles to actual bytes. Exclusive attempt
+leases protect live writers, and the next write reclaims abandoned reservations while preserving
+published evidence. Failed cleanup retains the charge until recovery succeeds.
+
+[`Meridian.Documents/README.md`](../Meridian.Documents/README.md#evidence-storage-quota-configuration)
+documents `EvidenceVault:StorageQuota`, defaults, tenant budgets across company scopes, and the
+shared-local-filesystem deployment boundary. Stores freeze options at construction. This bounded
+PRD-105 slice retains streaming copy and index-last publication; retention policy, broad runtime
+ownership, and quota admission for document-review metadata rewrites remain open.
+Focused coverage is in `FileEvidenceArtifactStoreExportTests`, `FileEvidenceArtifactStoreQuotaTests`,
+and `EvidenceStorageQuotaCoordinatorTests`, including simultaneous near-limit writes, underestimated
+sizes, disk pressure, cancellation/retry, actual-byte reconciliation, and abandoned-attempt recovery.
 
 `WorkstationOperationsJsonContext` includes the accounting-record summary, evidence-category, and
 private-capital shadow NAV tie-out DTOs so shared workstation endpoints can serialize the same

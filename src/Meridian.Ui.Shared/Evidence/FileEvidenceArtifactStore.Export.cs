@@ -1,4 +1,7 @@
+using System.Text;
+using System.Text.Json;
 using Meridian.Contracts.Integrity;
+using Meridian.Documents;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 
@@ -14,16 +17,18 @@ public sealed partial class FileEvidenceArtifactStore
         ExportCopyBufferBytes, FileOptions.Asynchronous | FileOptions.SequentialScan);
 
     internal static async Task<ExportArtifactCopyResult> CopyExportArtifactAsync(
-        Stream source, Stream destination, string artifactId, CancellationToken ct = default)
+        Stream source, Stream destination, string artifactId, CancellationToken ct = default,
+        EvidenceStorageReservation? reservation = null, long artifactByteLimit = MaxRetainedArtifactBytes)
     {
         // The canonical digest consumes a bounded tee: every byte it hashes is also written to
         // the private staged artifact. Neither the source length nor a pre-copy stat is authority.
-        using var copy = new ExportCopyStream(source, destination, artifactId);
+        using var copy = new ExportCopyStream(source, destination, artifactId, reservation, artifactByteLimit);
         var hash = await Sha256Digest.ComputeAsync(copy, ct).ConfigureAwait(false);
         return new ExportArtifactCopyResult(hash, copy.BytesCopied);
     }
 
-    private sealed class ExportCopyStream(Stream source, Stream destination, string artifactId) : Stream
+    private sealed class ExportCopyStream(Stream source, Stream destination, string artifactId,
+        EvidenceStorageReservation? reservation, long artifactByteLimit) : Stream
     {
         public long BytesCopied { get; private set; }
         public override bool CanRead => true;
@@ -42,7 +47,26 @@ public sealed partial class FileEvidenceArtifactStore
                 throw new InvalidOperationException($"Retained artifact '{artifactId}' exceeds the 100 MB vault artifact limit.");
             }
 
+            if (count > artifactByteLimit - BytesCopied)
+            {
+                throw new EvidenceStorageQuotaExceededException("artifact-bytes", "Export exceeds the configured artifact byte limit.");
+            }
+            if (count == 0)
+            {
+                return 0;
+            }
+            if (reservation is not null)
+            {
+                await reservation.BeforeWriteAsync(count, ct).ConfigureAwait(false);
+            }
             await destination.WriteAsync(buffer[..count], ct).ConfigureAwait(false);
+            if (reservation is not null)
+            {
+                // FileStream may buffer a short read in user space. Make its disk allocation
+                // visible to the headroom probe before crediting these bytes as written.
+                await destination.FlushAsync(ct).ConfigureAwait(false);
+                await reservation.AfterWriteAsync(count, CancellationToken.None).ConfigureAwait(false);
+            }
             BytesCopied += count;
             return count;
         }
@@ -58,39 +82,33 @@ public sealed partial class FileEvidenceArtifactStore
     }
 
     /// <summary>
-    /// Owns one unpublished attempt. Staged files are invisible to scoped vault readers, which
-    /// require a top-level index and its matching manifest. The index is published last.
+    /// Owns one unpublished attempt. Publication intent is durable before any final-path move;
+    /// the quota coordinator holds the root lock until the index-last transaction finishes.
     /// </summary>
     internal sealed class ExportPublication : IAsyncDisposable
     {
         private readonly FileEvidenceArtifactStore _store;
+        private readonly EvidenceStorageReservation? _reservation;
+        private readonly string _attemptId;
         private readonly string _stagingDirectory;
         private readonly string _stagedPackageDirectory;
         private readonly string _packageDirectory;
         private readonly string _manifestPath;
         private readonly string _indexPath;
-        private bool _ownsPackage;
-        private bool _ownsManifest;
-        private bool _committed;
 
-        public ExportPublication(FileEvidenceArtifactStore store, string vaultId, string manifestPath)
+        public ExportPublication(FileEvidenceArtifactStore store, string vaultId, string manifestPath,
+            EvidenceStorageReservation? reservation = null)
         {
             _store = store;
-            _stagingDirectory = Path.Combine(store._rootDirectory, "_staging", Guid.NewGuid().ToString("N"));
+            _reservation = reservation;
+            _attemptId = reservation?.Id ?? Guid.NewGuid().ToString("N");
+            _stagingDirectory = Path.Combine(store._rootDirectory, "_staging", _attemptId);
             _stagedPackageDirectory = Path.Combine(_stagingDirectory, "package");
             _packageDirectory = Path.Combine(store._rootDirectory, "_vault", vaultId);
             _manifestPath = manifestPath;
             _indexPath = Path.Combine(store._rootDirectory, "_vault", $"{vaultId}.json");
             ArtifactDirectory = Path.Combine(_stagedPackageDirectory, "artifacts");
-            try
-            {
-                Directory.CreateDirectory(ArtifactDirectory);
-            }
-            catch
-            {
-                Cleanup(_stagingDirectory, directory: true);
-                throw;
-            }
+            Directory.CreateDirectory(ArtifactDirectory);
         }
 
         public string ArtifactDirectory { get; }
@@ -99,74 +117,72 @@ public sealed partial class FileEvidenceArtifactStore
         {
             var stagedManifest = Path.Combine(_stagingDirectory, "manifest.json");
             var stagedIndex = Path.Combine(_stagingDirectory, "index.json");
-            await AtomicFileWriter.WriteAsync(stagedManifest, manifestJson, ct)
-                .ConfigureAwait(false);
-            await AtomicFileWriter.WriteAsync(stagedIndex, identityJson, ct)
-                .ConfigureAwait(false);
-            ct.ThrowIfCancellationRequested();
-            Directory.CreateDirectory(Path.GetDirectoryName(_packageDirectory)!);
-            Directory.CreateDirectory(Path.GetDirectoryName(_manifestPath)!);
+            await WriteMetadataAsync(stagedManifest, manifestJson, ct).ConfigureAwait(false);
+            await WriteMetadataAsync(stagedIndex, identityJson, ct).ConfigureAwait(false);
+            if (_reservation is null)
+            {
+                await PublishFilesAsync(ct).ConfigureAwait(false);
+            }
+            else
+            {
+                await _reservation.PublishAsync(PublishFilesAsync, ct).ConfigureAwait(false);
+            }
+        }
 
-            // No overwrite at any publication step: a colliding attempt cannot replace retained
-            // evidence, and rollback owns only paths whose move actually succeeded.
+        private async Task WriteMetadataAsync(string path, string json, CancellationToken ct)
+        {
+            var bytes = Encoding.UTF8.GetByteCount(json);
+            if (_reservation is not null)
+            {
+                await _reservation.BeforeWriteAsync(bytes, ct).ConfigureAwait(false);
+            }
+            await AtomicFileWriter.WriteAsync(path, json, ct).ConfigureAwait(false);
+            if (_reservation is not null)
+            {
+                await _reservation.AfterWriteAsync(bytes, CancellationToken.None).ConfigureAwait(false);
+            }
+        }
+
+        private async Task PublishFilesAsync(CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            // All targets must be absent before durable intent grants this attempt ownership.
+            // This check and all moves run under the same cross-process quota lock. Recovery runs
+            // under that lock too, before another operation can claim an abandoned target.
+            _store.EnsurePublicationTargetsUnclaimed(_attemptId, _packageDirectory, _manifestPath, _indexPath);
+            if (Path.Exists(_packageDirectory) || Path.Exists(_manifestPath) || Path.Exists(_indexPath))
+            {
+                throw new IOException("Evidence publication would replace an existing package, manifest, or index.");
+            }
+            Directory.CreateDirectory(Path.GetDirectoryName(_packageDirectory)!);
+            if (Path.GetDirectoryName(_manifestPath) != _packageDirectory)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(_manifestPath)!);
+            }
+            await AtomicFileWriter.WriteAsync(Path.Combine(_stagingDirectory, "publication.json"),
+                JsonSerializer.Serialize(new StoragePublicationIntent(_packageDirectory, _manifestPath, _indexPath)), ct)
+                .ConfigureAwait(false);
             Directory.Move(_stagedPackageDirectory, _packageDirectory);
-            _ownsPackage = true;
             await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(_packageDirectory)!, CancellationToken.None)
                 .ConfigureAwait(false);
             ct.ThrowIfCancellationRequested();
-            File.Move(stagedManifest, _manifestPath, overwrite: false);
-            _ownsManifest = true;
+            File.Move(Path.Combine(_stagingDirectory, "manifest.json"), _manifestPath, overwrite: false);
             await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(_manifestPath)!, CancellationToken.None)
                 .ConfigureAwait(false);
             ct.ThrowIfCancellationRequested();
-            File.Move(stagedIndex, _indexPath, overwrite: false);
-            _committed = true;
-            // Once the readable index exists, caller cancellation cannot turn success into a
-            // failed retry, and cleanup cannot dismantle the complete readable package.
-            // Directory durability uses the same primitive as AtomicFileWriter.
+            File.Move(Path.Combine(_stagingDirectory, "index.json"), _indexPath, overwrite: false);
+            // Once visible, preserve evidence even if flushing or the reservation commit fails.
             await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(_indexPath)!, CancellationToken.None)
                 .ConfigureAwait(false);
         }
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            if (!_committed)
+            // Reservations run recovery under the root lock and retain the charge if cleanup
+            // fails. The compatibility constructor is used only by publication primitive tests.
+            if (_reservation is null)
             {
-                if (_ownsManifest)
-                {
-                    Cleanup(_manifestPath, directory: false);
-                }
-                if (_ownsPackage)
-                {
-                    Cleanup(_packageDirectory, directory: true);
-                }
-            }
-
-            Cleanup(_stagingDirectory, directory: true);
-            return ValueTask.CompletedTask;
-        }
-
-        private void Cleanup(string path, bool directory)
-        {
-            // All directories here are either our private GUID stage or a directory moved from
-            // that stage without overwrite. Never sweep the subject or shared _vault directory.
-            try
-            {
-                if (directory)
-                {
-                    if (Directory.Exists(path))
-                    {
-                        Directory.Delete(path, recursive: true);
-                    }
-                }
-                else
-                {
-                    File.Delete(path);
-                }
-            }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-            {
-                _store._logger.LogWarning(ex, "Failed evidence export cleanup could not remove owned path {Path}.", path);
+                await _store.RecoverStorageAttemptAsync(_attemptId, CancellationToken.None).ConfigureAwait(false);
             }
         }
     }

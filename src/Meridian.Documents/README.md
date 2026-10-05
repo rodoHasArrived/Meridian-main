@@ -6,14 +6,16 @@ module_id: SRC-DESIGN-DOCUMENTS
 path: src/Meridian.Documents
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-27
+last_reviewed: 2026-10-05
 ---
 
 # src/Meridian.Documents
 
 ## Purpose
 
-Physical bounded-context module project for retained document attachments, document evidence, manifests, and document-management ownership conformance.
+Bounded-context module for retained document evidence, manifests, report rendering, and Evidence
+Vault storage-quota policy and durable reservations. Broader document-runtime ownership remains
+shared with the Evidence Vault adapter.
 
 ## Layer responsibility
 
@@ -22,6 +24,11 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 ## Key folders and files
 
 - `src/Meridian.Documents` - registered source module root.
+- `EvidenceStorageQuotaOptions.cs`, `EvidenceStorageQuotaCoordinator.cs`, and
+  `EvidenceStorageReservation.cs` - configurable Evidence Vault package/count and tenant budgets,
+  disk-headroom admission, durable reservation accounting, and process-owned recovery leases.
+  The shared vault adapter supplies published usage and attempt-specific staging cleanup; this
+  module owns admission and capacity reconciliation across concurrent processes.
 - `FinancialReportDocumentRenderer.cs` - client-grade QuestPDF (PDF) + ClosedXML (XLSX) renderer that
   implements the ledger's `ILedgerReportBinaryRenderer` seam. Output is made deterministic (fixed
   document metadata/timestamps, canonical zip ordering) so re-rendering a pack reproduces the bytes.
@@ -44,8 +51,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 
 ## Important workflows
 
-Document intake is implemented through shared contracts and the UI Shared Evidence Vault until this
-design module owns a dedicated runtime service. The active V1 workflow retains uploaded,
+Document intake and metadata workflows use shared contracts and the UI Shared Evidence Vault;
+this module owns storage-quota policy and reservation coordination. The active V1 workflow retains uploaded,
 API-supplied, local-file, or imported-file-reference sources as immutable vault artifacts, records
 source hash, received timestamp, source channel, source path/route reference, actor, tenant/scope,
 document classification, object links, extraction status, reviewer state, and audit trail, then
@@ -58,6 +65,46 @@ OCR and AI extraction must stay behind `IEvidenceDocumentExtractor`. The default
 normalizes operator-supplied deterministic metadata and fixture fields; later OCR or LLM extraction
 should return the same contract without gaining authority to post journals, approve evidence,
 release payments, or certify reports.
+
+Evidence storage reservations are persisted outside the readable vault under
+`workstation/evidence-quota`. Each attempt holds an exclusive filesystem lease until publication or
+cleanup. A root-wide filesystem gate serializes admission, actual-byte reconciliation, and
+publication; recovery reclaims only attempts whose owner lease is available. Failed cleanup keeps
+its reservation charged for a later retry. Package accounting includes artifact, UTF-8 manifest,
+and index bytes; disk admission includes every tenant's unwritten reserved capacity. Publication
+callbacks must write the scoped index last and preserve complete retained evidence during cleanup.
+Recovery runs on the next intake/export admission, or explicitly through
+`EvidenceStorageQuotaCoordinator.RecoverAbandonedAsync`. It never expires a live lease by age or
+deletes published evidence. These guarantees apply to cooperating local-filesystem writers using
+the same data root and quota configuration; they do not provide a distributed lease for filesystems
+that do not honor exclusive file sharing.
+
+### Evidence storage quota configuration
+
+Shared workstation composition binds `EvidenceVault:StorageQuota` to
+`EvidenceStorageQuotaOptions`. Direct callers can supply those options to
+`FileEvidenceArtifactStore`; each store validates and freezes its own copy at construction.
+Recreate stores or restart their hosts to apply changes consistently to all writers sharing a root.
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `MaxArtifactBytes` | `104857600` (100 MiB) | Per-artifact limit; may be lowered but cannot exceed the existing 100 MiB ceiling. |
+| `MaxPackageBytes` | `1073741824` (1 GiB) | Logical artifact, manifest, and index bytes in one retained package. |
+| `MaxArtifactsPerPackage` | `256` | Distinct retained artifacts per package. |
+| `DefaultTenantBudgetBytes` | `10737418240` (10 GiB) | Published bytes plus active reservations for one tenant across all company scopes. |
+| `TenantBudgetBytes` | `{}` | Case-insensitive tenant-ID budget overrides, in bytes. |
+| `MinimumDiskHeadroomBytes` | `268435456` (256 MiB) | Required free disk space after all tenants' unwritten reservations. |
+
+Package limits must be positive; tenant budgets and disk headroom may be zero. Logical byte
+accounting includes UTF-8 metadata, rather than filesystem allocation units. Reservations start
+from source-size estimates, extend before underestimated writes, and reconcile to actual written
+bytes before index-last publication. Published usage is measured from retained files after restart.
+Reservation journals and filesystem overhead are outside logical tenant/package totals; the disk
+headroom floor provides operational margin.
+
+This bounded PRD-105 slice covers intake/export admission and recovery. Retention/deletion policy,
+broader document-runtime ownership, and quota admission for document-review metadata rewrites
+remain outside this slice.
 
 ## Diagrams
 
@@ -82,6 +129,7 @@ release payments, or certify reports.
 
 ```bash
 dotnet build src/Meridian.Documents/Meridian.Documents.csproj /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EvidenceStorageQuotaCoordinatorTests" /p:EnableWindowsTargeting=true
 ```
 
 ## Optional conditional sections
