@@ -5605,6 +5605,10 @@ Meridian-main
 │   │   ├── ReportingGovernanceCanonicalValidation.cs
 │   │   ├── ReportingGovernanceContracts.cs
 │   │   ├── ReportingGovernanceService.cs
+│   │   ├── ReportingIncomeComparisonContracts.cs
+│   │   ├── ReportingIncomeComparisonEngine.cs
+│   │   ├── ReportingIncomeComparisonJsonContext.cs
+│   │   ├── ReportingIncomeDecimalJsonConverter.cs
 │   │   ├── ReportingNumberFormat.cs
 │   │   ├── ReportingOperationalStoreContracts.cs
 │   │   ├── ReportingOrchestrationService.cs
@@ -5911,6 +5915,7 @@ Meridian-main
 │   │   │   ├── PostgresReportingDeliveryStore.cs
 │   │   │   ├── PostgresReportingDeploymentProbe.cs
 │   │   │   ├── PostgresReportingGovernanceRepository.cs
+│   │   │   ├── PostgresReportingGovernanceRepository.RunBatches.cs
 │   │   │   ├── PostgresReportingReconciliationEvidenceStore.cs
 │   │   │   ├── PostgresReportingReleaseConsistencyGate.cs
 │   │   │   ├── PostgresReportingRunStore.cs
@@ -6699,6 +6704,8 @@ Meridian-main
 │   │   │   │   │   ├── reporting-hub.ts
 │   │   │   │   │   ├── reporting-impact.test.ts
 │   │   │   │   │   ├── reporting-impact.ts
+│   │   │   │   │   ├── reporting-income-comparison-api.test.ts
+│   │   │   │   │   ├── reporting-income-comparison-api.ts
 │   │   │   │   │   ├── reporting-lifecycle.test.ts
 │   │   │   │   │   ├── reporting-lifecycle.ts
 │   │   │   │   │   ├── reporting-link-safety.test.ts
@@ -6968,12 +6975,15 @@ Meridian-main
 │   │   │   │   │   ├── report-library-screen.test.tsx
 │   │   │   │   │   ├── report-library-screen.tsx
 │   │   │   │   │   ├── report-run-governance-client-package.ts
+│   │   │   │   │   ├── report-run-governance-parameters.ts
 │   │   │   │   │   ├── report-run-governance-screen.test.tsx
 │   │   │   │   │   ├── report-run-governance-screen.tsx
 │   │   │   │   │   ├── report-run-parameters-screen.test.tsx
 │   │   │   │   │   ├── report-run-parameters-screen.tsx
 │   │   │   │   │   ├── report-run-parameters-screen.view-model.test.ts
 │   │   │   │   │   ├── report-run-parameters-screen.view-model.ts
+│   │   │   │   │   ├── reporting-income-comparison.test.tsx
+│   │   │   │   │   ├── reporting-income-comparison.tsx
 │   │   │   │   │   ├── reporting-screen.a11y.test.tsx
 │   │   │   │   │   ├── reporting-screen.branding-access.tsx
 │   │   │   │   │   ├── reporting-screen.client-package.ts
@@ -7096,6 +7106,7 @@ Meridian-main
 │   │   │   │   ├── test
 │   │   │   │   │   ├── fixtures.ts
 │   │   │   │   │   ├── render.tsx
+│   │   │   │   │   ├── reporting-income-comparison-fixtures.ts
 │   │   │   │   │   ├── setup.ts
 │   │   │   │   │   └── verified-operation-outcome.ts
 │   │   │   │   ├── types
@@ -7121,6 +7132,7 @@ Meridian-main
 │   │   │   │   │   ├── provider-setup.ts
 │   │   │   │   │   ├── reconciliation-readiness.types.ts
 │   │   │   │   │   ├── reporting-governance.ts
+│   │   │   │   │   ├── reporting-income-comparison.ts
 │   │   │   │   │   ├── statement-run-detail.types.ts
 │   │   │   │   │   ├── workstation-1.ts
 │   │   │   │   │   ├── workstation-2.ts
@@ -7375,6 +7387,7 @@ Meridian-main
 │   │   │   ├── FundStructureEndpoints.cs
 │   │   │   ├── FundStructureEndpoints.ReportingCompatibility.cs
 │   │   │   ├── FundStructureEndpoints.ReportingGovernance.cs
+│   │   │   ├── FundStructureEndpoints.ReportingIncomeComparison.cs
 │   │   │   ├── FundStructureEndpoints.ReportingRunStream.cs
 │   │   │   ├── FundStructureEndpoints.ReportingScheduleAuthority.cs
 │   │   │   ├── FundStructureEndpoints.ReportingTombstones.cs
@@ -7665,6 +7678,7 @@ Meridian-main
 │   │   │   ├── ReportingGovernanceCoordinatorService.ArtifactValidation.cs
 │   │   │   ├── ReportingGovernanceCoordinatorService.cs
 │   │   │   ├── ReportingGovernanceReleaseAuthorizationVerifier.cs
+│   │   │   ├── ReportingIncomeComparisonService.cs
 │   │   │   ├── ReportingPartnersCapitalSource.cs
 │   │   │   ├── ReportingPrimaryDocumentRenderer.cs
 │   │   │   ├── ReportingReconciliationEvidenceSource.cs
@@ -10162,9 +10176,11 @@ Meridian-main
 │   │   │   └── SecurityMaster
 │   │   │       └── SecurityKindMappingTests.cs
 │   │   ├── Reporting
+│   │   │   ├── InvestmentIncomeComparisonEngineTests.cs
 │   │   │   ├── NavAttributionServiceTests.cs
 │   │   │   ├── ReportGenerationServiceTests.cs
 │   │   │   ├── ReportingGovernanceCanonicalValidationTests.cs
+│   │   │   ├── ReportingIncomeComparisonSerializationTests.cs
 │   │   │   ├── ReportingOrchestrationServiceTests.cs
 │   │   │   ├── ReportingSecureDistributionAuthorizationTests.cs
 │   │   │   ├── ReportingSecureDistributionTests.cs
@@ -10619,6 +10635,7 @@ Meridian-main
 │   │   │   ├── ReportingDeploymentReadinessServiceTests.cs
 │   │   │   ├── ReportingFileStoreLegacyCompatibilityTests.cs
 │   │   │   ├── ReportingGovernanceEndpointTests.cs
+│   │   │   ├── ReportingIncomeComparisonServiceTests.cs
 │   │   │   ├── ReportingOperationalConcurrencyTests.cs
 │   │   │   ├── ReportingPersistenceFailClosedTests.cs
 │   │   │   ├── ReportingProductionCompositionReadinessTests.cs
