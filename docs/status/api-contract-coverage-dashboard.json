@@ -3533,49 +3533,49 @@
     {
       "method": "GET",
       "path": "/api/health",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:42",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:48",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/status",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:116",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:127",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/errors",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:134",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:145",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backpressure",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:148",
-      "documented": true
-    },
-    {
-      "method": "GET",
-      "path": "/api/providers/latency",
       "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:159",
       "documented": true
     },
     {
       "method": "GET",
+      "path": "/api/providers/latency",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:170",
+      "documented": true
+    },
+    {
+      "method": "GET",
       "path": "/api/connections",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:174",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:185",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/health/detailed",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:212",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:223",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/events/stream",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:240",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:251",
       "documented": true
     },
     {
