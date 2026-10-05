@@ -1,5 +1,6 @@
 # Meridian Repository Rule Set
 
+**Status:** active
 **Owner:** Core Team
 **Scope:** Engineering — Repository-Wide
 **Review Cadence:** Quarterly (or when platform/tooling shifts)
@@ -9,6 +10,9 @@
 ## 1) Purpose
 
 This rule set defines the non-negotiable standards for contributing to Meridian so changes stay safe, reviewable, and consistent across C#, F#, UI, infrastructure, providers, storage, and tooling.
+
+**Maintenance check (2026-10-05):** workflow/validation routing below follows the root
+`AGENTS.md` repository operating policy. That policy and required hosted checks govern PR completion.
 
 ---
 
@@ -88,19 +92,20 @@ This rule set defines the non-negotiable standards for contributing to Meridian 
 
 ### 4.3 Validation before PR
 
-At minimum, run commands relevant to touched areas:
+Start with the narrow checks for the touched area in
+[Engineering](../engineering/README.md#buildtestrun), using the serialized `buildctl.py test`
+runner for local .NET tests and Windows validation for WPF. From the repository root, run the
+canonical pre-PR gate:
 
-- `dotnet restore Meridian.sln /p:EnableWindowsTargeting=true`
-- `dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true`
-- `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release /p:EnableWindowsTargeting=true`
-- `dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj -c Release /p:EnableWindowsTargeting=true`
+```bash
+bash scripts/ci.sh
+```
 
-If uncertain about impact, run full repository validation:
+Record the commands, results, and any unverified platform/service requirements in the PR.
+GitHub Actions is the authoritative integration result. Follow
+[CI/CD ownership](../engineering/ci-cd-optimization.md) and investigate required-check failures;
+a selected local test project is not the full repository gate.
 
-- `dotnet restore Meridian.sln /p:EnableWindowsTargeting=true`
-- `dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true`
-- `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release /p:EnableWindowsTargeting=true`
-- `dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj -c Release /p:EnableWindowsTargeting=true`
 ### 4.4 Documentation and traceability
 
 - Behavior changes must include doc updates in same PR.
@@ -165,6 +170,9 @@ Exceptions are allowed only when documented in PR with:
 4. compensating controls,
 5. follow-up issue (if debt is introduced).
 
+This process does not authorize bypassing branch protection, required tests/checks, human governance
+review, or the prohibited actions in `AGENTS.md`.
+
 ---
 
 ## 10) Definition of Done (DoD)
@@ -172,10 +180,11 @@ Exceptions are allowed only when documented in PR with:
 A change is considered done when all are true:
 
 - Acceptance criteria are met.
-- Relevant build/tests pass.
+- Relevant build/tests and `bash scripts/ci.sh` pass.
 - Required docs updated.
 - Security/secret handling reviewed.
 - PR description includes scope, risks, validation.
+- The feature branch is pushed, a PR targets `main`, and required GitHub Actions checks pass.
 
 ---
 

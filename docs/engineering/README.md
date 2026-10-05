@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-09-28
+**Reviewed:** 2026-10-05
 
 This is the canonical developer and agent entrypoint for Meridian engineering and contribution work.
 It replaces hand-built planning and historical engineering prose with active operating guidance.
@@ -15,6 +15,8 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **Source ownership:** [Source registry](../source/README.md)
 - **Roadmap truth:** [Roadmap registry](../roadmap/README.md)
 - **Generated output rules:** [Documentation ownership](../documentation-ownership.md)
+- **Detailed implementation and tooling guides:** [Development](../development/README.md)
+- **Writing or moving docs:** [Documentation Contribution Guide](../development/documentation-contribution-guide.md)
 - **Dead-code cleanup inventory:** [Dead-Code Inventory](dead-code-inventory.md)
 - **Production readiness and test debt:** [Production Readiness Audit 2026-07-27](production-readiness-audit-2026-07-27.md)
 - **Security Master architecture audit:** [Security Master Architecture Audit 2026-08-13](security-master-architecture-audit-2026-08-13.md) *(dated source-evidence review; verify findings against current source)*
@@ -33,8 +35,8 @@ Use the source-module registry and source README workflow before changing code:
 - [Source module registry](../source/data/source-modules.yml) *(canonical for engineering ownership)*
 - [Source ownership and validation](../source/README.md) *(canonical ownership workflow)*
 - [Architecture](../architecture/README.md) *(canonical system design and rationale)*
-- [Module map](../architecture/module-map.md) *(legacy source material; verify against `source/data/source-modules.yml`)*
-- [Project structure](../architecture/project-structure.md) *(legacy source material)*
+- [Module map](../architecture/module-map.md) *(maintained boundary reference; module ownership is registered in `source/data/source-modules.yml`)*
+- [Project structure](../architecture/project-structure.md) *(maintained repository overview)*
 - [Live trading engine](live-trading-engine.md) *(promotion → execution loop: feed tap, strategy sessions, OMS routing)*
 - [ETL execution ownership](etl-execution-ownership.md) *(single-run admission, guarded publication, takeover, and commit ordering)*
 
@@ -103,9 +105,20 @@ python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian
 The runner serializes local validation, detects active repo-owned build/test/compiler processes,
 builds before testing to avoid stale `--no-build` assemblies, uses isolated `artifacts/bin` and
 `artifacts/obj` roots by default, and writes run evidence under `.ai/validation-runs/`.
+For repeated local edits, add `--profile worktree` or `--profile session:<name>` to a `build` or
+`test` command to reuse compatible restore/build outputs. Keep the same project, SDK, framework,
+configuration, runtime, and build properties for that profile; incompatible reuse fails before
+building. Every test invocation still gets a separate report directory. Omit the profile (the test
+default) or use `--fresh` for fresh isolated validation before handing off a change. Both build and
+test commands acquire the validation lock; the test command's `--allow-concurrent` flag only
+skips detection of external build processes and keeps the lock. See
+[persistent build profiles](../development/build-observability.md#persistent-build-profiles)
+for compatibility, retention, and reset details.
+
 Each normal run restores, builds once, then invokes `dotnet test --no-build --no-restore`.
 To explicitly reuse outputs, pass `--no-build --isolation-key <existing-key>` (the prior run's
-`isolationKey` in its evidence JSON), or `--no-build --no-isolation` for shared outputs.
+`isolationKey` in its evidence JSON), `--no-build --no-isolation` for shared outputs, or
+`--no-build --profile <profile>` after a successful compatible profile build.
 Reuse skips both restore and compilation and requires the same project, configuration, framework,
 runtime, and MSBuild properties used to produce the outputs. It does not check source freshness;
 rerun without `--no-build` after source changes or when outputs are missing or incompatible.

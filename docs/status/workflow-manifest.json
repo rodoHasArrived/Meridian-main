@@ -321,21 +321,31 @@
       ],
       "requiredPrerequisites": [
         "dotnet SDK with Windows targeting packs",
-        "PowerShell available"
+        "PowerShell available",
+        "Python 3 available for TRX evidence validation"
       ],
       "executionCommands": [
         {
           "shell": "pwsh",
           "command": "pwsh ./scripts/dev/build-ibapi-smoke.ps1 -Configuration Release"
+        },
+        {
+          "shell": "pwsh",
+          "command": "dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release -p:EnableWindowsTargeting=true -p:EnableIbApiSmoke=true -maxcpucount:1 --filter \"FullyQualifiedName~IBMarketDataClientRuntimeReconnectTests\" --logger \"trx;LogFileName=ibapi-runtime-reconnect.trx\" --results-directory artifacts/test-results/ibapi-smoke"
         }
       ],
       "expectedArtifacts": [
-        "artifacts/bin/ibapi-smoke"
+        "artifacts/test-results/ibapi-smoke/ibapi-runtime-reconnect.trx",
+        "artifacts/test-results/ibapi-smoke/test-evidence.json"
       ],
       "validationChecks": [
         {
           "name": "IBAPI smoke build script exists",
           "command": "test -f scripts/dev/build-ibapi-smoke.ps1"
+        },
+        {
+          "name": "Nonempty passing runtime reconnect TRX evidence",
+          "command": "python build/scripts/ci/validate-test-results.py --results-dir artifacts/test-results/ibapi-smoke --require-trx-prefix ibapi-runtime-reconnect --output artifacts/test-results/ibapi-smoke/test-evidence.json"
         }
       ],
       "artifactPolicy": {
@@ -347,7 +357,7 @@
           "retainLatest": 20
         },
         "canonicalOutputRoots": [
-          "artifacts/bin/ibapi-smoke"
+          "artifacts/test-results/ibapi-smoke"
         ],
         "driftChecks": {
           "enforceMissing": false,

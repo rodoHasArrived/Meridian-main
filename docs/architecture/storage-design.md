@@ -33,6 +33,17 @@ This document captures the Meridian storage architecture as it exists today, plu
 
 ---
 
+## Scope and Related Persistence
+
+This page focuses on the file-backed **market-data archive**. Its cloud, analysis, and online-storage
+roadmap language does not describe the whole platform's persistence posture. Governed operational
+records already use PostgreSQL stores; follow the [Database Schema reference](../reference/database-schema.md),
+[Storage source guide](../../src/Meridian.Storage/README.md), and
+[storage topology](diagrams/meridian-storage-topology.mmd) for those boundaries.
+
+Maintenance check 2026-10-05: clarified this document's scope without recertifying its historical
+implementation checklist or benchmarks.
+
 ## Table of Contents
 
 1. [Executive Summary](#executive-summary)

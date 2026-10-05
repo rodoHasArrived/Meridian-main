@@ -26,7 +26,6 @@ using Xunit;
 namespace Meridian.Tests.Integration.EndpointTests;
 
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class FundStructureEndpointTests : IClassFixture<FundStructureEndpointTestFixture>
 {
     private const string TestPassHash = "pbkdf2-sha256$210000$DdocJLRlUqhBZlBR8YAatA==$MpNJJHhFb6+it6jMKuIzwHtg9Lq/WehIjKrC1m6TRQU=";
@@ -63,10 +62,8 @@ public sealed class FundStructureEndpointTests : IClassFixture<FundStructureEndp
     [Fact]
     public async Task SetupDraftCreate_WithValidAccountingSession_CreatesStructureThroughSharedEndpointWorkflow()
     {
-        var originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
-        Environment.SetEnvironmentVariable(
-            "MDC_USERS",
-            $$"""[{"username":"fund-ops","passwordHash":"{{TestPassHash}}","role":"Accounting"}]""");
+        var originalUsers = _fixture.Configuration["MDC_USERS"];
+        _fixture.Configuration["MDC_USERS"] = $$"""[{"username":"fund-ops","passwordHash":"{{TestPassHash}}","role":"Accounting"}]""";
 
         try
         {
@@ -95,17 +92,15 @@ public sealed class FundStructureEndpointTests : IClassFixture<FundStructureEndp
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERS", originalUsers);
+            _fixture.Configuration["MDC_USERS"] = originalUsers;
         }
     }
 
     [Fact]
     public async Task SetupDraftCreate_WithReadOnlySession_ReturnsForbidden()
     {
-        var originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
-        Environment.SetEnvironmentVariable(
-            "MDC_USERS",
-            $$"""[{"username":"read-only","passwordHash":"{{TestPassHash}}","role":"ReadOnly"}]""");
+        var originalUsers = _fixture.Configuration["MDC_USERS"];
+        _fixture.Configuration["MDC_USERS"] = $$"""[{"username":"read-only","passwordHash":"{{TestPassHash}}","role":"ReadOnly"}]""";
 
         try
         {
@@ -126,7 +121,7 @@ public sealed class FundStructureEndpointTests : IClassFixture<FundStructureEndp
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERS", originalUsers);
+            _fixture.Configuration["MDC_USERS"] = originalUsers;
         }
     }
 

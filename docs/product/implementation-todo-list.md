@@ -5,7 +5,7 @@
 **Reviewed:** 2026-10-02 (registry inventory and review-comment reconciliation; historical evidence retains its recorded dates)
 **Baseline:** registry inventory reconciled at `main` commit `a9f02daedfe798484ee1297b75411b4edf388385`; the historical certification baseline remains `8123e84798ffc3df2689245bc9dedf5bced28ef8`; production readiness remains blocked pending passing certification on the final release commit, operator review, signed release evidence, and required GitHub Actions activation
 **Previous production audit:** `f0ac384a2` on 2026-07-11
-**Sources:** [Meridian Design Document (Version 1.0)](meridian-design-document.md), [Program State](../roadmap/data/program-state.yml), [Roadmap Registry](../roadmap/data/roadmap-items.yml), and the live source, test, workflow, deployment, security, and operator surfaces named below
+**Sources:** [Meridian Design Document](meridian-design-document.md), [Program State](../roadmap/data/program-state.yml), [Roadmap Registry](../roadmap/data/roadmap-items.yml), and the live source, test, workflow, deployment, security, and operator surfaces named below
 
 This is Meridian's single active implementation list for turning the existing program into a supported production release. Roadmap rows marked `done` prove bounded product capabilities; they do not by themselves certify security, correctness, durability, operability, packaging, or recovery. Detailed product rationale remains in the design document, and roadmap status remains in the roadmap registry.
 
@@ -665,3 +665,24 @@ last. Failed attempts remove only their owned paths and retain previously publis
 Tenant quotas, aggregate package reservations, retention policy and broader document-runtime
 ownership remain open PRD-105 work. Focused regression results are retained with the change; this
 receipt does not close the parent item.
+
+### Partial PRD-105 storage quotas - 2026-10-05
+
+Evidence Vault intake/export now uses configurable artifact/package/count limits, tenant budgets
+across company scopes, and disk-headroom checks. `Meridian.Documents` owns admission policy and
+durable reservations; the shared vault adapter supplies retained usage and attempt-specific
+publication/recovery. Capacity is reserved before intake/export writes, extended before growth,
+and reconciled against actual artifact, UTF-8 manifest, and index bytes. Shared-root filesystem
+locks serialize admission/publication, while lifetime leases prevent reclaiming live operations.
+The next write recovers abandoned attempts; failed cleanup retains its capacity charge. Streaming
+copy, index-last publication, and preservation of published evidence remain intact.
+
+Configuration and defaults are documented in `src/Meridian.Documents/README.md`. Regression
+coverage is added in `EvidenceStorageQuotaCoordinatorTests`,
+`FileEvidenceArtifactStoreQuotaTests`, and `FileEvidenceArtifactStoreBufferedQuotaTests` for
+concurrent near-limit requests, underestimated sources, disk pressure, cancellation/retry,
+actual-byte reconciliation, and restart recovery. Focused validation on implementation commit
+`fb7fe807d` passed 162 tests with zero skips. Broader local CI and required hosted checks remain
+pending and are tracked in [PR #3071](https://github.com/rodoHasArrived/Meridian-main/pull/3071).
+Retention policy, broader document-runtime ownership, and quota admission for document-review
+metadata rewrites remain open; the parent PRD-105 item is not closed by this slice.

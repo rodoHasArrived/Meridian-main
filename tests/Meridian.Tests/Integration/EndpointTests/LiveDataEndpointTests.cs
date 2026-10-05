@@ -12,7 +12,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// These endpoints expose real-time trade, quote, and order book data.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class LiveDataEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     // W9-GOV-008: the /api/data reads serve live market data and now require ViewMarketData, the

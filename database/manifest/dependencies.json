@@ -928,6 +928,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.IProviderCatalog"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.IProviderInstrumentCapabilityMatrixService"
     },
     {
@@ -1613,6 +1619,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.RunCertificationRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.RuntimeProviderCatalog"
     },
     {
       "kind": "contract-set-member",
@@ -12214,6 +12226,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountProofDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountProofEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.LedgerAmountProvenanceDetailDto"
     },
     {
@@ -12239,6 +12263,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.LedgerAmountReportUsageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountScopeDto"
     },
     {
       "kind": "contract-set-member",
@@ -14213,6 +14243,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.RestatementCandidateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.RetainedLedgerAmountDto"
     },
     {
       "kind": "contract-set-member",
@@ -18551,6 +18587,12 @@
       "label": "",
       "source": "contract-set:identity-access-contracts",
       "target": "contract:Meridian.Identity.Auth.UserSessionRevokeResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:identity-access-contracts",
+      "target": "contract:Meridian.Identity.AuthenticationConfiguration"
     },
     {
       "kind": "contract-set-member",
@@ -23615,6 +23657,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Api.RoutePreviewResponse",
       "target": "contract:Meridian.Contracts.Api.RoutePreviewCandidateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Api.RuntimeProviderCatalog",
+      "target": "contract:Meridian.Contracts.Api.IProviderCatalog"
     },
     {
       "kind": "contract-reference",
@@ -33526,6 +33574,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.EvidencePacketDto",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountProofDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.EvidencePacketDto",
       "target": "contract:Meridian.Contracts.Workstation.WorkflowActionDto"
     },
     {
@@ -34551,6 +34605,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.FundReportPackLineagePointerDto",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.FundReportPackPreviewDto",
       "target": "contract:Meridian.Contracts.Workstation.FundReportAssetClassSectionDto"
     },
@@ -34583,6 +34643,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.FundReportPackProvenanceDto",
       "target": "contract:Meridian.Contracts.Workstation.FundReportPackLineagePointerDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.FundReportPackProvenanceDto",
+      "target": "contract:Meridian.Contracts.Workstation.RetainedLedgerAmountDto"
     },
     {
       "kind": "contract-reference",
@@ -35091,6 +35157,36 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.LedgerAmountProofDto",
+      "target": "contract:Meridian.Contracts.Workstation.EvidenceStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.LedgerAmountProofDto",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountProofEvidenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.LedgerAmountProofDto",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.LedgerAmountProofEvidenceDto",
+      "target": "contract:Meridian.Contracts.Workstation.EvidenceStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.LedgerAmountProvenanceDetailDto",
+      "target": "contract:Meridian.Contracts.Workstation.EvidenceStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.LedgerAmountProvenanceDetailDto",
       "target": "contract:Meridian.Contracts.Workstation.LedgerAmountApprovalStateDto"
     },
@@ -35111,6 +35207,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.LedgerAmountProvenanceDetailDto",
       "target": "contract:Meridian.Contracts.Workstation.LedgerAmountReportUsageDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.LedgerAmountProvenanceDetailDto",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountScopeDto"
     },
     {
       "kind": "contract-reference",
@@ -38201,6 +38303,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.RestatementCandidateDto",
       "target": "contract:Meridian.Contracts.Workstation.ReportPackChangedLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.RetainedLedgerAmountDto",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountScopeDto"
     },
     {
       "kind": "contract-reference",
@@ -47581,7 +47689,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "0c934d6e4202f71b35ddafbbba264492aa84b3fc81d53cba1661c914e3a9f6b4",
+  "fingerprint": "fa918b025a529aef87400dca603fec69e4cc406c46c7f63281f177be35c598ad",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -48560,6 +48668,12 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Api.IProviderCatalog",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.IProviderCatalog"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.Api.IProviderInstrumentCapabilityMatrixService",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Api.IProviderInstrumentCapabilityMatrixService"
@@ -49247,6 +49361,12 @@
       "id": "contract:Meridian.Contracts.Api.RunCertificationRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Api.RunCertificationRequest"
+    },
+    {
+      "classification": "catalog",
+      "id": "contract:Meridian.Contracts.Api.RuntimeProviderCatalog",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.RuntimeProviderCatalog"
     },
     {
       "classification": "response",
@@ -59846,6 +59966,18 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.LedgerAmountProofDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.LedgerAmountProofDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.LedgerAmountProofEvidenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.LedgerAmountProofEvidenceDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.LedgerAmountProvenanceDetailDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.LedgerAmountProvenanceDetailDto"
@@ -59873,6 +60005,12 @@
       "id": "contract:Meridian.Contracts.Workstation.LedgerAmountReportUsageDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.LedgerAmountReportUsageDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.LedgerAmountScopeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.LedgerAmountScopeDto"
     },
     {
       "classification": "dto",
@@ -61847,6 +61985,12 @@
       "id": "contract:Meridian.Contracts.Workstation.RestatementCandidateDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.RestatementCandidateDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.RetainedLedgerAmountDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.RetainedLedgerAmountDto"
     },
     {
       "classification": "request",
@@ -64013,6 +64157,12 @@
       "id": "contract:Meridian.Identity.Auth.UserSessionRevokeResultDto",
       "kind": "contract-type",
       "label": "Meridian.Identity.Auth.UserSessionRevokeResultDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Identity.AuthenticationConfiguration",
+      "kind": "contract-type",
+      "label": "Meridian.Identity.AuthenticationConfiguration"
     },
     {
       "classification": "enum",
@@ -69732,11 +69882,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3127,
-    "contract_set_memberships": 3699,
-    "edges": 7905,
+    "contract_references": 3138,
+    "contract_set_memberships": 3706,
+    "edges": 7923,
     "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3839
+    "nodes": 3846
   }
 }

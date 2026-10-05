@@ -560,7 +560,7 @@ Use this generated snapshot when validating docs automation and workflow drift.
 | `provider-validation-wave1` | Provider credentials configured for Wave 1 adapters; PowerShell available | provider validation summary exists |
 | `operator-inbox-route-validation` | dotnet SDK with Windows targeting packs; PowerShell available | operator inbox route artifact directory exists |
 | `provider-validation-evidence-bundle` | Provider credentials configured for Wave 1 adapters; PowerShell available | provider evidence bundle output exists |
-| `ibapi-smoke-build` | dotnet SDK with Windows targeting packs; PowerShell available | IBAPI smoke build script exists |
+| `ibapi-smoke-build` | dotnet SDK with Windows targeting packs; PowerShell available; Python 3 available for TRX evidence validation | IBAPI smoke build script exists; Nonempty passing runtime reconnect TRX evidence |
 | `wpf-route-validation-position-blotter` | dotnet SDK with Windows targeting packs; PowerShell available | position blotter route artifact directory exists |
 | `wpf-dev-loop-validation` | dotnet SDK with Windows targeting packs; PowerShell available | WPF dev-loop validation artifacts produced |
 | `targeted-test` | Branch pushed to GitHub; GitHub CLI authenticated or manual Actions UI access; Curated Targeted Test mode selected; Repo-relative .NET test project under tests/ and specific filter when mode=dotnet-filtered; windows-latest runner when running WPF or desktop modes | Targeted Test workflow exists; Targeted Test validates curated modes |

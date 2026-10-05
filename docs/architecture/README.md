@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-07-19
+**Reviewed:** 2026-10-05
 **Scope:** Engineering
 **Review Cadence:** Quarterly or when significant architectural decisions are made
 
@@ -11,6 +11,14 @@
 ## Purpose
 
 This directory contains documentation about the system's design, architectural decisions, and structural patterns. It is the authoritative source for understanding _how_ the system is built and _why_ key design choices were made.
+
+Start with [Overview](overview.md) and [Module Map](module-map.md) for system orientation,
+[Layer Boundaries](layer-boundaries.md) before changing dependencies, and the
+[Domain Dictionary](../domain/README.md) for business terminology. The [source registry](../source/README.md)
+and owning source README establish implemented behavior; a specification or dated review alone does
+not establish delivery status. Use [Product](../product/README.md) for roadmap and release evidence.
+
+This index's review covers navigation and document scope. Dated reviews retain their own evidence dates.
 
 ---
 
@@ -49,15 +57,15 @@ This directory contains documentation about the system's design, architectural d
 | [Design Module Conformance](design-module-conformance.md) | Maps the design document's bounded-context modules to current source owners and staged extraction rules |
 | [MVVM Guidelines](mvvm-guidelines.md) | Browser workstation and WPF desktop view-model boundaries |
 | [Layer Boundaries](layer-boundaries.md) | Project dependency rules and enforcement |
-| [Storage Design](storage-design.md) | Tiered storage pipeline and WAL design |
+| [Storage Design](storage-design.md) | File-backed market-data archive, tiering, pipeline, and WAL design; operational database ownership is separate |
 | [Storage Topology Diagram](diagrams/meridian-storage-topology.mmd) | File-backed and PostgreSQL durable stores, control services, and their consumers |
 | [Deterministic Canonicalization](deterministic-canonicalization.md) | Data normalization and deduplication |
 | [Desktop Layers](desktop-layers.md) | WPF desktop application architecture |
 | [Why This Architecture](why-this-architecture.md) | Design rationale and tradeoffs |
 | [Provider Management](provider-management.md) | Provider abstraction and failover |
 | [Provider Integration Manifest Runtime](provider-integration-manifest-runtime.md) | No-code provider integration manifests, generic connector runtime, raw payload retention, mapping, validation, quarantine, and certified trading boundary |
-| [Domain Boundaries](domains.md) | Domain model responsibilities |
-| [Security Master Extensibility Review](security-master-extensibility-review.md) | Cross-asset extensibility assessment of the Security Master: asset model normalization, identifier resolution, projection coverage, provenance depth, editable-workflow reach, and refactoring priorities |
+| [Market-Data Runtime Contracts](domains.md) | Collector event envelopes, payloads, and source attribution; use the Domain Dictionary for business concepts |
+| [Security Master Extensibility Review](security-master-extensibility-review.md) | Dated cross-asset assessment and source-evidence addenda; recheck each finding against current source before acting |
 | [Security Master Identifier Conflict Detection](security-master-identifier-conflict-detection.md) | Canonical identifier equality, validity-window overlap, complete claimant-pair detection, and indexed rebuild behavior |
 | [Security-Identified Open-Lot Convergence Blueprint](../engineering/blueprints/security-lot-convergence-blueprint.md) | Target contract and staged migration for SecurityId-keyed unit/face lots, acquisition FX, relief, amortization, and corporate-action continuity |
 | [C4 Diagrams Reference](c4-diagrams.md) | C4 views plus the runtime, workstation, Security Master, and fund-ops diagram catalog |
@@ -73,6 +81,10 @@ This directory contains documentation about the system's design, architectural d
 | [Workflow Library](workflow-library.md) | Reusable workstation workflow and action registry architecture |
 | [Evidence Workflow Fabric](evidence-workflow-fabric.md) | Cross-workflow evidence packets, lineage, validation, and manifest-only export architecture |
 | [Reporting Workstation Model](reporting-workstation-model.md) | Reporting production pipeline, controlled state vocabularies, reporting period, health gates, and change-since-review |
+| [Runtime Component State Boundaries](runtime-component-state-boundaries.md) | Stateful host responsibilities, recovery boundaries, and prerequisites for service extraction or scaling |
+| [Operator Observability Dashboard](operator-observability-dashboard.md) | Dashboard design targets; deployed thresholds remain owned by the SLO registry and alert rules |
+| [Write-Path Invariants](write-path-invariants.md) | Required versioning, idempotency, transaction, and evidence boundaries for operator-critical writes |
+| [Workstation Continuity Payload Profile](workstation-continuity-payload-profile.md) | Shared ledger, reconciliation, and strategy continuity contracts and compatibility tests |
 | [Stakeholder Product Charter](../product/meridian-design-document.md) | Product-facing strategy and capability model used for current direction framing |
 | [Trading Workstation Migration Blueprint (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/trading-workstation-migration-blueprint.md) | Historical migration model retained for reference; active architecture execution posture is now under canonical product/engineering documentation |
 | [Current Direction and Status (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/current-direction-and-status.md) | Historical planning interpretation retained for context; active direction now in `docs/product/` |
