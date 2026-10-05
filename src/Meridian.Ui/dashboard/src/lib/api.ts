@@ -767,7 +767,7 @@ export async function getJson<T>(path: string, options: ApiRequestOptions = {}):
 const developmentFallbackStatuses = new Set([404, 500, 502, 503, 504]);
 
 async function getDevelopmentFallback<T>(path: string, status: number): Promise<T | undefined> {
-  if (!allowsLegacyDevelopmentFallback() || !developmentFallbackStatuses.has(status)) {
+  if (!import.meta.env.DEV || import.meta.env.VITE_MERIDIAN_DEV_MODE || !developmentFallbackStatuses.has(status)) {
     return undefined;
   }
 
@@ -980,17 +980,12 @@ async function readResponseErrorBody(response: Response): Promise<string> {
 }
 
 async function getDevelopmentSearchFallback(query: string, take: number, activeOnly: boolean) {
-  if (!allowsLegacyDevelopmentFallback()) {
+  if (!import.meta.env.DEV || import.meta.env.VITE_MERIDIAN_DEV_MODE) {
     return undefined;
   }
 
   const { searchDevSecurityMasterEntries } = await import("@/lib/dev-fixtures");
   return searchDevSecurityMasterEntries(query, take, activeOnly);
-}
-
-function allowsLegacyDevelopmentFallback(): boolean {
-  // Explicit modes are resolved by Vite: connected failures and unsupported fixtures stay visible.
-  return import.meta.env.DEV && !import.meta.env.VITE_MERIDIAN_DEV_MODE;
 }
 
 export function getAdminMaintenanceSchedule(options: ApiRequestOptions = {}) {
