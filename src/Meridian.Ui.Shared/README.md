@@ -11,6 +11,11 @@ last_reviewed: 2026-10-05
 
 # src/Meridian.Ui.Shared
 
+Shared endpoint composition accepts an explicit `IConfiguration` for authentication, persistence,
+rate limiting and LEAN settings. Each host retains its own provider catalog and LEAN result records;
+fixture hosts can coexist without publishing configuration or endpoint state to the process.
+Omitting configuration retains the production environment-based startup contract.
+
 `ReportingIncomeComparisonService` and the `/api/fund-structure/reporting/comparisons` endpoints
 provide explicit baseline/current retained-run selection, including governed original/restated
 publication labels. Candidate discovery pages through retained history and applies both tenant and

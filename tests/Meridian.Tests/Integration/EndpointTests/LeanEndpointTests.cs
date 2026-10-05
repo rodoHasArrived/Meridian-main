@@ -13,7 +13,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// sync and backtest lifecycle routes, auto-export, results ingestion, and symbol mapping.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     // The Lean reads expose the deployment's Lean install path, its algorithm source listing, and

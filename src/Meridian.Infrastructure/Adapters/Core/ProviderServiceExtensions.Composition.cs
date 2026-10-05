@@ -176,6 +176,13 @@ public static partial class ProviderServiceExtensions
                 id => GetMergedProviderCatalogEntry(providers, sp.GetServices<IOptionsChainProvider>(), id, pluginInventory));
             return providers;
         });
+        services.TryAddSingleton<IProviderCatalog>(sp =>
+        {
+            var providers = sp.GetRequiredService<ProviderRegistry>();
+            return new RuntimeProviderCatalog(
+                () => BuildMergedProviderCatalog(providers, sp.GetServices<IOptionsChainProvider>(), pluginInventory),
+                id => GetMergedProviderCatalogEntry(providers, sp.GetServices<IOptionsChainProvider>(), id, pluginInventory));
+        });
         services.AddSingleton<IEnumerable<IHistoricalDataProvider>>(sp =>
             sp.GetRequiredService<ProviderRegistry>().GetProviders<IHistoricalDataProvider>());
         services.AddSingleton<IEnumerable<ISymbolSearchProvider>>(sp =>

@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Meridian.Identity.Auth;
 using System.Text.Json;
 using Meridian.Contracts.Api;
@@ -10,6 +11,7 @@ using Meridian.Storage.Replay;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -19,10 +21,10 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// </summary>
 public static class ReplayEndpoints
 {
-    private static readonly Dictionary<string, ReplaySession> s_sessions = new(StringComparer.OrdinalIgnoreCase);
-
     public static void MapReplayEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        var scans = app.Services.GetRequiredService<ReplayScanLifetime>();
+        var sessions = new ConcurrentDictionary<string, ReplaySession>(StringComparer.OrdinalIgnoreCase);
         var group = app.MapGroup("").WithTags("Replay");
 
         // List replay files - scans actual storage directory
@@ -78,10 +80,11 @@ public static class ReplayEndpoints
             var sessionId = Guid.NewGuid().ToString("N")[..12];
             var session = new ReplaySession(sessionId, resolvedFilePath, req.SpeedMultiplier ?? 1.0);
 
-            // Start background event counting
-            session.StartEventCounting();
+            // The host tracks readers through shutdown before releasing its owned data files.
+            if (!session.StartEventCounting(scans))
+                return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
 
-            s_sessions[sessionId] = session;
+            sessions[sessionId] = session;
 
             return Results.Json(new
             {
@@ -100,7 +103,7 @@ public static class ReplayEndpoints
         // Pause replay
         group.MapPost(UiApiRoutes.ReplayPause, (string sessionId) =>
         {
-            if (!s_sessions.TryGetValue(sessionId, out var session))
+            if (!sessions.TryGetValue(sessionId, out var session))
                 return Results.NotFound(new { error = $"Session '{sessionId}' not found" });
 
             session.Status = "paused";
@@ -114,7 +117,7 @@ public static class ReplayEndpoints
         // Resume replay
         group.MapPost(UiApiRoutes.ReplayResume, (string sessionId) =>
         {
-            if (!s_sessions.TryGetValue(sessionId, out var session))
+            if (!sessions.TryGetValue(sessionId, out var session))
                 return Results.NotFound(new { error = $"Session '{sessionId}' not found" });
 
             session.Status = "running";
@@ -128,7 +131,7 @@ public static class ReplayEndpoints
         // Stop replay - cancels and cleans up the session
         group.MapPost(UiApiRoutes.ReplayStop, (string sessionId) =>
         {
-            if (!s_sessions.Remove(sessionId, out var session))
+            if (!sessions.TryRemove(sessionId, out var session))
                 return Results.NotFound(new { error = $"Session '{sessionId}' not found" });
 
             session.Cancel();
@@ -142,7 +145,7 @@ public static class ReplayEndpoints
         // Seek replay
         group.MapPost(UiApiRoutes.ReplaySeek, (string sessionId, SeekRequest req) =>
         {
-            if (!s_sessions.TryGetValue(sessionId, out var session))
+            if (!sessions.TryGetValue(sessionId, out var session))
                 return Results.NotFound(new { error = $"Session '{sessionId}' not found" });
 
             return Results.Json(new { sessionId, positionMs = req.PositionMs, status = session.Status }, jsonOptions);
@@ -155,7 +158,7 @@ public static class ReplayEndpoints
         // Set replay speed
         group.MapPost(UiApiRoutes.ReplaySpeed, (string sessionId, SpeedRequest req) =>
         {
-            if (!s_sessions.TryGetValue(sessionId, out var session))
+            if (!sessions.TryGetValue(sessionId, out var session))
                 return Results.NotFound(new { error = $"Session '{sessionId}' not found" });
 
             session.Speed = req.SpeedMultiplier;
@@ -169,7 +172,7 @@ public static class ReplayEndpoints
         // Get replay status - returns actual event count and progress
         group.MapGet(UiApiRoutes.ReplayStatus, (string sessionId) =>
         {
-            if (!s_sessions.TryGetValue(sessionId, out var session))
+            if (!sessions.TryGetValue(sessionId, out var session))
                 return Results.NotFound(new { error = $"Session '{sessionId}' not found" });
 
             var progress = session.TotalEvents > 0
@@ -287,8 +290,8 @@ public static class ReplayEndpoints
 
             return Results.Json(new
             {
-                activeSessions = s_sessions.Count,
-                sessions = s_sessions.Values.Select(s => new
+                activeSessions = sessions.Count,
+                sessions = sessions.Values.Select(s => new
                 {
                     sessionId = s.SessionId,
                     status = s.Status,
@@ -368,18 +371,17 @@ public static class ReplayEndpoints
         /// Uses an async method directly instead of Task.Run to avoid wasting thread pool
         /// threads on I/O-bound work.
         /// </summary>
-        public void StartEventCounting()
-        {
-            _ = CountEventsAsync();
-        }
+        public bool StartEventCounting(ReplayScanLifetime scans)
+            => scans.TryStart(CountEventsAsync);
 
-        private async Task CountEventsAsync(CancellationToken ct = default)
+        private async Task CountEventsAsync(CancellationToken stoppingToken)
         {
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token, stoppingToken);
             try
             {
                 var replayer = new JsonlReplayer(FilePath);
                 long count = 0;
-                await foreach (var _ in replayer.ReadEventsAsync(_cts.Token))
+                await foreach (var _ in replayer.ReadEventsAsync(linked.Token))
                 {
                     count++;
                     EventsProcessed = count;
