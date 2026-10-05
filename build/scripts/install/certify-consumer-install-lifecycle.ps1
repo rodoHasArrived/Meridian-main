@@ -86,7 +86,9 @@ function Invoke-Executable {
         }
         if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
             $process.Kill($true)
-            $process.WaitForExit()
+            if (-not $process.WaitForExit(10000)) {
+                throw "$(Split-Path -Leaf $Path) exceeded the execution deadline and did not terminate within the cleanup deadline."
+            }
             throw "$(Split-Path -Leaf $Path) exceeded the execution deadline."
         }
         $output = ""
