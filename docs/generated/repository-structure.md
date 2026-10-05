@@ -2242,6 +2242,20 @@ Meridian-main
 │   │   │   ├── soc2-evidence-calendar.md
 │   │   │   ├── soc2-roadmap.md
 │   │   │   └── soc2-scope.md
+│   │   ├── evidence
+│   │   │   └── 2026-10-05-dependency-certification
+│   │   │       ├── braces-advisory-source.json
+│   │   │       ├── braces-bounded-reachability.json
+│   │   │       ├── dependency-source-evidence.json
+│   │   │       ├── hosted-npm-audit-gate.json
+│   │   │       ├── hosted-npm-audit.json
+│   │   │       ├── hosted-nuget-vulnerabilities.txt
+│   │   │       ├── manifest.json
+│   │   │       ├── npm-audit-gate.json
+│   │   │       ├── npm-audit-production.json
+│   │   │       ├── npm-audit.json
+│   │   │       ├── npm-graph.json
+│   │   │       └── upstream-registry-metadata.json
 │   │   ├── codex-security-remediation-2026-05-20.md
 │   │   ├── known-vulnerabilities.md
 │   │   ├── README.md
