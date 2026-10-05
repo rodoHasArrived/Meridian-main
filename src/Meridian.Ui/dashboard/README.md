@@ -11,6 +11,15 @@ last_reviewed: 2026-09-02
 
 # src/Meridian.Ui/dashboard
 
+Reporting run status and governed run detail expose an investment-income comparison over two
+explicit retained run identities. Baseline options distinguish originally published and restated
+results. The shared service retains the manifests, snapshot diff, explanation, and supporting
+records; the browser never reattributes from live journals. Period, population, accounting basis,
+currency, unsupported residuals, and incompatibility remain visible. Each contribution opens its
+retained record in the shared accessible sheet. `incomeComparison` and `incomeContribution`
+query parameters preserve the comparison and drill-through across reloads; selection parameters
+retain both runs and the measure. Authoritative requests disable development fallback.
+
 Accounting's draft queue reads retained recurring occurrences through the shared scoped
 `/api/ledger/journal-automation/recurring/occurrences` contract. Rows retain schedule/template
 versions, draft identity, human approval status and source evidence references. Blocked rows

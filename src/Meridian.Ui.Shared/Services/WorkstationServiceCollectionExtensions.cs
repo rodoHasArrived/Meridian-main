@@ -792,6 +792,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ReportingRunReadinessService>();
         services.TryAddSingleton<ReportingRunCertificationService>();
         services.TryAddSingleton<ReportingRunCommandService>();
+        services.TryAddSingleton<ReportingIncomeComparisonService>();
         services.TryAddSingleton(sp =>
             new ReportingScheduleService(
                 sp.GetRequiredService<IReportingOrchestrationService>(),
