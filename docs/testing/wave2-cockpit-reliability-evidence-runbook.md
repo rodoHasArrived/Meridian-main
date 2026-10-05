@@ -1,6 +1,9 @@
 # Wave 2 Cockpit Reliability Evidence Runbook
 
-**Last Reviewed:** 2026-05-18  
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-10-05
+**Original scope:** 2026-05-18 reliability sprint
 **Scope:** Paper-trading cockpit reliability sprint execution evidence for replay, session continuity,
 risk/control explainability, and promotion traceability.
 
@@ -13,6 +16,15 @@ evidence packet that proves:
 2. session state survives restart with order/ledger continuity,
 3. risk/control evidence remains explainable, and
 4. promotion decisions remain trace-complete and durable.
+
+## Prerequisites and execution context
+
+Use the SDK in [global.json](../../global.json), Bash or PowerShell, and the repository root for
+the test command. For the manual sequence, prepare a designated non-production paper workspace,
+a reviewed backtest, and an authenticated operator session with the necessary execution and
+read permissions. Follow [operator preflight](../operators/preflight-checklist.md) to start the
+host in one terminal and authenticate requests in another. Retain the same tenant, account, and
+session scope across each request; a bare API key does not supply an operator session.
 
 ## Required Test Evidence (Automated)
 
@@ -54,3 +66,15 @@ For each run date (`YYYY-MM-DD`), archive:
 - readiness payload snapshots for stale and recovered states,
 - operator-inbox snapshot for blocker alignment and routing/sign-off detail evidence,
 - short narrative stating whether all four Wave 2 reliability gates are pass/review/blocked.
+
+## Expected results and recovery
+
+The focused tests must execute and pass; record skips or missing tests as incomplete evidence.
+The replay sequence must show the stale blocker appearing and then clearing after verification.
+Capture restart/restore continuity and promotion/risk evidence separately before declaring all
+four gates satisfied; replay recovery alone does not prove them.
+
+For 401/403 responses, repair the operator login, role, or scope using preflight. For a failed
+replay or restart, retain the session ID, logs, readiness payload, and audit references before
+retrying. Reopen the same paper session and diagnose the mismatch; do not replace the evidence
+with a new session or remove a blocker by disabling its gate. Mark unresolved criteria blocked.

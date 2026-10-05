@@ -2,7 +2,14 @@
 
 **Last Updated:** 2026-05-22
 
-Meridian is a modular, event-driven trading platform that is being productized as an evidence-backed investment operations system. The architecture already supports ingestion, storage, replay, backtesting, export, portfolio, ledger, WPF desktop workflows, and a browser dashboard. The current roadmap extends that baseline into a connected product where trusted data, research, paper validation, books, reconciliation, approvals, and governed reports share one evidence chain.
+Meridian is a modular operational-finance platform with shared ingestion, storage, replay,
+backtesting, portfolio, ledger, reconciliation, and reporting modules. Active browser and WPF
+workstations consume common contracts and services. The [design charter](../product/meridian-design-document.md)
+owns product scope; [source documentation](../source/README.md) records implementation ownership,
+and [Product](../product/README.md) routes delivery and release-readiness questions.
+
+Maintenance check 2026-10-05: this overview's module and workstation framing was aligned with
+current source ownership. Earlier roadmap language below does not establish release certification.
 
 ## Current Direction
 
@@ -48,7 +55,7 @@ This layer is primarily C# and acts as the product orchestration boundary.
 - market-event and validation logic
 - strategy and run semantics
 - portfolio and ledger rules
-- future reconciliation, projection, and policy logic
+- reconciliation, projection, and policy rules in their owning domain modules
 
 This is where Meridian should concentrate financial correctness and deterministic transformations.
 
@@ -85,11 +92,14 @@ Examples of existing areas the plan builds on:
 - `src/Meridian.FSharp/`
 - `src/Meridian.Wpf/`
 
-Security Master already has meaningful anchors in contracts, application, storage, migrations, and F# domain modules. The governance plan layers new workstation-facing services and projections on top of those existing modules rather than introducing a separate subsystem.
+Security Master, accounting, reconciliation, and reporting have implemented source owners. Extend
+those shared contracts and services rather than creating per-workstation financial state.
 
 ## Planned Accounting And Governance-Control Expansion
 
-The active accounting and governance-control blueprint adds first-class product workflows for:
+This heading is retained for older links. The original expansion topics now span implemented
+modules and further planned work; they are not all future capabilities. Consult the owning source
+guides and roadmap rows for each bounded workflow:
 
 - Security Master
 - account and entity management foundations
@@ -100,9 +110,12 @@ The active accounting and governance-control blueprint adds first-class product 
 - report generation and report packs
 - investor reporting
 
-These capabilities are intended to live inside the canonical `Accounting` workspace and shared
-product model, with governance controls expressed as policy and evidence workflows rather than a
-separate visible root workspace.
+Accounting and reporting use their canonical workspaces and shared product model; governance
+controls remain policy and evidence workflows rather than a separate root workspace. Follow
+[Financial Operations](../../src/Meridian.FinancialOperations/README.md),
+[Ledger](../../src/Meridian.Ledger/README.md),
+[Reporting](../../src/Meridian.Reporting/README.md), and the
+[Module Map](module-map.md) for current ownership. The roadmap registry owns acceptance status.
 
 ## Related Documents
 
