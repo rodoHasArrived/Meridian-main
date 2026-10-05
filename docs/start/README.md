@@ -54,6 +54,31 @@ dotnet run --project src/Meridian/Meridian.csproj -- --quickstart
 
 `--quickstart` delegates to the configuration pipeline and prepares the app for a local workstation launch. Use `config/appsettings.sample.json` as the template for local runtime configuration. Do not commit local `appsettings*.json`, secrets, provider credentials, logs, or generated data.
 
+### Dev Container
+
+Open the repository with VS Code **Reopen in Container** or GitHub Codespaces and wait for the
+creation hooks to finish. The [dev container](../../.devcontainer/devcontainer.json) uses Node.js 24
+to match browser CI and installs the root and dashboard dependencies from their lockfiles,
+including the optional native packages needed by Vite.
+
+Start browser development from the repository root:
+
+```bash
+npm run dev
+```
+
+This starts the seeded backend in watch mode and Vite together. For browser fixtures without a
+backend, use `npm run dev:fixtures`. See the [browser development launcher guide](../engineering/web-development.md)
+for modes, readiness checks, and shutdown behavior.
+
+Open `http://localhost:5173/workstation/` through the forwarded **Browser Workstation (Vite)** port.
+The existing host/API port 8080 and PostgreSQL port 5432 are also forwarded.
+Run a focused browser component test in another terminal; no additional dependency install is needed:
+
+```bash
+npm --prefix src/Meridian.Ui/dashboard run test -- src/components/ui/button.test.tsx
+```
+
 ## See It Working: One-Command Demo
 
 To evaluate Meridian end-to-end without wiring up providers or a database, seed a demo workspace and
