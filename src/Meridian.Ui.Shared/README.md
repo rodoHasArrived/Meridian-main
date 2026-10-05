@@ -2618,3 +2618,24 @@ domain-specific endpoint edits to the matching partial file.
 - `docs/reference/accounting-report-packs.md`
 - `docs/operators/governed-reporting-operations.md`
 - `docs/operators/statement-reconciliation-report-operations.md`
+
+
+### W10 posted amount proof
+
+Legacy `_vault` manifest routes normalize surrounding whitespace and alias casing before resolving
+the retained subject and its read permission. Reporting-only access cannot read ledger-amount
+manifests through a filesystem alias; the same canonical vault path applies on Windows and Linux.
+`PostedLedgerAmountProvenanceTests` covers allowed ledger reads and denied reporting reads for
+canonical, whitespace, uppercase, and mixed-case aliases.
+
+`PostedLedgerAmountProvenanceService` serves `ledger-amount` subjects through the existing evidence
+packet, graph, validation, and export routes. A subject is `{journalEntryId}:{entryId}:debit|credit`;
+requests must carry `fundProfileId`, `ledgerBookId`, and `periodId`. The host obtains tenant/company
+from the authenticated request and checks retained fund ownership, book, period, and posted entry.
+Only exact amount-scoped retained vault references with matching content digest, retention metadata,
+and accepted review become supporting evidence. Missing or stale support is review-required;
+ambiguous, changed, or foreign support is blocked. Broad evidence contributors do not run for this
+subject, so unrelated report, strategy, or reconciliation evidence cannot enter the packet.
+
+The legacy report amount service accepts only explicit retained amount IDs and fully scoped pointers;
+label-only manifests fail closed. See [validation and slice boundaries](../../docs/testing/w10-amount-provenance.md).
