@@ -4,11 +4,9 @@ param(
     [string]$OutputDirectory = "artifacts/consumer-setup",
     [string]$PostgreSqlPayloadRoot = $env:MDC_POSTGRES_PAYLOAD_ROOT,
 
-    # Each runtime bundled here needs a matching PostgreSQL server payload, and PostgreSQL
-    # publishes no Windows ARM64 server build. Callers therefore declare exactly what they can
-    # supply rather than the script assuming both and failing at the payload check.
+    # Every bundled runtime must have an approved payload. Only win-x64 is currently approved.
     [ValidateSet("win-x64", "win-arm64")]
-    [string[]]$Runtimes = @("win-x64", "win-arm64"),
+    [string[]]$Runtimes = @("win-x64"),
 
     [string]$SigningCertificate,
     [string]$SigningCertificatePassword
@@ -16,6 +14,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "windows-sdk-tools.ps1")
+. (Join-Path $PSScriptRoot "postgresql-payload.ps1")
 
 # $ErrorActionPreference does not apply to native exit codes, so a failing `dotnet publish` used to
 # continue silently and surface only as "Meridian-Setup.exe was not produced" - with the real
@@ -28,18 +27,29 @@ function Invoke-Checked {
     }
 }
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "../../..")).Path
-$outputRoot = Join-Path $repoRoot $OutputDirectory
+$outputRoot = [IO.Path]::GetFullPath((Join-Path $repoRoot $OutputDirectory))
 $payloadRoot = Join-Path $outputRoot "payload"
 if (-not $outputRoot.StartsWith($repoRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
     throw "OutputDirectory must resolve inside the repository."
 }
-Remove-Item -LiteralPath $outputRoot -Recurse -Force -ErrorAction SilentlyContinue
-New-Item -ItemType Directory -Path $payloadRoot -Force | Out-Null
-
 if ([string]::IsNullOrWhiteSpace($PostgreSqlPayloadRoot)) {
     throw "A runtime-specific PostgreSQL payload is required. Set -PostgreSqlPayloadRoot or MDC_POSTGRES_PAYLOAD_ROOT."
 }
 $postgresPayloadRoot = [IO.Path]::GetFullPath($PostgreSqlPayloadRoot)
+foreach ($pathPair in @(@($outputRoot, $postgresPayloadRoot), @($postgresPayloadRoot, $outputRoot))) {
+    if ($pathPair[0].TrimEnd([IO.Path]::DirectorySeparatorChar).Equals($pathPair[1].TrimEnd([IO.Path]::DirectorySeparatorChar), [StringComparison]::OrdinalIgnoreCase) -or
+        $pathPair[0].StartsWith($pathPair[1].TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'OutputDirectory and PostgreSqlPayloadRoot must not overlap.'
+    }
+}
+if ($Runtimes.Count -eq 0) { throw 'At least one approved PostgreSQL runtime is required.' }
+$approvalPath = Join-Path $repoRoot "build/config/postgresql-payload.json"
+# Fail before clearing output, invoking npm/dotnet, or packaging any runtime.
+foreach ($runtime in $Runtimes) {
+    $null = Assert-PostgreSqlPayload -PayloadRoot $postgresPayloadRoot -RuntimeIdentifier $runtime -ApprovalPath $approvalPath
+}
+Remove-Item -LiteralPath $outputRoot -Recurse -Force -ErrorAction SilentlyContinue
+New-Item -ItemType Directory -Path $payloadRoot -Force | Out-Null
 
 Push-Location (Join-Path $repoRoot "src/Meridian.Ui/dashboard")
 try {
@@ -55,12 +65,15 @@ foreach ($runtime in $Runtimes) {
     New-Item -ItemType Directory -Path $hostRoot, $desktopRoot -Force | Out-Null
 
     $runtimePostgresRoot = Join-Path $postgresPayloadRoot $runtime
-    if (-not (Test-Path (Join-Path $runtimePostgresRoot "bin\postgres.exe")) -or
-        -not (Test-Path (Join-Path $runtimePostgresRoot "bin\pg_ctl.exe")) -or
-        -not (Test-Path (Join-Path $runtimePostgresRoot "bin\initdb.exe"))) {
-        throw "The PostgreSQL payload for $runtime must contain bin\postgres.exe, bin\pg_ctl.exe, and bin\initdb.exe under $runtimePostgresRoot."
+    # Revalidate immediately before copying, then verify the packaged database bytes too.
+    $receiptPath = Assert-PostgreSqlPayload -PayloadRoot $postgresPayloadRoot -RuntimeIdentifier $runtime -ApprovalPath $approvalPath
+    Copy-Item -LiteralPath $runtimePostgresRoot -Destination (Join-Path $runtimeRoot "database") -Recurse -Force
+    $packagedFiles = @(Get-PostgreSqlPayloadFiles -PayloadPath (Join-Path $runtimeRoot "database"))
+    $receipt = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json
+    if ((Get-PostgreSqlPayloadHash -Files $packagedFiles) -cne $receipt.payloadSha256) {
+        throw "Packaged PostgreSQL payload hash mismatch for $runtime."
     }
-    Copy-Item -Path $runtimePostgresRoot -Destination (Join-Path $runtimeRoot "database") -Recurse -Force
+    Copy-Item -LiteralPath $receiptPath -Destination (Join-Path $outputRoot "consumer-setup-$runtime-postgresql-payload.json")
 
     Invoke-Checked "publish Meridian host ($runtime)" { dotnet publish (Join-Path $repoRoot "src/Meridian/Meridian.csproj") -c $Configuration -r $runtime --self-contained true -o $hostRoot }
     Invoke-Checked "publish Meridian.Wpf ($runtime)" { dotnet publish (Join-Path $repoRoot "src/Meridian.Wpf/Meridian.Wpf.csproj") -c $Configuration -r $runtime --self-contained true -o $desktopRoot /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None }
