@@ -21,6 +21,12 @@ This adds no persisted policy field or schema migration.
 
 Partial W10-LOT-002 amortization uses migration `V_ledger_040` and the existing atomic posting transaction. Period, Security Master, book-position and lot locks bind the reviewed state through commit. A CAS open-basis adjustment and zero-quantity append-only mutation preserve acquisition facts, tie exactly to the journal carrying movement, and replay without another journal or mutation. PostgreSQL reference stores must share the ledger database.
 
+Current-basis disposal follows with `V_ledger_041`; both migrations remain in their original order.
+AverageCost reporting certifies each canonical acquisition against its retained pre-relief pool,
+including the ordered evidence identities by value. Separately deserialized lists and evidence
+records with equal facts are accepted; changed source, hash, review, retention, subject, or sequence
+contents block canonical reporting. `CanonicalOpenLotConsumerTests` covers this certification boundary.
+
 The durable replacement resolver excludes relieved lot IDs only within the disposing account's
 complete identity. LedgerBook scope retains same-ID acquisitions in sibling accounts. Prior-deferral
 basis adjustments use that same full account identity (name, type, symbol and financial account ID),

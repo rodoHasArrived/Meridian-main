@@ -2,13 +2,16 @@
   "schemaVersion": "program-state-summary/v3",
   "programSource": "docs/roadmap/data/program-state.yml",
   "roadmapSource": "docs/roadmap/data/roadmap-items.yml",
-  "snapshotDate": "2026-09-26",
+  "snapshotDate": "2026-10-02",
   "program": {
     "id": "meridian-program",
     "title": "Meridian Evidence-Backed Investment Operations",
     "owner": "Core Team",
     "status": "active",
     "currentFocus": [
+      "For W10 roadmap selection, retain the registry sequence values and recorded dependencies; W10-MARK-001 is rank 1, W10-RECON-001 rank 2, W10-SEAM-001 rank 7, and W10-LOT-002 rank 12",
+      "Preserve the operator-session plan recorded in docs/product/plans/next-work-determination-2026-09-27.md; certify W10-SEAM-001 before W10-MARK-001, with W10-LOT-002 as a separate continuation",
+      "For the user-requested work queue only, complete W10-LOT-002, then W10-MARK-001, then W10-SEAM-001 before opening W10-RECON-001 in that queue; this priority override creates no roadmap prerequisite and does not change the operator-session plan",
       "Data confidence and retained source evidence",
       "Portfolio and accounting reconciliation",
       "Accounting records",
@@ -41,8 +44,8 @@
       "Priority": "critical",
       "Owner Lane": "Data Confidence and Validation",
       "Evidence Posture": "complete",
-      "Evidence": "docs/reference/provider-validation-matrix.md",
-      "Last Reviewed": "2026-05-20"
+      "Evidence": "docs/reference/provider-validation-matrix.md; docs/source/data/adapter-readiness.yml; docs/source/generated/adapter-readiness-matrix.md",
+      "Last Reviewed": "2026-09-28"
     },
     {
       "ID": "W2-PROMO-001",
@@ -367,7 +370,7 @@
       "Owner Lane": "Platform Security and Governance",
       "Evidence Posture": "in_progress",
       "Evidence": "",
-      "Last Reviewed": "2026-08-29"
+      "Last Reviewed": "2026-09-28"
     },
     {
       "ID": "W9-INGEST-009",
@@ -478,13 +481,13 @@
       "Wave": "W10",
       "Title": "Durable recurring journal schedules and draft runner",
       "Workspaces": "Accounting",
-      "Status": "planned",
+      "Status": "in_progress",
       "Health": "green",
       "Priority": "high",
       "Owner Lane": "Accounting and Ledger",
-      "Evidence Posture": "planned_evidence",
-      "Evidence": "",
-      "Last Reviewed": "2026-07-31"
+      "Evidence Posture": "in_progress",
+      "Evidence": "docs/domain/recurring-journal.md; src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs; src/Meridian.FinancialOperations/FundAdministration/FileRecurringJournalStore.cs; src/Meridian.Ui.Shared/Services/AutomatedJournalScheduledWorker.cs; src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs; src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs; src/Meridian.Ui.Shared/Services/RecurringJournalSubjectAuthority.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.PeriodLockOwner.cs; src/Meridian.Ledger/RecurringJournalEvidence.cs; src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Lifecycle.cs; src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Recurring.cs; src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs; src/Meridian.Contracts/Workstation/RecurringJournalDtos.cs; src/Meridian.Ui/dashboard/src/components/accounting/RecurringJournalQueue.tsx; src/Meridian.Wpf/ViewModels/Accounting/RecurringJournalQueueViewModel.cs; src/Meridian.Wpf/Views/AccountingConfigurePage.xaml; tests/Meridian.Tests/FinancialOperations/RecurringJournalStoreTests.cs; tests/Meridian.Tests/Ui/RecurringJournalRunnerTests.cs; tests/Meridian.Tests/Ui/RecurringJournalLifecycleTests.cs; tests/Meridian.Tests/Ledger/RecurringJournalEvidenceTests.cs; tests/Meridian.Tests/Storage/RecurringJournalPeriodAuthorityPostgresTests.cs; tests/Meridian.Tests/Ui/RecurringJournalSubjectAuthorityTests.cs; tests/Meridian.Tests/Ui/WorkstationEndpointsTests.RecurringJournals.cs; src/Meridian.Ui/dashboard/src/components/accounting/RecurringJournalQueue.test.tsx; src/Meridian.Ui/dashboard/src/lib/api/recurring-journals.api.test.ts; tests/Meridian.Wpf.Tests/ViewModels/RecurringJournalQueueViewModelTests.cs; tests/Meridian.Wpf.Tests/Services/WorkstationRecurringJournalQueueClientTests.cs",
+      "Last Reviewed": "2026-10-01"
     },
     {
       "ID": "W10-TAX-001",
@@ -574,8 +577,8 @@
       "Priority": "critical",
       "Owner Lane": "Accounting and Ledger",
       "Evidence Posture": "in_progress",
-      "Evidence": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AverageCostRelief.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.AverageCost.cs; src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs; src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs; src/Meridian.Ledger/OpenLotReliefService.cs; tests/Meridian.Tests/Storage/OpenLotConvergenceTests.cs; tests/Meridian.Tests/Storage/OpenLotPostgresTests.cs; docs/engineering/blueprints/security-lot-convergence-blueprint.md; src/Meridian.Contracts/Accounting/Lots/OpenLotBackfillDtos.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs; src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs; tests/Meridian.Tests/Storage/CanonicalOpenLotConsumerTests.cs; tests/Meridian.Tests/Ui/WorkstationEndpointsTests.OpenLotBackfill.cs; src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs; tests/Meridian.Tests/AssetOperations/AssetAcquisitionLotPostgresRoundTripTests.cs",
-      "Last Reviewed": "2026-09-23"
+      "Evidence": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.DiscreteLotRelief.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.CurrentBasis.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AverageCostRelief.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.AverageCost.cs; src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs; src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs; src/Meridian.Ledger/OpenLotReliefService.cs; tests/Meridian.Tests/Storage/OpenLotConvergenceTests.cs; tests/Meridian.Tests/Storage/OpenLotPostgresTests.cs; docs/engineering/blueprints/security-lot-convergence-blueprint.md; src/Meridian.Contracts/Accounting/Lots/OpenLotBackfillDtos.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs; src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs; tests/Meridian.Tests/Storage/CanonicalOpenLotConsumerTests.cs; tests/Meridian.Tests/Ui/WorkstationEndpointsTests.OpenLotBackfill.cs; src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs; tests/Meridian.Tests/AssetOperations/AssetAcquisitionLotPostgresRoundTripTests.cs; src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs; src/Meridian.FinancialOperations/Ledger/CanonicalLotAmortizationService.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Amortization.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.Amortization.cs; tests/Meridian.Tests/AssetOperations/AmortizationLotInstructionContractTests.cs",
+      "Last Reviewed": "2026-10-02"
     }
   ]
 }
