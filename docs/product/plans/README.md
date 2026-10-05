@@ -13,8 +13,9 @@ planning inputs, not status sources: live roadmap status stays in the
 
 | Plan | Purpose |
 |---|---|
-| [What To Work On Next (2026-10-02)](next-work-determination-2026-10-02.md) | Latest prioritization input |
-| [What To Work On Next (2026-09-27)](next-work-determination-2026-09-27.md) | Superseded by the 2026-10-02 determination; retained in place because `docs/roadmap/data/program-state.yml` and the readiness tracker cite it as the recorded operator-session plan |
+| [What To Work On Next (2026-10-04)](next-work-determination-2026-10-04.md) | Latest prioritization input |
+| [What To Work On Next (2026-10-02)](next-work-determination-2026-10-02.md) | Superseded by the 2026-10-04 determination |
+| [What To Work On Next (2026-09-27)](next-work-determination-2026-09-27.md) | Superseded by the 2026-10-04 determination; retained in place because `docs/roadmap/data/program-state.yml` and the readiness tracker cite it as the recorded operator-session plan |
 | [2026-08 W9 Close-Out Delivery Plan](w9-close-out-delivery-plan-2026-08.md) | Sequence for the W9 close-out rows (`DEC-W9-CLOSEOUT-001`) |
 | [2026-07 First-Order Improvement Slate](product-roadmap-priorities-2026-07.md) | Ranked W9 priority rationale (`DEC-PRIORITY-SLATE-001`) |
 | [2026-07 Depth Slate](w10-depth-slate-2026-07.md) | W10 rationale for deepening existing functionality (`DEC-DEPTH-SLATE-001`) |

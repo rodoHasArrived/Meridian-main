@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-09-28T04:47:55Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-10-04T00:49:22Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | `2d1621987` (2026-09-28T00:40:02+00:00) | 3 |
-| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `2d1621987` (2026-09-28T00:40:02+00:00) | 2 |
-| `src/Meridian.Backtesting/README.md` | Backtesting and Strategy Analytics | `2d1621987` (2026-09-28T00:40:02+00:00) | 1 |
-| `src/Meridian.QuantScript/README.md` | Backtesting and Strategy Analytics | `2d1621987` (2026-09-28T00:40:02+00:00) | 1 |
-| `src/Meridian.Execution/Adapters/PaperTradingGateway.cs` | Execution, Risk, and Strategies | `aff38fd00` (2026-09-25T19:49:41-07:00) | 1 |
-| `src/Meridian.Execution/Adapters/PaperTradingGatewaySupport.cs` | Execution, Risk, and Strategies | `aff38fd00` (2026-09-25T19:49:41-07:00) | 1 |
-| `src/Meridian.Execution/PaperTradingGateway.cs` | Execution, Risk, and Strategies | `aff38fd00` (2026-09-25T19:49:41-07:00) | 1 |
-| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | `aff38fd00` (2026-09-25T19:49:41-07:00) | 1 |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs` | Execution, Risk, and Strategies | `dcc87676c` (2026-09-25T18:37:15-07:00) | 1 |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | Execution, Risk, and Strategies | `dcc87676c` (2026-09-25T18:37:15-07:00) | 1 |
-| `src/Meridian.Identity/Application/UserProfileRegistry.cs` | Unmapped | `462d4da03` (2026-09-25T14:28:59-07:00) | 2 |
-| `src/Meridian.Identity/README.md` | Unmapped | `462d4da03` (2026-09-25T14:28:59-07:00) | 2 |
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `462d4da03` (2026-09-25T14:28:59-07:00) | 2 |
-| `src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs` | Desktop and UI Workflows | `462d4da03` (2026-09-25T14:28:59-07:00) | 2 |
-| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `462d4da03` (2026-09-25T14:28:59-07:00) | 2 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 9 |
+| `src/Meridian.FinancialOperations/README.md` | Unmapped | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 9 |
+| `src/Meridian.Storage/README.md` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 9 |
+| `src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs` | Unmapped | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 4 |
+| `src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs` | Domain, Ledger, and F# | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 4 |
+| `src/Meridian.Ledger/README.md` | Domain, Ledger, and F# | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 4 |
+| `src/Meridian.Storage/Ledger/ILedgerJournalStore.cs` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 4 |
+| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 3 |
+| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 3 |
+| `src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs` | Host and Composition | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 2 |
+| `src/Meridian.Ledger/LedgerTaxLotReliefHistoryProjector.cs` | Domain, Ledger, and F# | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 2 |
+| `src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 2 |
+| `src/Meridian.Storage/Ledger/AtomicTaxLotJournalFingerprint.cs` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 1 |
+| `src/Meridian.Storage/Ledger/Migrations/V_ledger_039__tax_lot_proceeds_allocation.sql` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 1 |
+| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ProceedsAllocation.cs` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 1 |
 
