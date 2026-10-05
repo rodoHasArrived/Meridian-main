@@ -21,6 +21,11 @@ the retained account link and requires scoped trade-write authority before broke
 See [Alpaca recovery](../../docs/operators/provider-onboarding-alpaca.md#account-portfolio-recovery)
 for the fixture and paper-sandbox procedure.
 
+Shared endpoint composition accepts an explicit `IConfiguration` for authentication, persistence,
+rate limiting and LEAN settings. Each host retains its own provider catalog and LEAN result records;
+fixture hosts can coexist without publishing configuration or endpoint state to the process.
+Omitting configuration retains the production environment-based startup contract.
+
 `ReportingIncomeComparisonService` and the `/api/fund-structure/reporting/comparisons` endpoints
 provide explicit baseline/current retained-run selection, including governed original/restated
 publication labels. Candidate discovery pages through retained history and applies both tenant and

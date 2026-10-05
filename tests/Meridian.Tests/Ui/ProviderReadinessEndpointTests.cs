@@ -10,6 +10,7 @@ using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Plaid;
+using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -24,6 +25,28 @@ namespace Meridian.Tests.Ui;
 
 public sealed class ProviderReadinessEndpointTests
 {
+    [Fact]
+    public async Task GetProviderCatalog_UsesRegisteredInventoryEvenWhenFamilyCatalogContainsMoreProviders()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<ProviderRegistry>();
+            services.AddSingleton<IProviderCatalog>(new RuntimeProviderCatalog());
+        });
+        app.Services.GetRequiredService<IProviderCatalog>().Get("yahoo").Should().NotBeNull();
+
+        using var client = app.GetTestClient();
+        using var response = await client.GetAsync(UiApiRoutes.ProviderCatalog);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var catalog = await response.Content.ReadFromJsonAsync<ProviderCatalogResponse>(JsonOptions);
+        catalog.Should().NotBeNull();
+        catalog!.Providers.Should().BeEmpty("the family metadata must not add unregistered adapters to this endpoint");
+        catalog.TotalCount.Should().Be(0);
+
+        using var detail = await client.GetAsync(UiApiRoutes.ProviderCatalog + "/yahoo");
+        detail.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
     [Theory]
     [InlineData("interactive-brokers", "")]
     [InlineData("interactive-brokers", "Streaming")]
@@ -332,7 +355,7 @@ public sealed class ProviderReadinessEndpointTests
         raw.Should().NotContain("plaid-secret");
     }
 
-    private static async Task<WebApplication> CreateAppAsync()
+    private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection>? configureServices = null)
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-readiness", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
@@ -351,6 +374,7 @@ public sealed class ProviderReadinessEndpointTests
         builder.Services.AddSingleton(NullLogger<ProviderConnectionLifecycleService>.Instance);
         builder.Services.AddSingleton<ProviderConnectionLifecycleService>();
         builder.Services.AddSingleton<ProviderReadinessService>();
+        configureServices?.Invoke(builder.Services);
         builder.Services.AddRateLimiter(options =>
         {
             options.AddPolicy(UiEndpoints.MutationRateLimitPolicy, _ =>
@@ -360,7 +384,7 @@ public sealed class ProviderReadinessEndpointTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ManageCredentials;
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ManageCredentials | UserPermission.ViewConfig;
             context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
             context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-test";
             context.Items[LoginSessionMiddleware.CurrentUserKey] = "provider-readiness-test-operator";

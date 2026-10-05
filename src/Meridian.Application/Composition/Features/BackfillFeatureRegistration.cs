@@ -54,7 +54,8 @@ internal sealed class BackfillFeatureRegistration : IServiceFeatureRegistration
                 registry,
                 factory,
                 symbolResolver: symbolResolver,
-                symbolTimelineResolver: symbolTimelineResolver);
+                symbolTimelineResolver: symbolTimelineResolver,
+                providerCatalog: sp.GetService<Meridian.Contracts.Api.IProviderCatalog>());
         });
         services.AddSingleton<IBackfillExecutionGateway, BackfillCoordinatorExecutionGateway>();
 

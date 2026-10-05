@@ -64,6 +64,10 @@ timestamp, and quality declarations. Historical dividend/split evidence does not
 on-demand corporate-action factory. `ProviderCatalogCompositionTests` validates these fields and
 metadata through the actual public application registration path.
 
+`Api/IProviderCatalog.cs` exposes host-owned provider metadata to endpoint, routing, and backfill
+services. `RuntimeProviderCatalog` retains its owning registry callbacks; the built-in fallback
+reads only fixed metadata and never consults another host's legacy process-wide callback binding.
+
 Operations Continuity journal candidates carry a typed `Provenance` origin mark into the posting
 command. Omitted marks remain `Real`; seeded or simulated evidence must be explicitly marked,
 and the governed ledger boundary rejects mismatches.
