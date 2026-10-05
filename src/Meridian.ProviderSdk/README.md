@@ -50,6 +50,13 @@ copy-only scaffolds even when configuration enables them. `DataSourceRegistry.Re
 can exclude families already owned by an application catalog. Module and attribute registrations
 must run before the service provider is built; attribute registration preserves a module's existing
 factory for each implementation type.
+Built-in capability factories belong to the application's `ProviderCapabilityDescriptorCatalog`;
+external modules own their factories and lifetimes. Both module-loading entry points stage each
+module's service changes and publish them only after registration succeeds. The resulting
+`DataSourceRegistry.ModuleCapabilityRegistrations` inventory derives canonical family IDs and
+capability contracts from the concrete attributed services that the module actually registered.
+Application composition bridges that successful inventory; discovering an attribute or finding
+a pre-existing service cannot by itself publish a module-owned provider factory.
 `IProviderConnectionHealthSource.GetConnectionHealthAsync` reports health for exactly one connection;
 tenant-scoped routing, trust and selection use it so family-wide telemetry shared with other owners
 cannot rank a tenant's connection. Its default delegates to `GetHealthAsync`, so sources that fall back

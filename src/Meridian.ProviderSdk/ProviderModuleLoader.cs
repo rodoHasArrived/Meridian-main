@@ -181,7 +181,7 @@ public sealed class ProviderModuleLoader
                 }
 
                 _log.LogDebug("Registering provider module {ModuleId}", moduleId);
-                module.Register(services, registry);
+                registry.RegisterModuleServices(module, services);
 
                 loaded.Add(new LoadedModuleInfo(moduleId, module.ModuleDisplayName, module.Capabilities));
 

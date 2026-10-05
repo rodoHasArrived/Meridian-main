@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;
 using Moq;
 using Xunit;
@@ -7,6 +8,43 @@ namespace Meridian.Tests.Application.Pipeline;
 
 public sealed class ProviderRegistryDeterministicSelectionTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Streaming_registration_apis_share_one_alias_normalized_factory(bool replaceThroughCapabilityApi)
+    {
+        using var registry = new ProviderRegistry();
+        var original = Mock.Of<IMarketDataClient>();
+        var replacement = Mock.Of<IMarketDataClient>();
+
+        if (replaceThroughCapabilityApi)
+        {
+            registry.RegisterStreamingFactory("interactive-brokers", () => original);
+            registry.GetCapability<IMarketDataClient>("ibkr").Should().BeSameAs(original);
+            registry.RegisterCapabilityFactory(" IB ", typeof(IMarketDataClient), () => replacement);
+        }
+        else
+        {
+            registry.RegisterCapabilityFactory(" IB ", typeof(IMarketDataClient), () => original);
+            registry.CreateStreamingClient("interactive-brokers").Should().BeSameAs(original);
+            registry.RegisterStreamingFactory("ibkr", () => replacement);
+        }
+
+        registry.GetCapability<IMarketDataClient>("interactive-brokers").Should().BeSameAs(replacement);
+        registry.CreateStreamingClient(" IBKR ").Should().BeSameAs(replacement);
+        registry.SupportedStreamingSources.Should().Equal("ibkr");
+        registry.Disable("interactive_brokers");
+        registry.GetCapability<IMarketDataClient>("ib").Should().BeNull();
+        var createDisabled = () => registry.CreateStreamingClient("ibkr");
+        createDisabled.Should().Throw<InvalidOperationException>();
+        registry.SupportedStreamingSources.Should().Equal("ibkr",
+            "registered factory inventory remains available while runtime resolution is disabled");
+
+        registry.Enable(" IB ");
+        registry.GetCapability<IMarketDataClient>("ibkr").Should().BeSameAs(replacement);
+        registry.CreateStreamingClient("interactive-brokers").Should().BeSameAs(replacement);
+    }
+
     [Fact]
     public async Task GetBestBackfillProviderAsync_WhenEqualPriority_SelectsOrdinallyByProviderId()
     {

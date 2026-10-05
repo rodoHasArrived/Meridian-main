@@ -83,6 +83,12 @@ public interface IProviderModule
     /// <summary>
     /// Register provider services into the DI container.
     /// </summary>
+    /// <remarks>
+    /// The module owns construction and lifetime for its configured capability factories.
+    /// Register each concrete attributed provider service to publish its implemented contracts
+    /// through <see cref="DataSourceRegistry.ModuleCapabilityRegistrations"/>. Module loaders
+    /// stage service changes and publish this inventory only after registration succeeds.
+    /// </remarks>
     void Register(IServiceCollection services, DataSourceRegistry registry);
 }
 

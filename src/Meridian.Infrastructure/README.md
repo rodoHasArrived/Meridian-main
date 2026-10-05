@@ -90,7 +90,10 @@ factory flags from them without constructing disabled adapters. Module discovery
 `BuildServiceProvider` and excludes descriptor-owned families, so a discovered Alpaca module
 cannot replace configured built-in factories. Explicit plugin assemblies retain ownership of
 their module-registered concrete factories and lifetimes. Attribute metadata alone cannot bypass
-module configuration. External discovery metadata projects module-only corporate-action and
+module configuration: application composition consumes the SDK's successful module capability
+registrations, and failed registrations cannot leave partial services behind. The registry uses
+one family/contract factory map for streaming and generic capability resolution, including factory
+replacement through aliases. External discovery metadata projects module-only corporate-action and
 brokerage families into inventory without constructing them, including when disabled or awaiting
 configuration. Synthetic, Polygon and NYSE compatibility data sources are also recorded.
 OpenFIGI's `ISymbolResolver` remains in the adapter inventory, while the operator matrix

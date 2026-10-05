@@ -123,6 +123,7 @@ public sealed class DataSourceRegistry
 {
     private readonly object _sync = new();
     private readonly List<DataSourceMetadata> _sources = new();
+    private readonly List<ProviderModuleCapabilityRegistration> _moduleCapabilityRegistrations = new();
     private readonly List<DataSourceDiscoveryFailure> _failures = new();
     private readonly Dictionary<string, ProviderModuleContext> _moduleContexts
         = new(StringComparer.OrdinalIgnoreCase);
@@ -149,6 +150,19 @@ public sealed class DataSourceRegistry
         {
             lock (_sync)
                 return Array.AsReadOnly(_sources.ToArray());
+        }
+    }
+
+    /// <summary>
+    /// Capability factories published by successfully registered modules. Attribute discovery
+    /// and pre-existing service descriptors alone do not add entries to this inventory.
+    /// </summary>
+    public IReadOnlyList<ProviderModuleCapabilityRegistration> ModuleCapabilityRegistrations
+    {
+        get
+        {
+            lock (_sync)
+                return Array.AsReadOnly(_moduleCapabilityRegistrations.ToArray());
         }
     }
 
@@ -512,7 +526,7 @@ public sealed class DataSourceRegistry
                 try
                 {
                     Increment(ref _moduleRegistrationAttemptCount);
-                    module.Register(services, this);
+                    RegisterModuleServices(module, services);
                     Increment(ref _registeredModuleCount);
                 }
                 catch (Exception ex)
@@ -520,6 +534,61 @@ public sealed class DataSourceRegistry
                     RecordFailure("register", type.FullName ?? type.Name, moduleId, ex);
                     continue;
                 }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Publishes a module's services and capability inventory together. Both module-loading
+    /// entry points use this transaction so a failed module cannot leave resolvable factories.
+    /// </summary>
+    internal void RegisterModuleServices(IProviderModule module, IServiceCollection services)
+    {
+        lock (_sync)
+        {
+            IServiceCollection stagedServices = new ServiceCollection();
+            foreach (var descriptor in services)
+                stagedServices.Add(descriptor);
+
+            var originalSources = _sources.ToArray();
+            var originalRegistrations = _moduleCapabilityRegistrations.ToArray();
+            try
+            {
+                module.Register(stagedServices, this);
+
+                var registrations = stagedServices
+                    .Where(descriptor => !services.Contains(descriptor) && !descriptor.IsKeyedService)
+                    .Select(static descriptor => descriptor.ServiceType)
+                    .Distinct()
+                    .Where(static type => type.IsDataSource())
+                    .Select(static type => type.GetDataSourceMetadata()!)
+                    .OrderBy(static source => source.Id, StringComparer.Ordinal)
+                    .ThenBy(static source => source.ImplementationType.FullName, StringComparer.Ordinal)
+                    .SelectMany(source => source.ImplementationType.GetInterfaces()
+                        .Where(contract => source.CapabilityKeys.Contains(contract.FullName!))
+                        .OrderBy(static contract => contract.FullName, StringComparer.Ordinal)
+                        .Select(contract => new ProviderModuleCapabilityRegistration(
+                            source.Id, contract, source.ImplementationType)))
+                    .ToArray();
+
+                services.Clear();
+                foreach (var descriptor in stagedServices)
+                    services.Add(descriptor);
+                foreach (var registration in registrations)
+                {
+                    if (!_moduleCapabilityRegistrations.Contains(registration))
+                        _moduleCapabilityRegistrations.Add(registration);
+                }
+            }
+            catch
+            {
+                // Register may also discover sources. Preserve the same all-or-nothing
+                // publication rule for that metadata as for its service factories.
+                _sources.Clear();
+                _sources.AddRange(originalSources);
+                _moduleCapabilityRegistrations.Clear();
+                _moduleCapabilityRegistrations.AddRange(originalRegistrations);
+                throw;
             }
         }
     }

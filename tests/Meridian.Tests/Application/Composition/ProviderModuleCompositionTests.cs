@@ -41,19 +41,82 @@ public sealed class ProviderModuleCompositionTests : IDisposable
             capability.Should().BeAssignableTo<PluginCorporateActions>();
             ((PluginCorporateActions)capability!).Marker.Should().Be("configured-by-module");
             capability.Should().BeSameAs(provider.GetRequiredService(capability.GetType()));
-            provider.GetRequiredService<DataSourceRegistry>().GetRegistrationReport().RegisteredModuleCount.Should().Be(1);
+            var discovered = provider.GetRequiredService<DataSourceRegistry>();
+            discovered.GetRegistrationReport().RegisteredModuleCount.Should().Be(1);
+            discovered.ModuleCapabilityRegistrations.Should().ContainSingle()
+                .Which.Should().Be(new ProviderModuleCapabilityRegistration(
+                    "composition-plugin", typeof(ICorporateActionProvider), capability.GetType()));
         }
         else
         {
             capability.Should().BeNull();
-            provider.GetRequiredService<DataSourceRegistry>().GetRegistrationReport().RegisteredModuleCount.Should().Be(0);
+            var discovered = provider.GetRequiredService<DataSourceRegistry>();
+            discovered.GetRegistrationReport().RegisteredModuleCount.Should().Be(0);
+            discovered.ModuleCapabilityRegistrations.Should().BeEmpty();
         }
         services.Count.Should().Be(count);
     }
 
-    // Only this explicitly supplied assembly is discovered. The test never registers a
-    // provider implementation directly: discovery must invoke its configured module.
-    private static Assembly CreatePluginAssembly()
+    [Fact]
+    public async Task Failing_module_cannot_publish_services_or_resolvable_capabilities()
+    {
+        var assembly = CreatePluginAssembly(typeof(ThrowingPluginModule));
+        var adapter = GetAdapterType(assembly);
+        var config = CreateEnabledPluginConfig();
+        var services = new ServiceCollection();
+        services.AddProviderServices(config, _ => config, pluginAssemblies: [assembly]);
+        var count = services.Count;
+        await using var provider = services.BuildServiceProvider();
+        var registry = provider.GetRequiredService<ProviderRegistry>();
+        var discovered = provider.GetRequiredService<DataSourceRegistry>();
+
+        registry.GetCapability<ICorporateActionProvider>(" COMPOSITION-PLUGIN ").Should().BeNull();
+        provider.GetService(adapter).Should().BeNull("a module that throws after adding a factory must roll it back");
+        discovered.ModuleCapabilityRegistrations.Should().BeEmpty();
+        discovered.GetRegistrationReport().RegisteredModuleCount.Should().Be(0);
+        discovered.GetRegistrationReport().Failures.Should().ContainSingle()
+            .Which.Stage.Should().Be("register");
+        services.Count.Should().Be(count);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Attributed_type_and_preexisting_service_are_not_module_owned_capabilities(bool unrelatedModule)
+    {
+        var assembly = CreatePluginAssembly(typeof(UnrelatedPluginModule), includeModule: unrelatedModule);
+        var adapter = GetAdapterType(assembly);
+        var config = CreateEnabledPluginConfig();
+        var services = new ServiceCollection();
+        // An existing service can legitimately share an attributed type. Only a successful
+        // module's own factory registrations may turn that metadata into provider availability.
+        var preexisting = Activator.CreateInstance(adapter, "preexisting-service")!;
+        services.AddSingleton(adapter, preexisting);
+        services.AddProviderServices(config, _ => config, pluginAssemblies: [assembly]);
+        var count = services.Count;
+        await using var provider = services.BuildServiceProvider();
+        var registry = provider.GetRequiredService<ProviderRegistry>();
+        var discovered = provider.GetRequiredService<DataSourceRegistry>();
+
+        provider.GetRequiredService(adapter).Should().BeSameAs(preexisting);
+        discovered.Sources.Should().Contain(source => source.ImplementationType == adapter);
+        discovered.GetRegistrationReport().RegisteredModuleCount.Should().Be(unrelatedModule ? 1 : 0);
+        discovered.ModuleCapabilityRegistrations.Should().BeEmpty();
+        registry.GetCapability<ICorporateActionProvider>(" COMPOSITION-PLUGIN ").Should().BeNull();
+        services.Count.Should().Be(count);
+    }
+
+    private static AppConfig CreateEnabledPluginConfig() => new(ProviderModules: new ProviderModulesConfig(new()
+    {
+        [" COMPOSITION-PLUGIN "] = new(Enabled: true, Settings: new() { ["marker"] = "configured-by-module" })
+    }));
+
+    private static Type GetAdapterType(Assembly assembly) => assembly.GetTypes()
+        .Single(type => type.IsSubclassOf(typeof(PluginCorporateActions)));
+
+    // Only this explicitly supplied assembly is discovered. Positive resolution must come
+    // from its configured module; a preexisting service is used only in the negative case.
+    private static Assembly CreatePluginAssembly(Type? moduleBase = null, bool includeModule = true)
     {
         var assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName($"CompositionPlugin{Guid.NewGuid():N}"), AssemblyBuilderAccess.Run);
         var module = assembly.DefineDynamicModule("provider");
@@ -68,9 +131,12 @@ public sealed class ProviderModuleCompositionTests : IDisposable
             [typeof(string), typeof(string), typeof(DataSourceType), typeof(DataSourceCategory)])!,
             ["composition-plugin", "Composition plugin", DataSourceType.Reference, DataSourceCategory.Aggregator]));
         adapter.CreateType();
-        var registration = module.DefineType("ConfiguredModule", TypeAttributes.Public | TypeAttributes.Sealed, typeof(PluginModule));
-        registration.DefineDefaultConstructor(MethodAttributes.Public);
-        registration.CreateType();
+        if (includeModule)
+        {
+            var registration = module.DefineType("ConfiguredModule", TypeAttributes.Public | TypeAttributes.Sealed, moduleBase ?? typeof(PluginModule));
+            registration.DefineDefaultConstructor(MethodAttributes.Public);
+            registration.CreateType();
+        }
         return assembly;
     }
 
@@ -93,6 +159,23 @@ public sealed class ProviderModuleCompositionTests : IDisposable
             services.AddSingleton(adapter, _ => Activator.CreateInstance(adapter, GetSetting("marker"))!);
         }
     }
+
+    public abstract class ThrowingPluginModule : PluginModule
+    {
+        public override void Register(IServiceCollection services, DataSourceRegistry registry)
+        {
+            base.Register(services, registry);
+            throw new InvalidOperationException("Module failed after registering its factory.");
+        }
+    }
+
+    public abstract class UnrelatedPluginModule : PluginModule
+    {
+        public override void Register(IServiceCollection services, DataSourceRegistry registry)
+            => services.AddSingleton(new UnrelatedModuleService());
+    }
+
+    public sealed class UnrelatedModuleService { }
 
     public void Dispose()
     {

@@ -106,14 +106,13 @@ public static partial class ProviderServiceExtensions
         var pluginInventory = registry.Sources
             .Where(source => !ownedFamilies.Contains(source.Id) && pluginModules.Contains(source.ImplementationType.Module.ModuleVersionId))
             .ToArray();
-        // Plugin modules own construction and lifetime. Only bridge implementations actually
-        // registered by a module; attribute metadata alone must not bypass its configuration.
-        var pluginRegistrations = pluginInventory
-            .Where(source => registrationFactory.IsFamilyEnabled(source.Id)
-                && services.Any(service => service.ServiceType == source.ImplementationType))
-            .SelectMany(source => source.ImplementationType.GetInterfaces()
-                .Where(contract => source.CapabilityKeys.Contains(contract.FullName!))
-                .Select(contract => (source.Id, Contract: contract, Implementation: source.ImplementationType)))
+        // Discovery advertises inventory, while successful modules authoritatively publish
+        // factories. An unrelated service or a failed module must not create a provider merely
+        // because an implementation type happens to exist in the container.
+        var pluginImplementations = pluginInventory.Select(source => source.ImplementationType).ToHashSet();
+        var pluginRegistrations = registry.ModuleCapabilityRegistrations
+            .Where(registration => registrationFactory.IsFamilyEnabled(registration.ProviderId)
+                && pluginImplementations.Contains(registration.Implementation))
             .ToArray();
         services.AddSingleton(registry);
 
@@ -150,7 +149,6 @@ public static partial class ProviderServiceExtensions
                 {
                     IMarketDataClient Create() => (IMarketDataClient)registration.Factory(factory)!;
                     providers.RegisterStreamingFactory(registration.ProviderId, Create);
-                    providers.RegisterCapabilityFactory(registration.ProviderId, registration.Contract, Create);
                 }
                 else if (registration.Contract != typeof(IHistoricalDataProvider) && registration.Contract != typeof(ISymbolSearchProvider))
                 {
@@ -162,11 +160,12 @@ public static partial class ProviderServiceExtensions
             factory.CreateAndRegisterAllAsync(providers).GetAwaiter().GetResult();
             foreach (var registration in pluginRegistrations)
             {
-                providers.RegisterCapabilityFactory(registration.Id, registration.Contract,
-                    () => sp.GetRequiredService(registration.Implementation));
                 if (registration.Contract == typeof(IMarketDataClient))
-                    providers.RegisterStreamingFactory(registration.Id,
+                    providers.RegisterStreamingFactory(registration.ProviderId,
                         () => (IMarketDataClient)sp.GetRequiredService(registration.Implementation));
+                else
+                    providers.RegisterCapabilityFactory(registration.ProviderId, registration.Contract,
+                        () => sp.GetRequiredService(registration.Implementation));
             }
             foreach (var implementation in pluginRegistrations.Select(r => r.Implementation).Distinct())
             {

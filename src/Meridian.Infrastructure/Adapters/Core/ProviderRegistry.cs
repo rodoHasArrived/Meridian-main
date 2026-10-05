@@ -49,22 +49,16 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
         = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Dictionary of streaming client factory functions keyed by provider ID string (e.g. "alpaca", "ib").
-    /// Keys are always stored lower-case. Populated during DI setup via
-    /// <see cref="RegisterStreamingFactory(string, Func{IMarketDataClient})"/>.
-    /// Using string keys instead of <see cref="DataSourceKind"/> lets dynamically-discovered providers
-    /// register themselves without extending the closed enum (Open/Closed Principle).
+    /// Factories keyed by canonical family and contract. Streaming compatibility methods use
+    /// this same map so replacing a factory through either API updates every resolution path.
+    /// Contracts without IProviderMetadata participate without requiring a metadata wrapper.
     /// </summary>
-    private readonly ConcurrentDictionary<string, Func<IMarketDataClient>> _streamingFactories
-        = new(StringComparer.OrdinalIgnoreCase);
-
-    // Capabilities without IProviderMetadata (corporate actions and brokerage) participate
-    // through the same family key. Their lifetimes remain owned by the DI container.
     private readonly ConcurrentDictionary<(string ProviderId, Type Contract), Func<object?>> _capabilityFactories = new();
     private readonly ConcurrentDictionary<string, byte> _disabledFamilies = new(StringComparer.Ordinal);
 
     public void RegisterCapabilityFactory(string providerId, Type contract, Func<object?> factory)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(providerId);
         ArgumentNullException.ThrowIfNull(contract);
         ArgumentNullException.ThrowIfNull(factory);
         _capabilityFactories[(ProviderIdentity.NormalizeId(providerId), contract)] = factory;
@@ -145,7 +139,7 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
 
     /// <summary>
     /// Registers a factory function for creating a streaming client for the specified provider ID.
-    /// Provider IDs are case-insensitive strings (e.g. "alpaca", "ib", "polygon").
+    /// Provider IDs are canonical family names (e.g. "alpaca", "ibkr", "polygon") or accepted aliases.
     /// This is the primary registration path; it does not require extending <see cref="DataSourceKind"/>.
     /// </summary>
     /// <param name="providerId">The provider ID to register (case-insensitive).</param>
@@ -156,14 +150,16 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
         ArgumentNullException.ThrowIfNull(factory);
 
         var key = ProviderIdentity.NormalizeId(providerId);
-        if (_streamingFactories.TryAdd(key, factory))
+        Func<object?> capabilityFactory = () => factory();
+        var registrationKey = (key, typeof(IMarketDataClient));
+        if (_capabilityFactories.TryAdd(registrationKey, capabilityFactory))
         {
             MigrationDiagnostics.IncStreamingFactoryRegistered();
             _log.Information("Registered streaming factory for {DataSource}", key);
         }
         else
         {
-            _streamingFactories[key] = factory;
+            _capabilityFactories[registrationKey] = capabilityFactory;
             _log.Information("Replaced streaming factory for {DataSource}", key);
         }
     }
@@ -189,11 +185,13 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     public IMarketDataClient CreateStreamingClient(string providerId)
     {
         var key = ProviderIdentity.NormalizeId(providerId);
-        if (!_disabledFamilies.ContainsKey(key) && _streamingFactories.TryGetValue(key, out var factory))
+        if (!_disabledFamilies.ContainsKey(key) &&
+            _capabilityFactories.TryGetValue((key, typeof(IMarketDataClient)), out var factory))
         {
             MigrationDiagnostics.IncStreamingFactoryHit(key);
             _log.Information("Creating streaming client for {DataSource}", key);
-            return factory();
+            return factory() as IMarketDataClient
+                ?? throw new InvalidOperationException($"Provider '{key}' has no configured {nameof(IMarketDataClient)}.");
         }
 
         var registered = SupportedStreamingSources;
@@ -222,7 +220,11 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     /// Gets all provider IDs that have a registered streaming factory (lower-case, sorted).
     /// </summary>
     public IReadOnlyList<string> SupportedStreamingSources =>
-        _streamingFactories.Keys.OrderBy(k => k, StringComparer.Ordinal).ToList();
+        _capabilityFactories.Keys
+            .Where(key => key.Contract == typeof(IMarketDataClient))
+            .Select(key => key.ProviderId)
+            .OrderBy(key => key, StringComparer.Ordinal)
+            .ToList();
 
 
 
@@ -655,7 +657,6 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
         }
 
         _allProviders.Clear();
-        _streamingFactories.Clear();
         _capabilityFactories.Clear();
     }
 
