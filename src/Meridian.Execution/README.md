@@ -19,6 +19,8 @@ order snapshots through the serialized OMS fill path, including cumulative parti
 Open-order reconciliation is account-scoped and reports missing, conflicting, duplicate and pending
 handoff evidence. Recovery never submits a replacement order. Exactly one execution host may write
 each recovery directory; scope changes and unreadable state fail closed.
+Report checkpoints preserve newer submission uncertainty: a fill that began processing before a
+dispatch failure cannot clear the later recovery requirement in memory or in the retained store.
 
 ## Purpose
 

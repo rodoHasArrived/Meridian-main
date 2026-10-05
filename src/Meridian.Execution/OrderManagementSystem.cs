@@ -631,6 +631,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             // process exit must never make an already accepted client id available again.
             if (_gateway is IBrokerageGateway || _recoveryStore is not null)
                 RetainBrokerageDispatch(orderState);
+            var recoveryVersion = GetBrokerageRecoveryVersion(orderId);
             dispatchAttempted = true;
             var report = await _gateway.SubmitOrderAsync(safeRequest with { ClientOrderId = orderId }, ct)
                 .ConfigureAwait(false);
@@ -678,7 +679,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                     .ConfigureAwait(false);
             }
 
-            RetainProcessedBrokerageOrder(orderId, report);
+            RetainProcessedBrokerageOrder(orderId, report, recoveryVersion);
 
             try
             {
@@ -1357,6 +1358,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     private async Task ProcessGatewayReportCoreAsync(ExecutionReport report, CancellationToken ct)
     {
         var orderId = report.ClientOrderId ?? report.OrderId;
+        var recoveryVersion = string.IsNullOrWhiteSpace(orderId) ? 0L : GetBrokerageRecoveryVersion(orderId);
         if (!string.IsNullOrWhiteSpace(orderId))
         {
             RememberBrokerOrderId(orderId, report);
@@ -1464,7 +1466,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
 
             if (updatedState is not null)
             {
-                RetainProcessedBrokerageOrder(orderId!, report);
+                RetainProcessedBrokerageOrder(orderId!, report, recoveryVersion);
                 await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId!), updatedState, ct).ConfigureAwait(false);
             }
         }

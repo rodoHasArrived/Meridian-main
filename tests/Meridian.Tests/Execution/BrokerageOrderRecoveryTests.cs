@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Threading.Channels;
 using FluentAssertions;
 using Meridian.Execution;
+using Meridian.Execution.Events;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -76,8 +77,69 @@ public sealed class BrokerageOrderRecoveryTests
 
         oms.GetOrder(request.ClientOrderId!)!.Status.Should().Be(OrderStatus.Filled);
         oms.GetOpenOrders().Should().BeEmpty();
+        oms.GetRecoveryOrders(FundAccountId).Should().BeEmpty(
+            "the fresh final fill reconciles the submission failure in the same running process");
         portfolio.Positions["AAPL"].Quantity.Should().Be(10);
         portfolio.Cash.Should().Be(98_500m);
+    }
+
+    [Fact]
+    public async Task EarlierFillCheckpoint_CannotClearLaterSubmissionUncertainty_InMemoryOrAfterRestart()
+    {
+        using var directory = new RecoveryDirectory();
+        var response = new TaskCompletionSource<ExecutionReport>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var publisher = new PausedTradeEventPublisher();
+        var gateway = new RecoveryGateway { SubmitResponse = (_, _) => response.Task };
+        var request = Request("older-fill-checkpoint-after-disconnect");
+        var partial = Report(request.ClientOrderId!, OrderStatus.PartiallyFilled, 4m);
+        await using (var first = CreateOms(gateway, new PaperTradingPortfolio(100_000m), directory.Path, publisher))
+        {
+            try
+            {
+                var submission = first.PlaceOrderAsync(request);
+                await gateway.SubmissionStarted.Task.WaitAsync(Timeout);
+                await gateway.PublishAsync(partial);
+                await publisher.Entered.Task.WaitAsync(Timeout);
+
+                // The fill is already reflected in order/portfolio state, but its durable
+                // checkpoint must wait for accounting admission. Fail submit in that exact gap.
+                response.SetException(new IOException("Disconnected while the earlier fill handoff was pending."));
+                var result = await submission.WaitAsync(Timeout);
+                result.OrderState.FilledQuantity.Should().Be(4m);
+                first.GetRecoveryOrders(FundAccountId).Should().ContainSingle();
+
+                publisher.Release.TrySetResult();
+                (await ReadFillAsync(first)).FilledQuantity.Should().Be(4m);
+                (await DrainThroughMarkerAsync(first, gateway)).Should().BeEmpty();
+
+                first.GetRecoveryOrders(FundAccountId).Should().ContainSingle(order => order.FilledQuantity == 4m,
+                    "the completed older report cannot reconcile a later submission failure");
+                var retained = new FileBrokerageOrderRecoveryStore(directory.Path, gateway.GatewayId).Load().Single();
+                retained.State.FilledQuantity.Should().Be(4m);
+                retained.RequiresRecovery.Should().BeTrue(
+                    "the newer uncertainty must survive the earlier report's durable checkpoint");
+            }
+            finally
+            {
+                response.TrySetException(new IOException("Release any pending test submission during cleanup."));
+                publisher.Release.TrySetResult();
+            }
+        }
+
+        var recoveredPortfolio = new PaperTradingPortfolio(100_000m);
+        recoveredPortfolio.ApplyFill(partial);
+        await using var recovered = CreateOms(new RecoveryGateway(), recoveredPortfolio, directory.Path);
+        recovered.GetRecoveryOrders(FundAccountId).Should().ContainSingle(order => order.FilledQuantity == 4m);
+
+        // Fresh authoritative evidence may clear the current recovery generation and only book
+        // the missing six shares; retaining the newer uncertainty must not make it permanent.
+        await recovered.ReconcileRecoveryOrderAsync(Report(request.ClientOrderId!, OrderStatus.Filled, 10m));
+        (await ReadFillAsync(recovered)).FilledQuantity.Should().Be(6m);
+        recovered.GetRecoveryOrders(FundAccountId).Should().BeEmpty();
+        recoveredPortfolio.Positions["AAPL"].Quantity.Should().Be(10L);
+        recoveredPortfolio.Cash.Should().Be(98_500m);
+        new FileBrokerageOrderRecoveryStore(directory.Path, gateway.GatewayId).Load().Single()
+            .RequiresRecovery.Should().BeFalse();
     }
 
     [Fact]
@@ -383,10 +445,12 @@ public sealed class BrokerageOrderRecoveryTests
     private static OrderManagementSystem CreateOms(
         RecoveryGateway gateway,
         PaperTradingPortfolio? portfolio = null,
-        string? recoveryPath = null) => new(
+        string? recoveryPath = null,
+        ITradeEventPublisher? publisher = null) => new(
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio,
+            tradeEventPublisher: publisher,
             recoveryStore: recoveryPath is null
                 ? null
                 : new FileBrokerageOrderRecoveryStore(recoveryPath, gateway.GatewayId));
@@ -450,6 +514,20 @@ public sealed class BrokerageOrderRecoveryTests
             if (report.ClientOrderId == markerId)
                 return reports;
             reports.Add(report);
+        }
+    }
+
+    private sealed class PausedTradeEventPublisher : ITradeEventPublisher
+    {
+        public TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public void Publish(TradeExecutedEvent tradeEvent) => throw new NotSupportedException("Use the asynchronous handoff.");
+
+        public async Task PublishAsync(TradeExecutedEvent tradeEvent)
+        {
+            Entered.TrySetResult();
+            await Release.Task;
         }
     }
 

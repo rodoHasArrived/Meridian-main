@@ -69,6 +69,8 @@ public sealed partial class OrderManagementSystem
     private readonly FileBrokerageOrderRecoveryStore? _recoveryStore;
     private readonly ConcurrentDictionary<string, byte> _dispatchedOrderIds = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, byte> _recoveryOrderIds = new(StringComparer.Ordinal);
+    private readonly object _brokerageRecoveryStateSync = new();
+    private readonly Dictionary<string, long> _brokerageRecoveryVersions = new(StringComparer.Ordinal);
     // Recovery lookups and the live report stream share the same cumulative-fill watermark.
     // Serial admission keeps both from booking the same missing increment concurrently.
     private readonly SemaphoreSlim _brokerageRecoveryReportGate = new(1, 1);
@@ -147,13 +149,23 @@ public sealed partial class OrderManagementSystem
     {
         if (!_dispatchedOrderIds.ContainsKey(orderId))
             return;
-        _recoveryOrderIds[orderId] = 0;
-        // Keep the last fully processed cumulative fill watermark; an in-flight report may
-        // already have advanced the in-memory state without completing its durable handoff.
-        _recoveryStore?.RequireRecovery(orderId);
+        lock (_brokerageRecoveryStateSync)
+        {
+            _brokerageRecoveryVersions[orderId] = _brokerageRecoveryVersions.GetValueOrDefault(orderId) + 1;
+            _recoveryOrderIds[orderId] = 0;
+            // Keep the last fully processed cumulative fill watermark; an in-flight report may
+            // already have advanced the in-memory state without completing its durable handoff.
+            _recoveryStore?.RequireRecovery(orderId);
+        }
     }
 
-    private void RetainProcessedBrokerageOrder(string orderId, ExecutionReport report)
+    private long GetBrokerageRecoveryVersion(string orderId)
+    {
+        lock (_brokerageRecoveryStateSync)
+            return _brokerageRecoveryVersions.GetValueOrDefault(orderId);
+    }
+
+    private void RetainProcessedBrokerageOrder(string orderId, ExecutionReport report, long observedRecoveryVersion)
     {
         if (!_dispatchedOrderIds.ContainsKey(orderId) || !_orders.TryGetValue(orderId, out var state))
             return;
@@ -161,9 +173,18 @@ public sealed partial class OrderManagementSystem
         // are still running, or invalidate the recovery evidence of an already processed fill.
         if (report.FilledQuantity < state.FilledQuantity)
             return;
-        _orderBrokerIds.TryGetValue(orderId, out var brokerOrderId);
-        _recoveryStore?.Save(new RetainedBrokerageOrder(state, brokerOrderId, false));
-        _recoveryOrderIds.TryRemove(orderId, out _);
+        lock (_brokerageRecoveryStateSync)
+        {
+            // Completing a report that began before a later disconnect cannot reconcile that
+            // newer uncertainty. Persist its completed fills while retaining the newer block.
+            var requiresRecovery = observedRecoveryVersion != _brokerageRecoveryVersions.GetValueOrDefault(orderId);
+            _orderBrokerIds.TryGetValue(orderId, out var brokerOrderId);
+            _recoveryStore?.Save(new RetainedBrokerageOrder(state, brokerOrderId, requiresRecovery));
+            if (requiresRecovery)
+                _recoveryOrderIds[orderId] = 0;
+            else
+                _recoveryOrderIds.TryRemove(orderId, out _);
+        }
     }
 
     /// <summary>Applies broker-proven recovery evidence through the ordinary idempotent fill path.</summary>
