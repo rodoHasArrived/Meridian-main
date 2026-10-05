@@ -55,6 +55,7 @@ public sealed class ReportingProductionCompositionReadinessTests
             await using var server = new UiServer(configPath, port: 0);
             var services = GetServerApp(server).Services;
 
+            services.GetRequiredService<ReportingIncomeComparisonService>().Should().NotBeNull();
             var authority = services.GetRequiredService<IStatementReconciliationReportAuthorityStore>();
             authority.Should().BeOfType<PostgresStatementReconciliationReportAuthorityStore>(
                 "a configured reporting connection string must produce the durable statement authority");
@@ -92,6 +93,39 @@ public sealed class ReportingProductionCompositionReadinessTests
             capability.IsReady.Should().BeFalse();
             capability.BlockingReasons.Should().Contain(
                 "The PostgreSQL reporting authority is unreachable.");
+        }
+        finally
+        {
+            CleanupTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task UiServer_WithoutReportingAuthority_StartsWithoutComparisonServiceOrFallbackArtifactStore()
+    {
+        using var quiet = new Meridian.Tests.Application.Composition.ProductionEnvironmentQuietScope();
+        using var aspnet = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "ASPNETCORE_ENVIRONMENT", Environments.Development);
+        using var dotnet = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "DOTNET_ENVIRONMENT", Environments.Development);
+        using var governance = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MERIDIAN_USE_INMEMORY_GOVERNANCE", "true");
+        using var unified = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            Meridian.Storage.MeridianDatabaseEnvironment.UnifiedVariable, null);
+        using var reporting = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MERIDIAN_REPORTING_CONNECTION_STRING", null);
+        using var ledger = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MERIDIAN_LEDGER_CONNECTION_STRING", null);
+        var root = CreateTempRoot();
+        var configPath = WriteMinimalConfig(root);
+        try
+        {
+            // Development validates constructor dependencies while the real host is built.
+            await using var server = new UiServer(configPath, port: 0);
+            var services = GetServerApp(server).Services;
+            services.GetService<ReportingIncomeComparisonService>().Should().BeNull();
+            services.GetService<IReportingArtifactStore>().Should().BeNull();
+            services.GetRequiredService<IReportingDeploymentReadinessService>().Evaluate().IsReady.Should().BeFalse();
         }
         finally
         {

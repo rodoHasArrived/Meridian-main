@@ -56,6 +56,38 @@ public sealed class ReportingGovernanceRepositoryTests :
     }
 
     [ReportingDatabaseFact]
+    public async Task GetRunsAsync_BoundsExactIdentitiesAndRetainsTenantAndAuditAuthority()
+    {
+        var scenario = NewScenario();
+        var released = await CreateReleasedRunAsync(_database.Repository, scenario);
+        var draft = await NewService(_database.Repository).CreateRunAsync(scenario.CreationRequest with
+        {
+            RunId = $"draft-{Guid.NewGuid():N}",
+            SeriesId = $"draft-series-{Guid.NewGuid():N}"
+        }, scenario.Creator);
+        var foreign = NewScenario();
+        var sameIdInOtherTenant = await NewService(_database.Repository).CreateRunAsync(
+            foreign.CreationRequest with { RunId = released.RunId }, foreign.Creator);
+        var retainedDraft = await LoadRunAsync(_database.Repository, scenario.TenantId, draft.RunId);
+        var retainedForeign = await LoadRunAsync(_database.Repository, foreign.TenantId, sameIdInOtherTenant.RunId);
+
+        var batch = await _database.Repository.ExecuteTransactionAsync((transaction, ct) =>
+            transaction.GetRunsAsync(scenario.TenantId, [released.RunId, "missing-run", draft.RunId, released.RunId], ct));
+        var foreignBatch = await _database.Repository.ExecuteTransactionAsync((transaction, ct) =>
+            transaction.GetRunsAsync(foreign.TenantId, [released.RunId, draft.RunId], ct));
+
+        batch.Should().BeEquivalentTo(new[] { released, retainedDraft! });
+        batch.Should().OnlyContain(run => run.Scope.TenantId == scenario.TenantId);
+        batch.Should().OnlyContain(run => ReportingGovernanceAuditChain.Verify(run.AuditTrail));
+        foreignBatch.Should().ContainSingle().Subject.Should().BeEquivalentTo(retainedForeign);
+        var oversizedIds = Enumerable.Range(0, IReportingGovernanceTransaction.MaximumRunReadBatchSize + 1)
+            .Select(index => $"run-{index}").ToArray();
+        Func<Task> oversized = async () => await _database.Repository.ExecuteTransactionAsync((transaction, ct) =>
+            transaction.GetRunsAsync(scenario.TenantId, oversizedIds, ct));
+        await oversized.Should().ThrowAsync<ArgumentOutOfRangeException>();
+    }
+
+    [ReportingDatabaseFact]
     public async Task ReplaceRunAsync_RejectsAStaleDurableVersionWithoutAppendingAudit()
     {
         var scenario = NewScenario();
@@ -125,6 +157,9 @@ public sealed class ReportingGovernanceRepositoryTests :
         revisions[1].GovernanceState.Should().Be(GovernedReportingState.Draft);
         ReportingGovernanceAuditChain.Verify(retainedRequest.AuditTrail).Should().BeTrue();
         ReportingGovernanceAuditChain.Verify(revisions[1].AuditTrail).Should().BeTrue();
+        var batch = await _database.Repository.ExecuteTransactionAsync((transaction, ct) =>
+            transaction.GetRunsAsync(scenario.TenantId, [predecessor.RunId, approved.DraftRun.RunId], ct));
+        batch.Should().BeEquivalentTo(revisions, "bulk reads retain the exact approved restatement binding validation");
     }
 
     [ReportingDatabaseFact]
@@ -217,6 +252,10 @@ public sealed class ReportingGovernanceRepositoryTests :
             await LoadRunAsync(_database.Repository, stateScenario.TenantId, stateRun.RunId);
         await corruptStateRead.Should().ThrowAsync<ReportingGovernancePersistenceException>()
             .WithMessage("*SHA-256*");
+        Func<Task> corruptStateBatch = async () => await _database.Repository.ExecuteTransactionAsync((transaction, ct) =>
+            transaction.GetRunsAsync(stateScenario.TenantId, [stateRun.RunId], ct));
+        await corruptStateBatch.Should().ThrowAsync<ReportingGovernancePersistenceException>()
+            .WithMessage("*SHA-256*");
 
         var auditScenario = NewScenario();
         var auditRun = await service.CreateRunAsync(auditScenario.CreationRequest, auditScenario.Creator);
@@ -228,6 +267,10 @@ public sealed class ReportingGovernanceRepositoryTests :
         Func<Task> corruptAuditRead = async () =>
             await LoadRunAsync(_database.Repository, auditScenario.TenantId, auditRun.RunId);
         await corruptAuditRead.Should().ThrowAsync<ReportingGovernancePersistenceException>()
+            .WithMessage("*chain*");
+        Func<Task> corruptAuditBatch = async () => await _database.Repository.ExecuteTransactionAsync((transaction, ct) =>
+            transaction.GetRunsAsync(auditScenario.TenantId, [auditRun.RunId], ct));
+        await corruptAuditBatch.Should().ThrowAsync<ReportingGovernancePersistenceException>()
             .WithMessage("*chain*");
     }
 
