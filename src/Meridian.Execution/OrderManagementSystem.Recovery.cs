@@ -109,7 +109,7 @@ public sealed partial class OrderManagementSystem
             var state = retained.State;
             _orders[state.OrderId] = state;
             _dispatchedOrderIds[state.OrderId] = 0;
-            if (retained.RequiresRecovery || state.Status != OrderStatus.Filled)
+            if (retained.RequiresRecovery || state.Status is not (OrderStatus.Filled or OrderStatus.Rejected))
                 _recoveryOrderIds[state.OrderId] = 0;
             if (!string.IsNullOrWhiteSpace(retained.BrokerOrderId))
                 _orderBrokerIds[state.OrderId] = retained.BrokerOrderId;

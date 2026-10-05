@@ -34,13 +34,14 @@ public sealed class BrokerageExecutionReconciliationService
         if (gateway is not IBrokerageOrderRecoveryGateway recoveryGateway)
             return;
         orderManager.EnsureBrokerageRecoveryScope(gateway);
-        // Accepted orders may have filled while disconnected even if their original
-        // acknowledgement was durable. Re-query the working retained book on every explicit
-        // sync so terminal/partial outcomes do not remain permanent read-only discrepancies.
+        // Accepted or terminal acknowledgements can precede a late fill lost during an outage.
+        // Re-query every retained order with possible remaining execution on explicit sync;
+        // cancellation and expiry do not prove that no earlier execution arrived late.
         var recoveryOrders = orderManager.GetRecoveryOrders(fundAccountId)
             .Concat(orderManager.GetRetainedBrokerageOrders(fundAccountId)
                 .Where(static order => order.Status is OrderStatus.PendingNew or OrderStatus.Accepted
-                    or OrderStatus.PartiallyFilled or OrderStatus.PendingCancel))
+                    or OrderStatus.PartiallyFilled or OrderStatus.PendingCancel
+                    or OrderStatus.Cancelled or OrderStatus.Expired))
             .DistinctBy(static order => order.OrderId, StringComparer.Ordinal)
             .ToArray();
         if (recoveryOrders.Length == 0)
@@ -50,7 +51,14 @@ public sealed class BrokerageExecutionReconciliationService
             ct.ThrowIfCancellationRequested();
             var report = await recoveryGateway.GetOrderForRecoveryAsync(order.OrderId, ct).ConfigureAwait(false);
             if (report is null)
+            {
+                // A terminal local order is absent from both open books, so a missing lookup
+                // cannot be represented by open-order discrepancies. Keep synchronization
+                // explicitly blocked until the broker can prove its cumulative executions.
+                if (order.Status is OrderStatus.Cancelled or OrderStatus.Expired or OrderStatus.Rejected or OrderStatus.Filled)
+                    throw new InvalidDataException("Broker could not verify a retained terminal order; late-fill recovery remains unresolved.");
                 continue;
+            }
 
             // The report pump may have advanced the order while the broker query was in flight.
             // Compare against the current retained state before passing evidence to the OMS.

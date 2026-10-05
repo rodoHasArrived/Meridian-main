@@ -289,6 +289,13 @@ public sealed class BrokerageOrderRecoveryTests
         var recoveredGateway = new RecoveryGateway();
         await using var recovered = CreateOms(recoveredGateway, recoveryPath: directory.Path);
 
+        if (status is OrderStatus.Filled or OrderStatus.Rejected)
+            recovered.GetRecoveryOrders(FundAccountId).Should().BeEmpty(
+                "a definitive rejection may never create a broker order, and a full fill has no execution remainder");
+        else
+            recovered.GetRecoveryOrders(FundAccountId).Should().ContainSingle(
+                "cancelled and expired orders still need late-fill verification after restart");
+
         (await recovered.PlaceOrderAsync(request)).Success.Should().BeFalse();
         recoveredGateway.SubmitCount.Should().Be(0,
             "a terminal acknowledgement does not authorize another submission with the same client ID");

@@ -75,6 +75,80 @@ public sealed class BrokerageExecutionReconciliationServiceTests
     }
 
     [Fact]
+    public async Task RecoverOrdersAsync_CancelledOrderWithMissedLateFill_RecoversWithoutRestart()
+    {
+        var accountId = Guid.NewGuid();
+        await using var context = new RecoveryContext([
+            CreateLocalOrder("ord-1") with { FundAccountId = accountId }
+        ]);
+        var cancelled = CreateRecoveryReport("ord-1") with
+        {
+            OrderStatus = OrderStatus.Cancelled,
+            ReportType = ExecutionReportType.Cancelled,
+            FilledQuantity = 0m,
+            FillPrice = null
+        };
+        context.Gateway.CancelOrderAsync("ord-1", Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(cancelled));
+        (await context.OrderManager.CancelOrderAsync("ord-1")).Success.Should().BeTrue();
+        context.OrderManager.GetRecoveryOrders(accountId).Should().BeEmpty();
+        context.OrderManager.GetOpenOrders().Should().BeEmpty();
+
+        // The cancellation acknowledgement preceded a four-share execution update that never
+        // arrived on the socket. Only an explicit terminal-order lookup can reveal this gap.
+        var lateExecution = cancelled with { FilledQuantity = 4m, FillPrice = 150m };
+        context.RecoveryGateway.GetOrderForRecoveryAsync("ord-1", Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<ExecutionReport?>(lateExecution));
+        var service = CreateService();
+        await service.RecoverOrdersAsync(context.Gateway, context.OrderManager, accountId);
+        await service.RecoverOrdersAsync(context.Gateway, context.OrderManager, accountId);
+
+        context.OrderManager.GetOrder("ord-1")!.Status.Should().Be(OrderStatus.Cancelled);
+        context.OrderManager.GetOrder("ord-1")!.FilledQuantity.Should().Be(4m);
+        context.OrderManager.GetOpenOrders().Should().BeEmpty();
+        context.Portfolio.Positions["AAPL"].Quantity.Should().Be(4L);
+        context.Portfolio.Cash.Should().Be(99_400m);
+        await context.RecoveryGateway.Received(2).GetOrderForRecoveryAsync("ord-1", Arg.Any<CancellationToken>());
+        context.Gateway.ReceivedCalls().Should().NotContain(call =>
+            call.GetMethodInfo().Name == nameof(IExecutionGateway.SubmitOrderAsync));
+    }
+
+    [Theory]
+    [InlineData(OrderStatus.Cancelled)]
+    [InlineData(OrderStatus.Expired)]
+    public async Task RecoverOrdersAsync_UnavailableTerminalOrder_FailsSynchronization(OrderStatus terminalStatus)
+    {
+        var accountId = Guid.NewGuid();
+        await using var context = new RecoveryContext([
+            CreateLocalOrder("ord-1") with { FundAccountId = accountId }
+        ]);
+        await context.OrderManager.ReconcileRecoveryOrderAsync(CreateRecoveryReport("ord-1") with
+        {
+            OrderStatus = terminalStatus,
+            ReportType = terminalStatus switch
+            {
+                OrderStatus.Cancelled => ExecutionReportType.Cancelled,
+                OrderStatus.Expired => ExecutionReportType.Expired,
+                _ => ExecutionReportType.Rejected
+            },
+            FilledQuantity = 0m,
+            FillPrice = null
+        });
+        context.OrderManager.GetRecoveryOrders(accountId).Should().BeEmpty();
+        context.OrderManager.GetOpenOrders().Should().BeEmpty();
+        context.RecoveryGateway.GetOrderForRecoveryAsync("ord-1", Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<ExecutionReport?>(null));
+
+        var recover = () => CreateService().RecoverOrdersAsync(context.Gateway, context.OrderManager, accountId);
+
+        await recover.Should().ThrowAsync<InvalidDataException>().WithMessage("*terminal order*unresolved*");
+        context.OrderManager.GetOrder("ord-1")!.Status.Should().Be(terminalStatus);
+        context.OrderManager.GetOrder("ord-1")!.FilledQuantity.Should().Be(0m);
+        context.Portfolio.Positions.Should().BeEmpty();
+        await context.RecoveryGateway.Received(1).GetOrderForRecoveryAsync("ord-1", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task RecoverOrdersAsync_MissingEvidenceOrUnsupportedGateway_LeavesOrderUnresolved()
     {
         var accountId = Guid.NewGuid();

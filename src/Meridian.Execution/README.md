@@ -84,8 +84,12 @@ after cancellation advance actual exposure without reopening the cancelled remai
 
 Explicit synchronization uses `BrokerageExecutionReconciliationService.RecoverOrdersAsync` to look
 up retained client IDs, including terminal broker orders, and applies authoritative evidence through
-the existing idempotent fill path. A missing order, mismatched identity, regressive fill quantity, or
+the existing idempotent fill path. Every explicit sync rechecks retained cancelled and expired
+orders for late fills, including within the same process; an unavailable terminal-order
+lookup blocks synchronization. A missing order, mismatched identity, regressive fill quantity, or
 unverifiable account/environment leaves recovery blocked; recovery never resubmits an order.
+Durably confirmed rejections keep their client IDs reserved across restart but do not require a
+lookup for an order the broker may never have created; an explicitly unresolved rejection stays blocked.
 Read-only reconciliation compares account-scoped exposure with the broker and reports duplicate
 client IDs, foreign-account matches, pending fill handoffs, and missing or inconsistent orders.
 

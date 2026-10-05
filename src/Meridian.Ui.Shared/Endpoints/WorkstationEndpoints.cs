@@ -3141,7 +3141,7 @@ public static partial class WorkstationEndpoints
     }
 
     private static Task<bool> CanReadTradingAccountAsync(Guid? fundAccountId, HttpContext context) =>
-        fundAccountId.HasValue
+        fundAccountId.HasValue && context.RequestServices.GetService<LiveBrokeragePortfolioSyncService>()?.IsActive == true
             ? FundAccountEndpoints.CanAccessFundAccountBrokerageSyncAsync(fundAccountId.Value, context)
             : Task.FromResult(true);
 
