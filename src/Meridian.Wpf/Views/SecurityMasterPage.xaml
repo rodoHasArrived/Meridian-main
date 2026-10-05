@@ -924,6 +924,7 @@
                                                             <DataGridTextColumn Header="Portfolio" Binding="{Binding PortfolioId}" Width="130" />
                                                             <DataGridTextColumn Header="Account" Binding="{Binding AccountScopeDisplayName}" Width="150" />
                                                             <DataGridTextColumn Header="Trade" Binding="{Binding TradeDate, StringFormat='{}{0:g}'}" Width="130" />
+                                                            <DataGridTextColumn Header="Short" Binding="{Binding IsShort}" Width="70" />
                                                             <DataGridTextColumn Header="Current Qty" Binding="{Binding CurrentQuantity}" Width="110" />
                                                             <DataGridTextColumn Header="Current Face" Binding="{Binding CurrentFace}" Width="110" />
                                                             <DataGridTextColumn Header="Factor Adj. Qty" Binding="{Binding FactorAdjustedQuantity}" Width="120" />

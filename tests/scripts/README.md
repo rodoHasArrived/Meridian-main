@@ -33,14 +33,23 @@ or general build-script suites above.
 
 ## Running
 
+PowerShell 7 (`pwsh`) must be on `PATH` for the consumer certification process tests.
+Those tests exercise native process deadlines and inherited output handles without installing
+Meridian; the Windows release workflow owns installed consumer lifecycle evidence.
+
 ```bash
 # a single suite
 python3 -m unittest tests/scripts/test_screenshot_diff_report.py
+
+# recovery receipt production and objective validation (requires PowerShell 7)
+python3 -m unittest tests/scripts/test_production_recovery.py tests/scripts/test_recovery_evidence.py
 
 # every suite in this directory
 python3 -m unittest discover -s tests/scripts -p 'test_*.py'
 ```
 
-CI runs targeted suites from `.github/workflows/ci.yml` and
-`.github/workflows/golden-path-validation.yml`; keep any new CI-gating suite wired into the relevant
-workflow.
+The `verify-workflows` lane of `scripts/ci.sh` discovers these suites through
+`build/scripts/ci/run-script-tests.py`; its quarantine register makes exclusions explicit.
+The recovery suites execute the PowerShell producer and validator. PostgreSQL tool stubs exercise
+receipt behavior with real encryption and file restoration; database integration and operator
+acceptance still require separate operational evidence.

@@ -6,10 +6,12 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-02
 ---
 
 # src/Meridian.Contracts
+
+Canonical amortization adds an optional `Amortization` input to lot instructions and basis adjustments, omitted when absent to preserve retained fingerprints. `OpenLotAmortization` binds reviewed canonical lot and versioned Security Master evidence, delegates shared straight-line/constant-yield kernels, and retains annual decimal yield and acquisition FX. Unsupported structures and missing terms fail closed.
 
 `Etl/IEtlStagingStore.cs` lets source adapters retain imported streams through an injected
 persistence port without referencing the Storage implementation.
@@ -134,6 +136,9 @@ accepts older numeric status payloads; persisted queue records already use text 
 - `Workstation/` - workstation and operator workflow DTOs, including the persisted statement
   reconciliation report status, stage, current retained JSON/CSV artifact generation, immutable
   superseded-generation manifest and receipt history, evidence-link, and recovery payloads.
+  Security Master open-lot DTOs carry additive init-only `IsShort` direction without changing their
+  positional constructor/deconstruction shape, so browser and desktop consumers do not infer lot
+  direction from an always-positive lot quantity.
 - `AssetOperations/` - shared Security Master-keyed asset operations DTOs, readiness payloads,
   terms/obligations timeline payloads, instrument-role and book-position semantics, economic-state
   and event references, projection lineage, and query/command service contracts.

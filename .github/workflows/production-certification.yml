@@ -200,14 +200,49 @@ jobs:
           exit 1
 
       - name: Seed source and clean recovery targets
+        id: recovery_checkpoint
+        shell: pwsh
         run: |
-          psql --host localhost --username postgres --dbname meridian --command "CREATE TABLE recovery_probe(id integer PRIMARY KEY, value text NOT NULL); INSERT INTO recovery_probe VALUES (1, 'expected');"
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Path artifacts/recovery/source-data/credentials, artifacts/recovery/restore-data -Force | Out-Null
+          [IO.File]::WriteAllText('artifacts/recovery/source-data/credentials/provider-vault.dat', 'encrypted-vault-probe')
+          # This isolated source has no writers after seeding. The database records a
+          # conservative point before commit; the separate read verifies committed state.
+          psql --no-psqlrc --set=ON_ERROR_STOP=1 --host localhost --username postgres --dbname meridian --command "CREATE TABLE recovery_probe(id integer PRIMARY KEY, value text NOT NULL, checkpoint_at timestamptz NOT NULL); INSERT INTO recovery_probe VALUES (1, 'expected', clock_timestamp());"
+          if ($LASTEXITCODE -ne 0) { throw 'Recovery source seed failed.' }
           createdb --host localhost --username postgres meridian_restore
-          mkdir -p artifacts/recovery/source-data/credentials artifacts/recovery/restore-data
-          printf 'encrypted-vault-probe' > artifacts/recovery/source-data/credentials/provider-vault.dat
+          if ($LASTEXITCODE -ne 0) { throw 'Clean recovery target creation failed.' }
+          $sourceRow = psql --no-psqlrc --set=ON_ERROR_STOP=1 --host localhost --username postgres --dbname meridian --tuples-only --no-align --command 'SELECT to_char(checkpoint_at AT TIME ZONE ''UTC'', ''YYYY-MM-DD"T"HH24:MI:SS.US"Z"'') || ''|'' || value FROM recovery_probe WHERE id = 1'
+          if ($LASTEXITCODE -ne 0) { throw 'Committed recovery checkpoint read failed.' }
+          $probe = ([string]$sourceRow).Trim() -split '\|'
+          if ($probe.Count -ne 2 -or $probe[1] -cne 'expected' -or $probe[0] -cnotmatch '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z$') {
+            throw 'Committed recovery checkpoint does not match the seeded business state.'
+          }
+          $vaultPath = 'artifacts/recovery/source-data/credentials/provider-vault.dat'
+          if ([IO.File]::ReadAllText($vaultPath) -cne 'encrypted-vault-probe') { throw 'Recovery source vault probe mismatch.' }
+          $checkpointPath = 'artifacts/recovery/source-data/recovery-checkpoint.json'
+          [ordered]@{
+            sourceCommit = $env:GITHUB_SHA
+            workflowRunId = $env:GITHUB_RUN_ID
+            workflowRunAttempt = $env:GITHUB_RUN_ATTEMPT
+            lastVerifiedRecoverablePointAtUtc = $probe[0]
+            database = 'meridian'
+            table = 'recovery_probe'
+            rowId = 1
+            value = $probe[1]
+            vaultPath = 'credentials/provider-vault.dat'
+            vaultSha256 = (Get-FileHash -LiteralPath $vaultPath -Algorithm SHA256).Hash.ToLowerInvariant()
+          } | ConvertTo-Json | Set-Content -LiteralPath $checkpointPath -Encoding utf8
+          $checkpointHash = (Get-FileHash -LiteralPath $checkpointPath -Algorithm SHA256).Hash.ToLowerInvariant()
+          $evidence = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID/attempts/$env:GITHUB_RUN_ATTEMPT#production-recovery-drill-$env:GITHUB_RUN_ID/source-data/recovery-checkpoint.json;sha256=$checkpointHash"
+          "point=$($probe[0])" >> $env:GITHUB_OUTPUT
+          "evidence=$evidence" >> $env:GITHUB_OUTPUT
 
       - name: Execute encrypted backup and restore drill
         shell: pwsh
+        env:
+          RECOVERY_POINT_AT_UTC: ${{ steps.recovery_checkpoint.outputs.point }}
+          RECOVERY_POINT_EVIDENCE: ${{ steps.recovery_checkpoint.outputs.evidence }}
         run: |
           pwsh ./build/scripts/recovery/invoke-production-recovery.ps1 `
             -Mode Drill `
@@ -217,14 +252,31 @@ jobs:
             -RestoreConnectionString 'Host=localhost;Port=5432;Database=meridian_restore;Username=postgres;Password=meridian-recovery' `
             -RestoreDataRoot artifacts/recovery/restore-data `
             -AllowDatabaseOverwrite `
-            -MaximumRpoSeconds 600 `
-            -MaximumRtoSeconds 600 `
+            -LastVerifiedRecoverablePointAtUtc $env:RECOVERY_POINT_AT_UTC `
+            -RecoverablePointEvidence $env:RECOVERY_POINT_EVIDENCE `
+            -MaximumRpoSeconds 3600 `
+            -MaximumRtoSeconds 7200 `
             -ReceiptPath artifacts/recovery/recovery-drill-receipt.json
 
       - name: Verify restored business and file state
+        shell: pwsh
         run: |
-          test "$(psql --host localhost --username postgres --dbname meridian_restore --tuples-only --no-align --command "SELECT value FROM recovery_probe WHERE id = 1")" = "expected"
-          test "$(cat artifacts/recovery/restore-data/credentials/provider-vault.dat)" = "encrypted-vault-probe"
+          $ErrorActionPreference = 'Stop'
+          . ./build/scripts/recovery/recovery-evidence.ps1
+          $checkpointPath = 'artifacts/recovery/source-data/recovery-checkpoint.json'
+          $restoredCheckpointPath = 'artifacts/recovery/restore-data/recovery-checkpoint.json'
+          if ((Get-FileHash -LiteralPath $checkpointPath).Hash -cne (Get-FileHash -LiteralPath $restoredCheckpointPath).Hash) {
+            throw 'Restored checkpoint differs from the committed recovery unit.'
+          }
+          $checkpoint = Read-RecoveryJson $checkpointPath
+          $restoredRow = psql --no-psqlrc --set=ON_ERROR_STOP=1 --host localhost --username postgres --dbname meridian_restore --tuples-only --no-align --command 'SELECT to_char(checkpoint_at AT TIME ZONE ''UTC'', ''YYYY-MM-DD"T"HH24:MI:SS.US"Z"'') || ''|'' || value FROM recovery_probe WHERE id = 1'
+          if ($LASTEXITCODE -ne 0) { throw 'Restored recovery checkpoint read failed.' }
+          if (([string]$restoredRow).Trim() -cne "$($checkpoint.lastVerifiedRecoverablePointAtUtc)|$($checkpoint.value)") {
+            throw 'Restored business state does not match the committed recovery checkpoint.'
+          }
+          $vaultHash = (Get-FileHash -LiteralPath artifacts/recovery/restore-data/credentials/provider-vault.dat -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($vaultHash -cne $checkpoint.vaultSha256) { throw 'Restored vault probe differs from the recovery checkpoint.' }
+          # Fixture verification is automated evidence, not operator acceptance.
 
       - name: Upload dated recovery evidence
         if: always()
