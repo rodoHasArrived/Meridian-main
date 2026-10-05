@@ -9899,6 +9899,7 @@ Meridian-main
 │   │   │   │   ├── ProviderHealthTrackerTests.cs
 │   │   │   │   ├── ProviderMarketDataCapabilityTests.cs
 │   │   │   │   ├── ProviderRateLimitTrackerTests.cs
+│   │   │   │   ├── ProviderRegistryCapabilityFactoryTests.cs
 │   │   │   │   ├── ProviderResilienceTests.cs
 │   │   │   │   ├── ProviderTemplateFactoryCredentialTests.cs
 │   │   │   │   ├── RobinhoodBrokerageGatewayTests.cs
