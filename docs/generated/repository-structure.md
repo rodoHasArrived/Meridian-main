@@ -1918,6 +1918,7 @@ Meridian-main
 │   │   │   ├── adversarial-review-2026-08-remediation-plan.md
 │   │   │   ├── next-work-determination-2026-09-27.md
 │   │   │   ├── next-work-determination-2026-10-02.md
+│   │   │   ├── next-work-determination-2026-10-04.md
 │   │   │   ├── product-roadmap-priorities-2026-07.md
 │   │   │   ├── production-readiness-backlog-2026-08.md
 │   │   │   ├── README.md
@@ -2281,6 +2282,7 @@ Meridian-main
 │   │   │   ├── dk1-baseline-trust-thresholds.md
 │   │   │   ├── dk1-pilot-parity-runbook.md
 │   │   │   ├── dk1-trust-rationale-mapping.md
+│   │   │   ├── prd-106-portfolio-snapshot-hardening.md
 │   │   │   ├── wave2-cockpit-evidence-packet.md
 │   │   │   └── wave4-evidence-template.md
 │   │   ├── ai-handoff-checklist-report.json
@@ -8530,6 +8532,7 @@ Meridian-main
 │   │   ├── MeridianNativeBacktestStudioEngineTests.cs
 │   │   ├── MultiSymbolMergeEnumeratorTests.cs
 │   │   ├── OptionsOverwriteStrategyTests.cs
+│   │   ├── PortfolioCorporateActionSnapshotTests.cs
 │   │   ├── SimulatedPortfolioCacheTests.cs
 │   │   ├── SimulatedPortfolioTests.cs
 │   │   ├── StageTelemetryTests.cs
