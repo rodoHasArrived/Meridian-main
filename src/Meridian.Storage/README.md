@@ -27,6 +27,10 @@ so a sibling account's same-ID lot cannot change the disposing lot's basis or ho
 Ledger migration `039` adds nullable disposal allocation-version and sale-price evidence to immutable
 atomic batches without backfilling existing rows. New disposal inserts retain the current convention
 after the exact-replay check, leaving legacy retries and absent-price command fingerprints unchanged.
+New disposal validation requires exact disposing-account realized gain credits and realized loss debits
+for both aggregate inferred proceeds and explicit quotes; sibling, incorrectly typed/symbol-scoped,
+and incorrectly sided result lines are rejected transactionally. Retained exact retries bypass this
+new-insert validation without rewriting immutable history or fingerprints.
 An explicit original quote must reproduce supported, account-scoped cash journal proceeds; fees and
 other unsupported expense shapes cannot supply that assertion. Aggregate-only governed commands
 retain the current version with a null price, deriving their canonical price at reporting from the
