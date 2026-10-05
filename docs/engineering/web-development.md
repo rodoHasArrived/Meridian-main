@@ -11,7 +11,8 @@ Run the following commands from the repository root.
 ## Install and choose a mode
 
 Use Node.js 22.12 or newer and npm. Backend-connected mode also requires the .NET 10 SDK on
-`PATH`; fixture-only mode does not need .NET or a database.
+`PATH`; fixture-only mode does not need .NET or a database. Windows uses the built-in Windows
+PowerShell to establish process ownership before starting a service.
 
 ```sh
 npm ci
@@ -89,8 +90,10 @@ they can change startup requirements. See [the seeded demo guide](../start/READM
 
 Press Ctrl+C in the launcher terminal to stop the session. On macOS/Linux it sends SIGINT to its
 owned process groups, allows five seconds for the complete group to drain, then kills remaining
-members. On Windows it uses `taskkill.exe /pid <owned-supervisor-pid> /T /F` to stop each owned
-tree; this is forced termination, not a claim of graceful host draining. The launcher never
+members. On Windows each service starts inside an owned Job Object. Closing its handle stops all
+members, including descendants whose immediate parent has exited. This is forced termination;
+graceful host draining is only supported by the POSIX shutdown path. If Windows cannot establish
+job ownership, startup fails before the service runs. The launcher never
 selects processes by executable name or kills a process because it occupies a port. Seeded data
 is retained after shutdown.
 

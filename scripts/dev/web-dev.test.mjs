@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { createServer } from 'node:http';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
@@ -14,6 +15,8 @@ import { startOwnedProcess } from './owned-process.mjs';
 const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
 const processFixture = path.join(repoRoot, 'tests/scripts/fixtures/web-dev/process-tree.mjs');
 const launcherFixture = path.join(repoRoot, 'tests/scripts/fixtures/web-dev/launcher.mjs');
+const windowsKeeperPath = fileURLToPath(new URL('./owned-process-windows.ps1', import.meta.url));
+const windowsOnly = process.platform !== 'win32' ? 'requires Windows Job Objects and Windows PowerShell' : false;
 
 async function temporaryDirectory(t) {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'meridian-web-dev-test-'));
@@ -99,6 +102,30 @@ async function launchFixture(t, mode, scenario = 'running', ports) {
       assert.match(output, /\[dev\] Ready \(/);
     }, 'launcher ready output', 10_000),
   };
+}
+
+function spawnTestProcess(t, command, args, stdio = ['ignore', 'pipe', 'pipe']) {
+  const child = spawn(command, args, { cwd: repoRoot, detached: true, windowsHide: true, stdio });
+  let output = '';
+  child.stdout?.on('data', (chunk) => { output += chunk; });
+  child.stderr?.on('data', (chunk) => { output += chunk; });
+  const result = new Promise((resolve, reject) => {
+    child.once('error', reject);
+    child.once('exit', (code, signal) => resolve({ code, signal }));
+  });
+  t.after(async () => {
+    if (child.exitCode !== null || child.signalCode !== null) return;
+    child.kill('SIGKILL');
+    await result;
+  });
+  return { child, result, output: () => output };
+}
+
+function spawnWindowsKeeper(t, ownedPid) {
+  return spawnTestProcess(t, 'powershell.exe', [
+    '-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
+    '-File', windowsKeeperPath, '-OwnedPid', String(ownedPid),
+  ], ['pipe', 'pipe', 'pipe']);
 }
 
 test('mode selection is explicit and validates conflicting ports and invalid options', () => {
@@ -354,9 +381,8 @@ test('a surviving descendant receives time to flush after its command has alread
   await assertStopped(state);
 });
 
-test('cleanup still stops its process group when the ownership supervisor is killed', {
+test('cleanup still stops owned descendants when the ownership supervisor is killed', {
   timeout: 15_000,
-  skip: process.platform === 'win32' ? 'POSIX process groups survive their leader' : false,
 }, async (t) => {
   const directory = await temporaryDirectory(t);
   const stateFile = path.join(directory, 'supervisor-killed.json');
@@ -375,6 +401,51 @@ test('cleanup still stops its process group when the ownership supervisor is kil
   await assertStopped(state);
 });
 
+test('Windows ownership helper fails closed for an invalid process identity', { skip: windowsOnly, timeout: 20_000 }, async (t) => {
+  // Windows process IDs are multiples of four, so this value cannot name a process.
+  const keeper = spawnWindowsKeeper(t, 2_147_483_647);
+  assert.equal((await keeper.result).code, 1);
+  assert.match(keeper.output(), /OpenProcess/);
+  assert.doesNotMatch(keeper.output(), /OPENED|READY/);
+});
+
+test('Windows keeper EOF before assignment leaves the opened process untouched', { skip: windowsOnly, timeout: 20_000 }, async (t) => {
+  const directory = await temporaryDirectory(t);
+  const stateFile = path.join(directory, 'unassigned.json');
+  const sentinel = spawnTestProcess(t, process.execPath, [processFixture, 'server', stateFile]);
+  const state = await readState(stateFile);
+  const keeper = spawnWindowsKeeper(t, sentinel.child.pid);
+  await eventually(async () => assert.match(keeper.output(), /OPENED/), 'keeper opened handle', 15_000);
+
+  keeper.child.stdin.end();
+  assert.equal((await keeper.result).code, 0, keeper.output());
+  assert.doesNotMatch(keeper.output(), /READY/);
+  assert.equal((await (await fetch(`http://127.0.0.1:${state.port}`)).json()).pid, sentinel.child.pid);
+});
+
+test('Windows keeper crash closes its job and removes the entire assigned process tree', { skip: windowsOnly, timeout: 25_000 }, async (t) => {
+  const directory = await temporaryDirectory(t);
+  const stateFile = path.join(directory, 'keeper-crash.json');
+  const worker = spawnTestProcess(t, process.execPath, [
+    fileURLToPath(new URL('./owned-process.mjs', import.meta.url)), '--worker',
+  ], ['ignore', 'ignore', 'ignore', 'ipc']);
+  const keeper = spawnWindowsKeeper(t, worker.child.pid);
+  await eventually(async () => assert.match(keeper.output(), /OPENED/), 'keeper opened handle', 15_000);
+  const nonce = randomUUID();
+  const confirmed = new Promise((resolve) => worker.child.once('message', resolve));
+  worker.child.send({ type: 'ownership-probe', nonce });
+  assert.deepEqual(await confirmed, { type: 'ownership-probe', nonce });
+  keeper.child.stdin.write('ASSIGN\n');
+  await eventually(async () => assert.match(keeper.output(), /READY/), 'job assignment');
+  worker.child.send({ command: process.execPath, args: [processFixture, 'tree', stateFile] });
+  const state = await readState(stateFile);
+
+  keeper.child.kill('SIGKILL');
+  await keeper.result;
+  await worker.result;
+  await assertStopped(state);
+});
+
 test('fixture-only launches just Vite and Ctrl+C releases its complete process tree', { timeout: 20_000 }, async (t) => {
   const fixture = await launchFixture(t, 'fixture-only');
   await fixture.ready();
@@ -387,6 +458,16 @@ test('fixture-only launches just Vite and Ctrl+C releases its complete process t
   assert.deepEqual(await fixture.result, { code: 0, signal: null }, fixture.output());
   await assertStopped(state);
   assert.match(fixture.output(), /Shutdown complete/);
+});
+
+test('launcher death releases its owned process tree through supervisor disconnect or keeper EOF', { timeout: 20_000 }, async (t) => {
+  const fixture = await launchFixture(t, 'fixture-only');
+  await fixture.ready();
+  const state = await readState(path.join(fixture.directory, 'vite.json'));
+
+  fixture.launcher.kill('SIGKILL');
+  await fixture.result;
+  await assertStopped(state);
 });
 
 test('connected startup seeds, waits for the backend, starts Vite, and shuts both down', { timeout: 20_000 }, async (t) => {

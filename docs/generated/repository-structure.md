@@ -3362,6 +3362,7 @@ Meridian-main
 │   │   ├── generate-desktop-user-manual.ps1
 │   │   ├── generate-dk1-pilot-parity-packet.ps1
 │   │   ├── install-git-hooks.sh
+│   │   ├── owned-process-windows.ps1
 │   │   ├── owned-process.mjs
 │   │   ├── preflight_runner.py
 │   │   ├── prepare-dk1-operator-signoff.ps1
