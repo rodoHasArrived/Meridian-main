@@ -17,9 +17,10 @@ python3 build/scripts/ci/benchmark-pipeline.py --local
 
 The [recorded profile](../../build/config/testing/pipeline-benchmark-profile.json)
 fixes the Release build, runtime, GC/tiering settings, one launch, three warmups,
-eight measured iterations and a 250 ms target per iteration. Each restore/build
-is capped at five minutes; benchmark execution is capped at twenty minutes and
-the hosted job at thirty-five. Timeouts terminate the benchmark process group.
+eight measured iterations and a 250 ms target per iteration. Restore and the initial
+build are capped at five minutes each; BenchmarkDotNet's generated build is capped
+at ten minutes within the twenty-minute benchmark execution cap. The hosted job
+is capped at thirty-five minutes. Timeouts terminate the benchmark process group.
 There is no parameter matrix or user-supplied benchmark filter.
 The harness starts BenchmarkDotNet in the benchmark project directory, whose
 small solution file bounds project discovery and avoids following the dashboard's

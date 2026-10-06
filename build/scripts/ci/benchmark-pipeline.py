@@ -178,6 +178,7 @@ def main(argv=None):
                               '--warmupCount', str(profile['warmupCount']),
                               '--iterationCount', str(profile['iterationCount']),
                               '--iterationTime', str(profile['iterationTimeMs']),
+                              '--buildTimeout', str(profile['generatedBuildTimeoutSeconds']),
                               '--memory', '--exporters', 'fulljson', '--export-budgets',
                               '--artifacts', str(directory / 'bdn')], profile['benchmarkTimeoutSeconds'],
                 cwd=ROOT / Path(PROJECT).parent)

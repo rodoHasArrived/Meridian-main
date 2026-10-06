@@ -14,6 +14,7 @@
   "iterationCount": 8,
   "iterationTimeMs": 250,
   "buildTimeoutSeconds": 300,
+  "generatedBuildTimeoutSeconds": 600,
   "benchmarkTimeoutSeconds": 1200,
   "environment": {
     "DOTNET_ROLL_FORWARD": "Disable",

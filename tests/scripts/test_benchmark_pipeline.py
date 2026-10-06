@@ -199,6 +199,7 @@ class PipelineBenchmarkTests(unittest.TestCase):
                               ("--launchCount", profile["launchCount"]),
                               ("--warmupCount", profile["warmupCount"]),
                               ("--iterationCount", profile["iterationCount"]),
+                              ("--buildTimeout", profile["generatedBuildTimeoutSeconds"]),
                               ("--iterationTime", profile["iterationTimeMs"])):
             self.assertEqual(str(value), command[command.index(option) + 1], option)
         self.assertIn("--fail-on-violation", result["commands"]["validator"]["command"])
