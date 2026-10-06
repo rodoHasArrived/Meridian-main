@@ -486,6 +486,15 @@ currency residuals, invalid identities/versions and Schedule D exclusivity.
 stale state, final-mutation rollback, restart and changed duplicate replay.
 `LedgerReportingAuthoritativeSourceSuccessorTests` covers retained exchange/refunding evidence,
 replay stability and incomplete or tampered history refusals.
-Automated results and hosted validation are recorded with the implementation change; this receipt
-does not claim those gates passed. `W10-LOT-002` remains `in_progress`: wider corporate-action and
+Implementation proof at `7bb99b4b2`: the accounting, lot and Reporting regression slice passed
+486 tests with zero failures and zero skips, including the PostgreSQL successor and publication
+recovery cases. PostgreSQL 16.15 schema snapshot, promotion and independent empty-database
+verification passed for all 121 migrations with zero errors. Documentation and workflow validation
+passed; the latter ran 1,552 script tests with zero failures/errors, 16 existing skips and seven
+existing quarantined modules. These results are retained in
+[PR #3102](https://github.com/rodoHasArrived/Meridian-main/pull/3102).
+
+Full local and hosted acceptance remain blocked by the unchanged dashboard's Tailwind 4/PostCSS
+configuration mismatch, also present on the implementation's `main` base. This evidence does not
+claim a green full gate or operator acceptance. `W10-LOT-002` remains `in_progress`: wider corporate-action and
 consumer parity, remaining convergence work and live shadow-operation acceptance remain open.
