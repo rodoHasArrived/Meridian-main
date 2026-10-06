@@ -75,6 +75,15 @@ public sealed partial class AccountingClosePreparationService
 
     private async Task SaveAsync(PreparationDocument state, CancellationToken ct)
     {
+        var claimedPreviews = state.Creations.Select(creation => creation.PreviewId).ToHashSet();
+        var now = _timeProvider.GetUtcNow();
+        // Claimed previews are recovery evidence, including completed and abandoned requests.
+        // Unclaimed previews are disposable after their creation window closes.
+        state = state with
+        {
+            Previews = state.Previews.Where(entry => entry.Preview.ExpiresAtUtc > now
+                || claimedPreviews.Contains(entry.Preview.PreviewId)).ToArray()
+        };
         if (_directory is null)
         { _memory = Copy(state); return; }
         await AtomicFileWriter.WriteAsync(Path.Combine(_directory, "preparation.json"),

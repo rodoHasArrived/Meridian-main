@@ -500,10 +500,12 @@ public sealed partial class AccountingCloseServicesTests
         public const string Company = "company-alpha";
         private static readonly DateTimeOffset CapturedAt = DateTimeOffset.Parse("2026-10-01T12:00:00Z");
         private readonly TemporaryStorageRoot _storage = new();
+        private readonly TimeProvider? _timeProvider;
         private readonly Dictionary<Guid, OperationsContinuityWorkflowDto> _createdWorkflows = [];
 
-        public PreparationFixture()
+        public PreparationFixture(TimeProvider? timeProvider = null)
         {
+            _timeProvider = timeProvider;
             SourceWorkflow = BuildLockedCloseWorkflow(BuildCloseWorkflow(Guid.NewGuid(), "Done", "Done", "September preparer", "September reviewer")) with
             {
                 PeriodId = "2026-09",
@@ -578,7 +580,7 @@ public sealed partial class AccountingCloseServicesTests
         public IReadOnlyCollection<OperationsContinuityWorkflowDto> CreatedWorkflows => _createdWorkflows.Values;
 
         public AccountingClosePreparationService NewService() => new(ClosePlans, Workflows, Books, Store,
-            new StorageOptions { RootPath = _storage.RootPath });
+            new StorageOptions { RootPath = _storage.RootPath }, _timeProvider);
 
         public CaptureClosePlanTemplateRequestDto CaptureRequest(CloseDeadlineRuleDto? rule = null, bool hasHoliday = false) =>
             new(SourceWorkflow.WorkflowId, "Monthly close controls",

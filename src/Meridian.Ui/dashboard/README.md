@@ -1497,7 +1497,10 @@ approvals, reviewed evidence, journal references and locks remain on their origi
 All preparation reads and writes disable development fallback. Target-book discovery uses the
 authoritative source book's fund identity; stale or mismatched responses are discarded. A lost or
 interrupted creation response is retried with the same preview and idempotency key. A typed stale
-preview response requires a new preview. The creation result retains template version and history
+or missing preview response requires a new preview. Before creation, the browser saves only the
+opaque request identity in session storage. Reload and navigation recover that same request after
+fresh authorized source, template and book reads; no cached approval or preview state is reused.
+The creation result retains template version and history
 and links back to the prepared close scope. Reloaded plans expose their retained preparation
 lineage and creation history through the shared plan configuration. Focused coverage lives in
 `accounting-screen.prepare-next-period.test.tsx` and `close-preparation.api.test.ts`.

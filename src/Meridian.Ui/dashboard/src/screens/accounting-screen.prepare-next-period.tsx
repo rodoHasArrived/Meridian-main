@@ -16,9 +16,64 @@ import { ClosePreparationCalendarForm } from "./accounting-screen.prepare-next-p
 const message = (error: unknown) => describeApiError(error, "Close preparation is unavailable. Retry when the service is available.").summary;
 const templateKey = (template: ClosePlanTemplate) => `${template.templateId}:${template.version}`;
 
+interface PendingCloseCreation {
+  version: 1;
+  sourceWorkflowId: string;
+  sourceLedgerBookId: string;
+  fundProfileId: string;
+  templateId: string;
+  templateVersion: number;
+  targetLedgerBookId: string;
+  targetPeriodId: string;
+  previewId: string;
+  idempotencyKey: string;
+}
+
+const pendingCreationKey = (workflowId: string) => `meridian.close-preparation.pending.v1:${encodeURIComponent(workflowId.toLowerCase())}`;
+const sameIdentity = (left: string, right: string) => left.toLowerCase() === right.toLowerCase();
+
+/** Opaque command identity only. Fresh authorized reads and the create endpoint retain all authority. */
+function readPendingCreation(sourceWorkflowId: string): PendingCloseCreation | null {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(pendingCreationKey(sourceWorkflowId)) ?? "null") as PendingCloseCreation | null;
+    if (!saved || saved.version !== 1 || !Number.isSafeInteger(saved.templateVersion) || saved.templateVersion < 1
+      || [saved.sourceWorkflowId, saved.sourceLedgerBookId, saved.fundProfileId, saved.templateId, saved.targetLedgerBookId,
+        saved.targetPeriodId, saved.previewId, saved.idempotencyKey].some(value => typeof value !== "string" || !value.trim())
+      || !sameIdentity(saved.sourceWorkflowId, sourceWorkflowId)) return null;
+    return saved;
+  } catch { return null; }
+}
+
+function matchingPendingCreation(template: ClosePlanTemplate, books: LedgerBook[]) {
+  const saved = readPendingCreation(template.sourceWorkflowId);
+  return saved && sameIdentity(saved.sourceLedgerBookId, template.sourceLedgerBookId)
+    && saved.fundProfileId === template.fundProfileId && sameIdentity(saved.templateId, template.templateId)
+    && saved.templateVersion === template.version
+    && books.some(book => sameIdentity(book.ledgerBookId, saved.targetLedgerBookId) && book.fundProfileId === saved.fundProfileId)
+    ? saved : null;
+}
+
+function persistPendingCreation(command: PendingCloseCreation) {
+  const existing = readPendingCreation(command.sourceWorkflowId);
+  if (existing && existing.fundProfileId === command.fundProfileId && sameIdentity(existing.sourceLedgerBookId, command.sourceLedgerBookId)
+    && (existing.previewId !== command.previewId || existing.idempotencyKey !== command.idempotencyKey))
+    throw new Error("A pending creation already exists for this source plan. Reopen preparation to recover its original request before creating another plan.");
+  try { sessionStorage.setItem(pendingCreationKey(command.sourceWorkflowId), JSON.stringify(command)); }
+  catch { throw new Error("The creation recovery request could not be saved. Enable browser session storage before creating the plan."); }
+}
+
+function clearPendingCreation(command: PendingCloseCreation) {
+  try {
+    const current = readPendingCreation(command.sourceWorkflowId);
+    if (current?.previewId === command.previewId && current.idempotencyKey === command.idempotencyKey)
+      sessionStorage.removeItem(pendingCreationKey(command.sourceWorkflowId));
+  } catch { /* A retained identity can safely recover the same result again. */ }
+}
+
 function isStalePreviewError(error: unknown) {
   if (!isApiError(error)) return false;
-  if (error.status === 410 || error.status === 412) return true;
+  // Unclaimed expired previews may be pruned; previews referenced by a retained claim are kept.
+  if (error.status === 404 || error.status === 410 || error.status === 412) return true;
   if (error.status !== 409 || !error.responseBody) return false;
   try { return (JSON.parse(error.responseBody) as { code?: string }).code === "PREPARATION_PREVIEW_STALE"; }
   catch { return false; }
@@ -46,7 +101,12 @@ function ClosePreparationSources({ initialWorkflowId }: { initialWorkflowId?: st
     const request = new AbortController();
     setLoading(true); setError(null); setSources([]);
     void listClosePreparationSources(request.signal).then(rows => {
-      if (!request.signal.aborted) setSources(rows);
+      if (!request.signal.aborted) {
+        setSources(rows);
+        // Only discover pending requests through freshly authorized source identities.
+        const pendingSource = rows.find(row => readPendingCreation(row.workflowId));
+        if (pendingSource) setSelected(pendingSource.workflowId);
+      }
     }).catch(reason => { if (!request.signal.aborted) setError(message(reason)); })
       .finally(() => { if (!request.signal.aborted) setLoading(false); });
     return () => request.abort();
@@ -74,15 +134,21 @@ function ClosePreparationTemplateEditor({ workflowId }: { workflowId: string }) 
   const [selected, setSelected] = useState("");
   const [previous, setPrevious] = useState<ClosePlanTemplate | null>(null);
   const [busy, setBusy] = useState(false);
+  const [hasPending, setHasPending] = useState(false);
   const controller = useRef<AbortController | null>(null);
   useEffect(() => {
     const request = new AbortController();
     controller.current = request;
-    setLoaded(null); setError(null); setSelected(""); setPrevious(null);
+    setLoaded(null); setError(null); setSelected(""); setPrevious(null); setHasPending(false);
     void Promise.all([getClosePreparationSource(workflowId, request.signal), listClosePlanTemplates(workflowId, request.signal)])
       .then(async ([plan, templates]) => {
         const books = await getClosePreparationBooks(plan.ledgerBookId!, request.signal);
-        if (!request.signal.aborted) setLoaded({ plan, templates, books });
+        if (!request.signal.aborted) {
+          setLoaded({ plan, templates, books });
+          const pendingTemplate = templates.find(item => matchingPendingCreation(item, books));
+          setHasPending(Boolean(pendingTemplate));
+          if (pendingTemplate) setSelected(templateKey(pendingTemplate));
+        }
       }).catch(reason => { if (!request.signal.aborted) setError(message(reason)); });
     return () => { request.abort(); controller.current?.abort(); };
   }, [workflowId, revision]);
@@ -106,29 +172,31 @@ function ClosePreparationTemplateEditor({ workflowId }: { workflowId: string }) 
     {error ? <StatusBanner tone="danger" title="Preparation unavailable" detail={error} role="alert" /> : null}
     {!loaded && error ? <Button variant="outline" onClick={() => setRevision(value => value + 1)}>Retry selected plan</Button> : null}
     {loaded ? <>
-      <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap gap-3 text-sm"><Badge variant="outline">{loaded.plan.periodStart} – {loaded.plan.periodEnd}</Badge><span>{loaded.plan.tasks.length} tasks</span><span>{loaded.plan.isPeriodLocked ? "Source period locked" : "Source period open"}</span></div><Button size="sm" variant="outline" disabled={busy} onClick={() => setRevision(value => value + 1)}>Refresh source plan</Button></div>
+      <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap gap-3 text-sm"><Badge variant="outline">{loaded.plan.periodStart} – {loaded.plan.periodEnd}</Badge><span>{loaded.plan.tasks.length} tasks</span><span>{loaded.plan.isPeriodLocked ? "Source period locked" : "Source period open"}</span></div><Button size="sm" variant="outline" disabled={busy || hasPending} onClick={() => setRevision(value => value + 1)}>Refresh source plan</Button></div>
       {loaded.plan.configuration?.preparation ? <section aria-label="Retained plan creation" className="space-y-2 rounded border border-border p-3 text-sm">
         <h4 className="font-semibold">Retained plan creation</h4>
         <p className="break-words">Template {loaded.plan.configuration.preparation.templateId} · v{loaded.plan.configuration.preparation.templateVersion}</p>
         <p>Created by {loaded.plan.configuration.preparation.createdBy} at {loaded.plan.configuration.preparation.createdAtUtc} for {loaded.plan.configuration.preparation.periodStart} – {loaded.plan.configuration.preparation.periodEnd}.</p>
         <ClosePreparationHistoryList history={loaded.plan.configuration.preparation.history} label="Retained creation history" />
       </section> : null}
-      {loaded.templates.length > 0 ? <FormRow label="Retained template" labelFor="close-retained-template"><Select id="close-retained-template" disabled={busy} value={selected} onChange={event => { setSelected(event.target.value); setPrevious(null); setError(null); }}>
+      {loaded.templates.length > 0 ? <FormRow label="Retained template" labelFor="close-retained-template"><Select id="close-retained-template" disabled={busy || hasPending} value={selected} onChange={event => { setSelected(event.target.value); setPrevious(null); setError(null); }}>
         <option value="">Capture configuration from source</option>
         {loaded.templates.map(item => <option key={templateKey(item)} value={templateKey(item)}>{item.name} · v{item.version}</option>)}
       </Select></FormRow> : null}
       {!template ? <ClosePreparationCalendarForm key={previous ? templateKey(previous) : "new"} plan={loaded.plan} previous={previous} busy={busy} onCapture={request => void capture(request)} /> : <>
-        <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm">Template <strong>{template.name} · v{template.version}</strong> captured by {template.capturedBy} on {template.capturedAtUtc}.</p><Button size="sm" variant="outline" onClick={() => { setPrevious(template); setSelected(""); }}>Capture another version</Button></div>
+        <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm">Template <strong>{template.name} · v{template.version}</strong> captured by {template.capturedBy} on {template.capturedAtUtc}.</p><Button size="sm" variant="outline" disabled={hasPending} onClick={() => { setPrevious(template); setSelected(""); }}>Capture another version</Button></div>
         <ClosePreparationHistoryList history={template.history} label="Template history" />
-        <ClosePreparationTarget key={templateKey(template)} template={template} books={loaded.books} />
+        <ClosePreparationTarget key={templateKey(template)} template={template} books={loaded.books} onPendingChange={setHasPending} />
       </>}
     </> : null}
   </div>;
 }
 
-function ClosePreparationTarget({ template, books }: { template: ClosePlanTemplate; books: LedgerBook[] }) {
-  const [bookId, setBookId] = useState("");
-  const [periodId, setPeriodId] = useState("");
+function ClosePreparationTarget({ template, books, onPendingChange }: { template: ClosePlanTemplate; books: LedgerBook[]; onPendingChange: (pending: boolean) => void }) {
+  const [pending, setPending] = useState(() => matchingPendingCreation(template, books));
+  useEffect(() => { onPendingChange(Boolean(pending)); }, [pending, onPendingChange]);
+  const [bookId, setBookId] = useState(pending?.targetLedgerBookId ?? "");
+  const [periodId, setPeriodId] = useState(pending?.targetPeriodId ?? "");
   const [periods, setPeriods] = useState<LedgerPeriod[]>([]);
   const [periodLoading, setPeriodLoading] = useState(false);
   const [periodError, setPeriodError] = useState<string | null>(null);
@@ -164,11 +232,12 @@ function ClosePreparationTarget({ template, books }: { template: ClosePlanTempla
     return () => window.clearTimeout(timer);
   }, [preview]);
   const invalidate = () => {
+    if (pending) return;
     ++generation.current; controller.current?.abort(); creationKey.current = null;
     setPreview(null); setResult(null); setError(null); setExpired(false); setRetryCreate(false); setBusy(null);
   };
   const runPreview = async () => {
-    if (!bookId || !periodId || busy) return;
+    if (!bookId || !periodId || busy || pending) return;
     invalidate();
     const requestGeneration = generation.current;
     const request = new AbortController(); controller.current = request;
@@ -184,19 +253,31 @@ function ClosePreparationTarget({ template, books }: { template: ClosePlanTempla
     finally { if (requestGeneration === generation.current && !request.signal.aborted) setBusy(null); }
   };
   const create = async () => {
-    if (!preview?.canCreate || busy || !creationKey.current || (expired && !retryCreate)) return;
+    if (busy || result) return;
+    if (!pending && (!preview?.canCreate || !creationKey.current || (expired && !retryCreate))) return;
+    const command: PendingCloseCreation = pending ?? { version: 1, sourceWorkflowId: template.sourceWorkflowId,
+      sourceLedgerBookId: template.sourceLedgerBookId, fundProfileId: template.fundProfileId,
+      templateId: template.templateId, templateVersion: template.version, targetLedgerBookId: bookId, targetPeriodId: periodId,
+      previewId: preview!.previewId, idempotencyKey: creationKey.current! };
+    // Persist before the first POST, including a navigation or reload while it is in flight.
+    try { persistPendingCreation(command); }
+    catch (reason) { setError(message(reason)); return; }
+    setPending(command);
     const requestGeneration = generation.current;
     const request = new AbortController(); controller.current = request;
     setBusy("create"); setError(null);
     try {
-      const next = await createPreparedClosePlan({ previewId: preview.previewId, idempotencyKey: creationKey.current }, request.signal);
+      const next = await createPreparedClosePlan({ previewId: command.previewId, idempotencyKey: command.idempotencyKey }, request.signal);
       if (requestGeneration === generation.current && !request.signal.aborted) {
-        if (next.templateId !== template.templateId || next.templateVersion !== template.version || next.targetLedgerBookId !== bookId || next.targetPeriodId !== periodId || next.sourceWorkflowId !== template.sourceWorkflowId) throw new Error("Created plan response does not match the reviewed preparation. Retry the same request to recover its result.");
-        setResult(next); setRetryCreate(false);
+        if (!sameIdentity(next.templateId, command.templateId) || next.templateVersion !== command.templateVersion
+          || !sameIdentity(next.targetLedgerBookId, command.targetLedgerBookId) || !sameIdentity(next.targetPeriodId, command.targetPeriodId)
+          || !sameIdentity(next.sourceWorkflowId, command.sourceWorkflowId)) throw new Error("Created plan response does not match the reviewed preparation. Retry the same request to recover its result.");
+        clearPendingCreation(command); setPending(null); setResult(next); setRetryCreate(false);
       }
     } catch (reason) {
       if (requestGeneration === generation.current && !request.signal.aborted) {
         if (isStalePreviewError(reason)) {
+          clearPendingCreation(command); setPending(null);
           setPreview(null); creationKey.current = null; setRetryCreate(false);
           setError(`${message(reason)} Refresh the preview before creating the plan.`);
         } else { setRetryCreate(true); setError(`${message(reason)} Retry creation to recover the same plan; the retry keeps the original request identity.`); }
@@ -206,9 +287,13 @@ function ClosePreparationTarget({ template, books }: { template: ClosePlanTempla
   const selectedBook = books.find(book => book.ledgerBookId === bookId);
   const visiblePeriods = periods.filter(period => period.ledgerBookId.toLowerCase() === bookId.toLowerCase());
   const selectedPeriod = visiblePeriods.find(period => period.periodId === periodId);
-  const configurationDisabled = busy === "create" || result !== null;
+  const configurationDisabled = busy === "create" || result !== null || pending !== null;
   const selectedPolicyChanged = selectedBook && (selectedBook.accountingPolicyId !== template.sourceAccountingPolicyId || selectedBook.accountingPolicyVersion !== template.sourceAccountingPolicyVersion);
   return <div className="space-y-4 border-t border-border pt-4">
+    {pending && !preview && !result ? <div className="space-y-3">
+      <StatusBanner tone="warning" title="Unfinished creation request" detail="Recover the original request before preparing another period. The service will return its existing plan or recheck the original inputs." role="status" />
+      <Button disabled={Boolean(busy)} onClick={() => void create()}>{busy === "create" ? "Recovering creation…" : "Recover pending creation"}</Button>
+    </div> : null}
     <fieldset disabled={configurationDisabled} className="space-y-4">
       <legend className="mb-3 font-semibold">2. Select target and resolve mappings</legend>
       <FormGrid columns={2}>
@@ -229,7 +314,7 @@ function ClosePreparationTarget({ template, books }: { template: ClosePlanTempla
       {selectedBook ? <p className="text-sm"><strong>{selectedPolicyChanged ? "Policy changed" : "Book policy"}:</strong> {template.sourceAccountingPolicyId} · {template.sourceAccountingPolicyVersion} → {selectedBook.accountingPolicyId} · {selectedBook.accountingPolicyVersion}</p> : null}
       <Checkbox label="I have reviewed policy changes for this target book and period" checked={policyAcknowledged} onCheckedChange={checked => { invalidate(); setPolicyAcknowledged(checked); }} />
     </fieldset>
-    {!result ? <Button variant="outline" disabled={!bookId || !periodId || Boolean(busy)} onClick={() => void runPreview()}>{busy === "preview" ? "Calculating preview…" : preview || error ? "Refresh preview" : "Preview next period"}</Button> : null}
+    {!result ? <Button variant="outline" disabled={!bookId || !periodId || Boolean(busy) || Boolean(pending)} onClick={() => void runPreview()}>{busy === "preview" ? "Calculating preview…" : preview || error ? "Refresh preview" : "Preview next period"}</Button> : null}
     {error ? <StatusBanner tone="danger" title="Preparation needs attention" detail={error} role="alert" /> : null}
     {preview ? <ClosePreparationPreviewDetails preview={preview} /> : null}
     {preview && !result ? <>

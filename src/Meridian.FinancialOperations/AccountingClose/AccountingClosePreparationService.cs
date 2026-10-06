@@ -35,13 +35,15 @@ public sealed partial class AccountingClosePreparationService(
     IOperationsContinuityWorkflowService workflows,
     ILedgerBookService? books,
     ILedgerJournalStore? journalStore,
-    StorageOptions? storageOptions = null) : IAccountingClosePreparationService
+    StorageOptions? storageOptions = null,
+    TimeProvider? timeProvider = null) : IAccountingClosePreparationService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         Converters = { new JsonStringEnumConverter() }
     };
     private readonly SemaphoreSlim _gate = new(1, 1);
+    private readonly TimeProvider _timeProvider = timeProvider ?? TimeProvider.System;
     private readonly string? _directory = storageOptions is null ? null
         : Path.Combine(storageOptions.RootPath, "accounting", "close-preparation");
     private PreparationDocument _memory = new(1, [], [], []);
@@ -86,7 +88,7 @@ public sealed partial class AccountingClosePreparationService(
             if (entry.Template.SourceWorkflowId != request.SourceWorkflowId)
                 throw new InvalidOperationException("A template version cannot change its source workflow.");
         }
-        var now = DateTimeOffset.UtcNow;
+        var now = _timeProvider.GetUtcNow();
         var version = existing.Length == 0 ? 1 : existing.Max(entry => entry.Template.Version) + 1;
         var history = existing.OrderByDescending(entry => entry.Template.Version).FirstOrDefault()?.Template.History ?? [];
         var template = new ClosePlanTemplateDto(templateId, version, name, source.Workflow.WorkflowId,
@@ -161,13 +163,14 @@ public sealed partial class AccountingClosePreparationService(
             issues.Add(new("TargetPeriodNotOpen", "The authoritative target period is not open.", true));
         if (target.Period.StartDate <= source.Period.EndDate)
             issues.Add(new("TargetPeriodNotLater", "Choose an authoritative period after the source period.", true));
-        var existing = await workflows.ListAsync(template.FundAccountId, target.Period.PeriodId.ToString("D"), ct: ct, ledgerBookId: target.Book.LedgerBookId).ConfigureAwait(false);
-        // Legacy workflows can retain a display period key. Check both authoritative identity and date-label aliases.
-        var all = await workflows.ListAsync(template.FundAccountId, ct: ct, ledgerBookId: target.Book.LedgerBookId).ConfigureAwait(false);
-        if (existing.Count > 0 || all.Any(workflow => PeriodMatches(workflow.PeriodId, target.Period)) ||
+        // PostgreSQL permits only one open workflow per account and period across all books.
+        // Retain the stricter same-book rule for closed plans and recognize legacy period aliases.
+        var existing = await workflows.ListAsync(template.FundAccountId, ct: ct).ConfigureAwait(false);
+        if (existing.Any(workflow => PeriodMatches(workflow.PeriodId, target.Period)
+                && (workflow.LedgerBookId == target.Book.LedgerBookId || workflow.Status != OperationsWorkflowStatusDto.Closed)) ||
             state.Creations.Any(creation => !creation.Abandoned && creation.TargetBookId == target.Book.LedgerBookId && creation.TargetPeriodId == target.Period.PeriodId))
-            issues.Add(new("TargetPlanExists", "A close plan or retained creation already exists for this book and period.", true));
-        var now = DateTimeOffset.UtcNow;
+            issues.Add(new("TargetPlanExists", "A close plan or retained creation exists for this book and period, or an open workflow already uses this account and period.", true));
+        var now = _timeProvider.GetUtcNow();
         var preview = new ClosePreparationPreviewDto(Guid.NewGuid(), template.TemplateId, template.Version,
             template.SourceWorkflowId, target.Book, ToDto(target.Book, target.Period), template.Calendar,
             preparedTasks, issues, policyChanged, issues.All(issue => !issue.IsBlocking), now, now.AddMinutes(15));
@@ -207,7 +210,7 @@ public sealed partial class AccountingClosePreparationService(
         }
         if (!preview.CanCreate)
             throw new InvalidOperationException("Resolve the blocking mappings and policies, then generate a fresh preview.");
-        if (claim is null && preview.ExpiresAtUtc <= DateTimeOffset.UtcNow)
+        if (claim is null && preview.ExpiresAtUtc <= _timeProvider.GetUtcNow())
             throw new ClosePreparationPreviewStaleException("This preparation preview expired; generate a fresh preview.");
         if (state.Templates.Any(entry => entry.Template.TemplateId == template.TemplateId && entry.Template.Version > previewEntry.LatestTemplateVersion))
             await RejectStaleAsync(state, claim, "The template version changed.", ct).ConfigureAwait(false);
@@ -221,10 +224,11 @@ public sealed partial class AccountingClosePreparationService(
         {
             if (state.Creations.Any(creation => !creation.Abandoned && creation.TargetBookId == target.Book.LedgerBookId && creation.TargetPeriodId == target.Period.PeriodId))
                 throw new InvalidOperationException("A creation already exists for this book and period. Retry the original request.");
-            var existing = await workflows.ListAsync(template.FundAccountId, ct: ct, ledgerBookId: target.Book.LedgerBookId).ConfigureAwait(false);
-            if (existing.Any(workflow => PeriodMatches(workflow.PeriodId, target.Period)))
-                throw new InvalidOperationException("A close plan already exists for the target book and period.");
-            var now = DateTimeOffset.UtcNow;
+            var existing = await workflows.ListAsync(template.FundAccountId, ct: ct).ConfigureAwait(false);
+            if (existing.Any(workflow => PeriodMatches(workflow.PeriodId, target.Period)
+                    && (workflow.LedgerBookId == target.Book.LedgerBookId || workflow.Status != OperationsWorkflowStatusDto.Closed)))
+                throw new InvalidOperationException("A close plan exists for this book and period, or an open workflow already uses this account and period.");
+            var now = _timeProvider.GetUtcNow();
             claim = new CreationEntry(tenantId, companyId, key, preview.PreviewId, Guid.NewGuid(),
                 template.TemplateId, template.Version, template.SourceWorkflowId, target.Book.LedgerBookId,
                 target.Period.PeriodId, now, actor.Trim(), false,

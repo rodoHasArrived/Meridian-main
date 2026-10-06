@@ -710,38 +710,37 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             throw new ArgumentException("Close plan configuration evidence must reference the workflow or exact close period and selected ledger book on the same artifact.", nameof(request));
         }
 
-        var currentConfiguration = GetPlanConfiguration(request.WorkflowId);
-        if (currentConfiguration?.Preparation is not null)
-            evidenceLinks = NormalizeEvidenceLinks(evidenceLinks.Concat(currentConfiguration.EvidenceLinks
-                .Where(link => link.StartsWith("close-plan-preparation:", StringComparison.Ordinal))));
-        if (currentConfiguration?.ConfiguredAtUtc is { } configuredAtUtc &&
-            request.ExpectedConfiguredAtUtc is { } expectedConfiguredAtUtc &&
-            !CloseConfigurationVersionMatches(configuredAtUtc, expectedConfiguredAtUtc))
-        {
-            throw new InvalidOperationException(
-                $"Close plan configuration for workflow '{request.WorkflowId}' changed at {configuredAtUtc:O}; reload the close plan before retaining setup changes.");
-        }
-
-        var materialityPolicy = NormalizeMaterialityPolicy(request.MaterialityPolicy, currentConfiguration?.MaterialityPolicy, workflow);
-        var taskConfigurations = NormalizeTaskConfigurations(request.TaskConfigurations, workflow);
-        if (request.MaterialityPolicy is null && taskConfigurations.Count == 0)
-        {
-            throw new ArgumentException("Close plan configuration must include a materiality policy or at least one task configuration.", nameof(request));
-        }
-
-        var configuration = new ClosePeriodPlanConfigurationDto(
-            request.WorkflowId,
-            materialityPolicy,
-            taskConfigurations,
-            resolvedActor,
-            DateTimeOffset.UtcNow,
-            evidenceLinks,
-            request.Preparation ?? currentConfiguration?.Preparation);
-
         await _writeGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            EnsurePreparedConfigurationDoesNotOverwrite(request);
+            var currentConfiguration = GetPlanConfiguration(request.WorkflowId);
+            EnsurePreparedConfigurationDoesNotOverwrite(request, currentConfiguration);
+            if (currentConfiguration?.Preparation is not null)
+                evidenceLinks = NormalizeEvidenceLinks(evidenceLinks.Concat(currentConfiguration.EvidenceLinks
+                    .Where(link => link.StartsWith("close-plan-preparation:", StringComparison.Ordinal))));
+            if (currentConfiguration?.ConfiguredAtUtc is { } configuredAtUtc &&
+                request.ExpectedConfiguredAtUtc is { } expectedConfiguredAtUtc &&
+                !CloseConfigurationVersionMatches(configuredAtUtc, expectedConfiguredAtUtc))
+            {
+                throw new InvalidOperationException(
+                    $"Close plan configuration for workflow '{request.WorkflowId}' changed at {configuredAtUtc:O}; reload the close plan before retaining setup changes.");
+            }
+
+            var materialityPolicy = NormalizeMaterialityPolicy(request.MaterialityPolicy, currentConfiguration?.MaterialityPolicy, workflow);
+            var taskConfigurations = NormalizeTaskConfigurations(request.TaskConfigurations, workflow);
+            if (request.MaterialityPolicy is null && taskConfigurations.Count == 0)
+            {
+                throw new ArgumentException("Close plan configuration must include a materiality policy or at least one task configuration.", nameof(request));
+            }
+
+            var configuration = new ClosePeriodPlanConfigurationDto(
+                request.WorkflowId,
+                materialityPolicy,
+                taskConfigurations,
+                resolvedActor,
+                DateTimeOffset.UtcNow,
+                evidenceLinks,
+                request.Preparation ?? currentConfiguration?.Preparation);
             var configurations = ReadPlanConfigurations()
                 .Where(row => row.WorkflowId != request.WorkflowId)
                 .Append(configuration)

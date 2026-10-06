@@ -15,6 +15,7 @@ const service = vi.mocked(api);
 
 beforeEach(() => {
   vi.resetAllMocks();
+  sessionStorage.clear();
   service.listClosePreparationSources.mockResolvedValue([sourceWorkflow]);
   service.getClosePreparationSource.mockResolvedValue(sourcePlan);
   service.getClosePreparationBooks.mockResolvedValue([targetBook]);
@@ -24,6 +25,12 @@ beforeEach(() => {
   service.previewClosePreparation.mockResolvedValue(preparationPreview);
   service.createPreparedClosePlan.mockResolvedValue(preparedResult);
 });
+
+const recoveryKey = `meridian.close-preparation.pending.v1:${sourceWorkflow.workflowId}`;
+const storedRecovery = () => JSON.parse(sessionStorage.getItem(recoveryKey) ?? "null") as { previewId: string; idempotencyKey: string } | null;
+const pendingCreation = () => ({ version: 1, sourceWorkflowId: sourceWorkflow.workflowId, sourceLedgerBookId: targetBook.ledgerBookId,
+  fundProfileId: retainedTemplate.fundProfileId, templateId: retainedTemplate.templateId, templateVersion: retainedTemplate.version,
+  targetLedgerBookId: targetBook.ledgerBookId, targetPeriodId: targetPeriod.periodId, previewId: preparationPreview.previewId, idempotencyKey: "retained-request-key" });
 
 async function openTemplate() {
   const user = userEvent.setup();
@@ -101,6 +108,7 @@ it("rejects stale previews and requires a new preview before another creation", 
   await user.click(screen.getByRole("button", { name: "Preview next period" }));
   await user.click(await screen.findByRole("button", { name: "Create next-period plan" }));
   await screen.findByText(/Refresh the preview before creating the plan/);
+  expect(storedRecovery()).toBeNull();
   expect(screen.queryByRole("button", { name: "Create next-period plan" })).not.toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: "Refresh preview" }));
   await user.click(await screen.findByRole("button", { name: "Create next-period plan" }));
@@ -118,6 +126,87 @@ it.each([new Error("Connection interrupted"), new ApiError({ path: "/prepare/cre
   await screen.findByText("Existing preparation recovered");
   expect(service.createPreparedClosePlan.mock.calls[1][0]).toEqual(service.createPreparedClosePlan.mock.calls[0][0]);
   expect(service.previewClosePreparation).toHaveBeenCalledTimes(1);
+  expect(storedRecovery()).toBeNull();
+});
+
+it("persists before posting and recovers a lost response after reload with the original identity", async () => {
+  service.createPreparedClosePlan.mockImplementationOnce(async command => {
+    expect(storedRecovery()).toEqual(expect.objectContaining(command));
+    throw new Error("Response lost after creation");
+  }).mockResolvedValueOnce({ ...preparedResult, wasAlreadyCreated: true });
+  const { user, unmount } = await selectTarget();
+  await user.click(screen.getByRole("button", { name: "Preview next period" }));
+  await user.click(await screen.findByRole("button", { name: "Create next-period plan" }));
+  await screen.findByRole("button", { name: "Retry creation" });
+  const saved = storedRecovery();
+  expect(saved).not.toBeNull();
+  expect(screen.getByRole("button", { name: "Refresh preview" })).toBeDisabled();
+  expect(screen.getByLabelText("Retained template")).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Capture another version" })).toBeDisabled();
+  unmount();
+
+  service.listClosePreparationSources.mockResolvedValue([{ ...sourceWorkflow, workflowId: preparedResult.workflowId, periodId: targetPeriod.periodId }, sourceWorkflow]);
+  render(<MemoryRouter><PrepareNextPeriodPanel initialWorkflowId={preparedResult.workflowId} /></MemoryRouter>);
+  await user.click(screen.getByRole("button", { name: "Prepare next period" }));
+  await user.click(await screen.findByRole("button", { name: "Recover pending creation" }));
+  await screen.findByText("Existing preparation recovered");
+  expect(screen.getByLabelText("Source plan")).toHaveValue(sourceWorkflow.workflowId);
+  expect(service.createPreparedClosePlan.mock.calls[1][0]).toEqual(service.createPreparedClosePlan.mock.calls[0][0]);
+  expect(service.previewClosePreparation).toHaveBeenCalledTimes(1);
+  expect(storedRecovery()).toBeNull();
+});
+
+it.each([
+  { sourceWorkflowId: "other-source" }, { sourceLedgerBookId: "other-book" }, { fundProfileId: "other-fund" },
+  { targetLedgerBookId: "foreign-target" }, { templateVersion: 99 },
+])("ignores stored recovery outside the freshly authorized source/template/book scope: %j", async mismatch => {
+  sessionStorage.setItem(recoveryKey, JSON.stringify({ ...pendingCreation(), ...mismatch }));
+  const { user } = await openTemplate();
+  expect(screen.queryByRole("button", { name: "Recover pending creation" })).not.toBeInTheDocument();
+  expect(screen.getByLabelText("Target book")).toBeEnabled();
+  await user.selectOptions(screen.getByLabelText("Target book"), targetBook.ledgerBookId);
+  expect(service.createPreparedClosePlan).not.toHaveBeenCalled();
+});
+
+it.each([
+  new ApiError({ path: "/prepare/create", status: 409, detail: "The original preview expired before creation.", responseBody: JSON.stringify({ code: "PREPARATION_PREVIEW_STALE" }) }),
+  new ApiError({ path: "/prepare/create", status: 404, detail: "The unclaimed preview was not found." }),
+])("recovers without cached authority and clears terminal stale or missing preview rejection: %s", async failure => {
+  sessionStorage.setItem(recoveryKey, JSON.stringify(pendingCreation()));
+  service.createPreparedClosePlan.mockRejectedValueOnce(failure);
+  const user = userEvent.setup();
+  render(<MemoryRouter><PrepareNextPeriodPanel initialWorkflowId={sourceWorkflow.workflowId} /></MemoryRouter>);
+  await user.click(screen.getByRole("button", { name: "Prepare next period" }));
+  const recover = await screen.findByRole("button", { name: "Recover pending creation" });
+  expect(screen.queryByRole("region", { name: "Next-period preview" })).not.toBeInTheDocument();
+  expect(screen.getByLabelText("Target book")).toBeDisabled();
+  await user.click(recover);
+  await screen.findByText(/Refresh the preview before creating the plan/);
+  expect(service.createPreparedClosePlan).toHaveBeenCalledWith({ previewId: preparationPreview.previewId, idempotencyKey: "retained-request-key" }, expect.any(AbortSignal));
+  expect(storedRecovery()).toBeNull();
+  expect(screen.queryByRole("button", { name: "Recover pending creation" })).not.toBeInTheDocument();
+  expect(screen.getByLabelText("Target book")).toBeEnabled();
+});
+
+it("does not post a creation when recovery identity cannot be persisted", async () => {
+  const { user } = await selectTarget();
+  await user.click(screen.getByRole("button", { name: "Preview next period" }));
+  const write = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => { throw new Error("Storage disabled"); });
+  try {
+    await user.click(await screen.findByRole("button", { name: "Create next-period plan" }));
+    expect(await screen.findByText(/Enable browser session storage before creating the plan/)).toBeInTheDocument();
+    expect(service.createPreparedClosePlan).not.toHaveBeenCalled();
+  } finally { write.mockRestore(); }
+});
+
+it("never replaces a different pending command retained for the same authorized source", async () => {
+  const { user } = await selectTarget();
+  await user.click(screen.getByRole("button", { name: "Preview next period" }));
+  sessionStorage.setItem(recoveryKey, JSON.stringify(pendingCreation()));
+  await user.click(await screen.findByRole("button", { name: "Create next-period plan" }));
+  expect(await screen.findByText(/A pending creation already exists for this source plan/)).toBeInTheDocument();
+  expect(service.createPreparedClosePlan).not.toHaveBeenCalled();
+  expect(storedRecovery()?.idempotencyKey).toBe("retained-request-key");
 });
 
 it("discards a late preview after the operator changes an owner", async () => {
