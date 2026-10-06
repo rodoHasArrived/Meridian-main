@@ -14,6 +14,7 @@ public sealed class EvidenceGraphService
     private readonly EvidencePacketValidationService _validationService;
     private readonly ILogger<EvidenceGraphService> _logger;
     private readonly PostedLedgerAmountProvenanceService? _postedLedgerAmounts;
+    private readonly ReportLedgerAmountProvenanceService? _reportLedgerAmounts;
 
     public EvidenceGraphService(
         EvidenceSubjectResolver subjectResolver,
@@ -22,7 +23,8 @@ public sealed class EvidenceGraphService
         ILogger<EvidenceGraphService> logger,
         IWorkflowActionCatalog? actionCatalog = null,
         EvidencePacketValidationService? validationService = null,
-        PostedLedgerAmountProvenanceService? postedLedgerAmounts = null)
+        PostedLedgerAmountProvenanceService? postedLedgerAmounts = null,
+        ReportLedgerAmountProvenanceService? reportLedgerAmounts = null)
     {
         _subjectResolver = subjectResolver ?? throw new ArgumentNullException(nameof(subjectResolver));
         _templateRegistry = templateRegistry ?? throw new ArgumentNullException(nameof(templateRegistry));
@@ -31,6 +33,7 @@ public sealed class EvidenceGraphService
         _actionCatalog = actionCatalog;
         _validationService = validationService ?? new EvidencePacketValidationService();
         _postedLedgerAmounts = postedLedgerAmounts;
+        _reportLedgerAmounts = reportLedgerAmounts;
     }
 
     public Task<IReadOnlyList<EvidenceSubjectDto>> ListSubjectsAsync(CancellationToken ct = default)
@@ -43,13 +46,19 @@ public sealed class EvidenceGraphService
         string subjectId,
         CancellationToken ct = default,
         Guid? ledgerBookId = null,
-        LedgerAmountScopeDto? ledgerAmountScope = null)
+        LedgerAmountScopeDto? ledgerAmountScope = null,
+        ReportAccessQueryContext? reportAccess = null)
     {
         // Amount proof has one authority. General contributors must never add unrelated cases.
         if (string.Equals(subjectKind, EvidenceSubjectResolver.LedgerAmountKind, StringComparison.OrdinalIgnoreCase))
+        {
+            if (ReportLedgerAmountProvenanceService.IsReportSubject(subjectId))
+                return _reportLedgerAmounts is null || ledgerAmountScope is null ? null
+                    : await _reportLedgerAmounts.GetPacketAsync(subjectId, ledgerAmountScope, reportAccess, ct).ConfigureAwait(false);
             return _postedLedgerAmounts is null || ledgerAmountScope is null
                 ? null
                 : await _postedLedgerAmounts.GetPacketAsync(subjectId, ledgerAmountScope, ct).ConfigureAwait(false);
+        }
 
         var subject = await _subjectResolver.ResolveAsync(subjectKind, subjectId, ct, ledgerBookId).ConfigureAwait(false);
         if (subject is null)
@@ -166,9 +175,10 @@ public sealed class EvidenceGraphService
         string subjectId,
         CancellationToken ct = default,
         Guid? ledgerBookId = null,
-        LedgerAmountScopeDto? ledgerAmountScope = null)
+        LedgerAmountScopeDto? ledgerAmountScope = null,
+        ReportAccessQueryContext? reportAccess = null)
     {
-        var packet = await GetPacketAsync(subjectKind, subjectId, ct, ledgerBookId, ledgerAmountScope).ConfigureAwait(false);
+        var packet = await GetPacketAsync(subjectKind, subjectId, ct, ledgerBookId, ledgerAmountScope, reportAccess).ConfigureAwait(false);
         return packet is null
             ? null
             : new EvidenceGraphDto(packet.Subject, packet.GeneratedAt, packet.Nodes, packet.Edges, packet.Warnings)

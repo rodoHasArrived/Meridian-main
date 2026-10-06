@@ -148,6 +148,13 @@ public sealed partial class PostgresLedgerJournalStore :
         LedgerJournalEntryQuery query,
         CancellationToken ct = default)
     {
+        var lineDimensionsJson = ValidateJournalQuery(query);
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        return await QueryAsync(connection, null, query, lineDimensionsJson, ct).ConfigureAwait(false);
+    }
+
+    private static string? ValidateJournalQuery(LedgerJournalEntryQuery query)
+    {
         ArgumentNullException.ThrowIfNull(query);
         var lineDimensionsJson = BuildLineDimensionContainmentJson(query.LineDimensions);
         if (!query.LedgerBookId.HasValue
@@ -164,8 +171,18 @@ public sealed partial class PostgresLedgerJournalStore :
             throw new ArgumentException("At least one journal query filter is required.", nameof(query));
         }
 
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        return lineDimensionsJson;
+    }
+
+    private async Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction? transaction,
+        LedgerJournalEntryQuery query,
+        string? lineDimensionsJson,
+        CancellationToken ct)
+    {
         await using var command = CreateJournalEntryReadCommand(connection);
+        command.Transaction = transaction;
         command.CommandText += BuildJournalEntryQueryFilterSql(
             Qualified("journal_entries"),
             Qualified("journal_legs"),

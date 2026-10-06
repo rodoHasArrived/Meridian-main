@@ -1,9 +1,6 @@
 using System.Collections.Immutable;
 using System.Globalization;
-using System.Text;
-using System.Text.Json;
 using Meridian.Contracts.FundStructure;
-using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Tenancy;
@@ -87,7 +84,6 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
     private readonly IFundProfileTenancyRegistry _tenancyRegistry;
     private readonly IFundStructureService _fundStructure;
     private readonly TimeProvider _timeProvider;
-    private readonly ILedgerTaxLotDisposalHistory? _taxLotDisposalHistory;
 
     public LedgerReportingAuthoritativeSource(
         ILedgerJournalStore journalStore,
@@ -101,10 +97,9 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
         _fundStructure = fundStructure ?? throw new ArgumentNullException(nameof(fundStructure));
         _timeProvider = timeProvider ?? TimeProvider.System;
 
-        // Optional: a store without retained tax-lot history contributes no realized-gain rows, which
-        // is exactly the behavior the pack had before. Falling back to the journal store keeps the
-        // common case (one Postgres store implementing both) wired without extra registration.
-        _taxLotDisposalHistory = taxLotDisposalHistory ?? journalStore as ILedgerTaxLotDisposalHistory;
+        // The optional history argument is retained for caller compatibility. Certified relief
+        // must come from the atomic reporting snapshot seam, never a later independent read.
+        _ = taxLotDisposalHistory;
     }
 
     public ValueTask<ReportingAuthoritativeSourceCapture> CaptureAsync(
@@ -185,27 +180,45 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
         ValidatePeriod(parameters, period, book);
 
         var requiredDimensions = BuildRequiredDimensions(parameters, fundId, book.LedgerBookId, organization.OrganizationId);
+        var populationDimensions = new LedgerLineDimensionSet(
+            FundId: fundId,
+            OrganizationId: requiredDimensions.OrganizationId,
+            BookId: book.LedgerBookId.ToString("D"));
+        var populationQuery = new LedgerJournalEntryQuery(
+            LedgerBookId: book.LedgerBookId,
+            LineDimensions: populationDimensions,
+            OccurredTo: cutoffUtc);
         IReadOnlyList<LedgerJournalEntryRecord> records;
+        IReadOnlyList<LedgerTaxLotDisposalHistoryRecord>? retainedTaxHistory = null;
         try
         {
-            records = await _journalStore.QueryAsync(
-                new LedgerJournalEntryQuery(
-                    LedgerBookId: book.LedgerBookId,
-                    PeriodId: period.PeriodId,
-                    LineDimensions: requiredDimensions,
-                    OccurredTo: cutoffUtc),
-                cancellationToken).ConfigureAwait(false);
+            if (_journalStore is ILedgerReportingSnapshotSource snapshotSource)
+            {
+                var captured = await snapshotSource.CaptureReportingSnapshotAsync(populationQuery, period.PeriodId, cancellationToken)
+                    .ConfigureAwait(false);
+                records = captured.Journals;
+                retainedTaxHistory = captured.TaxLotDisposalHistory;
+                period = captured.Period
+                    ?? throw Unavailable("The reporting snapshot did not retain its accounting period authority.");
+                ValidatePeriod(parameters, period, book);
+            }
+            else
+            {
+                throw Unavailable(
+                    "Certified reporting requires a ledger reporting snapshot authority that captures journals, accounting period, and tax-lot history together.");
+            }
         }
         catch (NotSupportedException exception)
         {
             throw Unavailable(
-                $"The configured ledger journal store cannot provide an authoritative scoped as-of query: {exception.Message}");
+                $"The configured ledger journal store cannot provide an authoritative scoped as-of snapshot: {exception.Message}");
         }
 
-        var ordered = records
+        var orderedHistory = records
             .OrderBy(static record => record.GlobalSequence)
             .ThenBy(static record => record.Entry.JournalEntryId)
             .ToArray();
+        var ordered = orderedHistory.Where(record => record.PeriodId == period.PeriodId).ToArray();
         ordered = FilterToCertifiedDimensions(
             ordered,
             period,
@@ -229,35 +242,32 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
                 "Final reporting is blocked because the exact fund/book/period/basis/as-of source contains no ledger rows.");
         }
 
-        var canonicalReportPack = ReportingCertifiedLedgerPresentationBinding.IsRequired(
-                intent,
-                parameters.OutputFormat)
-            ? await BuildCanonicalLedgerReportPackAsync(
-                    parameters,
-                    fundId,
-                    book,
-                    period,
-                    basis,
-                    cutoffUtc,
-                    requiredDimensions,
-                    cancellationToken)
-                .ConfigureAwait(false)
+        var populationSnapshot = BuildLedgerPopulationSnapshot(
+            parameters, new LedgerAmountScopeDto(tenantId, companyId, fundId, book.LedgerBookId, period.PeriodId),
+            book, period, basis, cutoffUtc, requiredDimensions, orderedHistory, retainedTaxHistory,
+            cancellationToken);
+        populationSnapshot = populationSnapshot with
+        {
+            PeriodVersion = period.Version,
+            DatasetRows = rows,
+            ReportAmounts = ReportAmountBindingBuilder.Build(populationSnapshot)
+        };
+        var retainedPopulation = populationSnapshot.Retain();
+        var canonicalReportPack = ReportingCertifiedLedgerPresentationBinding.IsRequired(intent, parameters.OutputFormat)
+            ? populationSnapshot.Replay()
             : null;
-        var highestSequence = ordered.Length == 0 ? 0 : ordered.Max(static record => record.GlobalSequence);
+        var highestSequence = retainedPopulation.HighestGlobalSequence;
         var capturedAtUtc = _timeProvider.GetUtcNow().ToUniversalTime();
         var sourceId = $"ledger:{book.LedgerBookId:D}:{period.PeriodId:D}";
-        var checkpointHash = ComputeCheckpointHash(
-            tenantId,
-            organization.OrganizationId.ToString("D"),
-            companyId,
-            fundId,
-            book,
-            period,
-            basis,
-            parameters,
-            cutoffUtc,
-            highestSequence,
-            rows);
+        var checkpoint = new ReportingAuthoritativeSourceCheckpoint(
+            SourceKind, sourceId, tenantId, organization.OrganizationId.ToString("D"), companyId,
+            fundId, book.LedgerBookId.ToString("D"), period.PeriodId.ToString("D"), basis.ToString(),
+            parameters.AsOfDate, cutoffUtc, highestSequence, ordered.Length, rows.Length,
+            "", "", capturedAtUtc, [])
+        {
+            LedgerPopulation = retainedPopulation
+        };
+        var checkpointHash = populationSnapshot.ComputeCheckpointHash(checkpoint);
         var checkpointId = $"ledger-checkpoint-{checkpointHash[..32]}";
         var evidence = ImmutableArray.CreateBuilder<string>();
         evidence.Add($"reporting-source-checkpoint:{checkpointId}:{checkpointHash}");
@@ -265,29 +275,17 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
             $"ledger-source:{tenantId}:{organization.OrganizationId:D}:{companyId}:{fundId}:{book.LedgerBookId:D}:{period.PeriodId:D}:{basis}:{parameters.AsOfDate:yyyy-MM-dd}");
         evidence.Add($"ledger-sequence:{highestSequence.ToString(CultureInfo.InvariantCulture)}");
         evidence.Add($"ledger-rows:{rows.Length.ToString(CultureInfo.InvariantCulture)}");
+        evidence.Add($"ledger-population:{retainedPopulation.SnapshotId}:{retainedPopulation.ContentHashSha256}");
         if (canonicalReportPack is not null)
         {
             evidence.Add(ReportingCertifiedLedgerPresentationBinding.BuildEvidenceId(canonicalReportPack));
         }
-        var checkpoint = new ReportingAuthoritativeSourceCheckpoint(
-            SourceKind,
-            sourceId,
-            tenantId,
-            organization.OrganizationId.ToString("D"),
-            companyId,
-            fundId,
-            book.LedgerBookId.ToString("D"),
-            period.PeriodId.ToString("D"),
-            basis.ToString(),
-            parameters.AsOfDate,
-            cutoffUtc,
-            highestSequence,
-            ordered.Length,
-            rows.Length,
-            checkpointId,
-            checkpointHash,
-            capturedAtUtc,
-            evidence.ToImmutable());
+        checkpoint = checkpoint with
+        {
+            CheckpointId = checkpointId,
+            CheckpointHash = checkpointHash,
+            EvidenceIds = evidence.ToImmutable()
+        };
         var presentation = canonicalReportPack is null
             ? null
             : new ReportingCertifiedLedgerPresentationInput(
@@ -298,47 +296,30 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
         return new ReportingAuthoritativeSourceCapture(checkpoint, rows, presentation);
     }
 
-    private async Task<LedgerFinancialReportPack> BuildCanonicalLedgerReportPackAsync(
+    private ReportingLedgerPopulationSnapshot BuildLedgerPopulationSnapshot(
         ReportingRunParametersDto parameters,
-        string fundId,
+        LedgerAmountScopeDto scope,
         LedgerBookRecord book,
         LedgerAccountingPeriod period,
         AccountingBasisKindDto basis,
         DateTimeOffset cutoffUtc,
         LedgerLineDimensionSet selectedDimensions,
+        LedgerJournalEntryRecord[] orderedHistory,
+        IReadOnlyList<LedgerTaxLotDisposalHistoryRecord>? retainedTaxHistory,
         CancellationToken cancellationToken)
     {
+        var fundId = scope.FundProfileId;
         var baseDimensions = new LedgerLineDimensionSet(
             FundId: fundId,
             OrganizationId: selectedDimensions.OrganizationId,
             BookId: book.LedgerBookId.ToString("D"));
-        IReadOnlyList<LedgerJournalEntryRecord> historicalRecords;
-        try
-        {
-            historicalRecords = await _journalStore.QueryAsync(
-                    new LedgerJournalEntryQuery(
-                        LedgerBookId: book.LedgerBookId,
-                        LineDimensions: baseDimensions,
-                        OccurredTo: cutoffUtc),
-                    cancellationToken)
-                .ConfigureAwait(false);
-        }
-        catch (NotSupportedException exception)
-        {
-            throw Unavailable(
-                $"The configured ledger journal store cannot build the canonical partners-capital presentation from complete as-of history: {exception.Message}");
-        }
-
-        var orderedHistory = historicalRecords
-            .OrderBy(static record => record.GlobalSequence)
-            .ThenBy(static record => record.Entry.JournalEntryId)
-            .ToArray();
         var sequences = new HashSet<long>();
         var ledger = new Meridian.Ledger.Ledger();
         foreach (var record in orderedHistory)
         {
             if (record.AccountingBasis != basis
                 || record.Entry.Timestamp > cutoffUtc
+                || record.PeriodId == Guid.Empty
                 || record.GlobalSequence <= 0
                 || !sequences.Add(record.GlobalSequence))
             {
@@ -352,6 +333,9 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
                     ?? throw Unavailable(
                         $"Ledger line '{line.EntryId:D}' lacks the immutable dimensional scope required for the canonical client presentation.");
                 EnsureDimensionsMatch(dimensions, baseDimensions, line.EntryId);
+                if (line.Currency is { } currency
+                    && !string.Equals(currency.FunctionalCurrency, book.BaseCurrency.Trim(), StringComparison.OrdinalIgnoreCase))
+                    throw Unavailable($"Ledger line '{line.EntryId:D}' uses functional currency '{currency.FunctionalCurrency}', not certified book currency '{book.BaseCurrency}'.");
             }
 
             try
@@ -396,17 +380,15 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
         // any, so it shipped as a header with no rows. Rebuilding them from retained disposal
         // history against the same journals this checkpoint was taken over is what makes the
         // realized-gain and wash-sale columns report real numbers.
-        var taxLotReliefProjections = await BuildTaxLotReliefProjectionsAsync(
+        var taxLotReliefProjections = BuildTaxLotReliefProjections(
                 book.LedgerBookId,
                 orderedHistory,
                 book.BaseCurrency,
-                cancellationToken)
-            .ConfigureAwait(false);
+                retainedTaxHistory,
+                cancellationToken);
 
-        return LedgerReportPackBuilder.Build(
-            ledger,
-            reportRequest,
-            taxLotReliefProjections: taxLotReliefProjections);
+        return new ReportingLedgerPopulationSnapshot(scope, reportRequest,
+            orderedHistory.ToImmutableArray(), taxLotReliefProjections.ToImmutableArray());
     }
 
     /// <summary>
@@ -414,39 +396,27 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
     /// <paramref name="journals"/>. A disposal whose retained economics cannot produce a well-formed
     /// projection blocks capture until its canonical acquisition evidence and economics reconcile.
     /// </summary>
-    private async Task<IReadOnlyList<LedgerTaxLotReliefProjection>> BuildTaxLotReliefProjectionsAsync(
+    private static IReadOnlyList<LedgerTaxLotReliefProjection> BuildTaxLotReliefProjections(
         Guid ledgerBookId,
         IReadOnlyList<LedgerJournalEntryRecord> journals,
         string functionalCurrency,
+        IReadOnlyList<LedgerTaxLotDisposalHistoryRecord>? retainedTaxHistory,
         CancellationToken cancellationToken)
     {
         if (journals.Count == 0)
         {
             return [];
         }
-        if (_taxLotDisposalHistory is null)
+        cancellationToken.ThrowIfCancellationRequested();
+        if (retainedTaxHistory is null)
         {
             if (journals.Any(record => record.Entry.Lines.Any(line =>
                 line.Dimensions?.InstrumentId is not null || line.Dimensions?.PositionId is not null ||
                 line.Account.Name == LedgerAccounts.RealizedGain.Name || line.Account.Name == LedgerAccounts.RealizedLoss.Name)))
-                throw Unavailable("Canonical tax-lot history is required for investment journals; the acquisition backfill and disposal history authority are unavailable.");
+                throw Unavailable("Certified investment reporting requires journal and tax-lot history captured together by the ledger reporting snapshot authority.");
             return [];
         }
-
-        IReadOnlyList<LedgerTaxLotDisposalHistoryRecord> disposals;
-        try
-        {
-            disposals = await _taxLotDisposalHistory
-                .GetTaxLotDisposalHistoryAsync(
-                    ledgerBookId,
-                    journals.Select(static record => record.Entry.JournalEntryId).ToArray(),
-                    cancellationToken)
-                .ConfigureAwait(false);
-        }
-        catch (Exception exception) when (exception is NotSupportedException or LedgerValidationException or ArgumentException or InvalidOperationException or JsonException)
-        {
-            throw Unavailable($"Canonical tax-lot history is unavailable: {exception.Message}");
-        }
+        var disposals = retainedTaxHistory;
 
         if (disposals.Count == 0)
         {
@@ -1027,51 +997,6 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
         // over-allocates and does not equal Count; MoveToImmutable would throw. ToImmutable freezes
         // the exact contents regardless of capacity.
         return rows.ToImmutable();
-    }
-
-    private static string ComputeCheckpointHash(
-        string tenantId,
-        string organizationId,
-        string companyId,
-        string fundId,
-        LedgerBookRecord book,
-        LedgerAccountingPeriod period,
-        AccountingBasisKindDto basis,
-        ReportingRunParametersDto parameters,
-        DateTimeOffset cutoffUtc,
-        long highestSequence,
-        ImmutableArray<IReadOnlyDictionary<string, string>> rows)
-    {
-        using var stream = new MemoryStream();
-        using (var writer = new Utf8JsonWriter(stream))
-        {
-            writer.WriteStartObject();
-            writer.WriteString("sourceKind", SourceKind);
-            writer.WriteString("tenantId", tenantId);
-            writer.WriteString("organizationId", organizationId);
-            writer.WriteString("companyId", companyId);
-            writer.WriteString("fundId", fundId);
-            writer.WriteString("ledgerBookId", book.LedgerBookId);
-            writer.WriteString("accountingPeriodId", period.PeriodId);
-            writer.WriteString("accountingBasis", basis.ToString());
-            writer.WriteString("asOfDate", parameters.AsOfDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-            writer.WriteString("cutoffUtc", cutoffUtc.ToString("O", CultureInfo.InvariantCulture));
-            writer.WriteNumber("periodVersion", period.Version);
-            writer.WriteNumber("highestGlobalSequence", highestSequence);
-            writer.WriteStartArray("rows");
-            foreach (var row in rows)
-            {
-                writer.WriteStartObject();
-                foreach (var pair in row.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
-                {
-                    writer.WriteString(pair.Key, pair.Value);
-                }
-                writer.WriteEndObject();
-            }
-            writer.WriteEndArray();
-            writer.WriteEndObject();
-        }
-        return Sha256Digest.Compute(stream.ToArray());
     }
 
     private static void ValidateParameterEnums(ReportingRunParametersDto parameters)

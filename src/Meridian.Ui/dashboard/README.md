@@ -11,6 +11,17 @@ last_reviewed: 2026-09-02
 
 # src/Meridian.Ui/dashboard
 
+Report Run Detail exposes retained trial-balance account balances from the exact run's ledger
+checkpoint through `/api/fund-structure/reporting/runs/{runId}/amounts`. Each balance opens the
+shared `LedgerAmountProofDrawer` with its immutable `report:{runId}:{amountId}` subject and
+retained fund/book/period. The panel validates tenant, company, fund, book, period and checkpoint
+identity before exposing amounts; absent, ambiguous or foreign bindings remain blocked.
+Exact journal-entry and ledger-entry IDs remain inspectable beside each amount. The drawer verifies
+retained source digests and guarded scope links, and hides missing, altered or foreign evidence.
+Run or scope changes abort prior requests and discard the previous selection. Reads prohibit
+development fallback and never calculate support from current Accounting scope or live balances.
+Focused coverage lives in `reporting-retained-amounts.test.tsx` and `report-amount-proof-api.test.ts`.
+
 Trading includes an account-scoped brokerage recovery panel backed by the shared readiness and
 execution reconciliation projection. The operator can synchronize and reconcile Alpaca portfolio
 evidence through the governed recovery endpoint. Connection health, portfolio currency and cash,

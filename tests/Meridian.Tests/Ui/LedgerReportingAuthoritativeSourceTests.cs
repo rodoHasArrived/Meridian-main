@@ -1,3 +1,6 @@
+using System.Collections.Immutable;
+using System.Globalization;
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
@@ -7,6 +10,7 @@ using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.PortfolioRecords.FundAccounts;
+using Meridian.Reporting;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
 using Meridian.Tests.Storage;
@@ -51,10 +55,10 @@ public sealed class LedgerReportingAuthoritativeSourceTests
         fixture.JournalStore.LastQuery.Should().NotBeNull();
         fixture.JournalStore.LastQuery!.OccurredTo.Should().Be(CutoffUtc);
         fixture.JournalStore.LastQuery.LedgerBookId.Should().Be(fixture.Book.LedgerBookId);
-        fixture.JournalStore.LastQuery.PeriodId.Should().Be(fixture.Period.PeriodId);
+        fixture.JournalStore.LastQuery.PeriodId.Should().BeNull(
+            "period activity is derived from the same retained historical population as opening balances");
         fixture.JournalStore.LastQuery.LineDimensions.Should().BeEquivalentTo(new LedgerLineDimensionSet(
             fixture.FundId,
-            CostCenterId: "cost-center-a",
             OrganizationId: fixture.OrganizationId.ToString("D"),
             BookId: fixture.Book.LedgerBookId.ToString("D")));
         fixture.LastStructureQuery.Should().NotBeNull();
@@ -108,6 +112,23 @@ public sealed class LedgerReportingAuthoritativeSourceTests
     {
         var fixture = CreateFixture();
         fixture.JournalStore.Records.Add(IncomeAccrualRecord(fixture, functionalCurrency: "GBP"));
+
+        var capture = () => fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access).AsTask();
+
+        await capture.Should().ThrowAsync<ReportingAuthoritativeSourceUnavailableException>()
+            .WithMessage("*functional currency 'GBP'*certified book currency 'USD'*");
+    }
+
+    [Fact]
+    public async Task CaptureAsync_RejectsHistoricalFunctionalCurrencyThatDisagreesWithCertifiedBook()
+    {
+        var fixture = CreateFixture();
+        fixture.JournalStore.Records.Add(IncomeAccrualRecord(fixture, functionalCurrency: "GBP") with
+        {
+            PeriodId = Guid.NewGuid()
+        });
+        fixture.JournalStore.Records.Add(Record(
+            fixture, new DateTimeOffset(2026, 7, 10, 13, 0, 0, TimeSpan.Zero), 12));
 
         var capture = () => fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access).AsTask();
 
@@ -199,6 +220,24 @@ public sealed class LedgerReportingAuthoritativeSourceTests
 
         await capture.Should().ThrowAsync<ReportingAuthoritativeSourceUnavailableException>()
             .WithMessage("*SoftClosed*not HardClosed*");
+    }
+
+    [Fact]
+    public async Task CaptureAsync_FinalReporting_ValidatesPeriodStateRetainedWithPopulation()
+    {
+        var fixture = CreateFixture();
+        fixture.JournalStore.Records.Add(Record(
+            fixture, new DateTimeOffset(2026, 7, 10, 12, 0, 0, TimeSpan.Zero), 11));
+        fixture.JournalStore.SnapshotPeriod = fixture.Period with
+        {
+            Status = "Open",
+            Version = fixture.Period.Version + 1
+        };
+
+        var capture = () => fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access).AsTask();
+
+        await capture.Should().ThrowAsync<ReportingAuthoritativeSourceUnavailableException>()
+            .WithMessage("*Open*not HardClosed*");
     }
 
     [Fact]
@@ -302,7 +341,202 @@ public sealed class LedgerReportingAuthoritativeSourceTests
         fixture.JournalStore.LastQuery.Should().NotBeNull();
         fixture.JournalStore.LastQuery!.PeriodId.Should().BeNull(
             "the presentation must include retained history before the reporting period");
-        fixture.JournalStore.CompleteHistoryQueryCount.Should().Be(1);
+        fixture.JournalStore.QueryCount.Should().Be(2, "each capture must query the ledger population once");
+        fixture.JournalStore.CompleteHistoryQueryCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task CaptureAsync_ConcurrentBackdatedPosting_AllCertifiedComponentsUseOnePopulation()
+    {
+        var fixture = CreateFixture();
+        fixture.Parameters = fixture.Parameters with { OutputFormat = ReportingOutputFormatDto.ClientPackage };
+        var priorPeriod = Guid.NewGuid();
+        var openingCapital = Record(fixture, new DateTimeOffset(2026, 6, 15, 12, 0, 0, TimeSpan.Zero), 10)
+            with { PeriodId = priorPeriod };
+        var periodCapital = Record(fixture, new DateTimeOffset(2026, 7, 10, 12, 0, 0, TimeSpan.Zero), 11);
+        var periodIncome = IncomeAccrualRecord(fixture) with { GlobalSequence = 12 };
+        var originalPopulation = new[] { openingCapital, periodCapital, periodIncome };
+        fixture.JournalStore.Records.AddRange(originalPopulation);
+        var captured = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var resume = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        fixture.JournalStore.AfterFirstQuerySnapshot = async () =>
+        {
+            captured.SetResult();
+            await resume.Task;
+        };
+        var intent = new ReportingAuthoritativeSourceCaptureIntent("capital-account-statement");
+
+        var captureTask = fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access, intent).AsTask();
+        await captured.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        var lateOpeningCapital = Record(fixture, openingCapital.Entry.Timestamp, 13) with { PeriodId = priorPeriod };
+        var latePeriodCapital = Record(fixture, periodCapital.Entry.Timestamp.AddHours(1), 14);
+        var latePeriodIncome = IncomeAccrualRecord(fixture) with { GlobalSequence = 15 };
+        fixture.JournalStore.Records.Add(lateOpeningCapital);
+        await fixture.JournalStore.AppendAsync(new LedgerJournalEntryWrite(
+            latePeriodCapital.Entry,
+            latePeriodCapital.AggregateId,
+            latePeriodCapital.PeriodId,
+            AccountingBasis: latePeriodCapital.AccountingBasis));
+        fixture.JournalStore.Records.Add(latePeriodIncome);
+        resume.SetResult();
+        var capture = await captureTask.WaitAsync(TimeSpan.FromSeconds(10));
+
+        fixture.JournalStore.QueryCount.Should().Be(1,
+            "period rows and historical balances must be selected from the same database population");
+        capture.DatasetRows.Should().HaveCount(4);
+        capture.DatasetRows.Should().OnlyContain(row =>
+            row["journalEntryId"] == periodCapital.Entry.JournalEntryId.ToString("D")
+            || row["journalEntryId"] == periodIncome.Entry.JournalEntryId.ToString("D"));
+        capture.Checkpoint.HighestGlobalSequence.Should().Be(12);
+        capture.Checkpoint.LedgerPopulation.Should().NotBeNull();
+        capture.Checkpoint.LedgerPopulation!.HighestGlobalSequence.Should().Be(12);
+        capture.Checkpoint.LedgerPopulation.JournalEntryCount.Should().Be(3);
+        capture.Checkpoint.LedgerPopulation.LedgerLineCount.Should().Be(6);
+        var presentation = capture.CertifiedLedgerPresentation!;
+        presentation.ReportPack.Statements.PartnersCapital!.BeginningCapital.Should().Be(125m);
+        presentation.ReportPack.Statements.PartnersCapital.EndingCapital.Should().Be(375m);
+        presentation.ReportPack.Statements.TotalRevenue.Should().Be(125m);
+        presentation.ReportPack.Statements.TotalAssets.Should().Be(375m);
+
+        var persistedCheckpoint = JsonSerializer.Deserialize<ReportingAuthoritativeSourceCheckpoint>(
+            JsonSerializer.Serialize(capture.Checkpoint))!;
+        var retainedSnapshot = ReportingLedgerPopulationSnapshot.Decode(persistedCheckpoint);
+        retainedSnapshot.Journals.Select(static record => record.Entry.JournalEntryId).Should().Equal(
+            originalPopulation.Select(static record => record.Entry.JournalEntryId));
+        retainedSnapshot.Journals[0].PeriodId.Should().Be(priorPeriod);
+        var retainedPeriodLines = retainedSnapshot.Journals
+            .Where(record => record.PeriodId == fixture.Period.PeriodId)
+            .SelectMany(static record => record.Entry.Lines)
+            .ToDictionary(static line => line.EntryId.ToString("D"));
+        capture.DatasetRows.Select(static row => row["entryId"]).Should().BeEquivalentTo(retainedPeriodLines.Keys);
+        foreach (var row in capture.DatasetRows)
+        {
+            var retainedLine = retainedPeriodLines[row["entryId"]];
+            row["journalEntryId"].Should().Be(retainedLine.JournalEntryId.ToString("D"));
+            row["debit"].Should().Be(retainedLine.Debit.ToString("G29", CultureInfo.InvariantCulture));
+            row["credit"].Should().Be(retainedLine.Credit.ToString("G29", CultureInfo.InvariantCulture));
+            row["netAmount"].Should().Be((retainedLine.Debit - retainedLine.Credit).ToString("G29", CultureInfo.InvariantCulture));
+        }
+        var reproduced = retainedSnapshot.Replay();
+        reproduced.Statements.Should().BeEquivalentTo(presentation.ReportPack.Statements);
+        reproduced.LineProvenance.Should().BeEquivalentTo(presentation.ReportPack.LineProvenance);
+        reproduced.Artifacts.Should().BeEquivalentTo(presentation.ReportPack.Artifacts,
+            options => options.WithStrictOrdering());
+        reproduced.Signature.Should().Be(presentation.ReportPack.Signature);
+
+        var recaptured = await fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access, intent);
+        recaptured.DatasetRows.Should().HaveCount(8);
+        recaptured.Checkpoint.CheckpointHash.Should().NotBe(capture.Checkpoint.CheckpointHash);
+        recaptured.Checkpoint.HighestGlobalSequence.Should().Be(15);
+        recaptured.CertifiedLedgerPresentation!.ReportPack.Statements.PartnersCapital!.BeginningCapital.Should().Be(250m);
+        recaptured.CertifiedLedgerPresentation.ReportPack.Statements.PartnersCapital.EndingCapital.Should().Be(750m);
+        recaptured.CertifiedLedgerPresentation.ReportPack.Statements.TotalRevenue.Should().Be(250m);
+        presentation.ReportPack.Statements.TotalRevenue.Should().Be(125m,
+            "later posting and recapture must not mutate an already captured report");
+        retainedSnapshot.Replay().Signature.Should().Be(presentation.ReportPack.Signature,
+            "retained input must reproduce every component after the live journal population changes");
+    }
+
+    [Fact]
+    public async Task CaptureAsync_HistoricalAmountChange_ChangesCheckpointWithoutChangingPeriodRows()
+    {
+        var fixture = CreateFixture();
+        fixture.Parameters = fixture.Parameters with { OutputFormat = ReportingOutputFormatDto.Pdf };
+        var historical = Record(fixture, new DateTimeOffset(2026, 6, 15, 12, 0, 0, TimeSpan.Zero), 40)
+            with { PeriodId = Guid.NewGuid() };
+        var activity = Record(fixture, new DateTimeOffset(2026, 7, 10, 12, 0, 0, TimeSpan.Zero), 11);
+        fixture.JournalStore.Records.AddRange([historical, activity]);
+        var intent = new ReportingAuthoritativeSourceCaptureIntent("capital-account-statement");
+
+        var captured = await fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access, intent);
+        var retained = ReportingLedgerPopulationSnapshot.Decode(captured.Checkpoint);
+        var changedEntry = new JournalEntry(
+            historical.Entry.JournalEntryId,
+            historical.Entry.Timestamp,
+            historical.Entry.Description,
+            historical.Entry.Lines.Select(line => new LedgerEntry(
+                line.EntryId,
+                line.JournalEntryId,
+                line.Timestamp,
+                line.Account,
+                line.Debit * 2,
+                line.Credit * 2,
+                line.Description,
+                line.Dimensions)).ToArray());
+        fixture.JournalStore.Records[0] = historical with { Entry = changedEntry };
+        var recaptured = await fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access, intent);
+
+        captured.Checkpoint.HighestGlobalSequence.Should().Be(40,
+            "the certified sequence boundary covers historical balance input as well as period activity");
+        recaptured.DatasetRows.Should().BeEquivalentTo(captured.DatasetRows);
+        recaptured.Checkpoint.CheckpointHash.Should().NotBe(captured.Checkpoint.CheckpointHash);
+        recaptured.Checkpoint.LedgerPopulation!.ContentHashSha256.Should().NotBe(
+            captured.Checkpoint.LedgerPopulation!.ContentHashSha256);
+        captured.CertifiedLedgerPresentation!.ReportPack.Statements.PartnersCapital!.BeginningCapital.Should().Be(125m);
+        recaptured.CertifiedLedgerPresentation!.ReportPack.Statements.PartnersCapital!.BeginningCapital.Should().Be(250m);
+        retained.Replay().Signature.Should().Be(captured.CertifiedLedgerPresentation.ReportPack.Signature);
+    }
+
+    [Theory]
+    [InlineData("missing")]
+    [InlineData("altered")]
+    [InlineData("rebound-amount")]
+    [InlineData("foreign-scope")]
+    public async Task RetainedPopulation_MissingAlteredOrForeignScope_CannotReplayCertifiedReport(string fault)
+    {
+        var fixture = CreateFixture();
+        fixture.JournalStore.Records.Add(Record(
+            fixture, new DateTimeOffset(2026, 7, 10, 12, 0, 0, TimeSpan.Zero), 11));
+        var capture = await fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access);
+        var checkpoint = capture.Checkpoint;
+        if (fault == "missing")
+        {
+            checkpoint = checkpoint with { LedgerPopulation = null };
+        }
+        else if (fault == "altered")
+        {
+            checkpoint = checkpoint with
+            {
+                LedgerPopulation = checkpoint.LedgerPopulation! with
+                {
+                    PayloadJson = checkpoint.LedgerPopulation!.PayloadJson + " "
+                }
+            };
+        }
+        else
+        {
+            var snapshot = ReportingLedgerPopulationSnapshot.Decode(checkpoint);
+            ReportingLedgerPopulationSnapshot replacement;
+            if (fault == "rebound-amount")
+            {
+                var journal = snapshot.Journals[0];
+                var changed = new JournalEntry(journal.Entry.JournalEntryId, journal.Entry.Timestamp,
+                    journal.Entry.Description, journal.Entry.Lines.Select(line => new LedgerEntry(
+                        line.EntryId, line.JournalEntryId, line.Timestamp, line.Account,
+                        line.Debit * 2, line.Credit * 2, line.Description, line.Dimensions)).ToArray());
+                replacement = snapshot with
+                {
+                    Journals = snapshot.Journals.SetItem(0, journal with { Entry = changed })
+                };
+            }
+            else
+            {
+                replacement = snapshot with { Scope = snapshot.Scope with { FundProfileId = "foreign-fund" } };
+            }
+            var replacementPopulation = replacement.Retain();
+            checkpoint = checkpoint with
+            {
+                LedgerPopulation = replacementPopulation,
+                EvidenceIds = checkpoint.EvidenceIds
+                    .Where(static evidence => !evidence.StartsWith("ledger-population:", StringComparison.Ordinal))
+                    .Append($"ledger-population:{replacementPopulation.SnapshotId}:{replacementPopulation.ContentHashSha256}")
+                    .ToImmutableArray()
+            };
+        }
+
+        Action replay = () => ReportingLedgerPopulationSnapshot.Decode(checkpoint).Replay();
+
+        replay.Should().Throw<ReportingGovernanceException>();
     }
 
     [Fact]
@@ -326,13 +560,14 @@ public sealed class LedgerReportingAuthoritativeSourceTests
             new ReportingAuthoritativeSourceCaptureIntent("capital-account-statement"));
 
         capture.CertifiedLedgerPresentation.Should().BeNull();
+        capture.Checkpoint.LedgerPopulation.Should().NotBeNull();
         capture.Checkpoint.EvidenceIds.Should().NotContain(reference =>
             reference.StartsWith("ledger-report-pack:", StringComparison.Ordinal));
-        fixture.JournalStore.CompleteHistoryQueryCount.Should().Be(0);
+        fixture.JournalStore.CompleteHistoryQueryCount.Should().Be(1);
     }
 
     [Fact]
-    public async Task CaptureAsync_NonCapitalClientPackage_DoesNotRequireCompleteHistoryReplay()
+    public async Task CaptureAsync_NonCapitalClientPackage_RetainsHistoryWithoutBuildingCapitalPresentation()
     {
         var fixture = CreateFixture();
         fixture.Parameters = fixture.Parameters with
@@ -345,7 +580,6 @@ public sealed class LedgerReportingAuthoritativeSourceTests
             11,
             debitCostCenterId: "cost-center-a",
             creditCostCenterId: "cost-center-a"));
-        fixture.JournalStore.RejectCompleteHistoryQueries = true;
 
         var capture = await fixture.Source.CaptureAsync(
             fixture.Parameters,
@@ -354,10 +588,11 @@ public sealed class LedgerReportingAuthoritativeSourceTests
 
         capture.DatasetRows.Should().HaveCount(2);
         capture.CertifiedLedgerPresentation.Should().BeNull();
+        capture.Checkpoint.LedgerPopulation.Should().NotBeNull();
         capture.Checkpoint.EvidenceIds.Should().NotContain(reference =>
             reference.StartsWith("ledger-report-pack:", StringComparison.Ordinal));
         fixture.JournalStore.QueryCount.Should().Be(1);
-        fixture.JournalStore.CompleteHistoryQueryCount.Should().Be(0);
+        fixture.JournalStore.CompleteHistoryQueryCount.Should().Be(1);
     }
 
     [Theory]
@@ -399,6 +634,51 @@ public sealed class LedgerReportingAuthoritativeSourceTests
             .And.Contain("AcquisitionFxRateToFunctional").And.Contain("1.2")
             .And.Contain("FunctionalCostBasis");
         restored.Checkpoint.EvidenceIds.Should().Contain(reference => reference.StartsWith("ledger-report-pack:", StringComparison.Ordinal));
+        var retained = ReportingLedgerPopulationSnapshot.Decode(restored.Checkpoint);
+        retained.TaxLotReliefProjections.Should().ContainSingle();
+        retained.TaxLotReliefProjections[0].Lines.Sum(static line => line.debit).Should().BeGreaterThan(0m,
+            "retained tax-relief tuple amounts must survive payload serialization");
+        retained.Replay().Artifacts.Should().BeEquivalentTo(restored.CertifiedLedgerPresentation.ReportPack.Artifacts,
+            options => options.WithStrictOrdering());
+        retained.Replay().Signature.Should().Be(restored.CertifiedLedgerPresentation.ReportPack.Signature);
+    }
+
+    [Fact]
+    public async Task CaptureAsync_TaxHistoryChangedAfterSnapshot_UsesRetainedReliefAndBlocksNextCapture()
+    {
+        var fixture = CreateFixture();
+        fixture.Parameters = fixture.Parameters with { OutputFormat = ReportingOutputFormatDto.Pdf };
+        var lot = CanonicalOpenLotConsumerTests.DurableLot(1) with { LedgerBookId = fixture.Book.LedgerBookId };
+        var sourceRecord = Record(fixture, new DateTimeOffset(2026, 7, 10, 12, 0, 0, TimeSpan.Zero), 11);
+        var disposal = CanonicalOpenLotConsumerTests.DisposalJournal(lot);
+        var dimensions = sourceRecord.Entry.Lines[0].Dimensions! with
+        {
+            InstrumentId = lot.SecurityId,
+            PositionId = lot.BookPositionId
+        };
+        var entry = new JournalEntry(disposal.JournalEntryId, disposal.Timestamp, disposal.Description,
+            disposal.Lines.Select(line => new LedgerEntry(line.EntryId, line.JournalEntryId, line.Timestamp,
+                line.Account, line.Debit, line.Credit, line.Description, dimensions)).ToArray());
+        fixture.JournalStore.Records.Add(sourceRecord with { Entry = entry });
+        var history = CanonicalOpenLotConsumerTests.History(lot, entry, lot.ToOpenLot());
+        fixture.JournalStore.Disposals.Add(history);
+        fixture.JournalStore.AfterFirstQuerySnapshot = () =>
+        {
+            fixture.JournalStore.Disposals[0] = history with { CanonicalLots = null };
+            return Task.CompletedTask;
+        };
+        var intent = new ReportingAuthoritativeSourceCaptureIntent("capital-account-statement");
+
+        var captured = await fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access, intent);
+        var retained = ReportingLedgerPopulationSnapshot.Decode(captured.Checkpoint);
+
+        retained.TaxLotReliefProjections.Should().ContainSingle();
+        retained.Replay().Artifacts.Should().BeEquivalentTo(captured.CertifiedLedgerPresentation!.ReportPack.Artifacts,
+            options => options.WithStrictOrdering());
+        retained.Replay().Signature.Should().Be(captured.CertifiedLedgerPresentation.ReportPack.Signature);
+        var recapture = () => fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access, intent).AsTask();
+        await recapture.Should().ThrowAsync<ReportingAuthoritativeSourceUnavailableException>()
+            .WithMessage("*blocks canonical reporting*");
     }
 
     private static Fixture CreateFixture(string periodStatus = "HardClosed")
@@ -643,7 +923,7 @@ public sealed class LedgerReportingAuthoritativeSourceTests
 
     private sealed class QueryFilteringJournalStore(
         LedgerBookRecord book,
-        LedgerAccountingPeriod period) : ILedgerJournalStore, ILedgerTaxLotDisposalHistory
+        LedgerAccountingPeriod period) : ILedgerJournalStore, ILedgerTaxLotDisposalHistory, ILedgerReportingSnapshotSource
     {
         public List<LedgerJournalEntryRecord> Records { get; } = [];
         public List<LedgerTaxLotDisposalHistoryRecord> Disposals { get; } = [];
@@ -655,10 +935,35 @@ public sealed class LedgerReportingAuthoritativeSourceTests
         public int QueryCount { get; private set; }
         public int CompleteHistoryQueryCount { get; private set; }
         public LedgerJournalEntryQuery? LastQuery { get; private set; }
+        public Func<Task>? AfterFirstQuerySnapshot { get; set; }
+        public LedgerAccountingPeriod SnapshotPeriod { get; set; } = period;
 
-        public Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(
+        public async Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(
             LedgerJournalEntryQuery query,
             CancellationToken ct = default)
+        {
+            var result = ReadQuerySnapshot(query);
+            await PauseAfterFirstSnapshotAsync();
+            return result;
+        }
+
+        public async Task<LedgerReportingSnapshot> CaptureReportingSnapshotAsync(
+            LedgerJournalEntryQuery query,
+            Guid? accountingPeriodId = null,
+            CancellationToken ct = default)
+        {
+            var journals = ReadQuerySnapshot(query);
+            var taxHistory = Disposals.ToArray();
+            if (accountingPeriodId is not null)
+            {
+                accountingPeriodId.Should().Be(period.PeriodId);
+            }
+            var capturedPeriod = accountingPeriodId is null ? null : SnapshotPeriod;
+            await PauseAfterFirstSnapshotAsync();
+            return new LedgerReportingSnapshot(journals, taxHistory, capturedPeriod);
+        }
+
+        private IReadOnlyList<LedgerJournalEntryRecord> ReadQuerySnapshot(LedgerJournalEntryQuery query)
         {
             LastQuery = query;
             QueryCount++;
@@ -678,8 +983,13 @@ public sealed class LedgerReportingAuthoritativeSourceTests
                         && record.Entry.Lines.Any(line => DimensionsMatch(line.Dimensions, query.LineDimensions)))
                     .ToArray()
                 : Records.ToArray();
-            return Task.FromResult(result);
+            return result;
         }
+
+        private Task PauseAfterFirstSnapshotAsync() =>
+            QueryCount == 1 && AfterFirstQuerySnapshot is { } afterSnapshot
+                ? afterSnapshot()
+                : Task.CompletedTask;
 
         public Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default) =>
             Task.FromResult<LedgerBookRecord?>(ledgerBookId == book.LedgerBookId ? book : null);
@@ -687,8 +997,19 @@ public sealed class LedgerReportingAuthoritativeSourceTests
         public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default) =>
             Task.FromResult<LedgerAccountingPeriod?>(periodId == period.PeriodId ? period : null);
 
-        public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default) =>
-            Task.CompletedTask;
+        public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
+        {
+            Records.Add(new LedgerJournalEntryRecord(
+                entry.Entry,
+                entry.AggregateId,
+                entry.PeriodId,
+                entry.CommandId,
+                entry.CorrelationId,
+                Records.Count == 0 ? 1 : Records.Max(static record => record.GlobalSequence) + 1,
+                entry.Entry.Timestamp,
+                entry.AccountingBasis));
+            return Task.CompletedTask;
+        }
 
         public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(Records.Where(record => record.PeriodId == periodId).ToArray());

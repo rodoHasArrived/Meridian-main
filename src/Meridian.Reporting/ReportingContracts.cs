@@ -106,7 +106,20 @@ public sealed record ReportingAuthoritativeSourceCheckpoint(
     string CheckpointId,
     string CheckpointHash,
     DateTimeOffset CapturedAtUtc,
-    ImmutableArray<string> EvidenceIds);
+    ImmutableArray<string> EvidenceIds)
+{
+    /// <summary>Exact retained replay inputs for every calculation at this source boundary.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public ReportingRetainedLedgerPopulation? LedgerPopulation { get; init; }
+}
+
+public sealed record ReportingRetainedLedgerPopulation(
+    string SnapshotId,
+    string ContentHashSha256,
+    string PayloadJson,
+    long HighestGlobalSequence,
+    int JournalEntryCount,
+    int LedgerLineCount);
 
 public sealed record ReportingOutputManifest(
     string RunId,

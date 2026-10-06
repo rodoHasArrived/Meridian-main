@@ -29,6 +29,7 @@ public static class LedgerStoreExtensions
         services.AddSingleton<PostgresLedgerJournalStore>();
         services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+        services.AddSingleton<ILedgerReportingSnapshotSource>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<Meridian.Contracts.Accounting.Lots.IOpenLotBackfillStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<IGovernedLedgerPostingTarget, DurableLedgerPostingTarget>();
         services.AddSingleton(sp => new DurableAutomatedJournalPoster(

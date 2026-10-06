@@ -11,6 +11,11 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Contracts
 
+`ReportLedgerAmountBindingDtos` retains generated trial-balance amounts with exact accounting scope
+and journal/line identities. Generated amount source evidence additionally carries its original
+`SourceScope` and `SourceSubjectId`, so historical opening-balance support preserves its own posted
+period while the shared proof drawer and guarded source route remain bound to the selected report.
+
 `TradingBrokerageRecoveryDtos` extends shared Trading readiness with nullable broker balances,
 currency, observation/attempt/success timestamps, completeness and blocking reasons, plus affected
 account-scoped strategy runs. Existing execution-reconciliation DTOs remain the discrepancy source.

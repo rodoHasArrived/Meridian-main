@@ -141,7 +141,7 @@ public static class EvidenceEndpoints
             string subjectId,
             HttpContext context) =>
         {
-            if (!CanReadSubject(subjectKind, context))
+            if (!CanReadSubject(subjectKind, context, subjectId))
                 return Results.StatusCode(StatusCodes.Status403Forbidden);
             var result = await ResolvePacketAsync(subjectKind, subjectId, context, jsonOptions).ConfigureAwait(false);
             return result;
@@ -160,7 +160,7 @@ public static class EvidenceEndpoints
             string subjectId,
             HttpContext context) =>
         {
-            if (!CanReadSubject(subjectKind, context))
+            if (!CanReadSubject(subjectKind, context, subjectId))
                 return Results.StatusCode(StatusCodes.Status403Forbidden);
             var service = context.RequestServices.GetRequiredService<EvidenceGraphService>();
             if (!service.IsSupportedSubjectKind(subjectKind))
@@ -185,7 +185,8 @@ public static class EvidenceEndpoints
             var (amountScope, scopeError) = ResolveLedgerAmountScope(subjectKind, context);
             if (scopeError is not null)
                 return scopeError;
-            var graph = await service.GetGraphAsync(subjectKind, subjectId, context.RequestAborted, ledgerBookId, amountScope).ConfigureAwait(false);
+            var graph = await service.GetGraphAsync(subjectKind, subjectId, context.RequestAborted, ledgerBookId, amountScope,
+                BuildAmountReportAccess(context)).ConfigureAwait(false);
             return graph is null
                 ? Results.NotFound(Error(
                     "evidence-subject-not-found",
@@ -631,7 +632,7 @@ public static class EvidenceEndpoints
         HttpContext context)
     {
         if (string.Equals(subjectKind, EvidenceSubjectResolver.LedgerAmountKind, StringComparison.OrdinalIgnoreCase) &&
-            !CanReadSubject(subjectKind, context))
+            !CanReadSubject(subjectKind, context, subjectId))
             return (null, Results.StatusCode(StatusCodes.Status403Forbidden));
         var service = context.RequestServices.GetRequiredService<EvidenceGraphService>();
         if (!service.IsSupportedSubjectKind(subjectKind))
@@ -656,7 +657,8 @@ public static class EvidenceEndpoints
         var (amountScope, scopeError) = ResolveLedgerAmountScope(subjectKind, context);
         if (scopeError is not null)
             return (null, scopeError);
-        var packet = await service.GetPacketAsync(subjectKind, subjectId, context.RequestAborted, ledgerBookId, amountScope).ConfigureAwait(false);
+        var packet = await service.GetPacketAsync(subjectKind, subjectId, context.RequestAborted, ledgerBookId, amountScope,
+            BuildAmountReportAccess(context)).ConfigureAwait(false);
         return packet is null
             ? (null, Results.NotFound(Error(
                 "evidence-subject-not-found",
@@ -696,11 +698,26 @@ public static class EvidenceEndpoints
             ? ledgerBookId
             : null;
 
-    private static bool CanReadSubject(string subjectKind, HttpContext context)
+    private static bool CanReadSubject(string subjectKind, HttpContext context, string? subjectId = null)
         => string.Equals(subjectKind, EvidenceSubjectResolver.LedgerAmountKind, StringComparison.OrdinalIgnoreCase)
             ? EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewLedgerReports,
                 UserPermission.ManageLedgerReports, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
+                && (subjectId is null || !ReportLedgerAmountProvenanceService.IsReportSubject(subjectId)
+                    || EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewReporting,
+                        UserPermission.ManageReporting, UserPermission.ApproveReporting,
+                        UserPermission.DeliverReporting, UserPermission.AdminMaintenance))
             : EndpointAuthorization.HasPermission(context, UserPermission.ViewReporting);
+
+    private static ReportAccessQueryContext BuildAmountReportAccess(HttpContext context)
+    {
+        var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        return new ReportAccessQueryContext(
+            ActorPrincipalId: EndpointAuthorization.TryResolveActor(context, out var actor) ? actor : null,
+            GroupPrincipalIds: EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
+            CompanyId: tenant.CompanyId,
+            HasGlobalOverride: EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance),
+            TenantId: tenant.TenantId, RequireBoundScope: true);
+    }
 
     private sealed record LedgerAmountManifestGuard(string ContentHash, string RetainedSubjectId);
 
@@ -720,18 +737,29 @@ public static class EvidenceEndpoints
         var (scope, scopeError) = ResolveLedgerAmountScope(EvidenceSubjectResolver.LedgerAmountKind, context);
         if (scopeError is not null)
             return (null, scopeError);
-        if (!CanReadSubject(EvidenceSubjectResolver.LedgerAmountKind, context))
+        if (!CanReadSubject(EvidenceSubjectResolver.LedgerAmountKind, context, query["ledgerAmountSubjectId"]))
             return (null, Results.StatusCode(StatusCodes.Status403Forbidden));
-        var service = context.RequestServices.GetRequiredService<PostedLedgerAmountProvenanceService>();
         var subjectId = query["ledgerAmountSubjectId"].ToString();
         var hash = query["expectedContentHash"].ToString();
-        var packet = await service.GetPacketAsync(subjectId, scope!, context.RequestAborted).ConfigureAwait(false);
+        var packet = ReportLedgerAmountProvenanceService.IsReportSubject(subjectId)
+            ? await context.RequestServices.GetRequiredService<ReportLedgerAmountProvenanceService>()
+                .GetPacketAsync(subjectId, scope!, BuildAmountReportAccess(context), context.RequestAborted).ConfigureAwait(false)
+            : await context.RequestServices.GetRequiredService<PostedLedgerAmountProvenanceService>()
+                .GetPacketAsync(subjectId, scope!, context.RequestAborted).ConfigureAwait(false);
         var prefix = $"/workstation/evidence/vault/{Uri.EscapeDataString(vaultId)}?";
+        var retainedSource = packet?.LedgerAmount?.Evidence.FirstOrDefault(item => item.Status == EvidenceStatusDto.Ready
+            && item.ContentHash == hash && item.Route?.StartsWith(prefix, StringComparison.Ordinal) == true);
         if (packet?.LedgerAmount is not { } proof || proof.Status == EvidenceStatusDto.Blocked ||
-            proof.SubjectId != subjectId || !proof.Evidence.Any(item => item.Status == EvidenceStatusDto.Ready &&
-                item.ContentHash == hash && item.Route?.StartsWith(prefix, StringComparison.Ordinal) == true))
+            proof.SubjectId != subjectId || retainedSource is null)
             return (null, Results.Conflict(Error("ledger-amount-proof-stale", "Retained amount evidence is missing, changed, or outside the selected scope. Refresh the amount proof.")));
-        return (new LedgerAmountManifestGuard(hash, PostedLedgerAmountProvenanceService.BuildRetainedSubjectId(subjectId, scope!)), null);
+        var retainedSubject = ReportLedgerAmountProvenanceService.IsReportSubject(subjectId)
+            ? retainedSource.SourceSubjectId : subjectId;
+        var retainedScope = ReportLedgerAmountProvenanceService.IsReportSubject(subjectId)
+            ? retainedSource.SourceScope : scope;
+        if (retainedSubject is null || retainedScope is null)
+            return (null, Results.Conflict(Error("ledger-amount-proof-stale", "The retained report source binding is unavailable.")));
+        return (new LedgerAmountManifestGuard(hash,
+            PostedLedgerAmountProvenanceService.BuildRetainedSubjectId(retainedSubject, retainedScope)), null);
     }
 
     private static async Task<bool> ManifestMatchesAmountGuardAsync(

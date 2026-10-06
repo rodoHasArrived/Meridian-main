@@ -275,6 +275,8 @@ public sealed class StrictTenantMutationPostgresTests
             (await strict.ListOpenTaxLotsAsync(alpha.LedgerBookId, lot.Account)).Should().ContainSingle();
             (await strict.GetTaxLotsByIdsAsync(alpha.LedgerBookId, [lot.TaxLotRecordId])).Should().ContainSingle();
             (await strict.ResolveAsync(replacementQuery)).Replacements.Should().ContainSingle();
+            (await strict.CaptureReportingSnapshotAsync(new(LedgerBookId: alpha.LedgerBookId)))
+                .Journals.Should().BeEmpty();
         }
         var deferral = new WashSaleDeferralRecord(Guid.NewGuid(), alpha.LedgerBookId, Guid.NewGuid(), lot.SecurityId,
             date, lot.Account, lot.TaxLotRecordId, lot.LotId, 1m, 1m, date, "reviewed", 30,
@@ -289,6 +291,7 @@ public sealed class StrictTenantMutationPostgresTests
                 () => strict.GetTaxLotsByIdsAsync(alpha.LedgerBookId, [lot.TaxLotRecordId]),
                 () => strict.ListOpenTaxLotsByAssetScopeAsync(alpha.LedgerBookId, lot.SecurityId, lot.BookPositionId, date),
                 () => strict.GetTaxLotDisposalHistoryAsync(alpha.LedgerBookId, [Guid.NewGuid()]),
+                () => strict.CaptureReportingSnapshotAsync(new(LedgerBookId: alpha.LedgerBookId)),
                 () => strict.ResolveAsync(replacementQuery),
                 () => strict.ListWashSaleDeferralsAsync(alpha.LedgerBookId, date, date),
                 () => strict.SaveWashSaleDeferralsAsync([deferral])

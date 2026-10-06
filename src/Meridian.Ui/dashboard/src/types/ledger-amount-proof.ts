@@ -19,6 +19,9 @@ export interface LedgerAmountProofEvidence {
   status: EvidenceStatus;
   contentHash: string | null;
   reason: string | null;
+  /** Original retained posting identity for a generated report's source evidence. */
+  sourceSubjectId?: string | null;
+  sourceScope?: LedgerAmountScope | null;
 }
 
 export interface LedgerAmountProof {
@@ -31,7 +34,7 @@ export interface LedgerAmountProof {
   warnings: string[];
 }
 
-/** A selected immutable posting line, never an account-name or symbol lookup. */
+/** A selected immutable posting line or retained report amount, never a name or symbol lookup. */
 export interface LedgerAmountSelection {
   subjectId: string;
   ledgerBookId: string;
@@ -40,4 +43,10 @@ export interface LedgerAmountSelection {
   amount: number;
   currency: string;
   label: string;
+  /** Authenticated retained report scope, in addition to the fund/book/period guard. */
+  tenantId?: string;
+  companyId?: string;
+  /** Exact retained contributor identities required for generated report selections. */
+  journalEntryIds?: string[];
+  ledgerEntryIds?: string[];
 }

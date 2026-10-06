@@ -1,7 +1,7 @@
-# W10-PROV-001 first posted amount workflow
+# W10-PROV-001 posted and generated amount workflows
 
-**Status:** posted-line slice implemented; full validation tracked in PR #3041
-**Reviewed:** 2026-10-02
+**Status:** posted-line and generated trial-balance slices implemented; validation recorded below
+**Reviewed:** 2026-10-06
 
 Browser Accounting Ledger Explorer and WPF Posted Ledger now select an individual posted debit or
 credit amount. Both request the same `ledger-amount` subject packet and display the same retained
@@ -23,8 +23,9 @@ for Ready status.
 The compatibility report-pack reader requires typed amount bindings and exact scoped lineage.
 Even correctly scoped typed report pointers remain `ReviewRequired` until their source content can
 be verified; their presence alone never produces `Ready`. Label-only historical manifests fail
-closed. Report generation does not yet emit those new bindings; report/NAV/portfolio-wide activation
-remains outside this first posted-line slice. The canonical roadmap item remains in progress.
+closed. The governed reporting path now emits generated trial-balance bindings in its retained source
+population. Other report families, NAV, and portfolio-wide activation remain outside this bounded
+slice. The canonical roadmap item remains in progress.
 
 Verified posted-source links carry the selected amount subject, fund, book, period, and expected
 manifest digest to the existing vault route. Opening a link re-evaluates the retained source bytes
@@ -39,6 +40,54 @@ amount selections, so returning to a tab, book, or period cannot reopen an earli
 closes proof before replacing journal rows, including pending reads, and derives available bases
 from both journal and trial-balance responses. A GAAP-only open-period journal remains available
 when the trial balance returns 404; either response order preserves an available basis selection.
+
+## Generated report amounts and one retained population
+
+Open a governed generated run and inspect its retained trial-balance amounts. Each amount uses the
+stable subject `report:{runId}:{amountId}` and the run's retained tenant/company/fund/book/period
+scope. The amount ID identifies the canonical trial-balance account row, and its binding retains
+exact contributing journal and line IDs. Account labels do not establish proof.
+
+Every ledger capture reads the complete scoped as-of population once. PostgreSQL captures journal,
+period status/version, and tax-lot history within the same repeatable-read, read-only transaction.
+Period rows, historical balances, tax-relief projections, financial statements, and amount bindings
+all derive from this retained population. Its serialized inputs, content hash, sequence boundary,
+and counts are retained in the source checkpoint. The checkpoint digest binds the entire population,
+including historical entries that do not appear in period activity. Primary-document rendering
+replays those inputs; current-source revalidation remains a separate release gate.
+
+Generated amount proof requires every contributing line's exact reviewed source evidence to verify.
+Sources from opening balances retain their original posting period and scoped subject while the
+manifest link guards the selected report amount. Missing, altered, unreviewed, or foreign support
+blocks the complete amount and removes inspectable source routes. Opening a verified source link
+rechecks the report population, all contributors, and source bytes before returning the manifest.
+Old runs without retained populations expose no generated amount proof and require recertification.
+
+The source regression pauses capture, commits backdated period and historical postings, and proves
+period rows, statements, provenance, artifact contents, and signature reproduce from the original
+serialized population. A second capture sees the later postings. The PostgreSQL test also commits a
+period reopen and wash-sale history while the capture is paused, proving all three reads share one
+transaction snapshot. Retention tests reject missing, altered, foreign, and coherently rebound
+populations; tax-relief tests exercise nonempty serialized tuple posting lines.
+
+## 2026-10-06 generated-report validation
+
+- Snapshot/storage filter: **193 passed, 0 failed, 0 skipped**, including real PostgreSQL
+  repeatable-read concurrency, retained period authority, complete population replay, source
+  checkpoint tampering, historical currency, and nonempty tax-relief serialization.
+- Generated report proof: **23 passed, 0 failed, 0 skipped**, including exact historical/current
+  support, guarded source opening, scope/permission denial, corrupt bindings, and rehashed
+  population or certified-dataset mismatch. The combined regression run also passed its other
+  **194** reporting and posted-proof cases.
+- Browser report/proof filter: **98 passed** across seven suites; TypeScript, Vite production build,
+  and targeted ESLint passed.
+- Chromium report-detail interactions passed at **1920 × 1080** and **1366 × 768**, plus 125% scaling:
+  exact retained selection, historical-source opening, blocked evidence, Tab focus trapping,
+  Escape dismissal/focus restoration, and no overflow or console/framework errors.
+
+Browser interactions use controlled HTTP fixtures. The PostgreSQL tests independently establish
+live database snapshot consistency; no live browser-to-storage flow is claimed. Full repository CI
+results are recorded after the remaining gate completes.
 
 ## Validation evidence
 
