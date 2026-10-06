@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "prd112-linux-x64-net10-v1",
+  "runnerLabel": "ubuntu-24.04",
+  "os": "Linux",
+  "architecture": "x86_64",
+  "sdkVersion": "10.0.100",
+  "runtimeVersion": "10.0.0",
+  "configuration": "Release",
+  "benchmarkClass": "Meridian.Benchmarks.PipelineBudgetBenchmarks",
+  "job": "short",
+  "launchCount": 1,
+  "warmupCount": 3,
+  "iterationCount": 8,
+  "iterationTimeMs": 250,
+  "buildTimeoutSeconds": 300,
+  "benchmarkTimeoutSeconds": 1200,
+  "environment": {
+    "DOTNET_ROLL_FORWARD": "Disable",
+    "DOTNET_ROLL_FORWARD_TO_PRERELEASE": "0",
+    "DOTNET_TieredCompilation": "1",
+    "DOTNET_TieredPGO": "1",
+    "DOTNET_gcServer": "0"
+  },
+  "requiredStages": [
+    "DedupKey_CacheHit",
+    "DedupKey_CacheMiss",
+    "WalChecksum_Small",
+    "WalChecksum_Medium_1KB",
+    "WalChecksum_Large_4KB",
+    "NewlineScan_Portable",
+    "AlpacaParse_Trade_SourceGenerated",
+    "AlpacaParse_Quote_SourceGenerated"
+  ]
+}
