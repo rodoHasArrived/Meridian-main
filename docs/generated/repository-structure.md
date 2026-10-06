@@ -1124,6 +1124,7 @@ Meridian-main
 │       │   ├── check-warning-suppressions.py
 │       │   ├── check-workflow-hygiene.py
 │       │   ├── ci-metrics.py
+│       │   ├── collect-actions.py
 │       │   ├── dispatch-targeted-test.py
 │       │   ├── duplicate-helper-baseline.json
 │       │   ├── generate-release-evidence-manifest.py
@@ -1769,6 +1770,11 @@ Meridian-main
 │   │   │   ├── README.md
 │   │   │   ├── web-ui-improvements-implementation-plan-2026-07.md
 │   │   │   └── wpf-web-ui-alignment-plan.md
+│   │   ├── actions-local-benchmarks-2026-10-05.json
+│   │   ├── actions-rollout-measurement-2026-10-05.md
+│   │   ├── actions-rollout-policy-2026-10-05.json
+│   │   ├── actions-rollout-report-2026-10-05.json.gz
+│   │   ├── actions-rollout-source-2026-10-05.json.gz
 │   │   ├── actions-storage-audit-2026-10-05.json
 │   │   ├── actions-storage-audit-2026-10-05.md
 │   │   ├── ci-cd-optimization.md
@@ -1935,6 +1941,7 @@ Meridian-main
 │   │   │   ├── next-work-determination-2026-09-27.md
 │   │   │   ├── next-work-determination-2026-10-02.md
 │   │   │   ├── next-work-determination-2026-10-04.md
+│   │   │   ├── next-work-determination-2026-10-05.md
 │   │   │   ├── product-roadmap-priorities-2026-07.md
 │   │   │   ├── production-readiness-backlog-2026-08.md
 │   │   │   ├── README.md
@@ -11215,11 +11222,13 @@ Meridian-main
 │   │   │       └── process-tree.mjs
 │   │   ├── README.md
 │   │   ├── setup-verification.sh
+│   │   ├── test_actions_collector.py
 │   │   ├── test_adapter_readiness.py
 │   │   ├── test_ai_setup_dotnet_channel.py
 │   │   ├── test_api_contract_coverage_dashboard.py
 │   │   ├── test_archive_code_tombstones.py
 │   │   ├── test_artifact_retention_module.py
+│   │   ├── test_benchmark_ci.py
 │   │   ├── test_build_profiles.py
 │   │   ├── test_buildctl_artifact_retention.py
 │   │   ├── test_buildctl_validation_runner.py
@@ -11291,6 +11300,7 @@ Meridian-main
 │   │   ├── test_release_promotion.py
 │   │   ├── test_render_adapter_readiness.py
 │   │   ├── test_render_roadmap_diagrams.py
+│   │   ├── test_repair_links_anchors.py
 │   │   ├── test_resolve_generated_merge_conflicts.py
 │   │   ├── test_roadmap_source_docs.py
 │   │   ├── test_roadmap_validator_compatibility.py
