@@ -125,8 +125,19 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             JsonSerializer.SerializeToElement(retained.Mutations.Single().LotAfter.BasisAdjustment!.Amortization),
             JsonSerializer.SerializeToElement(command.Amortization)).Should().BeTrue();
 
+        var changedInstruction = command.Amortization! with { ExpectedBookPositionVersion = 2 };
+        var changedReplay = (command with
+        {
+            Amortization = changedInstruction,
+            Journal = command.Journal with
+            { PostingCommand = command.Journal.PostingCommand! with { LotAmortization = changedInstruction } }
+        }).WithComputedFingerprint();
+        var collide = () => fixture.Restart().AppendAssetPostingAsync(changedReplay);
+        await collide.Should().ThrowAsync<LedgerValidationException>().WithMessage("*identity collision*");
+
         // Exact retry remains recoverable even after the period is locked.
         await fixture.LockPeriodAsync();
+        await fixture.Securities.UpsertProjectionAsync(fixture.Security with { Version = 2 });
         var replay = await fixture.Restart().AppendAssetPostingAsync(command);
         replay.IsExactReplay.Should().BeTrue();
         replay.Mutations.Single().MutationRecordId.Should().Be(mutation.MutationRecordId);
@@ -271,6 +282,154 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         (await fixture.Store.GetAtomicTaxLotPostingAsync(command.MutationBatchId)).Should().BeNull();
     }
 
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task CanonicalAmortization_MissingOrUnknownCalculationVersion_RefusesNewPostingWithoutMutation()
+    {
+        await using var fixture = await AmortFixture.CreateAsync(premium: true);
+        var command = fixture.Command();
+        foreach (var version in new string?[] { null, "unknown-amortization-model" })
+        {
+            var instruction = command.Amortization! with { CalculationVersion = version };
+            var invalid = command with
+            {
+                Amortization = instruction,
+                Journal = command.Journal with
+                { PostingCommand = command.Journal.PostingCommand! with { LotAmortization = instruction } }
+            };
+            // Historical v1 still has a valid canonical fingerprint. Unknown versions fail
+            // command normalization before fingerprint calculation or database access.
+            if (version is null)
+                invalid = invalid.WithComputedFingerprint();
+            var post = () => fixture.Restart().AppendAssetPostingAsync(invalid);
+            await post.Should().ThrowAsync<LedgerValidationException>().WithMessage(version is null
+                ? "New amortization postings require a fresh preview using the current calculation version."
+                : "Amortization calculation version is unsupported.");
+            await AssertAmortizationUnchangedAsync(fixture, command);
+        }
+        (await fixture.Restart().AppendAssetPostingAsync(command)).IsExactReplay.Should().BeFalse();
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task CanonicalAmortization_AliasInsertedAfterPreviewWithUnchangedSecurityVersion_RefusesPosting()
+    {
+        await using var fixture = await AmortFixture.CreateAsync(premium: true);
+        var command = fixture.Command();
+        var at = new DateTimeOffset(AmortAsOf.ToDateTime(new TimeOnly(10, 0)), TimeSpan.Zero);
+        await fixture.Securities.UpsertAliasAsync(new(Guid.NewGuid(), fixture.Security.SecurityId,
+            "Ticker", "AMORT-UPDATED", null, SecurityAliasScope.Operations, "Reviewed alias addition",
+            "reference-reviewer", at, at, null, true));
+        var current = (await fixture.Securities.GetProjectionAsync(fixture.Security.SecurityId))!;
+        current.Version.Should().Be(command.Amortization!.Security.Version);
+        OpenLotAmortization.SecurityHash(current).Should().NotBe(OpenLotAmortization.SecurityHash(command.Amortization.Security));
+
+        var post = () => fixture.Restart().AppendAssetPostingAsync(command);
+        await post.Should().ThrowAsync<LedgerValidationException>().WithMessage("*Security Master*stale*");
+        await AssertAmortizationUnchangedAsync(fixture, command);
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task CanonicalAmortization_RequiresExplicitGovernedSourceAndExactReviewedInstruction()
+    {
+        await using var fixture = await AmortFixture.CreateAsync(premium: true);
+        var command = fixture.Command();
+        var posting = command.Journal.PostingCommand!;
+        var legacy = posting with
+        {
+            SourceEventType = null,
+            BookContext = null,
+            BookPositionId = null,
+            EconomicEvent = null,
+            ProjectionLineage = null,
+            RulePackReference = null,
+            Evidence = [],
+            LotAmortization = null
+        };
+        var eventOnly = posting.Evidence.Where(item => item.SubjectType == AssetAccountingEvidenceSubjects.Event).ToArray();
+        var incomeType = AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.Income);
+        AccountingPostingCommandDto?[] variants =
+        [
+            null,
+            legacy,
+            legacy with { SourceEventType = "" },
+            legacy with { SourceEventType = "  " },
+            legacy with { SourceEventType = "LegacyAmortization" },
+            legacy with { SourceEventType = "AssetAccounting.Unknown" },
+            posting with
+            {
+                SourceEventType = incomeType, LotAmortization = null, Evidence = eventOnly,
+                EconomicEvent = posting.EconomicEvent! with { EventType = incomeType }
+            },
+            posting with { LotAmortization = null, Evidence = eventOnly },
+            posting with { LotAmortization = command.Amortization! with { ExpectedBookPositionVersion = 2 } }
+        ];
+        // Even hosts permitting legacy generic journal writes must require the complete
+        // governed instruction for amortization. Every variant is otherwise normalizable.
+        var compatibilityStore = new PostgresLedgerJournalStore(new LedgerJournalStoreOptions
+        { ConnectionString = fixture.Options.ConnectionString, SchemaName = fixture.Options.SchemaName });
+        foreach (var changed in variants)
+        {
+            var invalid = (command with { Journal = command.Journal with { PostingCommand = changed } }).WithComputedFingerprint();
+            var post = () => compatibilityStore.AppendAssetPostingAsync(invalid);
+            await post.Should().ThrowAsync<LedgerValidationException>()
+                .WithMessage("The governed journal must retain the exact reviewed canonical amortization inputs.");
+            await AssertAmortizationUnchangedAsync(fixture, command);
+        }
+
+        var missingAtomicInstruction = (command with { Amortization = null }).WithComputedFingerprint();
+        var missing = () => fixture.Restart().AppendAssetPostingAsync(missingAtomicInstruction);
+        await missing.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("Atomic amortization requires retained reviewed lot and Security Master inputs.");
+        await AssertAmortizationUnchangedAsync(fixture, command);
+        (await fixture.Restart().AppendAssetPostingAsync(command)).IsExactReplay.Should().BeFalse();
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task CanonicalAmortization_RequiresExactAcquisitionAndSecurityEvidenceAtBothBoundaries()
+    {
+        await using var fixture = await AmortFixture.CreateAsync(premium: true);
+        var command = fixture.Command();
+        var posting = command.Journal.PostingCommand!;
+        foreach (var reviewed in command.Amortization!.ExpectedLot.Acquisition.Evidence.Append(command.Amortization.SecurityEvidence))
+        {
+            AtomicTaxLotJournalCommand[] variants =
+            [
+                command with { RetainedEvidence = command.RetainedEvidence.Where(item => item.EvidenceId != reviewed.EvidenceId).ToArray() },
+                command with { RetainedEvidence = command.RetainedEvidence.Select(item => item.EvidenceId == reviewed.EvidenceId
+                    ? item with { ContentHashSha256 = new string('f', 64) } : item).ToArray() },
+                command with { Journal = command.Journal with { PostingCommand = posting with
+                    { Evidence = posting.Evidence.Where(item => item.EvidenceId != reviewed.EvidenceId).ToArray() } } },
+                command with { Journal = command.Journal with { PostingCommand = posting with
+                    { Evidence = posting.Evidence.Select(item => item.EvidenceId == reviewed.EvidenceId
+                        ? item with { SourceReference = "different-reference", EffectiveDate = posting.EffectiveDate } : item).ToArray() } } },
+                command with { Journal = command.Journal with { PostingCommand = posting with
+                    { Evidence = posting.Evidence.Select(item => item.EvidenceId == reviewed.EvidenceId
+                        ? item with { Kind = AccountingPostingEvidenceKindDto.Approval, EffectiveDate = posting.EffectiveDate } : item).ToArray() } } }
+            ];
+            foreach (var variant in variants)
+            {
+                var invalid = variant.WithComputedFingerprint();
+                var post = () => fixture.Restart().AppendAssetPostingAsync(invalid);
+                await post.Should().ThrowAsync<LedgerValidationException>()
+                    .WithMessage("Amortization must bind the exact journal scope, effective date, acquisition and reference evidence.");
+                await AssertAmortizationUnchangedAsync(fixture, command);
+            }
+        }
+        (await fixture.Restart().AppendAssetPostingAsync(command)).IsExactReplay.Should().BeFalse();
+    }
+
+    private static async Task AssertAmortizationUnchangedAsync(AmortFixture fixture, AtomicTaxLotJournalCommand command)
+    {
+        (await fixture.Restart().GetByPeriodAsync(fixture.Period.PeriodId)).Should().BeEmpty();
+        (await fixture.Restart().GetAtomicTaxLotPostingAsync(command.MutationBatchId)).Should().BeNull();
+        JsonElement.DeepEquals(
+            JsonSerializer.SerializeToElement((await fixture.Restart().ListOpenTaxLotsAsync(fixture.BookId, AmortAccount)).Single().ToOpenLot()),
+            JsonSerializer.SerializeToElement(command.Amortization!.ExpectedLot)).Should().BeTrue();
+    }
+
     internal static OpenLotAmortizationInstructionDto AmortPureInstruction(decimal price, decimal coupon,
         BondAmortizationMethod method, decimal? yield)
     {
@@ -323,6 +482,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         private Guid PositionId { get; } = Guid.NewGuid();
         public LedgerAccountingPeriod Period { get; private set; } = null!;
         private LedgerTaxLotRecord Lot { get; set; } = null!;
+        private AccountingBookContextDto BookContext { get; set; } = null!;
 
         private AmortFixture(PostgresTestServer server, LedgerJournalStoreOptions options,
             PostgresSecurityMasterStore securities, PostgresAssetOperationsProjectionStore positions)
@@ -380,7 +540,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         {
             var ownerId = Guid.NewGuid();
             var at = new DateTimeOffset(2025, 1, 1, 12, 0, 0, TimeSpan.Zero);
-            await Store.SaveLedgerBookAsync(new(BookId, "amort-fund", ownerId, FundStructureNodeKindDto.Fund, "Amortization book", "USD", at, at));
+            await Store.SaveLedgerBookAsync(new(BookId, "amort-fund", ownerId, FundStructureNodeKindDto.Fund,
+                "Amortization book", "USD", at, at, AccountingPolicyId: "amort-policy", AccountingPolicyVersion: "1"));
             var acquisitionPeriod = await Store.SavePeriodAsync(new(Guid.NewGuid(), BookId, 2025, 1, "2025",
                 AmortAcquired, new DateOnly(2025, 12, 31), "Open", at, null, 0), 0);
             Period = await Store.SavePeriodAsync(new(Guid.NewGuid(), BookId, 2026, 1, "2026",
@@ -396,6 +557,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 InstrumentAccountingSides.Debit, InstrumentEconomicSides.Asset, AmortAcquired, OriginEvent: origin, EvidenceLinks: [evidence.EvidenceUri]);
             var book = new AccountingBookContextDto(BookId, "amort-fund", ownerId, FundStructureNodeKindDto.Fund,
                 "Amortization book", "USD", AccountingBasisKindDto.Primary, "amort-policy", "1");
+            BookContext = book with { PeriodId = Period.PeriodId };
             await Positions.UpsertAsync(role, new BookPositionDto(PositionId, Security.SecurityId, roleId, book,
                 BookPositionSides.Long, "Active", AmortAcquired, OriginEvent: origin, EvidenceLinks: [evidence.EvidenceUri])
             { RetainedEvidence = [evidence] }, null, 0, new("independent-controller", "evidence://position-approval", "Review owned position", at));
@@ -430,9 +592,43 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             var key = "amort-period:" + Guid.NewGuid().ToString("N");
             var journal = Journal(Period, AmortAsOf, key, Math.Abs(projection.TransactionMovement) + amountOffset,
                 Math.Abs(projection.FunctionalMovement) + amountOffset * 1.1m, projection.FunctionalMovement > 0m);
+            var eventId = journal.SourceEventId!.Value;
+            var eventEvidence = BuildEvidence("amort-event-" + eventId.ToString("N"), 'c') with
+            { EffectiveDate = instruction.AsOfDate, SubjectType = AssetAccountingEvidenceSubjects.Event, SubjectId = eventId.ToString("D") };
+            RetainedEvidenceIdentityDto[] evidence = [.. instruction.ExpectedLot.Acquisition.Evidence, instruction.SecurityEvidence, eventEvidence];
+            var eventType = AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.DepreciationAmortization);
+            var economicEvent = new EconomicEventReferenceDto(eventId, eventType, 1, instruction.AsOfDate,
+                journal.Entry.Timestamp, eventEvidence.SourceSystem, eventEvidence.SourceReference,
+                SourceContentHash: eventEvidence.ContentHashSha256)
+            {
+                SecurityId = Security.SecurityId,
+                BookPositionId = PositionId,
+                RetainedEvidence = evidence,
+                EvidenceLinks = evidence.Select(item => item.EvidenceUri).ToArray()
+            };
+            var lineage = new ProjectionLineageDto(Guid.NewGuid(), null, "canonical-lot-amortization",
+                OpenLotAmortization.ModelVersion, "amortization-v1", "base", instruction.AsOfDate,
+                journal.Entry.Timestamp, eventEvidence.SourceSystem, eventEvidence.SourceReference, economicEvent)
+            { BookPositionId = PositionId, RetainedEvidence = evidence, EvidenceLinks = economicEvent.EvidenceLinks };
+            var posting = journal.PostingCommand! with
+            {
+                SourceEventType = eventType,
+                BookContext = BookContext,
+                BookPositionId = PositionId,
+                EconomicEvent = economicEvent,
+                ProjectionLineage = lineage,
+                RulePackReference = new("canonical-amortization", "1", "amortization", "1"),
+                LotAmortization = instruction,
+                Evidence = evidence.Select(item => new AccountingPostingEvidenceReferenceDto(item.EvidenceId,
+                    item.EvidenceUri, AccountingPostingEvidenceKindDto.Source, item.SourceSystem, item.RetainedAtUtc,
+                    item.RetainedBy, item.SubjectId, item.ContentHashSha256, SourceReference: item.SourceReference,
+                    Reviewer: item.ReviewedBy, ReviewedAtUtc: item.ReviewedAtUtc, EffectiveDate: item.EffectiveDate,
+                    EvidenceVersion: item.EvidenceVersion, ReviewStatus: item.ReviewStatus, SubjectType: item.SubjectType)).ToArray()
+            };
+            journal = journal with { RuleId = "amortization", RuleVersion = "1", PostingCommand = posting };
             return AtomicTaxLotJournalCommand.Create(Guid.NewGuid(), BookId, journal, journal.SourceEventId!.Value,
                 key, Period.Version, AtomicTaxLotMutationKind.Amortization,
-                [.. instruction.ExpectedLot.Acquisition.Evidence, instruction.SecurityEvidence], amortization: instruction);
+                evidence, amortization: instruction);
         }
 
         private LedgerJournalEntryWrite Journal(LedgerAccountingPeriod period, DateOnly date, string key,
@@ -455,7 +651,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 ApprovalState: AccountingPostingApprovalStateDto.Approved, ApprovalId: "independent-controller-review",
                 OperatorRationale: "Independently reviewed fixture economics and owned retained evidence.", LedgerBookId: BookId)
             { Actor = "independent-controller" };
-            return new(entry, BookId, period.PeriodId, SourceEventId: sourceId, LedgerBookId: BookId, PostingCommand: posting);
+            return new(entry, BookId, period.PeriodId, AccountingPolicyId: "amort-policy", AccountingPolicyVersion: "1",
+                SourceEventId: sourceId, LedgerBookId: BookId, PostingCommand: posting);
         }
 
         public ValueTask DisposeAsync() => _server.DisposeAsync();
