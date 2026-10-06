@@ -71,8 +71,9 @@ latest-run, date-window, held-quantity, and capital-kind selectors used to build
 The shared workstation read service uses this metadata before amount arithmetic to reject
 missing currency or unsupported FX aggregation. Superseded and out-of-window flows and
 unrecognized capital activities remain excluded; the engine retains its warning for an
-unrecognized in-window capital kind. Early-call validation also selects future principal that
-the scenario pulls into the requested window.
+unrecognized in-window capital kind. Early-call validation excludes flows discarded after the
+selected call date while retaining coupons due on or before the call and every future principal
+flow that the scenario pulls into the requested window.
 
 Asset-specific instrument reference services live here because they expose financial instrument
 terms, lifecycle, contract, expiry, maturity, accrual, sweep, liquidity, fund-family, and

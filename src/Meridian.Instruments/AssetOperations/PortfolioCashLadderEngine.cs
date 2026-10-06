@@ -129,38 +129,40 @@ public static class PortfolioCashLadderEngine
 
     /// <summary>
     /// Returns the raw currencies of selected inputs before amount scaling or scenario
-    /// arithmetic. Uses the same run, position, and capital-kind selection as the ladder itself.
+    /// arithmetic. Uses the same run, position, scenario, and capital-kind selection as the ladder itself.
     /// </summary>
     public static IEnumerable<string> GetContributionCurrencies(PortfolioCashLadderInputs inputs, string? scenarioId = null)
     {
         ArgumentNullException.ThrowIfNull(inputs);
         var windowEnd = inputs.AsOfDate.AddDays(Math.Max(1, inputs.HorizonDays));
+        var callDates = string.Equals(scenarioId, EarlyCallScenarioId, StringComparison.OrdinalIgnoreCase)
+            ? SelectEarlyCallDates(inputs.Positions, inputs.AsOfDate, windowEnd)
+            : new Dictionary<Guid, DateOnly>();
         foreach (var position in inputs.Positions)
         {
+            var hasCallDate = callDates.TryGetValue(position.Operations.Subject.SecurityId, out var callDate);
             foreach (var flow in SelectPositionFlows(position, inputs.AsOfDate, windowEnd))
             {
-                yield return flow.Currency;
+                if (!hasCallDate || flow.DueDate <= callDate)
+                {
+                    yield return flow.Currency;
+                }
+            }
+
+            // Later coupons are discarded, but every future principal flow funds the call
+            // redemption and still needs currency evidence, even beyond the normal horizon.
+            if (hasCallDate)
+            {
+                foreach (var flow in SelectCallPrincipalFlows(position, callDate))
+                {
+                    yield return flow.Currency;
+                }
             }
         }
 
         foreach (var (activity, _) in SelectCapitalActivities(inputs.CapitalActivity, inputs.AsOfDate, windowEnd))
         {
             yield return activity.Currency;
-        }
-
-        if (string.Equals(scenarioId, EarlyCallScenarioId, StringComparison.OrdinalIgnoreCase))
-        {
-            var callDates = SelectEarlyCallDates(inputs.Positions, inputs.AsOfDate, windowEnd);
-            foreach (var position in inputs.Positions)
-            {
-                if (callDates.TryGetValue(position.Operations.Subject.SecurityId, out var callDate))
-                {
-                    foreach (var flow in SelectCallPrincipalFlows(position, callDate))
-                    {
-                        yield return flow.Currency;
-                    }
-                }
-            }
         }
     }
 

@@ -369,39 +369,131 @@ public sealed class PortfolioCashLadderReadServiceTests
 
     [Theory]
     [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("EUR")]
+    public async Task GetCashLadderAsync_EarlyCallIgnoresDiscardedCouponCurrencyButBaseScenarioBlocks(
+        string discardedCurrency)
+    {
+        var detail = BuildCallableDetail();
+        var service = BuildService(detail with
+        {
+            ProjectedCashFlows = detail.ProjectedCashFlows
+                .Select(flow => flow.DueDate == Today.AddDays(20)
+                    ? flow with { Currency = discardedCurrency }
+                    : flow)
+                .ToArray()
+        }, quantity: 2m);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+
+        var earlyCallLadder = await service.GetCashLadderAsync(new PortfolioCashLadderQuery(
+            HorizonDays: 30, ScenarioId: PortfolioCashLadderEngine.EarlyCallScenarioId), timeout.Token);
+        var baseLadder = await service.GetCashLadderAsync(new PortfolioCashLadderQuery(HorizonDays: 30), timeout.Token);
+
+        earlyCallLadder.IsDecisionReady.Should().BeTrue();
+        earlyCallLadder.BlockingReasons.Should().BeEmpty();
+        earlyCallLadder.Buckets.Should().NotBeEmpty();
+        earlyCallLadder.Contributions.Should().HaveCount(3)
+            .And.OnlyContain(row => row.Currency == "USD" && row.DueDate <= Today.AddDays(15));
+        earlyCallLadder.Contributions.Should().Contain(row =>
+            row.FlowType == "Coupon" && row.DueDate == Today.AddDays(10) && row.Amount == 200m);
+        earlyCallLadder.Contributions.Should().Contain(row =>
+            row.FlowType == "Coupon" && row.DueDate == Today.AddDays(15) && row.Amount == 400m);
+        earlyCallLadder.Contributions.Should().ContainSingle(row => row.FlowType == "CallRedemption")
+            .Which.Should().Match<PortfolioCashLadderContributionDto>(row =>
+                row.DueDate == Today.AddDays(15) && row.Amount == 2_000m);
+        baseLadder.IsDecisionReady.Should().BeFalse();
+        baseLadder.Buckets.Should().BeEmpty();
+        baseLadder.Contributions.Should().BeEmpty();
+        baseLadder.BlockingReasons.Should().ContainMatch(string.IsNullOrWhiteSpace(discardedCurrency)
+            ? "*missing currency evidence*" : "*no authoritative FX conversion source*");
+    }
+
+    [Theory]
+    [InlineData(10, "")]
+    [InlineData(10, " ")]
+    [InlineData(10, "EUR")]
+    [InlineData(15, "")]
+    [InlineData(15, " ")]
+    [InlineData(15, "EUR")]
+    public async Task GetCashLadderAsync_EarlyCallStillValidatesPreCallAndOnCallCouponCurrency(
+        int couponDayOffset, string couponCurrency)
+    {
+        var detail = BuildCallableDetail();
+        var service = BuildService(detail with
+        {
+            ProjectedCashFlows = detail.ProjectedCashFlows
+                .Select(flow => flow.DueDate == Today.AddDays(couponDayOffset)
+                    ? flow with { Amount = decimal.MaxValue, Currency = couponCurrency }
+                    : flow)
+                .ToArray()
+        }, quantity: 2m);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+
+        var ladder = await service.GetCashLadderAsync(new PortfolioCashLadderQuery(
+            HorizonDays: 30, ScenarioId: PortfolioCashLadderEngine.EarlyCallScenarioId), timeout.Token);
+
+        ladder.IsDecisionReady.Should().BeFalse();
+        ladder.Buckets.Should().BeEmpty();
+        ladder.Contributions.Should().BeEmpty();
+        ladder.BlockingReasons.Should().ContainMatch(string.IsNullOrWhiteSpace(couponCurrency)
+            ? "*missing currency evidence*" : "*no authoritative FX conversion source*");
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
     [InlineData("EUR")]
     public async Task GetCashLadderAsync_EarlyCallValidatesFuturePrincipalBeforePullingItIntoTheWindow(
         string principalCurrency)
+    {
+        var detail = BuildCallableDetail();
+        var service = BuildService(detail with
+        {
+            ProjectedCashFlows = detail.ProjectedCashFlows
+                .Select(flow => flow.FlowType == "Principal"
+                    ? flow with { Amount = decimal.MaxValue, Currency = principalCurrency }
+                    : flow)
+                .ToArray()
+        }, quantity: 2m);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+
+        var baseLadder = await service.GetCashLadderAsync(new PortfolioCashLadderQuery(HorizonDays: 30), timeout.Token);
+        var earlyCallLadder = await service.GetCashLadderAsync(new PortfolioCashLadderQuery(
+            HorizonDays: 30, ScenarioId: PortfolioCashLadderEngine.EarlyCallScenarioId), timeout.Token);
+
+        baseLadder.IsDecisionReady.Should().BeTrue();
+        baseLadder.Contributions.Should().HaveCount(3).And.OnlyContain(row => row.FlowType == "Coupon");
+        baseLadder.Contributions.Sum(row => row.Amount).Should().Be(1_200m);
+        earlyCallLadder.IsDecisionReady.Should().BeFalse();
+        earlyCallLadder.Buckets.Should().BeEmpty();
+        earlyCallLadder.Contributions.Should().BeEmpty();
+        earlyCallLadder.BlockingReasons.Should().ContainMatch(string.IsNullOrWhiteSpace(principalCurrency)
+            ? "*missing currency evidence*" : "*no authoritative FX conversion source*");
+    }
+
+    private static AssetOperationsDetailDto BuildCallableDetail()
     {
         var detail = BuildDetail(Guid.NewGuid(), "Callable USD bond", couponAmount: 100m);
         var terms = new AssetTermsVersionDto(Guid.NewGuid(), detail.Subject.SecurityId, 1,
             "callable-terms", Today.AddYears(-1), detail.CashFlowProjectionRuns.Single().GeneratedAt.AddDays(-1),
             "SecurityMaster", detail.Subject.SecurityId.ToString("D"), "Retained call terms",
             JsonSerializer.SerializeToElement(new { callDate = Today.AddDays(15).ToString("yyyy-MM-dd") }));
-        var principal = detail.ProjectedCashFlows.Single() with
-        {
-            FlowType = "Principal",
-            DueDate = Today.AddDays(60),
-            Amount = decimal.MaxValue,
-            Currency = principalCurrency
-        };
-        var service = BuildService(detail with
+        var coupon = detail.ProjectedCashFlows.Single();
+        return detail with
         {
             TermsHistory = [terms],
-            ProjectedCashFlows = [.. detail.ProjectedCashFlows, principal]
-        }, quantity: 2m);
-
-        var baseLadder = await service.GetCashLadderAsync(new PortfolioCashLadderQuery(HorizonDays: 30));
-        var earlyCallLadder = await service.GetCashLadderAsync(new PortfolioCashLadderQuery(
-            HorizonDays: 30, ScenarioId: PortfolioCashLadderEngine.EarlyCallScenarioId));
-
-        baseLadder.IsDecisionReady.Should().BeTrue();
-        baseLadder.Contributions.Should().ContainSingle().Which.Amount.Should().Be(200m);
-        earlyCallLadder.IsDecisionReady.Should().BeFalse();
-        earlyCallLadder.Buckets.Should().BeEmpty();
-        earlyCallLadder.Contributions.Should().BeEmpty();
-        earlyCallLadder.BlockingReasons.Should().ContainMatch(principalCurrency.Length == 0
-            ? "*missing currency evidence*" : "*no authoritative FX conversion source*");
+            ProjectedCashFlows =
+            [
+                coupon,
+                coupon with { ProjectedCashFlowId = Guid.NewGuid(), SequenceNumber = 2, DueDate = Today.AddDays(15), Amount = 200m },
+                coupon with { ProjectedCashFlowId = Guid.NewGuid(), SequenceNumber = 3, DueDate = Today.AddDays(20), Amount = 300m },
+                coupon with
+                {
+                    ProjectedCashFlowId = Guid.NewGuid(), SequenceNumber = 4, FlowType = "Principal",
+                    DueDate = Today.AddDays(60), Amount = 1_000m
+                }
+            ]
+        };
     }
 
     private static PortfolioCashLadderReadService BuildService(

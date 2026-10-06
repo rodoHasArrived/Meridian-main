@@ -118,7 +118,7 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
         };
 
         // Validate raw currencies before any amount arithmetic, using the engine's own run,
-        // horizon, position, and capital-kind selection. Excluded provider rows cannot affect cash.
+        // horizon, position, scenario, and capital-kind selection. Excluded provider rows cannot affect cash.
         var contributionCurrencies = PortfolioCashLadderEngine.GetContributionCurrencies(inputs, query.ScenarioId).ToArray();
         if (contributionCurrencies.Any(static currency => string.IsNullOrWhiteSpace(currency)))
         {
