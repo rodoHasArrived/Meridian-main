@@ -3,6 +3,7 @@ using FluentAssertions;
 using Meridian.Application.Integrations;
 using Meridian.Contracts.Integrations;
 using Meridian.Storage.Integrations;
+using Moq;
 
 namespace Meridian.Tests.Application.Integrations;
 
@@ -25,13 +26,22 @@ public sealed class ProviderIntegrationQuarantineReplayServiceTests : IDisposabl
     }
 
     [Fact]
-    public async Task ReplayAsync_StagesRecordsAfterMappingChange()
+    public async Task ReplayAsync_RemediatesWithSelectedNewerMappingAndRetainsBothProvenances()
     {
         var store = new FileProviderIntegrationManifestStore(testRoot);
-        await SeedQuarantineAsync(store, CreateReplayReadyManifest());
+        var original = CreateReplayReadyManifest(includeSecurityMapping: false);
+        var selected = CreateReplayReadyManifest() with { ManifestVersion = 2 };
+        await SeedQuarantineAsync(store, original);
+        await PublishAsync(store, original, selected);
+        await PublishAsync(store, selected, selected with { ManifestVersion = 3, FieldMappings = original.FieldMappings });
         var service = new ProviderIntegrationQuarantineReplayService(store);
 
-        var result = await service.ReplayAsync(CreateRequest());
+        var result = await service.ReplayAsync(CreateRequest() with
+        {
+            Mode = ProviderIntegrationReplayModeDto.Remediation,
+            TargetManifestVersion = selected.ManifestVersion,
+            TargetManifestDigest = ProviderIntegrationManifestIdentity.Create(selected).ContentDigest.ToUpperInvariant()
+        });
 
         result.ReplaySyncRunId.Should().Be("sync-run-replay-1");
         result.RecordsReplayed.Should().Be(1);
@@ -39,13 +49,302 @@ public sealed class ProviderIntegrationQuarantineReplayServiceTests : IDisposabl
         result.RecordsRequarantined.Should().Be(0);
         result.Status.Should().Be(ProviderIntegrationProcessingStatusDto.Validated);
         result.Issues.Should().BeEmpty();
-        (await store.GetRawPayloadAsync(result.ReplaySyncRunId, result.RawPayloadId)).Should().NotBeNull();
-        (await store.GetSyncRunAsync(result.ReplaySyncRunId))!.RecordsAccepted.Should().Be(1);
+        var payload = (await store.GetRawPayloadAsync(result.ReplaySyncRunId, result.RawPayloadId))!;
+        var run = (await store.GetSyncRunAsync(result.ReplaySyncRunId))!;
+        run.RecordsAccepted.Should().Be(1);
+        run.ManifestReference.Should().Be(ProviderIntegrationManifestIdentity.Create(selected));
+        run.OriginalManifestReference.Should().Be(ProviderIntegrationManifestIdentity.Create(original));
+        run.ReplayMode.Should().Be(ProviderIntegrationReplayModeDto.Remediation);
+        run.SourceSyncRunId.Should().Be("sync-run-quarantine-1");
+        payload.ManifestReference.Should().Be(run.ManifestReference);
+        payload.OriginalManifestReference.Should().Be(run.OriginalManifestReference);
+        payload.ReplayMode.Should().Be(run.ReplayMode);
+        payload.SourceSyncRunId.Should().Be(run.SourceSyncRunId);
         var staged = await store.ListStagingRecordsAsync(result.ReplaySyncRunId);
         staged.Should().ContainSingle();
         staged[0].SourceRecordId.Should().Be("POS-1");
         staged[0].MappedRecord.GetProperty("security").GetProperty("cusip").GetString().Should().Be("9128285M8");
         (await store.ListQuarantinedRecordsAsync(result.ReplaySyncRunId)).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ReplayAsync_UsesOriginalMappingAfterUpdateAndRestart()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var original = CreateReplayReadyManifest(includeSecurityMapping: false);
+        await SeedQuarantineAsync(store, original);
+        await PublishAsync(store, original, CreateReplayReadyManifest() with { ManifestVersion = 2 });
+
+        var restartedStore = new FileProviderIntegrationManifestStore(testRoot);
+        var result = await new ProviderIntegrationQuarantineReplayService(restartedStore).ReplayAsync(CreateRequest());
+
+        result.RecordsAccepted.Should().Be(0);
+        result.RecordsRequarantined.Should().Be(1);
+        result.Issues.Should().Contain(issue => issue.Code == "required.missing" && issue.TargetField == "security.cusip");
+        var run = (await restartedStore.GetSyncRunAsync(result.ReplaySyncRunId))!;
+        var payload = (await restartedStore.GetRawPayloadAsync(result.ReplaySyncRunId, result.RawPayloadId))!;
+        var originalReference = ProviderIntegrationManifestIdentity.Create(original);
+        run.ManifestReference.Should().Be(originalReference);
+        run.OriginalManifestReference.Should().Be(originalReference);
+        run.ReplayMode.Should().Be(ProviderIntegrationReplayModeDto.Original);
+        payload.ManifestReference.Should().Be(originalReference);
+        payload.OriginalManifestReference.Should().Be(originalReference);
+        payload.MappingVersion.Should().Be($"{original.ManifestId}:v1");
+        (await restartedStore.GetManifestAsync(original.ManifestId))!.ManifestVersion.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task ReplayAsync_OriginalReplayOfRemediationPreservesFirstIngestionMapping()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var original = CreateReplayReadyManifest(includeSecurityMapping: false);
+        var remediation = original with { ManifestVersion = 2, ChangeReason = "Investigate missing security" };
+        await SeedQuarantineAsync(store, original);
+        await PublishAsync(store, original, remediation);
+        var service = new ProviderIntegrationQuarantineReplayService(store);
+        var remediated = await service.ReplayAsync(CreateRequest() with
+        {
+            Mode = ProviderIntegrationReplayModeDto.Remediation,
+            TargetManifestVersion = remediation.ManifestVersion,
+            TargetManifestDigest = ProviderIntegrationManifestIdentity.Create(remediation).ContentDigest
+        });
+        var records = await store.ListQuarantinedRecordsAsync(remediated.ReplaySyncRunId);
+
+        var replay = await service.ReplayAsync(CreateRequest() with
+        {
+            ReplaySyncRunId = "sync-run-replay-2",
+            SourceSyncRunId = remediated.ReplaySyncRunId,
+            QuarantineRecordIds = records.Select(record => record.QuarantineRecordId).ToArray()
+        });
+
+        var run = (await store.GetSyncRunAsync(replay.ReplaySyncRunId))!;
+        run.ManifestReference.Should().Be(ProviderIntegrationManifestIdentity.Create(original));
+        run.OriginalManifestReference.Should().Be(run.ManifestReference);
+        run.SourceSyncRunId.Should().Be(remediated.ReplaySyncRunId);
+        (await store.GetSyncRunAsync(remediated.ReplaySyncRunId))!.ManifestReference
+            .Should().Be(ProviderIntegrationManifestIdentity.Create(remediation));
+    }
+
+    [Theory]
+    [InlineData(ProviderIntegrationReplayModeDto.Original, 2, "digest")]
+    [InlineData(ProviderIntegrationReplayModeDto.Remediation, null, null)]
+    [InlineData(ProviderIntegrationReplayModeDto.Remediation, 1, "digest")]
+    [InlineData(ProviderIntegrationReplayModeDto.Remediation, 2, null)]
+    [InlineData((ProviderIntegrationReplayModeDto)99, null, null)]
+    public async Task ReplayAsync_RejectsImplicitOrNonNewerRemediation(
+        ProviderIntegrationReplayModeDto mode, int? targetVersion, string? targetDigest)
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        await SeedQuarantineAsync(store, CreateReplayReadyManifest());
+        var service = new ProviderIntegrationQuarantineReplayService(store);
+
+        var act = () => service.ReplayAsync(CreateRequest() with
+        {
+            Mode = mode,
+            TargetManifestVersion = targetVersion,
+            TargetManifestDigest = targetDigest
+        });
+
+        await act.Should().ThrowAsync<ArgumentException>();
+        (await store.GetSyncRunAsync("sync-run-replay-1")).Should().BeNull();
+        (await store.ListStagingRecordsAsync("sync-run-replay-1")).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ReplayAsync_RejectsUnavailableOrMismatchedRemediationSnapshot(bool snapshotExists)
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var original = CreateReplayReadyManifest();
+        await SeedQuarantineAsync(store, original);
+        if (snapshotExists)
+        {
+            await PublishAsync(store, original, original with { ManifestVersion = 2 });
+        }
+
+        var act = () => new ProviderIntegrationQuarantineReplayService(store).ReplayAsync(CreateRequest() with
+        {
+            Mode = ProviderIntegrationReplayModeDto.Remediation,
+            TargetManifestVersion = 2,
+            TargetManifestDigest = new string('0', 64)
+        });
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        (await store.GetSyncRunAsync("sync-run-replay-1")).Should().BeNull();
+        (await store.ListStagingRecordsAsync("sync-run-replay-1")).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("legacy-unbound-evidence")]
+    [InlineData("missing-run-reference")]
+    [InlineData("missing-original-reference")]
+    [InlineData("missing-payload")]
+    [InlineData("mismatched-payload-reference")]
+    [InlineData("tampered-both-digests")]
+    [InlineData("missing-original-snapshot")]
+    [InlineData("different-payload-scope")]
+    [InlineData("mismatched-mapping-version")]
+    public async Task ReplayAsync_RejectsMissingOrInconsistentSourceProvenanceBeforeWrites(string corruption)
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = CreateReplayReadyManifest();
+        await SeedQuarantineAsync(store, manifest);
+        var sourceRun = (await store.GetSyncRunAsync("sync-run-quarantine-1"))!;
+        var sourcePayload = (await store.GetRawPayloadAsync(sourceRun.SyncRunId, sourceRun.RawPayloadId!))!;
+        var falseReference = sourceRun.ManifestReference! with { ContentDigest = new string('0', 64) };
+        switch (corruption)
+        {
+            case "legacy-unbound-evidence":
+                sourceRun = sourceRun with { ManifestReference = null, OriginalManifestReference = null };
+                sourcePayload = sourcePayload with { ManifestReference = null, OriginalManifestReference = null };
+                break;
+            case "missing-run-reference":
+                sourceRun = sourceRun with { ManifestReference = null };
+                break;
+            case "missing-original-reference":
+                sourceRun = sourceRun with { OriginalManifestReference = null };
+                break;
+            case "mismatched-payload-reference":
+                sourcePayload = sourcePayload with { ManifestReference = falseReference };
+                break;
+            case "tampered-both-digests":
+                sourceRun = sourceRun with { ManifestReference = falseReference, OriginalManifestReference = falseReference };
+                sourcePayload = sourcePayload with { ManifestReference = falseReference, OriginalManifestReference = falseReference };
+                break;
+            case "different-payload-scope":
+                sourcePayload = sourcePayload with { ConnectionId = "another-connection" };
+                break;
+            case "mismatched-mapping-version":
+                sourcePayload = sourcePayload with { MappingVersion = "another-manifest:v1" };
+                break;
+        }
+
+        var damaged = new Mock<IProviderIntegrationManifestStore>(MockBehavior.Strict);
+        damaged.Setup(candidate => candidate.GetSyncRunAsync("sync-run-replay-1", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ProviderIntegrationSyncRunDto?)null);
+        damaged.Setup(candidate => candidate.GetSyncRunAsync(sourceRun.SyncRunId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(sourceRun);
+        damaged.Setup(candidate => candidate.GetConnectionAsync("connection-alpha", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(CreateConnection());
+        damaged.Setup(candidate => candidate.GetRawPayloadAsync(sourceRun.SyncRunId, "payload-1", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(corruption == "missing-payload" ? null : sourcePayload);
+        damaged.Setup(candidate => candidate.GetManifestVersionAsync(manifest.ManifestId, manifest.ManifestVersion, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(corruption == "missing-original-snapshot" ? null : manifest);
+
+        var act = () => new ProviderIntegrationQuarantineReplayService(damaged.Object).ReplayAsync(CreateRequest());
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        damaged.Verify(candidate => candidate.SaveRawPayloadAsync(It.IsAny<RawIngestionPayloadDto>(), It.IsAny<CancellationToken>()), Times.Never);
+        damaged.Verify(candidate => candidate.SaveSyncRunAsync(It.IsAny<ProviderIntegrationSyncRunDto>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ReplayAsync_RejectsSourceRunIdReuseWithoutChangingSourceEvidence()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        await SeedQuarantineAsync(store, CreateReplayReadyManifest());
+        var before = await store.GetSyncRunAsync("sync-run-quarantine-1");
+
+        var act = () => new ProviderIntegrationQuarantineReplayService(store).ReplayAsync(CreateRequest() with
+        {
+            ReplaySyncRunId = "sync-run-quarantine-1"
+        });
+
+        await act.Should().ThrowAsync<ArgumentException>();
+        (await store.GetSyncRunAsync("sync-run-quarantine-1")).Should().BeEquivalentTo(before);
+    }
+
+    [Fact]
+    public async Task ReplayAsync_ConcurrentDifferentSourcesClaimOneRunBeforePublishingAnyRows()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = CreateReplayReadyManifest();
+        await SeedQuarantineAsync(store, manifest);
+        var firstRun = (await store.GetSyncRunAsync("sync-run-quarantine-1"))!;
+        var firstPayload = (await store.GetRawPayloadAsync(firstRun.SyncRunId, firstRun.RawPayloadId!))!;
+        var firstRecord = (await store.ListQuarantinedRecordsAsync(firstRun.SyncRunId)).Single();
+        var secondRun = firstRun with { SyncRunId = "sync-run-quarantine-2", RawPayloadId = "payload-2" };
+        await store.SaveRawPayloadAsync(firstPayload with
+        {
+            SyncRunId = secondRun.SyncRunId,
+            PayloadId = secondRun.RawPayloadId!,
+            RawPayload = Json(firstPayload.RawPayload.GetRawText().Replace("POS-1", "POS-2", StringComparison.Ordinal))
+        });
+        await store.SaveSyncRunAsync(secondRun);
+        await store.SaveQuarantinedRecordAsync(firstRecord with
+        {
+            SyncRunId = secondRun.SyncRunId,
+            QuarantineRecordId = "quarantine-other",
+            RawRecord = Json(firstRecord.RawRecord.GetRawText().Replace("POS-1", "POS-2", StringComparison.Ordinal))
+        });
+
+        var firstRequest = CreateRequest();
+        var secondRequest = firstRequest with
+        {
+            SourceSyncRunId = secondRun.SyncRunId,
+            QuarantineRecordIds = ["quarantine-other"]
+        };
+        var bothReadUnusedRun = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var arrivals = 0;
+        async Task<ProviderIntegrationSyncRunDto?> ReadRunAsync(IProviderIntegrationManifestStore underlying, string id, CancellationToken ct)
+        {
+            var run = await underlying.GetSyncRunAsync(id, ct);
+            if (id == firstRequest.ReplaySyncRunId)
+            {
+                run.Should().BeNull();
+                if (Interlocked.Increment(ref arrivals) == 2)
+                {
+                    bothReadUnusedRun.SetResult();
+                }
+
+                await bothReadUnusedRun.Task.WaitAsync(TimeSpan.FromSeconds(10), ct);
+            }
+
+            return run;
+        }
+
+        var firstService = new ProviderIntegrationQuarantineReplayService(
+            ForwardReplayStore(store, (id, ct) => ReadRunAsync(store, id, ct)));
+        var secondStore = new FileProviderIntegrationManifestStore(testRoot);
+        var secondService = new ProviderIntegrationQuarantineReplayService(
+            ForwardReplayStore(secondStore, (id, ct) => ReadRunAsync(secondStore, id, ct)));
+        async Task<(string SourceId, Exception? Error)> AttemptAsync(
+            ProviderIntegrationQuarantineReplayService service, ProviderIntegrationQuarantineReplayRequestDto request)
+        {
+            try
+            {
+                await service.ReplayAsync(request);
+                return (request.SourceSyncRunId, null);
+            }
+            catch (InvalidOperationException error)
+            {
+                return (request.SourceSyncRunId, error);
+            }
+        }
+
+        var attempts = await Task.WhenAll(AttemptAsync(firstService, firstRequest), AttemptAsync(secondService, secondRequest));
+
+        var winner = attempts.Where(attempt => attempt.Error is null).Should().ContainSingle().Which;
+        attempts.Where(attempt => attempt.Error is not null).Should().ContainSingle()
+            .Which.Error.Should().BeOfType<InvalidOperationException>().Which.Message.Should().Contain("unused sync run id");
+        var retained = (await store.GetSyncRunAsync(firstRequest.ReplaySyncRunId))!;
+        retained.SourceSyncRunId.Should().Be(winner.SourceId);
+        retained.Status.Should().Be(ProviderIntegrationProcessingStatusDto.Validated);
+        retained.ManifestReference.Should().Be(ProviderIntegrationManifestIdentity.Create(manifest));
+        retained.OriginalManifestReference.Should().Be(retained.ManifestReference);
+        var staged = (await store.ListStagingRecordsAsync(firstRequest.ReplaySyncRunId)).Should().ContainSingle().Which;
+        staged.SourceRecordId.Should().Be(winner.SourceId == firstRun.SyncRunId ? "POS-1" : "POS-2");
+        staged.RawPayloadId.Should().Be(retained.RawPayloadId);
+        (await store.ListQuarantinedRecordsAsync(firstRequest.ReplaySyncRunId)).Should().BeEmpty();
+        var replayPayloads = Directory.EnumerateFiles(Path.Combine(testRoot, "_integrations", "raw-payloads"), "*.json", SearchOption.AllDirectories)
+            .Select(path => JsonSerializer.Deserialize(File.ReadAllText(path), ProviderIntegrationContractsJsonContext.Default.RawIngestionPayloadDto)!)
+            .Where(payload => payload.SyncRunId == firstRequest.ReplaySyncRunId);
+        var payload = replayPayloads.Should().ContainSingle().Which;
+        payload.SourceSyncRunId.Should().Be(winner.SourceId);
+        payload.PayloadId.Should().Be(retained.RawPayloadId);
+        payload.ManifestReference.Should().Be(retained.ManifestReference);
+        payload.RawPayload.GetProperty("sourceSyncRunId").GetString().Should().Be(winner.SourceId);
     }
 
     [Fact]
@@ -144,6 +443,33 @@ public sealed class ProviderIntegrationQuarantineReplayServiceTests : IDisposabl
             "operator@example.com",
             DateTimeOffset.Parse("2026-06-16T12:30:00Z"));
 
+    private static IProviderIntegrationManifestStore ForwardReplayStore(
+        IProviderIntegrationManifestStore underlying,
+        Func<string, CancellationToken, Task<ProviderIntegrationSyncRunDto?>> readRun)
+    {
+        var proxy = new Mock<IProviderIntegrationManifestStore>(MockBehavior.Strict);
+        proxy.Setup(store => store.GetSyncRunAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(readRun);
+        proxy.Setup(store => store.GetConnectionAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns((string id, CancellationToken ct) => underlying.GetConnectionAsync(id, ct));
+        proxy.Setup(store => store.GetRawPayloadAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns((string run, string id, CancellationToken ct) => underlying.GetRawPayloadAsync(run, id, ct));
+        proxy.Setup(store => store.GetManifestVersionAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .Returns((string id, int version, CancellationToken ct) => underlying.GetManifestVersionAsync(id, version, ct));
+        proxy.Setup(store => store.ListQuarantinedRecordsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns((string id, CancellationToken ct) => underlying.ListQuarantinedRecordsAsync(id, ct));
+        proxy.Setup(store => store.TryCreateSyncRunAsync(It.IsAny<ProviderIntegrationSyncRunDto>(), It.IsAny<CancellationToken>()))
+            .Returns((ProviderIntegrationSyncRunDto run, CancellationToken ct) => underlying.TryCreateSyncRunAsync(run, ct));
+        proxy.Setup(store => store.SaveSyncRunAsync(It.IsAny<ProviderIntegrationSyncRunDto>(), It.IsAny<CancellationToken>()))
+            .Returns((ProviderIntegrationSyncRunDto run, CancellationToken ct) => underlying.SaveSyncRunAsync(run, ct));
+        proxy.Setup(store => store.SaveRawPayloadAsync(It.IsAny<RawIngestionPayloadDto>(), It.IsAny<CancellationToken>()))
+            .Returns((RawIngestionPayloadDto payload, CancellationToken ct) => underlying.SaveRawPayloadAsync(payload, ct));
+        proxy.Setup(store => store.SaveStagingRecordAsync(It.IsAny<IntegrationStagingRecordDto>(), It.IsAny<CancellationToken>()))
+            .Returns((IntegrationStagingRecordDto record, CancellationToken ct) => underlying.SaveStagingRecordAsync(record, ct));
+        proxy.Setup(store => store.SaveQuarantinedRecordAsync(It.IsAny<QuarantinedRecordDto>(), It.IsAny<CancellationToken>()))
+            .Returns((QuarantinedRecordDto record, CancellationToken ct) => underlying.SaveQuarantinedRecordAsync(record, ct));
+        return proxy.Object;
+    }
+
     private static async Task SeedQuarantineAsync(
         IProviderIntegrationManifestStore store,
         ProviderIntegrationManifestDto manifest,
@@ -151,6 +477,23 @@ public sealed class ProviderIntegrationQuarantineReplayServiceTests : IDisposabl
     {
         await store.SaveManifestAsync(manifest).ConfigureAwait(false);
         await store.SaveConnectionAsync(CreateConnection()).ConfigureAwait(false);
+        var reference = ProviderIntegrationManifestIdentity.Create(manifest);
+        await store.SaveRawPayloadAsync(new RawIngestionPayloadDto(
+            "payload-1",
+            manifest.ProviderId,
+            "connection-alpha",
+            ProviderCapabilityKindDto.Positions,
+            "positions",
+            "sync-run-quarantine-1",
+            DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+            new Dictionary<string, string>(),
+            Json("""{"positions":[{"account_id":"A-100","quantity":"100","as_of_date":"2026-06-16","position_id":"POS-1"}]}"""),
+            $"{manifest.ManifestId}:v{manifest.ManifestVersion}",
+            ProviderIntegrationProcessingStatusDto.Received)
+        {
+            ManifestReference = reference,
+            OriginalManifestReference = reference
+        }).ConfigureAwait(false);
         await store.SaveSyncRunAsync(new ProviderIntegrationSyncRunDto(
             "sync-run-quarantine-1",
             manifest.ManifestId,
@@ -173,7 +516,11 @@ public sealed class ProviderIntegrationQuarantineReplayServiceTests : IDisposabl
                     "Required field 'security.cusip' is missing.",
                     "security.cusip",
                     "Map CUSIP, ISIN, ticker, or provider security id.")
-            ])).ConfigureAwait(false);
+            ])
+        {
+            ManifestReference = reference,
+            OriginalManifestReference = reference
+        }).ConfigureAwait(false);
         await store.SaveQuarantinedRecordAsync(new QuarantinedRecordDto(
             "quarantine-1",
             "sync-run-quarantine-1",
@@ -211,6 +558,18 @@ public sealed class ProviderIntegrationQuarantineReplayServiceTests : IDisposabl
                 ProviderIntegrationProcessingStatusDto.Quarantined,
                 DateTimeOffset.Parse("2026-06-16T12:01:30Z"))).ConfigureAwait(false);
         }
+    }
+
+    private static async Task PublishAsync(
+        IProviderIntegrationManifestStore store,
+        ProviderIntegrationManifestDto current,
+        ProviderIntegrationManifestDto next)
+    {
+        await store.SaveManifestVersionAsync(next);
+        (await store.CompareExchangeCurrentManifestAsync(
+            current.ManifestId,
+            ProviderIntegrationManifestIdentity.Create(current),
+            ProviderIntegrationManifestIdentity.Create(next))).Should().BeTrue();
     }
 
     private static ProviderIntegrationManifestDto CreateReplayReadyManifest(
@@ -252,7 +611,7 @@ public sealed class ProviderIntegrationQuarantineReplayServiceTests : IDisposabl
 
         return new ProviderIntegrationManifestDto(
             "manifest-custodian-abc-v1",
-            2,
+            1,
             "custodian-abc",
             "Custodian ABC",
             IntegrationTypeDto.Rest,
@@ -289,10 +648,10 @@ public sealed class ProviderIntegrationQuarantineReplayServiceTests : IDisposabl
                 RequiredIssueCodes: []),
             ProviderIntegrationActivationStateDto.DryRunPassed,
             "operator@example.com",
-            DateTimeOffset.Parse("2026-06-16T12:20:00Z"),
+            DateTimeOffset.Parse("2026-06-16T11:50:00Z"),
             ApprovedBy: null,
             ApprovedAt: null,
-            ChangeReason: "Replay after mapping change");
+            ChangeReason: "Initial mapping");
     }
 
     private static FieldMappingDto Mapping(

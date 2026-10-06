@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-06-30
+**Reviewed:** 2026-10-05
 
 This is the canonical operator lane for historical data backfill operations and recovery in Meridian.
 
@@ -12,6 +12,20 @@ This is the canonical operator lane for historical data backfill operations and 
 - provider priority and fallback behavior,
 - gap remediation and quality checks,
 - dry-run and evidence capture posture.
+
+## Prerequisites
+
+- Complete [local setup](../start/README.md#first-local-setup) and select the intended
+  [persistence profile](../reference/environment-variables.md#database-persistence).
+- Run the Windows workstation examples in PowerShell 7 from the repository root. The one-line `dotnet` commands also
+  work in Bash. An installed release uses its supervisor-managed host and workstation controls;
+  these source-checkout commands do not replace the installed host.
+- Configure the requested historical provider, credentials, permitted symbols/date range, and
+  data root. Provider calls can consume quota; review the preview/cost estimate first.
+- For API checks, provision an operator account with `ViewHistoricalData` or the applicable
+  provider/storage permission. Submitting a backfill requires `TriggerBackfill`.
+- Choose one writer for the data root. Run a standalone CLI backfill after stopping a source host
+  that uses that root, or submit the job through the running workstation. Do not launch both.
 
 ## Backfill operator workflow
 
@@ -33,6 +47,12 @@ Use this sequence for controlled backfill execution:
 - `POST /api/backfill/run`
 - `GET /api/backfill/executions`
 - `GET /api/backfill/statistics`
+
+Use [preflight authentication](preflight-checklist.md#authenticated-evidence-collection) for API
+reads. Workstation submissions use the signed-in operator session and its mutation protections.
+`/api/backfill/progress` describes the host's coordinator activity; it does not monitor a separate
+CLI process. `/api/backfill/status` reads the most recent completed result from the configured data
+root and returns `404` when none exists.
 
 ## Provider configuration posture
 
@@ -72,33 +92,76 @@ mode:
 
 ## Execution commands
 
-```bash
-# Full symbol history
-Dotnet run -- --backfill --backfill-symbols AAPL --backfill-from 2000-01-01 --backfill-to 2026-01-01
+Choose one execution command for the approved scope. These examples use the configured provider;
+add `--backfill-provider <provider-id>` to select a specific registered provider explicitly.
+They are real backfill requests, not previews.
 
-# Incremental/scheduled catch-up
-Dotnet run -- --backfill --backfill-symbols AAPL --backfill-from 2025-01-01
+```powershell
+# Begin with a bounded single-symbol window
+dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-symbols AAPL --backfill-from 2025-06-02 --backfill-to 2025-06-06
+
+# Catch up an explicitly chosen later interval
+dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-symbols AAPL --backfill-from 2025-06-09 --backfill-to 2025-06-13
 
 # Scoped date range
-Dotnet run -- --backfill --backfill-symbols AAPL,MSFT --backfill-from 2025-06-01 --backfill-to 2025-12-31
+dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-symbols AAPL,MSFT --backfill-from 2025-06-01 --backfill-to 2025-12-31
 
-# Dry-run validation
-Dotnet run -- --backfill --backfill-symbols AAPL --backfill-from 2025-01-01 --dry-run
+# Configuration/resource validation without provider connectivity checks or collection
+dotnet run --project src/Meridian/Meridian.csproj -- --dry-run --offline
 ```
 
-> Note: in examples above, use lowercase `dotnet` command.
+`--dry-run --offline` validates local configuration/resources; it does not produce a backfill
+fetch plan or prove provider access. Use the workstation preview/cost-estimate operation for the
+exact symbols and dates, and `--help backfill` for supported CLI options.
+
+## Expected result
+
+- The chosen CLI backfill exits with code `0` and writes its last-run result to
+  `{DataRoot}/_status/backfill.json`. A nonzero exit is a failed run.
+- The result's provider, symbols, dates, and timestamps match the approved request. Inspect
+  `Success`, `BarsWritten`, `SkippedSymbols`, `SymbolValidationSignals`, and `Error`; successful
+  process completion alone does not establish complete or correct historical coverage.
+- Retain the result before a later run replaces the last-run file, then complete the quality
+  checks below and the [mandatory evidence](#mandatory-evidence) packet.
 
 ## Quality and gap checks
 
-Before accepting outputs, run:
+After a standalone CLI run has exited, start the workstation host against the same config/data root
+in **terminal 1** using [preflight](preflight-checklist.md#mandatory-command-set). In **terminal 2**,
+complete [authenticated evidence collection](preflight-checklist.md#authenticated-evidence-collection)
+to define `$meridianBaseUrl` and `$operatorSession`, then inspect the completed run and a date in
+the requested window:
 
-- backfill gap report (`dotnet run -- --gap-report ...`)
-- quality report (`dotnet run -- --quality-report <symbol>`)
+```powershell
+Invoke-RestMethod "$meridianBaseUrl/api/backfill/status" -WebSession $operatorSession
+Invoke-RestMethod "$meridianBaseUrl/api/quality/gaps/AAPL?date=2025-06-02" -WebSession $operatorSession
+Invoke-RestMethod "$meridianBaseUrl/api/quality/reports/daily?date=2025-06-02" -WebSession $operatorSession
+```
+
+These are supported HTTP routes; there are no `--gap-report` or `--quality-report` CLI commands.
+The quality endpoints report the host's available monitoring evidence. Empty results do not prove
+that every historical bar was observed or that the requested interval is complete. Compare their
+coverage with the run's per-symbol validation signals and retained output.
+
+Before accepting outputs, also complete:
+
 - bounded cross-source daily backfill reconciliation when an alternate provider is part of the
   acceptance evidence; batch reconciliation normalizes symbols to uppercase, de-duplicates them,
   preserves first-seen request order, filters comparison bars to the requested symbol, and reports
   clean/drift/symbol-mismatch/missing-evidence/error posture per symbol
 - review execution history/lineage before promoting archive/parquet transitions.
+
+## Failure and recovery
+
+| Symptom | Next action |
+| --- | --- |
+| Local configuration validation fails | Fix the reported setting and rerun `--dry-run --offline` before provider calls. |
+| Startup rejects the persistence profile, or an API returns `401/403` | Use the [preflight failure table](preflight-checklist.md#failure-and-recovery); preserve the intended data root and operator scope. |
+| Provider rejects credentials, entitlement, symbols, or dates | Correct the specific input, retain the failed result, and retry a bounded window. Use [Provider Credential Operations](provider-credentials.md) for credential repair. |
+| Rate limiting or provider outage | Respect retry delays and the configured fallback policy; keep original provider evidence when using an alternate source. |
+| API reports an active-job conflict | Inspect `/api/backfill/progress` and let the admitted job finish or follow its cancellation procedure before resubmitting. |
+| Status returns `404`, or returned dates/provider differ from this run | Verify the host and CLI used the same data root and that a completed result was written. Do not accept another run's status as proof. |
+| Missing bars or failed per-symbol validation | Retain the result, investigate the affected symbols/window, then use the gap-remediation workflow below. Preserve checkpoints and failed evidence for the repair review. |
 
 ## Gap-remediation SLA posture
 

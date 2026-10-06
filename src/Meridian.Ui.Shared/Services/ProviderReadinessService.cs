@@ -42,7 +42,8 @@ public sealed class ProviderReadinessService
 
         foreach (var source in configuredProviders)
         {
-            providerIds.Add(ProviderCredentialCatalog.NormalizeProviderId(source.Id));
+            // Source IDs identify configured connections, not provider families. A named
+            // connection must not add a second family or shadow another adapter's readiness.
             providerIds.Add(ProviderCredentialCatalog.NormalizeProviderId(source.Provider.ToString()));
         }
 
@@ -56,7 +57,7 @@ public sealed class ProviderReadinessService
             var descriptor = ProviderCredentialCatalog.Find(providerId);
             var connection = FindConnection(connections, providerId);
             var source = FindSource(configuredProviders, providerId);
-            var providerMetrics = FindMetrics(metrics, providerId, source);
+            var providerMetrics = ProviderMetricsLookup.Find(metrics, configuredProviders, providerId);
             var degradationScore = scorer?.GetScore(providerId).CompositeScore;
             var familyId = ProviderCredentialCatalog.NormalizeProviderId(source?.Provider.ToString() ?? providerId);
             var moduleDisabled = cfg.ProviderModules?.Modules?.Any(module =>
@@ -184,14 +185,7 @@ public sealed class ProviderReadinessService
 
     private static DataSourceConfig? FindSource(IReadOnlyList<DataSourceConfig> sources, string providerId)
         => sources.FirstOrDefault(source =>
-            string.Equals(ProviderCredentialCatalog.NormalizeProviderId(source.Id), providerId, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(ProviderCredentialCatalog.NormalizeProviderId(source.Provider.ToString()), providerId, StringComparison.OrdinalIgnoreCase));
-
-    private static ProviderMetrics? FindMetrics(ProviderMetricsStatus? metrics, string providerId, DataSourceConfig? source)
-        => metrics?.Providers.FirstOrDefault(provider =>
-            string.Equals(ProviderCredentialCatalog.NormalizeProviderId(provider.ProviderId), providerId, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(ProviderCredentialCatalog.NormalizeProviderId(provider.ProviderType), providerId, StringComparison.OrdinalIgnoreCase) ||
-            (source is not null && string.Equals(provider.ProviderId, source.Id, StringComparison.OrdinalIgnoreCase)));
 
     private static ProviderContinuityHealthDto ResolveConnectionHealth(bool isEnabled, bool isConnected, bool fallbackActive)
         => !isEnabled ? ProviderContinuityHealthDto.Warning

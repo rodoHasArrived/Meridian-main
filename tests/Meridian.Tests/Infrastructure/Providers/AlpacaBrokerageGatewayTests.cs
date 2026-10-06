@@ -15,7 +15,7 @@ namespace Meridian.Tests.Infrastructure.Providers;
 /// Unit tests for <see cref="AlpacaBrokerageGateway"/>, including fixed income (bond/treasury) support.
 /// All tests use a stub HTTP handler — no real network calls are made.
 /// </summary>
-public sealed class AlpacaBrokerageGatewayTests
+public sealed partial class AlpacaBrokerageGatewayTests
 {
     private const string PaperBaseUrl = "https://paper-api.alpaca.markets";
 

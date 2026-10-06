@@ -108,7 +108,10 @@ public static class BrokerageServiceRegistration
                 options: orderManagementOptions,
                 tradeEventPublisher: sp.GetService<ITradeEventPublisher>(),
                 tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>(),
-                escalationQueue: sp.GetService<RiskEscalationQueueService>());
+                escalationQueue: sp.GetService<RiskEscalationQueueService>(),
+                // Every brokerage-backed OMS must retain dispatch identities before routing,
+                // including a broker's sandbox. In-process paper execution needs no broker recovery file.
+                recoveryStore: gateway is IBrokerageGateway ? sp.GetRequiredService<FileBrokerageOrderRecoveryStore>() : null);
         });
 
         services.TryAddSingleton<BrokerageExecutionReconciliationService>();

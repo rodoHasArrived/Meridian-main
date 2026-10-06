@@ -11,7 +11,8 @@ public sealed record LedgerTaxLot
         decimal quantity,
         decimal unitCost,
         Guid? securityId = null,
-        DateOnly? holdingPeriodStartDate = null)
+        DateOnly? holdingPeriodStartDate = null,
+        decimal? costBasis = null)
     {
         if (string.IsNullOrWhiteSpace(lotId))
             throw new ArgumentException("Tax lot identifier must not be null or whitespace.", nameof(lotId));
@@ -19,6 +20,8 @@ public sealed record LedgerTaxLot
             throw new ArgumentOutOfRangeException(nameof(quantity), quantity, "Tax lot quantity must be positive.");
         if (unitCost < 0m)
             throw new ArgumentOutOfRangeException(nameof(unitCost), unitCost, "Tax lot unit cost cannot be negative.");
+        if (costBasis is < 0m)
+            throw new ArgumentOutOfRangeException(nameof(costBasis), costBasis, "Tax lot cost basis cannot be negative.");
         if (holdingPeriodStartDate is { } holdingStart && holdingStart > acquiredDate)
         {
             throw new ArgumentOutOfRangeException(
@@ -33,6 +36,7 @@ public sealed record LedgerTaxLot
         UnitCost = unitCost;
         SecurityId = securityId;
         HoldingPeriodStartDate = holdingPeriodStartDate;
+        CostBasis = costBasis;
     }
 
     public string LotId { get; }
@@ -42,6 +46,14 @@ public sealed record LedgerTaxLot
     public decimal Quantity { get; }
 
     public decimal UnitCost { get; }
+
+    /// <summary>
+    /// Exact current basis of the whole lot, when it is known rather than implied by
+    /// <see cref="Quantity"/> times <see cref="UnitCost"/>. Lot-discrete relief that consumes the
+    /// entire lot relieves this amount exactly, so a governed current basis carrying fractional
+    /// cents is not re-derived through a rounded unit cost.
+    /// </summary>
+    public decimal? CostBasis { get; }
 
     /// <summary>
     /// Optional Security Master identity for this lot. When present, the relief engine can be

@@ -1,10 +1,10 @@
 # Architecture Diagrams
 
-**Status:** Active
-**Owner:** Core Team
-**Reviewed:** 2026-06-16
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-10-05
 
-This folder contains committed DOT, PlantUML, PNG, and SVG diagram assets for the Meridian system, updated to reflect the current monolithic runtime, shared workstation delivery, security-master productization, and fund-operations workflows. Registered Mermaid architecture sources live separately in [`docs/architecture/diagrams/`](../architecture/diagrams/) and are indexed through [`docs/source/data/diagram-index.yml`](../source/data/diagram-index.yml).
+This folder contains committed DOT, PlantUML, PNG, and SVG diagram sources and rendered assets. Source-generated WPF views and manually maintained architecture sketches have different refresh rules; a rendering is not evidence of current runtime capability. Registered Mermaid architecture sources live separately in [`docs/architecture/diagrams/`](../architecture/diagrams/) and are indexed through [`docs/source/data/diagram-index.yml`](../source/data/diagram-index.yml).
 
 - **Graphviz DOT diagrams** — C4 context/container/component, data flow, provider, storage, UI, operations, and reference views
 - **UML diagrams** — Sequence, state, activity, timing, and communication diagrams in [`uml/`](uml/README.md)
@@ -25,7 +25,7 @@ Diagram source/artifact triplets are organized by domain to reduce top-level spr
 - `analytics/`
 - `uml/`
 
-The index below keeps basename references for readability; use the folders above to locate each diagram set.
+The index links diagram sources. Consult [Architecture](../architecture/README.md), [provider capabilities](../reference/provider-capability-matrix.md), and the [support matrix](../adr/019-production-support-matrix-and-deployment-posture.md) for maintained behavior and deployment guidance.
 
 ---
 
@@ -33,42 +33,47 @@ The index below keeps basename references for readability; use the folders above
 
 | Diagram | Description | File |
 | --------- | ------------- | ------ |
-| **C4 Level 1: Context** | System context showing actors and external systems | `c4-level1-context.dot` |
-| **C4 Level 2: Containers** | High-level container view (apps, services, storage) | `c4-level2-containers.dot` |
-| **C4 Level 3: Components** | Internal component architecture of core collector | `c4-level3-components.dot` |
-| **Data Flow** | End-to-end data flow from sources to export | `data-flow.dot` |
-| **Provider Architecture** | Data provider abstraction, manifest-driven setup, sync-run evidence, staging, and reconciliation handoff | `provider-architecture.dot` |
-| **Storage Architecture** | Storage pipeline with WAL, compression, tiering | `storage-architecture.dot` |
+| **C4 Level 1: Context** | System context showing actors and external systems | [c4-level1-context.dot](architecture/c4/c4-level1-context.dot) |
+| **C4 Level 2: Containers** | High-level container view (apps, services, storage) | [c4-level2-containers.dot](architecture/c4/c4-level2-containers.dot) |
+| **C4 Level 3: Components** | Internal component architecture of core collector | [c4-level3-components.dot](architecture/c4/c4-level3-components.dot) |
+| **Data Flow** | End-to-end data flow from sources to export | [data-flow.dot](workflows/operations/data-flow.dot) |
+| **Provider Architecture** | Data provider abstraction, manifest-driven setup, sync-run evidence, staging, and reconciliation handoff | [provider-architecture.dot](architecture/platform/provider-architecture.dot) |
+| **Storage Architecture** | Storage pipeline with WAL, compression, tiering | [storage-architecture.dot](architecture/platform/storage-architecture.dot) |
 | **Storage Topology** | Maintained Mermaid view of file-backed stores, PostgreSQL governed records, lifecycle controls, and consumers | `../architecture/diagrams/meridian-storage-topology.mmd` |
-| **Event Pipeline Sequence** | Detailed event processing sequence | `event-pipeline-sequence.dot` |
-| **Resilience Patterns** | Circuit breakers, retry, failover patterns | `resilience-patterns.dot` |
-| **Deployment Options** | Standalone and Docker deployment paths | `deployment-options.dot` |
-| **Onboarding Flow** | User journey from first-run to operation | `onboarding-flow.dot` |
-| **CLI Commands** | All CLI flags and commands reference | `cli-commands.dot` |
-| **Project Dependencies** | Project layer dependencies and test coverage | `project-dependencies.dot` |
-| **Runtime Hosts & Startup Modes** | Runnable projects plus the shared startup orchestration behind `src/Meridian` | `runtime-hosts.dot` |
-| **Workstation Delivery** | How WPF shells, governance review surfaces, provider-integration handoff routes, and desktop-local API seams converge on shared run, portfolio, ledger, cash-flow, reconciliation, and security-reference services | `workstation-delivery.dot` |
-| **Security Master Lifecycle** | Import, ingest status, grouped conflict triage, projections, cache warmup, and workstation/query consumers | `security-master-lifecycle.dot` |
-| **Fund Ops & Reconciliation** | Accounting workspace review loop across provider handoff evidence, reconciliation services, F# rules, and persisted break queues | `fund-ops-reconciliation.dot` |
+| **Event Pipeline Sequence** | Detailed event processing sequence | [event-pipeline-sequence.dot](workflows/operations/event-pipeline-sequence.dot) |
+| **Resilience Patterns** | Circuit breakers, retry, failover patterns | [resilience-patterns.dot](operations/resilience-patterns.dot) |
+| **Deployment Options** | Standalone and Docker deployment paths | [deployment-options.dot](operations/deployment-options.dot) |
+| **Onboarding Flow** | User journey from first-run to operation | [onboarding-flow.dot](workflows/operations/onboarding-flow.dot) |
+| **CLI Commands** | All CLI flags and commands reference | [cli-commands.dot](reference/cli-commands.dot) |
+| **Project Dependencies** | Project layer dependencies and test coverage | [project-dependencies.dot](architecture/platform/project-dependencies.dot) |
+| **Runtime Hosts & Startup Modes** | Runnable projects plus the shared startup orchestration behind `src/Meridian` | [runtime-hosts.dot](architecture/platform/runtime-hosts.dot) |
+| **Workstation Delivery** | How WPF shells, governance review surfaces, provider-integration handoff routes, and desktop-local API seams converge on shared run, portfolio, ledger, cash-flow, reconciliation, and security-reference services | [workstation-delivery.dot](architecture/platform/workstation-delivery.dot) |
+| **Security Master Lifecycle** | Import, ingest status, grouped conflict triage, projections, cache warmup, and workstation/query consumers | [security-master-lifecycle.dot](workflows/operations/security-master-lifecycle.dot) |
+| **Fund Ops & Reconciliation** | Accounting workspace review loop across provider handoff evidence, reconciliation services, F# rules, and persisted break queues | [fund-ops-reconciliation.dot](workflows/operations/fund-ops-reconciliation.dot) |
 | **UI Navigation Map** | Auto-generated WPF sidebar/workspace navigation map from source code without hand-maintained drift | `ui-navigation-map.dot` |
 | **UI Implementation Flow** | Auto-generated WPF shell/DI/navigation flow from source code without hand-maintained drift | `ui-implementation-flow.dot` |
 | **WPF Screen Summary** | Auto-generated WPF workspace summary showing screen counts, section counts, visibility tiers, and launchpad page classes | `ui-wpf-screen-summary.dot` |
 | **WPF Screen Catalog** | Auto-generated WPF screen catalog grouped by workspace and section with route tags, page classes, visibility tiers, and ordering | `ui-wpf-screen-catalog.dot` |
 | **WPF Workspace Screen Diagrams** | Auto-generated per-workspace WPF screen diagrams for Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings | `ui-wpf-screens-*.dot` |
-| **Backtesting Engine** | Tick-level backtest replay evidence: universe discovery, fill models, portfolio simulation, metrics, and paper-readiness handoff | `backtesting-engine.dot` |
-| **Strategy Lifecycle** | Strategy state machine, registration, paper-first promotion evidence, and gated W7 live-readiness | `strategy-lifecycle.dot` |
-| **Execution Layer** | Paper trading gateway, paper-first order lifecycle state machine, and position tracking | `execution-layer.dot` |
-| **Domain Event Model** | MarketEvent hierarchy: all payload types, event type enum, and tier classification | `domain-event-model.dot` |
-| **F# Domain Library** | Railway-oriented validation, type-safe calculations, and C# interop layer | `fsharp-domain.dot` |
-| **Data Quality & Monitoring** | Provider sync-run evidence, handoff history, quality scoring, SLA enforcement, outlier detection, and observability stack | `data-quality-monitoring.dot` |
-| **Backfill Workflow** | CLI/REST/scheduled backfill → CompositeProvider → rate limiting → gap detection → WAL + storage | `backfill-workflow.dot` |
-| **MCP Server** | Model Context Protocol server tools, resources, prompts, and Meridian backend integration | `mcp-server.dot` |
-| **Configuration Management** | appsettings.json hierarchy, environment variable overrides, IOptionsMonitor hot-reload | `configuration-management.dot` |
-| **Symbol Search & Resolution** | Search query → 5 providers → OpenFIGI canonical ID → SymbolMapper → provider-specific formats | `symbol-search-resolution.dot` |
+| **Backtesting Engine** | Tick-level backtest replay evidence: universe discovery, fill models, portfolio simulation, metrics, and paper-readiness handoff | [backtesting-engine.dot](analytics/backtesting-engine.dot) |
+| **Strategy Lifecycle** | Strategy state machine, registration, paper-first promotion evidence, and gated W7 live-readiness | [strategy-lifecycle.dot](workflows/operations/strategy-lifecycle.dot) |
+| **Execution Layer** | Paper trading gateway, paper-first order lifecycle state machine, and position tracking | [execution-layer.dot](workflows/operations/execution-layer.dot) |
+| **Domain Event Model** | MarketEvent hierarchy: all payload types, event type enum, and tier classification | [domain-event-model.dot](architecture/platform/domain-event-model.dot) |
+| **F# Domain Library** | Railway-oriented validation, type-safe calculations, and C# interop layer | [fsharp-domain.dot](architecture/platform/fsharp-domain.dot) |
+| **Data Quality & Monitoring** | Provider sync-run evidence, handoff history, quality scoring, SLA enforcement, outlier detection, and observability stack | [data-quality-monitoring.dot](operations/data-quality-monitoring.dot) |
+| **Backfill Workflow** | CLI/REST/scheduled backfill → CompositeProvider → rate limiting → gap detection → WAL + storage | [backfill-workflow.dot](workflows/operations/backfill-workflow.dot) |
+| **MCP Server** | Model Context Protocol server tools, resources, prompts, and Meridian backend integration | [mcp-server.dot](architecture/platform/mcp-server.dot) |
+| **Configuration Management** | appsettings.json hierarchy, environment variable overrides, IOptionsMonitor hot-reload | [configuration-management.dot](reference/configuration-management.dot) |
+| **Symbol Search & Resolution** | Search query → 5 providers → OpenFIGI canonical ID → SymbolMapper → provider-specific formats | [symbol-search-resolution.dot](reference/symbol-search-resolution.dot) |
 
 ---
 
 ## Diagram Descriptions
+
+The descriptions below explain the committed sketches. Provider counts, defaults, and example
+topologies may reflect the drawing's original scope. Use the linked owning documentation for
+setup and support decisions. Regenerate source-derived diagrams when source changes; update a
+manual diagram's source and rendered assets together when revising the architecture it depicts.
 
 ### C4 Level 1: System Context
 
@@ -364,7 +369,7 @@ Shows the Model Context Protocol server architecture:
 Shows the configuration hierarchy and hot-reload mechanism:
 
 - **Sources (lowest → highest priority)**: Built-in defaults → `appsettings.sample.json` → `appsettings.json` → Environment variables → CLI args
-- **Credentials**: Environment variables only — never in JSON files or source control (ADR-011)
+- **Credentials**: Workstation-managed credentials use the encrypted store. Environment fallback is policy-controlled; see [provider credentials](../operators/provider-credentials.md) and [ADR-023](../adr/023-host-wide-provider-credential-ownership.md). Never commit secrets.
 - **Options Pattern** — `IOptionsMonitor<T>` preferred for all runtime-mutable config; `IOptions<T>` only for static settings
 - **Hot-Reload** — `--watch-config` flag enables `FileSystemWatcher` on `appsettings.json`; `IOptionsMonitor.OnChange` callbacks propagate to streaming providers, storage, pipeline, and SLA monitor
 - **Typed Options** — `DataSourceOptions`, `SymbolsOptions`, `StorageOptions`, `BackfillOptions`, `DataQualityOptions`
@@ -489,8 +494,10 @@ done
 
 ### High-DPI PNG (for presentations)
 
+From `docs/diagrams` in Bash with Graphviz installed:
+
 ```bash
-dot -Tpng -Gdpi=300 c4-level2-containers.dot -o c4-level2-containers-hd.png
+dot -Tpng -Gdpi=300 architecture/c4/c4-level2-containers.dot -o c4-level2-containers-hd.png
 ```
 
 ---
@@ -572,11 +579,11 @@ See [uml/README.md](uml/README.md) for the full inventory and rendering instruct
 
 - [Architecture Overview](../architecture/overview.md)
 - [C4 Diagrams Reference](../architecture/c4-diagrams.md)
-- [Production Status](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/status/production-status.md)
+- [Current readiness tracker](../product/implementation-todo-list.md)
 - [Provider Management](../architecture/provider-management.md)
 
 ---
 
 _Graphviz diagrams generated with DOT language. UML diagrams generated with PlantUML. Registered Mermaid sources live under `docs/architecture/diagrams/`._
 
-_Last Updated: 2026-06-16_
+_Index reviewed: 2026-10-05; individual diagram evidence retains its original scope._

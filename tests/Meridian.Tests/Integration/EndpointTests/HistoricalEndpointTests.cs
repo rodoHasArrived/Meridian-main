@@ -12,7 +12,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// Implements Phase 1A.4 and Phase 9B.1 from the roadmap.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class HistoricalEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     // The historical reads answer ViewHistoricalData, the same permission the alignment routes in this

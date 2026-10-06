@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
+import { LedgerAmountProofDrawer } from "@/components/meridian/proof-drawer";
+import type { LedgerAmountSelection } from "@/types/ledger-amount-proof";
 import { Link, useSearchParams } from "react-router-dom";
 import { formatCurrency } from "@/lib/format";
 import { formatCurrencyForCode } from "@/screens/accounting-screen.formatting";
@@ -443,7 +445,7 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
           posted-ledger hook duplicated every request TrialBalanceScreen already makes on the other
           tab; unmounted instead, it lost the operator's chosen book and period every time they
           looked at the trial balance and came back. `active` pauses the requests and keeps the
-          selection.
+          book and period selection. Amount proof is cleared when the tab becomes inactive.
         */}
         <PostedLedgerJournalTab active={view === "ledger"} />
       </TabPanel>
@@ -456,6 +458,7 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
 
 /** The Ledger tab's own body, so its requests belong to the tab that renders them. */
 function PostedLedgerJournalTab({ active }: { active: boolean }) {
+  const [selectedAmount, setSelectedAmount] = useState<LedgerAmountSelection | null>(null);
   const [searchText, setSearchText] = useState("");
   const [tabSearchParams] = useSearchParams();
   const postedLedger = useAccountingPostedLedgerViewModel(
@@ -478,6 +481,20 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
   const loading = postedLedger.journalLoading;
 
   const baseCurrency = postedLedger.view.baseCurrency;
+  const selectedFundId = postedLedger.selectedBook?.fundProfileId ?? "";
+  const selectedBookId = postedLedger.selectedBook?.ledgerBookId ?? "";
+  const currentAmount = selectedAmount && active && !loading && !postedLedger.journalErrorText &&
+    (!selectedAmount.ledgerBookId || selectedAmount.ledgerBookId === selectedBookId) &&
+    (!selectedAmount.periodId || selectedAmount.periodId === postedLedger.selectedPeriodId) &&
+    selectedAmount.fundProfileId === selectedFundId && journalLines.some((entry) => entry.postedLines?.some((line) =>
+      selectedAmount.subjectId === `${entry.journalEntryId}:${line.entryId}:debit` ||
+      selectedAmount.subjectId === `${entry.journalEntryId}:${line.entryId}:credit`)) ? selectedAmount : null;
+  // Discard invalid selections as well as hiding their drawer. This tab stays mounted while
+  // inactive, and retaining the selection would reopen its proof when the old scope loads again.
+  if (selectedAmount && !currentAmount) {
+    setSelectedAmount(null);
+  }
+
   // The trial balance on the sibling tab is labelled in the book's base currency; these are the
   // same governed debits and credits, so they carry it too rather than defaulting to dollars.
   const postedMoney = (value: number) =>
@@ -589,7 +606,8 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
               </thead>
               <tbody>
                 {filteredRows.length > 0 ? filteredRows.map((line) => (
-                  <tr key={line.journalEntryId} className="border-t border-border/70">
+                  <Fragment key={line.journalEntryId}>
+                  <tr className="border-t border-border/70">
                     <td className="px-3 py-2 text-xs">{formatDateTimeLabel(line.timestamp)}</td>
                     <td className="px-3 py-2">
                       <Link
@@ -609,6 +627,36 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
                     <td className="px-3 py-2">{line.description || "Ledger posting"}</td>
                     <td className="px-3 py-2">Posted</td>
                   </tr>
+                  {(line.postedLines ?? []).map((posting) => (
+                    <tr key={posting.entryId} className="border-t border-border/40 bg-secondary/10">
+                      <td className="px-3 py-2 text-xs" colSpan={2}>Posting amount</td>
+                      <td className="px-3 py-2">{posting.accountName}{posting.symbol ? ` - ${posting.symbol}` : ""}</td>
+                      {(["debit", "credit"] as const).map((side) => (
+                        <td key={side} className="px-3 py-2 text-right font-mono">
+                          {posting[side] !== 0 ? (
+                            <button
+                              type="button"
+                              className="text-primary underline underline-offset-2"
+                              aria-label={`Inspect ${side} ${postedMoney(posting[side])} for ${posting.accountName} in journal ${line.journalEntryId}`}
+                              onClick={() => setSelectedAmount({
+                                subjectId: `${line.journalEntryId}:${posting.entryId}:${side}`,
+                                ledgerBookId: line.ledgerBookId ?? "",
+                                periodId: line.periodId ?? "",
+                                fundProfileId: selectedFundId,
+                                amount: posting[side],
+                                currency: baseCurrency ?? "",
+                                label: `${posting.accountName} ${side} ${postedMoney(posting[side])}`
+                              })}
+                            >{postedMoney(posting[side])}</button>
+                          ) : postedMoney(0)}
+                        </td>
+                      ))}
+                      <td className="px-3 py-2">{posting.dimensions?.entityId ?? "Not scoped to one entity"}</td>
+                      <td className="px-3 py-2">{posting.description || "Retained posting line"}</td>
+                      <td className="px-3 py-2 text-xs">Select amount for proof</td>
+                    </tr>
+                  ))}
+                  </Fragment>
                 )) : (
                   <tr>
                     <td className="px-3 py-4 text-muted-foreground" colSpan={8}>
@@ -640,6 +688,7 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
           ) : null}
         </CardContent>
       </Card>
+      <LedgerAmountProofDrawer selection={currentAmount} onClose={() => setSelectedAmount(null)} />
     </div>
   );
 }

@@ -33,6 +33,10 @@ or general build-script suites above.
 
 ## Running
 
+PowerShell 7 (`pwsh`) must be on `PATH` for the consumer certification process tests.
+Those tests exercise native process deadlines and inherited output handles without installing
+Meridian; the Windows release workflow owns installed consumer lifecycle evidence.
+
 ```bash
 # a single suite
 python3 -m unittest tests/scripts/test_screenshot_diff_report.py

@@ -6,10 +6,18 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-02
 ---
 
 # src/Meridian.Storage
+
+Atomic file-write diagnostics retain operation outcomes, byte counts, OS error numbers and exception
+types. Paths, file contents, checksum values and exception messages are omitted because they can
+contain financial account identities or other private data.
+
+Reporting governance supports bounded run-ID batches within one tenant transaction. Bulk state and
+audit reads preserve the same checksum, row binding, audit-chain, and restatement verification as
+individual reads, avoiding a separate transaction for every retained comparison candidate.
 
 `Archival/AtomicFileWriterAdapter.cs`, `EtlStagingStore` in `Etl/EtlStores.cs`, and `Backfill/JsonlBackfillBarWriter.cs`
 implement lower-level persistence ports consumed by Infrastructure. Application/host composition
@@ -18,6 +26,8 @@ owns their construction; atomic durability, staging and JSONL naming policies re
 `LedgerAccountTaxLotPolicyRecord.EffectiveWashSalePolicy` carries the existing `PolicyId` revision
 into wash-sale projection evidence together with the configured window, scope and activation date.
 This adds no persisted policy field or schema migration.
+
+Partial W10-LOT-002 amortization uses migration `V_ledger_040` and the existing atomic posting transaction. Period, Security Master, book-position and lot locks bind the reviewed state through commit. A CAS open-basis adjustment and zero-quantity append-only mutation preserve acquisition facts, tie exactly to the journal carrying movement, and replay without another journal or mutation. PostgreSQL reference stores must share the ledger database.
 
 The durable replacement resolver excludes relieved lot IDs only within the disposing account's
 complete identity. LedgerBook scope retains same-ID acquisitions in sibling accounts. Prior-deferral
@@ -170,6 +180,15 @@ Public tax-lot, historical disposal, and wash-sale APIs also check the retained 
 Wash-sale deferrals require their referenced replacement lot and disposal batch to belong to
 that book. Global posting-identity collision checks reject foreign authority before returning
 any retained journal contents.
+
+## Current-basis lot relief
+
+All supported durable relief methods certify current canonical basis under the locked effective
+policy while keeping acquisition unit cost and acquisition evidence immutable. Partial discrete
+relief of an adjusted lot stores exact remaining transaction and functional basis on its existing mutation; Reporting
+reproduces certified posted basis without rounding it through acquisition unit cost. Migration
+`V_ledger_041` follows PR #3048's reserved amortization ordinal 040. PostgreSQL coverage lives in
+`AtomicTaxLotJournalStoreTests.CurrentBasis`; see the [lot convergence blueprint](../../docs/engineering/blueprints/security-lot-convergence-blueprint.md).
 
 ## Purpose
 
@@ -589,6 +608,14 @@ quarantined records, staging records, and sync-run summaries under the resolved 
 source payloads without reacquiring provider data. Workstation-hosted flows can request a
 tenant-scoped store partition so provider manifests, connections, dry-run evidence, and activation
 state remain isolated by the authenticated tenant session.
+Manifest revisions are immutable by id and version; identical saves are idempotent and changed
+content under an existing version is rejected. A cross-process compare-and-set promotion updates
+the durable current pointer only after revision content has been written. Restart follows that
+pointer, preserving unpromoted candidates without treating the highest stored version as current.
+Payloads and sync runs retain exact manifest version/digest bindings. Legacy migration preserves
+only the revision actually available and does not manufacture overwritten versions or backfill
+unprovable historical provenance. This store owns integration configuration persistence; provider
+alias and capability-factory composition remain in their existing ProviderSdk/Infrastructure owners.
 
 Accounting configuration persistence keeps rich posting-rule payloads and saved Accounting Rules
 Studio regression cases as durable workspace-owned records. PostgreSQL stores saved rule test cases

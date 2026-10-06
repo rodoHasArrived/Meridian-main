@@ -17,11 +17,42 @@ tooling remain visible, so running schema validation does not change the publish
 
 ## Core Scripts
 
+### validate-docs-structure.py
+
+Checks top-level folder ownership, folder indexes, and lifecycle metadata. Run from the
+repository root; neither command writes documentation:
+
+```bash
+python3 build/scripts/docs/validate-docs-structure.py --summary
+python3 build/scripts/docs/validate-docs-structure.py --top-level operators --summary
+```
+
+`Status`, `Owner`, and `Reviewed` must be in opening YAML front matter or the opening Markdown
+title/metadata block. YAML keys are case-insensitive and use the pinned PyYAML dependency in
+`build/scripts/docs/requirements.txt`. Fields in examples, code fences, later sections, or body
+paragraphs do not count. Empty values and malformed YAML headers produce warnings. `Reviewed`
+must be a real `YYYY-MM-DD` date; dates older than 180 days produce a review warning.
+Lifecycle findings remain warnings unless `--strict` is used. Scoped checks skip the global
+folder checks.
+
+The summary separates checked hand-authored documents from generated outputs and exempt
+entrypoint/meta files (`README.md`, `HELP.md`, and `DEPENDENCIES.md`). Generated ownership is
+recognized through `generated/` or `_site/` directories, literal Markdown output declarations
+in `run-docs-automation.py`, or an explicit generated-file header before the body. The runner's
+registry is read without executing its scripts. A document merely discussing a generator or
+showing a generated-header example is still checked. `docs/status/` is not exempt as a whole:
+its hand-authored procedures and compatibility pages retain their lifecycle requirements.
+Update a generated report's owner or source rather than hand-editing it to add review fields.
+
 ### common.py
 
 Shared helper module for documentation automation. It provides repo-root resolution,
 stable path normalization, Markdown table rendering, generated headers, manifest
-writing, safe file writes, lightweight YAML loading, and finding output helpers.
+writing, safe file writes, standard YAML loading, and finding output helpers.
+YAML inputs require PyYAML; install the pinned dependency with
+`python3 -m pip install --requirement build/scripts/docs/requirements.txt`.
+Missing dependencies and malformed input fail with the input path and available
+line/column details. Validation and rendering never recover through a subset parser.
 
 ### validate-roadmap-registry.py
 
@@ -425,16 +456,22 @@ python3 generate-health-dashboard.py \
 
 ### repair-links.py
 
-Detects and optionally auto-fixes broken internal links. The default output path is
-`docs/status/link-repair-report.md`; pass `--output` to write to an alternate location such as
-`.artifacts/link-repair-report.md`.
+Detects and optionally auto-fixes broken internal links. Standalone scans write no files unless
+`--output` or `--auto-fix` is supplied. The automation runner explicitly writes its report to
+`docs/status/link-repair-report.md`. GitHub heading checks preserve consecutive hyphens, including
+those created by spaces around an em dash. The checker scans relative inline Markdown links;
+same-page anchors, images, external URLs, and paths written only as inline code are outside its
+coverage.
 
 ```bash
-# Report only
-python3 repair-links.py --output link-repair-report.md
+# Read-only check from the repository root
+python3 build/scripts/docs/repair-links.py --summary
+
+# Write a report without changing links
+python3 build/scripts/docs/repair-links.py --output .artifacts/link-repair-report.md
 
 # Auto-fix
-python3 repair-links.py --auto-fix
+python3 build/scripts/docs/repair-links.py --auto-fix
 ```
 
 ### validate-examples.py
@@ -735,7 +772,7 @@ if __name__ == '__main__':
 - Type hints on functions
 - `--output` for file output
 - `--summary` for CI summary
-- Only stdlib dependencies
+- Prefer stdlib dependencies; registry parsing uses the pinned PyYAML dependency
 - Return 0 on success, 1 on error
 
 **Recommended:**
@@ -764,15 +801,15 @@ cat /tmp/test.md
 1. Add script to `build/scripts/docs/`
 2. Test locally with `--help` and `--summary`
 3. Add or update the relevant step in `.github/workflows/documentation.yml`
-4. Update `docs/guides/documentation-automation.md`
+4. Update the [documentation automation guide](../../../docs/development/documentation-automation.md).
 5. Update this README
 
 ## Contributing
 
 For detailed development guidelines, see:
 
-- `docs/guides/documentation-automation.md` - User guide for the automation system
-- `docs/guides/expanding-scripts.md` - Developer guide for adding new scripts
+- [Documentation automation](../../../docs/development/documentation-automation.md) - User guide for the automation system
+- [Expanding scripts](../../../docs/development/expanding-scripts.md) - Developer guide for adding new scripts
 
 ## Support
 
@@ -781,7 +818,7 @@ If you encounter issues with these scripts:
 1. Check script help: `python3 script.py --help`
 2. Review script docstring for usage examples
 3. Check `.github/workflows/documentation.yml` for integration examples
-4. See `docs/guides/documentation-automation.md` for troubleshooting
+4. See [documentation automation](../../../docs/development/documentation-automation.md) for troubleshooting.
 
 ---
 

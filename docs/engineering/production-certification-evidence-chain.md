@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-02
+**Reviewed:** 2026-10-05
 **Scope:** the six evidence-gated P0 rows in the
 [production-readiness tracker](../product/implementation-todo-list.md) — what evidence exists,
 what an agent can still generate, and exactly which decisions and activations require a human.
@@ -155,6 +155,38 @@ drain/flush ordering, and lifecycle receipts.
    rollback/uninstall receipts for x64 and ARM64 are the PRD-014 evidence. Record the run link
    here.
 
+The consumer EXE has an additional mandatory certification gate. After human governance review
+of the workflow changes, run a signed rehearsal on the reviewed commit. Retain
+`consumer-setup-win-x64-lifecycle.json` from `consumer-install-certification-win-x64-<run>-<attempt>`:
+it must prove installation of the exact signed `Meridian-Setup.exe`, authenticated startup,
+installed bundled PostgreSQL readiness, repair, restart, uninstall and data preservation.
+Published consumer predecessors require upgrade and rollback proof; the first consumer release
+records explicit `not-applicable` N-1 steps backed by the successful repository lookup receipt.
+Existing MSIX-only releases do not constitute a consumer predecessor. Lookup and checksum
+failures cannot establish first-release mode.
+
+Promotion verifies that the successful consumer receipt matches the EXE digest, source commit,
+workflow run and attempt. Missing, failed, incomplete or mismatched consumer evidence blocks
+promotion even when both MSIX lifecycles pass. The implementation and static tests establish
+this gate's mechanism; PRD-014 consumer certification remains pending until a protected signed
+Windows run produces that successful receipt on the frozen release commit.
+
+#### PostgreSQL payload review and evidence
+
+The checked-in [`postgresql-payload.json`](../../build/config/postgresql-payload.json) declares
+PostgreSQL 17.11 / win-x64 from the explicit Windows 2025 hosted-runner installation. Human
+governance review of the pull request accepts that version/source declaration; no prior approval
+or successful certification of this declaration is asserted here. Packaging and installed-startup
+smoke share one resolver, with missing or mismatched inputs rejected before consumer packaging.
+Release evidence retains `postgresqlPayloads`, including the exact version/source, runner identity,
+per-file SHA-256 hashes and canonical payload-tree hash from `win-x64-payload.json`.
+
+For each payload change, review the source and declaration together, retain negative-resolution
+test results, and rerun installed-startup plus the existing native upgrade/rollback certification
+on the reviewed commit. Record their run links and receipts before claiming release evidence.
+The [operator payload procedure](../operators/browser-workstation-installer.md#postgresql-payload-declaration)
+describes resolution and the review steps. This entry changes no tracker row or certification result.
+
 ### PRD-015: recovery-drill operator review
 
 **Actor:** operations owner. This review also supplies the recovery portion of open `PRD-111`.
@@ -221,6 +253,43 @@ bash scripts/ci.sh --lane verify-docs
 ## Evidence Log
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
+
+- **2026-10-05 — GitHub reconnection recheck and main refresh.** Integrated current main
+  `433ff014b51244daeab8deca5fba812f9bb5fe6a` and regenerated the conflicting documentation
+  health reports. [Certification #151](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37360660094)
+  is now terminal: dependency evidence failed on the same unaccepted braces advisory; NuGet,
+  integrations, recovery, and documentation passed. The
+  [main receipt](../security/evidence/2026-10-05-braces/main-recheck-433ff.json) and
+  [retained gate report](../security/evidence/2026-10-05-braces/hosted-151/npm-audit-gate.json)
+  preserve the result and unchanged dependency/gate hashes. Dependency artifact
+  `production-dependency-evidence-151-1` (ID `11367836066`) has verified ZIP SHA-256
+  `80d7d434e508dbf5d4df3edfa5dfc6c354ed7706a9c343072fd742f4cd3ce4d1`.
+  No exception or human approval
+  is activated. These are main results; the refreshed proposal commit needs its own evidence.
+- **2026-10-05 — concurrent main refresh.** Main advanced to
+  `600cde87be9de99c615594cb1a2b09f507cd2b2f`; [certification #150](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37357037036)
+  was pending with no jobs/artifacts at the refresh observation. The
+  [recorded byte comparison](../security/evidence/2026-10-05-braces/main-recheck.json) confirms the
+  npm graph, acceptance register, validator and certification workflow match the #147 baseline.
+  The bounded proposal remains pending and the earlier evidence retains its original commit
+  binding. NuGet updates do not establish a new dependency-certification result.
+
+- **2026-10-05 — dependency failure rechecked; human decision pending.** Main
+  `e3bf60bae577c132d8444a827ca4dc3181cc48a1` / [Production Certification #147, attempt 1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283)
+  failed its dependency job on unaccepted `braces` advisory `GHSA-vfj7-8cjw-p6xm`; NuGet passed.
+  The [security registry investigation and bounded proposal](../security/known-vulnerabilities.md#pending-decision-braces-stack-exhaustion-2026-10-05)
+  (KV-2026-003) retains the raw audits, graph, registry recheck, artifact digest and expiry.
+  The [parallel retained manifest](../security/evidence/2026-10-05-dependency-certification/manifest.json)
+  also preserves source and bounded reachability evidence from this baseline. Hosted artifact
+  [production-dependency-evidence-147-1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283/artifacts/11362468562)
+  has verified ZIP SHA-256 `478075a50b84e225b37581089a9e2f28aad6d9ad95b29b811b3297e179a02d11`
+  and hosted expiry `2027-01-03T17:54:46Z`. No compatible
+  published patch was found; Tailwind 4 is a supported migration candidate requiring validation.
+  **@rodoHasArrived** is the named human decision point; no risk was accepted and no gate changed.
+  Any approved exception has a proposed hard expiry of 2026-10-19 00:00 UTC and requires fresh
+  certification evidence for its own commit. This failed main run cannot certify a proposal or
+  later implementation commit. Last verified green remains [#130 / 37073985831](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37073985831)
+  on `2dbd8723acdb209b250a4416a87f64ae0271d611` (2026-10-02).
 
 - **2026-10-02 — recovery-evidence correction** (source reviewed at `0feac3d50`; no new hosted run or
   operator acceptance): `PRD-015` and the recovery portion of `PRD-111` previously treated archive

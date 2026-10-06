@@ -6,6 +6,10 @@
 **Supersedes:** —
 **Superseded by:** —
 
+The context below records the problem at proposal time. Typed posture and final-graph validation
+now have source implementations listed below; this ADR remains Proposed pending the sign-off and
+release evidence tracked under [PRD-000](../product/implementation-todo-list.md).
+
 ## Context
 
 `PRD-000` in the [production-readiness tracker](../product/implementation-todo-list.md) blocks
@@ -166,8 +170,9 @@ default environment stays unvalidated.
 
 ### Neutral
 
-- Development and test composition behavior is unchanged; the guard no-ops outside production
-  postures.
+- Outside production postures, unlabeled `LocalWorkstation` composition still validates durable
+  stores. A pinned non-real provenance declaration retains the documented simulation lane;
+  other non-production postures do not run the production factory check.
 - `deploy/docker/`, `deploy/k8s/`, and `deploy/systemd/` remain in-tree as experimental material
   pending `PRD-013` disposition.
 

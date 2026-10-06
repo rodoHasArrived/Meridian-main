@@ -70,15 +70,12 @@ _INLINE_CODE_PATTERN: re.Pattern[str] = re.compile(r"`[^`]*`")
 
 #: Anchors generated from markdown headings.
 #: GitHub-flavoured heading-to-anchor rules:
-#: lowercase, strip non-alphanumerics except hyphens/spaces, spaces to hyphens.
-#: Consecutive hyphens are *preserved*: GitHub's slugger does not collapse them,
-#: so a heading like "Tier 5 - W10: ..." (em dash removed, leaving two spaces)
-#: yields "tier-5--w10-" with a double hyphen.
+#: lowercase, strip non-alphanumerics except hyphens/spaces, spaces to hyphens,
+#: preserve consecutive hyphens (for example, spaces around an em dash).
 _HEADING_PATTERN: re.Pattern[str] = re.compile(r"^#{1,6}\s+(.+)$", re.MULTILINE)
 
 #: Characters stripped from heading text when generating an anchor slug.
 _SLUG_STRIP: re.Pattern[str] = re.compile(r"[^\w\s-]", re.UNICODE)
-
 
 # ---------------------------------------------------------------------------
 # Data classes
@@ -136,11 +133,7 @@ def _heading_to_anchor(heading_text: str) -> str:
     2. Convert to lowercase.
     3. Remove characters that are not alphanumeric, spaces, or hyphens.
     4. Replace spaces with hyphens.
-
-    Consecutive hyphens are deliberately preserved. GitHub's slugger does not
-    collapse them, so collapsing here reports valid anchors as broken whenever
-    a heading contains a stripped character between two spaces (an em dash, for
-    example).
+    Adjacent hyphens are preserved, as in GitHub's heading IDs.
 
     Args:
         heading_text: Raw heading text (without the leading ``#`` characters).
@@ -151,7 +144,7 @@ def _heading_to_anchor(heading_text: str) -> str:
     text = heading_text.strip().lower()
     text = _SLUG_STRIP.sub("", text)
     text = text.replace(" ", "-")
-    return text.strip("-")
+    return text
 
 
 def _extract_anchors(content: str) -> set[str]:

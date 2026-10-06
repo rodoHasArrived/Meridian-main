@@ -939,11 +939,14 @@ public sealed class RiskRuleRuntimeService
             return !string.Equals(entry.Outcome, "Rejected", StringComparison.OrdinalIgnoreCase);
         }
 
-        return string.Equals(entry.Action, "OrderRejected", StringComparison.OrdinalIgnoreCase)
-            && string.Equals(
-                entry.Reason,
-                OrderManagementSystem.AmbiguousSubmissionReason,
-                StringComparison.Ordinal);
+        // The explicit uncertain outcome retains capacity. Older persisted audit files used
+        // OrderRejected with the ambiguity reason for the same post-dispatch condition.
+        return string.Equals(entry.Action, "OrderSubmissionUncertain", StringComparison.OrdinalIgnoreCase)
+            || (string.Equals(entry.Action, "OrderRejected", StringComparison.OrdinalIgnoreCase)
+                && string.Equals(
+                    entry.Reason,
+                    OrderManagementSystem.AmbiguousSubmissionReason,
+                    StringComparison.Ordinal));
     }
 
     private int? ReadOrderRateUsage()

@@ -4,6 +4,10 @@
 **Last Updated:** 2026-02-13
 **Audience:** Developers, Contributors, Maintainers
 
+**Maintenance check (2026-10-05):** documentation placement, source-inventory routing, and validation
+entrypoints were updated. The original architecture discussion retains its dated scope; use current
+project files and the [source registry](../source/README.md) for the complete module graph.
+
 This guide establishes conventions for organizing code, documentation, and assets in the Meridian repository. Following these patterns ensures consistency, maintainability, and ease of navigation.
 
 ---
@@ -29,42 +33,17 @@ This guide establishes conventions for organizing code, documentation, and asset
 
 1. **Clear Boundaries** — Each project has a well-defined responsibility and owns specific types
 2. **Minimal Dependencies** — Projects only reference what they absolutely need
-3. **Dependency Direction** — Dependencies flow inward: UI → Application → Domain/Infrastructure → Core → Contracts
+3. **Dependency Direction** — Follow the [layer boundary rules](../architecture/layer-boundaries.md) and architecture tests; project references alone do not authorize new coupling
 4. **No Circular Dependencies** — If project A references B, B cannot reference A
 5. **Shared Types in Contracts** — Types shared across multiple projects belong in `Contracts`
 
 ### Architectural Layers
 
-```
-┌─────────────────────────────────────────────────────┐
-│  Presentation Layer (UI Projects)                   │
-│  - Meridian.Wpf (Desktop)                │
-│  - Meridian.Ui (Web UI)                  │
-├─────────────────────────────────────────────────────┤
-│  UI Services Layer                                  │
-│  - Meridian.Ui.Services (shared)         │
-│  - Meridian.Ui.Shared (web components)   │
-├─────────────────────────────────────────────────────┤
-│  Application Layer                                  │
-│  - Meridian.Application                  │
-│  - Meridian (entry point)                │
-├─────────────────────────────────────────────────────┤
-│  Domain & Infrastructure Layer                      │
-│  - Meridian.Domain (business logic)      │
-│  - Meridian.Infrastructure (providers)   │
-│  - Meridian.Storage (persistence)        │
-│  - Meridian.FSharp (functional domain)   │
-├─────────────────────────────────────────────────────┤
-│  Core Layer                                         │
-│  - Meridian.Core (shared utilities)      │
-│  - Meridian.ProviderSdk (provider API)   │
-├─────────────────────────────────────────────────────┤
-│  Contracts Layer (bottom)                           │
-│  - Meridian.Contracts (DTOs, interfaces) │
-└─────────────────────────────────────────────────────┘
-```
-
-**Dependency Rule:** Upper layers can reference lower layers, but not vice versa.
+Use the maintained [layer boundary rules](../architecture/layer-boundaries.md) for dependency
+direction and [source registry](../source/README.md) for module ownership. Business behavior belongs
+in shared application/domain/service layers before browser or WPF presentation consumes it. Keep
+both workstation lanes on the shared contract and read-model seams described by
+[Engineering](../engineering/README.md#architecture-and-module-boundaries).
 
 ---
 
@@ -94,6 +73,10 @@ Meridian/
 
 ### Source Projects Organization (`src/`)
 
+The abbreviated project map below explains common roles. The complete maintained inventory and
+ownership live in the [source registry](../source/README.md); do not infer that an omitted project
+is inactive or that this map authorizes a new dependency.
+
 ```
 src/
 ├── Meridian/                    # Main entry point (Program.cs)
@@ -107,7 +90,7 @@ src/
 ├── Meridian.Storage/            # Storage, archival, export
 ├── Meridian.Ui/                 # Web UI entry point
 ├── Meridian.Ui.Services/        # Shared UI services (desktop + web)
-├── Meridian.Ui.Shared/          # Web-specific UI components
+├── Meridian.Ui.Shared/          # Shared host endpoints and workstation services
 └── Meridian.Wpf/                # WPF desktop application
 ```
 
@@ -169,31 +152,17 @@ ProjectName/
 
 ### Allowed Dependencies
 
-Each project can reference projects below it in the layer hierarchy:
-
-| Project | Can Reference |
-|---------|---------------|
-| **Meridian** | Application, Domain, Infrastructure, Storage, Core, Contracts, FSharp, ProviderSdk, Ui.Shared |
-| **Application** | Domain, Infrastructure, Storage, Core, Contracts, FSharp, ProviderSdk |
-| **Ui.Services** | Contracts, Core |
-| **Ui.Shared** | Application, Ui.Services, Contracts, Core |
-| **Wpf** | Ui.Services, Contracts |
-| **Domain** | Contracts, Core |
-| **Infrastructure** | Domain, Core, Contracts, ProviderSdk, FSharp |
-| **Storage** | Domain, Core, Contracts |
-| **Core** | Contracts |
-| **ProviderSdk** | Contracts |
-| **Contracts** | *(No project references)* |
+The [layer boundary rules](../architecture/layer-boundaries.md) and covered architecture tests own
+the allowed directions. Inspect the affected `.csproj`/`.fsproj` and nearest source README for the
+actual direct references before adding one; this supporting guide does not maintain a second
+allowlist. For example, the shared UI projects contain more dependencies than their names alone
+suggest, and they must not be treated as interchangeable layers.
 
 ### Forbidden Dependencies
 
-❌ **Never** create these circular dependencies:
-
-1. Contracts → Any other project
-2. Core → Application, Infrastructure, Domain
-3. Domain → Application, Infrastructure
-4. Infrastructure → Application
-5. Ui.Services → Application (use Contracts only)
+Never introduce a circular project reference or make shared contracts depend on a consuming
+application/UI project. Check a proposed dependency against the current layer rules and tests;
+a folder name or the historical map in an old guide is not an exception to those boundaries.
 
 ### Type Ownership Rules
 
@@ -303,68 +272,25 @@ public static class ConfigEndpoints
 
 ### Documentation Structure
 
-The current documentation target model is owned by
-[Documentation Ownership Contract](../documentation-ownership.md). Use
-`docs/start/`, `docs/product/`, `docs/engineering/`, `docs/operators/`,
-`docs/reference/`, `docs/ai/`, `docs/roadmap/`, `docs/source/`, and
-`docs/generated/` for new active docs. The older folder map below is retained
-as source material for migrating existing docs, not as the target taxonomy.
+Use the [Documentation Ownership Contract](../documentation-ownership.md) and
+[Documentation Contribution Guide](documentation-contribution-guide.md) for placement and lifecycle
+rules. Start at [the docs front door](../README.md); this guide does not maintain a second folder tree.
 
-```
-docs/
-├── adr/                    # Architecture Decision Records
-│   ├── 001-provider-abstraction.md
-│   ├── 002-tiered-storage-architecture.md
-│   └── _template.md
-├── ai/                     # AI assistant instructions
-│   ├── claude/            # Claude-specific guides
-│   ├── copilot/           # GitHub Copilot instructions
-│   └── ai-known-errors.md
-├── architecture/           # Architecture documentation
-│   ├── overview.md
-│   ├── layer-boundaries.md
-│   └── *.puml (diagrams)
-+-- archive/                # Project-level historical material root
-   +-- docs/               # Historical and superseded docs
-   +-- code/               # Reserved for retired code snapshots
-├── audits/                 # Code audits and analyses
-│   ├── CLEANUP_SUMMARY.md
-│   └── DUPLICATE_CODE_ANALYSIS.md
-├── development/            # Developer guides
-│   ├── provider-implementation.md
-│   ├── repository-organization-guide.md (this file)
-│   └── wpf-implementation-notes.md
-├── diagrams/               # Generated diagrams
-│   ├── *.dot
-│   ├── *.png
-│   └── *.svg
-├── generated/              # Auto-generated documentation
-│   ├── repository-structure.md
-│   └── provider-registry.md
-├── start/                  # User and contributor onboarding
-│   └── README.md
-├── integrations/           # Integration guides
-│   ├── lean-integration.md
-│   └── fsharp-integration.md
-├── operators/              # Operational guides and provider setup
-│   ├── README.md
-│   └── provider-credentials.md
-├── reference/              # API and data references
-│   ├── api-reference.md
-│   ├── data-dictionary.md
-│   └── provider-capability-matrix.md
-├── roadmap/                # Registry-owned roadmap tracking
-│   ├── README.md
-│   └── data/
-├── status/                 # Controlled generated/status migration output
-│   ├── README.md
-│   └── doc-health-dashboard.md
-├── uml/                    # UML diagrams
-│   └── *.puml
-├── DEPENDENCIES.md
-├── HELP.md
-└── README.md              # Documentation index (to be created)
-```
+| Material | Home |
+| --- | --- |
+| First-run instructions | `docs/start/` |
+| Contributor entrypoints and shortest current command paths | `docs/engineering/` |
+| Detailed supporting implementation/tooling guides | `docs/development/`, linked from Engineering |
+| Product narrative and prioritization interpretation | `docs/product/` |
+| Operator procedures | `docs/operators/` |
+| API, configuration, and capability lookup | `docs/reference/` |
+| Architecture, domain vocabulary, decisions | `docs/architecture/`, `docs/domain/`, `docs/adr/` |
+| Roadmap/source truth | `docs/roadmap/data/`, `docs/source/data/` |
+| Generated views and reports | Their existing registered output paths; update inputs/generators |
+| Superseded or historical records | `archive/docs/`, with a replacement link or archive rationale |
+
+Do not recreate retired `docs/audits/` or `docs/uml/` lanes. Use the owning audience path and
+`docs/diagrams/` for current material. Repository archives are outside `docs/`.
 
 ### Documentation Naming Conventions
 
@@ -374,7 +300,7 @@ docs/
 | **Guide** | `{topic}-guide.md` | `deployment-guide.md` |
 | **Reference** | `{topic}-reference.md` | `api-reference.md` |
 | **Setup/How-to** | `{provider}-setup.md` | `alpaca-setup.md` |
-| **Status** | UPPERCASE | `ROADMAP.md`, `CHANGELOG.md` |
+| **Generated status** | Preserve generator-owned names | `docs/roadmap/generated/ROADMAP_SUMMARY.md` |
 | **Analysis** | `{topic}-analysis.md` | `duplicate-code-analysis.md` |
 
 ### When to Create New Documentation
@@ -385,8 +311,8 @@ docs/
 | **New provider** | Document setup and capability lookup | `docs/operators/` and `docs/reference/` |
 | **New feature** | Update registry/status and canonical lane | `docs/roadmap/data/*.yml`, generated roadmap views, and `docs/product/` or `docs/engineering/` as needed |
 | **API changes** | Update reference | `docs/reference/` |
-| **Bug fix** | Update changelog | `docs/status/CHANGELOG.md` |
-| **Development pattern** | Add to engineering lane | `docs/engineering/` |
+| **Bug fix** | Update affected behavior guidance and PR evidence; leave generated changelog output to its generator | Owning audience lane |
+| **Development pattern** | Add a supporting guide and link it from Engineering | `docs/development/` |
 | **Operational procedure** | Add to operator lane | `docs/operators/` |
 
 ---
@@ -668,37 +594,37 @@ Follow this structure:
 
 ### Manual Checks
 
-Run these checks before committing:
+Run from the repository root, using the prerequisites in [Engineering](../engineering/README.md#buildtestrun):
 
 ```bash
-# Build all projects (catches reference issues)
-dotnet build -c Release
+# Review whitespace and the files being committed
+git diff --check
+git status --short
 
-# Run tests (catches broken tests)
-dotnet test
+# Validate documentation placement and navigation
+python build/scripts/docs/validate-docs-structure.py --summary
+python build/scripts/docs/repair-links.py --summary
 
-# Check for build artifacts in git
-git status | grep -E "(bin/|obj/|build-output.log)"
-
-# Scan for open task marker comments
-grep -rE "FIXME:|HACK:" src/ tests/
+# Canonical pre-PR gate, after the focused checks for the touched source area
+bash scripts/ci.sh
 ```
 
 ### Automated Checks
 
-The following CI workflows enforce organization rules:
+[CI/CD ownership](../engineering/ci-cd-optimization.md) identifies the current gate owners.
+`Meridian CI` runs the canonical .NET, browser, docs, and workflow lanes; Windows desktop validation
+provides the platform-specific proof. See the [workflow guide](../../.github/workflows/README.md)
+for triggers and artifacts instead of duplicating its workflow catalog here.
 
-- **ci.yml** — Restore, format, build, non-integration tests, and browser workstation validation
-- **windows-desktop-build.yml** — Windows WPF build, WPF tests, and desktop publish smoke
-- **maintenance.yml** — Workflow hygiene and workflow syntax validation
+Documentation structure and internal-link validators already exist; extend their checks through the
+[documentation tooling guide](documentation-automation.md) rather than creating a competing validator.
 
 ### Future Enforcement
 
-Consider adding these tools (not yet implemented):
+Potential additional tooling (evaluate against the current test/analyzer inventory before adopting):
 
 - **ArchUnitNET** — Enforce dependency rules programmatically
 - **Custom analyzer** — Detect naming violations
-- **Documentation linter** — Validate doc structure and links
 
 ---
 

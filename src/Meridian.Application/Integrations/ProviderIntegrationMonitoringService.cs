@@ -162,7 +162,13 @@ public sealed class ProviderIntegrationMonitoringService
             criticalIssueCount,
             warningIssueCount,
             syncRun.RawPayloadId,
-            syncRun.Issues);
+            syncRun.Issues)
+        {
+            ManifestReference = syncRun.ManifestReference,
+            OriginalManifestReference = syncRun.OriginalManifestReference,
+            SourceSyncRunId = syncRun.SourceSyncRunId,
+            ReplayMode = syncRun.ReplayMode
+        };
     }
 
     private static int NormalizeLimit(int recentRunLimit)

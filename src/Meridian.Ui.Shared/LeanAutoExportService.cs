@@ -1,4 +1,5 @@
 using Meridian.Storage;
+using Meridian.Application.Composition;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -85,16 +86,18 @@ public sealed class LeanAutoExportService : BackgroundService
     /// <summary>Gets the total bytes written since service start.</summary>
     public long TotalBytesExported => Interlocked.Read(ref _totalBytesExported);
 
-    public LeanAutoExportService(StorageOptions storageOptions, ILogger<LeanAutoExportService> logger)
+    public LeanAutoExportService(StorageOptions storageOptions, ILogger<LeanAutoExportService> logger,
+        CompositionConfiguration? configuration = null)
     {
         _storageOptions = storageOptions;
         _logger = logger;
 
-        // Read initial configuration from environment variables
-        _leanDataPath = Environment.GetEnvironmentVariable("LEAN_DATA_PATH");
+        configuration ??= new CompositionConfiguration();
+        // Read initial configuration from the owning host.
+        _leanDataPath = configuration["LEAN_DATA_PATH"];
         _enabled = _leanDataPath != null; // auto-enable only when path is provided at start-up
 
-        var intervalEnv = Environment.GetEnvironmentVariable("LEAN_EXPORT_INTERVAL_SECONDS");
+        var intervalEnv = configuration["LEAN_EXPORT_INTERVAL_SECONDS"];
         _interval = int.TryParse(intervalEnv, out var secs) && secs > 0
             ? TimeSpan.FromSeconds(secs)
             : TimeSpan.FromMinutes(5);

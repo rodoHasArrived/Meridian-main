@@ -20,7 +20,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// Every covered-call route must also retain discoverable workstation tenant-scope metadata.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class CoveredCallEndpointAuthorizationTests : IClassFixture<EndpointTestFixture>
 {
     private readonly EndpointTestFixture _fixture;

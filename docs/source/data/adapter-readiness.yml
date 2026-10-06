@@ -416,7 +416,7 @@ adapters:
     credentials: Authenticated TWS or IB Gateway session, configured host/port/client ID, account access and relevant
       market-data subscriptions; Flex reconciliation has separate credentials and identity.
     optional_sdk: Official IBApi DLL/project for real TWS/Gateway connectivity with EnableIbApiVendor=true; EnableIbApiSmoke=true
-      is compile-only verification, not the vendor runtime.
+      provides local-stub compile and reconnect verification, not the vendor runtime.
   risks:
   - Historical pacing is 60 requests/10 minutes with 15-second minimum spacing in the guidance surface.
   - Vendor version, local socket reachability, account permissions and live/frozen/delayed entitlements determine

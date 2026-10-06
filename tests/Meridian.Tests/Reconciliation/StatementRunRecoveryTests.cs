@@ -94,7 +94,7 @@ public sealed class StatementRunRecoveryTests : IDisposable
             second.CreateAsync(request, timeout.Token));
 
         results[0].Should().BeEquivalentTo(results[1]);
-        (await new JsonCanonicalStatementStore(_root).ListImportsAsync(timeout.Token))
+        (await new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter()).ListImportsAsync(timeout.Token))
             .Should().ContainSingle();
         Directory.EnumerateFiles(
                 Path.Combine(_root, "reconciliation", "statement-breaks"),
@@ -161,7 +161,7 @@ public sealed class StatementRunRecoveryTests : IDisposable
     [Fact]
     public void Scenario_OldConstructorWithoutRecoveryAuthority_FailsBeforeImportCanBePersisted()
     {
-        var imports = new JsonCanonicalStatementStore(_root);
+        var imports = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
 
         Action construct = () => _ = new StatementRunWorkflowService(
             imports,
@@ -179,7 +179,7 @@ public sealed class StatementRunRecoveryTests : IDisposable
     [Fact]
     public void Scenario_ConstructorWithoutMatchArtifactAuthority_FailsBeforeImportCanBePersisted()
     {
-        var imports = new JsonCanonicalStatementStore(_root);
+        var imports = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
 
         Action construct = () => _ = new StatementRunWorkflowService(
             imports,
@@ -198,7 +198,7 @@ public sealed class StatementRunRecoveryTests : IDisposable
     [Fact]
     public void Scenario_ConstructorWithoutCaseworkCommitAuthority_FailsBeforeImportCanBePersisted()
     {
-        var imports = new JsonCanonicalStatementStore(_root);
+        var imports = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
 
         Action construct = () => _ = new StatementRunWorkflowService(
             imports,
@@ -399,7 +399,7 @@ public sealed class StatementRunRecoveryTests : IDisposable
         IStatementRunWorkflowFaultInjector? faultInjector = null,
         IStatementToleranceProfileProvider? toleranceProfiles = null)
     {
-        var imports = new JsonCanonicalStatementStore(_root);
+        var imports = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
         return new StatementRunWorkflowService(
             imports,
             new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()),
@@ -440,7 +440,7 @@ public sealed class StatementRunRecoveryTests : IDisposable
         SourceFileHash: string.Empty);
 
     private async Task<string> ResolveImportIdAsync(CancellationToken ct)
-        => (await new JsonCanonicalStatementStore(_root).ListImportsAsync(ct))
+        => (await new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter()).ListImportsAsync(ct))
             .Should().ContainSingle().Subject.ImportId;
 
     private string ProjectionPath(

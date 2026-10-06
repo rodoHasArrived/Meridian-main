@@ -34,7 +34,7 @@ public sealed class WorkstationEndpointContractCompatibilityTests
         ]);
 
         var hash = ComputeSha256(descriptor);
-        hash.Should().Be("73C3BD6E2530E37B71DA84C833428453D1F6E7230B0CD19E10D8E574FA3C9573");
+        hash.Should().Be("C3B6AE5F58B171AE86F937DCDAAF2D0B775D32F3CBD5311C4C6163D373C440BB");
     }
 
     [Fact]

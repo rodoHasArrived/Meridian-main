@@ -108,6 +108,25 @@ public sealed partial class WorkstationEndpointsTests
                 endpoint.Response.RecordsPath == "$.positions");
             (await tenantStore.GetManifestAsync(request.ManifestId)).Should().BeEquivalentTo(result.Manifest);
             (await store.GetManifestAsync(request.ManifestId)).Should().BeNull();
+            var originalManifest = result.Manifest;
+            var reimportRequest = request with
+            {
+                DisplayName = "Updated OpenAPI import",
+                ExpectedManifestReference = result.ManifestReference
+            };
+            var reimportResponse = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationOpenApiImport, reimportRequest, ServerJsonOptions);
+            reimportResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            var reimport = await reimportResponse.Content.ReadFromJsonAsync<ProviderIntegrationOpenApiImportResultDto>(ServerJsonOptions);
+            reimport!.Manifest.ManifestVersion.Should().Be(originalManifest.ManifestVersion + 1);
+            reimport.Manifest.DisplayName.Should().Be(reimportRequest.DisplayName);
+            (await tenantStore.GetManifestVersionAsync(request.ManifestId, originalManifest.ManifestVersion))
+                .Should().BeEquivalentTo(originalManifest);
+
+            var staleResponse = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationOpenApiImport, reimportRequest, ServerJsonOptions);
+            staleResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            (await tenantStore.GetManifestAsync(request.ManifestId)).Should().BeEquivalentTo(reimport.Manifest);
         }
         finally
         {
@@ -171,6 +190,28 @@ public sealed partial class WorkstationEndpointsTests
             (await tenantStore.GetConnectionAsync(request.Connection.ConnectionId))!.UpdatedAt.Should()
                 .Be(DateTimeOffset.Parse("2026-06-16T15:00:00Z"));
             (await store.GetManifestAsync(request.Manifest.ManifestId)).Should().BeNull();
+            var originalManifest = (await tenantStore.GetManifestAsync(request.Manifest.ManifestId))!;
+            var editRequest = request with
+            {
+                Manifest = originalManifest with { DisplayName = "Edited provider integration" },
+                ExpectedManifestReference = result.ManifestReference,
+                ChangeReason = "Edited from workstation endpoint."
+            };
+            var editResponse = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationSetupSave, editRequest, ServerJsonOptions);
+            editResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            var edit = await editResponse.Content.ReadFromJsonAsync<ProviderIntegrationSetupSaveResultDto>(ServerJsonOptions);
+            edit!.ManifestReference!.ManifestVersion.Should().Be(originalManifest.ManifestVersion + 1);
+            var updatedManifest = (await tenantStore.GetManifestAsync(request.Manifest.ManifestId))!;
+            updatedManifest.DisplayName.Should().Be(editRequest.Manifest.DisplayName);
+            ProviderIntegrationManifestIdentity.Create(updatedManifest).Should().Be(edit.ManifestReference);
+            (await tenantStore.GetManifestVersionAsync(originalManifest.ManifestId, originalManifest.ManifestVersion))
+                .Should().BeEquivalentTo(originalManifest);
+
+            var staleResponse = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationSetupSave, editRequest, ServerJsonOptions);
+            staleResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            (await tenantStore.GetManifestAsync(originalManifest.ManifestId)).Should().BeEquivalentTo(updatedManifest);
         }
         finally
         {
@@ -1018,51 +1059,95 @@ public sealed partial class WorkstationEndpointsTests
         }
     }
 
-    [Fact]
-    public async Task MapWorkstationEndpoints_ProviderIntegrationQuarantineReplay_StagesReviewedRecords()
+    [Theory]
+    [InlineData(ProviderIntegrationReplayModeDto.Original, 0, 1)]
+    [InlineData(ProviderIntegrationReplayModeDto.Remediation, 1, 0)]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationQuarantineReplay_PreservesSelectedMappingProvenance(
+        ProviderIntegrationReplayModeDto mode,
+        int expectedAccepted,
+        int expectedQuarantined)
     {
         var testRoot = CreateProviderIntegrationTestRoot();
         try
         {
-            var store = await CreateSeededProviderIntegrationStoreAsync(testRoot);
+            var store = new FileProviderIntegrationManifestStore(testRoot);
             var tenantStore = DefaultProviderIntegrationTenantStore(store);
-            await tenantStore.SaveManifestAsync(CreateProviderIntegrationReplayManifest());
+            var originalManifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-custodian-positions-v1")! with
+            {
+                ManifestId = "manifest-custodian-abc-v1",
+                ProviderId = "custodian-abc"
+            };
+            var connection = CreateProviderIntegrationEndpointConnection(originalManifest);
+            await tenantStore.SaveManifestAsync(originalManifest);
+            await tenantStore.SaveConnectionAsync(connection);
+            var transport = new ProviderIntegrationEndpointTransport(new ProviderIntegrationHttpResponse(
+                200, new Dictionary<string, string>(), """{"positions":[{"account_id":"A-100"}]}"""));
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store, transport),
+                currentUserPermissions: UserPermission.ManageProviders);
+            var client = app.GetTestClient();
+            var ingestionResponse = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationRestDryRun,
+                CreateRestDryRunRequest(originalManifest, connection) with { SyncRunId = "sync-run-new" },
+                ServerJsonOptions);
+            ingestionResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            var sourceRecord = (await tenantStore.ListQuarantinedRecordsAsync("sync-run-new"))
+                .Should().ContainSingle().Subject;
+            var originalReference = ProviderIntegrationManifestIdentity.Create(originalManifest);
+            var selectedManifest = CreateProviderIntegrationReplayManifest();
+            var selectedReference = ProviderIntegrationManifestIdentity.Create(selectedManifest);
+            await tenantStore.SaveManifestVersionAsync(selectedManifest);
+            (await tenantStore.CompareExchangeCurrentManifestAsync(
+                originalManifest.ManifestId, originalReference, selectedReference)).Should().BeTrue();
             await tenantStore.SaveQuarantineDecisionAsync(new ProviderIntegrationQuarantineDecisionDto(
                 "decision-sync-run-new-0",
                 "sync-run-new",
-                "quarantine-sync-run-new-0",
-                "connection-alpha",
+                sourceRecord.QuarantineRecordId,
+                connection.ConnectionId,
                 ProviderIntegrationQuarantineResolutionActionDto.ReplayAfterMappingChange,
                 "operator@example.com",
                 DateTimeOffset.Parse("2026-06-16T12:10:00Z"),
-                "Mapping updated for replay."));
-            await using var app = await CreateAppAsync(
-                services => RegisterProviderIntegrationEndpointServices(services, store),
-                currentUserPermissions: UserPermission.ManageProviders);
-            var client = app.GetTestClient();
+                "Reviewed mapping for replay."));
             var request = new ProviderIntegrationQuarantineReplayRequestDto(
                 "sync-run-replay-endpoint-1",
                 "sync-run-new",
-                "manifest-custodian-abc-v1",
-                "connection-alpha",
+                originalManifest.ManifestId,
+                connection.ConnectionId,
                 ProviderCapabilityKindDto.Positions,
-                ["quarantine-sync-run-new-0"],
+                [sourceRecord.QuarantineRecordId],
                 "operator@example.com",
                 DateTimeOffset.Parse("2026-06-16T12:20:00Z"));
+            if (mode == ProviderIntegrationReplayModeDto.Remediation)
+            {
+                request = request with
+                {
+                    Mode = mode,
+                    TargetManifestVersion = selectedReference.ManifestVersion,
+                    TargetManifestDigest = selectedReference.ContentDigest
+                };
+            }
 
             var response = await client.PostAsJsonAsync(
                 UiApiRoutes.WorkstationProviderIntegrationQuarantineReplay,
                 request,
                 ServerJsonOptions);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
             var result = await response.Content.ReadFromJsonAsync<ProviderIntegrationQuarantineReplayResultDto>(ServerJsonOptions);
 
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
             result.Should().NotBeNull();
-            result!.RecordsAccepted.Should().Be(1);
-            result.RecordsRequarantined.Should().Be(0);
-            (await tenantStore.ListStagingRecordsAsync(request.ReplaySyncRunId)).Should().ContainSingle();
-            (await tenantStore.GetSyncRunAsync(request.ReplaySyncRunId))!.Status.Should()
-                .Be(ProviderIntegrationProcessingStatusDto.Validated);
+            result!.RecordsAccepted.Should().Be(expectedAccepted);
+            result.RecordsRequarantined.Should().Be(expectedQuarantined);
+            (await tenantStore.ListStagingRecordsAsync(request.ReplaySyncRunId)).Should().HaveCount(expectedAccepted);
+            var replayRun = await tenantStore.GetSyncRunAsync(request.ReplaySyncRunId);
+            var replayPayload = await tenantStore.GetRawPayloadAsync(request.ReplaySyncRunId, result.RawPayloadId);
+            var appliedReference = mode == ProviderIntegrationReplayModeDto.Original ? originalReference : selectedReference;
+            replayRun!.ManifestReference.Should().Be(appliedReference);
+            replayRun.OriginalManifestReference.Should().Be(originalReference);
+            replayRun.ReplayMode.Should().Be(mode);
+            replayRun.SourceSyncRunId.Should().Be(request.SourceSyncRunId);
+            replayPayload!.ManifestReference.Should().Be(appliedReference);
+            replayPayload.OriginalManifestReference.Should().Be(originalReference);
+            (await tenantStore.GetSyncRunAsync(request.SourceSyncRunId))!.ManifestReference.Should().Be(originalReference);
         }
         finally
         {
@@ -1377,6 +1462,18 @@ public sealed partial class WorkstationEndpointsTests
             result.ConnectionState.Should().Be(ProviderIntegrationActivationStateDto.Active);
             (await tenantStore.GetManifestAsync(manifest.ManifestId))!.State.Should().Be(ProviderIntegrationActivationStateDto.Active);
             (await tenantStore.GetConnectionAsync(connection.ConnectionId))!.ApprovalEvidenceId.Should().Be("approval-evidence-endpoint-1");
+            var activeManifest = (await tenantStore.GetManifestAsync(manifest.ManifestId))!;
+            activeManifest.ManifestVersion.Should().Be(manifest.ManifestVersion + 1);
+            result.ManifestReference.Should().Be(ProviderIntegrationManifestIdentity.Create(activeManifest));
+            (await tenantStore.GetManifestVersionAsync(manifest.ManifestId, manifest.ManifestVersion))
+                .Should().BeEquivalentTo(manifest);
+
+            var staleResponse = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationActivate,
+                CreateProviderIntegrationActivationRequest(manifest, connection),
+                ServerJsonOptions);
+            staleResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            (await tenantStore.GetManifestAsync(manifest.ManifestId)).Should().BeEquivalentTo(activeManifest);
         }
         finally
         {
@@ -1711,7 +1808,11 @@ public sealed partial class WorkstationEndpointsTests
             accepted,
             quarantined,
             $"payload-{syncRunId}",
-            issues);
+            issues)
+        {
+            ManifestReference = ProviderIntegrationManifestIdentity.Create(manifest),
+            OriginalManifestReference = ProviderIntegrationManifestIdentity.Create(manifest)
+        };
 
     private static ProviderIntegrationManifestDto CreateProviderIntegrationEndpointManifest()
         => new(
@@ -1951,7 +2052,11 @@ public sealed partial class WorkstationEndpointsTests
                 new Dictionary<string, string> { ["source"] = "workstation-endpoint-test" },
                 ProviderIntegrationEndpointJson(rawPayload),
                 $"{manifest.ManifestId}:v{manifest.ManifestVersion}",
-                ProviderIntegrationProcessingStatusDto.Received));
+                ProviderIntegrationProcessingStatusDto.Received)
+            {
+                ManifestReference = ProviderIntegrationManifestIdentity.Create(manifest),
+                OriginalManifestReference = ProviderIntegrationManifestIdentity.Create(manifest)
+            });
 
     private static IntegrationProviderConnectionDto CreateProviderIntegrationManualCsvConnection(
         ProviderIntegrationManifestDto manifest)
@@ -2129,7 +2234,10 @@ public sealed partial class WorkstationEndpointsTests
             "approver@example.com",
             DateTimeOffset.Parse("2026-06-16T14:00:00Z"),
             "approval-evidence-endpoint-1",
-            "Approved from workstation endpoint test.");
+            "Approved from workstation endpoint test.")
+        {
+            ExpectedManifestReference = ProviderIntegrationManifestIdentity.Create(manifest)
+        };
 
     private static ProviderIntegrationManifestDto CreateProviderIntegrationActivationManifest(
         bool missingQuantityMapping = false)

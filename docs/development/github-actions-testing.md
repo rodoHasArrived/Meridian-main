@@ -1,7 +1,8 @@
 # GitHub Actions Testing Checklist
 
-**Status:** Active
-**Reviewed:** 2026-05-18
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-10-05
 
 Use this checklist when changing `.github/workflows/`, workflow-related scripts, or
 the local commands mirrored by CI.
@@ -13,36 +14,42 @@ the local commands mirrored by CI.
 - Referenced solution, project, script, and dashboard paths exist.
 - New workflow steps use repository-relative paths.
 - Token permissions stay at `contents: read` unless a write is explicitly required.
-- Publish workflows upload artifacts only; they do not create public releases or deploy externally.
+- Verify artifact, release, and deployment behavior against the workflow being changed.
+- Workflow governance changes require explicit human review under the root `AGENTS.md` policy.
 
 ## Local Validation
 
+From the repository root in PowerShell or Bash, with Python and the documentation YAML dependency:
+
 ```powershell
+python -m pip install --requirement build/scripts/docs/requirements.txt
 python build/scripts/ci/check-workflow-hygiene.py
-python - <<'PY'
-import pathlib, yaml
-for path in pathlib.Path(".github/workflows").glob("*.yml"):
-    yaml.safe_load(path.read_text())
-PY
+python -c "import pathlib, yaml; [yaml.safe_load(p.read_text(encoding='utf-8')) for p in pathlib.Path('.github/workflows').glob('*.yml')]"
+bash scripts/ci.sh --lane verify-workflows
 ```
 
-For build/test command parity, run the command set from
-[`github-actions-summary.md`](github-actions-summary.md).
+Expected result: each command exits zero. YAML parsing checks syntax; the workflow lane adds the
+repository's workflow checks. Fix the reported file/step before rerunning; do not suppress a failed
+check. Use [Engineering](../engineering/README.md#buildtestrun) for additional affected build/test
+lanes, then run the full `bash scripts/ci.sh` gate before submitting the change.
 
 ## Post-Merge Smoke
 
-- Confirm `CI` runs on the next pull request and on pushes to `main`.
-- Confirm `Windows Desktop Build` reaches the WPF publish smoke step.
-- Manually run `Publish Smoke` for `collector` and verify the uploaded artifact contains `Meridian.exe`.
-- Manually run `Maintenance` after workflow edits and confirm the hygiene script and `actionlint` pass.
+- Confirm required `Meridian CI` checks run for the applicable pull request, push, or merge-group event.
+- For WPF changes, inspect the `Windows Desktop Build` validation bundle; its publish step runs only
+  when the workflow's smoke-publish condition is met.
+- For publish changes, run the applicable `Publish Smoke` project/runtime and inspect its artifact
+  and release-evidence manifest using the current [workflow guide](../../.github/workflows/README.md).
+- Inspect failed jobs and their evidence before considering the change verified.
 
 ## Expected Artifacts
 
 | Workflow | Artifact |
 | --- | --- |
-| CI | .NET TRX results only on failure |
-| Windows Desktop Build | WPF TRX results only on failure |
-| Publish Smoke | `artifacts/publish/publish-smoke/` upload |
-| Maintenance | None |
+| Meridian CI | Lane-specific build logs, test results, and summaries; uploads run even after failure when files exist |
+| Windows Desktop Build | `artifacts/wpf-validation/windows-desktop-build/` and conditional desktop smoke output |
+| Publish Smoke | `artifacts/publish/publish-smoke/`, including failure evidence when available |
 
-Generated artifacts remain ignored by Git and should not be committed.
+Workflow artifacts and local build outputs are distinct from tracked generated documentation and
+the tracked browser bundle. Follow [generated-content ownership](../documentation-ownership.md)
+when deciding what belongs in the commit; artifact names and retention live in the workflow guide.

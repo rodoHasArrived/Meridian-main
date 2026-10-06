@@ -1,11 +1,18 @@
-# Domain Model
+# Market-Data Runtime Domain Contracts
 
 This document describes the **runtime domain contracts** used by the collectors and event pipeline.
 Primary source of truth lives in:
 
+- `src/Meridian.Domain/Events/MarketEvent.cs` for the runtime event envelope
 - `src/Meridian.Contracts/Domain/Events/`
 - `src/Meridian.Contracts/Domain/Models/`
 - `src/Meridian.Domain/Collectors/`
+
+For customer-neutral business concepts and accounting invariants, use the
+[Meridian Domain Model](meridian-domain-model.md) and [Domain Dictionary](../domain/README.md).
+The runtime `MarketEvent` below is distinct from the serialized `MarketEventDto` compatibility
+contract. Maintenance check 2026-10-05: runtime source defaults verified against the event record
+and `MarketDataSources`; the rest of this reference retains its existing verification scope.
 
 ## MarketEvent Envelope
 
@@ -18,7 +25,7 @@ public sealed record MarketEvent(
     MarketEventType Type,
     MarketEventPayload Payload,
     long Sequence = 0,
-    string Source = "IB",
+    string Source = MarketDataSources.Unknown,
     byte SchemaVersion = 1,
     MarketEventTier Tier = MarketEventTier.Raw,
     DateTimeOffset? ExchangeTimestamp = null,
@@ -41,7 +48,9 @@ public sealed record MarketEvent(
 - `Type` – discriminator for payload parsing and downstream routing.
 - `Payload` – strongly typed `MarketEventPayload` instance (non-nullable; heartbeat events use the `MarketEventPayload.HeartbeatPayload` nested record to eliminate the null-payload special case and enable exhaustive pattern matching).
 - `Sequence` – monotonic sequence when available from source or collector.
-- `Source` – provider/source identifier (examples: `IB`, `ALPACA`, `stooq`).
+- `Source` – provider/source identifier (examples: `IB`, `ALPACA`, `stooq`). Runtime factory methods
+  require the real source explicitly; direct construction/deserialization defaults to the honest
+  `MarketDataSources.Unknown` sentinel, not Interactive Brokers.
 - `SchemaVersion` – payload schema compatibility marker (`byte`).
 - `Tier` – event tier classification (`Raw`, `Enriched`, `Processed`). Canonicalized events are promoted to `Enriched`.
 - `ExchangeTimestamp` – exchange/venue timestamp from the provider feed (best-effort, depends on provider).
@@ -62,7 +71,7 @@ The three timestamp fields serve distinct purposes:
 
 | Field | Populated by | Semantics |
 |-------|-------------|-----------|
-| `Timestamp` | Factory methods (`MarketEvent.Trade()`, etc.) | When the event was created in the collector process |
+| `Timestamp` | The `ts` argument supplied to factory methods (`MarketEvent.Trade()`, etc.) | Event time supplied by the caller; do not assume it is collector wall-clock time |
 | `ExchangeTimestamp` | `StampReceiveTime(exchangeTs)` in provider adapter | Exchange/venue timestamp from the provider feed |
 | `ReceivedAtUtc` | `StampReceiveTime()` | Wall-clock time when event entered the collector |
 

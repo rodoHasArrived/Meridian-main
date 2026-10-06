@@ -53,6 +53,10 @@ Load this context before work on:
 
 ## Review Checklist
 
+For the first posted amount workflow, use the [W10 amount provenance acceptance record](../../testing/w10-amount-provenance.md).
+Its shared `ledger-amount` subject binds immutable journal/line/side IDs to authenticated tenant/company
+and retained fund/book/period scope; names, symbols, and general navigation links cannot establish proof.
+
 - Can the user trace the record from source evidence to output?
 - Does the workflow retain evidence before the record is approved, posted, delivered, or reported?
 - Are unresolved exceptions close-blocking or release-blocking when they should be?
