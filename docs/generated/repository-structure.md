@@ -3984,6 +3984,7 @@ Meridian-main
 │   │   │       ├── OpenLotAmortization.cs
 │   │   │       ├── OpenLotBackfillDtos.cs
 │   │   │       ├── OpenLotDto.cs
+│   │   │       ├── OpenLotSuccessors.cs
 │   │   │       └── OpenLotValidation.cs
 │   │   ├── AccountingSystem
 │   │   │   └── AccountingSystemDtos.cs
@@ -5899,7 +5900,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_038__audit_safe_tenant_attribution.sql
 │   │   │   │   ├── V_ledger_039__tax_lot_proceeds_allocation.sql
 │   │   │   │   ├── V_ledger_040__canonical_lot_amortization.sql
-│   │   │   │   └── V_ledger_041__current_basis_disposal.sql
+│   │   │   │   ├── V_ledger_041__current_basis_disposal.sql
+│   │   │   │   └── V_ledger_042__atomic_lot_successors.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -5928,6 +5930,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.AtomicTaxLots.cs
 │   │   │   ├── PostgresLedgerJournalStore.Audit.cs
 │   │   │   ├── PostgresLedgerJournalStore.AverageCostRelief.cs
+│   │   │   ├── PostgresLedgerJournalStore.CorporateAction.cs
 │   │   │   ├── PostgresLedgerJournalStore.cs
 │   │   │   ├── PostgresLedgerJournalStore.DiscreteLotRelief.cs
 │   │   │   ├── PostgresLedgerJournalStore.HistoricalTaxLots.cs
@@ -7732,6 +7735,7 @@ Meridian-main
 │   │   │   ├── LedgerDimensionMapper.cs
 │   │   │   ├── LedgerMarkToMarketCarryingValueSource.cs
 │   │   │   ├── LedgerReportingAuthoritativeSource.cs
+│   │   │   ├── LedgerReportingAuthoritativeSource.Successors.cs
 │   │   │   ├── LiveBrokeragePortfolioSyncService.cs
 │   │   │   ├── ManualJournalEntryDraftStores.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.AccountingCloseReceipts.cs
@@ -9673,6 +9677,7 @@ Meridian-main
 │   │   │   ├── InstrumentPositionProjectionStoreTests.cs
 │   │   │   ├── OpenLotAmortizationCalendarTests.cs
 │   │   │   ├── OpenLotAmortizationPrecisionTests.cs
+│   │   │   ├── OpenLotSuccessorTests.cs
 │   │   │   ├── PortfolioCashLadderEngineTests.cs
 │   │   │   ├── PortfolioCashLadderReadServiceTests.cs
 │   │   │   └── RetainedEvidenceIdentityValidatorTests.cs
@@ -9903,6 +9908,7 @@ Meridian-main
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.HistoricalLots.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.RetainedEvidenceMerge.cs
+│   │   │   │   ├── AccountingPostingCandidateServiceTests.Successors.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.cs
 │   │   │   │   └── AssetAccountingLifecycleSeparationTests.cs
 │   │   │   ├── OperationsContinuity
@@ -10475,6 +10481,8 @@ Meridian-main
 │   │   │   ├── AtomicTaxLotJournalStoreTests.CurrentBasis.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.HistoricalQuantity.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.ProceedsAllocation.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.SuccessorPublication.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.Successors.cs
 │   │   │   ├── AuditChainProcessTests.cs
 │   │   │   ├── AuditChainServiceTests.cs
 │   │   │   ├── CanonicalOpenLotConsumerTests.cs
@@ -10728,6 +10736,7 @@ Meridian-main
 │   │   │   ├── LedgerAmountProvenanceEndpointTests.cs
 │   │   │   ├── LedgerAmountProvenanceServiceTests.cs
 │   │   │   ├── LedgerAndCompliancePermissionSplitTests.cs
+│   │   │   ├── LedgerReportingAuthoritativeSourceSuccessorTests.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceTests.cs
 │   │   │   ├── LegacyReportingRouteRetirementEndpointTests.cs
 │   │   │   ├── LiveBrokeragePortfolioSyncServiceTests.cs

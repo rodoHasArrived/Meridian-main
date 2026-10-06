@@ -135,6 +135,7 @@ UI Shared and strategy adapters consume `Meridian.Instruments.Options.OptionsCha
 <!-- source-roadmap-traceability:begin module=SRC-DESIGN-INSTRUMENTS -->
 | Roadmap item | Title |
 | --- | --- |
+| `W10-LOT-002` | Security-identified open-lot convergence |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
 | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |

@@ -394,7 +394,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             OperatorRationale: "Independently reviewed corporate-action basis allocation.", LedgerBookId: fixture.BookId)
         { Actor = "independent-controller", LotCorporateAction = instruction };
         var journal = new LedgerJournalEntryWrite(entry, fixture.BookId, fixture.Period.PeriodId,
-            AccountingBasis: basis, SourceEventId: eventId, LedgerBookId: fixture.BookId, PostingCommand: posting);
+            AccountingBasis: basis, AccountingPolicyId: book.AccountingPolicyId, AccountingPolicyVersion: book.AccountingPolicyVersion,
+            SourceEventId: eventId, LedgerBookId: fixture.BookId, PostingCommand: posting);
         var retained = predecessor.Acquisition.Evidence.Concat(targets.SelectMany(t => t.Lot.Acquisition.Evidence))
             .Concat(instruction.Projection.EvidenceManifest.Select(item => BuildEvidence(item.EvidenceId, 'a') with
             {
