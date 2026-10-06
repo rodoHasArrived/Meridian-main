@@ -6,7 +6,7 @@ using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
-public sealed class OperationsContinuityViewModelTests
+public sealed partial class OperationsContinuityViewModelTests
 {
     [Fact]
     public async Task RefreshAsync_ProjectsWorkflowsQueueCalendarAndPolicy()
@@ -401,6 +401,7 @@ public sealed class OperationsContinuityViewModelTests
         public IReadOnlyList<OperationsContinuityWorkflowSummaryDto>? Workflows { get; set; }
 
         public OperationsContinuityWorkflowDto? Detail { get; set; }
+        public Func<Guid, Task<OperationsContinuityWorkflowDto?>>? DetailLoader { get; set; }
 
         public OperationsCloseCalendarDto? Calendar { get; set; }
 
@@ -416,6 +417,6 @@ public sealed class OperationsContinuityViewModelTests
             => Task.FromResult(Workflows);
 
         public Task<OperationsContinuityWorkflowDto?> GetWorkflowAsync(Guid workflowId, CancellationToken ct = default)
-            => Task.FromResult(Detail);
+            => DetailLoader?.Invoke(workflowId) ?? Task.FromResult(Detail);
     }
 }

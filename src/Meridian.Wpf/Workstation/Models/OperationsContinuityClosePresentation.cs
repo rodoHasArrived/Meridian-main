@@ -5,6 +5,10 @@ namespace Meridian.Wpf.Workstation.Models;
 /// <summary>Displays the selected shared close decision; legacy gate totals cannot establish close readiness.</summary>
 public sealed record OperationsContinuityClosePresentation(bool IsReady, string Label, string Detail)
 {
+    public IReadOnlyList<CloseReadinessBlockerDto> Blockers { get; init; } = [];
+    public IReadOnlyList<OperationsContinuityCloseBlockerPresentation> BlockerRows
+        => Blockers.Select(static blocker => new OperationsContinuityCloseBlockerPresentation(blocker)).ToArray();
+
     public static OperationsContinuityClosePresentation Build(
         OperationsContinuityWorkflowDto? workflow,
         FinancialOperationsCommandCenterDto? commandCenter,
@@ -26,8 +30,20 @@ public sealed record OperationsContinuityClosePresentation(bool IsReady, string 
             return new(true, "Ready to close", "The shared service confirms complete close evidence for this scope and workflow version.");
         return Blocked(decision.Blockers.Count > 0
             ? string.Join(" ", decision.Blockers.Select(blocker => $"{blocker.ContributorId}: {blocker.Message}"))
-            : "The shared close evidence is incomplete or requires review. Resolve the issue and refresh readiness.");
+            : "The shared close evidence is incomplete or requires review. Resolve the issue and refresh readiness.") with
+        {
+            Blockers = decision.Blockers
+        };
     }
 
     private static OperationsContinuityClosePresentation Blocked(string detail) => new(false, "Close blocked", detail);
+}
+
+public sealed record OperationsContinuityCloseBlockerPresentation(CloseReadinessBlockerDto Blocker)
+{
+    public string OwnerLabel => string.IsNullOrWhiteSpace(Blocker.Owner) ? "Owner unavailable" : Blocker.Owner;
+
+    public string RepairInstruction => string.IsNullOrWhiteSpace(Blocker.Owner)
+        ? "Repair: identify the owning lane, resolve this contributor and its causing records through that workflow, then select Evaluate close to refresh the shared decision."
+        : $"Repair: ask {Blocker.Owner} to resolve this contributor and its causing records through the owning workflow, then select Evaluate close to refresh the shared decision.";
 }

@@ -1,11 +1,11 @@
 {
-  "total_files": 698,
-  "total_lines": 154741,
+  "total_files": 699,
+  "total_lines": 154901,
   "orphaned_count": 233,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 296,
-  "average_lines": 221.7,
+  "average_lines": 221.6,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2764,7 +2764,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11454,
+      "line_count": 11471,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4019,8 +4019,16 @@
       "stale": false
     },
     {
+      "path": "docs/testing/evidence/w10-seam-refresh-20261006/README.md",
+      "line_count": 117,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/testing/README.md",
-      "line_count": 24,
+      "line_count": 25,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4036,7 +4044,7 @@
     },
     {
       "path": "docs/testing/w10-mark-seam-operator-acceptance.md",
-      "line_count": 309,
+      "line_count": 314,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5740,7 +5748,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1483,
+      "line_count": 1490,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5788,7 +5796,7 @@
     },
     {
       "path": "src/Meridian.Wpf/README.md",
-      "line_count": 959,
+      "line_count": 972,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

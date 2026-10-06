@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "scope": "Fixed supporting artifacts; README and continuation.json track evolving validation/candidate metadata and are excluded.",
+  "artifacts": [
+    {
+      "path": "browser/capture.mjs",
+      "bytes": 21402,
+      "sha256": "1eedea5fcbe1d56a97982d1dc629ebb117c71428e9f5862c0d77d63c910b97b8"
+    },
+    {
+      "path": "browser/cases-full.json.gz",
+      "bytes": 21991,
+      "sha256": "626bf98325edd7336ed397def1fc6d11a7724bfe9e26f21c5530d075663e3e1e"
+    },
+    {
+      "path": "browser/cases.json",
+      "bytes": 20312,
+      "sha256": "419928e1cc558d2763061f19c513dc6cafd4fa75edd7e767dd8d2a34ea1c7479"
+    },
+    {
+      "path": "browser/provenance.json",
+      "bytes": 3328,
+      "sha256": "2ccd9da516616f7229ccec34c32baba836eb1228f3c20b001f4c081171420ca9"
+    },
+    {
+      "path": "browser/requests-responses.json.gz",
+      "bytes": 130181,
+      "sha256": "3e055ce242dab93a3500b39f52a557ec090159cc5e505796a0bc80c8a4feb039"
+    },
+    {
+      "path": "browser/screenshots/S4-repaired-v9.png",
+      "bytes": 140740,
+      "sha256": "dcc69f3e8da8faf0c6786524b7fb04f75133f5015fef3d8b71092869bf1ca8ae"
+    },
+    {
+      "path": "browser/screenshots/S5-published-v10.png",
+      "bytes": 108664,
+      "sha256": "1cdb56af20920159036613fe39a94c758679e8ed2bee522b73dfa04a976dde52"
+    },
+    {
+      "path": "browser/vitest.log.gz",
+      "bytes": 285,
+      "sha256": "f2a5f90e77323c3bf95af3ed5a33563350aa948266c7927d12088ebe2a437cc5",
+      "uncompressedBytes": 435,
+      "uncompressedSha256": "f3321b678a699f240fe6de0d6624df6ab8a4d63489090ecd21b754ba0729a37b"
+    },
+    {
+      "path": "source-hashes.json",
+      "bytes": 1449,
+      "sha256": "12b07dc3172806d7d3f510852eeeb96de5203c3f1e73f51d92267bdf3dada37b"
+    },
+    {
+      "path": "wpf-static.txt",
+      "bytes": 1455,
+      "sha256": "0324850f5c429ba7e441d1c90b30d2791161d2e519fd24701c688267f5c78c38"
+    }
+  ]
+}

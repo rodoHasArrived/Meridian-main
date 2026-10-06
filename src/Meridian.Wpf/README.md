@@ -90,6 +90,19 @@ Account, aggregate, strategy-run, and trading position presentations use `MarkFr
 
 Operations Continuity and Accounting Close require explicit fund, book, account, entity, and period selections for close evaluation. Preparation remains available without close scope. The desktop shared publication guard reads the current authenticated session; missing tenancy, sign-out, or unavailable authoritative evidence blocks publication. Changing the selected subject or workflow invalidates prior readiness and pending results.
 
+Operations Continuity displays the shared close blocker's type, count, severity, owner,
+contributor, code and causing record IDs separately from workflow gate blockers. Counts and
+ownership come directly from the shared projection; missing owners and record IDs remain explicit. The
+repair instruction names the owning lane, and Evaluate close reloads the selected workflow
+detail and shared decision after repair. The workflow list, detail and shared decision must
+agree on the workflow version. A response for another workflow, a mismatched version or a
+superseded selection cannot establish readiness or contribute blocker records.
+`OperationsContinuityViewModelTests` covers structured fields, stale-version recovery,
+wrong-workflow refusal and delayed-response isolation, plus a Windows-only rendering test for
+the shared blocker template and repair refresh. A Linux stub build does not execute these tests
+or certify WPF rendering; the joint live acceptance session still runs SEAM before MARK and
+retains the designated operator's actual verdicts.
+
 Accounting Close resolves `IWorkstationAccountingCloseApiClient` to
 `WorkstationAccountingCloseApiClient` in the Accounting feature module. Its plan reads and
 governed commands use the server HTTP endpoints; the server resolves authenticated authority

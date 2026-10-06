@@ -1,0 +1,883 @@
+{
+  "schemaVersion": 1,
+  "recordId": "w10-seam-refresh-20261006",
+  "reviewedOn": "2026-10-06",
+  "roadmapRow": "W10-SEAM-001",
+  "sourceBaseCommit": "9c96c3f72dd60111b62b8368d29e553ec58fd7a0",
+  "workBranch": "codex/w10-seam-refresh",
+  "candidateCommit": null,
+  "candidateBindingState": "pending_final_application_candidate",
+  "historicalEvidence": {
+    "caseRecords": "../w10-615abde9/case-records.json",
+    "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+    "candidateTree": "9372fc96135e0203c0eb25fc105ed67b1d90f231",
+    "pr": "https://github.com/rodoHasArrived/Meridian-main/pull/3048",
+    "preservation": "unchanged"
+  },
+  "implementationOrder": [
+    "LOT",
+    "MARK",
+    "SEAM",
+    "RECON"
+  ],
+  "operatorSessionOrder": [
+    "SEAM",
+    "MARK"
+  ],
+  "implementationQueueCompletion": "not_established",
+  "queueContext": [
+    {
+      "pr": "https://github.com/rodoHasArrived/Meridian-main/pull/3050",
+      "observation": "Merged partial LOT slice; does not close W10-LOT-002."
+    },
+    {
+      "pr": "https://github.com/rodoHasArrived/Meridian-main/pull/3070",
+      "observation": "Pending LOT follow-up; remaining queue completion is not established."
+    }
+  ],
+  "findings": [
+    {
+      "id": "B1",
+      "historicalState": "open",
+      "historicalTier": "rendered_response_simulation",
+      "historicalSummary": "Refresh workflows retains selected detail version after same-workflow version change; repaired ready projection leaves publication disabled.",
+      "currentState": "repair_supported_by_browser_regression_and_response_simulation",
+      "engineeringResult": "58 focused browser tests and 16 rendered observations passed; server version verification pending",
+      "liveClientResult": "pending",
+      "evidence": [
+        "browser/cases.json",
+        "browser/provenance.json",
+        "browser/requests-responses.json.gz",
+        "browser/vitest.log.gz"
+      ]
+    },
+    {
+      "id": "D1",
+      "historicalState": "open",
+      "historicalTier": "static_source",
+      "historicalSummary": "Desktop shared blocker presentation flattens structured fields.",
+      "currentState": "structured_bindings_present_windows_verification_pending",
+      "engineeringResult": "Structured blocker bindings and eight new regression cases compile in the full Windows target; eight general static checks pass. Windows execution remains pending.",
+      "liveClientResult": "pending",
+      "evidence": [
+        "wpf-static.txt"
+      ]
+    }
+  ],
+  "validation": [
+    {
+      "lane": "browser_regression_and_build",
+      "state": "passed",
+      "command": [
+        "npm run test:vitest -- src/screens/operations-continuity-screen.view-model.test.ts src/screens/operations-continuity-screen.test.tsx --maxWorkers=2",
+        "npm run build"
+      ],
+      "result": {
+        "testsPassed": 58,
+        "testsFailed": 0,
+        "testFilesPassed": 2,
+        "typeScript": "passed",
+        "viteBuild": "passed",
+        "targetedEslint": {
+          "state": "passed",
+          "filesChecked": 4,
+          "log": "Empty successful log; no diagnostics."
+        }
+      },
+      "evidence": [
+        "browser/vitest.log.gz"
+      ],
+      "workingDirectory": "src/Meridian.Ui/dashboard",
+      "logRetention": "Focused test log retained. Large build log remains workspace-local; build result recorded from completed command."
+    },
+    {
+      "lane": "shared_refusal_repair_publication",
+      "state": "serial_attempt_3_pending",
+      "command": null,
+      "result": null,
+      "evidence": [],
+      "attempts": [
+        {
+          "attempt": 1,
+          "state": "failed_before_tests",
+          "diagnostic": "MSB3030: 57 browser asset files were removed by a concurrent bundle rebuild after host MSBuild evaluated their filenames.",
+          "classification": "task_owned_validation_sequencing",
+          "sourceWorkaround": false
+        },
+        {
+          "attempt": 2,
+          "state": "admission_timeout_before_tests",
+          "exitCode": 3,
+          "diagnostic": "Timed out awaiting WPF validation lock; no tests executed.",
+          "classification": "task_owned_validation_sequencing"
+        },
+        {
+          "attempt": 3,
+          "state": "pending_after_wpf_completion"
+        }
+      ]
+    },
+    {
+      "lane": "wpf_regression_and_build",
+      "state": "cross_compilation_passed_runtime_pending",
+      "command": "python build/python/cli/buildctl.py build --project tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --configuration Release --full-wpf-build --property IsWindows=true --property EnableWindowsTargeting=true --profile session:w10-seam-wpf --verbosity quiet",
+      "result": {
+        "exitCode": 0,
+        "errors": 0,
+        "warnings": 8,
+        "newRegressionCasesCompiled": 8,
+        "runtimeTestsExecuted": 0,
+        "applicationXamlAndTestAssembly": "compiled"
+      },
+      "evidence": [],
+      "attempts": [
+        {
+          "attempt": 1,
+          "state": "test_compilation_failed",
+          "diagnostic": "CS1061 in ItemCollection assertions at tests/Meridian.Wpf.Tests/ViewModels/OperationsContinuityViewModelTests.SharedBlockers.cs:184 and :199. Application and XAML compiled.",
+          "repair": "Changed assertions to list.Items.Cast<object>().Should()."
+        },
+        {
+          "attempt": 2,
+          "state": "passed"
+        }
+      ],
+      "limit": "Linux cross-compilation uses the full Windows target; no Windows test or rendered desktop case ran."
+    },
+    {
+      "lane": "repository_ci",
+      "state": "rerun_pending",
+      "command": "bash scripts/ci.sh",
+      "result": null,
+      "evidence": [],
+      "attempts": [
+        {
+          "attempt": 1,
+          "state": "failed",
+          "step": "Enforce no-new-god-file ratchet",
+          "diagnostic": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.ts had 4078 lines against cap 4073, exceeding by 5.",
+          "repair": "Extracted selected-workflow helper; standalone file-size ratchet subsequently passed."
+        },
+        {
+          "attempt": 2,
+          "state": "pending",
+          "result": null
+        }
+      ]
+    },
+    {
+      "lane": "same_candidate_hosted_checks",
+      "state": "pending",
+      "command": null,
+      "result": null,
+      "evidence": []
+    },
+    {
+      "lane": "live_browser",
+      "state": "pending",
+      "command": null,
+      "result": null,
+      "evidence": []
+    },
+    {
+      "lane": "live_wpf",
+      "state": "pending",
+      "command": null,
+      "result": null,
+      "evidence": []
+    },
+    {
+      "lane": "browser_rendered_response_simulation",
+      "state": "passed",
+      "command": "node capture.mjs",
+      "workingDirectory": "capture environment recorded in browser/capture.mjs",
+      "result": {
+        "observationsPassed": 16,
+        "observationsFailed": 0,
+        "requestResponseRecords": 71,
+        "viewports": [
+          {
+            "width": 1440,
+            "height": 900
+          },
+          {
+            "width": 1366,
+            "height": 768
+          }
+        ],
+        "frameworkOverlays": 0,
+        "pageExceptions": 0
+      },
+      "evidence": [
+        "browser/cases.json",
+        "browser/cases-full.json.gz",
+        "browser/provenance.json",
+        "browser/requests-responses.json.gz",
+        "browser/screenshots/S4-repaired-v9.png",
+        "browser/screenshots/S5-published-v10.png"
+      ],
+      "limit": "Governed API scenarios are intercepted; no server persistence or authorization. Plan/evidence revisions are simulated contributor record identities, not independent retained version checks."
+    },
+    {
+      "lane": "wpf_general_static_structure",
+      "state": "passed",
+      "command": "python scripts/wpf_finance_ux_checks.py --root . --output <report-path>",
+      "result": {
+        "checksPassed": 8,
+        "checksFailed": 0
+      },
+      "evidence": [
+        "wpf-static.txt"
+      ],
+      "limit": "General source structure checks do not execute the new blocker presentation or render Windows."
+    },
+    {
+      "lane": "independent_code_review",
+      "state": "passed",
+      "command": null,
+      "result": "No remaining implementation blockers reported.",
+      "evidence": [],
+      "limit": "Engineering review supplies no operator verdict or live client proof."
+    },
+    {
+      "lane": "documentation_checks",
+      "state": "passed",
+      "command": [
+        "python build/scripts/docs/validate-docs-structure.py --summary",
+        "python build/scripts/docs/repair-links.py --summary",
+        "python build/scripts/docs/check-docfx-navigation.py --summary",
+        "git diff --check"
+      ],
+      "result": {
+        "structureErrors": 0,
+        "existingStructureWarnings": 364,
+        "linksBroken": 0,
+        "docfxErrors": 0,
+        "docfxGeneratedTargetsDeferred": 1,
+        "exactHistoricalDecisionsPreserved": true
+      },
+      "evidence": []
+    },
+    {
+      "lane": "core_documentation_automation",
+      "state": "passed",
+      "command": null,
+      "result": {
+        "stepsPassed": 23
+      },
+      "evidence": [],
+      "logRetention": "Full core automation log remains workspace-local."
+    }
+  ],
+  "populationProvisioningState": "not_established_for_continuation",
+  "liveSession": {
+    "state": "pending",
+    "candidateCommit": null,
+    "hostIdentity": null,
+    "browserIdentity": null,
+    "windowsIdentity": null,
+    "wpfIdentity": null,
+    "retainedScope": null,
+    "operatorIdentity": null,
+    "startedAtUtc": null,
+    "endedAtUtc": null,
+    "requiredOrder": [
+      "SEAM",
+      "MARK"
+    ],
+    "seamCompletedAtUtc": null,
+    "markStartedAtUtc": null,
+    "retainedRequestResponseIds": [],
+    "materialCommandIds": [],
+    "approvalIds": [],
+    "repairEvidenceIds": [],
+    "publicationIds": [],
+    "screenshots": []
+  },
+  "actualUserEnvironmentInput": "No existing non-production accounting population or Windows operator session is available.",
+  "actualOperatorDecisions": [],
+  "rowDecisions": {
+    "W10-SEAM-001": "pending",
+    "W10-MARK-001": "pending"
+  },
+  "retainedCriterionDecisions": [
+    {
+      "id": "MARK-C1",
+      "roadmapRow": "W10-MARK-001",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "MARK-C2",
+      "roadmapRow": "W10-MARK-001",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "MARK-C3",
+      "roadmapRow": "W10-MARK-001",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "MARK-C4",
+      "roadmapRow": "W10-MARK-001",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "MARK-C5",
+      "roadmapRow": "W10-MARK-001",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "MARK-C6",
+      "roadmapRow": "W10-MARK-001",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "SEAM-C1",
+      "roadmapRow": "W10-SEAM-001",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "SEAM-C2",
+      "roadmapRow": "W10-SEAM-001",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "SEAM-C3",
+      "roadmapRow": "W10-SEAM-001",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "SEAM-C4",
+      "roadmapRow": "W10-SEAM-001",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "SEAM-C5",
+      "roadmapRow": "W10-SEAM-001",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "SEAM-C6",
+      "roadmapRow": "W10-SEAM-001",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    }
+  ],
+  "retainedCaseClientDecisions": [
+    {
+      "case": "S1",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S1",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S2",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S2",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S3",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S3",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S4",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S4",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S4b",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S4b",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S5",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S5",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S6",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S6",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S7",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S7",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S8",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S8",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S9",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S9",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S10",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S10",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M1",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M1",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M2",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M2",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M3",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M3",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M4",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M4",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M5",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M5",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M6",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M6",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M7",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M7",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M8",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M8",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M9",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M9",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M10",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M10",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M11",
+      "client": "browser",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M11",
+      "client": "desktop",
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    }
+  ],
+  "acceptanceState": "pending",
+  "acceptanceLimit": "Automated engineering checks do not provide live retained accounting execution, installed Windows rendering or human operator acceptance.",
+  "browserEvidence": {
+    "captureStartUtc": "2026-10-06T21:27:05.765Z",
+    "captureEndUtc": "2026-10-06T21:27:24.809Z",
+    "tier": "rendered_response_simulation",
+    "sourceBinding": "source-hashes.json",
+    "sourceBindingState": "working_tree_hashes_final_commit_pending",
+    "provenance": "browser/provenance.json",
+    "compactCases": "browser/cases.json",
+    "originalCases": "browser/cases-full.json.gz",
+    "requestResponses": "browser/requests-responses.json.gz",
+    "retainedScreenshotCount": 2,
+    "allOperatorDecisions": "pending",
+    "planEvidenceVersionChecks": "not_established_by_simulation; pending_server_regression_lane"
+  }
+}

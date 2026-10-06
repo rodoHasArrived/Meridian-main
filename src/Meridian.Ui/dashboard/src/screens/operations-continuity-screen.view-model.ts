@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import { formatDate, formatDateOnly } from "@/screens/operations-continuity-screen.date-format";
+import { compareWorkflowSummaries, workflowMatchesSummary } from "@/screens/operations-continuity-screen.workflow-selection";
 import {
   getOperationsCloseCalendar,
   getFinancialOperationsCommandCenter,
@@ -762,6 +763,7 @@ export function useOperationsContinuityScreenViewModel(
     const controller = new AbortController();
     listAbortRef.current = controller;
     setLoading(true);
+    setDetail(null);
     setCommandCenter(null);
     setError(null);
     setDetailError(null);
@@ -806,24 +808,34 @@ export function useOperationsContinuityScreenViewModel(
     void refresh();
   }, [refresh]);
 
-  useEffect(() => {
-    if (!selectedWorkflowId) {
-      setDetail(null);
-      setDetailError(null);
-      return;
-    }
+  const closeCockpitScope = useMemo(() => {
+    return workflows.find((workflow) => workflow.workflowId === selectedWorkflowId) ?? workflows[0] ?? null;
+  }, [selectedWorkflowId, workflows]);
 
+  useEffect(() => {
     const revision = detailRevisionRef.current + 1;
     detailRevisionRef.current = revision;
     detailAbortRef.current?.abort();
+    setDetail(null);
+    setDetailError(null);
+
+    if (loading || !closeCockpitScope) {
+      setDetailLoading(false);
+      return;
+    }
+
     const controller = new AbortController();
     detailAbortRef.current = controller;
     setDetailLoading(true);
-    setDetailError(null);
 
-    services.getWorkflow(selectedWorkflowId, { signal: controller.signal })
+    services.getWorkflow(closeCockpitScope.workflowId, { signal: controller.signal, allowDevelopmentFallback: false })
       .then((workflow) => {
         if (!mountedRef.current || detailRevisionRef.current !== revision) {
+          return;
+        }
+
+        if (!workflowMatchesSummary(workflow, closeCockpitScope)) {
+          setDetailError("Workflow detail no longer matches the selected workflow revision. Refresh workflows before continuing.");
           return;
         }
 
@@ -844,11 +856,14 @@ export function useOperationsContinuityScreenViewModel(
           detailAbortRef.current = null;
         }
       });
-  }, [selectedWorkflowId, services]);
-
-  const closeCockpitScope = useMemo(() => {
-    return workflows.find((workflow) => workflow.workflowId === selectedWorkflowId) ?? workflows[0] ?? null;
-  }, [selectedWorkflowId, workflows]);
+    return () => {
+      controller.abort();
+      if (detailRevisionRef.current === revision) {
+        detailRevisionRef.current += 1;
+      }
+    };
+  }, [workflows, closeCockpitScope, loading, services, closeScope.fundProfileId, closeScope.ledgerBookId,
+    closeScope.fundAccountId, closeScope.entityId, closeScope.periodId]);
 
   useEffect(() => {
     if (loading) {
@@ -889,7 +904,7 @@ export function useOperationsContinuityScreenViewModel(
           closeCalendarAbortRef.current = null;
         }
       });
-  }, [closeCockpitScope, loading, services]);
+  }, [workflows, closeCockpitScope, loading, services]);
 
   useEffect(() => {
     if (loading) {
@@ -935,7 +950,7 @@ export function useOperationsContinuityScreenViewModel(
           closeCockpitAbortRef.current = null;
         }
       });
-  }, [closeCockpitScope, closeScope, loading, services]);
+  }, [workflows, closeCockpitScope, closeScope, loading, services]);
 
   const selectWorkflow = useCallback((workflowId: string) => {
     setSelectedWorkflowId(workflowId);
@@ -982,7 +997,7 @@ export function buildOperationsContinuityScreenViewModel({
   selectWorkflow
 }: BuildOperationsContinuityScreenViewModelOptions): OperationsContinuityScreenViewModel {
   const selectedSummary = workflows.find((workflow) => workflow.workflowId === selectedWorkflowId) ?? workflows[0] ?? null;
-  const effectiveDetail = detail?.workflowId === selectedSummary?.workflowId ? detail : null;
+  const effectiveDetail = detail && selectedSummary && workflowMatchesSummary(detail, selectedSummary) ? detail : null;
   const gateSource = effectiveDetail?.gates ?? selectedSummary?.gates ?? [];
   const nextAction = buildNextActionViewModel({
     workflow: effectiveDetail ?? selectedSummary,
@@ -3961,10 +3976,6 @@ function gateStatusPriority(status: OperationsGateStatus): number {
     default:
       return 0;
   }
-}
-
-function compareWorkflowSummaries(left: OperationsContinuityWorkflowSummary, right: OperationsContinuityWorkflowSummary): number {
-  return right.updatedAtUtc.localeCompare(left.updatedAtUtc);
 }
 
 function buildStatusAnnouncement({

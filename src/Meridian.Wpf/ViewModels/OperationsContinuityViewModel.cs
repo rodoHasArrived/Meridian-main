@@ -362,6 +362,7 @@ public sealed class OperationsContinuityViewModel : BindableBase, IDisposable
         }
 
         var revision = ++_loadRevision;
+        IsRefreshing = false;
         SelectedWorkflowId = workflowId;
         _closeCommandCenter = null;
         ApplyDetail(null);
@@ -413,10 +414,15 @@ public sealed class OperationsContinuityViewModel : BindableBase, IDisposable
 
         try
         {
+            var selectedVersion = WorkflowRows.FirstOrDefault(row => row.WorkflowId == workflowId)?.Version;
             var detail = await _client.GetWorkflowAsync(workflowId, ct).ConfigureAwait(true);
-            return detail is null
-                ? (null, "The selected workflow detail failed to load from the shared workstation API.")
-                : (detail, string.Empty);
+            if (detail is null)
+                return (null, "The selected workflow detail failed to load from the shared workstation API.");
+            if (detail.WorkflowId != workflowId)
+                return (null, "The returned detail does not match the selected workflow. Refresh the selected workflow before reviewing close readiness.");
+            if (selectedVersion is { } version && detail.Version != version)
+                return (null, "The workflow list and selected detail have different versions. Refresh the selected workflow before reviewing close readiness.");
+            return (detail, string.Empty);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {

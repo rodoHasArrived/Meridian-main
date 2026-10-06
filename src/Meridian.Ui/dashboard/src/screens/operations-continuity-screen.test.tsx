@@ -1716,6 +1716,64 @@ describe("OperationsContinuityScreen", () => {
     expect(within(alert).getByText("Close package publication version conflict.")).toBeInTheDocument();
   });
 
+  it.each([4, 5])("refreshes selected workflow and repaired evidence before publication at workflow version %s", async (repairedVersion) => {
+    const oldEvidence: OperationsEvidenceLink = {
+      evidenceId: "report-pack-revision-1",
+      label: "Report-pack revision 1",
+      route: "/workstation/reporting/report-packs/report-pack-2026-05/evidence",
+      source: "operations-continuity",
+      capturedAtUtc: "2026-05-10T18:00:00Z"
+    };
+    const repairedEvidence = { ...oldEvidence, evidenceId: "report-pack-revision-2", label: "Report-pack revision 2" };
+    const initialDetail = createCloseReadyDetail(oldEvidence);
+    const repairedDetail = { ...createCloseReadyDetail(repairedEvidence), version: repairedVersion };
+    const blockedDecision = sharedCloseDecision(initialDetail);
+    blockedDecision.closeReadiness.isReadyToClose = false;
+    blockedDecision.closeReadiness.status = "Blocked";
+    blockedDecision.closeReadiness.blockers = [{
+      code: "close.plan.stale", contributorId: "close-plan", type: "Stale", count: 1,
+      severity: "Critical", owner: "Controller", message: "Repair the close plan and report evidence.",
+      recordIds: ["close-plan-revision-1", oldEvidence.evidenceId]
+    }];
+    const repairedDecision = sharedCloseDecision(repairedDetail);
+    repairedDecision.closeReadiness.contributors = [{
+      contributorId: "close-plan", owner: "Controller", status: "Ready",
+      evaluatedAtUtc: repairedDecision.generatedAtUtc, recordIds: ["close-plan-revision-2", repairedEvidence.evidenceId]
+    }];
+    vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(initialDetail);
+    vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(blockedDecision);
+
+    const user = userEvent.setup();
+    renderScreen();
+    const publish = await screen.findByRole("button", { name: "Publish close package for 2026-05" });
+    await waitFor(() => expect(publish).toBeDisabled());
+    await user.click(publish);
+    expect(closeOperationsContinuityWorkflow).not.toHaveBeenCalled();
+
+    let completeDetail!: (workflow: OperationsContinuityWorkflow) => void;
+    const pendingDetail = new Promise<OperationsContinuityWorkflow>((resolve) => { completeDetail = resolve; });
+    vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([repairedDetail]);
+    vi.mocked(getOperationsContinuityWorkflow).mockReturnValueOnce(pendingDetail).mockResolvedValue(repairedDetail);
+    vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(repairedDecision);
+    await user.click(screen.getByRole("button", { name: "Refresh operations continuity workflows" }));
+    await waitFor(() => expect(getOperationsContinuityWorkflow).toHaveBeenCalledTimes(2));
+    expect(screen.queryByRole("button", { name: "Publish close package for 2026-05" })).not.toBeInTheDocument();
+
+    completeDetail(repairedDetail);
+    const repairedPublish = await screen.findByRole("button", { name: "Publish close package for 2026-05" });
+    await waitFor(() => expect(repairedPublish).toBeEnabled());
+    await user.click(repairedPublish);
+    await waitFor(() => expect(closeOperationsContinuityWorkflow).toHaveBeenCalledWith(workflowId, expect.objectContaining({
+      expectedVersion: repairedVersion,
+      evidenceLinks: expect.arrayContaining([repairedEvidence]),
+      closeScope: repairedDecision.closeReadiness.scope,
+      actionOrigin: "HumanOperator"
+    })));
+    const publishedEvidence = vi.mocked(closeOperationsContinuityWorkflow).mock.calls[0]?.[1].evidenceLinks;
+    expect(publishedEvidence).not.toEqual(expect.arrayContaining([oldEvidence]));
+    expect(await screen.findByText("Close package published.")).toBeInTheDocument();
+  });
+
   it("reopens a closed period from close governance with entered incident metadata", async () => {
     const closeEvidence = {
       evidenceId: "close-package-2026-05-manifest",
@@ -1725,6 +1783,7 @@ describe("OperationsContinuityScreen", () => {
       capturedAtUtc: "2026-05-10T18:45:00Z"
     };
     const closedDetail = createClosedWorkflowDetail(closeEvidence);
+    vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([closedDetail]);
     vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(closedDetail);
 
     const user = userEvent.setup();

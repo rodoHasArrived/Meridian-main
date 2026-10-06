@@ -4,13 +4,18 @@
 
 **Owner:** Accounting and Ledger / Workstation Shell and UX / designated operator
 
-**Reviewed:** 2026-10-02
+**Reviewed:** 2026-10-06
 
-**Current candidate boundary:** The branch now includes PR #3044's infrastructure-boundary
-changes to storage interfaces and host composition. The archived `w10-615abde9` packet remains
-historical supporting evidence and does not certify the current PR application head. A live
-session must pin the current candidate and rerun affected support tests and operator cases.
-Preserve the original candidate's failed hosted checks and pending operator decisions below.
+**Current candidate boundary:** The [2026-10-06 SEAM continuation](evidence/w10-seam-refresh-20261006/README.md)
+tracks the B1 selected-detail refresh and D1 structured desktop blocker rechecks from base
+`9c96c3f72dd60111b62b8368d29e553ec58fd7a0` on `codex/w10-seam-refresh`.
+Its current validation and candidate-binding record is separate from the archived
+`w10-615abde9` packet below. LOT and MARK queue completion is not established: PR #3050
+merged a partial LOT slice and follow-up work remains. Preserve implementation order
+LOT → MARK → SEAM → RECON and run SEAM before MARK in the joint live session.
+The original candidate's failed hosted checks, findings and pending operator decisions
+remain historical evidence. Pin the final application candidate and rerun affected support
+tests and live operator cases before recording new acceptance decisions.
 
 This packet binds the remaining `W10-SEAM-001` and `W10-MARK-001` acceptance preparation to
 candidate **`615abde90001ab33bd6e58e545edc7fce635e254`**, tree

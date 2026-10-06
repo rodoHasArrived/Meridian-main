@@ -17,6 +17,7 @@ This folder owns scenario-specific acceptance procedures and retained evidence.
 | Verify posted amount provenance | [W10 amount provenance](w10-amount-provenance.md) | Scoped evidence selection, review regressions, and validation limits. |
 | Evaluate close readiness and mark freshness | [W10 operator acceptance](w10-mark-seam-operator-acceptance.md) | Candidate, population, criterion decisions, and validation limits. |
 | Inspect retained W10 evidence | [Candidate evidence packet](evidence/w10-615abde9/README.md) | Results bound to its recorded commit and environment. |
+| Continue the SEAM refresh and blocker rechecks | [2026-10-06 SEAM continuation](evidence/w10-seam-refresh-20261006/README.md) | B1/D1 repair evidence, preserved operator decisions and SEAM-before-MARK session order. |
 | Validate endpoint isolation and concurrency | [Endpoint fixture isolation](endpoint-fixture-isolation.md) | Reproducible benchmark and recorded isolation evidence. |
 
 A procedure describes what to verify; a retained packet records what was actually observed. Keep

@@ -2478,6 +2478,22 @@ Meridian-main
 │   │   │   │   ├── README.md
 │   │   │   │   ├── validation.json
 │   │   │   │   └── verify_packet.py
+│   │   │   ├── w10-seam-refresh-20261006
+│   │   │   │   ├── browser
+│   │   │   │   │   ├── screenshots
+│   │   │   │   │   │   ├── S4-repaired-v9.png
+│   │   │   │   │   │   └── S5-published-v10.png
+│   │   │   │   │   ├── capture.mjs
+│   │   │   │   │   ├── cases-full.json.gz
+│   │   │   │   │   ├── cases.json
+│   │   │   │   │   ├── provenance.json
+│   │   │   │   │   ├── requests-responses.json.gz
+│   │   │   │   │   └── vitest.log.gz
+│   │   │   │   ├── artifact-manifest.json
+│   │   │   │   ├── continuation.json
+│   │   │   │   ├── README.md
+│   │   │   │   ├── source-hashes.json
+│   │   │   │   └── wpf-static.txt
 │   │   │   └── endpoint-fixture-concurrency.json
 │   │   ├── accounting-trust-corrections.md
 │   │   ├── alpaca-paper-portfolio-sandbox.md
@@ -7032,6 +7048,7 @@ Meridian-main
 │   │   │   │   │   ├── operations-continuity-screen.tsx
 │   │   │   │   │   ├── operations-continuity-screen.view-model.test.ts
 │   │   │   │   │   ├── operations-continuity-screen.view-model.ts
+│   │   │   │   │   ├── operations-continuity-screen.workflow-selection.ts
 │   │   │   │   │   ├── operations-record-release-screen.test.tsx
 │   │   │   │   │   ├── operations-record-release-screen.tsx
 │   │   │   │   │   ├── operations-record-release-screen.view-model.test.ts
@@ -11106,6 +11123,7 @@ Meridian-main
 │   │   │   ├── MessagingHubViewModelTests.cs
 │   │   │   ├── NotificationCenterViewModelTests.cs
 │   │   │   ├── OperationsContinuityViewModelTests.cs
+│   │   │   ├── OperationsContinuityViewModelTests.SharedBlockers.cs
 │   │   │   ├── OperationsRecordReleaseViewModelTests.cs
 │   │   │   ├── OperatorReadinessConsoleViewModelTests.cs
 │   │   │   ├── OptionsViewModelConcurrencyTests.cs
