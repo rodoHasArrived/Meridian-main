@@ -13,7 +13,20 @@ public sealed partial class PostgresSecurityMasterStore
     public async Task<SecurityAliasDto?> UpsertAliasAsync(SecurityAliasDto alias, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await using (var authority = connection.CreateCommand())
+        {
+            authority.Transaction = transaction;
+            // Match projection replacement's parent-before-child write order. Touching the tuple
+            // (without changing its event-stream version) also makes a Serializable posting whose
+            // snapshot predates this alias commit fail on its parent lock instead of missing a
+            // newly inserted alias. A row lock alone does not invalidate that older snapshot.
+            authority.CommandText = $"update {Qualified("securities")} set security_id = security_id where security_id = @security_id;";
+            authority.Parameters.AddWithValue("security_id", alias.SecurityId);
+            await authority.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         // An alias is part of recorded-as-of state, but the current schema has no alias revision
         // table. Permit an idempotent replay of the same alias ID and reject every material change;
         // otherwise a correction made today would silently alter what an older as-of view reports.
@@ -64,11 +77,14 @@ public sealed partial class PostgresSecurityMasterStore
         }
 
         // Echo the original creation facts when the write was an idempotent replay.
-        return alias with
+        var retained = alias with
         {
             CreatedBy = reader.GetString(0),
             CreatedAt = new DateTimeOffset(reader.GetDateTime(1), TimeSpan.Zero)
         };
+        await reader.CloseAsync().ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return retained;
     }
 
     private async Task ReplaceAliasesAsync(

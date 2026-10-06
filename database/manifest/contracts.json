@@ -3872,7 +3872,7 @@
       ]
     }
   ],
-  "fingerprint": "52b148949b73c34923474246c9b854775fe5d534405b1789e2f1a7b9df7efdf9",
+  "fingerprint": "f6e142e4faecde687e68dcb0b6d1c90682aec5e86658f691c8189a86dc82836a",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -3883,7 +3883,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "af11383547061e34915644f266a6b7284bc2e6446dd537d0ff37ff0d1a19b1a7",
+      "fingerprint": "246f3061e378656fa2767008771bdf0d2687783e78e48c794b88b82bdad7b9db",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Accounting.Lots",
       "object_ids": [
@@ -7790,7 +7790,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "6d8c0b437666c69e32972619cb1aa40c94fa40c052a45ac678b65d835c271a4c",
+      "fingerprint": "f073cdcd9d86b6cfabd37571639d3fb9a1a1d4b919ec91625ffc2847df83e5be",
       "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotAmortization",
       "id": "Meridian.Contracts.Accounting.Lots.OpenLotAmortization",
       "kind": "class",
@@ -7802,12 +7802,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.OpenLotAmortization",
       "references": [],
       "source": {
-        "line": 24,
+        "line": 37,
         "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs"
       },
       "sources": [
         {
-          "line": 24,
+          "line": 37,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs"
         }
       ],
@@ -7823,7 +7823,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "82cc13b3fec6aa11d3a2e08105adda60cd454306f6518887edcf6289ccd62ad0",
+      "fingerprint": "b6f801cca8a54b2a6ab12a63c1b7dc3303d70d7509b0abc108680c3a5da8f765",
       "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto",
       "id": "Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto",
       "kind": "record",
@@ -7840,8 +7840,23 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 15,
+          "source_line": 17,
           "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "CalculationVersion",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 19,
+          "type": "string?"
         },
         {
           "collection": false,
@@ -7854,7 +7869,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 14,
+          "source_line": 16,
           "type": "long"
         },
         {
@@ -7868,7 +7883,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OpenLotDto",
-          "source_line": 11,
+          "source_line": 13,
           "type": "OpenLotDto"
         },
         {
@@ -7882,7 +7897,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "SecurityProjectionRecord",
-          "source_line": 12,
+          "source_line": 14,
           "type": "SecurityProjectionRecord"
         },
         {
@@ -7896,7 +7911,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "RetainedEvidenceIdentityDto",
-          "source_line": 13,
+          "source_line": 15,
           "type": "RetainedEvidenceIdentityDto"
         }
       ],
@@ -7910,12 +7925,12 @@
         "Meridian.Contracts.SecurityMaster.SecurityProjectionRecord"
       ],
       "source": {
-        "line": 10,
+        "line": 12,
         "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs"
       },
       "sources": [
         {
-          "line": 10,
+          "line": 12,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs"
         }
       ],
@@ -7931,7 +7946,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "80035e76ee1c7d23edfbfffd87ab2195760b3eb28b693033d3fed0248954fd7a",
+      "fingerprint": "76cf88f083777d7d0a33b387af7d73d135c5a76fee100c4e6d33113cccec90ab",
       "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotAmortizationProjectionDto",
       "id": "Meridian.Contracts.Accounting.Lots.OpenLotAmortizationProjectionDto",
       "kind": "record",
@@ -7948,7 +7963,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 19,
+          "source_line": 32,
           "type": "decimal"
         },
         {
@@ -7962,7 +7977,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 21,
+          "source_line": 34,
           "type": "decimal"
         },
         {
@@ -7976,7 +7991,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 18,
+          "source_line": 31,
           "type": "decimal"
         },
         {
@@ -7990,7 +8005,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 20,
+          "source_line": 33,
           "type": "decimal"
         }
       ],
@@ -8000,12 +8015,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.OpenLotAmortizationProjectionDto",
       "references": [],
       "source": {
-        "line": 17,
+        "line": 30,
         "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs"
       },
       "sources": [
         {
-          "line": 17,
+          "line": 30,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs"
         }
       ],
