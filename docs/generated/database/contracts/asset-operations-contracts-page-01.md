@@ -50,6 +50,7 @@ classDiagram
         +bool WasReplay
     }
     class Meridian_Contracts_AssetOperations_AssetAccountingEventSpineDto["AssetAccountingEventSpineDto"] {
+        +Meridian_Contracts_Accounting_Lots_OpenLotSuccessorInstructionDto? CorporateAction
         +AssetAccountingCorrectionReferenceDto? Correction
         +string Currency
         +PostingRuleJournalCandidateRequestDto? DraftedCandidate
@@ -61,7 +62,6 @@ classDiagram
         +EconomicEventReferenceDto EconomicEvent
         +DateOnly EffectiveDate
         +decimal EventAmount
-        +Guid EventId
     }
     class Meridian_Contracts_AssetOperations_AssetAccountingEventSpineValidator["AssetAccountingEventSpineValidator"] {
     }
@@ -178,6 +178,7 @@ classDiagram
         +AssetAcquisitionLotDto? Acquisition
         +Meridian_Contracts_Accounting_Lots_OpenLotAmortizationInstructionDto? Amortization
         +string? AssetAccountId
+        +Meridian_Contracts_Accounting_Lots_OpenLotSuccessorInstructionDto? CorporateAction
         +LedgerAdjustmentApprovalMetadataDto? CorrectionApproval
         +Guid? CorrectsJournalEntryId
         +Guid? CorrectsMutationBatchId
@@ -388,6 +389,7 @@ classDiagram
     class Meridian_Contracts_AssetOperations_CorporateActionAssetAccountingEventProjectionDto["CorporateActionAssetAccountingEventProjectionDto"] {
         +AccountingRulePackReferenceDto AppliedAccountingRulePack
         +ProjectAssetAccountingEventRequestDto Event
+        +AssetLotMutationInstructionDto? LotMutation
         +CorporateActionLotMutationSetDto LotMutations
         +string PostingIdempotencyKey
         +CorporateActionPostingSetDto PostingSet
@@ -650,6 +652,7 @@ classDiagram
     Meridian_Contracts_AssetOperations_CorporateActionAccountingProjectionDto --> Meridian_Contracts_AssetOperations_CorporateActionProjectionStatusDto
     Meridian_Contracts_AssetOperations_CorporateActionAccountingProjectionDto --> Meridian_Contracts_AssetOperations_CorporateActionTreatmentDecisionDto
     Meridian_Contracts_AssetOperations_CorporateActionAccountingProjectionDto --> Meridian_Contracts_AssetOperations_EconomicEventReferenceDto
+    Meridian_Contracts_AssetOperations_CorporateActionAssetAccountingEventProjectionDto --> Meridian_Contracts_AssetOperations_AssetLotMutationInstructionDto
     Meridian_Contracts_AssetOperations_CorporateActionAssetAccountingEventProjectionDto --> Meridian_Contracts_AssetOperations_CorporateActionLotMutationSetDto
     Meridian_Contracts_AssetOperations_CorporateActionAssetAccountingEventProjectionDto --> Meridian_Contracts_AssetOperations_CorporateActionPostingSetDto
     Meridian_Contracts_AssetOperations_CorporateActionAssetAccountingEventProjectionDto --> Meridian_Contracts_AssetOperations_CorporateActionTreatmentDecisionDto

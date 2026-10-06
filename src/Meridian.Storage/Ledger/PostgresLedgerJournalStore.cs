@@ -83,11 +83,24 @@ public sealed partial class PostgresLedgerJournalStore :
         await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
 
-    public async Task AppendAsync(
+    public Task AppendAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         LedgerJournalEntryWrite entry,
         CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        if (entry.PostingCommand?.LotCorporateAction is not null
+            || entry.Entry.Metadata.Tags?.ContainsKey(Meridian.Contracts.Accounting.Lots.OpenLotSuccessors.JournalFingerprintTag) == true)
+            throw new LedgerValidationException("Successor journals require the atomic predecessor/successor posting boundary.");
+        return AppendJournalWithinTransactionAsync(connection, transaction, entry, ct);
+    }
+
+    private async Task AppendJournalWithinTransactionAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        LedgerJournalEntryWrite entry,
+        CancellationToken ct)
     {
         RequireWriteTenant();
         ArgumentNullException.ThrowIfNull(connection);

@@ -4,6 +4,10 @@
 **Depth:** full  
 **Status:** proposed
 
+**Owner:** Accounting and Ledger
+
+**Reviewed:** 2026-10-06
+
 > **Breaking change**
 >
 > The end state removes `Meridian.Execution.Sdk.TaxLot` as an authoritative model and makes
@@ -25,9 +29,9 @@ identity, quantity-basis, or acquisition-FX facts remain visible exceptions with
 The durable disposal transaction now selects through the canonical decimal relief contract, and
 authoritative Reporting validates retained disposal snapshots and includes canonical acquisition
 evidence in its signed pack. This increment does not certify the entire convergence roadmap:
-The later acquisition, AverageCost and bounded amortization increments are recorded below.
-Corporate-action successors, advance refunding, remaining consumer parity and shadow-operation
-acceptance remain open. Simulated Backtesting
+The later acquisition, AverageCost, bounded amortization, current-basis relief, and bounded
+corporate-action successor increments are recorded below. Wider corporate-action coverage,
+remaining consumer parity and shadow-operation acceptance remain open. Simulated Backtesting
 lots retain their declared simulation boundary rather than receiving invented evidence.
 
 **In scope:** one open-lot contract for unit- and face-denominated instruments; acquisition
@@ -43,7 +47,8 @@ owner.
 the durable convergence anchor. `V_ledger_034` retains explicit quantity-basis semantics,
 acquisition currencies and FX, and face-value acquisition terms. Remaining gaps include
 mandatory identity across unresolved legacy rows, complete cross-consumer selector/amortization
-parity, corporate-action successors, advance refunding, and shadow-operation acceptance.
+parity, corporate-action coverage beyond the bounded exchange/refunding workflow, and
+shadow-operation acceptance.
 
 ## 2. Architectural Overview
 
@@ -427,3 +432,60 @@ Implementation proof at `a4c4b5ff0`: the focused Ledger/Storage/event-spine/acqu
 PostgreSQL 16.15 schema snapshot and independent empty-database verification passed with zero
 errors and unchanged 242 policy warnings. Canonical repository CI and hosted checks remain separate
 validation gates; this evidence does not accept the broader row or certify PR #3048.
+
+### Bounded exchange and advance-refunding continuation (2026-10-06)
+
+The existing corporate-action projections now support governed successor posting for cashless
+`RegS144AExchange`, followed by the registered `AdvanceRefunding` case. This boundary fully closes
+one predecessor's remaining open quantity and creates one exchange successor or exactly two face
+successors: refunded and unrefunded. It requires distinct durable lot, Security Master and
+book-position identities. Target securities and active book positions must already exist; symbols
+remain display evidence. Other action types, multiple predecessors, cash components, transfers
+between financial accounts and combined correction instructions remain outside this slice.
+
+`OpenLotSuccessorInstructionDto` binds the reviewed projection to exact predecessor/successor
+snapshots and reference versions/hashes. Original acquisition basis attributable to the remaining
+holding and current carrying basis are allocated separately in transaction and functional currency.
+Each currency uses its own precision, and the final successor receives the exact residual.
+Acquisition date, holding-period start, currencies, acquisition FX, face terms and retained
+acquisition evidence survive the transfer. Only the refunded successor carries `ScheduleD` in the
+retained mutation plan. No current market FX rate supplies an acquisition fact.
+
+The candidate and independent approval workflow retain that instruction through posting. The
+existing serializable `AppendAssetPostingAsync` transaction locks the period, source/target
+Security Master and book-position authority, then checks the predecessor and create-only targets.
+It appends one predecessor asset credit and one asset debit per successor, closes the predecessor
+with expected-version CAS, creates every successor and records immutable before/after mutations
+together. Journal functional amounts must exactly equal each lot’s carrying transfer. When
+acquisition-currency detail is supplied, its transaction basis and FX must also match; governed
+functional-currency-only lines retain both lot bases and acquisition FX in the bound instruction.
+Migration `V_ledger_042` extends existing atomic-batch retention without backfilling earlier
+batches; no parallel lot store is introduced. Historical quantities recognize a successor from the
+action's effective date while its acquisition date remains inherited. Journal-only append cannot
+bypass the atomic boundary. A stale assertion or failure on any mutation rolls back the journal
+and every lot.
+Disposal eligibility likewise starts at the successor's action date, preserving its inherited
+holding history without allowing relief before the lot opens.
+An exact retry reloads the retained batch before later live-state checks, including after restart;
+changed content under the same identity is refused.
+If the commit succeeds before lifecycle publication, the exact retained journal and mutation batch
+also authorize recovery of the missing Posted stage after a later position revision. Unposted
+projections still require the reviewed current position version.
+
+`LedgerReportingAuthoritativeSource` obtains the committed batches through
+`ILedgerOpenLotSuccessorHistory`, validates the closed predecessor and each persisted successor
+against the approved instruction, and checks owner, book, period, accounting basis and exclusive
+refunded Schedule D treatment. The retained Reporting dataset/checkpoint includes exact batch JSON,
+its SHA-256 hash and the instruction fingerprint on the existing journal rows. It adds no monetary
+rows and does not reconstruct earlier evidence from later live lot balances. Missing history or
+contradictory snapshots block authoritative reporting.
+
+`OpenLotSuccessorTests` covers acquisition/current-basis allocation, FX and holding continuity,
+currency residuals, invalid identities/versions and Schedule D exclusivity.
+`AtomicTaxLotJournalStoreTests.Successors` covers the exchange and advance-refunding scenarios,
+stale state, final-mutation rollback, restart and changed duplicate replay.
+`LedgerReportingAuthoritativeSourceSuccessorTests` covers retained exchange/refunding evidence,
+replay stability and incomplete or tampered history refusals.
+Automated results and hosted validation are recorded with the implementation change; this receipt
+does not claim those gates passed. `W10-LOT-002` remains `in_progress`: wider corporate-action and
+consumer parity, remaining convergence work and live shadow-operation acceptance remain open.

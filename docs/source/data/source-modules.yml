@@ -721,6 +721,7 @@ modules:
     purpose: Physical bounded-context module project for instrument terms, contracts, obligations, classifications, option-chain query/failover, asset operations projections, money-market liquidity and sweep projections, and ledger-projection ownership conformance.
     readme: src/Meridian.Instruments/README.md
     roadmap_items:
+      - W10-LOT-002
       - W4-RECON-001
       - W5-MASSET-001
       - W9-ASSET-010
@@ -973,6 +974,7 @@ modules:
     purpose: Shared UI read models and endpoint adapters, including authoritative reporting capture, exact reconciliation readiness, certified artifact production/retention, governed lifecycle/restatement coordination, tenant-safe action projections, release-gated scheduling, recipient-bound secure distribution, provider receipts, and credential-free legacy reporting compatibility; also owns Security Master workbench projections, ledger/accounting configuration services, private-capital drill-through, identity/auth adapters, and acceptance filters consumed by browser and desktop surfaces.
     readme: src/Meridian.Ui.Shared/README.md
     roadmap_items:
+      - W10-LOT-002
       - W9-GOV-008
       - W2-TRD-001
       - W4-RECON-001

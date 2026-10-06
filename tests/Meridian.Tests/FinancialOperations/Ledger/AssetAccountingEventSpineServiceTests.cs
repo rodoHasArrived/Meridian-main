@@ -8,9 +8,11 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.FinancialOperations.Ledger;
+using Meridian.Instruments.AssetOperations;
 using Meridian.Ledger;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
+using Meridian.Tests.AssetOperations;
 using NSubstitute;
 
 namespace Meridian.Tests.FinancialOperations.Ledger;
@@ -18,6 +20,234 @@ namespace Meridian.Tests.FinancialOperations.Ledger;
 public sealed class AssetAccountingEventSpineServiceTests
 {
     private static readonly JsonSerializerOptions CanonicalJsonOptions = new(JsonSerializerDefaults.Web);
+
+    [Fact]
+    public async Task CorporateAction_MapsProjectsDraftsAndPostsSuccessorsWithIndependentApprovalAndExactReplay()
+    {
+        var baseline = BuildFixture(AssetAccountingEventKindDto.CorporateAction);
+        var original = OpenLotSuccessorTestData.Predecessor();
+        var source = original with
+        {
+            SecurityId = baseline.Security.SecurityId,
+            BookPositionId = baseline.Position.PositionId,
+            LedgerBookId = baseline.Book.LedgerBookId,
+            Acquisition = original.Acquisition with { QuantityBasis = LotQuantityBasis.Units, FaceValueTerms = null }
+        };
+        var sourceSecurity = baseline.Security with { Currency = "EUR" };
+        var target = OpenLotSuccessorTestData.Successor(source, 1m);
+        var targetSecurity = sourceSecurity with { SecurityId = target.Lot.SecurityId, Version = target.ExpectedSecurityVersion };
+        target = target with { ExpectedSecurityHash = new string('b', 64) };
+        var instruction = OpenLotSuccessorTestData.Build(source, [target],
+            expectedPositionVersion: baseline.Position.Version, expectedSecurityVersion: sourceSecurity.Version,
+            periodId: baseline.Period.PeriodId, expectedSecurityHash: new string('a', 64),
+            expectedPeriodVersion: baseline.Period.Version);
+        var mapped = new CorporateActionAssetAccountingEventMapper().Map(
+            OpenLotSuccessorTestData.MapRequest(instruction, baseline.Request.Scope.Dimensions));
+        mapped.IsMapped.Should().BeTrue("{0}", string.Join("; ", mapped.Blockers.Select(item => item.Message)));
+        var fixture = baseline with
+        {
+            Request = mapped.Projection!.Event,
+            Security = sourceSecurity,
+            Position = baseline.Position with
+            {
+                OriginEvent = mapped.Projection.Event.EconomicEvent,
+                ProjectionLineage = mapped.Projection.Event.ProjectionLineage,
+                RetainedEvidence = mapped.Projection.Event.RetainedEvidence
+            },
+            Period = baseline.Period with
+            {
+                PeriodNo = 8,
+                Label = "August 2026",
+                StartDate = new DateOnly(2026, 8, 1),
+                EndDate = new DateOnly(2026, 8, 31)
+            }
+        };
+        var sourceRecord = new LedgerTaxLotRecord(source.TaxLotRecordId, source.LedgerBookId,
+            new LedgerAccount("Assets:Investment", LedgerAccountType.Asset, FinancialAccountId: "custody-main"), source.LotId, source.AcquiredDate,
+            source.OriginalQuantity, source.OpenQuantity, source.Acquisition.TransactionCostBasis / source.OriginalQuantity,
+            source.Acquisition.AcquisitionCurrency, fixture.Request.ProjectedAtUtc, fixture.Request.ProjectedAtUtc,
+            Version: source.Version, SecurityId: source.SecurityId, BookPositionId: source.BookPositionId,
+            Acquisition: source.Acquisition, BasisAdjustment: new OpenLotBasisAdjustmentDto(Guid.NewGuid(),
+                OpenLotBasisAdjustmentReasons.Amortization, source.OpenQuantity, source.OpenTransactionCostBasis, source.OpenFunctionalCostBasis));
+        sourceRecord.ToOpenLot().Should().BeEquivalentTo(source);
+
+        var retained = new Dictionary<long, AssetAccountingEventProjectionRecord>();
+        var eventStore = Substitute.For<IAssetAccountingEventProjectionStore>();
+        eventStore.AppendAsync(Arg.Any<AssetAccountingEventSpineDto>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var spine = call.ArgAt<AssetAccountingEventSpineDto>(0);
+                retained.Add(spine.SpineVersion, new AssetAccountingEventProjectionRecord(spine, ComputeFingerprint(spine)));
+                return new AssetAccountingEventAppendResult(spine, ComputeFingerprint(spine), false);
+            });
+        eventStore.GetAsync(Arg.Any<Guid>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>())
+            .Returns(call => retained.GetValueOrDefault(call.ArgAt<long>(2)));
+        eventStore.GetLatestAsync(Arg.Any<Guid>(), Arg.Any<long>(), Arg.Any<CancellationToken>())
+            .Returns(_ => retained.Count == 0 ? null : retained[retained.Keys.Max()]);
+        var positions = Substitute.For<IInstrumentPositionProjectionStore>();
+        positions.GetBookPositionAsync(source.BookPositionId, Arg.Any<CancellationToken>()).Returns(fixture.Position);
+        positions.GetBookPositionAsync(target.Lot.BookPositionId, Arg.Any<CancellationToken>()).Returns(fixture.Position with
+        {
+            PositionId = target.Lot.BookPositionId,
+            SecurityId = target.Lot.SecurityId,
+            Version = target.ExpectedBookPositionVersion
+        });
+        var securities = Substitute.For<ISecurityMasterQueryService>();
+        securities.GetRecordedByIdAsOfAsync(source.SecurityId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>()).Returns(sourceSecurity);
+        securities.GetRecordedByIdAsOfAsync(target.Lot.SecurityId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>()).Returns(targetSecurity);
+        var books = Substitute.For<ILedgerBookService>();
+        books.GetBookAsync(fixture.Book.LedgerBookId, Arg.Any<CancellationToken>()).Returns(fixture.Book);
+        books.ListPeriodsAsync(Arg.Any<LedgerPeriodQuery>(), Arg.Any<CancellationToken>()).Returns([fixture.Period]);
+        var policies = Substitute.For<IAccountingPolicyService>();
+        policies.ResolvePolicyAsync(Arg.Any<AccountingPolicyQuery>(), Arg.Any<CancellationToken>()).Returns(BuildPolicy());
+        var configuration = Substitute.For<IAccountingConfigurationService>();
+        configuration.DryRunPostingRuleAsync(Arg.Any<RuleDryRunRequestDto>(), Arg.Any<CancellationToken>()).Returns(BuildMatchingDryRun(fixture));
+        var ledger = Substitute.For<ILedgerJournalStore>();
+        ledger.GetTaxLotsByIdsAsync(source.LedgerBookId, Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>())
+            .Returns(call => call.ArgAt<IReadOnlyList<Guid>>(1).Contains(source.TaxLotRecordId) ? [sourceRecord] : []);
+        ledger.GetLedgerBookAsync(source.LedgerBookId, Arg.Any<CancellationToken>()).Returns(new LedgerBookRecord(
+            fixture.Book.LedgerBookId, fixture.Book.FundProfileId, fixture.Book.FundStructureNodeId, fixture.Book.FundStructureNodeKind,
+            fixture.Book.DisplayName, fixture.Book.BaseCurrency, fixture.Book.CreatedAt, fixture.Book.UpdatedAt,
+            AccountingBasis: fixture.Book.AccountingBasis, AccountingPolicyId: fixture.Book.AccountingPolicyId,
+            AccountingPolicyVersion: fixture.Book.AccountingPolicyVersion));
+        var authority = Substitute.For<IAccountingPostingCandidateAuthorityBuilder>();
+        AccountingPostingCandidateWriteResult? stableWrite = null;
+        authority.BuildAuthoritativeCandidateWriteAsync(Arg.Any<PostingRuleJournalCandidateRequestDto>(),
+                Arg.Any<AssetAccountingCandidateAuthorityContext>(), Arg.Any<CancellationToken>())
+            .Returns(call => stableWrite ??= BuildSuccessorCandidateWrite(call.ArgAt<PostingRuleJournalCandidateRequestDto>(0), fixture));
+        var atomic = Substitute.For<IAtomicTaxLotJournalStore>();
+        AtomicTaxLotJournalCommand? committedCommand = null;
+        AtomicTaxLotJournalResult? committed = null;
+        atomic.AppendAssetPostingAsync(Arg.Any<AtomicTaxLotJournalCommand>(), Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            var command = call.ArgAt<AtomicTaxLotJournalCommand>(0);
+            if (committed is not null)
+            {
+                command.CanonicalFingerprint.Should().Be(committedCommand!.CanonicalFingerprint);
+                return committed with { IsExactReplay = true };
+            }
+            committedCommand = command;
+            var write = AccountingPostingCommandValidator.NormalizeAndValidate(command.Journal,
+                requirePostingCommand: true, requireExpectedVersion: true);
+            var journal = new LedgerJournalEntryRecord(write.Entry, write.AggregateId, write.PeriodId, write.CommandId,
+                write.CorrelationId, 1, fixture.Request.ProjectedAtUtc.AddHours(1), write.AccountingBasis,
+                write.AccountingPolicyId, write.AccountingPolicyVersion, write.RuleId, write.RuleVersion, write.SourceEventId);
+            committed = new AtomicTaxLotJournalResult(command.MutationBatchId, command.MutationKind,
+                command.CanonicalFingerprint, false, journal, [], [], command.RetainedEvidence, CorporateAction: command.CorporateAction);
+            return committed;
+        });
+        ledger.GetByAggregateAsync(source.LedgerBookId, Arg.Any<CancellationToken>())
+            .Returns(_ => committed is null ? [] : new[] { committed.Journal });
+        var spineService = new AssetAccountingEventSpineService(eventStore, positions, securities, books, policies,
+            configuration, authority, ledger);
+
+        var projected = await spineService.ProjectAsync(fixture.Request);
+        var omitSuccessors = () => spineService.BuildPostingCandidateAsync(BuildCandidateRequest(fixture));
+        await omitSuccessors.Should().ThrowAsync<InvalidOperationException>();
+        retained.Should().HaveCount(2, "omitting the retained successor plan must fail before Drafted is appended");
+        var drafted = await spineService.BuildPostingCandidateAsync(BuildCandidateRequest(fixture) with
+        {
+            LotMutation = mapped.Projection.LotMutation
+        });
+        var candidate = drafted.Spine.DraftedCandidate!;
+        var reviewed = candidate.AccountingTimestamp.AddMinutes(10);
+        var approval = fixture.Request.RetainedEvidence.Single(item => item.SubjectType == AssetAccountingEvidenceSubjects.Event) with
+        {
+            EvidenceId = "successor-posting-approval",
+            EvidenceUri = "evidence://successors/approval",
+            ReviewedBy = "approver",
+            ReviewedAtUtc = reviewed,
+            RetainedAtUtc = reviewed,
+            SourceReference = "successor-approval",
+            SubjectType = AssetAccountingEvidenceSubjects.PostingApproval,
+            SubjectId = AssetAccountingEvidenceSubjects.PostingApprovalSubjectId(candidate.SourceEventId!.Value,
+                candidate.EconomicEvent!.EventVersion, candidate.FundProfileId, source.LedgerBookId, candidate.PeriodId,
+                candidate.AccountingBasis, "successor-approval", drafted.Spine.DraftedCandidateFingerprint!, candidate.TenantId, candidate.CompanyId)
+        };
+        var request = new PostPostingRuleJournalCandidateRequestDto(candidate, "approver", "successor-approval")
+        { ApprovalEvidence = [approval] };
+        var postService = new AccountingPostingCandidatePostService(Substitute.For<IAccountingPostingCandidateWriteBuilder>(),
+            ledger, atomic, eventStore, authority);
+
+        var posted = await postService.PostCandidateAsync(request);
+        var replay = await postService.PostCandidateAsync(request);
+
+        projected.Spine.SpineVersion.Should().Be(2);
+        drafted.Spine.DraftedLotMutation!.CorporateAction.Should().BeEquivalentTo(instruction);
+        posted.WasReplay.Should().BeFalse();
+        replay.WasReplay.Should().BeTrue();
+        replay.PostedJournal.Should().BeEquivalentTo(posted.PostedJournal);
+        committedCommand!.MutationKind.Should().Be(AtomicTaxLotMutationKind.CorporateAction);
+        committedCommand.CorporateAction.Should().BeEquivalentTo(instruction);
+        committedCommand.Journal.PostingCommand!.ApprovalState.Should().Be(AccountingPostingApprovalStateDto.Approved);
+        committedCommand.Journal.PostingCommand.Actor.Should().Be("approver");
+        committedCommand.Journal.Entry.Lines.Should().OnlyContain(line => line.Account.FinancialAccountId == "custody-main");
+        committedCommand.Journal.Entry.Metadata.Tags![OpenLotSuccessors.JournalFingerprintTag]
+            .Should().Be(OpenLotSuccessors.Fingerprint(instruction));
+        retained.Should().HaveCount(5);
+        retained[5].Projection.Stages.Select(item => item.Stage).Should().Equal(AssetAccountingLifecycleStageDto.Expected,
+            AssetAccountingLifecycleStageDto.Projected, AssetAccountingLifecycleStageDto.Drafted,
+            AssetAccountingLifecycleStageDto.Approved, AssetAccountingLifecycleStageDto.Posted);
+        retained[5].Projection.TaxLotMutationBatchId.Should().Be(posted.TaxLotMutationBatchId);
+        await atomic.Received(2).AppendAssetPostingAsync(Arg.Any<AtomicTaxLotJournalCommand>(), Arg.Any<CancellationToken>());
+    }
+
+    private static AccountingPostingCandidateWriteResult BuildSuccessorCandidateWrite(
+        PostingRuleJournalCandidateRequestDto request, Fixture fixture)
+    {
+        var result = BuildPreApprovedCandidateWrite(request);
+        var write = result.Write!;
+        var command = write.PostingCommand! with
+        {
+            ApprovalState = AccountingPostingApprovalStateDto.Pending,
+            ApprovalId = null,
+            Actor = request.Actor,
+            ExpectedVersion = request.ExpectedPeriodVersion,
+            BookContext = request.BookContext,
+            BookPositionId = request.BookPositionId,
+            EconomicEvent = request.EconomicEvent,
+            ProjectionLineage = request.ProjectionLineage,
+            RulePackReference = request.RulePackReference,
+            LotCorporateAction = request.AssetLotMutation!.CorporateAction,
+            Evidence = request.RetainedEvidence.Select(item => new AccountingPostingEvidenceReferenceDto(
+                item.EvidenceId, item.EvidenceUri, AccountingPostingEvidenceKindDto.Source, item.SourceSystem,
+                item.RetainedAtUtc, item.RetainedBy, item.SubjectId, item.ContentHashSha256,
+                SourceReference: item.SourceReference, Reviewer: item.ReviewedBy, ReviewedAtUtc: item.ReviewedAtUtc,
+                EffectiveDate: item.EffectiveDate, EvidenceVersion: item.EvidenceVersion, ReviewStatus: item.ReviewStatus,
+                SubjectType: item.SubjectType)).ToArray()
+        };
+        var generated = BuildMatchingDryRun(fixture).GeneratedPostingLines;
+        var lines = write.Entry.Lines.Select((line, index) =>
+        {
+            var dimensions = generated[index].Dimensions!;
+            return new LedgerEntry(line.EntryId, line.JournalEntryId,
+                line.Timestamp, new LedgerAccount(generated[index].AccountPath, LedgerAccountType.Asset, FinancialAccountId: "custody-main"),
+                line.Debit, line.Credit, line.Description,
+                new LedgerLineDimensionSet(dimensions.FundId, dimensions.EntityId, dimensions.SleeveId,
+                    dimensions.StrategyId, dimensions.InvestorId, dimensions.CapitalAccountId, dimensions.InstrumentId,
+                    dimensions.TaxLotId, dimensions.CostCenterId, dimensions.CounterpartyId, dimensions.ExternalGlDimensions,
+                    dimensions.OrganizationId, dimensions.PortfolioId, dimensions.BookId, dimensions.AccountId,
+                    dimensions.CustomerId, dimensions.VendorId, dimensions.ProjectId)
+                { PositionId = dimensions.PositionId });
+        }).ToArray();
+        var metadata = write.Entry.Metadata with
+        {
+            SecurityId = request.EconomicEvent!.SecurityId,
+            IdempotencyKey = command.IdempotencyKey,
+            FinancialAccountId = "custody-main"
+        };
+        var entry = new JournalEntry(write.Entry.JournalEntryId, write.Entry.Timestamp, write.Entry.Description, lines, metadata);
+        return new AccountingPostingCandidateWriteResult(result.Candidate with
+        {
+            PostingCommand = command,
+            GeneratedPostingLines = generated,
+            BookContext = request.BookContext,
+            BookPositionId = request.BookPositionId,
+            EconomicEvent = request.EconomicEvent,
+            ProjectionLineage = request.ProjectionLineage,
+            RulePackReference = request.RulePackReference
+        }, write with { PostingCommand = command, CommandId = command.CommandId, Entry = entry });
+    }
 
     [Fact]
     public async Task PostCandidateAsync_DuplicateTypedEvidenceIds_FailsBeforeLedgerRead()

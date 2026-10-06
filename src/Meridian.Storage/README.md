@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-06
 ---
 
 # src/Meridian.Storage
@@ -33,6 +33,23 @@ instruction, and matching acquisition/reference evidence in both the atomic requ
 journal. Missing or mismatched inputs are refused before mutation. Posting locks the Security Master
 parent and its hashed identifiers/aliases through commit; alias writes touch the parent in the same
 transaction so a posting with an older serializable snapshot refuses concurrent reference drift.
+
+Bounded corporate-action successor posting uses `V_ledger_042` and that same serializable atomic
+boundary. A cashless Reg S/144A exchange closes one predecessor into one new lot; advance refunding
+closes one face lot into exactly two new lots. The transaction locks reviewed Security Master and
+book-position authority, checks the predecessor snapshot/version and empty target identities, and
+commits the reclassification journal, predecessor CAS, every successor and immutable mutation
+snapshot together. Both currency bases reconcile to the retained allocation while acquisition FX,
+holding dates and original acquisition evidence remain intact. Exact retries return the retained
+batch before checking later live state. Exact durable journal/batch evidence also permits recovery
+of a missing Posted projection after later position revisions; unposted position CAS stays strict.
+`ILedgerOpenLotSuccessorHistory` exposes those immutable
+batches to Reporting; unsupported actions, cash components, cross-account transfers, combined
+instructions and unrepresentable durable precision fail closed.
+Migration 042 leaves earlier batches unchanged. Historical quantity reads open successors on the
+corporate-action effective date while preserving their inherited acquisition date. Journal-only
+append cannot bypass the atomic successor boundary. Disposal eligibility excludes successors
+before their retained corporate-action opening date.
 
 The durable replacement resolver excludes relieved lot IDs only within the disposing account's
 complete identity. LedgerBook scope retains same-ID acquisitions in sibling accounts. Prior-deferral

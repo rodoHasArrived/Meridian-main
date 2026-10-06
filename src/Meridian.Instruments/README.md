@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-INSTRUMENTS
 path: src/Meridian.Instruments
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-13
+last_reviewed: 2026-10-06
 ---
 
 # src/Meridian.Instruments
@@ -107,6 +107,12 @@ SecurityId, book-position id and expected version, book/period/basis scope, econ
 projection lineage, projected balanced effect, and complete typed retained evidence. Generated
 obligations and service availability can explain pending work, but neither can manufacture evidence
 readiness or advance an event into Drafted or Posted state.
+`CorporateActionAssetAccountingEventMapper` requires a reviewed `OpenLotSuccessorInstructionDto`
+for cashless Reg S/144A exchange and advance-refunding handoffs. The instruction must match the
+exact existing projection, source security version, predecessor and successor allocations, and
+retained evidence; its fingerprint participates in the posting identity. The mapper carries it as
+a typed corporate-action lot instruction into governed candidate preparation. It rejects missing
+or contradictory instructions and successor corrections, and cannot approve or persist lots.
 The factor-paydown model computes `held face x (prior factor - current factor)`. Equal factors emit
 no posting candidate; factor increases, missing evidence, stale versions, invalid face/factors, and
 unrepresentable currency results fail closed. Its event identity excludes run timestamps so replay

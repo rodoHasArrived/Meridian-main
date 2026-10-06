@@ -103,6 +103,10 @@ public sealed record AccountingPostingCommandDto(
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? LotAmortization { get; init; }
 
+    /// <summary>Reviewed predecessor and successor snapshots committed with this journal.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? LotCorporateAction { get; init; }
+
     /// <summary>
     /// Origin of the figures this posting carries. Defaults to <see cref="DataProvenance.Real"/>.
     /// A non-real value is the retained "simulated mark": the append boundary refuses to persist a

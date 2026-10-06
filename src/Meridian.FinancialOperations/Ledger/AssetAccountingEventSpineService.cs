@@ -164,7 +164,8 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             ProjectedEffect: null,
             PostedJournalImpact: null,
             TaxLotMutationBatchId: null,
-            Correction: request.Correction);
+            Correction: request.Correction,
+            CorporateAction: request.CorporateAction);
         var projectedSpine = expectedSpine with
         {
             SpineVersion = 2,
@@ -215,7 +216,7 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             }
         }
 
-        await ResolveAuthoritativeSecurityAsync(projectedSpine, request.ProjectionLineage.GeneratedAtUtc, ct)
+        await ResolveAuthoritativeSecurityAsync(projectedSpine, request.ProjectionLineage.GeneratedAtUtc, ct, request.CorporateAction)
             .ConfigureAwait(false);
 
         var position = await _positionStore
@@ -380,9 +381,11 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
         var source = sourceRecord.Projection;
         ValidateSourceRecord(sourceRecord);
         ValidateRequestAssertions(request, source);
+        RequireAssertion(PayloadEquals(source.CorporateAction, request.LotMutation?.CorporateAction),
+            "A retained successor projection requires the exact canonical lot instruction; it cannot be omitted or replaced.");
         await ResolveCorrectionAuthorityAsync(source, ct).ConfigureAwait(false);
 
-        await ResolveAuthoritativeSecurityAsync(source, request.AccountingTimestamp, ct)
+        await ResolveAuthoritativeSecurityAsync(source, request.AccountingTimestamp, ct, request.LotMutation?.CorporateAction)
             .ConfigureAwait(false);
 
         var position = await _positionStore
@@ -398,6 +401,9 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             ?? throw new InvalidOperationException(
                 $"Authoritative ledger book '{source.Scope.LedgerBookId:D}' was not found.");
         ValidateBook(source, position, book);
+        if (request.LotMutation?.CorporateAction is { } reviewedSuccessors)
+            RequireAssertion(reviewedSuccessors.Projection.AccountingScope!.ExpectedPeriodVersion == request.ExpectedPeriodVersion,
+                "Successor projection accounting-period version must match the requested candidate.");
         var authoritativeLotMutation = await ResolveAuthoritativeLotMutationAsync(
                 request.LotMutation,
                 source,
@@ -831,7 +837,8 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
     private async Task ResolveAuthoritativeSecurityAsync(
         AssetAccountingEventSpineDto source,
         DateTimeOffset accountingAsOfUtc,
-        CancellationToken ct)
+        CancellationToken ct,
+        OpenLotSuccessorInstructionDto? corporateAction = null)
     {
         var security = await _securityMasterQueryService
             .GetRecordedByIdAsOfAsync(source.Scope.SecurityId, accountingAsOfUtc, ct)
@@ -845,7 +852,18 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             "Resolved Security Master version is stale relative to the asset accounting event.");
         RequireAssertion(security.Status == SecurityStatusDto.Active,
             "Resolved Security Master record is not Active.");
-        RequireAssertion(string.Equals(security.Currency, source.Currency, StringComparison.OrdinalIgnoreCase),
+        if (corporateAction is not null)
+        {
+            OpenLotSuccessors.Validate(corporateAction);
+            RequireAssertion(source.EventKind == AssetAccountingEventKindDto.CorporateAction
+                && PayloadEquals(corporateAction.Projection.EconomicEvent, source.EconomicEvent)
+                && corporateAction.ExpectedLot.SecurityId == security.SecurityId
+                && corporateAction.ExpectedSecurityVersion == security.Version
+                && corporateAction.ExpectedLot.Acquisition.FunctionalCurrency == source.Currency,
+                "Successor currency authority must bind the exact source security and retained canonical event.");
+        }
+        RequireAssertion(string.Equals(security.Currency,
+                corporateAction?.ExpectedLot.Acquisition.AcquisitionCurrency ?? source.Currency, StringComparison.OrdinalIgnoreCase),
             "Foreign-currency asset accounting is not supported by this bounded spine unless Security Master, event, and ledger functional currency are identical; explicit FX rate/evidence is required before posting.");
         RequireAssertion(security.EffectiveFrom <= accountingAsOfUtc &&
                          (security.EffectiveTo is null || accountingAsOfUtc <= security.EffectiveTo.Value),
@@ -927,6 +945,54 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
                 && assetLines[0].Debit == Math.Max(projection.FunctionalMovement, 0m)
                 && assetLines[0].Credit == Math.Max(-projection.FunctionalMovement, 0m),
                 "Amortization projected accounting must contain the exact reviewed asset carrying-value movement.");
+            return requested;
+        }
+
+        if (source.EventKind == AssetAccountingEventKindDto.CorporateAction && requested is not null)
+        {
+            var successor = requested.CorporateAction
+                ?? throw new InvalidOperationException("Corporate-action lot posting requires reviewed canonical successors.");
+            OpenLotSuccessors.Validate(successor);
+            RequireAssertion(successor.ExpectedLot.SecurityId == source.Scope.SecurityId
+                && successor.ExpectedLot.BookPositionId == position.PositionId
+                && successor.ExpectedLot.LedgerBookId == book.LedgerBookId
+                && successor.ExpectedSecurityVersion == source.Scope.ExpectedSecurityVersion
+                && successor.Projection.LotMutations!.ExpectedPositionVersion == position.Version
+                && successor.Projection.AccountingScope!.PeriodId == source.Scope.PeriodId
+                && successor.Projection.Treatment.AccountingBasis == source.Scope.AccountingBasis
+                && PayloadEquals(successor.Projection.EconomicEvent, source.EconomicEvent)
+                && PayloadEquals(successor.Projection.ProjectionLineage, source.ProjectionLineage)
+                && successor.Projection.EventAmount == source.EventAmount,
+                "Successor inputs must match the exact governed source event, projection, book, position and period.");
+            var retained = (await _journalStore.GetTaxLotsByIdsAsync(book.LedgerBookId,
+                [successor.ExpectedLot.TaxLotRecordId], ct).ConfigureAwait(false)).SingleOrDefault()
+                ?? throw new InvalidOperationException("The reviewed predecessor lot is missing from its authoritative book.");
+            RequireAssertion(retained.Account.AccountType == LedgerAccountType.Asset
+                && PayloadEquals(retained.ToOpenLot(), successor.ExpectedLot),
+                "The reviewed predecessor version, quantity or basis changed; rebuild the successor projection.");
+            foreach (var target in successor.Successors)
+            {
+                var targetPosition = await _positionStore.GetBookPositionAsync(target.Lot.BookPositionId, ct).ConfigureAwait(false)
+                    ?? throw new InvalidOperationException("The reviewed successor book position is missing.");
+                RequireAssertion(targetPosition.Version == target.ExpectedBookPositionVersion
+                    && targetPosition.SecurityId == target.Lot.SecurityId
+                    && targetPosition.Status == "Active"
+                    && targetPosition.PositionSide is BookPositionSides.Long or BookPositionSides.Asset
+                    && targetPosition.EffectiveFrom <= source.EffectiveDate
+                    && (targetPosition.EffectiveTo is null || targetPosition.EffectiveTo >= source.EffectiveDate),
+                    "Successor book-position identity, version or accounting scope is stale.");
+                ValidateBook(source, targetPosition, book);
+                var targetSecurity = await _securityMasterQueryService.GetRecordedByIdAsOfAsync(target.Lot.SecurityId,
+                    source.ProjectionLineage.GeneratedAtUtc, ct).ConfigureAwait(false)
+                    ?? throw new InvalidOperationException("The reviewed successor Security Master identity is missing.");
+                RequireAssertion(targetSecurity.Version == target.ExpectedSecurityVersion
+                    && targetSecurity.Status == SecurityStatusDto.Active
+                    && targetSecurity.Currency == target.Lot.Acquisition.AcquisitionCurrency,
+                    "Successor Security Master identity, version, terms or currency is stale.");
+                var existingTargets = await _journalStore.GetTaxLotsByIdsAsync(book.LedgerBookId,
+                    [target.Lot.TaxLotRecordId], ct).ConfigureAwait(false);
+                RequireAssertion(existingTargets.Count == 0, "Successor lots must be newly created durable identities.");
+            }
             return requested;
         }
 

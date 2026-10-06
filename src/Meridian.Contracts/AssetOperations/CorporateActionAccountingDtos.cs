@@ -1024,4 +1024,6 @@ public sealed record CorporateActionAssetAccountingEventProjectionDto(
     CorporateActionLotMutationSetDto LotMutations,
     CorporateActionPostingSetDto PostingSet,
     AccountingRulePackReferenceDto AppliedAccountingRulePack,
-    string PostingIdempotencyKey);
+    string PostingIdempotencyKey,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    AssetLotMutationInstructionDto? LotMutation = null);

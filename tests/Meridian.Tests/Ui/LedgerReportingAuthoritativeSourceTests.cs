@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Meridian.Tests.Ui;
 
-public sealed class LedgerReportingAuthoritativeSourceTests
+public sealed partial class LedgerReportingAuthoritativeSourceTests
 {
     private static readonly DateOnly AsOfDate = new(2026, 7, 15);
     private static readonly DateTimeOffset CutoffUtc = new(
@@ -401,16 +401,19 @@ public sealed class LedgerReportingAuthoritativeSourceTests
         restored.Checkpoint.EvidenceIds.Should().Contain(reference => reference.StartsWith("ledger-report-pack:", StringComparison.Ordinal));
     }
 
-    private static Fixture CreateFixture(string periodStatus = "HardClosed")
+    private static Fixture CreateFixture(string periodStatus = "HardClosed", bool successors = false,
+        AccountingBasisKindDto accountingBasis = AccountingBasisKindDto.Gaap)
     {
-        const string tenantId = "tenant-reporting";
-        const string companyId = "company-reporting";
-        const string fundId = "fund-reporting";
+        var tenantId = successors ? "tenant-alpha" : "tenant-reporting";
+        var companyId = successors ? "company-alpha" : "company-reporting";
+        var fundId = successors ? "fund-alpha" : "fund-reporting";
         var organizationId = Guid.NewGuid();
         var fundNodeId = Guid.NewGuid();
         var bookId = Guid.NewGuid();
         var periodId = Guid.NewGuid();
-        var now = new DateTimeOffset(2026, 7, 15, 20, 0, 0, TimeSpan.Zero);
+        var now = successors ? new DateTimeOffset(2026, 8, 25, 20, 0, 0, TimeSpan.Zero)
+            : new DateTimeOffset(2026, 7, 15, 20, 0, 0, TimeSpan.Zero);
+        var asOf = DateOnly.FromDateTime(now.UtcDateTime);
         var book = new LedgerBookRecord(
             bookId,
             fundId,
@@ -420,15 +423,15 @@ public sealed class LedgerReportingAuthoritativeSourceTests
             "USD",
             now,
             now,
-            AccountingBasis: AccountingBasisKindDto.Gaap);
+            AccountingBasis: accountingBasis);
         var period = new LedgerAccountingPeriod(
             periodId,
             bookId,
             2026,
-            7,
-            "2026-07",
-            new DateOnly(2026, 7, 1),
-            new DateOnly(2026, 7, 31),
+            asOf.Month,
+            $"2026-{asOf.Month:00}",
+            new DateOnly(2026, asOf.Month, 1),
+            new DateOnly(2026, asOf.Month, 31),
             periodStatus,
             now,
             now,
@@ -499,9 +502,9 @@ public sealed class LedgerReportingAuthoritativeSourceTests
                 fundId,
                 Dimensions: new LedgerDimensionSetDto(CostCenterId: "cost-center-a")),
             periodId.ToString("D"),
-            AsOfDate,
+            asOf,
             new ReportingLedgerBookSelectionDto(bookId),
-            ReportingAccountingBasisDto.Gaap,
+            accountingBasis == AccountingBasisKindDto.Statutory ? ReportingAccountingBasisDto.Statutory : ReportingAccountingBasisDto.Gaap,
             "USD",
             ReportingConsolidationLevelDto.Fund,
             ReportingOutputFormatDto.Csv,
@@ -643,10 +646,14 @@ public sealed class LedgerReportingAuthoritativeSourceTests
 
     private sealed class QueryFilteringJournalStore(
         LedgerBookRecord book,
-        LedgerAccountingPeriod period) : ILedgerJournalStore, ILedgerTaxLotDisposalHistory
+        LedgerAccountingPeriod period) : ILedgerJournalStore, ILedgerTaxLotDisposalHistory, ILedgerOpenLotSuccessorHistory
     {
         public List<LedgerJournalEntryRecord> Records { get; } = [];
         public List<LedgerTaxLotDisposalHistoryRecord> Disposals { get; } = [];
+        public List<AtomicTaxLotJournalResult> Successors { get; } = [];
+        public Task<IReadOnlyList<AtomicTaxLotJournalResult>> GetOpenLotSuccessorHistoryAsync(
+            Guid ledgerBookId, IReadOnlyList<Guid> journalEntryIds, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<AtomicTaxLotJournalResult>>(Successors);
         public Task<IReadOnlyList<LedgerTaxLotDisposalHistoryRecord>> GetTaxLotDisposalHistoryAsync(
             Guid ledgerBookId, IReadOnlyList<Guid> journalEntryIds, CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<LedgerTaxLotDisposalHistoryRecord>>(Disposals);

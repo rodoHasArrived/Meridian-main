@@ -118,6 +118,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotSuccessorTargetDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotSuccessors"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotValidation"
     },
     {
@@ -22341,6 +22359,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDto",
       "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto"
     },
@@ -22349,6 +22373,30 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotReliefResultDto",
       "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotReliefSelectionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotSuccessorTargetDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.CorporateActionAccountingProjectionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotSuccessorTargetDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDto"
     },
     {
       "kind": "contract-reference",
@@ -23788,6 +23836,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingCorrectionReferenceDto"
     },
     {
@@ -23957,6 +24011,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto",
       "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto"
     },
     {
       "kind": "contract-reference",
@@ -24328,6 +24388,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.CorporateActionAssetAccountingEventProjectionDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.CorporateActionAssetAccountingEventProjectionDto",
       "target": "contract:Meridian.Contracts.AssetOperations.CorporateActionLotMutationSetDto"
     },
     {
@@ -24647,6 +24713,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactLineDto",
       "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionSetDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto"
     },
     {
       "kind": "contract-reference",
@@ -28841,6 +28913,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.AccountingPostingCommandDto",
       "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.AccountingPostingCommandDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto"
     },
     {
       "kind": "contract-reference",
@@ -42005,6 +42083,18 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:ledger.ck_atomic_tax_lot_successor_instruction on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.corporate_action_instruction"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_atomic_tax_lot_successor_instruction on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.mutation_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:ledger.ck_journal_entries_adjustment_approval_metadata on ledger.journal_entries",
       "target": "database:ledger.journal_entries.adjustment_approval_metadata"
     },
@@ -42193,6 +42283,12 @@
       "label": "",
       "source": "database:ledger.ck_tax_lot_mutations_ordinal on ledger.tax_lot_mutations",
       "target": "database:ledger.tax_lot_mutations.selection_ordinal"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.lot_snapshot_before"
     },
     {
       "kind": "normal",
@@ -47731,7 +47827,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "b76257151cae8d116ceff52e838759ea812b4ba318af43621eb8bf49ee9411a9",
+  "fingerprint": "1b1e8abb623e39aa702214392c58c23a840145ccc5681f4d7a0017e92236de00",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -47897,6 +47993,24 @@
       "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotReliefSelectionDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Accounting.Lots.OpenLotReliefSelectionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotSuccessorTargetDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotSuccessorTargetDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotSuccessors",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotSuccessors"
     },
     {
       "classification": "class",
@@ -65289,6 +65403,11 @@
       "label": "ledger.atomic_tax_lot_posting_batches.canonical_fingerprint"
     },
     {
+      "id": "database:ledger.atomic_tax_lot_posting_batches.corporate_action_instruction",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches.corporate_action_instruction"
+    },
+    {
       "id": "database:ledger.atomic_tax_lot_posting_batches.disposal_sale_price",
       "kind": "database-object",
       "label": "ledger.atomic_tax_lot_posting_batches.disposal_sale_price"
@@ -65432,6 +65551,11 @@
       "id": "database:ledger.ck_atomic_tax_lot_batch_proceeds_allocation on ledger.atomic_tax_lot_posting_batches",
       "kind": "database-object",
       "label": "ledger.ck_atomic_tax_lot_batch_proceeds_allocation on ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "id": "database:ledger.ck_atomic_tax_lot_successor_instruction on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.ck_atomic_tax_lot_successor_instruction on ledger.atomic_tax_lot_posting_batches"
     },
     {
       "id": "database:ledger.ck_journal_entries_adjustment_approval_metadata on ledger.journal_entries",
@@ -69948,11 +70072,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3141,
-    "contract_set_memberships": 3710,
-    "edges": 7930,
+    "contract_references": 3151,
+    "contract_set_memberships": 3713,
+    "edges": 7946,
     "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3850
+    "nodes": 3855
   }
 }

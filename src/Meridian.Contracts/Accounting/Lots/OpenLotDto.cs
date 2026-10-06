@@ -39,13 +39,16 @@ public sealed record OpenLotBasisAdjustmentDto(
     decimal TransactionCostBasis,
     decimal FunctionalCostBasis,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    OpenLotAmortizationInstructionDto? Amortization = null);
+    OpenLotAmortizationInstructionDto? Amortization = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    OpenLotSuccessorInstructionDto? CorporateAction = null);
 
 public static class OpenLotBasisAdjustmentReasons
 {
     /// <summary>Average-cost relief restated the surviving pool at the pooled per-unit basis.</summary>
     public const string AverageCostRedistribution = "AverageCostRedistribution";
     public const string Amortization = "Amortization";
+    public const string CorporateActionSuccessor = "CorporateActionSuccessor";
 
     /// <summary>Discrete relief retains the exact unrelieved current basis on its surviving lot.</summary>
     public const string DisposalRelief = "DisposalRelief";

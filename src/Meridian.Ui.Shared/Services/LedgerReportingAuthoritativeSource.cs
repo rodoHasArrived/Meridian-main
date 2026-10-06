@@ -79,7 +79,7 @@ public class ReportingAuthoritativeSourceUnavailableException : InvalidOperation
 /// structure, organization, book, period, accounting basis, currency, selected dimensions, and
 /// line-level dimensional stamps are all verified before a checkpoint is issued.
 /// </summary>
-public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritativeSource
+public sealed partial class LedgerReportingAuthoritativeSource : IReportingAuthoritativeSource
 {
     private const string SourceKind = "durable-ledger-journal";
 
@@ -88,13 +88,15 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
     private readonly IFundStructureService _fundStructure;
     private readonly TimeProvider _timeProvider;
     private readonly ILedgerTaxLotDisposalHistory? _taxLotDisposalHistory;
+    private readonly ILedgerOpenLotSuccessorHistory? _openLotSuccessorHistory;
 
     public LedgerReportingAuthoritativeSource(
         ILedgerJournalStore journalStore,
         IFundProfileTenancyRegistry tenancyRegistry,
         IFundStructureService fundStructure,
         TimeProvider? timeProvider = null,
-        ILedgerTaxLotDisposalHistory? taxLotDisposalHistory = null)
+        ILedgerTaxLotDisposalHistory? taxLotDisposalHistory = null,
+        ILedgerOpenLotSuccessorHistory? openLotSuccessorHistory = null)
     {
         _journalStore = journalStore ?? throw new ArgumentNullException(nameof(journalStore));
         _tenancyRegistry = tenancyRegistry ?? throw new ArgumentNullException(nameof(tenancyRegistry));
@@ -105,6 +107,7 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
         // is exactly the behavior the pack had before. Falling back to the journal store keeps the
         // common case (one Postgres store implementing both) wired without extra registration.
         _taxLotDisposalHistory = taxLotDisposalHistory ?? journalStore as ILedgerTaxLotDisposalHistory;
+        _openLotSuccessorHistory = openLotSuccessorHistory ?? journalStore as ILedgerOpenLotSuccessorHistory;
     }
 
     public ValueTask<ReportingAuthoritativeSourceCapture> CaptureAsync(
@@ -206,6 +209,7 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
             .OrderBy(static record => record.GlobalSequence)
             .ThenBy(static record => record.Entry.JournalEntryId)
             .ToArray();
+        var completeJournals = ordered;
         ordered = FilterToCertifiedDimensions(
             ordered,
             period,
@@ -222,6 +226,9 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
             requiredDimensions);
 
         var rows = BuildRows(ordered, book, period, fundId, organization.OrganizationId);
+        rows = await RetainOpenLotSuccessorEvidenceAsync(
+                rows, completeJournals, ordered, book, period, tenantId, companyId, fundId, cancellationToken)
+            .ConfigureAwait(false);
         if (parameters.Finality == ReportingFinalityDto.Final
             && rows.IsDefaultOrEmpty)
         {
@@ -265,6 +272,9 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
             $"ledger-source:{tenantId}:{organization.OrganizationId:D}:{companyId}:{fundId}:{book.LedgerBookId:D}:{period.PeriodId:D}:{basis}:{parameters.AsOfDate:yyyy-MM-dd}");
         evidence.Add($"ledger-sequence:{highestSequence.ToString(CultureInfo.InvariantCulture)}");
         evidence.Add($"ledger-rows:{rows.Length.ToString(CultureInfo.InvariantCulture)}");
+        foreach (var successorHash in rows.Where(static row => row.ContainsKey("openLotSuccessorEvidenceHash"))
+                     .Select(static row => row["openLotSuccessorEvidenceHash"]).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal))
+            evidence.Add($"open-lot-successor-evidence:{successorHash}");
         if (canonicalReportPack is not null)
         {
             evidence.Add(ReportingCertifiedLedgerPresentationBinding.BuildEvidenceId(canonicalReportPack));

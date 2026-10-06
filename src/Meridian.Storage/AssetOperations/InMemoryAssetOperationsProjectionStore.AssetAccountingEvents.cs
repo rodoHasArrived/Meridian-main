@@ -58,7 +58,7 @@ public sealed partial class InMemoryAssetOperationsProjectionStore
         ArgumentNullException.ThrowIfNull(projection);
         ct.ThrowIfCancellationRequested();
         projection = AssetAccountingEventProjectionRules.Clone(projection);
-        await AssetAccountingEventProjectionRules.ValidateDurablePostedImpactAsync(
+        var hasDurableSuccessorAuthority = await AssetAccountingEventProjectionRules.ValidateDurablePostedImpactAsync(
                 projection,
                 _assetAccountingJournalStore,
                 ct)
@@ -98,7 +98,7 @@ public sealed partial class InMemoryAssetOperationsProjectionStore
                     $"Book position '{projection.Scope.BookPositionId:D}' was not found.");
             }
 
-            if (position.Version != expectedBookPositionVersion ||
+            if ((!hasDurableSuccessorAuthority && position.Version != expectedBookPositionVersion) ||
                 position.SecurityId != projection.Scope.SecurityId ||
                 position.BookContext.LedgerBookId != projection.Scope.LedgerBookId)
             {

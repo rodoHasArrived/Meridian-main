@@ -475,13 +475,13 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         private readonly PostgresTestServer _server;
         public LedgerJournalStoreOptions Options { get; }
         public PostgresSecurityMasterStore Securities { get; }
-        private PostgresAssetOperationsProjectionStore Positions { get; }
+        public PostgresAssetOperationsProjectionStore Positions { get; }
         public PostgresLedgerJournalStore Store { get; }
         public SecurityProjectionRecord Security { get; private set; } = null!;
         public Guid BookId { get; } = Guid.NewGuid();
-        private Guid PositionId { get; } = Guid.NewGuid();
+        public Guid PositionId { get; } = Guid.NewGuid();
         public LedgerAccountingPeriod Period { get; private set; } = null!;
-        private LedgerTaxLotRecord Lot { get; set; } = null!;
+        public LedgerTaxLotRecord Lot { get; private set; } = null!;
         private AccountingBookContextDto BookContext { get; set; } = null!;
 
         private AmortFixture(PostgresTestServer server, LedgerJournalStoreOptions options,

@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-05
+last_reviewed: 2026-10-06
 ---
 
 # src/Meridian.Ui.Shared
@@ -185,6 +185,15 @@ reports the completed work to `POST /api/workstation/first-run/outcomes/complete
 checklist reflects finished work rather than page visits.
 
 ## Shared close and lot convergence
+
+`LedgerReportingAuthoritativeSource` reconciles corporate-action successor journals against the
+immutable batches returned by `ILedgerOpenLotSuccessorHistory`. It verifies predecessor closeout,
+every new lot, both allocated currency bases, acquisition FX, holding dates and the refunded-only
+`ScheduleD` tag against the approved instruction. Exact batch JSON, its SHA-256 hash and the
+instruction fingerprint become evidence columns on existing journal rows in the retained Reporting
+dataset/checkpoint. This adds no monetary rows and does not use later live lot balances to restate
+past reports. Missing history, contradictory snapshots or mismatched owner/book/period scope block
+authoritative reporting.
 
 Manual-journal commands retain a durable intent before changing drafts or appending a journal.
 The receipt includes the original actor, before/after drafts, exact posting write, deterministic

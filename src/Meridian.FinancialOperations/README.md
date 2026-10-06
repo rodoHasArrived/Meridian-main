@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-06
 ---
 
 # src/Meridian.FinancialOperations
@@ -20,7 +20,7 @@ New amortization postings require the current calculation version before approva
 Historical unversioned instructions remain readable for exact receipt replay; unposted legacy
 drafts require a fresh preview.
 
-The governed event-spine path retains its existing requirement that the Security Master currency
+The amortization event-spine path retains its existing requirement that the Security Master currency
 equal the event's functional currency. The atomic lot boundary preserves acquisition currency and
 FX, but this delivery does not extend the event spine's cross-currency workflow. Current-basis
 disposal relief is supplied by the separate PR #3050 implementation; these amortization corrections
@@ -776,6 +776,16 @@ explicit selected lot ids under exact expected-version/open-quantity CAS. Both p
 mutation fingerprint, evidence, relief policy, before/after snapshots, correction lineage, and
 idempotent replay result. The event spine records Approved and Posted only from the durable journal
 identity and balanced posted amounts returned by that boundary.
+Bounded cashless `RegS144AExchange` and `AdvanceRefunding` candidates use the same governed path
+with a retained `OpenLotSuccessorInstructionDto`. Independent approval covers its predecessor,
+create-only successors, reference versions and exact allocation. Posting rechecks that instruction
+against the drafted event, embeds its fingerprint in the journal and sends the complete mutation
+set to the atomic store. The journal reclassifies the predecessor's current basis to its successors;
+the instruction also retains original acquisition basis, currency/FX, holding dates and refunded-only
+Schedule D treatment. This successor path binds Security Master currency to retained acquisition
+currency while the event and book retain functional currency; it does not obtain a new FX rate.
+Other action types and multiple-predecessor mutations remain unsupported by
+this bounded successor path.
 For this spine, a same-source journal is a replay only when its deterministic journal identity,
 complete Drafted candidate/result fingerprints, policy/rule pack, approval evidence, amounts,
 lines, currencies, and dimensions all match. Lots retain Security Master and book-position scope;

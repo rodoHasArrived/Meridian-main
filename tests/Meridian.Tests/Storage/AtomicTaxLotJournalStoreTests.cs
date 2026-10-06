@@ -586,7 +586,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             "PostgresLedgerJournalStore.AtomicTaxLots.cs");
 
         source.Should().Contain("BeginTransactionAsync(IsolationLevel.Serializable");
-        source.Should().Contain("await AppendAsync(connection, transaction, command.Journal, ct)");
+        source.Should().Contain("await AppendJournalWithinTransactionAsync(connection, transaction, command.Journal, ct)");
         source.Should().Contain("await InsertAtomicTaxLotBatchAsync(connection, transaction, command");
         source.Should().Contain("await InsertTaxLotMutationAsync(connection, transaction, mutation, ct)");
         source.Should().Contain("and version = @expected_version");

@@ -71,6 +71,12 @@
       "rule_id": "migration-drop-table-member",
       "reason": "Requires human schema/storage review. The cost check is dropped and immediately recreated transactionally as a superset: canonical discrete disposals retain current basis in their pre-relief acquisition and governed-adjustment snapshot, while acquisition-cost, AverageCost and PR #3048 amortization cases remain admitted. No columns or data are removed. Follows PR #3048's ordinal 040 amortization migration.",
       "review_after": "2027-04-02"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_042__atomic_lot_successors.sql",
+      "rule_id": "migration-drop-table-member",
+      "reason": "Requires human schema/storage review. Replaces only named check constraints transactionally with supersets admitting governed CorporateAction predecessor closeout and successor opening. Existing acquisition, disposal, redistribution and amortization rules remain valid; no table, column, row or acquisition fact is removed. The new nullable instruction is required only for new successor batches, preserving historical replay. Fresh/upgrade migration, rollback and restart evidence accompany this bounded W10-LOT-002 change.",
+      "review_after": "2027-04-06"
     }
   ],
   "removed_migrations": [

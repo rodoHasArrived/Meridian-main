@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-06
 ---
 
 # src/Meridian.Contracts
@@ -80,6 +80,15 @@ command. Omitted marks remain `Real`; seeded or simulated evidence must be expli
 and the governed ledger boundary rejects mismatches.
 
 ## Shared close and lot convergence
+
+`OpenLotSuccessorInstructionDto` retains the reviewed corporate-action projection, exact
+predecessor snapshot, and create-only successor snapshots with Security Master hashes/versions and
+book-position versions. `OpenLotSuccessors` supports a cashless Reg S/144A exchange into one lot
+and advance refunding into refunded/unrefunded face lots. It allocates original acquisition and
+current carrying basis separately in transaction and functional currency, assigns the final
+residual exactly, and preserves acquisition FX, holding dates, face terms and source evidence.
+Only the refunded successor receives `ScheduleD`; unsupported action or allocation shapes fail
+validation. Optional instruction fields are omitted when absent to preserve earlier payloads.
 
 `AssetLotMutationInstructionDto.DisposalSalePrice` optionally retains the original disposal quote
 through governed drafting and posting. It is omitted from JSON when absent so existing retained
@@ -392,8 +401,9 @@ scope does not satisfy canonical asset posting or production-readiness gates.
 Drafted authority retains the full candidate intent/result and canonical fingerprints, including
 all dimensions, rule-pack and policy identity, period/version assertions, evidence, and any lot
 instruction. Typed correction lineage identifies the exact earlier event version and posted journal
-(plus mutation batch for lot-backed events). Acquisition and disposal lot instructions retain exact
-asset account and cost authority; other event kinds cannot carry lot mutations.
+(plus mutation batch for lot-backed events). Acquisition, disposal, canonical amortization, and
+bounded corporate-action successor instructions retain their exact lot and accounting authority;
+other event kinds cannot carry lot mutations.
 The workspace can also carry a `LedgerBookSetupCandidateDto` when a selected ledger book is missing
 but the server can derive a safe setup target from registered ledger-book scope. Clients should use
 that candidate for ledger-book setup actions instead of guessing fund-structure node context.
