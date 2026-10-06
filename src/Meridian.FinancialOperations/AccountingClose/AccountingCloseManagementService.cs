@@ -711,6 +711,9 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
         }
 
         var currentConfiguration = GetPlanConfiguration(request.WorkflowId);
+        if (currentConfiguration?.Preparation is not null)
+            evidenceLinks = NormalizeEvidenceLinks(evidenceLinks.Concat(currentConfiguration.EvidenceLinks
+                .Where(link => link.StartsWith("close-plan-preparation:", StringComparison.Ordinal))));
         if (currentConfiguration?.ConfiguredAtUtc is { } configuredAtUtc &&
             request.ExpectedConfiguredAtUtc is { } expectedConfiguredAtUtc &&
             !CloseConfigurationVersionMatches(configuredAtUtc, expectedConfiguredAtUtc))
@@ -732,11 +735,13 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             taskConfigurations,
             resolvedActor,
             DateTimeOffset.UtcNow,
-            evidenceLinks);
+            evidenceLinks,
+            request.Preparation ?? currentConfiguration?.Preparation);
 
         await _writeGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            EnsurePreparedConfigurationDoesNotOverwrite(request);
             var configurations = ReadPlanConfigurations()
                 .Where(row => row.WorkflowId != request.WorkflowId)
                 .Append(configuration)
@@ -1387,8 +1392,10 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             snapshot.TaskSignOffs!.Where(row => row.WorkflowId == workflow.WorkflowId).ToArray(),
             snapshot.PlanConfigurations!.Where(row => row.WorkflowId == workflow.WorkflowId).ToArray(),
             snapshot.EvidenceReviews!.Where(row => row.WorkflowId == workflow.WorkflowId).ToArray());
-        var period = ResolvePeriod(workflow.PeriodId);
         var planConfiguration = snapshot.PlanConfigurations!.FirstOrDefault();
+        var period = planConfiguration?.Preparation is { } preparation
+            ? (Start: preparation.PeriodStart, End: preparation.PeriodEnd)
+            : ResolvePeriod(workflow.PeriodId);
         var materialityPolicy = planConfiguration?.MaterialityPolicy ?? ResolveMaterialityPolicy(workflow);
         var taskConfigurations = planConfiguration?.TaskConfigurations
             .ToDictionary(static configuration => configuration.TaskId, StringComparer.OrdinalIgnoreCase)

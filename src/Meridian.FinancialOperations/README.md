@@ -11,6 +11,19 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.FinancialOperations
 
+`AccountingClosePreparationService` captures immutable versions of close configuration and previews
+them against authoritative ledger books and periods. Deadline rules specify a period anchor,
+calendar/business-day offset, and subsequent weekend/holiday adjustment using an explicit retained
+calendar. Owners require confirmed mappings; accounting policy differences require review.
+Creation starts fresh workflow controls and evidence requirements while leaving source approvals,
+reviewed evidence, journal references, and locks in their original period. A durable creation claim
+and process-independent lease make retries resume one workflow. Preview fingerprints reject changed
+source or target authority; an already retained configuration recovers its original creation receipt.
+Ambiguous interrupted starts retain their claim and require recovery instead of creating another plan.
+`OperationsContinuityWorkflowService.StartPreparedWorkflowAsync` supplies the atomic fresh workflow
+and exact-identity recovery boundary. Focused proof lives in `AccountingCloseServicesTests.Preparation`
+and `OperationsContinuityWorkflowServiceTests.PreparedStart`.
+
 Statement reconciliation composition supplies the shared `IAtomicFileWriter` to the canonical
 statement store so committed imports use Storage-owned directory durability without an
 Infrastructure-to-Storage reference.
