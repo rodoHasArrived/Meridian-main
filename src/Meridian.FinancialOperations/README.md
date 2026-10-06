@@ -11,6 +11,10 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.FinancialOperations
 
+Statement reconciliation composition supplies the shared `IAtomicFileWriter` to the canonical
+statement store so committed imports use Storage-owned directory durability without an
+Infrastructure-to-Storage reference.
+
 `CanonicalLotAmortizationService` prepares read-only canonical face-lot projections from authoritative lot/reference records. Optional workstation postures may construct the service with absent stores, but preview requires ledger, Security Master, and book-position authority and refuses missing stores before any read. `AccountingPostingCandidatePostService` carries an `Amortize` instruction through the existing event-spine and independent approval rail to atomic journal/basis posting; the service itself cannot approve or post.
 
 The governed event-spine path retains its existing requirement that the Security Master currency
