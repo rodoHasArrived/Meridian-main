@@ -299,6 +299,14 @@ Replay has two explicit meanings:
   together with the source run and replay identity. It does not rewrite the source run or claim
   that the repaired mapping produced the original result.
 
+Manual CSV replay applies the selected revision to the retained row's `fields` using the same
+column lookup and transformations as CSV ingestion, including case-insensitive headers, literal
+dots in column names, and conditional sign fields. The raw row wrapper stays intact as evidence.
+This behavior also applies when replaying a previously re-quarantined CSV row; REST records keep
+their JSON-path mapping semantics. New replay payloads retain their source record format in request
+metadata. Older replay chains resolve format through verified ingestion ancestry; missing or
+inconsistent ancestry blocks replay without rewriting historical evidence.
+
 CSV ingestion, REST ingestion, and replay durably claim their run identity before writing any
 payload, staging, or quarantine rows; REST also claims before calling the provider. Requests using
 the same run ID cannot mix ingestion and replay outputs or outputs from different sources or mappings.
