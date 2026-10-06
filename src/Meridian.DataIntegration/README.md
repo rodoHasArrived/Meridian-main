@@ -71,7 +71,8 @@ The existing non-Windows local key file remains a production-hardening gap; this
 Scoped token records retain and validate their provider and ownership context; legacy token enumeration
 cannot return scoped tokens. `OAuthTokenRefreshService` accepts trusted `ownershipScope` for loading,
 saving, refresh rotation and deletion. Scoped services never claim or erase an unassigned legacy OAuth
-sidecar. Host callers must supply authorized scope; the default service remains a legacy compatibility path.
+sidecar, but do restrict an existing sidecar to owner-only access on Unix. Host callers must supply
+authorized scope; the default service remains a legacy compatibility path.
 
 ## Credential migration recovery
 

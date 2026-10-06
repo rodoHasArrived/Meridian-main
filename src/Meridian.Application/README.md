@@ -101,7 +101,8 @@ this constructor alone does not establish end-to-end tenant isolation.
 
 `OAuthTokenRefreshService` also accepts trusted `ownershipScope`. Scoped instances load and persist
 only that owner's OAuth tokens, including refresh responses and cache recovery after audit failure,
-and leave unassigned legacy sidecars alone. Initialization is asynchronous in both ownership modes;
+and leave unassigned legacy sidecar contents alone while restricting their Unix permissions to the
+owner. Initialization is asynchronous in both ownership modes;
 completed remote rotations commit independently of lifecycle cancellation while preserving scope.
 Default host registration still needs connection ownership propagation before scoped services replace
 the provider-wide OAuth runtime.
