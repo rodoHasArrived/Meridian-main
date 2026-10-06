@@ -59,7 +59,7 @@ public sealed class ReconciliationApiServiceTests
         services.AddSingleton<IStatementReconciliationValidationService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());
         services.AddSingleton<IDataIntegrationIngestionService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());
         services.AddSingleton<IReconciliationCaseIntakeService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());
-        services.AddSingleton<ICanonicalStatementStore>(_ => new JsonCanonicalStatementStore(root));
+        services.AddSingleton<ICanonicalStatementStore>(_ => new JsonCanonicalStatementStore(root, new AtomicFileWriterAdapter()));
         services.AddSingleton<IReconciliationCaseStore>(_ => new JsonReconciliationCaseStore(root, new AtomicFileWriterAdapter()));
         services.AddSingleton<IReconciliationBreakStore>(_ => new JsonReconciliationBreakStore(root, new AtomicFileWriterAdapter()));
         services.AddSingleton<IStatementRunRecoveryRepository>(_ => new FileStatementRunRecoveryRepository(root));

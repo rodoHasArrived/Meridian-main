@@ -1,6 +1,6 @@
 {
   "total_files": 695,
-  "total_lines": 153909,
+  "total_lines": 153921,
   "orphaned_count": 233,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -5516,7 +5516,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 883,
+      "line_count": 887,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5572,7 +5572,7 @@
     },
     {
       "path": "src/Meridian.Infrastructure/README.md",
-      "line_count": 383,
+      "line_count": 391,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

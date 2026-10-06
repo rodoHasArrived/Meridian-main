@@ -148,7 +148,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
 
         await act.Should().ThrowAsync<InvalidDataException>()
             .WithMessage("*external account*");
-        var imports = await new JsonCanonicalStatementStore(_root).ListImportsAsync();
+        var imports = await new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter()).ListImportsAsync();
         imports.Should().BeEmpty("an account-mismatched statement must not be retained as a reconcilable run");
     }
 
@@ -346,7 +346,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
 
         // The import must not be committed when tolerance resolution fails, so a corrected retry of the
         // same statement is not blocked by the duplicate-source guard.
-        var imports = await new JsonCanonicalStatementStore(_root).ListImportsAsync();
+        var imports = await new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter()).ListImportsAsync();
         imports.Should().BeEmpty("the import must not be persisted when the run fails before matching");
     }
 
@@ -391,7 +391,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         IReconciliationFxRateProvider? fxRateProvider = null,
         IStatementToleranceProfileProvider? toleranceProfileProvider = null)
     {
-        var importStore = new JsonCanonicalStatementStore(_root);
+        var importStore = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
         return StatementRunWorkflowService.CreateEphemeralForTesting(
             importStore,
             new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()),
