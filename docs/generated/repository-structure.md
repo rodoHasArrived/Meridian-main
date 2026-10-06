@@ -2483,13 +2483,50 @@ Meridian-main
 │   │   │   │   │   ├── screenshots
 │   │   │   │   │   │   ├── S4-repaired-v9.png
 │   │   │   │   │   │   └── S5-published-v10.png
+│   │   │   │   │   ├── build-blocker.json
 │   │   │   │   │   ├── capture.mjs
 │   │   │   │   │   ├── cases-full.json.gz
 │   │   │   │   │   ├── cases.json
+│   │   │   │   │   ├── clean-build.log.gz
+│   │   │   │   │   ├── clean-dependencies.json
+│   │   │   │   │   ├── clean-install-tests.log.gz
 │   │   │   │   │   ├── provenance.json
 │   │   │   │   │   ├── requests-responses.json.gz
 │   │   │   │   │   └── vitest.log.gz
+│   │   │   │   ├── ci
+│   │   │   │   │   ├── attempt-2
+│   │   │   │   │   │   ├── ci-dotnet-test-summary.json.gz
+│   │   │   │   │   │   ├── core-remainder.log.gz
+│   │   │   │   │   │   ├── full-ci.log.gz
+│   │   │   │   │   │   ├── process-state-snapshot.json
+│   │   │   │   │   │   ├── steps.tsv.gz
+│   │   │   │   │   │   └── summary.md.gz
+│   │   │   │   │   ├── attempt-3
+│   │   │   │   │   │   ├── dashboard-test.log.gz
+│   │   │   │   │   │   └── full-ci.log.gz
+│   │   │   │   │   ├── quality-gate
+│   │   │   │   │   │   ├── steps.tsv
+│   │   │   │   │   │   └── summary.md.gz
+│   │   │   │   │   ├── workflows
+│   │   │   │   │   │   ├── attempt-1-summary.md.gz
+│   │   │   │   │   │   ├── attempt-1.log.gz
+│   │   │   │   │   │   ├── final.log.gz
+│   │   │   │   │   │   ├── steps.tsv
+│   │   │   │   │   │   └── summary.md.gz
+│   │   │   │   │   ├── child-reaper-context.json
+│   │   │   │   │   ├── dotnet-summary.json.gz
+│   │   │   │   │   ├── reaper-check.log.gz
+│   │   │   │   │   ├── reaper-check.trx.gz
+│   │   │   │   │   └── run-with-child-reaper.py
+│   │   │   │   ├── server
+│   │   │   │   │   ├── seam-support.trx.gz
+│   │   │   │   │   ├── summary.json
+│   │   │   │   │   └── validation-run.json
+│   │   │   │   ├── wpf
+│   │   │   │   │   ├── build-retry.log.gz
+│   │   │   │   │   └── compilation.json
 │   │   │   │   ├── artifact-manifest.json
+│   │   │   │   ├── candidate-binding.json
 │   │   │   │   ├── continuation.json
 │   │   │   │   ├── README.md
 │   │   │   │   ├── source-hashes.json

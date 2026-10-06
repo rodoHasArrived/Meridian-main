@@ -6,16 +6,7 @@
 
 **Reviewed:** 2026-10-06
 
-**Current candidate boundary:** The [2026-10-06 SEAM continuation](evidence/w10-seam-refresh-20261006/README.md)
-tracks the B1 selected-detail refresh and D1 structured desktop blocker rechecks from base
-`9c96c3f72dd60111b62b8368d29e553ec58fd7a0` on `codex/w10-seam-refresh`.
-Its current validation and candidate-binding record is separate from the archived
-`w10-615abde9` packet below. LOT and MARK queue completion is not established: PR #3050
-merged a partial LOT slice and follow-up work remains. Preserve implementation order
-LOT → MARK → SEAM → RECON and run SEAM before MARK in the joint live session.
-The original candidate's failed hosted checks, findings and pending operator decisions
-remain historical evidence. Pin the final application candidate and rerun affected support
-tests and live operator cases before recording new acceptance decisions.
+**Current candidate boundary:** The [2026-10-06 SEAM continuation](evidence/w10-seam-refresh-20261006/README.md) binds B1/D1 source to candidate `2f3bef7feb23f5fa9be1a9ad27dd3d08b9a5a732` on `codex/w10-seam-refresh` (base `9c96c3f72dd60111b62b8368d29e553ec58fd7a0`). Shared fixtures passed 550 tests and full Windows-target WPF compilation passed with zero runtime tests. The earlier 58 browser tests/build and 16 response simulations used an uncaptured pre-clean-install dependency environment. After `npm ci`, 37 focused view-model tests passed, but screen CSS imports and the build failed on inherited Tailwind 4/PostCSS integration. Full CI attempt 3 remains FAILED despite all 19 .NET suites passing (18,973 tests, five skipped); source-hash binding does not establish current-lock browser reproducibility. Required hosted checks and live browser/Windows operator acceptance remain pending. The archived `w10-615abde9` evidence, failures and undecided operator records below remain unchanged. LOT/MARK queue completion is not established: PR #3050 was a partial LOT slice and follow-up work remains. Preserve implementation LOT → MARK → SEAM → RECON and SEAM before MARK in the joint live session.
 
 This packet binds the remaining `W10-SEAM-001` and `W10-MARK-001` acceptance preparation to
 candidate **`615abde90001ab33bd6e58e545edc7fce635e254`**, tree

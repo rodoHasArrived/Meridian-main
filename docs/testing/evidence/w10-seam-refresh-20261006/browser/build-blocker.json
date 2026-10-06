@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "applicationCandidateCommit": "2f3bef7feb23f5fa9be1a9ad27dd3d08b9a5a732",
+  "classification": "inherited_tailwind4_legacy_postcss_integration_incompatibility",
+  "inheritedUpgradeCommit": "9e5a0ed7c636355d0c99d9827d373a2f229cf365",
+  "declaredUpgrade": "Tailwind 3.4.15 to 4.3.3 without the PostCSS/CSS configuration migration",
+  "currentDependencyInputHashes": [
+    {
+      "path": "src/Meridian.Ui/dashboard/package.json",
+      "sha256": "92c36b89f42392f501549cfcad0821d8dd85ce4a4f137182a5a0aee5cbd31127"
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/package-lock.json",
+      "sha256": "a99337a1c038824ba37ce7909b1eda7d54f5d6cf3977fa3cb5e05cabebf1aca0"
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/postcss.config.cjs",
+      "sha256": "c3275e0c1ab2639ab056915eac2a806b997a7879c31edce8898ec443a4823a06"
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/tailwind.config.ts",
+      "sha256": "3dbe1875c20796e85f924ca116e3d41d569b75d00bae9592edbfc44c66841ad1"
+    }
+  ],
+  "observedFailure": "After npm ci, CSS imports fail because postcss.config.cjs still invokes tailwindcss directly; Tailwind 4 requires its matching PostCSS or Vite integration.",
+  "initialEvidenceLimit": "58 focused tests, TypeScript/Vite build and 16 rendered observations passed before the clean lockfile install. That installed dependency closure was not recorded; source hash binding alone does not establish reproducibility with the current lockfile.",
+  "initialFrozenArtifactsModified": false,
+  "fullCiAttempt3": {
+    "state": "failed",
+    "exitCode": 1,
+    "dotnetSuitesPassed": 19,
+    "dotnetCounts": {
+      "passed": 18973,
+      "failed": 0,
+      "skipped": 5,
+      "other": 0
+    },
+    "browserLintErrors": 0,
+    "browserLintWarnings": 105,
+    "strictTypeScript": "passed",
+    "firstBrowserBatch": {
+      "testsPassed": 112,
+      "testFilesPassed": 7,
+      "testFilesFailed": 1,
+      "failedImportSuite": "src/app.test.tsx"
+    }
+  },
+  "currentFocusedTests": {
+    "lane": "browser_current_lock_focused_tests",
+    "state": "failed",
+    "command": "npm run test:vitest -- src/screens/operations-continuity-screen.view-model.test.ts src/screens/operations-continuity-screen.test.tsx --maxWorkers=2",
+    "workingDirectory": "src/Meridian.Ui/dashboard",
+    "result": {
+      "exitCode": 1,
+      "testsPassed": 37,
+      "testFilesPassed": 1,
+      "testFilesFailed": 1,
+      "screenCasesNotExecuted": 21,
+      "failure": "Screen test file failed during CSS import: Tailwind 4 cannot be used through the inherited Tailwind 3 PostCSS configuration.",
+      "processCompletion": "Root confirmed session 7255 completed with exit 1."
+    },
+    "evidence": [
+      "browser/clean-install-tests.log.gz"
+    ]
+  },
+  "currentBuild": {
+    "lane": "browser_current_lock_build",
+    "state": "failed",
+    "command": "npm run build -- --outDir /workspace/scratch/w10-seam-clean-build",
+    "workingDirectory": "src/Meridian.Ui/dashboard",
+    "result": {
+      "exitCode": 1,
+      "processCompletionExplicitlyConfirmed": true,
+      "processCompletion": "Root confirmed session 54655 completed with exit 1; external output directory preserved tracked bundle.",
+      "failure": "Inherited Tailwind 4/PostCSS integration error."
+    },
+    "evidence": [
+      "browser/clean-build.log.gz"
+    ]
+  },
+  "remediationBoundary": "Full Tailwind migration is outside the bounded SEAM B1/D1 change. No dependency downgrade or exception was applied. Downgrading to Tailwind 3 restores the documented unaccepted high braces advisory.",
+  "securityReference": "docs/security/known-vulnerabilities.md:103",
+  "scopeDecision": "Keep the B1/D1 scope while optional broader-migration user choice remains unanswered; no affirmative choice or risk acceptance inferred.",
+  "operatorDecision": "pending",
+  "cleanDependencyInventory": "browser/clean-dependencies.json"
+}

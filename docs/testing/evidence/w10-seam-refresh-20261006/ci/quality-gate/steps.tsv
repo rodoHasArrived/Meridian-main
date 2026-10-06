@@ -1,0 +1,25 @@
+Verify .NET SDK	0	1
+Verify Python	0	0
+Restore .NET solution	0	4
+Verify .NET formatting	0	41
+Validate warning suppression inventory	0	0
+Enforce ApiClientService caller ratchet	0	1
+Enforce no-new-god-file ratchet	0	0
+Enforce consolidated-helper duplication ratchet	0	5
+Enforce inline SHA-256 hashing ratchet	0	1
+Enforce posture-environment test serialization	0	2
+Enforce server-derived ActionOrigin at endpoints	0	0
+Enforce declared file-store concurrency postures	0	1
+Enforce ledger-book-native accounting scope	0	1
+Enforce ledger dimension coverage across surfaces	0	0
+Build web workstation .NET lane	0	9
+Run .NET non-integration test projects	0	618
+Validate browser evidence reader	0	0
+Verify Node.js	0	0
+Verify npm	0	0
+Verify Python	0	0
+Install dashboard dependencies from lockfile	0	8
+Generated UI contract drift gate	0	0
+Lint dashboard source	0	21
+Enforce strictNullChecks on dashboard source	0	39
+Run dashboard tests	1	5

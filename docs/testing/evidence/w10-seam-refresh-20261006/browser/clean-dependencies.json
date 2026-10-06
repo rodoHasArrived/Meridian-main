@@ -1,0 +1,31 @@
+{
+  "nodePackages": {
+    "tailwindcss": "4.3.3",
+    "postcss": "8.5.23",
+    "vite": "8.0.16",
+    "vitest": "4.1.11"
+  },
+  "files": [
+    {
+      "path": "src/Meridian.Ui/dashboard/package.json",
+      "sha256": "92c36b89f42392f501549cfcad0821d8dd85ce4a4f137182a5a0aee5cbd31127"
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/package-lock.json",
+      "sha256": "a99337a1c038824ba37ce7909b1eda7d54f5d6cf3977fa3cb5e05cabebf1aca0"
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/postcss.config.cjs",
+      "sha256": "c3275e0c1ab2639ab056915eac2a806b997a7879c31edce8898ec443a4823a06"
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/tailwind.config.ts",
+      "sha256": "3dbe1875c20796e85f924ca116e3d41d569b75d00bae9592edbfc44c66841ad1"
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/styles/index.css",
+      "sha256": "f0df1b7d6c1705a35c139ede81ce582971bec1917e3f279004bc6abd74aa0519"
+    }
+  ],
+  "priorCaptureDependencyState": "not recorded before npm ci; source hashes alone do not prove clean dependency reproduction"
+}

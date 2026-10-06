@@ -1,0 +1,40 @@
+{
+  "applicationCandidateCommit": "2f3bef7feb23f5fa9be1a9ad27dd3d08b9a5a732",
+  "sourceBaseCommit": "9c96c3f72dd60111b62b8368d29e553ec58fd7a0",
+  "tier": "automated shared-service and HTTP endpoint fixtures; no live acceptance population",
+  "exitCode": 0,
+  "counters": {
+    "total": "550",
+    "executed": "550",
+    "passed": "550",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "times": {
+    "creation": "2026-10-06T21:41:15.2916129+00:00",
+    "queuing": "2026-10-06T21:41:15.2916129+00:00",
+    "start": "2026-10-06T21:41:10.8540152+00:00",
+    "finish": "2026-10-06T21:47:32.5826202+00:00"
+  },
+  "testDefinitionsByClass": {
+    "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests": 58,
+    "Meridian.Tests.Ui.StrategyDesignerWorkstationEndpointsTests": 15,
+    "Meridian.Tests.Ui.WorkstationEndpointsTests": 458,
+    "Meridian.Tests.Ui.ClosePublicationWorkerAuthorityTests": 7,
+    "Meridian.Tests.Ui.CloseReadinessSubjectSourceTests": 12
+  },
+  "uncompressedSha256": "075ae1b9bb06c077ca1f05475001a01ea532651046e45f62584953ef9cc44646",
+  "uncompressedBytes": 1737869,
+  "operatorDecision": "pending"
+}
