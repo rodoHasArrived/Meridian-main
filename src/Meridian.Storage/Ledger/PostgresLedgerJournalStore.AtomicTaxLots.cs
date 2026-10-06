@@ -1,5 +1,6 @@
 using System.Data;
 using System.Text.Json;
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Ledger;
 using Npgsql;
@@ -88,6 +89,12 @@ public sealed partial class PostgresLedgerJournalStore
             await transaction.CommitAsync(ct).ConfigureAwait(false);
             return replay;
         }
+
+        // Unversioned instructions preserve historical receipt fingerprints and calculations,
+        // but only an existing exact receipt may use them. New writes require a fresh preview.
+        if (command.MutationKind == AtomicTaxLotMutationKind.Amortization
+            && command.Amortization!.CalculationVersion != OpenLotAmortization.ModelVersion)
+            throw new LedgerValidationException("New amortization postings require a fresh preview using the current calculation version.");
 
         var period = await LoadPeriodAsync(
                 connection,

@@ -136,6 +136,10 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         var existing = await FindExistingPostingAsync(journalStore, ledgerBookId, sourceEventId, ct).ConfigureAwait(false);
         var hasAtomicLotMutation = isAssetAccountingEvent &&
                                    assetAuthority?.Drafted.Projection.DraftedLotMutation is { Intent: not AssetLotMutationIntentDto.None };
+        if (existing is null && hasAtomicLotMutation
+            && assetAuthority?.Drafted.Projection.DraftedLotMutation is { Intent: AssetLotMutationIntentDto.Amortize } amortization
+            && amortization.Amortization?.CalculationVersion != OpenLotAmortization.ModelVersion)
+            throw new InvalidOperationException("New amortization postings require a fresh preview using the current calculation version.");
         if (existing is not null && !hasAtomicLotMutation)
         {
             PostingRuleJournalCandidateResultDto candidateForReplay;
