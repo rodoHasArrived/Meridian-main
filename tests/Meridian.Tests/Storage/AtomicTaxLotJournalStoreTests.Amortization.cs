@@ -136,6 +136,47 @@ public sealed partial class AtomicTaxLotJournalStoreTests
 
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
+    public async Task CanonicalAmortization_LaterFifoDisposalRelievesAmortizedBasisAndReportingCertifiesIt()
+    {
+        await using var fixture = await AmortFixture.CreateAsync(premium: true);
+        await fixture.Store.AppendAssetPostingAsync(fixture.Command());
+        var amortized = (await fixture.Store.ListOpenTaxLotsAsync(fixture.BookId, AmortAccount)).Single();
+        amortized.ToOpenLot().OpenFunctionalCostBasis.Should().Be(6_930m,
+            "the premium lot carries its amortized basis, not quantity times acquisition unit cost");
+        (amortized.OpenQuantity * amortized.UnitCost).Should().NotBe(6_930m);
+
+        // A third of the remaining face relieves a third of the amortized basis.
+        var partial = await fixture.CurrentBasisDisposalAsync(20m, new DateOnly(2026, 2, 1), "amort-current-partial");
+        partial.Relief.FunctionalCostBasis.Should().Be(2_310m);
+        partial.Relief.TransactionCostBasis.Should().Be(2_100m);
+        var posted = await fixture.Store.AppendAssetPostingAsync(partial.Command);
+        posted.Mutations.Single().CostBasis.Should().Be(2_310m);
+        var remaining = (await fixture.Restart().ListOpenTaxLotsAsync(fixture.BookId, AmortAccount)).Single().ToOpenLot();
+        remaining.OpenFunctionalCostBasis.Should().Be(4_620m);
+        remaining.OpenTransactionCostBasis.Should().Be(4_200m);
+        remaining.Acquisition.Should().BeEquivalentTo(amortized.ToOpenLot().Acquisition);
+        (await fixture.Restart().AppendAssetPostingAsync(partial.Command)).IsExactReplay.Should().BeTrue();
+
+        // Closing relieves exactly the amortized basis that remains.
+        var closing = await fixture.CurrentBasisDisposalAsync(40m, new DateOnly(2026, 3, 1), "amort-current-closing");
+        closing.Relief.FunctionalCostBasis.Should().Be(4_620m);
+        await fixture.Store.AppendAssetPostingAsync(closing.Command);
+        (await fixture.Store.ListOpenTaxLotsAsync(fixture.BookId, AmortAccount)).Should().BeEmpty();
+
+        var journals = (await fixture.Store.GetByPeriodAsync(fixture.Period.PeriodId))
+            .ToDictionary(static item => item.Entry.JournalEntryId, static item => item.Entry);
+        var history = await fixture.Store.GetTaxLotDisposalHistoryAsync(fixture.BookId,
+            [partial.Command.Journal.Entry.JournalEntryId, closing.Command.Journal.Entry.JournalEntryId]);
+        foreach (var (command, relief) in new[] { partial, closing })
+        {
+            var record = history.Single(item => item.MutationBatchId == command.MutationBatchId);
+            CanonicalDisposalHistoryProjector.Project(record, journals[command.Journal.Entry.JournalEntryId],
+                fixture.BookId, "USD").CostBasis.Should().Be(relief.FunctionalCostBasis);
+        }
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task CanonicalAmortization_ReferenceChangesAndLockedPeriod_LeaveNoJournalOrMutation()
     {
         await using var fixture = await AmortFixture.CreateAsync(premium: true);
@@ -433,6 +474,26 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             return AtomicTaxLotJournalCommand.Create(Guid.NewGuid(), BookId, journal, journal.SourceEventId!.Value,
                 key, Period.Version, AtomicTaxLotMutationKind.Amortization,
                 [.. instruction.ExpectedLot.Acquisition.Evidence, instruction.SecurityEvidence], amortization: instruction);
+        }
+
+        /// <summary>
+        /// A FIFO disposal of the current (possibly amortized) lot, priced at its certified current
+        /// canonical basis so the sale books no gain or loss.
+        /// </summary>
+        public async Task<(AtomicTaxLotJournalCommand Command, OpenLotReliefResultDto Relief)> CurrentBasisDisposalAsync(
+            decimal quantity, DateOnly date, string key)
+        {
+            var lot = (await Store.ListOpenTaxLotsAsync(BookId, AmortAccount)).Single();
+            var canonical = lot.ToOpenLot();
+            var relief = new OpenLotReliefService().Select([canonical],
+                quantity * LedgerTaxLotFaceValueTerms.LedgerLotParBasis, OpenLotReliefMethod.Fifo);
+            var source = canonical.Acquisition.Evidence.Single();
+            var journal = Journal(Period, date, key, relief.TransactionCostBasis, relief.FunctionalCostBasis, assetDebit: false);
+            return (AtomicTaxLotJournalCommand.Create(Guid.NewGuid(), BookId, journal, journal.SourceEventId!.Value, key,
+                Period.Version, AtomicTaxLotMutationKind.Disposal, [source],
+                disposalSelections: [new(lot.TaxLotRecordId, lot.LotId, lot.Version, lot.OpenQuantity, quantity, 0,
+                    source.EvidenceId, lot.UnitCost, relief.FunctionalCostBasis)],
+                reliefMethod: "Fifo", policyRevision: "amort-fifo-v1"), relief);
         }
 
         private LedgerJournalEntryWrite Journal(LedgerAccountingPeriod period, DateOnly date, string key,

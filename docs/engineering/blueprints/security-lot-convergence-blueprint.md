@@ -362,9 +362,13 @@ boundary, posting is refused rather than retaining a lot basis that differs from
 The governed event spine retains its existing same-currency requirement for Security Master and
 the event's functional currency; this partial delivery does not add a cross-currency event workflow.
 The atomic boundary preserves the acquisition currencies and FX for supported store commands.
-A later discrete disposal whose acquisition unit cost differs from its restated canonical basis
-continues to fail closed through `CanonicalOpenLotDisposalGuard`; extending relief of an amortized
-basis remains separate lot-convergence work.
+When this slice landed, a later discrete disposal whose acquisition unit cost differed from its
+restated canonical basis failed closed through `CanonicalOpenLotDisposalGuard`. The current-basis
+continuation below lifts that restriction for amortized lots too:
+`AtomicTaxLotJournalStoreTests.CanonicalAmortization_LaterFifoDisposalRelievesAmortizedBasisAndReportingCertifiesIt`
+amortizes a premium face lot, then partially and fully relieves it under FIFO against PostgreSQL.
+Each disposal books exactly the amortized basis, retains the acquisition facts, replays exactly,
+and is certified by Reporting.
 
 Migration `V_ledger_040` widens existing mutation constraints without replacing acquisition facts or
 backfilling legacy rows. Exact command retries return the retained journal and mutation before
