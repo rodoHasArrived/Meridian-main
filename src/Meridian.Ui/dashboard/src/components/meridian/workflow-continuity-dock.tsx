@@ -53,7 +53,7 @@ export function WorkflowContinuityDock({
           {onEditOperatingContext ? (
             <button
               type="button"
-              className="workflow-continuity-clear focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              className="workflow-continuity-clear focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
               onClick={onEditOperatingContext}
               aria-label={viewModel.operatingScope.hasScope ? "Change operating scope" : "Set operating scope"}
               title={viewModel.operatingScope.hasScope ? "Change operating scope" : "Set operating scope"}
@@ -64,7 +64,7 @@ export function WorkflowContinuityDock({
           {viewModel.operatingScope.hasScope && viewModel.clearSubjectAriaLabel && onClearOperatingContext ? (
             <button
               type="button"
-              className="workflow-continuity-clear focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              className="workflow-continuity-clear focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
               onClick={onClearOperatingContext}
               aria-label={viewModel.clearSubjectAriaLabel}
               title={viewModel.clearSubjectAriaLabel}
@@ -150,7 +150,7 @@ export function WorkflowContinuityDock({
                     aria-label={step.ariaLabel}
                     aria-current={step.active ? "step" : undefined}
                     className={cn(
-                      "workflow-continuity-step focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                      "workflow-continuity-step focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
                       `workflow-continuity-step-${step.statusTone}`,
                       step.active && "workflow-continuity-step-active",
                       step.next && "workflow-continuity-step-next"
@@ -171,7 +171,7 @@ export function WorkflowContinuityDock({
                   aria-label={step.ariaLabel}
                   aria-current={step.active ? "step" : undefined}
                   className={cn(
-                    "workflow-continuity-step focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                    "workflow-continuity-step focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
                     `workflow-continuity-step-${step.statusTone}`,
                     step.active && "workflow-continuity-step-active"
                   )}

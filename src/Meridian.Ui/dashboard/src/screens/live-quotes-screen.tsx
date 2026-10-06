@@ -629,7 +629,7 @@ function BboPanel({ panel, icon, onSeed }: BboPanelProps) {
     : "border-danger/30 bg-danger/5 text-danger";
   const interactive = typeof onSeed === "function" && Number.isFinite(panel.price) && panel.price > 0;
   const interactiveClass = interactive
-    ? "cursor-pointer hover:bg-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+    ? "cursor-pointer hover:bg-secondary/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
     : "";
 
   if (!interactive) {
@@ -758,7 +758,7 @@ function DepthLadderSide({
             aria-expanded={level.expanded}
             aria-pressed={level.expanded}
             className={cn(
-              "relative flex w-full justify-between rounded-sm border px-2 py-1 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+              "relative flex w-full justify-between rounded-sm border px-2 py-1 text-left transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
               selectedClass
             )}
           >

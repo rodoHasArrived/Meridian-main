@@ -27,14 +27,16 @@ export interface DesignSystemBadgeProps extends HTMLAttributes<HTMLSpanElement> 
 const badgeVariantClasses: Record<NonNullable<DesignSystemBadgeProps["variant"]>, string> = {
   default: "mds-badge--info border-primary/40 bg-primary/15 text-primary",
   outline: "mds-badge--neutral border-border bg-secondary/35 text-muted-foreground",
-  success: "mds-badge--success border-success/35 bg-success/12 text-success",
-  warning: "mds-badge--warning border-warning/35 bg-warning/12 text-warning",
-  danger: "mds-badge--danger border-danger/35 bg-danger/12 text-danger",
-  paper: "mds-badge--paper border-paper/35 bg-paper/12 text-paper",
+  // These semantic variants have always been unfilled: /12 was not emitted by
+  // Tailwind 3. Retain that contrast instead of adding a new tint under v4.
+  success: "mds-badge--success border-success/35 text-success",
+  warning: "mds-badge--warning border-warning/35 text-warning",
+  danger: "mds-badge--danger border-danger/35 text-danger",
+  paper: "mds-badge--paper border-paper/35 text-paper",
   // "live" variant = LIVE environment (real-money alarm). Uses --live-env (alarm red),
   // not --live (cyan data-posture). Workspace status "live" maps to "success" in view-models.
-  live: "mds-badge--live border-live-env/40 bg-live-env/12 text-live-env",
-  research: "mds-badge--info border-primary/35 bg-primary/12 text-primary"
+  live: "mds-badge--live border-live-env/40 text-live-env",
+  research: "mds-badge--info border-primary/35 text-primary"
 };
 
 export function DesignSystemBadge({ children, className, dot = false, variant = "default", ...props }: DesignSystemBadgeProps) {

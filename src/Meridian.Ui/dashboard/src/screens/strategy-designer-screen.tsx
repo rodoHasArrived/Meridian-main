@@ -71,7 +71,7 @@ export function StrategyDesignerScreen() {
       </div>
 
       <details className="rounded-lg border border-border/70 bg-secondary/15 px-4 py-3">
-        <summary className="cursor-pointer font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+        <summary className="cursor-pointer font-semibold text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
           Templates and backtest proof
         </summary>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -84,7 +84,7 @@ export function StrategyDesignerScreen() {
       </details>
 
       <details className="rounded-lg border border-border/70 bg-secondary/15 px-4 py-3">
-        <summary className="cursor-pointer font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+        <summary className="cursor-pointer font-semibold text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
           Transition and payoff analysis
         </summary>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -520,7 +520,7 @@ function BacktestProofPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
               key={action.id}
               href={action.href}
               aria-label={action.ariaLabel}
-              className="inline-flex items-center gap-1 rounded-md border border-border/70 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+              className="inline-flex items-center gap-1 rounded-md border border-border/70 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40"
             >
               <Eye className="h-3.5 w-3.5" aria-hidden="true" />
               <span>{action.method}</span>

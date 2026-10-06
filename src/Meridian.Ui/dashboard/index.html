@@ -6,6 +6,9 @@
     <link rel="icon" href="data:," />
     <title>Meridian Web Workstation</title>
     <style>
+      /* Keep the pre-module startup shell below the loaded workstation styles. */
+      @layer theme, base, components, utilities;
+      @layer base {
       /* Programmed Institutionalism v2.0. Mirrors tokens/colors.css; the startup
          shell cannot import the token stylesheet because it must render before any
          module loads, so these values are duplicated deliberately and must be kept
@@ -184,6 +187,7 @@
           animation: none;
           width: 72%;
         }
+      }
       }
     </style>
   </head>

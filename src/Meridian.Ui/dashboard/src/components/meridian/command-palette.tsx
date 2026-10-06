@@ -222,7 +222,7 @@ export function CommandPalette({
         aria-labelledby="command-palette-title"
         aria-describedby="command-palette-route-context"
         tabIndex={-1}
-        className="command-palette-shell w-full max-w-xl outline-none"
+        className="command-palette-shell w-full max-w-xl outline-hidden"
       >
         <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-3">
           <div>
@@ -236,7 +236,7 @@ export function CommandPalette({
           </div>
           <button
             type="button"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
             onClick={closePalette}
             aria-label="Close command palette"
           >
@@ -269,7 +269,7 @@ export function CommandPalette({
           placeholder={viewModel.searchPlaceholder}
           aria-label={viewModel.searchInputLabel}
           aria-describedby={viewModel.searchDescribedBy}
-          className="mt-3 h-10 w-full rounded-md border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-primary/70 focus-visible:ring-2 focus-visible:ring-primary/35"
+          className="mt-3 h-10 w-full rounded-md border border-border/80 bg-background px-3 text-sm text-foreground outline-hidden transition-colors placeholder:text-muted-foreground focus-visible:border-primary/70 focus-visible:ring-2 focus-visible:ring-primary/35"
           onChange={(event) => setQuery(event.target.value)}
         />
         <nav className="mt-3 max-h-[62vh] overflow-y-auto pr-1" aria-label={viewModel.commandListLabel}>
@@ -292,7 +292,7 @@ export function CommandPalette({
                     to={item.route}
                     data-command-id={`recommended:${item.id}`}
                     aria-label={`Recommended command: ${item.ariaLabel}`}
-                    className="command-palette-command rounded-md border border-border/60 bg-background/70 px-3 py-2 text-sm transition-colors hover:border-primary/35 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    className="command-palette-command rounded-md border border-border/60 bg-background/70 px-3 py-2 text-sm transition-colors hover:border-primary/35 hover:bg-primary/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                     onClick={() => {
                       if (item.presetId && onPresetUsed) {
                         void Promise.resolve(onPresetUsed(item.presetId)).catch(() => undefined);
@@ -379,7 +379,7 @@ export function CommandPalette({
                     aria-label={item.ariaLabel}
                     className={cn(
                       "command-palette-command rounded-md border px-3 py-2.5 text-left text-sm transition-colors",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                      "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
                       "disabled:cursor-not-allowed disabled:opacity-60",
                       armedActionId === item.id
                         ? "border-warning/50 bg-warning/10 text-foreground"
@@ -427,7 +427,7 @@ export function CommandPalette({
                     aria-current={item.active ? "page" : undefined}
                     className={cn(
                       "command-palette-command rounded-md border px-3 py-2.5 text-sm transition-colors",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                      "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
                       item.active
                         ? "border-primary/35 bg-primary/10 text-foreground"
                         : "border-transparent hover:border-border/70 hover:bg-secondary/70"

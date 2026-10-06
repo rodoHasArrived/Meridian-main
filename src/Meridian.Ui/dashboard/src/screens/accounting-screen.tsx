@@ -468,7 +468,7 @@ function AccountingSystemReconciliationPanel({
           <AccountingValue label="Break rows" value={String(reconciliation?.breakCount ?? 0)} />
         </div>
         {providers.length > 0 ? (
-          <div className="overflow-x-auto rounded-md border border-border/70 bg-background/70 shadow-sm">
+          <div className="overflow-x-auto rounded-md border border-border/70 bg-background/70 shadow-xs">
             <table className="w-full min-w-[900px] text-sm" aria-label="External GL provider import posture">
               <thead className="bg-secondary/35 text-xs uppercase tracking-[0.14em] text-muted-foreground">
                 <tr>
@@ -544,7 +544,7 @@ function AccountingSystemReconciliationPanel({
           </div>
         ) : null}
         {mappingProfiles.length > 0 ? (
-          <div className="overflow-x-auto rounded-md border border-border/70 bg-background/70 shadow-sm">
+          <div className="overflow-x-auto rounded-md border border-border/70 bg-background/70 shadow-xs">
             <table className="w-full min-w-[760px] text-sm" aria-label="External GL mapping profiles">
               <thead className="bg-secondary/35 text-xs uppercase tracking-[0.14em] text-muted-foreground">
                 <tr>
@@ -608,7 +608,7 @@ function AccountingSystemReconciliationPanel({
         )}
         {reconciliation ? (
           <div className="grid min-w-0 gap-3 2xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.34fr)]">
-            <div className="h-fit min-w-0 overflow-hidden rounded-md border border-border/70 bg-background/70 shadow-sm">
+            <div className="h-fit min-w-0 overflow-hidden rounded-md border border-border/70 bg-background/70 shadow-xs">
               <div className="border-b border-border/70 bg-secondary/35 px-4 py-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -1469,7 +1469,7 @@ function AccountingCaseWorkbench({
                   <button
                     type="button"
                     className={cn(
-                      "rounded-md border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                      "rounded-md border px-3 py-2 text-left transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
                       row.breakId === selectedBreak?.breakId ? "border-primary/45 bg-primary/10" : "border-border/70 bg-secondary/20 hover:bg-secondary/35"
                     )}
                     aria-pressed={row.breakId === selectedBreak?.breakId}
@@ -1485,7 +1485,7 @@ function AccountingCaseWorkbench({
                 {selectedBlocker ? (
                   <Link
                     to={selectedBlocker.href ?? WORKSTATION_ROUTE_CATALOG.accountingApprovals}
-                    className="rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-left text-sm text-warning transition-colors hover:bg-warning/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    className="rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-left text-sm text-warning transition-colors hover:bg-warning/15 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                   >
                     <span className="block font-semibold">{selectedBlocker.label}</span>
                     <span className="mt-1 block text-xs leading-5">{selectedBlocker.actionLabel}</span>
@@ -2935,7 +2935,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                       aria-label={profile.selectAriaLabel}
                       onClick={() => reporting.selectProfile(profile.id)}
                       className={cn(
-                        "w-full rounded-lg border px-4 py-3 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40",
+                        "w-full rounded-lg border px-4 py-3 text-left transition-colors focus:outline-hidden focus:ring-2 focus:ring-primary/40",
                         profile.isSelected
                           ? "border-primary/45 bg-primary/10"
                           : "border-border/70 bg-secondary/30 hover:bg-secondary/45"
@@ -3132,7 +3132,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                   aria-controls={securityMaster.hasResults ? "security-master-results" : undefined}
                   aria-describedby="security-master-search-help security-master-search-status"
                   aria-invalid={securityMaster.searchErrorText ? true : undefined}
-                  className="w-full rounded-lg border border-border/70 bg-secondary/30 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  className="w-full rounded-lg border border-border/70 bg-secondary/30 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/50"
                 />
                 <p id="security-master-search-help" className="text-xs text-muted-foreground">
                   Search by ticker, ISIN, CUSIP, FIGI, or display name.

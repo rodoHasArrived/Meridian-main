@@ -262,7 +262,7 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
                 {focusCollapsible ? (
                   <button
                     type="button"
-                    className="inline-flex items-center gap-1 rounded-[2px] px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    className="inline-flex items-center gap-1 rounded-[2px] px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                     aria-expanded={!focusCollapsed}
                     aria-controls={focusRegionId}
                     onClick={() => setFocusCollapsed((collapsed) => !collapsed)}
@@ -300,7 +300,7 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
               {onContextClose ? (
                 <button
                   type="button"
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-[2px] text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="inline-flex h-6 w-6 items-center justify-center rounded-[2px] text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                   aria-label={`Close ${contextLabel}`}
                   onClick={onContextClose}
                 >

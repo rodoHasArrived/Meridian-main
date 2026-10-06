@@ -409,7 +409,7 @@ export function ReportingScheduleManagementPanel({
               <label className="mt-3 block space-y-1">
                 <span className="text-xs font-medium text-muted-foreground">Ledger dimensions (JSON)</span>
                 <textarea
-                  className="min-h-24 w-full rounded-sm border border-input bg-background px-3 py-2 font-mono text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="min-h-24 w-full rounded-sm border border-input bg-background px-3 py-2 font-mono text-sm text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                   value={scheduleDraft.runParameters.dimensionsJson}
                   onChange={(event) => onRunParameterChange("dimensionsJson", event.target.value)}
                   aria-label="Reporting schedule ledger dimensions (JSON)"
@@ -422,7 +422,7 @@ export function ReportingScheduleManagementPanel({
               <label className="mt-3 block space-y-1">
                 <span className="text-xs font-medium text-muted-foreground">Template parameters (JSON)</span>
                 <textarea
-                  className="min-h-20 w-full rounded-sm border border-input bg-background px-3 py-2 font-mono text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="min-h-20 w-full rounded-sm border border-input bg-background px-3 py-2 font-mono text-sm text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                   value={scheduleDraft.runParameters.templateParametersJson}
                   onChange={(event) => onRunParameterChange("templateParametersJson", event.target.value)}
                   aria-label="Reporting schedule template parameters (JSON)"
@@ -567,7 +567,7 @@ export function ReportingScheduleManagementPanel({
                   <ReportingScheduleField label="Report period end" value={schedule.nextAsOfLabel} />
                 </dl>
                 <details className="mt-3 rounded-md border border-border/60 bg-background/35">
-                  <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                  <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
                     Schedule details
                   </summary>
                   <dl className="grid gap-2 border-t border-border/60 px-3 py-3 sm:grid-cols-2">
@@ -690,7 +690,7 @@ export function ReportingScheduleManagementPanel({
                     <ReportingScheduleField label="Owner" value={plan.ownerLabel} />
                   </dl>
                   <details className="mt-3 rounded-md border border-border/60 bg-secondary/15">
-                    <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                    <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
                       Delivery metadata and retained access
                     </summary>
                     <div className="space-y-2 border-t border-border/60 px-3 py-3">
@@ -752,7 +752,7 @@ export function ReportingScheduleManagementPanel({
                             key={link.id}
                             href={safeHref}
                             aria-label={link.ariaLabel}
-                            className="inline-flex min-h-9 min-w-0 items-center gap-1.5 rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                            className="inline-flex min-h-9 min-w-0 items-center gap-1.5 rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-secondary/45 focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                           >
                             <span className="max-w-[12rem] truncate text-foreground">{link.label}</span>
                             <Badge variant="outline">{link.tokenLabel}</Badge>

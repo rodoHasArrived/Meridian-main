@@ -1,6 +1,8 @@
 import type { Config } from "tailwindcss";
 
 export default {
+  // Loaded explicitly by src/styles/index.css with @config. source(none) keeps
+  // Tailwind 4 scanning scoped to these workstation sources in this monorepo.
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   // The workstation is light-first. Class dark mode stays available for local
   // experiments, but the production visual contract is token-driven in CSS.

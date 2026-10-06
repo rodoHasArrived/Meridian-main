@@ -13,7 +13,7 @@ export function DecisionBriefPill({ brief }: { brief: AppShellDecisionBrief }) {
     <Link
       to={brief.actionHref}
       className={cn(
-        "masthead-status-pill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+        "masthead-status-pill focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
         `masthead-status-pill-${brief.statusTone}`
       )}
       aria-label={`${brief.label}: ${brief.title}. Status ${brief.statusLabel}. ${brief.actionLabel}.`}

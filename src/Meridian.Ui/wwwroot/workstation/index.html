@@ -6,6 +6,9 @@
     <link rel="icon" href="data:," />
     <title>Meridian Web Workstation</title>
     <style>
+      /* Keep the pre-module startup shell below the loaded workstation styles. */
+      @layer theme, base, components, utilities;
+      @layer base {
       /* Programmed Institutionalism v2.0. Mirrors tokens/colors.css; the startup
          shell cannot import the token stylesheet because it must render before any
          module loads, so these values are duplicated deliberately and must be kept
@@ -185,12 +188,13 @@
           width: 72%;
         }
       }
+      }
     </style>
-    <script type="module" crossorigin src="/workstation/assets/index-BJ9q_a6m.js"></script>
-    <link rel="modulepreload" crossorigin href="/workstation/assets/button-BzSrybpR.js">
+    <script type="module" crossorigin src="/workstation/assets/index-DAsOWcJt.js"></script>
+    <link rel="modulepreload" crossorigin href="/workstation/assets/button-Tu0QFSOM.js">
     <link rel="modulepreload" crossorigin href="/workstation/assets/chrome-bridge-B4RO-XWV.js">
     <link rel="modulepreload" crossorigin href="/workstation/assets/workstation-endpoints-BhDNm7jg.js">
-    <link rel="stylesheet" crossorigin href="/workstation/assets/index-CMWZgeO9.css">
+    <link rel="stylesheet" crossorigin href="/workstation/assets/index-BB3wRX98.css">
   </head>
   <body>
     <div id="root">

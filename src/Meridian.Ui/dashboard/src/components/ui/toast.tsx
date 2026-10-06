@@ -99,7 +99,7 @@ export function Toast({ className, onDismiss, toast }: { className?: string; onD
         <button
           type="button"
           aria-label="Dismiss notification"
-          className="text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="text-muted-foreground hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
           onClick={onDismiss}
         >
           <X className="h-3.5 w-3.5" aria-hidden="true" />

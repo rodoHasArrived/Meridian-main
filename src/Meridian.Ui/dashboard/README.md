@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-09-02
+last_reviewed: 2026-10-06
 ---
 
 # src/Meridian.Ui/dashboard
@@ -1345,6 +1345,22 @@ The final light-first workspace surface cascade now lives in `src/styles/workspa
 imported immediately after `src/styles/index.css` in `main.tsx`, so `index.css` stays focused on
 global tokens, Tailwind layers, and legacy shared rules while the workspace surface overrides remain
 order-pinned and reviewable.
+Tailwind 4 compilation uses `@tailwindcss/postcss`; the stylesheet imports `tailwindcss` and
+explicitly loads `tailwind.config.ts` with `@config`. Automatic monorepo scanning is disabled with
+`source(none)` so the config's existing dashboard content globs own utility discovery. Keep the
+Segoe UI/Cascadia font stacks, semantic colors, and radius/shadow tokens in that shared config.
+Tailwind handles CSS imports and vendor prefixes, so a separate Autoprefixer plugin is unnecessary.
+The pre-module startup CSS in `index.html` belongs to the base layer so it yields to the loaded
+workstation, and base button cursors and placeholder colors preserve the existing defaults.
+Focus utilities use `outline-hidden` to retain forced-colors outlines; `shadow-xs`,
+`backdrop-blur-sm`, and `shrink-0` retain their previous visual and flex behavior under v4.
+Semantic badges retain their unfilled backgrounds: previously unsupported `/12` utilities would
+otherwise introduce new tints and reduce text contrast. Card-title defaults live in the component
+layer so caller-supplied text-size utilities still win independently of Tailwind utility ordering.
+`src/tailwind-build.test.ts` compiles the real stylesheet through the configured PostCSS pipeline
+and checks token-backed components, responsive utilities, typography, opacity, and focus behavior.
+Any future separately processed stylesheet that uses `@apply` must first reference
+`src/styles/index.css` with `@reference` to access the workstation theme without emitting it twice.
 The root `Meridian Design System/` package is vendored as the visual source bundle for tokens,
 component references, patterns, templates, and governance scripts. The browser workstation consumes
 the package through copied `src/assets/` files and the `src/design-system/assets.ts` bridge, while

@@ -34,7 +34,7 @@ export function Stepper({ steps, activeStep = 0, onStepChange, showStepNumber = 
             onClick={() => onStepChange?.(index)}
             className={cn(
               "flex flex-1 items-center gap-2 truncate px-4 py-2.5 text-left text-xs transition-colors",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 [outline-offset:-2px]",
+              "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 [outline-offset:-2px]",
               active
                 ? "border-b-2 border-primary bg-background pb-[9px] font-semibold text-foreground"
                 : "bg-card text-muted-foreground hover:bg-[var(--ws-row-hover)] hover:text-foreground"
