@@ -268,7 +268,7 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
             LedgerPopulation = retainedPopulation
         };
         var checkpointHash = populationSnapshot.ComputeCheckpointHash(checkpoint);
-        var checkpointId = $"ledger-checkpoint-{checkpointHash[..32]}";
+        var checkpointId = ReportingRetainedLedgerPopulationValidation.BuildCheckpointId(checkpointHash);
         var evidence = ImmutableArray.CreateBuilder<string>();
         evidence.Add($"reporting-source-checkpoint:{checkpointId}:{checkpointHash}");
         evidence.Add(

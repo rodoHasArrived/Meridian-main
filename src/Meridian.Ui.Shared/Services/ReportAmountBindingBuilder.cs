@@ -22,8 +22,12 @@ public static class ReportAmountBindingBuilder
                 continue;
             var identity = JsonSerializer.Serialize(new
             {
-                artifact = "trial-balance.csv", row.Path, row.Account.Name, row.Account.AccountType,
-                row.Account.Symbol, financialAccountId = row.Account.FinancialAccountId?.ToUpperInvariant()
+                artifact = "trial-balance.csv",
+                row.Path,
+                row.Account.Name,
+                row.Account.AccountType,
+                row.Account.Symbol,
+                financialAccountId = row.Account.FinancialAccountId?.ToUpperInvariant()
             });
             result.Add(new ReportLedgerAmountBindingDto(Sha256Digest.ComputeUtf8(identity),
                 row.Path, row.AggregateBalance, snapshot.Request.BaseCurrency, snapshot.Scope,

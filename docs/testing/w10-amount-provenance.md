@@ -55,6 +55,11 @@ all derive from this retained population. Its serialized inputs, content hash, s
 and counts are retained in the source checkpoint. The checkpoint digest binds the entire population,
 including historical entries that do not appear in period activity. Primary-document rendering
 replays those inputs; current-source revalidation remains a separate release gate.
+Every artifact format and both retained run stores verify the population payload, exact dataset
+rows, accounting scope, and reconstructed source digest. A population evidence marker with missing
+or damaged retained inputs cannot issue an authoritative artifact.
+New versioned source checkpoint identities require retained inputs even if both the payload and
+evidence marker are removed. Artifact production also verifies the certified snapshot hash.
 
 Generated amount proof requires every contributing line's exact reviewed source evidence to verify.
 Sources from opening balances retain their original posting period and scoped subject while the
@@ -75,10 +80,11 @@ populations; tax-relief tests exercise nonempty serialized tuple posting lines.
 - Snapshot/storage filter: **193 passed, 0 failed, 0 skipped**, including real PostgreSQL
   repeatable-read concurrency, retained period authority, complete population replay, source
   checkpoint tampering, historical currency, and nonempty tax-relief serialization.
-- Generated report proof: **23 passed, 0 failed, 0 skipped**, including exact historical/current
-  support, guarded source opening, scope/permission denial, corrupt bindings, and rehashed
-  population or certified-dataset mismatch. The combined regression run also passed its other
-  **194** reporting and posted-proof cases.
+- Expanded report/proof regression filter: **312 passed, 0 failed, 0 skipped**, including **73**
+  generated amount and artifact-format cases. Exact historical/current support, guarded source
+  opening, scope/permission denial, corrupt bindings, and population/dataset mismatch are covered.
+  All five output formats reject damaged or removed retention and checkpoint downgrade attempts;
+  genuinely legacy checkpoint compatibility remains covered.
 - Browser report/proof filter: **98 passed** across seven suites; TypeScript, Vite production build,
   and targeted ESLint passed.
 - Chromium report-detail interactions passed at **1920 × 1080** and **1366 × 768**, plus 125% scaling:

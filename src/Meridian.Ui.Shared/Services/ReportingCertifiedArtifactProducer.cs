@@ -989,6 +989,18 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
 
     private static void ValidateManifest(ReportingOutputManifest manifest)
     {
+        if (manifest.AuthoritativeSource is { } retainedSource)
+        {
+            try
+            {
+                ReportingRetainedLedgerPopulationValidation.Validate(retainedSource, manifest.CertifiedDatasetRows);
+            }
+            catch (InvalidDataException exception)
+            {
+                throw new ReportingGovernanceException(
+                    $"Reporting manifest '{manifest.RunId}' retained ledger population could not be verified: {exception.Message}");
+            }
+        }
         if (manifest.Status != ReportingRunStatus.Draft
             || manifest.ResolvedTemplate is null
             || manifest.ResolvedParameters is null
@@ -1018,6 +1030,10 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
             throw new ReportingGovernanceException(
                 $"Reporting manifest '{manifest.RunId}' is not a complete authoritative certified Draft.");
         }
+        if (!Sha256Digest.FixedEquals(manifest.CertifiedSnapshot.SnapshotHash,
+                ReportingCertifiedManifestValidation.ComputeSnapshotHash(manifest)))
+            throw new ReportingGovernanceException(
+                $"Reporting manifest '{manifest.RunId}' no longer matches its signed certified snapshot binding.");
     }
 
     private static byte[] Utf8(string value) => Encoding.UTF8.GetBytes(value);

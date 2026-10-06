@@ -352,7 +352,8 @@ public sealed class LedgerReportingAuthoritativeSourceTests
         fixture.Parameters = fixture.Parameters with { OutputFormat = ReportingOutputFormatDto.ClientPackage };
         var priorPeriod = Guid.NewGuid();
         var openingCapital = Record(fixture, new DateTimeOffset(2026, 6, 15, 12, 0, 0, TimeSpan.Zero), 10)
-            with { PeriodId = priorPeriod };
+            with
+        { PeriodId = priorPeriod };
         var periodCapital = Record(fixture, new DateTimeOffset(2026, 7, 10, 12, 0, 0, TimeSpan.Zero), 11);
         var periodIncome = IncomeAccrualRecord(fixture) with { GlobalSequence = 12 };
         var originalPopulation = new[] { openingCapital, periodCapital, periodIncome };
@@ -443,7 +444,8 @@ public sealed class LedgerReportingAuthoritativeSourceTests
         var fixture = CreateFixture();
         fixture.Parameters = fixture.Parameters with { OutputFormat = ReportingOutputFormatDto.Pdf };
         var historical = Record(fixture, new DateTimeOffset(2026, 6, 15, 12, 0, 0, TimeSpan.Zero), 40)
-            with { PeriodId = Guid.NewGuid() };
+            with
+        { PeriodId = Guid.NewGuid() };
         var activity = Record(fixture, new DateTimeOffset(2026, 7, 10, 12, 0, 0, TimeSpan.Zero), 11);
         fixture.JournalStore.Records.AddRange([historical, activity]);
         var intent = new ReportingAuthoritativeSourceCaptureIntent("capital-account-statement");

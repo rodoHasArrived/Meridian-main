@@ -27,6 +27,145 @@ public sealed class ReportLedgerAmountProvenanceTests
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
+    public static IEnumerable<object[]> ArtifactFormatCases() => new[]
+    {
+        ReportingOutputFormatDto.Pdf, ReportingOutputFormatDto.Xlsx, ReportingOutputFormatDto.Csv,
+        ReportingOutputFormatDto.EvidenceVault, ReportingOutputFormatDto.ClientPackage
+    }.Select(format => new object[] { format });
+
+    public static IEnumerable<object[]> ArtifactPopulationTamperCases()
+    {
+        string[] conditions = ["missing-population", "missing-marker", "changed-payload",
+            "rehashed-payload-old-checkpoint", "changed-certified-rows", "changed-declared-counts",
+            "missing-population-and-marker", "downgraded-checkpoint-without-resigning"];
+        foreach (var format in ArtifactFormatCases())
+            foreach (var condition in conditions)
+                yield return [format[0], condition];
+    }
+
+    [Theory]
+    [MemberData(nameof(ArtifactFormatCases))]
+    public async Task CertifiedArtifacts_AllFormatsProduceFromAValidatedRetainedPopulation(ReportingOutputFormatDto format)
+    {
+        using var fixture = new Fixture();
+        await fixture.CaptureAsync();
+        var manifest = fixture.BuildManifest(fixture.Snapshot, format);
+        Action validate = () => ReportingCertifiedManifestValidation.Validate(manifest);
+        validate.Should().NotThrow();
+
+        var production = await new DeterministicReportingCertifiedArtifactProducer().ProduceAsync(manifest);
+
+        production.Certification.IsAuthoritative.Should().BeTrue();
+        production.Certification.SourceCheckpointHash.Should().Be(manifest.AuthoritativeSource!.CheckpointHash);
+        production.Artifacts.Select(artifact => artifact.ArtifactId).Should().Equal(manifest.Artifacts);
+        production.Artifacts.Should().OnlyContain(artifact => !artifact.Content.IsEmpty);
+        fixture.LiveJournals.VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [MemberData(nameof(ArtifactFormatCases))]
+    public async Task CertifiedArtifacts_LegacyManifestWithoutPopulationOrMarkerPreservesCompatibility(ReportingOutputFormatDto format)
+    {
+        using var fixture = new Fixture();
+        await fixture.CaptureAsync();
+        var manifest = fixture.BuildManifest(fixture.Snapshot, format);
+        var legacySource = LegacyCheckpoint(manifest.AuthoritativeSource!);
+        manifest = manifest with
+        {
+            AuthoritativeSource = legacySource,
+            CertifiedSnapshot = manifest.CertifiedSnapshot! with { SourceCheckpointId = legacySource.CheckpointId }
+        };
+        manifest = manifest with
+        {
+            CertifiedSnapshot = manifest.CertifiedSnapshot! with
+            {
+                SnapshotHash = ReportingCertifiedManifestValidation.ComputeSnapshotHash(manifest)
+            }
+        };
+        Action validate = () => ReportingCertifiedManifestValidation.Validate(manifest);
+        validate.Should().NotThrow();
+
+        var production = await new DeterministicReportingCertifiedArtifactProducer().ProduceAsync(manifest);
+
+        production.Artifacts.Select(artifact => artifact.ArtifactId).Should().Equal(manifest.Artifacts);
+        production.Artifacts.Should().OnlyContain(artifact => !artifact.Content.IsEmpty);
+        fixture.LiveJournals.VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [MemberData(nameof(ArtifactPopulationTamperCases))]
+    public async Task CertifiedArtifacts_AllFormatsRejectAlteredRetainedPopulationBeforeRendering(
+        ReportingOutputFormatDto format, string condition)
+    {
+        using var fixture = new Fixture();
+        await fixture.CaptureAsync();
+        var manifest = fixture.BuildManifest(fixture.Snapshot, format);
+        var source = manifest.AuthoritativeSource!;
+        var retained = source.LedgerPopulation!;
+        var changed = (fixture.Snapshot with { PeriodVersion = fixture.Snapshot.PeriodVersion + 1 }).Retain();
+        switch (condition)
+        {
+            case "missing-population":
+                source = source with { LedgerPopulation = null };
+                break;
+            case "missing-marker":
+                source = source with
+                {
+                    EvidenceIds = source.EvidenceIds
+                        .Where(id => !id.StartsWith("ledger-population:", StringComparison.Ordinal)).ToImmutableArray()
+                };
+                break;
+            case "changed-payload":
+                source = source with { LedgerPopulation = retained with { PayloadJson = changed.PayloadJson } };
+                break;
+            case "rehashed-payload-old-checkpoint":
+                source = source with
+                {
+                    LedgerPopulation = changed,
+                    EvidenceIds = source.EvidenceIds
+                        .Where(id => !id.StartsWith("ledger-population:", StringComparison.Ordinal))
+                        .Append($"ledger-population:{changed.SnapshotId}:{changed.ContentHashSha256}").ToImmutableArray()
+                };
+                break;
+            case "changed-certified-rows":
+                var row = new Dictionary<string, string>(manifest.CertifiedDatasetRows[0]) { ["netAmount"] = "999" };
+                manifest = manifest with { CertifiedDatasetRows = manifest.CertifiedDatasetRows.SetItem(0, row) };
+                manifest = manifest with
+                {
+                    CertifiedSnapshot = manifest.CertifiedSnapshot! with
+                    {
+                        SnapshotHash = ReportingCertifiedManifestValidation.ComputeSnapshotHash(manifest)
+                    }
+                };
+                break;
+            case "changed-declared-counts":
+                source = source with { LedgerPopulation = retained with { LedgerLineCount = retained.LedgerLineCount + 1 } };
+                break;
+            case "missing-population-and-marker":
+                source = source with
+                {
+                    LedgerPopulation = null,
+                    EvidenceIds = source.EvidenceIds
+                        .Where(id => !id.StartsWith("ledger-population:", StringComparison.Ordinal)).ToImmutableArray()
+                };
+                break;
+            case "downgraded-checkpoint-without-resigning":
+                source = LegacyCheckpoint(source);
+                manifest = manifest with
+                {
+                    CertifiedSnapshot = manifest.CertifiedSnapshot! with { SourceCheckpointId = source.CheckpointId }
+                };
+                break;
+        }
+        manifest = manifest with { AuthoritativeSource = source };
+        Action validate = () => ReportingCertifiedManifestValidation.Validate(manifest);
+        var produce = () => new DeterministicReportingCertifiedArtifactProducer().ProduceAsync(manifest).AsTask();
+
+        validate.Should().Throw<InvalidDataException>();
+        await produce.Should().ThrowAsync<ReportingGovernanceException>();
+        fixture.LiveJournals.VerifyNoOtherCalls();
+    }
+
     [Fact]
     public async Task RetainedBalance_BindsOpeningAndCurrentActivityToExactJournalsAndSourceScopes()
     {
@@ -212,7 +351,7 @@ public sealed class ReportLedgerAmountProvenanceTests
 
         AssertBlocked(packet);
         Action list = () => fixture.Service.List(Fixture.RunId, fixture.Access);
-        list.Should().Throw<ReportingGovernanceException>();
+        list.Should().Throw<InvalidDataException>();
         fixture.LiveJournals.VerifyNoOtherCalls();
     }
 
@@ -238,7 +377,8 @@ public sealed class ReportLedgerAmountProvenanceTests
                 ImmutableAccessScope = fixture.Manifest.ImmutableAccessScope! with
                 {
                     Mode = ReportingGovernanceAccessMode.Private,
-                    OwnerPrincipalId = "other-operator", AllowOwnerAccess = true
+                    OwnerPrincipalId = "other-operator",
+                    AllowOwnerAccess = true
                 }
             };
 
@@ -305,6 +445,20 @@ public sealed class ReportLedgerAmountProvenanceTests
         packet.LedgerAmount.Evidence.Should().BeEmpty();
         packet.Nodes.SelectMany(node => node.ArtifactRefs).Should().BeEmpty();
         packet.Warnings.Should().NotBeEmpty();
+    }
+
+    private static ReportingAuthoritativeSourceCheckpoint LegacyCheckpoint(ReportingAuthoritativeSourceCheckpoint source)
+    {
+        var checkpointId = "ledger-checkpoint-" + source.CheckpointHash[..32];
+        return source with
+        {
+            CheckpointId = checkpointId,
+            LedgerPopulation = null,
+            EvidenceIds = source.EvidenceIds
+                .Where(id => !id.StartsWith("ledger-population:", StringComparison.Ordinal))
+                .Select(id => id == $"reporting-source-checkpoint:{source.CheckpointId}:{source.CheckpointHash}"
+                    ? $"reporting-source-checkpoint:{checkpointId}:{source.CheckpointHash}" : id).ToImmutableArray()
+        };
     }
 
     private sealed class Fixture : IDisposable
@@ -384,7 +538,8 @@ public sealed class ReportLedgerAmountProvenanceTests
                     periodStart, cutoff, cutoff, "USD", "controller", DateTimeOffset.UtcNow,
                     lineDimensions: Dimensions), [Opening, Current], [])
             {
-                PeriodVersion = 1, DatasetRows = rows
+                PeriodVersion = 1,
+                DatasetRows = rows
             };
             Snapshot = Snapshot with { ReportAmounts = ReportAmountBindingBuilder.Build(Snapshot) };
             Manifest = BuildManifest(Snapshot);
@@ -416,7 +571,9 @@ public sealed class ReportLedgerAmountProvenanceTests
                 "ledger-amount", retainedSubject, "upload", evidenceId + ".txt",
                 Convert.ToBase64String(Encoding.UTF8.GetBytes(evidenceId)), "text/plain", "bank")
             {
-                TenantId = scope.TenantId, Scope = scope.CompanyId, Actor = "preparer"
+                TenantId = scope.TenantId,
+                Scope = scope.CompanyId,
+                Actor = "preparer"
             });
             var review = await _artifacts.ReviewDocumentAsync(intake.VaultIdentity.VaultId, intake.Document!.DocumentId,
                 scope.TenantId, scope.CompanyId, new EvidenceVaultDocumentReviewRequestDto(
@@ -436,28 +593,31 @@ public sealed class ReportLedgerAmountProvenanceTests
                 ReviewedAtUtc: review!.AuditEvent.RecordedAt, SubjectType: "ledger-amount");
         }
 
-        public ReportingOutputManifest BuildManifest(ReportingLedgerPopulationSnapshot snapshot)
+        public ReportingOutputManifest BuildManifest(ReportingLedgerPopulationSnapshot snapshot,
+            ReportingOutputFormatDto outputFormat = ReportingOutputFormatDto.Pdf)
         {
             var now = DateTimeOffset.UtcNow;
             var asOfDate = DateOnly.FromDateTime(snapshot.Request.AsOf.UtcDateTime);
             var retained = snapshot.Retain();
-            var source = new ReportingAuthoritativeSourceCheckpoint("durable-ledger", "source-alpha",
+            var source = new ReportingAuthoritativeSourceCheckpoint("durable-ledger-journal", "source-alpha",
                 Scope.TenantId, OrganizationId, Scope.CompanyId, Scope.FundProfileId,
                 Scope.LedgerBookId.ToString("D"), Scope.PeriodId.ToString("D"), "Gaap", asOfDate,
                 snapshot.Request.AsOf, retained.HighestGlobalSequence, 1, snapshot.DatasetRows.Length,
-                "pending", new string('0', 64), now, []) { LedgerPopulation = retained };
+                "pending", new string('0', 64), now, [])
+            { LedgerPopulation = retained };
             var checkpointHash = snapshot.ComputeCheckpointHash(source);
-            var checkpointId = "ledger-checkpoint-" + checkpointHash[..32];
+            var checkpointId = ReportingRetainedLedgerPopulationValidation.BuildCheckpointId(checkpointHash);
             source = source with
             {
-                CheckpointId = checkpointId, CheckpointHash = checkpointHash,
+                CheckpointId = checkpointId,
+                CheckpointHash = checkpointHash,
                 EvidenceIds = [$"reporting-source-checkpoint:{checkpointId}:{checkpointHash}",
                     $"ledger-population:{retained.SnapshotId}:{retained.ContentHashSha256}"]
             };
             var parameters = new ReportingRunParametersDto(new ReportingRunScopeDto(Scope.FundProfileId),
                 Scope.PeriodId.ToString("D"), asOfDate, new ReportingLedgerBookSelectionDto(LedgerBookId: Scope.LedgerBookId),
                 ReportingAccountingBasisDto.Gaap, "USD", ReportingConsolidationLevelDto.Fund,
-                ReportingOutputFormatDto.Pdf, ReportingFinalityDto.Draft, true, false);
+                outputFormat, ReportingFinalityDto.Draft, true, false);
             var certified = new ReportingCertifiedSnapshotScope(Scope.TenantId, OrganizationId, Scope.CompanyId,
                 Scope.FundProfileId, Scope.LedgerBookId.ToString("D"), Scope.PeriodId.ToString("D"),
                 "snapshot-alpha", new string('0', 64), "reconciliation-alpha", now, checkpointId,
@@ -475,6 +635,10 @@ public sealed class ReportLedgerAmountProvenanceTests
                 ImmutableAccessScope: new ReportingAccessScope("company-reporting", "1",
                     ReportingGovernanceAccessMode.CompanyWide, null, false, [], new string('a', 64)),
                 CertifiedSnapshot: certified, AuthoritativeSource: source, CertifiedDatasetRows: snapshot.DatasetRows);
+            manifest = manifest with
+            {
+                Artifacts = ReportingArtifactDeclaration.Build(manifest).Select(artifact => artifact.ArtifactId).ToImmutableArray()
+            };
             return manifest with
             {
                 CertifiedSnapshot = certified with { SnapshotHash = ReportingCertifiedManifestValidation.ComputeSnapshotHash(manifest) }

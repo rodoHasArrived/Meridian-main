@@ -94,8 +94,12 @@ public sealed class ReportLedgerAmountProvenanceService(
             }
             foreach (var item in verified.Evidence)
             {
-                var retained = item with { SourceScope = lineScope, SourceSubjectId = postedSubject,
-                    Route = RebindSourceRoute(item.Route, subjectId, scope, item.ContentHash) };
+                var retained = item with
+                {
+                    SourceScope = lineScope,
+                    SourceSubjectId = postedSubject,
+                    Route = RebindSourceRoute(item.Route, subjectId, scope, item.ContentHash)
+                };
                 if (!evidence.TryAdd(item.EvidenceId, retained))
                     warnings.Add("Contributing lines retain ambiguous supporting-evidence identities. Generated amount proof is blocked.");
             }

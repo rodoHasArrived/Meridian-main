@@ -24,6 +24,8 @@ including retained generated trial-balance amount bindings. Rendering and amount
 frozen journal/tax-relief inputs rather than rereading current journals. Historical-only postings
 change the source checkpoint even when period activity rows are unchanged. Legacy runs without the
 retained population cannot expose verified generated amount proof and require fresh certification.
+`ReportingRetainedLedgerPopulationValidation` verifies the same payload, scoped journals, counts,
+certified dataset, and source digest at every retained-manifest and artifact-production boundary.
 
 ## Layer responsibility
 

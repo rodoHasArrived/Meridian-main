@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Globalization;
 using System.Text.Json;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
@@ -89,43 +88,14 @@ public sealed record ReportingLedgerPopulationSnapshot(
                     || line.Dimensions?.OrganizationId != checkpoint.OrganizationId)))
             throw new ReportingGovernanceException("The retained ledger population is outside the certified accounting scope or sequence boundary.");
         if (!Sha256Digest.FixedEquals(checkpoint.CheckpointHash, snapshot.ComputeCheckpointHash(checkpoint))
-            || checkpoint.CheckpointId != $"ledger-checkpoint-{checkpoint.CheckpointHash[..32]}")
+            || checkpoint.CheckpointId != ReportingRetainedLedgerPopulationValidation.BuildCheckpointId(checkpoint.CheckpointHash))
             throw new ReportingGovernanceException("The retained population does not reproduce the certified source checkpoint digest.");
         return snapshot;
     }
 
     public string ComputeCheckpointHash(ReportingAuthoritativeSourceCheckpoint checkpoint)
-    {
-        using var stream = new MemoryStream();
-        using (var writer = new Utf8JsonWriter(stream))
-        {
-            writer.WriteStartObject();
-            writer.WriteString("sourceKind", checkpoint.SourceKind);
-            writer.WriteString("tenantId", checkpoint.TenantId);
-            writer.WriteString("organizationId", checkpoint.OrganizationId);
-            writer.WriteString("companyId", checkpoint.CompanyId);
-            writer.WriteString("fundId", checkpoint.FundId);
-            writer.WriteString("ledgerBookId", Scope.LedgerBookId);
-            writer.WriteString("accountingPeriodId", Scope.PeriodId);
-            writer.WriteString("accountingBasis", checkpoint.AccountingBasis);
-            writer.WriteString("asOfDate", checkpoint.AsOfDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-            writer.WriteString("cutoffUtc", checkpoint.CutoffUtc.ToString("O", CultureInfo.InvariantCulture));
-            writer.WriteNumber("periodVersion", PeriodVersion);
-            writer.WriteNumber("highestGlobalSequence", checkpoint.HighestGlobalSequence);
-            writer.WriteString("ledgerPopulationHash", checkpoint.LedgerPopulation!.ContentHashSha256);
-            writer.WriteStartArray("rows");
-            foreach (var row in DatasetRows)
-            {
-                writer.WriteStartObject();
-                foreach (var pair in row.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
-                    writer.WriteString(pair.Key, pair.Value);
-                writer.WriteEndObject();
-            }
-            writer.WriteEndArray();
-            writer.WriteEndObject();
-        }
-        return Sha256Digest.Compute(stream.ToArray());
-    }
+        => ReportingRetainedLedgerPopulationValidation.ComputeCheckpointHash(
+            checkpoint, Scope.LedgerBookId, Scope.PeriodId, PeriodVersion, DatasetRows);
 
     public LedgerFinancialReportPack Replay()
     {
