@@ -28,6 +28,14 @@ Load this context before generating or reviewing code for ledgers, journal entri
 
 ## Review Checklist
 
+Close-plan preparation captures reusable task configuration and explicit date rules into immutable
+template versions. Preview resolves an existing target ledger book and period, exposes owner and
+accounting-policy changes, and blocks unresolved mappings. Creation requires a current retained
+preview and an idempotency key, creates a fresh workflow and evidence requirements, and retains
+template and creation provenance. Completions, approvals, reviewed evidence, journal references,
+and period locks remain attached to the source period. Never implement rollover as a serialized
+copy of an executed workflow or calculate authoritative due dates in a workstation client.
+
 - Does the change preserve double-entry balance?
 - Are posted records immutable?
 - Is reversal/rebook supported for corrections?
