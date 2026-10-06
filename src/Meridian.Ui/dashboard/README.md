@@ -93,6 +93,25 @@ Accounting and Operations Continuity require the shared decision to match all fi
 Operations Continuity submits checklist controls from the shared workflow's explicit acknowledgment actor and time, including the first submission before any close package exists. Missing controls block submission. Rejected or reopened workflows can submit a newly reviewed cycle without reusing old package approvals. Approval decisions carry retained submission evidence; an assigned reviewer is not counted as having approved until the server records the actual decision. Close publication uses the current submission and decision history together with current prerequisite acknowledgments.
 Focused proof: `operations-continuity-screen.view-model.test.ts` and `operations-continuity-screen.test.tsx`.
 
+## Work-first Portfolio and Reporting
+
+Portfolio opens on selectable holdings before the supporting retained-record explorer and
+readiness handoff. Reporting opens on its selectable daily work queue before period production
+tools. Their compact data-confidence disclosures keep source, scope, freshness, completeness,
+and blockers visible; expanding them reveals explanations and recovery actions. The existing
+native disclosure pattern also retains full Portfolio readiness and Reporting production tools.
+
+Reporting queue selection uses `reportingWork` in the URL, preserving other query parameters
+and the hash. The selected item owns the inspector's evidence and actions. Removed or unknown
+items are explicitly unavailable, and changing financial scope clears the prior selection.
+The shared dense-row keyboard contract supports row selection, detail focus, and return focus.
+
+`src/lib/workstation-features.ts` supplies wired browser destinations to both sidebar navigation
+and local command search. Purpose descriptions and search-only aliases expose intents such as
+cash forecast, statement import, historical prices, and running reports. Local destinations remain
+searchable when remote command or entity search is unavailable; unwired routes stay excluded.
+The masthead places operator controls on a second row at laptop widths so search stays readable.
+
 ## Purpose
 
 Accounting balances and materiality labels format amounts using the supplied currency code, including signed values. Currency codes appear once even when the formatter emits the code as its symbol, and negative zero renders as zero.

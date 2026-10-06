@@ -6459,6 +6459,7 @@ Meridian-main
 │   │   │   │   │   │   ├── quant-plot.view-model.ts
 │   │   │   │   │   │   ├── report-writer-chart-preview.tsx
 │   │   │   │   │   │   ├── report-writer-grid-diff-view.tsx
+│   │   │   │   │   │   ├── reporting-hub.selection.ts
 │   │   │   │   │   │   ├── reporting-hub.test.tsx
 │   │   │   │   │   │   ├── reporting-hub.tsx
 │   │   │   │   │   │   ├── reporting-lineage-summary.test.tsx
@@ -6844,6 +6845,7 @@ Meridian-main
 │   │   │   │   │   ├── workspace.ts
 │   │   │   │   │   ├── workstation-endpoints.test.ts
 │   │   │   │   │   ├── workstation-endpoints.ts
+│   │   │   │   │   ├── workstation-features.ts
 │   │   │   │   │   ├── workstation-screen-view-states.test.ts
 │   │   │   │   │   └── workstation-screen-view-states.ts
 │   │   │   │   ├── screens
@@ -7253,6 +7255,7 @@ Meridian-main
 │   │   │   │   ├── app-shell.operating-scope.test.ts
 │   │   │   │   ├── app-shell.operating-scope.ts
 │   │   │   │   ├── app-shell.operator-focus.ts
+│   │   │   │   ├── app-shell.route-focus.test.ts
 │   │   │   │   ├── app-shell.route-focus.ts
 │   │   │   │   ├── app-shell.status-panel.ts
 │   │   │   │   ├── app-shell.trust-strip.ts

@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-10-04T00:49:22Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-10-06T22:25:50Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Contracts/README.md` | Host and Composition | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 9 |
-| `src/Meridian.FinancialOperations/README.md` | Unmapped | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 9 |
-| `src/Meridian.Storage/README.md` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 9 |
-| `src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs` | Unmapped | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 4 |
-| `src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs` | Domain, Ledger, and F# | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 4 |
-| `src/Meridian.Ledger/README.md` | Domain, Ledger, and F# | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 4 |
-| `src/Meridian.Storage/Ledger/ILedgerJournalStore.cs` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 4 |
-| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 3 |
-| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 3 |
-| `src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs` | Host and Composition | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 2 |
-| `src/Meridian.Ledger/LedgerTaxLotReliefHistoryProjector.cs` | Domain, Ledger, and F# | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 2 |
-| `src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 2 |
-| `src/Meridian.Storage/Ledger/AtomicTaxLotJournalFingerprint.cs` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 1 |
-| `src/Meridian.Storage/Ledger/Migrations/V_ledger_039__tax_lot_proceeds_allocation.sql` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 1 |
-| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ProceedsAllocation.cs` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 1 |
+| `src/Meridian.Application/README.md` | Host and Composition | `001880757` (2026-10-06T14:58:26-07:00) | 23 |
+| `src/Meridian.Storage/README.md` | Providers and Storage | `001880757` (2026-10-06T14:58:26-07:00) | 16 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `001880757` (2026-10-06T14:58:26-07:00) | 15 |
+| `src/Meridian.FinancialOperations/README.md` | Unmapped | `001880757` (2026-10-06T14:58:26-07:00) | 13 |
+| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs` | Providers and Storage | `001880757` (2026-10-06T14:58:26-07:00) | 6 |
+| `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Host and Composition | `001880757` (2026-10-06T14:58:26-07:00) | 5 |
+| `src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs` | Unmapped | `001880757` (2026-10-06T14:58:26-07:00) | 3 |
+| `src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs` | Host and Composition | `001880757` (2026-10-06T14:58:26-07:00) | 2 |
+| `src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs` | Host and Composition | `001880757` (2026-10-06T14:58:26-07:00) | 2 |
+| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Amortization.cs` | Providers and Storage | `001880757` (2026-10-06T14:58:26-07:00) | 2 |
+| `src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.PostingAuthority.cs` | Providers and Storage | `001880757` (2026-10-06T14:58:26-07:00) | 2 |
+| `src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.Aliases.cs` | Providers and Storage | `001880757` (2026-10-06T14:58:26-07:00) | 1 |
+| `src/Meridian.Infrastructure/README.md` | Providers and Storage | `06cbae74f` (2026-10-06T00:59:52Z) | 14 |
+| `src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs` | Providers and Storage | `06cbae74f` (2026-10-06T00:59:52Z) | 1 |
+| `src/Meridian.Storage/Archival/AtomicFileWriter.cs` | Providers and Storage | `06cbae74f` (2026-10-06T00:59:52Z) | 1 |
 

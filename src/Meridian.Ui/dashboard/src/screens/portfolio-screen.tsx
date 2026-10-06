@@ -595,11 +595,94 @@ export function PortfolioScreen({
       }
     : undefined;
 
+  const readinessHandoff = vm.workflowTaskPanel ? (
+    <section
+      role="region"
+      aria-label={vm.workflowTaskPanel.regionLabel}
+      className="min-w-0"
+    >
+      <TechnicalDetails
+        label={`${vm.workflowTaskPanel.title} · ${vm.workflowTaskPanel.statusLabel}`}
+        open={showBrokerageSync ? true : undefined}
+      >
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0">
+            <div className="eyebrow-label">{vm.workflowTaskPanel.eyebrow}</div>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <h3 className="text-base font-semibold text-foreground">{vm.workflowTaskPanel.title}</h3>
+              <Badge variant={workflowStatusVariant(vm.workflowTaskPanel.statusTone)}>
+                {vm.workflowTaskPanel.statusLabel}
+              </Badge>
+            </div>
+            <p className="mt-2 max-w-4xl text-sm leading-6 text-muted-foreground">
+              {vm.workflowTaskPanel.description}
+            </p>
+            <p className="mt-3 text-sm leading-6 text-foreground">{vm.workflowTaskPanel.selectedSummary}</p>
+            <div className="mt-4 flex flex-wrap gap-2" aria-label={vm.workflowTaskPanel.actionListLabel}>
+              {vm.workflowTaskPanel.actions.map((action) => (
+                <Button key={action.id} asChild variant={action.variant} size="sm">
+                  <Link to={action.href} aria-label={action.ariaLabel} aria-describedby={action.detailId}>
+                    <PortfolioWorkflowTaskActionIcon actionId={action.id} />
+                    {action.label}
+                    <span id={action.detailId} className="sr-only">{action.detail}</span>
+                  </Link>
+                </Button>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+            {vm.workflowTaskPanel.chips.map((chip) => (
+              <PortfolioChip key={chip.label} label={chip.label} value={chip.value} />
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_0.8fr]">
+          <dl className="grid gap-2 sm:grid-cols-2">
+            {vm.workflowTaskPanel.statusRows.map((field) => (
+              <div
+                key={field.label}
+                className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
+              >
+                <dt className="text-xs text-muted-foreground">{field.label}</dt>
+                <dd className={cn("text-right font-mono text-xs", detailFieldToneClass[field.tone])}>
+                  {field.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+          <TechnicalDetails
+            label="Technical source health"
+            description="Endpoint contracts supporting this workflow."
+            className="h-fit"
+          >
+            <div className="grid gap-2">
+              {vm.workflowTaskPanel.backendLinks.map((link) => (
+                <a
+                  key={link.id}
+                  href={link.href}
+                  aria-label={link.ariaLabel}
+                  className="flex min-w-0 items-center justify-between gap-3 rounded-md border border-border/60 bg-secondary/20 px-3 py-2 text-xs transition-colors hover:border-primary/50 hover:bg-primary/10"
+                >
+                  <span className="min-w-0 truncate font-medium text-foreground">{link.label}</span>
+                  <span className="shrink-0 font-mono text-muted-foreground">
+                    {link.method} {link.href}
+                  </span>
+                </a>
+              ))}
+            </div>
+          </TechnicalDetails>
+        </div>
+      </TechnicalDetails>
+    </section>
+  ) : null;
+
   return (
-    <div className="space-y-5">
+    <div className={showOverview ? "space-y-3" : "space-y-5"}>
       <StatStrip
         metrics={vm.metricsFromTrading ? vm.metricCards : vm.fallbackStats}
         label="Portfolio headline metrics"
+        compact={showOverview}
       />
 
       <section
@@ -611,7 +694,7 @@ export function PortfolioScreen({
           <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
             {routeCopy.title}
           </h2>
-          <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
+          <p className={showOverview ? "sr-only" : "mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground"}>
             {routeCopy.description}
           </p>
         </div>
@@ -642,6 +725,7 @@ export function PortfolioScreen({
 
       <OperationalTrustSummary
         label="Portfolio data confidence"
+        disclosure
         source={{
           value: vm.positionSourceLabel,
           detail: "Holdings source used by this route",
@@ -671,82 +755,7 @@ export function PortfolioScreen({
         blocker={workflowBlocker}
       />
 
-      {vm.workflowTaskPanel ? (
-        <section
-          role="region"
-          aria-label={vm.workflowTaskPanel.regionLabel}
-          className={cn("panel-surface border p-4", cashFlowBorderClass[vm.workflowTaskPanel.statusTone])}
-        >
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div className="min-w-0">
-              <div className="eyebrow-label">{vm.workflowTaskPanel.eyebrow}</div>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <h3 className="text-base font-semibold text-foreground">{vm.workflowTaskPanel.title}</h3>
-                <Badge variant={workflowStatusVariant(vm.workflowTaskPanel.statusTone)}>
-                  {vm.workflowTaskPanel.statusLabel}
-                </Badge>
-              </div>
-              <p className="mt-2 max-w-4xl text-sm leading-6 text-muted-foreground">
-                {vm.workflowTaskPanel.description}
-              </p>
-              <p className="mt-3 text-sm leading-6 text-foreground">{vm.workflowTaskPanel.selectedSummary}</p>
-              <div className="mt-4 flex flex-wrap gap-2" aria-label={vm.workflowTaskPanel.actionListLabel}>
-                {vm.workflowTaskPanel.actions.map((action) => (
-                  <Button key={action.id} asChild variant={action.variant} size="sm">
-                    <Link to={action.href} aria-label={action.ariaLabel} aria-describedby={action.detailId}>
-                      <PortfolioWorkflowTaskActionIcon actionId={action.id} />
-                      {action.label}
-                      <span id={action.detailId} className="sr-only">{action.detail}</span>
-                    </Link>
-                  </Button>
-                ))}
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-              {vm.workflowTaskPanel.chips.map((chip) => (
-                <PortfolioChip key={chip.label} label={chip.label} value={chip.value} />
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_0.8fr]">
-            <dl className="grid gap-2 sm:grid-cols-2">
-              {vm.workflowTaskPanel.statusRows.map((field) => (
-                <div
-                  key={field.label}
-                  className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
-                >
-                  <dt className="text-xs text-muted-foreground">{field.label}</dt>
-                  <dd className={cn("text-right font-mono text-xs", detailFieldToneClass[field.tone])}>
-                    {field.value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-            <TechnicalDetails
-              label="Technical source health"
-              description="Endpoint contracts supporting this workflow."
-              className="h-fit"
-            >
-              <div className="grid gap-2">
-                {vm.workflowTaskPanel.backendLinks.map((link) => (
-                  <a
-                    key={link.id}
-                    href={link.href}
-                    aria-label={link.ariaLabel}
-                    className="flex min-w-0 items-center justify-between gap-3 rounded-md border border-border/60 bg-secondary/20 px-3 py-2 text-xs transition-colors hover:border-primary/50 hover:bg-primary/10"
-                  >
-                    <span className="min-w-0 truncate font-medium text-foreground">{link.label}</span>
-                    <span className="shrink-0 font-mono text-muted-foreground">
-                      {link.method} {link.href}
-                    </span>
-                  </a>
-                ))}
-              </div>
-            </TechnicalDetails>
-          </div>
-        </section>
-      ) : null}
+      {showOverview ? null : readinessHandoff}
 
       {showBrokerageSync && vm.multiAssetCoveragePanel ? (
         <Card className={cn("panel-surface border", cashFlowBorderClass[vm.multiAssetCoveragePanel.statusTone])}>
@@ -1171,24 +1180,10 @@ export function PortfolioScreen({
       </Card>
       ) : null}
 
-      {showOverview || showAttribution ? (
-      <FinancialRecordExplorerShell
-        explorerLabel="Financial Record Explorer"
-        title="Portfolio Explorer"
-        titleId="portfolio-financial-record-explorer-title"
-        description="Open holdings, run evidence, brokerage posture, and retained proof links stay anchored to the existing portfolio read model."
-        scopeItems={financialRecordExplorerScopeItems}
-        savedViews={financialRecordExplorerSavedViews}
-        summaryItems={financialRecordExplorerSummaryItems}
-        appliedFilters={financialRecordExplorerAppliedFilters}
-        actions={financialRecordExplorerActions}
-        explorer={portfolioExplorerPresentation}
-        onSaveView={savePortfolioExplorerView}
-      >
         {showOverview ? (
         <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
           <Card className="panel-surface">
-            <CardHeader>
+            <CardHeader className="px-3 py-2">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2">
@@ -1196,7 +1191,7 @@ export function PortfolioScreen({
                     Open positions
                   </CardTitle>
                   <CardDescription className="mt-2">
-                    Open positions with recorded exposure and unrealized P&amp;L. Review mark readiness before approving valuation numbers.
+                    Select a holding to inspect its mark readiness and evidence.
                   </CardDescription>
                 </div>
                 <Badge variant="outline" aria-label={vm.positionCountLabel}>
@@ -1204,12 +1199,7 @@ export function PortfolioScreen({
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="mb-4 flex flex-wrap items-center gap-2">
-                <PortfolioChip label={vm.selectedPositionChip.label} value={vm.selectedPositionChip.value} />
-                <PortfolioChip label="Execution source" value={vm.positionSourceLabel} />
-                <PortfolioChip label={vm.runEvidenceChip.label} value={vm.runEvidenceChip.value} />
-              </div>
+            <CardContent className="px-3 py-2">
               {vm.hasPositions ? (
                 <DenseDataTable
                   columns={positionColumns}
@@ -1241,6 +1231,10 @@ export function PortfolioScreen({
                   />
                 </div>
               )}
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <PortfolioChip label="Execution source" value={vm.positionSourceLabel} />
+                <PortfolioChip label={vm.runEvidenceChip.label} value={vm.runEvidenceChip.value} />
+              </div>
             </CardContent>
           </Card>
 
@@ -1305,6 +1299,23 @@ export function PortfolioScreen({
           </aside>
         </section>
         ) : null}
+
+      {showOverview ? readinessHandoff : null}
+
+      {showOverview || showAttribution ? (
+      <FinancialRecordExplorerShell
+        explorerLabel="Financial Record Explorer"
+        title="Portfolio Explorer"
+        titleId="portfolio-financial-record-explorer-title"
+        description="Open holdings, run evidence, brokerage posture, and retained proof links stay anchored to the existing portfolio read model."
+        scopeItems={financialRecordExplorerScopeItems}
+        savedViews={financialRecordExplorerSavedViews}
+        summaryItems={financialRecordExplorerSummaryItems}
+        appliedFilters={financialRecordExplorerAppliedFilters}
+        actions={financialRecordExplorerActions}
+        explorer={portfolioExplorerPresentation}
+        onSaveView={savePortfolioExplorerView}
+      >
 
         {showAttribution ? (
         <Card className="panel-surface">

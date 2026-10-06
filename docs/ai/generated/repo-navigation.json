@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-04T00:49:22Z",
+  "generatedAt": "2026-10-06T22:25:50Z",
   "generatorVersion": "1.0",
-  "repositoryRoot": "pr-3011",
+  "repositoryRoot": "Meridian-main",
   "subsystems": [
     {
       "id": "host-shell",
@@ -2220,324 +2220,324 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Contracts/README.md",
+      "path": "src/Meridian.Application/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 9
+      "lastModified": "2026-10-06T14:58:26-07:00",
+      "lastCommit": "001880757",
+      "lastSummary": "Fix amortization authority, reference locking, and Actual coupon schedules (#3098)",
+      "touches": 23
     },
     {
       "path": "src/Meridian.Storage/README.md",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 9
+      "lastModified": "2026-10-06T14:58:26-07:00",
+      "lastCommit": "001880757",
+      "lastSummary": "Fix amortization authority, reference locking, and Actual coupon schedules (#3098)",
+      "touches": 16
     },
     {
-      "path": "src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs",
+      "path": "src/Meridian.Contracts/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-06T14:58:26-07:00",
+      "lastCommit": "001880757",
+      "lastSummary": "Fix amortization authority, reference locking, and Actual coupon schedules (#3098)",
+      "touches": 15
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/README.md",
       "subsystem": "Unmapped",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ledger/README.md",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/ILedgerJournalStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 4
+      "lastModified": "2026-10-06T14:58:26-07:00",
+      "lastCommit": "001880757",
+      "lastSummary": "Fix amortization authority, reference locking, and Actual coupon schedules (#3098)",
+      "touches": 13
     },
     {
       "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ledger/LedgerTaxLotReliefHistoryProjector.cs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/AtomicTaxLotJournalFingerprint.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_039__tax_lot_proceeds_allocation.sql",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ProceedsAllocation.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T13:47:30-07:00",
-      "lastCommit": "d1f68e14a",
-      "lastSummary": "Fix backfill timeout spans and preserve opt-in pipeline telemetry",
-      "touches": 18
-    },
-    {
-      "path": "src/Meridian.Infrastructure/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T13:47:30-07:00",
-      "lastCommit": "d1f68e14a",
-      "lastSummary": "Fix backfill timeout spans and preserve opt-in pipeline telemetry",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Application/Pipeline/EventPipeline.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T13:47:30-07:00",
-      "lastCommit": "d1f68e14a",
-      "lastSummary": "Fix backfill timeout spans and preserve opt-in pipeline telemetry",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T13:47:30-07:00",
-      "lastCommit": "d1f68e14a",
-      "lastSummary": "Fix backfill timeout spans and preserve opt-in pipeline telemetry",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/ConfigurationFeatureRegistration.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T13:47:30-07:00",
-      "lastCommit": "d1f68e14a",
-      "lastSummary": "Fix backfill timeout spans and preserve opt-in pipeline telemetry",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Platform/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-02T13:47:30-07:00",
-      "lastCommit": "d1f68e14a",
-      "lastSummary": "Fix backfill timeout spans and preserve opt-in pipeline telemetry",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Platform/Tracing/OpenTelemetrySetup.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-02T13:47:30-07:00",
-      "lastCommit": "d1f68e14a",
-      "lastSummary": "Fix backfill timeout spans and preserve opt-in pipeline telemetry",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.WashSale.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T13:42:28-07:00",
-      "lastCommit": "fdcb99488",
-      "lastSummary": "fix(ledger): preserve parcel signs and account-scoped wash-sale identities",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Core/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Application/Composition/ServiceCompositionRoot.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Core/Config/AppConfig.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Composition/HostStartup.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Core/Config/SensitiveKeyRegistry.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Core/Config/TracingConfig.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Core/Serialization/MarketDataJsonContext.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/Backfill/MarketDataTracing.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.ProviderSdk/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
-      "touches": 5
+      "lastModified": "2026-10-06T14:58:26-07:00",
+      "lastCommit": "001880757",
+      "lastSummary": "Fix amortization authority, reference locking, and Actual coupon schedules (#3098)",
+      "touches": 6
     },
     {
       "path": "src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
+      "lastModified": "2026-10-06T14:58:26-07:00",
+      "lastCommit": "001880757",
+      "lastSummary": "Fix amortization authority, reference locking, and Actual coupon schedules (#3098)",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-06T14:58:26-07:00",
+      "lastCommit": "001880757",
+      "lastSummary": "Fix amortization authority, reference locking, and Actual coupon schedules (#3098)",
       "touches": 3
     },
     {
-      "path": "src/Meridian.Application/Composition/Features/ProviderFeatureRegistration.cs",
+      "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
+      "lastModified": "2026-10-06T14:58:26-07:00",
+      "lastCommit": "001880757",
+      "lastSummary": "Fix amortization authority, reference locking, and Actual coupon schedules (#3098)",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Reconciliation/StatementDurabilityInfrastructure.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/BackfillFeatureRegistration.cs",
+      "path": "src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
+      "lastModified": "2026-10-06T14:58:26-07:00",
+      "lastCommit": "001880757",
+      "lastSummary": "Fix amortization authority, reference locking, and Actual coupon schedules (#3098)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Amortization.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-06T14:58:26-07:00",
+      "lastCommit": "001880757",
+      "lastSummary": "Fix amortization authority, reference locking, and Actual coupon schedules (#3098)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.PostingAuthority.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-06T14:58:26-07:00",
+      "lastCommit": "001880757",
+      "lastSummary": "Fix amortization authority, reference locking, and Actual coupon schedules (#3098)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.Aliases.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-06T14:58:26-07:00",
+      "lastCommit": "001880757",
+      "lastSummary": "Fix amortization authority, reference locking, and Actual coupon schedules (#3098)",
       "touches": 1
+    },
+    {
+      "path": "src/Meridian.Infrastructure/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-06T00:59:52Z",
+      "lastCommit": "06cbae74f",
+      "lastSummary": "Keep brokerage account identities out of diagnostic logs",
+      "touches": 14
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-06T00:59:52Z",
+      "lastCommit": "06cbae74f",
+      "lastSummary": "Keep brokerage account identities out of diagnostic logs",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Archival/AtomicFileWriter.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-06T00:59:52Z",
+      "lastCommit": "06cbae74f",
+      "lastSummary": "Keep brokerage account identities out of diagnostic logs",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/package-lock.json",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-06T00:05:09Z",
+      "lastCommit": "9e5a0ed7c",
+      "lastSummary": "deps(dashboard)(deps): bump postcss-selector-parser and tailwindcss",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/package.json",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-06T00:05:09Z",
+      "lastCommit": "9e5a0ed7c",
+      "lastSummary": "deps(dashboard)(deps): bump postcss-selector-parser and tailwindcss",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-05T23:20:17Z",
+      "lastCommit": "cd83aa84b",
+      "lastSummary": "Close brokerage recovery review gaps and compact terminal history",
+      "touches": 25
+    },
+    {
+      "path": "src/Meridian.Execution/README.md",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-10-05T23:20:17Z",
+      "lastCommit": "cd83aa84b",
+      "lastSummary": "Close brokerage recovery review gaps and compact terminal history",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Execution/OrderManagementSystem.Recovery.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-10-05T23:20:17Z",
+      "lastCommit": "cd83aa84b",
+      "lastSummary": "Close brokerage recovery review gaps and compact terminal history",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Execution/OrderManagementSystem.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-10-05T23:20:17Z",
+      "lastCommit": "cd83aa84b",
+      "lastSummary": "Close brokerage recovery review gaps and compact terminal history",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-10-05T23:20:17Z",
+      "lastCommit": "cd83aa84b",
+      "lastSummary": "Close brokerage recovery review gaps and compact terminal history",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Execution/BrokerageServiceRegistration.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-10-05T23:20:17Z",
+      "lastCommit": "cd83aa84b",
+      "lastSummary": "Close brokerage recovery review gaps and compact terminal history",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Execution/OrderManagementSystem.Retention.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-10-05T23:20:17Z",
+      "lastCommit": "cd83aa84b",
+      "lastSummary": "Close brokerage recovery review gaps and compact terminal history",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-10-05T23:20:17Z",
+      "lastCommit": "cd83aa84b",
+      "lastSummary": "Close brokerage recovery review gaps and compact terminal history",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-05T23:20:17Z",
+      "lastCommit": "cd83aa84b",
+      "lastSummary": "Close brokerage recovery review gaps and compact terminal history",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-05T23:20:17Z",
+      "lastCommit": "cd83aa84b",
+      "lastSummary": "Close brokerage recovery review gaps and compact terminal history",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Documents/EvidenceStorageQuotaCoordinator.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-05T22:51:01Z",
+      "lastCommit": "234172fee",
+      "lastSummary": "Harden quota portability and typed persistence",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.Export.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-05T22:51:01Z",
+      "lastCommit": "234172fee",
+      "lastSummary": "Harden quota portability and typed persistence",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Documents/EvidenceStorageQuotaOptions.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-05T22:51:01Z",
+      "lastCommit": "234172fee",
+      "lastSummary": "Harden quota portability and typed persistence",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Documents/Meridian.Documents.csproj",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-05T22:51:01Z",
+      "lastCommit": "234172fee",
+      "lastSummary": "Harden quota portability and typed persistence",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-05T22:51:01Z",
+      "lastCommit": "234172fee",
+      "lastSummary": "Harden quota portability and typed persistence",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.StorageQuota.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-05T22:51:01Z",
+      "lastCommit": "234172fee",
+      "lastSummary": "Harden quota portability and typed persistence",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-05T21:26:11Z",
+      "lastCommit": "c1342cf0e",
+      "lastSummary": "Isolate endpoint fixture dependencies and validate concurrency",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-05T21:26:11Z",
+      "lastCommit": "c1342cf0e",
+      "lastSummary": "Isolate endpoint fixture dependencies and validate concurrency",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.Composition.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-05T21:26:11Z",
+      "lastCommit": "c1342cf0e",
+      "lastSummary": "Isolate endpoint fixture dependencies and validate concurrency",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Application/Composition/ServiceCompositionRoot.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-05T21:26:11Z",
+      "lastCommit": "c1342cf0e",
+      "lastSummary": "Isolate endpoint fixture dependencies and validate concurrency",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Application/Composition/TenantScopeServiceRegistration.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-05T21:26:11Z",
+      "lastCommit": "c1342cf0e",
+      "lastSummary": "Isolate endpoint fixture dependencies and validate concurrency",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Identity/Application/UserProfileRegistry.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-05T21:26:11Z",
+      "lastCommit": "c1342cf0e",
+      "lastSummary": "Isolate endpoint fixture dependencies and validate concurrency",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Identity/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-05T21:26:11Z",
+      "lastCommit": "c1342cf0e",
+      "lastSummary": "Isolate endpoint fixture dependencies and validate concurrency",
+      "touches": 3
     }
   ],
   "recentChangesWindowDays": 14,

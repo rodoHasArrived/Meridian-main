@@ -1,6 +1,7 @@
 import { Network } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type {
   ReportingChipViewModel,
   ReportingWorkbenchAction
@@ -10,16 +11,17 @@ import type { ReportingTaskModeViewModel } from "@/screens/reporting-screen.task
 export interface ReportingWorkbenchContextProps {
   taskMode: ReportingTaskModeViewModel;
   actions: ReportingWorkbenchAction[];
+  compact?: boolean;
 }
 
-export function ReportingWorkbenchContext({ taskMode, actions }: ReportingWorkbenchContextProps) {
+export function ReportingWorkbenchContext({ taskMode, actions, compact = false }: ReportingWorkbenchContextProps) {
   return (
     <section
       role="region"
       aria-label="Reporting workbench context"
       className="flex flex-wrap items-end justify-between gap-3"
     >
-      <div className="min-w-0">
+      <div className={cn("min-w-0", compact && "sr-only")}>
         <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
           {taskMode.label}
         </h2>
