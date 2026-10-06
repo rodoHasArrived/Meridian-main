@@ -1755,7 +1755,7 @@ public sealed class StatementToDeliveryAuthorityTests
         Guid authoritativeFundAccountId,
         Guid authoritativeOrganizationId,
         Guid authoritativeLedgerBookId,
-        Guid authoritativeAccountingPeriodId) : ILedgerJournalStore, ILedgerBookService
+        Guid authoritativeAccountingPeriodId) : ILedgerJournalStore, ILedgerBookService, ILedgerReportingSnapshotSource
     {
         private readonly List<LedgerJournalEntryRecord> _records = [];
         private readonly LedgerBookRecord _book = new(
@@ -1920,16 +1920,35 @@ public sealed class StatementToDeliveryAuthorityTests
             CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            IReadOnlyList<LedgerJournalEntryRecord> selected = _records
+            return Task.FromResult(SelectRecords(query));
+        }
+        public Task<LedgerReportingSnapshot> CaptureReportingSnapshotAsync(
+            LedgerJournalEntryQuery query,
+            Guid? accountingPeriodId = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (accountingPeriodId.HasValue
+                && (accountingPeriodId.Value != authoritativeAccountingPeriodId
+                    || query.LedgerBookId != authoritativeLedgerBookId))
+            {
+                throw new InvalidDataException("The report period escaped the authoritative ledger book.");
+            }
+            return Task.FromResult(new LedgerReportingSnapshot(
+                SelectRecords(query),
+                [],
+                accountingPeriodId.HasValue ? _period : null));
+        }
+        private IReadOnlyList<LedgerJournalEntryRecord> SelectRecords(LedgerJournalEntryQuery query) =>
+            _records
                 .Where(record =>
-                    (!query.PeriodId.HasValue || record.PeriodId == query.PeriodId.Value)
+                    (!query.LedgerBookId.HasValue || query.LedgerBookId.Value == authoritativeLedgerBookId)
+                    && (!query.PeriodId.HasValue || record.PeriodId == query.PeriodId.Value)
                     && (!query.AggregateId.HasValue || record.AggregateId == query.AggregateId.Value)
                     && (!query.OccurredFrom.HasValue || record.Entry.Timestamp >= query.OccurredFrom.Value)
                     && (!query.OccurredTo.HasValue || record.Entry.Timestamp <= query.OccurredTo.Value)
                     && record.Entry.Lines.Any(line => DimensionsMatch(line.Dimensions, query.LineDimensions)))
                 .ToArray();
-            return Task.FromResult(selected);
-        }
         public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(
             Guid periodId,
             CancellationToken ct = default) =>
