@@ -18,11 +18,24 @@ This is the canonical operator procedure lane for Interactive Brokers setup and 
 
 1. Install IB API SDK locally (not committed) into approved local vendor path.
 2. Choose mode:
-   - `EnableIbApiSmoke` for compile verification,
+   - `EnableIbApiSmoke` for local-stub compile and reconnect verification,
    - `EnableIbApiVendor` for native runtime.
 3. Build and validate selected mode.
 4. Configure socket + optional Client Portal settings.
 5. Run staged connectivity and trade-flow checks before live routing.
+
+## Prerequisites and execution context
+
+- Run source build commands in PowerShell 7 from the repository root with the pinned .NET SDK.
+  For a workstation launch, complete [preflight](preflight-checklist.md) for persistence and a
+  signed-in operator with the required provider/workflow permissions.
+- Obtain the official SDK separately and identify the actual `CSharpAPI.csproj` or `CSharpAPI.dll`.
+  The SDK and provider credentials do not belong in source control.
+- Start a paper TWS or IB Gateway session and confirm its configured socket port before running
+  the connectivity script. TWS normally uses `7497`; IB Gateway normally uses `4002`.
+- Run host checks in a second terminal using the
+  [authenticated session](preflight-checklist.md#authenticated-evidence-collection). A build or
+  successful TCP connection alone does not verify account identity, entitlements, or order routing.
 
 ## Flex Web Service statement setup
 
@@ -46,8 +59,9 @@ provider-prime scope on the retained evidence and Margin Control Center rollup.
 
 ## Setup modes
 
-- Guidance: default runtime behavior with IB guidance only.
-- Smoke: compile-only verification of IB API path.
+- Default: no official SDK; the standard market-data client uses its simulator. This does not
+  establish a TWS/Gateway connection or validate a real account.
+- Smoke: compile and reconnect verification of the IB API path against the local stub.
 - Vendor: native IB connectivity with local API SDK.
 
 Use vendor mode for operational validation and evidence, never as a blind default in production.
@@ -55,12 +69,26 @@ Use vendor mode for operational validation and evidence, never as a blind defaul
 ## Build commands
 
 ```powershell
+# Standard build (no official SDK)
 dotnet build src/Meridian.Infrastructure/Meridian.Infrastructure.csproj -c Release -p:EnableWindowsTargeting=true
+# Compile-only API stub; choose this separately from vendor mode
 dotnet build src/Meridian.Infrastructure/Meridian.Infrastructure.csproj -c Release -p:EnableWindowsTargeting=true -p:EnableIbApiSmoke=true
-dotnet build src/Meridian.Infrastructure/Meridian.Infrastructure.csproj -c Release -p:EnableWindowsTargeting=true -p:EnableIbApiVendor=true
 ```
 
-Smoke and vendor modes must not be mixed.
+Choose the intended build mode; smoke and vendor modes must not be mixed. Use the vendor command
+below with an explicit SDK input instead of assuming that `EnableIbApiVendor=true` locates one.
+
+The `IB API Smoke Build` workflow also runs the reconnect regression with the stub enabled:
+
+```powershell
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release -p:EnableWindowsTargeting=true -p:EnableIbApiSmoke=true --filter "FullyQualifiedName~IBMarketDataClientRuntimeReconnectTests" --logger "trx;LogFileName=ibapi-runtime-reconnect.trx" --results-directory artifacts/test-results/ibapi-smoke
+python build/scripts/ci/validate-test-results.py --results-dir artifacts/test-results/ibapi-smoke --require-trx-prefix ibapi-runtime-reconnect --output artifacts/test-results/ibapi-smoke/test-evidence.json
+```
+
+This slice requires the runtime callback and verifies retained trade/depth subscriptions are replayed
+once after connection loss. Missing or empty TRX evidence, failures, and skips fail the workflow;
+the TRX and JSON summary are uploaded even on failure. This stub evidence does not establish
+connectivity to TWS/Gateway or replace the official-SDK runtime lane.
 
 ### Supported official-SDK runtime lane
 
@@ -70,14 +98,17 @@ default to `false`. Vendor mode is supported only with an official `CSharpAPI.cs
 by the protected paper integration lane with one SDK input and a paper TWS/Gateway socket:
 
 ```powershell
+$ibApiProjectPath = Read-Host 'Full path to the official CSharpAPI.csproj'
 pwsh scripts/dev/build-ibapi-vendor.ps1 `
-  -IBApiProjectPath 'D:\vendor\IBApi\TWS API\source\CSharpClient\client\CSharpAPI.csproj' `
+  -IBApiProjectPath $ibApiProjectPath `
   -SmokeHost '127.0.0.1' `
   -SmokePort 7497
 ```
 
 `build-ibapi-vendor.ps1` compiles against the official SDK and verifies only TCP reachability to
 the specified paper socket. It does not authenticate, request market data, or place an order.
+Use `-IBApiDllPath` instead of `-IBApiProjectPath` for an official DLL, and change `-SmokePort` to
+the actual paper socket port. Do not supply both SDK inputs.
 See [Interactive Brokers API Compatibility](../reference/interactive-brokers-api-compatibility.md)
 for the tested-version evidence and protected GitHub Actions environment contract.
 
@@ -87,7 +118,7 @@ In TWS/Gateway:
 
 - enable socket API clients,
 - allow localhost,
-- set paper port `7497` during initial validation,
+- confirm the paper socket port (`7497` for TWS or `4002` for IB Gateway unless customized),
 - set live port only after explicit operator approval,
 - disable read-only API if order routing is required.
 
@@ -105,6 +136,20 @@ In TWS/Gateway:
 - collect sanitized validation artifacts per provider-validation lane,
 - include timestamps, mode, host/port, and evidence of command/endpoint checks,
 - keep failures plus rollback actions in operator inbox.
+
+## Expected results and recovery
+
+The vendor script must exit successfully after both compilation and TCP reachability checks.
+Then verify the intended paper account, provider status, and entitlement-dependent operations
+through the workstation; keep this evidence separate from compile/smoke output.
+
+| Failure | Next action |
+| --- | --- |
+| Missing SDK or mixed smoke/vendor flags | Correct the project/DLL path or select one mode, then rebuild. |
+| TCP timeout or connection refused | Confirm paper TWS/Gateway is running, socket API is enabled, localhost is allowed, and the script uses that application's configured port. |
+| Connected socket but missing data or account access | Inspect provider diagnostics and entitlements; TCP reachability does not prove an authenticated API session. |
+| Host still reports simulation | Confirm the launched host includes the vendor-enabled dependency build; preserve the reported mode rather than treating simulated output as provider proof. |
+| Flex fetch or parsing failure | Verify the `ib-flex` vault record and query scope, retain sanitized failure evidence, and follow [statement reconciliation](statement-reconciliation-report-operations.md). |
 
 ## Runbook links
 

@@ -374,6 +374,14 @@ public sealed class BrokeragePortfolioSyncServiceTests
 
             var reconciliationResults = await fundAccountService.GetReconciliationResultsAsync(reconciliationRuns[0].ReconciliationRunId, cts.Token);
             reconciliationResults.Should().Contain(result => result.Category == "Cash");
+
+            await service.LinkAccountAsync(fundAccountId,
+                new BrokerageAccountLinkRequestDto("alpaca", "PA-RELINKED", "Relinked account", "tests"), cts.Token);
+            var relinkedStatus = await service.GetStatusAsync(fundAccountId, cts.Token);
+            relinkedStatus.ExternalAccountId.Should().Be("PA-RELINKED");
+            relinkedStatus.Health.Should().Be(WorkstationBrokerageSyncHealth.Stale,
+                "an explicit relink must not reuse the previous broker account's projection");
+            relinkedStatus.LastSuccessfulSyncAt.Should().BeNull();
         }
         finally
         {

@@ -1078,7 +1078,7 @@ public static class FundAccountEndpoints
             .ConfigureAwait(false);
     }
 
-    private static async Task<bool> CanAccessFundAccountBrokerageSyncAsync(
+    internal static async Task<bool> CanAccessFundAccountBrokerageSyncAsync(
         Guid accountId,
         HttpContext context,
         bool requireWriteAccess = false)

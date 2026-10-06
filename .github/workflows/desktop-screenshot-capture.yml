@@ -183,15 +183,8 @@ jobs:
 
           Write-Host "[INFO] Prepared $($entries.Count) screenshot file(s) for the complete desktop screenshot artifact."
 
-      - name: Upload screenshot artifacts
-        if: ${{ steps.capture_desktop.outcome == 'success' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: desktop-screenshots-${{ github.run_number }}
-          path: ${{ steps.validate_output_dir.outputs.safe_output_dir }}/*.png
-          if-no-files-found: ignore
-          retention-days: 14
-
+      # The complete archive already includes these catalog PNGs as well as
+      # workflow captures and a manifest; retain one authoritative download.
       - name: Upload complete screenshot artifact
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -1,0 +1,489 @@
+{
+  "schemaVersion": 1,
+  "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "f268e37744fae7518e71c17af955388a22a30016d3c184744908dc6dc2f63248"
+    },
+    {
+      "path": "browser/attempts.json",
+      "sha256": "c5680b54fdd19477c0def267a7499dd092c382d8d3ad5e6c087233ba57666f11"
+    },
+    {
+      "path": "browser/browser-evidence.md",
+      "sha256": "e86a3af57a674c1a9c4abca5e2d87482eed15a351113e688a21781273df20dde"
+    },
+    {
+      "path": "browser/build.log",
+      "sha256": "c2f7a9d4195b5e9a3b2ce0c8061e646d7ae0775f891b1e117bb19141022edfc3"
+    },
+    {
+      "path": "browser/capture.log",
+      "sha256": "9ac422874f1a20e991d70b58c31393aba3ca1ba888144fe9790562b9b72e022d"
+    },
+    {
+      "path": "browser/capture.mjs",
+      "sha256": "45da1fc19d3e0a5f07daf29c47419398acd1576a02043a3ac47cc6a807015df2"
+    },
+    {
+      "path": "browser/evidence/cases.json",
+      "sha256": "8a4b9272e3a07c2f180e6b36bcd00b43a27a9416b91f422872dff12fcf240f26"
+    },
+    {
+      "path": "browser/evidence/findings.json",
+      "sha256": "b62d0c0d3547afb7ff17ec3fd74f954eb9972756db46b810e7b1029ed2f62849"
+    },
+    {
+      "path": "browser/evidence/network-observations.json",
+      "sha256": "9ac21319ceef112c34294a9821f035b2b31ce47975a88246b257c6ef1f4e1525"
+    },
+    {
+      "path": "browser/evidence/provenance.json",
+      "sha256": "3ead803874fa20bea6a4c8d229849d0e1a1164feeb6e6fdaaf68242fbfec30cf"
+    },
+    {
+      "path": "browser/evidence/requests-responses.json",
+      "sha256": "b3efc71631d1ed605f11e041c32235432f5d8183920d4d04cd290a6324341f34"
+    },
+    {
+      "path": "browser/evidence/screenshots/M-refusal-repair.png",
+      "sha256": "87fc0276e3340ae107c39e1fc5888a5bd9e4b33e2a92415bddb5c89cb50d8cd3"
+    },
+    {
+      "path": "browser/evidence/screenshots/M-refusal.png",
+      "sha256": "52a0a937f86a258c7021026a9ddb8550e0f05f6fca5276cdd393014af7f55a5b"
+    },
+    {
+      "path": "browser/evidence/screenshots/M1-fresh-1366x768.png",
+      "sha256": "0acb29c67af58fea3c7692c35ef442a284c96646aef00bb4d16b2a9b126edf8c"
+    },
+    {
+      "path": "browser/evidence/screenshots/M1-fresh.png",
+      "sha256": "f0109dd6e75cd98b0cae2ad8a324005dddca423b543fcae1ffcaf991c552848f"
+    },
+    {
+      "path": "browser/evidence/screenshots/M10-unsupported-override-simulation-repair.png",
+      "sha256": "87fc0276e3340ae107c39e1fc5888a5bd9e4b33e2a92415bddb5c89cb50d8cd3"
+    },
+    {
+      "path": "browser/evidence/screenshots/M10-unsupported-override-simulation.png",
+      "sha256": "ef5375a0946dcb19f8dbc0a5901db1462332e37c02c47a639f384a06411edd7a"
+    },
+    {
+      "path": "browser/evidence/screenshots/M2-stale-repair.png",
+      "sha256": "87fc0276e3340ae107c39e1fc5888a5bd9e4b33e2a92415bddb5c89cb50d8cd3"
+    },
+    {
+      "path": "browser/evidence/screenshots/M2-stale.png",
+      "sha256": "6fa74f655edc4068255d2606a5f0829c424a02c735498799d5952f441889b432"
+    },
+    {
+      "path": "browser/evidence/screenshots/M3-future-repair.png",
+      "sha256": "87fc0276e3340ae107c39e1fc5888a5bd9e4b33e2a92415bddb5c89cb50d8cd3"
+    },
+    {
+      "path": "browser/evidence/screenshots/M3-future.png",
+      "sha256": "aedceb1df421356df1db8e64dbfc4a8a6297f9ba0296a030f3fdde9327a7c4b1"
+    },
+    {
+      "path": "browser/evidence/screenshots/M4-missing-date-repair.png",
+      "sha256": "87fc0276e3340ae107c39e1fc5888a5bd9e4b33e2a92415bddb5c89cb50d8cd3"
+    },
+    {
+      "path": "browser/evidence/screenshots/M4-missing-date.png",
+      "sha256": "e05d63f52623be05a129de67937210d482263d4d55b798467c49d99db74ec4d6"
+    },
+    {
+      "path": "browser/evidence/screenshots/M5-coverage-repair.png",
+      "sha256": "87fc0276e3340ae107c39e1fc5888a5bd9e4b33e2a92415bddb5c89cb50d8cd3"
+    },
+    {
+      "path": "browser/evidence/screenshots/M5-coverage.png",
+      "sha256": "b6c02e612bc656486704a7eb3ebfcde06b33e6c45d02696713b48c48fec597c7"
+    },
+    {
+      "path": "browser/evidence/screenshots/M6-confidence-repair.png",
+      "sha256": "87fc0276e3340ae107c39e1fc5888a5bd9e4b33e2a92415bddb5c89cb50d8cd3"
+    },
+    {
+      "path": "browser/evidence/screenshots/M6-confidence.png",
+      "sha256": "572de289e55971f564630cdd1561e879e22967d1dab9b02f8df40ffbcc0e050e"
+    },
+    {
+      "path": "browser/evidence/screenshots/M8-delayed-old-preview.png",
+      "sha256": "8ec7b85fa892a5ba2d68ef95514c397f191de18d68c617cebaba6cb8aadfa862"
+    },
+    {
+      "path": "browser/evidence/screenshots/S1-current-scope-1366x768.png",
+      "sha256": "85789ca40b6b0860757ad530b9652257ac94ed568c1998c73d8d077275477d24"
+    },
+    {
+      "path": "browser/evidence/screenshots/S1-current-scope.png",
+      "sha256": "aa841665632dc20d34b0fa2ea01d7a21af2e298f1e2e570f746475819e7a58ae"
+    },
+    {
+      "path": "browser/evidence/screenshots/S2-missing-entityId.png",
+      "sha256": "3e2001ca4116254098ae2364c6ec8845127fd76ebdcfa8d13e3a37efc1420d69"
+    },
+    {
+      "path": "browser/evidence/screenshots/S2-missing-fundAccountId.png",
+      "sha256": "640b0776330c71cf3f20ea07f0c66dfc15819bb97c761c244bcae25083822b1b"
+    },
+    {
+      "path": "browser/evidence/screenshots/S2-missing-fundProfileId.png",
+      "sha256": "47ec1e1b7e6bcc119a4cc80b7181637f3d0be55833216d9553471ea093a741d6"
+    },
+    {
+      "path": "browser/evidence/screenshots/S2-missing-ledgerBookId.png",
+      "sha256": "7d8ccc2bf7361a83c01b3385b921c554f302c621863c9d1ac1fffdfb0451f9ce"
+    },
+    {
+      "path": "browser/evidence/screenshots/S2-missing-periodId.png",
+      "sha256": "4fc827b7a5e2e23252887c42da8883c339279392aabe58ac909888909e805fe3"
+    },
+    {
+      "path": "browser/evidence/screenshots/S3-foreign-scope.png",
+      "sha256": "9f10fe8efc9a0d0b76c8a552942bc4e4d52c2dbf71288f98c2a10d09bd2ce362"
+    },
+    {
+      "path": "browser/evidence/screenshots/S4-accounting-details.png",
+      "sha256": "a0274f35d5313bd9bea24a83fea7b9695f343c0af7a1f44ac640c1ce6ad79305"
+    },
+    {
+      "path": "browser/evidence/screenshots/S4-missing-context.png",
+      "sha256": "e82ba3a4fb066b7a24935b103b5f5ff653937048bdbb4b1dae42173472ada43c"
+    },
+    {
+      "path": "browser/evidence/screenshots/S4-missing-repair-context.png",
+      "sha256": "e82ba3a4fb066b7a24935b103b5f5ff653937048bdbb4b1dae42173472ada43c"
+    },
+    {
+      "path": "browser/evidence/screenshots/S4-missing-repair.png",
+      "sha256": "e82ba3a4fb066b7a24935b103b5f5ff653937048bdbb4b1dae42173472ada43c"
+    },
+    {
+      "path": "browser/evidence/screenshots/S4-missing.png",
+      "sha256": "2a0d9c6456b1247c9fc04a0540496eaa9fe6ff6f4328202eb6a4e46088406e9d"
+    },
+    {
+      "path": "browser/evidence/screenshots/S5-accounting-details.png",
+      "sha256": "01fabfb767c6aef679387f91f13bc758ea4f5e97f7874d2be6b9aabf449c2bca"
+    },
+    {
+      "path": "browser/evidence/screenshots/S5-stale-context.png",
+      "sha256": "e82ba3a4fb066b7a24935b103b5f5ff653937048bdbb4b1dae42173472ada43c"
+    },
+    {
+      "path": "browser/evidence/screenshots/S5-stale-repair-context.png",
+      "sha256": "e82ba3a4fb066b7a24935b103b5f5ff653937048bdbb4b1dae42173472ada43c"
+    },
+    {
+      "path": "browser/evidence/screenshots/S5-stale-repair.png",
+      "sha256": "e82ba3a4fb066b7a24935b103b5f5ff653937048bdbb4b1dae42173472ada43c"
+    },
+    {
+      "path": "browser/evidence/screenshots/S5-stale.png",
+      "sha256": "3d4ea548d8740a57947bd2e236081fd8e6cafd7596c048e930b571de75ad6baa"
+    },
+    {
+      "path": "browser/evidence/screenshots/S6-repair.png",
+      "sha256": "e82ba3a4fb066b7a24935b103b5f5ff653937048bdbb4b1dae42173472ada43c"
+    },
+    {
+      "path": "browser/evidence/screenshots/S6-unavailable.png",
+      "sha256": "e82ba3a4fb066b7a24935b103b5f5ff653937048bdbb4b1dae42173472ada43c"
+    },
+    {
+      "path": "browser/evidence/screenshots/S7-refusal-context.png",
+      "sha256": "f294706659b60c03d5b3c1e7ca7af2e9df74264e03da22a62365cb06490ee830"
+    },
+    {
+      "path": "browser/evidence/screenshots/S7-refusal.png",
+      "sha256": "fc4e6c9502dde8c89250447ac6a1574a3dc054f89c0fdd927bc3024fed2de1b8"
+    },
+    {
+      "path": "browser/evidence/screenshots/S7-repair-context.png",
+      "sha256": "e82ba3a4fb066b7a24935b103b5f5ff653937048bdbb4b1dae42173472ada43c"
+    },
+    {
+      "path": "browser/evidence/screenshots/S7-repair.png",
+      "sha256": "11e8e8a956d941005c2824098b775253d12715807de98f02b8b316345400e18b"
+    },
+    {
+      "path": "browser/evidence/screenshots/S8-delayed-old-response.png",
+      "sha256": "174e11fbb46a4b3d536e62ea24807e5b2ce96e49dcdcd6554883915b1053ecb4"
+    },
+    {
+      "path": "browser/evidence/screenshots/S8-repair.png",
+      "sha256": "ee8953a2c5a6276200de50dece8f70f08b688a1bb8d63f9eb407415c0bd23e38"
+    },
+    {
+      "path": "browser/vitest.log.gz",
+      "sha256": "9811e189877e6d5cbf1c479d8685574d90898420501fdb27b8578156a750c3e8"
+    },
+    {
+      "path": "case-records.json",
+      "sha256": "20cc368ab467a31825e9a26d7ad212d0838e8c2225b4a9b8ec0aa846dcf92e60"
+    },
+    {
+      "path": "criteria-review.md",
+      "sha256": "d99f97ff6c6cd47c393b67209e3e763ec42de97dfdd0415cadae2f4da092cc51"
+    },
+    {
+      "path": "desktop/desktop-evidence.md",
+      "sha256": "abd5886d6c79aa50333bdafdcd0e2520846957aa8dac6b697b319f1ceab09827"
+    },
+    {
+      "path": "desktop/inspect_desktop_support.py",
+      "sha256": "d4ed750ce7860606ea25686f7ca1d1cf65853a300ef7decbc116b437d744a7fd"
+    },
+    {
+      "path": "desktop/source-inventory.json",
+      "sha256": "bd6c988f9b892f08a3ea92df2304c95d27a24f061a42064038ec511572bd969a"
+    },
+    {
+      "path": "desktop/wpf-finance-ux-static.md",
+      "sha256": "0324850f5c429ba7e441d1c90b30d2791161d2e519fd24701c688267f5c78c38"
+    },
+    {
+      "path": "docs-ci.log.gz",
+      "sha256": "e92742138ab8ca742886cb980593c2f819748e91bd7e0e9869ada8dce560d8e8"
+    },
+    {
+      "path": "full-ci.log.gz",
+      "sha256": "b7a86b41a759e1dee68040bf22ae573d50c2217f44ec00fa0d742ce89bf95c51"
+    },
+    {
+      "path": "hosted-checks.json",
+      "sha256": "127a53affd17049bd6d5f0512a08702af2918610bbb86521a7c5d3bfd3d6775b"
+    },
+    {
+      "path": "integrity-validation.json",
+      "sha256": "795b1cec0b6eea1e22d9e99a67b0444a7bc6472f5e815dc3dca12f2c5f6b2de4"
+    },
+    {
+      "path": "population.json",
+      "sha256": "26a13b1ae1885d3cb855fbc96ba338da472ce0de9e2ff3d13aef394af7130294"
+    },
+    {
+      "path": "server/acceptance-support.trx.gz",
+      "sha256": "dd26c4d02467d030f320f20f27bb38f2ba51a799669f64398ddcae93e5960a69",
+      "compression": "gzip",
+      "originalPath": "server/acceptance-support.trx",
+      "uncompressedSizeBytes": 1716443,
+      "uncompressedSha256": "b3f39ac1e5ffc764556fe23b309de49940cef4f87a80a713411ba08e1b48b3bf"
+    },
+    {
+      "path": "server/focused-tests.log",
+      "sha256": "5301210eeaa1b2a4154a684004355c83482e7f34b04b7e2ec3f33428b6b86047"
+    },
+    {
+      "path": "server/server-evidence.md",
+      "sha256": "1ec06703112e2f3358d96e5e26b02d8a6c7da16b7bbbf0b0a2e09626db6ab665"
+    },
+    {
+      "path": "server/summary.json",
+      "sha256": "2c07a2461b82756f63e57da977b7d8d7cef09d6562ad6584bbe19e65ad35ee2e"
+    },
+    {
+      "path": "validation.json",
+      "sha256": "78e33c03416e392d182aeef2fc5b57d5f69337e3dd7db15b38226714cd80a85a"
+    },
+    {
+      "path": "verify_packet.py",
+      "sha256": "0e628ebd3a09f52d622fe5700d186ced21259d5545fd404bd6e734df457d47a8"
+    }
+  ],
+  "sourceHashes": [
+    {
+      "path": "docs/engineering/plans/wpf-web-ui-alignment-plan.md",
+      "sha256": "ae8c780d6263f868c2163aa5baffcafc5d99c81855e4ff5f1e3f791699ae1e1d"
+    },
+    {
+      "path": "docs/product/meridian-design-document.md",
+      "sha256": "9fc288c708668bee29ce0c5be21c0f883ea9d3ba779313be2d46a01043711ccd"
+    },
+    {
+      "path": "docs/roadmap/data/roadmap-items.yml",
+      "sha256": "d2d3d162867c47a6185f8a3b85fd177d82d0f934c2bd43c0faf28c605af80c9a"
+    },
+    {
+      "path": "scripts/dev/capture-web-screenshots.mjs",
+      "sha256": "47cb030abc856ec5a2dc420e3fa5deb2d9a59b6576f32f826919f8f6a06eb919"
+    },
+    {
+      "path": "scripts/dev/web-screenshot-fixtures.json",
+      "sha256": "ff65478e972db1fbb6a659752abbd9b4881efde7eaf7e5bb795babc2d757fa7f"
+    },
+    {
+      "path": "src/Meridian.Application/Accounting/DailyMarkToMarketService.cs",
+      "sha256": "aaca34c30e4d6d3b9dbb1be906be955bb0adfdca973ab1a7cb923ddc9b92849c"
+    },
+    {
+      "path": "src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs",
+      "sha256": "940dccf36ca35c4fd3337ce7a44cf04f363dace1404ea7f33a6a73310e38d27c"
+    },
+    {
+      "path": "src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs",
+      "sha256": "3afc1ab8b8b5d37aed48f257d57ea0e802202d3375df42ee260cb30710d9ea20"
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/OperationsContinuity/CloseReadinessProjection.cs",
+      "sha256": "80db22ee397cf62171c3731738685b69b6803f93d065c1c1d35e76801f85daf4"
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.CloseInputs.cs",
+      "sha256": "f7609d500e7a2467fd3501c20961b996dce44c097b3ab88c798b9180de55a837"
+    },
+    {
+      "path": "src/Meridian.Ledger/ValuationFreshnessPolicy.cs",
+      "sha256": "f8277206b20a5deebfa8d4b0e66bb84f1333328ade45afef4e7e36eef360563a"
+    },
+    {
+      "path": "src/Meridian.Ledger/ValuationMarkEvidence.cs",
+      "sha256": "97c65f3414e2169d56798edab5265784d88475a419ba3988686b1f41c98649c8"
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs",
+      "sha256": "8d307eb0076a279a176de9cc82d821a41d156f924d0be382061c381afb89da17"
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs",
+      "sha256": "2550e2bd048d2cb5666172f12d95d3eaf684f583a5e541053fbba1c8105dbe20"
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs",
+      "sha256": "0d9533cc20199425a41d56d95bd5aab028afee18bac9c2ff434c4d5e77e4f58c"
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs",
+      "sha256": "bbad82615e40b389974d088ab507fb5035ac17498371349292df680b7f277887"
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs",
+      "sha256": "34e60ebb49fa7a49fb2e3fef30201b1ba61fe1110c32dfb9cba5ff7bf6794c5b"
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs",
+      "sha256": "64c321b9fa656f787a40d9a5168fdcc4e5e8afc9f07288f372ed51957e38eb80"
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs",
+      "sha256": "9150877cf383fdf5f65bffb6003eb2176775004dd0aee44c9fd64b56978ee4b3"
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/mark-freshness-cell.tsx",
+      "sha256": "ebeb42375b7ae3af4f5e83d0ecaa14d1cb225c1e74e5130b10755040e4cdaf1e"
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts",
+      "sha256": "fc8a71835dfb185bbd08e1d8c10e18c681bb6d62da685dac700c0594e293f39f"
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.close-command-center.view-model.ts",
+      "sha256": "335233dffa357677c585c2763ffd9e4ff7729be53383b381f624830a4dccd9a2"
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.mark-preview.test.tsx",
+      "sha256": "00b9324c943148f79bb0018d1664af8af4709431aa39c10f73f43ddfdaad5939"
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.close-test-fixtures.ts",
+      "sha256": "2f0211b58ec7e472abc2c1b3acfdc32889a84357ec23ad9c44f1d697c5a6f376"
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.test.tsx",
+      "sha256": "68ab80c1a1266959f5050a50503176acaaa01d0acd8439b26f9af56e08bb84be"
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.ts",
+      "sha256": "3d199cdf7328c6b87906a89767c21e8cf7dc2cf6a50e50a241f0adf0fb9bdd75"
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/portfolio-screen.mark-freshness.test.ts",
+      "sha256": "83ab8ea39851445462f6ad9353a68f7452778dd30096bdaa154eea77c7fe6aac"
+    },
+    {
+      "path": "src/Meridian.Wpf/Meridian.Wpf.csproj",
+      "sha256": "a225027cb1fbcb0831d0119d4cf619a858eba1f90fd2a7b7219328850da3023e"
+    },
+    {
+      "path": "src/Meridian.Wpf/Models/MarkFreshnessPresentation.cs",
+      "sha256": "fd7f567a8a75402eb0b7228ee067a8a19230e21e5f3167855a8da7ae60db6308"
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs",
+      "sha256": "dddd20684158cc87859cc75ce502676369a6ccda451d73b664decfc3f66d0279"
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs",
+      "sha256": "0662b13c3be7af0133a85dbc969ba432fe6d0145cf9ab3ae92836d957d5697f5"
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/FundLedgerViewModel.CloseReadiness.cs",
+      "sha256": "8991387443e930f88f5095b17e4fe30d39abcb6e345ed5a3cf2670ad79583073"
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/OperationsContinuityViewModel.cs",
+      "sha256": "a3b0ab2dd21b32dfffd7121fffd4cac7275e51bcdb15d313a275fd5c6bb05ef0"
+    },
+    {
+      "path": "src/Meridian.Wpf/Views/OperationsContinuityPage.xaml",
+      "sha256": "7f8f2bebd5c4ae5b71825f240b84be531f6f51faa5d2aa2cc0be4889fa179832"
+    },
+    {
+      "path": "src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs",
+      "sha256": "0d850321dde83065e74d250f4ce14aaffba4b12df6f43cafe79f0d6a45fcb730"
+    },
+    {
+      "path": "src/Meridian/DemoWorkspaceCli.cs",
+      "sha256": "d894b3412dd8989df9a7284a869f05eb10fd7bf12116225f1b0923940e829bd9"
+    },
+    {
+      "path": "tests/Meridian.Tests/Application/Accounting/ValuationFreshnessAcceptanceTests.cs",
+      "sha256": "a4d01eba7002fb5203df120c86e86e65fecde45f58bd7f838a3da5c02cef55d7"
+    },
+    {
+      "path": "tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.AcceptanceTests.cs",
+      "sha256": "c03ca30e074741bbcb8e1ce45a26d1d6b73794fb1ba009d004ec04606dae69cc"
+    },
+    {
+      "path": "tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.ScopeTests.cs",
+      "sha256": "671e744c7bf9643302eb1771528ff1c5b71e3f442e951a70ca3110460e66c281"
+    },
+    {
+      "path": "tests/Meridian.Tests/Ui/CloseReadinessSubjectSourceTests.cs",
+      "sha256": "bf3db8804ada918b4ddc069d55ae3eb68d50296c1caa9e14f746c35cc7bee5f1"
+    },
+    {
+      "path": "tests/Meridian.Tests/Ui/DailyValuationScheduleIdentityTests.cs",
+      "sha256": "bfd107f59815ac89aee6eaa582615d5c8986e6b28b4ce717052c0c03b4cd32bb"
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingCloseHttpRecoveryTests.ResponseIsolation.cs",
+      "sha256": "15b41fff22d30a52462fb12c8c7a9fa70eb1d800d425d67c1182a5e862af457a"
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingCloseHttpRecoveryTests.cs",
+      "sha256": "85b3f282ba057382a61823ad0173b9ea3792d4e42a781ed74fbdeb1cc67edc8d"
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj",
+      "sha256": "0dd65ce68408f4958aa32105a67efd3a2ddebc48cec165d2850ebf6489aecaf9"
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/ViewModels/AccountingCloseViewModelTests.cs",
+      "sha256": "cdf264ca83cab728aaa118b64934cba03dad312f8a4fa5bda6c8ee648b712111"
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/ViewModels/MarkFreshnessPresentationTests.cs",
+      "sha256": "20c4fe4f6b959f0dd3798d2406eefeeb1e393f33f40de1ddc3868d157a0d9803"
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/ViewModels/OperationsContinuityViewModelTests.cs",
+      "sha256": "b3e8d88063a4853a0c6bcba2cde8801dd6aba33edeb33f0300a8f108ae88f48a"
+    }
+  ],
+  "evidenceTier": "supporting_only; live acceptance and operator decisions pending"
+}

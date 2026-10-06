@@ -4,6 +4,7 @@ using FluentAssertions;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity;
+using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
@@ -28,7 +29,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </para>
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationTestBase
 {
     // Declared ViewMarketData when the live-data family was gated; the quote stream's polling
@@ -43,10 +43,10 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     [Fact]
     public async Task ValidApiKey_ReachesADeclaredRoute()
     {
-        var original = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "declared-route-key");
-        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", nameof(UserRole.TradeDesk));
+        var original = Fixture.Configuration["MDC_API_KEY"];
+        var originalRole = Fixture.Configuration["MDC_API_KEY_ROLE"];
+        Fixture.Configuration["MDC_API_KEY"] = "declared-route-key";
+        Fixture.Configuration["MDC_API_KEY_ROLE"] = nameof(UserRole.TradeDesk);
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, DeclaredRoute);
@@ -63,19 +63,19 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", original);
-            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+            Fixture.Configuration["MDC_API_KEY"] = original;
+            Fixture.Configuration["MDC_API_KEY_ROLE"] = originalRole;
         }
     }
 
     [Fact]
     public async Task ApiKeyWithANarrowerRole_IsRefusedByThePermissionRatherThanTheKey()
     {
-        var original = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "narrow-role-key");
+        var original = Fixture.Configuration["MDC_API_KEY"];
+        var originalRole = Fixture.Configuration["MDC_API_KEY_ROLE"];
+        Fixture.Configuration["MDC_API_KEY"] = "narrow-role-key";
         // Accounting holds no ViewMarketData, so the key authenticates but the route still refuses.
-        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", nameof(UserRole.Accounting));
+        Fixture.Configuration["MDC_API_KEY_ROLE"] = nameof(UserRole.Accounting);
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, DeclaredRoute);
@@ -90,8 +90,8 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", original);
-            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+            Fixture.Configuration["MDC_API_KEY"] = original;
+            Fixture.Configuration["MDC_API_KEY_ROLE"] = originalRole;
         }
     }
 
@@ -100,10 +100,10 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     [InlineData("3")]
     public async Task ApiKeyWithANumericRole_FailsClosedRatherThanResolvingByOrdinal(string numericRole)
     {
-        var original = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "numeric-role-key");
-        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", numericRole);
+        var original = Fixture.Configuration["MDC_API_KEY"];
+        var originalRole = Fixture.Configuration["MDC_API_KEY_ROLE"];
+        Fixture.Configuration["MDC_API_KEY"] = "numeric-role-key";
+        Fixture.Configuration["MDC_API_KEY_ROLE"] = numericRole;
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, DeclaredRoute);
@@ -118,18 +118,18 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", original);
-            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+            Fixture.Configuration["MDC_API_KEY"] = original;
+            Fixture.Configuration["MDC_API_KEY_ROLE"] = originalRole;
         }
     }
 
     [Fact]
     public async Task ApiKeyPrincipal_CarriesThePermissionSnapshotHandlersReadDirectly()
     {
-        var original = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "snapshot-key");
-        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", nameof(UserRole.Admin));
+        var original = Fixture.Configuration["MDC_API_KEY"];
+        var originalRole = Fixture.Configuration["MDC_API_KEY_ROLE"];
+        Fixture.Configuration["MDC_API_KEY"] = "snapshot-key";
+        Fixture.Configuration["MDC_API_KEY_ROLE"] = nameof(UserRole.Admin);
         try
         {
             var nextCalled = false;
@@ -148,7 +148,7 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
                     .Should().Be(RolePermissions.For(UserRole.Admin));
                 nextContext.Items[ApiKeyMiddleware.ApiKeyPrincipalKey].Should().Be(true);
                 return Task.CompletedTask;
-            });
+            }, new AuthenticationConfiguration(Fixture.Configuration));
 
             await middleware.InvokeAsync(context);
 
@@ -156,22 +156,22 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", original);
-            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+            Fixture.Configuration["MDC_API_KEY"] = original;
+            Fixture.Configuration["MDC_API_KEY_ROLE"] = originalRole;
         }
     }
 
     [Fact]
     public async Task ApiKeyPrincipal_DoesNotInheritTheAnonymousTenantScope()
     {
-        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        var originalKeyRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
-        var originalAnonRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
-        var originalAnonTenant = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_TENANT");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "scope-inherit-key");
-        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", nameof(UserRole.Admin));
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", "anon-tenant");
+        var originalKey = Fixture.Configuration["MDC_API_KEY"];
+        var originalKeyRole = Fixture.Configuration["MDC_API_KEY_ROLE"];
+        var originalAnonRole = Fixture.Configuration["MDC_ANONYMOUS_ROLE"];
+        var originalAnonTenant = Fixture.Configuration["MDC_ANONYMOUS_TENANT"];
+        Fixture.Configuration["MDC_API_KEY"] = "scope-inherit-key";
+        Fixture.Configuration["MDC_API_KEY_ROLE"] = nameof(UserRole.Admin);
+        Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = nameof(UserRole.Admin);
+        Fixture.Configuration["MDC_ANONYMOUS_TENANT"] = "anon-tenant";
         try
         {
             var nextCalled = false;
@@ -195,7 +195,7 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
                 nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.DemoLocalOperatorPrincipalKey);
                 nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.CurrentUserRoleProfileNameKey);
                 return Task.CompletedTask;
-            });
+            }, new AuthenticationConfiguration(Fixture.Configuration));
 
             await middleware.InvokeAsync(context);
 
@@ -203,24 +203,24 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
-            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalKeyRole);
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalAnonRole);
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", originalAnonTenant);
+            Fixture.Configuration["MDC_API_KEY"] = originalKey;
+            Fixture.Configuration["MDC_API_KEY_ROLE"] = originalKeyRole;
+            Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = originalAnonRole;
+            Fixture.Configuration["MDC_ANONYMOUS_TENANT"] = originalAnonTenant;
         }
     }
 
     [Fact]
     public async Task SessionPayload_WithheldFromAStrategylessCaller_LeaksNoPromotionStateViaTheWorkspace()
     {
-        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
-        var originalTenant = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_TENANT");
+        var originalRole = Fixture.Configuration["MDC_ANONYMOUS_ROLE"];
+        var originalTenant = Fixture.Configuration["MDC_ANONYMOUS_TENANT"];
         // FundAccountant holds no strategy permission, so the run digest is withheld -- and the
         // workspace must not hand the same promotion state back one field over. MapWorkspace turns
         // LiveManaged into accounting and CandidateForLive into trading, which is exactly the
         // restricted state the rest of the payload is withholding.
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.FundAccountant));
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", "workspace-leak-tenant");
+        Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = nameof(UserRole.FundAccountant);
+        Fixture.Configuration["MDC_ANONYMOUS_TENANT"] = "workspace-leak-tenant";
         try
         {
             using var response = await Client.GetAsync("/api/workstation/session");
@@ -236,18 +236,18 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", originalTenant);
+            Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = originalRole;
+            Fixture.Configuration["MDC_ANONYMOUS_TENANT"] = originalTenant;
         }
     }
 
     [Fact]
     public async Task SessionPayload_ReportsTheCallersOwnRoleNotTheLatestRunsPosture()
     {
-        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
-        var originalTenant = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_TENANT");
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Compliance));
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", "role-label-tenant");
+        var originalRole = Fixture.Configuration["MDC_ANONYMOUS_ROLE"];
+        var originalTenant = Fixture.Configuration["MDC_ANONYMOUS_TENANT"];
+        Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = nameof(UserRole.Compliance);
+        Fixture.Configuration["MDC_ANONYMOUS_TENANT"] = "role-label-tenant";
         try
         {
             using var response = await Client.GetAsync("/api/workstation/session");
@@ -260,20 +260,20 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", originalTenant);
+            Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = originalRole;
+            Fixture.Configuration["MDC_ANONYMOUS_TENANT"] = originalTenant;
         }
     }
 
     [Fact]
     public async Task NonDemoAnonymousPrincipal_CarriesTheTenantTheDeploymentNames()
     {
-        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
-        var originalTenant = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_TENANT");
-        var originalDemoMode = Environment.GetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable);
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", "acme-local");
-        Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, null);
+        var originalRole = Fixture.Configuration["MDC_ANONYMOUS_ROLE"];
+        var originalTenant = Fixture.Configuration["MDC_ANONYMOUS_TENANT"];
+        var originalDemoMode = Fixture.Configuration[DemoWorkspaceLayout.DemoModeEnvironmentVariable];
+        Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = nameof(UserRole.Admin);
+        Fixture.Configuration["MDC_ANONYMOUS_TENANT"] = "acme-local";
+        Fixture.Configuration[DemoWorkspaceLayout.DemoModeEnvironmentVariable] = null;
         try
         {
             var nextCalled = false;
@@ -285,7 +285,7 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
                 nextContext.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey].Should().Be("acme-local");
                 nextContext.Items[LoginSessionMiddleware.CurrentTenantIdKey].Should().Be("acme-local");
                 return Task.CompletedTask;
-            });
+            }, new AuthenticationConfiguration(Fixture.Configuration));
 
             await middleware.InvokeAsync(
                 context,
@@ -295,21 +295,21 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", originalTenant);
-            Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, originalDemoMode);
+            Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = originalRole;
+            Fixture.Configuration["MDC_ANONYMOUS_TENANT"] = originalTenant;
+            Fixture.Configuration[DemoWorkspaceLayout.DemoModeEnvironmentVariable] = originalDemoMode;
         }
     }
 
     [Fact]
     public async Task UnscopedAnonymousPrincipal_CarriesNoTenantAtAll()
     {
-        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
-        var originalTenant = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_TENANT");
-        var originalDemoMode = Environment.GetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable);
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", null);
-        Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, null);
+        var originalRole = Fixture.Configuration["MDC_ANONYMOUS_ROLE"];
+        var originalTenant = Fixture.Configuration["MDC_ANONYMOUS_TENANT"];
+        var originalDemoMode = Fixture.Configuration[DemoWorkspaceLayout.DemoModeEnvironmentVariable];
+        Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = nameof(UserRole.Admin);
+        Fixture.Configuration["MDC_ANONYMOUS_TENANT"] = null;
+        Fixture.Configuration[DemoWorkspaceLayout.DemoModeEnvironmentVariable] = null;
         try
         {
             var context = new DefaultHttpContext();
@@ -319,7 +319,7 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
                 nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.CurrentTenantIdKey);
                 nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.CurrentUserCompanyIdKey);
                 return Task.CompletedTask;
-            });
+            }, new AuthenticationConfiguration(Fixture.Configuration));
 
             await middleware.InvokeAsync(
                 context,
@@ -327,9 +327,9 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", originalTenant);
-            Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, originalDemoMode);
+            Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = originalRole;
+            Fixture.Configuration["MDC_ANONYMOUS_TENANT"] = originalTenant;
+            Fixture.Configuration[DemoWorkspaceLayout.DemoModeEnvironmentVariable] = originalDemoMode;
         }
     }
 
@@ -341,10 +341,10 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     [InlineData("PROPFIND")]
     public async Task DefaultApiKeyRole_RejectsEveryMethodOutsideTheSafeAllowlist(string method)
     {
-        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "default-read-key");
-        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", null);
+        var originalKey = Fixture.Configuration["MDC_API_KEY"];
+        var originalRole = Fixture.Configuration["MDC_API_KEY_ROLE"];
+        Fixture.Configuration["MDC_API_KEY"] = "default-read-key";
+        Fixture.Configuration["MDC_API_KEY_ROLE"] = null;
         try
         {
             var nextCalled = false;
@@ -359,7 +359,7 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
             {
                 nextCalled = true;
                 return Task.CompletedTask;
-            });
+            }, new AuthenticationConfiguration(Fixture.Configuration));
 
             await middleware.InvokeAsync(context);
 
@@ -368,18 +368,18 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
-            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+            Fixture.Configuration["MDC_API_KEY"] = originalKey;
+            Fixture.Configuration["MDC_API_KEY_ROLE"] = originalRole;
         }
     }
 
     [Fact]
     public async Task DefaultApiKeyRole_AllowsGetWithReadOnlyPermissionSnapshot()
     {
-        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "default-read-key");
-        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", null);
+        var originalKey = Fixture.Configuration["MDC_API_KEY"];
+        var originalRole = Fixture.Configuration["MDC_API_KEY_ROLE"];
+        Fixture.Configuration["MDC_API_KEY"] = "default-read-key";
+        Fixture.Configuration["MDC_API_KEY_ROLE"] = null;
         try
         {
             var nextCalled = false;
@@ -394,7 +394,7 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
                 nextContext.Items[LoginSessionMiddleware.CurrentUserPermissionsKey]
                     .Should().Be(RolePermissions.For(UserRole.ReadOnly));
                 return Task.CompletedTask;
-            });
+            }, new AuthenticationConfiguration(Fixture.Configuration));
 
             await middleware.InvokeAsync(context);
 
@@ -402,18 +402,18 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
-            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+            Fixture.Configuration["MDC_API_KEY"] = originalKey;
+            Fixture.Configuration["MDC_API_KEY_ROLE"] = originalRole;
         }
     }
 
     [Fact]
     public async Task DefaultApiKeyRole_CannotReachAViewPermissionMutation()
     {
-        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "default-read-key");
-        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", null);
+        var originalKey = Fixture.Configuration["MDC_API_KEY"];
+        var originalRole = Fixture.Configuration["MDC_API_KEY_ROLE"];
+        Fixture.Configuration["MDC_API_KEY"] = "default-read-key";
+        Fixture.Configuration["MDC_API_KEY_ROLE"] = null;
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Post, "/api/sampling/create");
@@ -426,20 +426,20 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
-            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+            Fixture.Configuration["MDC_API_KEY"] = originalKey;
+            Fixture.Configuration["MDC_API_KEY_ROLE"] = originalRole;
         }
     }
 
     [Fact]
     public async Task AnonymousRolePrincipal_CarriesThePermissionSnapshotHandlersReadDirectly()
     {
-        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
-        var originalTenant = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_TENANT");
-        var originalDemoMode = Environment.GetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable);
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", null);
-        Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, null);
+        var originalRole = Fixture.Configuration["MDC_ANONYMOUS_ROLE"];
+        var originalTenant = Fixture.Configuration["MDC_ANONYMOUS_TENANT"];
+        var originalDemoMode = Fixture.Configuration[DemoWorkspaceLayout.DemoModeEnvironmentVariable];
+        Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = nameof(UserRole.Admin);
+        Fixture.Configuration["MDC_ANONYMOUS_TENANT"] = null;
+        Fixture.Configuration[DemoWorkspaceLayout.DemoModeEnvironmentVariable] = null;
         try
         {
             var nextCalled = false;
@@ -458,7 +458,7 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
                 nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.CurrentUserCompanyIdKey);
                 nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.CurrentTenantIdKey);
                 return Task.CompletedTask;
-            });
+            }, new AuthenticationConfiguration(Fixture.Configuration));
 
             await middleware.InvokeAsync(
                 context,
@@ -468,9 +468,9 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", originalTenant);
-            Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, originalDemoMode);
+            Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = originalRole;
+            Fixture.Configuration["MDC_ANONYMOUS_TENANT"] = originalTenant;
+            Fixture.Configuration[DemoWorkspaceLayout.DemoModeEnvironmentVariable] = originalDemoMode;
         }
     }
 
@@ -479,10 +479,10 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     [InlineData("/setup/account")]
     public async Task InvalidAnonymousRole_StillLetsTheInitialAccountBootstrapThrough(string path)
     {
-        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
-        var originalTenant = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_TENANT");
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", "Reedonly");
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", null);
+        var originalRole = Fixture.Configuration["MDC_ANONYMOUS_ROLE"];
+        var originalTenant = Fixture.Configuration["MDC_ANONYMOUS_TENANT"];
+        Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = "Reedonly";
+        Fixture.Configuration["MDC_ANONYMOUS_TENANT"] = null;
         try
         {
             // A misconfigured role must not make a fresh install unrecoverable. The method cap further
@@ -500,7 +500,7 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
                 nextCalled = true;
                 nextContext.Items.Should().NotContainKey(LoginSessionMiddleware.AnonymousPrincipalKey);
                 return Task.CompletedTask;
-            });
+            }, new AuthenticationConfiguration(Fixture.Configuration));
 
             await middleware.InvokeAsync(
                 context,
@@ -511,18 +511,18 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", originalTenant);
+            Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = originalRole;
+            Fixture.Configuration["MDC_ANONYMOUS_TENANT"] = originalTenant;
         }
     }
 
     [Fact]
     public async Task InvalidAnonymousRole_StillRefusesEverythingElse()
     {
-        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
-        var originalTenant = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_TENANT");
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", "Reedonly");
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", null);
+        var originalRole = Fixture.Configuration["MDC_ANONYMOUS_ROLE"];
+        var originalTenant = Fixture.Configuration["MDC_ANONYMOUS_TENANT"];
+        Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = "Reedonly";
+        Fixture.Configuration["MDC_ANONYMOUS_TENANT"] = null;
         try
         {
             // The exemption is for bootstrap alone. A typo must still surface loudly on every other
@@ -536,7 +536,7 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
             {
                 nextCalled = true;
                 return Task.CompletedTask;
-            });
+            }, new AuthenticationConfiguration(Fixture.Configuration));
 
             await middleware.InvokeAsync(
                 context,
@@ -547,20 +547,20 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", originalTenant);
+            Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = originalRole;
+            Fixture.Configuration["MDC_ANONYMOUS_TENANT"] = originalTenant;
         }
     }
 
     [Fact]
     public async Task DemoAnonymousPrincipal_CarriesTheSeededTenantScope()
     {
-        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
-        var originalTenant = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_TENANT");
-        var originalDemoMode = Environment.GetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable);
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", null);
-        Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, "true");
+        var originalRole = Fixture.Configuration["MDC_ANONYMOUS_ROLE"];
+        var originalTenant = Fixture.Configuration["MDC_ANONYMOUS_TENANT"];
+        var originalDemoMode = Fixture.Configuration[DemoWorkspaceLayout.DemoModeEnvironmentVariable];
+        Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = nameof(UserRole.Admin);
+        Fixture.Configuration["MDC_ANONYMOUS_TENANT"] = null;
+        Fixture.Configuration[DemoWorkspaceLayout.DemoModeEnvironmentVariable] = "true";
         try
         {
             var nextCalled = false;
@@ -575,7 +575,7 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
                     .Should().Be(DemoTenantBlueprint.TenantId);
                 nextContext.Items[LoginSessionMiddleware.DemoLocalOperatorPrincipalKey].Should().Be(true);
                 return Task.CompletedTask;
-            });
+            }, new AuthenticationConfiguration(Fixture.Configuration));
 
             await middleware.InvokeAsync(
                 context,
@@ -585,19 +585,19 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", originalTenant);
-            Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, originalDemoMode);
+            Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = originalRole;
+            Fixture.Configuration["MDC_ANONYMOUS_TENANT"] = originalTenant;
+            Fixture.Configuration[DemoWorkspaceLayout.DemoModeEnvironmentVariable] = originalDemoMode;
         }
     }
 
     [Fact]
     public async Task ApiKeyPrincipal_DoesNotSatisfySessionOnlyAuthorization()
     {
-        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "session-only-key");
-        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", nameof(UserRole.Admin));
+        var originalKey = Fixture.Configuration["MDC_API_KEY"];
+        var originalRole = Fixture.Configuration["MDC_API_KEY_ROLE"];
+        Fixture.Configuration["MDC_API_KEY"] = "session-only-key";
+        Fixture.Configuration["MDC_API_KEY_ROLE"] = nameof(UserRole.Admin);
         try
         {
             using var request = new HttpRequestMessage(
@@ -614,8 +614,8 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
-            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+            Fixture.Configuration["MDC_API_KEY"] = originalKey;
+            Fixture.Configuration["MDC_API_KEY_ROLE"] = originalRole;
         }
     }
 
@@ -624,14 +624,12 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     [InlineData(true)]
     public async Task AnonymousRolePrincipal_CannotMutateSessionOwnedWorkflowPresets(bool demoMode)
     {
-        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
-        var originalTenant = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_TENANT");
-        var originalDemoMode = Environment.GetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable);
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", demoMode ? null : "session-write-test");
-        Environment.SetEnvironmentVariable(
-            DemoWorkspaceLayout.DemoModeEnvironmentVariable,
-            demoMode ? "true" : null);
+        var originalRole = Fixture.Configuration["MDC_ANONYMOUS_ROLE"];
+        var originalTenant = Fixture.Configuration["MDC_ANONYMOUS_TENANT"];
+        var originalDemoMode = Fixture.Configuration[DemoWorkspaceLayout.DemoModeEnvironmentVariable];
+        Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = nameof(UserRole.Admin);
+        Fixture.Configuration["MDC_ANONYMOUS_TENANT"] = demoMode ? null : "session-write-test";
+        Fixture.Configuration[DemoWorkspaceLayout.DemoModeEnvironmentVariable] = demoMode ? "true" : null;
         try
         {
             var request = new WorkflowPresetSaveRequest(
@@ -653,9 +651,9 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_TENANT", originalTenant);
-            Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, originalDemoMode);
+            Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = originalRole;
+            Fixture.Configuration["MDC_ANONYMOUS_TENANT"] = originalTenant;
+            Fixture.Configuration[DemoWorkspaceLayout.DemoModeEnvironmentVariable] = originalDemoMode;
         }
     }
 
@@ -699,12 +697,12 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     [Fact]
     public async Task AnonymousReadOnlyRole_DoesNotRefuseAMutationCarryingAValidApiKey()
     {
-        var originalAnonRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
-        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        var originalKeyRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.ReadOnly));
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "deferred-judgement-key");
-        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", nameof(UserRole.Admin));
+        var originalAnonRole = Fixture.Configuration["MDC_ANONYMOUS_ROLE"];
+        var originalKey = Fixture.Configuration["MDC_API_KEY"];
+        var originalKeyRole = Fixture.Configuration["MDC_API_KEY_ROLE"];
+        Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = nameof(UserRole.ReadOnly);
+        Fixture.Configuration["MDC_API_KEY"] = "deferred-judgement-key";
+        Fixture.Configuration["MDC_API_KEY_ROLE"] = nameof(UserRole.Admin);
         try
         {
             // LoginSessionMiddleware runs before ApiKeyMiddleware, so judging this request by the
@@ -724,17 +722,17 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalAnonRole);
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
-            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalKeyRole);
+            Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = originalAnonRole;
+            Fixture.Configuration["MDC_API_KEY"] = originalKey;
+            Fixture.Configuration["MDC_API_KEY_ROLE"] = originalKeyRole;
         }
     }
 
     [Fact]
     public async Task AnonymousReadOnlyRole_DoesNotBlockTheInitialAccountBootstrap()
     {
-        var originalAnonRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.ReadOnly));
+        var originalAnonRole = Fixture.Configuration["MDC_ANONYMOUS_ROLE"];
+        Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = nameof(UserRole.ReadOnly);
         try
         {
             // The bootstrap surface carries its own loopback and one-use token checks, which are
@@ -758,15 +756,15 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalAnonRole);
+            Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = originalAnonRole;
         }
     }
 
     [Fact]
     public async Task AnonymousReadOnlyPrincipal_CannotReachAViewPermissionMutation()
     {
-        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.ReadOnly));
+        var originalRole = Fixture.Configuration["MDC_ANONYMOUS_ROLE"];
+        Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = nameof(UserRole.ReadOnly);
         try
         {
             // /api/replay/start declares ViewHistoricalData, which ReadOnly holds, so the route would
@@ -786,17 +784,17 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
+            Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = originalRole;
         }
     }
 
     [Fact]
     public async Task ExplicitReadOnlyApiKeyRole_CannotReachAViewPermissionMutation()
     {
-        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "explicit-read-key");
-        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", nameof(UserRole.ReadOnly));
+        var originalKey = Fixture.Configuration["MDC_API_KEY"];
+        var originalRole = Fixture.Configuration["MDC_API_KEY_ROLE"];
+        Fixture.Configuration["MDC_API_KEY"] = "explicit-read-key";
+        Fixture.Configuration["MDC_API_KEY_ROLE"] = nameof(UserRole.ReadOnly);
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Post, "/api/sampling/create");
@@ -809,8 +807,8 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
-            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+            Fixture.Configuration["MDC_API_KEY"] = originalKey;
+            Fixture.Configuration["MDC_API_KEY_ROLE"] = originalRole;
         }
     }
 
@@ -819,10 +817,10 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     [InlineData(nameof(UserRole.Executive))]
     public async Task ReadOnlyApiKeyRoleHoldingExportData_ReachesAnExportRoute(string roleName)
     {
-        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "export-grant-key");
-        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", roleName);
+        var originalKey = Fixture.Configuration["MDC_API_KEY"];
+        var originalRole = Fixture.Configuration["MDC_API_KEY_ROLE"];
+        Fixture.Configuration["MDC_API_KEY"] = "export-grant-key";
+        Fixture.Configuration["MDC_API_KEY_ROLE"] = roleName;
         try
         {
             // Analysis and Executive are read-only in the sense the method rule means -- no Manage,
@@ -847,8 +845,8 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
-            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+            Fixture.Configuration["MDC_API_KEY"] = originalKey;
+            Fixture.Configuration["MDC_API_KEY_ROLE"] = originalRole;
         }
     }
 
@@ -857,10 +855,10 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     [InlineData(nameof(UserRole.Executive))]
     public async Task ReadOnlyApiKeyRoleHoldingExportData_IsStillRefusedAViewPermissionMutation(string roleName)
     {
-        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "export-grant-scope-key");
-        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", roleName);
+        var originalKey = Fixture.Configuration["MDC_API_KEY"];
+        var originalRole = Fixture.Configuration["MDC_API_KEY_ROLE"];
+        Fixture.Configuration["MDC_API_KEY"] = "export-grant-scope-key";
+        Fixture.Configuration["MDC_API_KEY_ROLE"] = roleName;
         try
         {
             // The export exemption is keyed on the permission the endpoint declares, not on the
@@ -880,16 +878,16 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
-            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+            Fixture.Configuration["MDC_API_KEY"] = originalKey;
+            Fixture.Configuration["MDC_API_KEY_ROLE"] = originalRole;
         }
     }
 
     [Fact]
     public async Task AnonymousReadOnlyRoleHoldingExportData_ReachesAnExportRoute()
     {
-        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Analysis));
+        var originalRole = Fixture.Configuration["MDC_ANONYMOUS_ROLE"];
+        Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = nameof(UserRole.Analysis);
         try
         {
             // The two postures share one rule, so the exemption has to reach both. Pinned on the
@@ -907,7 +905,7 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
+            Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = originalRole;
         }
     }
 
@@ -916,10 +914,10 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     [InlineData(nameof(UserRole.Analysis))]
     public async Task ReadOnlyApiKeyRole_ReachesAPostDeclaredNonMutating(string roleName)
     {
-        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "non-mutating-key");
-        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", roleName);
+        var originalKey = Fixture.Configuration["MDC_API_KEY"];
+        var originalRole = Fixture.Configuration["MDC_API_KEY_ROLE"];
+        Fixture.Configuration["MDC_API_KEY"] = "non-mutating-key";
+        Fixture.Configuration["MDC_API_KEY_ROLE"] = roleName;
         try
         {
             // The method rule uses the verb as a proxy for "changes state", and the proxy is wrong for
@@ -940,8 +938,8 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
-            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+            Fixture.Configuration["MDC_API_KEY"] = originalKey;
+            Fixture.Configuration["MDC_API_KEY_ROLE"] = originalRole;
         }
     }
 
@@ -950,10 +948,10 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     [InlineData(nameof(UserRole.Executive))]
     public async Task ReadOnlyApiKeyRole_ReachesReportTemplateRendering(string roleName)
     {
-        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "render-key");
-        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", roleName);
+        var originalKey = Fixture.Configuration["MDC_API_KEY"];
+        var originalRole = Fixture.Configuration["MDC_API_KEY_ROLE"];
+        Fixture.Configuration["MDC_API_KEY"] = "render-key";
+        Fixture.Configuration["MDC_API_KEY_ROLE"] = roleName;
         try
         {
             // Rendering a template resolves it, evaluates the grids in memory and returns a DTO --
@@ -979,8 +977,8 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
-            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+            Fixture.Configuration["MDC_API_KEY"] = originalKey;
+            Fixture.Configuration["MDC_API_KEY_ROLE"] = originalRole;
         }
     }
 
@@ -989,10 +987,10 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     [InlineData("/portal/reporting/access-grants/grant-1/exchange")]
     public async Task ReadOnlyApiKeyRole_DoesNotRefuseARouteThatAuthenticatesItsOwnCaller(string route)
     {
-        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "independent-auth-key");
-        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", nameof(UserRole.ReadOnly));
+        var originalKey = Fixture.Configuration["MDC_API_KEY"];
+        var originalRole = Fixture.Configuration["MDC_API_KEY_ROLE"];
+        Fixture.Configuration["MDC_API_KEY"] = "independent-auth-key";
+        Fixture.Configuration["MDC_API_KEY_ROLE"] = nameof(UserRole.ReadOnly);
         try
         {
             // Neither caller is the ambient principal: one is a reporting provider proving itself with
@@ -1026,8 +1024,8 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
-            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+            Fixture.Configuration["MDC_API_KEY"] = originalKey;
+            Fixture.Configuration["MDC_API_KEY_ROLE"] = originalRole;
         }
     }
 
@@ -1037,10 +1035,10 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     [InlineData("/api/strategies/covered-call/chain-preview")]
     public async Task ReadOnlyApiKeyRole_ReachesTheQueryStylePostsItHoldsPermissionFor(string route)
     {
-        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "query-post-key");
-        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", nameof(UserRole.ReadOnly));
+        var originalKey = Fixture.Configuration["MDC_API_KEY"];
+        var originalRole = Fixture.Configuration["MDC_API_KEY_ROLE"];
+        Fixture.Configuration["MDC_API_KEY"] = "query-post-key";
+        Fixture.Configuration["MDC_API_KEY_ROLE"] = nameof(UserRole.ReadOnly);
         try
         {
             // Each of these declares ViewStrategies, which ReadOnly holds, and each handler only
@@ -1062,18 +1060,18 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
-            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+            Fixture.Configuration["MDC_API_KEY"] = originalKey;
+            Fixture.Configuration["MDC_API_KEY_ROLE"] = originalRole;
         }
     }
 
     [Fact]
     public async Task ReadOnlyApiKeyRole_IsStillRefusedAnUnmarkedViewPermissionPost()
     {
-        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "unmarked-post-key");
-        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", nameof(UserRole.ReadOnly));
+        var originalKey = Fixture.Configuration["MDC_API_KEY"];
+        var originalRole = Fixture.Configuration["MDC_API_KEY_ROLE"];
+        Fixture.Configuration["MDC_API_KEY"] = "unmarked-post-key";
+        Fixture.Configuration["MDC_API_KEY_ROLE"] = nameof(UserRole.ReadOnly);
         try
         {
             // The marker is applied per route after reading the handler, so absence is the default and
@@ -1092,8 +1090,8 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
-            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+            Fixture.Configuration["MDC_API_KEY"] = originalKey;
+            Fixture.Configuration["MDC_API_KEY_ROLE"] = originalRole;
         }
     }
 
@@ -1102,8 +1100,8 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
     [InlineData("/api/auth/access-assignments")]
     public async Task AnonymousAdminRole_CannotAdministerAccounts(string route)
     {
-        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
+        var originalRole = Fixture.Configuration["MDC_ANONYMOUS_ROLE"];
+        Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = nameof(UserRole.Admin);
         try
         {
             // Naming a broad anonymous role is a convenience for reaching the read surface in a
@@ -1122,17 +1120,17 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
+            Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = originalRole;
         }
     }
 
     [Fact]
     public async Task AdminApiKey_CannotAdministerAccounts()
     {
-        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "admin-key");
-        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", nameof(UserRole.Admin));
+        var originalKey = Fixture.Configuration["MDC_API_KEY"];
+        var originalRole = Fixture.Configuration["MDC_API_KEY_ROLE"];
+        Fixture.Configuration["MDC_API_KEY"] = "admin-key";
+        Fixture.Configuration["MDC_API_KEY_ROLE"] = nameof(UserRole.Admin);
         try
         {
             // The same rule for the other non-session principal, so the two cannot drift: a shared
@@ -1147,16 +1145,16 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
-            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+            Fixture.Configuration["MDC_API_KEY"] = originalKey;
+            Fixture.Configuration["MDC_API_KEY_ROLE"] = originalRole;
         }
     }
 
     [Fact]
     public async Task AnonymousRolePrincipal_CannotReadTheRoleCatalog()
     {
-        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Analysis));
+        var originalRole = Fixture.Configuration["MDC_ANONYMOUS_ROLE"];
+        Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = nameof(UserRole.Analysis);
         try
         {
             // ResolveCurrentProfile falls back to the items an upstream authenticator populated, so a
@@ -1171,17 +1169,17 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
+            Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = originalRole;
         }
     }
 
     [Fact]
     public async Task AnonymousRolePrincipal_DoesNotBypassConfiguredApiKey()
     {
-        var originalKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        var originalRole = Environment.GetEnvironmentVariable("MDC_ANONYMOUS_ROLE");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "still-required-key");
-        Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", nameof(UserRole.Admin));
+        var originalKey = Fixture.Configuration["MDC_API_KEY"];
+        var originalRole = Fixture.Configuration["MDC_ANONYMOUS_ROLE"];
+        Fixture.Configuration["MDC_API_KEY"] = "still-required-key";
+        Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = nameof(UserRole.Admin);
         try
         {
             using var response = await Client.GetAsync(DeclaredRoute);
@@ -1192,18 +1190,18 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalKey);
-            Environment.SetEnvironmentVariable("MDC_ANONYMOUS_ROLE", originalRole);
+            Fixture.Configuration["MDC_API_KEY"] = originalKey;
+            Fixture.Configuration["MDC_ANONYMOUS_ROLE"] = originalRole;
         }
     }
 
     [Fact]
     public async Task ApiKeyWithAnUnknownRole_FailsClosed()
     {
-        var original = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        var originalRole = Environment.GetEnvironmentVariable("MDC_API_KEY_ROLE");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "bad-role-key");
-        Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", "NotARole");
+        var original = Fixture.Configuration["MDC_API_KEY"];
+        var originalRole = Fixture.Configuration["MDC_API_KEY_ROLE"];
+        Fixture.Configuration["MDC_API_KEY"] = "bad-role-key";
+        Fixture.Configuration["MDC_API_KEY_ROLE"] = "NotARole";
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Post, DeclaredRoute);
@@ -1217,8 +1215,8 @@ public sealed class NonSessionPrincipalAuthorizationTests : EndpointIntegrationT
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", original);
-            Environment.SetEnvironmentVariable("MDC_API_KEY_ROLE", originalRole);
+            Fixture.Configuration["MDC_API_KEY"] = original;
+            Fixture.Configuration["MDC_API_KEY_ROLE"] = originalRole;
         }
     }
 }

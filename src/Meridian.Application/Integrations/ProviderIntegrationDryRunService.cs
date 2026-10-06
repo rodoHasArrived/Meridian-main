@@ -66,6 +66,7 @@ public sealed class ProviderIntegrationDryRunService
             ?? throw new KeyNotFoundException($"Provider integration connection '{request.ConnectionId}' was not found.");
 
         ValidateRequestScope(request, manifest, connection);
+        var manifestReference = ProviderIntegrationManifestIdentity.Create(manifest);
 
         var csvRecords = ParseCsv(request.CsvContent);
         var payloadId = StableId("raw-payload", request.SyncRunId, request.FileName);
@@ -86,7 +87,18 @@ public sealed class ProviderIntegrationDryRunService
             },
             ToJsonElement(new ManualCsvRawPayload(request.FileName, "text/csv", csvRecords.Count, csvRecords)),
             mappingVersion,
-            ProviderIntegrationProcessingStatusDto.Received);
+            ProviderIntegrationProcessingStatusDto.Received)
+        {
+            ManifestReference = manifestReference,
+            OriginalManifestReference = manifestReference
+        };
+
+        if (!await scopedStore.TryCreateSyncRunAsync(
+                CreateSyncRun(request, manifest, manifestReference, connection, payloadId, result: null), ct)
+            .ConfigureAwait(false))
+        {
+            throw new InvalidOperationException("Ingestion requires an unused sync run id to preserve retained evidence.");
+        }
 
         await scopedStore.SaveRawPayloadAsync(rawPayload, ct).ConfigureAwait(false);
 
@@ -111,7 +123,8 @@ public sealed class ProviderIntegrationDryRunService
                 RecordsQuarantined: 0,
                 ProviderIntegrationProcessingStatusDto.Blocked,
                 [issue]);
-            await SaveSyncRunAsync(scopedStore, request, manifest, connection, payloadId, blockedResult, ct).ConfigureAwait(false);
+            await scopedStore.SaveSyncRunAsync(
+                CreateSyncRun(request, manifest, manifestReference, connection, payloadId, blockedResult), ct).ConfigureAwait(false);
             return blockedResult;
         }
 
@@ -231,35 +244,37 @@ public sealed class ProviderIntegrationDryRunService
             quarantined,
             status,
             allIssues);
-        await SaveSyncRunAsync(scopedStore, request, manifest, connection, payloadId, result, ct).ConfigureAwait(false);
+        await scopedStore.SaveSyncRunAsync(
+            CreateSyncRun(request, manifest, manifestReference, connection, payloadId, result), ct).ConfigureAwait(false);
         return result;
     }
 
-    private Task SaveSyncRunAsync(
-        IProviderIntegrationManifestStore scopedStore,
+    private static ProviderIntegrationSyncRunDto CreateSyncRun(
         ManualCsvProviderIntegrationDryRunRequestDto request,
         ProviderIntegrationManifestDto manifest,
+        ProviderIntegrationManifestReferenceDto manifestReference,
         ProviderConnectionDto connection,
         string rawPayloadId,
-        ProviderIntegrationDryRunResultDto result,
-        CancellationToken ct)
-        => scopedStore.SaveSyncRunAsync(
-            new ProviderIntegrationSyncRunDto(
-                request.SyncRunId,
-                manifest.ManifestId,
-                connection.ConnectionId,
-                manifest.ProviderId,
-                request.Capability,
-                ManualCsvEndpointKey,
-                request.RequestedAt,
-                request.RequestedAt,
-                result.Status,
-                result.RecordsReceived,
-                result.RecordsAccepted,
-                result.RecordsQuarantined,
-                rawPayloadId,
-                result.Issues),
-            ct);
+        ProviderIntegrationDryRunResultDto? result)
+        => new(
+            request.SyncRunId,
+            manifest.ManifestId,
+            connection.ConnectionId,
+            manifest.ProviderId,
+            request.Capability,
+            ManualCsvEndpointKey,
+            request.RequestedAt,
+            result is null ? null : request.RequestedAt,
+            result?.Status ?? ProviderIntegrationProcessingStatusDto.Received,
+            result?.RecordsReceived ?? 0,
+            result?.RecordsAccepted ?? 0,
+            result?.RecordsQuarantined ?? 0,
+            rawPayloadId,
+            result?.Issues ?? [])
+        {
+            ManifestReference = manifestReference,
+            OriginalManifestReference = manifestReference
+        };
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
         => string.IsNullOrWhiteSpace(tenantId)

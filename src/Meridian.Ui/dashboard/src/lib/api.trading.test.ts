@@ -63,6 +63,7 @@ import {
   getStrategyBriefing,
   getStrategyWorkspace,
   getTradingReadiness,
+  synchronizeTradingBrokerage,
   getTradingWorkspace,
   getWorkflowLibrary,
   getWorkflowPresets,
@@ -108,6 +109,17 @@ describe("trading endpoint wiring", () => {
     fetchMock.mockResolvedValue({ ok: true, json: async () => ({}), text: async () => "{}" });
     vi.stubGlobal("fetch", fetchMock);
     resetDevelopmentFixtureUsage();
+  });
+
+  it("synchronizes the selected fund account with cancellation and no development fallback", async () => {
+    const controller = new AbortController();
+    await synchronizeTradingBrokerage("fund-1", { signal: controller.signal });
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/trading/brokerage-recovery", expect.objectContaining({
+      method: "POST", body: JSON.stringify({ fundAccountId: "fund-1" }), signal: controller.signal
+    }));
+    fetchMock.mockResolvedValueOnce({ ok: false, status: 503, statusText: "Unavailable", text: async () => "Broker unavailable" });
+    await expect(synchronizeTradingBrokerage("fund-1")).rejects.toThrow();
+    expect(hasDevelopmentFixtureUsage()).toBe(false);
   });
 
   it("wires governed reconciliation waive and supersede actions with disposition evidence", async () => {

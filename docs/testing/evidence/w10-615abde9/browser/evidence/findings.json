@@ -1,0 +1,25 @@
+{
+  "candidate": "615abde90001ab33bd6e58e545edc7fce635e254",
+  "findings": [
+    {
+      "id": "B1",
+      "title": "Refreshing a repaired workflow retains selected detail from the previous version",
+      "technicalDecision": "fail",
+      "operatorDecision": "pending",
+      "evidenceClass": "rendered-response-simulation",
+      "steps": [
+        "Load complete matching scope and workflow version 4.",
+        "Attempt simulated close and return 409 changed-evidence/version refusal.",
+        "Advance the same workflow ID to version 5 in the simulated workflow list/detail and shared decision.",
+        "Click Refresh workflows; list and shared readiness become version 5 but selected detail remains version 4.",
+        "Observe Publish close package still disabled; reloading the same scope restores the matching detail."
+      ],
+      "source": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.ts",
+      "sourceLines": [748, 777, 824, 847],
+      "scenarioIds": ["S7-refusal", "S7-repair", "S8-repair"],
+      "screenshots": ["screenshots/S7-refusal.png", "screenshots/S7-repair.png"],
+      "cause": "refresh retains the selected workflow ID; the selected detail-fetch effect is keyed only by selectedWorkflowId and services, so it does not fetch new detail for an unchanged ID.",
+      "repairDecision": "pending; preserve the candidate and implementation order; fix and rerun in a later authorized focused candidate change"
+    }
+  ]
+}

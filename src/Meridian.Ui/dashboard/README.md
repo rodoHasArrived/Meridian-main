@@ -6,10 +6,39 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-08-04
+last_reviewed: 2026-09-02
 ---
 
 # src/Meridian.Ui/dashboard
+
+Trading includes an account-scoped brokerage recovery panel backed by the shared readiness and
+execution reconciliation projection. The operator can synchronize and reconcile Alpaca portfolio
+evidence through the governed recovery endpoint. Connection health, portfolio currency and cash,
+buying power, synchronization timestamps, completeness, impacted strategy runs, and retained-local
+versus broker-order discrepancies remain inspectable. Missing, stale, inconsistent, failed, pending,
+or wrong-account evidence stays visibly blocked; account changes abort and discard prior responses.
+The active account polls shared readiness every ten seconds without overlapping requests.
+Portfolio expiry uses the server's observation window and blocks locally even when a refresh fails;
+repeated delivery of the same snapshot cannot extend its lifetime. Recovery never resubmits orders
+or resumes runs. Focused coverage lives in
+`trading-screen.brokerage-recovery.test.tsx`, `trading-screen.view-model.test.ts`, and `api.trading.test.ts`.
+
+Reporting run status and governed run detail expose an investment-income comparison over two
+explicit retained run identities. Baseline options distinguish originally published and restated
+results. The shared service retains the manifests, snapshot diff, explanation, and supporting
+records; the browser never reattributes from live journals. Period, population, accounting basis,
+currency, unsupported residuals, and incompatibility remain visible. Each contribution opens its
+retained record in the shared accessible sheet. `incomeComparison` and `incomeContribution`
+query parameters preserve the comparison and drill-through across reloads; selection parameters
+retain both runs and the measure. Authoritative requests disable development fallback.
+Monetary values stay canonical decimal strings from the API through display and residual checks;
+the browser groups digits directly and rejects already-rounded JSON numbers.
+
+Provider integration setup retains the server's immutable manifest version and digest after saving
+or activating, and forwards that reference on later edits and activation. OpenAPI reimports retain
+the same compare-and-set guard. Quarantine replay explicitly uses the original retained mapping;
+applying an updated mapping requires an explicit remediation request with a selected version and digest.
+Legacy evidence leaves unavailable provenance absent rather than deriving historical mappings in React.
 
 Accounting's draft queue reads retained recurring occurrences through the shared scoped
 `/api/ledger/journal-automation/recurring/occurrences` contract. Rows retain schedule/template
@@ -29,6 +58,11 @@ journal detail debit/credit cells carry the entry and ledger-book identity; valu
 retained subject are never assigned inferred provenance. Reads disable development fallback and
 show loading, unavailable, empty, stale and mismatched-subject states. Escape and focus restoration
 use the shared sheet behavior. Full evidence links retain the selected ledger book.
+
+Ledger Explorer clears the selected amount when its tab becomes inactive, its book or period
+changes, or its posted journal no longer contains that amount. Returning to the prior scope
+requires a new amount click; a late evidence response cannot restore the previous drawer.
+`finance-standard-pages-screen.test.tsx` covers tab, book and period round trips and late responses.
 
 Reconciliation break details expose source observation state (New, Aging, Cleared, Recurring),
 lineage, occurrence and successful-run clearing independently of governed casework status.
@@ -129,13 +163,20 @@ dropped transient notification cannot erase the retained execution/SLA record.
 
 ## Important workflows
 
+From the repository root, use `npm run dev` for the seeded backend with watch/restarts and Vite
+hot reload, or `npm run dev:fixtures` for explicit fixture-only responses without a backend.
+Backend-connected errors never fall back to fixtures. See the
+[browser development launcher](../../../docs/engineering/web-development.md) for prerequisites,
+port options, readiness, shutdown, and manual acceptance checks.
+
 The browser workstation exposes `/accounting/entity-setup` for the shared fund-structure setup wizard. The feature posts drafts to `/api/fund-structure/setup-drafts/validate` for validation and preview, then `/api/fund-structure/setup-drafts/create` for review-and-create instead of reimplementing setup orchestration in React.
 
 
 This is the active operator UI lane; keep shared contract compatibility with retained WPF consumers. Security
 Master Governance detail uses the workstation trust snapshot's `scheduleBook` and
 `openLotReadModel` projections for cash-flow schedules, factor provenance, and open-lot exposure
-review.
+review. Open-lot rows render explicit Long/Short direction in the table, detail panel, and accessible
+row description rather than inferring direction from the positive lot quantity.
 The Settings workspace also owns the browser asset-profile governance surface for custom Security
 Master assets: it reads approved profiles, drafts profile variants from starter templates, submits
 approval/rollback lineage actions through the shared Security Master endpoints, and creates
@@ -1399,6 +1440,10 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 <!-- source-todos:end -->
 
 ## Validation
+
+Launcher/process ownership coverage runs from the repository root with
+`node --test scripts/dev/web-dev.test.mjs`. Focused Vite/API mode coverage is in
+`src/vite-config.test.ts` and `src/lib/api.development-modes.test.ts`.
 
 ```bash
 npm --prefix src/Meridian.Ui/dashboard run lint

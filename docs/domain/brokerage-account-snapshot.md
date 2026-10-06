@@ -38,6 +38,12 @@ placement authority.
   overwrite ledger records automatically.
 - Activity pagination must either complete or fail closed. A truncated provider page cannot be
   presented as a complete account history.
+- Execution risk consumes one explicitly scoped, complete broker portfolio at a time. Broker
+  holdings replace local strategy projections for that account and retain remaining working-order
+  exposure. Missing balances or unsupported currencies cannot become zero-valued authority.
+- Recovery preserves dispatched client order IDs across restart. An uncertain broker response
+  requires authoritative lookup under the same account and environment; absence is not evidence
+  that retrying an order is safe. New fills or order changes revoke prior synchronization readiness.
 
 ## Examples
 

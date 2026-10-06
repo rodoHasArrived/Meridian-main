@@ -186,7 +186,23 @@ public sealed class AssetAccountingEventSpineContractTests
     }
 
     [Fact]
-    public void DisposalSelections_UnretainedEvidenceDuplicateOrdinalOrWrongCostBasis_FailClosed()
+    public void DisposalSelections_CurrentBasisMayDifferFromOriginalAcquisitionUnitCost()
+    {
+        var retained = BuildProjected().RetainedEvidence;
+        var valid = BuildDisposalInstruction(retained[0].EvidenceId);
+        var selection = valid.DisposalSelections[0];
+        var adjusted = valid with
+        {
+            DisposalSelections = [selection with { ExpectedCostBasis = 160m }]
+        };
+
+        AssetLotMutationInstructionValidator.Validate(
+                AssetAccountingEventKindDto.Disposal, adjusted, 160m, new DateOnly(2026, 6, 30), retained)
+            .Should().BeEmpty("the authoritative canonical pool certifies current basis independently of acquisition unit cost");
+    }
+
+    [Fact]
+    public void DisposalSelections_UnretainedEvidenceDuplicateOrdinalOrNonPositiveCostBasis_FailClosed()
     {
         var retained = BuildProjected().RetainedEvidence;
         var valid = BuildDisposalInstruction(retained[0].EvidenceId);
@@ -204,12 +220,12 @@ public sealed class AssetAccountingEventSpineContractTests
                 baseline with { TaxLotRecordId = Guid.NewGuid(), LotId = "lot-b" }
             ]
         };
-        var wrongCostBasis = valid with
+        var nonPositiveCostBasis = valid with
         {
-            DisposalSelections = [baseline with { ExpectedCostBasis = baseline.ExpectedCostBasis + 1m }]
+            DisposalSelections = [baseline with { ExpectedCostBasis = 0m }]
         };
 
-        foreach (var mutated in new[] { unretainedEvidence, duplicateOrdinal, wrongCostBasis })
+        foreach (var mutated in new[] { unretainedEvidence, duplicateOrdinal, nonPositiveCostBasis })
         {
             AssetLotMutationInstructionValidator.Validate(
                     AssetAccountingEventKindDto.Disposal,

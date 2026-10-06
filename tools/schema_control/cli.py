@@ -27,6 +27,7 @@ from .migrations import (
     compare_immutable_migrations,
     detect_destructive_changes,
     git_base_file_reader,
+    resolve_git_commit,
 )
 from .render import render_snapshot
 
@@ -328,6 +329,8 @@ def _migration_manifest(
     waivers: Mapping[str, Any],
     base_ref: str | None,
 ) -> tuple[MigrationInventory, dict[str, Any]]:
+    if base_ref is not None:
+        base_ref = resolve_git_commit(root, base_ref)
     inventory = build_migration_inventory(root, config)
     findings = list(inventory.findings)
     findings.extend(_waiver_findings(waivers))
@@ -430,6 +433,7 @@ def _render_summary(
     contracts: Mapping[str, Any] | None = None,
     policy_report: Mapping[str, Any] | None = None,
     drift: Mapping[str, Any] | None = None,
+    revisions: Mapping[str, Any] | None = None,
     status: str,
 ) -> str:
     migration_summary = migration_manifest.get("summary", {})
@@ -443,6 +447,14 @@ def _render_summary(
         f"- Migration errors: {migration_summary.get('errors', 0)}",
         f"- Configured migration waivers: {migration_summary.get('waivers', 0)}",
     ]
+    if revisions is not None:
+        lines.extend(
+            [
+                f"- Baseline SHA: `{revisions.get('baseline_sha') or 'not selected'}`",
+                f"- Candidate SHA (checkout HEAD): `{revisions.get('candidate_sha') or 'unavailable'}`",
+                f"- Candidate working tree dirty: `{str(revisions.get('candidate_dirty')).lower()}`",
+            ]
+        )
     if catalog is not None:
         lines.extend(
             [
@@ -493,6 +505,35 @@ def _prepare_candidate_root(root: Path, candidate_root: Path) -> None:
         render_manifest.unlink()
 
 
+def _revision_evidence(root: Path, baseline_sha: str | None) -> dict[str, Any]:
+    """Keep run provenance out of the reproducible, promoted artifact trees."""
+
+    candidate_sha = None
+    candidate_dirty = None
+    try:
+        candidate_sha = resolve_git_commit(root, "HEAD")
+    except ValueError:
+        # Local snapshots also support source archives without Git metadata.
+        pass
+    if candidate_sha is not None:
+        status = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=normal"],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if status.returncode != 0:
+            raise ValueError(f"Unable to inspect candidate working tree: {status.stderr.strip()}")
+        candidate_dirty = bool(status.stdout.strip())
+    return {
+        "format": "meridian.schema-control-revisions.v1",
+        "baseline_sha": baseline_sha,
+        "candidate_sha": candidate_sha,
+        "candidate_dirty": candidate_dirty,
+    }
+
+
 def create_snapshot(
     *,
     root: Path,
@@ -503,9 +544,12 @@ def create_snapshot(
     candidate_root: Path,
     base_ref: str | None,
 ) -> tuple[dict[str, Any], bool]:
-    inventory, migration_manifest = _migration_manifest(root, config, waivers, base_ref)
-    migration_failed = bool(migration_manifest["summary"]["errors"])
+    baseline_sha = resolve_git_commit(root, base_ref) if base_ref is not None else None
+    revisions = _revision_evidence(root, baseline_sha)
     _prepare_candidate_root(root, candidate_root)
+    write_json_if_changed(candidate_root / "reports" / "revisions.json", revisions)
+    inventory, migration_manifest = _migration_manifest(root, config, waivers, baseline_sha)
+    migration_failed = bool(migration_manifest["summary"]["errors"])
     if migration_failed:
         reports = candidate_root / "reports"
         write_json_if_changed(reports / "migration-report.json", migration_manifest)
@@ -513,10 +557,11 @@ def create_snapshot(
             reports / "summary.md",
             _render_summary(
                 migration_manifest=migration_manifest,
+                revisions=revisions,
                 status="failed migration safety checks",
             ),
         )
-        return {"migrations": migration_manifest}, True
+        return {"migrations": migration_manifest, "revisions": revisions}, True
 
     apply_result = apply_migrations(database_url, inventory)
 
@@ -555,6 +600,7 @@ def create_snapshot(
             catalog=catalog,
             contracts=contracts,
             policy_report=policy_report,
+            revisions=revisions,
             status="failed policy checks" if failed else "candidate generated",
         ),
     )
@@ -565,6 +611,7 @@ def create_snapshot(
         "dependencies": dependencies,
         "policies": policy_report,
         "application": application_report,
+        "revisions": revisions,
     }, failed
 
 
@@ -783,6 +830,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 contracts=snapshot.get("contracts"),
                 policy_report=snapshot.get("policies"),
                 drift=drift,
+                revisions=snapshot.get("revisions"),
                 status="passed" if not failed and drift["clean"] else "failed",
             ),
         )

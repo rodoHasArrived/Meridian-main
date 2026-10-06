@@ -3,6 +3,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Domain.Collectors;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
+using Meridian.Risk;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Http;
@@ -30,11 +31,24 @@ public static partial class WorkstationEndpoints
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         var portfolio = context.RequestServices.GetService<IPortfolioState>();
         var oms = context.RequestServices.GetService<IOrderManager>();
+        var brokerPortfolio = portfolio as BrokeragePortfolioState;
+        var canReadBrokerPortfolio = brokerPortfolio is null
+            || fundAccountId.HasValue && brokerPortfolio.FundAccountId == fundAccountId
+                && await FundAccountEndpoints.CanAccessFundAccountBrokerageSyncAsync(fundAccountId.Value, context)
+                    .ConfigureAwait(false);
+        if (!canReadBrokerPortfolio)
+        {
+            // The workstation still needs its account-selection/recovery panel. Hide the
+            // host's singleton broker book until its owning account is explicitly selected
+            // and authorized, including when a different authorized account was selected.
+            portfolio = null;
+            oms = null;
+        }
         var brokerageConfiguration = context.RequestServices.GetService<BrokerageConfiguration>();
         var quoteCollector = context.RequestServices.GetService<QuoteCollector>();
         var tradeCollector = context.RequestServices.GetService<TradeDataCollector>();
 
-        if (portfolio is null && oms is null && readService is null)
+        if (portfolio is null && oms is null && readService is null && brokerPortfolio is null)
         {
             return null;
         }
@@ -63,7 +77,9 @@ public static partial class WorkstationEndpoints
         var realisedPnl = portfolio?.RealisedPnl ?? run?.NetPnl ?? 0m;
         var unrealisedPnl = portfolio?.UnrealisedPnl ?? 0m;
         var totalPnl = realisedPnl + unrealisedPnl;
-        var openOrderCount = oms?.GetOpenOrders().Count ?? 0;
+        var visibleOpenOrders = oms?.GetOpenOrders()
+            .Where(order => brokerPortfolio is null || order.FundAccountId == fundAccountId).ToArray() ?? [];
+        var openOrderCount = visibleOpenOrders.Length;
         var pnlTone = totalPnl >= 0m ? "success" : "warning";
 
         // --- Positions (live execution layer when available) — PR-03: typed rows ---
@@ -75,17 +91,17 @@ public static partial class WorkstationEndpoints
             positions = portfolio.Positions.Values.Select(pos =>
             {
                 var retainedMark = ResolveLiveMarkWithObservation(pos.Symbol, quoteCollector, tradeCollector);
-                var mark = retainedMark.Price;
+                var mark = retainedMark.Price ?? brokerPortfolio?.GetPosition(pos.Symbol).MarketPrice;
                 var hasMark = mark.HasValue && mark.Value > 0m;
                 var effectiveMark = hasMark ? mark!.Value : pos.AverageCostBasis;
-                var liveUnrealized = (effectiveMark - pos.AverageCostBasis) * pos.Quantity;
-                var liveExposure = Math.Abs(pos.Quantity * effectiveMark);
+                var liveUnrealized = (effectiveMark - pos.AverageCostBasis) * pos.ExactQuantity * pos.ContractMultiplier;
+                var liveExposure = Math.Abs(pos.ExactQuantity * effectiveMark * pos.ContractMultiplier);
 
                 return new WorkstationTradingPositionRow(
                     PositionKey: pos.Symbol,
                     Symbol: pos.Symbol,
-                    Side: pos.Quantity >= 0 ? "Long" : "Short",
-                    Quantity: Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
+                    Side: pos.ExactQuantity >= 0 ? "Long" : "Short",
+                    Quantity: Math.Abs(pos.ExactQuantity).ToString(CultureInfo.InvariantCulture),
                     AveragePrice: pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
                     MarkPrice: hasMark ? effectiveMark.ToString("F2", CultureInfo.InvariantCulture) : "—",
                     DayPnl: "—",
@@ -106,7 +122,7 @@ public static partial class WorkstationEndpoints
         WorkstationTradingOrderRow[] openOrders;
         if (oms is not null)
         {
-            openOrders = oms.GetOpenOrders().Select(static order => new WorkstationTradingOrderRow(
+            openOrders = visibleOpenOrders.Select(static order => new WorkstationTradingOrderRow(
                 OrderId: order.OrderId.ToString(),
                 Symbol: order.Symbol,
                 Side: order.Side.ToString(),
@@ -137,8 +153,8 @@ public static partial class WorkstationEndpoints
             {
                 var mark = ResolveLiveMark(pos.Symbol, quoteCollector, tradeCollector);
                 var px = mark.HasValue && mark.Value > 0m ? mark.Value : pos.AverageCostBasis;
-                grossExposure += Math.Abs(pos.Quantity * px);
-                netExposureValue += pos.Quantity * px;
+                grossExposure += Math.Abs(pos.ExactQuantity * px * pos.ContractMultiplier);
+                netExposureValue += pos.ExactQuantity * px * pos.ContractMultiplier;
             }
             var drawdownPct = portfolio.PortfolioValue > 0m
                 ? totalPnl / portfolio.PortfolioValue
@@ -161,7 +177,8 @@ public static partial class WorkstationEndpoints
             riskSummary = "Strategy is running at a loss. Monitoring active.";
         }
 
-        var runtimeRisk = await ResolveRuntimeRiskDescriptorAsync(context).ConfigureAwait(false);
+        var runtimeRisk = canReadBrokerPortfolio
+            ? await ResolveRuntimeRiskDescriptorAsync(context).ConfigureAwait(false) : null;
         if (runtimeRisk is not null)
         {
             riskState = runtimeRisk.State;
@@ -175,9 +192,10 @@ public static partial class WorkstationEndpoints
         // exposure beside them would show, say, $100k gross next to a gross guardrail
         // reading $160k and Constrained — so the headline figures come from that snapshot
         // whenever it is available, and fall back to filled positions when it is not.
-        if (context.RequestServices.GetService<Meridian.Risk.IPortfolioExposureProvider>() is { } exposureProvider)
+        if (canReadBrokerPortfolio && context.RequestServices.GetService<Meridian.Risk.IPortfolioExposureProvider>() is { } exposureProvider)
         {
-            var exposureSnapshot = exposureProvider.GetSnapshot();
+            var exposureSnapshot = brokerPortfolio is null ? exposureProvider.GetSnapshot()
+                : exposureProvider.GetSnapshot(fundAccountId);
             grossExposure = exposureSnapshot.GrossExposure;
             netExposureValue = exposureSnapshot.NetExposure;
         }
@@ -194,7 +212,9 @@ public static partial class WorkstationEndpoints
         WorkstationTradingFillRow[] fills;
         if (oms is not null)
         {
-            fills = oms.GetCompletedOrders(20).Select(static order => new WorkstationTradingFillRow(
+            fills = oms.GetCompletedOrders(20)
+                .Where(order => brokerPortfolio is null || order.FundAccountId == fundAccountId)
+                .Select(static order => new WorkstationTradingFillRow(
                 FillId: order.OrderId.ToString(),
                 OrderId: order.OrderId.ToString(),
                 Symbol: order.Symbol,
@@ -239,10 +259,10 @@ public static partial class WorkstationEndpoints
                 Provider: brokerageValidation.GatewayDisplayName,
                 Account: run is not null && !string.IsNullOrWhiteSpace(run.PortfolioId) ? run.PortfolioId : "—",
                 Environment: run?.Mode == StrategyRunMode.Live ? "live" : "paper",
-                Connection: portfolio is not null ? "Connected" : "Disconnected",
+                Connection: portfolio is not null && (brokerPortfolio?.IsConnected ?? true) ? "Connected" : "Disconnected",
                 LastHeartbeat: portfolio is not null ? "live" : "—",
                 OrderIngress: oms is not null ? "healthy" : "—",
-                FillFeed: portfolio is not null ? "healthy" : "—",
+                FillFeed: portfolio is not null && (brokerPortfolio?.IsConnected ?? true) ? "healthy" : "—",
                 Notes: [BuildTradingBrokerageNotes(run, portfolio is not null, brokerageConfiguration)]),
             Readiness: readiness,
             Comparisons: run is null ? Array.Empty<WorkstationModeComparisonGroup>() : BuildModeComparisons([run]),

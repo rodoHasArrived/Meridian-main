@@ -1,6 +1,10 @@
+using Meridian.Application.Composition;
+using Meridian.Documents;
+using Microsoft.Extensions.Options;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.Reporting;
 using Meridian.Ui.Shared.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -9,19 +13,40 @@ namespace Meridian.Ui.Shared.Evidence;
 
 public static class EvidenceWorkflowServiceCollectionExtensions
 {
+    /// <summary>Registers the shared evidence store and host-configured storage limits for browser and desktop hosts.</summary>
+    public static IServiceCollection AddEvidenceArtifactStorage(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        // Explicit per-host composition settings take precedence over the generic host
+        // configuration. Direct consumers without either retain the default limits.
+        services.AddOptions<EvidenceStorageQuotaOptions>()
+            .Configure<IServiceProvider>((options, provider) =>
+                (provider.GetService<CompositionConfiguration>()?.HostConfiguration
+                    ?? provider.GetService<IConfiguration>())?
+                .GetSection("EvidenceVault:StorageQuota").Bind(options));
+        services.TryAddSingleton<IEvidenceArtifactStore>(sp =>
+            new FileEvidenceArtifactStore(
+                FileEvidenceArtifactStore.ResolveDataRoot(sp),
+                sp.GetRequiredService<ILogger<FileEvidenceArtifactStore>>(),
+                sp.GetRequiredService<IOptions<EvidenceStorageQuotaOptions>>().Value));
+        return services;
+    }
+
     public static IServiceCollection AddEvidenceWorkflowFabric(
         this IServiceCollection services,
         bool isProductionComposition = false)
     {
+        services.AddEvidenceArtifactStorage();
         services.TryAddSingleton<EvidenceTemplateRegistry>();
         services.TryAddSingleton<EvidenceSubjectResolver>();
         services.TryAddSingleton<EvidencePacketValidationService>();
         services.TryAddSingleton<EvidenceGraphService>();
+        services.TryAddSingleton(sp => new PostedLedgerAmountProvenanceService(
+            sp.GetService<Meridian.Storage.Ledger.ILedgerJournalStore>(),
+            sp.GetService<Meridian.Contracts.Ledger.ILedgerBookService>(),
+            sp.GetService<Meridian.Contracts.Tenancy.IFundProfileTenancyRegistry>(),
+            sp.GetService<IEvidenceArtifactStore>()));
         services.TryAddSingleton<IEvidenceDocumentExtractor, ManualEvidenceDocumentExtractor>();
-        services.TryAddSingleton<IEvidenceArtifactStore>(sp =>
-            new FileEvidenceArtifactStore(
-                FileEvidenceArtifactStore.ResolveDataRoot(sp),
-                sp.GetRequiredService<ILogger<FileEvidenceArtifactStore>>()));
         var hasKnownDurableStatementAuthority =
             HasKnownDurableStatementAuthority(services);
 

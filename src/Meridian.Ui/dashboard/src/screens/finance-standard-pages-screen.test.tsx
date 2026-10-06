@@ -1,4 +1,6 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { createLedgerAmountProofPacket } from "@/test/ledger-amount-proof-fixtures";
+import { getLedgerAmountProof } from "@/lib/ledger-amount-proof-api";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { useLocation } from "react-router-dom";
 import * as api from "@/lib/api";
@@ -25,6 +27,8 @@ vi.mock("@/lib/api", async () => {
     getRunTrialBalance: vi.fn()
   };
 });
+
+vi.mock("@/lib/ledger-amount-proof-api", () => ({ getLedgerAmountProof: vi.fn() }));
 
 vi.mock("@/lib/ledger-reports-api", () => ({
   getLedgerBooks: vi.fn(),
@@ -67,6 +71,20 @@ function mockPostedBook() {
   vi.mocked(ledgerReportsApi.getLedgerPeriodTrialBalance).mockResolvedValue([] as never);
   vi.mocked(ledgerReportsApi.getLedgerPeriodPnlSummary).mockRejectedValue(new Error("not configured"));
   vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValue([] as never);
+}
+
+function mockPostedAmount() {
+  mockPostedBook();
+  vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockImplementation(async (periodId) => periodId === LEDGER_PERIOD_ID ? [{
+    journalEntryId: "je-proof", periodId: LEDGER_PERIOD_ID, ledgerBookId: LEDGER_BOOK_ID,
+    timestamp: "2026-07-31T00:00:00Z", description: "Scoped posting", totalDebits: 500, totalCredits: 500,
+    isBalanced: true, lines: [{ entryId: "line-proof", journalEntryId: "je-proof", timestamp: "2026-07-31T00:00:00Z",
+      accountName: "Cash", accountType: "Asset", symbol: "AAPL", debit: 500, credit: 0, description: "Selected line" }]
+  }] : []);
+  const proofPacket = createLedgerAmountProofPacket({ subjectId: "je-proof:line-proof:debit", ledgerBookId: LEDGER_BOOK_ID,
+    periodId: LEDGER_PERIOD_ID, fundProfileId: "fund-alpha", amount: 500, currency: "USD", label: "Cash" });
+  vi.mocked(getLedgerAmountProof).mockResolvedValue(proofPacket);
+  return proofPacket;
 }
 
 const data = {
@@ -399,6 +417,113 @@ describe("finance standard pages", () => {
       "href",
       `/accounting/journal-entries/detail?journalEntryId=je-cash-1&periodId=${LEDGER_PERIOD_ID}`
     );
+  });
+
+  it("selects a retained posting amount by entry identity and exact book, period and fund scope", async () => {
+    const proofPacket = mockPostedAmount();
+    await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
+    expect(getLedgerAmountProof).not.toHaveBeenCalled();
+    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" }));
+    const drawer = await screen.findByRole("dialog", { name: "Cash debit $500 proof detail" });
+    expect(await within(drawer).findByRole("link", { name: "Open Retained journal line" })).toHaveAttribute("href", proofPacket.ledgerAmount!.evidence[0]!.route);
+    expect(getLedgerAmountProof).toHaveBeenCalledWith(expect.objectContaining({
+      subjectId: "je-proof:line-proof:debit", ledgerBookId: LEDGER_BOOK_ID, periodId: LEDGER_PERIOD_ID,
+      fundProfileId: "fund-alpha", amount: 500
+    }), expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("requires a fresh amount click after visiting Trial balance and returning to Ledger", async () => {
+    mockPostedAmount();
+    await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
+    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" }));
+    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
+    await waitForAsyncEffects();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    const amount = await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(getLedgerAmountProof).toHaveBeenCalledTimes(1);
+    fireEvent.click(amount);
+    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
+    expect(getLedgerAmountProof).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(["book", "period"] as const)("requires a fresh amount click after a %s scope round trip", async (scope) => {
+    mockPostedAmount();
+    const otherBookId = "00000000-0000-0000-0000-0000000000cc";
+    const otherPeriodId = "88888888-8888-8888-8888-888888888888";
+    const book = {
+      ledgerBookId: LEDGER_BOOK_ID, fundProfileId: "fund-alpha", fundStructureNodeId: "entity-alpha",
+      fundStructureNodeKind: "Fund", displayName: "Alpha Master Fund", baseCurrency: "USD",
+      createdAt: "2026-01-01T00:00:00Z", updatedAt: "2026-01-01T00:00:00Z", accountingBasis: "Primary",
+      accountingPolicyId: "legacy-v1", accountingPolicyVersion: "legacy-v1"
+    };
+    const period = {
+      periodId: LEDGER_PERIOD_ID, ledgerBookId: LEDGER_BOOK_ID, fiscalYear: 2026, periodNo: 7,
+      label: "July 2026", startDate: "2026-07-01", endDate: "2026-07-31", status: "HardClosed",
+      openedAt: "2026-07-01T00:00:00Z", closedAt: "2026-08-02T00:00:00Z", version: 1
+    };
+    vi.mocked(ledgerReportsApi.getLedgerBooks).mockResolvedValue([
+      book, { ...book, ledgerBookId: otherBookId, displayName: "Beta Feeder Fund" }
+    ] as never);
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockImplementation(async (query) => {
+      const otherPeriod = { ...period, periodId: otherPeriodId, periodNo: 6, label: "June 2026",
+        ledgerBookId: scope === "book" ? otherBookId : LEDGER_BOOK_ID };
+      return (query?.ledgerBookId === otherBookId ? [otherPeriod]
+        : scope === "period" ? [period, otherPeriod] : [period]) as never;
+    });
+    await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
+    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" }));
+    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
+
+    const selector = () => document.getElementById(`ledger-${scope}-select`) as HTMLSelectElement;
+    fireEvent.change(selector(), { target: { value: scope === "book" ? otherBookId : otherPeriodId } });
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    fireEvent.change(selector(), { target: { value: scope === "book" ? LEDGER_BOOK_ID : LEDGER_PERIOD_ID } });
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+
+    const amount = await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(getLedgerAmountProof).toHaveBeenCalledTimes(1);
+    fireEvent.click(amount);
+    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
+    expect(getLedgerAmountProof).toHaveBeenCalledTimes(2);
+  });
+
+  it("discards pending evidence after a tab round trip until the operator selects the amount again", async () => {
+    const proofPacket = mockPostedAmount();
+    let completeProof!: (packet: typeof proofPacket) => void;
+    vi.mocked(getLedgerAmountProof).mockImplementationOnce(() => new Promise((resolve) => { completeProof = resolve; }));
+    await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
+    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" }));
+    expect(screen.getByRole("dialog")).toHaveTextContent("Loading retained amount evidence");
+    const signal = vi.mocked(getLedgerAmountProof).mock.calls[0][1]?.signal;
+
+    fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
+    await waitForAsyncEffects();
+    expect(signal?.aborted).toBe(true);
+    fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
+    await waitForAsyncEffects();
+    await waitForAsyncEffects();
+    const amount = await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" });
+    await act(async () => { completeProof(proofPacket); });
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Open Retained journal line" })).not.toBeInTheDocument();
+    expect(getLedgerAmountProof).toHaveBeenCalledTimes(1);
+    fireEvent.click(amount);
+    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
+    expect(getLedgerAmountProof).toHaveBeenCalledTimes(2);
   });
 
   it("labels posted amounts in the book's currency and claims no evidence it does not have", async () => {

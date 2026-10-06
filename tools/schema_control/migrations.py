@@ -605,21 +605,30 @@ def compare_immutable_migrations(
     return findings
 
 
-def git_base_file_reader(root: Path, base_ref: str) -> BaseFileReader:
-    """Create a baseline reader backed by ``git show <ref>:<path>``."""
+def resolve_git_commit(root: Path, ref: str) -> str:
+    """Resolve a revision once so later reads cannot follow a moving branch."""
 
-    root = root.resolve()
-    if not base_ref.strip():
-        raise ValueError("base_ref cannot be empty.")
+    if not ref.strip():
+        raise ValueError("Git ref cannot be empty.")
     verification = subprocess.run(
-        ["git", "rev-parse", "--verify", f"{base_ref}^{{commit}}"],
+        ["git", "rev-parse", "--verify", "--end-of-options", f"{ref}^{{commit}}"],
         cwd=root,
         capture_output=True,
+        text=True,
         check=False,
     )
     if verification.returncode != 0:
-        details = verification.stderr.decode("utf-8", errors="replace").strip()
-        raise ValueError(f"Unable to resolve git base ref '{base_ref}': {details}")
+        raise ValueError(
+            f"Unable to resolve git ref '{ref}': {verification.stderr.strip()}"
+        )
+    return verification.stdout.strip()
+
+
+def git_base_file_reader(root: Path, base_ref: str) -> BaseFileReader:
+    """Create a baseline reader pinned to the commit resolved from ``base_ref``."""
+
+    root = root.resolve()
+    base_ref = resolve_git_commit(root, base_ref)
 
     baseline_listing = subprocess.run(
         ["git", "ls-tree", "-r", "--name-only", base_ref],

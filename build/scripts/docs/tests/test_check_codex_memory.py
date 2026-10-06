@@ -11,6 +11,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 MODULE_PATH = Path(__file__).resolve().parents[1] / "check-codex-memory.py"
@@ -291,6 +292,51 @@ class CheckCodexMemoryTests(unittest.TestCase):
             findings, _ = check_codex_memory.collect_findings(root)
 
             self.assertTrue(any("missing YAML front matter" in finding.message for finding in findings))
+
+    def test_malformed_front_matter_reports_markdown_path_and_line(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            path = root / ".codex" / "memory" / "repo" / "validation.md"
+            write(path, "---\nid: repo:validation\nsummary: Review: pending\n---\n")
+
+            findings, _ = check_codex_memory.collect_findings(root)
+
+            diagnostic = next(finding.message for finding in findings if "malformed YAML" in finding.message)
+            self.assertIn(str(path), diagnostic)
+            self.assertRegex(diagnostic, r"validation\.md:3:\d+: malformed YAML")
+
+    def test_front_matter_preserves_quoted_and_folded_yaml(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "memory.md"
+            write(path, '---\nsummary: "Review: pending #3048"\nnotes: >-\n  Review: pending\n  and repair: required\n---\n')
+
+            parsed, findings = check_codex_memory.parse_front_matter(path)
+
+            self.assertEqual([], findings)
+            self.assertEqual("Review: pending #3048", parsed["summary"])
+            self.assertEqual("Review: pending and repair: required", parsed["notes"])
+
+    def test_front_matter_requires_yaml_dependency_without_recovery(self) -> None:
+        real_import = __import__
+
+        def without_yaml(name, *args, **kwargs):
+            if name == "yaml":
+                raise ModuleNotFoundError("No module named 'yaml'", name="yaml")
+            return real_import(name, *args, **kwargs)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "memory.md"
+            write(path, "---\nid: repo:validation\n---\n")
+            with mock.patch("builtins.__import__", side_effect=without_yaml):
+                parsed, findings = check_codex_memory.parse_front_matter(path)
+
+            self.assertEqual({}, parsed)
+            self.assertEqual(1, len(findings))
+            self.assertEqual("error", findings[0].severity)
+            self.assertIn(str(path), findings[0].message)
+            self.assertIn("requires PyYAML", findings[0].message)
+            self.assertIn("build/scripts/docs/requirements.txt", findings[0].message)
 
     def test_front_matter_missing_required_metadata_fails(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

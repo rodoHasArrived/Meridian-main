@@ -111,7 +111,9 @@ public sealed partial class TradingOperatorReadinessService : ITradingOperatorRe
         AddPromotionGovernanceWorkItems(workItems, latestRun, promotion, trustGate, reportPack, reconciliationGate);
 
         var brokerageStatus = await ResolveBrokerageStatusAsync(fundAccountId, ct).ConfigureAwait(false);
-        var executionReconciliation = await ResolveExecutionReconciliationAsync(ct).ConfigureAwait(false);
+        var executionReconciliation = await ResolveExecutionReconciliationAsync(fundAccountId, brokerageStatus, ct).ConfigureAwait(false);
+        var brokerageRecovery = await BuildBrokerageRecoveryAsync(fundAccountId, scope, brokerageStatus, executionReconciliation, ct)
+            .ConfigureAwait(false);
         AddBrokerageSyncWorkItem(workItems, brokerageStatus);
         AddExecutionReconciliationWorkItem(workItems, executionReconciliation);
         AddSecurityMasterCoverageWorkItem(workItems, latestRun);
@@ -129,7 +131,16 @@ public sealed partial class TradingOperatorReadinessService : ITradingOperatorRe
             brokerageStatus,
             executionReconciliation,
             riskRuleStatuses,
-            auditEntries);
+            auditEntries).ToList();
+        if (Resolve<LiveBrokeragePortfolioSyncService>()?.IsActive == true)
+        {
+            acceptanceGates.Add(new TradingAcceptanceGateDto(
+                "brokerage-portfolio-recovery", "Broker portfolio synchronization",
+                brokerageRecovery.Status == "Ready" ? TradingAcceptanceGateStatusDto.Ready : TradingAcceptanceGateStatusDto.Blocked,
+                brokerageRecovery.Detail,
+                LastEvidenceAt: brokerageRecovery.Portfolio?.LastSuccessfulAt,
+                RequiredNextAction: brokerageRecovery.Status == "Ready" ? null : "Synchronize and reconcile the selected broker account."));
+        }
         var overallStatus = EvaluateOverallPosture(acceptanceGates);
         var portfolioLedgerWorkflowStatus = PortfolioLedgerWorkflowStatusService.Compute(acceptanceGates, workItems);
         var evidenceCompleteness = BuildEvidenceCompleteness(acceptanceGates, workItems);
@@ -184,7 +195,8 @@ public sealed partial class TradingOperatorReadinessService : ITradingOperatorRe
             SnapshotVersion = snapshotVersion,
             ProviderPromotionChecklist = BuildProviderPromotionChecklist(trustGate, replay, asOf),
             PortfolioLedgerWorkflowStatus = portfolioLedgerWorkflowStatus,
-            ExecutionReconciliation = executionReconciliation
+            ExecutionReconciliation = executionReconciliation,
+            BrokerageRecovery = brokerageRecovery
         };
 
         ValidateRequiredReadinessFields(readiness);
@@ -920,12 +932,27 @@ public sealed partial class TradingOperatorReadinessService : ITradingOperatorRe
             : await syncService.GetStatusAsync(fundAccountId.Value, ct).ConfigureAwait(false);
     }
 
-    private async Task<TradingExecutionReconciliationReadinessDto?> ResolveExecutionReconciliationAsync(CancellationToken ct)
+    private async Task<TradingExecutionReconciliationReadinessDto?> ResolveExecutionReconciliationAsync(
+        Guid? fundAccountId, WorkstationBrokerageSyncStatusDto? link, CancellationToken ct)
     {
         var gateway = ResolveBrokerageGateway();
         if (gateway is null)
         {
             return null;
+        }
+
+        if (Resolve<LiveBrokeragePortfolioSyncService>() is { IsActive: true } sync)
+        {
+            var state = fundAccountId.HasValue ? sync.GetStatus(fundAccountId.Value) : null;
+            // Do not query a single-account gateway on behalf of a different authorized local
+            // account. An explicit sync first proves the retained link against broker identity.
+            if (state?.Snapshot is not { } snapshot || !state.IsConnected || link?.IsLinked != true
+                || !string.Equals(snapshot.Account.AccountId, link.ExternalAccountId, StringComparison.OrdinalIgnoreCase)
+                || !string.Equals(snapshot.Account.ProviderId, link.ProviderId, StringComparison.OrdinalIgnoreCase))
+            {
+                return CreateExecutionReconciliationUnavailable(gateway,
+                    "Synchronize the selected account to verify its broker identity before reading order reconciliation.");
+            }
         }
 
         var service = Resolve<BrokerageExecutionReconciliationService>();
@@ -946,7 +973,7 @@ public sealed partial class TradingOperatorReadinessService : ITradingOperatorRe
 
         try
         {
-            var report = await service.ReconcileOpenOrdersAsync(gateway, orderManager, ct).ConfigureAwait(false);
+            var report = await service.ReconcileOpenOrdersAsync(gateway, orderManager, fundAccountId, ct).ConfigureAwait(false);
             return MapExecutionReconciliation(report);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
