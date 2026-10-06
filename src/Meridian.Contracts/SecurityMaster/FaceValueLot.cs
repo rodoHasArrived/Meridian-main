@@ -149,10 +149,80 @@ public sealed record FaceValueLot
     /// (<c>basis × (1 + i)</c> less the period coupon), so a premium amortizes slowly at first and
     /// faster near maturity, and a discount accretes in reverse — the ASC 310-20 profile the
     /// straight-line method only approximates. The partial current period interpolates linearly
-    /// between period boundaries. Periods are level (no odd-first-period day-count adjustment);
-    /// the day-count convention scales elapsed time into period space.
+    /// between calendar coupon boundaries using the current period's day-count fraction.
+    /// Supports one to 1200 regular monthly, quarterly, semiannual or annual periods,
+    /// including end-of-month schedules; odd periods require a separate model.
     /// </summary>
     public decimal ConstantYieldAmortizedBasisAsOf(
+        DayCountConvention convention,
+        DateOnly maturity,
+        DateOnly asOf,
+        decimal annualCouponRatePercent,
+        int paymentsPerYear = 2,
+        decimal? retainedAnnualEffectiveYield = null)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(paymentsPerYear);
+        ArgumentOutOfRangeException.ThrowIfNegative(annualCouponRatePercent);
+
+        if (retainedAnnualEffectiveYield is <= -1m
+            || (retainedAnnualEffectiveYield is not null && maturity <= AcquiredDate))
+            throw new ArgumentException("Retained effective yield or maturity is invalid.");
+        if (maturity <= AcquiredDate)
+            return CostBasis;
+
+        var couponDates = RegularCouponDates(maturity, paymentsPerYear);
+        var totalPeriods = couponDates.Length - 1;
+
+        // Canonical acquisitions retain annual yield as a decimal (0.05 = 5%). Verify that
+        // it prices these level contractual cash flows before using it, including at maturity.
+        if (retainedAnnualEffectiveYield is { } retainedYield)
+        {
+            if (Math.Abs(PricePerUnitAtYield(annualCouponRatePercent / 100m / paymentsPerYear,
+                    totalPeriods, retainedYield / paymentsPerYear) - PricePercentOfPar / ParBasis) > 0.0000000001m)
+                throw new ArgumentException("Retained effective yield does not reconcile to acquisition price and level contractual periods.");
+        }
+
+        if (PremiumDiscount == 0m)
+            return CostBasis;
+        if (asOf <= AcquiredDate)
+            return CostBasis;
+        if (asOf >= maturity)
+            return OriginalFace;
+
+        var pricePerUnit = PricePercentOfPar / ParBasis;
+        var couponPerPeriod = annualCouponRatePercent / 100m / paymentsPerYear;
+        var yieldPerPeriod = retainedAnnualEffectiveYield is { } annualYield
+            ? annualYield / paymentsPerYear
+            : SolveYieldPerPeriod(pricePerUnit, couponPerPeriod, totalPeriods);
+
+        var wholePeriods = 0;
+        while (couponDates[wholePeriods + 1] <= asOf)
+            wholePeriods++;
+        var periodStart = couponDates[wholePeriods];
+        var periodEnd = couponDates[wholePeriods + 1];
+        var periodFraction = DayCountConventions.Fraction(convention, periodStart, periodEnd);
+        if (periodFraction <= 0m)
+            throw new ArgumentException("Constant-yield amortization requires a positive coupon-period day-count fraction.");
+        var partialPeriod = DayCountConventions.Fraction(convention, periodStart, asOf) / periodFraction;
+
+        var basis = pricePerUnit;
+        for (var period = 0; period < wholePeriods; period++)
+        {
+            basis = (basis * (1m + yieldPerPeriod)) - couponPerPeriod;
+        }
+
+        if (partialPeriod > 0m)
+        {
+            var nextBasis = (basis * (1m + yieldPerPeriod)) - couponPerPeriod;
+            basis += (nextBasis - basis) * partialPeriod;
+        }
+
+        return basis * OriginalFace;
+    }
+
+    // Frozen v1 arithmetic for retained, unversioned canonical instructions only.
+    // New calculations use calendar coupon boundaries in the public kernel above.
+    internal decimal LegacyConstantYieldAmortizedBasisAsOf(
         DayCountConvention convention,
         DateOnly maturity,
         DateOnly asOf,
@@ -219,6 +289,33 @@ public sealed record FaceValueLot
         }
 
         return basis * OriginalFace;
+    }
+
+    private DateOnly[] RegularCouponDates(DateOnly maturity, int paymentsPerYear)
+    {
+        if (paymentsPerYear is not (1 or 2 or 4 or 12))
+            throw new ArgumentException("Constant-yield amortization requires an annual, semiannual, quarterly or monthly coupon frequency.");
+        var monthsPerPeriod = 12 / paymentsPerYear;
+        var months = (maturity.Year - AcquiredDate.Year) * 12 + maturity.Month - AcquiredDate.Month;
+        if (months < monthsPerPeriod || months % monthsPerPeriod != 0 || months / monthsPerPeriod > 1200)
+            throw new ArgumentException("Constant-yield amortization requires one to 1200 level calendar coupon periods.");
+
+        // Endpoints at month end retain EOM through February and leap years. Otherwise
+        // retain the contractual day, clipping only short months. Anchor each boundary
+        // independently so a clipped February never shifts later coupon dates.
+        var endOfMonth = AcquiredDate.Day == DateTime.DaysInMonth(AcquiredDate.Year, AcquiredDate.Month)
+            && maturity.Day == DateTime.DaysInMonth(maturity.Year, maturity.Month);
+        var dayOfMonth = Math.Max(AcquiredDate.Day, maturity.Day);
+        var dates = new DateOnly[months / monthsPerPeriod + 1];
+        for (var period = 0; period < dates.Length; period++)
+        {
+            var month = AcquiredDate.AddMonths(period * monthsPerPeriod);
+            var lastDay = DateTime.DaysInMonth(month.Year, month.Month);
+            dates[period] = new DateOnly(month.Year, month.Month, endOfMonth ? lastDay : Math.Min(dayOfMonth, lastDay));
+        }
+        if (dates[0] != AcquiredDate || dates[^1] != maturity)
+            throw new ArgumentException("Constant-yield amortization requires regular calendar coupon dates; odd periods are unsupported.");
+        return dates;
     }
 
     /// <summary>

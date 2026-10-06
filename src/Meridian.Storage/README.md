@@ -28,6 +28,11 @@ into wash-sale projection evidence together with the configured window, scope an
 This adds no persisted policy field or schema migration.
 
 Partial W10-LOT-002 amortization uses migration `V_ledger_040` and the existing atomic posting transaction. Period, Security Master, book-position and lot locks bind the reviewed state through commit. A CAS open-basis adjustment and zero-quantity append-only mutation preserve acquisition facts, tie exactly to the journal carrying movement, and replay without another journal or mutation. PostgreSQL reference stores must share the ledger database.
+Amortization requires the canonical depreciation/amortization source type, the exact reviewed
+instruction, and matching acquisition/reference evidence in both the atomic request and governed
+journal. Missing or mismatched inputs are refused before mutation. Posting locks the Security Master
+parent and its hashed identifiers/aliases through commit; alias writes touch the parent in the same
+transaction so a posting with an older serializable snapshot refuses concurrent reference drift.
 
 The durable replacement resolver excludes relieved lot IDs only within the disposing account's
 complete identity. LedgerBook scope retains same-ID acquisitions in sibling accounts. Prior-deferral

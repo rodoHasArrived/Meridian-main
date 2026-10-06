@@ -161,6 +161,67 @@ class ValidationRunnerTests(unittest.TestCase):
                 self.assertIn("console;verbosity=quiet", test_command)
                 self.assertEqual(test_command[test_command.index("--collect") + 1], "XPlat Code Coverage")
 
+    def test_explicit_isolation_key_matching_new_run_id_reuses_existing_outputs(self) -> None:
+        scenarios = (
+            ({"no_build": True}, ["test"]),
+            ({"skip_restore": True}, ["build", "test"]),
+            ({}, ["restore", "build", "test"]),
+        )
+        for options, expected_commands in scenarios:
+            with self.subTest(options=options), tempfile.TemporaryDirectory() as temp_dir:
+                repo_root = Path(temp_dir)
+                for kind in ("bin", "obj"):
+                    (repo_root / "artifacts" / kind / "existing-output").mkdir(parents=True)
+                with (
+                    patch.object(self.buildctl, "REPO_ROOT", repo_root),
+                    patch.object(self.buildctl, "_get_active_repo_build_processes", return_value=[]),
+                    patch.object(self.buildctl, "_prune_for_isolation"),
+                    patch.object(self.buildctl, "_run_passthrough", return_value=0) as run,
+                    redirect_stdout(io.StringIO()),
+                    redirect_stderr(io.StringIO()),
+                ):
+                    exit_code = self.buildctl.cmd_test(self._args(
+                        run_id="existing-output", isolation_key="existing-output", **options,
+                    ))
+
+                self.assertEqual(exit_code, 0)
+                commands = [call.args[0] for call in run.call_args_list]
+                self.assertEqual([command[1] for command in commands], expected_commands)
+                self.assertTrue(all(
+                    "/p:MeridianBuildIsolationKey=existing-output" in command for command in commands
+                ))
+                self.assertIn("--no-build", commands[-1])
+                self.assertIn("--no-restore", commands[-1])
+                payload = json.loads(
+                    (repo_root / ".ai/validation-runs/existing-output.json").read_text(encoding="utf-8")
+                )
+                self.assertEqual(payload["status"], "passed")
+                self.assertEqual(payload["isolationKey"], "existing-output")
+                self.assertIsNone(self.buildctl._read_validation_lock(repo_root))
+
+    def test_test_command_rejects_properties_that_override_no_build(self) -> None:
+        assignments = ("VSTestNoBuild=false", "/p:vstestnobuild=false", "-P:VSTESTNOBUILD=false")
+        for no_build in (False, True):
+            for assignment in assignments:
+                with self.subTest(no_build=no_build, assignment=assignment), tempfile.TemporaryDirectory() as temp_dir:
+                    stderr = io.StringIO()
+                    with (
+                        patch.object(self.buildctl, "REPO_ROOT", Path(temp_dir)),
+                        patch.object(self.buildctl, "_get_active_repo_build_processes", return_value=[]),
+                        patch.object(self.buildctl, "_prune_for_isolation"),
+                        patch.object(self.buildctl, "_run_passthrough", return_value=0) as run,
+                        redirect_stdout(io.StringIO()),
+                        redirect_stderr(stderr),
+                    ):
+                        exit_code = self.buildctl.cmd_test(self._args(
+                            no_build=no_build, isolation_key="existing-output", property=[assignment],
+                        ))
+
+                    self.assertEqual(exit_code, 2)
+                    run.assert_not_called()
+                    self.assertIn("vstestnobuild", stderr.getvalue())
+                    self.assertIn("managed by the runner", stderr.getvalue())
+
     def test_failed_reuse_records_failure_without_build_fallback(self) -> None:
         exit_code, commands, payload, stderr = self._run_test(
             self._args(no_build=True, isolation_key="missing-output"), exit_codes={"test": 1}

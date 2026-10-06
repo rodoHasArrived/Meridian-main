@@ -337,6 +337,14 @@ def _validate_output_name(value: str, label: str) -> None:
         raise ValueError(f"Invalid {label}: use a portable name containing letters, digits, '.', '_' or '-'.")
 
 
+def _uses_auto_isolation(args: argparse.Namespace) -> bool:
+    return (
+        not getattr(args, "profile", None)
+        and not getattr(args, "no_isolation", False)
+        and getattr(args, "isolation_key", None) in (None, "", "auto")
+    )
+
+
 def _validate_output_options(args: argparse.Namespace) -> None:
     # Output overrides must not bypass fresh isolation or a persistent manifest.
     normalize_properties(getattr(args, "property", []))
@@ -377,7 +385,7 @@ def _prepare_outputs(args: argparse.Namespace, run_id: str, command: str = "test
         )
     elif getattr(args, "isolation_key", None):
         effective.isolation_key = _resolve_isolation_key(args.isolation_key, run_id=run_id, disabled=False)
-    if getattr(effective, "isolation_key", None) == run_id:
+    if _uses_auto_isolation(args) and getattr(effective, "isolation_key", None) == run_id:
         if any((REPO_ROOT / "artifacts" / root / run_id).exists() for root in ("bin", "obj")):
             raise ValueError("Fresh output already exists; choose a new run ID for independent validation.")
     return effective, profile
@@ -1233,7 +1241,7 @@ def cmd_test(args: argparse.Namespace) -> int:
         print(str(exc), file=sys.stderr)
         return 2
 
-    if (no_build or getattr(args, "skip_restore", False)) and isolation_key == run_id:
+    if (no_build or getattr(args, "skip_restore", False)) and _uses_auto_isolation(args):
         print(
             "--no-build/--skip-restore requires an existing --isolation-key or --no-isolation, "
             "or a compatible --profile. Fresh isolation requires restore and build. "

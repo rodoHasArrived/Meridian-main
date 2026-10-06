@@ -24,6 +24,13 @@ account-scoped strategy runs. Existing execution-reconciliation DTOs remain the 
 Recovery requests carry only the local account ID; provider and external identity are server-resolved.
 
 Canonical amortization adds an optional `Amortization` input to lot instructions and basis adjustments, omitted when absent to preserve retained fingerprints. `OpenLotAmortization` binds reviewed canonical lot and versioned Security Master evidence, delegates shared straight-line/constant-yield kernels, and retains annual decimal yield and acquisition FX. Unsupported structures and missing terms fail closed.
+Constant yield counts contractual calendar coupons for monthly, quarterly, semiannual and annual
+schedules, including month ends and leap dates. Day-count fractions interpolate within the current
+coupon period; they do not determine the number of coupons. Odd schedules and schedules exceeding
+1200 periods are refused, and retained yield must reconcile to the acquisition price even at maturity.
+New instructions identify calculation model v2. Retained JSON without a calculation version keeps
+the original v1 calculation and serialized shape for receipt replay; unposted legacy instructions
+require a fresh preview. Unknown calculation versions are refused.
 
 `Etl/IEtlStagingStore.cs` lets source adapters retain imported streams through an injected
 persistence port without referencing the Storage implementation.

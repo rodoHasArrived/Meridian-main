@@ -1,5 +1,7 @@
 using System.Text.Json;
 using Meridian.Contracts.Accounting.Lots;
+using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Ledger;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Ledger;
@@ -27,17 +29,31 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException("Amortization cannot carry acquisition, relief or correction inputs; corrections require reversal and rebook.");
         var scope = ResolveAtomicAssetScope(command.Journal);
         var lot = instruction.ExpectedLot;
-        if (Meridian.Contracts.AssetOperations.AssetAccountingEventTypeNames.TryParse(command.Journal.PostingCommand?.SourceEventType, out _)
-            && !JsonElement.DeepEquals(JsonSerializer.SerializeToElement(command.Journal.PostingCommand?.LotAmortization),
+        var posting = command.Journal.PostingCommand;
+        if (!AssetAccountingEventTypeNames.TryParse(posting?.SourceEventType, out var eventKind)
+            || eventKind != AssetAccountingEventKindDto.DepreciationAmortization
+            || !JsonElement.DeepEquals(JsonSerializer.SerializeToElement(posting?.LotAmortization),
                 JsonSerializer.SerializeToElement(instruction)))
             throw new LedgerValidationException("The governed journal must retain the exact reviewed canonical amortization inputs.");
+        var reviewedEvidence = lot.Acquisition.Evidence.Append(instruction.SecurityEvidence);
         if (lot.LedgerBookId != command.LedgerBookId || lot.SecurityId != scope.SecurityId || lot.BookPositionId != scope.BookPositionId
             || instruction.AsOfDate != command.Journal.Entry.Metadata.EffectiveDate
             || lot.Acquisition.FunctionalCurrency != ResolveAtomicFunctionalCurrency(command.Journal)
-            || !command.RetainedEvidence.Contains(instruction.SecurityEvidence)
-            || lot.Acquisition.Evidence.Any(evidence => !command.RetainedEvidence.Contains(evidence)))
+            || reviewedEvidence.Any(evidence => !command.RetainedEvidence.Contains(evidence)
+                || !posting!.Evidence.Any(item => MatchesAmortizationEvidence(item, evidence))))
             throw new LedgerValidationException("Amortization must bind the exact journal scope, effective date, acquisition and reference evidence.");
     }
+
+    private static bool MatchesAmortizationEvidence(
+        AccountingPostingEvidenceReferenceDto actual, RetainedEvidenceIdentityDto expected)
+        => actual.Kind == AccountingPostingEvidenceKindDto.Source
+           && actual.EvidenceId == expected.EvidenceId && actual.Uri == expected.EvidenceUri
+           && actual.ContentHash == expected.ContentHashSha256 && actual.SourceSystem == expected.SourceSystem
+           && actual.SourceReference == expected.SourceReference && actual.ReviewStatus == expected.ReviewStatus
+           && actual.Reviewer == expected.ReviewedBy && actual.ReviewedAtUtc == expected.ReviewedAtUtc
+           && actual.EffectiveDate == expected.EffectiveDate && actual.EvidenceVersion == expected.EvidenceVersion
+           && actual.RetainedAtUtc == expected.RetainedAtUtc && actual.RetainedBy == expected.RetainedBy
+           && actual.SubjectType == expected.SubjectType && actual.SubjectId == expected.SubjectId;
 
     private static void ValidateAmortizationAssetCurrency(AtomicTaxLotJournalCommand command, LedgerEntry asset)
     {
