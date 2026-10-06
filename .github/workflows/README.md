@@ -7,7 +7,9 @@ workflow lane runs actionlint and enforces full-SHA external action references. 
 
 `pipeline-benchmark.yml` runs the bounded PRD-112 pipeline stage budgets on the
 recorded Linux/.NET profile and retains commit-bound full measurements and validator
-verdicts for 90 days, including failures. See [reproduction and scope](../../docs/engineering/pipeline-benchmark.md).
+verdicts for 30 days, including failures. These are routine diagnostics; adopted baselines
+or certification evidence need separate governed preservation before expiry. See
+[reproduction, retention rationale and storage measurement](../../docs/engineering/pipeline-benchmark.md).
 Its workflow changes require **human governance review**. Sustained-load soak remains separate.
 
 Meridian CI also calls `service-backed-integrations.yml` on pull requests (including forks),

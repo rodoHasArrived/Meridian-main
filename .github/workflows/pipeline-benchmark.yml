@@ -76,6 +76,6 @@ jobs:
         with:
           name: pipeline-budget-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/pipeline-benchmark/
-          retention-days: 90
+          retention-days: 30
           if-no-files-found: error
           compression-level: 1
