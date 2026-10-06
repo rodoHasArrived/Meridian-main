@@ -1,3 +1,14 @@
+@import "tailwindcss" source("../");
+@config "../../tailwind.config.ts";
+
+/* Keep the existing controls visible in Windows forced-colors mode. Tailwind 4
+   changed outline-none to remove the outline, unlike the v3 transparent outline. */
+@utility outline-none {
+  --tw-outline-style: solid;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
 /* Monospace resolves through the local Cascadia Mono @font-face below and the
    system `ui-monospace` stack — no external font fetch. A render-blocking
    external Google Fonts import for JetBrains Mono was removed: it failed under
@@ -30,10 +41,6 @@
   font-style: normal;
   font-display: swap;
 }
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 @layer base {
   /* Light appearance remains an explicit alias for nested panels that already

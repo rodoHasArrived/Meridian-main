@@ -1,6 +1,10 @@
 // @vitest-environment node
 
-import { describe, expect, it, vi } from "vitest";
+import { createRequire } from "node:module";
+import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+import postcss, { type PluginCreator, type Root } from "postcss";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import config, {
   createMeridianApiFallbackBypass,
   createMeridianApiProxy,
@@ -938,3 +942,62 @@ class FakeResponse {
     return this;
   }
 }
+
+const require = createRequire(import.meta.url);
+const stylesheet = fileURLToPath(new URL("./styles/index.css", import.meta.url));
+let compiled: Root;
+
+function declarations(selector: string, property: string): string[] {
+  const values: string[] = [];
+  compiled.walkRules(selector, rule => {
+    rule.walkDecls(property, declaration => { values.push(declaration.value); });
+  });
+  return values;
+}
+
+describe("production Tailwind compilation", () => {
+  beforeAll(async () => {
+    // Exercise the same plugin configuration and entry point as Vite, including
+    // source discovery, @apply expansion and the explicitly loaded Meridian theme.
+    const config = require("../postcss.config.cjs") as {
+      plugins: Record<string, Record<string, unknown>>;
+    };
+    const plugins = Object.entries(config.plugins).map(([name, options]) => {
+      const plugin = require(name) as PluginCreator<Record<string, unknown>>;
+      return plugin(options);
+    });
+    const result = await postcss(plugins).process(await readFile(stylesheet, "utf8"), {
+      from: stylesheet
+    });
+    compiled = result.root;
+  });
+
+  it("expands imports and apply directives through the production PostCSS plugin", () => {
+    const unresolved: string[] = [];
+    compiled.walkAtRules(/^(import|tailwind|apply|config|source)$/, rule => {
+      unresolved.push(rule.toString());
+    });
+    expect(unresolved).toEqual([]);
+    expect(declarations("body", "min-height")).toContain("100vh");
+    expect(declarations(".flex", "display")).toContain("flex");
+  });
+
+  it("preserves subtle input shadows and transparent keyboard-focus outlines", () => {
+    expect(declarations(".shadow-sm", "--tw-shadow").join(" ")).toContain("0.05");
+    const outlines: string[] = [];
+    compiled.walkRules(rule => {
+      if (rule.selector.includes("focus-visible\\:outline-none")) {
+        rule.walkDecls("outline", declaration => { outlines.push(declaration.value); });
+      }
+    });
+    expect(outlines).toContain("2px solid transparent");
+  });
+
+  it("retains semantic colors, radii, fonts and panel elevation from the theme", () => {
+    expect(declarations(".bg-background", "background-color")).toContain("hsl(var(--background) / 1)");
+    expect(declarations(".text-foreground", "color")).toContain("hsl(var(--foreground) / 1)");
+    expect(declarations(".rounded-sm", "border-radius")).toContain("var(--radius-sm)");
+    expect(declarations("body", "font-family").join(" ")).toContain("Segoe UI Variable Text");
+    expect(declarations(".panel-surface", "--tw-shadow").join(" ")).toContain("--shadow-workstation");
+  });
+});

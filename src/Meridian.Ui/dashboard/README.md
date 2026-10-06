@@ -1452,6 +1452,17 @@ npm --prefix src/Meridian.Ui/dashboard run build
 npm --prefix src/Meridian.Ui/dashboard run smoke:workstation
 ```
 
+Tailwind 4 is compiled through the pinned `@tailwindcss/postcss` plugin. The CSS
+entry point imports Tailwind and explicitly loads `tailwind.config.ts` so Meridian's
+semantic colors, typography, radii, and elevation remain available. Source discovery
+is scoped to the dashboard. Autoprefixer is unnecessary because the Tailwind plugin
+handles vendor prefixes. The small `outline-none` compatibility utility preserves
+transparent focus outlines in forced-colors mode; `shadow-sm` retains its existing
+subtle input elevation. The CSS regressions in `src/vite-config.test.ts` compile the real CSS
+entry point through the production PostCSS configuration to cover these contracts.
+After CSS/toolchain changes, run the build and commit the regenerated
+`../wwwroot/workstation` assets with the source change.
+
 Linting is a correctness-only ESLint flat-config baseline (`eslint.config.mjs`): typescript-eslint
 recommended, react-hooks rules, and a local kebab-case filename rule with grandfathered
 PascalCase/camelCase directories (`components/accounting`, `components/charts`,

@@ -81,6 +81,8 @@ export default {
         xs: "var(--radius-xs)"
       },
       boxShadow: {
+        // Preserve v3's subtle input elevation after the v4 shadow scale change.
+        sm: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
         workstation: "var(--shadow-workstation)",
         panel: "var(--shadow-panel)",
         float: "var(--shadow-float)",
