@@ -11,6 +11,23 @@ last_reviewed: 2026-10-05
 
 # src/Meridian.Ui.Shared
 
+Trading recovery uses `LiveBrokeragePortfolioSyncService` to publish account-scoped Alpaca
+holdings, cash, buying power, currency and completeness to the existing exposure provider.
+Broker holdings replace local projections for that account; remaining OMS exposure stays reserved.
+The mandatory brokerage risk rule blocks missing, stale, interrupted or inconsistent evidence.
+An order/fill change, reconnect or restart requires synchronization again. The shared readiness
+payload exposes recovery evidence and affected authorized strategy runs; the recovery POST resolves
+the retained account link and requires scoped trade-write authority before broker I/O.
+Synchronization reconciles the complete broker order book before and after its final portfolio
+read. Both reconciliations must be clean and their canonical order fingerprints must match, so an
+unfilled external order or changed price cannot hide behind unchanged holdings and cash. Failed
+final reads revoke readiness and retain the latest discrepancy report for inspection.
+Malformed duplicate-symbol observations remain readable in legacy symbol-keyed portfolio views,
+which aggregate their net quantities and P&L. Risk still consumes the original rows and gross
+exposure; duplicate evidence remains inconsistent and cannot authorize trading.
+See [Alpaca recovery](../../docs/operators/provider-onboarding-alpaca.md#account-portfolio-recovery)
+for the fixture and paper-sandbox procedure.
+
 Shared endpoint composition accepts an explicit `IConfiguration` for authentication, persistence,
 rate limiting and LEAN settings. Each host retains its own provider catalog and LEAN result records;
 fixture hosts can coexist without publishing configuration or endpoint state to the process.
@@ -1443,10 +1460,28 @@ file-size check. Source hash mismatches, read failures, and cancellation abort t
 Artifacts, manifest, and index are staged before publication; no-overwrite moves publish the
 scoped index last, which is the visibility boundary used by vault readers. Failure cleanup removes
 only the attempt's private stage and paths it successfully moved, preserving existing packages.
-The shared `AtomicFileWriter` continues to own file flushing and directory durability. This is a
-bounded PRD-105 export-retention slice; tenant storage quotas and retention policies remain open.
-Focused evidence is in `FileEvidenceArtifactStoreExportTests`, including restart reads, streamed
-size checks, cancellation, hash mismatch, later-artifact failure, and publication collisions.
+The shared `AtomicFileWriter` continues to own file flushing and directory durability.
+Intake and export now reserve package/count, tenant, and disk capacity through
+`Meridian.Documents.EvidenceStorageQuotaCoordinator` before writing. The shared adapter measures
+published artifact/manifest/index bytes and owns attempt-specific publication and recovery;
+Documents owns policy, durable reservations, and concurrent admission. Source growth extends a
+reservation before additional writes; publication reconciles to actual bytes. Exclusive attempt
+leases protect live writers, and the next write reclaims abandoned reservations while preserving
+published evidence. Failed cleanup retains the charge until recovery succeeds.
+`AddEvidenceArtifactStorage` binds these limits and registers the shared store for both the
+browser workflow fabric and WPF Accounting feature. Direct consumers without host configuration
+retain the same default limits. Explicit `CompositionConfiguration.HostConfiguration` settings
+take precedence over a registered `IConfiguration`, including hosts composed from a plain
+`ServiceCollection` without an `IConfiguration` registration.
+
+[`Meridian.Documents/README.md`](../Meridian.Documents/README.md#evidence-storage-quota-configuration)
+documents `EvidenceVault:StorageQuota`, defaults, tenant budgets across company scopes, and the
+shared-local-filesystem deployment boundary. Stores freeze options at construction. This bounded
+PRD-105 slice retains streaming copy and index-last publication; retention policy, broad runtime
+ownership, and quota admission for document-review metadata rewrites remain open.
+Focused coverage is in `FileEvidenceArtifactStoreExportTests`, `FileEvidenceArtifactStoreQuotaTests`,
+and `EvidenceStorageQuotaCoordinatorTests`, including simultaneous near-limit writes, underestimated
+sizes, disk pressure, cancellation/retry, actual-byte reconciliation, and abandoned-attempt recovery.
 
 `WorkstationOperationsJsonContext` includes the accounting-record summary, evidence-category, and
 private-capital shadow NAV tie-out DTOs so shared workstation endpoints can serialize the same
@@ -2600,3 +2635,24 @@ domain-specific endpoint edits to the matching partial file.
 - `docs/reference/accounting-report-packs.md`
 - `docs/operators/governed-reporting-operations.md`
 - `docs/operators/statement-reconciliation-report-operations.md`
+
+
+### W10 posted amount proof
+
+Legacy `_vault` manifest routes normalize surrounding whitespace and alias casing before resolving
+the retained subject and its read permission. Reporting-only access cannot read ledger-amount
+manifests through a filesystem alias; the same canonical vault path applies on Windows and Linux.
+`PostedLedgerAmountProvenanceTests` covers allowed ledger reads and denied reporting reads for
+canonical, whitespace, uppercase, and mixed-case aliases.
+
+`PostedLedgerAmountProvenanceService` serves `ledger-amount` subjects through the existing evidence
+packet, graph, validation, and export routes. A subject is `{journalEntryId}:{entryId}:debit|credit`;
+requests must carry `fundProfileId`, `ledgerBookId`, and `periodId`. The host obtains tenant/company
+from the authenticated request and checks retained fund ownership, book, period, and posted entry.
+Only exact amount-scoped retained vault references with matching content digest, retention metadata,
+and accepted review become supporting evidence. Missing or stale support is review-required;
+ambiguous, changed, or foreign support is blocked. Broad evidence contributors do not run for this
+subject, so unrelated report, strategy, or reconciliation evidence cannot enter the packet.
+
+The legacy report amount service accepts only explicit retained amount IDs and fully scoped pointers;
+label-only manifests fail closed. See [validation and slice boundaries](../../docs/testing/w10-amount-provenance.md).

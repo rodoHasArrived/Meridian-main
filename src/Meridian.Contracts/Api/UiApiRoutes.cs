@@ -703,6 +703,8 @@ public static class UiApiRoutes
     public const string WorkstationFinancialRecordExplorerRecord = "/api/workstation/financial-record-explorers/{explorerId}/records/{recordId}";
     public const string WorkstationFinancialRecordExplorerSavedViews = "/api/workstation/financial-record-explorers/{explorerId}/saved-views";
     public const string WorkstationTradingReadiness = "/api/workstation/trading/readiness";
+
+    public const string WorkstationTradingBrokerageRecovery = "/api/workstation/trading/brokerage-recovery";
     public const string WorkstationOperatorInbox = "/api/workstation/operator/inbox";
     public const string WorkstationEvidenceSubjects = "/api/workstation/evidence/subjects";
     public const string WorkstationEvidenceSubjectPacket = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/packet";

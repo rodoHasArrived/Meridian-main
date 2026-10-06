@@ -320,10 +320,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
             new FileAccountingProductionCertificationProfileStore(
                 Path.Combine(ResolveAccountingDataDirectory(sp), "production-certification-profiles.json"),
                 sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<FileAccountingProductionCertificationProfileStore>>()));
-        services.TryAddSingleton<IEvidenceArtifactStore>(sp =>
-            new FileEvidenceArtifactStore(
-                FileEvidenceArtifactStore.ResolveDataRoot(sp),
-                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<FileEvidenceArtifactStore>>()));
+        services.AddEvidenceArtifactStorage();
         services.TryAddSingleton<IAccountingProductionCertificationEvidenceAuthority,
             EvidenceVaultAccountingProductionCertificationEvidenceAuthority>();
         services.TryAddSingleton<AccountingProductionCertificationCommandService>();

@@ -1019,6 +1019,7 @@ public sealed class TradingOperatorReadinessServiceTests
     {
         var orderManager = Substitute.For<IOrderManager>();
         orderManager.GetOpenOrders().Returns(openOrders);
+        orderManager.GetExposureReservingOrders().Returns(openOrders);
         return orderManager;
     }
 

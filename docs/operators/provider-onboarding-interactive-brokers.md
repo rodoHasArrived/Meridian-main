@@ -18,7 +18,7 @@ This is the canonical operator procedure lane for Interactive Brokers setup and 
 
 1. Install IB API SDK locally (not committed) into approved local vendor path.
 2. Choose mode:
-   - `EnableIbApiSmoke` for compile verification,
+   - `EnableIbApiSmoke` for local-stub compile and reconnect verification,
    - `EnableIbApiVendor` for native runtime.
 3. Build and validate selected mode.
 4. Configure socket + optional Client Portal settings.
@@ -61,7 +61,7 @@ provider-prime scope on the retained evidence and Margin Control Center rollup.
 
 - Default: no official SDK; the standard market-data client uses its simulator. This does not
   establish a TWS/Gateway connection or validate a real account.
-- Smoke: compile-only verification of IB API path.
+- Smoke: compile and reconnect verification of the IB API path against the local stub.
 - Vendor: native IB connectivity with local API SDK.
 
 Use vendor mode for operational validation and evidence, never as a blind default in production.
@@ -77,6 +77,18 @@ dotnet build src/Meridian.Infrastructure/Meridian.Infrastructure.csproj -c Relea
 
 Choose the intended build mode; smoke and vendor modes must not be mixed. Use the vendor command
 below with an explicit SDK input instead of assuming that `EnableIbApiVendor=true` locates one.
+
+The `IB API Smoke Build` workflow also runs the reconnect regression with the stub enabled:
+
+```powershell
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release -p:EnableWindowsTargeting=true -p:EnableIbApiSmoke=true --filter "FullyQualifiedName~IBMarketDataClientRuntimeReconnectTests" --logger "trx;LogFileName=ibapi-runtime-reconnect.trx" --results-directory artifacts/test-results/ibapi-smoke
+python build/scripts/ci/validate-test-results.py --results-dir artifacts/test-results/ibapi-smoke --require-trx-prefix ibapi-runtime-reconnect --output artifacts/test-results/ibapi-smoke/test-evidence.json
+```
+
+This slice requires the runtime callback and verifies retained trade/depth subscriptions are replayed
+once after connection loss. Missing or empty TRX evidence, failures, and skips fail the workflow;
+the TRX and JSON summary are uploaded even on failure. This stub evidence does not establish
+connectivity to TWS/Gateway or replace the official-SDK runtime lane.
 
 ### Supported official-SDK runtime lane
 

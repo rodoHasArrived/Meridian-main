@@ -11,6 +11,15 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Infrastructure
 
+Robinhood read-only synchronization logs failed HTTP status codes without endpoint URLs or response
+bodies, which can contain account identifiers or provider-returned private details.
+
+Alpaca portfolio snapshots carry explicit completeness evidence. Missing cash, equity, buying
+power, restrictions, or position fields cannot be certified as zero balances or an empty book.
+The connection epoch revokes live risk evidence after credential/environment changes and stream
+reconnects. Recovery queries the original client order identity, including terminal fills, and
+never resubmits an order.
+
 Persistence is supplied through `Core.IO.IAtomicFileWriter`, `Contracts.Etl.IEtlStagingStore`, and
 ProviderSdk `IBackfillBarWriter`. Infrastructure has no project-reference path to Storage;
 application/host composition supplies Storage implementations. See the PRD-108 inventory in
@@ -36,6 +45,14 @@ This layer owns external integration details while depending on lower contracts 
   SFTP publisher adapter for the Contracts-owned ETL publisher port.
 
 ## Important workflows
+
+Canonical statement imports stream JSON to an exclusive temporary file, force its contents to
+disk, then publish with a no-overwrite rename and the host-supplied `IAtomicFileWriter`
+directory-sync policy. Caller
+cancellation is checked before publication and is not observed after the rename commits.
+Subprocess tests cover interrupted serialization, restart after acknowledged publication,
+and concurrent writers claiming one complete import. These are process-crash tests; they do
+not certify physical power-loss behavior on every filesystem or storage device.
 
 Backfill request admission captures the current activity context; queued worker execution restores
 that parent explicitly rather than inheriting the worker's ambient context. Provider fetch and bar

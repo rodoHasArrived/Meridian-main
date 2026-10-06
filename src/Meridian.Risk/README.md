@@ -11,6 +11,11 @@ last_reviewed: 2026-08-11
 
 # src/Meridian.Risk
 
+`BrokeragePortfolioStateRule` requires a current, complete and reconciled account snapshot before
+live admission, independently of configurable exposure ceilings. Scoped exposure uses broker
+holdings, cash, buying power and currency, with remaining working orders reserved in the same
+account. Local paper projections keep their existing aggregation behavior.
+
 ## Purpose
 
 Risk contains pre-trade validation rules and order-safety checks used before execution workflows proceed.

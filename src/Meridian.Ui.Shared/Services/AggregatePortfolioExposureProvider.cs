@@ -29,7 +29,7 @@ namespace Meridian.Ui.Shared.Services;
 /// burst of working orders cannot each observe a flat book and collectively breach a
 /// ceiling that none of them breaches alone.
 /// </summary>
-public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvider
+public sealed class AggregatePortfolioExposureProvider : IAccountScopedPortfolioExposureProvider
 {
     private readonly IAggregatePortfolioService _aggregatePortfolio;
     private readonly IPortfolioState? _portfolioState;
@@ -41,6 +41,7 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
     private readonly Func<DateTimeOffset> _clock;
     private readonly Func<ILiveFeedAdapter?>? _liveFeedAccessor;
     private readonly Func<bool> _paperMatchingIsAuthoritative;
+    private readonly Func<LiveBrokeragePortfolioSyncService?>? _livePortfolioAccessor;
 
     /// <summary>
     /// How old a quote or trade may be and still price an order. A stalled feed keeps
@@ -59,7 +60,8 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
         TimeSpan? markMaxAge = null,
         Func<DateTimeOffset>? clock = null,
         Func<ILiveFeedAdapter?>? liveFeedAccessor = null,
-        Func<bool>? paperMatchingIsAuthoritative = null)
+        Func<bool>? paperMatchingIsAuthoritative = null,
+        Func<LiveBrokeragePortfolioSyncService?>? livePortfolioAccessor = null)
     {
         _aggregatePortfolio = aggregatePortfolio ?? throw new ArgumentNullException(nameof(aggregatePortfolio));
         _portfolioState = portfolioState;
@@ -77,6 +79,7 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
         // Defaults to false. A host that has not said which engine decides its fills is treated as
         // a live one, because that is the posture where guessing wrong routes an unbounded order.
         _paperMatchingIsAuthoritative = paperMatchingIsAuthoritative ?? (static () => false);
+        _livePortfolioAccessor = livePortfolioAccessor;
     }
 
     /// <summary>
@@ -331,7 +334,9 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
     private void ApplyWorkingOrderExposure(
         Dictionary<string, SymbolExposure> symbolExposures,
         ref decimal grossExposure,
-        ref decimal netExposure)
+        ref decimal netExposure,
+        Guid? fundAccountId = null,
+        IReadOnlyList<OrderState>? retainedOrders = null)
     {
         var orderManager = _orderManagerAccessor?.Invoke();
         if (orderManager is null)
@@ -345,8 +350,10 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
         // working $80k sells would reserve 0 for the first and $40k for the second and
         // report $140k — more than any possible fill subset can reach.
         var buckets = new Dictionary<(string Symbol, string Account), WorkingOrderBucket>();
-        foreach (var order in orderManager.GetExposureReservingOrders())
+        foreach (var order in retainedOrders ?? orderManager.GetExposureReservingOrders())
         {
+            if (fundAccountId.HasValue && order.FundAccountId != fundAccountId)
+                continue;
             var remaining = Math.Abs(order.Quantity) - Math.Abs(order.FilledQuantity);
             // Dollar-sized orders retire their reserve by filled notional below; their
             // placeholder quantity says nothing about how much is still working.
@@ -539,6 +546,8 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
     /// <inheritdoc />
     public PortfolioExposureSnapshot GetSnapshot()
     {
+        if (_livePortfolioAccessor?.Invoke() is { IsActive: true } live)
+            return BuildBrokerageSnapshot(live, null);
         var positions = _aggregatePortfolio.GetAggregatedPositions();
 
         var symbolExposures = new Dictionary<string, SymbolExposure>(StringComparer.OrdinalIgnoreCase);
@@ -640,5 +649,65 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             PortfolioValue: portfolioValue,
             SymbolExposures: symbolExposures,
             AsOf: DateTimeOffset.UtcNow);
+    }
+
+    public PortfolioExposureSnapshot GetSnapshot(Guid? fundAccountId) =>
+        _livePortfolioAccessor?.Invoke() is { IsActive: true } live
+            ? BuildBrokerageSnapshot(live, fundAccountId)
+            : GetSnapshot();
+
+    private PortfolioExposureSnapshot BuildBrokerageSnapshot(LiveBrokeragePortfolioSyncService live, Guid? fundAccountId)
+    {
+        var status = fundAccountId is { } accountId ? live.GetStatus(accountId) : null;
+        if (status is null || live.GetRiskSnapshot(fundAccountId!.Value) is not { } broker)
+            return PortfolioExposureSnapshot.Empty with
+            {
+                IsBrokerageSnapshot = true,
+                IsComplete = false,
+                FundAccountId = fundAccountId,
+                BlockingReasons = status?.BlockingReasons ?? ["An explicit synchronized brokerage account is required."]
+            };
+
+        // Broker holdings replace local run projections for this account. Adding them to the
+        // execution portfolio would count every broker fill twice after its local handoff.
+        var symbols = new Dictionary<string, SymbolExposure>(StringComparer.OrdinalIgnoreCase);
+        foreach (var position in broker.Positions)
+        {
+            var existing = symbols.GetValueOrDefault(position.Symbol);
+            var net = (existing?.NetNotional ?? 0m) + position.MarketValue;
+            symbols[position.Symbol] = new SymbolExposure(position.Symbol,
+                (existing?.GrossExposure ?? 0m) + Math.Abs(position.MarketValue),
+                (existing?.NetQuantity ?? 0m) + position.Quantity,
+                position.MarketPrice, net,
+                new Dictionary<string, decimal> { [fundAccountId!.Value.ToString("D")] = net });
+        }
+        var gross = symbols.Values.Sum(p => p.GrossExposure);
+        var netExposure = symbols.Values.Sum(p => p.NetNotional);
+        var workingOrders = live.GetExposureReservingOrders(fundAccountId!.Value);
+        ApplyWorkingOrderExposure(symbols, ref gross, ref netExposure, fundAccountId, workingOrders);
+        var heldQuantities = broker.Positions.GroupBy(p => p.Symbol, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.Sum(p => p.Quantity), StringComparer.OrdinalIgnoreCase);
+        var availableCoveredSales = heldQuantities.ToDictionary(pair => pair.Key,
+            pair => Math.Max(0m, pair.Value), StringComparer.OrdinalIgnoreCase);
+        foreach (var order in workingOrders.Where(order => order.Side == OrderSide.Sell))
+        {
+            var available = availableCoveredSales.GetValueOrDefault(order.Symbol);
+            // Dollar-sized sell orders cannot be measured as shares. Until the next broker
+            // observation, do not let their placeholder quantity free shares for another sell.
+            var reserved = order.RoutedNotional is > 0m ? available : Math.Max(0m, order.Quantity - order.FilledQuantity);
+            availableCoveredSales[order.Symbol] = available - Math.Min(available, reserved);
+        }
+        return new PortfolioExposureSnapshot(gross, netExposure, broker.Balance.Equity, symbols, broker.RetrievedAt)
+        {
+            IsBrokerageSnapshot = true,
+            IsComplete = status.IsReady,
+            FundAccountId = fundAccountId,
+            Cash = broker.Balance.Cash,
+            BuyingPower = broker.Balance.BuyingPower,
+            Currency = broker.Balance.Currency,
+            BrokerHeldQuantities = heldQuantities,
+            BrokerAvailableCoveredSaleQuantities = availableCoveredSales,
+            BlockingReasons = status.BlockingReasons
+        };
     }
 }

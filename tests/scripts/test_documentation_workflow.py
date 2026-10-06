@@ -30,11 +30,12 @@ class DocumentationWorkflowTests(unittest.TestCase):
         self.assertEqual(checkout.get("with", {}).get("persist-credentials"), "false")
         self.assertEqual(checkout.get("with", {}).get("fetch-depth"), "0")
         steps = yaml.load(self.workflow, Loader=yaml.BaseLoader)["jobs"]["regenerate-docs"]["steps"]
-        comparison = next(
+        comparisons = [
             step for step in steps
             if step.get("name") == "Compare dashboard readiness deltas vs previous commit"
-        )
-        self.assertLess(steps.index(checkout), steps.index(comparison))
+        ]
+        self.assertEqual(len(comparisons), 1, "Expected exactly one history comparison step")
+        self.assertLess(steps.index(checkout), steps.index(comparisons[0]))
 
     def test_diagram_dependencies_use_root_lockfile(self) -> None:
         self.assertIn('"package-lock.json"', self.workflow)

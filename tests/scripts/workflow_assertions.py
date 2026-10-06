@@ -21,7 +21,7 @@ def assert_pinned_action(
     )
     step = matches[0]
     test_case.assertRegex(
-        step["uses"], rf"\A{re.escape(action)}@[a-f0-9]{{40}}\Z",
+        step["uses"], rf"\A{re.escape(action)}@[A-Fa-f0-9]{{40}}\Z",
         f"{job_name}: {action} must be pinned to a full SHA",
     )
     return step

@@ -2,7 +2,7 @@ import { screen, fireEvent, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { resolveTradingRouteView, TradingScreen } from "@/screens/trading-screen";
 import * as api from "@/lib/api";
-import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
+import { renderWithRouter, TestMemoryRouter, waitForAsyncEffects } from "@/test/render";
 import type { PaperSessionSummary, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
 const paperPromotionEvidenceReferences = [
@@ -20,6 +20,7 @@ vi.mock("@/lib/api", async () => {
     cancelAllOrders: vi.fn().mockResolvedValue({ actionId: "a2", status: "Completed", message: "ok", occurredAt: new Date().toISOString() }),
     closePosition: vi.fn().mockResolvedValue({ actionId: "a3", status: "Accepted", message: "ok", occurredAt: new Date().toISOString() }),
     submitOrder: vi.fn().mockResolvedValue({ success: true, orderId: "O-1", reason: null }),
+    synchronizeTradingBrokerage: vi.fn(),
     getExecutionSessions: vi.fn().mockResolvedValue([{ sessionId: "sess-1", strategyId: "strat-1", strategyName: null, initialCash: 100000, createdAt: "2026-01-01", closedAt: null, isActive: true }]),
     createPaperSession: vi.fn(),
     closePaperSession: vi.fn().mockResolvedValue({ actionId: "a4", status: "Completed", message: "closed", occurredAt: "2026-01-01T01:00:00Z", auditId: "audit-close-1" }),
@@ -614,6 +615,35 @@ describe("TradingScreen", () => {
     expect(screen.getByText("Execution evidence incomplete")).toBeInTheDocument();
     expect(screen.getByText("OrderRejected is missing actor, scope, and rationale.")).toBeInTheDocument();
     expect(screen.getByText("Replay evidence is stale for sess-1.")).toBeInTheDocument();
+  });
+
+  it("updates confidence from scoped recovery while preserving other live blockers", async () => {
+    const accountId = "11111111-1111-1111-1111-111111111111";
+    const readiness: TradingOperatorReadiness = {
+      ...serverReadinessData.readiness!,
+      asOf: "2026-10-05T15:30:00Z",
+      brokerageRecovery: {
+        fundAccountId: accountId, providerId: "alpaca", externalAccountId: "PA-404", status: "Blocked", detail: "Reconnect required", blockingReasons: [], affectedRuns: [],
+        portfolio: { cash: 100, buyingPower: 200, portfolioValue: 300, currency: "USD", positionCount: 1, observedAt: "2026-10-05T15:30:00Z", expiresAt: "2026-10-05T15:30:30Z", lastAttemptedAt: null, lastSuccessfulAt: null, isComplete: false, isFresh: false, isConsistent: false, warnings: [] }
+      },
+      executionReconciliation: { status: "Blocked", gatewayId: "alpaca", brokerDisplayName: "Alpaca", brokerConnected: false, brokerHealthy: false, matchedOpenOrderCount: 0, breakCount: 0, reconciledAt: "2026-10-05T15:30:00Z", detail: "Disconnected", breaks: [] }
+    };
+    vi.mocked(api.synchronizeTradingBrokerage).mockResolvedValue({
+      ...readiness,
+      brokerageRecovery: { ...readiness.brokerageRecovery!, status: "Ready", portfolio: { ...readiness.brokerageRecovery!.portfolio!, isComplete: true, isFresh: true, isConsistent: true } },
+      executionReconciliation: { ...readiness.executionReconciliation!, status: "Ready", brokerConnected: true, brokerHealthy: true }
+    });
+    const { rerender } = await renderTradingScreen({ ...data, readiness }, "/trading", accountId);
+    const confidence = screen.getByRole("region", { name: "Trading data confidence" });
+    expect(within(confidence).getByText("Disconnected")).toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole("button", { name: "Synchronize and reconcile" }));
+    expect(await within(confidence).findByText("Connected · healthy")).toBeInTheDocument();
+    expect(within(confidence).queryByText("Disconnected")).not.toBeInTheDocument();
+    expect(within(confidence).getByText("Complete and consistent broker evidence")).toBeInTheDocument();
+    expect(screen.getByText("Overall: Blocked")).toBeInTheDocument();
+    rerender(<TestMemoryRouter initialEntries={["/trading"]}><TradingScreen data={{ ...data, readiness }} fundAccountId="22222222-2222-2222-2222-222222222222" /></TestMemoryRouter>);
+    expect(within(confidence).queryByText("Connected · healthy")).not.toBeInTheDocument();
+    expect(within(confidence).getByText("Broker unavailable")).toBeInTheDocument();
   });
 
   it("refreshes shared readiness and surfaces account brokerage posture", async () => {

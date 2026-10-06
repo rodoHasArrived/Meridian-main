@@ -1,6 +1,8 @@
 // Barrel for the workstation dashboard type modules. Every type is declared in
 // exactly one module under ./types/; add new declarations there, not here.
 export * from "./types/instrument-accounting";
+export * from "./types/brokerage-recovery";
+export * from "./types/ledger-amount-proof";
 export * from "./types/lifecycle";
 export * from "./types/mark-freshness";
 export * from "./types/market-data";

@@ -12226,6 +12226,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountProofDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountProofEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.LedgerAmountProvenanceDetailDto"
     },
     {
@@ -12251,6 +12263,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.LedgerAmountReportUsageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountScopeDto"
     },
     {
       "kind": "contract-set-member",
@@ -14230,6 +14248,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.RetainedLedgerAmountDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReviewReconciliationBreakRequest"
     },
     {
@@ -15473,6 +15497,30 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.TradingAcceptanceGateStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.TradingBrokerageAffectedRunDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.TradingBrokerageRecoveryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.TradingBrokerageRecoveryPortfolioDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.TradingBrokerageRecoveryRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -33550,6 +33598,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.EvidencePacketDto",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountProofDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.EvidencePacketDto",
       "target": "contract:Meridian.Contracts.Workstation.WorkflowActionDto"
     },
     {
@@ -34575,6 +34629,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.FundReportPackLineagePointerDto",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.FundReportPackPreviewDto",
       "target": "contract:Meridian.Contracts.Workstation.FundReportAssetClassSectionDto"
     },
@@ -34607,6 +34667,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.FundReportPackProvenanceDto",
       "target": "contract:Meridian.Contracts.Workstation.FundReportPackLineagePointerDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.FundReportPackProvenanceDto",
+      "target": "contract:Meridian.Contracts.Workstation.RetainedLedgerAmountDto"
     },
     {
       "kind": "contract-reference",
@@ -35115,6 +35181,36 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.LedgerAmountProofDto",
+      "target": "contract:Meridian.Contracts.Workstation.EvidenceStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.LedgerAmountProofDto",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountProofEvidenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.LedgerAmountProofDto",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.LedgerAmountProofEvidenceDto",
+      "target": "contract:Meridian.Contracts.Workstation.EvidenceStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.LedgerAmountProvenanceDetailDto",
+      "target": "contract:Meridian.Contracts.Workstation.EvidenceStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.LedgerAmountProvenanceDetailDto",
       "target": "contract:Meridian.Contracts.Workstation.LedgerAmountApprovalStateDto"
     },
@@ -35135,6 +35231,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.LedgerAmountProvenanceDetailDto",
       "target": "contract:Meridian.Contracts.Workstation.LedgerAmountReportUsageDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.LedgerAmountProvenanceDetailDto",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountScopeDto"
     },
     {
       "kind": "contract-reference",
@@ -38229,6 +38331,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.RetainedLedgerAmountDto",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.RunAttributionSummary",
       "target": "contract:Meridian.Contracts.Workstation.StrategyRunMode"
     },
@@ -39789,6 +39897,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.TradingBrokerageRecoveryDto",
+      "target": "contract:Meridian.Contracts.Workstation.TradingBrokerageAffectedRunDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.TradingBrokerageRecoveryDto",
+      "target": "contract:Meridian.Contracts.Workstation.TradingBrokerageRecoveryPortfolioDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.TradingControlReadinessDto",
       "target": "contract:Meridian.Contracts.Workstation.TradingControlEvidenceDto"
     },
@@ -39845,6 +39965,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.TradingOperatorReadinessDto",
       "target": "contract:Meridian.Contracts.Workstation.TradingAcceptanceGateStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.TradingOperatorReadinessDto",
+      "target": "contract:Meridian.Contracts.Workstation.TradingBrokerageRecoveryDto"
     },
     {
       "kind": "contract-reference",
@@ -47605,7 +47731,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "07fe657e6565a0d7231576dc82a0c8b83308e5e86991a5d75abc15c26cd77ba1",
+  "fingerprint": "b76257151cae8d116ceff52e838759ea812b4ba318af43621eb8bf49ee9411a9",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -59882,6 +60008,18 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.LedgerAmountProofDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.LedgerAmountProofDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.LedgerAmountProofEvidenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.LedgerAmountProofEvidenceDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.LedgerAmountProvenanceDetailDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.LedgerAmountProvenanceDetailDto"
@@ -59909,6 +60047,12 @@
       "id": "contract:Meridian.Contracts.Workstation.LedgerAmountReportUsageDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.LedgerAmountReportUsageDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.LedgerAmountScopeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.LedgerAmountScopeDto"
     },
     {
       "classification": "dto",
@@ -61885,6 +62029,12 @@
       "label": "Meridian.Contracts.Workstation.RestatementCandidateDto"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.RetainedLedgerAmountDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.RetainedLedgerAmountDto"
+    },
+    {
       "classification": "request",
       "id": "contract:Meridian.Contracts.Workstation.ReviewReconciliationBreakRequest",
       "kind": "contract-type",
@@ -63131,6 +63281,30 @@
       "id": "contract:Meridian.Contracts.Workstation.TradingAcceptanceGateStatusDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.TradingAcceptanceGateStatusDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.TradingBrokerageAffectedRunDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.TradingBrokerageAffectedRunDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.TradingBrokerageRecoveryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.TradingBrokerageRecoveryDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.TradingBrokerageRecoveryPortfolioDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.TradingBrokerageRecoveryPortfolioDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.TradingBrokerageRecoveryRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.TradingBrokerageRecoveryRequestDto"
     },
     {
       "classification": "dto",
@@ -69774,11 +69948,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3128,
-    "contract_set_memberships": 3702,
-    "edges": 7909,
+    "contract_references": 3141,
+    "contract_set_memberships": 3710,
+    "edges": 7930,
     "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3842
+    "nodes": 3850
   }
 }

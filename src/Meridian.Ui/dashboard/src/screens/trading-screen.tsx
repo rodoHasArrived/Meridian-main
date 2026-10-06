@@ -76,6 +76,7 @@ import {
   type TradingConfirmViewModel
 } from "@/screens/trading-screen.view-model";
 import { ExecutionControlsHeader } from "@/screens/trading-screen.execution-controls-header";
+import { BrokerageRecoveryPanel } from "@/screens/trading-screen.brokerage-recovery";
 import { LIVE_GOVERNED_APPROVAL_SERVICES, useGovernedApprovalsViewModel } from "@/screens/trading-screen.governed-approvals";
 import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
@@ -537,7 +538,15 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   const showRisk = routeView === "risk";
   const routeCopy = tradingRouteViewCopy[routeView];
   const readinessStatus = tradingReadiness.readiness?.overallStatus ?? null;
-  const sourceTone: OperationalTrustTone = data.brokerage.connection === "Connected"
+  const recovery = tradingReadiness.readiness?.brokerageRecovery;
+  const scopedRecovery = fundAccountId && recovery?.fundAccountId?.toLowerCase() === fundAccountId.toLowerCase() ? recovery : null;
+  const hasRecoveryProjection = Boolean(recovery || data.readiness?.brokerageRecovery);
+  const reconciliation = scopedRecovery ? tradingReadiness.readiness?.executionReconciliation : null;
+  const recoveryPortfolio = scopedRecovery?.portfolio;
+  const recoveryUnavailable = tradingReadiness.refreshing || Boolean(tradingReadiness.errorText) || !scopedRecovery || !recoveryPortfolio?.isFresh;
+  const sourceTone: OperationalTrustTone = hasRecoveryProjection
+    ? recoveryUnavailable || !reconciliation ? "unknown" : !reconciliation.brokerConnected ? "blocked" : reconciliation.brokerHealthy ? "ready" : "review"
+    : data.brokerage.connection === "Connected"
     ? "ready"
     : data.brokerage.connection === "Degraded"
       ? "review"
@@ -586,8 +595,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       <OperationalTrustSummary
         label="Trading data confidence"
         source={{
-          value: `${data.brokerage.provider} · ${data.brokerage.environment}`,
-          detail: data.brokerage.connection,
+          value: hasRecoveryProjection ? reconciliation?.brokerDisplayName ?? scopedRecovery?.providerId ?? "Broker unavailable" : `${data.brokerage.provider} · ${data.brokerage.environment}`,
+          detail: hasRecoveryProjection
+            ? reconciliation && !reconciliation.brokerConnected ? "Disconnected" : recoveryUnavailable ? "Current account evidence unverified" : !reconciliation ? "Connection unknown" : reconciliation.brokerHealthy ? "Connected · healthy" : "Connected · degraded"
+            : data.brokerage.connection,
           tone: sourceTone
         }}
         scope={{
@@ -596,20 +607,28 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           tone: fundAccountId || data.brokerage.account ? "ready" : "unknown"
         }}
         freshness={{
-          value: data.brokerage.lastHeartbeat || "Unavailable",
-          detail: "Latest brokerage heartbeat",
-          tone: sourceTone
+          value: hasRecoveryProjection ? recoveryPortfolio?.observedAt ?? "Unavailable" : data.brokerage.lastHeartbeat || "Unavailable",
+          detail: hasRecoveryProjection ? "Latest broker portfolio observation" : "Latest brokerage heartbeat",
+          tone: hasRecoveryProjection ? recoveryPortfolio?.isFresh === false ? "blocked" : recoveryUnavailable ? "unknown" : recoveryPortfolio?.isFresh ? "ready" : "blocked" : sourceTone
         }}
         completeness={{
-          value: `${data.positions.length} positions · ${data.openOrders.length} orders · ${data.fills.length} fills`,
-          detail: `${completenessCount} execution records loaded`,
-          tone: completenessCount > 0 ? "ready" : "review"
+          value: hasRecoveryProjection ? recoveryPortfolio ? `${recoveryPortfolio.positionCount} positions · ${reconciliation?.matchedOpenOrderCount ?? "Unknown"} matched open orders` : "Unavailable" : `${data.positions.length} positions · ${data.openOrders.length} orders · ${data.fills.length} fills`,
+          detail: hasRecoveryProjection ? recoveryUnavailable ? "Current account evidence unverified" : recoveryPortfolio?.isComplete && recoveryPortfolio.isConsistent ? "Complete and consistent broker evidence" : "Incomplete or inconsistent broker evidence" : `${completenessCount} execution records loaded`,
+          tone: hasRecoveryProjection ? recoveryUnavailable ? "unknown" : recoveryPortfolio?.isComplete && recoveryPortfolio.isConsistent ? "ready" : "blocked" : completenessCount > 0 ? "ready" : "review"
         }}
         blocker={readinessStatus ? {
           value: formatReadinessStatusValue(readinessStatus),
           detail: "Operator readiness posture",
           tone: readinessTone
         } : undefined}
+      />
+
+      <BrokerageRecoveryPanel
+        readiness={tradingReadiness.readiness}
+        fundAccountId={fundAccountId}
+        busy={tradingReadiness.refreshing}
+        error={tradingReadiness.errorText}
+        onRecover={tradingReadiness.recoverBrokerage}
       />
 
       {showOverview ? (
