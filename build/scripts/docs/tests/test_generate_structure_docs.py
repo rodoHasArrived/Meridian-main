@@ -54,7 +54,10 @@ class GenerateStructureDocsTests(unittest.TestCase):
                     stdout=b"docs/generated/repository-structure.md\0docs/status/TODO.md\0",
                     stderr=b"",
                 )
-                with patch.object(generate_structure_docs.subprocess, "run", return_value=git_result):
+                with (
+                    patch.dict("os.environ", {"MERIDIAN_DOC_HEALTH_USE_GIT": "0"}),
+                    patch.object(generate_structure_docs.subprocess, "run", return_value=git_result),
+                ):
                     before = generate_structure_docs.generate_repository_structure(root)
                     structure.write_text(before, encoding="utf-8")
                     before_health = generate_health_dashboard.analyse(root)

@@ -1,6 +1,6 @@
 {
   "total_files": 698,
-  "total_lines": 154812,
+  "total_lines": 154816,
   "orphaned_count": 233,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -5836,7 +5836,7 @@
     },
     {
       "path": "tests/scripts/README.md",
-      "line_count": 55,
+      "line_count": 59,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
