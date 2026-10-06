@@ -1,11 +1,11 @@
 {
   "total_files": 699,
-  "total_lines": 154926,
+  "total_lines": 154950,
   "orphaned_count": 233,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 296,
-  "average_lines": 221.6,
+  "average_lines": 221.7,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1564,7 +1564,7 @@
     },
     {
       "path": "docs/architecture/provider-integration-manifest-runtime.md",
-      "line_count": 865,
+      "line_count": 873,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2316,7 +2316,7 @@
     },
     {
       "path": "docs/engineering/pipeline-benchmark.md",
-      "line_count": 135,
+      "line_count": 147,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2772,7 +2772,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11463,
+      "line_count": 11464,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5452,7 +5452,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 942,
+      "line_count": 945,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

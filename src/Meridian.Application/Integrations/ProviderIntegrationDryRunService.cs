@@ -12,7 +12,7 @@ namespace Meridian.Application.Integrations;
 
 public sealed class ProviderIntegrationDryRunService
 {
-    private const string ManualCsvEndpointKey = "manual-csv-upload";
+    internal const string ManualCsvEndpointKey = "manual-csv-upload";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly IProviderIntegrationManifestStore store;
     private readonly ILogger<ProviderIntegrationDryRunService> logger;
@@ -302,6 +302,37 @@ public sealed class ProviderIntegrationDryRunService
         {
             throw new InvalidOperationException("Manual CSV dry runs require a manual-upload, file, or hybrid integration manifest.");
         }
+    }
+
+    internal static JsonObject MapRetainedManualCsvRecord(
+        JsonElement record,
+        IReadOnlyList<FieldMappingDto> mappings,
+        List<ValidationIssueDto> issues)
+        => MapRecord(ReadRetainedManualCsvRecord(record), mappings, issues);
+
+    internal static void ValidateRetainedManualCsvRecord(JsonElement record)
+        => _ = ReadRetainedManualCsvRecord(record);
+
+    private static ManualCsvRawRecord ReadRetainedManualCsvRecord(JsonElement record)
+    {
+        if (record.ValueKind != JsonValueKind.Object ||
+            !record.TryGetProperty("rowNumber", out var rowNumber) ||
+            rowNumber.ValueKind != JsonValueKind.Number || !rowNumber.TryGetInt32(out var ordinal) || ordinal < 1 ||
+            !record.TryGetProperty("fields", out var retainedFields) || retainedFields.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidOperationException("The retained manual CSV record has no valid row number and fields.");
+        }
+
+        var fields = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var field in retainedFields.EnumerateObject())
+        {
+            if (field.Value.ValueKind != JsonValueKind.String || !fields.TryAdd(field.Name, field.Value.GetString()!))
+            {
+                throw new InvalidOperationException("The retained manual CSV record has invalid or ambiguous column values.");
+            }
+        }
+
+        return new ManualCsvRawRecord(ordinal, fields);
     }
 
     private static JsonObject MapRecord(

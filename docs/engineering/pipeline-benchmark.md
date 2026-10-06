@@ -106,11 +106,23 @@ The generated benchmark build timed out and no benchmarks executed; the validato
 rejected incomplete measurements. This measures failure evidence only, not the size of
 a complete successful run. Its existing 90-day expiry is January 4, 2027.
 
+The subsequent [run 37539737285](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37539737285)
+retained [artifact 11447529498](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37539737285/artifacts/11447529498)
+at **70,336 compressed bytes** (16 files, 496,627 bytes uncompressed), bound to tested
+merge commit `3353e16c9634fb37f3288897c88e4373d8d0e62e` for branch head `002c4985`.
+All eight portable stages completed on the recorded AMD EPYC 9V74 runner with four
+logical CPUs, SDK 10.0.100 and runtime 10.0.0. The unchanged validator correctly failed
+three WAL checksum latency budgets: small 673.58 ns against 400 ns, medium 1,315.62 ns
+against 600 ns, and large 3,819.73 ns against 1,200 ns. All allocation budgets and the
+other five stage budgets passed. This is a complete measurement archive with a failing
+budget verdict, not a budget-passing baseline. The archive and every recorded file hash
+were verified; its existing 90-day expiry is also January 4, 2027.
+
 Following the [Actions storage audit](actions-storage-audit-2026-10-05.md), use compressed
 artifact API `size_in_bytes` and observed upload frequency: steady retained bytes are
 approximately `average bytes per upload × uploads per day × retention days`. Count
 PR synchronizations, main pushes, manual dispatches and rerun attempts, including failures.
-There is no schedule; the first two runs cannot establish a representative daily cadence.
+There is no schedule; this short observation window cannot establish a representative daily cadence.
 
 | Illustrative uploads/day, each equal to the observed incomplete artifact | 90 days | 30 days | Reduction |
 | --- | ---: | ---: | ---: |
@@ -119,9 +131,9 @@ There is no schedule; the first two runs cannot establish a representative daily
 
 These are failure-size scenarios, not a successful-run forecast or account billing estimate
 (MiB = 2^20 bytes). At equal size and cadence, 90 to 30 days reduces steady retained
-storage by 66.7%. Before activation, record representative complete-run artifact sizes
-and an observed cadence window; calculate successful and failed uploads separately if
-their sizes differ. No complete hosted measurement archive was available in this snapshot.
+storage by 66.7%. Before activation, gather representative complete-run artifact sizes
+and an observed cadence window; calculate complete and incomplete uploads separately if
+their sizes differ. One complete archive does not establish a representative size or cadence.
 GitHub accrues storage hourly, so shorter retention reduces future exposure and does not
 reverse already accrued usage; see [GitHub Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions).
 
