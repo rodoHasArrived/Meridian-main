@@ -74,6 +74,10 @@ public sealed partial class CorporateActionAccountingProjectionService
         AppendToken(builder, Invariant(request.AccountingScope?.ExpectedPeriodVersion));
         AppendToken(builder, request.AccountingScope?.Jurisdiction.Trim());
 
+        // Absent mode retains the existing fingerprint grammar byte for byte.
+        if (request.CanonicalLotTransferJournal)
+            AppendToken(builder, "canonical-lot-transfer-journal/v1");
+
         foreach (var mutation in request.AuthoritativeLotMutations)
         {
             AppendLotMutationTokens(builder, mutation);

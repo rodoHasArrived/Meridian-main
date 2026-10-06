@@ -283,6 +283,21 @@ public static class AccountingPostingCommandValidator
                 throw new LedgerValidationException("Canonical lot amortization inputs must match the governed posting scope and date.");
         }
 
+        if (command.LotCorporateAction is { } corporateAction)
+        {
+            try
+            { _ = Meridian.Contracts.Accounting.Lots.OpenLotCorporateAction.Project(corporateAction); }
+            catch (ArgumentException exception) { throw new LedgerValidationException(exception.Message); }
+            if (eventKind != AssetAccountingEventKindDto.CorporateAction || command.LotAmortization is not null
+                || corporateAction.CorporateActionId != command.SourceEventId
+                || corporateAction.CorporateActionId != command.EconomicEvent.EventId
+                || corporateAction.EffectiveDate != command.EffectiveDate
+                || corporateAction.ExpectedLot.SecurityId != command.EconomicEvent.SecurityId
+                || corporateAction.ExpectedLot.BookPositionId != command.BookPositionId
+                || corporateAction.ExpectedLot.LedgerBookId != command.LedgerBookId)
+                throw new LedgerValidationException("Canonical lot corporate-action inputs must match the governed posting scope and date.");
+        }
+
         if (command.Evidence.Any(item => item.EffectiveDate != command.EffectiveDate
             && (item.Kind != AccountingPostingEvidenceKindDto.Source || !AssetAccountingEvidenceSubjects.MatchesEventEvidenceDate(
             eventKind, command.EffectiveDate, command.EconomicEvent.SecurityId ?? Guid.Empty,
@@ -291,7 +306,7 @@ public static class AccountingPostingCommandValidator
                 item.SourceReference!, item.ReviewStatus!, item.Reviewer!, item.ReviewedAtUtc!.Value,
                 item.EffectiveDate!.Value, item.EvidenceVersion!.Value, item.RetainedAtUtc, item.RetainedBy,
                 item.SubjectType!, item.SubjectId!),
-            command.LotAmortization, requireInstruction: true))))
+            command.LotAmortization, requireInstruction: true, corporateAction: command.LotCorporateAction))))
         {
             throw new LedgerValidationException(
                 "Asset accounting posting evidence effective date must match the economic event effective date.");
@@ -449,7 +464,8 @@ public static class AccountingPostingCommandValidator
             entry.Lines,
             normalizedMetadata.Tags,
             typedSecurityId,
-            command.BookPositionId ?? command.EconomicEvent?.BookPositionId);
+            command.BookPositionId ?? command.EconomicEvent?.BookPositionId,
+            command.LotCorporateAction);
         return new JournalEntry(
             entry.JournalEntryId,
             entry.Timestamp,
@@ -467,6 +483,11 @@ public static class AccountingPostingCommandValidator
             [PostingCommandFingerprintTag] = ComputePostingCommandFingerprint(command)
         };
 
+        if (command.LotCorporateAction is { } action)
+        {
+            tags["lotCorporateActionHash"] = Meridian.Contracts.Accounting.Lots.OpenLotCorporateAction.Fingerprint(action);
+            tags["lotCorporateActionInputs"] = JsonSerializer.Serialize(action);
+        }
         AddTag(tags, "approvalId", command.ApprovalId);
         AddTag(tags, PostingActorTag, command.Actor);
         if (!string.IsNullOrWhiteSpace(command.Actor))
@@ -606,7 +627,8 @@ public static class AccountingPostingCommandValidator
         IReadOnlyList<LedgerEntry> lines,
         IReadOnlyDictionary<string, string>? tags,
         Guid? typedInstrumentId,
-        Guid? typedPositionId)
+        Guid? typedPositionId,
+        Meridian.Contracts.Accounting.Lots.OpenLotCorporateActionInstructionDto? corporateAction = null)
     {
         if ((tags is null || tags.Count == 0) &&
             !typedInstrumentId.HasValue &&
@@ -619,32 +641,44 @@ public static class AccountingPostingCommandValidator
         for (var index = 0; index < lines.Count; index++)
         {
             var line = lines[index];
+            var expectedInstrumentId = typedInstrumentId;
+            var expectedPositionId = typedPositionId;
+            if (corporateAction is not null && line.Debit > 0m)
+            {
+                var successors = Meridian.Contracts.Accounting.Lots.OpenLotCorporateAction.Project(corporateAction)
+                    .Where(projection => projection.Successor.AssetAccountId == line.Account.ToString()
+                        && projection.OpenFunctionalCostBasis == line.Debit).ToArray();
+                if (successors.Length != 1)
+                    throw new LedgerValidationException("Corporate-action journal debit must identify one exact reviewed successor account and basis.");
+                expectedInstrumentId = successors[0].Successor.Security.SecurityId;
+                expectedPositionId = successors[0].Successor.BookPositionId;
+            }
             var dimensions = line.Dimensions ??
                 (tags is null ? null : BuildLineDimensions(line.EntryId, tags));
 
             if (dimensions?.InstrumentId is Guid instrumentId &&
-                typedInstrumentId.HasValue &&
-                instrumentId != typedInstrumentId.Value)
+                expectedInstrumentId.HasValue &&
+                instrumentId != expectedInstrumentId.Value)
             {
                 throw new LedgerValidationException(
                     $"Ledger line '{line.EntryId:D}' instrument dimension conflicts with the typed economic event.");
             }
 
             if (dimensions?.PositionId is Guid positionId &&
-                typedPositionId.HasValue &&
-                positionId != typedPositionId.Value)
+                expectedPositionId.HasValue &&
+                positionId != expectedPositionId.Value)
             {
                 throw new LedgerValidationException(
                     $"Ledger line '{line.EntryId:D}' position dimension conflicts with the typed book position.");
             }
 
             var normalizedDimensions = dimensions;
-            if (typedInstrumentId.HasValue || typedPositionId.HasValue)
+            if (expectedInstrumentId.HasValue || expectedPositionId.HasValue)
             {
                 normalizedDimensions = (dimensions ?? new LedgerLineDimensionSet()) with
                 {
-                    InstrumentId = dimensions?.InstrumentId ?? typedInstrumentId,
-                    PositionId = dimensions?.PositionId ?? typedPositionId
+                    InstrumentId = dimensions?.InstrumentId ?? expectedInstrumentId,
+                    PositionId = dimensions?.PositionId ?? expectedPositionId
                 };
             }
 

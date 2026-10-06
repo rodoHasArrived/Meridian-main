@@ -838,6 +838,15 @@
       "sha256": "fa5bb6af9f5ac1b4d66c59a7e345b12bea59d7990381c2d9c496e30ec5ac0672"
     },
     {
+      "filename": "V_ledger_042__canonical_lot_corporate_action.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_042__canonical_lot_corporate_action.sql",
+      "schema": "ledger",
+      "sha256": "7a27bcb74a0f2baf17b4936936b5101daee4eb7543a6b7c9294d745dff3c0d5b"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1082,7 +1091,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "75563c4e9ab6f5feb3ec17f350b01b36f6b4b3a6e80117bd08f51dd19c889109",
+  "fingerprint": "c7a62bbe677c64e63e5405101e02b96053de73ce707cf7d88ed7fcbc442d42c4",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1320,9 +1329,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 120,
+    "files": 121,
     "migration_sets": 10,
-    "waivers": 13,
+    "waivers": 14,
     "warnings": 0
   },
   "waivers": [
@@ -1387,6 +1396,13 @@
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_041__current_basis_disposal.sql",
       "reason": "Requires human schema/storage review. The cost check is dropped and immediately recreated transactionally as a superset: canonical discrete disposals retain current basis in their pre-relief acquisition and governed-adjustment snapshot, while acquisition-cost, AverageCost and PR #3048 amortization cases remain admitted. No columns or data are removed. Follows PR #3048's ordinal 040 amortization migration.",
       "review_after": "2027-04-02",
+      "rule_id": "migration-drop-table-member"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_042__canonical_lot_corporate_action.sql",
+      "reason": "Requires human schema/storage review before release. Replaces only ck_atomic_tax_lot_batch_kind, ck_tax_lot_mutations_kind, ck_tax_lot_mutations_quantities and ck_tax_lot_mutations_cost transactionally with strict supersets admitting CorporateAction batches and governed CorporateActionClose/CorporateActionSuccessor mutations. Every prior acquisition, disposal, AverageCost redistribution and amortization case remains admitted; no table, column, row, acquisition fact or retained history is removed. The migration runner rolls back all four constraint replacements on failure. Validate fresh and upgrade databases before release.",
+      "review_after": "2027-04-06",
       "rule_id": "migration-drop-table-member"
     },
     {

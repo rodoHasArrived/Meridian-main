@@ -190,6 +190,26 @@ The Asset Accounting Event Spine remains the only route to candidate preparation
 evidence validation, maker-checker approval, optimistic-concurrency checks, and durable posting.
 Neither the projector nor the mapper can append a journal directly.
 
+### Canonical successor lots
+
+The bounded `W10-LOT-002` continuation prepares an explicit canonical-lot instruction for
+whole-unit splits, stock mergers and proportional two-successor advance refundings. The shared
+`CanonicalLotCorporateActionService` binds the actual mapped event and reviewed predecessor and
+successors before drafting through the spine. Normal independent approval remains required.
+The PostgreSQL posting command commits predecessor closure, successor openings, journal and retained
+mutation receipts together. A journal-only append refuses this instruction. Same-security splits
+opt into a balanced basis-transfer journal; operational-only split projections remain available.
+
+Successors retain acquisition/holding dates, original FX, both original and current currency bases,
+and predecessor/action lineage. Advance-refunding successors distinguish refunded `ScheduleD`
+tracking from the unrefunded holding. Reporting verifies the retained journal and mutation proof.
+The authoritative report pack carries `corporate-action-lot-evidence.json` under its manifest and
+signature and refuses missing or inconsistent lot receipts.
+Cash-in-lieu, other unsupported treatments and corporate-action corrections are refused by this
+bounded lot path; the general case correction lifecycle above does not imply that its successor-lot
+reversal is implemented. Successor amortization also requires a separately reviewed continuation.
+See the [lot convergence blueprint](../engineering/blueprints/security-lot-convergence-blueprint.md).
+
 ## Future Expansion Notes
 
 Initial implementation uses the Clearwater corporate-action methodology as an effective-dated

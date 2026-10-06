@@ -316,7 +316,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         private readonly PostgresTestServer _server;
         public LedgerJournalStoreOptions Options { get; }
         public PostgresSecurityMasterStore Securities { get; }
-        private PostgresAssetOperationsProjectionStore Positions { get; }
+        public PostgresAssetOperationsProjectionStore Positions { get; }
         public PostgresLedgerJournalStore Store { get; }
         public SecurityProjectionRecord Security { get; private set; } = null!;
         public Guid BookId { get; } = Guid.NewGuid();

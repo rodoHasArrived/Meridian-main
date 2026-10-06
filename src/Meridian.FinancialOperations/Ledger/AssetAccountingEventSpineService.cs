@@ -930,6 +930,60 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             return requested;
         }
 
+        if (source.EventKind == AssetAccountingEventKindDto.CorporateAction && requested is not null)
+        {
+            var corporateInstruction = requested.CorporateAction
+                ?? throw new InvalidOperationException("Corporate-action lot posting requires the reviewed successor plan.");
+            var projection = OpenLotCorporateAction.Project(corporateInstruction);
+            RequireAssertion(corporateInstruction.CorporateActionId == source.EventId
+                && corporateInstruction.ExpectedLot.SecurityId == source.Scope.SecurityId
+                && corporateInstruction.ExpectedLot.BookPositionId == source.Scope.BookPositionId
+                && corporateInstruction.ExpectedLot.LedgerBookId == book.LedgerBookId
+                && corporateInstruction.Security.Version == source.Scope.ExpectedSecurityVersion
+                && corporateInstruction.ExpectedBookPositionVersion == position.Version
+                && corporateInstruction.EffectiveDate == source.EffectiveDate
+                && corporateInstruction.ExpectedLot.OpenFunctionalCostBasis == source.EventAmount,
+                "Corporate-action inputs must bind the exact authoritative event, book, position, security version, date and current basis.");
+            var retained = (await _journalStore.GetTaxLotsByIdsAsync(book.LedgerBookId,
+                [corporateInstruction.ExpectedLot.TaxLotRecordId], ct).ConfigureAwait(false)).SingleOrDefault()
+                ?? throw new InvalidOperationException("The reviewed predecessor lot is missing from the authoritative book.");
+            RequireAssertion(retained.Account.AccountType == LedgerAccountType.Asset
+                && retained.Account.ToString() == corporateInstruction.SourceAssetAccountId
+                && PayloadEquals(retained.ToOpenLot(), corporateInstruction.ExpectedLot),
+                "The predecessor lot account, version, quantity or current basis changed; rebuild and review the corporate action.");
+            var referenceInputs = new[] { corporateInstruction.Security }.Concat(corporateInstruction.Successors.Select(item => item.Security));
+            foreach (var expected in referenceInputs)
+            {
+                var actual = await _securityMasterQueryService.GetByIdAsync(expected.SecurityId, ct).ConfigureAwait(false)
+                    ?? throw new InvalidOperationException("Corporate-action reference authority is unavailable.");
+                var expectedDetail = new SecurityDetailDto(expected.SecurityId, expected.AssetClass, expected.Status,
+                    expected.DisplayName, expected.Currency, expected.CommonTerms, expected.AssetSpecificTerms,
+                    expected.Identifiers, expected.Aliases, expected.Version, expected.EffectiveFrom, expected.EffectiveTo);
+                RequireAssertion(PayloadEquals(actual, expectedDetail),
+                    "A corporate-action source or successor Security Master snapshot changed; rebuild and review the projection.");
+            }
+            foreach (var target in corporateInstruction.Successors)
+            {
+                var actual = await _positionStore.GetBookPositionAsync(target.BookPositionId, ct).ConfigureAwait(false)
+                    ?? throw new InvalidOperationException("Corporate-action successor book position is unavailable.");
+                RequireAssertion(actual.SecurityId == target.Security.SecurityId && actual.Version == target.ExpectedBookPositionVersion
+                    && actual.BookContext.LedgerBookId == book.LedgerBookId && actual.BookContext.FundProfileId == book.FundProfileId
+                    && actual.BookContext.FundStructureNodeId == book.FundStructureNodeId
+                    && actual.BookContext.FundStructureNodeKind == book.FundStructureNodeKind
+                    && actual.BookContext.BaseCurrency == book.BaseCurrency
+                    && actual.PositionSide is BookPositionSides.Long or BookPositionSides.Asset && actual.Status == "Active"
+                    && actual.EffectiveFrom <= source.EffectiveDate && (actual.EffectiveTo is null || actual.EffectiveTo >= source.EffectiveDate),
+                    "Corporate-action successor position identity, version, book, owner or effective scope is stale.");
+            }
+            var lines = source.ProjectedEffect!.Lines;
+            RequireAssertion(lines.Count == projection.Count + 1
+                && lines.Count(line => line.AccountId == requested.AssetAccountId && line.Credit == source.EventAmount && line.Debit == 0m) == 1
+                && projection.All(target => lines.Count(line => line.AccountId == (target.Successor.PostingAccountPath ?? target.Successor.AssetAccountId)
+                    && line.Debit == target.OpenFunctionalCostBasis && line.Credit == 0m) == 1),
+                "Corporate-action projected accounting must exactly reclassify the predecessor current basis into the reviewed successor asset accounts.");
+            return requested;
+        }
+
         if (source.EventKind != AssetAccountingEventKindDto.Disposal)
             return null;
 

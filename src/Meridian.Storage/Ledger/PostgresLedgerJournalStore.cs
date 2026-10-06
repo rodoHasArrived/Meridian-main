@@ -83,17 +83,29 @@ public sealed partial class PostgresLedgerJournalStore :
         await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
 
-    public async Task AppendAsync(
+    public Task AppendAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         LedgerJournalEntryWrite entry,
         CancellationToken ct = default)
+        => AppendJournalAsync(connection, transaction, entry, allowCorporateActionLot: false, ct);
+
+    private async Task AppendJournalAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        LedgerJournalEntryWrite entry,
+        bool allowCorporateActionLot,
+        CancellationToken ct)
     {
         RequireWriteTenant();
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(transaction);
         ArgumentNullException.ThrowIfNull(entry);
         ArgumentNullException.ThrowIfNull(entry.Entry);
+        if (!allowCorporateActionLot && (entry.PostingCommand?.LotCorporateAction is not null
+            || entry.Entry.Metadata.Tags?.Keys.Any(key => key.Equals("lotCorporateActionHash", StringComparison.OrdinalIgnoreCase)
+                || key.Equals("lotCorporateActionInputs", StringComparison.OrdinalIgnoreCase)) == true))
+            throw new LedgerValidationException("Canonical corporate-action journals must use atomic journal and lot posting.");
         entry = AccountingPostingCommandValidator.NormalizeAndValidate(
             entry,
             _options.RequireGovernedPostingCommand,

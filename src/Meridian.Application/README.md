@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-06
 ---
 
 # src/Meridian.Application
@@ -17,6 +17,11 @@ missing values, without writing environment defaults; omitted configuration pres
 resolution. Unified database URLs are resolved locally for explicit configurations.
 
 Ledger composition registers the read-only `CanonicalLotAmortizationService` alongside existing governed candidate services. Its registration preserves workstation startup when amortization stores are absent; preview requires the authoritative ledger, Security Master, and book-position stores and rejects missing authority before any read. Amortization posting remains on the shared Asset Accounting Event Spine approval and atomic ledger path.
+
+`CanonicalLotCorporateActionService` prepares reviewed predecessor/successor lot instructions over
+the same authoritative stores. It cannot approve or post a journal. Supported corporate-action
+instructions use the existing Asset Accounting Event Spine, independent approval, and atomic
+journal-plus-lot transaction; absent authority or unsupported treatment blocks preparation.
 
 Governed statement reconciliation carries its resolved fund, primary ledger book, and exact period
 through the retained population provider into journal queries. The journal source validates that

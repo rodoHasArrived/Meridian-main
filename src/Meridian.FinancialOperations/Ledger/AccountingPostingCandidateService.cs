@@ -1,4 +1,5 @@
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
@@ -320,14 +321,16 @@ public sealed class AccountingPostingCandidateService :
                 ProjectionLineage = request.ProjectionLineage,
                 RulePackReference = request.RulePackReference,
                 LotAmortization = request.AssetLotMutation is { Intent: AssetLotMutationIntentDto.Amortize }
-                    ? request.AssetLotMutation.Amortization : null
+                    ? request.AssetLotMutation.Amortization : null,
+                LotCorporateAction = request.AssetLotMutation is { Intent: AssetLotMutationIntentDto.CorporateAction }
+                    ? request.AssetLotMutation.CorporateAction : null
             }
             : null;
         var write = draft.Write is null
             ? null
             : draft.Write with
             {
-                Entry = WithSecurityMasterLineage(draft.Write.Entry, authority, request.Currency),
+                Entry = WithCorporateActionLineage(WithSecurityMasterLineage(draft.Write.Entry, authority, request.Currency), request.AssetLotMutation, dryRun.GeneratedPostingLines),
                 PostingCommand = postingCommand
             };
 
@@ -815,6 +818,61 @@ public sealed class AccountingPostingCandidateService :
     // asserted it Active, effective, and in the event currency - the same rule the manual journal
     // path applies - so a generic caller can never assert it. Post-time re-derivation reproduces the
     // same tags from the retained spine scope.
+    private static JournalEntry WithCorporateActionLineage(JournalEntry entry, AssetLotMutationInstructionDto? lotMutation, IReadOnlyList<GeneratedPostingLineDto> generated)
+    {
+        if (lotMutation?.CorporateAction is not { } instruction)
+            return entry;
+        var projected = OpenLotCorporateAction.Project(instruction);
+        if (entry.Lines.Count != projected.Count + 1)
+            throw new InvalidOperationException("A corporate-action journal must contain only the exact predecessor credit and successor debits.");
+        var usedTargets = new HashSet<Guid>();
+        var sourceLines = 0;
+        var lines = entry.Lines.Select((line, index) =>
+        {
+            Guid securityId;
+            Guid positionId;
+            decimal transactionDebit;
+            decimal transactionCredit;
+            if (line.Credit > 0m)
+            {
+                if (++sourceLines != 1 || line.Account.ToString() != instruction.SourceAssetAccountId
+                    || generated[index].AccountPath != lotMutation.AssetAccountId
+                    || line.Credit != instruction.ExpectedLot.OpenFunctionalCostBasis)
+                    throw new InvalidOperationException("Corporate-action credit must exactly relieve the reviewed predecessor asset account and current basis.");
+                securityId = instruction.ExpectedLot.SecurityId;
+                positionId = instruction.ExpectedLot.BookPositionId;
+                transactionDebit = 0m;
+                transactionCredit = instruction.ExpectedLot.OpenTransactionCostBasis;
+            }
+            else
+            {
+                var matches = projected.Where(p => p.Successor.AssetAccountId == line.Account.ToString()
+                    && (p.Successor.PostingAccountPath ?? p.Successor.AssetAccountId) == generated[index].AccountPath
+                    && p.OpenFunctionalCostBasis == line.Debit).ToArray();
+                if (matches.Length != 1 || !usedTargets.Add(matches[0].Successor.TaxLotRecordId))
+                    throw new InvalidOperationException("Corporate-action debit must uniquely identify one reviewed successor account and basis allocation.");
+                var target = matches[0];
+                securityId = target.Successor.Security.SecurityId;
+                positionId = target.Successor.BookPositionId;
+                transactionDebit = target.OpenTransactionCostBasis;
+                transactionCredit = 0m;
+            }
+            if (line.Account.AccountType != LedgerAccountType.Asset)
+                throw new InvalidOperationException("Corporate-action carryover journals require asset accounts only.");
+            var acquisition = instruction.ExpectedLot.Acquisition;
+            return new LedgerEntry(line.EntryId, line.JournalEntryId, line.Timestamp, line.Account, line.Debit, line.Credit,
+                line.Description, (line.Dimensions ?? new LedgerLineDimensionSet()) with { InstrumentId = securityId, PositionId = positionId },
+                new LedgerEntryCurrency(acquisition.AcquisitionCurrency, acquisition.FunctionalCurrency,
+                    transactionDebit, transactionCredit, acquisition.AcquisitionFxRateToFunctional));
+        }).ToArray();
+        if (sourceLines != 1 || usedTargets.Count != projected.Count)
+            throw new InvalidOperationException("Corporate-action journal does not fully reconcile the reviewed predecessor and successors.");
+        var tags = entry.Metadata.Tags?.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase)
+            ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        tags["lotCorporateActionHash"] = OpenLotCorporateAction.Fingerprint(instruction);
+        return new JournalEntry(entry.JournalEntryId, entry.Timestamp, entry.Description, lines, entry.Metadata with { Tags = tags });
+    }
+
     private static JournalEntry WithSecurityMasterLineage(
         JournalEntry entry,
         AssetAccountingCandidateAuthorityContext? authority,

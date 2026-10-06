@@ -41,17 +41,21 @@ internal static class HistoricalTaxLotQuantity
                 mutation.After < 0m || mutation.After > lot.OriginalQuantity ||
                 mutation.EffectiveDate < lot.AcquiredDate)
                 throw Missing();
-            if (mutation.Kind == AtomicTaxLotMutationKind.Acquisition)
+            if (mutation.Kind is AtomicTaxLotMutationKind.Acquisition or AtomicTaxLotMutationKind.CorporateActionSuccessor)
             {
                 if (i != 0 || mutation.MutationBatchId != lot.OriginatingMutationBatchId ||
                     mutation.Before != 0m || mutation.After != lot.OriginalQuantity ||
-                    mutation.EffectiveDate != lot.AcquiredDate)
+                    (mutation.Kind == AtomicTaxLotMutationKind.Acquisition
+                        ? mutation.EffectiveDate != lot.AcquiredDate
+                        : lot.Acquisition?.CorporateActionLineage?.EffectiveDate != mutation.EffectiveDate))
                     throw Missing();
             }
             // An average-cost survivor restatement changes basis only; it never moves quantity.
             else if (mutation.Kind is AtomicTaxLotMutationKind.BasisRedistribution or AtomicTaxLotMutationKind.Amortization
                     ? mutation.Delta != 0m || mutation.Before <= 0m
-                    : mutation.Kind != AtomicTaxLotMutationKind.Disposal || mutation.Delta >= 0m)
+                    : mutation.Kind is not (AtomicTaxLotMutationKind.Disposal or AtomicTaxLotMutationKind.CorporateActionClose)
+                        || mutation.Delta >= 0m
+                        || (mutation.Kind == AtomicTaxLotMutationKind.CorporateActionClose && mutation.After != 0m))
                 throw Missing();
 
             running = mutation.After;
@@ -61,7 +65,7 @@ internal static class HistoricalTaxLotQuantity
         }
         if (running != lot.OpenQuantity || ordered[^1].MutationBatchId != lot.LastMutationBatchId ||
             asOf < 0m || asOf > lot.OriginalQuantity ||
-            (lot.OriginatingMutationBatchId.HasValue && ordered[0].Kind != AtomicTaxLotMutationKind.Acquisition))
+            (lot.OriginatingMutationBatchId.HasValue && ordered[0].Kind is not (AtomicTaxLotMutationKind.Acquisition or AtomicTaxLotMutationKind.CorporateActionSuccessor)))
             throw Missing();
 
         // Version and immutable acquisition facts stay current; only the read projection's quantity

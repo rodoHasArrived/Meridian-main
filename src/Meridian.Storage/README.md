@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-06
 ---
 
 # src/Meridian.Storage
@@ -721,6 +721,21 @@ serializable transaction for the journal, scoped tax lots, immutable mutation sn
 and correction lineage. Every atomic lot carries Security Master plus book-position identity;
 disposal compare-and-swap also rechecks unit cost and journal asset relief against the retained
 selected-lot cost basis.
+
+Canonical corporate-action posting uses the same transaction to close one complete predecessor
+and create reviewed split, stock-merger, or advance-refunding successors. Migration 042 adds
+explicit close and successor mutation kinds while preserving prior mutation constraints. The
+store locks source and successor Security Master rows, book positions, and lots in deterministic
+order; stale reference versions, position scope, lot basis, or successor identities fail closed.
+Journals carry only the exact source asset credit and allocated successor asset debits, with the
+predecessor acquisition FX and financial-account scope. Original acquisition date, holding-period
+start, acquisition basis allocation, current basis, and reviewed lineage remain inspectable.
+Successor evidence must explicitly bind the new lot to its inherited acquisition date. Historical
+quantity reads expose each successor only from the action effective date, and exact retries replay
+the immutable receipt. The posted event lifecycle validates that exact batch and the reviewed
+predecessor/successor dimensions before retaining its posted impact. Cash-in-lieu, gains,
+unsupported corrections, and nonrepresentable durable
+unit costs or ten-decimal journal amounts and FX require a separately reviewed workflow.
 
 ## Roadmap traceability
 

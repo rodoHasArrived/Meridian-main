@@ -84,7 +84,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-10-02
+    last_reviewed: 2026-10-06
 
   - id: SRC-CONTRACTS
     path: src/Meridian.Contracts
@@ -141,7 +141,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-10-02
+    last_reviewed: 2026-10-06
 
   - id: SRC-CORE
     path: src/Meridian.Core
@@ -276,7 +276,7 @@ modules:
       - DIA-ASSURANCE-LOOP
       - DIA-STORAGE-TOPOLOGY
     todos: []
-    last_reviewed: 2026-10-02
+    last_reviewed: 2026-10-06
 
   - id: SRC-EXECUTION
     path: src/Meridian.Execution
@@ -445,7 +445,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-09
+    last_reviewed: 2026-10-06
 
   - id: SRC-FSHARP
     path: src/Meridian.FSharp
@@ -736,7 +736,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-06
+    last_reviewed: 2026-10-06
 
   - id: SRC-DESIGN-PORTFOLIO-RECORDS
     path: src/Meridian.PortfolioRecords
@@ -804,7 +804,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-10-02
+    last_reviewed: 2026-10-06
 
   - id: SRC-DESIGN-WORKFLOW
     path: src/Meridian.Workflow
@@ -871,7 +871,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-08-04
+    last_reviewed: 2026-10-06
 
   - id: SRC-DESIGN-DOCUMENTS
     path: src/Meridian.Documents
@@ -933,7 +933,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-07-18
+    last_reviewed: 2026-10-06
 
   - id: SRC-UI-SERVICES
     path: src/Meridian.Ui.Services
@@ -1008,7 +1008,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-10-02
+    last_reviewed: 2026-10-06
 
   - id: SRC-UI-DASHBOARD
     path: src/Meridian.Ui/dashboard
@@ -1046,7 +1046,7 @@ modules:
       - DIA-BROWSER-WORKSTATION-ROUTES
     todos:
       - TODO-SRC-UI-DASHBOARD-001
-    last_reviewed: 2026-08-04
+    last_reviewed: 2026-10-06
 
   - id: SRC-WPF
     path: src/Meridian.Wpf

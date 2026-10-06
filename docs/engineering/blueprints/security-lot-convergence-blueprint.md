@@ -25,9 +25,9 @@ identity, quantity-basis, or acquisition-FX facts remain visible exceptions with
 The durable disposal transaction now selects through the canonical decimal relief contract, and
 authoritative Reporting validates retained disposal snapshots and includes canonical acquisition
 evidence in its signed pack. This increment does not certify the entire convergence roadmap:
-The later acquisition, AverageCost and bounded amortization increments are recorded below.
-Corporate-action successors, advance refunding, remaining consumer parity and shadow-operation
-acceptance remain open. Simulated Backtesting
+The later acquisition, AverageCost, bounded amortization, current-basis relief and corporate-action
+increments are recorded below. Broader corporate-action coverage, remaining consumer parity and
+shadow-operation acceptance remain open. Simulated Backtesting
 lots retain their declared simulation boundary rather than receiving invented evidence.
 
 **In scope:** one open-lot contract for unit- and face-denominated instruments; acquisition
@@ -43,7 +43,7 @@ owner.
 the durable convergence anchor. `V_ledger_034` retains explicit quantity-basis semantics,
 acquisition currencies and FX, and face-value acquisition terms. Remaining gaps include
 mandatory identity across unresolved legacy rows, complete cross-consumer selector/amortization
-parity, corporate-action successors, advance refunding, and shadow-operation acceptance.
+parity, broader corporate-action treatments, and shadow-operation acceptance.
 
 ## 2. Architectural Overview
 
@@ -417,3 +417,58 @@ Implementation proof at `a4c4b5ff0`: the focused Ledger/Storage/event-spine/acqu
 PostgreSQL 16.15 schema snapshot and independent empty-database verification passed with zero
 errors and unchanged 242 policy warnings. Canonical repository CI and hosted checks remain separate
 validation gates; this evidence does not accept the broader row or certify PR #3048.
+
+## Bounded corporate-action successor implementation - 2026-10-06
+
+`OpenLotCorporateActionInstructionDto` binds an exact reviewed predecessor, action, source and
+successor Security Master versions, book positions, new lot identities and approved allocations.
+`CanonicalLotCorporateActionService` reloads authoritative records and prepares the existing
+Asset Accounting Event Spine draft. The supported treatments are whole-unit forward/reverse
+splits, one-successor stock mergers and proportional two-successor face advance refundings.
+Ordinary same-security splits explicitly select `CanonicalLotTransferJournal`; their balanced
+same-account basis transfer accompanies the lot transformation. The existing operational-only
+split projection keeps its no-journal behavior when that option is absent.
+
+The normal promoted rules, independent approval and posting checks apply. Durable account names
+and chart paths are retained separately and must resolve to the generated journal accounts.
+One serializable PostgreSQL transaction closes the exact predecessor, creates all successors,
+appends the balanced journal and immutable before/after receipts, and retains the complete
+evidence and command fingerprint. Period, reference and lot versions are rechecked under locks;
+journal-only append paths reject the lot instruction. Exact retries return the original batch.
+Migration `V_ledger_042` widens four existing checks while preserving their previous cases.
+Corporate-action quantities and lot bases must be exact at the existing twelve-decimal lot
+boundary; journal amounts and FX must also fit the stricter ten-decimal journal columns. An
+unrepresentable transfer is refused before writing instead of silently rounding away conservation.
+
+Original acquisition and current carrying bases are allocated separately in both currencies.
+Successors inherit acquisition date, holding period and original FX, and retain explicit
+predecessor/action lineage. Refunded and unrefunded face quantities sum to the predecessor;
+only the refunded successor has `ScheduleD` tracking. Historical quantity reads include successors
+from the action date, despite their inherited acquisition date. Reporting verifies the retained
+instruction, journal hash and scoped asset legs, and reconstructs the exact predecessor/successor
+economics before returning a projection. Successor acquisition evidence excludes event/approval
+records belonging to an earlier action, allowing later independently reviewed actions.
+The authoritative report source loads immutable lot receipts by the exact captured journal IDs;
+missing or inconsistent receipts block capture. The report pack includes
+`corporate-action-lot-evidence.json` in its manifest and signature, so the retained successor and
+Schedule D proof travels with the financial output.
+
+This slice refuses cash-in-lieu, cash/tax treatments, corporate-action corrections and unsupported
+allocation structures. The spine still requires matching security/event/functional currencies;
+store-level FX preservation does not establish a cross-currency drafting workflow. A pooled basis
+that cannot satisfy the retained FX equation is refused. Successor amortization is blocked until
+its yield and schedule continuation are separately reviewed, rather than reusing parent economics
+against changed successor terms. Successors must retain the predecessor's non-security accounting
+dimensions; cross-sleeve or other dimension transfers require a separate reviewed workflow.
+Broader treatments, consumer parity and live shadow-operation
+acceptance remain open; `W10-LOT-002` stays `in_progress`.
+
+Regression evidence is owned by `OpenLotCorporateActionTests`,
+`CanonicalLotCorporateActionServiceTests`, `AssetCorporateActionPostgresRoundTripTests` and
+`AtomicTaxLotJournalStoreTests.CorporateAction`, with mapped refunding and authoritative report
+capture covered by `AssetCorporateActionRefundingPostgresRoundTripTests` and
+`LedgerReportingAuthoritativeSourceTests.CorporateActions`. The final focused suite passed
+620 tests with zero failures and zero skips, including PostgreSQL integration. PostgreSQL 16.15
+schema snapshot and fresh-database verification passed with zero errors, zero artifact drift and
+242 existing policy warnings. Canonical repository CI, hosted required checks and operator
+acceptance remain separate gates.

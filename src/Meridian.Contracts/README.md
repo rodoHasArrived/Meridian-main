@@ -6,10 +6,12 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-06
 ---
 
 # src/Meridian.Contracts
+
+`OpenLotCorporateAction` binds reviewed predecessor snapshots, successor Security Master and position versions, explicit fractional plan allocations, and retained successor acquisition evidence. Optional corporate-action inputs and acquisition lineage are omitted when absent, preserving legacy serialized payloads. The shared guard conserves original and current transaction/functional bases and carried acquisition dates, holding period and FX. Unsupported cash, fractional cash-in-lieu, correction or holding-period treatments fail closed. Successor amortization requires a separate reviewed yield/schedule continuation.
 
 `TradingBrokerageRecoveryDtos` extends shared Trading readiness with nullable broker balances,
 currency, observation/attempt/success timestamps, completeness and blocking reasons, plus affected

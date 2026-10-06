@@ -1093,7 +1093,8 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             : throw new InvalidOperationException("Asset lot mutation requires a canonical asset accounting event type.");
         if ((instruction.Intent == AssetLotMutationIntentDto.Acquire && eventKind != AssetAccountingEventKindDto.Acquisition) ||
             (instruction.Intent == AssetLotMutationIntentDto.Dispose && eventKind != AssetAccountingEventKindDto.Disposal) ||
-            (instruction.Intent == AssetLotMutationIntentDto.Amortize && eventKind != AssetAccountingEventKindDto.DepreciationAmortization))
+            (instruction.Intent == AssetLotMutationIntentDto.Amortize && eventKind != AssetAccountingEventKindDto.DepreciationAmortization) ||
+            (instruction.Intent == AssetLotMutationIntentDto.CorporateAction && eventKind != AssetAccountingEventKindDto.CorporateAction))
         {
             throw new InvalidOperationException(
                 "Asset lot mutation intent must match the canonical acquisition or disposal event kind.");
@@ -1241,10 +1242,23 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                 "Amortization asset posting must equal the reviewed carrying-value movement.");
             mutationKind = AtomicTaxLotMutationKind.Amortization;
         }
+        else if (instruction.Intent == AssetLotMutationIntentDto.CorporateAction)
+        {
+            var inputs = instruction.CorporateAction
+                ?? throw new InvalidOperationException("Corporate-action posting requires the exact reviewed predecessor and successor plan.");
+            _ = OpenLotCorporateAction.Project(inputs);
+            RequireAssetAssertion(inputs.ExpectedLot.SecurityId == authority.Context.SecurityId
+                && inputs.ExpectedLot.BookPositionId == authority.Context.BookPositionId
+                && inputs.Security.Version == authority.Context.SecurityVersion
+                && inputs.ExpectedBookPositionVersion == authority.Context.ExpectedBookPositionVersion
+                && inputs.EffectiveDate == request.Candidate.EffectiveDate
+                && inputs.ExpectedLot.OpenFunctionalCostBasis == request.Candidate.EventAmount,
+                "Corporate-action inputs must match the governed event authority, date and full carrying-value transfer.");
+            mutationKind = AtomicTaxLotMutationKind.CorporateAction;
+        }
         else
         {
-            throw new InvalidOperationException(
-                "Atomic lot posting supports only acquisition and disposal mutations.");
+            throw new InvalidOperationException("Unsupported atomic lot mutation intent.");
         }
 
         var command = AtomicTaxLotJournalCommand.Create(
@@ -1264,7 +1278,8 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             instruction.ReliefMethod,
             instruction.PolicyRevision,
             instruction.DisposalSalePrice,
-            instruction.Amortization);
+            instruction.Amortization,
+            instruction.CorporateAction);
         return await atomicStore.AppendAssetPostingAsync(command, ct).ConfigureAwait(false);
     }
 

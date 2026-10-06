@@ -6,7 +6,7 @@ module_id: SRC-LEDGER
 path: src/Meridian.Ledger
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-06
 ---
 
 # src/Meridian.Ledger
@@ -68,6 +68,10 @@ ledger-backed net asset value (the unitized NAV base) with an explicit reconcili
 money typed (not pre-formatted) so `FinancialReportDocumentRenderer` can emit a purpose-built
 partners-capital PDF section and a typed-numeric XLSX sheet instead of the generic table. The
 projection is presentation only — it introduces no ledger fact and never changes a figure.
+`LedgerReportPackBuilder` also accepts validated immutable corporate-action lot reports and includes
+`corporate-action-lot-evidence.json` in the artifact manifest and pack signature. The evidence retains
+predecessor before/after snapshots and successor acquisition/current basis, FX, holding period and
+reporting lineage. Packs without corporate actions retain their existing artifact set.
 `LedgerReportPackBuilder` emits those statements as CSV/JSON pack artifacts, and
 `LedgerScheduledReportExportPackageBuilder` now honors every declared `LedgerReportExportFormat`:
 Csv, Json, RegulatoryXml natively plus real binary Xlsx/Pdf through the

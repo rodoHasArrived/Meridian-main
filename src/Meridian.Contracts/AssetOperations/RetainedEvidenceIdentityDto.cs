@@ -41,10 +41,19 @@ public static class AssetAccountingEvidenceSubjects
         AssetAccountingEventKindDto eventKind, DateOnly eventDate, Guid securityId, long securityVersion,
         RetainedEvidenceIdentityDto evidence,
         Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? instruction,
-        bool requireInstruction)
+        bool requireInstruction,
+        Meridian.Contracts.Accounting.Lots.OpenLotCorporateActionInstructionDto? corporateAction = null)
     {
         if (evidence.EffectiveDate == eventDate)
             return true;
+        if (eventKind == AssetAccountingEventKindDto.CorporateAction && evidence.EffectiveDate <= eventDate)
+        {
+            if (evidence.SubjectType is not ("OpenLotAcquisition" or "SecurityMasterProjection")
+                || !Guid.TryParseExact(evidence.SubjectId, "D", out var subjectId) || subjectId == Guid.Empty)
+                return false;
+            return corporateAction is null ? !requireInstruction
+                : Meridian.Contracts.Accounting.Lots.OpenLotCorporateAction.Evidence(corporateAction).Contains(evidence);
+        }
         if (eventKind != AssetAccountingEventKindDto.DepreciationAmortization || evidence.EffectiveDate > eventDate)
             return false;
         var canonicalSubject = evidence.SubjectType switch

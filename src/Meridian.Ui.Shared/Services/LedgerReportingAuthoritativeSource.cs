@@ -79,7 +79,7 @@ public class ReportingAuthoritativeSourceUnavailableException : InvalidOperation
 /// structure, organization, book, period, accounting basis, currency, selected dimensions, and
 /// line-level dimensional stamps are all verified before a checkpoint is issued.
 /// </summary>
-public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritativeSource
+public sealed partial class LedgerReportingAuthoritativeSource : IReportingAuthoritativeSource
 {
     private const string SourceKind = "durable-ledger-journal";
 
@@ -403,10 +403,15 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
                 cancellationToken)
             .ConfigureAwait(false);
 
+        var corporateActionLotReports = await BuildCorporateActionLotReportsAsync(
+                book.LedgerBookId, orderedHistory, book.BaseCurrency, selectedDimensions, cancellationToken)
+            .ConfigureAwait(false);
+
         return LedgerReportPackBuilder.Build(
             ledger,
             reportRequest,
-            taxLotReliefProjections: taxLotReliefProjections);
+            taxLotReliefProjections: taxLotReliefProjections,
+            corporateActionLotReports: corporateActionLotReports);
     }
 
     /// <summary>

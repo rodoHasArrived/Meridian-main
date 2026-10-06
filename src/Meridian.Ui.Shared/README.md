@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-05
+last_reviewed: 2026-10-06
 ---
 
 # src/Meridian.Ui.Shared
@@ -55,6 +55,12 @@ still start while comparison routes remain unavailable; no in-memory production 
 currency/FX values, dimensional account ID, journal recording time, activity, and accounting-policy
 references with the exact journal/line IDs. Explicit functional currency inconsistent with the
 certified book blocks capture; missing transaction FX metadata is never invented.
+When building the canonical certified ledger pack, capture resolves each corporate-action journal's
+immutable atomic lot receipt by journal identity and validates it against the exact as-of journal,
+book, currency and selected dimensions. Missing receipts, altered snapshots, or actions crossing a
+selected dimensional boundary block certification. Validated predecessor/successor proof enters
+`corporate-action-lot-evidence.json` before the pack manifest and signature are computed; current
+mutable lots do not supply historical reporting evidence.
 
 `RecurringJournalRunner` joins `AutomatedJournalScheduledWorker` and the existing journal-intake
 path to create one retained human-review draft per recurring occurrence. It holds the durable

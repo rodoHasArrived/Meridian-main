@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Meridian.Tests.Ui;
 
-public sealed class LedgerReportingAuthoritativeSourceTests
+public sealed partial class LedgerReportingAuthoritativeSourceTests
 {
     private static readonly DateOnly AsOfDate = new(2026, 7, 15);
     private static readonly DateTimeOffset CutoffUtc = new(
@@ -647,6 +647,14 @@ public sealed class LedgerReportingAuthoritativeSourceTests
     {
         public List<LedgerJournalEntryRecord> Records { get; } = [];
         public List<LedgerTaxLotDisposalHistoryRecord> Disposals { get; } = [];
+        public Dictionary<Guid, AtomicTaxLotJournalResult?> CorporateReceipts { get; } = [];
+        public List<Guid> RequestedCorporateJournals { get; } = [];
+        public Task<AtomicTaxLotJournalResult?> GetAtomicTaxLotPostingByJournalAsync(
+            Guid journalEntryId, CancellationToken ct = default)
+        {
+            RequestedCorporateJournals.Add(journalEntryId);
+            return Task.FromResult(CorporateReceipts.GetValueOrDefault(journalEntryId));
+        }
         public Task<IReadOnlyList<LedgerTaxLotDisposalHistoryRecord>> GetTaxLotDisposalHistoryAsync(
             Guid ledgerBookId, IReadOnlyList<Guid> journalEntryIds, CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<LedgerTaxLotDisposalHistoryRecord>>(Disposals);
