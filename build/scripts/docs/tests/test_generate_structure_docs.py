@@ -31,9 +31,45 @@ generate_structure_docs = load_module(
     "generate_structure_docs_under_test",
     "generate-structure-docs.py",
 )
+generate_health_dashboard = load_module(
+    "generate_health_dashboard_under_test",
+    "generate-health-dashboard.py",
+)
 
 
 class GenerateStructureDocsTests(unittest.TestCase):
+    def test_todo_scan_artifact_does_not_change_structure_or_health(self) -> None:
+        for git_available in (False, True):
+            with self.subTest(git_available=git_available), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                structure = root / "docs/generated/repository-structure.md"
+                structure.parent.mkdir(parents=True)
+                structure.touch()
+                status = root / "docs/status"
+                status.mkdir()
+                (status / "TODO.md").write_text("# Tracked TODO report\n", encoding="utf-8")
+                git_result = subprocess.CompletedProcess(
+                    args=["git", "ls-files"],
+                    returncode=0 if git_available else 1,
+                    stdout=b"docs/generated/repository-structure.md\0docs/status/TODO.md\0",
+                    stderr=b"",
+                )
+                with patch.object(generate_structure_docs.subprocess, "run", return_value=git_result):
+                    before = generate_structure_docs.generate_repository_structure(root)
+                    structure.write_text(before, encoding="utf-8")
+                    before_health = generate_health_dashboard.analyse(root)
+
+                    (status / "todo-scan-results.json").write_text("{}\n", encoding="utf-8")
+                    after = generate_structure_docs.generate_repository_structure(root)
+                    structure.write_text(after, encoding="utf-8")
+                    after_health = generate_health_dashboard.analyse(root)
+
+                self.assertEqual(before, after)
+                self.assertEqual(before_health.total_lines, after_health.total_lines)
+                self.assertEqual(before_health.todo_count, after_health.todo_count)
+                self.assertIn("TODO.md", after)
+                self.assertNotIn("todo-scan-results.json", after)
+
     def test_schema_validation_outputs_do_not_change_repository_tree(self) -> None:
         for git_available in (False, True):
             with self.subTest(git_available=git_available), tempfile.TemporaryDirectory() as tmp:
@@ -66,7 +102,7 @@ class GenerateStructureDocsTests(unittest.TestCase):
             (root / ".github").mkdir()
             (root / ".github" / "pull_request_template.md").write_text("template\n", encoding="utf-8")
             (root / "docs" / "status").mkdir(parents=True)
-            (root / "docs" / "status" / "todo-scan-results.json").write_text("{}\n", encoding="utf-8")
+            (root / "docs" / "status" / "ui-route-wiring-report.json").write_text("{}\n", encoding="utf-8")
             git_result = subprocess.CompletedProcess(
                 args=["git", "ls-files"],
                 returncode=0,
@@ -85,7 +121,7 @@ class GenerateStructureDocsTests(unittest.TestCase):
                 {
                     ".github/PULL_REQUEST_TEMPLATE.md",
                     ".github/pull_request_template.md",
-                    "docs/status/todo-scan-results.json",
+                    "docs/status/ui-route-wiring-report.json",
                 },
                 {path.as_posix() for path in visible or []},
             )
