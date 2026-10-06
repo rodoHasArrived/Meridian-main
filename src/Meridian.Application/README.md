@@ -359,6 +359,9 @@ Core workstation host. Do not introduce a second listener or independent monitor
   the retained version and digest, preserves source and execution provenance, writes a replay raw
   payload, stages accepted records, and re-quarantines records that still fail validation. Missing
   historical provenance blocks both replay modes rather than substituting the current mapping.
+  Retained manual CSV rows reuse the ingestion mapper during replay, preserving case-insensitive
+  literal column names and conditional transforms inside the retained `fields` wrapper. Repeated
+  replay keeps that raw wrapper intact; REST records retain their JSON-path mapping semantics.
   The activation-readiness service evaluates
   those manifests before enablement, blocking unresolved required mappings, missing approval
   evidence, and order-preview/place/cancel capabilities unless they use a certified provider
