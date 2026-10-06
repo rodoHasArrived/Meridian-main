@@ -81,6 +81,10 @@ lineage, occurrence and successful-run clearing independently of governed casewo
 The build lockfile resolves Browserslist 4.28.9, removing the high-severity cache-growth and
 custom-stats parsing advisories reported by the September 6 production-certification scan.
 
+Tailwind 4 uses its matching `@tailwindcss/postcss` adapter. The main stylesheet explicitly loads
+the existing `tailwind.config.ts` so Meridian's semantic colors, typography, shadows and utility
+sources remain part of generated CSS. The lockfile retains patched `source-map-js` 1.2.2.
+
 First launch is browser-primary. `/setup` renders the first-run concierge while the
 shared first-run API remains the source of truth for starter kits, sample safety labels,
 recommendations, and completed activation outcomes. Sample mode stays offline-capable
