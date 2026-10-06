@@ -11,6 +11,10 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Storage
 
+Atomic file-write diagnostics retain operation outcomes, byte counts, OS error numbers and exception
+types. Paths, file contents, checksum values and exception messages are omitted because they can
+contain financial account identities or other private data.
+
 Reporting governance supports bounded run-ID batches within one tenant transaction. Bulk state and
 audit reads preserve the same checksum, row binding, audit-chain, and restatement verification as
 individual reads, avoiding a separate transaction for every retained comparison candidate.

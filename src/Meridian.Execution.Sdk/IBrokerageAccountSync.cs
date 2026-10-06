@@ -1,5 +1,13 @@
 namespace Meridian.Execution.Sdk;
 
+/// <summary>Opaque connection epoch; changes revoke portfolio evidence without exposing credentials.</summary>
+public interface IBrokerageConnectionState
+{
+    long ConnectionGeneration { get; }
+    bool IsExecutionStreamHealthy { get; }
+    string? ScopeIdentity { get; }
+}
+
 /// <summary>
 /// Enumerates brokerage or custodian accounts that can be imported into Meridian's
 /// read-side Portfolio, ledger, and Accounting workflows.
@@ -73,7 +81,9 @@ public sealed record BrokeragePortfolioSnapshotDto(
     DateTimeOffset RetrievedAt,
     BrokerageAccountSnapshotDto? AccountSnapshot = null,
     IReadOnlyList<BrokerageTaxLotSnapshotDto>? TaxLots = null,
-    IReadOnlyList<BrokerageBorrowPositionSnapshotDto>? BorrowPositions = null);
+    IReadOnlyList<BrokerageBorrowPositionSnapshotDto>? BorrowPositions = null,
+    bool IsComplete = false,
+    IReadOnlyList<string>? CompletenessIssues = null);
 
 public sealed record BrokerageBalanceSnapshotDto(
     decimal Cash,

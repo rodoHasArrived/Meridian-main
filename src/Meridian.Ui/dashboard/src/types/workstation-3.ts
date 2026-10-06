@@ -868,6 +868,7 @@ export interface TradingOperatorReadiness {
   trustGate: TradingTrustGateReadiness;
   brokerageSync: WorkstationBrokerageSyncStatus | null;
   executionReconciliation?: TradingExecutionReconciliationReadiness | null;
+  brokerageRecovery?: import("./brokerage-recovery").TradingBrokerageRecovery | null;
   workItems: OperatorWorkItem[];
   warnings: string[];
 }

@@ -11,6 +11,23 @@ last_reviewed: 2026-10-05
 
 # src/Meridian.Ui.Shared
 
+Trading recovery uses `LiveBrokeragePortfolioSyncService` to publish account-scoped Alpaca
+holdings, cash, buying power, currency and completeness to the existing exposure provider.
+Broker holdings replace local projections for that account; remaining OMS exposure stays reserved.
+The mandatory brokerage risk rule blocks missing, stale, interrupted or inconsistent evidence.
+An order/fill change, reconnect or restart requires synchronization again. The shared readiness
+payload exposes recovery evidence and affected authorized strategy runs; the recovery POST resolves
+the retained account link and requires scoped trade-write authority before broker I/O.
+Synchronization reconciles the complete broker order book before and after its final portfolio
+read. Both reconciliations must be clean and their canonical order fingerprints must match, so an
+unfilled external order or changed price cannot hide behind unchanged holdings and cash. Failed
+final reads revoke readiness and retain the latest discrepancy report for inspection.
+Malformed duplicate-symbol observations remain readable in legacy symbol-keyed portfolio views,
+which aggregate their net quantities and P&L. Risk still consumes the original rows and gross
+exposure; duplicate evidence remains inconsistent and cannot authorize trading.
+See [Alpaca recovery](../../docs/operators/provider-onboarding-alpaca.md#account-portfolio-recovery)
+for the fixture and paper-sandbox procedure.
+
 Shared endpoint composition accepts an explicit `IConfiguration` for authentication, persistence,
 rate limiting and LEAN settings. Each host retains its own provider catalog and LEAN result records;
 fixture hosts can coexist without publishing configuration or endpoint state to the process.

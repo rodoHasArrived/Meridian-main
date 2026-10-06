@@ -11,6 +11,11 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Contracts
 
+`TradingBrokerageRecoveryDtos` extends shared Trading readiness with nullable broker balances,
+currency, observation/attempt/success timestamps, completeness and blocking reasons, plus affected
+account-scoped strategy runs. Existing execution-reconciliation DTOs remain the discrepancy source.
+Recovery requests carry only the local account ID; provider and external identity are server-resolved.
+
 Canonical amortization adds an optional `Amortization` input to lot instructions and basis adjustments, omitted when absent to preserve retained fingerprints. `OpenLotAmortization` binds reviewed canonical lot and versioned Security Master evidence, delegates shared straight-line/constant-yield kernels, and retains annual decimal yield and acquisition FX. Unsupported structures and missing terms fail closed.
 
 `Etl/IEtlStagingStore.cs` lets source adapters retain imported streams through an injected

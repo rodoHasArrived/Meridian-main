@@ -11,6 +11,18 @@ last_reviewed: 2026-09-02
 
 # src/Meridian.Ui/dashboard
 
+Trading includes an account-scoped brokerage recovery panel backed by the shared readiness and
+execution reconciliation projection. The operator can synchronize and reconcile Alpaca portfolio
+evidence through the governed recovery endpoint. Connection health, portfolio currency and cash,
+buying power, synchronization timestamps, completeness, impacted strategy runs, and retained-local
+versus broker-order discrepancies remain inspectable. Missing, stale, inconsistent, failed, pending,
+or wrong-account evidence stays visibly blocked; account changes abort and discard prior responses.
+The active account polls shared readiness every ten seconds without overlapping requests.
+Portfolio expiry uses the server's observation window and blocks locally even when a refresh fails;
+repeated delivery of the same snapshot cannot extend its lifetime. Recovery never resubmits orders
+or resumes runs. Focused coverage lives in
+`trading-screen.brokerage-recovery.test.tsx`, `trading-screen.view-model.test.ts`, and `api.trading.test.ts`.
+
 Reporting run status and governed run detail expose an investment-income comparison over two
 explicit retained run identities. Baseline options distinguish originally published and restated
 results. The shared service retains the manifests, snapshot diff, explanation, and supporting

@@ -578,6 +578,7 @@ export const UI_API_ROUTES = {
   WorkstationFinancialRecordExplorerRecord: "/api/workstation/financial-record-explorers/{explorerId}/records/{recordId}",
   WorkstationFinancialRecordExplorerSavedViews: "/api/workstation/financial-record-explorers/{explorerId}/saved-views",
   WorkstationTradingReadiness: "/api/workstation/trading/readiness",
+  WorkstationTradingBrokerageRecovery: "/api/workstation/trading/brokerage-recovery",
   WorkstationOperatorInbox: "/api/workstation/operator/inbox",
   WorkstationEvidenceSubjects: "/api/workstation/evidence/subjects",
   WorkstationEvidenceSubjectPacket: "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/packet",
