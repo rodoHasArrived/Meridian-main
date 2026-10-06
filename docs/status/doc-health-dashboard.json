@@ -1,10 +1,10 @@
 {
   "total_files": 696,
-  "total_lines": 154167,
+  "total_lines": 154161,
   "orphaned_count": 233,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 295,
+  "todo_count": 294,
   "average_lines": 221.5,
   "health_score": 82,
   "orphaned_files": [
@@ -5420,9 +5420,9 @@
     },
     {
       "path": "README.md",
-      "line_count": 266,
+      "line_count": 260,
       "has_heading": true,
-      "todo_count": 4,
+      "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
