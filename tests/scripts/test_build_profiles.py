@@ -139,6 +139,12 @@ class BuildProfileTests(unittest.TestCase):
             self.prepare(no_build=True)
         self.assertFalse(self.prepare()["built"])
 
+    def test_profile_properties_cannot_override_test_no_build(self) -> None:
+        for assignment in ("VSTestNoBuild=false", "/p:vstestnobuild=false", "-P:VSTESTNOBUILD=false"):
+            with self.subTest(assignment=assignment), self.assertRaisesRegex(ValueError, "vstestnobuild.*managed"):
+                self.prepare(property=[assignment])
+        self.assertFalse((self.root / ".ai").exists())
+
     def test_skip_options_reject_missing_output_after_success(self) -> None:
         profile = self.prepare()
         profiles.mark_profile_built(profile)
