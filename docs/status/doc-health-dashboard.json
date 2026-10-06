@@ -1,6 +1,6 @@
 {
   "total_files": 698,
-  "total_lines": 154771,
+  "total_lines": 154776,
   "orphaned_count": 233,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -1364,7 +1364,7 @@
     },
     {
       "path": "docs/ai/tooling/README.md",
-      "line_count": 198,
+      "line_count": 200,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2372,7 +2372,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 363,
+      "line_count": 366,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
