@@ -12,6 +12,7 @@ This folder owns scenario-specific acceptance procedures and retained evidence.
 | Run the paper-cockpit regression slice | [Wave 2 acceptance tests](WAVE2_ACCEPTANCE_TESTS.md) | Automated checks and failure diagnosis. |
 | Capture paper-session continuity evidence | [Wave 2 reliability runbook](wave2-cockpit-reliability-evidence-runbook.md) | Automated and manual evidence sequence. |
 | Understand the original Wave 2 gates | [Wave 2 gate checklist](WAVE2_ACCEPTANCE_GATE_CHECKLIST.md) | Historical requirements and implementation snapshot. |
+| Validate Alpaca account synchronization and recovery | [Alpaca paper portfolio sandbox](alpaca-paper-portfolio-sandbox.md) | Opt-in broker evidence, deterministic fixtures, and validation limits. |
 | Verify accounting trust corrections | [Accounting trust acceptance](accounting-trust-corrections.md) | Scenario checklist; operator decisions remain explicit. |
 | Verify posted amount provenance | [W10 amount provenance](w10-amount-provenance.md) | Scoped evidence selection, review regressions, and validation limits. |
 | Evaluate close readiness and mark freshness | [W10 operator acceptance](w10-mark-seam-operator-acceptance.md) | Candidate, population, criterion decisions, and validation limits. |

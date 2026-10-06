@@ -360,6 +360,19 @@ public static class WorkstationServiceCollectionExtensions
                 RootDirectory = Path.Combine(ResolveWorkstationDataDirectory(sp), "brokerage-sync")
             });
         services.TryAddSingleton<BrokeragePortfolioSyncService>();
+        services.TryAddSingleton<BrokerageExecutionReconciliationService>();
+        services.TryAddSingleton(sp => new LiveBrokeragePortfolioSyncService(
+            () => sp.GetService<Meridian.Execution.Sdk.IExecutionGateway>() as Meridian.Execution.Sdk.IBrokerageGateway,
+            sp.GetService<Meridian.Execution.Sdk.IOrderManager>,
+            sp.GetRequiredService<BrokerageExecutionReconciliationService>(),
+            sp.GetService<TimeProvider>()));
+        services.TryAddSingleton(sp =>
+        {
+            var gatewayId = sp.GetService<Meridian.Execution.Sdk.IExecutionGateway>()?.GatewayId ?? "paper";
+            var gatewayPath = Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(gatewayId);
+            return new FileBrokerageOrderRecoveryStore(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "execution", gatewayPath, "broker-orders.json"), gatewayId);
+        });
         services.TryAddSingleton<ProviderLedgerReconciliationService>();
         services.TryAddSingleton(sp => new MarginCertificationStore(ResolveWorkstationDataDirectory(sp)));
         services.TryAddSingleton<MarginControlCenterReadService>();
@@ -450,7 +463,8 @@ public static class WorkstationServiceCollectionExtensions
                 // against a price the market left hours ago.
                 paperMatchingIsAuthoritative: () =>
                     sp.GetService<Meridian.Execution.Interfaces.IOrderGateway>()
-                        is Meridian.Execution.Adapters.PaperTradingGateway));
+                        is Meridian.Execution.Adapters.PaperTradingGateway,
+                livePortfolioAccessor: sp.GetService<LiveBrokeragePortfolioSyncService>));
         // Governed-approval queue for escalated orders (severity outcome: Escalate parks).
         // Queue transitions persist atomically so parked approvals survive restarts.
         services.TryAddSingleton<RiskEscalationQueueService>(sp => new RiskEscalationQueueService(
@@ -507,6 +521,7 @@ public static class WorkstationServiceCollectionExtensions
             }
 
             var exposureProvider = sp.GetRequiredService<Meridian.Risk.IPortfolioExposureProvider>();
+            rules.Add(new Meridian.Risk.Rules.BrokeragePortfolioStateRule(exposureProvider));
             // Fat-finger runs ahead of the portfolio-aware rules (Priority -10) so a mistyped
             // order is attributed to the mistake rather than to whichever exposure ceiling its
             // inflated size happened to breach.

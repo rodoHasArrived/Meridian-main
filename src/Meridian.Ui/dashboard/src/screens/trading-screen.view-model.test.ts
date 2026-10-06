@@ -1055,6 +1055,105 @@ describe("trading readiness view model", () => {
     expect(result.current.statusAnnouncement).toBe("Trading readiness review required as of Apr 26, 16:10 UTC.");
   });
 
+  it("aborts and discards old account recovery when scope changes without a new workspace payload", async () => {
+    const pending = createDeferred<TradingOperatorReadiness>();
+    const synchronizeTradingBrokerage = vi.fn().mockReturnValue(pending.promise);
+    const services: TradingReadinessServices = { getTradingReadiness: vi.fn(), synchronizeTradingBrokerage };
+    const { result, rerender } = renderHook(
+      ({ fundAccountId }) => useTradingReadinessViewModel({ initialReadiness: blockedReadiness, fundAccountId, services }),
+      { initialProps: { fundAccountId: "fund-1" } }
+    );
+    await act(async () => { void result.current.recoverBrokerage(); });
+    const signal = synchronizeTradingBrokerage.mock.calls[0][1].signal as AbortSignal;
+    expect(synchronizeTradingBrokerage).toHaveBeenCalledWith("fund-1", expect.objectContaining({ signal }));
+    rerender({ fundAccountId: "fund-2" });
+    expect(signal.aborted).toBe(true);
+    expect(result.current.readiness).toBeNull();
+    await act(async () => {
+      pending.resolve({ ...blockedReadiness, overallStatus: "Ready" });
+      await pending.promise;
+    });
+    expect(result.current.readiness).toBeNull();
+    expect(result.current.refreshing).toBe(false);
+  });
+
+  it("uses recovered server readiness only after synchronization completes and retains errors", async () => {
+    const pending = createDeferred<TradingOperatorReadiness>();
+    const synchronizeTradingBrokerage = vi.fn().mockReturnValueOnce(pending.promise).mockRejectedValueOnce(new Error("Broker unavailable"));
+    const services: TradingReadinessServices = { getTradingReadiness: vi.fn(), synchronizeTradingBrokerage };
+    const { result } = renderHook(() => useTradingReadinessViewModel({ initialReadiness: blockedReadiness, fundAccountId: "fund-1", services }));
+    await act(async () => { void result.current.recoverBrokerage(); });
+    expect(result.current.readiness?.overallStatus).toBe("Blocked");
+    expect(result.current.refreshing).toBe(true);
+    await act(async () => { pending.resolve({ ...blockedReadiness, overallStatus: "Ready" }); await pending.promise; });
+    expect(result.current.readiness?.overallStatus).toBe("Ready");
+    await act(async () => { await result.current.recoverBrokerage(); });
+    expect(result.current.errorText).toBe("Broker unavailable");
+    expect(services.getTradingReadiness).not.toHaveBeenCalled();
+  });
+
+  function freshRecoveryReadiness(): TradingOperatorReadiness {
+    return {
+      ...blockedReadiness,
+      asOf: "2026-10-05T15:30:00Z",
+      overallStatus: "Ready",
+      readyForLiveOperation: true,
+      liveOperationBlockers: ["existing-control-review"],
+      brokerageRecovery: {
+        fundAccountId: "fund-1", providerId: "alpaca", externalAccountId: "PA-404", status: "Ready",
+        detail: "Reconciled", blockingReasons: ["Retained operator note"], affectedRuns: [],
+        portfolio: { cash: 100, buyingPower: 200, portfolioValue: 300, currency: "USD", positionCount: 1,
+          observedAt: "2026-10-05T15:30:00Z", expiresAt: "2026-10-05T15:30:30Z",
+          lastAttemptedAt: null, lastSuccessfulAt: null, isComplete: true, isFresh: true, isConsistent: true, warnings: [] }
+      }
+    };
+  }
+
+  it("expires portfolio evidence locally during a network outage despite browser clock skew", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2099-01-01T00:00:00Z"));
+    const state = freshRecoveryReadiness();
+    const getTradingReadiness = vi.fn().mockRejectedValue(new Error("Network unavailable"));
+    const services: TradingReadinessServices = { getTradingReadiness };
+    const { result, unmount } = renderHook(() => useTradingReadinessViewModel({ initialReadiness: state, fundAccountId: "fund-1", services }));
+    try {
+      await act(async () => { await vi.advanceTimersByTimeAsync(10_000); });
+      expect(getTradingReadiness).toHaveBeenCalledOnce();
+      expect(getTradingReadiness).toHaveBeenCalledWith(expect.objectContaining({ fundAccountId: "fund-1", allowDevelopmentFallback: false }));
+      expect(result.current.errorText).toBe("Network unavailable");
+      expect(result.current.readiness?.brokerageRecovery?.portfolio?.isFresh).toBe(true);
+      await act(async () => { await vi.advanceTimersByTimeAsync(20_000); });
+      expect(result.current.readiness?.brokerageRecovery?.portfolio?.isFresh).toBe(false);
+      expect(result.current.readiness?.brokerageRecovery?.status).toBe("Blocked");
+      expect(result.current.readiness?.overallStatus).toBe("Blocked");
+      expect(result.current.readiness?.readyForLiveOperation).toBe(false);
+      expect(result.current.readiness?.liveOperationBlockers).toEqual(["existing-control-review", "brokeragePortfolio:Expired"]);
+      expect(result.current.readiness?.brokerageRecovery?.blockingReasons).toContain("Retained operator note");
+      expect(result.current.readiness?.brokerageRecovery?.portfolio?.cash).toBe(100);
+    } finally { unmount(); vi.useRealTimers(); }
+  });
+
+  it("does not overlap polling or let a repeated expired snapshot renew freshness", async () => {
+    vi.useFakeTimers();
+    const state = freshRecoveryReadiness();
+    const pending = createDeferred<TradingOperatorReadiness>();
+    const getTradingReadiness = vi.fn().mockReturnValue(pending.promise);
+    const services: TradingReadinessServices = { getTradingReadiness };
+    const { result, unmount } = renderHook(() => useTradingReadinessViewModel({ initialReadiness: state, fundAccountId: "fund-1", services }));
+    try {
+      await act(async () => { await vi.advanceTimersByTimeAsync(35_000); });
+      expect(getTradingReadiness).toHaveBeenCalledOnce();
+      expect(getTradingReadiness.mock.calls[0][0].signal.aborted).toBe(false);
+      expect(result.current.readiness?.brokerageRecovery?.portfolio?.isFresh).toBe(false);
+      await act(async () => { pending.resolve({ ...state }); await pending.promise; });
+      expect(result.current.readiness?.brokerageRecovery?.portfolio?.isFresh).toBe(false);
+      expect(result.current.readiness?.readyForLiveOperation).toBe(false);
+      unmount();
+      await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
+      expect(getTradingReadiness).toHaveBeenCalledOnce();
+    } finally { unmount(); vi.useRealTimers(); }
+  });
+
   it("normalizes readiness and brokerage status levels", () => {
     expect(formatReadinessStatusValue("ReviewRequired")).toBe("Review required");
     expect(mapReadinessStatusLevel("Ready")).toBe("ready");

@@ -11,6 +11,15 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Infrastructure
 
+Robinhood read-only synchronization logs failed HTTP status codes without endpoint URLs or response
+bodies, which can contain account identifiers or provider-returned private details.
+
+Alpaca portfolio snapshots carry explicit completeness evidence. Missing cash, equity, buying
+power, restrictions, or position fields cannot be certified as zero balances or an empty book.
+The connection epoch revokes live risk evidence after credential/environment changes and stream
+reconnects. Recovery queries the original client order identity, including terminal fills, and
+never resubmits an order.
+
 Persistence is supplied through `Core.IO.IAtomicFileWriter`, `Contracts.Etl.IEtlStagingStore`, and
 ProviderSdk `IBackfillBarWriter`. Infrastructure has no project-reference path to Storage;
 application/host composition supplies Storage implementations. See the PRD-108 inventory in
