@@ -124,6 +124,9 @@ runtime, and MSBuild properties used to produce the outputs. It does not check s
 rerun without `--no-build` after source changes or when outputs are missing or incompatible.
 The default `auto` isolation key is rejected with `--no-build` because it selects a new output
 location. Missing outputs fail the test step without falling back to a build.
+An explicit isolation key selects outputs independently of the unique `--run-id` used for evidence;
+the two names may match when that run ID has not been used before. `VSTestNoBuild` is managed by
+the runner and cannot be overridden through `--property`, so the test phase cannot compile again.
 
 After a timed-out generation, build, or test attempt, run `python build/python/cli/buildctl.py
 validation-status --summary`, then `dotnet build-server shutdown`. Stop only abandoned repo-owned
