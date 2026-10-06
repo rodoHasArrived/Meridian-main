@@ -1,6 +1,8 @@
 # Meridian
 
-Meridian is a .NET 10 operational-finance and trading-platform codebase in active delivery. It is built for financial operations teams that need to import data, validate it, reconcile it, approve decisions, retain evidence, and publish governed reports without losing the chain of proof.
+Meridian is a .NET 10 operational-finance and trading platform in active delivery. It connects source data, reconciliation, accounting, approvals, and governed reporting so financial operations teams can trace a reported number back to its evidence. Fund management is a first-class specialization within the common financial core.
+
+Start with the [seeded demo](#see-it-working-in-one-command), the [source setup guide](docs/start/README.md), or the [documentation index](docs/README.md).
 
 The core product promise is simple:
 
@@ -14,6 +16,17 @@ For an end user, Meridian is intended to reduce disconnected spreadsheets, inbox
 - Which report, ledger entry, close blocker, or operational decision depends on it?
 
 ## Get Meridian Running
+
+Run source commands from the repository root. Choose prerequisites for your task:
+
+| Task | Prerequisites |
+| --- | --- |
+| Run the tracked browser workstation or seeded demo | Git and the .NET SDK pinned by [global.json](global.json) |
+| Develop the browser workstation | Node.js 24 and npm, plus .NET for the connected backend |
+| Use Windows development helpers | PowerShell 7 |
+| Run build and documentation automation | Python 3.11 or newer; GNU Make is optional |
+
+See [Start Here](docs/start/README.md#prerequisites) for the complete setup path.
 
 Choose the [source setup path](docs/start/README.md) below, or use the
 [Windows installer guide](docs/operators/browser-workstation-installer.md) to check release
@@ -123,85 +136,66 @@ active commitment.
 
 ## Repository Map
 
-Major solution areas include:
+Use [Project Structure](docs/architecture/project-structure.md) and [Module Map](docs/architecture/module-map.md) for maintained ownership and dependency boundaries.
 
-| Area | Paths |
+| Area | Entry point |
 | --- | --- |
-| Host, application, domain, contracts, infrastructure, and storage | `src/Meridian`, `src/Meridian.Application`, `src/Meridian.Domain`, `src/Meridian.Core`, `src/Meridian.Contracts`, `src/Meridian.Infrastructure`, `src/Meridian.Storage` |
-| Bounded-context domain modules | `src/Meridian.Entities`, `src/Meridian.Identity`, `src/Meridian.Instruments`, `src/Meridian.PortfolioRecords`, `src/Meridian.ReferenceData`, `src/Meridian.DataIntegration`, `src/Meridian.Documents`, `src/Meridian.Workflow`, `src/Meridian.Platform` |
-| Providers, execution, risk, and strategies | `src/Meridian.ProviderSdk`, `src/Meridian.Execution`, `src/Meridian.Execution.Sdk`, `src/Meridian.Risk`, `src/Meridian.Strategies` |
-| Backtesting and replay | `src/Meridian.Backtesting`, `src/Meridian.Backtesting.Sdk` |
-| Accounting, financial operations, audit, and F# domain work | `src/Meridian.Ledger`, `src/Meridian.FinancialOperations`, `src/Meridian.Audit`, `src/Meridian.FSharp`, `src/Meridian.FSharp.Ledger`, `src/Meridian.FSharp.Trading`, `src/Meridian.FSharp.DirectLending.Aggregates` |
-| Reporting and analytics support | `src/Meridian.Reporting`, `src/Meridian.QuantScript` |
-| MCP tooling | `src/Meridian.Mcp` |
-| Browser workstation and shared UI/API read models | `src/Meridian.Ui/dashboard`, `src/Meridian.Ui/wwwroot/workstation`, `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared` |
-| Windows desktop workstation | `src/Meridian.Wpf` |
-| Installed workstation launch, lifecycle, and setup | `src/Meridian.Launcher`, `src/Meridian.LifecycleSupervisor`, `src/Meridian.Setup` |
+| Host and application orchestration | `src/Meridian/`, `src/Meridian.Application/` |
+| Domain, contracts, providers, and storage | [Source Documentation Mesh](docs/source/README.md) |
+| Accounting, financial operations, and audit | `src/Meridian.Ledger/`, `src/Meridian.FinancialOperations/`, `src/Meridian.Audit/` |
+| Trading, execution, risk, and backtesting | `src/Meridian.Execution/`, `src/Meridian.Risk/`, `src/Meridian.Strategies/`, `src/Meridian.Backtesting/` |
+| Browser workstation and shared services | `src/Meridian.Ui/dashboard/`, `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/` |
+| Windows workstation and installed lifecycle | `src/Meridian.Wpf/`, `src/Meridian.Launcher/`, `src/Meridian.LifecycleSupervisor/`, `src/Meridian.Setup/` |
 | Tests and benchmarks | `tests/`, `benchmarks/` |
-
-For maintained ownership and dependency boundaries, use [Project Structure](docs/architecture/project-structure.md), [Module Map](docs/architecture/module-map.md), and the generated [repository structure](docs/generated/repository-structure.md).
 
 ## Quick Commands
 
-Start with the maintained command references when in doubt:
-
-- [Start Here](docs/start/README.md)
-- [Engineering Guide](docs/engineering/README.md)
-- [Operator Guide](docs/operators/README.md)
-- [docs/HELP.md](docs/HELP.md)
-
-Direct commands:
-
-```bash
-dotnet run --project src/Meridian/Meridian.csproj -- --help
-dotnet run --project src/Meridian/Meridian.csproj -- --seed-demo
-dotnet run --project src/Meridian/Meridian.csproj -- --setup
-python build/python/cli/buildctl.py --help
-```
-
-`--mode workstation --http-port 8080` serves the host and `http://localhost:8080/workstation/`, but
-only once a persistence profile is configured — see [Running against your own
-data](#running-against-your-own-data). Unlike `--seed-demo`, it does not choose one for you.
-
-GNU Make targets are optional convenience wrappers when `make` is installed:
-
-```bash
-make help
-make bootstrap
-make verify-fast
-make verify-full
-make verify-docs
-make verify-desktop
-make verify-release
-```
+Use [Start Here](docs/start/README.md) for setup and launch profiles,
+[Engineering](docs/engineering/README.md) for build and test commands, and
+[Operator preflight](docs/operators/preflight-checklist.md) before using your own data.
+The [command help](docs/HELP.md) and [reference index](docs/reference/README.md) own detailed lookup material.
 
 ### Main CLI host - `src/Meridian`
 
-The primary runnable project supports collector, desktop-local API host, setup, self-test, backfill, provider recommendation, symbol-management, and ledger-reporting modes.
+Discover host commands directly:
 
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --help
-dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-symbols AAPL,MSFT --backfill-from 2024-01-01 --backfill-to 2024-12-31
-dotnet run --project src/Meridian/Meridian.csproj -- ledger -f ledger.dat balance
+python build/python/cli/buildctl.py --help
 ```
 
-When launched from the repository root, the local workstation/API host binds to `http://localhost:8080` by default. Config path resolution is `--config <path>` -> `MDC_CONFIG_PATH` -> `config/appsettings.json`.
+For a configured local browser host, use `--mode workstation --http-port 8080`;
+it serves `http://localhost:8080/workstation/`. Complete
+[operator preflight](docs/operators/preflight-checklist.md) first.
+Config path resolution is `--config <path>` → `MDC_CONFIG_PATH` → `config/appsettings.json`.
 
 ### Browser workstation - `src/Meridian.Ui/dashboard`
 
-The browser workstation builds static assets served from `src/Meridian.Ui/wwwroot/workstation/`.
+Install root and dashboard dependencies, then launch the coordinated development environment:
 
 ```bash
+npm ci
 npm --prefix src/Meridian.Ui/dashboard ci
-npm --prefix src/Meridian.Ui/dashboard run dev
+npm run dev
 ```
 
-Run these commands from the repository root in Bash or PowerShell. The dev server stays in the
-foreground and serves `/workstation/` on port 5173. Start the configured API host in another
-terminal; Vite proxies `/api` to `MERIDIAN_API_BASE_URL`, or `http://localhost:8080` by default.
-See [Start Here](docs/start/README.md) for host prerequisites. Use `npm --prefix
-src/Meridian.Ui/dashboard run test` or `run build` in another terminal for tests or a production
-bundle; `run preview` serves that built bundle.
+The root launcher seeds the demo backend, starts the host in watch mode, and starts Vite at
+`http://localhost:5173/workstation/`. Use `npm run dev:fixtures` for fixture-only UI work
+without a backend. See [browser development](docs/engineering/web-development.md) for
+prerequisites, modes, readiness checks, and shutdown behavior.
+
+For Vite alone, use `npm --prefix src/Meridian.Ui/dashboard run dev` and start a configured
+API host separately. Vite proxies `/api` to `MERIDIAN_API_BASE_URL`, or
+`http://localhost:8080` by default.
+
+When dashboard source changes, regenerate and commit the tracked bundle:
+
+```bash
+npm --prefix src/Meridian.Ui/dashboard run build
+```
+
+CI checks that `src/Meridian.Ui/wwwroot/workstation/` matches the dashboard source.
+See [Start Here](docs/start/README.md#the-workstation-bundle-the-demo-serves) for the bundle contract.
 
 ### MCP server
 
@@ -226,25 +220,25 @@ pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly
 
 ## Validation Lanes
 
-Run `bash scripts/ci.sh` for the canonical repository gate before completing PR work. Required
-GitHub Actions checks remain the merge authority. The optional Make wrappers below support
-focused local work; see [Engineering](docs/engineering/README.md#buildtestrun) for their scope.
+Use the smallest lane that covers your change during development:
 
-| Lane | Use when | Command |
-| --- | --- | --- |
-| `bootstrap` | Setting up or repairing a local development environment. | `make bootstrap` |
-| `verify-fast` | Tight-loop validation for most code changes. | `make verify-fast` |
-| `verify-full` | Broad pre-PR validation and coverage collection. | `make verify-full` |
-| `verify-docs` | Changing docs, workflow docs, AI/TODO governance references, or lane vocabulary. | `make verify-docs` |
-| `verify-desktop` | Touching WPF desktop shell, routing, or shared contracts that need desktop confidence. | `make verify-desktop` |
-| `verify-release` | Validating publish outputs or release packaging paths. | `make verify-release` |
+| Change | Focused command |
+| --- | --- |
+| Documentation and generated-doc contracts | `bash scripts/ci.sh --lane verify-docs` |
+| Browser source and tracked bundle | `bash scripts/ci.sh --lane verify-browser` |
+| .NET source and tests | `bash scripts/ci.sh --lane verify-dotnet` |
+| Workflow and lane contracts | `bash scripts/ci.sh --lane verify-workflows` |
 
-Build safety notes:
+Before completing PR work, run the canonical repository gate:
 
-- Prefer one solution or project build at a time when multiple entrypoints share referenced projects.
-- Use `python build/python/cli/buildctl.py build --project Meridian.sln --configuration Release` for a restore-once, single-node solution build.
-- For automation or concurrent local runs, pass `--isolation-key <name>` to `buildctl.py` so outputs write under isolated `artifacts/bin/<name>/` and `artifacts/obj/<name>/` roots.
-- Keep the F# test project's transitive `xunit.v3` runtime pin aligned with `xunit.runner.visualstudio`; Linux/macOS VSTest discovery depends on the v3 JSON handshake.
+```bash
+bash scripts/ci.sh
+```
+
+Contribute through a `codex/<short-task-name>` branch and a pull request targeting `main`.
+Required GitHub Actions checks remain the merge authority.
+See [Engineering](docs/engineering/README.md#buildtestrun) for desktop and release validation,
+build isolation, and hosted validation when local tooling is unavailable.
 
 ## Planning Source Of Truth
 
