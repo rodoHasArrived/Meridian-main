@@ -314,6 +314,11 @@ lookup paths, and evidence trails those layers rely on.
 
 ## Important workflows
 
+Portfolio Records creates accounts with `IFundAccountStore.TryCreateAccountAsync`, an atomic
+insert-only operation. A duplicate account ID returns false and retains the existing record;
+account updates and reviewed legacy imports continue to use the separate upsert operation.
+Both paths retain the store's tenant ownership checks.
+
 ### Operational case history
 
 `FileOperationalCaseHistoryStore` persists Contracts-owned workflow transitions, actors, reasons,

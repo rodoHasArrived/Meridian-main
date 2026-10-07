@@ -173,6 +173,13 @@ migration access available. Production composition still rejects these nonproduc
 The migration-required refusal derives from `MeridianException`, preserving shared domain-error
 classification while the HTTP boundary continues to report the specific migration guidance.
 
+One-shot command dispatch uses the same Portfolio Records registration as runtime hosts. Configured
+fund-account PostgreSQL persistence remains authoritative for command reconciliation reads, and
+local command reads pass through the same migration gate. Account query, management, and fund-account
+ports resolve to one shared service instance.
+Command reconciliation resolves account authority when reading retained populations, keeping help
+and configuration diagnostics available even when account tenant configuration requires repair.
+
 The explicit `--fund-tenant-backfill --action preview|apply` command previews retained ownership
 across the graph, ledger books and periods, close workflows, and configured fund accounts, then
 applies only the reviewed fingerprint. `preview-resolution|resolve` separately reviews and releases

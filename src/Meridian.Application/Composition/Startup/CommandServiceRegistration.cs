@@ -10,7 +10,6 @@ using Meridian.Contracts.Domain;
 using Meridian.Domain.Reconciliation;
 using Meridian.Contracts.Operations;
 using Meridian.PortfolioRecords.Accounts;
-using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Storage;
 using Meridian.Storage.Operations;
 using Meridian.Storage.Services;
@@ -46,6 +45,10 @@ internal static class CommandServiceRegistration
         services.TryAddSingleton(configService);
         services.TryAddSingleton(configStore);
         services.TryAddSingleton(storageOptions);
+        var configuration = CompositionConfiguration.Resolve(services);
+        services.TryAddSingleton(configuration);
+        services.AddFundScopeTenantServices();
+        services.AddPortfolioRecordServices(configuration);
         services.TryAddSingleton(new CommandServicePaths(cfgPath, dataRoot));
         services.TryAddSingleton<CommandDispatchLifetimeProbe>();
         services.TryAddSingleton(sp => new SymbolManagementService(
@@ -65,20 +68,24 @@ internal static class CommandServiceRegistration
         services.AddStatementReconciliationServices(dataRoot);
         // Reconcile CLI statement imports against Meridian's own retained account records (positions +
         // cash + journal-projected ledger transactions) instead of the fail-closed empty book, matching
-        // the browser workstation graph. The file-backed fund-account and position stores read retained
-        // governance/position data under the CLI data root; a run whose FundAccountId is a Meridian
-        // fund-account GUID reconciles, while a non-GUID label or missing retained data fails closed to
-        // breaks. The ledger-transaction source projects posted journals only when this graph composes a
+        // the browser workstation graph. Account queries share its configured durable authority and
+        // local tenant-migration gate; position snapshots read retained data under the CLI data root.
+        // A run whose FundAccountId is a Meridian account GUID reconciles when authority is available;
+        // a non-GUID label, missing authority or retained data fails closed to breaks.
+        // The ledger-transaction source projects posted journals only when this graph composes a
         // durable ILedgerJournalStore (Postgres); without one it fails closed to an empty population and
         // transaction breaks keep the informational classification. Replace (not TryAdd) so this wins
         // over the empty default AddStatementReconciliationServices registers via TryAddSingleton.
         services.TryAddSingleton<IPositionSnapshotStore>(sp => new JsonlPositionSnapshotStore(
             sp.GetRequiredService<StorageOptions>(),
             NullLogger<JsonlPositionSnapshotStore>.Instance));
-        services.TryAddSingleton<IAccountQueryService>(_ => new InMemoryFundAccountService(
-            Path.Combine(dataRoot, "governance", "fund-accounts.json")));
         services.TryAddSingleton<IInternalLedgerTransactionSource, LedgerJournalInternalTransactionSource>();
-        services.Replace(ServiceDescriptor.Singleton<IInternalReconciliationPopulationProvider, RetainedInternalReconciliationPopulationProvider>());
+        services.Replace(ServiceDescriptor.Singleton<IInternalReconciliationPopulationProvider>(sp =>
+            new RetainedInternalReconciliationPopulationProvider(
+                positionSnapshots: sp.GetService<IPositionSnapshotStore>(),
+                logger: sp.GetService<Microsoft.Extensions.Logging.ILogger<RetainedInternalReconciliationPopulationProvider>>(),
+                ledgerTransactionSource: sp.GetService<IInternalLedgerTransactionSource>(),
+                accountQueryResolver: () => sp.GetService<IAccountQueryService>())));
         // Normalize cross-currency statement lines using the operator-maintained FX rate table under the
         // data root (reconciliation/fx-rates.json), matching the workstation graph, instead of the
         // identity-only default. A missing or empty table keeps cross-currency lines failing closed.

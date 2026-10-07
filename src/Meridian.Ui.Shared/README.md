@@ -2526,6 +2526,10 @@ including close readiness, balances, sync history, statements, positions, bank l
 reconciliation runs/results, resolve the owning account before returning or mutating data; write
 payloads must match the route account id so callers cannot authorize one account in the URL while
 submitting another account in the request body.
+Statement intake rejects null line collections, null rows, and line/account mismatches before
+calling the configured account service. The Portfolio Records service also validates retained batch
+lineage and custodian as-of dates before writing evidence. These validation failures and malformed
+JSON fields return HTTP 400; account scope authorization still runs first.
 Operations Continuity reconciliation bridge payloads now also populate the shared cash, position,
 trade, income, MBS factor, bank, and GL support lane summaries from provider-ledger reconciliation
 detail, retained evidence, and open break materialization. Browser, WPF, and host callers should

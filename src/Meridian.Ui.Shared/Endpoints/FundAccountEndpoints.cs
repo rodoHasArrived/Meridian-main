@@ -654,20 +654,25 @@ public static class FundAccountEndpoints
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.IngestCustodianStatementRequest);
-            if (request is null)
-                return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
-            if (request.AccountId != accountId || request.Lines.Any(line => line.AccountId != accountId))
-                return AccountRouteMismatch();
-
             try
             {
+                var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.IngestCustodianStatementRequest);
+                if (request is null)
+                    return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
+                if (request.AccountId != accountId || request.Lines is null
+                    || request.Lines.Any(line => line is null || line.AccountId != accountId))
+                    return AccountRouteMismatch();
+
                 var result = await service.IngestCustodianStatementAsync(request, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
             }
             catch (AccountStatusPolicyException ex)
             {
                 return StatusPolicyConflict(ex);
+            }
+            catch (Exception ex) when (ex is ArgumentException or JsonException)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
         })
         .WithName("IngestCustodianStatement").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
@@ -708,20 +713,25 @@ public static class FundAccountEndpoints
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.IngestBankStatementRequest);
-            if (request is null)
-                return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
-            if (request.AccountId != accountId || request.Lines.Any(line => line.AccountId != accountId))
-                return AccountRouteMismatch();
-
             try
             {
+                var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.IngestBankStatementRequest);
+                if (request is null)
+                    return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
+                if (request.AccountId != accountId || request.Lines is null
+                    || request.Lines.Any(line => line is null || line.AccountId != accountId))
+                    return AccountRouteMismatch();
+
                 var result = await service.IngestBankStatementAsync(request, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
             }
             catch (AccountStatusPolicyException ex)
             {
                 return StatusPolicyConflict(ex);
+            }
+            catch (Exception ex) when (ex is ArgumentException or JsonException)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
         })
         .WithName("IngestBankStatement").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
