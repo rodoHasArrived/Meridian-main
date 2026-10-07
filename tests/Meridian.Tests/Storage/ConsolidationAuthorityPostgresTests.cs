@@ -21,6 +21,32 @@ namespace Meridian.Tests.Storage;
 public sealed class ConsolidationAuthorityPostgresTests
 {
     [LedgerDatabaseFact]
+    public async Task DirectAppend_RequiresCanonicalRuleLineage()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+        var ct = timeout.Token;
+        await using var fixture = await AuthorityFixture.CreateAsync(ct);
+        LedgerJournalEntryWrite[] invalidWrites =
+        [
+            fixture.Write with { RuleId = null },
+            fixture.Write with { RuleId = "manual-journal-entry" },
+            fixture.Write with { RuleVersion = null },
+            fixture.Write with { RuleVersion = "unreviewed-version" }
+        ];
+        foreach (var invalid in invalidWrites)
+        {
+            var append = () => fixture.Store.AppendAsync(invalid, ct);
+            await append.Should().ThrowAsync<LedgerValidationException>().WithMessage("*posting rule lineage*");
+        }
+        await fixture.AssertNoEliminationAsync(ct);
+
+        await fixture.Store.AppendAsync(fixture.Write, ct);
+        var retained = (await fixture.Database.JournalStore.GetByPeriodAsync(fixture.Period.PeriodId, ct)).Single();
+        retained.RuleId.Should().Be(ConsolidationService.RuleId);
+        retained.RuleVersion.Should().Be(ConsolidationService.RuleVersion);
+    }
+
+    [LedgerDatabaseFact]
     public async Task DirectCorrectionAppend_RequiresAdjustmentClassificationAndRetainsApprovedLineage()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));

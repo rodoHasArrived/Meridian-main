@@ -20,6 +20,65 @@ public sealed class ConsolidationPostingGuardTests
     }
 
     [Theory]
+    [InlineData("rule-id", null)]
+    [InlineData("rule-id", "manual-journal-entry")]
+    [InlineData("rule-version", null)]
+    [InlineData("rule-version", "unreviewed-version")]
+    public void ReviewedElimination_RequiresCanonicalRuleLineage(string field, string? value)
+    {
+        var write = ConsolidationStorageFixture.ReviewedWrite();
+        write = field == "rule-id" ? write with { RuleId = value } : write with { RuleVersion = value };
+        var validate = () => AccountingPostingCommandValidator.NormalizeAndValidate(write);
+        validate.Should().Throw<LedgerValidationException>().WithMessage("*posting rule lineage*");
+    }
+
+    [Fact]
+    public void ReviewedElimination_RejectsUnsupportedEvidenceRuleVersion()
+    {
+        var write = ConsolidationStorageFixture.ReviewedWrite();
+        write = ConsolidationStorageFixture.WithEvidence(write,
+            ConsolidationStorageFixture.ReadEvidence(write) with { RuleVersion = "unreviewed-version" });
+        write = write with { RuleVersion = "unreviewed-version" };
+        var validate = () => AccountingPostingCommandValidator.NormalizeAndValidate(write);
+        validate.Should().Throw<LedgerValidationException>().WithMessage("*posting rule lineage*");
+    }
+
+    [Theory]
+    [InlineData("manual-journal-entry", "w10-v1")]
+    [InlineData("consolidation.receivable-payable", "unreviewed-version")]
+    public void ReviewedElimination_RejectsContradictoryCommandRuleSelection(string ruleId, string ruleVersion)
+    {
+        var write = ConsolidationStorageFixture.ReviewedWrite();
+        write = write with
+        {
+            PostingCommand = write.PostingCommand! with
+            {
+                RulePackReference = new("consolidation-v1", "w10-v1", ruleId, ruleVersion)
+            }
+        };
+        var validate = () => AccountingPostingCommandValidator.NormalizeAndValidate(write);
+        validate.Should().Throw<LedgerValidationException>().WithMessage("*posting rule lineage*");
+    }
+
+    [Fact]
+    public void ReviewedElimination_AcceptsMatchingCommandRuleSelection()
+    {
+        var write = ConsolidationStorageFixture.ReviewedWrite();
+        write = write with
+        {
+            PostingCommand = write.PostingCommand! with
+            {
+                RulePackReference = new("consolidation-v1", "w10-v1", write.RuleId, write.RuleVersion)
+            }
+        };
+        var normalized = AccountingPostingCommandValidator.NormalizeAndValidate(write);
+        normalized.RuleId.Should().Be(write.RuleId);
+        normalized.RuleVersion.Should().Be(write.RuleVersion);
+        normalized.Entry.Metadata.Tags!["selectedRuleId"].Should().Be(write.RuleId);
+        normalized.Entry.Metadata.Tags["selectedRuleVersion"].Should().Be(write.RuleVersion);
+    }
+
+    [Theory]
     [InlineData(AccountingPostingApprovalStateDto.Pending)]
     [InlineData(AccountingPostingApprovalStateDto.NotRequired)]
     [InlineData(AccountingPostingApprovalStateDto.Rejected)]
@@ -219,7 +278,7 @@ internal static class ConsolidationStorageFixture
     internal static ConsolidationEvidenceDto Evidence(LedgerBookRecord book, LedgerAccountingPeriod period,
         IReadOnlyList<ConsolidationBookVersionDto> versions) => new(
             new(Guid.NewGuid(), Guid.NewGuid(), book.LedgerBookId, period.PeriodId, AsOf),
-            "fixture-scope", "reviewed-source", versions, "reviewed-perimeter", "v1", [],
+            "fixture-scope", "reviewed-source", versions, "reviewed-perimeter", "w10-v1", [],
             [new("payable", AccountingTemplateLineSideDto.Debit, 100m, "USD", "Liabilities:Intercompany Payable"),
              new("receivable", AccountingTemplateLineSideDto.Credit, 100m, "USD", "Assets:Intercompany Receivable")]);
 
@@ -239,7 +298,13 @@ internal static class ConsolidationStorageFixture
                 ["consolidation.digest"] = Sha256Digest.ComputeUtf8(json)
             }
         };
-        return write with { Entry = WithMetadata(write.Entry, metadata), PostingCommand = write.PostingCommand! with { IdempotencyKey = key } };
+        return write with
+        {
+            Entry = WithMetadata(write.Entry, metadata),
+            PostingCommand = write.PostingCommand! with { IdempotencyKey = key },
+            RuleId = "consolidation.receivable-payable",
+            RuleVersion = "w10-v1"
+        };
     }
 
     internal static JournalEntry WithMetadata(JournalEntry entry, JournalEntryMetadata metadata) =>

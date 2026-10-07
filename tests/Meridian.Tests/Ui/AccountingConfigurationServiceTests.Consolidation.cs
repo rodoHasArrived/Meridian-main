@@ -183,7 +183,7 @@ public sealed partial class AccountingConfigurationServiceTests
                 new ConsolidationBookVersionDto(ManualJournalLedgerBookId, 0, 0),
                 new ConsolidationBookVersionDto(Guid.NewGuid(), 1, 1),
                 new ConsolidationBookVersionDto(Guid.NewGuid(), 2, 1)],
-            "perimeter-version", "v1", [], draft.Lines);
+            "perimeter-version", ConsolidationService.RuleVersion, [], draft.Lines);
         var json = JsonSerializer.Serialize(evidence, new JsonSerializerOptions(JsonSerializerDefaults.Web));
         return draft with
         {

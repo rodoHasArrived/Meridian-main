@@ -143,6 +143,15 @@ internal static class ConsolidationPostingEvidenceGuard
             || string.IsNullOrWhiteSpace(evidence.PerimeterFingerprint) || string.IsNullOrWhiteSpace(evidence.RuleVersion))
             throw new LedgerValidationException("Consolidation reviewed evidence must match the posting book, period and effective date.");
 
+        if (!string.Equals(write.RuleId, "consolidation.receivable-payable", StringComparison.Ordinal)
+            || !string.Equals(evidence.RuleVersion, "w10-v1", StringComparison.Ordinal)
+            || !string.Equals(write.RuleVersion, evidence.RuleVersion, StringComparison.Ordinal)
+            || (command.RulePackReference?.SelectedRuleId is { } selectedRuleId
+                && !string.Equals(selectedRuleId, write.RuleId, StringComparison.Ordinal))
+            || (command.RulePackReference?.SelectedRuleVersion is { } selectedRuleVersion
+                && !string.Equals(selectedRuleVersion, evidence.RuleVersion, StringComparison.Ordinal)))
+            throw new LedgerValidationException("Consolidation posting rule lineage must match the reviewed receivable/payable rule w10-v1.");
+
         if (evidence.BookVersions is not { Count: 3 }
             || evidence.BookVersions.Any(item => item is null || item.LedgerBookId == Guid.Empty
                 || item.JournalCount < 0 || item.MaxSequence < 0 || (item.JournalCount == 0) != (item.MaxSequence == 0))
