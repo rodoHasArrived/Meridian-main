@@ -4181,6 +4181,7 @@ Meridian-main
 │   │   │   ├── LedgerBookDtos.cs
 │   │   │   ├── LedgerCurrencyRounding.cs
 │   │   │   ├── LedgerDimensionTags.cs
+│   │   │   ├── LedgerDisposalTaxDtos.cs
 │   │   │   ├── LedgerToleranceConstants.cs
 │   │   │   └── PrivateCapitalActivityRoutes.cs
 │   │   ├── Lifecycle
@@ -6770,6 +6771,8 @@ Meridian-main
 │   │   │   │   │   ├── ledger-amount-proof-api.test.ts
 │   │   │   │   │   ├── ledger-amount-proof-api.ts
 │   │   │   │   │   ├── ledger-reports-api.ts
+│   │   │   │   │   ├── ledger-tax-results-api.test.ts
+│   │   │   │   │   ├── ledger-tax-results-api.ts
 │   │   │   │   │   ├── mark-freshness.ts
 │   │   │   │   │   ├── onboarding.ts
 │   │   │   │   │   ├── plaid-link.ts
@@ -7024,6 +7027,8 @@ Meridian-main
 │   │   │   │   │   ├── journal-entry-detail-screen.test.tsx
 │   │   │   │   │   ├── journal-entry-detail-screen.tsx
 │   │   │   │   │   ├── journal-entry-detail-screen.view-model.ts
+│   │   │   │   │   ├── journal-entry-tax-results.test.tsx
+│   │   │   │   │   ├── journal-entry-tax-results.tsx
 │   │   │   │   │   ├── live-quotes-screen.quick-trade.ts
 │   │   │   │   │   ├── live-quotes-screen.test.tsx
 │   │   │   │   │   ├── live-quotes-screen.tsx
@@ -7236,6 +7241,7 @@ Meridian-main
 │   │   │   │   │   ├── instrument-accounting.ts
 │   │   │   │   │   ├── jest-axe.d.ts
 │   │   │   │   │   ├── ledger-amount-proof.ts
+│   │   │   │   │   ├── ledger-tax-results.ts
 │   │   │   │   │   ├── lifecycle.ts
 │   │   │   │   │   ├── mark-freshness.ts
 │   │   │   │   │   ├── market-data.ts
@@ -7523,6 +7529,7 @@ Meridian-main
 │   │   │   ├── LedgerEndpoints.OpenLotBackfill.cs
 │   │   │   ├── LedgerEndpoints.RecurringJournals.cs
 │   │   │   ├── LedgerEndpoints.Reporting.cs
+│   │   │   ├── LedgerEndpoints.Tax.cs
 │   │   │   ├── LiveDataEndpoints.cs
 │   │   │   ├── LoginSessionMiddleware.cs
 │   │   │   ├── MaintenanceScheduleEndpoints.cs
@@ -7744,6 +7751,7 @@ Meridian-main
 │   │   │   ├── LedgerBookOrdering.cs
 │   │   │   ├── LedgerClientReportExportService.cs
 │   │   │   ├── LedgerDimensionMapper.cs
+│   │   │   ├── LedgerDisposalTaxReadService.cs
 │   │   │   ├── LedgerMarkToMarketCarryingValueSource.cs
 │   │   │   ├── LedgerReportingAuthoritativeSource.cs
 │   │   │   ├── LiveBrokeragePortfolioSyncService.cs
@@ -10494,6 +10502,7 @@ Meridian-main
 │   │   │   ├── AtomicTaxLotJournalStoreTests.CurrentBasis.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.HistoricalQuantity.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.ProceedsAllocation.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.TaxResultHistory.cs
 │   │   │   ├── AuditChainProcessTests.cs
 │   │   │   ├── AuditChainServiceTests.cs
 │   │   │   ├── CanonicalOpenLotConsumerTests.cs
@@ -10747,6 +10756,8 @@ Meridian-main
 │   │   │   ├── LedgerAmountProvenanceEndpointTests.cs
 │   │   │   ├── LedgerAmountProvenanceServiceTests.cs
 │   │   │   ├── LedgerAndCompliancePermissionSplitTests.cs
+│   │   │   ├── LedgerDisposalTaxEndpointTests.cs
+│   │   │   ├── LedgerDisposalTaxReadServiceTests.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceTests.cs
 │   │   │   ├── LegacyReportingRouteRetirementEndpointTests.cs
 │   │   │   ├── LiveBrokeragePortfolioSyncServiceTests.cs

@@ -6,10 +6,16 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-06
 ---
 
 # src/Meridian.Storage
+
+Tax-lot disposal history now returns the atomic batch's exact `PolicyRevision` and `RecordedAt`,
+and restores each deferral's retained policy ID, replacement window and scope. These reads do not
+consult mutable standing policy rows. A recording timestamp is not evaluation coverage; activation
+dates and parcel deferral allocations absent from durable history remain unavailable. No schema or
+posting behavior changes are introduced by this W10-TAX-001 inspection slice.
 
 Atomic file-write diagnostics retain operation outcomes, byte counts, OS error numbers and exception
 types. Paths, file contents, checksum values and exception messages are omitted because they can

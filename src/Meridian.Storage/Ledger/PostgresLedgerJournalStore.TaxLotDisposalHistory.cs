@@ -11,6 +11,9 @@ namespace Meridian.Storage.Ledger;
 /// than in tax-lot storage: the sale's effective date and the gain or loss actually booked. The
 /// caller supplies those from the journal entries it already holds, which keeps the rebuilt rows
 /// tied to the same journals a report pack was certified over.
+/// <see cref="PolicyRevision"/> is the exact revision recorded on the batch, never today's
+/// account policy. <see cref="RecordedAt"/> is the atomic retention time, not proof that a later
+/// replacement window was re-evaluated or finalized.
 /// </summary>
 public sealed record LedgerTaxLotDisposalHistoryRecord(
     Guid MutationBatchId,
@@ -25,7 +28,11 @@ public sealed record LedgerTaxLotDisposalHistoryRecord(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     int? ProceedsAllocationVersion = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    decimal? SalePrice = null);
+    decimal? SalePrice = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? PolicyRevision = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    DateTimeOffset? RecordedAt = null);
 
 /// <summary>
 /// Reads retained tax-lot disposal history so realized-gain reporting can be rebuilt from the
@@ -96,7 +103,9 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
                     batch.Value.CanonicalLots,
                     poolByBatch.GetValueOrDefault(batch.Key),
                     batch.Value.ProceedsAllocationVersion,
-                    batch.Value.SalePrice);
+                    batch.Value.SalePrice,
+                    batch.Value.PolicyRevision,
+                    batch.Value.RecordedAt);
             })
             .OrderBy(static record => record.MutationBatchId)
             .ToArray();
@@ -136,7 +145,9 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
                    lot.booked_factor,
                    lot.par_basis,
                    batch.proceeds_allocation_version,
-                   batch.disposal_sale_price
+                   batch.disposal_sale_price,
+                   batch.policy_revision,
+                   batch.created_at
             from {Qualified("tax_lot_mutations")} mutation
             join {Qualified("atomic_tax_lot_posting_batches")} batch
               on batch.mutation_batch_id = mutation.mutation_batch_id
@@ -212,7 +223,9 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
                 new List<LedgerTaxLotDisposalHistoryLot> { lot },
                 new List<OpenLotDto> { canonical },
                 reader.IsDBNull(21) ? null : reader.GetInt32(21),
-                reader.IsDBNull(22) ? null : reader.GetDecimal(22));
+                reader.IsDBNull(22) ? null : reader.GetDecimal(22),
+                reader.IsDBNull(23) ? null : reader.GetString(23),
+                ReadUtcDateTimeOffset(reader, 24));
         }
 
         return batches;
@@ -282,7 +295,10 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
                    replacement_lot_id,
                    disallowed_amount,
                    matched_quantity,
-                   holding_period_carry_date
+                   holding_period_carry_date,
+                   policy_id,
+                   window_days,
+                   scope
             from {Qualified("wash_sale_deferrals")}
             where ledger_book_id = @ledger_book_id
               and disposal_mutation_batch_id = any(@batch_ids)
@@ -299,7 +315,17 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
             var increase = new WashSaleBasisIncrease(
                 reader.GetString(1),
                 reader.GetDecimal(2),
-                DateOnly.FromDateTime(reader.GetDateTime(4)));
+                DateOnly.FromDateTime(reader.GetDateTime(4)))
+            {
+                // The deferral proves that this revision governed this disposal. Its retained
+                // window and scope are authoritative; the mutable current policy is not. The
+                // activation date was not retained and must not be recovered from today's row.
+                AppliedPolicy = new WashSalePolicy(true, reader.GetInt32(6),
+                    Enum.Parse<WashSaleReplacementScope>(reader.GetString(7), ignoreCase: true))
+                {
+                    PolicyId = reader.GetString(5)
+                }
+            };
 
             if (byBatch.TryGetValue(batchId, out var existing))
             {
@@ -324,5 +350,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
         List<LedgerTaxLotDisposalHistoryLot> Lots,
         List<OpenLotDto> CanonicalLots,
         int? ProceedsAllocationVersion,
-        decimal? SalePrice);
+        decimal? SalePrice,
+        string? PolicyRevision,
+        DateTimeOffset RecordedAt);
 }

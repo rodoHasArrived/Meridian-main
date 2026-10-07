@@ -6,10 +6,16 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-06
 ---
 
 # src/Meridian.Contracts
+
+`Ledger/LedgerDisposalTaxDtos.cs` defines shared, server-derived disposal and parcel tax results for
+the journal tax-results read route. It separates economic/recognized gain and deferred loss, exposes
+effective holding starts and exact retained policy revisions, and distinguishes settled, provisional,
+and missing-evidence states. Nullable amounts represent unavailable evidence rather than zero;
+`EvaluatedAt` is read time and `ReEvaluationRequired` does not claim tax finalization occurred.
 
 `Ledger/AccountingClosePreparationDtos.cs` describes immutable close template versions, explicit
 calendar deadline rules, owner mappings, authoritative target previews, and retained creation history.

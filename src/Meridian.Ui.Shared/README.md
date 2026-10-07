@@ -6,10 +6,27 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-05
+last_reviewed: 2026-10-06
 ---
 
 # src/Meridian.Ui.Shared
+
+`LedgerDisposalTaxReadService` serves the bounded W10-TAX-001 retained-disposal slice through
+`GET /api/ledger/periods/{periodId}/journal-entries/{journalEntryId}/tax-results`. The existing
+journal-detail browser surface consumes the same shared contract available to other clients.
+The service certifies economics and holding-period character with `CanonicalDisposalHistoryProjector`,
+keeps economic gain, recognized gain and deferred loss separate, and exposes the exact retained
+batch policy revision. It never substitutes the current mutable account policy or rematches purchases
+on a read. Missing canonical/policy evidence stays explicit; a partial deferral without attribution
+across multiple loss parcels leaves their recognized amounts null while preserving certified disposal
+totals. Single-loss and fully deferred parcels have unambiguous attribution.
+
+Settled means no relieved parcel has a loss, or retained matching saturates both loss quantity and
+amount. A known, unsaturated replacement window is provisional through its inclusive end date and
+remains provisional afterwards with re-evaluation required. Neither read time nor batch recording
+time proves finalization. Refresh only reads newly retained evidence. Historical loss rows without
+retained wash-sale settings remain missing-evidence; this slice adds no finalization workflow,
+policy changes, pending-disposal comparison, or WPF surface and does not complete W10-TAX-001.
 
 Accounting close preparation exposes scoped template capture, retained template versions, preview,
 and creation under `/api/ledger/close-management`. Each request authorizes the source workflow;

@@ -681,6 +681,7 @@ export const UI_API_ROUTES = {
   LedgerPeriods: "/api/ledger/periods",
   LedgerPeriodClose: "/api/ledger/periods/{periodId:guid}/close",
   LedgerPeriodJournalEntries: "/api/ledger/periods/{periodId:guid}/journal-entries",
+  LedgerJournalEntryTaxResults: "/api/ledger/periods/{periodId:guid}/journal-entries/{journalEntryId:guid}/tax-results",
   LedgerPeriodTrialBalance: "/api/ledger/periods/{periodId:guid}/trial-balance",
   LedgerPeriodTrialBalanceReport: "/api/ledger/periods/{periodId:guid}/trial-balance-report",
   LedgerPeriodPnlSummary: "/api/ledger/periods/{periodId:guid}/pnl-summary",

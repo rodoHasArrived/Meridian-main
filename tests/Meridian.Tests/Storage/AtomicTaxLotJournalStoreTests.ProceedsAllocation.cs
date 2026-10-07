@@ -98,13 +98,15 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             await database.JournalStore.SaveWashSaleDeferralsAsync([new(Guid.NewGuid(), command.LedgerBookId,
                 command.MutationBatchId, TestSecurityId, new(2026, 5, 12), lots[0].Account,
                 replacement.TaxLotRecordId, replacement.LotId, 20m, 1m, lots[0].AcquiredDate,
-                "wash-sale-policy", 30, WashSaleReplacementScope.LedgerBook, timestamp)]);
+                "wash-sale-policy", 17, WashSaleReplacementScope.LedgerBook, timestamp)]);
 
             var reopened = new PostgresLedgerJournalStore(database.Options);
             var history = (await reopened.GetTaxLotDisposalHistoryAsync(command.LedgerBookId,
                 [command.Journal.Entry.JournalEntryId])).Single();
             history.ProceedsAllocationVersion.Should().Be(LedgerTaxLotReliefProjector.CurrentProceedsAllocationVersion);
             history.SalePrice.Should().Be(explicitPrice ? 80m : null);
+            history.PolicyRevision.Should().Be("tax-policy-v1");
+            history.RecordedAt.Should().Be(posted.Mutations[0].RecordedAt);
             var rebuilt = CanonicalDisposalHistoryProjector.Project(history, posted.Journal.Entry,
                 command.LedgerBookId, "USD");
             rebuilt.Proceeds.Should().Be(80m);
@@ -115,6 +117,11 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             var increase = rebuilt.WashSale!.BasisIncreases.Should().ContainSingle().Which;
             increase.ReplacementLotId.Should().Be(replacement.LotId);
             increase.Amount.Should().Be(20m);
+            increase.AppliedPolicy.Should().Be(new WashSalePolicy(true, 17, WashSaleReplacementScope.LedgerBook)
+            {
+                PolicyId = "wash-sale-policy"
+            });
+            increase.AppliedPolicy!.EffectiveDate.Should().BeNull("the deferral did not retain an activation date");
         }
     }
 
