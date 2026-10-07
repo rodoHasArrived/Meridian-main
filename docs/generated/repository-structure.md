@@ -1750,6 +1750,7 @@ Meridian-main
 │   │   ├── brokerage-account-snapshot.md
 │   │   ├── corporate-action-case.md
 │   │   ├── fund-event.md
+│   │   ├── intercompany-consolidation.md
 │   │   ├── operational-evidence-graph.md
 │   │   ├── README.md
 │   │   ├── recurring-journal.md
@@ -1828,6 +1829,7 @@ Meridian-main
 │   │   │   │   ├── ledger-contracts-page-02.md
 │   │   │   │   ├── ledger-contracts-page-03.md
 │   │   │   │   ├── ledger-contracts-page-04.md
+│   │   │   │   ├── ledger-contracts-page-05.md
 │   │   │   │   ├── ledger-contracts.md
 │   │   │   │   ├── money-market-contracts.md
 │   │   │   │   ├── reporting-contracts.md
@@ -1851,6 +1853,7 @@ Meridian-main
 │   │   │   │   ├── contracts-ledger-contracts-page-02.mmd
 │   │   │   │   ├── contracts-ledger-contracts-page-03.mmd
 │   │   │   │   ├── contracts-ledger-contracts-page-04.mmd
+│   │   │   │   ├── contracts-ledger-contracts-page-05.mmd
 │   │   │   │   ├── contracts-money-market-contracts.mmd
 │   │   │   │   ├── contracts-reporting-contracts.mmd
 │   │   │   │   ├── contracts-security-master-contracts-page-01.mmd
@@ -4186,6 +4189,7 @@ Meridian-main
 │   │   │   ├── AccountingConfigurationPrivateCapitalDtos.cs
 │   │   │   ├── AccountingPostingCommandDtos.cs
 │   │   │   ├── AutomatedJournalEvidenceDtos.cs
+│   │   │   ├── ConsolidationDtos.cs
 │   │   │   ├── CurrencyMinorUnits.cs
 │   │   │   ├── LedgerBookDtos.cs
 │   │   │   ├── LedgerCurrencyRounding.cs
@@ -4778,6 +4782,10 @@ Meridian-main
 │   │   │   ├── InMemoryBankingService.cs
 │   │   │   ├── PaymentBankEvidenceFactory.cs
 │   │   │   └── PostgresBankingService.cs
+│   │   ├── Consolidation
+│   │   │   ├── ConsolidationPerimeterResolver.cs
+│   │   │   ├── ConsolidationService.cs
+│   │   │   └── PostgresConsolidationPostingAuthority.cs
 │   │   ├── FundAdministration
 │   │   │   ├── FileRecurringJournalStore.cs
 │   │   │   ├── FundAdministrationControlService.cs
@@ -5865,6 +5873,7 @@ Meridian-main
 │   │   │   ├── IFundStructureTenantBackfillStore.cs
 │   │   │   ├── InMemoryFundStructureStateStore.cs
 │   │   │   ├── JsonFileFundStructureStateStore.cs
+│   │   │   ├── PostgresFundStructureStore.Consolidation.cs
 │   │   │   ├── PostgresFundStructureStore.cs
 │   │   │   └── PostgresFundStructureTenantBackfillStore.cs
 │   │   ├── Integrations
@@ -5931,6 +5940,7 @@ Meridian-main
 │   │   │   ├── DurableAutomatedJournalPoster.cs
 │   │   │   ├── GovernedLedgerPostingTarget.cs
 │   │   │   ├── HistoricalTaxLotQuantity.cs
+│   │   │   ├── IConsolidationPostingAuthority.cs
 │   │   │   ├── ILedgerJournalStore.cs
 │   │   │   ├── LedgerBookServiceException.cs
 │   │   │   ├── LedgerCurrencyBackfill.cs
@@ -5951,6 +5961,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.AtomicTaxLots.cs
 │   │   │   ├── PostgresLedgerJournalStore.Audit.cs
 │   │   │   ├── PostgresLedgerJournalStore.AverageCostRelief.cs
+│   │   │   ├── PostgresLedgerJournalStore.Consolidation.cs
 │   │   │   ├── PostgresLedgerJournalStore.CorporateAction.cs
 │   │   │   ├── PostgresLedgerJournalStore.cs
 │   │   │   ├── PostgresLedgerJournalStore.DiscreteLotRelief.cs
@@ -6771,6 +6782,8 @@ Meridian-main
 │   │   │   │   │   ├── api.risk-escalations.ts
 │   │   │   │   │   ├── api.trading.test.ts
 │   │   │   │   │   ├── api.ts
+│   │   │   │   │   ├── consolidation-api.test.ts
+│   │   │   │   │   ├── consolidation-api.ts
 │   │   │   │   │   ├── csv.test.ts
 │   │   │   │   │   ├── csv.ts
 │   │   │   │   │   ├── daily-control-tower.test.ts
@@ -6900,6 +6913,9 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.configure-panel.tsx
 │   │   │   │   │   ├── accounting-screen.configure-panel.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.configure-panel.view-model.ts
+│   │   │   │   │   ├── accounting-screen.consolidation-panel.test.tsx
+│   │   │   │   │   ├── accounting-screen.consolidation-panel.tsx
+│   │   │   │   │   ├── accounting-screen.consolidation-results.tsx
 │   │   │   │   │   ├── accounting-screen.corporate-action-formatting.ts
 │   │   │   │   │   ├── accounting-screen.corporate-actions-panel.tsx
 │   │   │   │   │   ├── accounting-screen.evidence-timeline.ts
@@ -7249,6 +7265,7 @@ Meridian-main
 │   │   │   │   │   ├── brokerage-recovery.ts
 │   │   │   │   │   ├── canonical-symbol.ts
 │   │   │   │   │   ├── close-preparation.ts
+│   │   │   │   │   ├── consolidation.ts
 │   │   │   │   │   ├── covered-call.types.ts
 │   │   │   │   │   ├── data-operations-assurance.ts
 │   │   │   │   │   ├── data-quality-watch.types.ts
@@ -7541,6 +7558,7 @@ Meridian-main
 │   │   │   ├── LedgerEndpoints.AccountingConfiguration.cs
 │   │   │   ├── LedgerEndpoints.CloseExecution.cs
 │   │   │   ├── LedgerEndpoints.ClosePreparation.cs
+│   │   │   ├── LedgerEndpoints.Consolidation.cs
 │   │   │   ├── LedgerEndpoints.cs
 │   │   │   ├── LedgerEndpoints.Dimensions.cs
 │   │   │   ├── LedgerEndpoints.JournalAutomation.cs
@@ -7728,6 +7746,8 @@ Meridian-main
 │   │   │   ├── CloseReadinessSubjectSource.cs
 │   │   │   ├── CollateralExposureService.cs
 │   │   │   ├── ConfigStore.cs
+│   │   │   ├── ConsolidationChartValidation.cs
+│   │   │   ├── ConsolidationWorkbenchService.cs
 │   │   │   ├── CrossProcessFileLock.cs
 │   │   │   ├── DailyValuationBatchLifecycleService.cs
 │   │   │   ├── DailyValuationPositionService.cs
@@ -7776,6 +7796,7 @@ Meridian-main
 │   │   │   ├── LiveBrokeragePortfolioSyncService.cs
 │   │   │   ├── ManualJournalEntryDraftStores.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.AccountingCloseReceipts.cs
+│   │   │   ├── ManualJournalEntryWorkbenchService.Consolidation.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.Lifecycle.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.MutationRecovery.cs
@@ -9520,6 +9541,7 @@ Meridian-main
 │   │   │   │   │   └── SharedStartupBootstrapperTests.cs
 │   │   │   │   ├── BackfillFeatureRegistrationTests.cs
 │   │   │   │   ├── CanonicalLotAmortizationCompositionTests.cs
+│   │   │   │   ├── ConsolidationPostingAuthorityCompositionTests.cs
 │   │   │   │   ├── DiagnosticsFeatureRegistrationTests.cs
 │   │   │   │   ├── DirectLendingStartupTests.cs
 │   │   │   │   ├── HostStartupLifecycleTests.cs
@@ -9945,11 +9967,22 @@ Meridian-main
 │   │   │   ├── Banking
 │   │   │   │   ├── BankTransactionSeedTests.cs
 │   │   │   │   └── PaymentApprovalTests.cs
+│   │   │   ├── Consolidation
+│   │   │   │   ├── ConsolidationPerimeterResolverTests.cs
+│   │   │   │   ├── ConsolidationServiceTests.cs
+│   │   │   │   ├── ConsolidationServiceTests.EndpointCapabilities.cs
+│   │   │   │   ├── ConsolidationServiceTests.Header.cs
+│   │   │   │   ├── ConsolidationServiceTests.PolicyPeriod.cs
+│   │   │   │   ├── ConsolidationServiceTests.Workbench.cs
+│   │   │   │   ├── ConsolidationServiceTests.WorkbenchChart.cs
+│   │   │   │   └── ConsolidationServiceTests.WorkbenchRepair.cs
 │   │   │   ├── Ledger
 │   │   │   │   ├── AccountingBasisProjectionSetServiceTests.cs
 │   │   │   │   ├── AccountingJournalDraftServiceTests.cs
+│   │   │   │   ├── AccountingPolicyAuthorityLeaseTests.cs
 │   │   │   │   ├── AccountingPolicyClockTests.cs
 │   │   │   │   ├── AccountingPolicyServiceTests.cs
+│   │   │   │   ├── AccountingPolicyVersionBindingTests.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.ActorAttribution.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.HistoricalLots.cs
@@ -10535,6 +10568,10 @@ Meridian-main
 │   │   │   ├── CanonicalOpenLotConsumerTests.cs
 │   │   │   ├── CanonicalSymbolRegistryTests.cs
 │   │   │   ├── CompositeSinkTests.cs
+│   │   │   ├── ConsolidationAuthorityPostgresTests.cs
+│   │   │   ├── ConsolidationPostingGuardTests.cs
+│   │   │   ├── ConsolidationPostingLineageTests.cs
+│   │   │   ├── ConsolidationSourcesPostgresTests.cs
 │   │   │   ├── DataLineageServiceTests.cs
 │   │   │   ├── DataQualityScoringServiceTests.cs
 │   │   │   ├── DataReplacementCostEstimatorTests.cs
@@ -10710,6 +10747,8 @@ Meridian-main
 │   │   │   │   ├── StreamConnectionRegistryTests.cs
 │   │   │   │   └── StreamTopicTests.cs
 │   │   │   ├── AccountingAuditAtomicityTests.cs
+│   │   │   ├── AccountingConfigurationServiceTests.Consolidation.cs
+│   │   │   ├── AccountingConfigurationServiceTests.ConsolidationChartRecovery.cs
 │   │   │   ├── AccountingConfigurationServiceTests.cs
 │   │   │   ├── AccountingConfigurationServiceTests.ManualAuditRecovery.cs
 │   │   │   ├── AccountingConfigurationServiceTests.ManualRecoveryArchive.cs

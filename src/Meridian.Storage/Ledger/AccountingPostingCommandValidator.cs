@@ -24,6 +24,8 @@ public static class AccountingPostingCommandValidator
         ArgumentNullException.ThrowIfNull(write);
         ArgumentNullException.ThrowIfNull(write.Entry);
 
+        ConsolidationPostingEvidenceGuard.Validate(write);
+
         if (string.IsNullOrWhiteSpace(write.PostingCommand?.Actor) &&
             write.Entry.Metadata.Tags?.Keys.Any(key =>
                 string.Equals(key, PostingActorTag, StringComparison.OrdinalIgnoreCase) ||

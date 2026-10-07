@@ -222,7 +222,17 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         await using var fixture = await AmortFixture.CreateAsync(premium: true);
         var command = await SuccessorCommandAsync(fixture, advanceRefunding: false);
         var bypass = () => fixture.Store.AppendAsync(command.Journal);
-        await bypass.Should().ThrowAsync<LedgerValidationException>();
+        await bypass.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*atomic predecessor/successor posting boundary*");
+        await AssertSuccessorUnchangedAsync(fixture, command);
+
+        await using var connection = new NpgsqlConnection(fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        var transactionalBypass = () => fixture.Store.AppendAsync(connection, transaction, command.Journal);
+        await transactionalBypass.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*atomic predecessor/successor posting boundary*");
+        await transaction.RollbackAsync();
         await AssertSuccessorUnchangedAsync(fixture, command);
     }
 

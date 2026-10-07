@@ -39,7 +39,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         IBankTransactionSource? bankTransactionSource = null,
         IGovernedLedgerPostingTarget? postingTarget = null,
         IManualJournalMutationRecoveryStore? mutationRecovery = null,
-        IRecurringJournalStore? recurringStore = null)
+        IRecurringJournalStore? recurringStore = null,
+        IConsolidationDraftGuard? consolidationGuard = null)
     {
         _draftStore = draftStore ?? throw new ArgumentNullException(nameof(draftStore));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
@@ -51,6 +52,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         _bankTransactionSource = bankTransactionSource;
         _mutationRecovery = mutationRecovery ?? DefaultMutationRecoveryFor(draftStore);
         _recurringStore = recurringStore;
+        _consolidationGuard = consolidationGuard;
     }
 
     public async Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default)
@@ -289,6 +291,11 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             ct,
             requestedTenantId,
             requestedCompanyId).ConfigureAwait(false);
+        if (!trustedAutomatedIntake && IsConsolidationDraft(request.Draft) &&
+            (existing is null || !IsConsolidationDraft(existing)))
+        {
+            throw new InvalidOperationException("Consolidation drafts require authoritative consolidation intake; rerun consolidation to prepare an elimination.");
+        }
         var normalizedDraft = await NormalizeAndValidateAsync(request.Draft with
         {
             TenantId = requestedTenantId,
@@ -302,7 +309,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 (existing.RequiresRecurringJournalEvidence || existing.RecurringJournalEvidenceJson is not null ||
                  RecurringJournalEvidenceGuard.IsRecurring(existing.TreasuryContext?.IdempotencyKey) ||
                  existing.RequiresValuationMarkEvidence || existing.ValuationMarkEvidenceJson is not null ||
-                 ValuationMarkEvidenceGuard.IsValuation(existing.TreasuryContext?.IdempotencyKey))
+                 ValuationMarkEvidenceGuard.IsValuation(existing.TreasuryContext?.IdempotencyKey) ||
+                 IsConsolidationDraft(existing))
                 ? (request.Draft.TreasuryContext ?? existing.TreasuryContext) is { } valuationContext
                     ? valuationContext with { IdempotencyKey = existing.TreasuryContext?.IdempotencyKey }
                     : existing.TreasuryContext
@@ -313,10 +321,10 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             RecurringJournalEvidenceDigest = existing is null
                 ? (trustedAutomatedIntake ? request.Draft.RecurringJournalEvidenceDigest : null)
                 : existing.RecurringJournalEvidenceDigest,
-            ReversalOfJournalEntryId = existing?.RecurringJournalEvidenceJson is not null ? existing.ReversalOfJournalEntryId : request.Draft.ReversalOfJournalEntryId,
-            RebookedFromJournalEntryId = existing?.RecurringJournalEvidenceJson is not null ? existing.RebookedFromJournalEntryId : request.Draft.RebookedFromJournalEntryId,
-            Reversal = existing?.RecurringJournalEvidenceJson is not null ? existing.Reversal : request.Draft.Reversal,
-            Rebook = existing?.RecurringJournalEvidenceJson is not null ? existing.Rebook : request.Draft.Rebook,
+            ReversalOfJournalEntryId = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing)) ? existing.ReversalOfJournalEntryId : request.Draft.ReversalOfJournalEntryId,
+            RebookedFromJournalEntryId = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing)) ? existing.RebookedFromJournalEntryId : request.Draft.RebookedFromJournalEntryId,
+            Reversal = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing)) ? existing.Reversal : request.Draft.Reversal,
+            Rebook = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing)) ? existing.Rebook : request.Draft.Rebook,
             RequiresRecurringJournalEvidence = existing?.RequiresRecurringJournalEvidence == true ||
                 existing?.RecurringJournalEvidenceJson is not null || request.Draft.RequiresRecurringJournalEvidence ||
                 RecurringJournalEvidenceGuard.IsRecurring(existing?.TreasuryContext?.IdempotencyKey) ||
@@ -332,7 +340,15 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 ValuationMarkEvidenceGuard.IsValuation(existing?.TreasuryContext?.IdempotencyKey) ||
                 existing?.ValuationMarkEvidenceJson is not null || request.Draft.RequiresValuationMarkEvidence ||
                 ValuationMarkEvidenceGuard.IsValuation(request.Draft.TreasuryContext?.IdempotencyKey) ||
-                request.Draft.ValuationMarkEvidenceJson is not null
+                request.Draft.ValuationMarkEvidenceJson is not null,
+            ConsolidationEvidenceJson = existing is null
+                ? (trustedAutomatedIntake ? request.Draft.ConsolidationEvidenceJson : null)
+                : existing.ConsolidationEvidenceJson,
+            ConsolidationEvidenceDigest = existing is null
+                ? (trustedAutomatedIntake ? request.Draft.ConsolidationEvidenceDigest : null)
+                : existing.ConsolidationEvidenceDigest,
+            RequiresConsolidationEvidence = (existing is not null && IsConsolidationDraft(existing)) ||
+                IsConsolidationDraft(request.Draft)
         }, allowIncomplete: true, ct).ConfigureAwait(false);
         EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, normalizedDraft);
         if (existing is not null)
@@ -422,7 +438,11 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 ValuationMarkEvidenceGuard.IsValuation(existing?.TreasuryContext?.IdempotencyKey) ||
                 existing?.ValuationMarkEvidenceJson is not null || request.Draft.RequiresValuationMarkEvidence ||
                 ValuationMarkEvidenceGuard.IsValuation(request.Draft.TreasuryContext?.IdempotencyKey) ||
-                request.Draft.ValuationMarkEvidenceJson is not null
+                request.Draft.ValuationMarkEvidenceJson is not null,
+            ConsolidationEvidenceJson = existing?.ConsolidationEvidenceJson,
+            ConsolidationEvidenceDigest = existing?.ConsolidationEvidenceDigest,
+            RequiresConsolidationEvidence = (existing is not null && IsConsolidationDraft(existing)) ||
+                IsConsolidationDraft(request.Draft)
         }, allowIncomplete: false, ct, periodIsLocked: request.PeriodIsLocked).ConfigureAwait(false);
     }
 
@@ -875,6 +895,16 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         DateTimeOffset recordedAtUtc,
         CancellationToken ct)
     {
+        if (IsConsolidationDraft(draft))
+        {
+            postingCommand = postingCommand with
+            {
+                BookContext = new AccountingBookContextDto(ledgerBook.LedgerBookId, ledgerBook.FundProfileId,
+                    ledgerBook.FundStructureNodeId, ledgerBook.FundStructureNodeKind, ledgerBook.DisplayName,
+                    ledgerBook.BaseCurrency, ledgerBook.AccountingBasis, ledgerBook.AccountingPolicyId,
+                    ledgerBook.AccountingPolicyVersion, periodId)
+            };
+        }
         var configuration = await _configurationService
             .GetWorkspaceAsync(draft.FundProfileId, draft.LedgerBookId, ct, draft.TenantId, draft.CompanyId)
             .ConfigureAwait(false);
@@ -934,8 +964,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             draft.AccountingBasis,
             ledgerBook.AccountingPolicyId,
             ledgerBook.AccountingPolicyVersion,
-            "manual-journal-entry",
-            "v1",
+            IsConsolidationDraft(draft) ? Meridian.FinancialOperations.Consolidation.ConsolidationService.RuleId : "manual-journal-entry",
+            IsConsolidationDraft(draft) ? Meridian.FinancialOperations.Consolidation.ConsolidationService.RuleVersion : "v1",
             postingCommand.SourceEventId,
             postingCommand.SourceJournalEntryId,
             BuildManualPostingKind(draft),
@@ -1014,6 +1044,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         AddMetadataTag(tags, RecurringJournalEvidenceGuard.DigestTag, draft.RecurringJournalEvidenceDigest);
         AddMetadataTag(tags, ValuationMarkEvidenceGuard.EvidenceTag, draft.ValuationMarkEvidenceJson);
         AddMetadataTag(tags, ValuationMarkEvidenceGuard.DigestTag, draft.ValuationMarkEvidenceDigest);
+        AddMetadataTag(tags, "consolidation.evidence", draft.ConsolidationEvidenceJson);
+        AddMetadataTag(tags, "consolidation.digest", draft.ConsolidationEvidenceDigest);
         AddMetadataTag(tags, "manualJournalEntryId", draft.JournalEntryId.ToString("D"));
         AddMetadataTag(tags, "manualJournalEntryStatus", draft.Status.ToString());
         AddMetadataTag(tags, "manualJournalEntryType", draft.EntryType.ToString());
