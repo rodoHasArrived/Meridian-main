@@ -172,6 +172,7 @@ public sealed partial class PostgresLedgerJournalStore :
         if (!query.LedgerBookId.HasValue
             && !query.PeriodId.HasValue
             && !query.AggregateId.HasValue
+            && !query.JournalEntryId.HasValue
             && !query.SourceEventId.HasValue
             && string.IsNullOrWhiteSpace(query.AccountName)
             && !query.OccurredFrom.HasValue
@@ -190,6 +191,11 @@ public sealed partial class PostgresLedgerJournalStore :
             Qualified("journal_legs"),
             Qualified("accounting_periods"),
             query);
+
+        if (query.JournalEntryId.HasValue)
+        {
+            command.Parameters.AddWithValue("journal_entry_id", query.JournalEntryId.Value);
+        }
 
         if (query.SourceEventId.HasValue)
         {
