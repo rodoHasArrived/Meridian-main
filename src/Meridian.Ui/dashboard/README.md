@@ -6,10 +6,14 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-06
+last_reviewed: 2026-10-07
 ---
 
 # src/Meridian.Ui/dashboard
+
+Tailwind and `@tailwindcss/postcss` are pinned to 4.3.3. The stylesheet uses the v4 import
+with the retained TypeScript theme configuration, and compiled-style regression tests preserve
+the workstation's utility behavior. Dependency updates must keep this pipeline and its built assets aligned.
 
 Trading includes an account-scoped brokerage recovery panel backed by the shared readiness and
 execution reconciliation projection. The operator can synchronize and reconcile Alpaca portfolio
@@ -1496,4 +1500,34 @@ Browser extensibility route helpers expose the shared core extensibility catalog
 
 ## Accounting close browser surface
 
+The External GL route also hosts bounded accounting onboarding for one entity, explicit account
+population and date range. Its shared onboarding API retains criteria revisions, exact import and
+mapping identities, comparison snapshots, difference ownership, independent reviewer decisions and
+frozen readiness packets. Historical comparisons can be reproduced from retained inputs. Readiness
+shows unresolved differences across every required date; a later clean period does not clear an
+earlier required period. The browser never substitutes fixtures for these authoritative reads or
+writes, computes readiness, imports missing sources automatically, or grants accounting authority.
+Focused workflow, stale-response and accessibility coverage lives in
+`accounting-screen.onboarding-panel.test.tsx`; API boundary coverage lives in
+`lib/api/accounting-onboarding.api.test.ts`.
+
 The Accounting route reuses fund-operations ledger views and now includes trial-balance source-event and approval drill-through affordances. Keep browser-only rendering in `src/screens/accounting-screen.tsx` and shared accounting close contracts in `src/features/accounting/accountingCloseModels.ts`.
+
+The close workspace (`/accounting`) exposes **Prepare next period**. Operators select an
+authoritative source plan, capture or reuse a retained template version, specify each task's
+calendar rule, select an authoritative target book and period, and resolve owner and policy
+changes before previewing. Calendar dates, dependency preservation, fresh evidence and sign-off
+requirements, stale-preview checks, and duplicate prevention are owned by shared close services.
+The browser never calculates rollover deadlines or copies completed controls. Prior completions,
+approvals, reviewed evidence, journal references and locks remain on their original period.
+
+All preparation reads and writes disable development fallback. Target-book discovery uses the
+authoritative source book's fund identity; stale or mismatched responses are discarded. A lost or
+interrupted creation response is retried with the same preview and idempotency key. A typed stale
+or missing preview response requires a new preview. Before creation, the browser saves only the
+opaque request identity in session storage. Reload and navigation recover that same request after
+fresh authorized source, template and book reads; no cached approval or preview state is reused.
+The creation result retains template version and history
+and links back to the prepared close scope. Reloaded plans expose their retained preparation
+lineage and creation history through the shared plan configuration. Focused coverage lives in
+`accounting-screen.prepare-next-period.test.tsx` and `close-preparation.api.test.ts`.

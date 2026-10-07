@@ -346,6 +346,12 @@ versioned, hash-bound reference evidence, and the existing `FaceValueLot` straig
 constant-yield kernels. Supported inputs are positive open face lots with fixed or zero coupons,
 unadjusted bullet principal, explicit supported day-count terms, and level constant-yield periods.
 Constant yield consumes the retained annual decimal yield and verifies it against acquisition price.
+Coupon counts follow regular calendar boundaries, including month ends and leap years, for monthly,
+quarterly, semiannual and annual schedules. Actual day-count fractions interpolate within the current
+coupon period rather than being rounded into coupon counts; odd schedules remain unsupported.
+New instructions carry calculation model v2. Previously retained unversioned instructions preserve
+v1 economics and their original serialization so receipt replay remains recoverable. Unposted legacy
+instructions require a fresh preview before approval/posting.
 Missing terms, structured principal/factors, floating or step coupons, callable instruments,
 unsupported day-count context and other methods block this slice.
 
@@ -362,9 +368,8 @@ boundary, posting is refused rather than retaining a lot basis that differs from
 The governed event spine retains its existing same-currency requirement for Security Master and
 the event's functional currency; this partial delivery does not add a cross-currency event workflow.
 The atomic boundary preserves the acquisition currencies and FX for supported store commands.
-A later discrete disposal whose acquisition unit cost differs from its restated canonical basis
-continues to fail closed through `CanonicalOpenLotDisposalGuard`; extending relief of an amortized
-basis remains separate lot-convergence work.
+Current-basis disposal relief is supplied by the separate PR #3050 slice described below. These
+amortization corrections preserve its existing relief implementation and acquisition evidence.
 
 Migration `V_ledger_040` widens existing mutation constraints without replacing acquisition facts or
 backfilling legacy rows. Exact command retries return the retained journal and mutation before
@@ -372,6 +377,11 @@ current period/version checks, including after restart and later period close. A
 at the same identity, stale lot/reference state, unproved historical partial holdings, earlier
 amortization date or another basis treatment is refused. PostgreSQL Security Master and position
 stores must share the ledger database so reference locks remain held through commit.
+Primary-host composition supplies deferred reference/position authorities to the journal store.
+Posting requires the exact reviewed instruction and acquisition/reference evidence under the canonical
+depreciation/amortization event type. Parent and child reference locks protect all hashed Security
+Master inputs; standalone alias writes participate in the same transaction ordering and invalidate
+older serializable posting snapshots.
 
 This is a partial W10-LOT-002 delivery. Corporate-action successors, advance refunding, active
 wash-sale correction, cross-consumer parity and live shadow-operation acceptance remain separate.

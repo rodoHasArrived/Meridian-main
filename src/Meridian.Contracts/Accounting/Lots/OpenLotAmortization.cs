@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.Integrity;
@@ -7,12 +8,24 @@ using Meridian.Contracts.SecurityMaster;
 namespace Meridian.Contracts.Accounting.Lots;
 
 /// <summary>Reviewed inputs, never posting authority. The store resolves and locks these identities again.</summary>
+[method: JsonConstructor]
 public sealed record OpenLotAmortizationInstructionDto(
     OpenLotDto ExpectedLot,
     SecurityProjectionRecord Security,
     RetainedEvidenceIdentityDto SecurityEvidence,
     long ExpectedBookPositionVersion,
-    DateOnly AsOfDate);
+    DateOnly AsOfDate,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? CalculationVersion = null)
+{
+    // Historical JSON has no version and retains the exact v1 calculation and fingerprint.
+    // New callers using the original constructor shape always select the current model.
+    public OpenLotAmortizationInstructionDto(OpenLotDto ExpectedLot, SecurityProjectionRecord Security,
+        RetainedEvidenceIdentityDto SecurityEvidence, long ExpectedBookPositionVersion, DateOnly AsOfDate)
+        : this(ExpectedLot, Security, SecurityEvidence, ExpectedBookPositionVersion, AsOfDate, OpenLotAmortization.ModelVersion)
+    {
+    }
+}
 
 public sealed record OpenLotAmortizationProjectionDto(
     decimal TransactionCostBasis,
@@ -23,7 +36,7 @@ public sealed record OpenLotAmortizationProjectionDto(
 /// <summary>Bounded fixed-rate bullet projection using the shared financial kernels and acquisition FX.</summary>
 public static class OpenLotAmortization
 {
-    public const string ModelVersion = "canonical-lot-amortization-v1";
+    public const string ModelVersion = "canonical-lot-amortization-v2";
 
     public static string SecurityHash(SecurityProjectionRecord security)
     {
@@ -51,6 +64,8 @@ public static class OpenLotAmortization
     private static OpenLotAmortizationProjectionDto ProjectCore(OpenLotAmortizationInstructionDto instruction)
     {
         ArgumentNullException.ThrowIfNull(instruction);
+        if (instruction.CalculationVersion is not null && instruction.CalculationVersion != ModelVersion)
+            throw new ArgumentException("Amortization calculation version is unsupported.");
         var lot = instruction.ExpectedLot;
         OpenLotValidation.Validate(lot);
         var security = instruction.Security;
@@ -98,12 +113,23 @@ public static class OpenLotAmortization
                  && annualYield > -1m && reference.CouponRate is { } coupon && coupon >= 0m)
         {
             var frequency = Frequency(reference.PaymentFrequency);
-            var periods = DayCountConventions.Fraction(convention, lot.AcquiredDate, maturity) * frequency;
-            // The shared kernel models level periods; refuse odd schedules instead of approximating them.
-            if (periods != decimal.Truncate(periods) || periods < 1m || periods > 1200m)
-                throw new ArgumentException("Constant-yield amortization requires one to 1200 level coupon periods.");
-            fullBasis = faceLot.ConstantYieldAmortizedBasisAsOf(convention, maturity, instruction.AsOfDate, coupon,
-                frequency, annualYield);
+            if (instruction.CalculationVersion is null)
+            {
+                // Preserve the admission rule and arithmetic of retained v1 instructions.
+                // Replaying an approved historical payload must not recalculate its journal.
+                var periods = DayCountConventions.Fraction(convention, lot.AcquiredDate, maturity) * frequency;
+                if (periods != decimal.Truncate(periods) || periods < 1m || periods > 1200m)
+                    throw new ArgumentException("Constant-yield amortization requires one to 1200 level coupon periods.");
+                fullBasis = faceLot.LegacyConstantYieldAmortizedBasisAsOf(convention, maturity, instruction.AsOfDate, coupon,
+                    frequency, annualYield);
+            }
+            else
+            {
+                // The shared kernel validates calendar coupon boundaries. An Actual day-count
+                // year fraction measures accrual, not the number of contractual payments.
+                fullBasis = faceLot.ConstantYieldAmortizedBasisAsOf(convention, maturity, instruction.AsOfDate, coupon,
+                    frequency, annualYield);
+            }
         }
         else
         {

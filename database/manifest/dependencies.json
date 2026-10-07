@@ -6856,6 +6856,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CaptureClosePlanTemplateRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CertifyAccountingReportPackageRequestDto"
     },
     {
@@ -6869,6 +6875,30 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CloseCalendarMilestoneDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CloseDeadlineAdjustmentDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CloseDeadlineAnchorDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CloseDeadlineDayCountDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CloseDeadlineRuleDto"
     },
     {
       "kind": "contract-set-member",
@@ -6922,6 +6952,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePlanPreparationLineageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePlanTemplateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePlanTemplateTaskDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ClosePostingBalanceDto"
     },
     {
@@ -6935,6 +6983,42 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ClosePostingGateStateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePreparationCalendarDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePreparationHistoryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePreparationIssueDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePreparationOwnerMappingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePreparationPreviewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePreparationTaskDto"
     },
     {
       "kind": "contract-set-member",
@@ -7001,6 +7085,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CreateLedgerPeriodRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CreatePreparedClosePlanRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -7559,6 +7649,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PreparedClosePlanResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PreviewClosePreparationRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -10660,6 +10762,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.AssignOnboardingDifferenceRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.AuditTrailExplorerQueryDto"
     },
     {
@@ -10828,6 +10936,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.CaptureOnboardingComparisonRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.CashFinancingSummary"
     },
     {
@@ -10949,6 +11063,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.CouponEvent"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.CreateOnboardingWorkspaceRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -11615,6 +11735,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.FirstRunStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.FreezeOnboardingPacketRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -12455,6 +12581,108 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.NullReportingRunNotifier"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingComparisonDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingCriteriaDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingCriteriaRevisionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingDifferenceAssignmentDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingDifferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingMissingSourceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingObservationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingPacketContentDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingPeriodDifferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingReadinessDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingReadinessPacketDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingReviewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingScopeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingSourceCaptureDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingSourceSelectionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingSourceSnapshotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingWorkspaceDto"
     },
     {
       "kind": "contract-set-member",
@@ -14284,6 +14512,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReviewOnboardingWorkspaceRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReviewReconciliationBreakRequest"
     },
     {
@@ -15641,6 +15875,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.TradingTrustGateSampleReviewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.UpdateOnboardingCriteriaRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -19636,6 +19876,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CaptureClosePlanTemplateRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CertifyAccountingReportPackageRequestDto"
     },
     {
@@ -19649,6 +19895,30 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CloseCalendarMilestoneDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CloseDeadlineAdjustmentDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CloseDeadlineAnchorDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CloseDeadlineDayCountDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CloseDeadlineRuleDto"
     },
     {
       "kind": "contract-set-member",
@@ -19702,6 +19972,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePlanPreparationLineageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePlanTemplateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePlanTemplateTaskDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ClosePostingBalanceDto"
     },
     {
@@ -19715,6 +20003,42 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ClosePostingGateStateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePreparationCalendarDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePreparationHistoryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePreparationIssueDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePreparationOwnerMappingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePreparationPreviewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePreparationTaskDto"
     },
     {
       "kind": "contract-set-member",
@@ -19781,6 +20105,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CreateLedgerPeriodRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CreatePreparedClosePlanRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -20339,6 +20669,18 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PreparedClosePlanResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PreviewClosePreparationRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -29367,6 +29709,24 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CaptureClosePlanTemplateRequestDto",
+      "target": "contract:Meridian.Contracts.Ledger.CloseDeadlineRuleDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CaptureClosePlanTemplateRequestDto",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePreparationCalendarDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CaptureClosePlanTemplateRequestDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.CertifyAccountingReportPackageRequestDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
     },
@@ -29375,6 +29735,24 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.CloseCalendarMilestoneDto",
       "target": "contract:Meridian.Contracts.Ledger.CloseTaskStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CloseDeadlineRuleDto",
+      "target": "contract:Meridian.Contracts.Ledger.CloseDeadlineAdjustmentDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CloseDeadlineRuleDto",
+      "target": "contract:Meridian.Contracts.Ledger.CloseDeadlineAnchorDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CloseDeadlineRuleDto",
+      "target": "contract:Meridian.Contracts.Ledger.CloseDeadlineDayCountDto"
     },
     {
       "kind": "contract-reference",
@@ -29423,6 +29801,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.ClosePeriodLockResultDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsTransitionResultDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ClosePeriodPlanConfigurationDto",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePlanPreparationLineageDto"
     },
     {
       "kind": "contract-reference",
@@ -29517,6 +29901,48 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ClosePlanPreparationLineageDto",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePreparationHistoryDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ClosePlanTemplateDto",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePlanTemplateTaskDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ClosePlanTemplateDto",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePreparationCalendarDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ClosePlanTemplateDto",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePreparationHistoryDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ClosePlanTemplateDto",
+      "target": "contract:Meridian.Contracts.Ledger.MaterialityPolicyDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ClosePlanTemplateTaskDto",
+      "target": "contract:Meridian.Contracts.Ledger.CloseDeadlineRuleDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ClosePlanTemplateTaskDto",
+      "target": "contract:Meridian.Contracts.Ledger.CloseTaskConfigurationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.ClosePostingBalanceDto",
       "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionSetDto"
     },
@@ -29537,6 +29963,54 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.ClosePostingGateDto",
       "target": "contract:Meridian.Contracts.Ledger.ManualJournalEntryStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ClosePreparationPreviewDto",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePreparationCalendarDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ClosePreparationPreviewDto",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePreparationIssueDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ClosePreparationPreviewDto",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePreparationTaskDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ClosePreparationPreviewDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerBookDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ClosePreparationPreviewDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerPeriodDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ClosePreparationTaskDto",
+      "target": "contract:Meridian.Contracts.Ledger.CloseDeadlineRuleDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ClosePreparationTaskDto",
+      "target": "contract:Meridian.Contracts.Ledger.CloseTaskDependencyConfigurationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ClosePreparationTaskDto",
+      "target": "contract:Meridian.Contracts.Ledger.CloseTaskSignOffRequirementConfigurationDto"
     },
     {
       "kind": "contract-reference",
@@ -29609,6 +30083,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.CreateLedgerBookRequest",
       "target": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CreatePreparedClosePlanRequestDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
     },
     {
       "kind": "contract-reference",
@@ -30621,6 +31101,30 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PreparedClosePlanResultDto",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePeriodPlanDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PreparedClosePlanResultDto",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePreparationHistoryDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PreviewClosePreparationRequestDto",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePreparationOwnerMappingDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PreviewClosePreparationRequestDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalActivityProjectionDto",
       "target": "contract:Meridian.Contracts.Ledger.AccountingConfigurationValidationIssueDto"
     },
@@ -31061,6 +31565,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.UpsertChartOfAccountsNodeRequest",
       "target": "contract:Meridian.Contracts.Ledger.ChartOfAccountsNodeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.UpsertClosePeriodPlanConfigurationRequestDto",
+      "target": "contract:Meridian.Contracts.Ledger.ClosePlanPreparationLineageDto"
     },
     {
       "kind": "contract-reference",
@@ -33381,6 +33891,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.CreateOnboardingWorkspaceRequestDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingCriteriaDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.CreateOnboardingWorkspaceRequestDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.CrossFundReportingConsolidationDto",
       "target": "contract:Meridian.Contracts.Workstation.CrossFundReportingConsolidationScopeDto"
     },
@@ -35555,6 +36077,180 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.NullReportingRunNotifier",
       "target": "contract:Meridian.Contracts.Workstation.IReportingRunNotifier"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingComparisonDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingCriteriaDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingComparisonDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingDifferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingComparisonDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingSourceCaptureDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingCriteriaRevisionDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingCriteriaDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingPacketContentDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingComparisonDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingPacketContentDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingCriteriaDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingPacketContentDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingCriteriaRevisionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingPacketContentDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingDifferenceAssignmentDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingPacketContentDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingDifferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingPacketContentDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingReadinessDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingPacketContentDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingReviewDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingPacketContentDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingPeriodDifferenceDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingDifferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingReadinessDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingMissingSourceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingReadinessDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingPeriodDifferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingReadinessPacketDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingPacketContentDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingSourceCaptureDto",
+      "target": "contract:Meridian.Contracts.Workstation.CloseReadinessProjectionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingSourceCaptureDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingMissingSourceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingSourceCaptureDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingObservationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingSourceCaptureDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingSourceSnapshotDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingComparisonDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingCriteriaDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingCriteriaRevisionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingDifferenceAssignmentDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingDifferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingReadinessDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingReadinessPacketDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingReviewDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingScopeDto"
     },
     {
       "kind": "contract-reference",
@@ -40175,6 +40871,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.TradingTrustGateReadinessDto",
       "target": "contract:Meridian.Contracts.Workstation.TradingTrustGateSampleReviewDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.UpdateOnboardingCriteriaRequestDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingCriteriaDto"
     },
     {
       "kind": "contract-reference",
@@ -47875,7 +48577,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "4db07a9778398c547be5bcb2cfe450b1add1562ab72f93b6e3f7b905d022d781",
+  "fingerprint": "937c01decdf0089c9755a0c70f79df8e434d45f5e6f9bb102a0fb3660aaad891",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -54782,6 +55484,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.CaptureClosePlanTemplateRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.CaptureClosePlanTemplateRequestDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.CertifyAccountingReportPackageRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.CertifyAccountingReportPackageRequestDto"
@@ -54797,6 +55505,30 @@
       "id": "contract:Meridian.Contracts.Ledger.CloseCalendarMilestoneDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.CloseCalendarMilestoneDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.CloseDeadlineAdjustmentDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.CloseDeadlineAdjustmentDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.CloseDeadlineAnchorDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.CloseDeadlineAnchorDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.CloseDeadlineDayCountDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.CloseDeadlineDayCountDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.CloseDeadlineRuleDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.CloseDeadlineRuleDto"
     },
     {
       "classification": "dto",
@@ -54848,6 +55580,24 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ClosePlanPreparationLineageDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ClosePlanPreparationLineageDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ClosePlanTemplateDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ClosePlanTemplateDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ClosePlanTemplateTaskDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ClosePlanTemplateTaskDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.ClosePostingBalanceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.ClosePostingBalanceDto"
@@ -54863,6 +55613,42 @@
       "id": "contract:Meridian.Contracts.Ledger.ClosePostingGateStateDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.ClosePostingGateStateDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ClosePreparationCalendarDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ClosePreparationCalendarDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ClosePreparationHistoryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ClosePreparationHistoryDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ClosePreparationIssueDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ClosePreparationIssueDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ClosePreparationOwnerMappingDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ClosePreparationOwnerMappingDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ClosePreparationPreviewDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ClosePreparationPreviewDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ClosePreparationTaskDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ClosePreparationTaskDto"
     },
     {
       "classification": "dto",
@@ -54929,6 +55715,12 @@
       "id": "contract:Meridian.Contracts.Ledger.CreateLedgerPeriodRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.CreateLedgerPeriodRequest"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.CreatePreparedClosePlanRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.CreatePreparedClosePlanRequestDto"
     },
     {
       "classification": "dto",
@@ -55487,6 +56279,18 @@
       "id": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PreparedClosePlanResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PreparedClosePlanResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PreviewClosePreparationRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PreviewClosePreparationRequestDto"
     },
     {
       "classification": "request",
@@ -58586,6 +59390,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.AssignOnboardingDifferenceRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.AssignOnboardingDifferenceRequestDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.AuditTrailExplorerQueryDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.AuditTrailExplorerQueryDto"
@@ -58753,6 +59563,12 @@
       "label": "Meridian.Contracts.Workstation.CanonicalizationProviderSummaryDto"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.CaptureOnboardingComparisonRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.CaptureOnboardingComparisonRequestDto"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.Workstation.CashFinancingSummary",
       "kind": "contract-type",
@@ -58877,6 +59693,12 @@
       "id": "contract:Meridian.Contracts.Workstation.CouponEvent",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.CouponEvent"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.CreateOnboardingWorkspaceRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.CreateOnboardingWorkspaceRequestDto"
     },
     {
       "classification": "dto",
@@ -59543,6 +60365,12 @@
       "id": "contract:Meridian.Contracts.Workstation.FirstRunStatusDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.FirstRunStatusDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.FreezeOnboardingPacketRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.FreezeOnboardingPacketRequestDto"
     },
     {
       "classification": "dto",
@@ -60383,6 +61211,108 @@
       "id": "contract:Meridian.Contracts.Workstation.NullReportingRunNotifier",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.NullReportingRunNotifier"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingComparisonDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingComparisonDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingCriteriaDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingCriteriaDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingCriteriaRevisionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingCriteriaRevisionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingDifferenceAssignmentDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingDifferenceAssignmentDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingDifferenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingDifferenceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingMissingSourceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingMissingSourceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingObservationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingObservationDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingPacketContentDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingPacketContentDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingPeriodDifferenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingPeriodDifferenceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingReadinessDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingReadinessDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingReadinessPacketDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingReadinessPacketDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingReviewDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingReviewDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingScopeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingScopeDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingSourceCaptureDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingSourceCaptureDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingSourceSelectionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingSourceSelectionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingSourceSnapshotDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingSourceSnapshotDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingWorkspaceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingWorkspaceDto"
     },
     {
       "classification": "record",
@@ -62209,6 +63139,12 @@
       "label": "Meridian.Contracts.Workstation.RetainedLedgerAmountDto"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ReviewOnboardingWorkspaceRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReviewOnboardingWorkspaceRequestDto"
+    },
+    {
       "classification": "request",
       "id": "contract:Meridian.Contracts.Workstation.ReviewReconciliationBreakRequest",
       "kind": "contract-type",
@@ -63569,6 +64505,12 @@
       "id": "contract:Meridian.Contracts.Workstation.TradingTrustGateSampleReviewDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.TradingTrustGateSampleReviewDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.UpdateOnboardingCriteriaRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.UpdateOnboardingCriteriaRequestDto"
     },
     {
       "classification": "request",
@@ -70127,11 +71069,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3156,
-    "contract_set_memberships": 3715,
-    "edges": 7954,
+    "contract_references": 3216,
+    "contract_set_memberships": 3772,
+    "edges": 8071,
     "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3856
+    "nodes": 3896
   }
 }

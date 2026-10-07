@@ -23,7 +23,7 @@ _MANAGED_PROPERTIES = frozenset({
     "baseoutputpath", "baseintermediateoutputpath", "outputpath", "outdir",
     "intermediateoutputpath", "msbuildprojectextensionspath", "artifactspath",
     "useartifactsoutput", "restoreoutputpath", "publishdir", "publishurl",
-    "vstestresultsdirectory", "vstestlogger",
+    "vstestresultsdirectory", "vstestlogger", "vstestnobuild",
     "importdirectorybuildprops", "directorybuildpropspath",
 })
 _DEFINITION_SUFFIXES = frozenset({".csproj", ".fsproj", ".vbproj", ".props", ".targets", ".sln", ".slnf", ".slnx"})

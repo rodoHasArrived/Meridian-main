@@ -10,7 +10,7 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.Application.Integrations;
 
-public sealed class ProviderIntegrationQuarantineReplayService
+public sealed partial class ProviderIntegrationQuarantineReplayService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly IProviderIntegrationManifestStore store;
@@ -89,8 +89,10 @@ public sealed class ProviderIntegrationQuarantineReplayService
             ?? throw new KeyNotFoundException($"Provider integration connection '{request.ConnectionId}' was not found.");
         var sourceSyncRun = await scopedStore.GetSyncRunAsync(request.SourceSyncRunId, ct).ConfigureAwait(false)
             ?? throw new KeyNotFoundException($"Provider integration sync run '{request.SourceSyncRunId}' was not found.");
-        var originalReference = await ValidateSourceProvenanceAsync(scopedStore, request, sourceSyncRun, ct)
+        var (originalReference, sourcePayload) = await ValidateSourceProvenanceAsync(scopedStore, request, sourceSyncRun, ct)
             .ConfigureAwait(false);
+        var sourceRecordFormat = await ResolveSourceRecordFormatAsync(
+            scopedStore, request, sourceSyncRun, sourcePayload, originalReference, ct).ConfigureAwait(false);
         var selectedReference = request.Mode == ProviderIntegrationReplayModeDto.Original
             ? originalReference
             : ResolveRemediationReference(request, originalReference);
@@ -99,6 +101,15 @@ public sealed class ProviderIntegrationQuarantineReplayService
 
         var capability = ValidateRequestScope(request, manifest, connection, sourceSyncRun);
         var sourceRecords = await ResolveRequestedRecordsAsync(scopedStore, request, ct).ConfigureAwait(false);
+        if (sourceRecordFormat == ManualCsvRecordFormat)
+        {
+            foreach (var sourceRecord in sourceRecords)
+            {
+                ct.ThrowIfCancellationRequested();
+                ProviderIntegrationDryRunService.ValidateRetainedManualCsvRecord(sourceRecord.RawRecord);
+            }
+        }
+
         var rawPayloadId = StableId("raw-payload", request.ReplaySyncRunId, request.SourceSyncRunId, "quarantine-replay");
 
         // Claim the run before publishing any evidence. Different source runs produce different
@@ -124,7 +135,8 @@ public sealed class ProviderIntegrationQuarantineReplayService
                     ["sourceSyncRunId"] = request.SourceSyncRunId,
                     ["sourceRawPayloadId"] = sourceSyncRun.RawPayloadId ?? string.Empty,
                     ["requestedBy"] = request.RequestedBy,
-                    ["recordCount"] = sourceRecords.Count.ToString(CultureInfo.InvariantCulture)
+                    ["recordCount"] = sourceRecords.Count.ToString(CultureInfo.InvariantCulture),
+                    [SourceRecordFormatMetadataKey] = sourceRecordFormat
                 },
                 ToJsonElement(new QuarantineReplayRawPayload(
                     request.SourceSyncRunId,
@@ -185,7 +197,9 @@ public sealed class ProviderIntegrationQuarantineReplayService
             ct.ThrowIfCancellationRequested();
             var sourceRecord = sourceRecords[index];
             var rowIssues = new List<ValidationIssueDto>();
-            var mappedRecord = MapRecord(sourceRecord.RawRecord, mappings, rowIssues);
+            var mappedRecord = sourceRecordFormat == ManualCsvRecordFormat
+                ? ProviderIntegrationDryRunService.MapRetainedManualCsvRecord(sourceRecord.RawRecord, mappings, rowIssues)
+                : MapRecord(sourceRecord.RawRecord, mappings, rowIssues);
             foreach (var requiredField in requiredCanonicalFields)
             {
                 if (!HasJsonPath(mappedRecord, requiredField))
@@ -276,7 +290,7 @@ public sealed class ProviderIntegrationQuarantineReplayService
         return result;
     }
 
-    private static async Task<ProviderIntegrationManifestReferenceDto> ValidateSourceProvenanceAsync(
+    private static async Task<(ProviderIntegrationManifestReferenceDto Reference, RawIngestionPayloadDto Payload)> ValidateSourceProvenanceAsync(
         IProviderIntegrationManifestStore scopedStore,
         ProviderIntegrationQuarantineReplayRequestDto request,
         ProviderIntegrationSyncRunDto sourceSyncRun,
@@ -334,7 +348,7 @@ public sealed class ProviderIntegrationQuarantineReplayService
             throw new InvalidOperationException("The retained manifest provenance is not linked to the source provider.");
         }
 
-        return ProviderIntegrationManifestIdentity.Create(originalManifest);
+        return (ProviderIntegrationManifestIdentity.Create(originalManifest), payload);
     }
 
     private static ProviderIntegrationManifestReferenceDto ResolveRemediationReference(

@@ -13,12 +13,33 @@ last_reviewed: 2026-10-06
 
 `OpenLotCorporateAction` binds reviewed predecessor snapshots, successor Security Master and position versions, explicit fractional plan allocations, and retained successor acquisition evidence. Optional corporate-action inputs and acquisition lineage are omitted when absent, preserving legacy serialized payloads. The shared guard conserves original and current transaction/functional bases and carried acquisition dates, holding period and FX. Unsupported cash, fractional cash-in-lieu, correction or holding-period treatments fail closed. Successor amortization requires a separate reviewed yield/schedule continuation.
 
+`Workstation/OnboardingDtos.cs` defines bounded onboarding scope, owner criteria, exact source
+snapshots, consecutive comparisons, difference assignments, independent review decisions and frozen
+readiness packets. Account populations use financial account GUIDs; financial comparisons use
+decimal amounts, explicit currencies and nullable missing values. Scope is immutable, mutations
+carry expected versions, and approvals refer to a particular data revision. These contracts convey
+read-only support evidence and never grant accounting or external posting authority.
+
+`Ledger/AccountingClosePreparationDtos.cs` describes immutable close template versions, explicit
+calendar deadline rules, owner mappings, authoritative target previews, and retained creation history.
+Create requests identify a retained preview and idempotency key rather than asserting dates or book
+policy. `ClosePeriodPlanConfigurationDto.Preparation` preserves server-owned template lineage and
+authoritative period bounds; public configuration JSON cannot supply that lineage. Explicit empty
+task dependencies remain empty through `CloseTaskConfigurationDto.HasExplicitDependencies`.
+
 `TradingBrokerageRecoveryDtos` extends shared Trading readiness with nullable broker balances,
 currency, observation/attempt/success timestamps, completeness and blocking reasons, plus affected
 account-scoped strategy runs. Existing execution-reconciliation DTOs remain the discrepancy source.
 Recovery requests carry only the local account ID; provider and external identity are server-resolved.
 
 Canonical amortization adds an optional `Amortization` input to lot instructions and basis adjustments, omitted when absent to preserve retained fingerprints. `OpenLotAmortization` binds reviewed canonical lot and versioned Security Master evidence, delegates shared straight-line/constant-yield kernels, and retains annual decimal yield and acquisition FX. Unsupported structures and missing terms fail closed.
+Constant yield counts contractual calendar coupons for monthly, quarterly, semiannual and annual
+schedules, including month ends and leap dates. Day-count fractions interpolate within the current
+coupon period; they do not determine the number of coupons. Odd schedules and schedules exceeding
+1200 periods are refused, and retained yield must reconcile to the acquisition price even at maturity.
+New instructions identify calculation model v2. Retained JSON without a calculation version keeps
+the original v1 calculation and serialized shape for receipt replay; unposted legacy instructions
+require a fresh preview. Unknown calculation versions are refused.
 
 `Etl/IEtlStagingStore.cs` lets source adapters retain imported streams through an injected
 persistence port without referencing the Storage implementation.

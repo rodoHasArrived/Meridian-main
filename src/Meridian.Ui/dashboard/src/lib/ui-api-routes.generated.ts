@@ -3,6 +3,17 @@
 // </auto-generated>
 
 export const UI_API_ROUTES = {
+  OnboardingWorkspaces: "/api/accounting/onboarding/workspaces",
+  OnboardingWorkspace: "/api/accounting/onboarding/workspaces/{workspaceId:guid}",
+  OnboardingCriteria: "/api/accounting/onboarding/workspaces/{workspaceId:guid}/criteria",
+  OnboardingSources: "/api/accounting/onboarding/workspaces/{workspaceId:guid}/sources",
+  OnboardingComparisons: "/api/accounting/onboarding/workspaces/{workspaceId:guid}/comparisons",
+  OnboardingDifferenceAssignment: "/api/accounting/onboarding/workspaces/{workspaceId:guid}/differences/{differenceKey}/assignment",
+  OnboardingReviews: "/api/accounting/onboarding/workspaces/{workspaceId:guid}/reviews",
+  OnboardingPackets: "/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets",
+  OnboardingPacket: "/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets/{packetId:guid}",
+  OnboardingPacketExport: "/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets/{packetId:guid}/download",
+  OnboardingReplay: "/api/accounting/onboarding/workspaces/{workspaceId:guid}/comparisons/{comparisonId}/replay",
   Health: "/health",
   HealthDetailed: "/health/detailed",
   Ready: "/ready",
@@ -703,6 +714,10 @@ export const UI_API_ROUTES = {
   LedgerAccountingConfigurationAudit: "/api/ledger/accounting-configuration/audit",
   LedgerCloseManagementPeriodPlan: "/api/ledger/close-management/period-plan/{workflowId:guid}",
   LedgerCloseManagementPeriodPlanConfiguration: "/api/ledger/close-management/period-plan/configuration",
+  LedgerCloseManagementTemplates: "/api/ledger/close-management/templates",
+  LedgerCloseManagementTemplate: "/api/ledger/close-management/templates/{templateId:guid}",
+  LedgerCloseManagementPreparationPreview: "/api/ledger/close-management/prepare/preview",
+  LedgerCloseManagementPreparationCreate: "/api/ledger/close-management/prepare/create",
   LedgerCloseManagementLateAdjustments: "/api/ledger/close-management/late-adjustments",
   LedgerCloseManagementLateAdjustmentReview: "/api/ledger/close-management/late-adjustments/review",
   LedgerCloseManagementTaskSignOffs: "/api/ledger/close-management/task-signoffs",

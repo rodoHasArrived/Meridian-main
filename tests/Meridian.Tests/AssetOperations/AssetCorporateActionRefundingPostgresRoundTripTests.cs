@@ -157,17 +157,54 @@ public sealed class AssetCorporateActionRefundingPostgresRoundTripTests
                     ["securityMasterProvenance"] = provenance,
                     ["securityMasterLineage"] = $"LOT:{securityId:N}:ledger-map:investment-lots:sm-approval:lot-controller:security-status:active:{provenance}"
                 }));
+        var amortizationEventType = AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.DepreciationAmortization);
+        var amortizationEventEvidence = Evidence("prior-amortization-event", date,
+            AssetAccountingEvidenceSubjects.Event, amortizationEventId, new string('d', 64));
+        RetainedEvidenceIdentityDto[] amortizationEvidence =
+            [acquisitionEvidence, amortization.SecurityEvidence, amortizationEventEvidence];
+        var amortizationEvent = new EconomicEventReferenceDto(amortizationEventId, amortizationEventType, 1, date,
+            now, amortizationEventEvidence.SourceSystem, amortizationEventEvidence.SourceReference,
+            SourceContentHash: amortizationEventEvidence.ContentHashSha256)
+        {
+            SecurityId = securityId,
+            BookPositionId = positionId,
+            RetainedEvidence = amortizationEvidence,
+            EvidenceLinks = amortizationEvidence.Select(item => item.EvidenceUri).ToArray()
+        };
+        var amortizationLineage = new ProjectionLineageDto(Guid.NewGuid(), null, "canonical-lot-amortization",
+            OpenLotAmortization.ModelVersion, "refunding-fixture-v1", "base", date, now,
+            amortizationEventEvidence.SourceSystem, amortizationEventEvidence.SourceReference, amortizationEvent)
+        {
+            BookPositionId = positionId,
+            RetainedEvidence = amortizationEvidence,
+            EvidenceLinks = amortizationEvent.EvidenceLinks
+        };
         var amortizationPosting = new AccountingPostingCommandDto(Guid.NewGuid(), bookId, period.PeriodId, date, now,
             amortizationKey, AccountingPostingIntentDto.Adjustment, amortizationEventId, ExpectedVersion: period.Version,
             ApprovalState: AccountingPostingApprovalStateDto.Approved, ApprovalId: "prior-amortization-controller-review",
             OperatorRationale: "Independently reviewed original basis and fixed-rate bond amortization.", LedgerBookId: bookId)
-        { Actor = approver };
+        {
+            Actor = approver,
+            SourceEventType = amortizationEventType,
+            BookContext = context,
+            BookPositionId = positionId,
+            EconomicEvent = amortizationEvent,
+            ProjectionLineage = amortizationLineage,
+            RulePackReference = new("canonical-amortization", "1", "amortization", "1"),
+            LotAmortization = amortization,
+            Evidence = amortizationEvidence.Select(item => new AccountingPostingEvidenceReferenceDto(item.EvidenceId,
+                item.EvidenceUri, AccountingPostingEvidenceKindDto.Source, item.SourceSystem, item.RetainedAtUtc,
+                item.RetainedBy, item.SubjectId, item.ContentHashSha256, SourceReference: item.SourceReference,
+                Reviewer: item.ReviewedBy, ReviewedAtUtc: item.ReviewedAtUtc, EffectiveDate: item.EffectiveDate,
+                EvidenceVersion: item.EvidenceVersion, ReviewStatus: item.ReviewStatus, SubjectType: item.SubjectType)).ToArray()
+        };
         var amortizationWrite = new LedgerJournalEntryWrite(amortizationJournal, bookId, period.PeriodId,
             SourceEventId: amortizationEventId, LedgerBookId: bookId, PostingCommand: amortizationPosting,
-            AccountingBasis: AccountingBasisKindDto.Gaap, AccountingPolicyId: policy, AccountingPolicyVersion: "v1");
+            AccountingBasis: AccountingBasisKindDto.Gaap, AccountingPolicyId: policy, AccountingPolicyVersion: "v1",
+            RuleId: "amortization", RuleVersion: "1");
         await journal.AppendAssetPostingAsync(AtomicTaxLotJournalCommand.Create(Guid.NewGuid(), bookId,
             amortizationWrite, amortizationEventId, amortizationKey, period.Version, AtomicTaxLotMutationKind.Amortization,
-            [acquisitionEvidence, amortization.SecurityEvidence], amortization: amortization), ct);
+            amortizationEvidence, amortization: amortization), ct);
         lot = (await journal.GetTaxLotsByIdsAsync(bookId, [lotId], ct)).Single();
         lot.ToOpenLot().OpenQuantity.Should().Be(6_000m);
         lot.ToOpenLot().OpenFunctionalCostBasis.Should().Be(6_300m);

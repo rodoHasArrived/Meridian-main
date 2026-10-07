@@ -23,6 +23,7 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **WPF performance and UI/UX audit:** [WPF Performance & UI/UX Refinement Audit 2026-06-14](wpf-perf-uiux-audit-2026-06-14.md) *(dated; its changes were not compiled or run when written)*
 - **Release-evidence working ledger:** [Production-Certification Evidence Chain](production-certification-evidence-chain.md)
 - **CI/CD ownership and rollout:** [CI/CD validation ownership](ci-cd-optimization.md)
+- **Pipeline budget measurements (PRD-112):** [Bounded benchmark lane and retained evidence](pipeline-benchmark.md)
 - **Docs regeneration automation constraints:** [Docs Regeneration Automation — Design Constraints](docs-regeneration-automation-design.md)
 - **Browser/docs regeneration and generated merge conflicts:** [Run the complete maintained generation sequence](generated-merge-recovery.md)
 - **Free development tools:** [Free Development Tools](free-development-tools.md)
@@ -124,6 +125,9 @@ runtime, and MSBuild properties used to produce the outputs. It does not check s
 rerun without `--no-build` after source changes or when outputs are missing or incompatible.
 The default `auto` isolation key is rejected with `--no-build` because it selects a new output
 location. Missing outputs fail the test step without falling back to a build.
+An explicit isolation key selects outputs independently of the unique `--run-id` used for evidence;
+the two names may match when that run ID has not been used before. `VSTestNoBuild` is managed by
+the runner and cannot be overridden through `--property`, so the test phase cannot compile again.
 
 After a timed-out generation, build, or test attempt, run `python build/python/cli/buildctl.py
 validation-status --summary`, then `dotnet build-server shutdown`. Stop only abandoned repo-owned

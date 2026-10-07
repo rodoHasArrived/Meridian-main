@@ -35,6 +35,7 @@ using Meridian.Execution.Services;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.Ledger;
+using Meridian.FinancialOperations.Onboarding;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.FinancialOperations.Reconciliation;
@@ -316,6 +317,11 @@ public static class WorkstationServiceCollectionExtensions
         services.AddSingleton<IAccountingSystemProvider>(sp => sp.GetRequiredService<XeroAccountingProvider>());
         services.AddSingleton<IAccountingSystemProvider>(sp => sp.GetRequiredService<NetSuiteAccountingProvider>());
         services.TryAddSingleton<AccountingSystemIntegrationService>();
+        services.TryAddSingleton<IOnboardingWorkspaceStore>(sp => new FileOnboardingWorkspaceStore(
+            Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "onboarding-workspaces.json")));
+        services.TryAddSingleton<OnboardingComparisonSource>();
+        services.TryAddSingleton<IOnboardingSourceProvider>(sp => sp.GetRequiredService<OnboardingComparisonSource>());
+        services.TryAddSingleton<OnboardingWorkspaceService>();
         services.TryAddSingleton<IAccountingMigrationRunArtifactStore>(sp =>
             new FileAccountingMigrationRunArtifactStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "migration-run-artifacts.json"),
@@ -891,6 +897,12 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IOperationsApprovalPolicyMatrixService, OperationsApprovalPolicyMatrixService>();
         services.TryAddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
         services.TryAddSingleton<IAccountingCloseManagementService, AccountingCloseManagementService>();
+        services.TryAddSingleton<IAccountingClosePreparationService>(sp => new AccountingClosePreparationService(
+            sp.GetRequiredService<IAccountingCloseManagementService>(),
+            sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
+            sp.GetRequiredService<ILedgerBookService>(),
+            sp.GetRequiredService<ILedgerJournalStore>(),
+            new StorageOptions { RootPath = ResolveWorkstationDataDirectory(sp) }));
         services.TryAddSingleton<IAccountingReportPackageService, AccountingReportPackageService>();
         services.TryAddSingleton<IAutomatedJournalCapitalAccountReconciliationResolver>(sp =>
             new LedgerCapitalAccountReconciliationResolver(
