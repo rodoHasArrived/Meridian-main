@@ -12,6 +12,7 @@ import json
 import os
 import platform
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -190,7 +191,12 @@ def _requirements(path: Path) -> list[tuple[str, str]]:
 
 
 def _check_packages(root: Path, requirements: str) -> list[CheckResult]:
-    fix = f'"{sys.executable}" -m pip install --requirement {requirements}'
+    if platform.system() == "Windows":
+        # PowerShell needs the call operator for a quoted executable path.
+        interpreter = "& '" + sys.executable.replace("'", "''") + "'"
+    else:
+        interpreter = shlex.quote(sys.executable)
+    fix = f"{interpreter} -m pip install --requirement {requirements}"
     try:
         packages = _requirements(root / requirements)
     except (OSError, ValueError) as exc:

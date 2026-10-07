@@ -251,6 +251,23 @@ class DoctorProfileTests(unittest.TestCase):
         self.packages["PyYAML"] = "6.0.3"
         self.assertEqual(self.row(self.check(), "PyYAML").status, "pass")
 
+    def test_windows_package_fix_invokes_exact_interpreter_with_literal_path(self) -> None:
+        self.packages.pop("Pillow")
+        interpreter = r"C:\Program Files\O'Brien Python\python.exe"
+        with self.environment(), patch.object(prerequisites.sys, "executable", interpreter):
+            result = self.row(prerequisites.check_prerequisites(self.root, "full-quality-gate"), "Pillow")
+        self.assert_actionable_failure(result)
+        self.assertEqual(result.fix, "& 'C:\\Program Files\\O''Brien Python\\python.exe' -m pip install --requirement build/scripts/ci/requirements.txt")
+
+    def test_posix_package_fix_quotes_spaces_and_shell_expansion_characters(self) -> None:
+        self.packages.pop("Pillow")
+        interpreter = "/opt/Python $cash/`package-tools`/python3"
+        with self.environment(), patch.object(prerequisites.platform, "system", return_value="Linux"), patch.object(prerequisites.sys, "executable", interpreter):
+            result = self.row(prerequisites.check_prerequisites(self.root, "full-quality-gate"), "Pillow")
+        self.assert_actionable_failure(result)
+        self.assertEqual(result.fix, "'/opt/Python $cash/`package-tools`/python3' -m pip install --requirement build/scripts/ci/requirements.txt")
+        self.assertEqual(shlex.split(result.fix), [interpreter, "-m", "pip", "install", "--requirement", "build/scripts/ci/requirements.txt"])
+
     def test_browser_reports_missing_package_and_lock_files(self) -> None:
         for filename in ("package.json", "package-lock.json"):
             path = self.root / "src/Meridian.Ui/dashboard" / filename
