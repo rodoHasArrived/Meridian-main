@@ -2453,7 +2453,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "25ae5823cce9bdd81cefbf1434fb7d9c4444a44a1f57b3595bca6a5dcee54101",
+  "fingerprint": "035d6a662f8595325982f50f135c5417c8023190aa59120bbe0865993610aec2",
   "foreign_tables": [],
   "functions": [
     {
@@ -2751,8 +2751,8 @@
         }
       ],
       "comment": null,
-      "definition_hash": "f183c348c613fca1daf4387bb415ce89cbaa27ab050ac2fb15c061b5a393d529",
-      "fingerprint": "c4523051bac3df92045313f43268aac6a2b1c84aac841eb77c2e22298425c27f",
+      "definition_hash": "b02431f73aa517e4c033d12034d94fef13b23cf5d054c828130bfbfd31abef94",
+      "fingerprint": "0c31cfc790892d30882475d2f10b6c534c11769b529f4df096f0fa34d76ab54e",
       "kind": "function",
       "language": "plpgsql",
       "name": "protect_open_lot_basis_adjustment",

@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "ab76bba7b0f1b3300cb8d4f30f149c035ca1c3baf77d53659829c13c2629f356",
+  "database_fingerprint": "5c66836c9033b704f075799c138f46ed62e80a409fcd16cb4b08a9c2a47f39c2",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -22829,7 +22829,7 @@
       "object": "function:ledger.protect_open_lot_backfill_evidence()"
     },
     {
-      "fingerprint": "c4523051bac3df92045313f43268aac6a2b1c84aac841eb77c2e22298425c27f",
+      "fingerprint": "0c31cfc790892d30882475d2f10b6c534c11769b529f4df096f0fa34d76ab54e",
       "object": "function:ledger.protect_open_lot_basis_adjustment()"
     },
     {
@@ -25685,7 +25685,7 @@
       "object": "schema:identity_access"
     },
     {
-      "fingerprint": "25ae5823cce9bdd81cefbf1434fb7d9c4444a44a1f57b3595bca6a5dcee54101",
+      "fingerprint": "035d6a662f8595325982f50f135c5417c8023190aa59120bbe0865993610aec2",
       "object": "schema:ledger"
     },
     {
@@ -63284,7 +63284,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "25ae5823cce9bdd81cefbf1434fb7d9c4444a44a1f57b3595bca6a5dcee54101",
+      "fingerprint": "035d6a662f8595325982f50f135c5417c8023190aa59120bbe0865993610aec2",
       "foreign_tables": [],
       "functions": [
         {
@@ -63582,8 +63582,8 @@
             }
           ],
           "comment": null,
-          "definition_hash": "f183c348c613fca1daf4387bb415ce89cbaa27ab050ac2fb15c061b5a393d529",
-          "fingerprint": "c4523051bac3df92045313f43268aac6a2b1c84aac841eb77c2e22298425c27f",
+          "definition_hash": "b02431f73aa517e4c033d12034d94fef13b23cf5d054c828130bfbfd31abef94",
+          "fingerprint": "0c31cfc790892d30882475d2f10b6c534c11769b529f4df096f0fa34d76ab54e",
           "kind": "function",
           "language": "plpgsql",
           "name": "protect_open_lot_basis_adjustment",

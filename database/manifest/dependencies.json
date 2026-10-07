@@ -7096,6 +7096,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CurrencyMinorUnits"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.DimensionMappingProfileDto"
     },
     {
@@ -8015,6 +8021,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Lifecycle.LifecycleShutdownStageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Lifecycle.LifecycleStartupTiming"
     },
     {
       "kind": "contract-set-member",
@@ -20111,6 +20123,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CreatePreparedClosePlanRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CurrencyMinorUnits"
     },
     {
       "kind": "contract-set-member",
@@ -48571,7 +48589,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "85585a07881625729de29019a572d2a3ec765e9bbc7e961990fbf5e1e2d345dc",
+  "fingerprint": "5fc2d110e55178fd235a9c2f12e6b7c60b4b0758d74f361b52f6918755e57b1a",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -55717,6 +55735,12 @@
       "label": "Meridian.Contracts.Ledger.CreatePreparedClosePlanRequestDto"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.CurrencyMinorUnits",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.CurrencyMinorUnits"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.DimensionMappingProfileDto",
       "kind": "contract-type",
@@ -56639,6 +56663,12 @@
       "id": "contract:Meridian.Contracts.Lifecycle.LifecycleShutdownStageDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Lifecycle.LifecycleShutdownStageDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Lifecycle.LifecycleStartupTiming",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Lifecycle.LifecycleStartupTiming"
     },
     {
       "classification": "dto",
@@ -71069,10 +71099,10 @@
   ],
   "summary": {
     "contract_references": 3216,
-    "contract_set_memberships": 3772,
-    "edges": 8070,
+    "contract_set_memberships": 3775,
+    "edges": 8073,
     "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3897
+    "nodes": 3899
   }
 }
