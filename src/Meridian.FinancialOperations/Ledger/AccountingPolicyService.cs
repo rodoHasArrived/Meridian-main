@@ -147,7 +147,14 @@ public sealed class AccountingPolicyService : IAccountingPolicyService
             Default(AccountingBasisKindDto.Gaap, "gaap-default-v1", "v1", "Default GAAP basis policy", AccountingTreatmentKindDto.Accrual),
             Default(AccountingBasisKindDto.Cash, "cash-default-v1", "v1", "Default cash basis policy", AccountingTreatmentKindDto.General),
             Default(AccountingBasisKindDto.Tax, "tax-default-v1", "v1", "Default tax basis policy", AccountingTreatmentKindDto.TaxLotRelief),
-            Default(AccountingBasisKindDto.Statutory, "stat-default-v1", "v1", "Default statutory basis policy", AccountingTreatmentKindDto.General)
+            Default(AccountingBasisKindDto.Statutory, "stat-default-v1", "v1", "Default statutory basis policy", AccountingTreatmentKindDto.General),
+            new AccountingPolicyDto("consolidation-v1", AccountingBasisKindDto.Primary, "w10-v1",
+                "Two-entity same-currency receivable/payable consolidation", start, null, false, "{}", createdAt,
+                RulePack: new AccountingPolicyRulePackDto("consolidation.rules", "w10-v1",
+                [new AccountingPolicyRuleDto("consolidation.receivable-payable", AccountingTreatmentKindDto.ConsolidationElimination,
+                    RuleVersion: "w10-v1", SourceEventType: "Consolidation", JournalTemplateId: "intercompany-receivable-payable-v1",
+                    RequiresEvidence: true, RequiresApproval: true, AllowsAutoPosting: false,
+                    Description: "Two directly wholly owned entities; Primary basis; same currency; reciprocal receivable/payable only.")]))
         ];
 
         AccountingPolicyDto Default(

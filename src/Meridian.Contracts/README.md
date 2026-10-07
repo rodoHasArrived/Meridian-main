@@ -11,6 +11,11 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Contracts
 
+`Ledger/ConsolidationDtos.cs` defines the two-entity same-currency request, retained source/version
+evidence and shared gross/proposed/posted/consolidated read model. Manual journal drafts retain
+server-owned consolidation evidence, digest and required-evidence marker across the existing review
+lifecycle. Proposed balances and unmatched amounts are distinct from posted accounting truth.
+
 `Ledger/AccountingClosePreparationDtos.cs` describes immutable close template versions, explicit
 calendar deadline rules, owner mappings, authoritative target previews, and retained creation history.
 Create requests identify a retained preview and idempotency key rather than asserting dates or book

@@ -11,6 +11,13 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.FinancialOperations
 
+`Consolidation/ConsolidationService` resolves two directly wholly owned entities from authoritative
+effective-dated ownership, compares reciprocal receivables/payables using posting entity and
+counterparty, and produces evidence-bound drafts through the typed `ConsolidationElimination`
+policy rule. Same-currency Primary books only; unmatched balances remain explicit. Read
+[the first-slice contract](../../docs/domain/intercompany-consolidation.md) for exact chart,
+perimeter, correction and currency limits.
+
 `AccountingClosePreparationService` captures immutable versions of close configuration and previews
 them against authoritative ledger books and periods. Deadline rules specify a period anchor,
 calendar/business-day offset, and subsequent weekend/holiday adjustment using an explicit retained

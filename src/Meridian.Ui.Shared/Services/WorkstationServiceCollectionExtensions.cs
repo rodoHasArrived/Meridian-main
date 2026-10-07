@@ -1,3 +1,4 @@
+using Meridian.FinancialOperations.Consolidation;
 using Meridian.Storage.Archival;
 using Meridian.Core.IO;
 using Meridian.Application.Accounting;
@@ -1000,6 +1001,19 @@ public static class WorkstationServiceCollectionExtensions
             new PositionSnapshotAutomatedJournalDividendPositionResolver(
                 sp.GetService<IPositionSnapshotStore>()));
         services.TryAddSingleton<TimeProvider>(TimeProvider.System);
+        services.TryAddSingleton<ConsolidationService>(sp =>
+            sp.GetService<IFundStructureService>() is PostgresFundStructureService structure &&
+            sp.GetService<ILedgerJournalStore>() is PostgresLedgerJournalStore ledger &&
+            sp.GetService<IAccountingPolicyService>() is { } policy &&
+            sp.GetService<IAccountingJournalDraftService>() is { } journalDrafts
+                ? new ConsolidationService(new ConsolidationPerimeterResolver(structure), ledger, policy, journalDrafts)
+                : null!);
+        services.TryAddSingleton<IConsolidationDraftGuard>(sp => sp.GetService<ConsolidationService>()!);
+        services.TryAddSingleton<ConsolidationWorkbenchService>(sp =>
+            sp.GetService<ConsolidationService>() is { } consolidation &&
+            sp.GetService<IManualJournalEntryWorkbenchService>() is ManualJournalEntryWorkbenchService workbench
+                ? new ConsolidationWorkbenchService(consolidation, sp.GetRequiredService<IManualJournalEntryDraftStore>(),
+                    workbench, sp.GetRequiredService<IAccountingConfigurationService>()) : null!);
         services.TryAddSingleton<IManualJournalEntryWorkbenchService>(sp =>
             new ManualJournalEntryWorkbenchService(
                 sp.GetRequiredService<IManualJournalEntryDraftStore>(),
@@ -1011,7 +1025,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>(),
                 sp.GetService<IGovernedLedgerPostingTarget>(),
                 sp.GetRequiredService<IManualJournalMutationRecoveryStore>(),
-                sp.GetRequiredService<Meridian.FinancialOperations.FundAdministration.IRecurringJournalStore>()));
+                sp.GetRequiredService<Meridian.FinancialOperations.FundAdministration.IRecurringJournalStore>(),
+                sp.GetService<IConsolidationDraftGuard>()));
         services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
             (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
         services.TryAddSingleton<DailyValuationBatchLifecycleService>();

@@ -11,6 +11,13 @@ last_reviewed: 2026-10-05
 
 # src/Meridian.Ui.Shared
 
+`ConsolidationWorkbenchService` exposes gross, incremental proposed, posted and actual consolidated
+balances with exact source drill-through. The consolidation HTTP routes resolve authenticated scope
+and use authoritative PostgreSQL sources. Drafts enter the existing journal queue; the manual
+workbench guards submit/approve/post and recovery against changed sources, preserves server evidence
+through edits and routes corrections back to the consolidation calculation. See
+[first-slice limits](../../docs/domain/intercompany-consolidation.md).
+
 Accounting close preparation exposes scoped template capture, retained template versions, preview,
 and creation under `/api/ledger/close-management`. Each request authorizes the source workflow;
 preview and creation also authorize the target book against the authenticated tenant and company.

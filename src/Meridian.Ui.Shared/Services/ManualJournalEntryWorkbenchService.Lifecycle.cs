@@ -585,7 +585,10 @@ public sealed partial class ManualJournalEntryWorkbenchService
             issues.Add(Issue("manual-je.lines-minimum", AccountingConfigurationValidationSeverityDto.Critical, "At least two journal lines are required for approval submission.", "lines", "Add debit and credit lines."));
         }
 
-        ValidateRequiredDimensions(headerDimensions, allowIncomplete, "manual-je.dimensions", issues);
+        // Consolidation spans two posting entities. Its guarded source lines retain each
+        // legal entity; assigning either entity (or the fund root) to the header is misleading.
+        ValidateRequiredDimensions(headerDimensions, allowIncomplete, "manual-je.dimensions", issues,
+            requireEntity: !IsConsolidationDraft(draft));
 
         if (!allowIncomplete && evidenceLinks.Count == 0)
         {
@@ -989,7 +992,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
         LedgerDimensionSetDto? dimensions,
         bool allowIncomplete,
         string targetId,
-        List<AccountingConfigurationValidationIssueDto> issues)
+        List<AccountingConfigurationValidationIssueDto> issues,
+        bool requireEntity = true)
     {
         var severity = allowIncomplete
             ? AccountingConfigurationValidationSeverityDto.Warning
@@ -1004,7 +1008,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
                 "Attach the fund dimension before approval submission."));
         }
 
-        if (string.IsNullOrWhiteSpace(dimensions?.EntityId))
+        if (requireEntity && string.IsNullOrWhiteSpace(dimensions?.EntityId))
         {
             issues.Add(Issue(
                 "manual-je.dimension-entity-missing",

@@ -167,7 +167,9 @@ public sealed class LedgerAndCompliancePermissionSplitTests
 
     private static async Task<WebApplication> CreateLedgerAndComplianceAppAsync(
         UserPermission permissions,
-        IFundProfileTenantGuard? tenantGuard = null)
+        IFundProfileTenantGuard? tenantGuard = null,
+        string? companyId = null,
+        bool useMutationGuard = false)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -185,8 +187,16 @@ public sealed class LedgerAndCompliancePermissionSplitTests
             context.Items[LoginSessionMiddleware.CurrentUserKey] = "permission-split-user";
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
             context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
+            if (companyId is not null)
+            {
+                context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = companyId;
+            }
             await next();
         });
+        if (useMutationGuard)
+        {
+            app.UseMutationAuthorizationGuard();
+        }
 
         app.MapLedgerEndpoints(JsonOptions);
         app.MapComplianceEndpoints(JsonOptions);
@@ -289,6 +299,53 @@ public sealed class LedgerAndCompliancePermissionSplitTests
                 UserPermission.ViewLedgerReports,
                 $"{route.Method} {route.Pattern} is a write: read authority must not satisfy it");
         }
+    }
+
+    [Fact]
+    public async Task ConsolidationRoutes_PreviewIsReadOnlyAndDraftCreationRequiresWriteAuthority()
+    {
+        await using var app = await CreateLedgerAndComplianceAppAsync(UserPermission.ViewLedgerReports);
+        var routes = DeclaredRoutes(app, "/api/ledger/consolidation");
+        var preview = routes.Should().ContainSingle(route => route.Pattern == "/api/ledger/consolidation/preview").Subject;
+        preview.Method.Should().Be("GET");
+        preview.Authorization.Permissions.Should().Contain(UserPermission.ViewLedgerReports);
+        var draft = routes.Should().ContainSingle(route => route.Pattern == "/api/ledger/consolidation/drafts").Subject;
+        draft.Method.Should().Be("POST");
+        draft.Authorization.Permissions.Should().Contain(UserPermission.ManageLedgerReports);
+        draft.Authorization.Permissions.Should().NotContain(UserPermission.ViewLedgerReports);
+    }
+
+    [Theory]
+    [InlineData("valid", System.Net.HttpStatusCode.NotImplemented)]
+    [InlineData("missing-organization", System.Net.HttpStatusCode.BadRequest)]
+    [InlineData("invalid-book", System.Net.HttpStatusCode.BadRequest)]
+    [InlineData("invalid-date", System.Net.HttpStatusCode.BadRequest)]
+    public async Task ConsolidationPreview_BindsRequiredScopeFromGetQuery(string input, System.Net.HttpStatusCode expected)
+    {
+        await using var app = await CreateLedgerAndComplianceAppAsync(UserPermission.ViewLedgerReports, companyId: "company-test");
+        var organization = input == "missing-organization" ? string.Empty : $"organizationId={Guid.NewGuid():D}&";
+        var book = input == "invalid-book" ? "invalid-guid" : Guid.NewGuid().ToString("D");
+        var date = input == "invalid-date" ? "invalid-date" : "2026-06-30";
+        var query = $"{organization}ownershipRootId={Guid.NewGuid():D}&eliminationBookId={book}&periodId={Guid.NewGuid():D}&asOf={date}";
+
+        var response = await app.GetTestClient().GetAsync($"/api/ledger/consolidation/preview?{query}");
+
+        // A valid query reaches the read handler, where this minimal host has no configured
+        // consolidation service. Malformed or absent required scope is refused during binding.
+        response.StatusCode.Should().Be(expected);
+    }
+
+    [Fact]
+    public async Task ConsolidationDraft_ReadOnlySessionIsDeniedBeforeRequestBodyBinding()
+    {
+        await using var app = await CreateLedgerAndComplianceAppAsync(UserPermission.ViewLedgerReports,
+            companyId: "company-test", useMutationGuard: true);
+        using var malformedBody = new StringContent("{invalid-json", System.Text.Encoding.UTF8, "application/json");
+
+        var response = await app.GetTestClient().PostAsync("/api/ledger/consolidation/drafts", malformedBody);
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Forbidden,
+            "a read-only session must fail the declared write permission before JSON binding or draft service access");
     }
 
     [Fact]

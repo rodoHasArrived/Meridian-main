@@ -11,6 +11,12 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Storage
 
+Consolidation append validates explicit approval, reviewed lines, currency, correction ancestry and
+source evidence. Under the existing global ledger audit lock it rechecks both source books and the
+elimination book as of the reviewed date, including earlier periods and backdated journals. A
+concurrent source change aborts posting and requires renewed review. See
+[consolidation scope](../../docs/domain/intercompany-consolidation.md).
+
 Atomic file-write diagnostics retain operation outcomes, byte counts, OS error numbers and exception
 types. Paths, file contents, checksum values and exception messages are omitted because they can
 contain financial account identities or other private data.
