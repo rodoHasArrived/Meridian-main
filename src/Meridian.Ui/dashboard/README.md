@@ -70,6 +70,11 @@ retained subject are never assigned inferred provenance. Reads disable developme
 show loading, unavailable, empty, stale and mismatched-subject states. Escape and focus restoration
 use the shared sheet behavior. Full evidence links retain the selected ledger book.
 
+Statement import links to the exact retained Operations Continuity workflow, book, and period.
+An unavailable requested workflow fails closed. Close publication continues to require the full
+fund/account/entity/book/period scope and current server readiness; the import handoff alone
+does not supply that complete close authority.
+
 Ledger Explorer clears the selected amount when its tab becomes inactive, its book or period
 changes, or its posted journal no longer contains that amount. Returning to the prior scope
 requires a new amount click; a late evidence response cannot restore the previous drawer.
