@@ -9,6 +9,32 @@ namespace Meridian.Storage.Ledger;
 
 public sealed partial class PostgresLedgerJournalStore
 {
+    private async Task<IAsyncDisposable?> AcquireConsolidationAuthorityAsync(
+        NpgsqlConnection connection, NpgsqlTransaction transaction, LedgerJournalEntryWrite entry, CancellationToken ct)
+    {
+        var evidence = ConsolidationPostingEvidenceGuard.Validate(entry);
+        if (evidence is null)
+            return null;
+        var authority = _consolidationAuthority?.Invoke()
+            ?? throw new LedgerValidationException("Authoritative consolidation ownership and policy validation is unavailable; posting is blocked.");
+
+        // Protect both retained books and absent competing book mappings. The independently
+        // configured ownership store and policy provider retain their own locks in the lease.
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = $"lock table {Qualified("ledger_books")} in share mode;";
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        try
+        {
+            return await authority.AcquireValidatedLeaseAsync(evidence, ct).ConfigureAwait(false)
+                ?? throw new LedgerValidationException("Consolidation authority did not retain its validation lease.");
+        }
+        catch (InvalidOperationException exception)
+        {
+            throw new LedgerValidationException(exception.Message);
+        }
+    }
+
     private async Task ValidateCurrentConsolidationSourcesAsync(
         NpgsqlConnection connection, NpgsqlTransaction transaction, LedgerJournalEntryWrite entry,
         CancellationToken ct)

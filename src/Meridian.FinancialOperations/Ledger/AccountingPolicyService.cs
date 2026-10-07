@@ -10,6 +10,11 @@ public interface IAccountingPolicyService
 {
     Task<AccountingPolicyDto> CreatePolicyAsync(CreateAccountingPolicyRequest request, CancellationToken ct = default);
 
+    /// <summary>Prevents policy mutation until the consolidation transaction has committed or rolled back.</summary>
+    Task<IAsyncDisposable> AcquireConsolidationAuthorityLeaseAsync(CancellationToken ct = default)
+        => Task.FromException<IAsyncDisposable>(new InvalidOperationException(
+            "The accounting policy provider cannot retain consolidation authority through commit."));
+
     Task<AccountingPolicyDto> ResolvePolicyAsync(AccountingPolicyQuery query, CancellationToken ct = default);
 
     Task<IReadOnlyList<AccountingPolicyDto>> ListPoliciesAsync(AccountingBasisKindDto? accountingBasis = null, CancellationToken ct = default);
@@ -48,6 +53,7 @@ public sealed record AccountingBasisProjectionResult(
 public sealed class AccountingPolicyService : IAccountingPolicyService
 {
     private readonly ConcurrentDictionary<string, AccountingPolicyDto> _policies = new(StringComparer.OrdinalIgnoreCase);
+    private readonly SemaphoreSlim _consolidationAuthorityGate = new(1, 1);
 
     private readonly TimeProvider _timeProvider;
 
@@ -72,10 +78,17 @@ public sealed class AccountingPolicyService : IAccountingPolicyService
         }
     }
 
-    public Task<AccountingPolicyDto> CreatePolicyAsync(CreateAccountingPolicyRequest request, CancellationToken ct = default)
+    public async Task<IAsyncDisposable> AcquireConsolidationAuthorityLeaseAsync(CancellationToken ct = default)
+    {
+        await _consolidationAuthorityGate.WaitAsync(ct).ConfigureAwait(false);
+        return new ConsolidationAuthorityLease(_consolidationAuthorityGate);
+    }
+
+    public async Task<AccountingPolicyDto> CreatePolicyAsync(CreateAccountingPolicyRequest request, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
+        await using var authorityLease = await AcquireConsolidationAuthorityLeaseAsync(ct).ConfigureAwait(false);
 
         var policy = new AccountingPolicyDto(
             PolicyId: RequireText(request.PolicyId, nameof(request.PolicyId)),
@@ -94,7 +107,7 @@ public sealed class AccountingPolicyService : IAccountingPolicyService
             RulePack: NormalizeRulePack(request.RulePack, request.PolicyId, request.Version));
 
         _policies[Key(policy.AccountingBasis, policy.PolicyId, policy.Version)] = policy;
-        return Task.FromResult(policy);
+        return policy;
     }
 
     public Task<AccountingPolicyDto> ResolvePolicyAsync(AccountingPolicyQuery query, CancellationToken ct = default)
@@ -135,6 +148,17 @@ public sealed class AccountingPolicyService : IAccountingPolicyService
             .ThenBy(static policy => policy.Version, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         return Task.FromResult<IReadOnlyList<AccountingPolicyDto>>(results);
+    }
+
+    private sealed class ConsolidationAuthorityLease(SemaphoreSlim gate) : IAsyncDisposable
+    {
+        private SemaphoreSlim? _gate = gate;
+
+        public ValueTask DisposeAsync()
+        {
+            Interlocked.Exchange(ref _gate, null)?.Release();
+            return ValueTask.CompletedTask;
+        }
     }
 
     private static IReadOnlyList<AccountingPolicyDto> BuildDefaultPolicies()

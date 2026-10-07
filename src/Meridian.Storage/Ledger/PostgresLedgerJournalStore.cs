@@ -31,13 +31,15 @@ public sealed partial class PostgresLedgerJournalStore :
     // Deferred because the asset projection store itself consumes the ledger journal interface.
     private readonly Func<Meridian.Storage.SecurityMaster.ISecurityMasterStore?>? _backfillSecurityMaster;
     private readonly Func<Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore?>? _backfillPositions;
+    private readonly Func<IConsolidationPostingAuthority?>? _consolidationAuthority;
 
     public PostgresLedgerJournalStore(
         LedgerJournalStoreOptions options,
         IFundScopeTenantAccessor? tenantAccessor = null,
         TenantScopeEnforcementOptions? tenantScope = null,
         Func<Meridian.Storage.SecurityMaster.ISecurityMasterStore?>? backfillSecurityMaster = null,
-        Func<Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore?>? backfillPositions = null)
+        Func<Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore?>? backfillPositions = null,
+        Func<IConsolidationPostingAuthority?>? consolidationAuthority = null)
     {
         ArgumentNullException.ThrowIfNull(options);
         _options = options;
@@ -45,6 +47,7 @@ public sealed partial class PostgresLedgerJournalStore :
         _tenantScope = tenantScope ?? TenantScopeEnforcementOptions.DeploymentBoundary;
         _backfillSecurityMaster = backfillSecurityMaster;
         _backfillPositions = backfillPositions;
+        _consolidationAuthority = consolidationAuthority;
     }
 
     // SEC-005 slice 4c-ii: the caller's tenant for the current ambient scope, or null (fail-open).
@@ -78,7 +81,8 @@ public sealed partial class PostgresLedgerJournalStore :
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
 
-        await AppendAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+        await using var authority = await AcquireConsolidationAuthorityAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+        await AppendCoreAsync(connection, transaction, entry, ct).ConfigureAwait(false);
 
         await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
@@ -88,6 +92,20 @@ public sealed partial class PostgresLedgerJournalStore :
         NpgsqlTransaction transaction,
         LedgerJournalEntryWrite entry,
         CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        ArgumentNullException.ThrowIfNull(entry.Entry);
+        if (ConsolidationPostingEvidenceGuard.Validate(entry) is not null)
+            throw new LedgerValidationException(
+                "Consolidation requires the standalone append transaction so authoritative ownership and policy remain locked through commit.");
+        await AppendCoreAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+    }
+
+    private async Task AppendCoreAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        LedgerJournalEntryWrite entry,
+        CancellationToken ct)
     {
         RequireWriteTenant();
         ArgumentNullException.ThrowIfNull(connection);

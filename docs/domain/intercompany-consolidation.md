@@ -2,7 +2,7 @@
 
 **Status:** implemented slice, validation tracked with the change
 **Owner:** Accounting and Ledger
-**Reviewed:** 2026-10-06
+**Reviewed:** 2026-10-07
 
 Consolidation is a reviewed overlay on immutable entity journals. A proposed elimination is not a
 posted balance. The shared consolidation view reports normal account balances as gross, proposed
@@ -59,7 +59,13 @@ the operator reruns and obtains renewed review. Old drafts remain inspectable an
 The PostgreSQL append boundary rechecks the as-of journal count and maximum sequence for all three
 books while holding the same ledger audit lock used by every journal append, preventing a source
 commit between the final balance check and elimination posting. Future-dated source journals do not
-invalidate an earlier as-of review. Ownership/policy are re-resolved at workflow boundaries.
+invalidate an earlier as-of review. The final append also re-resolves the complete evidence while
+holding ownership-table and book-mapping locks plus the policy provider's mutation lease through
+commit. Missing authority providers block posting. Consolidation uses the journal store's owned
+transaction; caller-owned transaction append is rejected because it cannot retain these authority
+leases through an external commit. These first-slice locks serialize ownership changes and book
+configuration changes during elimination posting; ordinary source journal appends retain their
+existing audit-lock ordering.
 
 Deterministic scope and evidence keys include perimeter, date, reciprocal entities and rule version.
 An unchanged rerun returns the same retained draft, and an already-posted target creates no new

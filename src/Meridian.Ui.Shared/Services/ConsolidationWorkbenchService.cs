@@ -34,9 +34,10 @@ public sealed class ConsolidationWorkbenchService(ConsolidationService consolida
                 {
                     var account = workspace.ChartOfAccounts.SingleOrDefault(x => x.Path == line.AccountPath);
                     if (account is null || account.IsArchived || account.AccountName != line.AccountPath ||
+                        account.Symbol is not null || account.FinancialAccountId is not null ||
                         !string.Equals(account.AccountType, line.AccountPath == ConsolidationService.ReceivableAccount
                             ? "Asset" : "Liability", StringComparison.OrdinalIgnoreCase))
-                        throw new InvalidOperationException("The elimination chart must contain the supported intercompany account paths with identical account names.");
+                        throw new InvalidOperationException("The elimination chart must contain the supported unscoped intercompany account paths with identical account names; Symbol and FinancialAccountId must be absent.");
                 }
                 await workbench.SaveAutomatedDraftAsync(new SaveManualJournalEntryDraftRequest(draft, actor,
                     CorrelationId: draft.TreasuryContext!.IdempotencyKey, TenantId: tenant, CompanyId: company), ct).ConfigureAwait(false);

@@ -4778,7 +4778,8 @@ Meridian-main
 │   │   │   └── PostgresBankingService.cs
 │   │   ├── Consolidation
 │   │   │   ├── ConsolidationPerimeterResolver.cs
-│   │   │   └── ConsolidationService.cs
+│   │   │   ├── ConsolidationService.cs
+│   │   │   └── PostgresConsolidationPostingAuthority.cs
 │   │   ├── FundAdministration
 │   │   │   ├── FileRecurringJournalStore.cs
 │   │   │   ├── FundAdministrationControlService.cs
@@ -5865,6 +5866,7 @@ Meridian-main
 │   │   │   ├── IFundStructureTenantBackfillStore.cs
 │   │   │   ├── InMemoryFundStructureStateStore.cs
 │   │   │   ├── JsonFileFundStructureStateStore.cs
+│   │   │   ├── PostgresFundStructureStore.Consolidation.cs
 │   │   │   ├── PostgresFundStructureStore.cs
 │   │   │   └── PostgresFundStructureTenantBackfillStore.cs
 │   │   ├── Integrations
@@ -5930,6 +5932,7 @@ Meridian-main
 │   │   │   ├── DurableAutomatedJournalPoster.cs
 │   │   │   ├── GovernedLedgerPostingTarget.cs
 │   │   │   ├── HistoricalTaxLotQuantity.cs
+│   │   │   ├── IConsolidationPostingAuthority.cs
 │   │   │   ├── ILedgerJournalStore.cs
 │   │   │   ├── LedgerBookServiceException.cs
 │   │   │   ├── LedgerCurrencyBackfill.cs
@@ -9524,6 +9527,7 @@ Meridian-main
 │   │   │   │   │   └── SharedStartupBootstrapperTests.cs
 │   │   │   │   ├── BackfillFeatureRegistrationTests.cs
 │   │   │   │   ├── CanonicalLotAmortizationCompositionTests.cs
+│   │   │   │   ├── ConsolidationPostingAuthorityCompositionTests.cs
 │   │   │   │   ├── DiagnosticsFeatureRegistrationTests.cs
 │   │   │   │   ├── DirectLendingStartupTests.cs
 │   │   │   │   ├── HostStartupLifecycleTests.cs
@@ -9954,6 +9958,7 @@ Meridian-main
 │   │   │   ├── Ledger
 │   │   │   │   ├── AccountingBasisProjectionSetServiceTests.cs
 │   │   │   │   ├── AccountingJournalDraftServiceTests.cs
+│   │   │   │   ├── AccountingPolicyAuthorityLeaseTests.cs
 │   │   │   │   ├── AccountingPolicyClockTests.cs
 │   │   │   │   ├── AccountingPolicyServiceTests.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.ActorAttribution.cs
@@ -10537,6 +10542,7 @@ Meridian-main
 │   │   │   ├── CanonicalOpenLotConsumerTests.cs
 │   │   │   ├── CanonicalSymbolRegistryTests.cs
 │   │   │   ├── CompositeSinkTests.cs
+│   │   │   ├── ConsolidationAuthorityPostgresTests.cs
 │   │   │   ├── ConsolidationPostingGuardTests.cs
 │   │   │   ├── ConsolidationSourcesPostgresTests.cs
 │   │   │   ├── DataLineageServiceTests.cs

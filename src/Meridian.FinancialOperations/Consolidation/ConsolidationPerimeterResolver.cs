@@ -105,7 +105,7 @@ public sealed class ConsolidationPerimeterResolver(IFundStructureService structu
 
     private static void RequireActive(bool active, DateTimeOffset from, DateTimeOffset? to, DateTimeOffset asOf, string description)
     {
-        if (!active || from > asOf || (to.HasValue && asOf > to.Value))
+        if (!active || from > asOf || (to.HasValue && asOf >= to.Value))
             throw new InvalidOperationException($"The {description} is not active on the consolidation date.");
     }
 

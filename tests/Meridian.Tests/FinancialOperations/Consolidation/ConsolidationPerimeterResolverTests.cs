@@ -110,6 +110,59 @@ public sealed class ConsolidationPerimeterResolverTests
     }
 
     [Theory]
+    [InlineData(FundStructureNodeKindDto.Organization, false)]
+    [InlineData(FundStructureNodeKindDto.Business, false)]
+    [InlineData(FundStructureNodeKindDto.Fund, false)]
+    [InlineData(FundStructureNodeKindDto.Entity, false)]
+    [InlineData(FundStructureNodeKindDto.Organization, true)]
+    [InlineData(FundStructureNodeKindDto.Business, true)]
+    [InlineData(FundStructureNodeKindDto.Fund, true)]
+    [InlineData(FundStructureNodeKindDto.Entity, true)]
+    public async Task ResolveAsync_AuthorityWindowIncludesStartAndExcludesExpiry(FundStructureNodeKindDto kind, bool nodeOnly)
+    {
+        var graph = Graph();
+        var from = AsOf.AddTicks(-1);
+        if (nodeOnly)
+        {
+            graph = graph with
+            {
+                Nodes = graph.Nodes.Select(node => node.Kind == kind
+                    ? node with { EffectiveFrom = from, EffectiveTo = AsOf } : node).ToArray()
+            };
+        }
+        else
+        {
+            graph = kind switch
+            {
+                FundStructureNodeKindDto.Organization => graph with
+                {
+                    Organizations = [graph.Organizations[0] with { EffectiveFrom = from, EffectiveTo = AsOf }]
+                },
+                FundStructureNodeKindDto.Business => graph with
+                {
+                    Businesses = [graph.Businesses[0] with { EffectiveFrom = from, EffectiveTo = AsOf }]
+                },
+                FundStructureNodeKindDto.Fund => graph with
+                {
+                    Funds = [graph.Funds[0] with { EffectiveFrom = from, EffectiveTo = AsOf }]
+                },
+                FundStructureNodeKindDto.Entity => graph with
+                {
+                    Entities = [graph.Entities[0] with { EffectiveFrom = from, EffectiveTo = AsOf }, graph.Entities[1]]
+                },
+                _ => throw new ArgumentOutOfRangeException(nameof(kind))
+            };
+        }
+        var service = Service(graph);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.ResolveAsync(OrganizationId, RootId, from.AddTicks(-1)));
+        var active = await service.ResolveAsync(OrganizationId, RootId, from);
+        Assert.Equal(2, active.Entities.Count);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.ResolveAsync(OrganizationId, RootId, AsOf));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.ResolveAsync(OrganizationId, RootId, AsOf.AddTicks(1)));
+    }
+
+    [Theory]
     [InlineData("EUR")]
     [InlineData("")]
     public async Task ResolveAsync_RejectsMixedOrMissingEntityCurrency(string currency)

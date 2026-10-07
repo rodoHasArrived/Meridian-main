@@ -15,7 +15,9 @@ last_reviewed: 2026-10-05
 balances with exact source drill-through. The consolidation HTTP routes resolve authenticated scope
 and use authoritative PostgreSQL sources. Drafts enter the existing journal queue; the manual
 workbench guards submit/approve/post and recovery against changed sources, preserves server evidence
-through edits and routes corrections back to the consolidation calculation. See
+through edits and routes corrections back to the consolidation calculation. Composition supplies a
+deferred posting authority that retains ownership and policy locks until ledger commit. Draft
+intake rejects intercompany chart accounts with symbol or financial-account scopes. See
 [first-slice limits](../../docs/domain/intercompany-consolidation.md).
 
 `OnboardingEndpoints` exposes tenant/company-scoped workspaces under

@@ -22,7 +22,7 @@ public sealed class ConsolidationSourcesPostgresTests
         var june = await database.JournalStore.SavePeriodAsync(ConsolidationStorageFixture.Period(books[1], 6), 0, ct: ct);
         await database.JournalStore.AppendAsync(ConsolidationStorageFixture.Write(books[1], june, new(2026, 6, 1)), ct);
 
-        await database.JournalStore.AppendAsync(write, ct);
+        await SourceOnlyStore(database).AppendAsync(write, ct);
 
         (await database.JournalStore.GetByPeriodAsync(periods[2].PeriodId, ct)).Should().ContainSingle();
         (await database.JournalStore.VerifyLedgerEventAuditAsync(ct)).ChainedEvents.Should().Be(7);
@@ -39,7 +39,7 @@ public sealed class ConsolidationSourcesPostgresTests
         var april = await database.JournalStore.SavePeriodAsync(ConsolidationStorageFixture.Period(books[0], 4), 0, ct: ct);
         await database.JournalStore.AppendAsync(ConsolidationStorageFixture.Write(books[0], april, new(2026, 4, 20)), ct);
 
-        var post = () => database.JournalStore.AppendAsync(write, ct);
+        var post = () => SourceOnlyStore(database).AppendAsync(write, ct);
         await post.Should().ThrowAsync<LedgerValidationException>().WithMessage("*renewed review*");
 
         (await database.JournalStore.GetByPeriodAsync(periods[2].PeriodId, ct)).Should().BeEmpty();
@@ -55,7 +55,7 @@ public sealed class ConsolidationSourcesPostgresTests
         var write = await ReviewedWriteAsync(database, books, periods, ct);
         await database.JournalStore.AppendAsync(ConsolidationStorageFixture.Write(books[2], periods[2]), ct);
 
-        var post = () => database.JournalStore.AppendAsync(write, ct);
+        var post = () => SourceOnlyStore(database).AppendAsync(write, ct);
         await post.Should().ThrowAsync<LedgerValidationException>().WithMessage("*renewed review*");
 
         (await database.JournalStore.GetByPeriodAsync(periods[2].PeriodId, ct)).Should().ContainSingle();
@@ -76,17 +76,42 @@ public sealed class ConsolidationSourcesPostgresTests
         await database.JournalStore.AppendAsync(sourceConnection, sourceTransaction,
             ConsolidationStorageFixture.Write(books[0], periods[0]), ct);
 
-        await using var eliminationConnection = new NpgsqlConnection(database.Options.ConnectionString);
-        await eliminationConnection.OpenAsync(ct);
-        await using var eliminationTransaction = await eliminationConnection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
-        var posting = database.JournalStore.AppendAsync(eliminationConnection, eliminationTransaction, elimination, ct);
-        await WaitUntilBlockedAsync(database, eliminationConnection.ProcessID, ct);
+        var name = $"consolidation-source-race-{Guid.NewGuid():N}";
+        var options = new LedgerJournalStoreOptions
+        {
+            ConnectionString = new NpgsqlConnectionStringBuilder(database.Options.ConnectionString) { ApplicationName = name }.ConnectionString,
+            SchemaName = database.Options.SchemaName
+        };
+        var store = new PostgresLedgerJournalStore(options, consolidationAuthority: () => new SourceOnlyAuthority());
+        var posting = store.AppendAsync(elimination, ct);
+        await WaitUntilBlockedAsync(database, name, ct);
         await sourceTransaction.CommitAsync(ct);
 
-        var complete = async () => await posting;
+        var complete = async () =>
+        {
+            try
+            { await posting; }
+            catch (PostgresException exception) when (exception.SqlState == PostgresErrorCodes.SerializationFailure)
+            {
+                // A SERIALIZABLE snapshot predating the competing audit-head update must retry
+                // the whole standalone append, including its authority lease and source check.
+                await store.AppendAsync(elimination, ct);
+            }
+        };
         await complete.Should().ThrowAsync<LedgerValidationException>().WithMessage("*renewed review*");
-        await eliminationTransaction.RollbackAsync(ct);
         (await database.JournalStore.GetByPeriodAsync(periods[2].PeriodId, ct)).Should().BeEmpty();
+    }
+
+    // This suite isolates journal-version concurrency. Production authority and lease lifetime
+    // are exercised against real ownership storage in ConsolidationAuthorityPostgresTests.
+    private static PostgresLedgerJournalStore SourceOnlyStore(LedgerPostgresTestDatabase database) =>
+        new(database.Options, consolidationAuthority: () => new SourceOnlyAuthority());
+
+    private sealed class SourceOnlyAuthority : IConsolidationPostingAuthority, IAsyncDisposable
+    {
+        public Task<IAsyncDisposable> AcquireValidatedLeaseAsync(ConsolidationEvidenceDto evidence, CancellationToken ct = default)
+            => Task.FromResult<IAsyncDisposable>(this);
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 
     private static async Task<(LedgerBookRecord[] Books, LedgerAccountingPeriod[] Periods)> CreateBooksAsync(
@@ -116,13 +141,13 @@ public sealed class ConsolidationSourcesPostgresTests
             ConsolidationStorageFixture.Evidence(books[2], periods[2], versions));
     }
 
-    private static async Task WaitUntilBlockedAsync(LedgerPostgresTestDatabase database, int processId, CancellationToken ct)
+    private static async Task WaitUntilBlockedAsync(LedgerPostgresTestDatabase database, string applicationName, CancellationToken ct)
     {
         await using var connection = new NpgsqlConnection(database.Options.ConnectionString);
         await connection.OpenAsync(ct);
         await using var command = connection.CreateCommand();
-        command.CommandText = "select cardinality(pg_blocking_pids(@pid)) > 0;";
-        command.Parameters.AddWithValue("pid", processId);
+        command.CommandText = "select exists(select 1 from pg_stat_activity where application_name = @name and cardinality(pg_blocking_pids(pid)) > 0);";
+        command.Parameters.AddWithValue("name", applicationName);
         while (!(bool)(await command.ExecuteScalarAsync(ct))!)
             await Task.Delay(10, ct);
     }

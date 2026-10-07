@@ -197,6 +197,27 @@ public sealed partial class ConsolidationServiceTests
             issue.TargetId == draft.Lines[0].LineId && issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
     }
 
+    [Theory]
+    [InlineData(ConsolidationService.ReceivableAccount, "ENTITY-A", null)]
+    [InlineData(ConsolidationService.ReceivableAccount, null, "custody-account")]
+    [InlineData(ConsolidationService.PayableAccount, "ENTITY-B", null)]
+    [InlineData(ConsolidationService.PayableAccount, null, "bank-account")]
+    public async Task ConsolidationWorkbench_ScopedEliminationChartAccountBlocksDraftIntake(
+        string accountPath, string? symbol, string? financialAccountId)
+    {
+        var receivable = accountPath == ConsolidationService.ReceivableAccount;
+        var account = new ChartOfAccountsNodeDto(receivable ? "ar" : "ap", accountPath, accountPath,
+            receivable ? "Asset" : "Liability", Symbol: symbol, FinancialAccountId: financialAccountId);
+        var fixture = await CreateWorkbenchFixture(account);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            fixture.Bridge.CreateDraftAsync(fixture.Request, "maker", null, null));
+
+        Assert.Contains("unscoped", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(await fixture.Drafts.ListAsync(Fixture.Profile));
+        Assert.Empty(fixture.Engine.Records[Fixture.OverlayBookId]);
+    }
+
     private static async Task<ManualJournalEntryDraftDto> ApproveAndPost(ManualJournalEntryWorkbenchService workbench,
         ManualJournalEntryDraftDto draft)
     {
@@ -225,7 +246,7 @@ public sealed partial class ConsolidationServiceTests
             EvidenceLinks: [$"/api/workstation/evidence/subjects/accounting-record/{(action == JournalEntryLifecycleActionDto.Post ? "posting" : "approval")}/ledger-book/{draft.LedgerBookId:D}/{draft.PeriodId}"],
             LedgerBookId: draft.LedgerBookId);
 
-    private static async Task<WorkbenchFixture> CreateWorkbenchFixture()
+    private static async Task<WorkbenchFixture> CreateWorkbenchFixture(ChartOfAccountsNodeDto? chartOverride = null)
     {
         var engine = new Fixture();
         var calculation = await engine.Calculate();
@@ -247,9 +268,11 @@ public sealed partial class ConsolidationServiceTests
         var audit = new InMemoryAccountingActionAuditStore();
         var configuration = new AccountingConfigurationService(new InMemoryAccountingConfigurationStore(), audit);
         await configuration.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(Fixture.Profile,
-            new ChartOfAccountsNodeDto("ar", ConsolidationService.ReceivableAccount, ConsolidationService.ReceivableAccount, "Asset"), "maker"));
+            chartOverride?.Path == ConsolidationService.ReceivableAccount ? chartOverride :
+                new ChartOfAccountsNodeDto("ar", ConsolidationService.ReceivableAccount, ConsolidationService.ReceivableAccount, "Asset"), "maker"));
         await configuration.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(Fixture.Profile,
-            new ChartOfAccountsNodeDto("ap", ConsolidationService.PayableAccount, ConsolidationService.PayableAccount, "Liability"), "maker"));
+            chartOverride?.Path == ConsolidationService.PayableAccount ? chartOverride :
+                new ChartOfAccountsNodeDto("ap", ConsolidationService.PayableAccount, ConsolidationService.PayableAccount, "Liability"), "maker"));
         var drafts = new InMemoryManualJournalEntryDraftStore();
         var workbench = new ManualJournalEntryWorkbenchService(drafts, configuration, audit,
             journalStore: engine.Store.Object, consolidationGuard: engine.Service);

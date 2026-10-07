@@ -211,6 +211,13 @@ public sealed class ConsolidationService(
             ConsolidationEvidenceDigest: digest, RequiresConsolidationEvidence: true);
     }
 
+    public async Task ValidateEvidenceCurrentAsync(ConsolidationEvidenceDto evidence, CancellationToken ct = default)
+    {
+        var current = await CalculateAsync(evidence.Request, ct).ConfigureAwait(false);
+        if (current.Blockers.Count > 0 || Hash(evidence) != Hash(current.Evidence))
+            throw new InvalidOperationException("Consolidation authority or source evidence changed. Rerun consolidation and obtain renewed review.");
+    }
+
     public async Task ValidateCurrentAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default)
     {
         var evidence = ReadEvidence(draft.ConsolidationEvidenceJson)

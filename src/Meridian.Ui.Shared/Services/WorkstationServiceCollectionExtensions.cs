@@ -1015,6 +1015,12 @@ public static class WorkstationServiceCollectionExtensions
                 ? new ConsolidationService(new ConsolidationPerimeterResolver(structure), ledger, policy, journalDrafts)
                 : null!);
         services.TryAddSingleton<IConsolidationDraftGuard>(sp => sp.GetService<ConsolidationService>()!);
+        services.TryAddSingleton<IConsolidationPostingAuthority>(sp =>
+            sp.GetService<ConsolidationService>() is { } consolidation &&
+            sp.GetService<Meridian.Storage.FundStructure.IFundStructureStore>() is
+                Meridian.Storage.FundStructure.PostgresFundStructureStore structure &&
+            sp.GetService<IAccountingPolicyService>() is { } policies
+                ? new PostgresConsolidationPostingAuthority(consolidation, structure, policies) : null!);
         services.TryAddSingleton<ConsolidationWorkbenchService>(sp =>
             sp.GetService<ConsolidationService>() is { } consolidation &&
             sp.GetService<IManualJournalEntryWorkbenchService>() is ManualJournalEntryWorkbenchService workbench
