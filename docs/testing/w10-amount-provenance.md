@@ -1,7 +1,7 @@
 # W10-PROV-001 posted and generated amount workflows
 
 **Status:** posted-line and generated trial-balance slices implemented; validation recorded below
-**Reviewed:** 2026-10-06
+**Reviewed:** 2026-10-07 (UTC)
 
 Browser Accounting Ledger Explorer and WPF Posted Ledger now select an individual posted debit or
 credit amount. Both request the same `ledger-amount` subject packet and display the same retained
@@ -90,10 +90,19 @@ populations; tax-relief tests exercise nonempty serialized tuple posting lines.
 - Chromium report-detail interactions passed at **1920 × 1080** and **1366 × 768**, plus 125% scaling:
   exact retained selection, historical-source opening, blocked evidence, Tab focus trapping,
   Escape dismissal/focus restoration, and no overflow or console/framework errors.
+- Full repository `bash scripts/ci.sh` completed with **exit 0**: **19,133 .NET tests passed,
+  0 failed, 5 registered skips** across 19 slices; **3,591 browser tests passed, 0 failed,
+  0 skipped** across 328 files. The workflow/script suite ran **1,552 tests** with **0 failures,
+  0 errors, 16 skips**, and retained the **7 existing quarantined modules**.
 
-Browser interactions use controlled HTTP fixtures. The PostgreSQL tests independently establish
-live database snapshot consistency; no live browser-to-storage flow is claimed. Full repository CI
-results are recorded after the remaining gate completes.
+Local validation used **.NET SDK 10.0.100 and runtime 10.0.0**. A task-local external Linux
+child-process reaper launched the unchanged CI command with `MERIDIAN_USE_INMEMORY_GOVERNANCE`
+unset. It handled process completion; repository CI supplied the checks, skip register, and
+quarantine policy. GitHub Actions remains the authoritative integration result.
+
+Browser interactions use controlled HTTP fixtures. Backend proof tests use retained files and
+review evidence; PostgreSQL tests independently establish live database snapshot consistency.
+These are separate validation boundaries; no live browser-to-storage flow is claimed.
 
 ## Validation evidence
 
