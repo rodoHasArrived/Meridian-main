@@ -375,6 +375,10 @@ the event's functional currency; this partial delivery does not add a cross-curr
 The atomic boundary preserves the acquisition currencies and FX for supported store commands.
 Current-basis disposal relief is supplied by the separate PR #3050 slice described below. These
 amortization corrections preserve its existing relief implementation and acquisition evidence.
+`AtomicTaxLotJournalStoreTests.CanonicalAmortization_LaterFifoDisposalRelievesAmortizedBasisAndReportingCertifiesIt`
+proves relief for an amortized lot: it amortizes a premium face lot, then partially and fully
+relieves it under FIFO against PostgreSQL. Each disposal books exactly the amortized basis, retains
+the acquisition facts, replays exactly, and is certified by Reporting.
 
 Migration `V_ledger_040` widens existing mutation constraints without replacing acquisition facts or
 backfilling legacy rows. Exact command retries return the retained journal and mutation before

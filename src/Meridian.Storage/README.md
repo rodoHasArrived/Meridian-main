@@ -34,6 +34,8 @@ journal. Missing or mismatched inputs are refused before mutation. Posting locks
 parent and its hashed identifiers/aliases through commit; alias writes touch the parent in the same
 transaction so a posting with an older serializable snapshot refuses concurrent reference drift.
 
+A reviewed amortization reversal restores the latest original mutation's complete prior basis adjustment and exactly inverts every retained financial journal line in the same transaction. It preserves acquisition facts, increments the lot version, and appends correction evidence. Same-date rebooks require the reversal receipt and approved lineage; intervening mutations, forged snapshots, wrong source journals and changed counteraccounts fail closed. Existing migration 040 constraints and current calculation/evidence guards remain intact.
+
 Bounded corporate-action successor posting uses `V_ledger_042` and that same serializable atomic
 boundary. A cashless Reg S/144A exchange closes one predecessor into one new lot; advance refunding
 closes one face lot into exactly two new lots. The transaction locks reviewed Security Master and
