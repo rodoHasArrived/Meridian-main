@@ -406,7 +406,7 @@ function NotebookCellItem({
                 "w-full resize-none rounded-md border border-border/60 bg-secondary/30 px-3 py-2",
                 isMarkdown ? "text-sm" : "font-mono text-xs",
                 "text-foreground",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
                 "disabled:cursor-not-allowed disabled:opacity-50",
                 "min-h-[80px]"
               )}

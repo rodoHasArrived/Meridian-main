@@ -103,7 +103,7 @@ export function ThemeToggle({
             onClick={() => select(optionValue)}
             className={cn(
               "inline-flex flex-1 items-center justify-center gap-1.5 rounded-[2px] font-medium leading-none transition-colors",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+              "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
               size === "sm" ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs",
               active
                 ? "bg-background font-semibold text-foreground shadow-[inset_0_0_0_1px_hsl(var(--border))]"

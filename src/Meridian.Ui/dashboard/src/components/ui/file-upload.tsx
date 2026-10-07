@@ -72,7 +72,7 @@ export function FileUpload({
         onDragLeave={() => setDragging(false)}
         className={cn(
           "flex w-full flex-col items-center gap-2 rounded-[2px] border-2 border-dashed px-5 py-5 text-center transition-colors",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+          "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
           dragging ? "border-primary bg-primary/10" : "border-border bg-[var(--ws-surface-raised)] hover:border-[var(--ws-border-hover)]",
           disabled && "cursor-not-allowed opacity-55"
         )}
@@ -106,7 +106,7 @@ export function FileUpload({
                 type="button"
                 aria-label={`Remove ${file.name}`}
                 onClick={() => removeFile(index)}
-                className="text-danger transition-colors hover:text-danger/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="text-danger transition-colors hover:text-danger/80 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
               >
                 <X className="h-3.5 w-3.5" aria-hidden="true" />
               </button>

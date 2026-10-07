@@ -158,7 +158,7 @@ export function LayoutSwitcher({
             <button
               type="button"
               role="menuitem"
-              className="flex w-full items-center gap-2 rounded-[2px] px-2 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              className="flex w-full items-center gap-2 rounded-[2px] px-2 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-secondary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
               onClick={() => {
                 setOpen(false);
                 setSaveOpen(true);
@@ -254,7 +254,7 @@ function LayoutRow({
       <button
         type="button"
         role="menuitem"
-        className="flex min-w-0 flex-1 flex-col gap-0.5 rounded-[2px] px-2 py-1.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        className="flex min-w-0 flex-1 flex-col gap-0.5 rounded-[2px] px-2 py-1.5 text-left focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
         onClick={onRestore}
         title={`Restore ${layout.name}`}
       >
@@ -269,7 +269,7 @@ function LayoutRow({
       {onDelete ? (
         <button
           type="button"
-          className="mr-1 shrink-0 rounded-[2px] p-1 text-muted-foreground opacity-0 transition-opacity hover:text-danger focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 group-hover:opacity-100"
+          className="mr-1 shrink-0 rounded-[2px] p-1 text-muted-foreground opacity-0 transition-opacity hover:text-danger focus-visible:opacity-100 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 group-hover:opacity-100"
           onClick={onDelete}
           aria-label={`Delete layout ${layout.name}`}
           title={`Delete ${layout.name}`}

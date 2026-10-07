@@ -73,7 +73,7 @@ export function ActivationHeaderProgress({ status }: { status?: FirstRunStatus |
         onClick={() => setOpen(true)}
         className={cn(
           "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs transition-colors",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+          "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
           model.finished
             ? "bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/25"
             : "bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-slate-100"
@@ -132,7 +132,7 @@ function GettingStartedRow({
     >
       <div className="flex items-start gap-2.5">
         <span
-          className={cn("mt-0.5 flex-shrink-0", step.isComplete ? "text-success" : "text-muted-foreground")}
+          className={cn("mt-0.5 shrink-0", step.isComplete ? "text-success" : "text-muted-foreground")}
           aria-hidden="true"
         >
           {step.isComplete ? <Check className="h-4 w-4" /> : <Circle className="h-4 w-4" />}
@@ -148,7 +148,7 @@ function GettingStartedRow({
         <button
           type="button"
           onClick={() => onOpen(step.route)}
-          className="inline-flex flex-shrink-0 items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-xs text-foreground transition-colors hover:bg-secondary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-xs text-foreground transition-colors hover:bg-secondary/60 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
         >
           {step.isComplete ? "Revisit" : step.actionLabel}
           <ArrowRight className="h-3 w-3" aria-hidden="true" />

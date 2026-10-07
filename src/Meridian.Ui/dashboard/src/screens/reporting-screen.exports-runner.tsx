@@ -229,7 +229,7 @@ export function ExportsReportRunner({
           </div>
 
           <details className="rounded-md border border-warning/40 bg-warning/5" open={isRestating || undefined}>
-            <summary className="cursor-pointer px-3 py-3 text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+            <summary className="cursor-pointer px-3 py-3 text-sm font-semibold text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
               Advanced: restate a released report
             </summary>
           <div className="space-y-3 border-t border-warning/30 px-3 py-3" aria-label="Restatement authorization">

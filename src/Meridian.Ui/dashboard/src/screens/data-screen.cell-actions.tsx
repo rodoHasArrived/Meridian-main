@@ -399,7 +399,7 @@ export function CellActionTrigger({
       onClick={onOpen}
       className={cn(
         "inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-[2px] text-muted-foreground transition-opacity",
-        "opacity-0 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+        "opacity-0 focus-visible:opacity-100 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
         "group-hover:opacity-100 group-focus-within:opacity-100 hover:text-foreground",
         className
       )}

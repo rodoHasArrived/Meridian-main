@@ -280,6 +280,7 @@ public sealed class EndpointStubDetectionTests
             ["FundAccounts"] = routes.Count(r => r.Route.StartsWith("/api/fund-accounts")),
             ["Ledger"] = routes.Count(r => r.Route.StartsWith("/api/ledger")),
             ["AccountingSystem"] = routes.Count(r => r.Route.StartsWith("/api/accounting-system")),
+            ["Onboarding"] = routes.Count(r => r.Route.StartsWith("/api/accounting/onboarding/", StringComparison.Ordinal)),
             ["Plaid"] = routes.Count(r => r.Route.StartsWith("/api/plaid")),
             ["Strategies"] = routes.Count(r => r.Route.StartsWith("/api/strategies")),
             ["Quant"] = routes.Count(r => r.Route.StartsWith("/api/quant")),
@@ -299,6 +300,7 @@ public sealed class EndpointStubDetectionTests
         categories["Config"].Should().BeGreaterThan(0);
         categories["Backfill"].Should().BeGreaterThan(0);
         categories["Provider"].Should().BeGreaterThan(0);
+        categories["Onboarding"].Should().BeGreaterThan(0);
     }
 
     #endregion
