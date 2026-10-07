@@ -28,6 +28,15 @@ posted basis debits, as well as the retained cash movement, including journals w
 are missing. Exact journal queries retain the existing book,
 period and tenant filters while hydrating every journal leg.
 
+Consolidation append validates explicit approval, reviewed lines, currency, correction ancestry and
+source evidence. Its owned transaction excludes ledger-book changes and retains an authoritative
+ownership/policy validation lease through journal commit. Ownership locks use the configured fund
+structure database and schema and exclude new competing claims as well as updates. Missing authority
+providers and caller-owned transactions refuse consolidation posting. Under the existing global
+ledger audit lock it also rechecks both source books and the elimination book as of the reviewed
+date, including earlier periods and backdated journals. Changed authority or sources require renewed review. See
+[consolidation scope](../../docs/domain/intercompany-consolidation.md).
+
 Atomic file-write diagnostics retain operation outcomes, byte counts, OS error numbers and exception
 types. Paths, file contents, checksum values and exception messages are omitted because they can
 contain financial account identities or other private data.

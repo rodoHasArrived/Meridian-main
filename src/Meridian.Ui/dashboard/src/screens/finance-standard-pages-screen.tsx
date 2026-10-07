@@ -26,6 +26,7 @@ import { ReportRunGovernanceScreen } from "@/screens/report-run-governance-scree
 import { TrialBalanceScreen } from "@/screens/trial-balance-screen";
 import { useAccountingPostedLedgerViewModel } from "@/screens/accounting-screen.posted-ledger.view-model";
 import { usePostedLedgerRouteScope } from "@/screens/posted-ledger-route-scope";
+import { ConsolidationPanel } from "@/screens/accounting-screen.consolidation-panel";
 import {
   buildTemplateRows,
   hasRetainedReportingAsOfDate,
@@ -689,6 +690,7 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
         </CardContent>
       </Card>
       <LedgerAmountProofDrawer selection={currentAmount} onClose={() => setSelectedAmount(null)} />
+      <ConsolidationPanel initialBookId={selectedBookId} initialPeriodId={postedLedger.periodsSettled ? postedLedger.selectedPeriodId : null} />
     </div>
   );
 }

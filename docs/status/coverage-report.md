@@ -5,25 +5,25 @@
 
 ## Overall Coverage
 
-**1407 / 9366** items documented (**15.0%**) &mdash; Grade: **F**
+**1416 / 9384** items documented (**15.1%**) &mdash; Grade: **F**
 
 ```text
-[===-----------------] 15.0%
+[===-----------------] 15.1%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 1318 | 8880 | 14.8% | F |
-| API Endpoints | 88 | 332 | 26.5% | F |
+| Public Classes / Interfaces | 1327 | 8896 | 14.9% | F |
+| API Endpoints | 88 | 334 | 26.3% | F |
 | Configuration Options | 1 | 143 | 0.7% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 0 | 11 | 0.0% | F |
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (7562 undocumented)
+### Public Classes / Interfaces (7569 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -77,9 +77,9 @@
 | `CrossSourceBackfillClosureDecision` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:533` |
 | `CrossSourceBackfillDiscrepancy` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:605` |
 | `CrossSourceBackfillProviderError` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:618` |
-| ... and 7512 more | |
+| ... and 7519 more | |
 
-### API Endpoints (244 undocumented)
+### API Endpoints (246 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -133,7 +133,7 @@
 | `/api/loans/servicer-statements/preview` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:499` |
 | `/api/loans/servicer-statements/import` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:523` |
 | `/api/loans/servicer-statements/{batchId}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:547` |
-| ... and 194 more | |
+| ... and 196 more | |
 
 ### Configuration Options (142 undocumented)
 
@@ -209,8 +209,8 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 7562 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
-2. **API Endpoints**: 244 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
+1. **Public Classes / Interfaces**: 7569 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
+2. **API Endpoints**: 246 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 142 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 4. **ADR Implementations**: Referenced ADR(s) ADR-001, ADR-007, ADR-010, ADR-006, ADR-015, ADR-013, ADR-004, ADR-005, ADR-014, ADR-002, ADR-016 have no corresponding file in `docs/adr/`. Create the missing ADR document(s) using `docs/adr/_template.md`.
 
