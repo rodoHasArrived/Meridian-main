@@ -184,7 +184,8 @@ public sealed partial class OperationsContinuityViewModelTests
                 list.Items.Cast<object>().Should().HaveCount(2);
                 var text = Descendants(list).OfType<TextBlock>().Where(block => block.IsVisible).Select(block => block.Text).ToArray();
                 text.Should().Contain(["Type: Stale", "Count: 3", "Severity: Critical", "Owner: Fund Controller",
-                    "report-package-7", "report-manifest-7", "Owner: Owner unavailable", "No causing record IDs supplied by the shared service."]);
+                    "Contributor: report-evidence · Code: REPORT_STALE", "report-package-7", "report-manifest-7",
+                    "Owner: Owner unavailable", "No causing record IDs supplied by the shared service."]);
                 text.Should().Contain(value => value.Contains("Repair: ask Fund Controller") && value.Contains("Evaluate close"));
                 var refresh = Descendants(page).OfType<Button>().Single(control =>
                     AutomationProperties.GetAutomationId(control) == "OperationsContinuityRefreshAfterRepairButton");

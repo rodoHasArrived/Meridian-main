@@ -12,18 +12,25 @@
         <DataTemplate x:Key="SharedCloseBlockerTemplate">
             <Border BorderBrush="{StaticResource ConsoleTextMutedBrush}" BorderThickness="1" Padding="10" Margin="0,0,0,8">
                 <StackPanel>
-                    <TextBlock Text="{Binding Blocker.Message}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding Blocker.Message, Mode=OneWay}" FontWeight="SemiBold" TextWrapping="Wrap" />
                     <WrapPanel Margin="0,4,0,0">
-                        <TextBlock Margin="0,0,12,0"><Run Text="Type: " /><Run Text="{Binding Blocker.Type, Mode=OneWay}" /></TextBlock>
-                        <TextBlock Margin="0,0,12,0"><Run Text="Count: " /><Run Text="{Binding Blocker.Count, Mode=OneWay}" /></TextBlock>
-                        <TextBlock Margin="0,0,12,0"><Run Text="Severity: " /><Run Text="{Binding Blocker.Severity, Mode=OneWay}" /></TextBlock>
-                        <TextBlock TextWrapping="Wrap"><Run Text="Owner: " /><Run Text="{Binding OwnerLabel, Mode=OneWay}" /></TextBlock>
+                        <TextBlock Text="{Binding Blocker.Type, Mode=OneWay, StringFormat='Type: {0}'}" Margin="0,0,12,0" />
+                        <TextBlock Text="{Binding Blocker.Count, Mode=OneWay, StringFormat='Count: {0}'}" Margin="0,0,12,0" />
+                        <TextBlock Text="{Binding Blocker.Severity, Mode=OneWay, StringFormat='Severity: {0}'}" Margin="0,0,12,0" />
+                        <TextBlock Text="{Binding OwnerLabel, Mode=OneWay, StringFormat='Owner: {0}'}" TextWrapping="Wrap" />
                     </WrapPanel>
-                    <TextBlock TextWrapping="Wrap" Margin="0,4,0,0"><Run Text="Contributor: " /><Run Text="{Binding Blocker.ContributorId, Mode=OneWay}" /><Run Text=" · Code: " /><Run Text="{Binding Blocker.Code, Mode=OneWay}" /></TextBlock>
+                    <TextBlock TextWrapping="Wrap" Margin="0,4,0,0">
+                        <TextBlock.Text>
+                            <MultiBinding Mode="OneWay" StringFormat="Contributor: {0} · Code: {1}">
+                                <Binding Path="Blocker.ContributorId" Mode="OneWay" />
+                                <Binding Path="Blocker.Code" Mode="OneWay" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
                     <TextBlock Text="Causing records" FontWeight="SemiBold" Margin="0,6,0,2" />
                     <ItemsControl ItemsSource="{Binding Blocker.RecordIds}" AutomationProperties.Name="Shared blocker causing records">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate><TextBlock Text="{Binding}" TextWrapping="Wrap" /></DataTemplate>
+                            <DataTemplate><TextBlock Text="{Binding Mode=OneWay}" TextWrapping="Wrap" /></DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     <TextBlock Text="No causing record IDs supplied by the shared service." TextWrapping="Wrap">
@@ -36,7 +43,7 @@
                             </Style>
                         </TextBlock.Style>
                     </TextBlock>
-                    <TextBlock Text="{Binding RepairInstruction}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                    <TextBlock Text="{Binding RepairInstruction, Mode=OneWay}" TextWrapping="Wrap" Margin="0,6,0,0" />
                 </StackPanel>
             </Border>
         </DataTemplate>
