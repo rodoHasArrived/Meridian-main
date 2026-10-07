@@ -105,7 +105,8 @@ public sealed class ConsolidationWorkbenchService(ConsolidationService consolida
                 calculation.Posted.Any(posted => posted.Entry.JournalEntryId == x.Draft.JournalEntryId) ? "Posted" : x.Draft.Status.ToString(),
                 !calculation.Posted.Any(posted => posted.Entry.JournalEntryId == x.Draft.JournalEntryId) && x.Draft.Status is not (ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.Rejected or ManualJournalEntryStatusDto.Reversed) &&
                 (x.Evidence!.SourceFingerprint != calculation.Evidence.SourceFingerprint ||
-                 ConsolidationService.Hash(x.Draft.Lines) != ConsolidationService.Hash(calculation.ProposedLines)),
+                 ConsolidationService.Hash(x.Draft.Lines) != ConsolidationService.Hash(calculation.ProposedLines) ||
+                 !ConsolidationService.HasCanonicalHeader(x.Draft, calculation.Evidence)),
                 x.Draft.RebookedFromJournalEntryId, x.Draft.Lines))
             .Concat(calculation.Posted.Where(posted => retained.All(draft => draft.JournalEntryId != posted.Entry.JournalEntryId))
                 .Select(posted => new ConsolidationDraftSummaryDto(posted.Entry.JournalEntryId, "Posted", false,

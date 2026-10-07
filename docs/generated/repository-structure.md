@@ -9958,6 +9958,7 @@ Meridian-main
 │   │   │   │   ├── ConsolidationPerimeterResolverTests.cs
 │   │   │   │   ├── ConsolidationServiceTests.cs
 │   │   │   │   ├── ConsolidationServiceTests.EndpointCapabilities.cs
+│   │   │   │   ├── ConsolidationServiceTests.Header.cs
 │   │   │   │   ├── ConsolidationServiceTests.PolicyPeriod.cs
 │   │   │   │   ├── ConsolidationServiceTests.Workbench.cs
 │   │   │   │   ├── ConsolidationServiceTests.WorkbenchChart.cs
@@ -10552,6 +10553,7 @@ Meridian-main
 │   │   │   ├── CompositeSinkTests.cs
 │   │   │   ├── ConsolidationAuthorityPostgresTests.cs
 │   │   │   ├── ConsolidationPostingGuardTests.cs
+│   │   │   ├── ConsolidationPostingLineageTests.cs
 │   │   │   ├── ConsolidationSourcesPostgresTests.cs
 │   │   │   ├── DataLineageServiceTests.cs
 │   │   │   ├── DataQualityScoringServiceTests.cs

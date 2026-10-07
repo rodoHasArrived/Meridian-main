@@ -52,7 +52,17 @@ public sealed class ConsolidationAuthorityPostgresTests
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
         var ct = timeout.Token;
         await using var fixture = await AuthorityFixture.CreateAsync(ct);
+        var falseInitialCorrection = ConsolidationStorageFixture.AsReviewedCorrection(fixture.Write, Guid.NewGuid());
+        var invalidInitial = () => fixture.Store.AppendAsync(falseInitialCorrection, ct);
+        await invalidInitial.Should().ThrowAsync<LedgerValidationException>().WithMessage("*Initial consolidation*originating*");
+        var falseInitialSource = () => fixture.Store.AppendAsync(fixture.Write with { SourceJournalEntryId = Guid.NewGuid() }, ct);
+        await falseInitialSource.Should().ThrowAsync<LedgerValidationException>().WithMessage("*Initial consolidation*originating*");
+        await fixture.AssertNoEliminationAsync(ct);
         await fixture.Store.AppendAsync(fixture.Write, ct);
+        var initial = (await fixture.Database.JournalStore.GetByPeriodAsync(fixture.Period.PeriodId, ct)).Single();
+        initial.PostingKind.Should().Be(LedgerPostingKindDto.Originating);
+        initial.SourceJournalEntryId.Should().BeNull();
+        initial.AdjustmentApproval.Should().BeNull();
         var correction = await fixture.BuildCorrectionAsync(ct);
         var invalid = correction with
         {

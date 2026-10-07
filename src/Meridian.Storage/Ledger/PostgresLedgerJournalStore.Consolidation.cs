@@ -180,6 +180,17 @@ internal static class ConsolidationPostingEvidenceGuard
                 throw new LedgerValidationException(
                     "Consolidation corrections require adjustment posting semantics and approved correction metadata matching the command approval.");
         }
+        else if (command.Intent != AccountingPostingIntentDto.Originating
+            || write.PostingKind != LedgerPostingKindDto.Originating
+            || command.SourceJournalEntryId.HasValue || write.SourceJournalEntryId.HasValue
+            || write.AdjustmentApproval is not null)
+            throw new LedgerValidationException(
+                "Initial consolidation eliminations require originating posting semantics without correction lineage or adjustment approval metadata.");
+
+        if (tags.Any(tag => string.Equals(tag.Key, "sourceJournalEntryId", StringComparison.OrdinalIgnoreCase)
+            && (!command.SourceJournalEntryId.HasValue || !Guid.TryParse(tag.Value, out var sourceId)
+                || sourceId != command.SourceJournalEntryId.Value)))
+            throw new LedgerValidationException("Consolidation source journal metadata must match the reviewed correction lineage.");
 
         ValidateLines(write, evidence);
         return evidence;

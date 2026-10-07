@@ -63,6 +63,8 @@ Evidence binds both source books, the elimination book, exact source lines, auth
 policy, period/date and expected draft lines. Review is checked at submit, approve, post and recovery.
 The current intercompany chart configuration is rechecked at each review and posting transition;
 archived, renamed, retyped or newly scoped accounts block the retained draft.
+Draft headers retain only the authoritative group root; entity attribution stays on the reviewed
+lines. Edited scope, entry type or treasury context requires repair and renewed review.
 A changed source book (including a backdated or amount-neutral new journal) invalidates the draft;
 the operator reruns and obtains renewed review. Old drafts remain inspectable and explicitly stale.
 The PostgreSQL append boundary rechecks the as-of journal count and maximum sequence for all three
@@ -83,6 +85,8 @@ elimination. Posted eliminations through the as-of date are included in the cumu
 subsequent dates propose only the remaining increment. Corrections create signed adjustments linked
 to a prior posted journal. The append boundary requires correction intent, adjustment classification
 and approved adjustment metadata as well as the source-journal link.
+Initial eliminations require originating classification without correction metadata. Both initial
+and correction postings must retain the exact reviewed consolidation rule ID and version.
 Reductions reverse the excess through a newly reviewed adjustment;
 no posted entry is replaced. Generic manual reversal/rebook is blocked for these drafts so that
 corrections always use current consolidation evidence. Exact committed posting receipts can finish

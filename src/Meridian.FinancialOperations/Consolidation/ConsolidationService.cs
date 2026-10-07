@@ -216,6 +216,7 @@ public sealed class ConsolidationService(
             calculation.Perimeter.Currency, "Consolidation elimination — " + calculation.Request.AsOf,
             actor, now, now, 0, calculation.ProposedLines, evidenceLinks, [],
             TreasuryContext: new TreasuryLedgerContextDto(calculation.Request.AsOf, key),
+            Dimensions: HeaderDimensions(calculation.Request.OwnershipRootId),
             RebookedFromJournalEntryId: calculation.Posted.LastOrDefault()?.Entry.JournalEntryId,
             TenantId: tenantId, CompanyId: companyId, ConsolidationEvidenceJson: evidenceJson,
             ConsolidationEvidenceDigest: digest, RequiresConsolidationEvidence: true);
@@ -242,9 +243,20 @@ public sealed class ConsolidationService(
             draft.FundProfileId != current.Book.FundProfileId || draft.AccountingDate != evidence.Request.AsOf ||
             draft.PeriodId != evidence.Request.PeriodId.ToString("D") || draft.Currency != current.Perimeter.Currency ||
             draft.AccountingBasis != AccountingBasisKindDto.Primary ||
-            draft.TreasuryContext?.IdempotencyKey != evidence.ScopeKey + ":" + draft.ConsolidationEvidenceDigest)
+            !HasCanonicalHeader(draft, current.Evidence))
             throw new InvalidOperationException("Consolidation sources or draft changed. Rerun consolidation and obtain renewed review.");
     }
+
+    /// <summary>Group-level provenance may name only the authoritative root; entity attribution remains on each source-backed line.</summary>
+    public static bool HasCanonicalHeader(ManualJournalEntryDraftDto draft, ConsolidationEvidenceDto evidence)
+        => draft.EntityId is null && draft.FundNodeId == evidence.Request.OwnershipRootId.ToString("D") &&
+           draft.EntryType == ManualJournalEntryTypeDto.General &&
+           Hash(draft.Dimensions) == Hash(HeaderDimensions(evidence.Request.OwnershipRootId)) &&
+           draft.TreasuryContext == new TreasuryLedgerContextDto(evidence.Request.AsOf,
+               evidence.ScopeKey + ":" + draft.ConsolidationEvidenceDigest);
+
+    private static LedgerDimensionSetDto HeaderDimensions(Guid ownershipRootId)
+        => new(FundId: ownershipRootId.ToString("D"));
 
     private Task<IReadOnlyList<LedgerJournalEntryRecord>> ReadBookAsync(Guid book, DateOnly asOf, CancellationToken ct)
         => journals.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: book, EffectiveTo: asOf), ct);
