@@ -47,6 +47,24 @@ public sealed partial class PostgresLedgerJournalStore
         // lock, so a source/correction cannot commit between this check and the elimination.
         // READ COMMITTED sees the preceding writer; SERIALIZABLE retries the whole transaction
         // if its snapshot predates a concurrent audit-head change.
+        await using (var future = connection.CreateCommand())
+        {
+            future.Transaction = transaction;
+            future.CommandText = $"""
+                select exists(
+                    select 1 from {Qualified("journal_entries")} je
+                    join {Qualified("accounting_periods")} p on p.period_id = je.period_id
+                    where p.ledger_book_id = @book
+                      and coalesce(nullif(btrim(je.metadata ->> 'effectiveDate'), ''),
+                          to_char(je.occurred_at at time zone 'UTC', 'YYYY-MM-DD')) > @as_of);
+                """;
+            future.Parameters.AddWithValue("book", evidence.Request.EliminationBookId);
+            future.Parameters.AddWithValue("as_of", evidence.Request.AsOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            if ((bool)(await future.ExecuteScalarAsync(ct).ConfigureAwait(false))!)
+                throw new LedgerValidationException(
+                    "A later-dated elimination is already posted; backdated consolidation would change an established cumulative overlay. Rerun at the latest elimination date and obtain renewed review.");
+        }
+
         foreach (var version in evidence.BookVersions.OrderBy(item => item.LedgerBookId))
         {
             await EnsureTenantRowAsync(connection, transaction, "ledger_books", "ledger_book_id",

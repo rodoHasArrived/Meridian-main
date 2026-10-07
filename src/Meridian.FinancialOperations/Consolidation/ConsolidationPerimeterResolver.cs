@@ -14,7 +14,8 @@ public sealed class ConsolidationPerimeterResolver(IFundStructureService structu
     public const string FirstSliceLimitation =
         "Exactly two direct, wholly owned legal entities under one fund ownership root; one shared base currency; "
         + "no indirect ownership, partial ownership, noncontrolling interests, or currency translation. "
-        + "Ownership applies from EffectiveFrom inclusive to EffectiveTo exclusive.";
+        + "Ownership applies from EffectiveFrom inclusive to EffectiveTo exclusive. "
+        + "Eliminations use a dedicated Fund book and must be posted in date order; backdating before a posted elimination is unsupported.";
 
     public async Task<ConsolidationPerimeter> ResolveAsync(
         Guid organizationId,

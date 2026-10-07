@@ -50,6 +50,11 @@ ownership and journal stores. The generated draft enters the existing journal wo
 independent approval, posting, evidence and audit history. Source journal and line IDs and ownership
 link IDs are retained for drill-through.
 
+`ManageLedgerReports` can create consolidation drafts and open the existing manual-journal review
+workbench, subject to the same fund ownership checks. `ViewLedgerReports` remains read-only and does
+not grant access to pre-posting review. Ordinary manual journals cannot enter a book designated with
+the consolidation policy, even when the caller omits consolidation tags.
+
 ## Freshness, reruns and corrections
 
 Evidence binds both source books, the elimination book, exact source lines, authoritative ownership,
@@ -75,6 +80,12 @@ to a prior posted journal. Reductions reverse the excess through a newly reviewe
 no posted entry is replaced. Generic manual reversal/rebook is blocked for these drafts so that
 corrections always use current consolidation evidence. Exact committed posting receipts can finish
 recovery even if source balances have subsequently moved.
+
+Posted elimination dates must be processed in order. An earlier date is blocked when the dedicated
+book already contains a later-dated elimination; the append boundary enforces this again under the
+audit lock. This first slice does not automatically recalculate subsequent overlays after backdating.
+Rerunning repairs an editable generated draft whose lines were changed, using the current authoritative
+calculation and requiring review again; posted journals remain immutable.
 
 ## Evidence and remaining roadmap scope
 

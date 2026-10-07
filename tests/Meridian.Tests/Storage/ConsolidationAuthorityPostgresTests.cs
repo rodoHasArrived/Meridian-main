@@ -21,6 +21,54 @@ namespace Meridian.Tests.Storage;
 public sealed class ConsolidationAuthorityPostgresTests
 {
     [LedgerDatabaseFact]
+    public async Task DedicatedBook_RejectsOrdinaryWritesWithoutTagsRegardlessOfCallerPolicy()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+        var ct = timeout.Token;
+        await using var fixture = await AuthorityFixture.CreateAsync(ct);
+        var key = $"manual-je:{fixture.Write.Entry.JournalEntryId:N}";
+        var ordinary = fixture.Write with
+        {
+            Entry = ConsolidationStorageFixture.WithMetadata(fixture.Write.Entry,
+                fixture.Write.Entry.Metadata with { Tags = null, IdempotencyKey = key, EffectiveDate = fixture.Evidence.Request.AsOf }),
+            PostingCommand = fixture.Write.PostingCommand! with { IdempotencyKey = key }
+        };
+        var attempts = new[]
+        {
+            ordinary,
+            ordinary with
+            {
+                AccountingPolicyId = "legacy-v1", AccountingPolicyVersion = "legacy-v1",
+                PostingCommand = ordinary.PostingCommand! with { BookContext = null }
+            },
+            ordinary with
+            {
+                AccountingPolicyId = "legacy-v1", AccountingPolicyVersion = "legacy-v1",
+                PostingCommand = null, LedgerBookId = null
+            }
+        };
+        foreach (var write in attempts)
+        {
+            var append = () => fixture.Store.AppendAsync(write, ct);
+            await append.Should().ThrowAsync<LedgerValidationException>().WithMessage("*Dedicated consolidation books require reviewed consolidation evidence*");
+
+            await using var connection = new NpgsqlConnection(fixture.Database.Options.ConnectionString);
+            await connection.OpenAsync(ct);
+            await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
+            var externalAppend = () => fixture.Store.AppendAsync(connection, transaction, write, ct);
+            await externalAppend.Should().ThrowAsync<LedgerValidationException>().WithMessage("*Dedicated consolidation books require reviewed consolidation evidence*");
+            await transaction.RollbackAsync(ct);
+        }
+        await fixture.AssertNoEliminationAsync(ct);
+
+        var normalBook = ConsolidationStorageFixture.Book("Normal operating book");
+        await fixture.Database.JournalStore.SaveLedgerBookAsync(normalBook, ct);
+        var normalPeriod = await fixture.Database.JournalStore.SavePeriodAsync(ConsolidationStorageFixture.Period(normalBook), 0, ct: ct);
+        await fixture.Store.AppendAsync(ConsolidationStorageFixture.Write(normalBook, normalPeriod), ct);
+        (await fixture.Database.JournalStore.GetByPeriodAsync(normalPeriod.PeriodId, ct)).Should().ContainSingle();
+    }
+
+    [LedgerDatabaseFact]
     public async Task DirectAppendWithoutAuthorityProvider_FailsClosed()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));

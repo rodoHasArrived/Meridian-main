@@ -26,7 +26,14 @@ public sealed class ConsolidationWorkbenchService(ConsolidationService consolida
         if (draft is not null)
         {
             var existing = await drafts.GetAsync(draft.FundProfileId, draft.JournalEntryId, ct, tenant, company).ConfigureAwait(false);
-            if (existing is null)
+            if (existing is not null && IsEditable(existing.Status))
+            {
+                // The workbench fills header dimensions (including FundId) during save. Compare
+                // against that same normalization so an unchanged rerun remains a no-op.
+                draft = await workbench.ValidateDraftAsync(new ValidateManualJournalEntryDraftRequest(draft,
+                    actor, LedgerBookId: draft.LedgerBookId, TenantId: tenant, CompanyId: company), ct).ConfigureAwait(false);
+            }
+            if (existing is null || NeedsAuthoritativeRepair(existing, draft))
             {
                 var workspace = await configuration.GetWorkspaceAsync(draft.FundProfileId, draft.LedgerBookId,
                     ct, tenant, company).ConfigureAwait(false);
@@ -39,12 +46,40 @@ public sealed class ConsolidationWorkbenchService(ConsolidationService consolida
                             ? "Asset" : "Liability", StringComparison.OrdinalIgnoreCase))
                         throw new InvalidOperationException("The elimination chart must contain the supported unscoped intercompany account paths with identical account names; Symbol and FinancialAccountId must be absent.");
                 }
-                await workbench.SaveAutomatedDraftAsync(new SaveManualJournalEntryDraftRequest(draft, actor,
-                    CorrelationId: draft.TreasuryContext!.IdempotencyKey, TenantId: tenant, CompanyId: company), ct).ConfigureAwait(false);
+                // Keep the retained optimistic version, evidence and lifecycle trail. Governed
+                // intake checks editability again and clears prior review before saving a repair.
+                var intake = existing is null ? draft : existing with
+                {
+                    AccountingBasis = draft.AccountingBasis,
+                    AccountingDate = draft.AccountingDate,
+                    PeriodId = draft.PeriodId,
+                    EntityId = draft.EntityId,
+                    FundNodeId = draft.FundNodeId,
+                    Currency = draft.Currency,
+                    EntryType = draft.EntryType,
+                    TreasuryContext = draft.TreasuryContext,
+                    Dimensions = draft.Dimensions,
+                    Lines = draft.Lines
+                };
+                await workbench.SaveAutomatedDraftAsync(new SaveManualJournalEntryDraftRequest(intake, actor,
+                    CorrelationId: draft.TreasuryContext!.IdempotencyKey, LedgerBookId: draft.LedgerBookId,
+                    TenantId: tenant, CompanyId: company), ct).ConfigureAwait(false);
             }
         }
         return await GetAsync(request, tenant, company, ct).ConfigureAwait(false);
     }
+
+    private static bool NeedsAuthoritativeRepair(ManualJournalEntryDraftDto existing, ManualJournalEntryDraftDto draft)
+        => IsEditable(existing.Status) &&
+           (ConsolidationService.Hash(existing.Lines) != ConsolidationService.Hash(draft.Lines) ||
+            ConsolidationService.Hash(existing.Dimensions) != ConsolidationService.Hash(draft.Dimensions) ||
+            existing.AccountingBasis != draft.AccountingBasis || existing.AccountingDate != draft.AccountingDate ||
+            existing.PeriodId != draft.PeriodId || existing.EntityId != draft.EntityId ||
+            existing.FundNodeId != draft.FundNodeId || existing.Currency != draft.Currency ||
+            existing.EntryType != draft.EntryType || existing.TreasuryContext != draft.TreasuryContext);
+
+    private static bool IsEditable(ManualJournalEntryStatusDto status)
+        => status is ManualJournalEntryStatusDto.Draft or ManualJournalEntryStatusDto.NeedsFix or ManualJournalEntryStatusDto.Rejected;
 
     public static ConsolidationViewDto Project(ConsolidationCalculation calculation,
         IReadOnlyList<ManualJournalEntryDraftDto> retained)

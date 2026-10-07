@@ -1829,6 +1829,7 @@ Meridian-main
 │   │   │   │   ├── ledger-contracts-page-02.md
 │   │   │   │   ├── ledger-contracts-page-03.md
 │   │   │   │   ├── ledger-contracts-page-04.md
+│   │   │   │   ├── ledger-contracts-page-05.md
 │   │   │   │   ├── ledger-contracts.md
 │   │   │   │   ├── money-market-contracts.md
 │   │   │   │   ├── reporting-contracts.md
@@ -1852,6 +1853,7 @@ Meridian-main
 │   │   │   │   ├── contracts-ledger-contracts-page-02.mmd
 │   │   │   │   ├── contracts-ledger-contracts-page-03.mmd
 │   │   │   │   ├── contracts-ledger-contracts-page-04.mmd
+│   │   │   │   ├── contracts-ledger-contracts-page-05.mmd
 │   │   │   │   ├── contracts-money-market-contracts.mmd
 │   │   │   │   ├── contracts-reporting-contracts.mmd
 │   │   │   │   ├── contracts-security-master-contracts-page-01.mmd
@@ -9954,7 +9956,8 @@ Meridian-main
 │   │   │   ├── Consolidation
 │   │   │   │   ├── ConsolidationPerimeterResolverTests.cs
 │   │   │   │   ├── ConsolidationServiceTests.cs
-│   │   │   │   └── ConsolidationServiceTests.Workbench.cs
+│   │   │   │   ├── ConsolidationServiceTests.Workbench.cs
+│   │   │   │   └── ConsolidationServiceTests.WorkbenchRepair.cs
 │   │   │   ├── Ledger
 │   │   │   │   ├── AccountingBasisProjectionSetServiceTests.cs
 │   │   │   │   ├── AccountingJournalDraftServiceTests.cs

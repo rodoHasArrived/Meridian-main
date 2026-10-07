@@ -30,9 +30,10 @@ public sealed class ConsolidationService(
             new DateTimeOffset(request.AsOf.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero), ct).ConfigureAwait(false);
         var book = await journals.GetLedgerBookAsync(request.EliminationBookId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("The elimination book is unavailable.");
-        if (book.FundStructureNodeId != request.OwnershipRootId || book.AccountingBasis != AccountingBasisKindDto.Primary ||
+        if (book.FundStructureNodeId != request.OwnershipRootId || book.FundStructureNodeKind != FundStructureNodeKindDto.Fund ||
+            book.AccountingBasis != AccountingBasisKindDto.Primary ||
             !string.Equals(book.BaseCurrency, perimeter.Currency, StringComparison.OrdinalIgnoreCase))
-            throw new InvalidOperationException("The elimination book must belong to the ownership root and use Primary basis and the perimeter currency.");
+            throw new InvalidOperationException("The elimination book must belong to the Fund ownership root and use Primary basis and the perimeter currency.");
         var period = await journals.GetPeriodAsync(request.PeriodId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("The elimination period is unavailable.");
         if (period.LedgerBookId != book.LedgerBookId || request.AsOf < period.StartDate || request.AsOf > period.EndDate)
@@ -102,7 +103,13 @@ public sealed class ConsolidationService(
                 }
             }
         }
-        var overlay = await ReadBookAsync(book.LedgerBookId, request.AsOf, ct).ConfigureAwait(false);
+        // Later eliminations already include the earlier source balances. A backdated draft
+        // would add those balances again unless every later overlay were recomputed, which
+        // this first slice does not support. Inspect the whole dedicated overlay book.
+        var overlay = await journals.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: book.LedgerBookId), ct)
+            .ConfigureAwait(false);
+        if (overlay.Any(record => EffectiveDate(record) > request.AsOf))
+            throw new InvalidOperationException("Backdated consolidation is outside this slice: the elimination book contains later posted eliminations. Use the latest posted date or later and obtain renewed review.");
         versions.Add(Version(book.LedgerBookId, overlay));
         // A dedicated overlay book prevents unrelated journals or overlapping as-of runs from disappearing.
         var posted = new List<LedgerJournalEntryRecord>();

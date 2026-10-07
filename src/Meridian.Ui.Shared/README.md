@@ -20,6 +20,10 @@ deferred posting authority that retains ownership and policy locks until ledger 
 intake rejects intercompany chart accounts with symbol or financial-account scopes. See
 [first-slice limits](../../docs/domain/intercompany-consolidation.md).
 
+Ledger managers who can prepare consolidation drafts can also load the manual-journal review
+workbench. Both its permission declaration and fund ownership guard accept `ManageLedgerReports`;
+read-only ledger report permission remains excluded from pre-posting workflow.
+
 `OnboardingEndpoints` exposes tenant/company-scoped workspaces under
 `/api/accounting/onboarding/workspaces`. Authenticated identity owns configuration and capture;
 designated independent reviewers record decisions. Exact source selection comes from retained

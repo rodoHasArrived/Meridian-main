@@ -237,6 +237,85 @@ public sealed partial class ConsolidationServiceTests
         Assert.Null(await fixture.Service.BuildDraftAsync(later, "maker", "tenant-test", "company-test"));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CalculateAndReview_LaterPostedEliminationBlocksEarlierDraftAndRerun(bool timestampFallback)
+    {
+        var fixture = new Fixture();
+        var mayDate = new DateOnly(2026, 5, 31);
+        var mayPeriod = Guid.NewGuid();
+        fixture.Store.Setup(store => store.GetPeriodAsync(mayPeriod, It.IsAny<CancellationToken>())).ReturnsAsync(
+            new LedgerAccountingPeriod(mayPeriod, Fixture.OverlayBookId, 2026, 5, "May", new DateOnly(2026, 5, 1),
+                mayDate, "Open", Fixture.Time.AddMonths(-1), null, 0));
+        fixture.Records[Fixture.FirstBookId].Clear();
+        fixture.Records[Fixture.SecondBookId].Clear();
+        fixture.AddSourceOn(mayDate, Fixture.FirstBookId, Fixture.FirstId, 1,
+            (ConsolidationService.ReceivableAccount, 100m, Fixture.SecondId.ToString("D")), ("Equity:Opening", -100m, null));
+        fixture.AddSourceOn(mayDate, Fixture.SecondBookId, Fixture.SecondId, 2,
+            ("Assets:Cash", 50m, null), (ConsolidationService.PayableAccount, -50m, Fixture.FirstId.ToString("D")));
+        var mayRequest = new ConsolidationRequestDto(Fixture.OrganizationId, Fixture.RootId,
+            Fixture.OverlayBookId, mayPeriod, mayDate);
+        var may = await fixture.Service.CalculateAsync(mayRequest);
+        var mayDraft = await fixture.Draft(may);
+        AssertLine(mayDraft.Lines, ConsolidationService.ReceivableAccount, Fixture.FirstId, Fixture.SecondId,
+            AccountingTemplateLineSideDto.Credit, 50m);
+
+        fixture.AddSource(Fixture.SecondBookId, Fixture.SecondId, 3,
+            ("Assets:Cash", 30m, null), (ConsolidationService.PayableAccount, -30m, Fixture.FirstId.ToString("D")));
+        var juneDraft = await fixture.Draft(await fixture.Calculate());
+        AssertLine(juneDraft.Lines, ConsolidationService.ReceivableAccount, Fixture.FirstId, Fixture.SecondId,
+            AccountingTemplateLineSideDto.Credit, 80m);
+        fixture.Post(juneDraft, 4);
+        if (timestampFallback)
+        {
+            var posted = fixture.Records[Fixture.OverlayBookId][0];
+            fixture.Records[Fixture.OverlayBookId][0] = posted with
+            {
+                Entry = new JournalEntry(posted.Entry.JournalEntryId, posted.Entry.Timestamp, posted.Entry.Description,
+                    posted.Entry.Lines, posted.Entry.Metadata with { EffectiveDate = null })
+            };
+        }
+
+        var rerun = await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Service.CalculateAsync(mayRequest));
+        var draftReview = await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Service.ValidateCurrentAsync(mayDraft));
+        var postingReview = await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Service.ValidateEvidenceCurrentAsync(may.Evidence));
+
+        Assert.All(new[] { rerun, draftReview, postingReview }, exception =>
+            Assert.Contains("Backdated consolidation", exception.Message));
+        var june = await fixture.Calculate();
+        Assert.Single(june.Posted);
+        Assert.Empty(june.ProposedLines);
+        Assert.Equal(80m, june.Posted.SelectMany(record => record.Entry.Lines)
+            .Where(line => line.Account.Name == ConsolidationService.ReceivableAccount).Sum(line => line.Credit - line.Debit));
+        fixture.Store.Verify(store => store.AppendAsync(It.IsAny<LedgerJournalEntryWrite>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData(FundStructureNodeKindDto.Organization)]
+    [InlineData(FundStructureNodeKindDto.Business)]
+    [InlineData(FundStructureNodeKindDto.Client)]
+    [InlineData(FundStructureNodeKindDto.Sleeve)]
+    [InlineData(FundStructureNodeKindDto.Vehicle)]
+    [InlineData(FundStructureNodeKindDto.InvestmentPortfolio)]
+    [InlineData(FundStructureNodeKindDto.Entity)]
+    [InlineData(FundStructureNodeKindDto.Account)]
+    public async Task CalculateAndReview_RejectsEliminationBookWithRootIdButNonFundKind(FundStructureNodeKindDto kind)
+    {
+        var fixture = new Fixture();
+        var calculation = await fixture.Calculate();
+        var draft = await fixture.Draft(calculation);
+        fixture.Store.Setup(store => store.GetLedgerBookAsync(Fixture.OverlayBookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(calculation.Book with { FundStructureNodeKind = kind });
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Calculate());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Service.ValidateCurrentAsync(draft));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Service.ValidateEvidenceCurrentAsync(calculation.Evidence));
+
+        Assert.Contains("Fund ownership root", exception.Message);
+        fixture.Store.Verify(store => store.AppendAsync(It.IsAny<LedgerJournalEntryWrite>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     [Fact]
     public async Task Calculate_ChangedAuthoritativeMemberCannotReusePriorPerimeterElimination()
     {
@@ -326,7 +405,9 @@ public sealed partial class ConsolidationServiceTests
             Store.Setup(store => store.QueryAsync(It.IsAny<LedgerJournalEntryQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((LedgerJournalEntryQuery query, CancellationToken _)
                     => (IReadOnlyList<LedgerJournalEntryRecord>)_records[query.LedgerBookId!.Value]
-                        .Where(record => record.Entry.Metadata.EffectiveDate <= query.EffectiveTo).ToArray());
+                        .Where(record => !query.EffectiveTo.HasValue ||
+                            (record.Entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(record.Entry.Timestamp.UtcDateTime)) <= query.EffectiveTo.Value)
+                        .ToArray());
             var policies = new AccountingPolicyService();
             Service = new ConsolidationService(new ConsolidationPerimeterResolver(Structure.Object), Store.Object,
                 policies, new AccountingJournalDraftService(policies, new AccountingBasisProjectionService(policies)));
@@ -343,12 +424,16 @@ public sealed partial class ConsolidationServiceTests
             => Assert.IsType<ManualJournalEntryDraftDto>(await Service.BuildDraftAsync(calculation, "maker", "tenant-test", "company-test"));
 
         internal void AddSource(Guid book, Guid entity, long sequence, params (string Account, decimal SignedAmount, string? Counterparty)[] lines)
+            => AddSourceOn(Date, book, entity, sequence, lines);
+
+        internal void AddSourceOn(DateOnly effectiveDate, Guid book, Guid entity, long sequence,
+            params (string Account, decimal SignedAmount, string? Counterparty)[] lines)
         {
             var id = Guid.NewGuid();
             var entry = new JournalEntry(id, Time, "Fixture journal", lines.Select(line => new LedgerEntry(Guid.NewGuid(), id,
                 Time, Account(line.Account), Math.Max(line.SignedAmount, 0m), Math.Max(-line.SignedAmount, 0m), "Fixture journal",
                 new LedgerLineDimensionSet(EntityId: entity.ToString("D"), CounterpartyId: line.Counterparty))).ToArray(),
-                new JournalEntryMetadata(EffectiveDate: Date, LedgerBook: book.ToString("D")));
+                new JournalEntryMetadata(EffectiveDate: effectiveDate, LedgerBook: book.ToString("D")));
             Assert.True(entry.IsBalanced);
             _records[book].Add(new LedgerJournalEntryRecord(entry, book, Guid.NewGuid(), null, null, sequence, Time));
         }

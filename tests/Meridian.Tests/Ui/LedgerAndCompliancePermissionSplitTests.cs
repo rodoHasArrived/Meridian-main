@@ -446,19 +446,46 @@ public sealed class LedgerAndCompliancePermissionSplitTests
                 $"{route.Method} {route.Pattern} exposes pre-posting workflow, not a ledger report");
         }
 
-        // The workbench goes further: it is the manual-journal lane's own surface, so it keeps the
-        // direct-lending grant alone and takes neither ledger-report permission. The configuration
-        // workspace is reachable with ManageLedgerReports, matching its own mutations.
+        // A ledger manager can create consolidation drafts and mutate manual journals, so the
+        // same write grant must reach their review workbench. Read-only ledger reporting stays
+        // excluded from pre-posting workflow.
         var manualWorkbench = workbench
             .Where(route => route.Pattern.Contains("journal-entry-workbench", StringComparison.OrdinalIgnoreCase))
             .ToList();
         manualWorkbench.Should().NotBeEmpty();
         foreach (var route in manualWorkbench)
         {
-            route.Authorization.Permissions.Should().NotContain(
+            route.Authorization.Permissions.Should().Contain(
                 UserPermission.ManageLedgerReports,
-                $"{route.Method} {route.Pattern} is the manual-journal lane's own surface");
+                $"{route.Method} {route.Pattern} must let a consolidation preparer inspect its approval workflow");
         }
+    }
+
+    [Fact]
+    public async Task ConsolidationPreparer_CanReachTheJournalReviewWorkbench()
+    {
+        await using var app = await CreateLedgerAndComplianceAppAsync(UserPermission.ManageLedgerReports,
+            companyId: "company-test");
+
+        var response = await app.GetTestClient().GetAsync("/api/ledger/journal-entry-workbench");
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotImplemented,
+            "the ledger manager must reach the handler, which has no workbench service in this test host");
+    }
+
+    [Fact]
+    public async Task ConsolidationPreparer_JournalReviewStillRejectsAnotherTenantsFund()
+    {
+        var guard = Substitute.For<IFundProfileTenantGuard>();
+        guard.EvaluateAsync(Arg.Any<WorkstationTenantContext>(), "fund-other", Arg.Any<CancellationToken>())
+            .Returns(FundProfileTenantDecision.Deny("owned by another tenant"));
+        await using var app = await CreateLedgerAndComplianceAppAsync(UserPermission.ManageLedgerReports,
+            guard, companyId: "company-test");
+
+        var response = await app.GetTestClient().GetAsync("/api/ledger/journal-entry-workbench?fundProfileId=fund-other");
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Forbidden);
+        await guard.Received().EvaluateAsync(Arg.Any<WorkstationTenantContext>(), "fund-other", Arg.Any<CancellationToken>());
     }
 
     // ── Live requests ────────────────────────────────────────────────────────

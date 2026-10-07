@@ -1563,7 +1563,7 @@ public sealed partial class PostgresLedgerJournalStore :
                    created_at,
                    updated_at
             from {Qualified("ledger_books")}
-            where ledger_book_id = @ledger_book_id;
+            where ledger_book_id = @ledger_book_id for share;
             """;
         command.Parameters.AddWithValue("ledger_book_id", ledgerBookId);
 

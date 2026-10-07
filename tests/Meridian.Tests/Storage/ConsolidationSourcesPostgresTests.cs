@@ -11,6 +11,43 @@ namespace Meridian.Tests.Storage;
 public sealed class ConsolidationSourcesPostgresTests
 {
     [LedgerDatabaseFact]
+    public async Task LaterEliminationPostedAfterValidation_BlocksEarlierAppendOutsideReviewedVersionWindow()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+        var ct = timeout.Token;
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync(ct);
+        var (books, periods) = await CreateBooksAsync(database, ct);
+        var earlier = await ReviewedWriteAsync(database, books, periods, ct);
+        var laterPeriod = await database.JournalStore.SavePeriodAsync(ConsolidationStorageFixture.Period(books[2], 6), 0, ct: ct);
+        var laterDate = new DateOnly(2026, 6, 30);
+        var evidence = ConsolidationStorageFixture.ReadEvidence(earlier);
+        var later = ConsolidationStorageFixture.WithEvidence(ConsolidationStorageFixture.Write(books[2], laterPeriod, laterDate),
+            evidence with { Request = evidence.Request with { PeriodId = laterPeriod.PeriodId, AsOf = laterDate } });
+
+        var authority = new PausedSourceOnlyAuthority();
+        var store = new PostgresLedgerJournalStore(database.Options, consolidationAuthority: () => authority);
+        var earlierAppend = store.AppendAsync(earlier, ct);
+        await authority.Validated.Task.WaitAsync(ct);
+        // Both source versions through May are still identical. A later elimination must not
+        // become invisible merely because it falls outside the reviewed source-version window.
+        await SourceOnlyStore(database).AppendAsync(later, ct);
+        authority.Continue.TrySetResult();
+
+        var complete = async () =>
+        {
+            try
+            { await earlierAppend; }
+            catch (PostgresException exception) when (exception.SqlState == PostgresErrorCodes.SerializationFailure)
+            {
+                await store.AppendAsync(earlier, ct);
+            }
+        };
+        await complete.Should().ThrowAsync<LedgerValidationException>().WithMessage("*later-dated elimination*");
+        (await database.JournalStore.GetByPeriodAsync(periods[2].PeriodId, ct)).Should().BeEmpty();
+        (await database.JournalStore.GetByPeriodAsync(laterPeriod.PeriodId, ct)).Should().ContainSingle();
+    }
+
+    [LedgerDatabaseFact]
     public async Task UnchangedAsOfSources_PostEvenWhenFutureDatedJournalWasAdded()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
@@ -111,6 +148,21 @@ public sealed class ConsolidationSourcesPostgresTests
     {
         public Task<IAsyncDisposable> AcquireValidatedLeaseAsync(ConsolidationEvidenceDto evidence, CancellationToken ct = default)
             => Task.FromResult<IAsyncDisposable>(this);
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+
+    private sealed class PausedSourceOnlyAuthority : IConsolidationPostingAuthority, IAsyncDisposable
+    {
+        public TaskCompletionSource Validated { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource Continue { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public async Task<IAsyncDisposable> AcquireValidatedLeaseAsync(ConsolidationEvidenceDto evidence, CancellationToken ct = default)
+        {
+            Validated.TrySetResult();
+            await Continue.Task.WaitAsync(ct);
+            return this;
+        }
+
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 
