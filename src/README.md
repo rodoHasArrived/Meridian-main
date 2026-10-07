@@ -22,6 +22,9 @@ The source tree is layered around host composition, application orchestration, c
 ## Key folders and files
 
 - `src/Meridian/` - host, CLI, and runtime composition.
+- `src/Meridian.Launcher/` - installed Windows entry point that verifies the supervisor's startup outcome.
+- `src/Meridian.LifecycleSupervisor/` - persistent installed host/database lifecycle, readiness, and browser opening.
+- `src/Meridian.Setup/` - consumer payload installation, repair, and uninstall.
 - `src/Meridian.Application/` - use cases, orchestration, commands, and pipelines.
 - `src/Meridian.Contracts/` - shared DTOs and compatibility contracts.
 - `src/Meridian.Ui/dashboard/` - active browser workstation UI lane.

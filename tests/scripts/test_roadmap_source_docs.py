@@ -1,4 +1,5 @@
 import importlib.util
+import re
 import shutil
 import sys
 import tempfile
@@ -26,6 +27,7 @@ render_source = load_script("render_source_docs", ROOT / "build" / "scripts" / "
 sync_source = load_script("sync_source_readmes", ROOT / "build" / "scripts" / "docs" / "sync-source-readmes.py")
 doc_hashes = load_script("validate_doc_hashes", ROOT / "build" / "scripts" / "docs" / "validate-doc-hashes.py")
 mark_stale = load_script("mark_stale_docs", ROOT / "build" / "scripts" / "docs" / "mark-stale-docs.py")
+navigation = load_script("generate_ai_navigation", ROOT / "build" / "scripts" / "docs" / "generate-ai-navigation.py")
 common = load_script("docs_common", ROOT / "build" / "scripts" / "docs" / "common.py")
 
 
@@ -48,6 +50,37 @@ def _registry_root(temp_dir: str, sequence_line: str | None) -> Path:
 
 
 class RoadmapSourceDocsTests(unittest.TestCase):
+    def test_installed_runtime_is_discoverable_with_its_ownership_docs(self) -> None:
+        projects = navigation.discover_projects(ROOT)
+        projects_by_name = {project["name"]: project for project in projects}
+        names = {"Meridian.Launcher", "Meridian.LifecycleSupervisor", "Meridian.Setup"}
+        self.assertTrue(names.issubset(projects_by_name))
+        self.assertIn("Meridian.Contracts", projects_by_name["Meridian.Launcher"]["projectReferences"])
+        self.assertIn("src/Meridian.Launcher/Program.cs", projects_by_name["Meridian.Launcher"]["entrypoints"])
+
+        docs = navigation.discover_documents(ROOT)
+        subsystems = navigation.build_subsystems(projects, docs)
+        routes = navigation.build_routes(subsystems, navigation.discover_symbols(ROOT))
+        route = next(item for item in routes if item["id"] == "installed-runtime")
+        self.assertEqual(names, set(route["startProjects"]))
+        self.assertIn("docs/reference/lifecycle-control-plane.md", route["authoritativeDocs"])
+        self.assertTrue(all((ROOT / path).is_file() for path in route["authoritativeDocs"]))
+
+    def test_launcher_is_a_buildable_source_solution_project(self) -> None:
+        solution = (ROOT / "Meridian.sln").read_text(encoding="utf-8-sig")
+        project = re.search(
+            r'Project\("[^"\n]+"\) = "Meridian\.Launcher", "src\\Meridian\.Launcher\\Meridian\.Launcher\.csproj", "(\{[^}]+\})"',
+            solution,
+        )
+        self.assertIsNotNone(project, "The installed entrypoint must be listed in the maintained solution.")
+        assert project is not None
+        guid = project.group(1)
+        for configuration in ("Debug", "Release"):
+            for platform in ("Any CPU", "x64", "x86"):
+                self.assertIn(f"{guid}.{configuration}|{platform}.Build.0 = {configuration}|Any CPU", solution)
+                self.assertIn(f"{guid}.{configuration}|{platform}.ActiveCfg = {configuration}|Any CPU", solution)
+        self.assertIn(f"{guid} = {{E1111111-F222-0333-1444-255555555555}}", solution)
+
     def test_current_registries_validate(self) -> None:
         self.assertEqual([], [finding for finding in validate_roadmap.validate(ROOT) if finding.severity == "error"])
         self.assertEqual([], [finding for finding in validate_source.validate(ROOT) if finding.severity == "error"])

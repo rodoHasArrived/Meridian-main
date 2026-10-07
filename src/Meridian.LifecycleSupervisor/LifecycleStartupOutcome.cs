@@ -31,7 +31,8 @@ internal sealed record LifecycleStartupOutcomeReceipt(
 internal sealed record LifecycleStartupOperationRequest(
     string RequestId,
     int AttemptNumber,
-    bool BrowserRequested);
+    bool BrowserRequested,
+    DateTimeOffset StartedAtUtc);
 
 internal sealed class LifecycleOpenOutcomeGate
 {
@@ -90,7 +91,8 @@ internal static class LifecycleStartupOutcome
         return new LifecycleStartupOperationRequest(
             normalizedRequestId,
             GetNextAttemptNumber(configuration.StartupOutcomeReceiptRoot, normalizedRequestId),
-            browserRequested);
+            browserRequested,
+            DateTimeOffset.UtcNow);
     }
 
     public static string NormalizeRequestId(string? requestId)
@@ -164,7 +166,8 @@ internal static class LifecycleStartupOutcome
             path,
             JsonSerializer.SerializeToUtf8Bytes(
                 outcome,
-                OperationsContractsJsonContext.Default.VerifiedOperationOutcome));
+                OperationsContractsJsonContext.Default.VerifiedOperationOutcome),
+            overwrite: false);
         return new LifecycleStartupOutcomeReceipt(outcome, path);
     }
 
@@ -185,7 +188,8 @@ internal static class LifecycleStartupOutcome
         var request = new LifecycleStartupOperationRequest(
             normalizedRequestId,
             GetNextAttemptNumber(receiptRoot, normalizedRequestId),
-            BrowserRequested: true);
+            BrowserRequested: true,
+            StartedAtUtc: now);
         var supervisorLogPath = Path.Combine(localServiceRoot, "logs", "lifecycle-supervisor.log");
         var manifestPath = Path.Combine(Path.GetFullPath(installRoot), "service", "lifecycle-supervisor.json");
         var message =
@@ -197,7 +201,7 @@ internal static class LifecycleStartupOutcome
             State: OperationTerminalState.Blocked,
             StartedAtUtc: now,
             CompletedAtUtc: now,
-            AttemptNumber: 1,
+            AttemptNumber: request.AttemptNumber,
             CorrelationId: request.RequestId,
             // Deliberately NOT routed through Sha256Digest (which lowercases): receipt hashes
             // cross the launcher/supervisor process boundary and persist across restarts, so a
@@ -262,7 +266,8 @@ internal static class LifecycleStartupOutcome
             path,
             JsonSerializer.SerializeToUtf8Bytes(
                 outcome,
-                OperationsContractsJsonContext.Default.VerifiedOperationOutcome));
+                OperationsContractsJsonContext.Default.VerifiedOperationOutcome),
+            overwrite: false);
         return new LifecycleStartupOutcomeReceipt(outcome, path);
     }
 
@@ -527,23 +532,29 @@ internal static class LifecycleStartupOutcome
             return 1;
 
         var maxAttempt = 0;
+        var readinessPrefix = $"startup-readiness-{requestId}-attempt-";
+        var terminalPrefix = $"startup-terminal-{requestId}-attempt-";
+        const string suffix = ".verified-outcome.json";
         foreach (var path in Directory.EnumerateFiles(
                      receiptRoot,
                      $"startup-*-{requestId}-attempt-*.verified-outcome.json"))
         {
-            try
+            var fileName = Path.GetFileName(path);
+            var prefix = fileName.StartsWith(readinessPrefix, StringComparison.OrdinalIgnoreCase)
+                ? readinessPrefix
+                : terminalPrefix;
+            if (!fileName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ||
+                !fileName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            var attemptText = fileName[prefix.Length..^suffix.Length];
+            if (int.TryParse(
+                    attemptText,
+                    System.Globalization.NumberStyles.None,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out var attemptNumber))
             {
-                var outcome = JsonSerializer.Deserialize(
-                    File.ReadAllBytes(path),
-                    OperationsContractsJsonContext.Default.VerifiedOperationOutcome);
-                if (outcome is not null &&
-                    string.Equals(outcome.OperationId, $"startup:{requestId}", StringComparison.Ordinal))
-                {
-                    maxAttempt = Math.Max(maxAttempt, outcome.AttemptNumber);
-                }
-            }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
-            {
+                maxAttempt = Math.Max(maxAttempt, attemptNumber);
             }
         }
 
