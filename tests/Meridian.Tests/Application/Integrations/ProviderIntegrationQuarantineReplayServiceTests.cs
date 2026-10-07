@@ -126,6 +126,280 @@ public sealed class ProviderIntegrationQuarantineReplayServiceTests : IDisposabl
     }
 
     [Theory]
+    [InlineData(IntegrationTypeDto.ManualUpload)]
+    [InlineData(IntegrationTypeDto.Hybrid)]
+    [InlineData(IntegrationTypeDto.SftpFile)]
+    public async Task ReplayAsync_ManualCsvPreservesOriginalMappingAndExplicitRemediationAfterRestart(
+        IntegrationTypeDto integrationType)
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var original = CreateReplayReadyManifest(includeSecurityMapping: false) with
+        {
+            IntegrationType = integrationType,
+            FieldMappings =
+            [
+                Mapping("$.account_id", "providerAccountId"),
+                Mapping("$['trade.quantity']", "quantity", new TransformRuleDto("signedAmount", new Dictionary<string, string>
+                {
+                    ["conditionSourcePath"] = "$.position.side",
+                    ["negativeValues"] = "Short"
+                })),
+                Mapping("$.as_of_date", "asOf", new TransformRuleDto("date", new Dictionary<string, string>())),
+                Mapping("$.position_id", "sourceRecordId"),
+                Mapping("$.missing_cusip", "security.cusip", new TransformRuleDto("uppercase", new Dictionary<string, string>()))
+            ]
+        };
+        await store.SaveManifestAsync(original);
+        await store.SaveConnectionAsync(CreateConnection());
+        var ingestion = await new ProviderIntegrationDryRunService(store).RunManualCsvDryRunAsync(
+            new ManualCsvProviderIntegrationDryRunRequestDto(
+                "csv-source-run", original.ManifestId, "connection-alpha", ProviderCapabilityKindDto.Positions,
+                "positions.csv",
+                """
+                ACCOUNT_ID,TRADE.QUANTITY,POSITION.SIDE,AS_OF_DATE,POSITION_ID,CUSIP
+                A-100,100,Short,2026-06-16,POS-1,9128285m8
+                """,
+                "operator@example.com", DateTimeOffset.Parse("2026-06-16T12:00:00Z")));
+        ingestion.RecordsQuarantined.Should().Be(1);
+        var sourceRecord = (await store.ListQuarantinedRecordsAsync(ingestion.SyncRunId)).Should().ContainSingle().Which;
+        sourceRecord.MappedRecord!.Value.GetProperty("quantity").GetDecimal().Should().Be(-100m);
+        sourceRecord.RawRecord.GetProperty("fields").GetProperty("TRADE.QUANTITY").GetString().Should().Be("100");
+        var sourceRun = (await store.GetSyncRunAsync(ingestion.SyncRunId))!;
+        var sourcePayload = (await store.GetRawPayloadAsync(ingestion.SyncRunId, ingestion.RawPayloadId))!;
+
+        var selected = original with
+        {
+            ManifestVersion = 2,
+            // Source format belongs to retained ingestion evidence, even when remediation changes integration type.
+            IntegrationType = IntegrationTypeDto.Rest,
+            FieldMappings = original.FieldMappings.Select(mapping => mapping.TargetField == "security.cusip"
+                ? mapping with { SourcePath = "$.cusip" }
+                : mapping).ToArray()
+        };
+        await PublishAsync(store, original, selected);
+        await PublishAsync(store, selected, original with { ManifestVersion = 3 });
+        var restarted = new FileProviderIntegrationManifestStore(testRoot);
+        var service = new ProviderIntegrationQuarantineReplayService(restarted);
+        var request = CreateRequest() with
+        {
+            SourceSyncRunId = ingestion.SyncRunId,
+            QuarantineRecordIds = [sourceRecord.QuarantineRecordId]
+        };
+
+        var replay = await service.ReplayAsync(request);
+
+        replay.RecordsAccepted.Should().Be(0);
+        replay.RecordsRequarantined.Should().Be(1);
+        var replayedRecord = (await restarted.ListQuarantinedRecordsAsync(replay.ReplaySyncRunId)).Should().ContainSingle().Which;
+        JsonElement.DeepEquals(replayedRecord.MappedRecord!.Value, sourceRecord.MappedRecord!.Value).Should().BeTrue();
+        replayedRecord.ValidationErrors.Select(issue => (issue.Code, issue.TargetField))
+            .Should().BeEquivalentTo(sourceRecord.ValidationErrors.Select(issue => (issue.Code, issue.TargetField)));
+        JsonElement.DeepEquals(replayedRecord.RawRecord, sourceRecord.RawRecord).Should().BeTrue();
+        var originalReference = ProviderIntegrationManifestIdentity.Create(original);
+        var replayRun = (await restarted.GetSyncRunAsync(replay.ReplaySyncRunId))!;
+        var replayPayload = (await restarted.GetRawPayloadAsync(replay.ReplaySyncRunId, replay.RawPayloadId))!;
+        replayRun.ManifestReference.Should().Be(originalReference);
+        replayRun.OriginalManifestReference.Should().Be(originalReference);
+        replayRun.SourceSyncRunId.Should().Be(ingestion.SyncRunId);
+        replayRun.ReplayMode.Should().Be(ProviderIntegrationReplayModeDto.Original);
+        replayPayload.ManifestReference.Should().Be(originalReference);
+        replayPayload.OriginalManifestReference.Should().Be(originalReference);
+
+        // Remediate the replayed CSV row to prove its retained wrapper and source format survive a replay chain.
+        var remediation = await service.ReplayAsync(request with
+        {
+            ReplaySyncRunId = "csv-remediation-run",
+            SourceSyncRunId = replay.ReplaySyncRunId,
+            QuarantineRecordIds = [replayedRecord.QuarantineRecordId],
+            Mode = ProviderIntegrationReplayModeDto.Remediation,
+            TargetManifestVersion = selected.ManifestVersion,
+            TargetManifestDigest = ProviderIntegrationManifestIdentity.Create(selected).ContentDigest
+        });
+
+        remediation.RecordsAccepted.Should().Be(1);
+        remediation.RecordsRequarantined.Should().Be(0);
+        var staged = (await restarted.ListStagingRecordsAsync(remediation.ReplaySyncRunId)).Should().ContainSingle().Which;
+        staged.SourceRecordId.Should().Be("POS-1");
+        staged.MappedRecord.GetProperty("providerAccountId").GetString().Should().Be("A-100");
+        staged.MappedRecord.GetProperty("quantity").GetDecimal().Should().Be(-100m);
+        staged.MappedRecord.GetProperty("security").GetProperty("cusip").GetString().Should().Be("9128285M8");
+        var remediationRun = (await restarted.GetSyncRunAsync(remediation.ReplaySyncRunId))!;
+        var remediationPayload = (await restarted.GetRawPayloadAsync(remediation.ReplaySyncRunId, remediation.RawPayloadId))!;
+        remediationRun.ManifestReference.Should().Be(ProviderIntegrationManifestIdentity.Create(selected));
+        remediationRun.OriginalManifestReference.Should().Be(originalReference);
+        remediationRun.SourceSyncRunId.Should().Be(replay.ReplaySyncRunId);
+        remediationRun.ReplayMode.Should().Be(ProviderIntegrationReplayModeDto.Remediation);
+        remediationPayload.ManifestReference.Should().Be(remediationRun.ManifestReference);
+        remediationPayload.OriginalManifestReference.Should().Be(originalReference);
+        remediationPayload.SourceSyncRunId.Should().Be(replay.ReplaySyncRunId);
+        remediationPayload.ReplayMode.Should().Be(ProviderIntegrationReplayModeDto.Remediation);
+        (await restarted.GetManifestAsync(original.ManifestId))!.ManifestVersion.Should().Be(3);
+        (await restarted.GetSyncRunAsync(ingestion.SyncRunId)).Should().BeEquivalentTo(sourceRun);
+        var retainedSourcePayload = (await restarted.GetRawPayloadAsync(ingestion.SyncRunId, ingestion.RawPayloadId))!;
+        retainedSourcePayload.Should().BeEquivalentTo(sourcePayload, options => options.Excluding(payload => payload.RawPayload));
+        JsonElement.DeepEquals(retainedSourcePayload.RawPayload, sourcePayload.RawPayload).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ReplayAsync_RestWithCsvEndpointAndEnvelopeKeepsJsonPathSemantics()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = CreateReplayReadyManifest() with
+        {
+            IntegrationType = IntegrationTypeDto.Hybrid,
+            Endpoints =
+            [
+                new EndpointDefinitionDto(
+                    "manual-csv-upload", ProviderCapabilityKindDto.Positions, ProviderIntegrationHttpMethodDto.Get,
+                    "/positions", new Dictionary<string, string>(), new Dictionary<string, string>(), null, null,
+                    new EndpointPaginationDto(ProviderIntegrationPaginationTypeDto.None, null, null, null, null),
+                    new EndpointResponseShapeDto("$.records", null, []))
+            ],
+            FieldMappings = CreateReplayReadyManifest().FieldMappings.Select(mapping => mapping with
+            {
+                SourcePath = mapping.SourcePath.Replace("$.", "$.fields.", StringComparison.Ordinal)
+            }).ToArray()
+        };
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(CreateConnection());
+        var transport = new Mock<IProviderIntegrationHttpTransport>();
+        transport.Setup(candidate => candidate.SendAsync(It.IsAny<ProviderIntegrationHttpRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ProviderIntegrationHttpResponse(200, new Dictionary<string, string>(),
+                """
+                {"fileName":"positions.csv","contentType":"text/csv","records":[
+                    {"rowNumber":2,"fields":{"account_id":"A-100","quantity":"invalid","as_of_date":"2026-06-16","position_id":"POS-1"}}
+                ]}
+                """));
+        var ingestion = await new ProviderIntegrationRestDryRunService(store, transport.Object).RunRestDryRunAsync(
+            new ProviderIntegrationRestDryRunRequestDto(
+                "rest-source-run", manifest.ManifestId, "connection-alpha", ProviderCapabilityKindDto.Positions,
+                "manual-csv-upload", new Dictionary<string, string>(), new Dictionary<string, string>(),
+                "operator@example.com", DateTimeOffset.Parse("2026-06-16T12:00:00Z"), MaxPages: 1));
+        var sourceRecord = (await store.ListQuarantinedRecordsAsync(ingestion.SyncRunId)).Should().ContainSingle().Which;
+
+        var result = await new ProviderIntegrationQuarantineReplayService(new FileProviderIntegrationManifestStore(testRoot))
+            .ReplayAsync(CreateRequest() with
+            {
+                SourceSyncRunId = ingestion.SyncRunId,
+                QuarantineRecordIds = [sourceRecord.QuarantineRecordId]
+            });
+
+        var replayedRecord = (await store.ListQuarantinedRecordsAsync(result.ReplaySyncRunId)).Should().ContainSingle().Which;
+        JsonElement.DeepEquals(replayedRecord.MappedRecord!.Value, sourceRecord.MappedRecord!.Value).Should().BeTrue();
+        replayedRecord.ValidationErrors.Select(issue => (issue.Code, issue.TargetField))
+            .Should().BeEquivalentTo(sourceRecord.ValidationErrors.Select(issue => (issue.Code, issue.TargetField)));
+    }
+
+    [Theory]
+    [InlineData("retained")]
+    [InlineData("missing")]
+    [InlineData("cycle")]
+    [InlineData("scope")]
+    [InlineData("unsupported-format")]
+    [InlineData("malformed-csv-row")]
+    [InlineData("malformed-csv-envelope")]
+    public async Task ReplayAsync_UnmarkedReplayRequiresVerifiedCsvSourceHistory(string history)
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = CreateReplayReadyManifest(includeSecurityMapping: false) with { IntegrationType = IntegrationTypeDto.ManualUpload };
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(CreateConnection());
+        var ingestion = await new ProviderIntegrationDryRunService(store).RunManualCsvDryRunAsync(
+            new ManualCsvProviderIntegrationDryRunRequestDto(
+                "csv-source-run", manifest.ManifestId, "connection-alpha", ProviderCapabilityKindDto.Positions,
+                "positions.csv", "account_id,quantity,as_of_date,position_id\nA-100,100,2026-06-16,POS-1",
+                "operator@example.com", DateTimeOffset.Parse("2026-06-16T12:00:00Z")));
+        var sourceRecord = (await store.ListQuarantinedRecordsAsync(ingestion.SyncRunId)).Should().ContainSingle().Which;
+        var sourceRun = (await store.GetSyncRunAsync(ingestion.SyncRunId))!;
+        var sourcePayload = (await store.GetRawPayloadAsync(ingestion.SyncRunId, ingestion.RawPayloadId))!;
+
+        async Task SaveOldReplayAsync(string runId, string parentId, string connectionId = "connection-alpha")
+        {
+            var run = sourceRun with
+            {
+                SyncRunId = runId,
+                ConnectionId = connectionId,
+                RawPayloadId = $"payload-{runId}",
+                SourceSyncRunId = parentId,
+                ReplayMode = ProviderIntegrationReplayModeDto.Original
+            };
+            var metadata = new Dictionary<string, string> { ["sourceSyncRunId"] = parentId };
+            if (history == "unsupported-format")
+            {
+                metadata["sourceRecordFormat"] = "unsupported-v99";
+            }
+
+            await store.SaveSyncRunAsync(run);
+            await store.SaveRawPayloadAsync(sourcePayload with
+            {
+                PayloadId = run.RawPayloadId,
+                SyncRunId = runId,
+                ConnectionId = connectionId,
+                SourceSyncRunId = parentId,
+                ReplayMode = ProviderIntegrationReplayModeDto.Original,
+                RequestMetadata = metadata,
+                RawPayload = JsonSerializer.SerializeToElement(new
+                {
+                    sourceSyncRunId = parentId,
+                    records = new[] { new { quarantineRecordId = sourceRecord.QuarantineRecordId, rawRecord = sourceRecord.RawRecord } }
+                })
+            });
+        }
+
+        var parentId = history switch
+        {
+            "missing" => "missing-source-run",
+            "cycle" or "scope" => "old-replay-parent",
+            _ => ingestion.SyncRunId
+        };
+        await SaveOldReplayAsync("old-replay", parentId);
+        if (history is "cycle" or "scope")
+        {
+            await SaveOldReplayAsync("old-replay-parent", history == "cycle" ? "old-replay" : ingestion.SyncRunId,
+                history == "scope" ? "other-connection" : "connection-alpha");
+        }
+
+        var oldRecord = sourceRecord with
+        {
+            SyncRunId = "old-replay",
+            QuarantineRecordId = "old-quarantine",
+            RawRecord = history == "malformed-csv-row" ? Json("""{"rowNumber":2,"fields":null}""") : sourceRecord.RawRecord
+        };
+        await store.SaveQuarantinedRecordAsync(oldRecord);
+        var request = CreateRequest() with { SourceSyncRunId = oldRecord.SyncRunId, QuarantineRecordIds = [oldRecord.QuarantineRecordId] };
+        var restarted = new FileProviderIntegrationManifestStore(testRoot);
+        IProviderIntegrationManifestStore replayStore = restarted;
+        if (history == "malformed-csv-envelope")
+        {
+            replayStore = ForwardReplayStore(restarted, restarted.GetSyncRunAsync);
+            Mock.Get(replayStore)
+                .Setup(candidate => candidate.GetRawPayloadAsync(ingestion.SyncRunId, ingestion.RawPayloadId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(sourcePayload with { RawPayload = Json("{}") });
+        }
+
+        var service = new ProviderIntegrationQuarantineReplayService(replayStore);
+
+        if (history != "retained")
+        {
+            var replay = () => service.ReplayAsync(request);
+            await replay.Should().ThrowAsync<InvalidOperationException>();
+            (await store.GetSyncRunAsync(request.ReplaySyncRunId)).Should().BeNull();
+            (await store.ListQuarantinedRecordsAsync(request.ReplaySyncRunId)).Should().BeEmpty();
+            (await store.ListStagingRecordsAsync(request.ReplaySyncRunId)).Should().BeEmpty();
+            return;
+        }
+
+        var result = await service.ReplayAsync(request);
+        var replayedRecord = (await store.ListQuarantinedRecordsAsync(result.ReplaySyncRunId)).Should().ContainSingle().Which;
+        JsonElement.DeepEquals(replayedRecord.MappedRecord!.Value, sourceRecord.MappedRecord!.Value).Should().BeTrue();
+        var payload = (await store.GetRawPayloadAsync(result.ReplaySyncRunId, result.RawPayloadId))!;
+        payload.RequestMetadata["sourceRecordFormat"].Should().Be("manual-csv-v1");
+        payload.ManifestReference.Should().Be(sourceRun.ManifestReference);
+        payload.OriginalManifestReference.Should().Be(sourceRun.OriginalManifestReference);
+        payload.SourceSyncRunId.Should().Be("old-replay");
+    }
+
+    [Theory]
     [InlineData(ProviderIntegrationReplayModeDto.Original, 2, "digest")]
     [InlineData(ProviderIntegrationReplayModeDto.Remediation, null, null)]
     [InlineData(ProviderIntegrationReplayModeDto.Remediation, 1, "digest")]

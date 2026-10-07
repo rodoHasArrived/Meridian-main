@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Application.Composition;
+using Meridian.Application.Composition.Features;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FixedIncome;
@@ -15,6 +17,8 @@ using Meridian.Storage.SecurityMaster;
 using Meridian.TestSupport;
 using Meridian.Tests.Storage;
 using Meridian.Ui.Shared.Services;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 
 namespace Meridian.Tests.AssetOperations;
@@ -31,7 +35,20 @@ public sealed class AssetAmortizationPostgresRoundTripTests
     public Task CanonicalAmortization_Discount_ApprovedSpineRetainsHistoricalEvidenceAndReplaysAfterRestart()
         => AssertGovernedAmortizationAsync(premium: false);
 
-    private static async Task AssertGovernedAmortizationAsync(bool premium)
+    [LedgerDatabaseFact]
+    public Task CanonicalAmortization_Actual360ConstantYield_PremiumUsesCalendarCoupons()
+        => AssertGovernedAmortizationAsync(premium: true, constantYield: true, convention: "Actual/360");
+
+    [LedgerDatabaseFact]
+    public Task CanonicalAmortization_Actual365ConstantYield_DiscountUsesCalendarCouponsAcrossLeapYear()
+        => AssertGovernedAmortizationAsync(premium: false, constantYield: true, convention: "Actual/365F");
+
+    [LedgerDatabaseFact]
+    public Task CanonicalAmortization_UnversionedRetainedInstruction_RequiresFreshPreviewWithoutMutation()
+        => AssertGovernedAmortizationAsync(premium: true, constantYield: true, convention: "Actual/365", legacy: true);
+
+    private static async Task AssertGovernedAmortizationAsync(
+        bool premium, bool constantYield = false, string convention = "30/360", bool legacy = false)
     {
         const string fund = "amortization-pipeline-fund";
         const string tenant = "amortization-pipeline-tenant";
@@ -42,9 +59,13 @@ public sealed class AssetAmortizationPostgresRoundTripTests
         const string rule = "canonical-amortization";
         const string assetPath = "assets/investments";
         const string incomePath = "income/amortization";
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
-        var acquired = date.AddYears(-1);
-        var maturity = date.AddYears(1);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        // Posting timestamps use the live clock. Anchor coupon dates on the first of the
+        // current month to keep a real open posting period and avoid day-31 schedule drift.
+        var date = legacy ? new DateOnly(2025, 7, 1) : new DateOnly(today.Year, today.Month, 1);
+        var halfLifeYears = constantYield && !premium ? 2 : 1;
+        var acquired = legacy ? new DateOnly(2025, 1, 1) : date.AddYears(-halfLifeYears);
+        var maturity = legacy ? new DateOnly(2026, 1, 1) : date.AddYears(halfLifeYears);
         var periodStart = new DateOnly(date.Year, date.Month, 1);
         var now = DateTimeOffset.UtcNow;
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
@@ -71,11 +92,12 @@ public sealed class AssetAmortizationPostgresRoundTripTests
         await new LedgerMigrationRunner(ledgerOptions).EnsureMigratedAsync(ct);
         await new SecurityMasterMigrationRunner(securityOptions).EnsureMigratedAsync(ct);
         await new AssetOperationsMigrationRunner(assetOptions).EnsureMigratedAsync(ct);
-        var securities = new PostgresSecurityMasterStore(securityOptions);
-        PostgresAssetOperationsProjectionStore? assets = null;
-        var journal = new PostgresLedgerJournalStore(ledgerOptions, backfillSecurityMaster: () => securities,
-            backfillPositions: () => assets!);
-        assets = new PostgresAssetOperationsProjectionStore(assetOptions, journal);
+        using var provider = ComposePrimaryHost(ledgerOptions, securityOptions, assetOptions);
+        var securities = provider.GetRequiredService<ISecurityMasterStore>();
+        var journal = provider.GetRequiredService<PostgresLedgerJournalStore>();
+        var assets = provider.GetRequiredService<PostgresAssetOperationsProjectionStore>();
+        provider.GetRequiredService<LedgerJournalStoreOptions>().RequireGovernedPostingCommand.Should().BeTrue();
+        provider.GetRequiredService<LedgerJournalStoreOptions>().RequireExpectedVersion.Should().BeTrue();
         var books = new PostgresLedgerBookService(journal);
         var bookId = Guid.NewGuid();
         var positionId = Guid.NewGuid();
@@ -95,9 +117,9 @@ public sealed class AssetAmortizationPostgresRoundTripTests
             JsonSerializer.SerializeToElement(new
             {
                 maturityDate = maturity.ToString("yyyy-MM-dd"),
-                dayCountConvention = "30/360",
-                couponRate = 10m,
-                paymentFrequency = "annual",
+                dayCountConvention = convention,
+                couponRate = legacy ? 10m : constantYield ? (premium ? 5m : 0m) : 10m,
+                paymentFrequency = legacy ? "semiannual" : "annual",
                 couponType = "Fixed",
                 isCallable = false
             }), empty, empty, 1,
@@ -112,13 +134,15 @@ public sealed class AssetAmortizationPostgresRoundTripTests
             OpenLotAmortization.SecurityHash(security));
         var eventEvidence = Evidence("amortization-period", date, AssetAccountingEvidenceSubjects.Event, eventId.ToString("D"), new string('b', 64));
         var evidence = new[] { eventEvidence, acquisitionEvidence, securityEvidence };
-        var price = premium ? 110m : 90m;
+        var price = premium ? 110m : constantYield ? 40.96m : 90m;
         var account = new LedgerAccount("Investments", LedgerAccountType.Asset);
         var lot = await journal.SaveTaxLotAsync(new LedgerTaxLotRecord(lotId, bookId, account, "amortization-owned-lot", acquired,
             100m, 100m, price, "USD", now, now, EvidenceRef: acquisitionEvidence.EvidenceId, Version: 1,
             SecurityId: securityId, BookPositionId: positionId, OriginalFace: 10_000m, BookedFactor: 1m, ParBasis: 100m,
             Acquisition: new OpenLotAcquisitionDto(LotQuantityBasis.Face, "USD", "USD", 1m, price * 100m, price * 100m,
-                acquired, new FaceValueAcquisitionTermsDto(100m, 1m, BondAmortizationMethod.StraightLine, null), [acquisitionEvidence])), ct);
+                acquired, new FaceValueAcquisitionTermsDto(100m, 1m,
+                    constantYield ? BondAmortizationMethod.ConstantYield : BondAmortizationMethod.StraightLine,
+                    constantYield ? (premium ? 0m : 0.25m) : null), [acquisitionEvidence])), ct);
         var dimensions = new LedgerDimensionSetDto(FundId: fund, EntityId: company,
             InstrumentId: securityId, BookId: bookId.ToString("D"))
         { PositionId = positionId };
@@ -131,7 +155,8 @@ public sealed class AssetAmortizationPostgresRoundTripTests
             RetainedEvidence = evidence,
             EvidenceLinks = evidence.Select(item => item.EvidenceUri).ToArray()
         };
-        var lineage = new ProjectionLineageDto(Guid.NewGuid(), null, "canonical-lot-amortization", OpenLotAmortization.ModelVersion,
+        var lineage = new ProjectionLineageDto(Guid.NewGuid(), null, "canonical-lot-amortization",
+            legacy ? "canonical-lot-amortization-v1" : OpenLotAmortization.ModelVersion,
             "test-fixture-v1", "base", date, DateTimeOffset.UtcNow, "custodian", eventEvidence.SourceReference, economicEvent)
         { BookPositionId = positionId, RetainedEvidence = evidence };
         var bookContext = new AccountingBookContextDto(bookId, fund, ownerId, FundStructureNodeKindDto.Fund,
@@ -145,10 +170,27 @@ public sealed class AssetAmortizationPostgresRoundTripTests
             { RetainedEvidence = evidence }, null, 0,
             new AssetOperationsWriteApprovalDto(approver, "document://position-approval/amortization",
                 "Retain the owned lot amortization event.", DateTimeOffset.UtcNow), ct);
-        var preview = await new CanonicalLotAmortizationService(journal, securities, assets)
+        var preview = await provider.GetRequiredService<CanonicalLotAmortizationService>()
             .PreviewAsync(bookId, lotId, date, securityEvidence, ct);
+        preview.Instruction.CalculationVersion.Should().Be(OpenLotAmortization.ModelVersion);
+        if (legacy)
+        {
+            // Rehydrate the exact pre-versioning instruction shape. Historical calculations
+            // remain available for receipt replay, but unposted drafts require a fresh preview.
+            var payload = JsonSerializer.SerializeToNode(preview.Instruction)!.AsObject();
+            payload.Remove(nameof(OpenLotAmortizationInstructionDto.CalculationVersion));
+            var retainedInstruction = JsonSerializer.Deserialize<OpenLotAmortizationInstructionDto>(payload.ToJsonString())!;
+            retainedInstruction.CalculationVersion.Should().BeNull();
+            preview = new(retainedInstruction, OpenLotAmortization.Project(retainedInstruction));
+        }
+        (await journal.GetByPeriodAsync(period.PeriodId, ct)).Should().BeEmpty();
+        (await journal.GetTaxLotsByIdsAsync(bookId, [lotId], ct)).Single().Should().BeEquivalentTo(lot);
         var movement = preview.Projection.FunctionalMovement;
-        Math.Abs(movement).Should().Be(500m);
+        // Independently known cash flows: premium 11,000 less a 500 coupon at zero yield;
+        // discount 4,096 grows at 25% with no coupon to 6,400 after two of four years.
+        var expectedAmount = legacy ? decimal.Round(500m * 362m / 365m, 12, MidpointRounding.ToEven)
+            : constantYield && !premium ? 2_304m : 500m;
+        Math.Abs(movement).Should().Be(expectedAmount);
         var amount = Math.Abs(movement);
         var policies = new AccountingPolicyService();
         await policies.CreatePolicyAsync(new CreateAccountingPolicyRequest(AccountingBasisKindDto.Gaap, policy, "v1",
@@ -205,8 +247,24 @@ public sealed class AssetAmortizationPostgresRoundTripTests
         var request = new PostPostingRuleJournalCandidateRequestDto(drafted.DraftedCandidate!, approver, approvalId,
             ApprovalNotes: "Approve the retained carrying-value movement.", TenantId: tenant, CompanyId: company)
         { ApprovalEvidence = [approvalEvidence] };
-        var posted = await new AccountingPostingCandidatePostService(candidateBuilder, journal, assetAccountingEventStore: assets)
-            .PostCandidateAsync(request, ct);
+        var postingService = new AccountingPostingCandidatePostService(candidateBuilder, journal, assetAccountingEventStore: assets);
+        var unapproved = () => postingService.PostCandidateAsync(request with { ApprovalEvidence = [] }, ct);
+        await unapproved.Should().ThrowAsync<InvalidOperationException>();
+        var selfApproved = () => postingService.PostCandidateAsync(request with { Actor = preparer }, ct);
+        await selfApproved.Should().ThrowAsync<InvalidOperationException>().WithMessage("*independent*");
+        (await journal.GetByPeriodAsync(period.PeriodId, ct)).Should().BeEmpty();
+        (await journal.GetTaxLotsByIdsAsync(bookId, [lotId], ct)).Single().Should().BeEquivalentTo(lot);
+        (await assets.GetLatestAsync(eventId, 1, ct))!.Projection.SpineVersion.Should().Be(drafted.SpineVersion);
+        if (legacy)
+        {
+            var staleCalculation = () => postingService.PostCandidateAsync(request, ct);
+            await staleCalculation.Should().ThrowAsync<InvalidOperationException>().WithMessage("*fresh*preview*");
+            (await journal.GetByPeriodAsync(period.PeriodId, ct)).Should().BeEmpty();
+            (await journal.GetTaxLotsByIdsAsync(bookId, [lotId], ct)).Single().Should().BeEquivalentTo(lot);
+            (await assets.GetLatestAsync(eventId, 1, ct))!.Projection.SpineVersion.Should().Be(drafted.SpineVersion);
+            return;
+        }
+        var posted = await postingService.PostCandidateAsync(request, ct);
         posted.WasReplay.Should().BeFalse();
         posted.TaxLotMutationBatchId.Should().NotBeNull();
         var retained = (await assets.GetLatestAsync(eventId, 1, ct))!.Projection;
@@ -217,17 +275,15 @@ public sealed class AssetAmortizationPostgresRoundTripTests
         retained.RetainedEvidence.Should().Contain(acquisitionEvidence);
         retained.RetainedEvidence.Should().Contain(securityEvidence);
         var reloaded = (await journal.GetTaxLotsByIdsAsync(bookId, [lotId], ct)).Single().ToOpenLot();
-        reloaded.OpenFunctionalCostBasis.Should().Be(premium ? 10_500m : 9_500m);
+        reloaded.OpenFunctionalCostBasis.Should().Be(price * 100m + (premium ? -expectedAmount : expectedAmount));
         reloaded.Acquisition.Should().BeEquivalentTo(lot.Acquisition);
         var batch = (await journal.GetAtomicTaxLotPostingAsync(posted.TaxLotMutationBatchId!.Value, ct))!;
         batch.MutationKind.Should().Be(AtomicTaxLotMutationKind.Amortization);
         batch.Journal.Entry.Lines.Where(line => line.Account == account).Sum(line => line.Debit - line.Credit)
             .Should().Be(reloaded.OpenFunctionalCostBasis - lot.ToOpenLot().OpenFunctionalCostBasis);
-        var restartedSecurities = new PostgresSecurityMasterStore(securityOptions);
-        PostgresAssetOperationsProjectionStore? restartedAssets = null;
-        var restartedJournal = new PostgresLedgerJournalStore(ledgerOptions, backfillSecurityMaster: () => restartedSecurities,
-            backfillPositions: () => restartedAssets!);
-        restartedAssets = new PostgresAssetOperationsProjectionStore(assetOptions, restartedJournal);
+        using var restartedProvider = ComposePrimaryHost(ledgerOptions, securityOptions, assetOptions);
+        var restartedJournal = restartedProvider.GetRequiredService<PostgresLedgerJournalStore>();
+        var restartedAssets = restartedProvider.GetRequiredService<PostgresAssetOperationsProjectionStore>();
         var replay = await new AccountingPostingCandidatePostService(candidateBuilder, restartedJournal,
             assetAccountingEventStore: restartedAssets).PostCandidateAsync(request, ct);
         replay.WasReplay.Should().BeTrue();
@@ -235,5 +291,27 @@ public sealed class AssetAmortizationPostgresRoundTripTests
         (await restartedAssets.GetLatestAsync(eventId, 1, ct))!.Projection.SpineVersion.Should().Be(5);
         (await restartedJournal.GetByPeriodAsync(period.PeriodId, ct)).Should().ContainSingle();
         (await restartedJournal.GetTaxLotsByIdsAsync(bookId, [lotId], ct)).Single().Version.Should().Be(lot.Version + 1);
+    }
+
+    private static ServiceProvider ComposePrimaryHost(
+        LedgerJournalStoreOptions ledger, SecurityMasterOptions securities, AssetOperationsOptions assets)
+    {
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["MERIDIAN_DATABASE_URL"] = ledger.ConnectionString,
+            ["MERIDIAN_LEDGER_CONNECTION_STRING"] = ledger.ConnectionString,
+            ["MERIDIAN_LEDGER_SCHEMA"] = ledger.SchemaName,
+            ["MERIDIAN_SECURITY_MASTER_CONNECTION_STRING"] = securities.ConnectionString,
+            ["MERIDIAN_SECURITY_MASTER_SCHEMA"] = securities.Schema,
+            ["MERIDIAN_ASSET_OPERATIONS_CONNECTION_STRING"] = assets.ConnectionString,
+            ["MERIDIAN_ASSET_OPERATIONS_SCHEMA"] = assets.Schema,
+            ["MERIDIAN_SECURITY_MASTER_PRELOAD_CACHE"] = "false"
+        }).Build();
+        var services = new ServiceCollection().AddLogging()
+            .DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+        var options = CompositionOptions.Minimal with { Configuration = configuration, EnableProcessWideHostedServices = false };
+        new StorageFeatureRegistration().Register(services, options);
+        new LedgerFeatureRegistration().Register(services, options);
+        return services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
     }
 }
