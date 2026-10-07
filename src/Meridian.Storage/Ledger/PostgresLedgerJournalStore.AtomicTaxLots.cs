@@ -162,6 +162,8 @@ public sealed partial class PostgresLedgerJournalStore
         }
 
         await ValidateCorrectionBatchAsync(connection, transaction, command, ct).ConfigureAwait(false);
+        if (command.MutationKind == AtomicTaxLotMutationKind.Acquisition)
+            await ValidateCorporateActionAcquisitionChronologyAsync(connection, transaction, command.AcquisitionLot!, ct).ConfigureAwait(false);
         AverageCostReliefPlan? averageCostPlan = null;
         if (command.MutationKind == AtomicTaxLotMutationKind.Disposal)
         {
@@ -174,9 +176,9 @@ public sealed partial class PostgresLedgerJournalStore
         LedgerTaxLotRecord? amortizationLot = null;
         if (command.MutationKind == AtomicTaxLotMutationKind.Amortization)
             amortizationLot = await LockAmortizationAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
-        LedgerTaxLotRecord? corporateActionLot = null;
+        IReadOnlyList<LedgerTaxLotRecord>? corporateActionLots = null;
         if (command.MutationKind == AtomicTaxLotMutationKind.CorporateAction)
-            corporateActionLot = await LockCorporateActionAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
+            corporateActionLots = await LockCorporateActionAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
         await AppendJournalAsync(connection, transaction, command.Journal,
             allowCorporateActionLot: command.MutationKind == AtomicTaxLotMutationKind.CorporateAction, ct).ConfigureAwait(false);
 
@@ -200,7 +202,7 @@ public sealed partial class PostgresLedgerJournalStore
         }
         else if (command.MutationKind == AtomicTaxLotMutationKind.CorporateAction)
         {
-            var mutations = await ApplyCorporateActionAsync(connection, transaction, command, corporateActionLot!, recordedAt, ct)
+            var mutations = await ApplyCorporateActionAsync(connection, transaction, command, corporateActionLots!, recordedAt, ct)
                 .ConfigureAwait(false);
             foreach (var mutation in mutations)
                 await InsertTaxLotMutationAsync(connection, transaction, mutation, ct).ConfigureAwait(false);

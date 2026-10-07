@@ -22,6 +22,7 @@ public sealed partial class PostgresLedgerJournalStore
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
         await EnsureBookWriteAuthorityAsync(connection, transaction, lot.LedgerBookId, ct).ConfigureAwait(false);
+        await ValidateCorporateActionAcquisitionChronologyAsync(connection, transaction, lot, ct).ConfigureAwait(false);
         await EnsureBookReferenceAuthorityAsync(connection, transaction, "tax_lots", "tax_lot_record_id",
             lot.TaxLotRecordId, lot.LedgerBookId, true, ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();

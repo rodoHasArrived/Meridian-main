@@ -477,17 +477,23 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             var sourceId = Instruction.CorporateActionId;
             var key = "corporate-lot:" + Guid.NewGuid().ToString("N");
             var at = new DateTimeOffset(Instruction.EffectiveDate.ToDateTime(new TimeOnly(12, 0)), TimeSpan.Zero);
-            LedgerEntry Leg(LedgerAccount account, Guid securityId, Guid positionId, decimal transaction, decimal functional, bool debit)
+            LedgerEntry Leg(LedgerAccount account, Guid securityId, Guid positionId, Guid lotId,
+                OpenLotAcquisitionDto acquisition, decimal transaction, decimal functional, bool debit)
                 => new(Guid.NewGuid(), id, at, account, debit ? functional : 0m, debit ? 0m : functional, "Reviewed advance refunding",
-                    new LedgerLineDimensionSet(InstrumentId: securityId) { PositionId = positionId },
-                    new("EUR", "USD", debit ? transaction : 0m, debit ? 0m : transaction, 1.1m));
-            var lines = new List<LedgerEntry>
+                    new LedgerLineDimensionSet(InstrumentId: securityId) { PositionId = positionId, TaxLotId = lotId.ToString("D") },
+                    new(acquisition.AcquisitionCurrency, acquisition.FunctionalCurrency, debit ? transaction : 0m,
+                        debit ? 0m : transaction, acquisition.AcquisitionFxRateToFunctional));
+            var lines = new List<LedgerEntry>();
+            foreach (var group in OpenLotCorporateAction.Groups(Instruction))
             {
-                Leg(new(Instruction.SourceAssetAccountId, LedgerAccountType.Asset), Instruction.ExpectedLot.SecurityId, Instruction.ExpectedLot.BookPositionId,
-                    Instruction.ExpectedLot.OpenTransactionCostBasis, Instruction.ExpectedLot.OpenFunctionalCostBasis, false)
-            };
-            lines.AddRange(projected.Select(p => Leg(new(p.Successor.AssetAccountId, LedgerAccountType.Asset), p.Successor.Security.SecurityId,
-                p.Successor.BookPositionId, p.OpenTransactionCostBasis, p.OpenFunctionalCostBasis, true)));
+                var lot = group.ExpectedLot;
+                lines.Add(Leg(new(group.SourceAssetAccountId, LedgerAccountType.Asset), lot.SecurityId, lot.BookPositionId,
+                    lot.TaxLotRecordId, lot.Acquisition, lot.OpenTransactionCostBasis, lot.OpenFunctionalCostBasis, false));
+                lines.AddRange(projected.Where(p => p.PredecessorTaxLotRecordId == lot.TaxLotRecordId)
+                    .Select(p => Leg(new(p.Successor.AssetAccountId, LedgerAccountType.Asset), p.Successor.Security.SecurityId,
+                        p.Successor.BookPositionId, p.Successor.TaxLotRecordId, lot.Acquisition,
+                        p.OpenTransactionCostBasis, p.OpenFunctionalCostBasis, true)));
+            }
             var tags = SecurityMasterLineageTags(Instruction.Security.SecurityId);
             tags["lotCorporateActionHash"] = OpenLotCorporateAction.Fingerprint(Instruction);
             var journal = new JournalEntry(id, at, "Reviewed advance refunding", lines,

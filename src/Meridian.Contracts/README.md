@@ -6,12 +6,17 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-10-06
+last_reviewed: 2026-10-07
 ---
 
 # src/Meridian.Contracts
 
 `OpenLotCorporateAction` binds reviewed predecessor snapshots, successor Security Master and position versions, explicit fractional plan allocations, and retained successor acquisition evidence. Optional corporate-action inputs and acquisition lineage are omitted when absent, preserving legacy serialized payloads. The shared guard conserves original and current transaction/functional bases and carried acquisition dates, holding period and FX. Unsupported cash, fractional cash-in-lieu, correction or holding-period treatments fail closed. Successor amortization requires a separate reviewed yield/schedule continuation.
+An instruction can retain additional predecessor groups for the same source position, so one event
+transforms every affected lot in one batch. Current transaction and functional basis allocations
+use ten-decimal journal precision with a conserved final residual; acquisition facts retain their
+twelve-decimal lot precision. Reviewed mutation amounts must match that allocation before approval.
+Unrepresentable inputs and arithmetic overflow are validation failures.
 
 `Workstation/OnboardingDtos.cs` defines bounded onboarding scope, owner criteria, exact source
 snapshots, consecutive comparisons, difference assignments, independent review decisions and frozen

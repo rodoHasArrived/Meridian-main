@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-REPORTING
 path: src/Meridian.Reporting
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-06
+last_reviewed: 2026-10-07
 ---
 
 # src/Meridian.Reporting
@@ -66,10 +66,11 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 
 Canonical corporate-action reporting reads immutable before/after mutation snapshots from the
 atomic posting receipt. `CanonicalCorporateActionLotProjection` verifies the journal's retained
-instruction hash, exact source credit and successor debit legs, reference/acquisition evidence,
+instruction hash, exact source credit and successor debit legs for every predecessor group, reference/acquisition evidence,
 both currency bases, acquisition and holding dates, and successor reporting tags. Current mutable
 lots cannot substitute for the retained posting snapshots. Unsupported or altered evidence fails
-closed rather than producing a reconciled report.
+closed rather than producing a reconciled report. Lot identities distinguish equal-value journal
+legs, and a batch yields one conserved predecessor/successor report per reviewed predecessor.
 
 Investment-income comparisons use two explicit retained run IDs and a retained grid/metric.
 `ReportingIncomeComparisonEngine` freezes both manifests and reuses `ReportSnapshotDiffEngine`.

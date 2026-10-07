@@ -25,7 +25,14 @@ namespace Meridian.Tests.AssetOperations;
 public sealed class AssetCorporateActionRefundingPostgresRoundTripTests
 {
     [LedgerDatabaseFact]
-    public async Task AdvanceRefunding_RealMappedProjectionApprovalAndRestartConserveOriginalAndCurrentFaceBasis()
+    public Task AdvanceRefunding_RealMappedProjectionApprovalAndRestartConserveOriginalAndCurrentFaceBasis()
+        => AssertGovernedRefundingAsync(60m);
+
+    [LedgerDatabaseFact]
+    public Task AdvanceRefunding_EqualAllocationsResolveDistinctSuccessorLotsAndReplayAfterRestart()
+        => AssertGovernedRefundingAsync(50m);
+
+    private static async Task AssertGovernedRefundingAsync(decimal refundedPercent)
     {
         const string fund = "refunding-pipeline-fund";
         const string tenant = "refunding-pipeline-tenant";
@@ -211,12 +218,13 @@ public sealed class AssetCorporateActionRefundingPostgresRoundTripTests
         var successors = new List<OpenLotCorporateActionSuccessorDto>();
         foreach (var refunded in new[] { true, false })
         {
+            var percent = refunded ? refundedPercent : 100m - refundedPercent;
             var targetSecurity = await RetainSecurity(Guid.NewGuid(), refunded ? "Refunded successor bond" : "Unrefunded successor bond");
             var targetPosition = await RetainPosition(targetSecurity, Guid.NewGuid());
             var targetLotId = Guid.NewGuid();
             successors.Add(new(targetLotId, refunded ? "refunded-face" : "unrefunded-face", assetName,
                 targetSecurity, SecurityEvidence(targetSecurity), targetPosition.PositionId, targetPosition.Version,
-                refunded ? 3_600m : 2_400m, refunded ? 60m : 40m,
+                6_000m * percent / 100m, percent,
                 refunded ? CorporateActionSuccessorRoleDto.Refunded : CorporateActionSuccessorRoleDto.Unrefunded,
                 refunded ? ["ScheduleD"] : [],
                 Evidence("successor-" + targetLotId.ToString("N"), acquired, "OpenLotAcquisition", targetLotId, new string(refunded ? 'b' : 'c', 64)), assetPath));
@@ -229,7 +237,7 @@ public sealed class AssetCorporateActionRefundingPostgresRoundTripTests
         var prepared = CanonicalLotCorporateActionServiceTests.ProjectAndMap(instruction, scope, period.Version, assetPath, preparer, now);
         var mapped = prepared.Mapped;
         instruction = prepared.Reviewed;
-        mapped.LotMutations.Mutations.Select(mutation => mutation.AllocationPercent).Should().Equal(0.6m, 0.4m);
+        mapped.LotMutations.Mutations.Select(mutation => mutation.AllocationPercent).Should().Equal(refundedPercent / 100m, 1m - refundedPercent / 100m);
         var currentRole = (await assets.GetSecurityAsync(securityId, ct)).InstrumentRoles.Single();
         position = await assets.UpsertAsync(currentRole, position with
         {
@@ -252,8 +260,8 @@ public sealed class AssetCorporateActionRefundingPostgresRoundTripTests
         await configuration.UpsertPostingRuleAsync(new(fund,
             new PostingRuleDto(rule, "Canonical advance refunding", eventType, "generated", "v1", EffectiveFrom: acquired, Priority: 100,
                 Formulas: [new("amount", AccountingRuleFormulaKindDto.SourceAmount, 0m),
-                    new("refunded", AccountingRuleFormulaKindDto.PercentageOfSourceAmount, 0.6m),
-                    new("unrefunded", AccountingRuleFormulaKindDto.PercentageOfSourceAmount, 0.4m)],
+                    new("refunded", AccountingRuleFormulaKindDto.PercentageOfSourceAmount, refundedPercent / 100m),
+                    new("unrefunded", AccountingRuleFormulaKindDto.PercentageOfSourceAmount, 1m - refundedPercent / 100m)],
                 GeneratedPostings:
                 [new("predecessor", assetPath, AccountingTemplateLineSideDto.Credit, "amount", 0m, "USD"),
                  new("refunded", assetPath, AccountingTemplateLineSideDto.Debit, "refunded", 0m, "USD"),
@@ -330,11 +338,12 @@ public sealed class AssetCorporateActionRefundingPostgresRoundTripTests
         proof.PredecessorAfter.OpenQuantity.Should().Be(0m);
         proof.Successors.Select(value => value.SecurityId).Should().Equal(successors.Select(value => value.Security.SecurityId));
         proof.Successors.Select(value => value.BookPositionId).Should().Equal(successors.Select(value => value.BookPositionId));
-        proof.Successors.Select(value => value.OpenQuantity).Should().Equal(3_600m, 2_400m);
-        proof.Successors.Select(value => value.Acquisition.TransactionCostBasis).Should().Equal(3_960m, 2_640m);
-        proof.Successors.Select(value => value.Acquisition.FunctionalCostBasis).Should().Equal(3_960m, 2_640m);
-        proof.Successors.Select(value => value.OpenTransactionCostBasis).Should().Equal(3_780m, 2_520m);
-        proof.Successors.Select(value => value.OpenFunctionalCostBasis).Should().Equal(3_780m, 2_520m);
+        var shares = new[] { refundedPercent / 100m, 1m - refundedPercent / 100m };
+        proof.Successors.Select(value => value.OpenQuantity).Should().Equal(shares.Select(share => 6_000m * share));
+        proof.Successors.Select(value => value.Acquisition.TransactionCostBasis).Should().Equal(shares.Select(share => 6_600m * share));
+        proof.Successors.Select(value => value.Acquisition.FunctionalCostBasis).Should().Equal(shares.Select(share => 6_600m * share));
+        proof.Successors.Select(value => value.OpenTransactionCostBasis).Should().Equal(shares.Select(share => 6_300m * share));
+        proof.Successors.Select(value => value.OpenFunctionalCostBasis).Should().Equal(shares.Select(share => 6_300m * share));
         proof.Successors.Sum(value => value.Acquisition.FunctionalCostBasis).Should().Be(6_600m);
         proof.Successors.Sum(value => value.OpenFunctionalCostBasis).Should().Be(proof.PredecessorBefore.OpenFunctionalCostBasis);
         proof.Successors.Sum(value => value.OpenTransactionCostBasis).Should().Be(proof.PredecessorBefore.OpenTransactionCostBasis);

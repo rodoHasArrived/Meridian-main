@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.SecurityMaster;
 
@@ -19,7 +20,13 @@ public sealed record OpenLotCorporateActionSuccessorDto(
     RetainedEvidenceIdentityDto AcquisitionEvidence,
     string? PostingAccountPath = null);
 
-/// <summary>A complete, independently approved full-open-lot transformation; no acquisition facts or approval are inferred.</summary>
+/// <summary>One reviewed predecessor and its distinct successors within a corporate-action batch.</summary>
+public sealed record OpenLotCorporateActionPredecessorDto(
+    OpenLotDto ExpectedLot,
+    IReadOnlyList<OpenLotCorporateActionSuccessorDto> Successors,
+    string SourceAssetAccountId);
+
+/// <summary>A complete reviewed transformation of the affected lots in one source position.</summary>
 public sealed record OpenLotCorporateActionInstructionDto(
     Guid CorporateActionId,
     CorporateActionAccountingTypeDto ActionType,
@@ -30,7 +37,9 @@ public sealed record OpenLotCorporateActionInstructionDto(
     long ExpectedBookPositionVersion,
     IReadOnlyList<OpenLotCorporateActionSuccessorDto> Successors,
     IReadOnlyList<CorporateActionLotMutationDto> Mutations,
-    string SourceAssetAccountId);
+    string SourceAssetAccountId,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<OpenLotCorporateActionPredecessorDto>? AdditionalPredecessors = null);
 
 /// <summary>Immutable origin on a successor acquisition, retained even after later relief.</summary>
 public sealed record OpenLotCorporateActionLineageDto(
@@ -48,19 +57,82 @@ public sealed record OpenLotCorporateActionSuccessorProjectionDto(
     decimal AcquisitionTransactionCostBasis,
     decimal AcquisitionFunctionalCostBasis,
     decimal OpenTransactionCostBasis,
-    decimal OpenFunctionalCostBasis);
+    decimal OpenFunctionalCostBasis)
+{
+    public Guid PredecessorTaxLotRecordId { get; init; }
+}
 
 /// <summary>Pure conservation and evidence guard shared by governed drafting, storage and retained Reporting proof.</summary>
 public static class OpenLotCorporateAction
 {
     public const string ModelVersion = "canonical-lot-corporate-action-v1";
 
+    /// <summary>Retains reviewed order without changing the serialized shape of single-lot instructions.</summary>
+    public static IReadOnlyList<OpenLotCorporateActionPredecessorDto> Groups(OpenLotCorporateActionInstructionDto instruction)
+    {
+        ArgumentNullException.ThrowIfNull(instruction);
+        var groups = new List<OpenLotCorporateActionPredecessorDto>
+        {
+            new(instruction.ExpectedLot, instruction.Successors, instruction.SourceAssetAccountId)
+        };
+        if (instruction.AdditionalPredecessors is { } additional)
+            groups.AddRange(additional);
+        if (groups.Any(group => group is null || group.ExpectedLot is null || group.Successors is null))
+            throw new ArgumentException("Corporate action requires complete predecessor and successor groups.", nameof(instruction));
+        return groups;
+    }
+
     public static IReadOnlyList<OpenLotCorporateActionSuccessorProjectionDto> Project(OpenLotCorporateActionInstructionDto instruction)
     {
         ArgumentNullException.ThrowIfNull(instruction);
-        var lot = instruction.ExpectedLot;
+        try
+        {
+            return ProjectBatch(instruction);
+        }
+        catch (OverflowException exception)
+        {
+            throw new ArgumentException("Corporate-action quantities, bases, allocations or FX exceed the supported decimal range.", nameof(instruction), exception);
+        }
+    }
+
+    private static IReadOnlyList<OpenLotCorporateActionSuccessorProjectionDto> ProjectBatch(OpenLotCorporateActionInstructionDto instruction)
+    {
+        var groups = Groups(instruction);
+        var first = groups[0].ExpectedLot;
+        foreach (var group in groups)
+            OpenLotValidation.Validate(group.ExpectedLot);
+        if (groups.Select(group => group.ExpectedLot.TaxLotRecordId).Distinct().Count() != groups.Count
+            || groups.Any(group => group.ExpectedLot.LedgerBookId != first.LedgerBookId
+                || group.ExpectedLot.SecurityId != first.SecurityId || group.ExpectedLot.BookPositionId != first.BookPositionId
+                || group.ExpectedLot.Acquisition.QuantityBasis != first.Acquisition.QuantityBasis
+                || group.ExpectedLot.Acquisition.AcquisitionCurrency != first.Acquisition.AcquisitionCurrency
+                || group.ExpectedLot.Acquisition.FunctionalCurrency != first.Acquisition.FunctionalCurrency))
+            throw new ArgumentException("All distinct predecessor lots must belong to the same book, security, source position and currency scope.");
+        var successors = groups.SelectMany(group => group.Successors).ToArray();
+        if (successors.Any(successor => successor is null)
+            || successors.Select(successor => successor.TaxLotRecordId).Distinct().Count() != successors.Length
+            || successors.Select(successor => successor.LotId).Distinct(StringComparer.Ordinal).Count() != successors.Length
+            || successors.Any(successor => groups.Any(group => group.ExpectedLot.TaxLotRecordId == successor.TaxLotRecordId)))
+            throw new ArgumentException("Successor lot identities must be globally distinct from every predecessor and successor in the action.");
+        if (instruction.Mutations is null || instruction.Mutations.Any(mutation => mutation is null)
+            || instruction.Mutations.Count != successors.Length
+            || CorporateActionLotMutationPlanValidator.Validate(instruction.Mutations).Count != 0)
+            throw new ArgumentException("Corporate action requires a complete authoritative source-to-successor mutation plan.");
+        var result = groups.SelectMany(group => ProjectGroup(instruction, group)).ToArray();
+        // The event amount and every consumer's debit/credit totals must fit before review.
+        if (groups.Sum(group => group.ExpectedLot.OpenFunctionalCostBasis) != result.Sum(target => target.OpenFunctionalCostBasis)
+            || groups.Sum(group => group.ExpectedLot.OpenTransactionCostBasis) != result.Sum(target => target.OpenTransactionCostBasis))
+            throw new ArgumentException("The corporate-action batch must conserve both journal currency totals.");
+        return result;
+    }
+
+    private static IReadOnlyList<OpenLotCorporateActionSuccessorProjectionDto> ProjectGroup(
+        OpenLotCorporateActionInstructionDto instruction, OpenLotCorporateActionPredecessorDto group)
+    {
+        var lot = group.ExpectedLot;
         OpenLotValidation.Validate(lot);
-        if (instruction.CorporateActionId == Guid.Empty || string.IsNullOrWhiteSpace(instruction.SourceAssetAccountId) || lot.Version <= 0 || lot.OpenQuantity <= 0m
+        if (instruction.CorporateActionId == Guid.Empty || string.IsNullOrWhiteSpace(group.SourceAssetAccountId)
+            || lot.Version <= 0 || lot.Version == long.MaxValue || lot.OpenQuantity <= 0m
             || lot.OpenFunctionalCostBasis <= 0m || instruction.ExpectedBookPositionVersion <= 0
             || instruction.EffectiveDate < lot.AcquiredDate)
             throw new ArgumentException("Corporate action requires a versioned positive open lot, action identity and effective date.");
@@ -72,7 +144,8 @@ public static class OpenLotCorporateAction
             or CorporateActionAccountingTypeDto.AdvanceRefunding))
             throw new ArgumentException("Only basis-preserving stock splits, stock mergers and advance refunding are supported; cash and other treatments require a separate reviewed workflow.");
         ValidateSecurity(instruction.Security, instruction.SecurityEvidence, lot.SecurityId, lot.Acquisition.AcquisitionCurrency, instruction.EffectiveDate);
-        var successors = instruction.Successors;
+        ValidatePrecision(lot);
+        var successors = group.Successors;
         if (successors is null || successors.Count == 0 || successors.Any(s => s is null || s.Security is null || s.SecurityEvidence is null || s.AcquisitionEvidence is null || s.TaxLotRecordId == Guid.Empty
             || s.TaxLotRecordId == lot.TaxLotRecordId || string.IsNullOrWhiteSpace(s.LotId)
             || string.IsNullOrWhiteSpace(s.AssetAccountId) || s.BookPositionId == Guid.Empty || s.ExpectedBookPositionVersion <= 0 || s.Quantity <= 0m
@@ -122,10 +195,8 @@ public static class OpenLotCorporateAction
             if (!successor.ReportingTags.SequenceEqual(requiredTags, StringComparer.Ordinal))
                 throw new ArgumentException("Only the refunded advance-refunding successor may carry ScheduleD tracking.");
         }
-        if (instruction.Mutations is null || instruction.Mutations.Any(mutation => mutation is null))
-            throw new ArgumentException("Corporate action requires a non-null authoritative mutation plan.");
-        var blockers = CorporateActionLotMutationPlanValidator.Validate(instruction.Mutations);
-        if (blockers.Count != 0 || instruction.Mutations.Count != successors.Count)
+        var mutations = instruction.Mutations.Where(mutation => mutation.SourceLotId == lot.TaxLotRecordId).ToArray();
+        if (mutations.Length != successors.Count)
             throw new ArgumentException("Corporate action requires a complete authoritative source-to-successor mutation plan.");
         var result = new List<OpenLotCorporateActionSuccessorProjectionDto>();
         var acquisitionTransaction = lot.Acquisition.TransactionCostBasis * lot.OpenQuantity / lot.OriginalQuantity;
@@ -139,9 +210,10 @@ public static class OpenLotCorporateAction
             var sourceQuantity = last ? lot.OpenQuantity - allocatedQuantity : Round(lot.OpenQuantity * fraction);
             var acquisitionTransactionPart = last ? acquisitionTransaction - allocatedAcquisitionTransaction : Round(acquisitionTransaction * fraction);
             var acquisitionFunctionalPart = last ? acquisitionFunctional - allocatedAcquisitionFunctional : Round(acquisitionFunctional * fraction);
-            var transaction = last ? lot.OpenTransactionCostBasis - allocatedTransaction : Round(lot.OpenTransactionCostBasis * fraction);
-            var functional = last ? lot.OpenFunctionalCostBasis - allocatedFunctional : Round(lot.OpenFunctionalCostBasis * fraction);
-            var mutation = instruction.Mutations.SingleOrDefault(m => m.TargetLotId == successor.TaxLotRecordId);
+            var transaction = last ? lot.OpenTransactionCostBasis - allocatedTransaction : RoundJournal(lot.OpenTransactionCostBasis * fraction);
+            var functional = last ? lot.OpenFunctionalCostBasis - allocatedFunctional : RoundJournal(lot.OpenFunctionalCostBasis * fraction);
+            var matches = mutations.Where(mutation => mutation.TargetLotId == successor.TaxLotRecordId).ToArray();
+            var mutation = matches.Length == 1 ? matches[0] : null;
             if (mutation is null || mutation.Kind is not (CorporateActionLotMutationKindDto.CarryOver or CorporateActionLotMutationKindDto.Allocate)
                 || mutation.SecurityId != lot.SecurityId || mutation.SourceLotId != lot.TaxLotRecordId
                 || mutation.ExpectedSourceLotVersion != lot.Version
@@ -155,11 +227,19 @@ public static class OpenLotCorporateAction
                 || mutation.HoldingPeriodTreatment != CorporateActionHoldingPeriodTreatmentDto.CarryOver
                 || mutation.LinkedCaseId is not null || !mutation.ReportingTags.SequenceEqual(successor.ReportingTags, StringComparer.Ordinal))
                 throw new ArgumentException("The reviewed corporate-action plan must close the exact predecessor and create each exact successor while carrying basis and holding period.");
-            if (functional <= 0m || transaction < 0m || !Exact(transaction) || !Exact(functional) || !Exact(successor.Quantity)
+            if (functional <= 0m || transaction <= 0m || !ExactLotNumeric(successor.Quantity)
                 || !Exact(acquisitionTransactionPart) || !Exact(acquisitionFunctionalPart)
+                || Math.Abs(acquisitionFunctionalPart - acquisitionTransactionPart * lot.Acquisition.AcquisitionFxRateToFunctional) > 0.000000000001m
                 || Math.Abs(functional - transaction * lot.Acquisition.AcquisitionFxRateToFunctional) > 0.000000000001m)
                 throw new ArgumentException("Successor quantity and bases must be representable at twelve decimals and conserve retained acquisition FX.");
-            result.Add(new(successor, acquisitionTransactionPart, acquisitionFunctionalPart, transaction, functional));
+            var durableQuantity = successor.Quantity / (lot.Acquisition.QuantityBasis == LotQuantityBasis.Face ? 100m : 1m);
+            var unitCost = acquisitionFunctionalPart / durableQuantity;
+            if (!ExactLotNumeric(durableQuantity) || !ExactLotNumeric(unitCost) || unitCost * durableQuantity != acquisitionFunctionalPart)
+                throw new ArgumentException("Successor acquisition quantity and unit cost must preserve original basis exactly at twelve decimals within the durable numeric range.");
+            result.Add(new(successor, acquisitionTransactionPart, acquisitionFunctionalPart, transaction, functional)
+            {
+                PredecessorTaxLotRecordId = lot.TaxLotRecordId
+            });
             allocatedQuantity += sourceQuantity;
             allocatedAcquisitionTransaction += acquisitionTransactionPart;
             allocatedAcquisitionFunctional += acquisitionFunctionalPart;
@@ -170,8 +250,9 @@ public static class OpenLotCorporateAction
     }
 
     public static IReadOnlyList<RetainedEvidenceIdentityDto> Evidence(OpenLotCorporateActionInstructionDto instruction)
-        => instruction.ExpectedLot.Acquisition.Evidence.Concat([instruction.SecurityEvidence])
-            .Concat(instruction.Successors.SelectMany(s => new[] { s.SecurityEvidence, s.AcquisitionEvidence })).Distinct().ToArray();
+        => Groups(instruction).SelectMany(group => group.ExpectedLot.Acquisition.Evidence).Concat([instruction.SecurityEvidence])
+            .Concat(Groups(instruction).SelectMany(group => group.Successors)
+                .SelectMany(successor => new[] { successor.SecurityEvidence, successor.AcquisitionEvidence })).Distinct().ToArray();
 
     public static string Fingerprint(OpenLotCorporateActionInstructionDto instruction)
     {
@@ -184,6 +265,25 @@ public static class OpenLotCorporateAction
 
     private static bool Exact(decimal value) => Round(value) == value;
     private static decimal Round(decimal value) => decimal.Round(value, 12, MidpointRounding.ToEven);
+    private static decimal RoundJournal(decimal value) => decimal.Round(value, 10, MidpointRounding.ToEven);
+    // Lot columns and mutation cost_basis are numeric(38,12); journal legs and FX are numeric(38,10).
+    private static bool ExactLotNumeric(decimal value) => Exact(value) && Math.Abs(value) < 100000000000000000000000000m;
+    private static bool ExactJournalNumeric(decimal value) => RoundJournal(value) == value && Math.Abs(value) < 10000000000000000000000000000m;
+
+    private static void ValidatePrecision(OpenLotDto lot)
+    {
+        var acquisition = lot.Acquisition;
+        if (!ExactLotNumeric(lot.OriginalQuantity) || !ExactLotNumeric(lot.OpenQuantity)
+            || !Exact(acquisition.TransactionCostBasis) || !Exact(acquisition.FunctionalCostBasis))
+            throw new ArgumentException("Predecessor quantities and original acquisition bases must be exact at twelve decimals within their durable numeric range.");
+        if (!ExactJournalNumeric(lot.OpenTransactionCostBasis)
+            || !ExactJournalNumeric(lot.OpenFunctionalCostBasis) || !ExactLotNumeric(lot.OpenFunctionalCostBasis)
+            || !ExactJournalNumeric(acquisition.AcquisitionFxRateToFunctional))
+            throw new ArgumentException("Current transaction and functional basis and acquisition FX must be exact at ten journal decimals and within durable numeric ranges before review.");
+        if (Math.Abs(acquisition.FunctionalCostBasis - acquisition.TransactionCostBasis * acquisition.AcquisitionFxRateToFunctional) > 0.000000000001m
+            || Math.Abs(lot.OpenFunctionalCostBasis - lot.OpenTransactionCostBasis * acquisition.AcquisitionFxRateToFunctional) > 0.000000000001m)
+            throw new ArgumentException("Original and current predecessor bases must conserve retained acquisition FX.");
+    }
 
     private static void ValidateSecurity(SecurityProjectionRecord security, RetainedEvidenceIdentityDto evidence,
         Guid securityId, string currency, DateOnly effectiveDate)

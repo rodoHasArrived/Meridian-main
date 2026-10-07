@@ -15,7 +15,7 @@ public sealed class OpenLotCorporateActionTests
     [Theory]
     [InlineData(CorporateActionAccountingTypeDto.StockSplit, 160)]
     [InlineData(CorporateActionAccountingTypeDto.ReverseStockSplit, 40)]
-    [InlineData(CorporateActionAccountingTypeDto.MergerStock, 120)]
+    [InlineData(CorporateActionAccountingTypeDto.MergerStock, 125)]
     public void StockTransformation_CarriesOnlyRemainingAcquisitionBasisAndPreservesCurrentBasis(
         CorporateActionAccountingTypeDto actionType, int quantity)
     {
@@ -73,8 +73,8 @@ public sealed class OpenLotCorporateActionTests
 
         var projection = OpenLotCorporateAction.Project(instruction);
 
-        projection.Select(p => p.OpenTransactionCostBasis).Should().Equal(239.999999999998m, 480.000000000002m);
-        projection.Select(p => p.OpenFunctionalCostBasis).Should().Equal(299.999999999997m, 600.000000000003m);
+        projection.Select(p => p.OpenTransactionCostBasis).Should().Equal(240m, 480m);
+        projection.Select(p => p.OpenFunctionalCostBasis).Should().Equal(300m, 600m);
         projection.Sum(p => p.AcquisitionTransactionCostBasis).Should().Be(88000m);
         projection.Sum(p => p.AcquisitionFunctionalCostBasis).Should().Be(110000m);
         foreach (var part in projection)
@@ -311,7 +311,16 @@ public sealed class OpenLotCorporateActionTests
     public void Merger_AcceptsExactlyRepresentableTwelveDecimalQuantity()
     {
         var instruction = Instruction(CorporateActionAccountingTypeDto.MergerStock);
-        instruction = Replan(instruction with { Successors = [instruction.Successors[0] with { Quantity = 1.234567890123m }] });
+        instruction = Replan(instruction with
+        {
+            ExpectedLot = instruction.ExpectedLot with
+            {
+                OriginalQuantity = 80m,
+                Acquisition = instruction.ExpectedLot.Acquisition with
+                { TransactionCostBasis = 4.938271560492m, FunctionalCostBasis = 6.172839450615m }
+            },
+            Successors = [instruction.Successors[0] with { Quantity = 1.234567890123m }]
+        });
 
         OpenLotCorporateAction.Project(instruction).Single().Successor.Quantity.Should().Be(1.234567890123m);
     }
@@ -340,7 +349,7 @@ public sealed class OpenLotCorporateActionTests
 
         var project = () => OpenLotCorporateAction.Project(instruction);
 
-        project.Should().Throw<ArgumentException>().WithMessage("*twelve decimals*");
+        project.Should().Throw<ArgumentException>();
     }
 
     [Fact]
@@ -380,6 +389,259 @@ public sealed class OpenLotCorporateActionTests
         evidence.Where(e => e.SubjectType == "OpenLotAcquisition").Should().OnlyContain(e => e.EffectiveDate == AcquiredDate);
     }
 
+    [Fact]
+    public void Batch_TransfersEveryPredecessorWithoutPoolingAcquisitionFactsOrEqualAmountSuccessors()
+    {
+        var instruction = AddPredecessor(Instruction(CorporateActionAccountingTypeDto.MergerStock));
+
+        var groups = OpenLotCorporateAction.Groups(instruction);
+        var projection = OpenLotCorporateAction.Project(instruction);
+
+        groups.Should().HaveCount(2);
+        projection.Select(target => target.PredecessorTaxLotRecordId)
+            .Should().Equal(groups.Select(group => group.ExpectedLot.TaxLotRecordId));
+        projection.Select(target => target.OpenFunctionalCostBasis).Should().Equal(900m, 900m);
+        projection.Select(target => target.AcquisitionFunctionalCostBasis).Should().Equal(1000m, 1000m);
+        projection.Select(target => target.Successor.TaxLotRecordId).Distinct().Should().HaveCount(2);
+        projection[1].Successor.AcquisitionEvidence.EffectiveDate.Should().Be(AcquiredDate.AddMonths(1));
+        groups[1].ExpectedLot.Acquisition.HoldingPeriodStartDate.Should().Be(new DateOnly(2024, 11, 1));
+        OpenLotCorporateAction.Evidence(instruction).Should().Contain(groups[1].ExpectedLot.Acquisition.Evidence[0]);
+        var lotInstruction = new AssetLotMutationInstructionDto(AssetLotMutationIntentDto.CorporateAction,
+            AssetAccountId: "Investments", CorporateAction: instruction);
+        AssetLotMutationInstructionValidator.Validate(AssetAccountingEventKindDto.CorporateAction, lotInstruction,
+            1800m, EffectiveDate, OpenLotCorporateAction.Evidence(instruction)).Should().BeEmpty();
+        AssetLotMutationInstructionValidator.Validate(AssetAccountingEventKindDto.CorporateAction, lotInstruction,
+            900m, EffectiveDate, OpenLotCorporateAction.Evidence(instruction)).Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public void AdvanceRefundingBatch_CreatesDistinctRefundedAndUnrefundedLotsForEachAcquisition()
+    {
+        var instruction = AddPredecessor(Instruction(CorporateActionAccountingTypeDto.AdvanceRefunding));
+
+        var projection = OpenLotCorporateAction.Project(instruction);
+
+        projection.Should().HaveCount(4);
+        projection.Select(target => target.Successor.TaxLotRecordId).Distinct().Should().HaveCount(4);
+        projection.Select(target => target.Successor.BookPositionId).Distinct().Should().HaveCount(2);
+        projection.Sum(target => target.Successor.Quantity).Should().Be(160000m);
+        projection.Sum(target => target.AcquisitionFunctionalCostBasis).Should().Be(220000m);
+        projection.Sum(target => target.OpenFunctionalCostBasis).Should().Be(210000m);
+        foreach (var group in OpenLotCorporateAction.Groups(instruction))
+        {
+            var targets = projection.Where(target => target.PredecessorTaxLotRecordId == group.ExpectedLot.TaxLotRecordId).ToArray();
+            targets.Select(target => target.Successor.Role).Should().Equal(CorporateActionSuccessorRoleDto.Refunded, CorporateActionSuccessorRoleDto.Unrefunded);
+            targets[0].Successor.ReportingTags.Should().Equal("ScheduleD");
+            targets[1].Successor.ReportingTags.Should().BeEmpty();
+            targets.Should().OnlyContain(target => target.Successor.AcquisitionEvidence.EffectiveDate == group.ExpectedLot.AcquiredDate);
+        }
+    }
+
+    [Theory]
+    [InlineData("book")]
+    [InlineData("security")]
+    [InlineData("position")]
+    [InlineData("predecessor")]
+    [InlineData("successor")]
+    [InlineData("successor-lot-id")]
+    public void Batch_RejectsScopeDriftAndReusedLotIdentities(string changed)
+    {
+        var instruction = AddPredecessor(Instruction(CorporateActionAccountingTypeDto.MergerStock));
+        var additional = instruction.AdditionalPredecessors![0];
+        var lot = additional.ExpectedLot;
+        additional = changed switch
+        {
+            "book" => additional with { ExpectedLot = lot with { LedgerBookId = Guid.NewGuid() } },
+            "security" => additional with { ExpectedLot = lot with { SecurityId = Guid.NewGuid() } },
+            "position" => additional with { ExpectedLot = lot with { BookPositionId = Guid.NewGuid() } },
+            "predecessor" => additional with { ExpectedLot = instruction.ExpectedLot },
+            "successor" => additional with { Successors = instruction.Successors },
+            "successor-lot-id" => additional with { Successors = [additional.Successors[0] with { LotId = instruction.Successors[0].LotId }] },
+            _ => throw new ArgumentOutOfRangeException(nameof(changed))
+        };
+
+        var project = () => OpenLotCorporateAction.Project(instruction with { AdditionalPredecessors = [additional] });
+
+        project.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void SinglePredecessor_PreservesLegacyJsonAndFingerprintWhenAdditionalPredecessorsAreAbsent()
+    {
+        var instruction = Instruction(CorporateActionAccountingTypeDto.MergerStock);
+
+        JsonSerializer.SerializeToElement(instruction).TryGetProperty("AdditionalPredecessors", out _).Should().BeFalse();
+        var roundTrip = JsonSerializer.Deserialize<OpenLotCorporateActionInstructionDto>(JsonSerializer.Serialize(instruction))!;
+
+        roundTrip.AdditionalPredecessors.Should().BeNull();
+        OpenLotCorporateAction.Fingerprint(roundTrip).Should().Be(OpenLotCorporateAction.Fingerprint(instruction));
+        OpenLotCorporateAction.Groups(roundTrip).Should().ContainSingle();
+    }
+
+    [Fact]
+    public void AdvanceRefunding_NormalizesCurrentJournalAllocationsToTenDecimalsWithAnExactResidual()
+    {
+        var instruction = SameCurrency(Instruction(CorporateActionAccountingTypeDto.AdvanceRefunding, 33.333333333333m));
+
+        var projected = OpenLotCorporateAction.Project(instruction);
+
+        projected.Select(target => target.OpenFunctionalCostBasis).Should().Equal(34999.9999999996m, 70000.0000000004m);
+        projected.Sum(target => target.OpenFunctionalCostBasis).Should().Be(105000m);
+        projected.Select(target => target.OpenTransactionCostBasis)
+            .Should().Equal(projected.Select(target => target.OpenFunctionalCostBasis));
+        projected.Should().OnlyContain(target => decimal.Round(target.OpenFunctionalCostBasis, 10) == target.OpenFunctionalCostBasis);
+
+        var oldPrecisionPlan = Replan(instruction, journalDecimals: 12);
+        var projectUnnormalized = () => OpenLotCorporateAction.Project(oldPrecisionPlan);
+        projectUnnormalized.Should().Throw<ArgumentException>().WithMessage("*reviewed corporate-action plan*");
+    }
+
+    [Theory]
+    [InlineData("transaction")]
+    [InlineData("functional")]
+    [InlineData("fx")]
+    public void Projection_RejectsJournalOverprecisionBeforeReview(string field)
+    {
+        var instruction = Instruction(CorporateActionAccountingTypeDto.MergerStock);
+        var lot = instruction.ExpectedLot;
+        lot = field switch
+        {
+            "transaction" => lot with { OpenTransactionCostBasis = 720.00000000001m },
+            "functional" => lot with { OpenFunctionalCostBasis = 900.00000000001m },
+            "fx" => lot with { Acquisition = lot.Acquisition with { AcquisitionFxRateToFunctional = 1.25000000001m } },
+            _ => throw new ArgumentOutOfRangeException(nameof(field))
+        };
+
+        var project = () => OpenLotCorporateAction.Project(instruction with { ExpectedLot = lot });
+
+        project.Should().Throw<ArgumentException>().WithMessage("*ten journal decimals*");
+    }
+
+    [Fact]
+    public void Projection_RejectsOriginalAcquisitionFxMismatchEvenWhenCurrentBasisReconciles()
+    {
+        var instruction = Instruction(CorporateActionAccountingTypeDto.MergerStock);
+        instruction = instruction with
+        {
+            ExpectedLot = instruction.ExpectedLot with
+            { Acquisition = instruction.ExpectedLot.Acquisition with { FunctionalCostBasis = 1250.001m } }
+        };
+        OpenLotValidation.Validate(instruction.ExpectedLot);
+
+        var project = () => OpenLotCorporateAction.Project(instruction);
+
+        project.Should().Throw<ArgumentException>().WithMessage("*Original and current predecessor bases*");
+    }
+
+    [Fact]
+    public void Projection_RejectsOriginalAllocationFxDriftEvenWhenCurrentJournalAllocationsReconcile()
+    {
+        var instruction = Instruction(CorporateActionAccountingTypeDto.AdvanceRefunding, 33.333333333333m);
+        instruction = Replan(instruction with
+        {
+            ExpectedLot = instruction.ExpectedLot with
+            {
+                OriginalQuantity = 80000m,
+                OpenTransactionCostBasis = 0.3m,
+                OpenFunctionalCostBasis = 300m,
+                Acquisition = instruction.ExpectedLot.Acquisition with
+                { TransactionCostBasis = 1m, FunctionalCostBasis = 1000m, AcquisitionFxRateToFunctional = 1000m }
+            }
+        });
+        instruction.Mutations[0].SourceBasisAmount.Should().Be(0.1m);
+        instruction.Mutations[0].SourceCarryingAmount.Should().Be(100m);
+
+        var project = () => OpenLotCorporateAction.Project(instruction);
+
+        project.Should().Throw<ArgumentException>().WithMessage("*conserve retained acquisition FX*");
+    }
+
+    [Fact]
+    public void Projection_RejectsNonRepresentableSuccessorUnitCostBeforeApproval()
+    {
+        var instruction = Instruction(CorporateActionAccountingTypeDto.MergerStock);
+        instruction = Replan(instruction with { Successors = [instruction.Successors[0] with { Quantity = 120m }] });
+
+        var project = () => OpenLotCorporateAction.Project(instruction);
+
+        project.Should().Throw<ArgumentException>().WithMessage("*unit cost*twelve decimals*");
+    }
+
+    [Theory]
+    [InlineData("fx")]
+    [InlineData("proportional-acquisition")]
+    public void Projection_ReturnsArgumentExceptionForArithmeticOverflow(string field)
+    {
+        var instruction = SameCurrency(Instruction(CorporateActionAccountingTypeDto.MergerStock));
+        var acquisition = instruction.ExpectedLot.Acquisition with
+        { TransactionCostBasis = decimal.MaxValue, FunctionalCostBasis = decimal.MaxValue };
+        if (field == "fx")
+            acquisition = acquisition with { AcquisitionCurrency = "EUR", AcquisitionFxRateToFunctional = 2m };
+        instruction = instruction with { ExpectedLot = instruction.ExpectedLot with { Acquisition = acquisition } };
+
+        var project = () => OpenLotCorporateAction.Project(instruction);
+
+        project.Should().Throw<ArgumentException>().WithInnerException<OverflowException>();
+    }
+
+    [Fact]
+    public void Batch_ConservesLargeTotalsWhenEachIndividualReceiptFitsItsDurableRange()
+    {
+        var instruction = SameCurrency(Instruction(CorporateActionAccountingTypeDto.MergerStock));
+        instruction = AddPredecessor(Replan(instruction with
+        {
+            ExpectedLot = instruction.ExpectedLot with
+            {
+                OpenTransactionCostBasis = 90000000000000000000000000m,
+                OpenFunctionalCostBasis = 90000000000000000000000000m
+            }
+        }));
+
+        var projected = OpenLotCorporateAction.Project(instruction);
+
+        projected.Sum(target => target.OpenFunctionalCostBasis).Should().Be(180000000000000000000000000m);
+        projected.Sum(target => target.OpenTransactionCostBasis).Should().Be(180000000000000000000000000m);
+    }
+
+    [Theory]
+    [InlineData("quantity")]
+    [InlineData("unit-cost")]
+    [InlineData("receipt-cost-basis")]
+    public void Projection_RejectsAmountsOutsideTheSqlNumericRangeBeforeReview(string field)
+    {
+        const decimal outsideLotRange = 100000000000000000000000000m;
+        var instruction = SameCurrency(Instruction(CorporateActionAccountingTypeDto.MergerStock));
+        instruction = instruction with
+        {
+            ExpectedLot = instruction.ExpectedLot with
+            {
+                OriginalQuantity = 2m,
+                OpenQuantity = 2m,
+                Acquisition = instruction.ExpectedLot.Acquisition with
+                { TransactionCostBasis = outsideLotRange, FunctionalCostBasis = outsideLotRange }
+            },
+            Successors = [instruction.Successors[0] with { Quantity = field == "quantity" ? outsideLotRange : 1m }]
+        };
+        if (field == "receipt-cost-basis")
+            instruction = instruction with { ExpectedLot = instruction.ExpectedLot with { OpenTransactionCostBasis = outsideLotRange, OpenFunctionalCostBasis = outsideLotRange } };
+        instruction = Replan(instruction);
+
+        var project = () => OpenLotCorporateAction.Project(instruction);
+
+        project.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void Projection_RejectsPredecessorVersionThatCannotAdvance()
+    {
+        var instruction = Instruction(CorporateActionAccountingTypeDto.MergerStock);
+        instruction = Replan(instruction with { ExpectedLot = instruction.ExpectedLot with { Version = long.MaxValue } });
+
+        var project = () => OpenLotCorporateAction.Project(instruction);
+
+        project.Should().Throw<ArgumentException>().WithMessage("*versioned positive open lot*");
+    }
+
     internal static OpenLotCorporateActionInstructionDto Instruction(CorporateActionAccountingTypeDto actionType,
         decimal refundedPercent = 25m)
     {
@@ -403,37 +665,93 @@ public sealed class OpenLotCorporateActionTests
             {
                 Successor(split ? security : Security(Guid.NewGuid(), false),
                     actionType == CorporateActionAccountingTypeDto.StockSplit ? 160m :
-                    actionType == CorporateActionAccountingTypeDto.ReverseStockSplit ? 40m : 120m,
+                    actionType == CorporateActionAccountingTypeDto.ReverseStockSplit ? 40m : 125m,
                     100m, CorporateActionSuccessorRoleDto.Successor)
             };
         return Replan(new(Guid.NewGuid(), actionType, EffectiveDate, lot, security, SecurityEvidence(security), 3, successors, [], "Investments"));
     }
 
-    private static OpenLotCorporateActionInstructionDto Replan(OpenLotCorporateActionInstructionDto instruction)
+    private static OpenLotCorporateActionInstructionDto Replan(OpenLotCorporateActionInstructionDto instruction, int journalDecimals = 10)
     {
-        var lot = instruction.ExpectedLot;
-        decimal transactionAllocated = 0m, functionalAllocated = 0m, quantityAllocated = 0m;
         var mutations = new List<CorporateActionLotMutationDto>();
-        for (var index = 0; index < instruction.Successors.Count; index++)
+        foreach (var group in OpenLotCorporateAction.Groups(instruction))
         {
-            var successor = instruction.Successors[index];
-            var last = index == instruction.Successors.Count - 1;
-            var fraction = successor.BasisAllocationPercent / 100m;
-            var transaction = last ? lot.OpenTransactionCostBasis - transactionAllocated : decimal.Round(lot.OpenTransactionCostBasis * fraction, 12, MidpointRounding.ToEven);
-            var functional = last ? lot.OpenFunctionalCostBasis - functionalAllocated : decimal.Round(lot.OpenFunctionalCostBasis * fraction, 12, MidpointRounding.ToEven);
-            var sourceQuantity = last ? lot.OpenQuantity - quantityAllocated : lot.OpenQuantity * fraction;
-            mutations.Add(new(CorporateActionLotMutationKindDto.CarryOver, lot.SecurityId, successor.Security.SecurityId,
-                successor.Quantity, functional, fraction, CorporateActionHoldingPeriodTreatmentDto.CarryOver,
-                ReportingTags: successor.ReportingTags, SourceLotId: lot.TaxLotRecordId, ExpectedSourceLotVersion: lot.Version,
-                SourceBefore: new(lot.OpenQuantity, lot.OpenFunctionalCostBasis, lot.OpenTransactionCostBasis), SourceAfter: new(0m, 0m, 0m),
-                TargetLotId: successor.TaxLotRecordId, TargetOperation: CorporateActionLotTargetOperationDto.Create,
-                TargetAfter: new(successor.Quantity, functional, transaction), BasisAmount: transaction,
-                SourceQuantity: sourceQuantity, SourceCarryingAmount: functional, SourceBasisAmount: transaction));
-            transactionAllocated += transaction;
-            functionalAllocated += functional;
-            quantityAllocated += sourceQuantity;
+            var lot = group.ExpectedLot;
+            decimal transactionAllocated = 0m, functionalAllocated = 0m, quantityAllocated = 0m;
+            for (var index = 0; index < group.Successors.Count; index++)
+            {
+                var successor = group.Successors[index];
+                var last = index == group.Successors.Count - 1;
+                var fraction = successor.BasisAllocationPercent / 100m;
+                var transaction = last ? lot.OpenTransactionCostBasis - transactionAllocated : decimal.Round(lot.OpenTransactionCostBasis * fraction, journalDecimals, MidpointRounding.ToEven);
+                var functional = last ? lot.OpenFunctionalCostBasis - functionalAllocated : decimal.Round(lot.OpenFunctionalCostBasis * fraction, journalDecimals, MidpointRounding.ToEven);
+                var sourceQuantity = last ? lot.OpenQuantity - quantityAllocated : lot.OpenQuantity * fraction;
+                mutations.Add(new(CorporateActionLotMutationKindDto.CarryOver, lot.SecurityId, successor.Security.SecurityId,
+                    successor.Quantity, functional, fraction, CorporateActionHoldingPeriodTreatmentDto.CarryOver,
+                    ReportingTags: successor.ReportingTags, SourceLotId: lot.TaxLotRecordId, ExpectedSourceLotVersion: lot.Version,
+                    SourceBefore: new(lot.OpenQuantity, lot.OpenFunctionalCostBasis, lot.OpenTransactionCostBasis), SourceAfter: new(0m, 0m, 0m),
+                    TargetLotId: successor.TaxLotRecordId, TargetOperation: CorporateActionLotTargetOperationDto.Create,
+                    TargetAfter: new(successor.Quantity, functional, transaction), BasisAmount: transaction,
+                    SourceQuantity: sourceQuantity, SourceCarryingAmount: functional, SourceBasisAmount: transaction));
+                transactionAllocated += transaction;
+                functionalAllocated += functional;
+                quantityAllocated += sourceQuantity;
+            }
         }
         return instruction with { Mutations = mutations };
+    }
+
+    internal static OpenLotCorporateActionInstructionDto AddPredecessor(OpenLotCorporateActionInstructionDto instruction)
+    {
+        var lotId = Guid.NewGuid();
+        var acquired = AcquiredDate.AddMonths(1);
+        var lot = instruction.ExpectedLot with
+        {
+            TaxLotRecordId = lotId,
+            LotId = "additional-predecessor",
+            AcquiredDate = acquired,
+            Acquisition = instruction.ExpectedLot.Acquisition with
+            {
+                HoldingPeriodStartDate = new DateOnly(2024, 11, 1),
+                Evidence = [Evidence("OpenLotAcquisition", lotId, acquired)]
+            }
+        };
+        var successors = instruction.Successors.Select(successor =>
+        {
+            var id = Guid.NewGuid();
+            return successor with
+            {
+                TaxLotRecordId = id,
+                LotId = "additional-" + id,
+                AcquisitionEvidence = Evidence("OpenLotAcquisition", id, acquired)
+            };
+        }).ToArray();
+        return Replan(instruction with { AdditionalPredecessors = [new(lot, successors, instruction.SourceAssetAccountId)] });
+    }
+
+    private static OpenLotCorporateActionInstructionDto SameCurrency(OpenLotCorporateActionInstructionDto instruction)
+    {
+        var security = instruction.Security with { Currency = "USD" };
+        return Replan(instruction with
+        {
+            Security = security,
+            SecurityEvidence = SecurityEvidence(security),
+            ExpectedLot = instruction.ExpectedLot with
+            {
+                OpenTransactionCostBasis = instruction.ExpectedLot.OpenFunctionalCostBasis,
+                Acquisition = instruction.ExpectedLot.Acquisition with
+                {
+                    AcquisitionCurrency = "USD",
+                    AcquisitionFxRateToFunctional = 1m,
+                    TransactionCostBasis = instruction.ExpectedLot.Acquisition.FunctionalCostBasis
+                }
+            },
+            Successors = instruction.Successors.Select(successor =>
+            {
+                var targetSecurity = successor.Security with { Currency = "USD" };
+                return successor with { Security = targetSecurity, SecurityEvidence = SecurityEvidence(targetSecurity) };
+            }).ToArray()
+        });
     }
 
     private static OpenLotCorporateActionSuccessorDto Successor(SecurityProjectionRecord security, decimal quantity,

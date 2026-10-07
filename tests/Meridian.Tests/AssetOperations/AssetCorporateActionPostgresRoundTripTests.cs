@@ -24,7 +24,14 @@ namespace Meridian.Tests.AssetOperations;
 public sealed class AssetCorporateActionPostgresRoundTripTests
 {
     [LedgerDatabaseFact]
-    public async Task SameSecurityStockSplit_RealMappedProjectionDraftApprovalPostAndRestartReconcile()
+    public Task SameSecurityStockSplit_RealMappedProjectionDraftApprovalPostAndRestartReconcile()
+        => RunStockSplitAsync(multipleLots: false);
+
+    [LedgerDatabaseFact]
+    public Task SameSecurityStockSplit_TwoLotsWithAggregatedRuleLinesPostAndReplayAsOneBatch()
+        => RunStockSplitAsync(multipleLots: true);
+
+    private static async Task RunStockSplitAsync(bool multipleLots)
     {
         const string fund = "corporate-pipeline-fund";
         const string tenant = "corporate-pipeline-tenant";
@@ -124,9 +131,32 @@ public sealed class AssetCorporateActionPostgresRoundTripTests
             SourceCarryingAmount: 1_000m, SourceBasisAmount: 1_000m);
         var instruction = new OpenLotCorporateActionInstructionDto(actionId, CorporateActionAccountingTypeDto.StockSplit, date,
             lot.ToOpenLot(), security, securityEvidence, reviewedPositionVersion, [successor], [mutation], assetName);
+        if (multipleLots)
+        {
+            var secondLotId = Guid.NewGuid();
+            var secondSuccessorId = Guid.NewGuid();
+            var secondAcquired = acquired.AddMonths(1);
+            var secondAcquisitionEvidence = Evidence("second-original-acquisition", secondAcquired, "OpenLotAcquisition", secondLotId, new string('c', 64));
+            var secondSuccessorEvidence = Evidence("second-reviewed-successor", secondAcquired, "OpenLotAcquisition", secondSuccessorId, new string('d', 64));
+            var secondLot = await journal.SaveTaxLotAsync(lot with
+            {
+                TaxLotRecordId = secondLotId,
+                LotId = "second-original-shares",
+                AcquiredDate = secondAcquired,
+                EvidenceRef = secondAcquisitionEvidence.EvidenceId,
+                Acquisition = lot.Acquisition! with { HoldingPeriodStartDate = secondAcquired, Evidence = [secondAcquisitionEvidence] }
+            }, ct);
+            var secondSuccessor = successor with
+            { TaxLotRecordId = secondSuccessorId, LotId = "second-split-shares", AcquisitionEvidence = secondSuccessorEvidence };
+            instruction = instruction with
+            {
+                AdditionalPredecessors = [new(secondLot.ToOpenLot(), [secondSuccessor], assetName)],
+                Mutations = [mutation, mutation with { SourceLotId = secondLotId, TargetLotId = secondSuccessorId }]
+            };
+        }
         var scope = new AssetAccountingEventScopeDto(securityId, security.Version, positionId, reviewedPositionVersion, bookId,
             period.PeriodId, AccountingBasisKindDto.Gaap, fund, tenant, company, dimensions);
-        var prepared = CanonicalLotCorporateActionServiceTests.ProjectAndMap(instruction, scope, period.Version, assetPath, preparer, now);
+        var prepared = CanonicalLotCorporateActionServiceTests.ProjectAndMap(instruction, scope, period.Version, assetPath, preparer, now, aggregateJournalLines: multipleLots);
         var mapped = prepared.Mapped;
         instruction = prepared.Reviewed;
         // Retain the reviewed corporate event on the governed position revision before drafting.
@@ -176,6 +206,8 @@ public sealed class AssetCorporateActionPostgresRoundTripTests
         drafted.DraftedLotMutation!.Intent.Should().Be(AssetLotMutationIntentDto.CorporateAction);
         JsonElement.DeepEquals(JsonSerializer.SerializeToElement(drafted.DraftedCandidateResult!.PostingCommand!.LotCorporateAction),
             JsonSerializer.SerializeToElement(instruction)).Should().BeTrue();
+        drafted.DraftedCandidateResult.GeneratedPostingLines.Should().HaveCount(2);
+        drafted.DraftedCandidate!.EventAmount.Should().Be(multipleLots ? 2_000m : 1_000m);
         (await journal.GetByPeriodAsync(period.PeriodId, ct)).Should().BeEmpty("drafting has no posting authority");
         var approvalId = Guid.NewGuid().ToString("D");
         var approvedAt = DateTimeOffset.UtcNow;
@@ -196,16 +228,30 @@ public sealed class AssetCorporateActionPostgresRoundTripTests
             AssetAccountingLifecycleStageDto.Projected, AssetAccountingLifecycleStageDto.Drafted,
             AssetAccountingLifecycleStageDto.Approved, AssetAccountingLifecycleStageDto.Posted);
         var batch = (await journal.GetAtomicTaxLotPostingAsync(posted.TaxLotMutationBatchId!.Value, ct))!;
-        await AssertPostedLifecycleRejectsCounterfeitReceiptsAsync(retained, batch, ct);
-        var close = batch.Mutations.Single(row => row.MutationKind == AtomicTaxLotMutationKind.CorporateActionClose);
-        var successorRow = batch.Mutations.Single(row => row.MutationKind == AtomicTaxLotMutationKind.CorporateActionSuccessor);
-        var proof = CanonicalCorporateActionLotProjection.Project(batch.Journal.Entry, account,
-            close.LotBefore!.ToOpenLot(), close.LotAfter.ToOpenLot(), [successorRow.LotAfter.ToOpenLot()]);
-        proof.Successors.Should().ContainSingle().Which.OpenQuantity.Should().Be(200m);
-        proof.Successors[0].OpenFunctionalCostBasis.Should().Be(1_000m);
-        proof.Successors[0].AcquiredDate.Should().Be(acquired);
-        proof.Successors[0].Acquisition.HoldingPeriodStartDate.Should().Be(acquired);
-        proof.Successors[0].Acquisition.CorporateActionLineage!.ReportingTags.Should().BeEmpty();
+        if (!multipleLots)
+            await AssertPostedLifecycleRejectsCounterfeitReceiptsAsync(retained, batch, ct);
+        var groups = OpenLotCorporateAction.Groups(instruction);
+        batch.Mutations.Should().HaveCount(groups.Count * 2);
+        batch.Journal.Entry.Lines.Should().HaveCount(groups.Count * 2);
+        batch.Journal.Entry.Lines.Select(line => line.Dimensions!.TaxLotId).Distinct().Should().HaveCount(groups.Count * 2);
+        foreach (var group in groups)
+        {
+            var close = batch.Mutations.Single(row => row.MutationKind == AtomicTaxLotMutationKind.CorporateActionClose
+                && row.TaxLotRecordId == group.ExpectedLot.TaxLotRecordId);
+            var successorRow = batch.Mutations.Single(row => row.MutationKind == AtomicTaxLotMutationKind.CorporateActionSuccessor
+                && row.TaxLotRecordId == group.Successors[0].TaxLotRecordId);
+            close.LotAfter.OpenQuantity.Should().Be(0m);
+            var successorLot = successorRow.LotAfter.ToOpenLot();
+            successorLot.OpenQuantity.Should().Be(200m);
+            successorLot.OpenFunctionalCostBasis.Should().Be(1_000m);
+            successorLot.AcquiredDate.Should().Be(group.ExpectedLot.AcquiredDate);
+            successorLot.Acquisition.HoldingPeriodStartDate.Should().Be(group.ExpectedLot.Acquisition.HoldingPeriodStartDate);
+            successorLot.Acquisition.CorporateActionLineage!.PredecessorTaxLotRecordId.Should().Be(group.ExpectedLot.TaxLotRecordId);
+            successorLot.Acquisition.CorporateActionLineage.ReportingTags.Should().BeEmpty();
+            var proof = CanonicalCorporateActionLotProjection.Project(batch.Journal.Entry, account,
+                close.LotBefore!.ToOpenLot(), close.LotAfter.ToOpenLot(), [successorLot]);
+            proof.Successors.Should().ContainSingle();
+        }
         batch.Journal.Entry.Lines.Should().OnlyContain(line => line.Account == account);
         batch.Journal.Entry.Lines.Sum(line => line.Debit - line.Credit).Should().Be(0m);
         var restartedSecurities = new PostgresSecurityMasterStore(securityOptions);
@@ -218,8 +264,11 @@ public sealed class AssetCorporateActionPostgresRoundTripTests
         replay.WasReplay.Should().BeTrue();
         replay.TaxLotMutationBatchId.Should().Be(posted.TaxLotMutationBatchId);
         (await restartedJournal.GetByPeriodAsync(period.PeriodId, ct)).Should().ContainSingle();
-        (await restartedJournal.ListOpenTaxLotsAsync(bookId, account, ct)).Should().ContainSingle()
-            .Which.ToOpenLot().OpenQuantity.Should().Be(200m);
+        var openLots = await restartedJournal.ListOpenTaxLotsAsync(bookId, account, ct);
+        openLots.Should().HaveCount(groups.Count);
+        openLots.Should().OnlyContain(openLot => openLot.ToOpenLot().OpenQuantity == 200m);
+        var repeatedBatch = (await restartedJournal.GetAtomicTaxLotPostingAsync(replay.TaxLotMutationBatchId!.Value, ct))!;
+        repeatedBatch.Journal.Entry.Lines.Select(line => line.EntryId).Should().Equal(batch.Journal.Entry.Lines.Select(line => line.EntryId));
     }
 
     private static async Task AssertPostedLifecycleRejectsCounterfeitReceiptsAsync(

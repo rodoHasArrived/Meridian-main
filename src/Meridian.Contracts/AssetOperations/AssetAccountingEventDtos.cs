@@ -796,34 +796,51 @@ public static class AssetAccountingEventSpineValidator
             || instruction.CorporateActionId != spine.EventId || instruction.EffectiveDate != spine.EffectiveDate
             || instruction.ExpectedLot.LedgerBookId != spine.Scope.LedgerBookId
             || instruction.ExpectedLot.SecurityId != spine.Scope.SecurityId
-            || instruction.ExpectedLot.BookPositionId != spine.Scope.BookPositionId
-            || instruction.ExpectedLot.OpenFunctionalCostBasis != spine.EventAmount)
+            || instruction.ExpectedLot.BookPositionId != spine.Scope.BookPositionId)
             return false;
         IReadOnlyList<OpenLotCorporateActionSuccessorProjectionDto> targets;
+        IReadOnlyList<OpenLotCorporateActionPredecessorDto> groups;
         try
-        { targets = OpenLotCorporateAction.Project(instruction); }
+        {
+            targets = OpenLotCorporateAction.Project(instruction);
+            groups = OpenLotCorporateAction.Groups(instruction);
+            if (groups.Sum(group => group.ExpectedLot.OpenFunctionalCostBasis) != spine.EventAmount)
+                return false;
+        }
         catch (ArgumentException) { return false; }
-        if (posted.Lines.Count != targets.Count + 1
+        if (posted.Lines.Count != targets.Count + groups.Count
             || posted.Lines.Select(line => line.LineId).Distinct().Count() != posted.Lines.Count)
             return false;
-        var credits = posted.Lines.Where(line => line.Credit > 0m).ToArray();
-        if (credits.Length != 1 || credits[0].Debit != 0m
-            || credits[0].AccountId != instruction.SourceAssetAccountId
-            || credits[0].Credit != instruction.ExpectedLot.OpenFunctionalCostBasis
-            || !PostedDimensionsMatchScope(credits[0].Dimensions, spine.Scope))
-            return false;
+        var legacy = groups.Count == 1 && posted.Lines.All(line => line.Dimensions?.TaxLotId is null);
+        var scope = spine.Scope with
+        {
+            Dimensions = spine.Scope.Dimensions is { } dimensions ? dimensions with { TaxLotId = null } : null
+        };
         var matched = new HashSet<Guid>();
+        foreach (var group in groups)
+        {
+            var lot = group.ExpectedLot;
+            var credits = posted.Lines.Where(line => line.Credit == lot.OpenFunctionalCostBasis && line.Debit == 0m
+                && line.AccountId == group.SourceAssetAccountId
+                && (legacy || string.Equals(line.Dimensions?.TaxLotId, lot.TaxLotRecordId.ToString("D"), StringComparison.OrdinalIgnoreCase))
+                && PostedDimensionsMatchScope(line.Dimensions, scope)).ToArray();
+            if (credits.Length != 1 || !matched.Add(credits[0].LineId))
+                return false;
+        }
+        if (posted.Lines.Count(line => line.Credit > 0m) != groups.Count)
+            return false;
         foreach (var target in targets)
         {
-            var successorScope = spine.Scope with
+            var successorScope = scope with
             { SecurityId = target.Successor.Security.SecurityId, BookPositionId = target.Successor.BookPositionId };
             var legs = posted.Lines.Where(line => line.Credit == 0m && line.Debit == target.OpenFunctionalCostBasis
                 && line.AccountId == target.Successor.AssetAccountId
+                && (legacy || string.Equals(line.Dimensions?.TaxLotId, target.Successor.TaxLotRecordId.ToString("D"), StringComparison.OrdinalIgnoreCase))
                 && PostedDimensionsMatchScope(line.Dimensions, successorScope)).ToArray();
             if (legs.Length != 1 || !matched.Add(legs[0].LineId))
                 return false;
         }
-        return matched.Count == targets.Count;
+        return matched.Count == posted.Lines.Count;
     }
 
     private static bool PostedDimensionsMatchScope(
@@ -979,7 +996,8 @@ public static class AssetLotMutationInstructionValidator
             try
             {
                 _ = Meridian.Contracts.Accounting.Lots.OpenLotCorporateAction.Project(corporateAction);
-                if (corporateAction.EffectiveDate != effectiveDate || corporateAction.ExpectedLot.OpenFunctionalCostBasis != eventAmount)
+                if (corporateAction.EffectiveDate != effectiveDate
+                    || OpenLotCorporateAction.Groups(corporateAction).Sum(group => group.ExpectedLot.OpenFunctionalCostBasis) != eventAmount)
                     issues.Add("Corporate-action event amount and date must equal the complete reviewed carrying-value transfer.");
                 if (Meridian.Contracts.Accounting.Lots.OpenLotCorporateAction.Evidence(corporateAction).Any(evidence => !retainedEvidence.Contains(evidence)))
                     issues.Add("Corporate-action posting must retain every exact acquisition and Security Master evidence identity.");

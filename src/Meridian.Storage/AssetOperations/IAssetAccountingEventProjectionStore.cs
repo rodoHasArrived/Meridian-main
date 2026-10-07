@@ -457,12 +457,14 @@ internal static class AssetAccountingEventProjectionRules
         try
         {
             var targets = OpenLotCorporateAction.Project(instruction);
+            var groups = OpenLotCorporateAction.Groups(instruction);
+            var allowLegacyLot = groups.Count == 1 && journal.Entry.Lines.All(line => line.Dimensions?.TaxLotId is null);
             var tags = journal.Entry.Metadata?.Tags;
             if (journal.Entry.Metadata?.EffectiveDate != instruction.EffectiveDate || tags is null
                 || !tags.TryGetValue("lotCorporateActionHash", out var hash) || hash != OpenLotCorporateAction.Fingerprint(instruction)
                 || !tags.TryGetValue("lotCorporateActionInputs", out var inputs)
                 || !PayloadEquals(JsonSerializer.Deserialize<OpenLotCorporateActionInstructionDto>(inputs), instruction)
-                || batch.Mutations.Count != targets.Count + 1 || batch.MutatedLots.Count != batch.Mutations.Count
+                || batch.Mutations.Count != targets.Count + groups.Count || batch.MutatedLots.Count != batch.Mutations.Count
                 || batch.Mutations.Select(row => row.MutationRecordId).Distinct().Count() != batch.Mutations.Count
                 || batch.Mutations.Select(row => row.TaxLotRecordId).Distinct().Count() != batch.Mutations.Count
                 || batch.MutatedLots.Select(lot => lot.TaxLotRecordId).Distinct().Count() != batch.MutatedLots.Count
@@ -479,72 +481,78 @@ internal static class AssetAccountingEventProjectionRules
                     || !PayloadEquals(row.LotAfter, batch.MutatedLots.SingleOrDefault(lot => lot.TaxLotRecordId == row.TaxLotRecordId))))
                 return false;
 
-            var source = instruction.ExpectedLot;
             var closed = batch.Mutations.Where(row => row.MutationKind == AtomicTaxLotMutationKind.CorporateActionClose).ToArray();
             var successorRows = batch.Mutations.Where(row => row.MutationKind == AtomicTaxLotMutationKind.CorporateActionSuccessor).ToArray();
-            if (closed.Length != 1 || successorRows.Length != targets.Count)
+            if (closed.Length != groups.Count || successorRows.Length != targets.Count
+                || journal.Entry.Lines.Count != targets.Count + groups.Count
+                || journal.Entry.Lines.Select(line => line.EntryId).Distinct().Count() != journal.Entry.Lines.Count)
                 return false;
-            var close = closed[0];
-            if (close.LotBefore is not { } before || close.TaxLotRecordId != source.TaxLotRecordId
-                || close.SelectionOrdinal != 0 || close.ExpectedVersion != source.Version
-                || close.QuantityBefore != before.OpenQuantity || close.QuantityAfter != 0m
-                || close.CostBasis != source.OpenFunctionalCostBasis
-                || close.SelectionEvidenceId != instruction.SecurityEvidence.EvidenceId
-                || before.Account.AccountType != LedgerAccountType.Asset
-                || before.Account.ToString() != instruction.SourceAssetAccountId || before.Account != close.LotAfter.Account
-                || !PayloadEquals(before.ToOpenLot(), source)
-                || !PayloadEquals(close.LotAfter.ToOpenLot(), source with
-                { OpenQuantity = 0m, OpenTransactionCostBasis = 0m, OpenFunctionalCostBasis = 0m, Version = source.Version + 1 }))
-                return false;
-            var credits = journal.Entry.Lines.Where(line => line.Credit > 0m).ToArray();
-            if (journal.Entry.Lines.Count != targets.Count + 1 || credits.Length != 1
-                || credits[0].Account != before.Account
-                || !CorporateActionLegMatches(credits[0], source, instruction.SourceAssetAccountId,
-                    source.OpenTransactionCostBasis, source.OpenFunctionalCostBasis, false))
-                return false;
-            for (var index = 0; index < targets.Count; index++)
+            var selectedLegs = new HashSet<Guid>();
+            var ordinal = 0;
+            foreach (var group in groups)
             {
-                var target = targets[index];
-                var successor = target.Successor;
-                var row = successorRows.SingleOrDefault(item => item.TaxLotRecordId == successor.TaxLotRecordId);
-                var acquisition = source.Acquisition with
+                var source = group.ExpectedLot;
+                var close = closed.SingleOrDefault(row => row.TaxLotRecordId == source.TaxLotRecordId);
+                if (close?.LotBefore is not { } before || close.SelectionOrdinal != ordinal++
+                    || close.ExpectedVersion != source.Version
+                    || close.QuantityBefore != before.OpenQuantity || close.QuantityAfter != 0m
+                    || close.CostBasis != source.OpenFunctionalCostBasis
+                    || close.SelectionEvidenceId != instruction.SecurityEvidence.EvidenceId
+                    || before.Account.AccountType != LedgerAccountType.Asset
+                    || before.Account.ToString() != group.SourceAssetAccountId || before.Account != close.LotAfter.Account
+                    || !PayloadEquals(before.ToOpenLot(), source)
+                    || !PayloadEquals(close.LotAfter, before with
+                    { OpenQuantity = 0m, Version = before.Version + 1, LastMutationBatchId = batch.MutationBatchId, UpdatedAt = close.RecordedAt }))
+                    return false;
+                var credits = journal.Entry.Lines.Where(line => CorporateActionLegMatches(line, source,
+                    group.SourceAssetAccountId, source.OpenTransactionCostBasis, source.OpenFunctionalCostBasis, false, allowLegacyLot)).ToArray();
+                if (credits.Length != 1 || credits[0].Account != before.Account || !selectedLegs.Add(credits[0].EntryId))
+                    return false;
+                foreach (var target in targets.Where(target => target.PredecessorTaxLotRecordId == source.TaxLotRecordId))
                 {
-                    TransactionCostBasis = target.AcquisitionTransactionCostBasis,
-                    FunctionalCostBasis = target.AcquisitionFunctionalCostBasis,
-                    Evidence = OpenLotCorporateAction.Evidence(instruction),
-                    CorporateActionLineage = new(instruction.CorporateActionId, instruction.ActionType, instruction.EffectiveDate,
-                        source.TaxLotRecordId, source.Version, successor.BasisAllocationPercent, successor.Role, successor.ReportingTags)
-                };
-                var expected = new OpenLotDto(successor.TaxLotRecordId, successor.Security.SecurityId, successor.BookPositionId,
-                    source.LedgerBookId, successor.LotId, source.AcquiredDate, successor.Quantity, successor.Quantity,
-                    target.OpenTransactionCostBasis, target.OpenFunctionalCostBasis, 1, acquisition);
-                if (row is null || row.LotBefore is not null || row.ExpectedVersion != 0 || row.QuantityBefore != 0m
-                    || row.SelectionOrdinal != index + 1 || row.CostBasis != target.OpenFunctionalCostBasis
-                    || row.SelectionEvidenceId != successor.AcquisitionEvidence.EvidenceId
-                    || row.LotAfter.Account.ToString() != successor.AssetAccountId
-                    || row.LotAfter.Account.AccountType != LedgerAccountType.Asset
-                    || row.LotAfter.OriginatingMutationBatchId != batch.MutationBatchId
-                    || row.LotAfter.SourceJournalEntryId != journal.Entry.JournalEntryId
-                    || !PayloadEquals(row.LotAfter.ToOpenLot(), expected))
-                    return false;
-                var debits = journal.Entry.Lines.Where(line => CorporateActionLegMatches(line, expected,
-                    successor.AssetAccountId, target.OpenTransactionCostBasis, target.OpenFunctionalCostBasis, true)).ToArray();
-                if (debits.Length != 1 || debits[0].Account != row.LotAfter.Account
-                    || !string.Equals(row.LotAfter.Account.FinancialAccountId, before.Account.FinancialAccountId, StringComparison.OrdinalIgnoreCase))
-                    return false;
+                    var successor = target.Successor;
+                    var row = successorRows.SingleOrDefault(item => item.TaxLotRecordId == successor.TaxLotRecordId);
+                    var acquisition = source.Acquisition with
+                    {
+                        TransactionCostBasis = target.AcquisitionTransactionCostBasis,
+                        FunctionalCostBasis = target.AcquisitionFunctionalCostBasis,
+                        Evidence = OpenLotCorporateAction.Evidence(instruction),
+                        CorporateActionLineage = new(instruction.CorporateActionId, instruction.ActionType, instruction.EffectiveDate,
+                            source.TaxLotRecordId, source.Version, successor.BasisAllocationPercent, successor.Role, successor.ReportingTags)
+                    };
+                    var expected = new OpenLotDto(successor.TaxLotRecordId, successor.Security.SecurityId, successor.BookPositionId,
+                        source.LedgerBookId, successor.LotId, source.AcquiredDate, successor.Quantity, successor.Quantity,
+                        target.OpenTransactionCostBasis, target.OpenFunctionalCostBasis, 1, acquisition);
+                    if (row is null || row.LotBefore is not null || row.ExpectedVersion != 0 || row.QuantityBefore != 0m
+                        || row.SelectionOrdinal != ordinal++ || row.CostBasis != target.OpenFunctionalCostBasis
+                        || row.SelectionEvidenceId != successor.AcquisitionEvidence.EvidenceId
+                        || row.LotAfter.Account.ToString() != successor.AssetAccountId
+                        || row.LotAfter.Account.AccountType != LedgerAccountType.Asset
+                        || row.LotAfter.OriginatingMutationBatchId != batch.MutationBatchId
+                        || row.LotAfter.SourceJournalEntryId != journal.Entry.JournalEntryId
+                        || !PayloadEquals(row.LotAfter.ToOpenLot(), expected))
+                        return false;
+                    var debits = journal.Entry.Lines.Where(line => CorporateActionLegMatches(line, expected,
+                        successor.AssetAccountId, target.OpenTransactionCostBasis, target.OpenFunctionalCostBasis, true, allowLegacyLot)).ToArray();
+                    if (debits.Length != 1 || debits[0].Account != row.LotAfter.Account || !selectedLegs.Add(debits[0].EntryId)
+                        || !string.Equals(row.LotAfter.Account.FinancialAccountId, before.Account.FinancialAccountId, StringComparison.OrdinalIgnoreCase))
+                        return false;
+                }
             }
             return true;
         }
-        catch (Exception exception) when (exception is ArgumentException or JsonException or LedgerValidationException)
+        catch (Exception exception) when (exception is ArgumentException or JsonException or LedgerValidationException or OverflowException)
         {
             return false;
         }
     }
 
     private static bool CorporateActionLegMatches(LedgerEntry line, OpenLotDto lot, string account,
-        decimal transaction, decimal functional, bool debit)
+        decimal transaction, decimal functional, bool debit, bool allowLegacyLot)
         => line.Account.AccountType == LedgerAccountType.Asset && line.Account.ToString() == account
            && line.Dimensions?.InstrumentId == lot.SecurityId && line.Dimensions.PositionId == lot.BookPositionId
+           && (string.Equals(line.Dimensions.TaxLotId, lot.TaxLotRecordId.ToString("D"), StringComparison.OrdinalIgnoreCase)
+               || (allowLegacyLot && line.Dimensions.TaxLotId is null))
            && line.Debit == (debit ? functional : 0m) && line.Credit == (debit ? 0m : functional)
            && line.Currency is { } currency && currency.TransactionCurrency == lot.Acquisition.AcquisitionCurrency
            && currency.FunctionalCurrency == lot.Acquisition.FunctionalCurrency

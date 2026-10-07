@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
@@ -628,33 +629,51 @@ public static class AccountingPostingCommandValidator
         IReadOnlyDictionary<string, string>? tags,
         Guid? typedInstrumentId,
         Guid? typedPositionId,
-        Meridian.Contracts.Accounting.Lots.OpenLotCorporateActionInstructionDto? corporateAction = null)
+        OpenLotCorporateActionInstructionDto? corporateAction = null)
     {
         if ((tags is null || tags.Count == 0) &&
             !typedInstrumentId.HasValue &&
-            !typedPositionId.HasValue)
+            !typedPositionId.HasValue && corporateAction is null)
         {
             return lines;
         }
+
+        var lineDimensions = lines.Select(line => line.Dimensions ??
+            (tags is null ? null : BuildLineDimensions(line.EntryId, tags))).ToArray();
+        var groups = corporateAction is null ? null : OpenLotCorporateAction.Groups(corporateAction);
+        var corporateLines = corporateAction is null ? null : groups!.Select(group =>
+            (LotId: group.ExpectedLot.TaxLotRecordId, SecurityId: group.ExpectedLot.SecurityId,
+                PositionId: group.ExpectedLot.BookPositionId, AccountId: group.SourceAssetAccountId,
+                Debit: 0m, Credit: group.ExpectedLot.OpenFunctionalCostBasis))
+            .Concat(OpenLotCorporateAction.Project(corporateAction).Select(projection =>
+                (LotId: projection.Successor.TaxLotRecordId, SecurityId: projection.Successor.Security.SecurityId,
+                    PositionId: projection.Successor.BookPositionId, AccountId: projection.Successor.AssetAccountId,
+                    Debit: projection.OpenFunctionalCostBasis, Credit: 0m))).ToArray();
+        var legacyCorporateLines = groups?.Count == 1 && lineDimensions.All(dimensions => dimensions?.TaxLotId is null);
+        var matchedLots = new HashSet<Guid>();
+        if (corporateLines is not null && corporateLines.Length != lines.Count)
+            throw new LedgerValidationException("Corporate-action journal must contain every reviewed predecessor and successor leg exactly once.");
 
         LedgerEntry[]? normalized = null;
         for (var index = 0; index < lines.Count; index++)
         {
             var line = lines[index];
+            var dimensions = lineDimensions[index];
             var expectedInstrumentId = typedInstrumentId;
             var expectedPositionId = typedPositionId;
-            if (corporateAction is not null && line.Debit > 0m)
+            if (corporateLines is not null)
             {
-                var successors = Meridian.Contracts.Accounting.Lots.OpenLotCorporateAction.Project(corporateAction)
-                    .Where(projection => projection.Successor.AssetAccountId == line.Account.ToString()
-                        && projection.OpenFunctionalCostBasis == line.Debit).ToArray();
-                if (successors.Length != 1)
-                    throw new LedgerValidationException("Corporate-action journal debit must identify one exact reviewed successor account and basis.");
-                expectedInstrumentId = successors[0].Successor.Security.SecurityId;
-                expectedPositionId = successors[0].Successor.BookPositionId;
+                var matches = corporateLines.Where(expected => expected.AccountId == line.Account.ToString()
+                    && expected.Debit == line.Debit && expected.Credit == line.Credit
+                    && (legacyCorporateLines
+                        ? dimensions?.InstrumentId is null || dimensions.InstrumentId == expected.SecurityId
+                        : string.Equals(dimensions?.TaxLotId, expected.LotId.ToString("D"), StringComparison.OrdinalIgnoreCase))
+                    && (!legacyCorporateLines || dimensions?.PositionId is null || dimensions.PositionId == expected.PositionId)).ToArray();
+                if (matches.Length != 1 || !matchedLots.Add(matches[0].LotId))
+                    throw new LedgerValidationException("Corporate-action journal leg must identify one exact reviewed predecessor or successor lot, account, and basis.");
+                expectedInstrumentId = matches[0].SecurityId;
+                expectedPositionId = matches[0].PositionId;
             }
-            var dimensions = line.Dimensions ??
-                (tags is null ? null : BuildLineDimensions(line.EntryId, tags));
 
             if (dimensions?.InstrumentId is Guid instrumentId &&
                 expectedInstrumentId.HasValue &&

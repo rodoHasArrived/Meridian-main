@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-06
+last_reviewed: 2026-10-07
 ---
 
 # src/Meridian.Ui.Shared
@@ -80,8 +80,10 @@ references with the exact journal/line IDs. Explicit functional currency inconsi
 certified book blocks capture; missing transaction FX metadata is never invented.
 When building the canonical certified ledger pack, capture resolves each corporate-action journal's
 immutable atomic lot receipt by journal identity and validates it against the exact as-of journal,
-book, currency and selected dimensions. Missing receipts, altered snapshots, or actions crossing a
-selected dimensional boundary block certification. Validated predecessor/successor proof enters
+book, currency and selected dimensions. Each mutation must reconcile its quantities, cost basis,
+unit cost, expected/result versions, contiguous ordinal and retained evidence to the reviewed
+instruction, immutable snapshots and complete batch. Missing receipts, altered facts or snapshots,
+or actions crossing a selected dimensional boundary block certification. Validated predecessor/successor proof enters
 `corporate-action-lot-evidence.json` before the pack manifest and signature are computed; current
 mutable lots do not supply historical reporting evidence.
 

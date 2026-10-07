@@ -48,7 +48,8 @@ public sealed class CanonicalLotCorporateActionServiceTests
         foreach (var position in fixture.PositionRecords.Values)
             await fixture.Positions.Received(1).GetBookPositionAsync(position.PositionId, cancellation.Token);
         fixture.Spine.ReceivedCalls().Should().BeEmpty();
-        fixture.Lots.ReceivedCalls().Should().OnlyContain(call => call.GetMethodInfo().Name == nameof(ILedgerJournalStore.GetTaxLotsByIdsAsync));
+        fixture.Lots.ReceivedCalls().Should().OnlyContain(call => call.GetMethodInfo().Name == nameof(ILedgerJournalStore.GetTaxLotsByIdsAsync)
+            || call.GetMethodInfo().Name == nameof(ILedgerJournalStore.ListOpenTaxLotsByAssetScopeAsync));
     }
 
     [Fact]
@@ -83,7 +84,8 @@ public sealed class CanonicalLotCorporateActionServiceTests
         captured.LotMutation!.CorporateAction.Should().BeSameAs(fixture.Reviewed);
         fixture.Spine.ReceivedCalls().Select(call => call.GetMethodInfo().Name)
             .Should().Equal(nameof(IAssetAccountingEventSpineService.ProjectAsync), nameof(IAssetAccountingEventSpineService.BuildPostingCandidateAsync));
-        fixture.Lots.ReceivedCalls().Should().OnlyContain(call => call.GetMethodInfo().Name == nameof(ILedgerJournalStore.GetTaxLotsByIdsAsync));
+        fixture.Lots.ReceivedCalls().Should().OnlyContain(call => call.GetMethodInfo().Name == nameof(ILedgerJournalStore.GetTaxLotsByIdsAsync)
+            || call.GetMethodInfo().Name == nameof(ILedgerJournalStore.ListOpenTaxLotsByAssetScopeAsync));
         result.Spine.PostedJournalImpact.Should().BeNull();
     }
 
@@ -119,7 +121,8 @@ public sealed class CanonicalLotCorporateActionServiceTests
 
         await draft.Should().ThrowAsync<InvalidOperationException>().WithMessage("*stale*");
         fixture.Spine.ReceivedCalls().Should().BeEmpty();
-        fixture.Lots.ReceivedCalls().Should().OnlyContain(call => call.GetMethodInfo().Name == nameof(ILedgerJournalStore.GetTaxLotsByIdsAsync));
+        fixture.Lots.ReceivedCalls().Should().OnlyContain(call => call.GetMethodInfo().Name == nameof(ILedgerJournalStore.GetTaxLotsByIdsAsync)
+            || call.GetMethodInfo().Name == nameof(ILedgerJournalStore.ListOpenTaxLotsByAssetScopeAsync));
     }
 
     [Theory]
@@ -146,19 +149,83 @@ public sealed class CanonicalLotCorporateActionServiceTests
         fixture.Spine.ReceivedCalls().Should().BeEmpty();
     }
 
+    [Fact]
+    public async Task Draft_MultipleLotsRetainsEveryReviewedPredecessorInOneEventInstruction()
+    {
+        var fixture = new Fixture();
+        fixture.IncludeSecondPredecessor();
+        AssetAccountingPostingCandidateRequestDto? captured = null;
+        fixture.Spine.BuildPostingCandidateAsync(Arg.Any<AssetAccountingPostingCandidateRequestDto>(), Arg.Any<CancellationToken>())
+            .Returns(call => { captured = call.Arg<AssetAccountingPostingCandidateRequestDto>(); return fixture.Candidate; });
+
+        await fixture.Service.DraftAsync(fixture.Mapped, fixture.Reviewed, AssetAccountPath,
+            "preparer", fixture.Mapped.Event.ProjectedAtUtc, "All reviewed lots");
+
+        captured!.EventAmount.Should().Be(fixture.Reviewed.ExpectedLot.OpenFunctionalCostBasis * 2m);
+        captured.LotMutation!.CorporateAction.Should().BeSameAs(fixture.Reviewed);
+        await fixture.Lots.Received(1).GetTaxLotsByIdsAsync(fixture.Reviewed.ExpectedLot.LedgerBookId,
+            Arg.Is<IReadOnlyList<Guid>>(ids => ids.Count == 2 && ids.Distinct().Count() == 2), Arg.Any<CancellationToken>());
+        await fixture.Spine.Received(1).BuildPostingCandidateAsync(Arg.Any<AssetAccountingPostingCandidateRequestDto>(), Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Preview_RejectsIncompletePositionInventoryBeforeAnySpineWrite(bool staleAdditionalLot)
+    {
+        var fixture = new Fixture();
+        var reviewed = fixture.Reviewed;
+        var mapped = fixture.Mapped;
+        fixture.IncludeSecondPredecessor();
+        if (staleAdditionalLot)
+        {
+            reviewed = fixture.Reviewed;
+            mapped = fixture.Mapped;
+            fixture.AdditionalLots[0] = fixture.AdditionalLots[0] with { Version = fixture.AdditionalLots[0].Version + 1 };
+        }
+
+        var preview = () => fixture.Service.PreviewAsync(mapped, reviewed, AssetAccountPath);
+
+        await preview.Should().ThrowAsync<InvalidOperationException>();
+        fixture.Spine.ReceivedCalls().Should().BeEmpty();
+    }
+
     private sealed class Fixture
     {
         public ILedgerJournalStore Lots { get; } = Substitute.For<ILedgerJournalStore>();
         public ISecurityMasterStore Securities { get; } = Substitute.For<ISecurityMasterStore>();
         public IInstrumentPositionProjectionStore Positions { get; } = Substitute.For<IInstrumentPositionProjectionStore>();
         public IAssetAccountingEventSpineService Spine { get; } = Substitute.For<IAssetAccountingEventSpineService>();
-        public OpenLotCorporateActionInstructionDto Reviewed { get; }
+        public OpenLotCorporateActionInstructionDto Reviewed { get; private set; }
         public Dictionary<Guid, SecurityProjectionRecord> SecurityRecords { get; } = [];
         public Dictionary<Guid, BookPositionDto> PositionRecords { get; } = [];
         public LedgerTaxLotRecord RetainedLot { get; set; }
-        public CorporateActionAssetAccountingEventProjectionDto Mapped { get; }
+        public List<LedgerTaxLotRecord> AdditionalLots { get; } = [];
+        public CorporateActionAssetAccountingEventProjectionDto Mapped { get; private set; }
         public AssetAccountingPostingCandidateDto Candidate { get; }
         public CanonicalLotCorporateActionService Service { get; }
+
+        public void IncludeSecondPredecessor()
+        {
+            Reviewed = OpenLotCorporateActionTests.AddPredecessor(Reviewed);
+            var group = Reviewed.AdditionalPredecessors![0];
+            AdditionalLots.Add(RetainedLot with
+            {
+                TaxLotRecordId = group.ExpectedLot.TaxLotRecordId,
+                LotId = group.ExpectedLot.LotId,
+                AcquiredDate = group.ExpectedLot.AcquiredDate,
+                Acquisition = group.ExpectedLot.Acquisition
+            });
+            Mapped = Mapped with
+            {
+                LotMutations = Mapped.LotMutations with { Mutations = Reviewed.Mutations },
+                Event = Mapped.Event with
+                {
+                    EventAmount = OpenLotCorporateAction.Groups(Reviewed).Sum(item => item.ExpectedLot.OpenFunctionalCostBasis),
+                    RetainedEvidence = Mapped.Event.RetainedEvidence.Concat(OpenLotCorporateAction.Evidence(Reviewed)).Distinct().ToArray()
+                }
+            };
+        }
 
         public Fixture(CorporateActionAccountingTypeDto actionType = CorporateActionAccountingTypeDto.MergerStock)
         {
@@ -218,14 +285,17 @@ public sealed class CanonicalLotCorporateActionServiceTests
                     Guid.NewGuid(), book, BookPositionSides.Long, "Active", lot.AcquiredDate, Version: successor.ExpectedBookPositionVersion));
             }
             Lots.GetTaxLotsByIdsAsync(lot.LedgerBookId, Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>())
-                .Returns(_ => Task.FromResult<IReadOnlyList<LedgerTaxLotRecord>>([RetainedLot]));
+                .Returns(_ => Task.FromResult<IReadOnlyList<LedgerTaxLotRecord>>([RetainedLot, .. AdditionalLots]));
+            Lots.ListOpenTaxLotsByAssetScopeAsync(lot.LedgerBookId, lot.SecurityId, lot.BookPositionId,
+                    Reviewed.EffectiveDate, Arg.Any<CancellationToken>())
+                .Returns(_ => Task.FromResult<IReadOnlyList<LedgerTaxLotRecord>>([RetainedLot, .. AdditionalLots]));
             Securities.GetProjectionAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
                 .Returns(call => Task.FromResult<SecurityProjectionRecord?>(SecurityRecords.GetValueOrDefault(call.Arg<Guid>())));
             Positions.GetBookPositionAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
                 .Returns(call => Task.FromResult<BookPositionDto?>(PositionRecords.GetValueOrDefault(call.Arg<Guid>())));
             var spine = new AssetAccountingEventSpineDto(economicEvent.EventId, source.EventKind, 1, 7, Reviewed.EffectiveDate,
                 source.EventAmount, "USD", scope, economicEvent, lineage, source.RetainedEvidence, ProjectedEffect: effect);
-            Spine.ProjectAsync(source, Arg.Any<CancellationToken>()).Returns(new AssetAccountingEventSpineAppendResultDto(spine, false));
+            Spine.ProjectAsync(Arg.Any<ProjectAssetAccountingEventRequestDto>(), Arg.Any<CancellationToken>()).Returns(new AssetAccountingEventSpineAppendResultDto(spine, false));
             var dryRun = new RuleDryRunResultDto("fund", lot.LedgerBookId, "MergerStock", Reviewed.EffectiveDate,
                 source.EventAmount, "USD", true, "merger-rule", [], [], []);
             Candidate = new(spine, new(dryRun, "merger-rule", "v1", [], null, null, source.EventAmount,
@@ -237,9 +307,13 @@ public sealed class CanonicalLotCorporateActionServiceTests
     internal static (OpenLotCorporateActionInstructionDto Reviewed, CorporateActionAssetAccountingEventProjectionDto Mapped)
         ProjectAndMap(OpenLotCorporateActionInstructionDto input, AssetAccountingEventScopeDto? scopeOverride = null,
             long expectedPeriodVersion = 3, string assetAccountPath = "Investments", string actor = "mapper",
-            DateTimeOffset? now = null)
+            DateTimeOffset? now = null, bool aggregateJournalLines = false)
     {
         var lot = input.ExpectedLot;
+        var groups = OpenLotCorporateAction.Groups(input);
+        var totalQuantity = groups.Sum(group => group.ExpectedLot.OpenQuantity);
+        var totalBasis = groups.Sum(group => group.ExpectedLot.OpenFunctionalCostBasis);
+        var successors = groups.SelectMany(group => group.Successors).ToArray();
         var at = now ?? new DateTimeOffset(input.EffectiveDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var positionSnapshot = Guid.NewGuid();
         var lotSnapshot = Guid.NewGuid();
@@ -262,11 +336,12 @@ public sealed class CanonicalLotCorporateActionServiceTests
             AccountingBasisKindDto.Gaap, lot.SecurityId, lot.BookPositionId, input.ExpectedBookPositionVersion,
             input.ExpectedBookPositionVersion, input.EffectiveDate, input.EffectiveDate, at, "USD", "SecurityMaster",
             "reviewed-corporate-action", new string('a', 64),
-            new(PositionQuantity: lot.OpenQuantity, AffectedQuantity: lot.OpenQuantity,
-                CarryingAmount: lot.OpenFunctionalCostBasis,
+            new(PositionQuantity: totalQuantity, AffectedQuantity: totalQuantity,
+                CarryingAmount: totalBasis,
                 SplitRatio: input.Successors[0].Quantity / lot.OpenQuantity,
-                Successors: input.Successors.Select(s => new CorporateActionSuccessorAllocationDto(s.Security.SecurityId,
-                    s.Role, s.Quantity, s.BasisAllocationPercent / 100m)).ToArray()),
+                Successors: successors.GroupBy(successor => (successor.Security.SecurityId, successor.Role, successor.BasisAllocationPercent))
+                    .Select(group => new CorporateActionSuccessorAllocationDto(group.Key.SecurityId,
+                        group.Key.Role, group.Sum(successor => successor.Quantity), group.Key.BasisAllocationPercent / 100m)).ToArray()),
             new(CarryHoldingPeriod: true), manifest, GeneratedAtUtc: at, CaseId: Guid.NewGuid(), CaseVersion: 1,
             PolicyDecisionVersion: 1, PositionSnapshotId: positionSnapshot,
             AccountingScope: new(scope.TenantId!, scope.CompanyId!, scope.FundProfileId, lot.LedgerBookId, scope.PeriodId, expectedPeriodVersion, "US"),
@@ -275,30 +350,59 @@ public sealed class CanonicalLotCorporateActionServiceTests
         var projector = new CorporateActionAccountingProjectionService();
         var intent = projector.Project(request);
         intent.Blockers.Should().BeEmpty();
-        var authoritative = intent.LotMutations!.Mutations.Select((mutation, index) => mutation with
+        var authoritative = new List<CorporateActionLotMutationDto>();
+        foreach (var group in groups)
         {
-            SourceLotId = lot.TaxLotRecordId,
-            ExpectedSourceLotVersion = lot.Version,
-            SourceBefore = new(lot.OpenQuantity, lot.OpenFunctionalCostBasis, lot.OpenTransactionCostBasis),
-            SourceAfter = new(0m, 0m, 0m),
-            TargetLotId = input.Successors[index].TaxLotRecordId,
-            TargetOperation = CorporateActionLotTargetOperationDto.Create,
-            TargetAfter = new(input.Successors[index].Quantity, mutation.CarryingAmount!.Value,
-                lot.OpenTransactionCostBasis * input.Successors[index].BasisAllocationPercent / 100m),
-            BasisAmount = lot.OpenTransactionCostBasis * input.Successors[index].BasisAllocationPercent / 100m,
-            SourceBasisAmount = lot.OpenTransactionCostBasis * input.Successors[index].BasisAllocationPercent / 100m
-        }).ToArray();
+            var predecessor = group.ExpectedLot;
+            decimal allocatedTransaction = 0m, allocatedFunctional = 0m, allocatedQuantity = 0m;
+            for (var index = 0; index < group.Successors.Count; index++)
+            {
+                var successor = group.Successors[index];
+                var last = index == group.Successors.Count - 1;
+                var fraction = successor.BasisAllocationPercent / 100m;
+                var transaction = last ? predecessor.OpenTransactionCostBasis - allocatedTransaction
+                    : decimal.Round(predecessor.OpenTransactionCostBasis * fraction, 10, MidpointRounding.ToEven);
+                var functional = last ? predecessor.OpenFunctionalCostBasis - allocatedFunctional
+                    : decimal.Round(predecessor.OpenFunctionalCostBasis * fraction, 10, MidpointRounding.ToEven);
+                var sourceQuantity = last ? predecessor.OpenQuantity - allocatedQuantity
+                    : decimal.Round(predecessor.OpenQuantity * fraction, 12, MidpointRounding.ToEven);
+                var mutation = intent.LotMutations!.Mutations.Single(item => item.TargetSecurityId == successor.Security.SecurityId);
+                authoritative.Add(mutation with
+                {
+                    SourceLotId = predecessor.TaxLotRecordId,
+                    ExpectedSourceLotVersion = predecessor.Version,
+                    SourceBefore = new(predecessor.OpenQuantity, predecessor.OpenFunctionalCostBasis, predecessor.OpenTransactionCostBasis),
+                    SourceAfter = new(0m, 0m, 0m),
+                    SourceQuantity = sourceQuantity,
+                    SourceCarryingAmount = functional,
+                    SourceBasisAmount = transaction,
+                    TargetLotId = successor.TaxLotRecordId,
+                    TargetOperation = CorporateActionLotTargetOperationDto.Create,
+                    Quantity = successor.Quantity,
+                    CarryingAmount = functional,
+                    BasisAmount = transaction,
+                    TargetAfter = new(successor.Quantity, functional, transaction)
+                });
+                allocatedTransaction += transaction;
+                allocatedFunctional += functional;
+                allocatedQuantity += sourceQuantity;
+            }
+        }
         var projection = projector.Project(request with { AuthoritativeLotMutations = authoritative });
         projection.Blockers.Should().BeEmpty();
         projection.CanPreparePostingCandidate.Should().BeTrue();
         var reviewed = input with { CorporateActionId = projection.EconomicEvent!.EventId, Mutations = projection.LotMutations!.Mutations };
         var lineage = projection.ProjectionLineage!;
-        var lines = new[] { new ProjectedAccountingEffectLineDto(assetAccountPath, 0m, lot.OpenFunctionalCostBasis, "USD", Dimensions: scope.Dimensions) }
-            .Concat(input.Successors.Select(s => new ProjectedAccountingEffectLineDto(s.PostingAccountPath ?? s.AssetAccountId,
-                lot.OpenFunctionalCostBasis * s.BasisAllocationPercent / 100m, 0m, "USD", Dimensions: scope.Dimensions))).ToArray();
+        var projected = OpenLotCorporateAction.Project(reviewed);
+        var debits = projected.Select(target => new ProjectedAccountingEffectLineDto(
+            target.Successor.PostingAccountPath ?? target.Successor.AssetAccountId, target.OpenFunctionalCostBasis, 0m,
+            "USD", Dimensions: scope.Dimensions)).ToArray();
+        if (aggregateJournalLines)
+            debits = debits.GroupBy(line => line.AccountId).Select(group => group.First() with { Debit = group.Sum(line => line.Debit) }).ToArray();
+        var lines = new[] { new ProjectedAccountingEffectLineDto(assetAccountPath, 0m, totalBasis, "USD", Dimensions: scope.Dimensions) }
+            .Concat(debits).ToArray();
         var effect = new ProjectedAccountingEffectDto(lineage.ProjectionRunId, lineage.ModelKey, lineage.ModelVersion,
-            lineage.ProjectionAsOfDate, lot.OpenFunctionalCostBasis, lot.OpenFunctionalCostBasis, "USD",
-            lines);
+            lineage.ProjectionAsOfDate, totalBasis, totalBasis, "USD", lines);
         var rule = new AccountingRulePackReferenceDto("corporate-action-gaap", "v1", "carrying-transfer", "v1");
         var mappings = projection.PostingSet!.Components.Select((component, index) =>
             new CorporateActionPostingComponentLineMappingDto(index, component.Kind,

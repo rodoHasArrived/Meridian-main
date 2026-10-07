@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.Integrity;
@@ -818,57 +819,79 @@ public sealed class AccountingPostingCandidateService :
     // asserted it Active, effective, and in the event currency - the same rule the manual journal
     // path applies - so a generic caller can never assert it. Post-time re-derivation reproduces the
     // same tags from the retained spine scope.
-    private static JournalEntry WithCorporateActionLineage(JournalEntry entry, AssetLotMutationInstructionDto? lotMutation, IReadOnlyList<GeneratedPostingLineDto> generated)
+    internal static JournalEntry WithCorporateActionLineage(JournalEntry entry, AssetLotMutationInstructionDto? lotMutation, IReadOnlyList<GeneratedPostingLineDto> generated)
     {
         if (lotMutation?.CorporateAction is not { } instruction)
             return entry;
         var projected = OpenLotCorporateAction.Project(instruction);
-        if (entry.Lines.Count != projected.Count + 1)
-            throw new InvalidOperationException("A corporate-action journal must contain only the exact predecessor credit and successor debits.");
-        var usedTargets = new HashSet<Guid>();
-        var sourceLines = 0;
-        var lines = entry.Lines.Select((line, index) =>
+        var groups = OpenLotCorporateAction.Groups(instruction);
+        if (entry.Lines.Count != generated.Count || entry.Lines.Count == 0
+            || entry.Lines.Any(line => line.Account.AccountType != LedgerAccountType.Asset)
+            || generated.Any(line => line.Currency != instruction.ExpectedLot.Acquisition.FunctionalCurrency))
+            throw new InvalidOperationException("Corporate-action carryover journals require mapped asset accounts in the reviewed functional currency.");
+
+        // Rules may aggregate multiple lots or emit equal allocations. Reconcile their complete
+        // accounting effect, then create each leg directly from its reviewed lot identity.
+        // Never infer which successor a rule line represents from a non-unique amount or account.
+        var dimensions = entry.Lines[0].Dimensions ?? new LedgerLineDimensionSet();
+        var scope = JsonSerializer.SerializeToElement(dimensions with { InstrumentId = null, PositionId = null, TaxLotId = null });
+        if (entry.Lines.Any(line => !JsonElement.DeepEquals(scope,
+            JsonSerializer.SerializeToElement((line.Dimensions ?? new LedgerLineDimensionSet()) with
+            { InstrumentId = null, PositionId = null, TaxLotId = null }))))
+            throw new InvalidOperationException("Corporate-action rule lines must retain one exact non-security dimension scope.");
+
+        var legs = new List<(OpenLotDto Source, Guid LotId, Guid SecurityId, Guid PositionId,
+            string Account, string Path, decimal Debit, decimal Credit, decimal TransactionDebit, decimal TransactionCredit)>();
+        foreach (var group in groups)
         {
-            Guid securityId;
-            Guid positionId;
-            decimal transactionDebit;
-            decimal transactionCredit;
-            if (line.Credit > 0m)
+            var source = group.ExpectedLot;
+            legs.Add((source, source.TaxLotRecordId, source.SecurityId, source.BookPositionId,
+                group.SourceAssetAccountId, lotMutation.AssetAccountId!, 0m, source.OpenFunctionalCostBasis, 0m, source.OpenTransactionCostBasis));
+            foreach (var target in projected.Where(item => item.PredecessorTaxLotRecordId == source.TaxLotRecordId))
             {
-                if (++sourceLines != 1 || line.Account.ToString() != instruction.SourceAssetAccountId
-                    || generated[index].AccountPath != lotMutation.AssetAccountId
-                    || line.Credit != instruction.ExpectedLot.OpenFunctionalCostBasis)
-                    throw new InvalidOperationException("Corporate-action credit must exactly relieve the reviewed predecessor asset account and current basis.");
-                securityId = instruction.ExpectedLot.SecurityId;
-                positionId = instruction.ExpectedLot.BookPositionId;
-                transactionDebit = 0m;
-                transactionCredit = instruction.ExpectedLot.OpenTransactionCostBasis;
+                var successor = target.Successor;
+                legs.Add((source, successor.TaxLotRecordId, successor.Security.SecurityId, successor.BookPositionId,
+                    successor.AssetAccountId, successor.PostingAccountPath ?? successor.AssetAccountId,
+                    target.OpenFunctionalCostBasis, 0m, target.OpenTransactionCostBasis, 0m));
             }
-            else
-            {
-                var matches = projected.Where(p => p.Successor.AssetAccountId == line.Account.ToString()
-                    && (p.Successor.PostingAccountPath ?? p.Successor.AssetAccountId) == generated[index].AccountPath
-                    && p.OpenFunctionalCostBasis == line.Debit).ToArray();
-                if (matches.Length != 1 || !usedTargets.Add(matches[0].Successor.TaxLotRecordId))
-                    throw new InvalidOperationException("Corporate-action debit must uniquely identify one reviewed successor account and basis allocation.");
-                var target = matches[0];
-                securityId = target.Successor.Security.SecurityId;
-                positionId = target.Successor.BookPositionId;
-                transactionDebit = target.OpenTransactionCostBasis;
-                transactionCredit = 0m;
-            }
-            if (line.Account.AccountType != LedgerAccountType.Asset)
-                throw new InvalidOperationException("Corporate-action carryover journals require asset accounts only.");
-            var acquisition = instruction.ExpectedLot.Acquisition;
-            return new LedgerEntry(line.EntryId, line.JournalEntryId, line.Timestamp, line.Account, line.Debit, line.Credit,
-                line.Description, (line.Dimensions ?? new LedgerLineDimensionSet()) with { InstrumentId = securityId, PositionId = positionId },
+        }
+        var expected = legs.GroupBy(leg => (leg.Account, leg.Path, Debit: leg.Debit > 0m))
+            .ToDictionary(group => group.Key, group => group.Sum(leg => leg.Debit + leg.Credit));
+        var actual = entry.Lines.Select((line, index) => (Line: line, Path: generated[index].AccountPath))
+            .GroupBy(item => (Account: item.Line.Account.ToString(), item.Path, Debit: item.Line.Debit > 0m))
+            .ToDictionary(group => group.Key, group => group.ToArray());
+        if (actual.Count != expected.Count || expected.Any(pair => !actual.TryGetValue(pair.Key, out var matching)
+            || matching.Sum(item => item.Line.Debit + item.Line.Credit) != pair.Value
+            || matching.Any(item => item.Line.Account != matching[0].Line.Account)))
+            throw new InvalidOperationException("Corporate-action generated account, path and side totals must exactly reconcile every reviewed predecessor and successor basis.");
+
+        var lines = legs.Select(leg =>
+        {
+            var template = actual[(leg.Account, leg.Path, leg.Debit > 0m)][0].Line;
+            var acquisition = leg.Source.Acquisition;
+            var lineId = new Guid(Sha256Digest.ComputeBytesUtf8($"corporate-action-leg|{entry.JournalEntryId:D}|{leg.LotId:D}|{(leg.Debit > 0m ? "debit" : "credit")}")[..16]);
+            return new LedgerEntry(lineId, entry.JournalEntryId, template.Timestamp, template.Account, leg.Debit, leg.Credit,
+                template.Description, dimensions with
+                { InstrumentId = leg.SecurityId, PositionId = leg.PositionId, TaxLotId = leg.LotId.ToString("D") },
                 new LedgerEntryCurrency(acquisition.AcquisitionCurrency, acquisition.FunctionalCurrency,
-                    transactionDebit, transactionCredit, acquisition.AcquisitionFxRateToFunctional));
+                    leg.TransactionDebit, leg.TransactionCredit, acquisition.AcquisitionFxRateToFunctional));
         }).ToArray();
-        if (sourceLines != 1 || usedTargets.Count != projected.Count)
-            throw new InvalidOperationException("Corporate-action journal does not fully reconcile the reviewed predecessor and successors.");
         var tags = entry.Metadata.Tags?.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase)
             ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var templatePrefix = $"lineDimensions.{entry.Lines[0].EntryId:N}.";
+        var commonTags = tags.Where(pair => pair.Key.StartsWith(templatePrefix, StringComparison.OrdinalIgnoreCase))
+            .ToDictionary(pair => pair.Key[templatePrefix.Length..], pair => pair.Value, StringComparer.OrdinalIgnoreCase);
+        foreach (var key in tags.Keys.Where(key => key.StartsWith("lineDimensions.", StringComparison.OrdinalIgnoreCase)).ToArray())
+            tags.Remove(key);
+        foreach (var line in lines)
+        {
+            var prefix = $"lineDimensions.{line.EntryId:N}.";
+            foreach (var pair in commonTags)
+                tags[prefix + pair.Key] = pair.Value;
+            tags[prefix + "instrumentId"] = line.Dimensions!.InstrumentId!.Value.ToString("D");
+            tags[prefix + "positionId"] = line.Dimensions.PositionId!.Value.ToString("D");
+            tags[prefix + "taxLotId"] = line.Dimensions.TaxLotId!;
+        }
         tags["lotCorporateActionHash"] = OpenLotCorporateAction.Fingerprint(instruction);
         return new JournalEntry(entry.JournalEntryId, entry.Timestamp, entry.Description, lines, entry.Metadata with { Tags = tags });
     }

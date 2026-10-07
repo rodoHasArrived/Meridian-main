@@ -104,10 +104,20 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
 
         if (blockers.Count == 0 && request.AuthoritativeLotMutations.Count > 0)
         {
-            computation = BindAuthoritativeLotMutations(
-                computation,
-                request.AuthoritativeLotMutations,
-                blockers);
+            try
+            {
+                computation = BindAuthoritativeLotMutations(
+                    computation,
+                    request.ActionType,
+                    request.AuthoritativeLotMutations,
+                    blockers);
+            }
+            catch (OverflowException)
+            {
+                blockers.Add(new CorporateActionProjectionBlockerDto(
+                    "corporate-action.amount-overflow",
+                    "The authoritative corporate-action lot economics exceed the supported decimal range."));
+            }
         }
 
         if (blockers.Count > 0)

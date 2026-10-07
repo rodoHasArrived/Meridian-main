@@ -6,7 +6,7 @@ using Meridian.Instruments.AssetOperations;
 
 namespace Meridian.Tests.AssetOperations;
 
-public sealed class CorporateActionAccountingProjectionServiceTests
+public sealed partial class CorporateActionAccountingProjectionServiceTests
 {
     private static readonly Guid SecurityId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid PositionId = Guid.Parse("22222222-2222-2222-2222-222222222222");

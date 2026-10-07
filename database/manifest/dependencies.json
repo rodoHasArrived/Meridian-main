@@ -112,6 +112,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotCorporateActionPredecessorDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotCorporateActionSuccessorDto"
     },
     {
@@ -22720,6 +22726,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotCorporateActionInstructionDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotCorporateActionPredecessorDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotCorporateActionInstructionDto",
       "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotCorporateActionSuccessorDto"
     },
     {
@@ -22763,6 +22775,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotCorporateActionLineageDto",
       "target": "contract:Meridian.Contracts.AssetOperations.CorporateActionSuccessorRoleDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotCorporateActionPredecessorDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotCorporateActionSuccessorDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotCorporateActionPredecessorDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDto"
     },
     {
       "kind": "contract-reference",
@@ -48577,7 +48601,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "937c01decdf0089c9755a0c70f79df8e434d45f5e6f9bb102a0fb3660aaad891",
+  "fingerprint": "02ec810e380565feece6483dddc5b522690b70ee7996b3d122b720db4b0a0b60",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -48737,6 +48761,12 @@
       "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotCorporateActionLineageDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Accounting.Lots.OpenLotCorporateActionLineageDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotCorporateActionPredecessorDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotCorporateActionPredecessorDto"
     },
     {
       "classification": "dto",
@@ -71069,11 +71099,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3216,
-    "contract_set_memberships": 3772,
-    "edges": 8071,
+    "contract_references": 3219,
+    "contract_set_memberships": 3773,
+    "edges": 8075,
     "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3896
+    "nodes": 3897
   }
 }

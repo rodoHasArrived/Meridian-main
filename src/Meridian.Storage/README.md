@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-06
+last_reviewed: 2026-10-07
 ---
 
 # src/Meridian.Storage
@@ -727,12 +727,18 @@ and correction lineage. Every atomic lot carries Security Master plus book-posit
 disposal compare-and-swap also rechecks unit cost and journal asset relief against the retained
 selected-lot cost basis.
 
-Canonical corporate-action posting uses the same transaction to close one complete predecessor
-and create reviewed split, stock-merger, or advance-refunding successors. Migration 042 adds
+Canonical corporate-action posting uses the same transaction to close every reviewed predecessor
+in the affected source position and create its split, stock-merger, or advance-refunding successors.
+The locked open-lot inventory must match the reviewed predecessor set; an omitted or stale lot
+rejects the whole event. Serializable inventory and retained-action reads prevent concurrent lot
+insertions from escaping that comparison. After an action, new or rewritten source-position lots
+with acquisition dates on or before its effective date are refused.
+All predecessor closures and successor creations share one mutation batch,
+with deterministic ordinals and lot-identified journal legs. Migration 042 adds
 explicit close and successor mutation kinds while preserving prior mutation constraints. The
 store locks source and successor Security Master rows, book positions, and lots in deterministic
 order; stale reference versions, position scope, lot basis, or successor identities fail closed.
-Journals carry only the exact source asset credit and allocated successor asset debits, with the
+Journals carry only the exact source asset credits and allocated successor asset debits, with the
 predecessor acquisition FX and financial-account scope. Original acquisition date, holding-period
 start, acquisition basis allocation, current basis, and reviewed lineage remain inspectable.
 Successor evidence must explicitly bind the new lot to its inherited acquisition date. Historical

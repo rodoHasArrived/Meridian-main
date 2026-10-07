@@ -6,12 +6,12 @@ module_id: SRC-DESIGN-INSTRUMENTS
 path: src/Meridian.Instruments
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-06
+last_reviewed: 2026-10-07
 ---
 
 # src/Meridian.Instruments
 
-`CorporateActionAccountingProjectionRequest.CanonicalLotTransferJournal` explicitly prepares same-identity stock splits and reverse splits for canonical lot posting. It requires a whole-unit successor, positive reviewed carrying basis and carried holding period, then emits the existing neutral asset-transfer components for promoted rule mapping and independent human approval. Operational-only callers retain their no-journal projection. The opt-in marker participates in the projection fingerprint; default request identities remain unchanged. This projector never creates a lot or approves a journal.
+`CorporateActionAccountingProjectionRequest.CanonicalLotTransferJournal` explicitly prepares same-identity stock splits and reverse splits for canonical lot posting. It requires a whole-unit successor, positive reviewed carrying basis and carried holding period, then emits the existing neutral asset-transfer components for promoted rule mapping and independent human approval. Operational-only callers retain their no-journal projection. The opt-in marker participates in the projection fingerprint; default request identities remain unchanged. This projector never creates a lot or approves a journal. Full-lot splits, stock mergers and advance refunding can retain one authoritative mutation plan for every predecessor in the position. Per-lot legs must reconcile each projected successor total, preserve the same quantity ratio and allocation for every predecessor, and carry exact source snapshots and target identities; aggregate totals cannot conceal a changed lot treatment.
 
 Direct-lending Asset Operations publication derives terms, status, and ledger row identities
 from retained loan/security facts so retries preserve those visible IDs. Ledger projection dates

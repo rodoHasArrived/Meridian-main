@@ -6,12 +6,16 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-06
+last_reviewed: 2026-10-07
 ---
 
 # src/Meridian.FinancialOperations
 
 `CanonicalLotCorporateActionService` connects an existing mapped corporate-action projection to the shared event spine. Preview reloads exact lot/reference/position authority; `DraftAsync` retains only Projected/Drafted stages. The existing independent human approval and posting service carries the exact reviewed instruction into the atomic store. Supported basis-preserving full-open-lot transfers include canonical split/reverse split, stock-only merger and two-successor advance refunding. Generated asset credits/debits must match every retained basis allocation, chart path and durable account; no gain or cash is invented. The spine retains its same-currency restriction. Current basis whose transaction/functional ratio cannot be represented using inherited acquisition FX is refused.
+Preparation verifies the complete affected source-position lot inventory. Drafting reconciles the
+generated accounting totals to the reviewed predecessor groups, then stamps each journal leg with
+its lot, security and position identity. Equal allocations on a shared account and posting path do
+not need distinct amounts to identify their successors.
 
 `Onboarding/OnboardingWorkspaceService` owns bounded accounting onboarding across required dates.
 Comparisons retain full source payloads, exact mapping versions, criteria and predecessor hashes.

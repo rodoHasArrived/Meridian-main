@@ -21,7 +21,7 @@ public interface IAccountingPostingCandidatePostService
         CancellationToken ct = default);
 }
 
-public sealed class AccountingPostingCandidatePostService : IAccountingPostingCandidatePostService
+public sealed partial class AccountingPostingCandidatePostService : IAccountingPostingCandidatePostService
 {
     private static readonly JsonSerializerOptions CanonicalJsonOptions = new(JsonSerializerDefaults.Web);
 
@@ -825,6 +825,22 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
 
         var generatedLines = projection.DraftedCandidateResult?.GeneratedPostingLines
             ?? throw new InvalidOperationException("The retained Drafted candidate is missing generated posting lines.");
+        if (projection.DraftedLotMutation?.CorporateAction is { } corporateAction)
+        {
+            var targets = OpenLotCorporateAction.Project(corporateAction);
+            var expectedIds = OpenLotCorporateAction.Groups(corporateAction).Select(group => group.ExpectedLot.TaxLotRecordId.ToString("D"))
+                .Concat(targets.Select(target => target.Successor.TaxLotRecordId.ToString("D"))).ToHashSet(StringComparer.Ordinal);
+            RequireAssetAssertion(write.Entry.Lines.Count == expectedIds.Count
+                && expectedIds.SetEquals(write.Entry.Lines.Select(line => line.Dimensions?.TaxLotId!))
+                && generatedLines.All(line => line.Currency == projection.Currency)
+                && write.Entry.Lines.All(line => line.Currency?.FunctionalCurrency == projection.Currency),
+                "The canonical corporate-action write must retain every reviewed lot identity and functional currency.");
+            return write with
+            {
+                Entry = new JournalEntry(write.Entry.JournalEntryId, write.Entry.Timestamp, write.Entry.Description,
+                    write.Entry.Lines, write.Entry.Metadata with { Tags = tags })
+            };
+        }
         RequireAssetAssertion(generatedLines.Count == write.Entry.Lines.Count,
             "The retained Drafted candidate line count does not match the journal write.");
         var lines = write.Entry.Lines.Select((line, index) =>
@@ -946,15 +962,21 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                               record.Entry.Metadata.EffectiveDate == candidate.EffectiveDate &&
                               string.Equals(record.Entry.Metadata.IdempotencyKey, pending.IdempotencyKey, StringComparison.Ordinal),
             "Existing durable journal timestamp, description, effective date, or idempotency key does not match the retained Drafted candidate.");
-        ValidateDurableLines(retained, record, ledgerBook.BaseCurrency);
+        ValidateDurableLines(retained, record, ledgerBook.BaseCurrency, projection.DraftedLotMutation);
         ValidateDurableApprovalEvidence(request.ApprovalEvidence, record.Entry.Metadata.EvidenceReferences);
     }
 
     private static void ValidateDurableLines(
         PostingRuleJournalCandidateResultDto retained,
         LedgerJournalEntryRecord record,
-        string baseCurrency)
+        string baseCurrency,
+        AssetLotMutationInstructionDto? lotMutation)
     {
+        if (lotMutation?.CorporateAction is not null)
+        {
+            ValidateDurableCorporateActionLines(retained, record, baseCurrency, lotMutation);
+            return;
+        }
         var previews = retained.DryRunResult.GeneratedLines;
         var generated = retained.GeneratedPostingLines;
         RequireAssetAssertion(previews.Count == record.Entry.Lines.Count && generated.Count == record.Entry.Lines.Count,
@@ -1256,7 +1278,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                 && inputs.Security.Version == authority.Context.SecurityVersion
                 && inputs.ExpectedBookPositionVersion == authority.Context.ExpectedBookPositionVersion
                 && inputs.EffectiveDate == request.Candidate.EffectiveDate
-                && inputs.ExpectedLot.OpenFunctionalCostBasis == request.Candidate.EventAmount,
+                && OpenLotCorporateAction.Groups(inputs).Sum(group => group.ExpectedLot.OpenFunctionalCostBasis) == request.Candidate.EventAmount,
                 "Corporate-action inputs must match the governed event authority, date and full carrying-value transfer.");
             mutationKind = AtomicTaxLotMutationKind.CorporateAction;
         }

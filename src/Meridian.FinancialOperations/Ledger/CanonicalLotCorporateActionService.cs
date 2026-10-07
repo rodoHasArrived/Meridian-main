@@ -37,19 +37,31 @@ public sealed class CanonicalLotCorporateActionService(
             || !Equivalent(reviewed.Mutations, mapped.LotMutations.Mutations))
             throw new InvalidOperationException("Corporate-action lot preparation must bind the exact mapped event, treatment, authoritative mutation plan and scope; no-journal or correction actions require another workflow.");
         _ = OpenLotCorporateAction.Project(reviewed);
-        var retained = (await lotStore.GetTaxLotsByIdsAsync(source.Scope.LedgerBookId,
-            [reviewed.ExpectedLot.TaxLotRecordId], ct).ConfigureAwait(false)).SingleOrDefault()
-            ?? throw new InvalidOperationException("The reviewed predecessor lot no longer exists.");
-        if (retained.Account.ToString() != reviewed.SourceAssetAccountId || !Equivalent(retained.ToOpenLot(), reviewed.ExpectedLot))
-            throw new InvalidOperationException("The predecessor lot account, quantity, basis or version is stale.");
-        foreach (var expected in new[] { reviewed.Security }.Concat(reviewed.Successors.Select(target => target.Security)))
+        var groups = OpenLotCorporateAction.Groups(reviewed);
+        var predecessorIds = groups.Select(group => group.ExpectedLot.TaxLotRecordId).ToHashSet();
+        var inventory = await lotStore.ListOpenTaxLotsByAssetScopeAsync(source.Scope.LedgerBookId,
+            source.Scope.SecurityId, source.Scope.BookPositionId, reviewed.EffectiveDate, ct).ConfigureAwait(false);
+        if (inventory.Count != predecessorIds.Count || !predecessorIds.SetEquals(inventory.Select(lot => lot.TaxLotRecordId)))
+            throw new InvalidOperationException("The reviewed corporate action must include every affected open predecessor lot in the authoritative position.");
+        var retained = await lotStore.GetTaxLotsByIdsAsync(source.Scope.LedgerBookId,
+            groups.Select(group => group.ExpectedLot.TaxLotRecordId).ToArray(), ct).ConfigureAwait(false);
+        if (retained.Count != predecessorIds.Count || retained.Select(lot => lot.TaxLotRecordId).Distinct().Count() != retained.Count)
+            throw new InvalidOperationException("A reviewed predecessor lot no longer exists.");
+        foreach (var group in groups)
+        {
+            var actual = retained.SingleOrDefault(lot => lot.TaxLotRecordId == group.ExpectedLot.TaxLotRecordId);
+            if (actual is null || actual.Account.ToString() != group.SourceAssetAccountId || !Equivalent(actual.ToOpenLot(), group.ExpectedLot))
+                throw new InvalidOperationException("A predecessor lot account, quantity, basis or version is stale.");
+        }
+        var successors = groups.SelectMany(group => group.Successors).ToArray();
+        foreach (var expected in new[] { reviewed.Security }.Concat(successors.Select(target => target.Security)))
         {
             var actual = await securityStore.GetProjectionAsync(expected.SecurityId, ct).ConfigureAwait(false);
             if (actual is null || OpenLotAmortization.SecurityHash(actual) != OpenLotAmortization.SecurityHash(expected))
                 throw new InvalidOperationException("A source or successor Security Master projection is missing or stale.");
         }
         var expectedPositions = new[] { (reviewed.ExpectedLot.BookPositionId, reviewed.ExpectedLot.SecurityId, reviewed.ExpectedBookPositionVersion) }
-            .Concat(reviewed.Successors.Select(target => (target.BookPositionId, target.Security.SecurityId, target.ExpectedBookPositionVersion)));
+            .Concat(successors.Select(target => (target.BookPositionId, target.Security.SecurityId, target.ExpectedBookPositionVersion))).Distinct();
         foreach (var (positionId, securityId, version) in expectedPositions)
         {
             var actual = await positionStore.GetBookPositionAsync(positionId, ct).ConfigureAwait(false);

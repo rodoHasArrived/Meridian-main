@@ -4798,6 +4798,7 @@ Meridian-main
 │   │   │   ├── AccountingBasisProjectionSetService.cs
 │   │   │   ├── AccountingJournalDraftService.cs
 │   │   │   ├── AccountingPolicyService.cs
+│   │   │   ├── AccountingPostingCandidatePostService.CorporateAction.cs
 │   │   │   ├── AccountingPostingCandidatePostService.cs
 │   │   │   ├── AccountingPostingCandidateService.cs
 │   │   │   ├── AssetAccountingCandidateCanonicalizer.cs
@@ -5958,6 +5959,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.Audit.cs
 │   │   │   ├── PostgresLedgerJournalStore.AverageCostRelief.cs
 │   │   │   ├── PostgresLedgerJournalStore.CorporateAction.cs
+│   │   │   ├── PostgresLedgerJournalStore.CorporateActionInventory.cs
 │   │   │   ├── PostgresLedgerJournalStore.cs
 │   │   │   ├── PostgresLedgerJournalStore.DiscreteLotRelief.cs
 │   │   │   ├── PostgresLedgerJournalStore.HistoricalTaxLots.cs
@@ -7069,6 +7071,7 @@ Meridian-main
 │   │   │   │   │   ├── operations-continuity-screen.close-test-fixtures.ts
 │   │   │   │   │   ├── operations-continuity-screen.command-state.ts
 │   │   │   │   │   ├── operations-continuity-screen.date-format.ts
+│   │   │   │   │   ├── operations-continuity-screen.selection.ts
 │   │   │   │   │   ├── operations-continuity-screen.test.tsx
 │   │   │   │   │   ├── operations-continuity-screen.tsx
 │   │   │   │   │   ├── operations-continuity-screen.view-model.test.ts
@@ -9650,6 +9653,7 @@ Meridian-main
 │   │   │   │   ├── ReconciliationMatchKernelTests.cs
 │   │   │   │   ├── ReconciliationNormalizationServiceTests.cs
 │   │   │   │   ├── ReconciliationRunOrchestratorTests.cs
+│   │   │   │   ├── ScopedLedgerJournalInternalTransactionSourceTests.cs
 │   │   │   │   ├── StatementMatchingEngineSidedKernelTests.cs
 │   │   │   │   ├── StatementMatchingEngineTests.cs
 │   │   │   │   ├── StatementReconciliationContextAdapterTests.cs
@@ -9718,6 +9722,7 @@ Meridian-main
 │   │   │   ├── CanonicalLotCorporateActionServiceTests.cs
 │   │   │   ├── ClearwaterCorporateActionRuleProfileV1Tests.cs
 │   │   │   ├── CorporateActionAccountingProjectionServiceTests.cs
+│   │   │   ├── CorporateActionAccountingProjectionServiceTests.LotBatches.cs
 │   │   │   ├── CorporateActionAssetAccountingEventMapperTests.cs
 │   │   │   ├── FactorPaydownProjectionServiceTests.cs
 │   │   │   ├── InMemoryAssetAccountingEventProjectionStoreTests.cs
@@ -9957,6 +9962,7 @@ Meridian-main
 │   │   │   │   ├── AccountingPolicyClockTests.cs
 │   │   │   │   ├── AccountingPolicyServiceTests.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.ActorAttribution.cs
+│   │   │   │   ├── AccountingPostingCandidateServiceTests.CorporateActions.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.HistoricalLots.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.RetainedEvidenceMerge.cs
@@ -10528,7 +10534,9 @@ Meridian-main
 │   │   │   ├── AtomicSnapshotTestWriter.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.Amortization.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.AverageCost.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.CorporateAction.Concurrency.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.CorporateAction.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.CorporateActionBatch.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.CurrentBasis.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.HistoricalQuantity.cs
@@ -11347,6 +11355,7 @@ Meridian-main
 │   │   ├── test_generate_ui_api_routes_ts.py
 │   │   ├── test_generate_ui_route_wiring_report.py
 │   │   ├── test_generate_workspace_catalog_ts.py
+│   │   ├── test_git_hooks.py
 │   │   ├── test_golden_path_validation_workflow.py
 │   │   ├── test_ibapi_smoke_workflow.py
 │   │   ├── test_lane_manifest.py
