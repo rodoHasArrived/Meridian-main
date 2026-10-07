@@ -53,7 +53,7 @@ except Exception as exc:
 def _docker(
     args: Sequence[str],
     *,
-    timeout: float = 30.0,
+    timeout: float | None = 30.0,
     env: Mapping[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
@@ -261,7 +261,7 @@ def run_disposable(
             return value.replace(password, "[redacted]")
 
         def command(
-            args: Sequence[str], *, timeout: float = 30.0, checked: bool = True
+            args: Sequence[str], *, timeout: float | None = 30.0, checked: bool = True
         ) -> subprocess.CompletedProcess[str]:
             with docker_log.open("a", encoding="utf-8") as log:
                 log.write(f"docker {json.dumps(list(args))}\n")
@@ -312,7 +312,7 @@ def run_disposable(
                 command(["pull", selected_image], timeout=120.0)
             cancellation.check()
             # Set this before the command: Docker may create a container even if
-            # its client times out before returning the ID.
+            # its client loses the response before returning the ID.
             allocation_attempted = True
             try:
                 command(
@@ -327,7 +327,12 @@ def run_disposable(
                         "--env", "POSTGRES_DB=meridian_schema_control",
                         selected_image,
                     ],
-                    timeout=30.0,
+                    # Keep this mutation's client until the daemon settles its
+                    # response. Killing it on a timer could leave a container
+                    # that appears only after cleanup has already finished.
+                    # Cancellation is remembered and checked immediately after
+                    # creation returns, before any database work starts.
+                    timeout=None,
                 )
             except Exception:
                 allocation_uncertain = True

@@ -66,8 +66,8 @@ Run directories are retained on success, failure, and cancellation. They contain
 (lifecycle, resource identity, exit status, and cleanup result), `docker.log`, `verification.log`,
 `postgres.log`, and any generated candidate manifests and reports. The command prints the exact
 artifact directory. It stops and reaps verification before capturing PostgreSQL logs and removing
-only its owned container and associated disposable storage. Ctrl+C and termination signals trigger
-cleanup; SIGKILL, machine shutdown, or a disconnected Docker daemon cannot guarantee cleanup.
+only its owned resources. Cancellation (Ctrl+C or termination) waits for in-flight creation to settle before cleanup.
+SIGKILL, machine shutdown, or a disconnected Docker daemon cannot guarantee cleanup.
 Use the recorded container identity and ownership labels to inspect any reported cleanup failure;
 avoid blanket container or volume pruning. Retained artifacts can be deleted when no longer needed.
 

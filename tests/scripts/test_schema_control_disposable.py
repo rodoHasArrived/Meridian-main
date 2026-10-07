@@ -192,6 +192,9 @@ class VerifierProcess(original_popen):
         return status
 
 def docker(args, *, timeout=30.0, env=None):
+    with (backend / 'events.jsonl').open('a', encoding='utf-8') as stream:
+        stream.write(json.dumps({'kind': 'docker-client', 'command': args[0],
+                                 'timeout': timeout}) + '\n')
     actual_env = os.environ.copy()
     if env:
         actual_env.update(env)
@@ -344,6 +347,15 @@ class SchemaControlDisposableTests(unittest.TestCase):
             time.sleep(0.01)
         self.fail(f'readiness did not start: {self.events()}')
 
+    def wait_for_creation(self) -> None:
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline:
+            if any(event['kind'] == 'docker' and event['args'][0] == 'create'
+                   for event in self.events()):
+                return
+            time.sleep(0.01)
+        self.fail(f'container creation did not start: {self.events()}')
+
     def run_roots(self, root: Path | None = None) -> list[Path]:
         return sorted((root or self.root).glob('build/schema-control/runs/*'))
 
@@ -459,6 +471,27 @@ class SchemaControlDisposableTests(unittest.TestCase):
                        if event['kind'] == 'docker' and event['args'][0] == 'inspect'
                        and event['time'] < removal['time']]
         self.assertGreater(len(inspections), 1)
+        self.assert_logs_precede_removal()
+
+    def test_cancellation_waits_for_slow_connected_creation_before_cleanup(self) -> None:
+        started = time.monotonic()
+        process = self.launch(FAKE_DAEMON_DELAY='6.5')
+        self.wait_for_creation()
+        self.cancel(process, signal.SIGTERM)
+        self.finish(process, 128 + signal.SIGTERM)
+        self.assertGreaterEqual(time.monotonic() - started, 6.5)
+        self.assertFalse(self.verifier_events())
+        self.assertFalse(list(self.backend.glob('resource-*.json')))
+        clients = [event for event in self.events() if event['kind'] == 'docker-client']
+        create_client = next(event for event in clients if event['command'] == 'create')
+        self.assertIsNone(create_client['timeout'])
+        self.assertTrue(all(event['timeout'] is not None for event in clients
+                            if event['command'] != 'create'))
+        run_root = self.run_roots()[0]
+        report = json.loads((run_root / 'run.json').read_text())
+        self.assertEqual('cancelled', report['status'])
+        self.assertEqual('removed', report['cleanup'])
+        self.assert_diagnostics(run_root, verified=False)
         self.assert_logs_precede_removal()
 
     def test_cancellation_while_waiting_for_readiness_cleans_up(self) -> None:
