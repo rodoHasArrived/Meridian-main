@@ -1,10 +1,59 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-set -eu
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+snapshot="$(mktemp -d "${TMPDIR:-/tmp}/meridian-pre-commit.XXXXXX")"
+trap 'rm -rf -- "$snapshot"' EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+# NUL-delimited paths preserve spaces, newlines and renamed destinations. Deleted
+# files and languages unsupported by dotnet format do not need a .NET check.
+git diff --cached --name-only --diff-filter=ACMR -z -- '*.cs' '*.vb' > "$snapshot/sources"
+staged_sources=()
+include_paths=()
+while IFS= read -r -d '' path; do
+  staged_sources+=("$path")
+  include_paths+=("./$path")
+done < "$snapshot/sources"
+
+if [[ ${#staged_sources[@]} -eq 0 ]]; then
+  echo "pre-commit: no staged C#/VB files; skipping .NET formatting."
+  exit 0
+fi
 
 if ! command -v dotnet >/dev/null 2>&1; then
-  echo "pre-commit: dotnet CLI is required to run formatting checks." >&2
+  echo "pre-commit: dotnet CLI is required to check staged C#/VB formatting." >&2
   exit 1
 fi
 
-dotnet format Meridian.sln --verify-no-changes
+# Read raw index blobs, not checkout-filtered or working-tree content. Only the
+# selected sources and formatting/SDK configuration are needed in folder mode.
+# This also keeps partially staged files and the real index untouched.
+git ls-files -z -- '.editorconfig' '**/.editorconfig' '.globalconfig' '**/.globalconfig' 'global.json' > "$snapshot/configs"
+staged_configs=()
+while IFS= read -r -d '' path; do
+  staged_configs+=("$path")
+done < "$snapshot/configs"
+
+mkdir "$snapshot/tree"
+for path in "${staged_sources[@]}" "${staged_configs[@]}"; do
+  destination="$snapshot/tree/$path"
+  mkdir -p -- "${destination%/*}"
+  git cat-file blob ":./$path" > "$destination"
+done
+
+echo "pre-commit: checking whitespace in ${#staged_sources[@]} staged C#/VB file(s)."
+if ! (
+  cd "$snapshot/tree"
+  dotnet format whitespace . --folder --verify-no-changes --verbosity minimal --include "${include_paths[@]}"
+); then
+  echo "pre-commit: staged formatting check failed. From the repository root, run:" >&2
+  printf '  dotnet format whitespace --folder --include ' >&2
+  printf '%q ' "${include_paths[@]}" >&2
+  printf '\nThen stage the intended hunks again and retry the commit.\n' >&2
+  exit 1
+fi
