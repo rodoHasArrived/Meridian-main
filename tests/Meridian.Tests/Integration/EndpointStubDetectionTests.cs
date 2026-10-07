@@ -280,6 +280,7 @@ public sealed class EndpointStubDetectionTests
             ["FundAccounts"] = routes.Count(r => r.Route.StartsWith("/api/fund-accounts")),
             ["Ledger"] = routes.Count(r => r.Route.StartsWith("/api/ledger")),
             ["AccountingSystem"] = routes.Count(r => r.Route.StartsWith("/api/accounting-system")),
+            ["AccountingOnboarding"] = routes.Count(r => r.Route.StartsWith("/api/accounting/onboarding/")),
             ["Plaid"] = routes.Count(r => r.Route.StartsWith("/api/plaid")),
             ["Strategies"] = routes.Count(r => r.Route.StartsWith("/api/strategies")),
             ["Quant"] = routes.Count(r => r.Route.StartsWith("/api/quant")),
@@ -291,6 +292,8 @@ public sealed class EndpointStubDetectionTests
         categories["Other"] = routes.Count - categorizedCount;
 
         // Assert - all routes should fall into known categories
+        categories["Other"].Should().BeGreaterThanOrEqualTo(0,
+            "Route categories must not double-count routes");
         categories["Other"].Should().BeLessThanOrEqualTo(10,
             "Too many uncategorized routes - add new categories as needed");
 
