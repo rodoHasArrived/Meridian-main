@@ -891,6 +891,12 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IOperationsApprovalPolicyMatrixService, OperationsApprovalPolicyMatrixService>();
         services.TryAddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
         services.TryAddSingleton<IAccountingCloseManagementService, AccountingCloseManagementService>();
+        services.TryAddSingleton<IAccountingClosePreparationService>(sp => new AccountingClosePreparationService(
+            sp.GetRequiredService<IAccountingCloseManagementService>(),
+            sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
+            sp.GetRequiredService<ILedgerBookService>(),
+            sp.GetRequiredService<ILedgerJournalStore>(),
+            new StorageOptions { RootPath = ResolveWorkstationDataDirectory(sp) }));
         services.TryAddSingleton<IAccountingReportPackageService, AccountingReportPackageService>();
         services.TryAddSingleton<IAutomatedJournalCapitalAccountReconciliationResolver>(sp =>
             new LedgerCapitalAccountReconciliationResolver(

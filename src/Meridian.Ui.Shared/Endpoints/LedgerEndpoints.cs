@@ -561,6 +561,7 @@ public static partial class LedgerEndpoints
         .Produces(StatusCodes.Status501NotImplemented);
 
         MapAccountingConfigurationEndpoints(app, jsonOptions);
+        MapClosePreparationEndpoints(app, jsonOptions);
 
         app.MapGet(UiApiRoutes.LedgerCloseManagementPeriodPlan, async (
             Guid workflowId,
