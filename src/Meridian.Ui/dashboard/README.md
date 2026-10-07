@@ -15,6 +15,16 @@ Tailwind and `@tailwindcss/postcss` are pinned to 4.3.3. The stylesheet uses the
 with the retained TypeScript theme configuration, and compiled-style regression tests preserve
 the workstation's utility behavior. Dependency updates must keep this pipeline and its built assets aligned.
 
+Governed Journal Entry Detail exposes retained disposal tax results from the shared period and
+journal read model. Operators can inspect mixed parcel character, carried holding-period starts,
+economic and recognized gain/loss, deferred loss, and the exact retained policy revision. Settled,
+provisional and missing-evidence results retain the server's reason, replacement-window end and
+re-evaluation posture. Refresh reads retained evidence only; the browser never derives character,
+settles an elapsed window, or recalculates tax amounts. Missing parcel allocation amounts stay
+unknown. Reads prohibit development fallback and reject a different book, period or journal.
+Focused coverage lives in `journal-entry-tax-results.test.tsx`,
+`journal-entry-detail-screen.test.tsx` and `ledger-tax-results-api.test.ts`.
+
 Trading includes an account-scoped brokerage recovery panel backed by the shared readiness and
 execution reconciliation projection. The operator can synchronize and reconcile Alpaca portfolio
 evidence through the governed recovery endpoint. Connection health, portfolio currency and cash,

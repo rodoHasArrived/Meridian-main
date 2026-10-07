@@ -7438,6 +7438,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerDisposalTaxParcelDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerDisposalTaxResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryDto"
     },
     {
@@ -7445,6 +7457,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto"
     },
     {
       "kind": "contract-set-member",
@@ -20518,6 +20536,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerDisposalTaxParcelDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerDisposalTaxResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryDto"
     },
     {
@@ -20525,6 +20555,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto"
     },
     {
       "kind": "contract-set-member",
@@ -30693,6 +30729,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.LedgerDisposalTaxResultDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerDisposalTaxParcelDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryDto",
       "target": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto"
     },
@@ -30719,6 +30761,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryLineDto",
       "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionSetDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerDisposalTaxResultDto"
     },
     {
       "kind": "contract-reference",
@@ -48787,7 +48835,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "97dc4debe0fd501227a50b3f440c3f92bd0ff8ce990ee15e0b53b959b92c5be1",
+  "fingerprint": "0ecafa119cdf73b8b016202362bd064c402487230c35ce0d5730145d9aedaeec",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -56276,6 +56324,18 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.LedgerDisposalTaxParcelDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LedgerDisposalTaxParcelDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.LedgerDisposalTaxResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LedgerDisposalTaxResultDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.LedgerJournalEntryDto"
@@ -56285,6 +56345,12 @@
       "id": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryLineDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.LedgerJournalEntryLineDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto"
     },
     {
       "classification": "enum",
@@ -71345,11 +71411,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3231,
-    "contract_set_memberships": 3792,
-    "edges": 8106,
+    "contract_references": 3233,
+    "contract_set_memberships": 3798,
+    "edges": 8114,
     "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3907
+    "nodes": 3910
   }
 }

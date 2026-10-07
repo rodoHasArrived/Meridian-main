@@ -274,6 +274,7 @@ public sealed record LedgerJournalEntryWrite(
     AccountingPostingCommandDto? PostingCommand = null,
     Guid? LedgerBookId = null);
 
+/// <summary>Conjunctive journal filters; an exact journal identity remains subject to every supplied scope filter.</summary>
 public sealed record LedgerJournalEntryQuery(
     Guid? LedgerBookId = null,
     Guid? PeriodId = null,
@@ -284,7 +285,8 @@ public sealed record LedgerJournalEntryQuery(
     DateTimeOffset? OccurredTo = null,
     Guid? SourceEventId = null,
     DateOnly? EffectiveFrom = null,
-    DateOnly? EffectiveTo = null);
+    DateOnly? EffectiveTo = null,
+    Guid? JournalEntryId = null);
 
 public sealed record LedgerJournalEntryRecord(
     JournalEntry Entry,

@@ -18,6 +18,14 @@ use ten-decimal journal precision with a conserved final residual; acquisition f
 twelve-decimal lot precision. Reviewed mutation amounts must match that allocation before approval.
 Unrepresentable inputs and arithmetic overflow are validation failures.
 
+`Ledger/LedgerDisposalTaxDtos.cs` defines shared, server-derived disposal and parcel tax results for
+the journal tax-results read route. It separates economic/recognized gain and deferred loss, exposes
+effective holding starts and exact retained policy revisions, and distinguishes settled, provisional,
+and missing-evidence states. Nullable amounts represent unavailable evidence rather than zero;
+`EvaluatedAt` is read time and `ReEvaluationRequired` does not claim tax finalization occurred.
+Tax-result amounts and parcel quantities use invariant decimal strings on the wire, preserving
+large values and fractional precision; absent evidence remains `null`.
+
 `Ledger/ConsolidationDtos.cs` defines the two-entity same-currency request, retained source/version
 evidence and shared gross/proposed/posted/consolidated read model. Manual journal drafts retain
 server-owned consolidation evidence, digest and required-evidence marker across the existing review

@@ -11,6 +11,23 @@ last_reviewed: 2026-10-07
 
 # src/Meridian.Storage
 
+Tax-lot disposal history now returns the atomic batch's exact `PolicyRevision` and `RecordedAt`,
+and restores each deferral's retained policy ID, replacement window and scope. These reads do not
+consult mutable standing policy rows. A recording timestamp is not evaluation coverage; activation
+dates and parcel deferral allocations absent from durable history remain unavailable. No schema or
+posting behavior changes are introduced by this W10-TAX-001 inspection slice. Retained deferral rows
+must agree on their repeated aggregate matched quantity and match the disposed security, journal sale
+date and full disposing account before history can certify finality. Replacement recipients must match
+their durable lot, security, book, window and account scope; aggregate matches cannot exceed their
+distinct original quantities. Shared recipients require cumulative source claims within capacity;
+shared multi-recipient claims without per-recipient quantity allocations remain missing evidence.
+Carried dates must copy an unambiguous source holding date through certified policy and recipient
+links to retained acquisition evidence. Cycles and traversals beyond 32 links or 1,024 batches fail
+closed. Deferral amounts reconcile to the exact recipient account, security and position on the
+posted basis debits, as well as the retained cash movement, including journals whose deferral rows
+are missing. Exact journal queries retain the existing book,
+period and tenant filters while hydrating every journal leg.
+
 Consolidation append validates explicit approval, reviewed lines, currency, correction ancestry and
 source evidence. Its owned transaction excludes ledger-book changes and retains an authoritative
 ownership/policy validation lease through journal commit. Ownership locks use the configured fund
