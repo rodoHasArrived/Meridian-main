@@ -8008,6 +8008,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Lifecycle.LifecycleStartupTiming"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Lifecycle.LifecycleSupervisorManifestDto"
     },
     {
@@ -48481,7 +48487,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "616e0dbef05b72e671ba709bde405a48f5fc34a9cb894c1d708d4627939bf0b8",
+  "fingerprint": "a76e0416e0639b6dfa7c55038675f4743d09a5df93044a3e7133cb3f68353a2d",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -56537,6 +56543,12 @@
       "id": "contract:Meridian.Contracts.Lifecycle.LifecycleShutdownStageDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Lifecycle.LifecycleShutdownStageDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Lifecycle.LifecycleStartupTiming",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Lifecycle.LifecycleStartupTiming"
     },
     {
       "classification": "dto",
@@ -70957,10 +70969,10 @@
   ],
   "summary": {
     "contract_references": 3203,
-    "contract_set_memberships": 3773,
-    "edges": 8055,
+    "contract_set_memberships": 3774,
+    "edges": 8056,
     "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3893
+    "nodes": 3894
   }
 }
