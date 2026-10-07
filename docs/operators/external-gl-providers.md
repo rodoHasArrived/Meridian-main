@@ -13,6 +13,19 @@ The `xero-fixture` and `netsuite-fixture` providers remain separate demo sources
 All four advertise `SupportsPosting=false`. Certification produces a retained
 review artifact; it never sends a journal to an external system.
 
+## Prerequisites and execution context
+
+Complete [preflight](preflight-checklist.md) and use a signed-in operator in the intended company,
+fund/account, ledger book, and accounting period. Provider connection changes require
+`ManageCredentials`. Import preview/reads require `AdminMaintenance` or `ManageFundStructure`;
+creating and certifying export packages require `AdminMaintenance` plus the scoped workflow
+evidence described below. Possessing a provider credential does not grant Meridian workflow access.
+
+The procedure uses the Windows browser/WPF workstation and its current loopback host. For API
+inspection, use PowerShell 7 and the [preflight operator session](preflight-checklist.md#authenticated-evidence-collection)
+in a separate terminal. Perform mutations through the governed UI or a client that supplies the
+session's CSRF protection and the exact request scope; a bare endpoint path is not a complete request.
+
 ## Configure and verify
 
 Save credentials through Settings / provider connections. The provider credential
@@ -182,6 +195,22 @@ package until verification succeeds. A failed verification also blocks review.
 Changing the external connection or retaining a new import invalidates old
 provider-control references; create a new review package with fresh evidence.
 Live posting stays disabled even after successful certification.
+
+## Expected result and failure recovery
+
+A successful retained import identifies the provider connection generation, exact scope/period,
+and content hashes. Reconciliation matches the provider's stated trial-balance basis; an export
+review package retains its own mapping and approval references. Certification still leaves
+`SupportsPosting=false`. Retain the import/reconciliation/package identifiers and evidence before
+replacing credentials or importing a new period.
+
+| Failure | Next action |
+| --- | --- |
+| `401/403` or missing accounting scope | Correct the operator session, permissions, company/fund/book assignment, and exact period. |
+| Token rotation cannot be retained | Repair primary/recovery vault storage; verify the retained credential generation before another provider read. |
+| Expired consent or provider permission/entitlement error | Restore the selected organisation/subsidiary/book access, verify the connection, then rerun the full period import. |
+| Incomplete pages, unsupported report basis, unbalanced totals, or currency mismatch | Preserve the failed evidence and repair/narrow the source or supported scope. No partial import can replace the last accepted one. |
+| Review invalidated after credential/import replacement | Verify the current generation and create fresh package-specific review evidence; stale approvals cannot certify the replacement. |
 
 ## Validation evidence
 

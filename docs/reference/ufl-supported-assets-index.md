@@ -4,25 +4,26 @@
 **Audience:** Product, architecture, domain, storage, and application contributors
 **Last Updated:** 2026-05-29
 
-## TODO Checklist (Concrete Implementation Items)
-- [ ] Define scope boundaries for **ufl supported assets index** and document explicit in-scope vs out-of-scope items.
-- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
-- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
-- [ ] Add/update operator runbook steps and rollback procedure for the ufl supported assets index workflow.
-- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
-
-**Status:** active reference index
+**Status:** active
+**Scope:** reference framework and historical asset-profile index
 **Reviewed:** 2026-05-13
 
 ## Summary
 
-This index is the active entry point for UFL capability profiles and target-state reference detail. It groups the security-master asset classes Meridian models in `src/Meridian.FSharp/Domain/SecurityMaster.fs`, maps through `src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs`, and exposes through shared workstation/reference-data surfaces as each slice matures.
+This index groups UFL capability profiles and target-state reference detail. Asset-profile links
+pinned to `archive/docs/` retain historical designs; they are not maintained delivery plans.
+Use the [roadmap registry](../roadmap/README.md) for current commitments and the
+[source module registry](../source/README.md) for implementation ownership and validation commands.
+The implementation uses Security Master types in `src/Meridian.FSharp/Domain/` and mapping in
+`src/Meridian.Application/SecurityMaster/`; confirm each proposed capability against its current owner.
 
-The existing direct-lending profile remains the deepest vertical slice. The sibling profiles below are active asset profiles for Security Master, ledger, Accounting, Reporting, Data, and controlled workstation workflows. They are not milestone-closure documents; each profile separates delivered baseline support from target-state additions that still need implementation evidence.
+The 2026-05-29 assessment described direct lending as the deepest vertical slice. The profiles below
+record baseline and proposed support across Security Master, ledger, Accounting, Reporting, Data,
+and workstation workflows. They do not establish current milestone closure or release readiness.
 
 UFL should be read as a shared capability and conformance framework first. Individual asset profiles are thin delta documents over the canonical [UFL Capability Model](ufl-capability-model.md), maturity levels, projection/evidence kernel, and milestone contracts.
 
-## Current Evidence Boundary
+## Evidence Boundary Recorded In The 2026-05-29 Assessment
 
 - Direct lending is the deepest UFL vertical slice and still owns the dedicated implementation roadmap.
 - Reference-data endpoint support currently exists for bonds, options, equities, futures, FX spot, swaps, commodities, crypto, deposits, money-market funds, and certificates of deposit.
@@ -40,7 +41,9 @@ UFL should be read as a shared capability and conformance framework first. Indiv
 | L4 | Operational Workflow | operator actions, approval/review, correction, and audit trail exist |
 | L5 | Accounting/Reconciliation Integrated | journals, period controls, reconciliation, and reporting evidence exist |
 
-Use the [UFL Conformance Matrix](ufl-conformance-matrix.md) to track current and next maturity by asset. Use `partial` instead of rounding up when evidence is mixed.
+The [UFL Conformance Matrix](ufl-conformance-matrix.md) retains the dated maturity assessment and
+proposed next levels. A new assessment must cite current implementation and test evidence; use
+`partial` instead of rounding up when that evidence is mixed.
 
 ## Architectural Lanes
 
@@ -59,7 +62,7 @@ Provider payloads may be retained as evidence, import source, and troubleshootin
 | Document | Role |
 | --- | --- |
 | [UFL Capability Model](ufl-capability-model.md) | Capability set, maturity levels, lanes, and required asset-profile sections. |
-| [UFL Conformance Matrix](ufl-conformance-matrix.md) | Single planning view of current maturity, next level, gaps, and evidence needed. |
+| [UFL Conformance Matrix](ufl-conformance-matrix.md) | Dated maturity assessment, proposed next levels, gaps, and evidence requirements. |
 | [UFL Projection and Evidence Kernel](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/ufl-projection-and-evidence-kernel.md) | Shared projection metadata, rebuild, checkpoint, lineage, and provider-isolation target. |
 | [UFL Accounting Impact Model](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/ufl-accounting-impact-model.md) | Shared accounting/reconciliation capability boundary and L5 milestone pattern. |
 | [UFL Asset Profile Template](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/ufl-asset-profile-template.md) | Required structure for converted asset profile documents. |
@@ -104,4 +107,3 @@ Custom assets are not a bypass around modeling discipline. One-off generic instr
 - Where a package proposes new projections, services, or endpoints, those are target-state additions unless current code evidence is named in the package.
 - The direct-lending document stays authoritative for the deepest fund-ops specialization; the others are thinner implementation-ready companion blueprints.
 - Keep UI references aligned with the current browser workstation workspaces: `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
-

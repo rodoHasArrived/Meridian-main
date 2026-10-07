@@ -86,7 +86,7 @@ public sealed class CommandModeRunnerTests
             disposed.Should().BeTrue();
             writer.ToString().Should().Contain("imported=");
 
-            var importStore = new JsonCanonicalStatementStore(dataRoot);
+            var importStore = new JsonCanonicalStatementStore(dataRoot, new AtomicFileWriterAdapter());
             var breakStore = new JsonReconciliationBreakStore(dataRoot, new AtomicFileWriterAdapter());
             var caseStore = new JsonReconciliationCaseStore(dataRoot, new AtomicFileWriterAdapter());
 

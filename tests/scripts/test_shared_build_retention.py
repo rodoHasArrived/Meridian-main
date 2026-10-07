@@ -13,8 +13,49 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "dev" / "SharedBuild.ps1"
 
 
-@unittest.skipIf(os.name != "nt", "SharedBuild.ps1 retention behavior is validated on Windows")
+@unittest.skipUnless(shutil.which("pwsh") or shutil.which("powershell"), "PowerShell is not available")
 class SharedBuildRetentionTests(unittest.TestCase):
+    def test_build_retention_preserves_profiles_outside_temporary_run_budgets(self) -> None:
+        for policy in ("age", "count", "size"):
+            with self.subTest(policy=policy), tempfile.TemporaryDirectory() as temp_dir:
+                repo_root = Path(temp_dir)
+                profiles = []
+                expired_runs = []
+                retained_runs = []
+                for artifact_kind in ("bin", "obj"):
+                    for name, age_days in (("profile-old", 30), ("PROFILE-new", 0)):
+                        profiles.append(self._create_artifact(
+                            repo_root,
+                            f"artifacts/{artifact_kind}/{name}",
+                            age_days=age_days,
+                            size_bytes=2 * 1024 * 1024,
+                        ))
+                    expired_runs.append(self._create_artifact(
+                        repo_root,
+                        f"artifacts/{artifact_kind}/old-run",
+                        age_days=30,
+                        size_bytes=700 * 1024,
+                    ))
+                    retained_runs.append(self._create_artifact(
+                        repo_root,
+                        f"artifacts/{artifact_kind}/latest-run",
+                        age_days=1,
+                        size_bytes=700 * 1024,
+                    ))
+
+                result = self._run_build_retention(
+                    repo_root,
+                    max_age_days=14 if policy == "age" else 0,
+                    retain_latest=1 if policy == "count" else 0,
+                    max_root_size_mb=1 if policy == "size" else 0,
+                )
+
+                self.assertEqual(result.returncode, 0, result.stderr)
+                for path in profiles + retained_runs:
+                    self.assertTrue(path.exists(), f"Removed {path}: {result.stdout}")
+                for path in expired_runs:
+                    self.assertFalse(path.exists(), f"Retained {path}: {result.stdout}")
+
     def test_prunes_recent_artifacts_beyond_retained_latest(self) -> None:
         powershell = shutil.which("pwsh") or shutil.which("powershell")
         if powershell is None:
@@ -185,6 +226,7 @@ class SharedBuildRetentionTests(unittest.TestCase):
             self.assertFalse(old_run.exists(), result.stdout)
             self.assertTrue(newest.exists(), result.stdout)
 
+    @unittest.skipIf(os.name != "nt", "Directory junctions require Windows")
     def test_build_retention_skips_junction_artifact_root(self) -> None:
         powershell = shutil.which("pwsh") or shutil.which("powershell")
         if powershell is None:
@@ -228,6 +270,7 @@ class SharedBuildRetentionTests(unittest.TestCase):
             self.assertTrue(stale_external.exists(), result.stdout)
             self.assertIn("reparse point", result.stdout + result.stderr)
 
+    @unittest.skipIf(os.name != "nt", "Directory junctions require Windows")
     def test_build_retention_skips_junction_artifact_parent(self) -> None:
         powershell = shutil.which("pwsh") or shutil.which("powershell")
         if powershell is None:
@@ -270,6 +313,33 @@ class SharedBuildRetentionTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertTrue(stale_external.exists(), result.stdout)
             self.assertIn("reparse point", result.stdout + result.stderr)
+
+    def _run_build_retention(
+        self,
+        repo_root: Path,
+        *,
+        max_age_days: int,
+        retain_latest: int,
+        max_root_size_mb: int,
+    ) -> subprocess.CompletedProcess[str]:
+        powershell = shutil.which("pwsh") or shutil.which("powershell")
+        if powershell is None:
+            self.skipTest("PowerShell is not available")
+
+        command = [powershell, "-NoProfile"]
+        if Path(powershell).name.lower().startswith("powershell"):
+            command.extend(["-ExecutionPolicy", "Bypass"])
+        script_path = str(SCRIPT_PATH).replace("'", "''")
+        root_path = str(repo_root).replace("'", "''")
+        command.extend([
+            "-Command",
+            "$ErrorActionPreference = 'Stop'; "
+            f". '{script_path}'; "
+            f"Invoke-MeridianBuildArtifactRetention -RepoRoot '{root_path}' "
+            f"-MaxAgeDays {max_age_days} -RetainLatest {retain_latest} "
+            f"-MaxRootSizeMB {max_root_size_mb}",
+        ])
+        return subprocess.run(command, capture_output=True, text=True)
 
     def _run_workflow_retention(
         self,

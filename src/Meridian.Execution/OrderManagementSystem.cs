@@ -78,7 +78,6 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     private Task? _disposeTask;
     private TaskCompletionSource? _operationsDrained;
     private Exception? _terminalReportPumpFailure;
-    private int _orderSequence;
     private int _activeOperations;
     private int _disposeStarted;
 
@@ -100,7 +99,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         OrderManagementSystemOptions? options = null,
         ITradeEventPublisher? tradeEventPublisher = null,
         ITradeFillHandoffFailureStore? tradeFillHandoffFailureStore = null,
-        RiskEscalationQueueService? escalationQueue = null)
+        RiskEscalationQueueService? escalationQueue = null,
+        FileBrokerageOrderRecoveryStore? recoveryStore = null)
     {
         _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -120,6 +120,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         _escalationQueue = escalationQueue;
         _portfolioState = portfolioState;
         _sessionPersistence = sessionPersistence;
+        _recoveryStore = recoveryStore;
         _brokerageConfiguration = brokerageConfiguration;
         _tradeEventPublisher = tradeEventPublisher;
         _tradeFillHandoffFailureStore = tradeFillHandoffFailureStore;
@@ -188,6 +189,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                     dropped.OrderId, dropped.ReportType, totalDropped);
             });
 
+        RestoreBrokerageOrders();
         RehydrateParkedOrderReservations();
 
         // Consume the gateway's asynchronous execution report stream so partial fills,
@@ -235,7 +237,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         // replayed or colliding id would overwrite the tracked state (fills, status history)
         // of the order already working under that id.
         if (request.ClientOrderId is not null
-            && ((_orders.TryGetValue(orderId, out var existingOrder) && !IsTerminalStatus(existingOrder.Status))
+            && (_dispatchedOrderIds.ContainsKey(orderId)
+                || (_orders.TryGetValue(orderId, out var existingOrder) && !IsTerminalStatus(existingOrder.Status))
                 || IsReservedByLiveEscalation(orderId, request)))
         {
             return await RejectDuplicateClientOrderIdAsync(
@@ -472,6 +475,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 CreatedAt = DateTimeOffset.UtcNow,
                 StrategyId = safeRequest.StrategyId,
                 FundAccountId = safeRequest.FundAccountId,
+                RunId = runId,
                 // Broker-native notional orders route dollars and discard quantity; the
                 // exposure reserve for this working order must value what actually routes.
                 RoutedNotional = BrokerNotionalMetadata.TryRead(safeRequest.Metadata, safeRequest.Quantity),
@@ -620,9 +624,15 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             _preTradeReservationGate.Release();
         }
 
+        using var retentionLease = TrackBrokerageSubmissionForRetention(orderId);
         try
         {
             ct.ThrowIfCancellationRequested();
+            // Retain the identity before the network boundary. A lost acknowledgement or
+            // process exit must never make an already accepted client id available again.
+            if (_gateway is IBrokerageGateway || _recoveryStore is not null)
+                RetainBrokerageDispatch(orderState);
+            var recoveryVersion = GetBrokerageRecoveryVersion(orderId);
             dispatchAttempted = true;
             var report = await _gateway.SubmitOrderAsync(safeRequest with { ClientOrderId = orderId }, ct)
                 .ConfigureAwait(false);
@@ -669,6 +679,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                         previousFilledQuantity)
                     .ConfigureAwait(false);
             }
+
+            RetainProcessedBrokerageOrder(orderId, report, recoveryVersion);
 
             try
             {
@@ -799,6 +811,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             // the behaviour the ceiling exists to stop. A failure before the gateway call is
             // provably pre-dispatch and releases the slot.
             SettleRiskReservations(riskDecision, commit: dispatchAttempted, orderId);
+            if (dispatchAttempted)
+                MarkBrokerageRecoveryRequired(orderId);
 
             _logger.LogError(ex, "Failed to submit order {OrderId} for {Symbol}", LogSanitizer.Sanitize(orderId), LogSanitizer.Sanitize(safeRequest.Symbol));
 
@@ -812,22 +826,23 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 RestoreConsumedApprovals(consumedApprovalId, "a submission failure before dispatch", orderId);
             }
 
-            var rejectedState = orderState with
-            {
-                Status = OrderStatus.Rejected,
-                LastUpdatedAt = DateTimeOffset.UtcNow
-            };
-            _orders[orderId] = rejectedState;
+            // Dispatch failure is an unknown outcome, not a broker rejection. In particular,
+            // the report pump may already have confirmed fills before the response was lost.
+            var rejectedState = _orders.AddOrUpdate(orderId,
+                _ => orderState with { Status = dispatchAttempted ? OrderStatus.PendingNew : OrderStatus.Rejected },
+                (_, current) => dispatchAttempted
+                    ? current
+                    : current with { Status = OrderStatus.Rejected, LastUpdatedAt = DateTimeOffset.UtcNow });
             TrimRetainedOrdersIfNeeded();
-            await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
+            await RecordSessionOrderUpdateAsync(sessionId, rejectedState, CancellationToken.None).ConfigureAwait(false);
 
             if (_auditTrail is not null)
             {
                 await _auditTrail.RecordAsync(new ExecutionAuditEntry(
                     AuditId: Guid.NewGuid().ToString("N"),
                     Category: "Order",
-                    Action: "OrderRejected",
-                    Outcome: "Rejected",
+                    Action: dispatchAttempted ? "OrderSubmissionUncertain" : "OrderRejected",
+                    Outcome: dispatchAttempted ? "RecoveryRequired" : "Rejected",
                     OccurredAt: DateTimeOffset.UtcNow,
                     Actor: actor,
                     BrokerName: brokerName,
@@ -839,7 +854,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                     // Stamped only when dispatch was attempted, because only then did the slot
                     // stay consumed. Marking a pre-dispatch failure would tell the status
                     // projection to count capacity the throttle had already released.
-                    Reason: dispatchAttempted ? AmbiguousSubmissionReason : null),
+                    Reason: dispatchAttempted ? AmbiguousSubmissionReason : null,
+                    Scope: BuildOrderAuditScope(safeRequest, runId)),
                     // CancellationToken.None: a cancelled caller must not erase the record of
                     // capacity the throttle is still holding on their behalf.
                     CancellationToken.None).ConfigureAwait(false);
@@ -1011,7 +1027,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     public IReadOnlyList<OrderState> GetOpenOrders()
     {
         return _orders.Values
-            .Where(o => o.Status is OrderStatus.PendingNew or OrderStatus.Accepted or OrderStatus.PartiallyFilled)
+            .Where(o => o.Status is OrderStatus.PendingNew or OrderStatus.Accepted or OrderStatus.PartiallyFilled or OrderStatus.PendingCancel)
             .ToList()
             .AsReadOnly();
     }
@@ -1232,43 +1248,6 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             message);
     }
 
-    private string GenerateOrderId()
-    {
-        var seq = Interlocked.Increment(ref _orderSequence);
-        return $"MDN-{DateTimeOffset.UtcNow:yyyyMMdd}-{seq:D6}";
-    }
-
-    private static OrderState ApplyReport(
-        OrderState current,
-        ExecutionReport report,
-        decimal? locallyAuthorizedModifiedQuantity = null)
-    {
-        // Once the OMS has reached a terminal state, late or malicious stream reports
-        // must not reopen, resize, or otherwise mutate the completed local order.
-        if (IsTerminal(current.Status))
-        {
-            return current;
-        }
-
-        // Gateway-streamed modifications are not trusted to authorize a quantity change.
-        // A quantity may change only while applying the response to a locally initiated
-        // modification, and is capped to the local request rather than report data.
-        var authorizedQuantity = report.ReportType is ExecutionReportType.Modified
-            && report.OrderStatus is OrderStatus.Accepted
-            && locallyAuthorizedModifiedQuantity is > 0m
-            ? Math.Max(locallyAuthorizedModifiedQuantity.Value, current.FilledQuantity)
-            : current.Quantity;
-
-        return current with
-        {
-            Status = report.OrderStatus,
-            Quantity = authorizedQuantity,
-            FilledQuantity = Math.Min(authorizedQuantity, Math.Max(report.FilledQuantity, current.FilledQuantity)),
-            AverageFillPrice = report.FillPrice ?? current.AverageFillPrice,
-            LastUpdatedAt = report.Timestamp
-        };
-    }
-
     /// <summary>
     /// Terminal statuses whose order ids may be reclaimed by a later submission. Excludes
     /// <see cref="OrderStatus.PendingCancel"/>: an order awaiting cancel confirmation is still
@@ -1284,6 +1263,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     /// </summary>
     private bool TryRegisterOrder(string orderId, OrderState orderState)
     {
+        if (_dispatchedOrderIds.ContainsKey(orderId))
+            return false;
         while (!_orders.TryAdd(orderId, orderState))
         {
             if (!_orders.TryGetValue(orderId, out var existing))
@@ -1291,7 +1272,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 continue; // Entry was trimmed between TryAdd and TryGetValue; retry.
             }
 
-            if (!IsTerminalStatus(existing.Status))
+            if (!IsTerminalStatus(existing.Status) || _dispatchedOrderIds.ContainsKey(orderId))
             {
                 return false;
             }
@@ -1375,9 +1356,12 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         }
     }
 
-    private async Task ProcessGatewayReportAsync(ExecutionReport report, CancellationToken ct)
+    private async Task ProcessGatewayReportCoreAsync(ExecutionReport report, CancellationToken ct)
     {
         var orderId = report.ClientOrderId ?? report.OrderId;
+        if (IsCompactedBrokerageReport(report))
+            return;
+        var recoveryVersion = string.IsNullOrWhiteSpace(orderId) ? 0L : GetBrokerageRecoveryVersion(orderId);
         if (!string.IsNullOrWhiteSpace(orderId))
         {
             RememberBrokerOrderId(orderId, report);
@@ -1485,6 +1469,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
 
             if (updatedState is not null)
             {
+                RetainProcessedBrokerageOrder(orderId!, report, recoveryVersion);
                 await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId!), updatedState, ct).ConfigureAwait(false);
             }
         }

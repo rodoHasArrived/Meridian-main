@@ -1,6 +1,8 @@
 # Meridian Help
 
-**Last Reviewed:** 2026-05-18
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-10-05
 
 This page keeps the high-traffic local operator and developer commands in one stable target for
 docs links. For roadmap status and product direction, start with
@@ -9,7 +11,10 @@ docs links. For roadmap status and product direction, start with
 
 ## Command-line usage
 
-Run these from the repository root unless a command says otherwise.
+Run these independent commands from the repository root in Bash or PowerShell with the SDK
+from [global.json](../global.json). The normal workstation launch requires persistence and
+operator authentication; complete [preflight](operators/preflight-checklist.md) first. For a
+configured demo instead, use `--seed-demo`, then `--demo` to reopen it.
 
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --help
@@ -20,34 +25,27 @@ dotnet run --project src/Meridian/Meridian.csproj -- --diagnostics
 dotnet run --project src/Meridian/Meridian.csproj -- --validate-config
 ```
 
-The browser workstation is the active operator UI lane. During local development:
+Both browser and Windows WPF workstations are active operator UI lanes. For browser development,
+install dependencies from the lockfile and start Vite in its own terminal (Node.js 24):
 
 ```bash
-cd src/Meridian.Ui/dashboard
-npm install
-npm run dev
-npm run test
-npm run build
+npm --prefix src/Meridian.Ui/dashboard ci
+npm --prefix src/Meridian.Ui/dashboard run dev
 ```
 
-`npm run dev` serves the workstation under `/workstation/` and proxies `/api` to
-`MERIDIAN_API_BASE_URL` when set, or `http://localhost:8080` by default.
+The dev server stays in the foreground. It serves `/workstation/` on port 5173 and proxies `/api`
+to `MERIDIAN_API_BASE_URL`, or `http://localhost:8080` by default. Start the configured API host
+in a separate terminal. Run tests or build assets from another terminal:
 
-To install the browser workstation as a local Windows app with Desktop and Start Menu shortcuts:
-
-```powershell
-.\build\scripts\install\install-web-workstation.ps1
-.\build\scripts\install\install.ps1 -Mode WebWorkstation
+```bash
+npm --prefix src/Meridian.Ui/dashboard run test
+npm --prefix src/Meridian.Ui/dashboard run build
 ```
 
-The installed shortcut starts the local host and opens `http://localhost:8080/workstation/`.
-It uses `--mode workstation`, which keeps provider connections and collector subscriptions
-deferred until an operator action needs them.
-For an end-to-end installed-copy smoke, run:
-
-```powershell
-.\build\scripts\install\smoke-web-workstation-install.ps1
-```
+For Windows installation, use the [installer guide](operators/browser-workstation-installer.md)
+for prerequisites, commands, expected installed paths, verification, and recovery. For WPF
+source builds, use [desktop testing](development/desktop-testing-guide.md). A non-Windows stub
+build does not validate the Windows UI.
 
 ## Configuration
 
@@ -94,17 +92,12 @@ by `src/Meridian.Application/Commands/EtlCommands.cs`.
 
 ## Production-safe DI defaults
 
-By default, production startup paths must use persistence-backed domain services.
-In-memory governance/domain services are for local fixture/dev scenarios only and now require explicit opt-in:
-
-```bash
-DOTNET_ENVIRONMENT=Development
-ASPNETCORE_ENVIRONMENT=Development
-MERIDIAN_USE_INMEMORY_GOVERNANCE=true
-```
-
-When `DOTNET_ENVIRONMENT=Production` (or `ASPNETCORE_ENVIRONMENT=Production`), Meridian fails fast
-if an in-memory governance profile is requested.
+Normal startup requires configured fund-account and fund-structure persistence. The
+`MERIDIAN_USE_INMEMORY_GOVERNANCE` name is historical: its explicit non-production opt-in selects
+file-backed governance stores. Other money-path stores still need PostgreSQL for durability.
+It is refused in Production, the default when no environment is named. Use the
+[environment reference](reference/environment-variables.md) for exact settings and precedence,
+and [preflight](operators/preflight-checklist.md) to verify the resulting host.
 
 For the WPF desktop launcher, use the explicit launch modes:
 
@@ -133,13 +126,17 @@ dotnet run --project src/Meridian/Meridian.csproj -- --error-codes
 python3 build/scripts/docs/run-docs-automation.py --profile quick --dry-run
 ```
 
-For browser-workstation issues, first verify the local host and route:
+For browser-workstation issues, verify the running host in a second PowerShell terminal:
 
 ```powershell
 Invoke-RestMethod http://localhost:8080/healthz
-Invoke-RestMethod http://localhost:8080/api/workstation/trading/readiness
-Invoke-RestMethod http://localhost:8080/api/workstation/operator/inbox
 ```
+
+Expect an HTTP success response from the live host. Then follow the authenticated readiness
+and operator-inbox requests in [preflight](operators/preflight-checklist.md); those routes need
+operator scope. A successful health probe alone does not establish readiness. If connection
+fails, inspect the host terminal and configured port. For 401/403, repair login and scope using
+preflight before retrying.
 
 Known local-environment pitfalls:
 
@@ -172,9 +169,9 @@ The commands below are generated from `docs/status/workflow-manifest.json`.
 
 - Owners: @storage-platform, @developer-experience
 - Commands:
-  - `python3 build/scripts/schema-control.py inventory --base-ref origin/main`
-  - `python3 build/scripts/schema-control.py verify --database-url "$DATABASE_URL" --base-ref origin/main`
-  - `gh workflow run schema-control.yml --ref <branch> -f mode=snapshot`
+  - `python3 build/scripts/schema-control.py inventory --base-ref <baseline-sha>`
+  - `python3 build/scripts/schema-control.py verify --database-url "$DATABASE_URL" --base-ref <baseline-sha>`
+  - `gh workflow run schema-control.yml --ref <branch> -f mode=snapshot -f baseline_ref=<baseline-sha>`
 
 #### `desktop-screenshot-catalog`
 
@@ -208,6 +205,7 @@ The commands below are generated from `docs/status/workflow-manifest.json`.
 - Owners: @provider-infra, @desktop-shell
 - Commands:
   - `pwsh ./scripts/dev/build-ibapi-smoke.ps1 -Configuration Release`
+  - `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release -p:EnableWindowsTargeting=true -p:EnableIbApiSmoke=true -maxcpucount:1 --filter "FullyQualifiedName~IBMarketDataClientRuntimeReconnectTests" --logger "trx;LogFileName=ibapi-runtime-reconnect.trx" --results-directory artifacts/test-results/ibapi-smoke`
 
 #### `wpf-route-validation-position-blotter`
 

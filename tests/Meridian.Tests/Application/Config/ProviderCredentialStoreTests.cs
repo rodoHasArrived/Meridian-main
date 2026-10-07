@@ -825,6 +825,32 @@ public sealed class ProviderCredentialStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task ReadForProviderAsync_ExplicitConfigurationIsAuthoritativeIncludingMissingValues()
+    {
+        using var key = new EnvironmentScope("POLYGON_API_KEY", "process-polygon-key");
+        using var fallback = new EnvironmentScope("MDC_PROVIDER_ALLOW_ENV_FALLBACK", "true");
+        var settings = new Dictionary<string, string?>();
+        var explicitStore = new FileProviderCredentialStore(_root, name => settings.GetValueOrDefault(name));
+        var processStore = new FileProviderCredentialStore(Path.Combine(_root, "process"));
+
+        (await processStore.ReadForProviderAsync("polygon"))!.Get("ApiKey").Should().Be("process-polygon-key");
+        (await explicitStore.ReadForProviderAsync("polygon")).Should().BeNull(
+            "the process fallback switch must not configure another store");
+
+        settings["MDC_PROVIDER_ALLOW_ENV_FALLBACK"] = "true";
+        (await explicitStore.ReadForProviderAsync("polygon")).Should().BeNull(
+            "a missing credential must not fall through to the process environment");
+
+        settings["POLYGON_API_KEY"] = "host-polygon-key";
+        (await explicitStore.ReadForProviderAsync("polygon"))!.Get("ApiKey").Should().Be("host-polygon-key");
+        (await processStore.ReadForProviderAsync("polygon"))!.Get("ApiKey").Should().Be("process-polygon-key");
+
+        settings["POLYGON_API_KEY"] = null;
+        (await explicitStore.ReadForProviderAsync("polygon")).Should().BeNull();
+        Environment.GetEnvironmentVariable("POLYGON_API_KEY").Should().Be("process-polygon-key");
+    }
+
+    [Fact]
     public async Task ReadForProviderAsync_DoesNotUseEnvironmentFallbackInProductionOrPackagedBuilds()
     {
         using var env = new EnvironmentScope("POLYGON_API_KEY", "legacy-polygon-key");

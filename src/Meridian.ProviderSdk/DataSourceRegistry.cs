@@ -10,7 +10,7 @@ namespace Meridian.Infrastructure.DataSources;
 /// <summary>
 /// A discovery or registration failure captured during data source and module scanning.
 /// </summary>
-/// <param name="Stage">Where the failure occurred: "type-load", "activate", "configure", or "register".</param>
+/// <param name="Stage">Where the failure occurred: "type-load", "activate", "configure", "validate", or "register".</param>
 /// <param name="Subject">The type or assembly the failure relates to.</param>
 /// <param name="ModuleId">Module ID when known, otherwise null.</param>
 /// <param name="ErrorType">Exception type name.</param>
@@ -36,7 +36,7 @@ public sealed record ProviderRegistrationReport(
     IReadOnlyList<DataSourceDiscoveryFailure> Failures)
 {
     public int FailedModuleCount => Failures.Count(failure =>
-        failure.Stage is "activate" or "configure" or "register");
+        failure.Stage is "activate" or "configure" or "validate" or "register");
 
     public bool IsHealthy => Failures.Count == 0;
 }
@@ -124,6 +124,8 @@ public sealed class DataSourceRegistry
     private readonly object _sync = new();
     private readonly List<DataSourceMetadata> _sources = new();
     private readonly List<DataSourceDiscoveryFailure> _failures = new();
+    private readonly HashSet<string> _moduleOwnedFamilies = new(StringComparer.Ordinal);
+    private readonly List<ProviderModuleCapabilityRegistration> _moduleCapabilityRegistrations = new();
     private readonly Dictionary<string, ProviderModuleContext> _moduleContexts
         = new(StringComparer.OrdinalIgnoreCase);
     private readonly ILogger _log;
@@ -158,6 +160,19 @@ public sealed class DataSourceRegistry
     /// individual failures so one broken module cannot block the rest.
     /// </summary>
     public IReadOnlyList<DataSourceDiscoveryFailure> Failures => GetRegistrationReport().Failures;
+
+    /// <summary>
+    /// Successfully registered module factories, derived from the same discovered service
+    /// contracts as capability metadata. Disabled, skipped, and failed modules publish none.
+    /// </summary>
+    public IReadOnlyList<ProviderModuleCapabilityRegistration> ModuleCapabilityRegistrations
+    {
+        get
+        {
+            lock (_sync)
+                return Array.AsReadOnly(_moduleCapabilityRegistrations.ToArray());
+        }
+    }
 
     /// <summary>
     /// Returns an immutable, point-in-time registration report. The counters are cumulative
@@ -335,7 +350,9 @@ public sealed class DataSourceRegistry
             right.CapabilityKeys.Contains(capability, StringComparer.Ordinal));
 
     /// <summary>
-    /// Registers discovered data sources into the service collection.
+    /// Registers discovered data sources into the service collection. Module-owned families
+    /// are excluded: only the module may decide which configured factories to publish.
+    /// Call module discovery before this attribute-only fallback so ownership is known.
     /// </summary>
     public void RegisterServices(IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
@@ -343,6 +360,12 @@ public sealed class DataSourceRegistry
 
         foreach (var source in Sources)
         {
+            lock (_sync)
+            {
+                if (_moduleOwnedFamilies.Contains(source.Id))
+                    continue;
+            }
+
             services.TryAdd(new ServiceDescriptor(source.ImplementationType, source.ImplementationType, lifetime));
             // Only register as IDataSource if the type actually implements it
             if (typeof(IDataSource).IsAssignableFrom(source.ImplementationType))
@@ -352,30 +375,108 @@ public sealed class DataSourceRegistry
                     lifetime));
             }
 
-            RegisterProviderInterface(
-                services,
-                source.ImplementationType,
-                "Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider",
-                lifetime);
+            foreach (var contract in GetCapabilityContracts(source))
+            {
+                if (contract != typeof(IDataSource))
+                    RegisterProviderInterface(services, source.ImplementationType, contract, lifetime);
+            }
         }
     }
 
     private static void RegisterProviderInterface(
         IServiceCollection services,
         Type implementationType,
-        string serviceTypeFullName,
+        Type serviceType,
         ServiceLifetime lifetime)
     {
-        var serviceType = implementationType
-            .GetInterfaces()
-            .FirstOrDefault(type => string.Equals(type.FullName, serviceTypeFullName, StringComparison.Ordinal));
-        if (serviceType is null)
-            return;
-
         services.Add(new ServiceDescriptor(
             serviceType,
             sp => sp.GetRequiredService(implementationType),
             lifetime));
+    }
+
+    private static IEnumerable<Type> GetCapabilityContracts(DataSourceMetadata source)
+        => source.ImplementationType.GetInterfaces()
+            .Where(contract => source.CapabilityKeys.Contains(contract.FullName!))
+            .OrderBy(static contract => contract.FullName, StringComparer.Ordinal);
+
+    internal void ClaimModuleFamily(string moduleId)
+    {
+        lock (_sync)
+            _moduleOwnedFamilies.Add(ProviderIdentity.NormalizeId(moduleId));
+    }
+
+    /// <summary>
+    /// Publishes a module's services, discovered metadata and capability inventory together.
+    /// Both loading entry points use this transaction after module validation succeeds.
+    /// </summary>
+    internal void RegisterModuleServices(IServiceCollection services, IProviderModule module)
+    {
+        lock (_sync)
+        {
+            var moduleId = ProviderIdentity.NormalizeId(module.ModuleId);
+            IServiceCollection staged = new ServiceCollection();
+            foreach (var descriptor in services)
+                staged.Add(descriptor);
+
+            var originalSources = _sources.ToArray();
+            var originalRegistrations = _moduleCapabilityRegistrations.ToArray();
+            try
+            {
+                module.Register(staged, this);
+
+                var added = staged.Where(descriptor => !services.Contains(descriptor)).ToArray();
+                var registrations = new List<ProviderModuleCapabilityRegistration>();
+                foreach (var source in Sources.Where(source => source.Id == moduleId))
+                {
+                    var contracts = GetCapabilityContracts(source).ToArray();
+                    var concreteFactory = staged.LastOrDefault(descriptor =>
+                        !descriptor.IsKeyedService && descriptor.ServiceType == source.ImplementationType);
+                    if (concreteFactory is null || !added.Contains(concreteFactory))
+                    {
+                        if (added.Any(descriptor => !descriptor.IsKeyedService && contracts.Contains(descriptor.ServiceType)))
+                        {
+                            throw new InvalidOperationException(
+                                $"Provider module '{moduleId}' registered a capability interface without its concrete factory '{source.ImplementationType.FullName}'. " +
+                                "Register the concrete implementation and forward interface registrations to that instance.");
+                        }
+                        continue;
+                    }
+
+                    if (concreteFactory.Lifetime == ServiceLifetime.Scoped)
+                    {
+                        throw new InvalidOperationException(
+                            $"Provider module '{moduleId}' registered a scoped concrete factory '{source.ImplementationType.FullName}'. " +
+                            "Provider capability factories must be singleton or transient because the provider registry belongs to the application host.");
+                    }
+
+                    registrations.AddRange(contracts.Select(contract =>
+                        new ProviderModuleCapabilityRegistration(moduleId, contract, source.ImplementationType)));
+                }
+
+                // Publish only after every capability registration is valid. An exception above or in
+                // Register leaves the caller's service collection and capability inventory unchanged.
+                services.Clear();
+                foreach (var descriptor in staged)
+                    services.Add(descriptor);
+                foreach (var registration in registrations)
+                {
+                    if (!_moduleCapabilityRegistrations.Contains(registration))
+                        _moduleCapabilityRegistrations.Add(registration);
+                }
+            }
+            catch
+            {
+                // A module can discover sources during Register. Roll that provisional
+                // inventory back if registration or capability validation fails, while
+                // preserving family ownership so attribute fallback stays disabled.
+                _sources.Clear();
+                _sources.AddRange(originalSources);
+                _moduleCapabilityRegistrations.Clear();
+                _moduleCapabilityRegistrations.AddRange(originalRegistrations);
+                throw;
+            }
+        }
     }
 
     /// <summary>
@@ -433,6 +534,8 @@ public sealed class DataSourceRegistry
         var externallyOwnedIds = externallyOwnedModuleIds
             .Select(ProviderIdentity.NormalizeId)
             .ToHashSet(StringComparer.Ordinal);
+        foreach (var moduleId in externallyOwnedIds)
+            ClaimModuleFamily(moduleId);
 
         foreach (var assembly in assemblies)
         {
@@ -474,6 +577,7 @@ public sealed class DataSourceRegistry
                 }
 
                 var moduleId = ProviderIdentity.NormalizeId(module.ModuleId);
+                ClaimModuleFamily(moduleId);
 
                 if (!module.IsProductionProvider || externallyOwnedIds.Contains(moduleId))
                 {
@@ -511,8 +615,20 @@ public sealed class DataSourceRegistry
 
                 try
                 {
+                    var validation = module.ValidateAsync().AsTask().GetAwaiter().GetResult();
+                    if (!validation.IsValid)
+                        throw new InvalidOperationException(validation.FailureReason ?? "Module validation failed.");
+                }
+                catch (Exception ex)
+                {
+                    RecordFailure("validate", type.FullName ?? type.Name, moduleId, ex);
+                    continue;
+                }
+
+                try
+                {
                     Increment(ref _moduleRegistrationAttemptCount);
-                    module.Register(services, this);
+                    RegisterModuleServices(services, module);
                     Increment(ref _registeredModuleCount);
                 }
                 catch (Exception ex)

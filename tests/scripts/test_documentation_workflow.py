@@ -1,6 +1,10 @@
 import unittest
 from pathlib import Path
 
+import yaml
+
+from tests.scripts.workflow_assertions import assert_pinned_action
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DOCUMENTATION_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "documentation.yml"
@@ -22,12 +26,16 @@ class DocumentationWorkflowTests(unittest.TestCase):
         self.assertIn("severe = baseline_available and (", self.workflow)
 
     def test_regenerate_docs_job_fetches_history_for_dashboard_diff(self) -> None:
-        checkout_index = self.workflow.index("regenerate-docs:")
-        diff_index = self.workflow.index("Compare dashboard readiness deltas vs previous commit")
-        regenerate_block = self.workflow[checkout_index:diff_index]
-
-        self.assertIn("uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", regenerate_block)
-        self.assertIn("fetch-depth: 0", regenerate_block)
+        checkout = assert_pinned_action(self, self.workflow, "regenerate-docs", "actions/checkout")
+        self.assertEqual(checkout.get("with", {}).get("persist-credentials"), "false")
+        self.assertEqual(checkout.get("with", {}).get("fetch-depth"), "0")
+        steps = yaml.load(self.workflow, Loader=yaml.BaseLoader)["jobs"]["regenerate-docs"]["steps"]
+        comparisons = [
+            step for step in steps
+            if step.get("name") == "Compare dashboard readiness deltas vs previous commit"
+        ]
+        self.assertEqual(len(comparisons), 1, "Expected exactly one history comparison step")
+        self.assertLess(steps.index(checkout), steps.index(comparisons[0]))
 
     def test_diagram_dependencies_use_root_lockfile(self) -> None:
         self.assertIn('"package-lock.json"', self.workflow)

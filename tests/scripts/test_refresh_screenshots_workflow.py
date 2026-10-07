@@ -4,6 +4,10 @@ import unittest
 from pathlib import Path
 from urllib.parse import urlsplit
 
+import yaml
+
+from tests.scripts.workflow_assertions import assert_pinned_action
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 WEB_SCREENSHOT_CAPTURE_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "web-screenshot-capture.yml"
@@ -42,15 +46,20 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("--surface web", self.web_workflow)
         self.assertIn("--require-fresh", self.web_workflow)
         self.assertIn("pull-requests: write", self.web_workflow)
-        self.assertIn("uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1", self.web_workflow)
+        pull_request = assert_pinned_action(
+            self, self.web_workflow, "capture-web-screenshots", "peter-evans/create-pull-request"
+        )
+        checkout = assert_pinned_action(self, self.web_workflow, "capture-web-screenshots", "actions/checkout")
+        self.assertEqual(checkout.get("with", {}).get("persist-credentials"), "false")
         capture_step = self.web_workflow.split("- name: Capture web screenshots", 1)[1].split(
             "- name: Validate web screenshot captures", 1
         )[0]
         self.assertNotIn("continue-on-error: true", capture_step)
         self.assertIn("continue-on-error: true", self.web_workflow)
-        self.assertIn("branch: automation/web-screenshot-capture", self.web_workflow)
-        self.assertIn("base: ${{ github.event.repository.default_branch }}", self.web_workflow)
-        self.assertIn("title: \"chore: refresh web workstation screenshot catalog\"", self.web_workflow)
+        self.assertEqual(pull_request.get("if"), "${{ steps.capture_web.outcome == 'success' }}")
+        self.assertEqual(pull_request.get("with", {}).get("branch"), "automation/web-screenshot-capture")
+        self.assertEqual(pull_request.get("with", {}).get("base"), "${{ github.event.repository.default_branch }}")
+        self.assertEqual(pull_request.get("with", {}).get("title"), "chore: refresh web workstation screenshot catalog")
         # The clean, lockfile-pinned install must not regress back to a mutable
         # `npm install`, which can silently drift the dependency tree in CI.
         self.assertNotIn("npm install --prefix", self.web_workflow)
@@ -65,7 +74,26 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("--require-fresh", self.desktop_screenshot_workflow)
         self.assertNotIn("continue-on-error: true", self.desktop_screenshot_workflow)
         self.assertIn("if: ${{ success() && inputs.commit == true }}", self.desktop_screenshot_workflow)
-        self.assertIn("name: desktop-screenshots-${{ github.run_number }}", self.desktop_screenshot_workflow)
+        self.assertIn("name: desktop-screenshots-complete-${{ github.run_number }}", self.desktop_screenshot_workflow)
+
+    def test_desktop_screenshots_keep_one_complete_archive_including_failure_evidence(self) -> None:
+        workflow = yaml.load(self.desktop_screenshot_workflow, Loader=yaml.BaseLoader)
+        steps = workflow["jobs"]["capture-screenshots"]["steps"]
+        uploads = [step for step in steps if step.get("uses", "").startswith("actions/upload-artifact@")]
+        self.assertEqual(len(uploads), 1, "Catalog PNGs must not be uploaded twice")
+        upload = uploads[0]
+        self.assertEqual(upload["if"], "${{ always() }}")
+        self.assertEqual(upload["with"]["path"], "artifacts/desktop-screenshot-capture/all-screenshots/")
+        self.assertEqual(upload["with"]["retention-days"], "14")
+        prepare = next(step for step in steps if step.get("name") == "Prepare complete screenshot artifact")
+        self.assertEqual(prepare["if"], "${{ always() }}")
+        self.assertLess(steps.index(prepare), steps.index(upload))
+        for required in (
+            'Copy-ScreenshotSet -SourceRoot "${{ steps.validate_output_dir.outputs.safe_output_dir }}" -Bucket "catalog"',
+            'Copy-ScreenshotSet -SourceRoot "artifacts/desktop-workflows" -Bucket "workflow-runs"',
+            "screenshot-artifact-manifest.json",
+        ):
+            self.assertIn(required, prepare["run"])
 
     def test_desktop_screenshot_wrapper_uses_fresh_artifact_root_by_default(self) -> None:
         self.assertIn("[string]$OutputRoot", self.capture_desktop_screenshots_script)

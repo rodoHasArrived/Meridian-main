@@ -703,6 +703,8 @@ public static class UiApiRoutes
     public const string WorkstationFinancialRecordExplorerRecord = "/api/workstation/financial-record-explorers/{explorerId}/records/{recordId}";
     public const string WorkstationFinancialRecordExplorerSavedViews = "/api/workstation/financial-record-explorers/{explorerId}/saved-views";
     public const string WorkstationTradingReadiness = "/api/workstation/trading/readiness";
+
+    public const string WorkstationTradingBrokerageRecovery = "/api/workstation/trading/brokerage-recovery";
     public const string WorkstationOperatorInbox = "/api/workstation/operator/inbox";
     public const string WorkstationEvidenceSubjects = "/api/workstation/evidence/subjects";
     public const string WorkstationEvidenceSubjectPacket = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/packet";
@@ -832,6 +834,10 @@ public static class UiApiRoutes
     public const string LedgerAccountingConfigurationAudit = "/api/ledger/accounting-configuration/audit";
     public const string LedgerCloseManagementPeriodPlan = "/api/ledger/close-management/period-plan/{workflowId:guid}";
     public const string LedgerCloseManagementPeriodPlanConfiguration = "/api/ledger/close-management/period-plan/configuration";
+    public const string LedgerCloseManagementTemplates = "/api/ledger/close-management/templates";
+    public const string LedgerCloseManagementTemplate = "/api/ledger/close-management/templates/{templateId:guid}";
+    public const string LedgerCloseManagementPreparationPreview = "/api/ledger/close-management/prepare/preview";
+    public const string LedgerCloseManagementPreparationCreate = "/api/ledger/close-management/prepare/create";
     public const string LedgerCloseManagementLateAdjustments = "/api/ledger/close-management/late-adjustments";
     public const string LedgerCloseManagementLateAdjustmentReview = "/api/ledger/close-management/late-adjustments/review";
     public const string LedgerCloseManagementTaskSignOffs = "/api/ledger/close-management/task-signoffs";

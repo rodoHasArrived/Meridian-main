@@ -265,7 +265,7 @@ public sealed class StatementImportCaseworkEvidenceTests : IDisposable
     private StatementRunWorkflowService CreateWorkflow(InternalReconciliationPopulations? populations = null,
         IInternalReconciliationPopulationProvider? populationProvider = null)
     {
-        var imports = new JsonCanonicalStatementStore(_root);
+        var imports = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
         return new StatementRunWorkflowService(imports, new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()),
             new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter()), new CsvBrokerStatementService(imports),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()),

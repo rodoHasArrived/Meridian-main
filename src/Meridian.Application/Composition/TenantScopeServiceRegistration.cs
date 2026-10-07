@@ -15,7 +15,7 @@ public static class TenantScopeServiceRegistration
     {
         if (!services.Any(descriptor => descriptor.ServiceType == typeof(TenantScopeEnforcementOptions)))
         {
-            var environmentValue = Environment.GetEnvironmentVariable(TenantScopeEnforcementOptions.EnvironmentVariable);
+            var environmentValue = CompositionConfiguration.Resolve(services)[TenantScopeEnforcementOptions.EnvironmentVariable];
             // Refuse a misspelled explicit override immediately. Resolve file configuration from
             // the final host graph, where ConfigStore/IConfiguration may be registered later.
             var environmentOptions = string.IsNullOrWhiteSpace(environmentValue) ? null :
@@ -31,7 +31,10 @@ public static class TenantScopeServiceRegistration
 
     private static TenantScopeEnforcementOptions ResolveConfiguration(IServiceProvider services)
     {
-        var configured = services.GetService<IConfiguration>()?[TenantScopeEnforcementOptions.ConfigurationKey];
+        var hostConfiguration = services.GetService<CompositionConfiguration>();
+        var configured = hostConfiguration is { UsesEnvironment: false }
+            ? hostConfiguration[TenantScopeEnforcementOptions.ConfigurationKey]
+            : services.GetService<IConfiguration>()?[TenantScopeEnforcementOptions.ConfigurationKey];
         var path = services.GetService<ConfigStore>()?.ConfigPath;
         if (configured is null && path is not null && File.Exists(path))
         {

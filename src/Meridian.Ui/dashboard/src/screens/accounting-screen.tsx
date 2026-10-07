@@ -11,6 +11,7 @@ import { FinancialRecordExplorerShell } from "@/components/meridian/financial-re
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RecurringJournalQueue } from "@/components/accounting/RecurringJournalQueue";
+import { PrepareNextPeriodPanel } from "@/screens/accounting-screen.prepare-next-period";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -2265,6 +2266,8 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
         workstream={workstream}
         taskMode={taskMode}
       />
+
+      {sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails ? <PrepareNextPeriodPanel initialWorkflowId={closeWorkflow?.workflowId} /> : null}
 
       {sectionVisibility.showCloseCockpitLanding ? (
         <>

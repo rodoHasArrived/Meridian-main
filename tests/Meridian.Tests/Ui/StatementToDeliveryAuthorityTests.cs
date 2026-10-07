@@ -714,7 +714,7 @@ public sealed class StatementToDeliveryAuthorityTests
                     Version: 1,
                     AccountingBasis: AccountingBasisKindDto.Gaap)
             ]);
-        var statementStore = new JsonCanonicalStatementStore(dataRoot);
+        var statementStore = new JsonCanonicalStatementStore(dataRoot, new AtomicFileWriterAdapter());
         var statementBreakStore = new JsonReconciliationBreakStore(dataRoot, new AtomicFileWriterAdapter());
         var statementCaseStore = new JsonReconciliationCaseStore(dataRoot, new AtomicFileWriterAdapter());
         var statementCaseworkCommitStore = new FileStatementCaseworkCommitStore(dataRoot, new AtomicFileWriterAdapter());

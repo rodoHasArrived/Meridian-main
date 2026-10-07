@@ -122,7 +122,7 @@ public sealed partial class StatementLedgerReconciliationPostgresTests
             var journals = new PostgresLedgerJournalStore(LedgerOptions);
             var accounts = new PostgresFundAccountService(new PostgresFundAccountStore(AccountOptions));
             var tenancy = new PostgresFundProfileTenancyRegistry(LedgerOptions);
-            var canonical = new JsonCanonicalStatementStore(Root);
+            var canonical = new JsonCanonicalStatementStore(Root, new AtomicFileWriterAdapter());
             var artifacts = new FileStatementRunMatchArtifactStore(Root, new AtomicFileWriterAdapter());
             var population = new RetainedInternalReconciliationPopulationProvider(accounts,
                 ledgerTransactionSource: new LedgerJournalInternalTransactionSource(journals));

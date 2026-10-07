@@ -1,270 +1,167 @@
 using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
+using Meridian.Infrastructure.Adapters.Core;
+using Meridian.ProviderSdk;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 namespace Meridian.Tests.Integration.EndpointTests;
 
 /// <summary>
-/// Guards the endpoint-host restart scenario where a prior host leaves process-wide provider
-/// catalog callbacks that can no longer resolve services from its disposed container.
+/// Exercises overlapping hosts through their real authentication, configuration, and provider routes.
+/// No test in this class reads or changes process-wide configuration or provider callbacks.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class EndpointTestFixtureProviderCatalogLifetimeTests
 {
-    [Fact]
-    public async Task ProviderComparison_PreviousHostCatalogWasDisposed_ReturnsCurrentFixtureResponse()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ConcurrentFixtures_DifferentAuthDataAndProviders_RemainIsolatedInEitherDisposalOrder(
+        bool disposeFirstFixtureFirst)
     {
-        var originalCatalogProvider = ProviderCatalog.RuntimeCatalogProvider;
-        var originalCatalogEntryProvider = ProviderCatalog.RuntimeCatalogEntryProvider;
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        ProviderCatalog.InitializeFromRegistry(
-            static () => throw new ObjectDisposedException("previous-host"),
-            static _ => throw new ObjectDisposedException("previous-host"));
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+        var first = CreateFixture("first-key", "first-provider", "required");
+        var second = CreateFixture("second-key", "second-provider", "optional");
 
-        var fixture = new EndpointTestFixture();
         try
         {
-            await fixture.InitializeAsync().WaitAsync(timeout.Token);
+            await Task.WhenAll(
+                Task.Run(first.InitializeAsync, timeout.Token),
+                Task.Run(second.InitializeAsync, timeout.Token)).WaitAsync(timeout.Token);
 
-            using var providerReadClient = fixture.CreatePermittedClient(UserPermission.ViewDiagnostics);
-            using var response = await providerReadClient.GetAsync(
-                "/api/providers/comparison",
+            Path.IsPathFullyQualified(first.DataRoot).Should().BeTrue();
+            Path.IsPathFullyQualified(second.DataRoot).Should().BeTrue();
+            first.DataRoot.Should().NotBe(second.DataRoot);
+            first.Services.GetRequiredService<IProviderCatalog>()
+                .Should().NotBeSameAs(second.Services.GetRequiredService<IProviderCatalog>());
+
+            using var firstClient = CreateApiClient(first, "first-key");
+            using var secondClient = CreateApiClient(second, "second-key");
+            await Task.WhenAll(
+                AddSymbolAsync(firstClient, "FIRSTONLY", timeout.Token),
+                AddSymbolAsync(secondClient, "SECONDONLY", timeout.Token));
+
+            await Task.WhenAll(
+                AssertOwnedStateAsync(first, firstClient, "first-provider", "second-provider", "FIRSTONLY", "SECONDONLY", timeout.Token),
+                AssertOwnedStateAsync(second, secondClient, "second-provider", "first-provider", "SECONDONLY", "FIRSTONLY", timeout.Token),
+                AssertKeyRejectedAsync(first, "second-key", timeout.Token),
+                AssertKeyRejectedAsync(second, "first-key", timeout.Token));
+
+            // Rotation is local too: an already-running sibling keeps accepting its original key.
+            first.Configuration["MDC_API_KEY"] = "rotated-first-key";
+            firstClient.DefaultRequestHeaders.Remove("X-Api-Key");
+            firstClient.DefaultRequestHeaders.Add("X-Api-Key", "rotated-first-key");
+            await Task.WhenAll(
+                AssertKeyRejectedAsync(first, "first-key", timeout.Token),
+                AssertOwnedStateAsync(first, firstClient, "first-provider", "second-provider", "FIRSTONLY", "SECONDONLY", timeout.Token),
+                AssertOwnedStateAsync(second, secondClient, "second-provider", "first-provider", "SECONDONLY", "FIRSTONLY", timeout.Token));
+
+            var disposed = disposeFirstFixtureFirst ? first : second;
+            var survivor = disposeFirstFixtureFirst ? second : first;
+            var survivorClient = disposeFirstFixtureFirst ? secondClient : firstClient;
+            var stopped = disposed.Services.GetRequiredService<IHostApplicationLifetime>();
+            var disposedRoot = Path.GetDirectoryName(disposed.DataRoot)!;
+            await disposed.DisposeAsync().WaitAsync(timeout.Token);
+
+            stopped.ApplicationStopped.IsCancellationRequested.Should().BeTrue();
+            Directory.Exists(disposedRoot).Should().BeFalse();
+            Directory.Exists(Path.GetDirectoryName(survivor.DataRoot)!).Should().BeTrue();
+            await AssertOwnedStateAsync(
+                survivor,
+                survivorClient,
+                disposeFirstFixtureFirst ? "second-provider" : "first-provider",
+                disposeFirstFixtureFirst ? "first-provider" : "second-provider",
+                disposeFirstFixtureFirst ? "SECONDONLY" : "FIRSTONLY",
+                disposeFirstFixtureFirst ? "FIRSTONLY" : "SECONDONLY",
                 timeout.Token);
-
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            response.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
-
-            var applicationLifetime = fixture.Services.GetRequiredService<IHostApplicationLifetime>();
-            await fixture.DisposeAsync().WaitAsync(timeout.Token);
-
-            applicationLifetime.ApplicationStopped.IsCancellationRequested.Should().BeTrue();
-            ProviderCatalog.RuntimeCatalogProvider.Should().BeNull();
-            ProviderCatalog.RuntimeCatalogEntryProvider.Should().BeNull();
-            var readCatalog = () => ProviderCatalog.GetAll();
-            readCatalog.Should().NotThrow();
-        }
-        finally
-        {
-            using var cleanupTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await fixture.DisposeAsync().WaitAsync(cleanupTimeout.Token);
-            ProviderCatalog.RuntimeCatalogProvider = originalCatalogProvider;
-            ProviderCatalog.RuntimeCatalogEntryProvider = originalCatalogEntryProvider;
-        }
-    }
-
-    [Fact]
-    public async Task ProviderComparison_InnerFixtureWasDisposed_OuterFixtureRemainsBound()
-    {
-        var originalCatalogProvider = ProviderCatalog.RuntimeCatalogProvider;
-        var originalCatalogEntryProvider = ProviderCatalog.RuntimeCatalogEntryProvider;
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-        var outer = new EndpointTestFixture();
-        var inner = new EndpointTestFixture();
-
-        try
-        {
-            await outer.InitializeAsync().WaitAsync(timeout.Token);
-            var outerCatalogProvider = ProviderCatalog.RuntimeCatalogProvider;
-            var outerCatalogEntryProvider = ProviderCatalog.RuntimeCatalogEntryProvider;
-            await inner.InitializeAsync().WaitAsync(timeout.Token);
-            await inner.DisposeAsync().WaitAsync(timeout.Token);
-
-            ProviderCatalog.RuntimeCatalogProvider.Should().BeSameAs(outerCatalogProvider);
-            ProviderCatalog.RuntimeCatalogEntryProvider.Should().BeSameAs(outerCatalogEntryProvider);
-
-            using var providerReadClient = outer.CreatePermittedClient(UserPermission.ViewDiagnostics);
-            using var response = await providerReadClient.GetAsync(
-                "/api/providers/comparison",
+            await AssertKeyRejectedAsync(
+                survivor,
+                disposeFirstFixtureFirst ? "rotated-first-key" : "second-key",
                 timeout.Token);
-
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            response.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
         }
         finally
         {
-            await inner.DisposeAsync().WaitAsync(timeout.Token);
-            await outer.DisposeAsync().WaitAsync(timeout.Token);
-            ProviderCatalog.RuntimeCatalogProvider.Should().BeNull();
-            ProviderCatalog.RuntimeCatalogEntryProvider.Should().BeNull();
-            ProviderCatalog.RuntimeCatalogProvider = originalCatalogProvider;
-            ProviderCatalog.RuntimeCatalogEntryProvider = originalCatalogEntryProvider;
+            using var cleanupTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+            await Task.WhenAll(first.DisposeAsync(), second.DisposeAsync()).WaitAsync(cleanupTimeout.Token);
         }
     }
 
     [Fact]
-    public async Task ProviderComparison_NewerNonFixtureOwnerWasInstalled_DisposeDoesNotClobberIt()
+    public async Task ConcurrentFixtures_OptionalAndRequiredAuthentication_DoNotShareTheirPosture()
     {
-        var originalCatalogProvider = ProviderCatalog.RuntimeCatalogProvider;
-        var originalCatalogEntryProvider = ProviderCatalog.RuntimeCatalogEntryProvider;
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        var fixture = new EndpointTestFixture();
-        ProviderCatalogEntry[] replacementEntries = [];
-        Func<IReadOnlyList<ProviderCatalogEntry>> replacementCatalogProvider = () => replacementEntries;
-        Func<string, ProviderCatalogEntry?> replacementCatalogEntryProvider = _ => null;
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        var optional = new EndpointTestFixture();
+        var required = CreateFixture("required-key", "required-provider", "required");
 
         try
         {
-            await fixture.InitializeAsync().WaitAsync(timeout.Token);
-            ProviderCatalog.InitializeFromRegistry(
-                replacementCatalogProvider,
-                replacementCatalogEntryProvider);
+            await Task.WhenAll(
+                Task.Run(optional.InitializeAsync, timeout.Token),
+                Task.Run(required.InitializeAsync, timeout.Token)).WaitAsync(timeout.Token);
+            using var optionalClient = optional.CreatePermittedClient(UserPermission.ViewConfig);
+            using var requiredAnonymousClient = required.CreatePermittedClient(UserPermission.ViewConfig);
+            using var requiredKeyClient = CreateApiClient(required, "required-key");
 
-            await fixture.DisposeAsync().WaitAsync(timeout.Token);
+            using var optionalResponse = await optionalClient.GetAsync("/api/config", timeout.Token);
+            using var requiredResponse = await requiredAnonymousClient.GetAsync("/api/config", timeout.Token);
+            using var keyResponse = await requiredKeyClient.GetAsync("/api/config", timeout.Token);
+            optionalResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            requiredResponse.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable,
+                "required session authentication without configured users must fail closed before test permission injection");
+            keyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            ProviderCatalog.RuntimeCatalogProvider.Should().BeSameAs(replacementCatalogProvider);
-            ProviderCatalog.RuntimeCatalogEntryProvider.Should().BeSameAs(replacementCatalogEntryProvider);
+            await required.DisposeAsync().WaitAsync(timeout.Token);
+            using var afterDisposal = await optionalClient.GetAsync("/api/config", timeout.Token);
+            afterDisposal.StatusCode.Should().Be(HttpStatusCode.OK);
         }
         finally
         {
-            await fixture.DisposeAsync().WaitAsync(timeout.Token);
-            ProviderCatalog.RuntimeCatalogProvider = originalCatalogProvider;
-            ProviderCatalog.RuntimeCatalogEntryProvider = originalCatalogEntryProvider;
+            using var cleanupTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+            await Task.WhenAll(optional.DisposeAsync(), required.DisposeAsync()).WaitAsync(cleanupTimeout.Token);
         }
     }
 
     [Fact]
-    public async Task ProviderComparison_NonFixturePairReplacedOuter_InnerDoesNotResurrectOuter()
+    public async Task Initialize_SiblingFails_CleansFailedFixtureAndLeavesRunningHostUsable()
     {
-        var originalCatalogProvider = ProviderCatalog.RuntimeCatalogProvider;
-        var originalCatalogEntryProvider = ProviderCatalog.RuntimeCatalogEntryProvider;
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-        var outer = new EndpointTestFixture();
-        var inner = new EndpointTestFixture();
-        Func<IReadOnlyList<ProviderCatalogEntry>> replacementCatalogProvider =
-            static () => Array.Empty<ProviderCatalogEntry>();
-        Func<string, ProviderCatalogEntry?> replacementCatalogEntryProvider = static _ => null;
-
-        try
-        {
-            await outer.InitializeAsync().WaitAsync(timeout.Token);
-            var detachedOuterCatalogProvider = ProviderCatalog.RuntimeCatalogProvider;
-            var detachedOuterCatalogEntryProvider = ProviderCatalog.RuntimeCatalogEntryProvider;
-            ProviderCatalog.InitializeFromRegistry(
-                replacementCatalogProvider,
-                replacementCatalogEntryProvider);
-
-            await inner.InitializeAsync().WaitAsync(timeout.Token);
-            await inner.DisposeAsync().WaitAsync(timeout.Token);
-
-            ProviderCatalog.RuntimeCatalogProvider.Should().BeNull();
-            ProviderCatalog.RuntimeCatalogEntryProvider.Should().BeNull();
-            ProviderCatalog.RuntimeCatalogProvider.Should().NotBeSameAs(detachedOuterCatalogProvider);
-            ProviderCatalog.RuntimeCatalogEntryProvider.Should().NotBeSameAs(detachedOuterCatalogEntryProvider);
-        }
-        finally
-        {
-            await inner.DisposeAsync().WaitAsync(timeout.Token);
-            await outer.DisposeAsync().WaitAsync(timeout.Token);
-            ProviderCatalog.RuntimeCatalogProvider = originalCatalogProvider;
-            ProviderCatalog.RuntimeCatalogEntryProvider = originalCatalogEntryProvider;
-        }
-    }
-
-    [Fact]
-    public async Task ProviderComparison_InnerFixtureInitializationFails_OuterFixtureIsRestored()
-    {
-        var originalCatalogProvider = ProviderCatalog.RuntimeCatalogProvider;
-        var originalCatalogEntryProvider = ProviderCatalog.RuntimeCatalogEntryProvider;
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-        var outer = new EndpointTestFixture();
-        var failingInner = new EndpointTestFixture(
+        var running = CreateFixture("survivor-key", "survivor-provider", "required");
+        var failing = new EndpointTestFixture(
             static () => throw new InvalidOperationException("synthetic initialization failure"));
 
         try
         {
-            await outer.InitializeAsync().WaitAsync(timeout.Token);
-            var outerCatalogProvider = ProviderCatalog.RuntimeCatalogProvider;
-            var outerCatalogEntryProvider = ProviderCatalog.RuntimeCatalogEntryProvider;
-
-            var initialize = () => failingInner.InitializeAsync().WaitAsync(timeout.Token);
+            await running.InitializeAsync().WaitAsync(timeout.Token);
+            var initialize = () => failing.InitializeAsync().WaitAsync(timeout.Token);
             await initialize.Should().ThrowAsync<InvalidOperationException>()
                 .WithMessage("synthetic initialization failure");
+            Directory.Exists(Path.GetDirectoryName(failing.DataRoot)!).Should().BeFalse();
 
-            ProviderCatalog.RuntimeCatalogProvider.Should().BeSameAs(outerCatalogProvider);
-            ProviderCatalog.RuntimeCatalogEntryProvider.Should().BeSameAs(outerCatalogEntryProvider);
-
-            using var providerReadClient = outer.CreatePermittedClient(UserPermission.ViewDiagnostics);
-            using var response = await providerReadClient.GetAsync(
-                "/api/providers/comparison",
-                timeout.Token);
-
+            using var client = CreateApiClient(running, "survivor-key");
+            using var config = await client.GetAsync("/api/config", timeout.Token);
+            config.StatusCode.Should().Be(HttpStatusCode.OK);
+            using var providerClient = CreateProviderReadClient(running);
+            using var response = await providerClient.GetAsync("/api/providers/catalog/survivor-provider", timeout.Token);
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-            response.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
+            using var comparison = await providerClient.GetAsync("/api/providers/comparison", timeout.Token);
+            comparison.StatusCode.Should().Be(HttpStatusCode.OK);
         }
         finally
         {
-            await failingInner.DisposeAsync().WaitAsync(timeout.Token);
-            await outer.DisposeAsync().WaitAsync(timeout.Token);
-            ProviderCatalog.RuntimeCatalogProvider.Should().BeNull();
-            ProviderCatalog.RuntimeCatalogEntryProvider.Should().BeNull();
-            ProviderCatalog.RuntimeCatalogProvider = originalCatalogProvider;
-            ProviderCatalog.RuntimeCatalogEntryProvider = originalCatalogEntryProvider;
-        }
-    }
-
-    [Fact]
-    public async Task InitializeAndDispose_SeededLeanEnvironment_IsClearedThenRestored()
-    {
-        var originalLeanPath = Environment.GetEnvironmentVariable("LEAN_PATH");
-        var originalLeanDataPath = Environment.GetEnvironmentVariable("LEAN_DATA_PATH");
-        var originalInterval = Environment.GetEnvironmentVariable("LEAN_EXPORT_INTERVAL_SECONDS");
-        var originalReportingConnection =
-            Environment.GetEnvironmentVariable("MERIDIAN_REPORTING_CONNECTION_STRING");
-        var originalDirectLendingConnection =
-            Environment.GetEnvironmentVariable("MERIDIAN_DIRECT_LENDING_CONNECTION_STRING");
-        var seededLeanPath = Path.Combine(Path.GetTempPath(), $"lean-install-{Guid.NewGuid():N}");
-        var seededDataPath = Path.Combine(Path.GetTempPath(), $"lean-data-{Guid.NewGuid():N}");
-        var fixture = new EndpointTestFixture();
-
-        try
-        {
-            Environment.SetEnvironmentVariable("LEAN_PATH", seededLeanPath);
-            Environment.SetEnvironmentVariable("LEAN_DATA_PATH", seededDataPath);
-            Environment.SetEnvironmentVariable("LEAN_EXPORT_INTERVAL_SECONDS", "1");
-
-            await fixture.InitializeAsync();
-
-            Environment.GetEnvironmentVariable("LEAN_PATH").Should().BeNull();
-            Environment.GetEnvironmentVariable("LEAN_DATA_PATH").Should().BeNull();
-            Environment.GetEnvironmentVariable("LEAN_EXPORT_INTERVAL_SECONDS").Should().BeNull();
-            Environment.GetEnvironmentVariable("MERIDIAN_REPORTING_CONNECTION_STRING")
-                .Should().Be(" ");
-
-            await fixture.DisposeAsync();
-
-            Environment.GetEnvironmentVariable("LEAN_PATH").Should().Be(seededLeanPath);
-            Environment.GetEnvironmentVariable("LEAN_DATA_PATH").Should().Be(seededDataPath);
-            Environment.GetEnvironmentVariable("LEAN_EXPORT_INTERVAL_SECONDS").Should().Be("1");
-            Environment.GetEnvironmentVariable("MERIDIAN_REPORTING_CONNECTION_STRING")
-                .Should().Be(originalReportingConnection);
-            Environment.GetEnvironmentVariable("MERIDIAN_DIRECT_LENDING_CONNECTION_STRING")
-                .Should().Be(originalDirectLendingConnection);
-            Directory.Exists(seededDataPath).Should().BeFalse();
-        }
-        finally
-        {
-            await fixture.DisposeAsync();
-            Environment.SetEnvironmentVariable("LEAN_PATH", originalLeanPath);
-            Environment.SetEnvironmentVariable("LEAN_DATA_PATH", originalLeanDataPath);
-            Environment.SetEnvironmentVariable("LEAN_EXPORT_INTERVAL_SECONDS", originalInterval);
-            Environment.SetEnvironmentVariable(
-                "MERIDIAN_REPORTING_CONNECTION_STRING",
-                originalReportingConnection);
-            Environment.SetEnvironmentVariable(
-                "MERIDIAN_DIRECT_LENDING_CONNECTION_STRING",
-                originalDirectLendingConnection);
+            using var cleanupTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+            await Task.WhenAll(failing.DisposeAsync(), running.DisposeAsync()).WaitAsync(cleanupTimeout.Token);
         }
     }
 
     [Fact]
     public async Task Dispose_HostedServiceStopThrowsAfterHostStops_CleansOwnedStateAndReportsError()
     {
-        var originalCatalogProvider = ProviderCatalog.RuntimeCatalogProvider;
-        var originalCatalogEntryProvider = ProviderCatalog.RuntimeCatalogEntryProvider;
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
         var fixture = new EndpointTestFixture(static services =>
             services.AddSingleton<IHostedService, ThrowingStopHostedService>());
@@ -276,20 +173,107 @@ public sealed class EndpointTestFixtureProviderCatalogLifetimeTests
             var fixtureRoot = Path.GetDirectoryName(fixture.DataRoot)!;
 
             var dispose = () => fixture.DisposeAsync().WaitAsync(timeout.Token);
-            await dispose.Should().ThrowAsync<AggregateException>()
+            var failure = await dispose.Should().ThrowAsync<AggregateException>()
                 .WithMessage("Endpoint test fixture cleanup failed.*");
+            failure.Which.Flatten().InnerExceptions.Should().Contain(error =>
+                error is InvalidOperationException && error.Message == "synthetic hosted-service stop failure");
 
             applicationLifetime.ApplicationStopped.IsCancellationRequested.Should().BeTrue();
-            ProviderCatalog.RuntimeCatalogProvider.Should().BeNull();
-            ProviderCatalog.RuntimeCatalogEntryProvider.Should().BeNull();
             Directory.Exists(fixtureRoot).Should().BeFalse();
         }
         finally
         {
-            await fixture.DisposeAsync().WaitAsync(timeout.Token);
-            ProviderCatalog.RuntimeCatalogProvider = originalCatalogProvider;
-            ProviderCatalog.RuntimeCatalogEntryProvider = originalCatalogEntryProvider;
+            using var cleanupTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await fixture.DisposeAsync().WaitAsync(cleanupTimeout.Token);
         }
+    }
+
+    private static EndpointTestFixture CreateFixture(string apiKey, string providerId, string authMode)
+    {
+        return new EndpointTestFixture(
+            new Dictionary<string, string?>
+            {
+                ["MDC_AUTH_MODE"] = authMode,
+                ["MDC_API_KEY"] = apiKey,
+                ["MDC_API_KEY_ROLE"] = "Admin"
+            },
+            services =>
+            {
+                services.RemoveAll<ProviderRegistry>();
+                services.AddSingleton<ProviderRegistry>(_ =>
+                {
+                    var registry = new ProviderRegistry();
+                    registry.Register(new FixtureProvider(providerId));
+                    return registry;
+                });
+                services.RemoveAll<IProviderCatalog>();
+                services.AddSingleton<IProviderCatalog>(provider =>
+                {
+                    var registry = provider.GetRequiredService<ProviderRegistry>();
+                    return new RuntimeProviderCatalog(registry.GetProviderCatalog, registry.GetProviderCatalogEntry);
+                });
+            });
+    }
+
+    private static HttpClient CreateApiClient(EndpointTestFixture fixture, string key)
+    {
+        var client = fixture.CreateNoRedirectClient();
+        client.DefaultRequestHeaders.Add("X-Api-Key", key);
+        return client;
+    }
+
+    private static HttpClient CreateProviderReadClient(EndpointTestFixture fixture)
+    {
+        // Provider routes require a tenant-scoped session; API-key principals deliberately have no
+        // tenant. Keep key-only authentication assertions on /api/config and model the workstation
+        // session separately. The key lets required authentication reach the fixture's session stub.
+        var client = fixture.CreateSessionClient(UserPermission.ViewDiagnostics);
+        client.DefaultRequestHeaders.Add("X-Api-Key", fixture.Configuration["MDC_API_KEY"]);
+        return client;
+    }
+
+    private static async Task AddSymbolAsync(HttpClient client, string symbol, CancellationToken ct)
+    {
+        using var response = await client.PostAsJsonAsync("/api/config/symbols", new { Symbol = symbol }, ct);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    private static async Task AssertKeyRejectedAsync(EndpointTestFixture fixture, string key, CancellationToken ct)
+    {
+        using var client = CreateApiClient(fixture, key);
+        using var response = await client.GetAsync("/api/config", ct);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    private static async Task AssertOwnedStateAsync(
+        EndpointTestFixture fixture,
+        HttpClient client,
+        string ownProvider,
+        string otherProvider,
+        string ownSymbol,
+        string otherSymbol,
+        CancellationToken ct)
+    {
+        using var configResponse = await client.GetAsync("/api/config", ct);
+        configResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var config = JsonDocument.Parse(await configResponse.Content.ReadAsStringAsync(ct));
+        config.RootElement.GetProperty("dataRoot").GetString().Should().Be(fixture.DataRoot);
+        var symbols = config.RootElement.GetProperty("symbols").EnumerateArray()
+            .Select(symbol => symbol.GetProperty("symbol").GetString()).ToArray();
+        symbols.Should().Contain(ownSymbol).And.NotContain(otherSymbol);
+
+        using var providerClient = CreateProviderReadClient(fixture);
+        using var catalogResponse = await providerClient.GetAsync("/api/providers/catalog", ct);
+        catalogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var catalog = JsonDocument.Parse(await catalogResponse.Content.ReadAsStringAsync(ct));
+        catalog.RootElement.GetProperty("providers").EnumerateArray()
+            .Select(provider => provider.GetProperty("providerId").GetString()).Should().Equal(ownProvider);
+        using var ownResponse = await providerClient.GetAsync($"/api/providers/catalog/{ownProvider}", ct);
+        using var otherResponse = await providerClient.GetAsync($"/api/providers/catalog/{otherProvider}", ct);
+        ownResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        otherResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var comparison = await providerClient.GetAsync("/api/providers/comparison", ct);
+        comparison.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     private sealed class ThrowingStopHostedService : IHostedService
@@ -298,5 +282,14 @@ public sealed class EndpointTestFixtureProviderCatalogLifetimeTests
 
         public Task StopAsync(CancellationToken cancellationToken) =>
             Task.FromException(new InvalidOperationException("synthetic hosted-service stop failure"));
+    }
+
+    private sealed class FixtureProvider(string providerId) : IProviderMetadata
+    {
+        public string ProviderId => providerId;
+        public string ProviderDisplayName => providerId;
+        public string ProviderDescription => "Metadata owned by one endpoint fixture";
+        public int ProviderPriority => 100;
+        public ProviderCapabilities ProviderCapabilities => ProviderCapabilities.None;
     }
 }

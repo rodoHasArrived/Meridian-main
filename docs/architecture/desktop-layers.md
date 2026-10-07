@@ -6,9 +6,12 @@ Meridian uses two active co-equal operator UI lanes — a browser operator works
 
 1. **Browser workstation (`src/Meridian.Ui/dashboard`)** for browser operator workflow delivery, with built assets served from `src/Meridian.Ui/wwwroot/workstation/`.
 2. **WPF Desktop (`Meridian.Wpf`)** as an active Windows desktop workstation (co-equal UI lane); current focus is web-UI parity (`W8-WPF-PARITY-001`).
-3. **Desktop-local API host (`src/Meridian`)** for localhost-only workstation APIs, Swagger, and supporting background services.
+3. **API host (`src/Meridian`)** for workstation APIs, Swagger, and supporting background services.
+   `LocalWorkstation` uses loopback bindings; separately configured `ProductionApi` deployments can
+   serve remote browser and WPF clients under the transport and authentication rules in the
+   [host source guide](../../src/Meridian/README.md).
 
-These surfaces share contracts and application logic through shared libraries, with clear boundaries between the browser shell, retained WPF desktop shell, the local host, and reusable UI functionality.
+These surfaces share contracts and application logic through shared libraries, with clear boundaries between the browser shell, active WPF desktop shell, the host, and reusable UI functionality.
 
 ## Layer Diagram
 
@@ -17,7 +20,7 @@ These surfaces share contracts and application logic through shared libraries, w
 │                          UI Host Layer                                    │
 │  ┌────────────────────────────┐     ┌──────────────────────────────────┐  │
 │  │ Browser workstation        │     │ Meridian.Wpf + src/Meridian     │  │
-│  │ (active operator UI)       │     │ (deferred shell + API host)   │  │
+│  │ (active operator UI)       │     │ (active WPF shell + API host)   │  │
 │  │ - React/Vite dashboard     │     │ - XAML desktop shell      │  │
 │  │ - /workstation assets      │     │ - localhost APIs + Swagger      │  │
 │  └──────────────┬─────────────┘     └──────────────────┬───────────────┘  │
@@ -82,7 +85,7 @@ These surfaces share contracts and application logic through shared libraries, w
 ### `src/Meridian.Ui.Services/` (Cross-feature shared UI services)
 
 - Shared service logic used by desktop workflows (API, fixture data, validation/utilities, etc.).
-- Includes linked contract source files for desktop compatibility scenarios.
+- References the canonical `Meridian.Contracts` project for shared types.
 - Keeps platform-neutral behavior out of WPF-specific code.
 
 ### `src/Meridian.Contracts/` (Canonical contracts)
@@ -98,7 +101,7 @@ These surfaces share contracts and application logic through shared libraries, w
 2. **WPF host → Ui.Services**
 3. **Desktop-local API host (`src/Meridian`) → Ui.Shared**
 4. **Ui.Shared → Application + Contracts**
-5. **Ui.Services → Contracts models (linked/shared consumption pattern)**
+5. **Ui.Services → Contracts project**
 6. **All UI-facing layers → Contracts**
 
 ### ❌ Forbidden
@@ -149,4 +152,5 @@ HTTP Request
 
 ---
 
-*Last Updated: 2026-05-22*
+*Original overview: 2026-05-22. Maintenance check 2026-10-05: active workstation labels,
+host deployment posture, and the `Ui.Services` contract project reference verified against source.*
