@@ -835,8 +835,9 @@ public sealed class InMemoryFundStructureServiceTests
             "test",
             AccruedInterest: 250m,
             PendingSettlement: 1_500m));
+        var statementBatchId = Guid.NewGuid();
         await fixture.AccountService.IngestBankStatementAsync(new IngestBankStatementRequest(
-            Guid.NewGuid(),
+            statementBatchId,
             fixture.AdvisoryAccountId,
             new DateOnly(2026, 04, 07),
             "Acme Bank",
@@ -844,7 +845,7 @@ public sealed class InMemoryFundStructureServiceTests
             [
                 new BankStatementLineDto(
                     Guid.NewGuid(),
-                    Guid.NewGuid(),
+                    statementBatchId,
                     fixture.AdvisoryAccountId,
                     new DateOnly(2026, 04, 03),
                     new DateOnly(2026, 04, 03),
@@ -856,7 +857,7 @@ public sealed class InMemoryFundStructureServiceTests
                     110_000m),
                 new BankStatementLineDto(
                     Guid.NewGuid(),
-                    Guid.NewGuid(),
+                    statementBatchId,
                     fixture.AdvisoryAccountId,
                     new DateOnly(2026, 04, 05),
                     new DateOnly(2026, 04, 05),
@@ -868,7 +869,7 @@ public sealed class InMemoryFundStructureServiceTests
                     107_000m),
                 new BankStatementLineDto(
                     Guid.NewGuid(),
-                    Guid.NewGuid(),
+                    statementBatchId,
                     fixture.AdvisoryAccountId,
                     new DateOnly(2026, 04, 10),
                     new DateOnly(2026, 04, 10),
@@ -880,7 +881,7 @@ public sealed class InMemoryFundStructureServiceTests
                     null),
                 new BankStatementLineDto(
                     Guid.NewGuid(),
-                    Guid.NewGuid(),
+                    statementBatchId,
                     fixture.AdvisoryAccountId,
                     new DateOnly(2026, 04, 12),
                     new DateOnly(2026, 04, 12),
@@ -997,8 +998,9 @@ public sealed class InMemoryFundStructureServiceTests
             "test",
             AccruedInterest: 250m,
             PendingSettlement: 1_500m));
+        var statementBatchId = Guid.NewGuid();
         await accountService.IngestBankStatementAsync(new IngestBankStatementRequest(
-            Guid.NewGuid(),
+            statementBatchId,
             account.AccountId,
             new DateOnly(2026, 04, 07),
             "Acme Bank",
@@ -1006,7 +1008,7 @@ public sealed class InMemoryFundStructureServiceTests
             [
                 new BankStatementLineDto(
                     Guid.NewGuid(),
-                    Guid.NewGuid(),
+                    statementBatchId,
                     account.AccountId,
                     new DateOnly(2026, 04, 03),
                     new DateOnly(2026, 04, 03),
@@ -1018,7 +1020,7 @@ public sealed class InMemoryFundStructureServiceTests
                     110_000m),
                 new BankStatementLineDto(
                     Guid.NewGuid(),
-                    Guid.NewGuid(),
+                    statementBatchId,
                     account.AccountId,
                     new DateOnly(2026, 04, 05),
                     new DateOnly(2026, 04, 05),
@@ -1030,7 +1032,7 @@ public sealed class InMemoryFundStructureServiceTests
                     107_000m),
                 new BankStatementLineDto(
                     Guid.NewGuid(),
-                    Guid.NewGuid(),
+                    statementBatchId,
                     account.AccountId,
                     new DateOnly(2026, 04, 10),
                     new DateOnly(2026, 04, 10),
@@ -1042,7 +1044,7 @@ public sealed class InMemoryFundStructureServiceTests
                     null),
                 new BankStatementLineDto(
                     Guid.NewGuid(),
-                    Guid.NewGuid(),
+                    statementBatchId,
                     account.AccountId,
                     new DateOnly(2026, 04, 12),
                     new DateOnly(2026, 04, 12),
