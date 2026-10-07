@@ -44,6 +44,11 @@ lockfile integrity checks, and npm's normal audit behavior. The docs and workflo
 pip download caches keyed by the docs and CI requirements files; both install their pinned
 requirements on every run. The workflow lane also installs Pillow to run screenshot validation.
 
+Browser CI reads its supported Node version from `.nvmrc`, which the doctor prerequisite checker
+also uses. Every local CI lane runs the shared `build/python/prerequisites.py` preflight before
+restore, build, or npm installation. See [prerequisite profiles](../../docs/engineering/README.md#prerequisite-checks)
+for required tools, pinned Python packages, and remediation commands.
+
 Publish Smoke installs Node.js and restores npm's cache
 only for `web-workstation`, the publish path that actually builds the browser bundle;
 collector and desktop publication still run their publish and release-evidence steps.

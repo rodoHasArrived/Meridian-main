@@ -57,7 +57,8 @@ CATEGORIES: list[tuple[str, str]] = [
     ),
     (
         "Diagnostics",
-        r"^(doctor|doctor-ci|doctor-quick|doctor-fix|diagnose|diagnose-build|"
+        r"^(doctor|doctor-ci|doctor-quick|doctor-fix|doctor-unit-test|"
+        r"doctor-browser|doctor-desktop|doctor-full-quality-gate|diagnose|diagnose-build|"
         r"collect-debug|collect-debug-minimal|build-profile|build-binlog|"
         r"validate-data|analyze-errors|build-graph|fingerprint|env-capture|"
         r"env-diff|impact|bisect|metrics|history|health|status|"

@@ -17,26 +17,32 @@ have() {
     command -v "$1" >/dev/null 2>&1
 }
 
-# Derive the .NET install channel (major.minor) from global.json so this script
-# always matches the SDK the repository actually requires. Falls back to "10.0".
-dotnet_channel_from_global_json() {
-    local global_json="$ROOT_DIR/global.json"
-    local channel=""
-    if have python3 && [[ -f "$global_json" ]]; then
-        channel="$(python3 - "$global_json" <<'PY' 2>/dev/null || true
-import json
-import sys
+prerequisite_python() {
+    local fallback=""
+    local candidate
+    for candidate in python3 python; do
+        if have "$candidate"; then
+            if [[ -z "$fallback" ]]; then
+                fallback="$candidate"
+            fi
+            if "$candidate" "$ROOT_DIR/build/python/prerequisites.py" --python-version-ok >/dev/null 2>&1; then
+                printf '%s\n' "$candidate"
+                return 0
+            fi
+        fi
+    done
+    printf '%s\n' "$fallback"
+}
 
-try:
-    with open(sys.argv[1], encoding="utf-8") as fh:
-        data = json.loads(fh.read())
-    version = data["sdk"]["version"]
-    major, minor = version.split(".")[:2]
-    print(f"{major}.{minor}")
-except Exception:
-    pass
-PY
-)"
+# Derive the .NET install channel (major.minor) from global.json so this script
+# always matches doctor and CI. The fallback allows .NET bootstrap when Python
+# is unavailable; the shared prerequisite check must still pass before restore.
+dotnet_channel_from_global_json() {
+    local channel=""
+    local python_cmd
+    python_cmd="$(prerequisite_python)"
+    if [[ -n "$python_cmd" && -f "$ROOT_DIR/build/python/prerequisites.py" ]]; then
+        channel="$("$python_cmd" "$ROOT_DIR/build/python/prerequisites.py" --dotnet-channel 2>/dev/null || true)"
     fi
     printf '%s\n' "${channel:-10.0}"
 }
@@ -84,6 +90,18 @@ install_dotnet_if_missing() {
         err "dotnet installation failed"
         exit 1
     }
+}
+
+check_prerequisites() {
+    local python_cmd
+    python_cmd="$(prerequisite_python)"
+    if [[ -z "$python_cmd" ]]; then
+        err "Python is required to check setup prerequisites. Install Python from https://www.python.org/downloads/ and add python3 or python to PATH."
+        return 1
+    fi
+
+    log "Checking shared prerequisites before installing packages or restoring"
+    "$python_cmd" build/python/prerequisites.py --lane verify-fast --skip-python-packages
 }
 
 resolve_dotnet_root() {
@@ -138,6 +156,7 @@ npm --version || true
 dotnet --version || true
 
 install_dotnet_if_missing
+check_prerequisites
 write_env_file
 # shellcheck disable=SC1090
 source "$ENV_FILE"

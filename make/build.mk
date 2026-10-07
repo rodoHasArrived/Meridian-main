@@ -72,10 +72,7 @@ setup-dev: install-hooks setup-config ## Full local dev setup (hooks, config, re
 	@echo "$(BLUE)Setting up development environment...$(NC)"
 	@echo ""
 	@echo "$(BLUE)[1/4] Checking prerequisites...$(NC)"
-	@command -v dotnet >/dev/null 2>&1 || { echo "$(YELLOW)ERROR: .NET SDK not found. Install from https://dot.net/download$(NC)"; exit 1; }
-	@echo "  .NET SDK $$(dotnet --version)"
-	@command -v git >/dev/null 2>&1 || { echo "$(YELLOW)ERROR: git not found$(NC)"; exit 1; }
-	@echo "  git $$(git --version | cut -d' ' -f3)"
+	@$(BUILDCTL) doctor --profile unit-test
 	@echo ""
 	@echo "$(BLUE)[2/4] Restoring packages and building sequentially...$(NC)"
 	@python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Debug --verbosity quiet
