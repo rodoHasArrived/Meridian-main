@@ -1,6 +1,6 @@
 {
   "total_files": 698,
-  "total_lines": 155086,
+  "total_lines": 155125,
   "orphaned_count": 233,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2540,7 +2540,7 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-03.md",
-      "line_count": 698,
+      "line_count": 712,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2548,7 +2548,7 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-04.md",
-      "line_count": 871,
+      "line_count": 896,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
