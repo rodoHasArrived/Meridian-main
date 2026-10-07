@@ -1,11 +1,11 @@
 {
-  "total_files": 698,
-  "total_lines": 155155,
+  "total_files": 699,
+  "total_lines": 155317,
   "orphaned_count": 233,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 295,
-  "average_lines": 222.3,
+  "average_lines": 222.2,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1324,7 +1324,7 @@
     },
     {
       "path": "docs/ai/navigation/README.md",
-      "line_count": 112,
+      "line_count": 118,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2315,6 +2315,14 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/pipeline-benchmark.md",
+      "line_count": 147,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/plans/god-file-burn-down-plan.md",
       "line_count": 290,
       "has_heading": true,
@@ -2372,7 +2380,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 366,
+      "line_count": 367,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2764,7 +2772,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11496,
+      "line_count": 11503,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2780,7 +2788,7 @@
     },
     {
       "path": "docs/generated/workflows-overview.md",
-      "line_count": 42,
+      "line_count": 43,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
