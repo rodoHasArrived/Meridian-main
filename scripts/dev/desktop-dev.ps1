@@ -315,7 +315,7 @@ if ($validationErrors.Count -eq 0 -and -not $SkipLaunchSmoke) {
         Add-ValidationWarning 'Skipping fixture startup smoke because -SkipRestore or -SkipBuild was supplied. Run desktop-dev.ps1 without those switches, or run pwsh ./scripts/dev/run-desktop.ps1 -Fixture -StartupSmoke separately.'
     }
     elseif (-not $onWindows) {
-        Add-ValidationWarning 'Skipping fixture startup smoke because the WPF desktop shell requires Windows.'
+        Add-ValidationError 'Fixture startup smoke requires Windows WPF binaries and a build receipt. Use Windows, or supply -SkipLaunchSmoke for non-Windows stub checks.'
     }
     else {
         Invoke-DesktopCommand `
