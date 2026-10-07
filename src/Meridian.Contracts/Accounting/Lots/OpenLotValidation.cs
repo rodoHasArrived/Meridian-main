@@ -37,7 +37,8 @@ public static class OpenLotValidation
             var split = origin.ActionType is CorporateActionAccountingTypeDto.StockSplit or CorporateActionAccountingTypeDto.ReverseStockSplit;
             var refunding = origin.ActionType == CorporateActionAccountingTypeDto.AdvanceRefunding;
             var requiredTags = refunding && origin.Role == CorporateActionSuccessorRoleDto.Refunded ? new[] { "ScheduleD" } : [];
-            if (origin.CorporateActionId == Guid.Empty || origin.PredecessorTaxLotRecordId == Guid.Empty
+            if (origin.CorporateActionId == Guid.Empty || origin.SourceCorporateActionId == Guid.Empty
+                || origin.PredecessorTaxLotRecordId == Guid.Empty
                 || origin.PredecessorTaxLotRecordId == lot.TaxLotRecordId || origin.PredecessorVersion <= 0
                 || origin.EffectiveDate < lot.AcquiredDate || !OpenLotSuccessors.IsSupported(origin.ActionType)
                 || origin.BasisAllocationPercent <= 0m || origin.BasisAllocationPercent > 100m

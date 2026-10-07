@@ -52,6 +52,7 @@ public sealed class OpenLotSuccessorCorporateActionTests
         carried.Acquisition.Evidence.Should().Contain(source.Acquisition.Evidence);
         var origin = carried.Acquisition.CorporateActionLineage!;
         origin.CorporateActionId.Should().Be(instruction.Projection.EconomicEvent!.EventId);
+        origin.SourceCorporateActionId.Should().Be(instruction.Projection.SourceCorporateActionId);
         origin.ActionType.Should().Be(action);
         origin.EffectiveDate.Should().Be(OpenLotSuccessorTestData.EffectiveDate);
         origin.PredecessorTaxLotRecordId.Should().Be(source.TaxLotRecordId);
@@ -204,6 +205,8 @@ public sealed class OpenLotSuccessorCorporateActionTests
 
     [Theory]
     [InlineData("action")]
+    [InlineData("source-action")]
+    [InlineData("absent-source-action")]
     [InlineData("type")]
     [InlineData("date")]
     [InlineData("predecessor")]
@@ -220,6 +223,8 @@ public sealed class OpenLotSuccessorCorporateActionTests
         var changedOrigin = alteredFact switch
         {
             "action" => origin with { CorporateActionId = Guid.NewGuid() },
+            "source-action" => origin with { SourceCorporateActionId = Guid.NewGuid() },
+            "absent-source-action" => origin with { SourceCorporateActionId = null },
             "type" => origin with { ActionType = CorporateActionAccountingTypeDto.ReverseStockSplit },
             "date" => origin with { EffectiveDate = origin.EffectiveDate.AddDays(1) },
             "predecessor" => origin with { PredecessorTaxLotRecordId = Guid.NewGuid() },
@@ -298,6 +303,63 @@ public sealed class OpenLotSuccessorCorporateActionTests
         validate.Should().Throw<ArgumentException>();
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Validate_RejectsSameSourceActionReprojectedUnderAnotherCaseAndVersion(bool legacyProjection)
+    {
+        var sourceActionId = Guid.NewGuid();
+        var initial = UnitPredecessor();
+        var firstTarget = UnitSuccessor(initial, 120m, sameIdentity: true);
+        var first = Build(initial, firstTarget, CorporateActionAccountingTypeDto.StockSplit, 2m, actionId: sourceActionId);
+        if (legacyProjection)
+            first = first with { Projection = first.Projection with { SourceCorporateActionId = null } };
+        var source = OpenLotSuccessors.WithLineage(first, firstTarget.Lot);
+        var secondTarget = UnitSuccessor(source, 240m, sameIdentity: true);
+        var repeated = Build(source, secondTarget, CorporateActionAccountingTypeDto.StockSplit, 2m,
+            effectiveDate: OpenLotSuccessorTestData.EffectiveDate.AddDays(1), actionId: sourceActionId,
+            sourceEventVersion: 2);
+        if (legacyProjection)
+            repeated = repeated with { Projection = repeated.Projection with { SourceCorporateActionId = null } };
+
+        repeated.Projection.CaseId.Should().NotBe(first.Projection.CaseId);
+        repeated.Projection.EconomicEvent!.EventVersion.Should().NotBe(first.Projection.EconomicEvent!.EventVersion);
+        repeated.Projection.EconomicEvent.EventId.Should().NotBe(first.Projection.EconomicEvent.EventId);
+        source.Acquisition.CorporateActionLineage!.SourceCorporateActionId.Should().Be(sourceActionId);
+        if (legacyProjection)
+            System.Text.Json.JsonSerializer.Serialize(repeated.Projection).Should().NotContain("SourceCorporateActionId");
+
+        var validate = () => OpenLotSuccessors.Validate(repeated);
+
+        validate.Should().Throw<ArgumentException>().WithMessage("*repeat the same action*");
+    }
+
+    [Theory]
+    [InlineData("source-action")]
+    [InlineData("empty-source-action")]
+    [InlineData("missing-source-evidence")]
+    public void Validate_RejectsSourceIdentityDifferentFromRetainedSourceEvent(string alteredFact)
+    {
+        var source = UnitPredecessor();
+        var target = UnitSuccessor(source, 120m, sameIdentity: true);
+        var instruction = Build(source, target, CorporateActionAccountingTypeDto.StockSplit, 2m);
+        var projection = alteredFact switch
+        {
+            "source-action" => instruction.Projection with { SourceCorporateActionId = Guid.NewGuid() },
+            "empty-source-action" => instruction.Projection with { SourceCorporateActionId = Guid.Empty },
+            "missing-source-evidence" => instruction.Projection with
+            {
+                EvidenceManifest = instruction.Projection.EvidenceManifest
+                    .Where(item => item.Role != CorporateActionProjectionEvidenceRoleDto.SourceEvent).ToArray()
+            },
+            _ => throw new ArgumentOutOfRangeException(nameof(alteredFact))
+        };
+
+        var validate = () => OpenLotSuccessors.Validate(instruction with { Projection = projection });
+
+        validate.Should().Throw<ArgumentException>().WithMessage("*stable source corporate action identity*");
+    }
+
     [Fact]
     public void AdvanceRefunding_LineagePreservesAllocationRoleAndScheduleDOnlyOnRefundedSuccessor()
     {
@@ -367,9 +429,10 @@ public sealed class OpenLotSuccessorCorporateActionTests
     }
 
     private static OpenLotSuccessorInstructionDto Build(OpenLotDto source, OpenLotSuccessorTargetDto target,
-        CorporateActionAccountingTypeDto action, decimal ratio, DateOnly? effectiveDate = null)
+        CorporateActionAccountingTypeDto action, decimal ratio, DateOnly? effectiveDate = null,
+        Guid? actionId = null, long sourceEventVersion = 1)
         => OpenLotSuccessorTestData.Build(source, [target], actionType: action,
             policyInputs: new CorporateActionPolicyInputsDto(CarryHoldingPeriod: true),
             splitRatio: action == CorporateActionAccountingTypeDto.MergerStock ? null : ratio,
-            effectiveDate: effectiveDate);
+            effectiveDate: effectiveDate, actionId: actionId, sourceEventVersion: sourceEventVersion);
 }

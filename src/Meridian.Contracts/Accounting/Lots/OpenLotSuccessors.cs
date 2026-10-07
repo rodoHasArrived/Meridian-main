@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
 
@@ -31,7 +32,12 @@ public sealed record OpenLotCorporateActionLineageDto(
     long PredecessorVersion,
     decimal BasisAllocationPercent,
     CorporateActionSuccessorRoleDto Role,
-    IReadOnlyList<string> ReportingTags);
+    IReadOnlyList<string> ReportingTags)
+{
+    /// <summary>The source action stays stable when its reviewed case/version produces another economic event.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? SourceCorporateActionId { get; init; }
+}
 
 /// <summary>Bounded cashless exchange, whole-unit split, stock merger and advance-refunding conservation rules.</summary>
 public static class OpenLotSuccessors
@@ -48,10 +54,11 @@ public static class OpenLotSuccessors
         var mutation = instruction.Projection.LotMutations!.Mutations.Single(item => item.TargetLotId == target.TaxLotRecordId);
         var operation = instruction.Projection.Recipe.Single(item => item.Kind == CorporateActionEconomicOperationKindDto.ExchangeIn
             && item.SecurityId == target.SecurityId);
-        return new(instruction.Projection.EconomicEvent!.EventId, instruction.Projection.Treatment.ActionType,
+        return new OpenLotCorporateActionLineageDto(instruction.Projection.EconomicEvent!.EventId, instruction.Projection.Treatment.ActionType,
             instruction.Projection.EconomicEvent.EffectiveDate, instruction.ExpectedLot.TaxLotRecordId,
             instruction.ExpectedLot.Version, (mutation.AllocationPercent ?? 1m) * 100m,
-            operation.SuccessorRole ?? CorporateActionSuccessorRoleDto.Successor, mutation.ReportingTags);
+            operation.SuccessorRole ?? CorporateActionSuccessorRoleDto.Successor, mutation.ReportingTags)
+        { SourceCorporateActionId = ResolveSourceCorporateActionId(instruction.Projection) };
     }
 
     /// <summary>Add the reviewed immutable origin without changing the approved instruction or its replay fingerprint.</summary>
@@ -87,6 +94,7 @@ public static class OpenLotSuccessors
             "Successor posting requires a complete reviewed authoritative corporate-action projection.");
         var mutations = projection.LotMutations!;
         var economicEvent = projection.EconomicEvent!;
+        var sourceCorporateActionId = ResolveSourceCorporateActionId(projection);
         Require(source.Version > 0 && source.OpenQuantity > 0 && source.OpenFunctionalCostBasis > 0
             && instruction.ExpectedSecurityVersion > 0 && Sha256Digest.IsCanonical(instruction.ExpectedSecurityHash)
             && mutations.PositionId == source.BookPositionId && mutations.ExpectedPositionVersion > 0
@@ -98,7 +106,8 @@ public static class OpenLotSuccessors
             && projection.PostingSet!.Currency == source.Acquisition.FunctionalCurrency,
             "Successor projection must bind the exact versioned predecessor and functional carrying basis.");
         if (source.Acquisition.CorporateActionLineage is { } origin)
-            Require(economicEvent.EffectiveDate >= origin.EffectiveDate && economicEvent.EventId != origin.CorporateActionId,
+            Require(economicEvent.EffectiveDate >= origin.EffectiveDate && economicEvent.EventId != origin.CorporateActionId
+                && sourceCorporateActionId != origin.SourceCorporateActionId,
                 "A successor cannot undergo a corporate action before its immutable origin or repeat the same action.");
         var targets = instruction.Successors;
         Require(targets.Count == (refunding ? 2 : 1)
@@ -220,6 +229,21 @@ public static class OpenLotSuccessors
         Require(mutations.Mutations.Sum(mutation => mutation.SourceQuantity ?? 0m) == source.OpenQuantity
             && mutations.Mutations.Sum(mutation => mutation.AllocationPercent ?? 1m) == 1m,
             "Successor contributions must fully relieve and conserve the predecessor.");
+    }
+
+    private static Guid ResolveSourceCorporateActionId(CorporateActionAccountingProjectionDto projection)
+    {
+        var economicEvent = projection.EconomicEvent!;
+        var retainedSourceIds = projection.EvidenceManifest
+            .Where(item => item.Role == CorporateActionProjectionEvidenceRoleDto.SourceEvent
+                && item.EvidenceVersion == economicEvent.EventVersion
+                && string.Equals(item.ContentHashSha256, economicEvent.SourceContentHash, StringComparison.Ordinal)
+                && Guid.TryParse(item.SubjectId, out var subjectId) && subjectId != Guid.Empty)
+            .Select(item => Guid.Parse(item.SubjectId)).Distinct().ToArray();
+        Require(retainedSourceIds.Length == 1
+            && (projection.SourceCorporateActionId is null || projection.SourceCorporateActionId == retainedSourceIds[0]),
+            "Successor posting must bind one stable source corporate action identity to its retained source-event evidence.");
+        return retainedSourceIds[0];
     }
 
     /// <summary>Independent currency allocation; the final successor receives the exact residual.</summary>

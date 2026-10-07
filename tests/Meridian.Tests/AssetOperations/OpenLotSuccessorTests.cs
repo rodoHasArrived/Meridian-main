@@ -299,7 +299,8 @@ internal static class OpenLotSuccessorTestData
         Guid? actionId = null,
         DateOnly? effectiveDate = null,
         bool identifierChanged = false,
-        bool? canonicalLotTransferJournal = null)
+        bool? canonicalLotTransferJournal = null,
+        long sourceEventVersion = 1)
     {
         var sourceId = actionId ?? Guid.NewGuid();
         var actionDate = effectiveDate ?? EffectiveDate;
@@ -315,7 +316,7 @@ internal static class OpenLotSuccessorTestData
             item.Lot.OpenQuantity,
             advanceRefunding ? allocationPercents?[index] ?? item.Lot.OpenQuantity / totalTargetQuantity : null)).ToArray();
         var request = new CorporateActionAccountingProjectionRequest(
-            sourceId, 1,
+            sourceId, sourceEventVersion,
             actionType ?? (advanceRefunding ? CorporateActionAccountingTypeDto.AdvanceRefunding : CorporateActionAccountingTypeDto.RegS144AExchange),
             advanceRefunding ? AccountingBasisKindDto.Statutory : AccountingBasisKindDto.Gaap,
             predecessor.SecurityId, predecessor.BookPositionId, expectedPositionVersion, expectedPositionVersion,
@@ -327,7 +328,7 @@ internal static class OpenLotSuccessorTestData
             PolicyInputs: policyInputs,
             EvidenceManifest:
             [
-                Dependency(CorporateActionProjectionEvidenceRoleDto.SourceEvent, sourceId, 1, "SecurityMasterCorporateAction", 'a'),
+                Dependency(CorporateActionProjectionEvidenceRoleDto.SourceEvent, sourceId, sourceEventVersion, "SecurityMasterCorporateAction", 'a'),
                 Dependency(CorporateActionProjectionEvidenceRoleDto.PositionSnapshot, positionSnapshotId, expectedPositionVersion, "PositionSnapshot", 'b'),
                 Dependency(CorporateActionProjectionEvidenceRoleDto.LotSnapshot, lotSnapshotId, predecessor.Version, "LotSnapshot", 'c'),
                 Dependency(CorporateActionProjectionEvidenceRoleDto.PolicyDecision, policyId, 2, "CorporateActionPolicyDecision", 'd')

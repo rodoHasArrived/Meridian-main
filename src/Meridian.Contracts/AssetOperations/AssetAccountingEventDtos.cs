@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 

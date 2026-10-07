@@ -97,7 +97,9 @@ The unified `OpenLotSuccessors` contract also admits one whole-unit same-securit
 split successor and one stock-merger unit successor. Those one-target transfers carry original and
 current bases exactly; exchange/refunding retain their independent currency allocations and final
 residuals. New successor acquisition facts retain immutable `CorporateActionLineage`, including
-action date, predecessor identity/version, allocation, role and reporting tags, even after relief.
+projected event and stable source-action identities, action date, predecessor identity/version,
+allocation, role and reporting tags, even after relief. Re-reviewing the same source action under
+another case/version cannot apply it again to its successor.
 The reviewed instruction remains unchanged for replay. Successor yield/schedule continuation
 requires a separately reviewed workflow.
 
