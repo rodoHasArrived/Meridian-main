@@ -7036,6 +7036,54 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationBalanceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationBookVersionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationDraftSummaryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationMatchDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationSourceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationViewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CreateAccountingPolicyRequest"
     },
     {
@@ -7151,6 +7199,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ICapitalAccountWorkbenchService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IConsolidationDraftGuard"
     },
     {
       "kind": "contract-set-member",
@@ -20062,6 +20116,54 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationBalanceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationBookVersionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationDraftSummaryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationMatchDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationSourceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationViewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CreateAccountingPolicyRequest"
     },
     {
@@ -20177,6 +20279,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ICapitalAccountWorkbenchService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IConsolidationDraftGuard"
     },
     {
       "kind": "contract-set-member",
@@ -29939,6 +30047,78 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.CloseTaskDto",
       "target": "contract:Meridian.Contracts.Ledger.CloseTaskStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationBalanceDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationSourceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationDraftSummaryDto",
+      "target": "contract:Meridian.Contracts.Ledger.ManualJournalEntryLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationEvidenceDto",
+      "target": "contract:Meridian.Contracts.FundStructure.OwnershipLinkDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationEvidenceDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationBookVersionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationEvidenceDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationRequestDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationEvidenceDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationSourceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationEvidenceDto",
+      "target": "contract:Meridian.Contracts.Ledger.ManualJournalEntryLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationMatchDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationSourceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationViewDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationBalanceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationViewDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationDraftSummaryDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationViewDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationMatchDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationViewDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationRequestDto"
     },
     {
       "kind": "contract-reference",
@@ -48439,7 +48619,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "1fffaf57b2ddc843642e1fd8a455e9a39542288ce9010e168ca0b62dfd307571",
+  "fingerprint": "09c75470689a39601d2095ba0ff3a937da1faac3c354bc4322451f53c4220f3a",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -55525,6 +55705,54 @@
       "label": "Meridian.Contracts.Ledger.CloseTaskStatusDto"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationBalanceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationBalanceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationBookVersionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationBookVersionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationDraftSummaryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationDraftSummaryDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationEvidenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationEvidenceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationMatchDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationMatchDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationRequestDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationSourceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationSourceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationViewDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationViewDto"
+    },
+    {
       "classification": "request",
       "id": "contract:Meridian.Contracts.Ledger.CreateAccountingPolicyRequest",
       "kind": "contract-type",
@@ -55643,6 +55871,12 @@
       "id": "contract:Meridian.Contracts.Ledger.ICapitalAccountWorkbenchService",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.ICapitalAccountWorkbenchService"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Ledger.IConsolidationDraftGuard",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IConsolidationDraftGuard"
     },
     {
       "classification": "service_contract",
@@ -70902,11 +71136,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3201,
-    "contract_set_memberships": 3768,
-    "edges": 8048,
+    "contract_references": 3213,
+    "contract_set_memberships": 3786,
+    "edges": 8078,
     "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3891
+    "nodes": 3900
   }
 }
