@@ -21,8 +21,9 @@ and cross-writer ordering require separate evidence before claiming exactly-once
 Canonical split posting explicitly opts into `CanonicalLotTransferJournal`: the projection emits
 a reviewed cashless basis transfer for one whole-unit successor. Existing operational split
 callers retain their no-journal quantity projection. `CorporateActionAssetAccountingEventMapper`
-requires the complete canonical instruction for supported exchange, refunding, stock merger and
-split journal paths; it retains that exact reviewed instruction on the Projected event.
+requires the complete canonical instruction for exchange/refunding and explicitly opted-in lot
+transfers; other split/merger projections keep their existing mapping behavior. Optional canonical
+instructions retain their exact reviewed payload on the Projected event.
 
 ## Purpose
 

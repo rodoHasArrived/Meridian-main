@@ -56,11 +56,18 @@ public sealed class CanonicalLotCorporateActionService(
             throw new InvalidOperationException("Corporate-action lot preparation must bind the exact mapped event, treatment, authoritative mutation plan and scope; no-journal or correction actions require another workflow.");
 
         OpenLotSuccessors.Validate(reviewed);
+        var predecessorCredits = source.ProjectedEffect.Lines.Where(line => line.Debit == 0m
+            && line.Credit == reviewed.ExpectedLot.OpenFunctionalCostBasis
+            && line.Dimensions?.InstrumentId == reviewed.ExpectedLot.SecurityId
+            && line.Dimensions?.PositionId == reviewed.ExpectedLot.BookPositionId
+            && (line.Dimensions.TaxLotId is null || line.Dimensions.TaxLotId == reviewed.ExpectedLot.LotId)).ToArray();
+        if (predecessorCredits.Length != 1 || predecessorCredits[0].AccountId != assetAccountId)
+            throw new InvalidOperationException("The source asset account path must match the exact mapped predecessor credit.");
         var retained = (await lotStore.GetTaxLotsByIdsAsync(source.Scope.LedgerBookId,
             [reviewed.ExpectedLot.TaxLotRecordId], ct).ConfigureAwait(false)).SingleOrDefault()
             ?? throw new InvalidOperationException("The reviewed predecessor lot no longer exists.");
-        if (retained.Account.ToString() != assetAccountId || !Equivalent(retained.ToOpenLot(), reviewed.ExpectedLot))
-            throw new InvalidOperationException("The predecessor lot account, quantity, basis or version is stale.");
+        if (!Equivalent(retained.ToOpenLot(), reviewed.ExpectedLot))
+            throw new InvalidOperationException("The predecessor lot quantity, basis or version is stale.");
 
         var expectedSecurities = new[] { (reviewed.ExpectedLot.SecurityId, reviewed.ExpectedSecurityVersion, reviewed.ExpectedSecurityHash) }
             .Concat(reviewed.Successors.Select(target => (target.Lot.SecurityId, target.ExpectedSecurityVersion, target.ExpectedSecurityHash)));

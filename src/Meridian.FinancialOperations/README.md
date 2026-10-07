@@ -172,7 +172,9 @@ Private-capital close evidence is selected by fund event, period, and ledger ent
 
 `CanonicalLotCorporateActionService` connects the unified reviewed successor instruction to the
 existing Projected/Drafted rail for exchanges, whole-unit splits, stock mergers and refundings.
-Preview rereads exact predecessor and versioned source/successor reference authority; drafting
+Preview binds the source chart path to its mapped predecessor credit and rereads exact predecessor
+and versioned source/successor reference authority; the candidate/storage boundary retains durable
+account identity checks. Drafting
 retains the mapped instruction and requires independent approval before posting.
 
 ## Purpose

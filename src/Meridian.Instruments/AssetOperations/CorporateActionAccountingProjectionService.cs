@@ -134,7 +134,8 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
                 request.LotSnapshotId ?? Guid.Empty,
                 request.LotSnapshotVersion ?? 0,
                 request.PolicyDecisionId ?? Guid.Empty,
-                request.ElectionId);
+                request.ElectionId)
+            { CanonicalLotTransferJournal = request.CanonicalLotTransferJournal };
         }
 
         var eventId = DeterministicGuid(BuildEventIdentity(request));
@@ -215,7 +216,8 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
             request.LotSnapshotId ?? Guid.Empty,
             request.LotSnapshotVersion ?? 0,
             request.PolicyDecisionId ?? Guid.Empty,
-            request.ElectionId);
+            request.ElectionId)
+        { CanonicalLotTransferJournal = request.CanonicalLotTransferJournal };
     }
 
     private static CorporateActionTreatmentDecisionDto ApplyPolicySelections(

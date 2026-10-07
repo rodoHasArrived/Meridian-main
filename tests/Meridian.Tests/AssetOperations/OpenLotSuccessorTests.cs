@@ -298,7 +298,8 @@ internal static class OpenLotSuccessorTestData
         decimal? splitRatio = null,
         Guid? actionId = null,
         DateOnly? effectiveDate = null,
-        bool identifierChanged = false)
+        bool identifierChanged = false,
+        bool? canonicalLotTransferJournal = null)
     {
         var sourceId = actionId ?? Guid.NewGuid();
         var actionDate = effectiveDate ?? EffectiveDate;
@@ -334,7 +335,11 @@ internal static class OpenLotSuccessorTestData
             CaseId: Guid.NewGuid(), CaseVersion: 3, PolicyDecisionVersion: 2, PositionSnapshotId: positionSnapshotId,
             AccountingScope: new CorporateActionAccountingProjectionScopeDto("tenant-alpha", "company-alpha", fundProfileId,
                 predecessor.LedgerBookId, periodId ?? Guid.NewGuid(), expectedPeriodVersion, "US"),
-            LotSnapshotId: lotSnapshotId, LotSnapshotVersion: predecessor.Version, PolicyDecisionId: policyId);
+            LotSnapshotId: lotSnapshotId, LotSnapshotVersion: predecessor.Version, PolicyDecisionId: policyId)
+        {
+            CanonicalLotTransferJournal = canonicalLotTransferJournal
+                ?? (actionType is CorporateActionAccountingTypeDto.StockSplit or CorporateActionAccountingTypeDto.ReverseStockSplit)
+        };
         var service = new CorporateActionAccountingProjectionService();
         var intent = service.Project(request);
         intent.Status.Should().Be(CorporateActionProjectionStatusDto.Projected, "the reusable fixture must use a supported registered projection");

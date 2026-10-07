@@ -91,19 +91,48 @@ public sealed class OpenLotSuccessorCorporateActionTests
     [InlineData(CorporateActionAccountingTypeDto.StockSplit, 2)]
     [InlineData(CorporateActionAccountingTypeDto.ReverseStockSplit, 0.5)]
     [InlineData(CorporateActionAccountingTypeDto.MergerStock, 1.5)]
-    public void Mapper_RequiresCanonicalInstructionForSplitAndStockMerger(
+    public void Mapper_RequiresCanonicalInstructionForExplicitlyOptedInSplitAndStockMerger(
         CorporateActionAccountingTypeDto action, double quantityRatio)
     {
         var source = UnitPredecessor();
         var target = UnitSuccessor(source, source.OpenQuantity * (decimal)quantityRatio,
             sameIdentity: action != CorporateActionAccountingTypeDto.MergerStock);
-        var instruction = Build(source, target, action, (decimal)quantityRatio);
+        var instruction = OpenLotSuccessorTestData.Build(source, [target], actionType: action,
+            policyInputs: new CorporateActionPolicyInputsDto(CarryHoldingPeriod: true),
+            splitRatio: action == CorporateActionAccountingTypeDto.MergerStock ? null : (decimal)quantityRatio,
+            canonicalLotTransferJournal: true);
+        instruction.Projection.CanonicalLotTransferJournal.Should().BeTrue();
         var request = OpenLotSuccessorTestData.MapRequest(instruction);
 
         var result = new CorporateActionAssetAccountingEventMapper().Map(request with { SuccessorInstruction = null });
 
         result.IsMapped.Should().BeFalse();
         result.Blockers.Should().Contain(item => item.Code == "corporate-action.canonical-successors-required");
+    }
+
+    [Theory]
+    [InlineData(CorporateActionAccountingTypeDto.StockSplit, 2)]
+    [InlineData(CorporateActionAccountingTypeDto.ReverseStockSplit, 0.5)]
+    [InlineData(CorporateActionAccountingTypeDto.MergerStock, 1.5)]
+    public void LegacyIdentifierChangingSplitAndStockMerger_MapWithoutCanonicalInstruction(
+        CorporateActionAccountingTypeDto action, double quantityRatio)
+    {
+        var source = UnitPredecessor();
+        var target = UnitSuccessor(source, source.OpenQuantity * (decimal)quantityRatio, sameIdentity: false);
+        var instruction = OpenLotSuccessorTestData.Build(source, [target], actionType: action,
+            policyInputs: new CorporateActionPolicyInputsDto(CarryHoldingPeriod: true),
+            splitRatio: action == CorporateActionAccountingTypeDto.MergerStock ? null : (decimal)quantityRatio,
+            identifierChanged: true, canonicalLotTransferJournal: false);
+        instruction.Projection.CanonicalLotTransferJournal.Should().BeFalse();
+        System.Text.Json.JsonSerializer.Serialize(instruction.Projection).Should().NotContain("CanonicalLotTransferJournal");
+        var request = OpenLotSuccessorTestData.MapRequest(instruction) with { SuccessorInstruction = null };
+
+        var result = new CorporateActionAssetAccountingEventMapper().Map(request);
+
+        result.IsMapped.Should().BeTrue("the existing non-opt-in projection remains mappable: {0}",
+            string.Join("; ", result.Blockers.Select(item => item.Message)));
+        result.Projection!.Event.CorporateAction.Should().BeNull();
+        result.Projection.LotMutation.Should().BeNull();
     }
 
     [Theory]

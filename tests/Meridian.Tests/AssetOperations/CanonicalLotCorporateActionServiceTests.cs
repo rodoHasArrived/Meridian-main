@@ -52,6 +52,46 @@ public sealed class CanonicalLotCorporateActionServiceTests
     }
 
     [Fact]
+    public async Task Preview_BindsChartPathWhenDurableAccountHasDifferentNameSymbolAndFinancialAccount()
+    {
+        var fixture = new Fixture();
+        const string assetPath = "Assets:Investments";
+        var original = fixture.Mapped.Event.ProjectedEffect;
+        var mapped = fixture.Mapped with
+        {
+            Event = fixture.Mapped.Event with
+            {
+                ProjectedEffect = original with
+                {
+                    Lines = original.Lines.Select(line => line.Credit > 0m ? line with { AccountId = assetPath } : line).ToArray()
+                }
+            }
+        };
+        fixture.RetainedLot = fixture.RetainedLot with
+        {
+            Account = new LedgerAccount("Investments", LedgerAccountType.Asset, Symbol: "ACME", FinancialAccountId: "broker-account")
+        };
+        fixture.RetainedLot.Account.ToString().Should().NotBe(assetPath);
+
+        var instruction = await fixture.Service.PreviewAsync(mapped, fixture.Reviewed, assetPath);
+
+        instruction.AssetAccountId.Should().Be(assetPath);
+        instruction.CorporateAction.Should().BeSameAs(fixture.Reviewed);
+        fixture.Spine.ReceivedCalls().Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Preview_RejectsAccountPathDifferentFromTheMappedPredecessorCredit()
+    {
+        var fixture = new Fixture();
+        var preview = () => fixture.Service.PreviewAsync(fixture.Mapped, fixture.Reviewed, "Assets:Other");
+
+        await preview.Should().ThrowAsync<InvalidOperationException>().WithMessage("*mapped predecessor credit*");
+        fixture.Lots.ReceivedCalls().Should().BeEmpty();
+        fixture.Spine.ReceivedCalls().Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task Draft_ProjectsMappedEventThenForwardsExactInstructionAtReturnedSpineVersion()
     {
         var fixture = new Fixture();
@@ -90,7 +130,6 @@ public sealed class CanonicalLotCorporateActionServiceTests
     [Theory]
     [InlineData("predecessor-version")]
     [InlineData("predecessor-acquisition")]
-    [InlineData("predecessor-account")]
     [InlineData("source-security-version")]
     [InlineData("source-security-hash")]
     [InlineData("successor-security-version")]
@@ -112,9 +151,6 @@ public sealed class CanonicalLotCorporateActionServiceTests
                 {
                     Acquisition = fixture.RetainedLot.Acquisition! with { HoldingPeriodStartDate = new DateOnly(2020, 1, 1) }
                 };
-                break;
-            case "predecessor-account":
-                fixture.RetainedLot = fixture.RetainedLot with { Account = new("Assets:Other", LedgerAccountType.Asset) };
                 break;
             case "source-security-version":
                 fixture.SecurityRecords[sourceId] = fixture.SecurityRecords[sourceId] with { Version = 99 };
