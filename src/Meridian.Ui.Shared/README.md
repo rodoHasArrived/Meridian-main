@@ -11,6 +11,22 @@ last_reviewed: 2026-10-06
 
 # src/Meridian.Ui.Shared
 
+`OnboardingEndpoints` exposes tenant/company-scoped workspaces under
+`/api/accounting/onboarding/workspaces`. Authenticated identity owns configuration and capture;
+designated independent reviewers record decisions. Exact source selection comes from retained
+imports and certified mapping content versions. `OnboardingComparisonSource` composes the existing
+opening reconciliation, provider/ledger/NAV, close-readiness and Evidence Vault services. Missing
+or mismatched dates and sources remain explicit blockers. No import fallback or posting command
+is exposed by onboarding.
+
+`FileOnboardingWorkspaceStore` persists full comparison payloads and frozen readiness packets using
+atomic file replacement, writer leases and expected-version checks. Retained history cannot be
+replaced or truncated, and corrupt storage fails closed. Packet reads verify SHA-256; historical
+replay uses retained inputs without consulting current imports or mappings. New evidence submitted
+with assignments or review must already be retained in the comparison or pass scoped Evidence Vault
+content verification. The browser consumes this shared state; authority transitions stay separately
+governed. See [bounded onboarding](../../docs/operators/external-gl-providers.md#bounded-onboarding).
+
 Accounting close preparation exposes scoped template capture, retained template versions, preview,
 and creation under `/api/ledger/close-management`. Each request authorizes the source workflow;
 preview and creation also authorize the target book against the authenticated tenant and company.
