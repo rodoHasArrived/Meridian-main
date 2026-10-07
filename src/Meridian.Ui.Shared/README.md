@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-05
+last_reviewed: 2026-10-06
 ---
 
 # src/Meridian.Ui.Shared
@@ -15,6 +15,28 @@ Trading readiness includes every supplied acceptance gate in aggregate status an
 summaries, including broker execution reconciliation and portfolio recovery. Every non-ready
 acceptance gate contributes a live-operation blocker independently of aggregate status, so new
 gate IDs cannot disappear from the shared browser and desktop readiness contract.
+
+`LedgerDisposalTaxReadService` serves the bounded W10-TAX-001 retained-disposal slice through
+`GET /api/ledger/periods/{periodId}/journal-entries/{journalEntryId}/tax-results`. The existing
+journal-detail browser surface consumes the same shared contract available to other clients. The
+endpoint reads only the requested journal within its authorized book and period.
+The service certifies economics and holding-period character with `CanonicalDisposalHistoryProjector`,
+keeps economic gain, recognized gain and deferred loss separate, and exposes the exact retained
+batch policy revision. It never substitutes the current mutable account policy or rematches purchases
+on a read. Missing canonical/policy evidence stays explicit; a partial deferral without attribution
+across multiple loss parcels leaves their recognized amounts null while preserving certified disposal
+totals. Single-loss and fully deferred parcels have unambiguous attribution. Amounts and parcel
+quantities cross the browser boundary as invariant decimal strings; display formatting preserves
+every retained digit without floating-point conversion or client tax calculations.
+
+Settled means no relieved parcel has a loss, or retained matching exactly covers both loss quantity
+and amount. Replacement quantities exceeding the loss parcels fail certification, including for
+face-based lots and mixed gain/loss disposals. A known, unsaturated replacement window is provisional
+through its inclusive end date and remains provisional afterwards with re-evaluation required.
+Neither read time nor batch recording
+time proves finalization. Refresh only reads newly retained evidence. Historical loss rows without
+retained wash-sale settings remain missing-evidence; this slice adds no finalization workflow,
+policy changes, pending-disposal comparison, or WPF surface and does not complete W10-TAX-001.
 
 `ConsolidationWorkbenchService` exposes gross, incremental proposed, posted and actual consolidated
 balances with exact source drill-through. The consolidation HTTP routes resolve authenticated scope

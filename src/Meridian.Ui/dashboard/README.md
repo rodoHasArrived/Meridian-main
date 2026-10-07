@@ -11,6 +11,16 @@ last_reviewed: 2026-09-02
 
 # src/Meridian.Ui/dashboard
 
+Governed Journal Entry Detail exposes retained disposal tax results from the shared period and
+journal read model. Operators can inspect mixed parcel character, carried holding-period starts,
+economic and recognized gain/loss, deferred loss, and the exact retained policy revision. Settled,
+provisional and missing-evidence results retain the server's reason, replacement-window end and
+re-evaluation posture. Refresh reads retained evidence only; the browser never derives character,
+settles an elapsed window, or recalculates tax amounts. Missing parcel allocation amounts stay
+unknown. Reads prohibit development fallback and reject a different book, period or journal.
+Focused coverage lives in `journal-entry-tax-results.test.tsx`,
+`journal-entry-detail-screen.test.tsx` and `ledger-tax-results-api.test.ts`.
+
 Tailwind is pinned to 3.4.19 to match the checked-in PostCSS plugin, Tailwind configuration, and
 `@tailwind` stylesheet directives. Upgrading its major version requires migrating that pipeline
 together; changing only the dependency prevents workstation styles and bundles from building.

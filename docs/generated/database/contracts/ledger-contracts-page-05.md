@@ -2,11 +2,47 @@
 
 # `ledger-contracts` data objects - page 5 of 5
 
-Objects 321-325 of 325. References crossing pages remain available in the dependency manifest.
+Objects 321-328 of 328. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_SubmitManualJournalEntryApprovalRequest["SubmitManualJournalEntryApprovalRequest"] {
+        +OperationsActionOriginDto ActionOrigin
+        +string Actor
+        +string? CompanyId
+        +string? CorrelationId
+        +IReadOnlyList~string~? EvidenceLinks
+        +string FundProfileId
+        +Guid JournalEntryId
+        +Guid? LedgerBookId
+        +string? Notes
+        +bool PeriodIsLocked
+        +IReadOnlyList~string~? ReportGroupPrincipalIds
+        +string? TenantId
+    }
+    class Meridian_Contracts_Ledger_TreasuryLedgerContextDto["TreasuryLedgerContextDto"] {
+        +string? BatchCorrelationId
+        +string? CapitalAccountId
+        +DateOnly? EffectiveDate
+        +string? FundEventId
+        +string? FundEventType
+        +string? IdempotencyKey
+        +string? InvestorId
+        +string? PaymentIntentId
+        +string? SettlementReference
+    }
+    class Meridian_Contracts_Ledger_UpsertAccountingRuleTestCaseRequest["UpsertAccountingRuleTestCaseRequest"] {
+        +string Actor
+        +string? CompanyId
+        +string? CorrelationId
+        +IReadOnlyList~string~? EvidenceLinks
+        +string FundProfileId
+        +Guid? LedgerBookId
+        +IReadOnlyList~string~? ReportGroupPrincipalIds
+        +string? TenantId
+        +AccountingRuleTestCaseDto TestCase
+    }
     class Meridian_Contracts_Ledger_UpsertChartOfAccountsNodeRequest["UpsertChartOfAccountsNodeRequest"] {
         +string Actor
         +string? CompanyId
