@@ -5,10 +5,12 @@ namespace Meridian.Storage.Ledger;
 
 public sealed partial class PostgresLedgerJournalStore
 {
-    private async Task CertifyReplacementClaimCapacityAsync(NpgsqlConnection connection, Guid ledgerBookId,
+    private async Task CertifyReplacementClaimCapacityAsync(NpgsqlConnection connection, NpgsqlTransaction? transaction,
+        Guid ledgerBookId,
         IReadOnlyCollection<Guid> batchIds, CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             $"""
             with requested_recipients as (

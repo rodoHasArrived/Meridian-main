@@ -45,6 +45,14 @@ Reporting governance supports bounded run-ID batches within one tenant transacti
 audit reads preserve the same checksum, row binding, audit-chain, and restatement verification as
 individual reads, avoiding a separate transaction for every retained comparison candidate.
 
+`ILedgerReportingSnapshotSource` captures the requested accounting period, scoped journal entries and retained disposal lots,
+average-cost pools, acquisition backfills, and wash-sale deferrals in one PostgreSQL repeatable-read,
+read-only transaction. Strict tenant ownership is verified from that same snapshot without mutation
+locks. Certified reporting retains this population for balances, period activity, checkpoint evidence,
+and replay; later journal or history commits appear only in a later capture.
+`AtomicTaxLotJournalStoreTests.ReportingSnapshot` controls a concurrent period reopen, posting and
+history commit between the journal and history reads and verifies that all use the earlier population.
+
 `Archival/AtomicFileWriterAdapter.cs`, `EtlStagingStore` in `Etl/EtlStores.cs`, and `Backfill/JsonlBackfillBarWriter.cs`
 implement lower-level persistence ports consumed by Infrastructure. Application/host composition
 owns their construction; atomic durability, staging and JSONL naming policies remain in Storage.

@@ -11,11 +11,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 19.8% |
+| Weighted score | 20.0% |
 | Endpoint coverage | 30.6% |
-| Workstation contract coverage | 3.7% |
+| Workstation contract coverage | 4.1% |
 | Endpoints documented | 207 / 676 |
-| Workstation contracts documented | 36 / 961 |
+| Workstation contracts documented | 39 / 962 |
 
 ## Endpoint Coverage
 
@@ -973,14 +973,14 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `InvestmentAccountingTransactionLabRequestDto` | Gap | `src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:29` |
 | `InvestmentAccountingTrialBalanceImpactDto` | Gap | `src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:47` |
 | `LedgerAmountApprovalStateDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:682` |
-| `LedgerAmountProofDto` | Gap | `src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:23` |
-| `LedgerAmountProofEvidenceDto` | Gap | `src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:10` |
+| `LedgerAmountProofDto` | Gap | `src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:31` |
+| `LedgerAmountProofEvidenceDto` | Documented | `src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:10` |
 | `LedgerAmountProvenanceDetailDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:706` |
 | `LedgerAmountProvenanceEvidenceDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:609` |
 | `LedgerAmountReconciliationCaseDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:644` |
 | `LedgerAmountReconciliationStateDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:675` |
 | `LedgerAmountReportUsageDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:688` |
-| `LedgerAmountScopeDto` | Gap | `src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:4` |
+| `LedgerAmountScopeDto` | Documented | `src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:4` |
 | `LedgerAmountSecurityMasterLinkDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:633` |
 | `LedgerAmountStrategyRunLinkDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:698` |
 | `LedgerImpactPreviewDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:291` |
@@ -1220,6 +1220,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `ReportAccessPrincipalDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1627` |
 | `ReportAccessPrincipalKindDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1621` |
 | `ReportBrandingThemeDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:138` |
+| `ReportLedgerAmountBindingDto` | Documented | `src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs:6` |
 | `ReportPackAuditEventDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1720` |
 | `ReportPackChangedLineDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1723` |
 | `ReportPackCreateRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1773` |
@@ -1667,7 +1668,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 ## Follow-up Queue
 
 - Document or intentionally suppress 469 mapped endpoint gap(s).
-- Document or intentionally suppress 925 workstation contract gap(s).
+- Document or intentionally suppress 923 workstation contract gap(s).
 
 ---
 

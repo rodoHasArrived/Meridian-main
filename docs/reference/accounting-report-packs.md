@@ -3,7 +3,7 @@
 **Owner:** Accounting / Fund Operations
 **Scope:** Certified reporting runs, immutable artifacts, lifecycle governance, scheduling, and distribution
 **Status:** Canonical production contract
-**Reviewed:** 2026-07-26
+**Reviewed:** 2026-10-06
 
 ---
 
@@ -58,6 +58,31 @@ The resulting certification retains:
 Presentation-currency conversion fails closed until an authoritative FX snapshot is available.
 Final output also requires the exact canonical `HardClosed` period state and an evidence appendix;
 `SoftClosed` is not sufficient.
+
+## Retained generated amount proof
+
+New ledger captures retain one complete journal population, accounting-period status/version,
+and tax-lot history from a repeatable-read database transaction. Period activity and historical
+balance calculations derive from that population. The source checkpoint retains its serialized
+replay inputs and content digest; primary artifacts replay them without reading later postings.
+A historical-only change produces a different source checkpoint even when period rows are unchanged.
+
+`GET /api/fund-structure/reporting/runs/{runId}/amounts` returns retained trial-balance balances as
+`ReportLedgerAmountBindingDto` records. Each record includes a stable amount ID, account label,
+amount/currency, complete `LedgerAmountScopeDto`, exact journal/line IDs, and a projected report
+subject/source checkpoint hash. The source payload retains these bindings when generated;
+recomputation verifies them before returning amounts. Legacy runs without a population return no
+amount bindings.
+
+The shared `ledger-amount` packet API accepts `report:{runId}:{amountId}` with the retained report's
+fund/book/period query. Generated proof requires reporting access and ledger evidence permission,
+plus the immutable report access policy. Every contributing line must have verified retained bytes,
+matching digests, exact original source scope, and accepted human review. Opening-balance sources
+retain their original posting period. `LedgerAmountProofEvidenceDto.sourceScope` and `sourceSubjectId`
+identify that original source, while the guarded vault route addresses the selected report amount.
+Missing, altered, foreign, or incomplete evidence blocks the entire amount and withholds all routes.
+Manifest opening reevaluates the complete report proof, preventing support changed since drawer load
+from being presented as verified.
 
 ## Readiness
 
@@ -278,6 +303,7 @@ due work from continuing. Public `POST /schedules/run-due` is retired; due execu
 | `POST` | `/api/fund-structure/reporting/runs/readiness` | Normalize parameters and evaluate blocking readiness. |
 | `POST` | `/api/fund-structure/reporting/runs` | Certify, render, retain, and create the governed Draft. |
 | `GET` | `/api/fund-structure/reporting/runs/{runId}` | Read one tenant/access-filtered governed run. |
+| `GET` | `/api/fund-structure/reporting/runs/{runId}/amounts` | Read retained `ReportLedgerAmountBindingDto` trial-balance amounts and exact journal support. |
 | `POST` | `/api/fund-structure/reporting/runs/{runId}/govern` | Recover governance for an already completed certified manifest. |
 | `POST` | `/api/fund-structure/reporting/runs/{runId}/validate` | Validate with `expectedVersion`. |
 | `POST` | `/api/fund-structure/reporting/runs/{runId}/submit` | Submit for independent review. |

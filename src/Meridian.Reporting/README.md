@@ -18,6 +18,15 @@ catalogs, deterministic artifact declarations, immutable lifecycle/restatement c
 distribution contracts, Security Master-enriched report generation, NAV attribution, no-code
 report-writer grid rendering, and reporting ownership conformance.
 
+Authoritative source checkpoints optionally retain a content-addressed complete ledger population.
+New ledger captures use that population for period datasets and complete-history calculations,
+including retained generated trial-balance amount bindings. Rendering and amount proof replay the
+frozen journal/tax-relief inputs rather than rereading current journals. Historical-only postings
+change the source checkpoint even when period activity rows are unchanged. Legacy runs without the
+retained population cannot expose verified generated amount proof and require fresh certification.
+`ReportingRetainedLedgerPopulationValidation` verifies the same payload, scoped journals, counts,
+certified dataset, and source digest at every retained-manifest and artifact-production boundary.
+
 ## Layer responsibility
 
 This module belongs to the Design Module layer. Keep changes within that ownership boundary and update the registry if the boundary changes.

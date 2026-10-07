@@ -967,6 +967,7 @@ public static class UiApiRoutes
     public const string ReportingRuns = "/api/fund-structure/reporting/runs";
     public const string ReportingRunReadiness = "/api/fund-structure/reporting/runs/readiness";
     public const string ReportingGovernedRun = "/api/fund-structure/reporting/runs/{runId}";
+    public const string ReportingGovernedRunAmounts = "/api/fund-structure/reporting/runs/{runId}/amounts";
     public const string ReportingGovernedSeries = "/api/fund-structure/reporting/runs/series/{seriesId}";
     public const string ReportingGovernedRunCreate = "/api/fund-structure/reporting/runs/{runId}/govern";
     public const string ReportingGovernedRunValidate = "/api/fund-structure/reporting/runs/{runId}/validate";

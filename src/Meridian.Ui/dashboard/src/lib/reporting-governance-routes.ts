@@ -35,6 +35,10 @@ export function governedReportingRunPath(runId: string): string {
   return replaceRouteToken(requiredGeneratedRoute("ReportingGovernedRun"), "runId", runId);
 }
 
+export function governedReportingRunAmountsPath(runId: string): string {
+  return replaceRouteToken(requiredGeneratedRoute("ReportingGovernedRunAmounts"), "runId", runId);
+}
+
 export function governedReportingTransitionPath(
   runId: string,
   transition: "validate" | "submit" | "approve" | "release"

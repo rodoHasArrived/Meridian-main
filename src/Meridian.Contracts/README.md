@@ -11,6 +11,11 @@ last_reviewed: 2026-10-07
 
 # src/Meridian.Contracts
 
+`ReportLedgerAmountBindingDtos` retains generated trial-balance amounts with exact accounting scope
+and journal/line identities. Generated amount source evidence additionally carries its original
+`SourceScope` and `SourceSubjectId`, so historical opening-balance support preserves its own posted
+period while the shared proof drawer and guarded source route remain bound to the selected report.
+
 `Ledger/LedgerDisposalTaxDtos.cs` defines shared, server-derived disposal and parcel tax results for
 the journal tax-results read route. It separates economic/recognized gain and deferred loss, exposes
 effective holding starts and exact retained policy revisions, and distinguishes settled, provisional,

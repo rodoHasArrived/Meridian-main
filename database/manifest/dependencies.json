@@ -13930,6 +13930,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReportLedgerAmountBindingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReportPackAuditEventDto"
     },
     {
@@ -35961,6 +35967,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.LedgerAmountProofEvidenceDto",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.LedgerAmountProvenanceDetailDto",
       "target": "contract:Meridian.Contracts.Workstation.EvidenceStatusDto"
     },
@@ -38243,6 +38255,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReportAccessPrincipalDto",
       "target": "contract:Meridian.Contracts.Workstation.ReportAccessPrincipalKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReportLedgerAmountBindingDto",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountScopeDto"
     },
     {
       "kind": "contract-reference",
@@ -48667,7 +48685,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "064a4c7f072df1d6399f68e9e9fe0620ceae280e1023af461ee59e090a31c3d4",
+  "fingerprint": "bf58235b5c01c7f6d6ef1e4b5c1cbb7089a16216a514cbdd56a67ec8c7d126fc",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -62648,6 +62666,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ReportLedgerAmountBindingDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReportLedgerAmountBindingDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.ReportPackAuditEventDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.ReportPackAuditEventDto"
@@ -71202,11 +71226,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3215,
-    "contract_set_memberships": 3792,
-    "edges": 8086,
+    "contract_references": 3217,
+    "contract_set_memberships": 3793,
+    "edges": 8089,
     "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3903
+    "nodes": 3904
   }
 }

@@ -2,6 +2,7 @@ import { axe } from "jest-axe";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as governanceApi from "@/lib/reporting-governance-api";
+import { getReportAmountBindings } from "@/lib/report-amount-proof-api";
 import { ReportRunGovernanceScreen } from "@/screens/report-run-governance-screen";
 import { renderWithRouter } from "@/test/render";
 import type {
@@ -27,6 +28,7 @@ vi.mock("@/lib/reporting-governance-api", () => ({
   submitGovernedReportingRun: vi.fn(),
   validateGovernedReportingRun: vi.fn()
 }));
+vi.mock("@/lib/report-amount-proof-api", () => ({ getReportAmountBindings: vi.fn() }));
 
 const draftRun = buildRun();
 const seriesHistory: ReportingGovernanceSeriesHistory = {
@@ -62,6 +64,7 @@ const distributionCapabilities: SecureReportingDistributionCapabilityCatalog = {
 describe("ReportRunGovernanceScreen", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(getReportAmountBindings).mockResolvedValue([]);
     vi.mocked(governanceApi.getGovernedReportingRun).mockResolvedValue(draftRun);
     vi.mocked(governanceApi.getGovernedReportingSeriesHistory).mockResolvedValue(seriesHistory);
     vi.mocked(governanceApi.getSecureReportingDeliveryHistory).mockResolvedValue([]);
@@ -88,6 +91,8 @@ describe("ReportRunGovernanceScreen", () => {
     expect(screen.getByText("User: maker-1")).toBeInTheDocument();
     expect(screen.getByText("Group: checker-group")).toBeInTheDocument();
     expect(screen.getByText("Company: company-1")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Retained trial-balance amounts" })).toBeInTheDocument();
+    expect(getReportAmountBindings).toHaveBeenCalledWith("run-1", { signal: expect.any(AbortSignal) });
 
     const validate = screen.getByRole("button", { name: "Validate" });
     const submit = screen.getByRole("button", { name: "Submit for review" });

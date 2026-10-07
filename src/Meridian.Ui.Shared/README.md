@@ -378,6 +378,20 @@ tenant/company-scoped queue contract as production workflows. Seeded demo breaks
 `DemoTenantBlueprint` tenant and company identifiers; authenticated demo hosts must resolve that
 scope to read the cases, and legacy unscoped queue rows remain inaccessible.
 
+Certified reporting retains one complete as-of ledger population in its source checkpoint.
+The PostgreSQL adapter captures journals, accounting-period authority, and tax-lot history in one
+repeatable-read, read-only transaction. Period activity, opening balances, financial statements,
+and generated trial-balance amount bindings derive from that population. Primary-document rendering
+replays retained inputs after restart; release readiness separately revalidates current authorities.
+The retained content digest and source checkpoint are checked before replay or amount inspection.
+
+Generated trial-balance amounts on governed run details use the shared `ledger-amount` proof packet
+with exact `report:{runId}:{amountId}` identities. Report access, fund/book/period ownership,
+contributing journal lines, original posting-period source subjects, retained source bytes, digests,
+and human review must all verify. Incomplete or altered support blocks the entire amount and
+withholds source routes. Guarded manifest opening rechecks the complete report proof.
+See [amount provenance validation](../../docs/testing/w10-amount-provenance.md).
+
 ## Layer responsibility
 
 This module owns cross-surface operator-facing projection types and shared endpoint helpers. Preserve

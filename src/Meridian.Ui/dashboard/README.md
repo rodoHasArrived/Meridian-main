@@ -11,6 +11,17 @@ last_reviewed: 2026-09-02
 
 # src/Meridian.Ui/dashboard
 
+Report Run Detail exposes retained trial-balance account balances from the exact run's ledger
+checkpoint through `/api/fund-structure/reporting/runs/{runId}/amounts`. Each balance opens the
+shared `LedgerAmountProofDrawer` with its immutable `report:{runId}:{amountId}` subject and
+retained fund/book/period. The panel validates tenant, company, fund, book, period and checkpoint
+identity before exposing amounts; absent, ambiguous or foreign bindings remain blocked.
+Exact journal-entry and ledger-entry IDs remain inspectable beside each amount. The drawer verifies
+retained source digests and guarded scope links, and hides missing, altered or foreign evidence.
+Run or scope changes abort prior requests and discard the previous selection. Reads prohibit
+development fallback and never calculate support from current Accounting scope or live balances.
+Focused coverage lives in `reporting-retained-amounts.test.tsx` and `report-amount-proof-api.test.ts`.
+
 Governed Journal Entry Detail exposes retained disposal tax results from the shared period and
 journal read model. Operators can inspect mixed parcel character, carried holding-period starts,
 economic and recognized gain/loss, deferred loss, and the exact retained policy revision. Settled,
@@ -20,10 +31,6 @@ settles an elapsed window, or recalculates tax amounts. Missing parcel allocatio
 unknown. Reads prohibit development fallback and reject a different book, period or journal.
 Focused coverage lives in `journal-entry-tax-results.test.tsx`,
 `journal-entry-detail-screen.test.tsx` and `ledger-tax-results-api.test.ts`.
-
-Tailwind is pinned to 3.4.19 to match the checked-in PostCSS plugin, Tailwind configuration, and
-`@tailwind` stylesheet directives. Upgrading its major version requires migrating that pipeline
-together; changing only the dependency prevents workstation styles and bundles from building.
 
 Trading includes an account-scoped brokerage recovery panel backed by the shared readiness and
 execution reconciliation projection. The operator can synchronize and reconcile Alpaca portfolio
@@ -88,6 +95,10 @@ lineage, occurrence and successful-run clearing independently of governed casewo
 
 The build lockfile resolves Browserslist 4.28.9, removing the high-severity cache-growth and
 custom-stats parsing advisories reported by the September 6 production-certification scan.
+
+Tailwind 4 uses its matching `@tailwindcss/postcss` adapter. The main stylesheet explicitly loads
+the existing `tailwind.config.ts` so Meridian's semantic colors, typography, shadows and utility
+sources remain part of generated CSS. The lockfile retains patched `source-map-js` 1.2.2.
 
 First launch is browser-primary. `/setup` renders the first-run concierge while the
 shared first-run API remains the source of truth for starter kits, sample safety labels,

@@ -445,7 +445,9 @@ public static class LedgerReportPackBuilder
                     .Distinct()
                     .ToArray();
                 var entries = descendants
-                    .SelectMany(account => ledger.GetEntries(account, request.PeriodStart, request.AsOf))
+                    // The three tables are point-in-time balances. Restricting their support to
+                    // current activity silently omitted prior-period balances from retained proof.
+                    .SelectMany(account => ledger.GetEntries(account, null, request.AsOf))
                     .Where(entry => string.IsNullOrWhiteSpace(financialAccountId)
                         || string.Equals(entry.Account.FinancialAccountId, financialAccountId.Trim(), StringComparison.OrdinalIgnoreCase))
                     .Where(entry => MatchesLineDimensions(entry.Dimensions, request.LineDimensions))

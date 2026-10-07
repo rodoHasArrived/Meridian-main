@@ -174,6 +174,7 @@ public sealed class LedgerJournalStoreTests
         var journalStore = provider.GetRequiredService<ILedgerJournalStore>();
         journalStore.Should().BeOfType<PostgresLedgerJournalStore>();
         provider.GetRequiredService<ITransactionalLedgerJournalStore>().Should().BeSameAs(journalStore);
+        provider.GetRequiredService<ILedgerReportingSnapshotSource>().Should().BeSameAs(journalStore);
         provider.GetRequiredService<IAccountingConfigurationStore>().Should().BeOfType<PostgresAccountingConfigurationStore>();
         provider.GetRequiredService<IAccountingActionAuditStore>().Should().BeOfType<PostgresAccountingConfigurationStore>();
         provider.GetRequiredService<LedgerMigrationRunner>().Should().NotBeNull();
@@ -216,6 +217,33 @@ public sealed class LedgerJournalStoreTests
 
         await act.Should().ThrowAsync<ArgumentException>()
             .WithMessage("*At least one journal query filter is required*");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReportingSnapshot_RequiresExactBookBeforeOpeningConnection(bool emptyBook)
+    {
+        var store = new PostgresLedgerJournalStore(new LedgerJournalStoreOptions());
+        var query = new LedgerJournalEntryQuery(
+            LedgerBookId: emptyBook ? Guid.Empty : null,
+            EffectiveTo: new DateOnly(2026, 5, 31));
+
+        var capture = () => store.CaptureReportingSnapshotAsync(query);
+
+        await capture.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*ledger book is required*");
+    }
+
+    [Fact]
+    public async Task ReportingSnapshot_RejectsEmptyRequestedPeriodBeforeOpeningConnection()
+    {
+        var store = new PostgresLedgerJournalStore(new LedgerJournalStoreOptions());
+
+        var capture = () => store.CaptureReportingSnapshotAsync(new(LedgerBookId: Guid.NewGuid()), Guid.Empty);
+
+        await capture.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*valid accounting period is required*");
     }
 
     [LedgerDatabaseFact]

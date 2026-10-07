@@ -74,6 +74,9 @@ Csv, Json, RegulatoryXml natively plus real binary Xlsx/Pdf through the
 `ILedgerReportBinaryRenderer` seam (the dependency-free `BuiltInLedgerReportBinaryRenderer` by
 default; `Meridian.Documents.FinancialReportDocumentRenderer` supplies branded, deterministic
 QuestPDF/ClosedXML output for client delivery).
+The report pack's trial-balance, income-statement, and balance-sheet line provenance includes the
+complete selected as-of history, matching those point-in-time amounts. Prior-period entries remain
+explicit support for opening balances instead of being omitted from a current-period proof.
 Ledger legs can carry explicit `LedgerEntryCurrency` (transaction currency, transaction amounts,
 and FX rate) alongside the functional debit/credit so currency no longer has to be inferred from
 account symbols; the currency-aware `Ledger.PostLines` overload and

@@ -2,16 +2,16 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 19.8,
+  "score_percent": 20.0,
   "endpoint_coverage_percent": 30.6,
-  "contract_coverage_percent": 3.7,
+  "contract_coverage_percent": 4.1,
   "summary": {
     "endpoint_count": 676,
     "documented_endpoint_count": 207,
     "undocumented_endpoint_count": 469,
-    "workstation_contract_count": 961,
-    "documented_workstation_contract_count": 36,
-    "undocumented_workstation_contract_count": 925
+    "workstation_contract_count": 962,
+    "documented_workstation_contract_count": 39,
+    "undocumented_workstation_contract_count": 923
   },
   "endpoints": [
     {
@@ -6215,16 +6215,16 @@
     {
       "name": "LedgerAmountScopeDto",
       "source": "src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:4",
-      "documented": false
+      "documented": true
     },
     {
       "name": "LedgerAmountProofEvidenceDto",
       "source": "src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:10",
-      "documented": false
+      "documented": true
     },
     {
       "name": "LedgerAmountProofDto",
-      "source": "src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:23",
+      "source": "src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:31",
       "documented": false
     },
     {
@@ -7130,6 +7130,11 @@
     {
       "name": "ReportingDeploymentCapabilityDto",
       "source": "src/Meridian.Contracts/Workstation/ReportingDeploymentDtos.cs:16",
+      "documented": true
+    },
+    {
+      "name": "ReportLedgerAmountBindingDto",
+      "source": "src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs:6",
       "documented": true
     },
     {

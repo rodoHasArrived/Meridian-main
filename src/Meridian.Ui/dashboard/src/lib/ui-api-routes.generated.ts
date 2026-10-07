@@ -828,6 +828,7 @@ export const UI_API_ROUTES = {
   ReportingRuns: "/api/fund-structure/reporting/runs",
   ReportingRunReadiness: "/api/fund-structure/reporting/runs/readiness",
   ReportingGovernedRun: "/api/fund-structure/reporting/runs/{runId}",
+  ReportingGovernedRunAmounts: "/api/fund-structure/reporting/runs/{runId}/amounts",
   ReportingGovernedSeries: "/api/fund-structure/reporting/runs/series/{seriesId}",
   ReportingGovernedRunCreate: "/api/fund-structure/reporting/runs/{runId}/govern",
   ReportingGovernedRunValidate: "/api/fund-structure/reporting/runs/{runId}/validate",

@@ -87,22 +87,39 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await EnsureBookWriteAuthorityAsync(connection, null, ledgerBookId, ct).ConfigureAwait(false);
-        var lotsByBatch = await LoadDisposalLotsAsync(connection, ledgerBookId, journalIds, ct).ConfigureAwait(false);
+        return await GetTaxLotDisposalHistoryAsync(connection, null, ledgerBookId, journalIds, ct)
+            .ConfigureAwait(false);
+    }
+
+    private async Task<IReadOnlyList<LedgerTaxLotDisposalHistoryRecord>> GetTaxLotDisposalHistoryAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction? transaction,
+        Guid ledgerBookId,
+        Guid[] journalIds,
+        CancellationToken ct)
+    {
+        if (journalIds.Length == 0)
+        {
+            return [];
+        }
+
+        var lotsByBatch = await LoadDisposalLotsAsync(connection, transaction, ledgerBookId, journalIds, ct).ConfigureAwait(false);
         if (lotsByBatch.Count == 0)
         {
             return [];
         }
-        await CertifyCarriedHoldingPeriodsAsync(connection, ledgerBookId, lotsByBatch, ct).ConfigureAwait(false);
+        await CertifyCarriedHoldingPeriodsAsync(connection, transaction, ledgerBookId, lotsByBatch, ct).ConfigureAwait(false);
 
-        var poolByBatch = await LoadAverageCostPoolsAsync(connection, ledgerBookId, lotsByBatch, ct)
+        var poolByBatch = await LoadAverageCostPoolsAsync(connection, transaction, ledgerBookId, lotsByBatch, ct)
             .ConfigureAwait(false);
         var deferralsByBatch = await LoadDeferralsByBatchAsync(
                 connection,
+                transaction,
                 ledgerBookId,
                 lotsByBatch,
                 ct)
             .ConfigureAwait(false);
-        await CertifyReplacementClaimCapacityAsync(connection, ledgerBookId, lotsByBatch.Keys.ToArray(), ct)
+        await CertifyReplacementClaimCapacityAsync(connection, transaction, ledgerBookId, lotsByBatch.Keys.ToArray(), ct)
             .ConfigureAwait(false);
 
         return lotsByBatch
@@ -131,11 +148,13 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
 
     private async Task<Dictionary<Guid, DisposalBatchAccumulator>> LoadDisposalLotsAsync(
         NpgsqlConnection connection,
+        NpgsqlTransaction? transaction,
         Guid ledgerBookId,
         Guid[] journalIds,
         CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             $"""
             select batch.mutation_batch_id,
@@ -260,9 +279,11 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
     }
 
     private async Task<List<CarriedHoldingPeriodEvidence>> LoadCarriedHoldingPeriodEvidenceAsync(NpgsqlConnection connection,
+        NpgsqlTransaction? transaction,
         IReadOnlyDictionary<Guid, DisposalBatchAccumulator> batches, CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             $"""
             select target.mutation_batch_id, target.tax_lot_record_id,
@@ -305,6 +326,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
     /// </summary>
     private async Task<Dictionary<Guid, IReadOnlyList<OpenLotDto>>> LoadAverageCostPoolsAsync(
         NpgsqlConnection connection,
+        NpgsqlTransaction? transaction,
         Guid ledgerBookId,
         Dictionary<Guid, DisposalBatchAccumulator> lotsByBatch,
         CancellationToken ct)
@@ -318,6 +340,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
         }
 
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             $"""
             select mutation.mutation_batch_id, mutation.tax_lot_record_id, mutation.lot_snapshot_before::text
@@ -352,11 +375,13 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
         IReadOnlyList<LedgerTaxLotDisposalRecipientEvidence> Recipients)>>
         LoadDeferralsByBatchAsync(
             NpgsqlConnection connection,
+            NpgsqlTransaction? transaction,
             Guid ledgerBookId,
             IReadOnlyDictionary<Guid, DisposalBatchAccumulator> batches,
             CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             $"""
             select deferral.disposal_mutation_batch_id,

@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Globalization;
+using System.Diagnostics;
 using Meridian.Contracts.Integrity;
 using Meridian.Core.ReferenceData;
 using Meridian.Domain.Reconciliation;
@@ -214,7 +215,12 @@ public sealed class JsonCanonicalStatementStore : ICanonicalStatementStore
                 stream.Flush(flushToDisk: true);
             }
             ct.ThrowIfCancellationRequested();
-            // The no-overwrite rename is the cross-process uniqueness and visibility boundary.
+            // Unix no-overwrite moves can check destination absence before an ordinary rename.
+            // Serialize publication across processes, retaining the lock inode for future writers.
+            await using var publicationClaim = await AcquirePublicationClaimAsync(targetPath, ct).ConfigureAwait(false);
+            ct.ThrowIfCancellationRequested();
+            if (File.Exists(targetPath))
+                return false;
             try
             {
                 File.Move(temporaryPath, targetPath, overwrite: false);
@@ -232,6 +238,25 @@ public sealed class JsonCanonicalStatementStore : ICanonicalStatementStore
             if (File.Exists(temporaryPath))
             {
                 File.Delete(temporaryPath);
+            }
+        }
+    }
+
+    private static async Task<FileStream> AcquirePublicationClaimAsync(string targetPath, CancellationToken ct)
+    {
+        var lockPath = targetPath + ".lock";
+        var started = Stopwatch.GetTimestamp();
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                return new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            }
+            catch (IOException) when (File.Exists(lockPath)
+                && Stopwatch.GetElapsedTime(started) < TimeSpan.FromSeconds(30))
+            {
+                await Task.Delay(25, ct).ConfigureAwait(false);
             }
         }
     }

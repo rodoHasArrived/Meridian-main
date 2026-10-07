@@ -34,6 +34,7 @@ import {
 } from "@/lib/reporting-governance-api";
 import { secureReportingArtifactDownloadPath } from "@/lib/reporting-governance-routes";
 import { ReportingIncomeComparisonPanel } from "@/screens/reporting-income-comparison";
+import { ReportingRetainedAmountsPanel } from "@/screens/reporting-retained-amounts";
 import { projectParameterEntries } from "@/screens/report-run-governance-parameters";
 import {
   enforceClientPackageArtifactSelection, resolveClientPackageArtifactGate, type ClientPackageArtifactGate
@@ -509,6 +510,8 @@ export function ReportRunGovernanceScreen() {
         <SnapshotPanel run={run} />
         <ReadinessPanel run={run} />
       </section>
+
+      <ReportingRetainedAmountsPanel run={run} />
 
       <ArtifactPanel
         run={run}

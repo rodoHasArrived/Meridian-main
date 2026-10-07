@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "52aadf272fcaf1fcbbb9a97c2be3ce10c1451dc570501a1d6bbc854ae6a292ba",
+      "fingerprint": "81221208ae3f68d8a663f2706d990e63d66dec0ef959c90ba928ffb0600c7180",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -2362,6 +2362,7 @@
         "Meridian.Contracts.Workstation.ReportingStarterKitProvisionResultDto",
         "Meridian.Contracts.Workstation.ReportingStarterKitStateDto",
         "Meridian.Contracts.Workstation.ReportingStarterSeedScheduleDto",
+        "Meridian.Contracts.Workstation.ReportLedgerAmountBindingDto",
         "Meridian.Contracts.Workstation.ReportPackAuditEventDto",
         "Meridian.Contracts.Workstation.ReportPackChangedLineDto",
         "Meridian.Contracts.Workstation.ReportPackCreateRequestDto",
@@ -3954,7 +3955,7 @@
       ]
     }
   ],
-  "fingerprint": "37c2cc063a2f47ba9f63d9d91be8e21f2f890f4a1c4e9a12c636b833db1f3c4b",
+  "fingerprint": "c3c6532a75bace0aa598ebc7dc3d677f50f60528b05a5f5401620cbd60665123",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6324,7 +6325,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "f65e31036f0d3f01ebe8b75657e0c8fafdfbf5912ccff1f68bb0380be161ba56",
+      "fingerprint": "b10b1a38da0e1d4fa090e7e6e419abcf376998ced2e6cc6350babde10985b5e3",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Workstation",
       "object_ids": [
@@ -6888,6 +6889,7 @@
         "Meridian.Contracts.Workstation.ReportingStarterKitProvisionResultDto",
         "Meridian.Contracts.Workstation.ReportingStarterKitStateDto",
         "Meridian.Contracts.Workstation.ReportingStarterSeedScheduleDto",
+        "Meridian.Contracts.Workstation.ReportLedgerAmountBindingDto",
         "Meridian.Contracts.Workstation.ReportPackAuditEventDto",
         "Meridian.Contracts.Workstation.ReportPackChangedLineDto",
         "Meridian.Contracts.Workstation.ReportPackCreateRequestDto",
@@ -288170,7 +288172,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "8a7de651853214ea3bbe01502c5de75875430b51aa1fd171ad4f2286dd0ae6ec",
+      "fingerprint": "6234c7e671ca02f87391790b3c777255a05d5eedb2d872838c8520fb33f8c49d",
       "full_name": "Meridian.Contracts.Workstation.LedgerAmountProofDto",
       "id": "Meridian.Contracts.Workstation.LedgerAmountProofDto",
       "kind": "record",
@@ -288187,7 +288189,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 26,
+          "source_line": 34,
           "type": "decimal"
         },
         {
@@ -288201,7 +288203,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 27,
+          "source_line": 35,
           "type": "string"
         },
         {
@@ -288215,7 +288217,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<LedgerAmountProofEvidenceDto>",
-          "source_line": 29,
+          "source_line": 37,
           "type": "IReadOnlyList<LedgerAmountProofEvidenceDto>"
         },
         {
@@ -288229,7 +288231,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "LedgerAmountScopeDto",
-          "source_line": 25,
+          "source_line": 33,
           "type": "LedgerAmountScopeDto"
         },
         {
@@ -288243,7 +288245,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "EvidenceStatusDto",
-          "source_line": 28,
+          "source_line": 36,
           "type": "EvidenceStatusDto"
         },
         {
@@ -288257,7 +288259,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 24,
+          "source_line": 32,
           "type": "string"
         },
         {
@@ -288271,7 +288273,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 30,
+          "source_line": 38,
           "type": "IReadOnlyList<string>"
         }
       ],
@@ -288285,12 +288287,12 @@
         "Meridian.Contracts.Workstation.LedgerAmountScopeDto"
       ],
       "source": {
-        "line": 23,
+        "line": 31,
         "path": "src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs"
       },
       "sources": [
         {
-          "line": 23,
+          "line": 31,
           "path": "src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs"
         }
       ],
@@ -288306,7 +288308,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "985d0acb868f9eecf9be91ddd89fa283c81bc754784a126da838dbc8363034b8",
+      "fingerprint": "79346b090b68a48bcbbe35b5b3df6a8408433231680bf5d5fd6625a59b96b30b",
       "full_name": "Meridian.Contracts.Workstation.LedgerAmountProofEvidenceDto",
       "id": "Meridian.Contracts.Workstation.LedgerAmountProofEvidenceDto",
       "kind": "record",
@@ -288416,6 +288418,34 @@
           "collection": false,
           "collection_kind": null,
           "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceScope",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "LedgerAmountScopeDto?",
+          "source_line": 24,
+          "type": "LedgerAmountScopeDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceSubjectId",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "string?",
+          "source_line": 27,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
@@ -288446,7 +288476,8 @@
       "partial": false,
       "qualified_name": "Meridian.Contracts.Workstation.LedgerAmountProofEvidenceDto",
       "references": [
-        "Meridian.Contracts.Workstation.EvidenceStatusDto"
+        "Meridian.Contracts.Workstation.EvidenceStatusDto",
+        "Meridian.Contracts.Workstation.LedgerAmountScopeDto"
       ],
       "source": {
         "line": 11,
@@ -334641,6 +334672,168 @@
         {
           "line": 1130,
           "path": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "d106fe62ff0d62c39e86e87593935a15dc67bed7a6a28781dd0292726509c01e",
+      "full_name": "Meridian.Contracts.Workstation.ReportLedgerAmountBindingDto",
+      "id": "Meridian.Contracts.Workstation.ReportLedgerAmountBindingDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Amount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 9,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AmountId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 7,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Currency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 10,
+          "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "Guid",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "JournalEntryIds",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<Guid>",
+          "source_line": 12,
+          "type": "IReadOnlyList<Guid>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Label",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 8,
+          "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "Guid",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LedgerEntryIds",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<Guid>",
+          "source_line": 13,
+          "type": "IReadOnlyList<Guid>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Scope",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "LedgerAmountScopeDto",
+          "source_line": 11,
+          "type": "LedgerAmountScopeDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceSnapshotHash",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "string?",
+          "source_line": 19,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "SubjectId",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "string?",
+          "source_line": 16,
+          "type": "string?"
+        }
+      ],
+      "name": "ReportLedgerAmountBindingDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.ReportLedgerAmountBindingDto",
+      "references": [
+        "Meridian.Contracts.Workstation.LedgerAmountScopeDto"
+      ],
+      "source": {
+        "line": 6,
+        "path": "src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 6,
+          "path": "src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs"
         }
       ],
       "type_parameters": []
