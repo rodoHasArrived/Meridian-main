@@ -1491,6 +1491,17 @@ Browser extensibility route helpers expose the shared core extensibility catalog
 
 ## Accounting close browser surface
 
+The External GL route also hosts bounded accounting onboarding for one entity, explicit account
+population and date range. Its shared onboarding API retains criteria revisions, exact import and
+mapping identities, comparison snapshots, difference ownership, independent reviewer decisions and
+frozen readiness packets. Historical comparisons can be reproduced from retained inputs. Readiness
+shows unresolved differences across every required date; a later clean period does not clear an
+earlier required period. The browser never substitutes fixtures for these authoritative reads or
+writes, computes readiness, imports missing sources automatically, or grants accounting authority.
+Focused workflow, stale-response and accessibility coverage lives in
+`accounting-screen.onboarding-panel.test.tsx`; API boundary coverage lives in
+`lib/api/accounting-onboarding.api.test.ts`.
+
 The Accounting route reuses fund-operations ledger views and now includes trial-balance source-event and approval drill-through affordances. Keep browser-only rendering in `src/screens/accounting-screen.tsx` and shared accounting close contracts in `src/features/accounting/accountingCloseModels.ts`.
 
 The close workspace (`/accounting`) exposes **Prepare next period**. Operators select an

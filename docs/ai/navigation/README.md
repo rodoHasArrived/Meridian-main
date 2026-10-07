@@ -51,6 +51,12 @@ and its `StorageQuota`/`Export` partials adapt retained usage, staging cleanup, 
 publication. Intake/export coverage lives in `FileEvidenceArtifactStoreQuotaTests`; coordinator
 concurrency and recovery coverage lives in `EvidenceStorageQuotaCoordinatorTests`.
 
+For PRD-112 pipeline budgets, start with [the bounded benchmark lane](../../engineering/pipeline-benchmark.md).
+`build/scripts/ci/benchmark-pipeline.py` records the profile and commit, runs the fixed
+`PipelineBudgetBenchmarks` stages, and invokes `build/scripts/validate_budget.py`.
+Failure propagation coverage lives in `tests/scripts/test_benchmark_pipeline.py`;
+sustained-load soak remains separate.
+
 ---
 
 ## MCP Surface

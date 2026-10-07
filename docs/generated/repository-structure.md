@@ -900,6 +900,7 @@ Meridian-main
 │   │   ├── ibapi-smoke.yml
 │   │   ├── maintenance.yml
 │   │   ├── meridian-ci.yml
+│   │   ├── pipeline-benchmark.yml
 │   │   ├── production-certification.yml
 │   │   ├── provider-validation.yml
 │   │   ├── publish-smoke.yml
@@ -940,7 +941,9 @@ Meridian-main
 │   │   ├── IndicatorBenchmarks.cs
 │   │   ├── JsonSerializationBenchmarks.cs
 │   │   ├── Meridian.Benchmarks.csproj
+│   │   ├── Meridian.Benchmarks.slnx
 │   │   ├── NewlineScanBenchmarks.cs
+│   │   ├── PipelineBudgetBenchmarks.cs
 │   │   ├── Program.cs
 │   │   ├── StorageSinkBenchmarks.cs
 │   │   ├── StrategyRunReadBenchmarks.cs
@@ -1042,6 +1045,7 @@ Meridian-main
 │   │   ├── security
 │   │   │   └── npm-audit-accepted-advisories.json
 │   │   ├── testing
+│   │   │   ├── pipeline-benchmark-profile.json
 │   │   │   └── test-skip-register.json
 │   │   ├── file-size-baseline.json
 │   │   └── postgresql-payload.json
@@ -1106,6 +1110,7 @@ Meridian-main
 │       │   ├── apiclient-caller-baseline.json
 │       │   ├── benchmark-ci.py
 │       │   ├── benchmark-endpoints.py
+│       │   ├── benchmark-pipeline.py
 │       │   ├── check-action-origin-derivation.py
 │       │   ├── check-apiclient-callers.py
 │       │   ├── check-contract-type-parity.py
@@ -1784,6 +1789,7 @@ Meridian-main
 │   │   ├── free-development-tools.md
 │   │   ├── generated-merge-recovery.md
 │   │   ├── live-trading-engine.md
+│   │   ├── pipeline-benchmark.md
 │   │   ├── practical-csharp-wpf-financial-markets.md
 │   │   ├── production-certification-evidence-chain.md
 │   │   ├── production-readiness-audit-2026-07-27.md
@@ -4386,6 +4392,7 @@ Meridian-main
 │   │   │   ├── LedgerReconciliationContractCompatibility.cs
 │   │   │   ├── MarginControlCenterDtos.cs
 │   │   │   ├── MarkFreshnessDtos.cs
+│   │   │   ├── OnboardingDtos.cs
 │   │   │   ├── OperationsContinuityDtos.cs
 │   │   │   ├── PilotReadinessArtifactDtos.cs
 │   │   │   ├── ReconciliationBreakLineageDtos.cs
@@ -4812,6 +4819,7 @@ Meridian-main
 │   │   │   └── AccountingReportPackageService.cs
 │   │   ├── AccountingSystem
 │   │   │   ├── AccountingSystemIntegrationService.cs
+│   │   │   ├── AccountingSystemIntegrationService.Onboarding.cs
 │   │   │   └── AccountingSystemIntegrationService.Reconciliation.cs
 │   │   ├── Banking
 │   │   │   ├── BankingException.cs
@@ -4846,6 +4854,9 @@ Meridian-main
 │   │   ├── MiddleOffice
 │   │   │   ├── MiddleOfficeModels.cs
 │   │   │   └── MiddleOfficeOperationsService.cs
+│   │   ├── Onboarding
+│   │   │   ├── OnboardingInterfaces.cs
+│   │   │   └── OnboardingWorkspaceService.cs
 │   │   ├── OperationsContinuity
 │   │   │   ├── CloseReadinessProjection.cs
 │   │   │   ├── FinancialOperationsCommandCenterReadService.CloseInputs.cs
@@ -6714,6 +6725,8 @@ Meridian-main
 │   │   │   │   │   │   ├── store.tsx
 │   │   │   │   │   │   └── types.ts
 │   │   │   │   │   ├── api
+│   │   │   │   │   │   ├── accounting-onboarding.api.test.ts
+│   │   │   │   │   │   ├── accounting-onboarding.api.ts
 │   │   │   │   │   │   ├── archive-maintenance.api.ts
 │   │   │   │   │   │   ├── banking-payments.api.ts
 │   │   │   │   │   │   ├── break-audit-rebuild.api.ts
@@ -6947,6 +6960,8 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.linked-context.ts
 │   │   │   │   │   ├── accounting-screen.mark-preview.test.tsx
 │   │   │   │   │   ├── accounting-screen.mark-preview.tsx
+│   │   │   │   │   ├── accounting-screen.onboarding-panel.test.tsx
+│   │   │   │   │   ├── accounting-screen.onboarding-panel.tsx
 │   │   │   │   │   ├── accounting-screen.operations-panels.tsx
 │   │   │   │   │   ├── accounting-screen.operator-focus.test.ts
 │   │   │   │   │   ├── accounting-screen.operator-focus.ts
@@ -7274,6 +7289,7 @@ Meridian-main
 │   │   │   │   │   ├── setup.ts
 │   │   │   │   │   └── verified-operation-outcome.ts
 │   │   │   │   ├── types
+│   │   │   │   │   ├── accounting-onboarding.ts
 │   │   │   │   │   ├── archive-maintenance.types.ts
 │   │   │   │   │   ├── banking-payments.types.ts
 │   │   │   │   │   ├── brokerage-recovery.ts
@@ -7586,6 +7602,7 @@ Meridian-main
 │   │   │   ├── MonitoringEndpointExemptions.cs
 │   │   │   ├── MutationAuthorizationGuardMiddleware.cs
 │   │   │   ├── OmsIntegrationEndpoints.cs
+│   │   │   ├── OnboardingEndpoints.cs
 │   │   │   ├── OptionChainEndpoints.cs
 │   │   │   ├── OptionReferenceEndpoints.cs
 │   │   │   ├── OptionsEndpoints.cs
@@ -7773,6 +7790,7 @@ Meridian-main
 │   │   │   ├── FeatureCapabilitySettingsService.cs
 │   │   │   ├── FileAccountingAuditPendingMarkerStore.cs
 │   │   │   ├── FileFundProfileTenancyRegistry.cs
+│   │   │   ├── FileOnboardingWorkspaceStore.cs
 │   │   │   ├── FinancialRecordExplorerReadScope.cs
 │   │   │   ├── FinancialRecordExplorerReadService.cs
 │   │   │   ├── FinancialRecordExplorerReadService.InstrumentJournalProof.cs
@@ -7812,6 +7830,7 @@ Meridian-main
 │   │   │   ├── MarginControlCenterReadService.cs
 │   │   │   ├── MultiAssetCoverageReadService.cs
 │   │   │   ├── OmsIntegrationService.cs
+│   │   │   ├── OnboardingComparisonSource.cs
 │   │   │   ├── OperationsContinuityReconciliationBridge.cs
 │   │   │   ├── OperationsReportPackAuthority.cs
 │   │   │   ├── OperatorInboxPriorityScoringService.cs
@@ -10740,6 +10759,7 @@ Meridian-main
 │   │   │   ├── AccountingSystemIntegrationServiceTests.BalancePeriods.cs
 │   │   │   ├── AccountingSystemIntegrationServiceTests.cs
 │   │   │   ├── AccountingSystemIntegrationServiceTests.LiveProviders.cs
+│   │   │   ├── AccountingSystemIntegrationServiceTests.Onboarding.cs
 │   │   │   ├── AggregatePortfolioExposureProviderTests.cs
 │   │   │   ├── AlpacaBrokerageConnectionServiceTests.cs
 │   │   │   ├── AlpacaCredentialEnvironmentCollection.cs
@@ -10790,6 +10810,7 @@ Meridian-main
 │   │   │   ├── FamilyOfficeReadServiceTests.cs
 │   │   │   ├── FileAccountingAuditChainTests.cs
 │   │   │   ├── FileFundProfileTenancyRegistryTests.cs
+│   │   │   ├── FileOnboardingWorkspaceStoreTests.cs
 │   │   │   ├── FirstRunEndpointsTests.cs
 │   │   │   ├── FirstRunExperienceServiceTests.cs
 │   │   │   ├── FundAccountEndpointAuthorizationTests.cs
@@ -10808,6 +10829,9 @@ Meridian-main
 │   │   │   ├── ManualJournalMutationRecoveryStoreTests.cs
 │   │   │   ├── MarginControlCenterReadServiceTests.cs
 │   │   │   ├── OmsIntegrationServiceTests.cs
+│   │   │   ├── OnboardingComparisonSourceTests.cs
+│   │   │   ├── OnboardingEndpointTests.cs
+│   │   │   ├── OnboardingWorkspaceServiceTests.cs
 │   │   │   ├── OperationsContinuityReconciliationBridgeTests.cs
 │   │   │   ├── OperationsReportPackAuthorityCompositionTests.cs
 │   │   │   ├── OperatorApprovalFlowScenarioTests.cs
@@ -11307,6 +11331,7 @@ Meridian-main
 │   │   ├── test_archive_code_tombstones.py
 │   │   ├── test_artifact_retention_module.py
 │   │   ├── test_benchmark_ci.py
+│   │   ├── test_benchmark_pipeline.py
 │   │   ├── test_build_profiles.py
 │   │   ├── test_buildctl_artifact_retention.py
 │   │   ├── test_buildctl_validation_runner.py
