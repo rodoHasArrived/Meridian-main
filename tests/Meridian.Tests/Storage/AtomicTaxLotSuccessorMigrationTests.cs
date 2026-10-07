@@ -138,7 +138,8 @@ public sealed class AtomicTaxLotSuccessorMigrationTests
             }
             catch
             {
-                try { await server.DisposeAsync(); }
+                try
+                { await server.DisposeAsync(); }
                 finally { if (Directory.Exists(scripts)) Directory.Delete(scripts, recursive: true); }
                 throw;
             }
@@ -276,7 +277,8 @@ public sealed class AtomicTaxLotSuccessorMigrationTests
 
         public async ValueTask DisposeAsync()
         {
-            try { await _server.DisposeAsync(); }
+            try
+            { await _server.DisposeAsync(); }
             finally { Directory.Delete(_scripts, recursive: true); }
         }
 
@@ -285,7 +287,8 @@ public sealed class AtomicTaxLotSuccessorMigrationTests
             for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
             {
                 var path = Path.Combine(directory.FullName, "src", "Meridian.Storage", "Ledger", "Migrations");
-                if (File.Exists(Path.Combine(path, SuccessorMigration))) return path;
+                if (File.Exists(Path.Combine(path, SuccessorMigration)))
+                    return path;
             }
             throw new DirectoryNotFoundException("Unable to locate retained Ledger migrations through 042.");
         }
