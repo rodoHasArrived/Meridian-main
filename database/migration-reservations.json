@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "migration_sets": [
+    {
+      "id": "security-master",
+      "filename_template": "{ordinal:03d}_{slug}.sql",
+      "ordinal_pattern": "^(?P<ordinal>\\d+)_",
+      "reservations": []
+    },
+    {
+      "id": "direct-lending",
+      "filename_template": "{ordinal:03d}_{slug}.sql",
+      "ordinal_pattern": "^(?P<ordinal>\\d+)_",
+      "reservations": []
+    },
+    {
+      "id": "asset-operations",
+      "filename_template": "{ordinal:03d}_{slug}.sql",
+      "ordinal_pattern": "^(?P<ordinal>\\d+)_",
+      "reservations": []
+    },
+    {
+      "id": "ledger",
+      "filename_template": "V_ledger_{ordinal:03d}__{slug}.sql",
+      "ordinal_pattern": "^V_ledger_(?P<ordinal>\\d+)__",
+      "reservations": [
+        {
+          "ordinal": 42,
+          "slug": "equalization_policy",
+          "description": "Equalization policy",
+          "blueprint": "docs/engineering/blueprints/accounting/equalization-and-series-accounting.md"
+        },
+        {
+          "ordinal": 43,
+          "slug": "equalization_subscription_lots",
+          "description": "Equalization subscription lots",
+          "blueprint": "docs/engineering/blueprints/accounting/equalization-and-series-accounting.md"
+        },
+        {
+          "ordinal": 44,
+          "slug": "fund_series",
+          "description": "Fund series",
+          "blueprint": "docs/engineering/blueprints/accounting/equalization-and-series-accounting.md"
+        },
+        {
+          "ordinal": 45,
+          "slug": "mark_freshness_assessment",
+          "description": "Per-position mark freshness assessment (Phase 2)",
+          "blueprint": "docs/engineering/blueprints/w10-mark-001-fail-closed-marks.md"
+        },
+        {
+          "ordinal": 46,
+          "slug": "valuation_attempt",
+          "description": "Valuation attempt and retained-draft association (Phase 2)",
+          "blueprint": "docs/engineering/blueprints/w10-mark-001-fail-closed-marks.md"
+        },
+        {
+          "ordinal": 47,
+          "slug": "mark_override",
+          "description": "Mark override and audit (Phase 3)",
+          "blueprint": "docs/engineering/blueprints/w10-mark-001-fail-closed-marks.md"
+        }
+      ]
+    },
+    {
+      "id": "fund-structure",
+      "filename_template": "{ordinal:03d}_{slug}.sql",
+      "ordinal_pattern": "^(?P<ordinal>\\d+)_",
+      "reservations": []
+    },
+    {
+      "id": "fund-accounts",
+      "filename_template": "{ordinal:03d}_{slug}.sql",
+      "ordinal_pattern": "^(?P<ordinal>\\d+)_",
+      "reservations": []
+    },
+    {
+      "id": "banking",
+      "filename_template": "{ordinal:03d}_{slug}.sql",
+      "ordinal_pattern": "^(?P<ordinal>\\d+)_",
+      "reservations": []
+    },
+    {
+      "id": "money-market",
+      "filename_template": "{ordinal:03d}_{slug}.sql",
+      "ordinal_pattern": "^(?P<ordinal>\\d+)_",
+      "reservations": []
+    },
+    {
+      "id": "reporting",
+      "filename_template": "{ordinal:03d}_{slug}.sql",
+      "ordinal_pattern": "^(?P<ordinal>\\d+)_",
+      "reservations": []
+    },
+    {
+      "id": "identity-access",
+      "filename_template": "{ordinal:03d}_{slug}.sql",
+      "ordinal_pattern": "^(?P<ordinal>\\d+)_",
+      "reservations": []
+    }
+  ]
+}
