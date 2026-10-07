@@ -1496,3 +1496,22 @@ Browser extensibility route helpers expose the shared core extensibility catalog
 ## Accounting close browser surface
 
 The Accounting route reuses fund-operations ledger views and now includes trial-balance source-event and approval drill-through affordances. Keep browser-only rendering in `src/screens/accounting-screen.tsx` and shared accounting close contracts in `src/features/accounting/accountingCloseModels.ts`.
+
+The close workspace (`/accounting`) exposes **Prepare next period**. Operators select an
+authoritative source plan, capture or reuse a retained template version, specify each task's
+calendar rule, select an authoritative target book and period, and resolve owner and policy
+changes before previewing. Calendar dates, dependency preservation, fresh evidence and sign-off
+requirements, stale-preview checks, and duplicate prevention are owned by shared close services.
+The browser never calculates rollover deadlines or copies completed controls. Prior completions,
+approvals, reviewed evidence, journal references and locks remain on their original period.
+
+All preparation reads and writes disable development fallback. Target-book discovery uses the
+authoritative source book's fund identity; stale or mismatched responses are discarded. A lost or
+interrupted creation response is retried with the same preview and idempotency key. A typed stale
+or missing preview response requires a new preview. Before creation, the browser saves only the
+opaque request identity in session storage. Reload and navigation recover that same request after
+fresh authorized source, template and book reads; no cached approval or preview state is reused.
+The creation result retains template version and history
+and links back to the prepared close scope. Reloaded plans expose their retained preparation
+lineage and creation history through the shared plan configuration. Focused coverage lives in
+`accounting-screen.prepare-next-period.test.tsx` and `close-preparation.api.test.ts`.
