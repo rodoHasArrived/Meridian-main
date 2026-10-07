@@ -1,11 +1,11 @@
 {
   "total_files": 699,
-  "total_lines": 155389,
+  "total_lines": 155443,
   "orphaned_count": 233,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 295,
-  "average_lines": 222.3,
+  "average_lines": 222.4,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2316,7 +2316,7 @@
     },
     {
       "path": "docs/engineering/pipeline-benchmark.md",
-      "line_count": 147,
+      "line_count": 183,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2772,7 +2772,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11506,
+      "line_count": 11509,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5452,7 +5452,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 945,
+      "line_count": 949,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5716,7 +5716,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 805,
+      "line_count": 816,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
