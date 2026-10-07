@@ -224,6 +224,16 @@ public static class CanonicalDisposalHistoryProjector
            acquisition.FunctionalCostBasis == poolAcquisition.FunctionalCostBasis &&
            acquisition.HoldingPeriodStartDate == poolAcquisition.HoldingPeriodStartDate &&
            acquisition.FaceValueTerms == poolAcquisition.FaceValueTerms &&
+           SameCorporateActionLineage(acquisition.CorporateActionLineage, poolAcquisition.CorporateActionLineage) &&
            acquisition.Evidence is { } evidence && poolAcquisition.Evidence is { } poolEvidence &&
            evidence.SequenceEqual(poolEvidence);
+
+    private static bool SameCorporateActionLineage(OpenLotCorporateActionLineageDto? left, OpenLotCorporateActionLineageDto? right)
+        => left is null ? right is null : right is not null &&
+           left.CorporateActionId == right.CorporateActionId && left.ActionType == right.ActionType &&
+           left.SourceCorporateActionId == right.SourceCorporateActionId &&
+           left.EffectiveDate == right.EffectiveDate && left.PredecessorTaxLotRecordId == right.PredecessorTaxLotRecordId &&
+           left.PredecessorVersion == right.PredecessorVersion && left.BasisAllocationPercent == right.BasisAllocationPercent &&
+           left.Role == right.Role && left.ReportingTags is { } tags && right.ReportingTags is { } poolTags &&
+           tags.SequenceEqual(poolTags, StringComparer.Ordinal);
 }

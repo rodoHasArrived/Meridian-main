@@ -190,6 +190,22 @@ The Asset Accounting Event Spine remains the only route to candidate preparation
 evidence validation, maker-checker approval, optimistic-concurrency checks, and durable posting.
 Neither the projector nor the mapper can append a journal directly.
 
+### Canonical successor lots
+
+The bounded `W10-LOT-002` continuation uses one retained successor instruction for cashless
+Reg S/144A exchange, whole-unit splits, stock merger and proportional two-successor advance
+refunding. The mapped projection retains the exact reviewed lot instruction through the governed
+spine. Independent approval is required. The PostgreSQL posting boundary locks current source and
+target scope and commits predecessor closure, successor openings, journal and immutable receipts
+in one transaction. Same-security splits explicitly opt into a basis-transfer journal.
+
+Successors preserve acquisition/holding dates, original FX, original and current currency bases,
+and immutable source-action lineage after later disposal. Refunded successors alone carry
+Schedule D tracking. Reporting validates the retained posting receipts and includes exact lot
+evidence under the report pack's checksums and signature. Unsupported cash components,
+corporate-action corrections and successor amortization require separately reviewed continuations.
+See the [lot convergence blueprint](../engineering/blueprints/security-lot-convergence-blueprint.md).
+
 ## Future Expansion Notes
 
 Initial implementation uses the Clearwater corporate-action methodology as an effective-dated

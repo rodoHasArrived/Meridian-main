@@ -498,7 +498,47 @@ passed; the latter ran 1,552 script tests with zero failures/errors, 16 existing
 existing quarantined modules. These results are retained in
 [PR #3102](https://github.com/rodoHasArrived/Meridian-main/pull/3102).
 
-Full local and hosted acceptance remain blocked by the unchanged dashboard's Tailwind 4/PostCSS
-configuration mismatch, also present on the implementation's `main` base. This evidence does not
-claim a green full gate or operator acceptance. `W10-LOT-002` remains `in_progress`: wider corporate-action and
-consumer parity, remaining convergence work and live shadow-operation acceptance remain open.
+The results above describe that bounded implementation head. The Tailwind 4/PostCSS prerequisite
+is corrected in the consolidated continuation below. Historical checks do not validate a later
+combined head or supply independent operator acceptance.
+
+### Consolidated lot posting and correction continuation (2026-10-07)
+
+[PR #3102](https://github.com/rodoHasArrived/Meridian-main/pull/3102) is the single review surface
+for the changes originally presented in #3109, #3102, #3093, #3067, #3070 and #3074.
+The successor path uses one `OpenLotSuccessorInstructionDto`, one atomic store implementation and
+migration `V_ledger_042__atomic_lot_successors.sql`. Its populated through-041 upgrade, historical
+predicate preservation, reapply, restart and failed-upgrade rollback audit remain attached to that
+migration. No historical migration is renumbered or overwritten.
+
+The governed path supports cashless Reg S/144A exchanges, whole-unit forward/reverse splits,
+stock mergers and proportional advance refundings. Each instruction fully closes one predecessor;
+exchange, split and merger create one successor, while refunding creates refunded/unrefunded face
+successors. Same-security splits explicitly opt into a basis-transfer journal; older operational
+and identifier-changing projection paths keep their existing behavior. The reviewed instruction
+survives Projected, Drafted and Approved lifecycle stages. Storage rechecks locked lot/reference
+versions, financial account, policy and canonical dimensions before committing every lot and journal
+leg together. Unsupported cash components, transfers and corporate-action corrections refuse posting.
+
+Original acquisition and current carrying bases remain separate in both currencies. Acquisition
+FX and holding dates are retained. Immutable acquisition lineage survives later relief, distinguishes
+exclusive refunded Schedule D treatment and prevents replaying the same source action under a new
+case. Reporting validates the immutable posting receipts, preserves exact batch JSON and hashes on
+journal rows, and includes `corporate-action-lot-evidence.json` under report-pack checksums and signing.
+AverageCost reporting compares acquisition evidence and successor lineage by value against its
+retained pre-relief pool; changed provenance fails certification even when all monetary facts match.
+
+Amortization reversal/rebook uses the latest unchanged retained mutation and exact original journal.
+A reviewed reversal restores the complete prior basis adjustment and inverses every financial line
+atomically. A same-date rebook requires that reversal receipt and approved correction lineage.
+Historical receipts retain their calculation and wire shape; newly drafted ordinary amortization
+keeps the current calculation, evidence and currency guards already on main. The PostgreSQL FIFO
+proof above covers partial/closing disposal after amortization and exact Reporting reconstruction.
+Backtesting and shared Security Master lot projections also use retained cost basis for long,
+explicit short and recovered legacy-short unrealized P&L, while chained simulation transformations
+replace only generated composite summaries and preserve operator prose.
+
+The consolidated branch carries the Tailwind 4/PostCSS migration and rebuilt workstation assets.
+Validation results belong to the canonical PR and its exact head. `W10-LOT-002` stays `in_progress`:
+other corporate actions, successor amortization, remaining cross-consumer parity and live
+shadow-operation acceptance still require their own implementation and independent review.

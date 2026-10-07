@@ -15,6 +15,7 @@
 - Accounting UI must expose validation state, source, approval state, and audit trail before commit.
 - Generated code must not silently create accounting records from unverified market data.
 - Ledger writes must fail closed when required source evidence, reviewer state, period posture, idempotency key, or version/concurrency guard is missing.
+- Supported canonical corporate actions bind reviewed predecessor/successor identities and commit lot mutations with the journal in one transaction. Retain original acquisition facts separately from current carrying basis and preserve source-action lineage after disposal; see the [lot convergence blueprint](../../engineering/blueprints/security-lot-convergence-blueprint.md) for treatments and remaining gates.
 - Payment-related work starts as payment intent, cash expectation, approval evidence, bank confirmation, ledger intent, reconciliation, and report linkage. Full live payment execution remains deferred unless roadmap evidence reopens it.
 
 ## AI Usage

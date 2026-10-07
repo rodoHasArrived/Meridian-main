@@ -6,7 +6,7 @@ using Meridian.Storage.Ledger;
 
 namespace Meridian.Tests.Storage;
 
-public sealed class CanonicalOpenLotConsumerTests
+public sealed partial class CanonicalOpenLotConsumerTests
 {
     [Theory]
     [InlineData(LedgerTaxLotReliefMethod.Fifo, 1)]

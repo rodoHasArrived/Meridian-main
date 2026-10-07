@@ -17,6 +17,9 @@ missing values, without writing environment defaults; omitted configuration pres
 resolution. Unified database URLs are resolved locally for explicit configurations.
 
 Ledger composition registers the read-only `CanonicalLotAmortizationService` alongside existing governed candidate services. Its registration preserves workstation startup when amortization stores are absent; preview requires the authoritative ledger, Security Master, and book-position stores and rejects missing authority before any read. Amortization posting remains on the shared Asset Accounting Event Spine approval and atomic ledger path.
+`CanonicalLotCorporateActionService` uses the same deferred authoritative stores to prepare the
+single retained successor instruction and draft it through the event spine. Preview preserves
+the chart path separately from the durable ledger account; posting requires independent approval.
 Primary-host storage composition supplies deferred Security Master and book-position resolvers to
 the PostgreSQL journal store. Deferred resolution preserves the shared singleton authorities while
 avoiding the journal/position constructor cycle; absent durable authority fails closed at posting.
