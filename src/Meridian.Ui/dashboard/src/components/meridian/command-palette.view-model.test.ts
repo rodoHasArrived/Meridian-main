@@ -33,6 +33,10 @@ describe("command palette view model", () => {
     ["import statement", "/accounting/statement-import"],
     ["accounting onboarding", "/accounting/reconciliation/external-gl"],
     ["onboard accounting", "/accounting/reconciliation/external-gl"],
+    ["group consolidation", "/accounting/ledger"],
+    ["intercompany balances", "/accounting/ledger"],
+    ["intercompany eliminations", "/accounting/ledger"],
+    ["elimination journals", "/accounting/ledger"],
     ["run a report", "/reporting/run"],
     ["historical prices", "/data/operations"],
     ["SQL", "/data/query"],
@@ -58,6 +62,18 @@ describe("command palette view model", () => {
 
     expect(cashLadder?.description).toBe("Review projected cash flows and upcoming funding needs.");
     expect(cashLadder?.description).not.toContain("cash forecast");
+  });
+
+  it("finds consolidation in the ledger tab while preserving the current Accounting book and period", () => {
+    const model = buildCommandPaletteViewModel(
+      "/accounting/ledger?view=trial-balance&fundProfileId=fund-alpha&ledgerBookId=book-alpha&periodId=2026-05&workflowStatus=Blocked",
+      undefined, {}, "group consolidation"
+    );
+    const ledger = model.filteredItems.find((item) => item.route.startsWith("/accounting/ledger"));
+
+    expect(ledger?.description).toContain("preview group consolidation");
+    expect(ledger?.description).toContain("elimination drafts for review");
+    expect(ledger?.route).toBe("/accounting/ledger?fundProfileId=fund-alpha&ledgerBookId=book-alpha&periodId=2026-05&workflowStatus=Blocked");
   });
 
   it("preserves the sidebar's operating scope on newly searchable destinations", () => {

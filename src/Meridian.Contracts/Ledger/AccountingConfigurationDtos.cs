@@ -803,7 +803,10 @@ public sealed record ManualJournalEntryDraftDto(
     bool RequiresValuationMarkEvidence = false,
     string? RecurringJournalEvidenceJson = null,
     string? RecurringJournalEvidenceDigest = null,
-    bool RequiresRecurringJournalEvidence = false)
+    bool RequiresRecurringJournalEvidence = false,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ConsolidationEvidenceJson = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ConsolidationEvidenceDigest = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool RequiresConsolidationEvidence = false)
 {
     public IReadOnlyList<JournalEntryLifecycleTransitionDto> LifecycleTransitions { get; init; } =
         LifecycleTransitions ?? [];
