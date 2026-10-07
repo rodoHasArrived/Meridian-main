@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FluentAssertions;
+using FluentAssertions.Equivalency;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FixedIncome;
@@ -481,14 +482,29 @@ public sealed partial class AtomicTaxLotJournalStoreTests
     public async Task CanonicalAmortization_DiscountCorrection_RestoresPriorBasisAndRebooksWithMonotonicVersions()
         => await AssertAmortCorrectionRoundTripAsync(premium: false);
 
-    private static async Task AssertAmortCorrectionRoundTripAsync(bool premium)
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task CanonicalAmortization_FirstPremiumCorrection_RestoresNullBasisAndRebooksWithMonotonicVersions()
+        => await AssertAmortCorrectionRoundTripAsync(premium: true, hasPriorAdjustment: false);
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task CanonicalAmortization_FirstDiscountCorrection_RestoresNullBasisAndRebooksWithMonotonicVersions()
+        => await AssertAmortCorrectionRoundTripAsync(premium: false, hasPriorAdjustment: false);
+
+    private static async Task AssertAmortCorrectionRoundTripAsync(bool premium, bool hasPriorAdjustment = true)
     {
         await using var fixture = await AmortFixture.CreateAsync(premium);
         var first = await fixture.Store.AppendAssetPostingAsync(fixture.Command());
-        var original = await fixture.Restart().AppendAssetPostingAsync(fixture.Command(
-            expectedLot: first.MutatedLots.Single().ToOpenLot(), asOf: new DateOnly(2026, 7, 1)));
+        var original = hasPriorAdjustment
+            ? await fixture.Restart().AppendAssetPostingAsync(fixture.Command(
+                expectedLot: first.MutatedLots.Single().ToOpenLot(), asOf: new DateOnly(2026, 7, 1)))
+            : first;
         var originalMutation = original.Mutations.Single();
-        originalMutation.LotBefore!.BasisAdjustment.Should().NotBeNull();
+        if (hasPriorAdjustment)
+            originalMutation.LotBefore!.BasisAdjustment.Should().NotBeNull();
+        else
+            originalMutation.LotBefore!.BasisAdjustment.Should().BeNull();
         var reversalCommand = fixture.Reverse(original);
 
         var reversed = await fixture.Restart().AppendAssetPostingAsync(reversalCommand);
@@ -497,8 +513,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         reversed.CorrectsMutationBatchId.Should().Be(original.MutationBatchId);
         reversed.Journal.SourceJournalEntryId.Should().Be(original.Journal.Entry.JournalEntryId);
         reversed.Mutations.Single().CorrectsMutationBatchId.Should().Be(original.MutationBatchId);
-        restored.ToOpenLot().Should().BeEquivalentTo(originalMutation.LotBefore.ToOpenLot() with
-        { Version = originalMutation.ResultVersion + 1 });
+        restored.ToOpenLot().Should().BeEquivalentTo(originalMutation.LotBefore!.ToOpenLot() with
+        { Version = originalMutation.ResultVersion + 1 }, options => AmortizationSnapshotOptions(options));
         JsonElement.DeepEquals(JsonSerializer.SerializeToElement(restored.BasisAdjustment),
             JsonSerializer.SerializeToElement(originalMutation.LotBefore.BasisAdjustment)).Should().BeTrue();
         foreach (var line in original.Journal.Entry.Lines)
@@ -524,15 +540,48 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         rebooked.CorrectsMutationBatchId.Should().Be(reversed.MutationBatchId);
         rebooked.Journal.SourceJournalEntryId.Should().Be(reversed.Journal.Entry.JournalEntryId);
         reloaded.ToOpenLot().Should().BeEquivalentTo(originalMutation.LotAfter.ToOpenLot() with
-        { Version = originalMutation.ResultVersion + 2 });
+        { Version = originalMutation.ResultVersion + 2 }, options => AmortizationSnapshotOptions(options));
         reloaded.BasisAdjustment!.MutationBatchId.Should().Be(rebooked.MutationBatchId);
 
         await fixture.LockPeriodAsync();
         (await fixture.Restart().AppendAssetPostingAsync(reversalCommand)).IsExactReplay.Should().BeTrue();
         (await fixture.Restart().AppendAssetPostingAsync(rebookCommand)).IsExactReplay.Should().BeTrue();
-        (await fixture.Store.GetByPeriodAsync(fixture.Period.PeriodId)).Should().HaveCount(4);
+        (await fixture.Store.GetByPeriodAsync(fixture.Period.PeriodId)).Should().HaveCount(hasPriorAdjustment ? 4 : 3);
         (await fixture.Store.ListOpenTaxLotsAsync(fixture.BookId, AmortAccount)).Single().Version
             .Should().Be(originalMutation.ResultVersion + 2);
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task CanonicalAmortization_UngovernedRemovalCannotUseVersionIncrementOrAnUnrelatedRetainedBatch()
+    {
+        await using var fixture = await AmortFixture.CreateAsync(premium: true);
+        var original = await fixture.Store.AppendAssetPostingAsync(fixture.Command());
+        await using var connection = new NpgsqlConnection(fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        foreach (var mutationStamp in new[]
+        {
+            "",
+            ", version = version + 1",
+            ", version = version + 1, last_mutation_batch_id = @unrelated_batch"
+        })
+        {
+            await using var removal = connection.CreateCommand();
+            removal.CommandText = $"""
+                update "{fixture.Options.SchemaName}".tax_lots
+                set basis_adjustment = null {mutationStamp}
+                where tax_lot_record_id = @lot;
+                """;
+            removal.Parameters.AddWithValue("lot", original.MutatedLots.Single().TaxLotRecordId);
+            removal.Parameters.AddWithValue("unrelated_batch", original.Mutations.Single().LotBefore!.LastMutationBatchId!.Value);
+            var remove = () => removal.ExecuteNonQueryAsync();
+            await remove.Should().ThrowAsync<PostgresException>()
+                .WithMessage("*Governed lot basis adjustments cannot be removed*");
+            (await fixture.Restart().ListOpenTaxLotsAsync(fixture.BookId, AmortAccount)).Single()
+                .Should().BeEquivalentTo(original.MutatedLots.Single(), options => AmortizationSnapshotOptions(options));
+        }
+        (await fixture.Restart().GetByPeriodAsync(fixture.Period.PeriodId)).Should().ContainSingle();
+        (await fixture.Restart().GetAtomicTaxLotPostingAsync(original.MutationBatchId))!.Mutations.Should().ContainSingle();
     }
 
     [LedgerDatabaseFact]
@@ -590,7 +639,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         (await fixture.Restart().GetByPeriodAsync(fixture.Period.PeriodId)).Should().ContainSingle();
         (await fixture.Restart().GetAtomicTaxLotPostingAsync(forged.MutationBatchId)).Should().BeNull();
         (await fixture.Restart().ListOpenTaxLotsAsync(fixture.BookId, AmortAccount)).Single()
-            .Should().BeEquivalentTo(original.MutatedLots.Single());
+            .Should().BeEquivalentTo(original.MutatedLots.Single(), options => AmortizationSnapshotOptions(options));
     }
 
     [LedgerDatabaseFact]
@@ -609,7 +658,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         (await fixture.Restart().GetByPeriodAsync(fixture.Period.PeriodId)).Should().HaveCount(2);
         (await fixture.Restart().GetAtomicTaxLotPostingAsync(ordinary.MutationBatchId)).Should().BeNull();
         (await fixture.Restart().ListOpenTaxLotsAsync(fixture.BookId, AmortAccount)).Single()
-            .Should().BeEquivalentTo(restored);
+            .Should().BeEquivalentTo(restored, options => AmortizationSnapshotOptions(options));
     }
 
     [LedgerDatabaseFact]
@@ -662,14 +711,14 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         (await fixture.Restart().GetByPeriodAsync(fixture.Period.PeriodId)).Should().ContainSingle();
         (await fixture.Restart().GetAtomicTaxLotPostingAsync(command.MutationBatchId)).Should().BeNull();
         (await fixture.Restart().ListOpenTaxLotsAsync(fixture.BookId, AmortAccount)).Single()
-            .Should().BeEquivalentTo(original.MutatedLots.Single());
+            .Should().BeEquivalentTo(original.MutatedLots.Single(), options => AmortizationSnapshotOptions(options));
         injection.CommandText = $"drop trigger reject_test_amort_reversal on \"{fixture.Options.SchemaName}\".tax_lot_mutations";
         await injection.ExecuteNonQueryAsync();
         var reversed = await fixture.Restart().AppendAssetPostingAsync(command);
         reversed.IsExactReplay.Should().BeFalse();
         reversed.MutatedLots.Single().BasisAdjustment.Should().BeNull();
         reversed.MutatedLots.Single().ToOpenLot().Should().BeEquivalentTo(original.Mutations.Single().LotBefore!.ToOpenLot() with
-        { Version = original.Mutations.Single().ResultVersion + 1 });
+        { Version = original.Mutations.Single().ResultVersion + 1 }, options => AmortizationSnapshotOptions(options));
         (await fixture.Restart().AppendAssetPostingAsync(command)).IsExactReplay.Should().BeTrue();
         (await fixture.Store.GetByPeriodAsync(fixture.Period.PeriodId)).Should().HaveCount(2);
     }
@@ -682,8 +731,13 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         (await fixture.Restart().GetByPeriodAsync(fixture.Period.PeriodId)).Should().HaveCount(journalCount);
         (await fixture.Restart().GetAtomicTaxLotPostingAsync(command.MutationBatchId)).Should().BeNull();
         (await fixture.Restart().ListOpenTaxLotsAsync(fixture.BookId, AmortAccount)).Single()
-            .Should().BeEquivalentTo(unchangedLot);
+            .Should().BeEquivalentTo(unchangedLot, options => AmortizationSnapshotOptions(options));
     }
+
+    private static EquivalencyOptions<T> AmortizationSnapshotOptions<T>(EquivalencyOptions<T> options)
+        => options.Using<JsonElement>(context =>
+                JsonElement.DeepEquals(context.Subject, context.Expectation).Should().BeTrue())
+            .WhenTypeIs<JsonElement>();
 
     internal static OpenLotAmortizationInstructionDto AmortPureInstruction(decimal price, decimal coupon,
         BondAmortizationMethod method, decimal? yield)
