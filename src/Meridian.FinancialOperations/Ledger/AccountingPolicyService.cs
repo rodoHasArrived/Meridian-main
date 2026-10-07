@@ -10,6 +10,11 @@ public interface IAccountingPolicyService
 {
     Task<AccountingPolicyDto> CreatePolicyAsync(CreateAccountingPolicyRequest request, CancellationToken ct = default);
 
+    /// <summary>Prevents policy mutation until the consolidation transaction has committed or rolled back.</summary>
+    Task<IAsyncDisposable> AcquireConsolidationAuthorityLeaseAsync(CancellationToken ct = default)
+        => Task.FromException<IAsyncDisposable>(new InvalidOperationException(
+            "The accounting policy provider cannot retain consolidation authority through commit."));
+
     Task<AccountingPolicyDto> ResolvePolicyAsync(AccountingPolicyQuery query, CancellationToken ct = default);
 
     Task<IReadOnlyList<AccountingPolicyDto>> ListPoliciesAsync(AccountingBasisKindDto? accountingBasis = null, CancellationToken ct = default);
@@ -39,7 +44,8 @@ public sealed record AccountingBasisProjectionRequest(
     LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating,
     LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null,
     Guid? LedgerBookId = null,
-    AccountingPostingCommandDto? PostingCommand = null);
+    AccountingPostingCommandDto? PostingCommand = null,
+    string? PolicyVersion = null);
 
 public sealed record AccountingBasisProjectionResult(
     AccountingPolicyDto Policy,
@@ -48,6 +54,7 @@ public sealed record AccountingBasisProjectionResult(
 public sealed class AccountingPolicyService : IAccountingPolicyService
 {
     private readonly ConcurrentDictionary<string, AccountingPolicyDto> _policies = new(StringComparer.OrdinalIgnoreCase);
+    private readonly SemaphoreSlim _consolidationAuthorityGate = new(1, 1);
 
     private readonly TimeProvider _timeProvider;
 
@@ -72,10 +79,17 @@ public sealed class AccountingPolicyService : IAccountingPolicyService
         }
     }
 
-    public Task<AccountingPolicyDto> CreatePolicyAsync(CreateAccountingPolicyRequest request, CancellationToken ct = default)
+    public async Task<IAsyncDisposable> AcquireConsolidationAuthorityLeaseAsync(CancellationToken ct = default)
+    {
+        await _consolidationAuthorityGate.WaitAsync(ct).ConfigureAwait(false);
+        return new ConsolidationAuthorityLease(_consolidationAuthorityGate);
+    }
+
+    public async Task<AccountingPolicyDto> CreatePolicyAsync(CreateAccountingPolicyRequest request, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
+        await using var authorityLease = await AcquireConsolidationAuthorityLeaseAsync(ct).ConfigureAwait(false);
 
         var policy = new AccountingPolicyDto(
             PolicyId: RequireText(request.PolicyId, nameof(request.PolicyId)),
@@ -94,7 +108,7 @@ public sealed class AccountingPolicyService : IAccountingPolicyService
             RulePack: NormalizeRulePack(request.RulePack, request.PolicyId, request.Version));
 
         _policies[Key(policy.AccountingBasis, policy.PolicyId, policy.Version)] = policy;
-        return Task.FromResult(policy);
+        return policy;
     }
 
     public Task<AccountingPolicyDto> ResolvePolicyAsync(AccountingPolicyQuery query, CancellationToken ct = default)
@@ -105,6 +119,8 @@ public sealed class AccountingPolicyService : IAccountingPolicyService
             .Where(policy => policy.AccountingBasis == query.AccountingBasis)
             .Where(policy => string.IsNullOrWhiteSpace(query.PolicyId)
                              || string.Equals(policy.PolicyId, query.PolicyId, StringComparison.OrdinalIgnoreCase))
+            .Where(policy => string.IsNullOrWhiteSpace(query.PolicyVersion)
+                             || string.Equals(policy.Version, query.PolicyVersion, StringComparison.Ordinal))
             .Where(policy => policy.EffectiveFrom <= effectiveDate
                              && (policy.EffectiveTo is null || effectiveDate <= policy.EffectiveTo.Value))
             .Where(policy => MatchesOptionalTextScope(policy.FundProfileId, query.FundProfileId))
@@ -137,6 +153,17 @@ public sealed class AccountingPolicyService : IAccountingPolicyService
         return Task.FromResult<IReadOnlyList<AccountingPolicyDto>>(results);
     }
 
+    private sealed class ConsolidationAuthorityLease(SemaphoreSlim gate) : IAsyncDisposable
+    {
+        private SemaphoreSlim? _gate = gate;
+
+        public ValueTask DisposeAsync()
+        {
+            Interlocked.Exchange(ref _gate, null)?.Release();
+            return ValueTask.CompletedTask;
+        }
+    }
+
     private static IReadOnlyList<AccountingPolicyDto> BuildDefaultPolicies()
     {
         var createdAt = DateTimeOffset.Parse("2026-01-01T00:00:00Z");
@@ -147,7 +174,14 @@ public sealed class AccountingPolicyService : IAccountingPolicyService
             Default(AccountingBasisKindDto.Gaap, "gaap-default-v1", "v1", "Default GAAP basis policy", AccountingTreatmentKindDto.Accrual),
             Default(AccountingBasisKindDto.Cash, "cash-default-v1", "v1", "Default cash basis policy", AccountingTreatmentKindDto.General),
             Default(AccountingBasisKindDto.Tax, "tax-default-v1", "v1", "Default tax basis policy", AccountingTreatmentKindDto.TaxLotRelief),
-            Default(AccountingBasisKindDto.Statutory, "stat-default-v1", "v1", "Default statutory basis policy", AccountingTreatmentKindDto.General)
+            Default(AccountingBasisKindDto.Statutory, "stat-default-v1", "v1", "Default statutory basis policy", AccountingTreatmentKindDto.General),
+            new AccountingPolicyDto("consolidation-v1", AccountingBasisKindDto.Primary, "w10-v1",
+                "Two-entity same-currency receivable/payable consolidation", start, null, false, "{}", createdAt,
+                RulePack: new AccountingPolicyRulePackDto("consolidation.rules", "w10-v1",
+                [new AccountingPolicyRuleDto("consolidation.receivable-payable", AccountingTreatmentKindDto.ConsolidationElimination,
+                    RuleVersion: "w10-v1", SourceEventType: "Consolidation", JournalTemplateId: "intercompany-receivable-payable-v1",
+                    RequiresEvidence: true, RequiresApproval: true, AllowsAutoPosting: false,
+                    Description: "Two directly wholly owned entities; Primary basis; same currency; reciprocal receivable/payable only.")]))
         ];
 
         AccountingPolicyDto Default(
@@ -286,7 +320,8 @@ public sealed class AccountingBasisProjectionService(IAccountingPolicyService ac
                     request.FundProfileId,
                     request.FundStructureNodeId,
                     request.InstrumentId,
-                    request.SourceEventId),
+                    request.SourceEventId,
+                    request.PolicyVersion),
                 ct)
             .ConfigureAwait(false);
 
