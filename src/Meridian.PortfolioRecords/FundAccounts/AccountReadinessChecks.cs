@@ -35,8 +35,11 @@ internal static class AccountReadinessChecks
                 latestSync.RawEvidencePath ?? latestSync.ProjectionEvidencePath);
         }
 
-        if (latestSync is { ProviderLinkStatus: AccountProviderLinkStatusDto.Degraded
-            or AccountProviderLinkStatusDto.SyncPending or AccountProviderLinkStatusDto.SyncFailed })
+        if (latestSync is
+            {
+                ProviderLinkStatus: AccountProviderLinkStatusDto.Degraded
+            or AccountProviderLinkStatusDto.SyncPending or AccountProviderLinkStatusDto.SyncFailed
+            })
         {
             yield return new AccountReadinessIssueDto(
                 "account.provider_link.sync_unavailable",
