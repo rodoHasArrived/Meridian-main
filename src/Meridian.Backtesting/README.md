@@ -51,7 +51,9 @@ Portfolio asset events fan out to every brokerage account holding the source sym
 transformations apportion successor shares through exact FIFO entitlements. Fractional entitlements
 carry their own basis across lot boundaries, and a combined whole share receives a deterministic
 composite lot/fill identity plus immutable component basis provenance. Chained actions scale the
-original components instead of collapsing them into the intermediate synthetic lot. Cash-in-lieu
+original components instead of collapsing them into the intermediate synthetic lot. Successor notes
+retain operator text and replace generated composite summaries with only the current component
+lineage; a single-component successor no longer claims the prior composite's contributors. Cash-in-lieu
 disposals relieve the remaining fractional securities basis or short payable and recognize the
 resulting account-scoped gain or loss in both the ledger and asset-event cash-flow evidence, including
 when no successor position remains. Canonical symbol attribution is still fill-derived: it neither

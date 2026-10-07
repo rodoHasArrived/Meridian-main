@@ -340,11 +340,80 @@ public sealed class CanonicalOpenLotConsumerTests
         {
             CanonicalLots = [canonical with
             {
-                Acquisition = canonical.Acquisition with { Evidence = canonical.Acquisition.Evidence.ToArray() }
+                Acquisition = canonical.Acquisition with
+                {
+                    Evidence = canonical.Acquisition.Evidence.Select(static evidence => evidence with { }).ToArray()
+                }
             }]
         };
         CanonicalDisposalHistoryProjector.Project(repaired, journal, lot.LedgerBookId, "USD")
             .CostBasis.Should().Be(300m);
+    }
+
+    [Theory]
+    [InlineData("id")]
+    [InlineData("uri")]
+    [InlineData("hash")]
+    [InlineData("source-system")]
+    [InlineData("source-reference")]
+    [InlineData("review-status")]
+    [InlineData("reviewer")]
+    [InlineData("reviewed-at")]
+    [InlineData("effective-date")]
+    [InlineData("version")]
+    [InlineData("retained-at")]
+    [InlineData("retained-by")]
+    [InlineData("subject-type")]
+    [InlineData("subject-id")]
+    [InlineData("missing")]
+    [InlineData("extra")]
+    [InlineData("null")]
+    public void Reporting_AverageCostRejectsChangedAcquisitionEvidenceWithUnchangedFacts(string fault)
+    {
+        var lot = DurableLot(1);
+        var canonical = lot.ToOpenLot();
+        var journal = DisposalJournal(lot);
+        var evidence = canonical.Acquisition.Evidence[0];
+        var changed = fault switch
+        {
+            "id" => evidence with { EvidenceId = "different-evidence" },
+            "uri" => evidence with { EvidenceUri = "evidence://different/source" },
+            "hash" => evidence with { ContentHashSha256 = new string('b', 64) },
+            "source-system" => evidence with { SourceSystem = "different-custodian" },
+            "source-reference" => evidence with { SourceReference = "different-reference" },
+            "review-status" => evidence with { ReviewStatus = "Pending" },
+            "reviewer" => evidence with { ReviewedBy = "different-reviewer" },
+            "reviewed-at" => evidence with { ReviewedAtUtc = evidence.ReviewedAtUtc.AddMinutes(1) },
+            "effective-date" => evidence with { EffectiveDate = evidence.EffectiveDate.AddDays(1) },
+            "version" => evidence with { EvidenceVersion = evidence.EvidenceVersion + 1 },
+            "retained-at" => evidence with { RetainedAtUtc = evidence.RetainedAtUtc.AddMinutes(1) },
+            "retained-by" => evidence with { RetainedBy = "different-retainer" },
+            "subject-type" => evidence with { SubjectType = "DifferentSubject" },
+            "subject-id" => evidence with { SubjectId = Guid.NewGuid().ToString("D") },
+            _ => evidence with { }
+        };
+        var altered = canonical with
+        {
+            Acquisition = canonical.Acquisition with
+            {
+                Evidence = fault switch
+                {
+                    "missing" => [],
+                    "extra" => [evidence, evidence with { EvidenceId = "additional-evidence" }],
+                    "null" => null!,
+                    _ => [changed]
+                }
+            }
+        };
+        var history = History(lot, journal, altered) with
+        {
+            ReliefMethod = LedgerTaxLotReliefMethod.AverageCost,
+            PoolLots = [canonical]
+        };
+
+        var act = () => CanonicalDisposalHistoryProjector.Project(history, journal, lot.LedgerBookId, "USD");
+
+        act.Should().Throw<LedgerValidationException>().WithMessage("*acquisition*pool snapshot*");
     }
 
     [Fact]

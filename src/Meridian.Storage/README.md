@@ -51,6 +51,12 @@ corporate-action effective date while preserving their inherited acquisition dat
 append cannot bypass the atomic successor boundary. Disposal eligibility excludes successors
 before their retained corporate-action opening date.
 
+Current-basis disposal follows with `V_ledger_041`; both migrations remain in their original order.
+AverageCost reporting certifies each canonical acquisition against its retained pre-relief pool,
+including the ordered evidence identities by value. Separately deserialized lists and evidence
+records with equal facts are accepted; changed source, hash, review, retention, subject, or sequence
+contents block canonical reporting. `CanonicalOpenLotConsumerTests` covers this certification boundary.
+
 The durable replacement resolver excludes relieved lot IDs only within the disposing account's
 complete identity. LedgerBook scope retains same-ID acquisitions in sibling accounts. Prior-deferral
 basis adjustments use that same full account identity (name, type, symbol and financial account ID),

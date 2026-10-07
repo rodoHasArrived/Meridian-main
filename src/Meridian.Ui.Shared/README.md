@@ -2161,6 +2161,9 @@ provider-to-Security-Master trust without rebuilding mapping logic locally. The 
 composes the Security Master operations workbench with identity confidence, provider evidence,
 terms, readiness, and handoff panels, keeping valuation-ready, ledger-ready, reconciliation-ready,
 close-ready, and report-ready posture server-owned for browser and WPF clients.
+Scoped run-snapshot open lots use retained component cost basis for unrealized P&L in both
+directions, including legacy short lots whose direction is recovered from the account position.
+Their displayed entry price does not replace the retained basis when the two differ.
 Security Master trust and conflict summaries use downstream Data, Accounting, and Reporting
 workflow labels so browser and WPF clients do not surface retained Governance-era wording for
 operator-facing review.
