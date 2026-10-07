@@ -3448,6 +3448,7 @@ Meridian-main
 │   │   ├── screenshot_workflow_plan.py
 │   │   ├── SharedBuild.ps1
 │   │   ├── SharedCheckpoint.ps1
+│   │   ├── SharedDesktopBuild.ps1
 │   │   ├── SharedPreflight.ps1
 │   │   ├── SharedWorkflowProfiles.ps1
 │   │   ├── summarize-desktop-workflow-bundle.ps1
@@ -11320,6 +11321,7 @@ Meridian-main
 │   │   ├── test_consumer_certification_processes.py
 │   │   ├── test_consumer_predecessor.py
 │   │   ├── test_dashboard_package_lock.py
+│   │   ├── test_desktop_build_receipt.py
 │   │   ├── test_desktop_msix_packaging.py
 │   │   ├── test_desktop_screen_blueprint_checklist.py
 │   │   ├── test_direct_lending_outbox_claim_sql.py
