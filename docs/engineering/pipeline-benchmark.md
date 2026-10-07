@@ -48,7 +48,7 @@ uses fixed timestamps and fixtures matching the existing allocation tests:
 | Stages | Measured work |
 | --- | --- |
 | `DedupKey_CacheHit`, `DedupKey_CacheMiss` | Seeded in-memory ledger lookup and fresh key computation with a warm prefix cache. Persistence is outside these stage budgets. |
-| `WalChecksum_Small`, `WalChecksum_Medium_1KB`, `WalChecksum_Large_4KB` | Production checksum core for 64/900/4096-byte ASCII payloads, using the existing benchmark hook. Final hex-string materialization and disk I/O are excluded by the existing allocation contract. The current implementation's 4608-byte stack buffer covers these inputs. |
+| `WalChecksum_Small`, `WalChecksum_Medium_1KB`, `WalChecksum_Large_4KB` | Production WAL v2 checksum core for 64/900/4096-byte ASCII payloads, using the existing benchmark hook. This includes UTF-8 encoding, binary field framing, canonical lossless PackBits encoding and BLAKE3-256 hashing. Final hex-string materialization and disk I/O are excluded by the existing allocation contract. Both 4608-byte stack buffers cover these inputs. |
 | `NewlineScan_Portable` | Portable `SearchValues` scan over a 256-byte buffer with fixed 128-byte lines. |
 | `AlpacaParse_Trade_SourceGenerated`, `AlpacaParse_Quote_SourceGenerated` | Production source-generated parsing of fixed wire-message fixtures. |
 
@@ -59,6 +59,42 @@ Mean nanoseconds and allocated bytes per operation are validated; the receipt al
 reports `1e9 / mean_ns` as derived stage operations/second. This is not end-to-end
 pipeline throughput. Sustained-load soak, backpressure, disk throughput, long-run
 resource stability and Python skip inventory remain separate PRD-112 slices.
+
+## WAL checksum format and compatibility
+
+New segments use `MDCWAL02|2|<creation timestamp>` and lowercase, 64-character
+BLAKE3-256 digests. Existing `MDCWAL01|1|<creation timestamp>` segments retain the
+original SHA-256 checksum of `sequence|timestamp:O|recordType|payload` encoded as
+UTF-8. Reads select the algorithm from the exact supported magic/version pair;
+there is no digest guessing or fallback. Repair preserves each segment's original
+header and valid digest strings. Unsupported or malformed recognized WAL formats
+stop recovery even in Skip/Alert mode, and remain ineligible for truncation.
+The distinct v2 magic also prevents older binaries' magic-only truncation check
+from deleting v2 segments. Drain retained v2 segments before downgrading to a
+binary that understands only v1; such a binary cannot replay v2 records.
+
+The canonical v2 hash input starts with four little-endian values: signed 64-bit
+sequence, signed 64-bit `DateTime.ToBinary()`, signed 32-bit UTF-8 record-type length
+and signed 32-bit UTF-8 payload length. The exact UTF-8 field bytes follow in that
+order, using the existing replacement fallback. Length framing protects field
+boundaries independently of delimiter characters.
+
+All these bytes are encoded with canonical PackBits before hashing. Literal
+blocks of 1..128 bytes use token `length - 1` followed by those bytes. Runs of at
+least three equal bytes use token `257 - length` followed by the byte, split at
+128 bytes; a two-byte remainder uses token 255 and a one-byte remainder is a
+separate one-byte literal. Literal regions are also split at 128 bytes. Token 128
+is never emitted. The earliest run is always selected, so scalar and accelerated
+scans produce identical bytes. PackBits is lossless and the field frame is
+unambiguous: distinct framed records cannot become identical hash inputs. The
+cryptographic digest remains 256 bits; this is not a noncryptographic checksum.
+
+Every checksum scans and hashes its complete input. No record or digest is cached.
+The fixed, repeated-ASCII budget fixtures compress particularly well; a passing
+stage result does not establish the same latency for incompressible payloads or
+end-to-end storage. Component profiles also retain varied inputs and JSON records
+to make this limit visible. General-purpose LZ4 was rejected for canonicalization
+because its 32-bit and 64-bit encoders can produce different bytes for one input.
 
 ## Evidence and failure behavior
 

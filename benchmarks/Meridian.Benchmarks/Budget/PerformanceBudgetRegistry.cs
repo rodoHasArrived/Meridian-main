@@ -50,8 +50,8 @@ public static class PerformanceBudgetRegistry
         MaxMeanNanosPerEvent: 800);
 
     // -----------------------------------------------------------------------
-    // WAL checksum computation — BOTTLENECK_REPORT.md P0 #2 (already fixed)
-    // IncrementalHash + stackalloc; see WalChecksumBenchmarks for historical baseline
+    // WAL checksum computation — versioned production core, excluding final hex materialization.
+    // Canonical encoding + BLAKE3-256 + stackalloc; historical SHA-256 measurements remain available.
     // -----------------------------------------------------------------------
 
     /// <summary>
@@ -66,7 +66,7 @@ public static class PerformanceBudgetRegistry
 
     /// <summary>
     /// WAL checksum — medium payload (~1 KB, typical trade event).
-    /// Still within the <c>stackalloc</c> path (≤1024 bytes); zero managed allocations.
+    /// Still within the <c>stackalloc</c> path; zero managed allocations.
     /// </summary>
     public static readonly IPerformanceBudget WalChecksumMedium = new PerformanceBudget(
         StageName: "WalChecksum_Medium_1KB",
@@ -75,8 +75,8 @@ public static class PerformanceBudgetRegistry
 
     /// <summary>
     /// WAL checksum — large payload (~4 KB, L2 snapshot).
-    /// Exceeds the <c>stackalloc</c> threshold; one <see cref="System.Buffers.ArrayPool{T}"/>
-    /// rent is expected. Budget: ≤1024 managed bytes (array wrapper only, not the rented buffer).
+    /// The recorded 4096-byte ASCII fixture fits both stack buffers. Larger encodings use
+    /// <see cref="System.Buffers.ArrayPool{T}"/>. The existing 1024-byte allocation cap is unchanged.
     /// </summary>
     public static readonly IPerformanceBudget WalChecksumLarge = new PerformanceBudget(
         StageName: "WalChecksum_Large_4KB",

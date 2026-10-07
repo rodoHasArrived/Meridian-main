@@ -24,6 +24,9 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
 
+    <!-- Versioned WAL cryptographic checksums -->
+    <PackageReference Include="Blake3.Native" />
+
     <!-- Compression -->
     <PackageReference Include="K4os.Compression.LZ4.Streams" />
     <PackageReference Include="ZstdSharp.Port" />
