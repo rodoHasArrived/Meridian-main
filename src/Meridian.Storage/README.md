@@ -11,6 +11,15 @@ last_reviewed: 2026-10-06
 
 # src/Meridian.Storage
 
+Consolidation append validates explicit approval, reviewed lines, currency, correction ancestry and
+source evidence. Its owned transaction excludes ledger-book changes and retains an authoritative
+ownership/policy validation lease through journal commit. Ownership locks use the configured fund
+structure database and schema and exclude new competing claims as well as updates. Missing authority
+providers and caller-owned transactions refuse consolidation posting. Under the existing global
+ledger audit lock it also rechecks both source books and the elimination book as of the reviewed
+date, including earlier periods and backdated journals. Changed authority or sources require renewed review. See
+[consolidation scope](../../docs/domain/intercompany-consolidation.md).
+
 Atomic file-write diagnostics retain operation outcomes, byte counts, OS error numbers and exception
 types. Paths, file contents, checksum values and exception messages are omitted because they can
 contain financial account identities or other private data.
@@ -53,6 +62,8 @@ ID is absent; a mapped asset account cannot silently transfer the lot.
 Atomic commands require the canonical `AssetAccounting.CorporateAction` type, approved state,
 retained approval identity, named actor and complete typed context. Corrected batch/source-journal
 metadata, reversal/rebook intents and closing-entry posting kinds refuse before any journal or lot write.
+Both public journal-only append paths reject successor instructions. The private atomic lot append
+path also refuses consolidation evidence, whose standalone transaction must hold its own authority lease.
 Migration 042 leaves earlier batches unchanged. Historical quantity reads open successors on the
 corporate-action effective date while preserving their inherited acquisition date. Journal-only
 append cannot bypass the atomic successor boundary. Disposal eligibility excludes successors

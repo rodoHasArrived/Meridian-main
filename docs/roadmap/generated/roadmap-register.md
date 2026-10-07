@@ -1261,7 +1261,7 @@ Rank 10 of the 2026-07 W10 depth slate and one of its four new-capability rows, 
 
 ### Current Summary
 
-Rank 11 of the 2026-07 W10 depth slate. Consolidation elimination already exists as an accounting treatment kind selected through the accounting policy rule, but no rule produces eliminations and the consolidated trial balance sums its sub-ledgers with no elimination step, so consolidated views double-count intercompany balances. This row defines that treatment on the existing policy seam rather than introducing a parallel discriminator, and adds an unmatched-intercompany report. Scope is deliberately limited to wholly owned fully consolidated entities so the work stops short of the deferred capital-structure modeling boundary; partial consolidation and minority interest are excluded. Known source constraints, including how entity and counterparty dimensions relate and where authoritative ownership lives, are recorded in docs/product/plans/w10-depth-slate-2026-07.md.
+Rank 11 of the 2026-07 W10 depth slate. The first slice implements the existing ConsolidationElimination policy treatment for two directly wholly owned entities in one currency, authoritative effective-dated perimeter checks, reciprocal receivable/payable matching, reviewed drafts, freshness guards, idempotent reruns and linked adjustments. The shared Accounting view distinguishes gross, proposed, posted, consolidated and unmatched balances with source drill-through. Scope and evidence paths are recorded in docs/domain/intercompany-consolidation.md. Full status remains planned because governed FX translation and desktop presentation are outside the first slice; partial consolidation and minority interest remain excluded.
 
 ### Exit Criteria
 

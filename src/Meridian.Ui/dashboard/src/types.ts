@@ -9,6 +9,7 @@ export * from "./types/lifecycle";
 export * from "./types/mark-freshness";
 export * from "./types/market-data";
 export * from "./types/canonical-symbol";
+export * from "./types/consolidation";
 export * from "./types/provider-accounting";
 export * from "./types/provider-integration-provenance";
 export * from "./types/reporting-governance";
