@@ -194,15 +194,20 @@ $baselineSha = git rev-parse --verify 'origin/main^{commit}'
 # Local, database-free migration inventory and safety checks
 python build/scripts/schema-control.py inventory --base-ref $baselineSha
 
-# Rebuild and verify against a disposable PostgreSQL database
+# Rebuild and verify with an owned disposable PostgreSQL container (requires Docker)
 python -m pip install --requirement tools/schema_control/requirements.txt
-python build/scripts/schema-control.py verify `
-  --database-url "postgresql://meridian:meridian@localhost:5432/meridian_schema_control" `
+python build/scripts/schema-control.py local `
   --base-ref $baselineSha
 
 # Generate a hosted snapshot artifact for review
 gh workflow run schema-control.yml --ref <branch> -f mode=snapshot -f baseline_ref=$baselineSha
 ```
+
+The local command allocates a fresh container, host port, and retained candidate directory for
+each run, so consecutive and concurrent worktree checks need no manual database reset or port
+selection. It retains verification and PostgreSQL logs and cleans up its owned resources after
+completion or cancellation. Use `local --mode snapshot` to prepare a reviewed candidate;
+`promote --candidate-root <printed-candidate-directory>` remains an explicit separate command.
 
 PR checks compare against the pull-request event's base SHA. Both manual modes require an explicit
 `baseline_ref`, resolved once to a commit. Run evidence records the baseline and the actual

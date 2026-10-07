@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import os
 import subprocess
@@ -182,6 +184,47 @@ class SchemaControlCliTests(unittest.TestCase):
             if command in {"snapshot", "verify"}:
                 argv.extend(["--database-url", "postgresql://example"])
             self.assertEqual(command, parse_args(argv).command)
+
+    def test_local_defaults_to_owned_verification_without_connection_options(self) -> None:
+        args = parse_args(["local"])
+        self.assertEqual("verify", args.mode)
+        self.assertEqual(60.0, args.readiness_timeout)
+        self.assertFalse(hasattr(args, "database_url"))
+        self.assertFalse(hasattr(args, "candidate_root"))
+
+    def test_local_rejects_promotion_and_invalid_readiness_timeouts(self) -> None:
+        for arguments in (
+            ["--mode", "promote"],
+            ["--readiness-timeout", "0"],
+            ["--readiness-timeout", "-1"],
+            ["--readiness-timeout", "nan"],
+            ["--readiness-timeout", "inf"],
+            ["--database-url", "postgresql://shared"],
+            ["--candidate-root", "shared-candidate"],
+        ):
+            with self.subTest(arguments=arguments), contextlib.redirect_stderr(io.StringIO()):
+                with self.assertRaises(SystemExit) as raised:
+                    parse_args(["local", *arguments])
+                self.assertEqual(2, raised.exception.code)
+
+    def test_local_dispatches_snapshot_options_and_preserves_exit_status(self) -> None:
+        with (
+            patch("tools.schema_control.cli._load_json", return_value={}),
+            patch("tools.schema_control.disposable.run_disposable", return_value=130) as run,
+        ):
+            result = main([
+                "--root", "/tmp/schema-checkout", "--config", "custom.json",
+                "--policies", "policies.json", "--waivers", "waivers.json",
+                "local", "--mode", "snapshot", "--base-ref", "baseline",
+                "--image", "postgres:16.14-alpine", "--readiness-timeout", "25",
+            ])
+
+        self.assertEqual(130, result)
+        run.assert_called_once_with(
+            root=Path("/tmp/schema-checkout").resolve(), config={}, mode="snapshot",
+            base_ref="baseline", config_path="custom.json", policies_path="policies.json",
+            waivers_path="waivers.json", image="postgres:16.14-alpine", readiness_timeout=25.0,
+        )
 
     def test_inventory_returns_one_for_duplicate_tracked_ordinal(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

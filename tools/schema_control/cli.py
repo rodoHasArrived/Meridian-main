@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import shutil
 import subprocess
 import sys
@@ -724,6 +725,13 @@ def _promote(root: Path, config: Mapping[str, Any], candidate_root: Path) -> Non
             remove_path(backup)
 
 
+def _positive_seconds(value: str) -> float:
+    seconds = float(value)
+    if not math.isfinite(seconds) or seconds <= 0:
+        raise argparse.ArgumentTypeError("Timeout must be a finite positive number of seconds.")
+    return seconds
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Build and verify Meridian PostgreSQL schema artifacts."
@@ -760,6 +768,14 @@ def build_parser() -> argparse.ArgumentParser:
             "--candidate-root", default="build/schema-control/candidate"
         )
 
+    local = subparsers.add_parser(
+        "local", help="Verify or snapshot using an owned disposable PostgreSQL container."
+    )
+    local.add_argument("--mode", choices=("verify", "snapshot"), default="verify")
+    local.add_argument("--base-ref", default=None)
+    local.add_argument("--image", default=None, help="Override the registry's PostgreSQL image.")
+    local.add_argument("--readiness-timeout", type=_positive_seconds, default=60.0)
+
     promote = subparsers.add_parser(
         "promote", help="Copy a reviewed candidate into committed outputs."
     )
@@ -778,6 +794,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         config = _load_json(_resolve(root, args.config))
         policies = _load_json(_resolve(root, args.policies))
         waivers = _load_json(_resolve(root, args.waivers))
+        if args.command == "local":
+            from .disposable import run_disposable
+
+            return run_disposable(
+                root=root,
+                config=config,
+                mode=args.mode,
+                base_ref=args.base_ref,
+                config_path=args.config,
+                policies_path=args.policies,
+                waivers_path=args.waivers,
+                image=args.image,
+                readiness_timeout=args.readiness_timeout,
+            )
         if args.command == "inventory":
             _, manifest = _migration_manifest(root, config, waivers, args.base_ref)
             write_json_if_changed(_resolve(root, args.output), manifest)

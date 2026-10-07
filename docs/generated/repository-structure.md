@@ -11434,6 +11434,7 @@ Meridian-main
 │   │   ├── test_schema_control_contracts.py
 │   │   ├── test_schema_control_dependencies.py
 │   │   ├── test_schema_control_diffing.py
+│   │   ├── test_schema_control_disposable.py
 │   │   ├── test_schema_control_migrations.py
 │   │   ├── test_schema_control_policies.py
 │   │   ├── test_schema_control_render.py
@@ -11514,6 +11515,7 @@ Meridian-main
 │   │   ├── contracts.py
 │   │   ├── dependencies.py
 │   │   ├── diffing.py
+│   │   ├── disposable.py
 │   │   ├── migrations.py
 │   │   ├── policies.py
 │   │   ├── README.md
