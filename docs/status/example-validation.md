@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1027 |
-| Valid | 586 |
+| Total code blocks | 1028 |
+| Valid | 587 |
 | Invalid | 0 |
 | Skipped | 441 |
 
@@ -18,7 +18,7 @@
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 107 | 0 | 0 | 107 |
-| `bash` | 184 | 184 | 0 | 0 |
+| `bash` | 185 | 185 | 0 | 0 |
 | `cpp` | 1 | 0 | 0 | 1 |
 | `csharp` | 304 | 304 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
@@ -162,6 +162,7 @@ No invalid code examples found.
 | `docs/status/README.md` | 1 |
 | `docs/status/evidence/dk1-pilot-parity-runbook.md` | 1 |
 | `docs/status/evidence/prd-106-portfolio-snapshot-hardening.md` | 1 |
+| `docs/testing/README.md` | 1 |
 | `docs/testing/WAVE2_ACCEPTANCE_TESTS.md` | 3 |
 | `docs/testing/alpaca-paper-portfolio-sandbox.md` | 1 |
 | `docs/testing/endpoint-fixture-isolation.md` | 1 |
