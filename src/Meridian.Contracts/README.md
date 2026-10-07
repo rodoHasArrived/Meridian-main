@@ -16,6 +16,11 @@ and journal/line identities. Generated amount source evidence additionally carri
 `SourceScope` and `SourceSubjectId`, so historical opening-balance support preserves its own posted
 period while the shared proof drawer and guarded source route remain bound to the selected report.
 
+`Ledger/ConsolidationDtos.cs` defines the two-entity same-currency request, retained source/version
+evidence and shared gross/proposed/posted/consolidated read model. Manual journal drafts retain
+server-owned consolidation evidence, digest and required-evidence marker across the existing review
+lifecycle. Proposed balances and unmatched amounts are distinct from posted accounting truth.
+
 `Workstation/OnboardingDtos.cs` defines bounded onboarding scope, owner criteria, exact source
 snapshots, consecutive comparisons, difference assignments, independent review decisions and frozen
 readiness packets. Account populations use financial account GUIDs; financial comparisons use
