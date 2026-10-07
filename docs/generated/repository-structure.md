@@ -7135,6 +7135,7 @@ Meridian-main
 │   │   │   │   │   ├── operations-continuity-screen.tsx
 │   │   │   │   │   ├── operations-continuity-screen.view-model.test.ts
 │   │   │   │   │   ├── operations-continuity-screen.view-model.ts
+│   │   │   │   │   ├── operations-continuity-screen.workflow-selection.test.ts
 │   │   │   │   │   ├── operations-continuity-screen.workflow-selection.ts
 │   │   │   │   │   ├── operations-record-release-screen.test.tsx
 │   │   │   │   │   ├── operations-record-release-screen.tsx
@@ -11229,6 +11230,7 @@ Meridian-main
 │   │   │   ├── MessagingHubViewModelTests.cs
 │   │   │   ├── NotificationCenterViewModelTests.cs
 │   │   │   ├── OperationsContinuityViewModelTests.cs
+│   │   │   ├── OperationsContinuityViewModelTests.SelectionConsistency.cs
 │   │   │   ├── OperationsContinuityViewModelTests.SharedBlockers.cs
 │   │   │   ├── OperationsRecordReleaseViewModelTests.cs
 │   │   │   ├── OperatorReadinessConsoleViewModelTests.cs

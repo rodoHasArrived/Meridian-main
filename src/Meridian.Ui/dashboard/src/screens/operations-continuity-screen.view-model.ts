@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import { formatDate, formatDateOnly } from "@/screens/operations-continuity-screen.date-format";
-import { compareWorkflowSummaries, workflowMatchesSummary } from "@/screens/operations-continuity-screen.workflow-selection";
+import { collectCloseWorkflowEvidenceLinks, compareWorkflowSummaries, workflowMatchesPublicationSnapshot, workflowMatchesSummary } from "@/screens/operations-continuity-screen.workflow-selection";
 import {
   getOperationsCloseCalendar,
   getFinancialOperationsCommandCenter,
@@ -1020,14 +1020,16 @@ export function buildOperationsContinuityScreenViewModel({
   const scopeMatches = (["fundProfileId", "ledgerBookId", "fundAccountId", "entityId", "periodId"] as const)
     .every((key) => typeof expectedCloseScope[key] === "string" && expectedCloseScope[key]!.trim().length > 0
       && decisionScope?.[key] === expectedCloseScope[key]);
+  const publicationSnapshotMatches = workflowMatchesPublicationSnapshot(effectiveDetail, commandCenter?.activeWorkflow);
   const sharedCloseReady = commandCenter?.closeReadiness?.isComplete === true
     && scopeMatches
     && commandCenter.closeReadiness.isReadyToClose
-    && commandCenter.activeWorkflow?.workflowId === effectiveDetail?.workflowId
-    && commandCenter.activeWorkflow?.version === effectiveDetail?.version
+    && publicationSnapshotMatches
     && !loading && !detailLoading && !closeCockpitLoading && !detailError && !closeCockpitError;
   const sharedCloseBlocker = commandCenter?.closeReadiness?.blockers[0]?.message
-    ?? "Select the complete close scope and refresh shared close readiness before publishing a close package.";
+    ?? (scopeMatches && effectiveDetail && commandCenter?.activeWorkflow && !publicationSnapshotMatches
+      ? "Close evidence no longer matches this workflow. Refresh workflows before publishing a close package."
+      : "Select the complete close scope and refresh shared close readiness before publishing a close package.");
   commandSpine.rows = commandSpine.rows.map((row) => row.id !== "produce-evidence" || sharedCloseReady ? row : ({
     ...row, canCloseWorkflow: false, closeWorkflowDisabledReason: sharedCloseBlocker,
     guardLabel: sharedCloseBlocker
@@ -1863,19 +1865,6 @@ function collectSubmitApprovalEvidenceLinks(workflow: OperationsContinuityWorkfl
     ...workflow.approvals.flatMap((approval) => approval.evidenceLinks)
   ];
   return distinctOperationsEvidenceLinks(links);
-}
-
-function collectCloseWorkflowEvidenceLinks(workflow: OperationsContinuityWorkflow | null): OperationsEvidenceLink[] {
-  if (!workflow) {
-    return [];
-  }
-
-  return distinctOperationsEvidenceLinks([
-    ...workflow.reportPackReadiness.evidenceLinks,
-    ...workflow.evidenceLinks,
-    ...(workflow.evidencePackages ?? []).flatMap((packageSummary) => packageSummary.evidenceLinks),
-    ...workflow.approvals.flatMap((approval) => approval.evidenceLinks)
-  ]);
 }
 
 function collectApprovalDecisionEvidenceLinks(

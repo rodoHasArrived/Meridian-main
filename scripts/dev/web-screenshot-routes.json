@@ -391,12 +391,19 @@
         "/api/workstation/accounting",
         "/api/accounting-system/providers",
         "/api/accounting-system/import/latest",
-        "/api/accounting-system/reconciliation/latest"
+        "/api/accounting-system/reconciliation/latest",
+        "/api/workstation/operations/continuity",
+        "/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "/api/workstation/operations/continuity/approval-policy-matrix"
       ],
       "waitForTexts": [
         "1 operations continuity workflows loaded.",
         "Workflows",
-        "Ledger Posting Draft"
+        "Ledger Posting Draft",
+        "Journal validation is still required."
+      ],
+      "waitForAbsentTexts": [
+        "Selected workflow detail failed to load:"
       ]
     },
     {

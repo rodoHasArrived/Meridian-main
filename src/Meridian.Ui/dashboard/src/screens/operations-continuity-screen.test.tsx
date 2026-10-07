@@ -1661,6 +1661,7 @@ describe("OperationsContinuityScreen", () => {
       ];
     }
     vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(readyDetail);
+    vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(sharedCloseDecision(readyDetail));
 
     const user = userEvent.setup();
     renderScreen();
@@ -1705,6 +1706,7 @@ describe("OperationsContinuityScreen", () => {
       capturedAtUtc: "2026-05-10T18:00:00Z"
     });
     vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(readyDetail);
+    vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(sharedCloseDecision(readyDetail));
     vi.mocked(closeOperationsContinuityWorkflow).mockRejectedValueOnce(new Error("Close package publication version conflict."));
 
     const user = userEvent.setup();
@@ -1772,6 +1774,40 @@ describe("OperationsContinuityScreen", () => {
     const publishedEvidence = vi.mocked(closeOperationsContinuityWorkflow).mock.calls[0]?.[1].evidenceLinks;
     expect(publishedEvidence).not.toEqual(expect.arrayContaining([oldEvidence]));
     expect(await screen.findByText("Close package published.")).toBeInTheDocument();
+  });
+
+  it.each(["detail", "shared decision"])("refuses publication with stale %s evidence at the same workflow version, then publishes matching repair", async (staleResponse) => {
+    const oldEvidence: OperationsEvidenceLink = {
+      evidenceId: "report-evidence", label: "Retained report evidence", source: "reporting",
+      route: "/workstation/reporting/report-packs/report-pack-2026-05/evidence",
+      capturedAtUtc: "2026-05-10T18:00:00Z"
+    };
+    const repairedEvidence = { ...oldEvidence, capturedAtUtc: "2026-05-10T19:00:00Z" };
+    const oldDetail = createCloseReadyDetail(oldEvidence);
+    const repairedDetail = createCloseReadyDetail(repairedEvidence);
+    const selected = staleResponse === "detail" ? oldDetail : repairedDetail;
+    const projected = staleResponse === "shared decision" ? oldDetail : repairedDetail;
+    vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(selected);
+    vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(sharedCloseDecision(projected));
+    const user = userEvent.setup();
+    renderScreen();
+    const publish = await screen.findByRole("button", { name: "Publish close package for 2026-05" });
+    await waitFor(() => expect(getFinancialOperationsCommandCenter).toHaveBeenCalledTimes(1));
+    expect(publish).toBeDisabled();
+    expect(screen.getAllByText("Close evidence no longer matches this workflow. Refresh workflows before publishing a close package.").length).toBeGreaterThan(0);
+    await user.click(publish);
+    expect(closeOperationsContinuityWorkflow).not.toHaveBeenCalled();
+
+    vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(repairedDetail);
+    vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(sharedCloseDecision(repairedDetail));
+    await user.click(screen.getByRole("button", { name: "Refresh operations continuity workflows" }));
+    const repairedPublish = await screen.findByRole("button", { name: "Publish close package for 2026-05" });
+    await waitFor(() => expect(repairedPublish).toBeEnabled());
+    await user.click(repairedPublish);
+    await waitFor(() => expect(closeOperationsContinuityWorkflow).toHaveBeenCalledWith(workflowId, expect.objectContaining({
+      expectedVersion: 4, reportPackId: "report-pack-2026-05", evidenceLinks: expect.arrayContaining([repairedEvidence])
+    })));
+    expect(vi.mocked(closeOperationsContinuityWorkflow).mock.calls[0]?.[1].evidenceLinks).not.toEqual(expect.arrayContaining([oldEvidence]));
   });
 
   it("reopens a closed period from close governance with entered incident metadata", async () => {

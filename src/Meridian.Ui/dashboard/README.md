@@ -96,7 +96,9 @@ Accounting and Operations Continuity require the shared decision to match all fi
 
 Operations Continuity refreshes the selected workflow detail on every workflow-list refresh and
 close-scope change, including repairs that retain the workflow version but replace report evidence.
-Publication waits for matching summary/detail revisions and the refreshed shared decision. Failed,
+Publication waits for matching summary/detail revisions and the refreshed shared decision. The
+decision's workflow must match the selected report pack and publication evidence identities (ID,
+source, route and capture time), including repairs that retain the workflow version. Failed,
 mismatched or superseded detail reads remain blocked, and late responses cannot restore old controls
 or evidence. Shared services still validate current close-plan and report-evidence versions.
 Focused proof: `operations-continuity-screen.test.tsx` and `operations-continuity-screen.view-model.test.ts`.

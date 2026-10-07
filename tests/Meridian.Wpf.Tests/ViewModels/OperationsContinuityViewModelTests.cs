@@ -150,7 +150,7 @@ public sealed partial class OperationsContinuityViewModelTests
             ActiveWorkflow: detail, CloseReadiness: projection);
         var client = new FakeOperationsClient
         {
-            Workflows = [CreateSummary()],
+            Workflows = [CreateSummary(scope.LedgerBookId)],
             Detail = detail,
             CommandCenter = issue switch
             {
@@ -190,7 +190,7 @@ public sealed partial class OperationsContinuityViewModelTests
         var scope = new CloseReadinessScopeDto("fund-alpha", Guid.NewGuid(), CreateSummary().FundAccountId, "entity-alpha", "2026-07");
         var detail = CreateDetail() with { LedgerBookId = scope.LedgerBookId };
         var pending = new TaskCompletionSource<FinancialOperationsCommandCenterDto?>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var client = new FakeOperationsClient { Workflows = [CreateSummary()], Detail = detail, CloseReadinessLoader = () => pending.Task };
+        var client = new FakeOperationsClient { Workflows = [CreateSummary(scope.LedgerBookId)], Detail = detail, CloseReadinessLoader = () => pending.Task };
         using var vm = new OperationsContinuityViewModel(client) { Parameter = scope };
         var refresh = vm.RefreshAsync();
         vm.EntityInput = "other-entity";
@@ -202,7 +202,7 @@ public sealed partial class OperationsContinuityViewModelTests
         vm.QueueRollup.StatusLabel.Should().Be("Blocked");
     }
 
-    private static OperationsContinuityWorkflowSummaryDto CreateSummary()
+    private static OperationsContinuityWorkflowSummaryDto CreateSummary(Guid? ledgerBookId = null)
         => new(
             WorkflowId: Guid.Parse("7d3c2f10-6a5b-4c8d-9e1f-0a2b3c4d5e6f"),
             FundAccountId: Guid.Parse("0e2a1c94-3f5b-4f6c-9a51-1c2d3e4f5a6b"),
@@ -214,7 +214,8 @@ public sealed partial class OperationsContinuityViewModelTests
             CreatedAtUtc: DateTimeOffset.Parse("2026-08-01T00:00:00Z"),
             UpdatedAtUtc: DateTimeOffset.Parse("2026-08-05T06:00:00Z"),
             Gates: [],
-            NextActions: []);
+            NextActions: [],
+            LedgerBookId: ledgerBookId);
 
     private static OperationsContinuityWorkflowDto CreateDetail()
         => new(

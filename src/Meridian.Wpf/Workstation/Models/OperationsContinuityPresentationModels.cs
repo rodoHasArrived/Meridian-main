@@ -13,7 +13,10 @@ public sealed record OperationsContinuityWorkflowRowModel(
     string UpdatedText,
     WorkstationReadinessTone ReadinessTone,
     string Tone,
-    long Version = 0);
+    long Version = 0,
+    Guid FundAccountId = default,
+    string PeriodId = "",
+    Guid? LedgerBookId = null);
 
 public sealed record OperationsContinuityPanelRowModel(
     string Id,
@@ -128,7 +131,10 @@ public static class OperationsContinuityMapper
                     FormatTimestamp(workflow.UpdatedAtUtc),
                     tone,
                     ToWorkspaceTone(tone),
-                    workflow.Version);
+                    workflow.Version,
+                    workflow.FundAccountId,
+                    workflow.PeriodId,
+                    workflow.LedgerBookId);
             })
             .ToArray();
     }
