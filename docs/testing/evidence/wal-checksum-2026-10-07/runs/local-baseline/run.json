@@ -1,0 +1,295 @@
+{
+  "schemaVersion": 1,
+  "commitSha": "2bc041f14477c68622e0e08e9922092a52f241af",
+  "worktreeDirty": false,
+  "executionEnvironment": "local",
+  "runId": "local-542bf92710f34f0ba40aa535093ced50",
+  "runAttempt": "1",
+  "startedAt": "2026-10-07T17:02:42.264564+00:00",
+  "conclusion": "failure",
+  "profileId": "prd112-linux-x64-net10-v1",
+  "profileSha256": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26",
+  "runnerLabel": "local-Linux-x86_64",
+  "commands": {
+    "sdk": {
+      "command": [
+        "dotnet",
+        "--version"
+      ],
+      "workingDirectory": "/workspace/Meridian-main",
+      "startedAt": "2026-10-07T17:02:42.267039+00:00",
+      "exitCode": 0,
+      "timedOut": false,
+      "error": null,
+      "seconds": 0.31643532300000743,
+      "completedAt": "2026-10-07T17:02:42.583493+00:00"
+    },
+    "runtime": {
+      "command": [
+        "dotnet",
+        "--list-runtimes"
+      ],
+      "workingDirectory": "/workspace/Meridian-main",
+      "startedAt": "2026-10-07T17:02:42.584192+00:00",
+      "exitCode": 0,
+      "timedOut": false,
+      "error": null,
+      "seconds": 0.008136886000002619,
+      "completedAt": "2026-10-07T17:02:42.592340+00:00"
+    },
+    "dotnetInfo": {
+      "command": [
+        "dotnet",
+        "--info"
+      ],
+      "workingDirectory": "/workspace/Meridian-main",
+      "startedAt": "2026-10-07T17:02:42.592733+00:00",
+      "exitCode": 0,
+      "timedOut": false,
+      "error": null,
+      "seconds": 0.4184639970000035,
+      "completedAt": "2026-10-07T17:02:43.011219+00:00"
+    },
+    "restore": {
+      "command": [
+        "dotnet",
+        "restore",
+        "benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj",
+        "-p:EnableWindowsTargeting=true"
+      ],
+      "workingDirectory": "/workspace/Meridian-main",
+      "startedAt": "2026-10-07T17:02:43.013559+00:00",
+      "exitCode": 0,
+      "timedOut": false,
+      "error": null,
+      "seconds": 21.567149267000005,
+      "completedAt": "2026-10-07T17:03:04.580724+00:00"
+    },
+    "build": {
+      "command": [
+        "dotnet",
+        "build",
+        "benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj",
+        "-c",
+        "Release",
+        "--no-restore",
+        "-p:EnableWindowsTargeting=true"
+      ],
+      "workingDirectory": "/workspace/Meridian-main",
+      "startedAt": "2026-10-07T17:03:04.581410+00:00",
+      "exitCode": 0,
+      "timedOut": false,
+      "error": null,
+      "seconds": 168.962369804,
+      "completedAt": "2026-10-07T17:05:53.543793+00:00"
+    },
+    "benchmark": {
+      "command": [
+        "dotnet",
+        "--fx-version",
+        "10.0.0",
+        "/workspace/Meridian-main/benchmarks/Meridian.Benchmarks/bin/Release/net10.0/Meridian.Benchmarks.dll",
+        "--filter",
+        "Meridian.Benchmarks.PipelineBudgetBenchmarks.*",
+        "--job",
+        "short",
+        "--launchCount",
+        "1",
+        "--warmupCount",
+        "3",
+        "--iterationCount",
+        "8",
+        "--iterationTime",
+        "250",
+        "--buildTimeout",
+        "600",
+        "--memory",
+        "--exporters",
+        "fulljson",
+        "--export-budgets",
+        "--artifacts",
+        "/workspace/Meridian-main/artifacts/pipeline-benchmark/2bc041f14477c68622e0e08e9922092a52f241af/local-542bf92710f34f0ba40aa535093ced50-1/bdn"
+      ],
+      "workingDirectory": "/workspace/Meridian-main/benchmarks/Meridian.Benchmarks",
+      "startedAt": "2026-10-07T17:05:53.544462+00:00",
+      "exitCode": 0,
+      "timedOut": false,
+      "error": null,
+      "seconds": 354.41790011000006,
+      "completedAt": "2026-10-07T17:11:47.962372+00:00"
+    },
+    "validator": {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/Meridian-main/build/scripts/validate_budget.py",
+        "--bdn-results",
+        "/workspace/Meridian-main/artifacts/pipeline-benchmark/2bc041f14477c68622e0e08e9922092a52f241af/local-542bf92710f34f0ba40aa535093ced50-1/bdn/results",
+        "--budget-json",
+        "/workspace/Meridian-main/artifacts/pipeline-benchmark/2bc041f14477c68622e0e08e9922092a52f241af/local-542bf92710f34f0ba40aa535093ced50-1/bdn/perf-budgets.json",
+        "--fail-on-violation",
+        "--json-output",
+        "/workspace/Meridian-main/artifacts/pipeline-benchmark/2bc041f14477c68622e0e08e9922092a52f241af/local-542bf92710f34f0ba40aa535093ced50-1/budget-evidence.json"
+      ],
+      "workingDirectory": "/workspace/Meridian-main",
+      "startedAt": "2026-10-07T17:11:47.963525+00:00",
+      "exitCode": 1,
+      "timedOut": false,
+      "error": null,
+      "seconds": 0.11514494100003958,
+      "completedAt": "2026-10-07T17:11:48.078686+00:00"
+    }
+  },
+  "errors": [],
+  "runtimeEnvironment": {
+    "DOTNET_ROLL_FORWARD": "Disable",
+    "DOTNET_ROLL_FORWARD_TO_PRERELEASE": "0",
+    "DOTNET_TieredCompilation": "1",
+    "DOTNET_TieredPGO": "1",
+    "DOTNET_gcServer": "0"
+  },
+  "hardware": {
+    "os": "Linux",
+    "architecture": "x86_64",
+    "kernel": "6.18.44",
+    "cpuModels": [
+      "AMD EPYC 9V74 80-Core Processor"
+    ],
+    "logicalCpuCount": 5,
+    "cpuAffinity": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "memoryTotal": "MemTotal:       18488520 kB",
+    "osRelease": "PRETTY_NAME=\"Debian GNU/Linux 13 (trixie)\"\nNAME=\"Debian GNU/Linux\"\nVERSION_ID=\"13\"\nVERSION=\"13 (trixie)\"\nVERSION_CODENAME=trixie\nDEBIAN_VERSION_FULL=13.6\nID=debian\nHOME_URL=\"https://www.debian.org/\"\nSUPPORT_URL=\"https://www.debian.org/support\"\nBUG_REPORT_URL=\"https://bugs.debian.org/\"\n",
+    "runner": {
+      "RUNNER_NAME": null,
+      "RUNNER_OS": null,
+      "RUNNER_ARCH": null,
+      "ImageOS": null,
+      "ImageVersion": null
+    },
+    "cgroup": {
+      "cpu.max": "400000 100000",
+      "memory.max": "17179869184"
+    }
+  },
+  "measurements": [
+    {
+      "stage_name": "AlpacaParse_Quote_SourceGenerated",
+      "requires_simd": false,
+      "max_allocated_bytes_per_event": 640,
+      "max_mean_nanos_per_event": 1200,
+      "measured": true,
+      "actual_allocated_bytes": 472.0,
+      "actual_mean_nanos": 1104.177362356488,
+      "matched_benchmark": "Meridian.Benchmarks.PipelineBudgetBenchmarks.AlpacaParse_Quote_SourceGenerated",
+      "status": "pass",
+      "operationsPerSecond": 905651.6046170725
+    },
+    {
+      "stage_name": "AlpacaParse_Trade_SourceGenerated",
+      "requires_simd": false,
+      "max_allocated_bytes_per_event": 512,
+      "max_mean_nanos_per_event": 900,
+      "measured": true,
+      "actual_allocated_bytes": 384.0,
+      "actual_mean_nanos": 733.8872266080061,
+      "matched_benchmark": "Meridian.Benchmarks.PipelineBudgetBenchmarks.AlpacaParse_Trade_SourceGenerated",
+      "status": "pass",
+      "operationsPerSecond": 1362607.1741593804
+    },
+    {
+      "stage_name": "DedupKey_CacheHit",
+      "requires_simd": false,
+      "max_allocated_bytes_per_event": 0,
+      "max_mean_nanos_per_event": 200,
+      "measured": true,
+      "actual_allocated_bytes": 0.0,
+      "actual_mean_nanos": 56.792391067718434,
+      "matched_benchmark": "Meridian.Benchmarks.PipelineBudgetBenchmarks.DedupKey_CacheHit",
+      "status": "pass",
+      "operationsPerSecond": 17607992.570828974
+    },
+    {
+      "stage_name": "DedupKey_CacheMiss",
+      "requires_simd": false,
+      "max_allocated_bytes_per_event": 256,
+      "max_mean_nanos_per_event": 800,
+      "measured": true,
+      "actual_allocated_bytes": 128.0,
+      "actual_mean_nanos": 847.9119403954444,
+      "matched_benchmark": "Meridian.Benchmarks.PipelineBudgetBenchmarks.DedupKey_CacheMiss",
+      "status": "violation",
+      "operationsPerSecond": 1179367.7531343945
+    },
+    {
+      "stage_name": "NewlineScan_Portable",
+      "requires_simd": false,
+      "max_allocated_bytes_per_event": 0,
+      "max_mean_nanos_per_event": 50,
+      "measured": true,
+      "actual_allocated_bytes": 0.0,
+      "actual_mean_nanos": 1.6446197370063582,
+      "matched_benchmark": "Meridian.Benchmarks.PipelineBudgetBenchmarks.NewlineScan_Portable",
+      "status": "pass",
+      "operationsPerSecond": 608043292.621712
+    },
+    {
+      "stage_name": "WalChecksum_Large_4KB",
+      "requires_simd": false,
+      "max_allocated_bytes_per_event": 1024,
+      "max_mean_nanos_per_event": 1200,
+      "measured": true,
+      "actual_allocated_bytes": 0.0,
+      "actual_mean_nanos": 5053.999248242042,
+      "matched_benchmark": "Meridian.Benchmarks.PipelineBudgetBenchmarks.WalChecksum_Large_4KB",
+      "status": "violation",
+      "operationsPerSecond": 197863.10818068185
+    },
+    {
+      "stage_name": "WalChecksum_Medium_1KB",
+      "requires_simd": false,
+      "max_allocated_bytes_per_event": 0,
+      "max_mean_nanos_per_event": 600,
+      "measured": true,
+      "actual_allocated_bytes": 0.0,
+      "actual_mean_nanos": 1603.4543673276673,
+      "matched_benchmark": "Meridian.Benchmarks.PipelineBudgetBenchmarks.WalChecksum_Medium_1KB",
+      "status": "violation",
+      "operationsPerSecond": 623653.5447320585
+    },
+    {
+      "stage_name": "WalChecksum_Small",
+      "requires_simd": false,
+      "max_allocated_bytes_per_event": 0,
+      "max_mean_nanos_per_event": 400,
+      "measured": true,
+      "actual_allocated_bytes": 0.0,
+      "actual_mean_nanos": 854.7618259935554,
+      "matched_benchmark": "Meridian.Benchmarks.PipelineBudgetBenchmarks.WalChecksum_Small",
+      "status": "violation",
+      "operationsPerSecond": 1169916.5423509914
+    }
+  ],
+  "completedAt": "2026-10-07T17:11:48.094651+00:00",
+  "artifactSha256": {
+    "bdn/Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-170553.log": "9f86ae104ac34e28a6add343b61169c1fe436eb7f2d9ded9417933c8a960d1f4",
+    "bdn/perf-budgets.json": "73c03f00210faac0b1d7bd5838d491cb8daae989ddc4304b30d9283997ebedce",
+    "bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json": "24910a6d93cc332c0072ce273a18ff17b6bb6afc769ab4a8a1e8d73da1f588a8",
+    "bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md": "e9acff27ffd0d34e75ed833b9771b254a1f472782e21d8fd3583d215267d387e",
+    "bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv": "9b19d6a92a1d2d58b6f4f7de350b717c48fa10b353faf2fc1ff6b4fe0885ed07",
+    "bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html": "ec7be787aae27d5da4b3fbc86b523908cb6241ba532d9071ee5ee8ba2e7c430f",
+    "benchmark.log": "11434523cdeef74149271b5fdf819ac687f1fc22803bcbeb3afd28c3e66e1ce2",
+    "budget-evidence.json": "e3d0081a568f7c6f619923a5735b1796170c05e9b129c4ffa751febd9651ce26",
+    "budget-validation.log": "028df7480b6b4f95b912168f5f33f34e9d60bc9f071fb265da4ca28ba9e6161c",
+    "build.log": "fdda8ca8e3160df0797cbb5b05d79b73eac3fab7a536cc085516df6dcc4aff69",
+    "dotnet-info.log": "9c8bd18f0e65fc688dfe0de1feb28f24da604926d090c38119a7716144150c3c",
+    "profile.json": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26",
+    "restore.log": "676d6c4e5cbe182c1971257b0ee5e465d99c757ed75a7eb77c4f865c6c034963",
+    "runtime.log": "89d66fdbcce8963bd9b073960b906d27d109c3998e5e2b06ccb50b18cb80f76d",
+    "sdk.log": "a807ca80c392730f0b9a4114bcd64d2c7258ea2f97fbeab0b9c5b3f88194ce94"
+  }
+}

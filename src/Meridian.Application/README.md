@@ -11,6 +11,10 @@ last_reviewed: 2026-10-07
 
 # src/Meridian.Application
 
+PostgreSQL ledger composition resolves consolidation posting authority through a deferred factory.
+The workstation supplies the authoritative ownership and policy provider, avoiding a dependency
+cycle with the ledger reader; missing providers block consolidation posting.
+
 Composition accepts host-owned runtime settings through `CompositionOptions.Configuration`.
 An explicit configuration is authoritative for storage, governance and deployment posture, including
 missing values, without writing environment defaults; omitted configuration preserves process-startup

@@ -1,0 +1,49 @@
+.NET SDK:
+ Version:           10.0.100
+ Commit:            b0f34d51fc
+ Workload version:  10.0.100-manifests.4c0ca8ba
+ MSBuild version:   18.0.2+b0f34d51f
+
+Runtime Environment:
+ OS Name:     debian
+ OS Version:  13
+ OS Platform: Linux
+ RID:         linux-x64
+ Base Path:   /workspace/dotnet-10.0.100/sdk/10.0.100/
+
+.NET workloads installed:
+There are no installed workloads to display.
+Configured to use workload sets when installing new manifests.
+No workload sets are installed. Run "dotnet workload restore" to install a workload set.
+
+Host:
+  Version:      10.0.0
+  Architecture: x64
+  Commit:       b0f34d51fc
+
+.NET SDKs installed:
+  10.0.100 [/workspace/dotnet-10.0.100/sdk]
+
+.NET runtimes installed:
+  Microsoft.AspNetCore.App 10.0.0 [/workspace/dotnet-10.0.100/shared/Microsoft.AspNetCore.App]
+  Microsoft.NETCore.App 10.0.0 [/workspace/dotnet-10.0.100/shared/Microsoft.NETCore.App]
+
+Other architectures found:
+  None
+
+Environment variables:
+  DOTNET_ROLL_FORWARD                      [Disable]
+  DOTNET_ROLL_FORWARD_TO_PRERELEASE        [0]
+  DOTNET_ROOT                              [/workspace/dotnet-10.0.100]
+  DOTNET_TieredCompilation                 [1]
+  DOTNET_TieredPGO                         [1]
+  DOTNET_gcServer                          [0]
+
+global.json file:
+  /workspace/Meridian-main/global.json
+
+Learn more:
+  https://aka.ms/dotnet/info
+
+Download .NET:
+  https://aka.ms/dotnet/download

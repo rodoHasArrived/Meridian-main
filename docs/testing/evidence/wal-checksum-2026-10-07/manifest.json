@@ -1,0 +1,1955 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-10-07T18:23:28.444200+00:00",
+  "status": "portable-passed-ci-pending",
+  "intendedTrackedLocation": "docs/testing/evidence/wal-checksum-2026-10-07/",
+  "portableRuns": [
+    {
+      "label": "local-baseline",
+      "path": "runs/local-baseline",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/2bc041f14477c68622e0e08e9922092a52f241af/local-542bf92710f34f0ba40aa535093ced50-1",
+      "commitSha": "2bc041f14477c68622e0e08e9922092a52f241af",
+      "originalManifestSha256": "2900ab6664312730df58fc60fdb8fe9c978758b7046173c68df6e70f7f25153a",
+      "originalHashedFileCount": 15,
+      "retainedFileCount": 16,
+      "retainedTextBytes": 487429,
+      "originalHarnessConclusion": "failure",
+      "measuredStages": [
+        "AlpacaParse_Quote_SourceGenerated",
+        "AlpacaParse_Trade_SourceGenerated",
+        "DedupKey_CacheHit",
+        "DedupKey_CacheMiss",
+        "NewlineScan_Portable",
+        "WalChecksum_Large_4KB",
+        "WalChecksum_Medium_1KB",
+        "WalChecksum_Small"
+      ],
+      "rawMeasurementCount": 461
+    },
+    {
+      "label": "hosted-main-prior",
+      "path": "runs/hosted-main-prior",
+      "source": "/workspace/attachments/43c11426-d6a4-434c-bcd1-508fcdff956e/main-prior-pipeline-budget-failure.zip",
+      "commitSha": "2da026b54ec43e785ab88ca94df5b58b78df11ef",
+      "originalManifestSha256": "398725d85c472286ca0ea5d0e672f637d9efdbeda1d2089693cdac8257f922f0",
+      "originalHashedFileCount": 15,
+      "retainedFileCount": 16,
+      "retainedTextBytes": 497974,
+      "originalHarnessConclusion": "failure",
+      "measuredStages": [
+        "AlpacaParse_Quote_SourceGenerated",
+        "AlpacaParse_Trade_SourceGenerated",
+        "DedupKey_CacheHit",
+        "DedupKey_CacheMiss",
+        "NewlineScan_Portable",
+        "WalChecksum_Large_4KB",
+        "WalChecksum_Medium_1KB",
+        "WalChecksum_Small"
+      ],
+      "rawMeasurementCount": 438,
+      "archiveSha256": "1159c179aaecc451bfd8393fec38774a27093f987354024ee7a84180b9da84ea",
+      "archiveBytes": 70846,
+      "githubRunId": "37643199718",
+      "githubArtifactId": "11494042014",
+      "githubRunUrl": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37643199718"
+    },
+    {
+      "label": "hosted-main-current",
+      "path": "runs/hosted-main-current",
+      "source": "/workspace/attachments/8da0002f-e869-416b-a57a-262b133e3210/main-current-pipeline-budget-failure.zip",
+      "commitSha": "2bc041f14477c68622e0e08e9922092a52f241af",
+      "originalManifestSha256": "2b570cadbf5aa4ad16f14d45bb080db6759c5ad3797c68d5f2f0dd4f678ee890",
+      "originalHashedFileCount": 15,
+      "retainedFileCount": 16,
+      "retainedTextBytes": 503248,
+      "originalHarnessConclusion": "failure",
+      "measuredStages": [
+        "AlpacaParse_Quote_SourceGenerated",
+        "AlpacaParse_Trade_SourceGenerated",
+        "DedupKey_CacheHit",
+        "DedupKey_CacheMiss",
+        "NewlineScan_Portable",
+        "WalChecksum_Large_4KB",
+        "WalChecksum_Medium_1KB",
+        "WalChecksum_Small"
+      ],
+      "rawMeasurementCount": 451,
+      "archiveSha256": "b0976ef796c751e4070198bb3c0110385614f9e5b96ea75ebed1e5f7ffca795a",
+      "archiveBytes": 71162,
+      "githubRunId": "37644053856",
+      "githubArtifactId": "11493583394",
+      "githubRunUrl": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37644053856"
+    },
+    {
+      "label": "hosted-pr-3109",
+      "path": "runs/hosted-pr-3109",
+      "source": "/workspace/attachments/ed58931a-0e03-4063-b430-e06f9c0d77b0/pr-3109-pipeline-budget-failure.zip",
+      "commitSha": "66064c4ec0252212a4c4be059ad56ce5f77b417d",
+      "originalManifestSha256": "34045b33581be70ab827270d1d46606d5f73eb6ea1b8e9e9880ef36c8685ca3b",
+      "originalHashedFileCount": 15,
+      "retainedFileCount": 16,
+      "retainedTextBytes": 492371,
+      "originalHarnessConclusion": "failure",
+      "measuredStages": [
+        "AlpacaParse_Quote_SourceGenerated",
+        "AlpacaParse_Trade_SourceGenerated",
+        "DedupKey_CacheHit",
+        "DedupKey_CacheMiss",
+        "NewlineScan_Portable",
+        "WalChecksum_Large_4KB",
+        "WalChecksum_Medium_1KB",
+        "WalChecksum_Small"
+      ],
+      "rawMeasurementCount": 426,
+      "archiveSha256": "be7129e8c3324f0cc0a88bf5c92400198ed5e88bc9a58cc795d77f4c26325554",
+      "archiveBytes": 69516,
+      "githubRunId": "37652037382",
+      "githubArtifactId": "11497012943",
+      "githubRunUrl": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37652037382"
+    },
+    {
+      "label": "hosted-first-optimized",
+      "path": "runs/hosted-first-optimized",
+      "source": "/workspace/attachments/2dfcadca-8ce4-4573-b480-424a61b08ea8/pipeline-budget-5ce795c47-run37659411104.zip",
+      "commitSha": "8064c0ee65334fc721095ccc47f58a2e84ee6b42",
+      "originalManifestSha256": "2e319f2fd9cd599dec6c5aafab1a49b2eb41e234ce39dd40e786e19bfa1d8990",
+      "originalHashedFileCount": 15,
+      "retainedFileCount": 16,
+      "retainedTextBytes": 495766,
+      "originalHarnessConclusion": "failure",
+      "measuredStages": [
+        "AlpacaParse_Quote_SourceGenerated",
+        "AlpacaParse_Trade_SourceGenerated",
+        "DedupKey_CacheHit",
+        "DedupKey_CacheMiss",
+        "NewlineScan_Portable",
+        "WalChecksum_Large_4KB",
+        "WalChecksum_Medium_1KB",
+        "WalChecksum_Small"
+      ],
+      "rawMeasurementCount": 435,
+      "archiveSha256": "9fac8aa7e84bf8926400a3d0c09c3eef14c799ff6b7ea823d66e5e4030ee0f78",
+      "archiveBytes": 70394,
+      "githubRunId": "37659411104",
+      "githubArtifactId": "11501385959",
+      "githubRunUrl": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37659411104"
+    },
+    {
+      "label": "local-first-optimized-interrupted",
+      "path": "runs/local-first-optimized-interrupted",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1",
+      "commitSha": "5ce795c47fc7c67734c4baa970c3bc4434c0e3de",
+      "originalManifestSha256": "8f6f347907e317af72d1e89e41eb15ee5b4e0bad11b64496ca90fe73d01f5957",
+      "originalHashedFileCount": 0,
+      "retainedFileCount": 14,
+      "retainedTextBytes": 472096,
+      "originalHarnessConclusion": "running",
+      "measuredStages": [
+        "AlpacaParse_Quote_SourceGenerated",
+        "AlpacaParse_Trade_SourceGenerated",
+        "DedupKey_CacheHit",
+        "DedupKey_CacheMiss",
+        "NewlineScan_Portable",
+        "WalChecksum_Large_4KB",
+        "WalChecksum_Medium_1KB",
+        "WalChecksum_Small"
+      ],
+      "rawMeasurementCount": 462,
+      "harnessStatus": "interrupted; original running manifest preserved; independent validator failed DedupKey_CacheMiss",
+      "interruptedReceipt": "receipts/optimized-interrupted-receipt.json"
+    },
+    {
+      "label": "hosted-final-pass",
+      "path": "runs/hosted-final-pass",
+      "source": "/workspace/attachments/223a5a4a-6e71-4bfd-b99f-ad0fd7a197d6/wal-checksum-hosted-a65c3f3-pass.zip",
+      "commitSha": "f7c1f6d77ec44b2a4924c892626678221fef3317",
+      "pullRequestHeadSha": "a65c3f3db71868724d5a3813e70575f75a903279",
+      "originalManifestSha256": "ac9bc9745bed56d45da94a48d2f1e1b21fe4c99e0bba66d2f41d9365ce134cbc",
+      "originalHashedFileCount": 15,
+      "retainedFileCount": 16,
+      "retainedTextBytes": 498412,
+      "originalHarnessConclusion": "success",
+      "measuredStages": [
+        "AlpacaParse_Quote_SourceGenerated",
+        "AlpacaParse_Trade_SourceGenerated",
+        "DedupKey_CacheHit",
+        "DedupKey_CacheMiss",
+        "NewlineScan_Portable",
+        "WalChecksum_Large_4KB",
+        "WalChecksum_Medium_1KB",
+        "WalChecksum_Small"
+      ],
+      "rawMeasurementCount": 444,
+      "archiveSha256": "c20314268e904ae4091b65b4f5379edb3226b0b0ce7bc8761f31c246b7b53086",
+      "archiveBytes": 70610,
+      "githubRunId": "37666873544",
+      "githubArtifactId": "11502599845",
+      "githubRunUrl": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37666873544"
+    }
+  ],
+  "componentSourceHashProofs": [
+    {
+      "sourcePath": "components/packbits/WalChecksum.cs",
+      "receiptPath": "components/packbits/run-environment.json",
+      "receiptKeys": [
+        "source_sha256_before",
+        "source_sha256_after"
+      ]
+    },
+    {
+      "sourcePath": "component-profiles/dedup/BaselineDedupLedger.original.cs",
+      "receiptPath": "component-profiles/dedup/run-environment.json",
+      "receiptKeys": [
+        "baseline_source_sha256"
+      ]
+    },
+    {
+      "sourcePath": "component-profiles/dedup/HexDedupLedger.original.cs",
+      "receiptPath": "component-profiles/dedup/run-environment.json",
+      "receiptKeys": [
+        "candidate_source_sha256",
+        "candidate_source_sha256_after"
+      ]
+    }
+  ],
+  "excludedGeneratedOrBinaryFiles": [
+    "/workspace/Meridian-main/artifacts/wal-checksum-profile/native/blake3.3.0.2.nupkg",
+    "/workspace/Meridian-main/artifacts/wal-checksum-profile/native/blake3.native.3.0.2.nupkg",
+    "/workspace/Meridian-main/artifacts/wal-checksum-profile/native/native_sha256"
+  ],
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2268,
+      "sha256": "3258cac37793efedb01a43996e943174932975b8108c6d59f9074c6e90d70919",
+      "encoding": "verbatim",
+      "source": "generated evidence landing page"
+    },
+    {
+      "path": "component-profiles/dedup/BaselineDedupLedger.cs",
+      "bytes": 39564,
+      "sha256": "f9faf4a91b7be3de0a545d583d85d8b82aa9250ae2031048df130354a943187d",
+      "encoding": "verbatim",
+      "originalBytes": 39564,
+      "originalSha256": "f9faf4a91b7be3de0a545d583d85d8b82aa9250ae2031048df130354a943187d",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/dedup/BaselineDedupLedger.cs"
+    },
+    {
+      "path": "component-profiles/dedup/BaselineDedupLedger.original.cs",
+      "bytes": 39570,
+      "sha256": "da44b84f0f9e33c42dd1888945538950ad860d23d84dec25d4707b6853263e95",
+      "encoding": "verbatim",
+      "originalBytes": 39570,
+      "originalSha256": "da44b84f0f9e33c42dd1888945538950ad860d23d84dec25d4707b6853263e95",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/dedup/BaselineDedupLedger.original.cs"
+    },
+    {
+      "path": "component-profiles/dedup/HexDedupLedger.cs",
+      "bytes": 37496,
+      "sha256": "64a37688542a37f14563c1640fdcd07f12ce6b217584fd1ef9a93c85558ce356",
+      "encoding": "verbatim",
+      "originalBytes": 37496,
+      "originalSha256": "64a37688542a37f14563c1640fdcd07f12ce6b217584fd1ef9a93c85558ce356",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/dedup/HexDedupLedger.cs"
+    },
+    {
+      "path": "component-profiles/dedup/HexDedupLedger.original.cs",
+      "bytes": 37517,
+      "sha256": "d406f7d2f15a11ee259a30aaf886e63c1445b114e6138979fe06f3a35ffdb770",
+      "encoding": "verbatim",
+      "originalBytes": 37517,
+      "originalSha256": "d406f7d2f15a11ee259a30aaf886e63c1445b114e6138979fe06f3a35ffdb770",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/dedup/HexDedupLedger.original.cs"
+    },
+    {
+      "path": "component-profiles/dedup/Profile.csproj",
+      "bytes": 377,
+      "sha256": "cbabe02a5bc5ca6adace51bca85984f581077a142346d7a814ccc2a07fe8587b",
+      "encoding": "verbatim",
+      "originalBytes": 377,
+      "originalSha256": "cbabe02a5bc5ca6adace51bca85984f581077a142346d7a814ccc2a07fe8587b",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/dedup/Profile.csproj"
+    },
+    {
+      "path": "component-profiles/dedup/Program.cs",
+      "bytes": 6038,
+      "sha256": "ca6bb79915465fce611a1c6addc979c5927f070d2fb0bc3a631f6f7cc44b98b3",
+      "encoding": "verbatim",
+      "originalBytes": 6038,
+      "originalSha256": "ca6bb79915465fce611a1c6addc979c5927f070d2fb0bc3a631f6f7cc44b98b3",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/dedup/Program.cs"
+    },
+    {
+      "path": "component-profiles/dedup/README.md",
+      "bytes": 3628,
+      "sha256": "e702e785487c6b5ff371ae2acd9dd04f870db3e4bfa66a6555b232e762ef2093",
+      "encoding": "verbatim",
+      "originalBytes": 3628,
+      "originalSha256": "e702e785487c6b5ff371ae2acd9dd04f870db3e4bfa66a6555b232e762ef2093",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/dedup/README.md"
+    },
+    {
+      "path": "component-profiles/dedup/ReuseDedupLedger.cs",
+      "bytes": 37664,
+      "sha256": "d95a6718a6633b62f5fdddbd495f47137e3f9db34e01010aab798cd54bf90f3b",
+      "encoding": "verbatim",
+      "originalBytes": 37664,
+      "originalSha256": "d95a6718a6633b62f5fdddbd495f47137e3f9db34e01010aab798cd54bf90f3b",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/dedup/ReuseDedupLedger.cs"
+    },
+    {
+      "path": "component-profiles/dedup/ReuseDedupLedger.original.cs",
+      "bytes": 37679,
+      "sha256": "fae424c0ca00de09f7d2e4eb0d76469eb1848ebe26049f6ae35801f587271a17",
+      "encoding": "verbatim",
+      "originalBytes": 37679,
+      "originalSha256": "fae424c0ca00de09f7d2e4eb0d76469eb1848ebe26049f6ae35801f587271a17",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/dedup/ReuseDedupLedger.original.cs"
+    },
+    {
+      "path": "component-profiles/dedup/build.log",
+      "bytes": 271,
+      "sha256": "93f35b02f59ae55c546de501c50bffd606760ebf6a85bac664c5bf959667f238",
+      "encoding": "verbatim",
+      "originalBytes": 271,
+      "originalSha256": "93f35b02f59ae55c546de501c50bffd606760ebf6a85bac664c5bf959667f238",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/dedup/build.log"
+    },
+    {
+      "path": "component-profiles/dedup/measurements.csv",
+      "bytes": 2743,
+      "sha256": "3aaf98c90aa221ece60646f92dfbc561ed643ea368ad4bf0b5436b6847e2c836",
+      "encoding": "verbatim",
+      "originalBytes": 2743,
+      "originalSha256": "3aaf98c90aa221ece60646f92dfbc561ed643ea368ad4bf0b5436b6847e2c836",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/dedup/measurements.csv"
+    },
+    {
+      "path": "component-profiles/dedup/run-environment.json",
+      "bytes": 1104,
+      "sha256": "5e8f4afad33e1d0a15d566a69ddf86d1cc8dcca1e080f545af381c48d0e29f2a",
+      "encoding": "verbatim",
+      "originalBytes": 1104,
+      "originalSha256": "5e8f4afad33e1d0a15d566a69ddf86d1cc8dcca1e080f545af381c48d0e29f2a",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/dedup/run-environment.json"
+    },
+    {
+      "path": "component-profiles/dedup/run.log",
+      "bytes": 141,
+      "sha256": "97928770ca347aa1ec2ed7663ff6aba3049a1e94e0035cc3aa3aa59b0939157d",
+      "encoding": "verbatim",
+      "originalBytes": 141,
+      "originalSha256": "97928770ca347aa1ec2ed7663ff6aba3049a1e94e0035cc3aa3aa59b0939157d",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/dedup/run.log"
+    },
+    {
+      "path": "component-profiles/dedup/summary.csv",
+      "bytes": 443,
+      "sha256": "8fcc152de8372c3749c7ce705e2137f2e3c65067a56c65e93b358285f06f8002",
+      "encoding": "verbatim",
+      "originalBytes": 443,
+      "originalSha256": "8fcc152de8372c3749c7ce705e2137f2e3c65067a56c65e93b358285f06f8002",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/dedup/summary.csv"
+    },
+    {
+      "path": "components/before/Profile.csproj",
+      "bytes": 254,
+      "sha256": "4ac0b929e0a1160d5313d3f65a90af589b5ce302dccde75a7041d961bb159c49",
+      "encoding": "verbatim",
+      "originalBytes": 254,
+      "originalSha256": "4ac0b929e0a1160d5313d3f65a90af589b5ce302dccde75a7041d961bb159c49",
+      "source": "/workspace/wal-checksum-profile/Profile.csproj"
+    },
+    {
+      "path": "components/before/Program.cs",
+      "bytes": 9997,
+      "sha256": "844746d196fb06a22b448bf33c8a955721f6121359a1d0c31efa9d942f99b358",
+      "encoding": "verbatim",
+      "originalBytes": 9997,
+      "originalSha256": "844746d196fb06a22b448bf33c8a955721f6121359a1d0c31efa9d942f99b358",
+      "source": "/workspace/wal-checksum-profile/Program.cs"
+    },
+    {
+      "path": "components/before/components-before.log",
+      "bytes": 3166,
+      "sha256": "2643600c127289591803e6d37f25598d5f19d16c66ab3a0650dd81c6b6aef2c2",
+      "encoding": "verbatim",
+      "originalBytes": 3166,
+      "originalSha256": "2643600c127289591803e6d37f25598d5f19d16c66ab3a0650dd81c6b6aef2c2",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/components-before.log"
+    },
+    {
+      "path": "components/before/profile-build.log",
+      "bytes": 233,
+      "sha256": "af3d687db3eb34fa6f61809602e526d77f473ab54a39e0c7cac531b2803005a0",
+      "encoding": "verbatim",
+      "originalBytes": 233,
+      "originalSha256": "af3d687db3eb34fa6f61809602e526d77f473ab54a39e0c7cac531b2803005a0",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/profile-build.log"
+    },
+    {
+      "path": "components/candidates/LLxx.cs",
+      "bytes": 4776,
+      "sha256": "9699c39e0d8849d91bf0f6bb32ffc7a96f0f619bddc1ed703096018eaebee5cf",
+      "encoding": "verbatim",
+      "originalBytes": 4776,
+      "originalSha256": "9699c39e0d8849d91bf0f6bb32ffc7a96f0f619bddc1ed703096018eaebee5cf",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/candidates/LLxx.cs"
+    },
+    {
+      "path": "components/candidates/LZ4Codec.cs",
+      "bytes": 10126,
+      "sha256": "8eed1c8e8bb4cb785520500b9c9ffe5103e4f401cdcc0ae19aaf9185a4b47852",
+      "encoding": "verbatim",
+      "originalBytes": 10126,
+      "originalSha256": "8eed1c8e8bb4cb785520500b9c9ffe5103e4f401cdcc0ae19aaf9185a4b47852",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/candidates/LZ4Codec.cs"
+    },
+    {
+      "path": "components/candidates/Program.cs",
+      "bytes": 9757,
+      "sha256": "ea7228d837923c05004855f0364bc2b7228c8df2a29b6e63015c61fb6bf651b9",
+      "encoding": "verbatim",
+      "originalBytes": 9757,
+      "originalSha256": "ea7228d837923c05004855f0364bc2b7228c8df2a29b6e63015c61fb6bf651b9",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/candidates/Program.cs"
+    },
+    {
+      "path": "components/candidates/README.md",
+      "bytes": 2306,
+      "sha256": "9264db489f7ce3bde65f82785a91835cb0b98a06e8f408d9edc04de706005cd6",
+      "encoding": "verbatim",
+      "originalBytes": 2306,
+      "originalSha256": "9264db489f7ce3bde65f82785a91835cb0b98a06e8f408d9edc04de706005cd6",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/candidates/README.md"
+    },
+    {
+      "path": "components/candidates/RESULTS.md",
+      "bytes": 2957,
+      "sha256": "26555763ec1d582825e89bb05c1c5ae1af176be0fd5371e5eeaa9c95ecc618f6",
+      "encoding": "verbatim",
+      "originalBytes": 2957,
+      "originalSha256": "26555763ec1d582825e89bb05c1c5ae1af176be0fd5371e5eeaa9c95ecc618f6",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/candidates/RESULTS.md"
+    },
+    {
+      "path": "components/candidates/build-managed.log",
+      "bytes": 277,
+      "sha256": "a03ebc34b4f7773351206394ece4a7fe2293413be5b96ea32935b1d6517194f8",
+      "encoding": "verbatim",
+      "originalBytes": 277,
+      "originalSha256": "a03ebc34b4f7773351206394ece4a7fe2293413be5b96ea32935b1d6517194f8",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/candidates/build-managed.log"
+    },
+    {
+      "path": "components/candidates/build-native.log",
+      "bytes": 275,
+      "sha256": "82a00ed1be975b1320ee91a5768b41192a6870540810bafdd3dcd63c9d2bc33c",
+      "encoding": "verbatim",
+      "originalBytes": 275,
+      "originalSha256": "82a00ed1be975b1320ee91a5768b41192a6870540810bafdd3dcd63c9d2bc33c",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/candidates/build-native.log"
+    },
+    {
+      "path": "components/candidates/managed/Profile.csproj",
+      "bytes": 504,
+      "sha256": "760edc17aefefd0b30e8a352180a67893d49b68196426db0e550ccba4585273c",
+      "encoding": "verbatim",
+      "originalBytes": 504,
+      "originalSha256": "760edc17aefefd0b30e8a352180a67893d49b68196426db0e550ccba4585273c",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/candidates/managed/Profile.csproj"
+    },
+    {
+      "path": "components/candidates/managed-measurements.csv",
+      "bytes": 16287,
+      "sha256": "d662a097e05f79beaa0eb52809a067fe8941daceac6e8d50b6744896877e5489",
+      "encoding": "verbatim",
+      "originalBytes": 16287,
+      "originalSha256": "d662a097e05f79beaa0eb52809a067fe8941daceac6e8d50b6744896877e5489",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/candidates/managed-measurements.csv"
+    },
+    {
+      "path": "components/candidates/managed-run.log",
+      "bytes": 197,
+      "sha256": "39a8c9d820091139d449dbaef1c74d47f44505e8b4a45ddbe1c62c5945a10f24",
+      "encoding": "verbatim",
+      "originalBytes": 197,
+      "originalSha256": "39a8c9d820091139d449dbaef1c74d47f44505e8b4a45ddbe1c62c5945a10f24",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/candidates/managed-run.log"
+    },
+    {
+      "path": "components/candidates/native/Profile.csproj",
+      "bytes": 438,
+      "sha256": "8d63bb7c5b07dbed96eef5e47d2dfb733ff31190ed1aa3c7b31bdc5c677da5f1",
+      "encoding": "verbatim",
+      "originalBytes": 438,
+      "originalSha256": "8d63bb7c5b07dbed96eef5e47d2dfb733ff31190ed1aa3c7b31bdc5c677da5f1",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/candidates/native/Profile.csproj"
+    },
+    {
+      "path": "components/candidates/native-measurements.csv",
+      "bytes": 16125,
+      "sha256": "082ebf12802cbbc4a64b51922d5ac62684ce2b5c644df74f782a8db2c2337608",
+      "encoding": "verbatim",
+      "originalBytes": 16125,
+      "originalSha256": "082ebf12802cbbc4a64b51922d5ac62684ce2b5c644df74f782a8db2c2337608",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/candidates/native-measurements.csv"
+    },
+    {
+      "path": "components/candidates/native-run.log",
+      "bytes": 196,
+      "sha256": "f2435a8e62faec2f0fefa1f858b13764380f46a84b5c5a3708839d31be9e6298",
+      "encoding": "verbatim",
+      "originalBytes": 196,
+      "originalSha256": "f2435a8e62faec2f0fefa1f858b13764380f46a84b5c5a3708839d31be9e6298",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/candidates/native-run.log"
+    },
+    {
+      "path": "components/candidates/run-environment.json",
+      "bytes": 1297,
+      "sha256": "26e79c45e298505d322e0395c3440834d08513a80099a698e479cf3ee6a7f341",
+      "encoding": "verbatim",
+      "originalBytes": 1297,
+      "originalSha256": "26e79c45e298505d322e0395c3440834d08513a80099a698e479cf3ee6a7f341",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/candidates/run-environment.json"
+    },
+    {
+      "path": "components/candidates/summary.csv",
+      "bytes": 10499,
+      "sha256": "e4fa555b48740a371fef31817941cff3fcecb28e8a94d7ba177348dfe27deb2e",
+      "encoding": "verbatim",
+      "originalBytes": 10499,
+      "originalSha256": "e4fa555b48740a371fef31817941cff3fcecb28e8a94d7ba177348dfe27deb2e",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/candidates/summary.csv"
+    },
+    {
+      "path": "components/compression/Profile.csproj",
+      "bytes": 387,
+      "sha256": "4a53432e5083604389dcac7c48c0c2917f80ac8a993de81f7bcb206e5957d4e1",
+      "encoding": "verbatim",
+      "originalBytes": 387,
+      "originalSha256": "4a53432e5083604389dcac7c48c0c2917f80ac8a993de81f7bcb206e5957d4e1",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/compression/Profile.csproj"
+    },
+    {
+      "path": "components/compression/Program.cs",
+      "bytes": 10494,
+      "sha256": "5f48362f7df464f0126e01f2559135a39a5e251395f774bc2d45bc2d064bc130",
+      "encoding": "verbatim",
+      "originalBytes": 10494,
+      "originalSha256": "5f48362f7df464f0126e01f2559135a39a5e251395f774bc2d45bc2d064bc130",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/compression/Program.cs"
+    },
+    {
+      "path": "components/compression/README.md",
+      "bytes": 2604,
+      "sha256": "5e2ee16c64b0518e1457cde00916a90274ce56c907287b64558691e4a5bf15f5",
+      "encoding": "verbatim",
+      "originalBytes": 2604,
+      "originalSha256": "5e2ee16c64b0518e1457cde00916a90274ce56c907287b64558691e4a5bf15f5",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/compression/README.md"
+    },
+    {
+      "path": "components/compression/build.log",
+      "bytes": 267,
+      "sha256": "12000378d12475b1445cfa16835472285d10aa574961749d1453ed62c506b352",
+      "encoding": "verbatim",
+      "originalBytes": 267,
+      "originalSha256": "12000378d12475b1445cfa16835472285d10aa574961749d1453ed62c506b352",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/compression/build.log"
+    },
+    {
+      "path": "components/compression/measurements.csv",
+      "bytes": 69915,
+      "sha256": "07c659abea7f10893ca2df139d9a22b52535d035039dd6fad0f11564a8e3e29f",
+      "encoding": "verbatim",
+      "originalBytes": 69915,
+      "originalSha256": "07c659abea7f10893ca2df139d9a22b52535d035039dd6fad0f11564a8e3e29f",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/compression/measurements.csv"
+    },
+    {
+      "path": "components/compression/run.log",
+      "bytes": 173,
+      "sha256": "62fe05a022b70674dad969c27eb788ea69c35cb7a51a83921d09b6a233c5ab8f",
+      "encoding": "verbatim",
+      "originalBytes": 173,
+      "originalSha256": "62fe05a022b70674dad969c27eb788ea69c35cb7a51a83921d09b6a233c5ab8f",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/compression/run.log"
+    },
+    {
+      "path": "components/compression/summary.csv",
+      "bytes": 25558,
+      "sha256": "40f99abfa1913a23defd8739f25daabff83d9c388f8f8241826e7b9c6aaebeb4",
+      "encoding": "verbatim",
+      "originalBytes": 25558,
+      "originalSha256": "40f99abfa1913a23defd8739f25daabff83d9c388f8f8241826e7b9c6aaebeb4",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/compression/summary.csv"
+    },
+    {
+      "path": "components/native/README.md",
+      "bytes": 1333,
+      "sha256": "6829d375b31460d01a42901e29e87672b52fd831b5cd7d5f529341edadd05860",
+      "encoding": "verbatim",
+      "originalBytes": 1333,
+      "originalSha256": "6829d375b31460d01a42901e29e87672b52fd831b5cd7d5f529341edadd05860",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/native/README.md"
+    },
+    {
+      "path": "components/native/blake3-1.8.2-test-vectors.json",
+      "bytes": 31922,
+      "sha256": "dcb91ea8accc77e6d6e632af7cdc1a99a9f3ae78cf648da595c7d064db32f624",
+      "encoding": "verbatim",
+      "originalBytes": 31922,
+      "originalSha256": "dcb91ea8accc77e6d6e632af7cdc1a99a9f3ae78cf648da595c7d064db32f624",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/native/blake3-1.8.2-test-vectors.json"
+    },
+    {
+      "path": "components/native/doc_benchmarks.md",
+      "bytes": 22586,
+      "sha256": "06be82907d0d0abfa1dfed262d4d73f584a0fc6f2f0863231fd7caeb21ff7c77",
+      "encoding": "verbatim",
+      "originalBytes": 22586,
+      "originalSha256": "06be82907d0d0abfa1dfed262d4d73f584a0fc6f2f0863231fd7caeb21ff7c77",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/native/doc_benchmarks.md"
+    },
+    {
+      "path": "components/native/lib_blake3_dotnet_Cargo.toml",
+      "bytes": 338,
+      "sha256": "2596cde3b496fb3e24981708fa3f8f1e15f45df6d524fa80bf117a0508317c25",
+      "encoding": "verbatim",
+      "originalBytes": 338,
+      "originalSha256": "2596cde3b496fb3e24981708fa3f8f1e15f45df6d524fa80bf117a0508317c25",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/native/lib_blake3_dotnet_Cargo.toml"
+    },
+    {
+      "path": "components/native/lib_blake3_dotnet_src_lib.rs",
+      "bytes": 3197,
+      "sha256": "8e936e3bfab479178158e898373145d1eee07c36ae64d0a7c1d60d6fe5eca2c0",
+      "encoding": "verbatim",
+      "originalBytes": 3197,
+      "originalSha256": "8e936e3bfab479178158e898373145d1eee07c36ae64d0a7c1d60d6fe5eca2c0",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/native/lib_blake3_dotnet_src_lib.rs"
+    },
+    {
+      "path": "components/native/native-sha256-measurements.csv",
+      "bytes": 5094,
+      "sha256": "0d4ba344a9d4b11af79d9fa5b754df0ea1b8c36f32c4469f2e8afaff689893bb",
+      "encoding": "verbatim",
+      "originalBytes": 5094,
+      "originalSha256": "0d4ba344a9d4b11af79d9fa5b754df0ea1b8c36f32c4469f2e8afaff689893bb",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/native/native-sha256-measurements.csv"
+    },
+    {
+      "path": "components/native/native-sha256-run.log",
+      "bytes": 88,
+      "sha256": "69a69e9eb070750174b17d14e63a6075e58dfb4ada19653f203ae78ac28fb1b1",
+      "encoding": "verbatim",
+      "originalBytes": 88,
+      "originalSha256": "69a69e9eb070750174b17d14e63a6075e58dfb4ada19653f203ae78ac28fb1b1",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/native/native-sha256-run.log"
+    },
+    {
+      "path": "components/native/native_sha256.c",
+      "bytes": 5008,
+      "sha256": "06042650c3f488a99cc3df603ea81b49f1cb3460c67ae63f58a705f86b824d18",
+      "encoding": "verbatim",
+      "originalBytes": 5008,
+      "originalSha256": "06042650c3f488a99cc3df603ea81b49f1cb3460c67ae63f58a705f86b824d18",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/native/native_sha256.c"
+    },
+    {
+      "path": "components/native/src_Blake3.Native_Blake3.Native.csproj",
+      "bytes": 1428,
+      "sha256": "eba773428329eb148aba17d80633463d85217aad25c5416e9cec765912cf77b3",
+      "encoding": "verbatim",
+      "originalBytes": 1428,
+      "originalSha256": "eba773428329eb148aba17d80633463d85217aad25c5416e9cec765912cf77b3",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/native/src_Blake3.Native_Blake3.Native.csproj"
+    },
+    {
+      "path": "components/native/src_Blake3.Native_Hasher.cs",
+      "bytes": 17323,
+      "sha256": "477c4056cf01c9023eb77a5a60807794cb85f56f024f3f2df0b106af77c9e3ae",
+      "encoding": "verbatim",
+      "originalBytes": 17323,
+      "originalSha256": "477c4056cf01c9023eb77a5a60807794cb85f56f024f3f2df0b106af77c9e3ae",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/native/src_Blake3.Native_Hasher.cs"
+    },
+    {
+      "path": "components/native/src_Blake3_Hasher.cs",
+      "bytes": 28163,
+      "sha256": "ea0e0657310b193588337a2052e13655c32b04e5493f11fbd62cbab69de81e57",
+      "encoding": "verbatim",
+      "originalBytes": 28163,
+      "originalSha256": "ea0e0657310b193588337a2052e13655c32b04e5493f11fbd62cbab69de81e57",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/native/src_Blake3_Hasher.cs"
+    },
+    {
+      "path": "components/native/summary.csv",
+      "bytes": 1853,
+      "sha256": "938ca4c6c47ea810a7dc9b85836fddf84093c86cc83ebb7217710a6a986d5b5c",
+      "encoding": "verbatim",
+      "originalBytes": 1853,
+      "originalSha256": "938ca4c6c47ea810a7dc9b85836fddf84093c86cc83ebb7217710a6a986d5b5c",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/native/summary.csv"
+    },
+    {
+      "path": "components/packbits/Profile.csproj",
+      "bytes": 498,
+      "sha256": "ec01937301c0a26b3a5134dd6564eba1166b2895ee6aacfe05347b6a9c477ad4",
+      "encoding": "verbatim",
+      "originalBytes": 498,
+      "originalSha256": "ec01937301c0a26b3a5134dd6564eba1166b2895ee6aacfe05347b6a9c477ad4",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/packbits/Profile.csproj"
+    },
+    {
+      "path": "components/packbits/Program.cs",
+      "bytes": 7989,
+      "sha256": "d794519187127598eeee8a6886b633cddfc50c6c0d572d5bb40f0f749bc6393c",
+      "encoding": "verbatim",
+      "originalBytes": 7989,
+      "originalSha256": "d794519187127598eeee8a6886b633cddfc50c6c0d572d5bb40f0f749bc6393c",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/packbits/Program.cs"
+    },
+    {
+      "path": "components/packbits/README.md",
+      "bytes": 2664,
+      "sha256": "29fb57c2a30443125890785686c89a8a796029b6c35e73631265fb4de8a3c53d",
+      "encoding": "verbatim",
+      "originalBytes": 2664,
+      "originalSha256": "29fb57c2a30443125890785686c89a8a796029b6c35e73631265fb4de8a3c53d",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/packbits/README.md"
+    },
+    {
+      "path": "components/packbits/WalChecksum.cs",
+      "bytes": 8103,
+      "sha256": "d184f707b85e6b6830ae4d54c691fb297ccaa6fef6068ee3e1f99a19b798d3bb",
+      "encoding": "verbatim",
+      "originalBytes": 8103,
+      "originalSha256": "d184f707b85e6b6830ae4d54c691fb297ccaa6fef6068ee3e1f99a19b798d3bb",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/packbits/WalChecksum.cs"
+    },
+    {
+      "path": "components/packbits/build.log",
+      "bytes": 281,
+      "sha256": "a77439ce8c77458fb60eac9fca26f0935ba1ed8ae493d6ccfeb2a3e906f24a9d",
+      "encoding": "verbatim",
+      "originalBytes": 281,
+      "originalSha256": "a77439ce8c77458fb60eac9fca26f0935ba1ed8ae493d6ccfeb2a3e906f24a9d",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/packbits/build.log"
+    },
+    {
+      "path": "components/packbits/measurements.csv",
+      "bytes": 1991,
+      "sha256": "d0294432f6941390b004b8656b717b30bb8b407adf76dad96ff66708eae18627",
+      "encoding": "verbatim",
+      "originalBytes": 1991,
+      "originalSha256": "d0294432f6941390b004b8656b717b30bb8b407adf76dad96ff66708eae18627",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/packbits/measurements.csv"
+    },
+    {
+      "path": "components/packbits/run-environment.json",
+      "bytes": 1007,
+      "sha256": "dcc0810004fbe5f85b018e12c41d101138a3e4a51cba38217c87aab2092e4939",
+      "encoding": "verbatim",
+      "originalBytes": 1007,
+      "originalSha256": "dcc0810004fbe5f85b018e12c41d101138a3e4a51cba38217c87aab2092e4939",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/packbits/run-environment.json"
+    },
+    {
+      "path": "components/packbits/run.log",
+      "bytes": 151,
+      "sha256": "2e5551392dc31975b51095fc96ea4d7c5cf988deaaf9b798ac708675b92ec3d1",
+      "encoding": "verbatim",
+      "originalBytes": 151,
+      "originalSha256": "2e5551392dc31975b51095fc96ea4d7c5cf988deaaf9b798ac708675b92ec3d1",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/packbits/run.log"
+    },
+    {
+      "path": "components/packbits/summary.csv",
+      "bytes": 688,
+      "sha256": "f403739ee01f39bab1926dace63e65a7ea8c8e5367b76f5b213815d62d0544f2",
+      "encoding": "verbatim",
+      "originalBytes": 688,
+      "originalSha256": "f403739ee01f39bab1926dace63e65a7ea8c8e5367b76f5b213815d62d0544f2",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/packbits/summary.csv"
+    },
+    {
+      "path": "integrity/commands.json",
+      "bytes": 2202,
+      "sha256": "d3fd147ccbec65a8ac63843e1b0dadfd4bf32a00aa85bccb24b983777e009d4b",
+      "encoding": "verbatim",
+      "originalBytes": 2202,
+      "originalSha256": "d3fd147ccbec65a8ac63843e1b0dadfd4bf32a00aa85bccb24b983777e009d4b",
+      "source": "generated exact root command receipt"
+    },
+    {
+      "path": "integrity/format.log",
+      "bytes": 123,
+      "sha256": "239c224f01960886368326d9ef5ebdcce071dcd0996d157bef6a963fc1eaa49c",
+      "encoding": "verbatim",
+      "originalBytes": 123,
+      "originalSha256": "239c224f01960886368326d9ef5ebdcce071dcd0996d157bef6a963fc1eaa49c",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/format.log"
+    },
+    {
+      "path": "integrity/integrity-tests.log.gz",
+      "bytes": 12114,
+      "sha256": "47ff9693eeda47ac502b038926ead08d3c1115d7f8f40a6c12f4d8f8b2631345",
+      "encoding": "gzip",
+      "originalBytes": 137056,
+      "originalSha256": "6bfec24ac481ba18b928d2691e59ef3fe16e4f228afd93cc3f3de990dea372da",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/integrity-tests.log"
+    },
+    {
+      "path": "integrity/local-time-tests.log.gz",
+      "bytes": 301,
+      "sha256": "0c73dbb66eca85a32a00cb12be388a4d8ad3d47fd4aad4bbe702c86bff089a9a",
+      "encoding": "gzip",
+      "originalBytes": 480,
+      "originalSha256": "bcb6acbec4c231539d5213b3ad331b6c604687bd55c57969cb0adafd64f4c1b4",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/local-time-tests.log"
+    },
+    {
+      "path": "integrity/scalar-tests.log.gz",
+      "bytes": 301,
+      "sha256": "8fd423a4a385beee9f1148b3d9326de2045c21f786b3e8da1ee9b60a9e2109ce",
+      "encoding": "gzip",
+      "originalBytes": 477,
+      "originalSha256": "997889943fd0ca3640b0a187aadbe81024eadcd1988b3538816a16378e312b14",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/scalar-tests.log"
+    },
+    {
+      "path": "integrity/wal-checksum-integrity.trx.gz",
+      "bytes": 28432,
+      "sha256": "12d85790156634ab2603a63e90fc1bfef2fee1872acd1d146e3e1737855cefc8",
+      "encoding": "gzip",
+      "originalBytes": 187646,
+      "originalSha256": "887e873c5b486b5930e96bc8ff5cb6b13fde4916e90a6c5b603faab83f14a072",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/test-results/wal-checksum-integrity.trx"
+    },
+    {
+      "path": "integrity/wal-checksum-local-time.trx.gz",
+      "bytes": 1794,
+      "sha256": "5b8ea73a64e1200f2ae3ce9a61ecfe4bccc41434b0c6326720bc63a541832063",
+      "encoding": "gzip",
+      "originalBytes": 6344,
+      "originalSha256": "5590fca63e0030deb7e9d1b1a5556d83ce849a770c553cd0522a980dfe309565",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/test-results/wal-checksum-local-time.trx"
+    },
+    {
+      "path": "integrity/wal-checksum-scalar.trx.gz",
+      "bytes": 16583,
+      "sha256": "7f90a89c3335b04e12347e111fdc1da63202ca047365733e81d2e2065ccd23db",
+      "encoding": "gzip",
+      "originalBytes": 120036,
+      "originalSha256": "86689781ec3b96b9dd23c07bc6629e5c1db58282eb1e3202e7af94ef0fe24a3d",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/test-results/wal-checksum-scalar.trx"
+    },
+    {
+      "path": "receipts/optimized-interrupted-budget-evidence.json",
+      "bytes": 3776,
+      "sha256": "474ae46f7aee7b626a15c3cca7ff871496a6cf3f0150cc523985aae116b5f03b",
+      "encoding": "verbatim",
+      "originalBytes": 3776,
+      "originalSha256": "474ae46f7aee7b626a15c3cca7ff871496a6cf3f0150cc523985aae116b5f03b",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/optimized-interrupted-budget-evidence.json"
+    },
+    {
+      "path": "receipts/optimized-interrupted-budget-validation.log",
+      "bytes": 739,
+      "sha256": "743aa66b0cc160b0de4721f4fd32d24cc66ef517567844659239f9ebc4699b31",
+      "encoding": "verbatim",
+      "originalBytes": 739,
+      "originalSha256": "743aa66b0cc160b0de4721f4fd32d24cc66ef517567844659239f9ebc4699b31",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/optimized-interrupted-budget-validation.log"
+    },
+    {
+      "path": "receipts/optimized-interrupted-receipt.json",
+      "bytes": 2645,
+      "sha256": "e3f45f62e3d08cdbcbb117806bfbdef05dbb1ba8411a766ef436caa57c73f795",
+      "encoding": "verbatim",
+      "originalBytes": 2645,
+      "originalSha256": "e3f45f62e3d08cdbcbb117806bfbdef05dbb1ba8411a766ef436caa57c73f795",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/optimized-interrupted-receipt.json"
+    },
+    {
+      "path": "receipts/optimized-pipeline-console.log",
+      "bytes": 812,
+      "sha256": "6ed032e3c2512c1b854482c43dee3236aa07045e2ba8c7b1fb5ee409abd8dde8",
+      "encoding": "verbatim",
+      "originalBytes": 812,
+      "originalSha256": "6ed032e3c2512c1b854482c43dee3236aa07045e2ba8c7b1fb5ee409abd8dde8",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/optimized-pipeline-console.log"
+    },
+    {
+      "path": "report.md",
+      "bytes": 13047,
+      "sha256": "96fced4d615412245f7803bc832a993a4d1439d4f614e8fcd772c1b018fc6650",
+      "encoding": "verbatim",
+      "source": "polished from artifacts/wal-checksum-profile/report-working.md and retained receipts"
+    },
+    {
+      "path": "runs/hosted-final-pass/bdn/Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-183444.log",
+      "bytes": 54047,
+      "sha256": "0681ba2a6f6b828d09ea5291834fea49207703a5eac185597b3bf742e2417820",
+      "encoding": "verbatim",
+      "originalBytes": 54047,
+      "originalSha256": "0681ba2a6f6b828d09ea5291834fea49207703a5eac185597b3bf742e2417820",
+      "source": "/workspace/attachments/223a5a4a-6e71-4bfd-b99f-ad0fd7a197d6/wal-checksum-hosted-a65c3f3-pass.zip!/f7c1f6d77ec44b2a4924c892626678221fef3317/37666873544-1/bdn/Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-183444.log"
+    },
+    {
+      "path": "runs/hosted-final-pass/bdn/perf-budgets.json",
+      "bytes": 1422,
+      "sha256": "73c03f00210faac0b1d7bd5838d491cb8daae989ddc4304b30d9283997ebedce",
+      "encoding": "verbatim",
+      "originalBytes": 1422,
+      "originalSha256": "73c03f00210faac0b1d7bd5838d491cb8daae989ddc4304b30d9283997ebedce",
+      "source": "/workspace/attachments/223a5a4a-6e71-4bfd-b99f-ad0fd7a197d6/wal-checksum-hosted-a65c3f3-pass.zip!/f7c1f6d77ec44b2a4924c892626678221fef3317/37666873544-1/bdn/perf-budgets.json"
+    },
+    {
+      "path": "runs/hosted-final-pass/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json",
+      "bytes": 144123,
+      "sha256": "3ad2902aba8463b2ce7222148901fa84c5d30572ce2644f0cf10c3d689d0ac12",
+      "encoding": "verbatim",
+      "originalBytes": 144123,
+      "originalSha256": "3ad2902aba8463b2ce7222148901fa84c5d30572ce2644f0cf10c3d689d0ac12",
+      "source": "/workspace/attachments/223a5a4a-6e71-4bfd-b99f-ad0fd7a197d6/wal-checksum-hosted-a65c3f3-pass.zip!/f7c1f6d77ec44b2a4924c892626678221fef3317/37666873544-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json"
+    },
+    {
+      "path": "runs/hosted-final-pass/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+      "bytes": 1332,
+      "sha256": "9115a37433ba030b41c6244529afbf539a24d5f5033985d3d8d839b71fe3a81f",
+      "encoding": "verbatim",
+      "originalBytes": 1332,
+      "originalSha256": "9115a37433ba030b41c6244529afbf539a24d5f5033985d3d8d839b71fe3a81f",
+      "source": "/workspace/attachments/223a5a4a-6e71-4bfd-b99f-ad0fd7a197d6/wal-checksum-hosted-a65c3f3-pass.zip!/f7c1f6d77ec44b2a4924c892626678221fef3317/37666873544-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md"
+    },
+    {
+      "path": "runs/hosted-final-pass/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv",
+      "bytes": 3762,
+      "sha256": "8f13e71c1bc0291b5424eeffcd3a0e51416d751156fabb14eba8cfdd39d97c89",
+      "encoding": "verbatim",
+      "originalBytes": 3762,
+      "originalSha256": "8f13e71c1bc0291b5424eeffcd3a0e51416d751156fabb14eba8cfdd39d97c89",
+      "source": "/workspace/attachments/223a5a4a-6e71-4bfd-b99f-ad0fd7a197d6/wal-checksum-hosted-a65c3f3-pass.zip!/f7c1f6d77ec44b2a4924c892626678221fef3317/37666873544-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv"
+    },
+    {
+      "path": "runs/hosted-final-pass/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html",
+      "bytes": 2005,
+      "sha256": "d0579b024b64ea74405bee2558501f081d45d053bce41a1a99ea8f66f307d172",
+      "encoding": "verbatim",
+      "originalBytes": 2005,
+      "originalSha256": "d0579b024b64ea74405bee2558501f081d45d053bce41a1a99ea8f66f307d172",
+      "source": "/workspace/attachments/223a5a4a-6e71-4bfd-b99f-ad0fd7a197d6/wal-checksum-hosted-a65c3f3-pass.zip!/f7c1f6d77ec44b2a4924c892626678221fef3317/37666873544-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html"
+    },
+    {
+      "path": "runs/hosted-final-pass/benchmark.log",
+      "bytes": 54243,
+      "sha256": "cc6881d27caea48f71572f036a518183ffecedeed737bf6cdfe696d5b4921a81",
+      "encoding": "verbatim",
+      "originalBytes": 54243,
+      "originalSha256": "cc6881d27caea48f71572f036a518183ffecedeed737bf6cdfe696d5b4921a81",
+      "source": "/workspace/attachments/223a5a4a-6e71-4bfd-b99f-ad0fd7a197d6/wal-checksum-hosted-a65c3f3-pass.zip!/f7c1f6d77ec44b2a4924c892626678221fef3317/37666873544-1/benchmark.log"
+    },
+    {
+      "path": "runs/hosted-final-pass/budget-evidence.json",
+      "bytes": 3771,
+      "sha256": "13fbd8bd3e830c09ab2738d73fa8446f83e1b8fbf78e470431d9847147006b5e",
+      "encoding": "verbatim",
+      "originalBytes": 3771,
+      "originalSha256": "13fbd8bd3e830c09ab2738d73fa8446f83e1b8fbf78e470431d9847147006b5e",
+      "source": "/workspace/attachments/223a5a4a-6e71-4bfd-b99f-ad0fd7a197d6/wal-checksum-hosted-a65c3f3-pass.zip!/f7c1f6d77ec44b2a4924c892626678221fef3317/37666873544-1/budget-evidence.json"
+    },
+    {
+      "path": "runs/hosted-final-pass/budget-validation.log",
+      "bytes": 675,
+      "sha256": "958937414d4a58f35e5489454d67bd73f2d59c3bae10da50644695f328b335cd",
+      "encoding": "verbatim",
+      "originalBytes": 675,
+      "originalSha256": "958937414d4a58f35e5489454d67bd73f2d59c3bae10da50644695f328b335cd",
+      "source": "/workspace/attachments/223a5a4a-6e71-4bfd-b99f-ad0fd7a197d6/wal-checksum-hosted-a65c3f3-pass.zip!/f7c1f6d77ec44b2a4924c892626678221fef3317/37666873544-1/budget-validation.log"
+    },
+    {
+      "path": "runs/hosted-final-pass/build.log",
+      "bytes": 214024,
+      "sha256": "af063b9ae6541bedbe17f9f990e8e88384d1c6b3011392ba9d7b28822df06f80",
+      "encoding": "verbatim",
+      "originalBytes": 214024,
+      "originalSha256": "af063b9ae6541bedbe17f9f990e8e88384d1c6b3011392ba9d7b28822df06f80",
+      "source": "/workspace/attachments/223a5a4a-6e71-4bfd-b99f-ad0fd7a197d6/wal-checksum-hosted-a65c3f3-pass.zip!/f7c1f6d77ec44b2a4924c892626678221fef3317/37666873544-1/build.log"
+    },
+    {
+      "path": "runs/hosted-final-pass/dotnet-info.log",
+      "bytes": 1796,
+      "sha256": "2303f1d40e454449978a7ff748bd5e31f50df114d36e318a926fc43ab59bf4c7",
+      "encoding": "verbatim",
+      "originalBytes": 1796,
+      "originalSha256": "2303f1d40e454449978a7ff748bd5e31f50df114d36e318a926fc43ab59bf4c7",
+      "source": "/workspace/attachments/223a5a4a-6e71-4bfd-b99f-ad0fd7a197d6/wal-checksum-hosted-a65c3f3-pass.zip!/f7c1f6d77ec44b2a4924c892626678221fef3317/37666873544-1/dotnet-info.log"
+    },
+    {
+      "path": "runs/hosted-final-pass/profile.json",
+      "bytes": 979,
+      "sha256": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26",
+      "encoding": "verbatim",
+      "originalBytes": 979,
+      "originalSha256": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26",
+      "source": "/workspace/attachments/223a5a4a-6e71-4bfd-b99f-ad0fd7a197d6/wal-checksum-hosted-a65c3f3-pass.zip!/f7c1f6d77ec44b2a4924c892626678221fef3317/37666873544-1/profile.json"
+    },
+    {
+      "path": "runs/hosted-final-pass/restore.log",
+      "bytes": 4544,
+      "sha256": "19396d4928156353f0fbf75423ec6ba10615b7136d89347487234974f6a94ea2",
+      "encoding": "verbatim",
+      "originalBytes": 4544,
+      "originalSha256": "19396d4928156353f0fbf75423ec6ba10615b7136d89347487234974f6a94ea2",
+      "source": "/workspace/attachments/223a5a4a-6e71-4bfd-b99f-ad0fd7a197d6/wal-checksum-hosted-a65c3f3-pass.zip!/f7c1f6d77ec44b2a4924c892626678221fef3317/37666873544-1/restore.log"
+    },
+    {
+      "path": "runs/hosted-final-pass/run.json",
+      "bytes": 11373,
+      "sha256": "ac9bc9745bed56d45da94a48d2f1e1b21fe4c99e0bba66d2f41d9365ce134cbc",
+      "encoding": "verbatim",
+      "originalBytes": 11373,
+      "originalSha256": "ac9bc9745bed56d45da94a48d2f1e1b21fe4c99e0bba66d2f41d9365ce134cbc",
+      "source": "/workspace/attachments/223a5a4a-6e71-4bfd-b99f-ad0fd7a197d6/wal-checksum-hosted-a65c3f3-pass.zip!/f7c1f6d77ec44b2a4924c892626678221fef3317/37666873544-1/run.json"
+    },
+    {
+      "path": "runs/hosted-final-pass/runtime.log",
+      "bytes": 307,
+      "sha256": "83adb39fc56c8c6ca08b8d98083ec5629ac7b76f83e77b56a0fd55bb3760cfc8",
+      "encoding": "verbatim",
+      "originalBytes": 307,
+      "originalSha256": "83adb39fc56c8c6ca08b8d98083ec5629ac7b76f83e77b56a0fd55bb3760cfc8",
+      "source": "/workspace/attachments/223a5a4a-6e71-4bfd-b99f-ad0fd7a197d6/wal-checksum-hosted-a65c3f3-pass.zip!/f7c1f6d77ec44b2a4924c892626678221fef3317/37666873544-1/runtime.log"
+    },
+    {
+      "path": "runs/hosted-final-pass/sdk.log",
+      "bytes": 9,
+      "sha256": "a807ca80c392730f0b9a4114bcd64d2c7258ea2f97fbeab0b9c5b3f88194ce94",
+      "encoding": "verbatim",
+      "originalBytes": 9,
+      "originalSha256": "a807ca80c392730f0b9a4114bcd64d2c7258ea2f97fbeab0b9c5b3f88194ce94",
+      "source": "/workspace/attachments/223a5a4a-6e71-4bfd-b99f-ad0fd7a197d6/wal-checksum-hosted-a65c3f3-pass.zip!/f7c1f6d77ec44b2a4924c892626678221fef3317/37666873544-1/sdk.log"
+    },
+    {
+      "path": "runs/hosted-first-optimized/bdn/Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-173903.log",
+      "bytes": 53800,
+      "sha256": "cc2281fca647de5c134f0e7c24488347c74ccb61f71b91bce82d54ca71a6223b",
+      "encoding": "verbatim",
+      "originalBytes": 53800,
+      "originalSha256": "cc2281fca647de5c134f0e7c24488347c74ccb61f71b91bce82d54ca71a6223b",
+      "source": "/workspace/attachments/2dfcadca-8ce4-4573-b480-424a61b08ea8/pipeline-budget-5ce795c47-run37659411104.zip!/8064c0ee65334fc721095ccc47f58a2e84ee6b42/37659411104-1/bdn/Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-173903.log"
+    },
+    {
+      "path": "runs/hosted-first-optimized/bdn/perf-budgets.json",
+      "bytes": 1422,
+      "sha256": "73c03f00210faac0b1d7bd5838d491cb8daae989ddc4304b30d9283997ebedce",
+      "encoding": "verbatim",
+      "originalBytes": 1422,
+      "originalSha256": "73c03f00210faac0b1d7bd5838d491cb8daae989ddc4304b30d9283997ebedce",
+      "source": "/workspace/attachments/2dfcadca-8ce4-4573-b480-424a61b08ea8/pipeline-budget-5ce795c47-run37659411104.zip!/8064c0ee65334fc721095ccc47f58a2e84ee6b42/37659411104-1/bdn/perf-budgets.json"
+    },
+    {
+      "path": "runs/hosted-first-optimized/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json",
+      "bytes": 141888,
+      "sha256": "05d0b554c0b8d5d6373f0035243e5a980bb70aa66321a0ec3d8e779ad3e0081a",
+      "encoding": "verbatim",
+      "originalBytes": 141888,
+      "originalSha256": "05d0b554c0b8d5d6373f0035243e5a980bb70aa66321a0ec3d8e779ad3e0081a",
+      "source": "/workspace/attachments/2dfcadca-8ce4-4573-b480-424a61b08ea8/pipeline-budget-5ce795c47-run37659411104.zip!/8064c0ee65334fc721095ccc47f58a2e84ee6b42/37659411104-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json"
+    },
+    {
+      "path": "runs/hosted-first-optimized/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+      "bytes": 1332,
+      "sha256": "55d276c44e18cac01f52131228295ed904b393ec3c6a6140d96038a68e7e36b9",
+      "encoding": "verbatim",
+      "originalBytes": 1332,
+      "originalSha256": "55d276c44e18cac01f52131228295ed904b393ec3c6a6140d96038a68e7e36b9",
+      "source": "/workspace/attachments/2dfcadca-8ce4-4573-b480-424a61b08ea8/pipeline-budget-5ce795c47-run37659411104.zip!/8064c0ee65334fc721095ccc47f58a2e84ee6b42/37659411104-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md"
+    },
+    {
+      "path": "runs/hosted-first-optimized/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv",
+      "bytes": 3762,
+      "sha256": "6f52b45c2f683b6954c4ee9b6acf3f4d8da02de442e1d79618525bd2e5729e47",
+      "encoding": "verbatim",
+      "originalBytes": 3762,
+      "originalSha256": "6f52b45c2f683b6954c4ee9b6acf3f4d8da02de442e1d79618525bd2e5729e47",
+      "source": "/workspace/attachments/2dfcadca-8ce4-4573-b480-424a61b08ea8/pipeline-budget-5ce795c47-run37659411104.zip!/8064c0ee65334fc721095ccc47f58a2e84ee6b42/37659411104-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv"
+    },
+    {
+      "path": "runs/hosted-first-optimized/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html",
+      "bytes": 2005,
+      "sha256": "b4d8eceef06d37ae4a82a0d60d249b67152eb4c66165f23778a6ad257dfd3e03",
+      "encoding": "verbatim",
+      "originalBytes": 2005,
+      "originalSha256": "b4d8eceef06d37ae4a82a0d60d249b67152eb4c66165f23778a6ad257dfd3e03",
+      "source": "/workspace/attachments/2dfcadca-8ce4-4573-b480-424a61b08ea8/pipeline-budget-5ce795c47-run37659411104.zip!/8064c0ee65334fc721095ccc47f58a2e84ee6b42/37659411104-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html"
+    },
+    {
+      "path": "runs/hosted-first-optimized/benchmark.log",
+      "bytes": 53996,
+      "sha256": "4bd69bc9a688dd8ff8162eb5b0497d6f1ff3b4aff20acbb5fbfa184f8241db26",
+      "encoding": "verbatim",
+      "originalBytes": 53996,
+      "originalSha256": "4bd69bc9a688dd8ff8162eb5b0497d6f1ff3b4aff20acbb5fbfa184f8241db26",
+      "source": "/workspace/attachments/2dfcadca-8ce4-4573-b480-424a61b08ea8/pipeline-budget-5ce795c47-run37659411104.zip!/8064c0ee65334fc721095ccc47f58a2e84ee6b42/37659411104-1/benchmark.log"
+    },
+    {
+      "path": "runs/hosted-first-optimized/budget-evidence.json",
+      "bytes": 3777,
+      "sha256": "4f3f66aa1f183441b5e40429ffa562e3ebecb120fbc6c3f7542f2716526c2a0e",
+      "encoding": "verbatim",
+      "originalBytes": 3777,
+      "originalSha256": "4f3f66aa1f183441b5e40429ffa562e3ebecb120fbc6c3f7542f2716526c2a0e",
+      "source": "/workspace/attachments/2dfcadca-8ce4-4573-b480-424a61b08ea8/pipeline-budget-5ce795c47-run37659411104.zip!/8064c0ee65334fc721095ccc47f58a2e84ee6b42/37659411104-1/budget-evidence.json"
+    },
+    {
+      "path": "runs/hosted-first-optimized/budget-validation.log",
+      "bytes": 739,
+      "sha256": "743aa66b0cc160b0de4721f4fd32d24cc66ef517567844659239f9ebc4699b31",
+      "encoding": "verbatim",
+      "originalBytes": 739,
+      "originalSha256": "743aa66b0cc160b0de4721f4fd32d24cc66ef517567844659239f9ebc4699b31",
+      "source": "/workspace/attachments/2dfcadca-8ce4-4573-b480-424a61b08ea8/pipeline-budget-5ce795c47-run37659411104.zip!/8064c0ee65334fc721095ccc47f58a2e84ee6b42/37659411104-1/budget-validation.log"
+    },
+    {
+      "path": "runs/hosted-first-optimized/build.log",
+      "bytes": 214024,
+      "sha256": "aecae26b76258d2ce67ce9a319aea4c6e68f75471a9b7a6ab15bad62371cc447",
+      "encoding": "verbatim",
+      "originalBytes": 214024,
+      "originalSha256": "aecae26b76258d2ce67ce9a319aea4c6e68f75471a9b7a6ab15bad62371cc447",
+      "source": "/workspace/attachments/2dfcadca-8ce4-4573-b480-424a61b08ea8/pipeline-budget-5ce795c47-run37659411104.zip!/8064c0ee65334fc721095ccc47f58a2e84ee6b42/37659411104-1/build.log"
+    },
+    {
+      "path": "runs/hosted-first-optimized/dotnet-info.log",
+      "bytes": 1796,
+      "sha256": "2303f1d40e454449978a7ff748bd5e31f50df114d36e318a926fc43ab59bf4c7",
+      "encoding": "verbatim",
+      "originalBytes": 1796,
+      "originalSha256": "2303f1d40e454449978a7ff748bd5e31f50df114d36e318a926fc43ab59bf4c7",
+      "source": "/workspace/attachments/2dfcadca-8ce4-4573-b480-424a61b08ea8/pipeline-budget-5ce795c47-run37659411104.zip!/8064c0ee65334fc721095ccc47f58a2e84ee6b42/37659411104-1/dotnet-info.log"
+    },
+    {
+      "path": "runs/hosted-first-optimized/profile.json",
+      "bytes": 979,
+      "sha256": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26",
+      "encoding": "verbatim",
+      "originalBytes": 979,
+      "originalSha256": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26",
+      "source": "/workspace/attachments/2dfcadca-8ce4-4573-b480-424a61b08ea8/pipeline-budget-5ce795c47-run37659411104.zip!/8064c0ee65334fc721095ccc47f58a2e84ee6b42/37659411104-1/profile.json"
+    },
+    {
+      "path": "runs/hosted-first-optimized/restore.log",
+      "bytes": 4547,
+      "sha256": "8e836b9d0bb42719b469fa286b87b49cd0d930813b14b2ba6a3949e1fd336c82",
+      "encoding": "verbatim",
+      "originalBytes": 4547,
+      "originalSha256": "8e836b9d0bb42719b469fa286b87b49cd0d930813b14b2ba6a3949e1fd336c82",
+      "source": "/workspace/attachments/2dfcadca-8ce4-4573-b480-424a61b08ea8/pipeline-budget-5ce795c47-run37659411104.zip!/8064c0ee65334fc721095ccc47f58a2e84ee6b42/37659411104-1/restore.log"
+    },
+    {
+      "path": "runs/hosted-first-optimized/run.json",
+      "bytes": 11383,
+      "sha256": "2e319f2fd9cd599dec6c5aafab1a49b2eb41e234ce39dd40e786e19bfa1d8990",
+      "encoding": "verbatim",
+      "originalBytes": 11383,
+      "originalSha256": "2e319f2fd9cd599dec6c5aafab1a49b2eb41e234ce39dd40e786e19bfa1d8990",
+      "source": "/workspace/attachments/2dfcadca-8ce4-4573-b480-424a61b08ea8/pipeline-budget-5ce795c47-run37659411104.zip!/8064c0ee65334fc721095ccc47f58a2e84ee6b42/37659411104-1/run.json"
+    },
+    {
+      "path": "runs/hosted-first-optimized/runtime.log",
+      "bytes": 307,
+      "sha256": "83adb39fc56c8c6ca08b8d98083ec5629ac7b76f83e77b56a0fd55bb3760cfc8",
+      "encoding": "verbatim",
+      "originalBytes": 307,
+      "originalSha256": "83adb39fc56c8c6ca08b8d98083ec5629ac7b76f83e77b56a0fd55bb3760cfc8",
+      "source": "/workspace/attachments/2dfcadca-8ce4-4573-b480-424a61b08ea8/pipeline-budget-5ce795c47-run37659411104.zip!/8064c0ee65334fc721095ccc47f58a2e84ee6b42/37659411104-1/runtime.log"
+    },
+    {
+      "path": "runs/hosted-first-optimized/sdk.log",
+      "bytes": 9,
+      "sha256": "a807ca80c392730f0b9a4114bcd64d2c7258ea2f97fbeab0b9c5b3f88194ce94",
+      "encoding": "verbatim",
+      "originalBytes": 9,
+      "originalSha256": "a807ca80c392730f0b9a4114bcd64d2c7258ea2f97fbeab0b9c5b3f88194ce94",
+      "source": "/workspace/attachments/2dfcadca-8ce4-4573-b480-424a61b08ea8/pipeline-budget-5ce795c47-run37659411104.zip!/8064c0ee65334fc721095ccc47f58a2e84ee6b42/37659411104-1/sdk.log"
+    },
+    {
+      "path": "runs/hosted-main-current/bdn/Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-153814.log",
+      "bytes": 55338,
+      "sha256": "947a5e7b24e0f7c4672348b1122b3cc7f14936c8e052c9b05907bbc376009738",
+      "encoding": "verbatim",
+      "originalBytes": 55338,
+      "originalSha256": "947a5e7b24e0f7c4672348b1122b3cc7f14936c8e052c9b05907bbc376009738",
+      "source": "/workspace/attachments/8da0002f-e869-416b-a57a-262b133e3210/main-current-pipeline-budget-failure.zip!/2bc041f14477c68622e0e08e9922092a52f241af/37644053856-1/bdn/Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-153814.log"
+    },
+    {
+      "path": "runs/hosted-main-current/bdn/perf-budgets.json",
+      "bytes": 1422,
+      "sha256": "73c03f00210faac0b1d7bd5838d491cb8daae989ddc4304b30d9283997ebedce",
+      "encoding": "verbatim",
+      "originalBytes": 1422,
+      "originalSha256": "73c03f00210faac0b1d7bd5838d491cb8daae989ddc4304b30d9283997ebedce",
+      "source": "/workspace/attachments/8da0002f-e869-416b-a57a-262b133e3210/main-current-pipeline-budget-failure.zip!/2bc041f14477c68622e0e08e9922092a52f241af/37644053856-1/bdn/perf-budgets.json"
+    },
+    {
+      "path": "runs/hosted-main-current/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json",
+      "bytes": 146227,
+      "sha256": "2bb8d4ca7271848ea4b36a2d3f7893ea40ce017a8b285f560ae4f87013ce709b",
+      "encoding": "verbatim",
+      "originalBytes": 146227,
+      "originalSha256": "2bb8d4ca7271848ea4b36a2d3f7893ea40ce017a8b285f560ae4f87013ce709b",
+      "source": "/workspace/attachments/8da0002f-e869-416b-a57a-262b133e3210/main-current-pipeline-budget-failure.zip!/2bc041f14477c68622e0e08e9922092a52f241af/37644053856-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json"
+    },
+    {
+      "path": "runs/hosted-main-current/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+      "bytes": 1384,
+      "sha256": "7139f81c60126ae6f15b7d02bad39191422afd7aff529bc1da0d460700709eaa",
+      "encoding": "verbatim",
+      "originalBytes": 1384,
+      "originalSha256": "7139f81c60126ae6f15b7d02bad39191422afd7aff529bc1da0d460700709eaa",
+      "source": "/workspace/attachments/8da0002f-e869-416b-a57a-262b133e3210/main-current-pipeline-budget-failure.zip!/2bc041f14477c68622e0e08e9922092a52f241af/37644053856-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md"
+    },
+    {
+      "path": "runs/hosted-main-current/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv",
+      "bytes": 3779,
+      "sha256": "45a8cd65d4b5712d884d74e3605f22422a70cb943530215d6200662344c39bfb",
+      "encoding": "verbatim",
+      "originalBytes": 3779,
+      "originalSha256": "45a8cd65d4b5712d884d74e3605f22422a70cb943530215d6200662344c39bfb",
+      "source": "/workspace/attachments/8da0002f-e869-416b-a57a-262b133e3210/main-current-pipeline-budget-failure.zip!/2bc041f14477c68622e0e08e9922092a52f241af/37644053856-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv"
+    },
+    {
+      "path": "runs/hosted-main-current/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html",
+      "bytes": 2028,
+      "sha256": "83caa4ce7c428f308d081f884b0720b9a3246aac3898b46367877245f3396de8",
+      "encoding": "verbatim",
+      "originalBytes": 2028,
+      "originalSha256": "83caa4ce7c428f308d081f884b0720b9a3246aac3898b46367877245f3396de8",
+      "source": "/workspace/attachments/8da0002f-e869-416b-a57a-262b133e3210/main-current-pipeline-budget-failure.zip!/2bc041f14477c68622e0e08e9922092a52f241af/37644053856-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html"
+    },
+    {
+      "path": "runs/hosted-main-current/benchmark.log",
+      "bytes": 55473,
+      "sha256": "cabd7604422d0d01a82f212de4c57cfff0729fb2de34ae5cac4312fa78ea4d07",
+      "encoding": "verbatim",
+      "originalBytes": 55473,
+      "originalSha256": "cabd7604422d0d01a82f212de4c57cfff0729fb2de34ae5cac4312fa78ea4d07",
+      "source": "/workspace/attachments/8da0002f-e869-416b-a57a-262b133e3210/main-current-pipeline-budget-failure.zip!/2bc041f14477c68622e0e08e9922092a52f241af/37644053856-1/benchmark.log"
+    },
+    {
+      "path": "runs/hosted-main-current/budget-evidence.json",
+      "bytes": 3784,
+      "sha256": "082be9659b6100141d122ac7701c540d4f0f2bc5006a7f67ce9c58da9dc5b69d",
+      "encoding": "verbatim",
+      "originalBytes": 3784,
+      "originalSha256": "082be9659b6100141d122ac7701c540d4f0f2bc5006a7f67ce9c58da9dc5b69d",
+      "source": "/workspace/attachments/8da0002f-e869-416b-a57a-262b133e3210/main-current-pipeline-budget-failure.zip!/2bc041f14477c68622e0e08e9922092a52f241af/37644053856-1/budget-evidence.json"
+    },
+    {
+      "path": "runs/hosted-main-current/budget-validation.log",
+      "bytes": 771,
+      "sha256": "bdd97059cd8b2389ded2ad8acbc9ca22789a68b9fa579d83bd31ecd973189e55",
+      "encoding": "verbatim",
+      "originalBytes": 771,
+      "originalSha256": "bdd97059cd8b2389ded2ad8acbc9ca22789a68b9fa579d83bd31ecd973189e55",
+      "source": "/workspace/attachments/8da0002f-e869-416b-a57a-262b133e3210/main-current-pipeline-budget-failure.zip!/2bc041f14477c68622e0e08e9922092a52f241af/37644053856-1/budget-validation.log"
+    },
+    {
+      "path": "runs/hosted-main-current/build.log",
+      "bytes": 214024,
+      "sha256": "94fdbec6777f44d625ef25861c3ee9fbafe16851422df25ae9b0a376fa69d3e3",
+      "encoding": "verbatim",
+      "originalBytes": 214024,
+      "originalSha256": "94fdbec6777f44d625ef25861c3ee9fbafe16851422df25ae9b0a376fa69d3e3",
+      "source": "/workspace/attachments/8da0002f-e869-416b-a57a-262b133e3210/main-current-pipeline-budget-failure.zip!/2bc041f14477c68622e0e08e9922092a52f241af/37644053856-1/build.log"
+    },
+    {
+      "path": "runs/hosted-main-current/dotnet-info.log",
+      "bytes": 1796,
+      "sha256": "2303f1d40e454449978a7ff748bd5e31f50df114d36e318a926fc43ab59bf4c7",
+      "encoding": "verbatim",
+      "originalBytes": 1796,
+      "originalSha256": "2303f1d40e454449978a7ff748bd5e31f50df114d36e318a926fc43ab59bf4c7",
+      "source": "/workspace/attachments/8da0002f-e869-416b-a57a-262b133e3210/main-current-pipeline-budget-failure.zip!/2bc041f14477c68622e0e08e9922092a52f241af/37644053856-1/dotnet-info.log"
+    },
+    {
+      "path": "runs/hosted-main-current/profile.json",
+      "bytes": 979,
+      "sha256": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26",
+      "encoding": "verbatim",
+      "originalBytes": 979,
+      "originalSha256": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26",
+      "source": "/workspace/attachments/8da0002f-e869-416b-a57a-262b133e3210/main-current-pipeline-budget-failure.zip!/2bc041f14477c68622e0e08e9922092a52f241af/37644053856-1/profile.json"
+    },
+    {
+      "path": "runs/hosted-main-current/restore.log",
+      "bytes": 4536,
+      "sha256": "2dd10fe29fd29aacfd620ebb2271c8f71370c5db8bb30ae53d48e9eeffcff836",
+      "encoding": "verbatim",
+      "originalBytes": 4536,
+      "originalSha256": "2dd10fe29fd29aacfd620ebb2271c8f71370c5db8bb30ae53d48e9eeffcff836",
+      "source": "/workspace/attachments/8da0002f-e869-416b-a57a-262b133e3210/main-current-pipeline-budget-failure.zip!/2bc041f14477c68622e0e08e9922092a52f241af/37644053856-1/restore.log"
+    },
+    {
+      "path": "runs/hosted-main-current/run.json",
+      "bytes": 11391,
+      "sha256": "2b570cadbf5aa4ad16f14d45bb080db6759c5ad3797c68d5f2f0dd4f678ee890",
+      "encoding": "verbatim",
+      "originalBytes": 11391,
+      "originalSha256": "2b570cadbf5aa4ad16f14d45bb080db6759c5ad3797c68d5f2f0dd4f678ee890",
+      "source": "/workspace/attachments/8da0002f-e869-416b-a57a-262b133e3210/main-current-pipeline-budget-failure.zip!/2bc041f14477c68622e0e08e9922092a52f241af/37644053856-1/run.json"
+    },
+    {
+      "path": "runs/hosted-main-current/runtime.log",
+      "bytes": 307,
+      "sha256": "83adb39fc56c8c6ca08b8d98083ec5629ac7b76f83e77b56a0fd55bb3760cfc8",
+      "encoding": "verbatim",
+      "originalBytes": 307,
+      "originalSha256": "83adb39fc56c8c6ca08b8d98083ec5629ac7b76f83e77b56a0fd55bb3760cfc8",
+      "source": "/workspace/attachments/8da0002f-e869-416b-a57a-262b133e3210/main-current-pipeline-budget-failure.zip!/2bc041f14477c68622e0e08e9922092a52f241af/37644053856-1/runtime.log"
+    },
+    {
+      "path": "runs/hosted-main-current/sdk.log",
+      "bytes": 9,
+      "sha256": "a807ca80c392730f0b9a4114bcd64d2c7258ea2f97fbeab0b9c5b3f88194ce94",
+      "encoding": "verbatim",
+      "originalBytes": 9,
+      "originalSha256": "a807ca80c392730f0b9a4114bcd64d2c7258ea2f97fbeab0b9c5b3f88194ce94",
+      "source": "/workspace/attachments/8da0002f-e869-416b-a57a-262b133e3210/main-current-pipeline-budget-failure.zip!/2bc041f14477c68622e0e08e9922092a52f241af/37644053856-1/sdk.log"
+    },
+    {
+      "path": "runs/hosted-main-prior/bdn/Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-152815.log",
+      "bytes": 54199,
+      "sha256": "90a38dc247c27107b90c2ee369e2f9d6fc1aee40185a93a4c0ae2365e9bd17f6",
+      "encoding": "verbatim",
+      "originalBytes": 54199,
+      "originalSha256": "90a38dc247c27107b90c2ee369e2f9d6fc1aee40185a93a4c0ae2365e9bd17f6",
+      "source": "/workspace/attachments/43c11426-d6a4-434c-bcd1-508fcdff956e/main-prior-pipeline-budget-failure.zip!/2da026b54ec43e785ab88ca94df5b58b78df11ef/37643199718-1/bdn/Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-152815.log"
+    },
+    {
+      "path": "runs/hosted-main-prior/bdn/perf-budgets.json",
+      "bytes": 1422,
+      "sha256": "73c03f00210faac0b1d7bd5838d491cb8daae989ddc4304b30d9283997ebedce",
+      "encoding": "verbatim",
+      "originalBytes": 1422,
+      "originalSha256": "73c03f00210faac0b1d7bd5838d491cb8daae989ddc4304b30d9283997ebedce",
+      "source": "/workspace/attachments/43c11426-d6a4-434c-bcd1-508fcdff956e/main-prior-pipeline-budget-failure.zip!/2da026b54ec43e785ab88ca94df5b58b78df11ef/37643199718-1/bdn/perf-budgets.json"
+    },
+    {
+      "path": "runs/hosted-main-prior/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json",
+      "bytes": 143191,
+      "sha256": "514a36a70ee47984f7595ef79c20f48135253bd1e3b695e03da77a3732e3b240",
+      "encoding": "verbatim",
+      "originalBytes": 143191,
+      "originalSha256": "514a36a70ee47984f7595ef79c20f48135253bd1e3b695e03da77a3732e3b240",
+      "source": "/workspace/attachments/43c11426-d6a4-434c-bcd1-508fcdff956e/main-prior-pipeline-budget-failure.zip!/2da026b54ec43e785ab88ca94df5b58b78df11ef/37643199718-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json"
+    },
+    {
+      "path": "runs/hosted-main-prior/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+      "bytes": 1378,
+      "sha256": "ec26b24508c05b535b7602a0165e034d466500450ed6a49d6bca938f32904e48",
+      "encoding": "verbatim",
+      "originalBytes": 1378,
+      "originalSha256": "ec26b24508c05b535b7602a0165e034d466500450ed6a49d6bca938f32904e48",
+      "source": "/workspace/attachments/43c11426-d6a4-434c-bcd1-508fcdff956e/main-prior-pipeline-budget-failure.zip!/2da026b54ec43e785ab88ca94df5b58b78df11ef/37643199718-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md"
+    },
+    {
+      "path": "runs/hosted-main-prior/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv",
+      "bytes": 3771,
+      "sha256": "79eda8f5befee5f45d258c19003ce3654a8a1a3800cc27d15ce910689fc2b4c5",
+      "encoding": "verbatim",
+      "originalBytes": 3771,
+      "originalSha256": "79eda8f5befee5f45d258c19003ce3654a8a1a3800cc27d15ce910689fc2b4c5",
+      "source": "/workspace/attachments/43c11426-d6a4-434c-bcd1-508fcdff956e/main-prior-pipeline-budget-failure.zip!/2da026b54ec43e785ab88ca94df5b58b78df11ef/37643199718-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv"
+    },
+    {
+      "path": "runs/hosted-main-prior/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html",
+      "bytes": 2028,
+      "sha256": "4cc45365db2fe65214f1f4cb7770d921e5de50f2cd86f3143c1f65b3857b4969",
+      "encoding": "verbatim",
+      "originalBytes": 2028,
+      "originalSha256": "4cc45365db2fe65214f1f4cb7770d921e5de50f2cd86f3143c1f65b3857b4969",
+      "source": "/workspace/attachments/43c11426-d6a4-434c-bcd1-508fcdff956e/main-prior-pipeline-budget-failure.zip!/2da026b54ec43e785ab88ca94df5b58b78df11ef/37643199718-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html"
+    },
+    {
+      "path": "runs/hosted-main-prior/benchmark.log",
+      "bytes": 54334,
+      "sha256": "9fb7ac7200378f5282592ae5c157a3f602bc4f5b685337a3874c116e67e29845",
+      "encoding": "verbatim",
+      "originalBytes": 54334,
+      "originalSha256": "9fb7ac7200378f5282592ae5c157a3f602bc4f5b685337a3874c116e67e29845",
+      "source": "/workspace/attachments/43c11426-d6a4-434c-bcd1-508fcdff956e/main-prior-pipeline-budget-failure.zip!/2da026b54ec43e785ab88ca94df5b58b78df11ef/37643199718-1/benchmark.log"
+    },
+    {
+      "path": "runs/hosted-main-prior/budget-evidence.json",
+      "bytes": 3791,
+      "sha256": "85811a516ba0309de48c2a613778d68ffb6e67dc27265aa67d11c7903c9a390d",
+      "encoding": "verbatim",
+      "originalBytes": 3791,
+      "originalSha256": "85811a516ba0309de48c2a613778d68ffb6e67dc27265aa67d11c7903c9a390d",
+      "source": "/workspace/attachments/43c11426-d6a4-434c-bcd1-508fcdff956e/main-prior-pipeline-budget-failure.zip!/2da026b54ec43e785ab88ca94df5b58b78df11ef/37643199718-1/budget-evidence.json"
+    },
+    {
+      "path": "runs/hosted-main-prior/budget-validation.log",
+      "bytes": 787,
+      "sha256": "028df7480b6b4f95b912168f5f33f34e9d60bc9f071fb265da4ca28ba9e6161c",
+      "encoding": "verbatim",
+      "originalBytes": 787,
+      "originalSha256": "028df7480b6b4f95b912168f5f33f34e9d60bc9f071fb265da4ca28ba9e6161c",
+      "source": "/workspace/attachments/43c11426-d6a4-434c-bcd1-508fcdff956e/main-prior-pipeline-budget-failure.zip!/2da026b54ec43e785ab88ca94df5b58b78df11ef/37643199718-1/budget-validation.log"
+    },
+    {
+      "path": "runs/hosted-main-prior/build.log",
+      "bytes": 214024,
+      "sha256": "4cbe856d8151aa47d5216bbce8beccae8c77331c33ceabd96245a7100ee864a7",
+      "encoding": "verbatim",
+      "originalBytes": 214024,
+      "originalSha256": "4cbe856d8151aa47d5216bbce8beccae8c77331c33ceabd96245a7100ee864a7",
+      "source": "/workspace/attachments/43c11426-d6a4-434c-bcd1-508fcdff956e/main-prior-pipeline-budget-failure.zip!/2da026b54ec43e785ab88ca94df5b58b78df11ef/37643199718-1/build.log"
+    },
+    {
+      "path": "runs/hosted-main-prior/dotnet-info.log",
+      "bytes": 1796,
+      "sha256": "2303f1d40e454449978a7ff748bd5e31f50df114d36e318a926fc43ab59bf4c7",
+      "encoding": "verbatim",
+      "originalBytes": 1796,
+      "originalSha256": "2303f1d40e454449978a7ff748bd5e31f50df114d36e318a926fc43ab59bf4c7",
+      "source": "/workspace/attachments/43c11426-d6a4-434c-bcd1-508fcdff956e/main-prior-pipeline-budget-failure.zip!/2da026b54ec43e785ab88ca94df5b58b78df11ef/37643199718-1/dotnet-info.log"
+    },
+    {
+      "path": "runs/hosted-main-prior/profile.json",
+      "bytes": 979,
+      "sha256": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26",
+      "encoding": "verbatim",
+      "originalBytes": 979,
+      "originalSha256": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26",
+      "source": "/workspace/attachments/43c11426-d6a4-434c-bcd1-508fcdff956e/main-prior-pipeline-budget-failure.zip!/2da026b54ec43e785ab88ca94df5b58b78df11ef/37643199718-1/profile.json"
+    },
+    {
+      "path": "runs/hosted-main-prior/restore.log",
+      "bytes": 4549,
+      "sha256": "20cafaa740ff125a746f1e4edbe22a51e1b71cfd87d7eec6dffd0bc47ec8ac8f",
+      "encoding": "verbatim",
+      "originalBytes": 4549,
+      "originalSha256": "20cafaa740ff125a746f1e4edbe22a51e1b71cfd87d7eec6dffd0bc47ec8ac8f",
+      "source": "/workspace/attachments/43c11426-d6a4-434c-bcd1-508fcdff956e/main-prior-pipeline-budget-failure.zip!/2da026b54ec43e785ab88ca94df5b58b78df11ef/37643199718-1/restore.log"
+    },
+    {
+      "path": "runs/hosted-main-prior/run.json",
+      "bytes": 11409,
+      "sha256": "398725d85c472286ca0ea5d0e672f637d9efdbeda1d2089693cdac8257f922f0",
+      "encoding": "verbatim",
+      "originalBytes": 11409,
+      "originalSha256": "398725d85c472286ca0ea5d0e672f637d9efdbeda1d2089693cdac8257f922f0",
+      "source": "/workspace/attachments/43c11426-d6a4-434c-bcd1-508fcdff956e/main-prior-pipeline-budget-failure.zip!/2da026b54ec43e785ab88ca94df5b58b78df11ef/37643199718-1/run.json"
+    },
+    {
+      "path": "runs/hosted-main-prior/runtime.log",
+      "bytes": 307,
+      "sha256": "83adb39fc56c8c6ca08b8d98083ec5629ac7b76f83e77b56a0fd55bb3760cfc8",
+      "encoding": "verbatim",
+      "originalBytes": 307,
+      "originalSha256": "83adb39fc56c8c6ca08b8d98083ec5629ac7b76f83e77b56a0fd55bb3760cfc8",
+      "source": "/workspace/attachments/43c11426-d6a4-434c-bcd1-508fcdff956e/main-prior-pipeline-budget-failure.zip!/2da026b54ec43e785ab88ca94df5b58b78df11ef/37643199718-1/runtime.log"
+    },
+    {
+      "path": "runs/hosted-main-prior/sdk.log",
+      "bytes": 9,
+      "sha256": "a807ca80c392730f0b9a4114bcd64d2c7258ea2f97fbeab0b9c5b3f88194ce94",
+      "encoding": "verbatim",
+      "originalBytes": 9,
+      "originalSha256": "a807ca80c392730f0b9a4114bcd64d2c7258ea2f97fbeab0b9c5b3f88194ce94",
+      "source": "/workspace/attachments/43c11426-d6a4-434c-bcd1-508fcdff956e/main-prior-pipeline-budget-failure.zip!/2da026b54ec43e785ab88ca94df5b58b78df11ef/37643199718-1/sdk.log"
+    },
+    {
+      "path": "runs/hosted-pr-3109/bdn/Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-163156.log",
+      "bytes": 53219,
+      "sha256": "cf1b3a8b56503c4d8a9337c20de265d4e1dd5db826f2d7217d05ea78f24eebe3",
+      "encoding": "verbatim",
+      "originalBytes": 53219,
+      "originalSha256": "cf1b3a8b56503c4d8a9337c20de265d4e1dd5db826f2d7217d05ea78f24eebe3",
+      "source": "/workspace/attachments/ed58931a-0e03-4063-b430-e06f9c0d77b0/pr-3109-pipeline-budget-failure.zip!/66064c4ec0252212a4c4be059ad56ce5f77b417d/37652037382-1/bdn/Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-163156.log"
+    },
+    {
+      "path": "runs/hosted-pr-3109/bdn/perf-budgets.json",
+      "bytes": 1422,
+      "sha256": "73c03f00210faac0b1d7bd5838d491cb8daae989ddc4304b30d9283997ebedce",
+      "encoding": "verbatim",
+      "originalBytes": 1422,
+      "originalSha256": "73c03f00210faac0b1d7bd5838d491cb8daae989ddc4304b30d9283997ebedce",
+      "source": "/workspace/attachments/ed58931a-0e03-4063-b430-e06f9c0d77b0/pr-3109-pipeline-budget-failure.zip!/66064c4ec0252212a4c4be059ad56ce5f77b417d/37652037382-1/bdn/perf-budgets.json"
+    },
+    {
+      "path": "runs/hosted-pr-3109/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json",
+      "bytes": 139626,
+      "sha256": "8b2e294741dee31186fa0f8beb0bee1b51d30e7ee44f4c321cb5fd8e8689709b",
+      "encoding": "verbatim",
+      "originalBytes": 139626,
+      "originalSha256": "8b2e294741dee31186fa0f8beb0bee1b51d30e7ee44f4c321cb5fd8e8689709b",
+      "source": "/workspace/attachments/ed58931a-0e03-4063-b430-e06f9c0d77b0/pr-3109-pipeline-budget-failure.zip!/66064c4ec0252212a4c4be059ad56ce5f77b417d/37652037382-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json"
+    },
+    {
+      "path": "runs/hosted-pr-3109/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+      "bytes": 1352,
+      "sha256": "77c6a485e31a99056ca48a5178a3ff171937691a4e205b17b542c22ec4771209",
+      "encoding": "verbatim",
+      "originalBytes": 1352,
+      "originalSha256": "77c6a485e31a99056ca48a5178a3ff171937691a4e205b17b542c22ec4771209",
+      "source": "/workspace/attachments/ed58931a-0e03-4063-b430-e06f9c0d77b0/pr-3109-pipeline-budget-failure.zip!/66064c4ec0252212a4c4be059ad56ce5f77b417d/37652037382-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md"
+    },
+    {
+      "path": "runs/hosted-pr-3109/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv",
+      "bytes": 3770,
+      "sha256": "f7dc2270f7f354c36085f22e2885f99432f5d8c6b65eecb55f1e9d408ffa2ef7",
+      "encoding": "verbatim",
+      "originalBytes": 3770,
+      "originalSha256": "f7dc2270f7f354c36085f22e2885f99432f5d8c6b65eecb55f1e9d408ffa2ef7",
+      "source": "/workspace/attachments/ed58931a-0e03-4063-b430-e06f9c0d77b0/pr-3109-pipeline-budget-failure.zip!/66064c4ec0252212a4c4be059ad56ce5f77b417d/37652037382-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv"
+    },
+    {
+      "path": "runs/hosted-pr-3109/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html",
+      "bytes": 2011,
+      "sha256": "2f13764e234db7a9029a9ceab0325e9f93abcd7f26a200a8840612996846d06b",
+      "encoding": "verbatim",
+      "originalBytes": 2011,
+      "originalSha256": "2f13764e234db7a9029a9ceab0325e9f93abcd7f26a200a8840612996846d06b",
+      "source": "/workspace/attachments/ed58931a-0e03-4063-b430-e06f9c0d77b0/pr-3109-pipeline-budget-failure.zip!/66064c4ec0252212a4c4be059ad56ce5f77b417d/37652037382-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html"
+    },
+    {
+      "path": "runs/hosted-pr-3109/benchmark.log",
+      "bytes": 53353,
+      "sha256": "88a5c5c9a09a441c99eadeb0ea09031f2f9377291bc26da0b519614cba3b605d",
+      "encoding": "verbatim",
+      "originalBytes": 53353,
+      "originalSha256": "88a5c5c9a09a441c99eadeb0ea09031f2f9377291bc26da0b519614cba3b605d",
+      "source": "/workspace/attachments/ed58931a-0e03-4063-b430-e06f9c0d77b0/pr-3109-pipeline-budget-failure.zip!/66064c4ec0252212a4c4be059ad56ce5f77b417d/37652037382-1/benchmark.log"
+    },
+    {
+      "path": "runs/hosted-pr-3109/budget-evidence.json",
+      "bytes": 3787,
+      "sha256": "1bf28222a37a2832540e764c8f08e21e3c637dce18c4a9edee10964be174bf3d",
+      "encoding": "verbatim",
+      "originalBytes": 3787,
+      "originalSha256": "1bf28222a37a2832540e764c8f08e21e3c637dce18c4a9edee10964be174bf3d",
+      "source": "/workspace/attachments/ed58931a-0e03-4063-b430-e06f9c0d77b0/pr-3109-pipeline-budget-failure.zip!/66064c4ec0252212a4c4be059ad56ce5f77b417d/37652037382-1/budget-evidence.json"
+    },
+    {
+      "path": "runs/hosted-pr-3109/budget-validation.log",
+      "bytes": 771,
+      "sha256": "bdd97059cd8b2389ded2ad8acbc9ca22789a68b9fa579d83bd31ecd973189e55",
+      "encoding": "verbatim",
+      "originalBytes": 771,
+      "originalSha256": "bdd97059cd8b2389ded2ad8acbc9ca22789a68b9fa579d83bd31ecd973189e55",
+      "source": "/workspace/attachments/ed58931a-0e03-4063-b430-e06f9c0d77b0/pr-3109-pipeline-budget-failure.zip!/66064c4ec0252212a4c4be059ad56ce5f77b417d/37652037382-1/budget-validation.log"
+    },
+    {
+      "path": "runs/hosted-pr-3109/build.log",
+      "bytes": 214024,
+      "sha256": "53808b5e6f7963925999d17284786f141a4175527ec7d0fa07a8e496e6421381",
+      "encoding": "verbatim",
+      "originalBytes": 214024,
+      "originalSha256": "53808b5e6f7963925999d17284786f141a4175527ec7d0fa07a8e496e6421381",
+      "source": "/workspace/attachments/ed58931a-0e03-4063-b430-e06f9c0d77b0/pr-3109-pipeline-budget-failure.zip!/66064c4ec0252212a4c4be059ad56ce5f77b417d/37652037382-1/build.log"
+    },
+    {
+      "path": "runs/hosted-pr-3109/dotnet-info.log",
+      "bytes": 1796,
+      "sha256": "2303f1d40e454449978a7ff748bd5e31f50df114d36e318a926fc43ab59bf4c7",
+      "encoding": "verbatim",
+      "originalBytes": 1796,
+      "originalSha256": "2303f1d40e454449978a7ff748bd5e31f50df114d36e318a926fc43ab59bf4c7",
+      "source": "/workspace/attachments/ed58931a-0e03-4063-b430-e06f9c0d77b0/pr-3109-pipeline-budget-failure.zip!/66064c4ec0252212a4c4be059ad56ce5f77b417d/37652037382-1/dotnet-info.log"
+    },
+    {
+      "path": "runs/hosted-pr-3109/profile.json",
+      "bytes": 979,
+      "sha256": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26",
+      "encoding": "verbatim",
+      "originalBytes": 979,
+      "originalSha256": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26",
+      "source": "/workspace/attachments/ed58931a-0e03-4063-b430-e06f9c0d77b0/pr-3109-pipeline-budget-failure.zip!/66064c4ec0252212a4c4be059ad56ce5f77b417d/37652037382-1/profile.json"
+    },
+    {
+      "path": "runs/hosted-pr-3109/restore.log",
+      "bytes": 4550,
+      "sha256": "caf4d5734579a95a1bba2acfcdc26fe8b8288129447ca1706d3f30531a106802",
+      "encoding": "verbatim",
+      "originalBytes": 4550,
+      "originalSha256": "caf4d5734579a95a1bba2acfcdc26fe8b8288129447ca1706d3f30531a106802",
+      "source": "/workspace/attachments/ed58931a-0e03-4063-b430-e06f9c0d77b0/pr-3109-pipeline-budget-failure.zip!/66064c4ec0252212a4c4be059ad56ce5f77b417d/37652037382-1/restore.log"
+    },
+    {
+      "path": "runs/hosted-pr-3109/run.json",
+      "bytes": 11395,
+      "sha256": "34045b33581be70ab827270d1d46606d5f73eb6ea1b8e9e9880ef36c8685ca3b",
+      "encoding": "verbatim",
+      "originalBytes": 11395,
+      "originalSha256": "34045b33581be70ab827270d1d46606d5f73eb6ea1b8e9e9880ef36c8685ca3b",
+      "source": "/workspace/attachments/ed58931a-0e03-4063-b430-e06f9c0d77b0/pr-3109-pipeline-budget-failure.zip!/66064c4ec0252212a4c4be059ad56ce5f77b417d/37652037382-1/run.json"
+    },
+    {
+      "path": "runs/hosted-pr-3109/runtime.log",
+      "bytes": 307,
+      "sha256": "83adb39fc56c8c6ca08b8d98083ec5629ac7b76f83e77b56a0fd55bb3760cfc8",
+      "encoding": "verbatim",
+      "originalBytes": 307,
+      "originalSha256": "83adb39fc56c8c6ca08b8d98083ec5629ac7b76f83e77b56a0fd55bb3760cfc8",
+      "source": "/workspace/attachments/ed58931a-0e03-4063-b430-e06f9c0d77b0/pr-3109-pipeline-budget-failure.zip!/66064c4ec0252212a4c4be059ad56ce5f77b417d/37652037382-1/runtime.log"
+    },
+    {
+      "path": "runs/hosted-pr-3109/sdk.log",
+      "bytes": 9,
+      "sha256": "a807ca80c392730f0b9a4114bcd64d2c7258ea2f97fbeab0b9c5b3f88194ce94",
+      "encoding": "verbatim",
+      "originalBytes": 9,
+      "originalSha256": "a807ca80c392730f0b9a4114bcd64d2c7258ea2f97fbeab0b9c5b3f88194ce94",
+      "source": "/workspace/attachments/ed58931a-0e03-4063-b430-e06f9c0d77b0/pr-3109-pipeline-budget-failure.zip!/66064c4ec0252212a4c4be059ad56ce5f77b417d/37652037382-1/sdk.log"
+    },
+    {
+      "path": "runs/local-baseline/bdn/Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-170553.log",
+      "bytes": 55856,
+      "sha256": "9f86ae104ac34e28a6add343b61169c1fe436eb7f2d9ded9417933c8a960d1f4",
+      "encoding": "verbatim",
+      "originalBytes": 55856,
+      "originalSha256": "9f86ae104ac34e28a6add343b61169c1fe436eb7f2d9ded9417933c8a960d1f4",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/2bc041f14477c68622e0e08e9922092a52f241af/local-542bf92710f34f0ba40aa535093ced50-1/bdn/Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-170553.log"
+    },
+    {
+      "path": "runs/local-baseline/bdn/perf-budgets.json",
+      "bytes": 1422,
+      "sha256": "73c03f00210faac0b1d7bd5838d491cb8daae989ddc4304b30d9283997ebedce",
+      "encoding": "verbatim",
+      "originalBytes": 1422,
+      "originalSha256": "73c03f00210faac0b1d7bd5838d491cb8daae989ddc4304b30d9283997ebedce",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/2bc041f14477c68622e0e08e9922092a52f241af/local-542bf92710f34f0ba40aa535093ced50-1/bdn/perf-budgets.json"
+    },
+    {
+      "path": "runs/local-baseline/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json",
+      "bytes": 148611,
+      "sha256": "24910a6d93cc332c0072ce273a18ff17b6bb6afc769ab4a8a1e8d73da1f588a8",
+      "encoding": "verbatim",
+      "originalBytes": 148611,
+      "originalSha256": "24910a6d93cc332c0072ce273a18ff17b6bb6afc769ab4a8a1e8d73da1f588a8",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/2bc041f14477c68622e0e08e9922092a52f241af/local-542bf92710f34f0ba40aa535093ced50-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json"
+    },
+    {
+      "path": "runs/local-baseline/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+      "bytes": 1397,
+      "sha256": "e9acff27ffd0d34e75ed833b9771b254a1f472782e21d8fd3583d215267d387e",
+      "encoding": "verbatim",
+      "originalBytes": 1397,
+      "originalSha256": "e9acff27ffd0d34e75ed833b9771b254a1f472782e21d8fd3583d215267d387e",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/2bc041f14477c68622e0e08e9922092a52f241af/local-542bf92710f34f0ba40aa535093ced50-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md"
+    },
+    {
+      "path": "runs/local-baseline/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv",
+      "bytes": 3798,
+      "sha256": "9b19d6a92a1d2d58b6f4f7de350b717c48fa10b353faf2fc1ff6b4fe0885ed07",
+      "encoding": "verbatim",
+      "originalBytes": 3798,
+      "originalSha256": "9b19d6a92a1d2d58b6f4f7de350b717c48fa10b353faf2fc1ff6b4fe0885ed07",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/2bc041f14477c68622e0e08e9922092a52f241af/local-542bf92710f34f0ba40aa535093ced50-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv"
+    },
+    {
+      "path": "runs/local-baseline/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html",
+      "bytes": 2023,
+      "sha256": "ec7be787aae27d5da4b3fbc86b523908cb6241ba532d9071ee5ee8ba2e7c430f",
+      "encoding": "verbatim",
+      "originalBytes": 2023,
+      "originalSha256": "ec7be787aae27d5da4b3fbc86b523908cb6241ba532d9071ee5ee8ba2e7c430f",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/2bc041f14477c68622e0e08e9922092a52f241af/local-542bf92710f34f0ba40aa535093ced50-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html"
+    },
+    {
+      "path": "runs/local-baseline/benchmark.log",
+      "bytes": 55950,
+      "sha256": "11434523cdeef74149271b5fdf819ac687f1fc22803bcbeb3afd28c3e66e1ce2",
+      "encoding": "verbatim",
+      "originalBytes": 55950,
+      "originalSha256": "11434523cdeef74149271b5fdf819ac687f1fc22803bcbeb3afd28c3e66e1ce2",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/2bc041f14477c68622e0e08e9922092a52f241af/local-542bf92710f34f0ba40aa535093ced50-1/benchmark.log"
+    },
+    {
+      "path": "runs/local-baseline/budget-evidence.json",
+      "bytes": 3793,
+      "sha256": "e3d0081a568f7c6f619923a5735b1796170c05e9b129c4ffa751febd9651ce26",
+      "encoding": "verbatim",
+      "originalBytes": 3793,
+      "originalSha256": "e3d0081a568f7c6f619923a5735b1796170c05e9b129c4ffa751febd9651ce26",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/2bc041f14477c68622e0e08e9922092a52f241af/local-542bf92710f34f0ba40aa535093ced50-1/budget-evidence.json"
+    },
+    {
+      "path": "runs/local-baseline/budget-validation.log",
+      "bytes": 787,
+      "sha256": "028df7480b6b4f95b912168f5f33f34e9d60bc9f071fb265da4ca28ba9e6161c",
+      "encoding": "verbatim",
+      "originalBytes": 787,
+      "originalSha256": "028df7480b6b4f95b912168f5f33f34e9d60bc9f071fb265da4ca28ba9e6161c",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/2bc041f14477c68622e0e08e9922092a52f241af/local-542bf92710f34f0ba40aa535093ced50-1/budget-validation.log"
+    },
+    {
+      "path": "runs/local-baseline/build.log",
+      "bytes": 195187,
+      "sha256": "fdda8ca8e3160df0797cbb5b05d79b73eac3fab7a536cc085516df6dcc4aff69",
+      "encoding": "verbatim",
+      "originalBytes": 195187,
+      "originalSha256": "fdda8ca8e3160df0797cbb5b05d79b73eac3fab7a536cc085516df6dcc4aff69",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/2bc041f14477c68622e0e08e9922092a52f241af/local-542bf92710f34f0ba40aa535093ced50-1/build.log"
+    },
+    {
+      "path": "runs/local-baseline/dotnet-info.log",
+      "bytes": 1412,
+      "sha256": "9c8bd18f0e65fc688dfe0de1feb28f24da604926d090c38119a7716144150c3c",
+      "encoding": "verbatim",
+      "originalBytes": 1412,
+      "originalSha256": "9c8bd18f0e65fc688dfe0de1feb28f24da604926d090c38119a7716144150c3c",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/2bc041f14477c68622e0e08e9922092a52f241af/local-542bf92710f34f0ba40aa535093ced50-1/dotnet-info.log"
+    },
+    {
+      "path": "runs/local-baseline/profile.json",
+      "bytes": 979,
+      "sha256": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26",
+      "encoding": "verbatim",
+      "originalBytes": 979,
+      "originalSha256": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/2bc041f14477c68622e0e08e9922092a52f241af/local-542bf92710f34f0ba40aa535093ced50-1/profile.json"
+    },
+    {
+      "path": "runs/local-baseline/restore.log",
+      "bytes": 4833,
+      "sha256": "676d6c4e5cbe182c1971257b0ee5e465d99c757ed75a7eb77c4f865c6c034963",
+      "encoding": "verbatim",
+      "originalBytes": 4833,
+      "originalSha256": "676d6c4e5cbe182c1971257b0ee5e465d99c757ed75a7eb77c4f865c6c034963",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/2bc041f14477c68622e0e08e9922092a52f241af/local-542bf92710f34f0ba40aa535093ced50-1/restore.log"
+    },
+    {
+      "path": "runs/local-baseline/run.json",
+      "bytes": 11192,
+      "sha256": "2900ab6664312730df58fc60fdb8fe9c978758b7046173c68df6e70f7f25153a",
+      "encoding": "verbatim",
+      "originalBytes": 11192,
+      "originalSha256": "2900ab6664312730df58fc60fdb8fe9c978758b7046173c68df6e70f7f25153a",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/2bc041f14477c68622e0e08e9922092a52f241af/local-542bf92710f34f0ba40aa535093ced50-1/run.json"
+    },
+    {
+      "path": "runs/local-baseline/runtime.log",
+      "bytes": 180,
+      "sha256": "89d66fdbcce8963bd9b073960b906d27d109c3998e5e2b06ccb50b18cb80f76d",
+      "encoding": "verbatim",
+      "originalBytes": 180,
+      "originalSha256": "89d66fdbcce8963bd9b073960b906d27d109c3998e5e2b06ccb50b18cb80f76d",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/2bc041f14477c68622e0e08e9922092a52f241af/local-542bf92710f34f0ba40aa535093ced50-1/runtime.log"
+    },
+    {
+      "path": "runs/local-baseline/sdk.log",
+      "bytes": 9,
+      "sha256": "a807ca80c392730f0b9a4114bcd64d2c7258ea2f97fbeab0b9c5b3f88194ce94",
+      "encoding": "verbatim",
+      "originalBytes": 9,
+      "originalSha256": "a807ca80c392730f0b9a4114bcd64d2c7258ea2f97fbeab0b9c5b3f88194ce94",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/2bc041f14477c68622e0e08e9922092a52f241af/local-542bf92710f34f0ba40aa535093ced50-1/sdk.log"
+    },
+    {
+      "path": "runs/local-first-optimized-interrupted/bdn/Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-173115.log",
+      "bytes": 56366,
+      "sha256": "3fab8343b7512d7699ab57b127ad6643a5f895df4bc5f26b3b05e598814e2e42",
+      "encoding": "verbatim",
+      "originalBytes": 56366,
+      "originalSha256": "3fab8343b7512d7699ab57b127ad6643a5f895df4bc5f26b3b05e598814e2e42",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1/bdn/Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-173115.log"
+    },
+    {
+      "path": "runs/local-first-optimized-interrupted/bdn/perf-budgets.json",
+      "bytes": 1422,
+      "sha256": "73c03f00210faac0b1d7bd5838d491cb8daae989ddc4304b30d9283997ebedce",
+      "encoding": "verbatim",
+      "originalBytes": 1422,
+      "originalSha256": "73c03f00210faac0b1d7bd5838d491cb8daae989ddc4304b30d9283997ebedce",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1/bdn/perf-budgets.json"
+    },
+    {
+      "path": "runs/local-first-optimized-interrupted/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json",
+      "bytes": 148959,
+      "sha256": "1bca637bd201b7e286305aaeb86785ca795d05e921ea6f68fc47933832ac58f4",
+      "encoding": "verbatim",
+      "originalBytes": 148959,
+      "originalSha256": "1bca637bd201b7e286305aaeb86785ca795d05e921ea6f68fc47933832ac58f4",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json"
+    },
+    {
+      "path": "runs/local-first-optimized-interrupted/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+      "bytes": 1367,
+      "sha256": "7114ae7eaa515e171ce6677a39ae0afbfba574bcd91e0394d4b7fe09f7cb0e91",
+      "encoding": "verbatim",
+      "originalBytes": 1367,
+      "originalSha256": "7114ae7eaa515e171ce6677a39ae0afbfba574bcd91e0394d4b7fe09f7cb0e91",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md"
+    },
+    {
+      "path": "runs/local-first-optimized-interrupted/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv",
+      "bytes": 3785,
+      "sha256": "5fb7ca5477ff8af130b694879c292753b075b2b9b82c79ba6ac9561842208b4d",
+      "encoding": "verbatim",
+      "originalBytes": 3785,
+      "originalSha256": "5fb7ca5477ff8af130b694879c292753b075b2b9b82c79ba6ac9561842208b4d",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv"
+    },
+    {
+      "path": "runs/local-first-optimized-interrupted/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html",
+      "bytes": 2015,
+      "sha256": "725087f1cf3fafa7a6e3fb8fbe4a233a702f925c3bbc7681c576a40747fee4e9",
+      "encoding": "verbatim",
+      "originalBytes": 2015,
+      "originalSha256": "725087f1cf3fafa7a6e3fb8fbe4a233a702f925c3bbc7681c576a40747fee4e9",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html"
+    },
+    {
+      "path": "runs/local-first-optimized-interrupted/benchmark.log",
+      "bytes": 56565,
+      "sha256": "aa3a6c8f3a67a229bf458fa1203a1bc99b2b229cebe34c516e6c97dc2d2b4833",
+      "encoding": "verbatim",
+      "originalBytes": 56565,
+      "originalSha256": "aa3a6c8f3a67a229bf458fa1203a1bc99b2b229cebe34c516e6c97dc2d2b4833",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1/benchmark.log"
+    },
+    {
+      "path": "runs/local-first-optimized-interrupted/build.log",
+      "bytes": 195187,
+      "sha256": "d91b576b9bd18b3e62c55af3b06c939afaa67a011d172fa7c1114910f17e8d2d",
+      "encoding": "verbatim",
+      "originalBytes": 195187,
+      "originalSha256": "d91b576b9bd18b3e62c55af3b06c939afaa67a011d172fa7c1114910f17e8d2d",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1/build.log"
+    },
+    {
+      "path": "runs/local-first-optimized-interrupted/dotnet-info.log",
+      "bytes": 1412,
+      "sha256": "9c8bd18f0e65fc688dfe0de1feb28f24da604926d090c38119a7716144150c3c",
+      "encoding": "verbatim",
+      "originalBytes": 1412,
+      "originalSha256": "9c8bd18f0e65fc688dfe0de1feb28f24da604926d090c38119a7716144150c3c",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1/dotnet-info.log"
+    },
+    {
+      "path": "runs/local-first-optimized-interrupted/profile.json",
+      "bytes": 979,
+      "sha256": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26",
+      "encoding": "verbatim",
+      "originalBytes": 979,
+      "originalSha256": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1/profile.json"
+    },
+    {
+      "path": "runs/local-first-optimized-interrupted/restore.log",
+      "bytes": 192,
+      "sha256": "1764ab81eccabd18330af48ad756d29096141ba2cbd758139af7bc4448fbf9a3",
+      "encoding": "verbatim",
+      "originalBytes": 192,
+      "originalSha256": "1764ab81eccabd18330af48ad756d29096141ba2cbd758139af7bc4448fbf9a3",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1/restore.log"
+    },
+    {
+      "path": "runs/local-first-optimized-interrupted/run.json",
+      "bytes": 3658,
+      "sha256": "8f6f347907e317af72d1e89e41eb15ee5b4e0bad11b64496ca90fe73d01f5957",
+      "encoding": "verbatim",
+      "originalBytes": 3658,
+      "originalSha256": "8f6f347907e317af72d1e89e41eb15ee5b4e0bad11b64496ca90fe73d01f5957",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1/run.json"
+    },
+    {
+      "path": "runs/local-first-optimized-interrupted/runtime.log",
+      "bytes": 180,
+      "sha256": "89d66fdbcce8963bd9b073960b906d27d109c3998e5e2b06ccb50b18cb80f76d",
+      "encoding": "verbatim",
+      "originalBytes": 180,
+      "originalSha256": "89d66fdbcce8963bd9b073960b906d27d109c3998e5e2b06ccb50b18cb80f76d",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1/runtime.log"
+    },
+    {
+      "path": "runs/local-first-optimized-interrupted/sdk.log",
+      "bytes": 9,
+      "sha256": "a807ca80c392730f0b9a4114bcd64d2c7258ea2f97fbeab0b9c5b3f88194ce94",
+      "encoding": "verbatim",
+      "originalBytes": 9,
+      "originalSha256": "a807ca80c392730f0b9a4114bcd64d2c7258ea2f97fbeab0b9c5b3f88194ce94",
+      "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1/sdk.log"
+    },
+    {
+      "path": "verify-evidence.py",
+      "bytes": 6994,
+      "sha256": "be361bfff8685538fface8b7182a387176cce524da561892eab295aa9307043a",
+      "encoding": "verbatim",
+      "source": "generated independent packet verifier"
+    }
+  ],
+  "componentProfiles": [
+    {
+      "label": "deduplication span hex diagnostic",
+      "path": "component-profiles/dedup",
+      "sourceProductionCommit": "a65c3f3db71868724d5a3813e70575f75a903279",
+      "profileHeadAsRecorded": "426cad76ff2c60186b931a16c8f5246389c42df5",
+      "rawMeasurementRows": 42,
+      "repetitionsPerCase": 7,
+      "oracleEventCount": 576,
+      "implementations": [
+        {
+          "label": "baseline scalar hex",
+          "originalSource": "component-profiles/dedup/BaselineDedupLedger.original.cs",
+          "compiledSource": "component-profiles/dedup/BaselineDedupLedger.cs",
+          "productionCandidate": false
+        },
+        {
+          "label": "span hex formatter",
+          "originalSource": "component-profiles/dedup/HexDedupLedger.original.cs",
+          "compiledSource": "component-profiles/dedup/HexDedupLedger.cs",
+          "productionCandidate": true
+        },
+        {
+          "label": "scratch SHA provider reuse; NOT production",
+          "originalSource": "component-profiles/dedup/ReuseDedupLedger.original.cs",
+          "compiledSource": "component-profiles/dedup/ReuseDedupLedger.cs",
+          "productionCandidate": false,
+          "scratchOnly": true
+        }
+      ]
+    }
+  ],
+  "updatedAt": "2026-10-07T19:07:25.386882+00:00",
+  "acceptedPortableRun": "runs/hosted-final-pass",
+  "acceptanceContractBaseline": "runs/local-baseline",
+  "canonicalCiStatus": {
+    "status": "pending-remediation-rerun",
+    "initialAttemptExitCode": 1,
+    "initialAttemptPassed": 19338,
+    "initialAttemptFailed": 4,
+    "initialAttemptRegisteredSkips": 5,
+    "initialAttemptShardCount": 19,
+    "environmentDiagnosis": "container PID 1 retained killed descendants as zombies",
+    "rerunCommand": [
+      "bash",
+      "scripts/ci.sh"
+    ],
+    "executionWrapper": "artifact-only linux-subreaper.py",
+    "wrapperMechanism": "adopts and reaps orphaned descendants; production source and tests unchanged",
+    "focusedWrapperProof": {
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 13,
+      "adoptedSigkillDescendantsReaped": 8,
+      "newZombies": 0,
+      "residualAdoptedProcesses": 0
+    }
+  },
+  "bytePreservation": "Packet-scoped .gitattributes disables Git text normalization; retained files preserve original bytes."
+}

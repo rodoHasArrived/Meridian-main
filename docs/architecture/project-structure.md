@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-06-09
+**Reviewed:** 2026-10-07
 
 Meridian uses a standard repository layout organized around source projects,
 tests, automation, docs, design-system assets, and generated artifacts.
@@ -12,6 +12,9 @@ tests, automation, docs, design-system assets, and generated artifacts.
 | Area | Classification | Purpose |
 | --- | --- | --- |
 | `src/Meridian/` | Active source code | Main CLI and desktop-local API host |
+| `src/Meridian.Launcher/` | Active source code | Installed Windows `Meridian.exe` entry point that verifies startup outcomes from the supervisor |
+| `src/Meridian.LifecycleSupervisor/` | Active source code | Persistent per-user ownership of installed host/database startup, readiness, browser opening, and shutdown |
+| `src/Meridian.Setup/` | Active source code | Consumer executable payload installation, repair, and uninstall |
 | `src/Meridian.Application/` | Active source code | Application workflows, commands, orchestration, configuration |
 | `src/Meridian.Contracts/` | Active source code | Shared DTOs, API routes, workstation payloads, accounting/private-capital records, report-pack/report-writer contracts, and identity-facing payloads |
 | `src/Meridian.Core/` | Active source code | Core config, exceptions, logging, serialization |

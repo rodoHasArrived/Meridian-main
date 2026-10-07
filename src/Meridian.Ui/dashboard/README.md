@@ -11,6 +11,16 @@ last_reviewed: 2026-09-02
 
 # src/Meridian.Ui/dashboard
 
+Governed Journal Entry Detail exposes retained disposal tax results from the shared period and
+journal read model. Operators can inspect mixed parcel character, carried holding-period starts,
+economic and recognized gain/loss, deferred loss, and the exact retained policy revision. Settled,
+provisional and missing-evidence results retain the server's reason, replacement-window end and
+re-evaluation posture. Refresh reads retained evidence only; the browser never derives character,
+settles an elapsed window, or recalculates tax amounts. Missing parcel allocation amounts stay
+unknown. Reads prohibit development fallback and reject a different book, period or journal.
+Focused coverage lives in `journal-entry-tax-results.test.tsx`,
+`journal-entry-detail-screen.test.tsx` and `ledger-tax-results-api.test.ts`.
+
 Tailwind is pinned to 3.4.19 to match the checked-in PostCSS plugin, Tailwind configuration, and
 `@tailwind` stylesheet directives. Upgrading its major version requires migrating that pipeline
 together; changing only the dependency prevents workstation styles and bundles from building.
@@ -1501,6 +1511,17 @@ Focused workflow, stale-response and accessibility coverage lives in
 `lib/api/accounting-onboarding.api.test.ts`.
 
 The Accounting route reuses fund-operations ledger views and now includes trial-balance source-event and approval drill-through affordances. Keep browser-only rendering in `src/screens/accounting-screen.tsx` and shared accounting close contracts in `src/features/accounting/accountingCloseModels.ts`.
+
+Accounting Ledger Explorer also includes the first W10-CONSOL-001 consolidation slice. Operators
+preview an authoritative effective-dated ownership perimeter, inspect gross/proposed/posted and
+consolidated account balances, retain unmatched reciprocal differences, and create drafts for the
+existing journal approval workflow. Source disclosures show the exact posting entity, counterparty,
+journal, book, line, debit, credit, and effective date; correction links and renewed-review status stay
+visible. Changing scope discards prior results, and failed requests require another preview. All
+amounts and eligibility are server-owned. This slice supports exactly two directly wholly owned
+entities, Primary basis, one shared functional currency, and a dedicated elimination book; it excludes
+foreign currency translation, minority interests, and nested ownership. Browser regression coverage
+is in `accounting-screen.consolidation-panel.test.tsx`.
 
 The close workspace (`/accounting`) exposes **Prepare next period**. Operators select an
 authoritative source plan, capture or reuse a retained template version, specify each task's

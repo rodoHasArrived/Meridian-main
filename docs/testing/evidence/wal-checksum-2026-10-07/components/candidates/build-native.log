@@ -1,0 +1,9 @@
+  Determining projects to restore...
+  Restored /workspace/wal-hash-candidates/native/Profile.csproj (in 1.21 sec).
+  Profile -> /workspace/wal-hash-candidates/native/bin/Release/net10.0/Profile.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.20

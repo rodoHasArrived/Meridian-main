@@ -1,0 +1,14 @@
+{
+  "head": "2bc041f14477c68622e0e08e9922092a52f241af",
+  "source_sha256_before": "d184f707b85e6b6830ae4d54c691fb297ccaa6fef6068ee3e1f99a19b798d3bb",
+  "tiered_compilation": "0",
+  "start_utc": "2026-10-07T17:22:08Z",
+  "cpu_before": "usage_usec 1460204009\nuser_usec 1368648344\nsystem_usec 91555665\nnice_usec 0\nnr_periods 7982\nnr_throttled 815\nthrottled_usec 33048172\nnr_bursts 0\nburst_usec 0\n",
+  "source_sha256_after": "d184f707b85e6b6830ae4d54c691fb297ccaa6fef6068ee3e1f99a19b798d3bb",
+  "end_utc": "2026-10-07T17:23:24Z",
+  "cpu_after": "usage_usec 1467023858\nuser_usec 1374585944\nsystem_usec 92437913\nnice_usec 0\nnr_periods 8200\nnr_throttled 815\nthrottled_usec 33048172\nnr_bursts 0\nburst_usec 0\n",
+  "commands": [
+    "/workspace/dotnet-10.0.100/dotnet build /workspace/wal-hash-candidates/production/Profile.csproj -c Release",
+    "DOTNET_TieredCompilation=0 /workspace/dotnet-10.0.100/dotnet /workspace/wal-hash-candidates/production/bin/Release/net10.0/Profile.dll 50000 3"
+  ]
+}
