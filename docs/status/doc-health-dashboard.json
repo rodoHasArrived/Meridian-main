@@ -1,11 +1,11 @@
 {
   "total_files": 699,
-  "total_lines": 155383,
+  "total_lines": 155428,
   "orphaned_count": 233,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 295,
-  "average_lines": 222.3,
+  "average_lines": 222.4,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1804,7 +1804,7 @@
     },
     {
       "path": "docs/development/git-hooks.md",
-      "line_count": 35,
+      "line_count": 70,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2380,7 +2380,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 367,
+      "line_count": 372,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2772,7 +2772,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11508,
+      "line_count": 11509,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5844,7 +5844,7 @@
     },
     {
       "path": "tests/scripts/README.md",
-      "line_count": 59,
+      "line_count": 63,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
