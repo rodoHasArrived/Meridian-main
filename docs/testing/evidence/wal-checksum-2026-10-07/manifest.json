@@ -225,8 +225,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 2631,
-      "sha256": "0e213df24a074e78f80883b9b46493b92909d3f59679b32b3800286531d7d207",
+      "bytes": 2720,
+      "sha256": "d0d6295df15a30567fcd9bcbccd378a50031fc9f9b94b57f5243f2001f253d17",
       "encoding": "verbatim",
       "source": "generated evidence landing page"
     },
@@ -2067,7 +2067,7 @@
       ]
     }
   ],
-  "updatedAt": "2026-10-07T19:14:05.321964+00:00",
+  "updatedAt": "2026-10-07T19:14:59.812242+00:00",
   "acceptedPortableRun": "runs/hosted-final-pass",
   "acceptanceContractBaseline": "runs/local-baseline",
   "canonicalCiStatus": {

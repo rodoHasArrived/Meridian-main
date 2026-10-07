@@ -1,6 +1,6 @@
 # WAL checksum evidence packet
 
-All eight portable stages pass in [hosted run 37666873544](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37666873544) with the existing profile and budgets. Canonical repository CI remains pending after an initial container process-reaping failure; the unchanged full command is rerunning through an artifact-only Linux subreaper wrapper.
+All eight portable stages pass in [hosted run 37666873544](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37666873544) with the existing profile and budgets. Current full repository gate outcomes are recorded on [PR #3123](https://github.com/rodoHasArrived/Meridian-main/pull/3123). The initial container process-reaping failure and independently verified remediation are preserved in the [CI environment archive](ci/README.md).
 
 The [performance report](report.md) explains the accepted measurements, versioned integrity design, retained failures, representative JSON limits, and validation status. The accepted run tested clean merge `f7c1f6d77ec44b2a4924c892626678221fef3317` for production head `a65c3f3db71868724d5a3813e70575f75a903279`.
 
