@@ -23,6 +23,20 @@ public sealed class AssetAccountingEventSpineServiceTests
 
     [Fact]
     public async Task CorporateAction_MapsProjectsDraftsAndPostsSuccessorsWithIndependentApprovalAndExactReplay()
+        => await AssertSuccessorWorkflowAsync(null, null, successorIsEffective: true);
+
+    [Theory]
+    [InlineData(1, null, false)]
+    [InlineData(null, -1, false)]
+    [InlineData(0, null, true)]
+    [InlineData(null, 0, true)]
+    [InlineData(0, 0, true)]
+    public async Task CorporateAction_RequiresSuccessorSecurityEffectiveOnEventDateBeforeDrafting(
+        int? effectiveFromDayOffset, int? effectiveToDayOffset, bool successorIsEffective)
+        => await AssertSuccessorWorkflowAsync(effectiveFromDayOffset, effectiveToDayOffset, successorIsEffective);
+
+    private static async Task AssertSuccessorWorkflowAsync(
+        int? effectiveFromDayOffset, int? effectiveToDayOffset, bool successorIsEffective)
     {
         var baseline = BuildFixture(AssetAccountingEventKindDto.CorporateAction);
         var original = OpenLotSuccessorTestData.Predecessor();
@@ -41,6 +55,16 @@ public sealed class AssetAccountingEventSpineServiceTests
             expectedPositionVersion: baseline.Position.Version, expectedSecurityVersion: sourceSecurity.Version,
             periodId: baseline.Period.PeriodId, expectedSecurityHash: new string('a', 64),
             expectedPeriodVersion: baseline.Period.Version);
+        var effectiveDate = instruction.Projection.EconomicEvent!.EffectiveDate;
+        targetSecurity = targetSecurity with
+        {
+            EffectiveFrom = effectiveFromDayOffset is { } fromOffset
+                ? new DateTimeOffset(effectiveDate.AddDays(fromOffset).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc))
+                : targetSecurity.EffectiveFrom,
+            EffectiveTo = effectiveToDayOffset is { } toOffset
+                ? new DateTimeOffset(effectiveDate.AddDays(toOffset).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc))
+                : targetSecurity.EffectiveTo
+        };
         var mapped = new CorporateActionAssetAccountingEventMapper().Map(
             OpenLotSuccessorTestData.MapRequest(instruction, baseline.Request.Scope.Dimensions));
         mapped.IsMapped.Should().BeTrue("{0}", string.Join("; ", mapped.Blockers.Select(item => item.Message)));
@@ -145,6 +169,19 @@ public sealed class AssetAccountingEventSpineServiceTests
         var omitSuccessors = () => spineService.BuildPostingCandidateAsync(BuildCandidateRequest(fixture));
         await omitSuccessors.Should().ThrowAsync<InvalidOperationException>();
         retained.Should().HaveCount(2, "omitting the retained successor plan must fail before Drafted is appended");
+        if (!successorIsEffective)
+        {
+            var draft = () => spineService.BuildPostingCandidateAsync(BuildCandidateRequest(fixture) with
+            {
+                LotMutation = mapped.Projection.LotMutation
+            });
+            await draft.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("Successor Security Master record is not effective on the corporate-action date.");
+            retained.Should().HaveCount(2, "out-of-period successor authority cannot append a Drafted or Approved stage");
+            await authority.DidNotReceiveWithAnyArgs().BuildAuthoritativeCandidateWriteAsync(default!, default!, default);
+            await atomic.DidNotReceiveWithAnyArgs().AppendAssetPostingAsync(default!, default);
+            return;
+        }
         var drafted = await spineService.BuildPostingCandidateAsync(BuildCandidateRequest(fixture) with
         {
             LotMutation = mapped.Projection.LotMutation

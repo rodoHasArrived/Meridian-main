@@ -45,7 +45,9 @@ batch before checking later live state. Exact durable journal/batch evidence als
 of a missing Posted projection after later position revisions; unposted position CAS stays strict.
 `ILedgerOpenLotSuccessorHistory` exposes those immutable
 batches to Reporting; unsupported actions, cash components, cross-account transfers, combined
-instructions and unrepresentable durable precision fail closed.
+instructions and unrepresentable durable precision fail closed. Successor lines must retain the
+predecessor's complete ledger-account identity, including name and symbol when the financial-account
+ID is absent; a mapped asset account cannot silently transfer the lot.
 Migration 042 leaves earlier batches unchanged. Historical quantity reads open successors on the
 corporate-action effective date while preserving their inherited acquisition date. Journal-only
 append cannot bypass the atomic successor boundary. Disposal eligibility excludes successors

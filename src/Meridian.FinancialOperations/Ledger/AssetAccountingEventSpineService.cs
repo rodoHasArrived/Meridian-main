@@ -989,6 +989,10 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
                     && targetSecurity.Status == SecurityStatusDto.Active
                     && targetSecurity.Currency == target.Lot.Acquisition.AcquisitionCurrency,
                     "Successor Security Master identity, version, terms or currency is stale.");
+                RequireAssertion(DateOnly.FromDateTime(targetSecurity.EffectiveFrom.UtcDateTime) <= source.EffectiveDate
+                    && (targetSecurity.EffectiveTo is null
+                        || source.EffectiveDate <= DateOnly.FromDateTime(targetSecurity.EffectiveTo.Value.UtcDateTime)),
+                    "Successor Security Master record is not effective on the corporate-action date.");
                 var existingTargets = await _journalStore.GetTaxLotsByIdsAsync(book.LedgerBookId,
                     [target.Lot.TaxLotRecordId], ct).ConfigureAwait(false);
                 RequireAssertion(existingTargets.Count == 0, "Successor lots must be newly created durable identities.");

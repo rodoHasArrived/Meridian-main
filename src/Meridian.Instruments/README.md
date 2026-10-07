@@ -122,6 +122,10 @@ exact existing projection, source security version, predecessor and successor al
 retained evidence; its fingerprint participates in the posting identity. The mapper carries it as
 a typed corporate-action lot instruction into governed candidate preparation. It rejects missing
 or contradictory instructions and successor corrections, and cannot approve or persist lots.
+Corporate-action monetary projections use the Contracts `CurrencyMinorUnits` definition, including
+four-decimal CLF/UYW amounts, so projected carrying allocations and canonical successor validation
+agree. The successor handoff refuses non-`Successor` Reg S/144A roles and zero functional carrying
+allocations before governed drafting.
 The factor-paydown model computes `held face x (prior factor - current factor)`. Equal factors emit
 no posting candidate; factor increases, missing evidence, stale versions, invalid face/factors, and
 unrepresentable currency results fail closed. Its event identity excludes run timestamps so replay

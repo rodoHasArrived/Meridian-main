@@ -174,9 +174,9 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
         if (!JsonElement.DeepEquals(JsonSerializer.SerializeToElement(before.ToOpenLot()), JsonSerializer.SerializeToElement(source))
             || before.Account != FindCorporateActionLine(command.Journal.Entry.Lines, source).Account)
             throw new LedgerValidationException("Successor predecessor version, identity, acquisition facts or current basis changed; rebuild and review.");
-        if (instruction.Successors.Any(target => FindCorporateActionLine(command.Journal.Entry.Lines, target.Lot).Account.FinancialAccountId
-            != before.Account.FinancialAccountId))
-            throw new LedgerValidationException("Successor posting cannot transfer lots between financial accounts.");
+        if (instruction.Successors.Any(target => FindCorporateActionLine(command.Journal.Entry.Lines, target.Lot).Account
+            != before.Account))
+            throw new LedgerValidationException("Successor posting cannot transfer lots between ledger accounts.");
         var history = await ReadDatedLotQuantitiesAsync(connection, transaction, command.LedgerBookId,
             [before.TaxLotRecordId], ct).ConfigureAwait(false);
         if (history.Any(mutation => mutation.EffectiveDate > effectiveDate)

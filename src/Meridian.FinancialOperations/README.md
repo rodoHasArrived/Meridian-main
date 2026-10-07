@@ -805,7 +805,9 @@ idempotent replay result. The event spine records Approved and Posted only from 
 identity and balanced posted amounts returned by that boundary.
 Bounded cashless `RegS144AExchange` and `AdvanceRefunding` candidates use the same governed path
 with a retained `OpenLotSuccessorInstructionDto`. Independent approval covers its predecessor,
-create-only successors, reference versions and exact allocation. Posting rechecks that instruction
+create-only successors, reference versions and exact allocation. Before `Drafted` is retained, each
+successor Security Master record must cover the event's effective date within its inclusive UTC
+effective-date interval. Posting rechecks that instruction
 against the drafted event, embeds its fingerprint in the journal and sends the complete mutation
 set to the atomic store. The journal reclassifies the predecessor's current basis to its successors;
 the instruction also retains original acquisition basis, currency/FX, holding dates and refunded-only
