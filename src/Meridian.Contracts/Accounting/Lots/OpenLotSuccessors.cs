@@ -66,6 +66,43 @@ public static class OpenLotSuccessors
     public static OpenLotDto WithLineage(OpenLotSuccessorInstructionDto instruction, OpenLotDto target)
         => target with { Acquisition = target.Acquisition with { CorporateActionLineage = ExpectedLineage(instruction, target) } };
 
+    /// <summary>Certify an immutable historical instruction without rewriting its omitted optional source identity.</summary>
+    public static void ValidateRetained(OpenLotSuccessorInstructionDto instruction)
+    {
+        if (instruction.Projection.SourceCorporateActionId is not null)
+        {
+            Validate(instruction);
+            return;
+        }
+        var sourceId = GetSourceCorporateActionId(instruction.Projection);
+        var targets = instruction.Successors.Select(target => target.Lot.Acquisition.CorporateActionLineage
+            is { SourceCorporateActionId: null } origin
+            ? target with
+            {
+                Lot = target.Lot with
+                {
+                    Acquisition = target.Lot.Acquisition with
+                    { CorporateActionLineage = origin with { SourceCorporateActionId = sourceId } }
+                }
+            }
+            : target).ToArray();
+        Validate(instruction with { Successors = targets });
+    }
+
+    /// <summary>Expected historical snapshot; only old projections may omit the later optional source identity.</summary>
+    public static OpenLotDto WithRetainedLineage(OpenLotSuccessorInstructionDto instruction, OpenLotDto target,
+        OpenLotCorporateActionLineageDto retainedOrigin)
+    {
+        var expected = WithLineage(instruction, target);
+        return instruction.Projection.SourceCorporateActionId is null && retainedOrigin.SourceCorporateActionId is null
+            ? expected with
+            {
+                Acquisition = expected.Acquisition with
+                { CorporateActionLineage = expected.Acquisition.CorporateActionLineage! with { SourceCorporateActionId = null } }
+            }
+            : expected;
+    }
+
     public static void Validate(OpenLotSuccessorInstructionDto instruction)
     {
         ArgumentNullException.ThrowIfNull(instruction);

@@ -75,7 +75,7 @@ internal static class CorporateActionSuccessorAncestry
                 throw Unproved();
             try
             {
-                OpenLotSuccessors.Validate(ancestor);
+                OpenLotSuccessors.ValidateRetained(ancestor);
                 if (OpenLotSuccessors.GetSourceCorporateActionId(ancestor.Projection) == sourceActionId
                     || ancestor.Projection.EconomicEvent!.EventId == eventId)
                     throw new LedgerValidationException("A successor cannot repeat a source corporate action retained anywhere in its immutable predecessor ancestry.");
@@ -92,8 +92,8 @@ internal static class CorporateActionSuccessorAncestry
                 || !JsonElement.DeepEquals(JsonSerializer.SerializeToElement(predecessor[0].LotBefore!.ToOpenLot()),
                     JsonSerializer.SerializeToElement(ancestor.ExpectedLot))
                 || !JsonElement.DeepEquals(JsonSerializer.SerializeToElement(opening.LotAfter.ToOpenLot()),
-                    JsonSerializer.SerializeToElement(opening.LotAfter.Acquisition?.CorporateActionLineage is null
-                        ? targets[0].Lot : OpenLotSuccessors.WithLineage(ancestor, targets[0].Lot))))
+                    JsonSerializer.SerializeToElement(opening.LotAfter.Acquisition?.CorporateActionLineage is { } retainedOrigin
+                        ? OpenLotSuccessors.WithRetainedLineage(ancestor, targets[0].Lot, retainedOrigin) : targets[0].Lot)))
                 throw Unproved();
             cursor = predecessor[0].LotBefore!;
         }

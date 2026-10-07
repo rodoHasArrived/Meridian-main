@@ -152,7 +152,7 @@ public static class CanonicalOpenLotSuccessorEvidence
         ArgumentNullException.ThrowIfNull(journal);
         var instruction = batch.CorporateAction
             ?? throw new ArgumentException("The retained successor instruction is missing.");
-        OpenLotSuccessors.Validate(instruction);
+        OpenLotSuccessors.ValidateRetained(instruction);
         var predecessor = instruction.ExpectedLot;
         Require(batch.MutationKind == AtomicTaxLotMutationKind.CorporateAction && batch.MutationBatchId != Guid.Empty
             && batch.CanonicalFingerprint.StartsWith("sha256:", StringComparison.Ordinal)
@@ -243,8 +243,9 @@ public static class CanonicalOpenLotSuccessorEvidence
                     && mutation.LotAfter.BasisAdjustment is { Reason: OpenLotBasisAdjustmentReasons.CorporateActionSuccessor } adjustment
                     && adjustment.MutationBatchId == batch.MutationBatchId && Equal(adjustment.CorporateAction, instruction)
                     && mutation.QuantityBefore == 0m && Equal(mutation.LotAfter.ToOpenLot(),
-                        mutation.LotAfter.Acquisition?.CorporateActionLineage is not null
-                            || instruction.Projection.Treatment.ActionType is CorporateActionAccountingTypeDto.StockSplit
+                        mutation.LotAfter.Acquisition?.CorporateActionLineage is { } retainedOrigin
+                            ? OpenLotSuccessors.WithRetainedLineage(instruction, target!.Lot, retainedOrigin)
+                            : instruction.Projection.Treatment.ActionType is CorporateActionAccountingTypeDto.StockSplit
                                 or CorporateActionAccountingTypeDto.ReverseStockSplit or CorporateActionAccountingTypeDto.MergerStock
                             ? OpenLotSuccessors.WithLineage(instruction, target!.Lot) : target!.Lot),
                     "A persisted successor differs from its approved identity, allocated basis or acquisition facts.");
