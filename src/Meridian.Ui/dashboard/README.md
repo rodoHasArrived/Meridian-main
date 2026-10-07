@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-09-02
+last_reviewed: 2026-10-07
 ---
 
 # src/Meridian.Ui/dashboard
@@ -145,6 +145,8 @@ instead of introducing one-off screen styling.
 - `src/assets/` - browser-bundled brand and icon copies from the `Meridian Design System/assets/` source package, including the app icon and PNG tile.
 - `src/types.ts` - compatibility barrel for browser DTO mirrors. Add new domain-specific DTO mirrors under `src/types/` and re-export them from this file instead of growing the barrel directly.
 - `src/lib/dev-fixtures.ts` - compatibility facade for no-host fixtures. Add new screen or domain fixture payloads under `src/lib/dev-fixtures/` and register them through the resolver map instead of adding another large block to the facade.
+- `src/scenarios/` - typed response scenarios shared by URL previews, Vitest, and Playwright screenshots. `accounting-payload.ts` owns the accounting payload; `accounting.ts` owns its normal, empty, delayed, forbidden, and failed variants.
+- `src/test/scenarios.ts` - strict scenario installation and request coverage assertions for Vitest.
 - `package.json` - dashboard build, test, and tooling commands.
 - Test files - browser workflow and component coverage.
 
@@ -187,6 +189,13 @@ hot reload, or `npm run dev:fixtures` for explicit fixture-only responses withou
 Backend-connected errors never fall back to fixtures. See the
 [browser development launcher](../../../docs/engineering/web-development.md) for prerequisites,
 port options, readiness, shutdown, and manual acceptance checks.
+
+For a deterministic accounting preview, open
+`http://127.0.0.1:5173/workstation/accounting/reconciliation?scenario=accounting.normal`
+in a fixture-only session. The [shared browser scenario guide](../../../docs/development/browser-scenarios.md)
+lists all five selectors and explicit HTTP statuses, strict test behavior, and screenshot commands.
+Changing the first reconciliation queue row's `strategyName` in `src/scenarios/accounting-payload.ts`
+updates the preview, production-component Vitest expectations, and screenshot readiness from one edit.
 
 The browser workstation exposes `/accounting/entity-setup` for the shared fund-structure setup wizard. The feature posts drafts to `/api/fund-structure/setup-drafts/validate` for validation and preview, then `/api/fund-structure/setup-drafts/create` for review-and-create instead of reimplementing setup orchestration in React.
 
@@ -1463,6 +1472,12 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 Launcher/process ownership coverage runs from the repository root with
 `node --test scripts/dev/web-dev.test.mjs`. Focused Vite/API mode coverage is in
 `src/vite-config.test.ts` and `src/lib/api.development-modes.test.ts`.
+Shared scenario coverage runs with:
+
+```bash
+npm --prefix src/Meridian.Ui/dashboard run test:vitest -- src/scenarios/scenarios.test.tsx src/vite-config.scenarios.test.ts
+node --test scripts/dev/web-screenshot-scenarios.test.mjs
+```
 
 ```bash
 npm --prefix src/Meridian.Ui/dashboard run lint

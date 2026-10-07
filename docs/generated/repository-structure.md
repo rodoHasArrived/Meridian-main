@@ -1479,6 +1479,7 @@ Meridian-main
 │   │   │   ├── desktop-support-policy.md
 │   │   │   └── promotion-policy-matrix.md
 │   │   ├── adding-custom-rules.md
+│   │   ├── browser-scenarios.md
 │   │   ├── build-observability.md
 │   │   ├── central-package-management.md
 │   │   ├── codex-workflow.md
@@ -3465,7 +3466,9 @@ Meridian-main
 │   │   ├── web-dev.mjs
 │   │   ├── web-dev.test.mjs
 │   │   ├── web-screenshot-fixtures.json
-│   │   └── web-screenshot-routes.json
+│   │   ├── web-screenshot-routes.json
+│   │   ├── web-screenshot-scenarios.mjs
+│   │   └── web-screenshot-scenarios.test.mjs
 │   ├── lib
 │   │   ├── ui-diagram-generator.mjs
 │   │   └── ui-diagram-generator.test.mjs
@@ -6891,6 +6894,14 @@ Meridian-main
 │   │   │   │   │   ├── workstation-endpoints.ts
 │   │   │   │   │   ├── workstation-screen-view-states.test.ts
 │   │   │   │   │   └── workstation-screen-view-states.ts
+│   │   │   │   ├── scenarios
+│   │   │   │   │   ├── accounting-payload.ts
+│   │   │   │   │   ├── accounting-support.test.tsx
+│   │   │   │   │   ├── accounting-support.ts
+│   │   │   │   │   ├── accounting.ts
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── scenarios.test.tsx
+│   │   │   │   │   └── types.ts
 │   │   │   │   ├── screens
 │   │   │   │   │   ├── accounting-calibration-summary.view-model.ts
 │   │   │   │   │   ├── accounting-screen.approvals.ts
@@ -7261,6 +7272,7 @@ Meridian-main
 │   │   │   │   │   ├── ledger-amount-proof-fixtures.ts
 │   │   │   │   │   ├── render.tsx
 │   │   │   │   │   ├── reporting-income-comparison-fixtures.ts
+│   │   │   │   │   ├── scenarios.ts
 │   │   │   │   │   ├── setup.ts
 │   │   │   │   │   └── verified-operation-outcome.ts
 │   │   │   │   ├── types
@@ -7330,6 +7342,7 @@ Meridian-main
 │   │   │   │   ├── design-system-contract.test.ts
 │   │   │   │   ├── main.tsx
 │   │   │   │   ├── types.ts
+│   │   │   │   ├── vite-config.scenarios.test.ts
 │   │   │   │   ├── vite-config.test.ts
 │   │   │   │   └── vite-env.d.ts
 │   │   │   ├── eslint.config.mjs

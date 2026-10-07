@@ -5,6 +5,12 @@ import { createRequire } from "node:module";
 import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
+import {
+  createScreenshotApiResolver,
+  loadScreenshotScenarioModule,
+  scenarioCapture,
+  setupScenarioApiMocking
+} from "./web-screenshot-scenarios.mjs";
 
 const repoMarkers = ["Meridian.sln", ".git"];
 
@@ -277,51 +283,6 @@ async function stopProcess(child) {
   await waitForExit(2000);
 }
 
-/**
- * Register Playwright API route mocks for all entries in the fixtures map.
- * Intercepts /api/** requests in the browser so screenshots never depend on a
- * running Meridian backend. Must be called before the first page.goto().
- *
- * @param {import('playwright').Page} page
- * @param {Record<string, unknown>} fixtureRoutes  Path → JSON body map from web-screenshot-fixtures.json
- */
-async function setupApiMocking(page, fixtureRoutes) {
-  await page.route("**/api/**", (route) => {
-    const url = new URL(route.request().url());
-    const pathname = url.pathname;
-
-    // Vite source modules can live under paths such as
-    // /workstation/src/lib/api/*.ts. Let those module requests pass through;
-    // only root API calls should be answered by screenshot fixtures.
-    if (!pathname.startsWith("/api/")) {
-      return route.continue();
-    }
-
-    // Exact-path match first (strips query string for lookup).
-    if (Object.prototype.hasOwnProperty.call(fixtureRoutes, pathname)) {
-      return route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify(fixtureRoutes[pathname])
-      });
-    }
-
-    // Prefix match for parameterised routes (e.g. /api/portfolio/household?provider=alpaca).
-    const prefixEntry = Object.entries(fixtureRoutes).find(([key]) => pathname.startsWith(key));
-    if (prefixEntry) {
-      return route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify(prefixEntry[1])
-      });
-    }
-
-    // Unregistered endpoints return empty 404 so the dev-fixture fallback can
-    // still handle them inside the browser if needed.
-    return route.fulfill({ status: 404, contentType: "application/json", body: "{}" });
-  });
-}
-
 function collectRequiredFixtureRoutes(captures) {
   const required = new Set();
   for (const capture of captures) {
@@ -335,10 +296,10 @@ function collectRequiredFixtureRoutes(captures) {
   return [...required];
 }
 
-function findMissingFixtureRoutes(requiredRoutes, fixtureRoutes) {
-  const availableRoutes = Object.keys(fixtureRoutes);
+function findMissingFixtureRoutes(requiredRoutes, fixtureRoutes, scenarioModule, scenario) {
   return requiredRoutes.filter(
-    (requiredRoute) => !availableRoutes.some((candidate) => candidate === requiredRoute || requiredRoute.startsWith(`${candidate}/`))
+    (requiredRoute) => !Object.hasOwn(fixtureRoutes, requiredRoute)
+      && !scenarioModule.resolveScenarioResponse(scenario, requiredRoute)
   );
 }
 
@@ -552,6 +513,7 @@ function createPageErrorTracker(page) {
   page.on("console", onConsole);
 
   return {
+    record,
     reset() {
       errors.length = 0;
       waiters.clear();
@@ -707,6 +669,8 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     id: capture.id,
     name: capture.name,
     docLabel: capture.docLabel,
+    scenario: capture.scenario,
+    previewUrl: capture.previewUrl,
     route: capture.path,
     url,
     actualUrl,
@@ -726,7 +690,7 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
 async function captureRouteWithRetries(
   browser,
   capture,
-  fixtureRoutes,
+  createApiResolver,
   outputDir,
   baseUrl,
   defaults,
@@ -743,13 +707,15 @@ async function captureRouteWithRetries(
     // Each attempt renders in a fresh browser context so a retry starts from the
     // route's default first-load state instead of inheriting a half-rendered
     // page from the attempt that just failed.
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await setupApiMocking(page, fixtureRoutes);
-    const tracker = createPageErrorTracker(page);
-    onTrackerChange(tracker);
-
+    let context = null;
+    let tracker = null;
     try {
+      context = await browser.newContext();
+      const page = await context.newPage();
+      tracker = createPageErrorTracker(page);
+      onTrackerChange(tracker);
+      const resolver = createApiResolver();
+      await setupScenarioApiMocking(page, resolver, tracker.record);
       const result = await captureRoute(
         page,
         tracker,
@@ -762,6 +728,7 @@ async function captureRouteWithRetries(
         timeoutMs,
         readinessTimeoutMs
       );
+      resolver.assertNoUnexpectedRequests();
       result.attempts = attempt;
       return result;
     } catch (error) {
@@ -774,9 +741,9 @@ async function captureRouteWithRetries(
         );
       }
     } finally {
-      tracker.dispose();
+      tracker?.dispose();
       onTrackerChange(null);
-      await context.close();
+      if (context) await context.close();
     }
   }
 
@@ -802,12 +769,29 @@ async function main() {
   }
   assertCaptureRouteStateIdentity(allCaptures);
   const captureSelectors = collectCaptureSelectors(valueLists);
-  const captures = selectCaptures(allCaptures, captureSelectors);
+  if (flags.has("scenario")) throw new Error("--scenario requires a registered scenario ID, for example accounting.normal.");
+  const scenarioId = values.get("scenario");
+  const scenarioSource = !flags.has("list") || scenarioId
+    ? await loadScreenshotScenarioModule(dashboardDir)
+    : null;
+  let selectedScenario;
+  let captures;
+  try {
+    selectedScenario = scenarioId ? scenarioSource.module.getScenario(scenarioId) : null;
+    const selected = captureSelectors.length > 0 || !selectedScenario
+      ? selectCaptures(allCaptures, captureSelectors)
+      : selectCaptures(allCaptures, [selectedScenario.previewPath]);
+    captures = selected.map((capture) => selectedScenario ? scenarioCapture(capture, selectedScenario, scenarioSource.module) : capture);
+  } catch (error) {
+    await scenarioSource?.close();
+    throw error;
+  }
 
   if (flags.has("list")) {
     for (const capture of captures) {
       console.log(`${capture.id ?? ""}\t${capture.name}\t${capture.path}`);
     }
+    await scenarioSource?.close();
     return;
   }
 
@@ -862,6 +846,10 @@ async function main() {
     selectedCaptureCount: captures.length,
     totalCaptureCount: allCaptures.length,
     maxAttemptsPerCapture: captureAttempts,
+    scenario: selectedScenario?.id ?? null,
+    accountingScenario: selectedScenario?.id ?? "accounting.normal",
+    previewUrl: selectedScenario ? scenarioSource.module.scenarioPreviewUrl(selectedScenario) : null,
+    strictApiRequests: flags.has("strict"),
     captures: results,
     logs: []
   };
@@ -885,7 +873,12 @@ async function main() {
       ? fixtureConfig.routes
       : {};
     const requiredFixtureRoutes = collectRequiredFixtureRoutes(captures);
-    const missingFixtureRoutes = findMissingFixtureRoutes(requiredFixtureRoutes, fixtureRoutes);
+    const scenario = selectedScenario ?? scenarioSource.module.getScenario("accounting.normal");
+    const missingFixtureRoutes = findMissingFixtureRoutes(requiredFixtureRoutes, fixtureRoutes, scenarioSource.module, scenario);
+    const createApiResolver = () => createScreenshotApiResolver(scenarioSource.module, fixtureRoutes, {
+      scenarioId,
+      strict: flags.has("strict")
+    });
     if (missingFixtureRoutes.length > 0) {
       // A missing fixture no longer aborts the run; the affected route may render
       // a degraded state and, if it fails its readiness checks, is reported as a
@@ -918,7 +911,7 @@ async function main() {
         const result = await captureRouteWithRetries(
           browser,
           capture,
-          fixtureRoutes,
+          createApiResolver,
           outputDir,
           baseUrl,
           routeConfig.defaultViewport ?? {},
@@ -944,6 +937,8 @@ async function main() {
           id: capture.id,
           name: capture.name,
           docLabel: capture.docLabel,
+          scenario: capture.scenario,
+          previewUrl: capture.previewUrl,
           route: capture.path,
           url: toRouteUrl(baseUrl, capture.path),
           status: "failed",
@@ -1029,6 +1024,7 @@ async function main() {
       await browser.close();
     }
     await stopProcess(server);
+    await scenarioSource.close();
 
     manifest.finishedAtUtc = new Date().toISOString();
     manifest.durationSeconds = Number(((Date.now() - startedUtc.getTime()) / 1000).toFixed(2));
