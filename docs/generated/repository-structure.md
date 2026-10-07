@@ -4194,6 +4194,7 @@ Meridian-main
 │   │   │   ├── LifecycleContractsJsonContext.cs
 │   │   │   ├── LifecycleDtos.cs
 │   │   │   ├── LifecycleEnums.cs
+│   │   │   ├── LifecycleStartupTiming.cs
 │   │   │   └── LifecycleSupervisorDtos.cs
 │   │   ├── Manifest
 │   │   │   └── DataManifest.cs
@@ -5313,6 +5314,7 @@ Meridian-main
 │   │   ├── Meridian.Instruments.csproj
 │   │   └── README.md
 │   ├── Meridian.Launcher
+│   │   ├── LauncherCommandPolicy.cs
 │   │   ├── Meridian.Launcher.csproj
 │   │   ├── Program.cs
 │   │   ├── README.md
@@ -8854,13 +8856,15 @@ Meridian-main
 │   │   ├── RuntimeShutdownSequenceTests.cs
 │   │   └── WorkstationModeRunnerTests.cs
 │   ├── Meridian.LifecycleSupervisor.Tests
+│   │   ├── LauncherPolicyTests.cs
 │   │   ├── LifecycleDatabaseAclTests.cs
 │   │   ├── LifecycleDatabaseToolTests.cs
 │   │   ├── LifecycleStartupOutcomeTests.cs
 │   │   ├── LifecycleSupervisorConfigurationTests.cs
 │   │   ├── LifecycleSupervisorPipeTests.cs
 │   │   ├── LifecycleSupervisorRuntimeTests.cs
-│   │   └── Meridian.LifecycleSupervisor.Tests.csproj
+│   │   ├── Meridian.LifecycleSupervisor.Tests.csproj
+│   │   └── SupervisorReceiptPreservationTests.cs
 │   ├── Meridian.ProcessTestHelper
 │   │   ├── Meridian.ProcessTestHelper.csproj
 │   │   ├── Meridian.ProcessTestHelper.runtimeconfig.json

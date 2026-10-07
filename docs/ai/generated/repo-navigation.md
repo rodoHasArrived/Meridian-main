@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-10-06T22:25:50Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-10-07T17:19:13Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -8,6 +8,7 @@ Use this file when an assistant needs fast orientation before reading subsystem-
 
 | Task shape | Start here | Authoritative docs |
 |---|---|---|
+| Consumer launcher, lifecycle supervisor, and installation | `Meridian.Launcher`, `Meridian.LifecycleSupervisor`, `Meridian.Setup` | `docs/reference/lifecycle-control-plane.md`, `docs/reference/verified-operation-outcomes.md`, `docs/operators/browser-workstation-installer.md` |
 | Provider implementation and provider bugs | `Meridian.ProviderSdk`, `Meridian.Infrastructure`, `Meridian.Storage` | `docs/ai/claude/CLAUDE.providers.md`, `docs/development/provider-implementation.md`, `docs/ai/ai-known-errors.md` |
 | Browser workstation and dashboard UI issues | `Meridian.Ui.Dashboard`, `Meridian.Ui.Services`, `Meridian.Ui.Shared` | `docs/ai/navigation/README.md`, `docs/ai/ai-known-errors.md` |
 | WPF and workstation workflow issues | `Meridian.Wpf`, `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian` | `docs/engineering/plans/wpf-web-ui-alignment-plan.md`, `docs/ai/ai-known-errors.md` |
@@ -20,11 +21,11 @@ Use this file when an assistant needs fast orientation before reading subsystem-
 
 Runtime startup, application composition, shared contracts, and cross-cutting infrastructure.
 
-- Projects: `Meridian`, `Meridian.Application`, `Meridian.Contracts`, `Meridian.Core`
+- Projects: `Meridian`, `Meridian.Application`, `Meridian.Contracts`, `Meridian.Core`, `Meridian.Launcher`, `Meridian.LifecycleSupervisor`, `Meridian.Setup`
 - Entrypoints: `src/Meridian.Application/Composition`, `src/Meridian.Application/Pipeline`, `src/Meridian.Contracts`, `src/Meridian.Core/Serialization`
-- Key contracts: `src/Meridian.Application/Pipeline/EventPipeline.cs`, `src/Meridian.Contracts`, `src/Meridian.Core/Serialization/MarketDataJsonContext.cs`, `src/Meridian/Program.cs`
+- Key contracts: `src/Meridian.Application/Pipeline/EventPipeline.cs`, `src/Meridian.Contracts`, `src/Meridian.Contracts/Lifecycle`, `src/Meridian.Contracts/Operations`
 - Common tasks: startup debugging, service composition, configuration, shared contracts
-- Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`
+- Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`, `docs/reference/verified-operation-outcomes.md`
 
 ### Providers and Storage
 
@@ -133,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Application/README.md` | Host and Composition | `001880757` (2026-10-06T14:58:26-07:00) | 23 |
-| `src/Meridian.Storage/README.md` | Providers and Storage | `001880757` (2026-10-06T14:58:26-07:00) | 16 |
-| `src/Meridian.Contracts/README.md` | Host and Composition | `001880757` (2026-10-06T14:58:26-07:00) | 15 |
-| `src/Meridian.FinancialOperations/README.md` | Unmapped | `001880757` (2026-10-06T14:58:26-07:00) | 13 |
-| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs` | Providers and Storage | `001880757` (2026-10-06T14:58:26-07:00) | 6 |
-| `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Host and Composition | `001880757` (2026-10-06T14:58:26-07:00) | 5 |
-| `src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs` | Unmapped | `001880757` (2026-10-06T14:58:26-07:00) | 3 |
-| `src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs` | Host and Composition | `001880757` (2026-10-06T14:58:26-07:00) | 2 |
-| `src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs` | Host and Composition | `001880757` (2026-10-06T14:58:26-07:00) | 2 |
-| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Amortization.cs` | Providers and Storage | `001880757` (2026-10-06T14:58:26-07:00) | 2 |
-| `src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.PostingAuthority.cs` | Providers and Storage | `001880757` (2026-10-06T14:58:26-07:00) | 2 |
-| `src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.Aliases.cs` | Providers and Storage | `001880757` (2026-10-06T14:58:26-07:00) | 1 |
-| `src/Meridian.Infrastructure/README.md` | Providers and Storage | `06cbae74f` (2026-10-06T00:59:52Z) | 14 |
-| `src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs` | Providers and Storage | `06cbae74f` (2026-10-06T00:59:52Z) | 1 |
-| `src/Meridian.Storage/Archival/AtomicFileWriter.cs` | Providers and Storage | `06cbae74f` (2026-10-06T00:59:52Z) | 1 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `a701eee58` (2026-10-07T08:19:30-07:00) | 27 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `a701eee58` (2026-10-07T08:19:30-07:00) | 14 |
+| `src/Meridian.FinancialOperations/README.md` | Unmapped | `a701eee58` (2026-10-07T08:19:30-07:00) | 14 |
+| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `a701eee58` (2026-10-07T08:19:30-07:00) | 9 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `a701eee58` (2026-10-07T08:19:30-07:00) | 9 |
+| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | `a701eee58` (2026-10-07T08:19:30-07:00) | 6 |
+| `src/Meridian.Contracts/Api/UiApiRoutes.cs` | Host and Composition | `a701eee58` (2026-10-07T08:19:30-07:00) | 5 |
+| `src/Meridian.Ui/dashboard/src/lib/api.ts` | Desktop and UI Workflows | `a701eee58` (2026-10-07T08:19:30-07:00) | 4 |
+| `src/Meridian.Ui/dashboard/src/lib/ui-api-routes.generated.ts` | Desktop and UI Workflows | `a701eee58` (2026-10-07T08:19:30-07:00) | 4 |
+| `src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs` | Desktop and UI Workflows | `a701eee58` (2026-10-07T08:19:30-07:00) | 3 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx` | Desktop and UI Workflows | `a701eee58` (2026-10-07T08:19:30-07:00) | 3 |
+| `src/Meridian.Ui/README.md` | Unmapped | `a701eee58` (2026-10-07T08:19:30-07:00) | 2 |
+| `src/Meridian.Contracts/Workstation/OnboardingDtos.cs` | Host and Composition | `a701eee58` (2026-10-07T08:19:30-07:00) | 1 |
+| `src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.Onboarding.cs` | Unmapped | `a701eee58` (2026-10-07T08:19:30-07:00) | 1 |
+| `src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs` | Unmapped | `a701eee58` (2026-10-07T08:19:30-07:00) | 1 |
 
