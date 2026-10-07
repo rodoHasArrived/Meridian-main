@@ -88,7 +88,7 @@ remain follow-up work under the existing contracts.
 ```bash
 dotnet build src/Meridian.PortfolioRecords/Meridian.PortfolioRecords.csproj /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PortfolioRecords|FullyQualifiedName~FundAccountEndpointAuthorizationTests" /p:EnableWindowsTargeting=true /p:NodeReuse=false
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PostgresFundAccountStoreTests" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PostgresFundAccountStore" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
 
 ## Optional conditional sections
