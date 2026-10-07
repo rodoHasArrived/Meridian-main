@@ -32,6 +32,9 @@ public sealed class OpenLotSuccessorCorporateActionTests
         var instruction = Build(source, target, action, (decimal)quantityRatio);
         var fingerprint = OpenLotSuccessors.Fingerprint(instruction);
 
+        instruction.Projection.EventAmount.Should().Be(source.OpenFunctionalCostBasis);
+        instruction.Projection.PostingSet!.Components.Should().OnlyContain(component => component.Amount == source.OpenFunctionalCostBasis);
+
         var validate = () => OpenLotSuccessors.Validate(instruction);
         validate.Should().NotThrow();
         var carried = OpenLotSuccessors.WithLineage(instruction, target.Lot);
@@ -434,5 +437,6 @@ public sealed class OpenLotSuccessorCorporateActionTests
         => OpenLotSuccessorTestData.Build(source, [target], actionType: action,
             policyInputs: new CorporateActionPolicyInputsDto(CarryHoldingPeriod: true),
             splitRatio: action == CorporateActionAccountingTypeDto.MergerStock ? null : ratio,
-            effectiveDate: effectiveDate, actionId: actionId, sourceEventVersion: sourceEventVersion);
+            effectiveDate: effectiveDate, actionId: actionId, sourceEventVersion: sourceEventVersion,
+            canonicalLotTransferJournal: true);
 }
