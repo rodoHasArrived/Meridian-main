@@ -205,7 +205,7 @@ export function CommandPalette({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center px-4 py-24"
+      className="fixed inset-0 z-50 flex items-start justify-center px-4 py-6"
       style={{ background: "rgba(14, 17, 19, 0.32)" }}
       data-testid="command-palette-backdrop"
       onClick={(event) => {
@@ -272,7 +272,7 @@ export function CommandPalette({
           className="mt-3 h-10 w-full rounded-md border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-primary/70 focus-visible:ring-2 focus-visible:ring-primary/35"
           onChange={(event) => setQuery(event.target.value)}
         />
-        <nav className="mt-3 max-h-[62vh] overflow-y-auto pr-1" aria-label={viewModel.commandListLabel}>
+        <nav className="command-palette-results mt-3 overflow-y-auto pr-1" aria-label={viewModel.commandListLabel}>
           <div className="flex items-center justify-between gap-3 pb-2">
             <div className="eyebrow-label">{viewModel.itemCountLabel}</div>
             <div id="command-palette-filter-count" className="text-xs text-muted-foreground" aria-live="polite">
