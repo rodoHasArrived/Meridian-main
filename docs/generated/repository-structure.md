@@ -11366,7 +11366,8 @@ Meridian-main
 │   │   ├── test_windows_ci_runner.py
 │   │   ├── test_windows_desktop_build_workflow.py
 │   │   ├── test_wpf_msix_install_guidance.py
-│   │   └── test_wpf_msix_manifest.py
+│   │   ├── test_wpf_msix_manifest.py
+│   │   └── workflow_assertions.py
 │   ├── Shared
 │   │   └── CorporateActions
 │   │       ├── GoldenCorporateActionScenario.cs
