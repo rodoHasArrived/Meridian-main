@@ -240,6 +240,8 @@ public static class CanonicalOpenLotSuccessorEvidence
                     && mutation.CostBasis == target!.Lot.OpenFunctionalCostBasis
                     && mutation.LotAfter.SourceJournalEntryId == journal.Entry.JournalEntryId
                     && mutation.LotAfter.OriginatingMutationBatchId == batch.MutationBatchId
+                    && (instruction.Projection.SourceCorporateActionId is null
+                        || mutation.LotAfter.Acquisition?.CorporateActionLineage is not null)
                     && mutation.LotAfter.BasisAdjustment is { Reason: OpenLotBasisAdjustmentReasons.CorporateActionSuccessor } adjustment
                     && adjustment.MutationBatchId == batch.MutationBatchId && Equal(adjustment.CorporateAction, instruction)
                     && mutation.QuantityBefore == 0m && Equal(mutation.LotAfter.ToOpenLot(),

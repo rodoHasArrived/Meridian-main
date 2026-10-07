@@ -71,7 +71,9 @@ internal static class CorporateActionSuccessorAncestry
             }
             if (receipt.MutationKind != AtomicTaxLotMutationKind.CorporateAction || receipt.CorporateAction is not { } ancestor
                 || receipt.CorrectsMutationBatchId is not null || ancestor.ExpectedLot.LedgerBookId != bookId
-                || ancestor.Projection.AccountingScope?.LedgerBookId != bookId)
+                || ancestor.Projection.AccountingScope?.LedgerBookId != bookId
+                || (ancestor.Projection.SourceCorporateActionId is not null
+                    && opening.LotAfter.Acquisition?.CorporateActionLineage is null))
                 throw Unproved();
             try
             {
