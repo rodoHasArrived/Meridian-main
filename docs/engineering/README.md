@@ -63,6 +63,11 @@ cross-blueprint contracts that stop two independently written designs from colli
 
 Prefer the narrowest proof lane for the files you change.
 
+Enable the [staged-source Git hook](../development/git-hooks.md) with
+`./scripts/dev/install-git-hooks.sh` or `make install-hooks`, including in linked worktrees.
+The hook checks an isolated snapshot of staged C#/VB whitespace and skips .NET for commits
+without supported source files. CI continues to check whitespace across `Meridian.sln`.
+
 For hosted CI cache behavior, artifact locations, and timing comparisons, see
 [dependency caches and artifacts](../../.github/workflows/README.md#dependency-caches-and-artifacts).
 

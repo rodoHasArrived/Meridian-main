@@ -1,6 +1,6 @@
 {
   "total_files": 699,
-  "total_lines": 155370,
+  "total_lines": 155389,
   "orphaned_count": 233,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -1804,7 +1804,7 @@
     },
     {
       "path": "docs/development/git-hooks.md",
-      "line_count": 35,
+      "line_count": 70,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2772,7 +2772,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11507,
+      "line_count": 11506,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5844,7 +5844,7 @@
     },
     {
       "path": "tests/scripts/README.md",
-      "line_count": 59,
+      "line_count": 63,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5940,7 +5940,7 @@
     },
     {
       "path": "tools/schema_control/README.md",
-      "line_count": 142,
+      "line_count": 123,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
