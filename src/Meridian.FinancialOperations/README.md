@@ -17,6 +17,19 @@ generated accounting totals to the reviewed predecessor groups, then stamps each
 its lot, security and position identity. Equal allocations on a shared account and posting path do
 not need distinct amounts to identify their successors.
 
+`Consolidation/ConsolidationService` resolves two directly wholly owned entities from authoritative
+effective-dated ownership, compares reciprocal receivables/payables using posting entity and
+counterparty, and produces evidence-bound drafts through the typed `ConsolidationElimination`
+policy rule. Same-currency Primary books only; unmatched balances remain explicit. Read
+[the first-slice contract](../../docs/domain/intercompany-consolidation.md) for exact chart,
+perimeter, correction and currency limits.
+
+`PostgresConsolidationPostingAuthority` revalidates the complete reviewed evidence at the durable
+append boundary while holding the configured ownership store's read lease and the accounting
+policy service's mutation lock. Both leases survive until the ledger transaction commits. A changed
+perimeter, currency, source-book mapping or policy requires a new draft and renewed review; a caller
+cannot bypass this check by appending directly to the journal store.
+
 `Onboarding/OnboardingWorkspaceService` owns bounded accounting onboarding across required dates.
 Comparisons retain full source payloads, exact mapping versions, criteria and predecessor hashes.
 Balance, position and NAV differences retain new/persistent/resolved lineage, owners and evidence.

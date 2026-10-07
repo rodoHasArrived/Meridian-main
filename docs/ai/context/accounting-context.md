@@ -27,6 +27,10 @@ references; a certified review artifact still cannot post externally.
 
 Load this context before generating or reviewing code for ledgers, journal entries, capital accounts, close workflows, reconciliation postings, reports with accounting balances, or audit evidence involving accounting records.
 
+Consolidation work loads [Intercompany Consolidation](../../domain/intercompany-consolidation.md).
+The first slice uses two direct 100% entities in one currency; only posted reviewed eliminations
+enter actual consolidated figures. The existing summed ledger/WPF views remain gross.
+
 ## Review Checklist
 
 Close-plan preparation captures reusable task configuration and explicit date rules into immutable

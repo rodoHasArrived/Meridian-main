@@ -18,6 +18,11 @@ use ten-decimal journal precision with a conserved final residual; acquisition f
 twelve-decimal lot precision. Reviewed mutation amounts must match that allocation before approval.
 Unrepresentable inputs and arithmetic overflow are validation failures.
 
+`Ledger/ConsolidationDtos.cs` defines the two-entity same-currency request, retained source/version
+evidence and shared gross/proposed/posted/consolidated read model. Manual journal drafts retain
+server-owned consolidation evidence, digest and required-evidence marker across the existing review
+lifecycle. Proposed balances and unmatched amounts are distinct from posted accounting truth.
+
 `Workstation/OnboardingDtos.cs` defines bounded onboarding scope, owner criteria, exact source
 snapshots, consecutive comparisons, difference assignments, independent review decisions and frozen
 readiness packets. Account populations use financial account GUIDs; financial comparisons use
@@ -156,10 +161,13 @@ accepts older numeric status payloads; persisted queue records already use text 
   surfacing a data-hygiene problem as an integrity failure.
 - `Lifecycle/` - shared runtime state, readiness-check, shutdown-operation, shutdown-receipt,
   supervisor-manifest, exact-process-identity, database-identity, and session-receipt contracts.
+  `LifecycleStartupTiming` defines the startup stage budget shared by the launcher and supervisor.
 - `Operations/` - the program-wide verified terminal-outcome contract and append-only operational
   case-history port. Terminal operations use only `Succeeded`, `CompletedWithWarnings`, `Failed`,
   or `Blocked`, with evaluated postconditions, retained evidence and artifacts, issues, and
   actionable recovery guidance. Durable stores assign case-event sequence and hash-chain values.
+  Null object entries in terminal receipt collections are validation errors, so malformed retained
+  JSON cannot crash consumers or satisfy the launcher's verified startup gate.
   `OperationsOriginGuard` owns the "reviewed automation may not perform this action; a human
   operator is required" control — the predicate and the canonical refusal message live there, so the
   rule evolves in one place instead of across every module that enforces it. Only the throwing gates
