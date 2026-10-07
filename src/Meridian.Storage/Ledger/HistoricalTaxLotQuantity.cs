@@ -40,7 +40,7 @@ internal static class HistoricalTaxLotQuantity
                 mutation.Before != running || mutation.After != mutation.Before + mutation.Delta ||
                 mutation.After < 0m || mutation.After > lot.OriginalQuantity ||
                 mutation.EffectiveDate < lot.AcquiredDate
-                || (lot.Acquisition?.CorporateActionLineage is { } origin && mutation.EffectiveDate < origin.EffectiveDate))
+                || (lot.Acquisition?.CorporateActionLineage is { } acquisitionOrigin && mutation.EffectiveDate < acquisitionOrigin.EffectiveDate))
                 throw Missing();
             if (mutation.Kind == AtomicTaxLotMutationKind.Acquisition
                 || (mutation.Kind == AtomicTaxLotMutationKind.CorporateAction && mutation.Delta > 0m))
@@ -49,7 +49,7 @@ internal static class HistoricalTaxLotQuantity
                     mutation.Before != 0m || mutation.After != lot.OriginalQuantity ||
                     (mutation.Kind == AtomicTaxLotMutationKind.Acquisition && mutation.EffectiveDate != lot.AcquiredDate)
                     || (mutation.Kind == AtomicTaxLotMutationKind.CorporateAction
-                        && lot.Acquisition?.CorporateActionLineage is { } origin && mutation.EffectiveDate != origin.EffectiveDate))
+                        && lot.Acquisition?.CorporateActionLineage is { } successorOrigin && mutation.EffectiveDate != successorOrigin.EffectiveDate))
                     throw Missing();
             }
             else if (mutation.Kind == AtomicTaxLotMutationKind.CorporateAction)
