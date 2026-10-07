@@ -1,6 +1,6 @@
 {
   "total_files": 700,
-  "total_lines": 155468,
+  "total_lines": 155495,
   "orphaned_count": 233,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2780,7 +2780,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11516,
+      "line_count": 11518,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3060,7 +3060,7 @@
     },
     {
       "path": "docs/operators/statement-reconciliation-report-operations.md",
-      "line_count": 345,
+      "line_count": 365,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5756,7 +5756,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1532,
+      "line_count": 1537,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
