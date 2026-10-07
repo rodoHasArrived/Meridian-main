@@ -450,8 +450,12 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             BookPositionId = predecessor.BookPositionId,
             EconomicEvent = economicEvent,
             ProjectionLineage = instruction.Projection.ProjectionLineage! with
-            { TriggerEvent = economicEvent, BookPositionId = predecessor.BookPositionId,
-                RetainedEvidence = retained, EvidenceLinks = economicEvent.EvidenceLinks },
+            {
+                TriggerEvent = economicEvent,
+                BookPositionId = predecessor.BookPositionId,
+                RetainedEvidence = retained,
+                EvidenceLinks = economicEvent.EvidenceLinks
+            },
             RulePackReference = new("canonical-successors", "1", "cashless-successor", "1"),
             Evidence = retained.Select(item => new AccountingPostingEvidenceReferenceDto(item.EvidenceId,
                 item.EvidenceUri, AccountingPostingEvidenceKindDto.Source, item.SourceSystem, item.RetainedAtUtc,

@@ -105,7 +105,8 @@ internal static class CorporateActionSuccessorAncestry
             if (batchId == Guid.Empty || !visited.Add(batchId))
                 throw Unproved();
             AtomicTaxLotJournalResult? receipt;
-            try { receipt = await loadReceipt(batchId).ConfigureAwait(false); }
+            try
+            { receipt = await loadReceipt(batchId).ConfigureAwait(false); }
             catch (InvalidOperationException) { throw Unproved(); }
             if (receipt is null || receipt.MutationBatchId != batchId || receipt.Mutations.Count == 0
                 || receipt.Mutations.Any(item => item.MutationBatchId != batchId

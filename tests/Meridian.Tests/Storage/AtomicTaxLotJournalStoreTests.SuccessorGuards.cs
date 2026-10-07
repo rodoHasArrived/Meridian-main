@@ -159,8 +159,11 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             ? new LedgerEntry(line.EntryId, line.JournalEntryId, line.Timestamp, line.Account, line.Debit, line.Credit,
                 line.Description, line.Dimensions! with { SleeveId = "unreviewed-sleeve" }, line.Currency)
             : line).ToArray();
-        var tampered = (command with { Journal = command.Journal with
-        { Entry = new(entry.JournalEntryId, entry.Timestamp, entry.Description, lines, entry.Metadata) } }).WithComputedFingerprint();
+        var tampered = (command with
+        {
+            Journal = command.Journal with
+            { Entry = new(entry.JournalEntryId, entry.Timestamp, entry.Description, lines, entry.Metadata) }
+        }).WithComputedFingerprint();
         var auditBefore = await fixture.Restart().VerifyLedgerEventAuditAsync();
         var post = () => fixture.Store.AppendAssetPostingAsync(tampered);
 

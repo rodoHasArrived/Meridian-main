@@ -103,6 +103,8 @@ full ancestor chain, so re-reviewing the same source action under another case/v
 it again after an intervening action. Historical absent source-ID or lineage fields retain their
 wire shape; source-event evidence resolves stable identity for ancestry certification without
 rewriting retained instructions or fingerprints.
+Historical origin compatibility requires the retained projection to omit its stable source-ID
+field. An explicit source identity requires complete successor origin; new writes stay strict.
 The reviewed instruction remains unchanged for replay. Successor yield/schedule continuation
 requires a separately reviewed workflow.
 

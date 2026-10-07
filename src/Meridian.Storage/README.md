@@ -240,6 +240,8 @@ The serializable transaction locks every source/target reference, position and l
 accounting policy, financial-account and canonical dimension scope before any journal or lot write.
 Same-security/same-position splits bind distinct lot labels on debit/credit legs. New successors
 retain immutable acquisition origin, while old absent-lineage receipts replay their retained shape.
+Only retained projections without the later stable source-ID field receive historical origin
+compatibility. Explicit-source receipts require complete origin for ancestry and Reporting.
 The populated through-041 migration upgrade/reapply/restart and failure-recovery audit remains in
 `AtomicTaxLotSuccessorMigrationTests`.
 Ancestry coverage lives in `CorporateActionSuccessorAncestryTests` and

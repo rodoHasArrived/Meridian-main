@@ -180,7 +180,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var journalId = Guid.NewGuid();
         var at = new DateTimeOffset(date.ToDateTime(new TimeOnly(12, 0)), TimeSpan.Zero);
         LedgerLineDimensionSet Dimensions(OpenLotDto lot) => new(FundId: "amort-fund", InstrumentId: lot.SecurityId,
-            BookId: fixture.BookId.ToString("D"), TaxLotId: lot.LotId) { PositionId = lot.BookPositionId };
+            BookId: fixture.BookId.ToString("D"), TaxLotId: lot.LotId)
+        { PositionId = lot.BookPositionId };
         const string description = "Independently reviewed canonical split";
         var entry = new JournalEntry(journalId, at, description,
             [
@@ -199,10 +200,13 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             ApprovalState: AccountingPostingApprovalStateDto.Approved, ApprovalId: "independent-controller-review",
             OperatorRationale: "Independent review of canonical split lineage and carrying basis.", LedgerBookId: fixture.BookId)
         {
-            Actor = "independent-controller", LotCorporateAction = instruction,
+            Actor = "independent-controller",
+            LotCorporateAction = instruction,
             BookContext = position.BookContext with { PeriodId = fixture.Period.PeriodId },
-            BookPositionId = position.PositionId, EconomicEvent = projection.EconomicEvent,
-            ProjectionLineage = projection.ProjectionLineage, RulePackReference = mapRequest.MappedEffect.AccountingRulePack,
+            BookPositionId = position.PositionId,
+            EconomicEvent = projection.EconomicEvent,
+            ProjectionLineage = projection.ProjectionLineage,
+            RulePackReference = mapRequest.MappedEffect.AccountingRulePack,
             Evidence = mapRequest.RetainedEvidence.Select(item => new AccountingPostingEvidenceReferenceDto(item.EvidenceId,
                 item.EvidenceUri, AccountingPostingEvidenceKindDto.Source, item.SourceSystem, item.RetainedAtUtc,
                 item.RetainedBy, item.SubjectId, item.ContentHashSha256, SourceReference: item.SourceReference,
