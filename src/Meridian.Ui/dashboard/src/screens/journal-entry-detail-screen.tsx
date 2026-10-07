@@ -11,6 +11,7 @@ import { TechnicalDetails } from "@/components/ui/technical-details";
 import { getManualJournalEntryWorkbench, getRunLedgerJournal } from "@/lib/api";
 import { getLedgerBooks, getLedgerPeriodJournalEntries } from "@/lib/ledger-reports-api";
 import { toLedgerJournalLine } from "@/screens/accounting-screen.posted-ledger.view-model";
+import { JournalEntryTaxResults } from "@/screens/journal-entry-tax-results";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import {
@@ -315,6 +316,10 @@ export function JournalEntryDetailScreen() {
             <LedgerTable rows={lineRows} currency={view.currency} showAccount caption={`Lines for journal entry ${view.journalEntryId}`} />
           </CardContent>
         </Card>
+      ) : null}
+
+      {postedEntry?.ledgerBookId && periodId ? (
+        <JournalEntryTaxResults key={`${periodId}:${journalEntryId}`} ledgerBookId={postedEntry.ledgerBookId} periodId={periodId} journalEntryId={journalEntryId} />
       ) : null}
 
       {/* Lifecycle, Evidence and Approval belong to the manual workbench's workflow. A governed
