@@ -106,7 +106,10 @@ internal static class CorporateActionSuccessorAncestry
             try { receipt = await loadReceipt(batchId).ConfigureAwait(false); }
             catch (InvalidOperationException) { throw Unproved(); }
             if (receipt is null || receipt.MutationBatchId != batchId || receipt.Mutations.Count == 0
-                || receipt.Mutations.Any(item => item.MutationBatchId != batchId || item.MutationKind != receipt.MutationKind
+                || receipt.Mutations.Any(item => item.MutationBatchId != batchId
+                    || (item.MutationKind != receipt.MutationKind
+                        && !(receipt.MutationKind == AtomicTaxLotMutationKind.Disposal
+                            && item.MutationKind == AtomicTaxLotMutationKind.BasisRedistribution))
                     || item.LotAfter.LedgerBookId != bookId || item.LotBefore is { } before && before.LedgerBookId != bookId
                     || item.TaxLotRecordId != item.LotAfter.TaxLotRecordId))
                 throw Unproved();
