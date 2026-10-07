@@ -16,8 +16,14 @@ and restores each deferral's retained policy ID, replacement window and scope. T
 consult mutable standing policy rows. A recording timestamp is not evaluation coverage; activation
 dates and parcel deferral allocations absent from durable history remain unavailable. No schema or
 posting behavior changes are introduced by this W10-TAX-001 inspection slice. Retained deferral rows
-must agree on their repeated aggregate matched quantity before history can certify finality. Exact
-journal queries retain the existing book, period and tenant filters while hydrating every journal leg.
+must agree on their repeated aggregate matched quantity and match the disposed security, journal sale
+date and full disposing account before history can certify finality. Replacement recipients must match
+their durable lot, security, book, window and account scope; aggregate matches cannot exceed their
+distinct original quantities. Carried holding dates require the immediate retained source disposal's
+exact policy revision and a certified recipient relationship.
+Deferral amounts also reconcile to the retained cash and replacement-asset movements, including
+journals whose deferral rows are missing. Exact journal queries retain the existing book,
+period and tenant filters while hydrating every journal leg.
 
 Atomic file-write diagnostics retain operation outcomes, byte counts, OS error numbers and exception
 types. Paths, file contents, checksum values and exception messages are omitted because they can

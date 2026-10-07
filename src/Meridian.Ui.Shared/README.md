@@ -22,8 +22,10 @@ on a read. Missing canonical/policy evidence stays explicit; a partial deferral 
 across multiple loss parcels leaves their recognized amounts null while preserving certified disposal
 totals. Single-loss and fully deferred parcels have unambiguous attribution.
 
-Settled means no relieved parcel has a loss, or retained matching saturates both loss quantity and
-amount. A known, unsaturated replacement window is provisional through its inclusive end date and
+Settled means no relieved parcel has a loss, or retained matching exactly covers both loss quantity
+and amount. Replacement quantities exceeding the loss parcels fail certification, including for
+face-based lots and mixed gain/loss disposals. A known, unsaturated replacement window is provisional
+through its inclusive end date and
 remains provisional afterwards with re-evaluation required. Neither read time nor batch recording
 time proves finalization. Refresh only reads newly retained evidence. Historical loss rows without
 retained wash-sale settings remain missing-evidence; this slice adds no finalization workflow,

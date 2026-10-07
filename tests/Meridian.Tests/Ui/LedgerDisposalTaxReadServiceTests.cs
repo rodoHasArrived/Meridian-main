@@ -153,6 +153,52 @@ public sealed class LedgerDisposalTaxReadServiceTests
     }
 
     [Theory]
+    [InlineData(10, 1.0001, false)]
+    [InlineData(20, 1.0001, false)]
+    [InlineData(20, 1.0001, true)]
+    public void Project_OverstatedReplacementQuantityCannotCertifyTaxFigures(
+        decimal deferred, decimal matchedQuantity, bool faceLot)
+    {
+        var lot = Lot(1, new(2025, 1, 1), 100m);
+        if (faceLot)
+            lot = lot with
+            {
+                OriginalFace = 1000m,
+                ParBasis = 100m,
+                BookedFactor = 0.9m,
+                Acquisition = lot.Acquisition! with
+                {
+                    QuantityBasis = LotQuantityBasis.Face,
+                    FaceValueTerms = new(100m, 0.9m, BondAmortizationMethod.ConstantYield, 0.05m)
+                }
+            };
+        var fixture = Create(SaleDate, [lot], proceeds: 80m, deferred: deferred, matchedQuantity: matchedQuantity);
+
+        var result = Project(fixture, SaleDate);
+
+        result.State.Should().Be("MissingEvidence");
+        result.CanChange.Should().BeTrue();
+        result.EconomicGainOrLoss.Should().BeNull();
+        result.RecognizedGainOrLoss.Should().BeNull();
+        result.DeferredLoss.Should().BeNull();
+        result.Parcels.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Project_ReplacementQuantityCannotIncludeGainParcels()
+    {
+        var fixture = Create(SaleDate,
+            [Lot(1, new(2024, 1, 1), 40m), Lot(2, new(2026, 1, 2), 120m)],
+            proceeds: 200m, deferred: 20m, matchedQuantity: 2m);
+
+        Project(fixture, SaleDate).State.Should().Be("MissingEvidence");
+
+        var gainOnly = Create(SaleDate, [Lot(1, new(2024, 1, 1), 40m)], proceeds: 100m,
+            matchedQuantity: decimal.MaxValue);
+        Project(gainOnly, SaleDate).State.Should().Be("MissingEvidence");
+    }
+
+    [Theory]
     [InlineData("2026-08-09", false)]
     [InlineData("2026-08-10", true)]
     [InlineData("2027-07-10", true)]

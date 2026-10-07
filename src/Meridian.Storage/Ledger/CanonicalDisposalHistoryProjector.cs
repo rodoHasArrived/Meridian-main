@@ -56,7 +56,7 @@ public static class CanonicalDisposalHistoryProjector
             .Sum(static line => line.Credit - line.Debit)
             - entry.Lines.Where(line => line.Account.Name == LedgerAccounts.RealizedLoss.Name)
                 .Sum(static line => line.Debit - line.Credit);
-        var projection = ProjectCertifiedEconomics(disposal, entry, canonical, history, recognized);
+        var projection = ProjectCertifiedEconomics(disposal, entry, canonical, history, recognized, functionalCurrency);
         if (projection.CostBasis != disposal.Lots.Sum(static lot => lot.CostBasis) ||
             projection.RecognizedGainOrLoss != recognized)
             throw new LedgerValidationException("Canonical disposal report does not reconcile to retained journal economics.");
@@ -69,7 +69,7 @@ public static class CanonicalDisposalHistoryProjector
     private static LedgerTaxLotReliefProjection ProjectCertifiedEconomics(
         LedgerTaxLotDisposalHistoryRecord disposal, JournalEntry entry,
         IReadOnlyList<OpenLotDto> canonical, IReadOnlyList<LedgerTaxLotDisposalHistoryLot> history,
-        decimal recognized)
+        decimal recognized, string functionalCurrency)
     {
         var quantity = history.Sum(static lot => lot.Quantity);
         var basis = history.Sum(static lot => lot.CostBasis);
@@ -77,6 +77,9 @@ public static class CanonicalDisposalHistoryProjector
         var proceeds = basis + recognized - disallowed;
         if (proceeds < 0m)
             throw new LedgerValidationException("Retained canonical disposal cannot produce nonnegative proceeds.");
+        if (disposal.WashSaleBasisIncreases.Count > 0 || entry.Lines.Any(static line =>
+                line.Account.Name == LedgerAccounts.Cash.Name || line.Account.Name.StartsWith("Cash (", StringComparison.Ordinal)))
+            CertifyDeferredDisposalJournal(disposal.Account, entry, functionalCurrency, proceeds, disallowed);
         if (disposal.ProceedsAllocationVersion is not null and not LedgerTaxLotReliefProjector.CurrentProceedsAllocationVersion ||
             disposal.ProceedsAllocationVersion is null && disposal.SalePrice is not null)
             throw new LedgerValidationException("Retained canonical disposal has an unsupported proceeds allocation version or quote.");
@@ -171,6 +174,46 @@ public static class CanonicalDisposalHistoryProjector
                 : new WashSaleOutcome(disallowed, Math.Max(0m, economicLoss - disallowed),
                     disposal.MatchedReplacementQuantity, disposal.WashSaleBasisIncreases)
         };
+    }
+
+    private static bool IsDisposalCash(LedgerEntry line, LedgerAccount assetAccount, string functionalCurrency)
+    {
+        var financialAccountId = assetAccount.FinancialAccountId;
+        var cashAccount = string.IsNullOrWhiteSpace(financialAccountId)
+            ? LedgerAccounts.Cash : LedgerAccounts.CashAccount(financialAccountId);
+        var currencyCashAccount = LedgerAccounts.CashInCurrency(functionalCurrency, financialAccountId);
+        return line.Account == cashAccount || line.Account == currencyCashAccount;
+    }
+
+    private static void CertifyDeferredDisposalJournal(LedgerAccount assetAccount, JournalEntry entry,
+        string functionalCurrency, decimal proceeds, decimal disallowed)
+    {
+        var financialAccountId = assetAccount.FinancialAccountId;
+        var gainAccount = string.IsNullOrWhiteSpace(financialAccountId)
+            ? LedgerAccounts.RealizedGain : LedgerAccounts.RealizedGainFor(financialAccountId);
+        var lossAccount = string.IsNullOrWhiteSpace(financialAccountId)
+            ? LedgerAccounts.RealizedLoss : LedgerAccounts.RealizedLossFor(financialAccountId);
+        bool IsCash(LedgerEntry line) => IsDisposalCash(line, assetAccount, functionalCurrency);
+        bool IsReplacementBasis(LedgerEntry line) => !IsCash(line) && line.Account != assetAccount &&
+            line.Account.AccountType == LedgerAccountType.Asset && line.Credit == 0m && line.Debit > 0m;
+
+        // Deferrals are retained separately from the atomic journal. Missing rows must not turn
+        // a deferred loss into an apparent nonnegative result. Bind the amount to the posting shape
+        // as an explicit disposal quote: exact scoped cash, source basis, result, and replacement
+        // basis debits. Ambiguous fee or additional-disposal shapes need separate retained evidence.
+        if (entry.Lines.Any(line =>
+                (line.Account.Name == LedgerAccounts.RealizedGain.Name &&
+                    (line.Account != gainAccount || line.Debit != 0m)) ||
+                (line.Account.Name == LedgerAccounts.RealizedLoss.Name &&
+                    (line.Account != lossAccount || line.Credit != 0m)) ||
+                (IsCash(line) && line.Credit != 0m) ||
+                (!IsCash(line) && line.Account != assetAccount && line.Account != gainAccount &&
+                    line.Account != lossAccount && !IsReplacementBasis(line))))
+            throw new LedgerValidationException("Retained wash-sale economics require supported cash, asset-basis, and realized-result journal lines.");
+
+        if (entry.Lines.Where(IsCash).Sum(static line => line.Debit) != proceeds ||
+            entry.Lines.Where(IsReplacementBasis).Sum(static line => line.Debit) != disallowed)
+            throw new LedgerValidationException("Retained wash-sale deferrals do not reconcile to journal cash proceeds and replacement basis.");
     }
 
     /// <summary>

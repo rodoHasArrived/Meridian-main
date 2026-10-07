@@ -71,9 +71,15 @@ public sealed class LedgerDisposalTaxReadService(ILedgerTaxLotDisposalHistory? h
         var losses = projection.Selections.Where(static selection => selection.RealizedGainOrLoss < 0m).ToArray();
         var lossAmount = losses.Sum(static selection => -selection.RealizedGainOrLoss);
         var deferred = projection.DisallowedWashSaleLoss;
+        // Retained matches use ledger-lot units; projections use face units for face lots.
+        // Compare in retained units to reject an overstated aggregate without overflowing.
+        var quantityScale = disposal.CanonicalLots![0].Acquisition.QuantityBasis == Meridian.Contracts.Accounting.Lots.LotQuantityBasis.Face
+            ? LedgerTaxLotFaceValueTerms.LedgerLotParBasis : 1m;
+        var lossQuantity = losses.Sum(static loss => loss.QuantityRelieved) / quantityScale;
         var allocations = disposal.WashSaleBasisIncreases.SelectMany(static increase => increase.SourceAllocations).ToArray();
         if (disposal.WashSaleBasisIncreases.Any(static increase => increase.Amount < 0m) ||
-            deferred > lossAmount || disposal.MatchedReplacementQuantity < 0m)
+            deferred > lossAmount || disposal.MatchedReplacementQuantity < 0m ||
+            disposal.MatchedReplacementQuantity > lossQuantity)
             return Result("MissingEvidence", "Retained wash-sale amounts do not reconcile to the relieved loss parcels.");
 
         // Never spread a legacy aggregate deferral across mixed parcels by quantity. Attribution
@@ -119,12 +125,7 @@ public sealed class LedgerDisposalTaxReadService(ILedgerTaxLotDisposalHistory? h
         {
             return Result("MissingEvidence", "The retained replacement window is invalid.", projection, parcels);
         }
-        // Matched quantity is stored in ledger-lot units (face instruments use a par basis).
-        var quantityScale = disposal.CanonicalLots![0].Acquisition.QuantityBasis == Meridian.Contracts.Accounting.Lots.LotQuantityBasis.Face
-            ? LedgerTaxLotFaceValueTerms.LedgerLotParBasis : 1m;
-        var lossQuantity = losses.Sum(static loss => loss.QuantityRelieved);
-        var matchedQuantity = disposal.MatchedReplacementQuantity * quantityScale;
-        if (deferred == lossAmount && matchedQuantity >= lossQuantity)
+        if (deferred == lossAmount && disposal.MatchedReplacementQuantity == lossQuantity)
             return Result("Settled", "The retained replacement matches cover every loss parcel and defer the full economic loss.", projection, parcels, windowEnd);
         return asOfDate <= windowEnd
             ? Result("Provisional", "The replacement window remains open through the displayed date. Additional acquisitions can change the retained recognized loss.", projection, parcels, windowEnd)
