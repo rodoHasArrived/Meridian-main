@@ -16,7 +16,9 @@ public sealed record OpenLotAmortizationInstructionDto(
     long ExpectedBookPositionVersion,
     DateOnly AsOfDate,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    string? CalculationVersion = null)
+    string? CalculationVersion = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    OpenLotAmortizationReversalDto? Reversal = null)
 {
     // Historical JSON has no version and retains the exact v1 calculation and fingerprint.
     // New callers using the original constructor shape always select the current model.
@@ -26,6 +28,10 @@ public sealed record OpenLotAmortizationInstructionDto(
     {
     }
 }
+
+/// <summary>Reviewed assertion only; posting verifies it against the immutable original mutation.</summary>
+public sealed record OpenLotAmortizationReversalDto(
+    Guid MutationBatchId, Guid JournalEntryId, OpenLotDto RestoresLot);
 
 public sealed record OpenLotAmortizationProjectionDto(
     decimal TransactionCostBasis,
@@ -45,7 +51,7 @@ public static class OpenLotAmortization
         // and reload while still binding every value and array entry in the reviewed projection.
         using var stream = new MemoryStream();
         using (var writer = new Utf8JsonWriter(stream))
-            WriteOrderedJson(writer, JsonSerializer.SerializeToElement(security));
+            WriteOrderedJson(writer, JsonSerializer.SerializeToElement(security, OpenLotAmortizationJsonContext.Default.SecurityProjectionRecord));
         return Sha256Digest.Compute(stream.ToArray());
     }
 
@@ -86,6 +92,20 @@ public static class OpenLotAmortization
             || evidence.SubjectId != security.SecurityId.ToString("D") || evidence.EvidenceVersion != security.Version
             || evidence.EffectiveDate > instruction.AsOfDate || !Sha256Digest.FixedEquals(evidence.ContentHashSha256, SecurityHash(security)))
             throw new ArgumentException("Amortization requires hash-bound versioned Security Master projection evidence.");
+        if (instruction.Reversal is { } reversal)
+        {
+            OpenLotValidation.Validate(reversal.RestoresLot);
+            var restored = reversal.RestoresLot;
+            if (reversal.MutationBatchId == Guid.Empty || reversal.JournalEntryId == Guid.Empty
+                || restored.Version >= lot.Version
+                || !SameLot(restored with { Version = lot.Version,
+                    OpenTransactionCostBasis = lot.OpenTransactionCostBasis,
+                    OpenFunctionalCostBasis = lot.OpenFunctionalCostBasis }, lot))
+                throw new ArgumentException("Amortization reversal must retain the original lot identity, quantity and acquisition facts.");
+            return new(restored.OpenTransactionCostBasis, restored.OpenFunctionalCostBasis,
+                restored.OpenTransactionCostBasis - lot.OpenTransactionCostBasis,
+                restored.OpenFunctionalCostBasis - lot.OpenFunctionalCostBasis);
+        }
         var detail = new SecurityDetailDto(security.SecurityId, security.AssetClass, security.Status, security.DisplayName,
             security.Currency, security.CommonTerms, security.AssetSpecificTerms, security.Identifiers, security.Aliases,
             security.Version, security.EffectiveFrom, security.EffectiveTo);
@@ -146,6 +166,16 @@ public static class OpenLotAmortization
             throw new ArgumentException("Amortization carrying-basis movement must be exactly representable at the 12-decimal journal boundary; fractional retained basis requires a separate governed residual treatment.");
         return new(transaction, functional, transactionMovement, functionalMovement);
     }
+
+    public static bool SameLot(OpenLotDto left, OpenLotDto right)
+        => JsonElement.DeepEquals(
+            JsonSerializer.SerializeToElement(left, OpenLotAmortizationJsonContext.Default.OpenLotDto),
+            JsonSerializer.SerializeToElement(right, OpenLotAmortizationJsonContext.Default.OpenLotDto));
+
+    public static bool SameInstruction(OpenLotAmortizationInstructionDto? left, OpenLotAmortizationInstructionDto? right)
+        => JsonElement.DeepEquals(
+            JsonSerializer.SerializeToElement(left, OpenLotAmortizationJsonContext.Default.OpenLotAmortizationInstructionDto),
+            JsonSerializer.SerializeToElement(right, OpenLotAmortizationJsonContext.Default.OpenLotAmortizationInstructionDto));
 
     private static int Frequency(string? value) => value?.Trim().ToLowerInvariant() switch
     {
@@ -253,3 +283,9 @@ public static class OpenLotAmortization
             element.WriteTo(writer);
     }
 }
+
+[JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Metadata)]
+[JsonSerializable(typeof(SecurityProjectionRecord))]
+[JsonSerializable(typeof(OpenLotDto))]
+[JsonSerializable(typeof(OpenLotAmortizationInstructionDto))]
+internal sealed partial class OpenLotAmortizationJsonContext : JsonSerializerContext;

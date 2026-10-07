@@ -961,8 +961,14 @@ public static class AssetLotMutationInstructionValidator
             if (instruction is not { Intent: AssetLotMutationIntentDto.Amortize, Amortization: { } amortization }
                 || instruction.Acquisition is not null || instruction.DisposalSelections.Count != 0
                 || instruction.ReliefMethod is not null || instruction.PolicyRevision is not null
+                || instruction.DisposalSalePrice is not null
                 || string.IsNullOrWhiteSpace(instruction.AssetAccountId))
                 return ["Lot amortization requires one complete Amortize instruction and exact asset account."];
+            if (amortization.Reversal is { } reversal
+                && (instruction.CorrectsMutationBatchId != reversal.MutationBatchId
+                    || instruction.CorrectsJournalEntryId != reversal.JournalEntryId
+                    || instruction.CorrectionApproval is null))
+                issues.Add("Amortization reversal requires the exact original batch, journal and approved correction lineage.");
             try
             {
                 var projection = Meridian.Contracts.Accounting.Lots.OpenLotAmortization.Project(amortization);
@@ -1025,6 +1031,8 @@ public static class AssetLotMutationInstructionValidator
         var populatedCorrectionFields = correctionFields.Count(static value => value is not null);
         if (populatedCorrectionFields is > 0 and < 3)
             issues.Add("Lot corrections require the exact corrected mutation batch, corrected journal, and approved correction metadata together.");
+        if (instruction?.CorrectsMutationBatchId == Guid.Empty || instruction?.CorrectsJournalEntryId == Guid.Empty)
+            issues.Add("Lot correction identities must be nonempty.");
         if (instruction?.CorrectionApproval is { } approval &&
             (approval.Status != LedgerAdjustmentApprovalStatusDto.Approved ||
              string.IsNullOrWhiteSpace(approval.ApprovalId) ||
