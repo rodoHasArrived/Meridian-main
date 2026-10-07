@@ -40,25 +40,43 @@ $baselineSha = git rev-parse --verify 'origin/main^{commit}'
 # Fast checks that do not need PostgreSQL.
 python build/scripts/schema-control.py inventory --base-ref $baselineSha
 
-# Build a candidate snapshot from a disposable PostgreSQL database.
+# Verify with Docker; each invocation owns a fresh PostgreSQL container and candidate directory.
 python -m pip install --requirement tools/schema_control/requirements.txt
-python build/scripts/schema-control.py snapshot `
-  --database-url "postgresql://meridian:meridian@localhost:5432/meridian_schema_control" `
+python build/scripts/schema-control.py local `
   --base-ref $baselineSha
 
-# Rebuild and require the candidate to match committed manifests and docs.
-python build/scripts/schema-control.py verify `
-  --database-url "postgresql://meridian:meridian@localhost:5432/meridian_schema_control" `
+# Build a retained snapshot for review using the same disposable lifecycle.
+python build/scripts/schema-control.py local --mode snapshot `
   --base-ref $baselineSha
 
-# After reviewing a snapshot artifact, copy it to the tracked output roots.
+# After reviewing the printed candidate directory, explicitly promote that snapshot.
 python build/scripts/schema-control.py promote `
-  --candidate-root build/schema-control/candidate
+  --candidate-root build/schema-control/runs/<run-id>/candidate
 ```
 
+`local` requires Python dependencies above and a running Docker daemon. It defaults to `verify`,
+uses the registry's pinned `manifest.postgres_image`, and supports `--image` and
+`--readiness-timeout <seconds>` overrides. Docker atomically allocates a loopback host port; no
+port selection, pre-existing database, or database reset is needed. Every invocation allocates a
+unique container and `build/schema-control/runs/<run-id>/candidate`, including concurrent runs in
+the same checkout or different Git worktrees. It waits for a successful PostgreSQL query through
+the mapped host port before invoking the existing `verify` or `snapshot` command.
+
+Run directories are retained on success, failure, and cancellation. They contain `run.json`
+(lifecycle, resource identity, exit status, and cleanup result), `docker.log`, `verification.log`,
+`postgres.log`, and any generated candidate manifests and reports. The command prints the exact
+artifact directory. It stops and reaps verification before capturing PostgreSQL logs and removing
+only its owned container and associated disposable storage. Ctrl+C and termination signals trigger
+cleanup; SIGKILL, machine shutdown, or a disconnected Docker daemon cannot guarantee cleanup.
+Use the recorded container identity and ownership labels to inspect any reported cleanup failure;
+avoid blanket container or volume pruning. Retained artifacts can be deleted when no longer needed.
+
+`local --mode snapshot` never promotes artifacts. Review its retained candidate and use `promote`
+with that exact directory, then run `local` again to verify the promoted outputs.
+
 `snapshot` and `verify` enforce a disposable, empty database preflight before running any DDL. The
-hosted workflow supplies a fresh database; do not point either command at a shared or production
-database.
+hosted workflow supplies a fresh database and still uses these lower-level commands with
+`--database-url` and `--candidate-root`. For local work, prefer the owned `local` wrapper.
 
 ### Baseline and candidate evidence
 
@@ -97,7 +115,8 @@ change their contents solely because the candidate SHA changed.
 | Governance | `database/policies/*.json` | `database/manifest/policies.json` and candidate reports |
 | Human-readable reference | The generated manifests above | `docs/generated/database/**` |
 
-The candidate workspace is `build/schema-control/candidate/`. Only `promote` writes to the tracked
+The lower-level commands default to `build/schema-control/candidate/`; `local` always uses its
+unique retained run directory. Only `promote` writes to the tracked
 manifest and documentation roots, and it must be followed by `verify` in GitHub Actions.
 Configured output roots must resolve to a non-root path within the repository; schema control
 rejects absolute paths, repository escapes, and symlinks that resolve outside the checkout.
