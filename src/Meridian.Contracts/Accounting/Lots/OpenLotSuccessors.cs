@@ -59,7 +59,7 @@ public static class OpenLotSuccessors
             instruction.Projection.EconomicEvent.EffectiveDate, instruction.ExpectedLot.TaxLotRecordId,
             instruction.ExpectedLot.Version, (mutation.AllocationPercent ?? 1m) * 100m,
             operation.SuccessorRole ?? CorporateActionSuccessorRoleDto.Successor, mutation.ReportingTags)
-        { SourceCorporateActionId = ResolveSourceCorporateActionId(instruction.Projection) };
+        { SourceCorporateActionId = GetSourceCorporateActionId(instruction.Projection) };
     }
 
     /// <summary>Add the reviewed immutable origin without changing the approved instruction or its replay fingerprint.</summary>
@@ -95,7 +95,7 @@ public static class OpenLotSuccessors
             "Successor posting requires a complete reviewed authoritative corporate-action projection.");
         var mutations = projection.LotMutations!;
         var economicEvent = projection.EconomicEvent!;
-        var sourceCorporateActionId = ResolveSourceCorporateActionId(projection);
+        var sourceCorporateActionId = GetSourceCorporateActionId(projection);
         Require(source.Version > 0 && source.OpenQuantity > 0 && source.OpenFunctionalCostBasis > 0
             && instruction.ExpectedSecurityVersion > 0 && Sha256Digest.IsCanonical(instruction.ExpectedSecurityHash)
             && mutations.PositionId == source.BookPositionId && mutations.ExpectedPositionVersion > 0
@@ -236,8 +236,11 @@ public static class OpenLotSuccessors
             "Successor contributions must fully relieve and conserve the predecessor.");
     }
 
-    private static Guid ResolveSourceCorporateActionId(CorporateActionAccountingProjectionDto projection)
+    /// <summary>Resolve the stable source action from its retained version/hash-bound source-event evidence.</summary>
+    public static Guid GetSourceCorporateActionId(CorporateActionAccountingProjectionDto projection)
     {
+        ArgumentNullException.ThrowIfNull(projection);
+        Require(projection.EconomicEvent is not null, "A retained corporate-action economic event is required.");
         var economicEvent = projection.EconomicEvent!;
         var retainedSourceIds = projection.EvidenceManifest
             .Where(item => item.Role == CorporateActionProjectionEvidenceRoleDto.SourceEvent

@@ -54,6 +54,11 @@ Migration 042 leaves earlier batches unchanged. Historical quantity reads open s
 corporate-action effective date while preserving their inherited acquisition date. Journal-only
 append cannot bypass the atomic successor boundary. Disposal eligibility excludes successors
 before their retained corporate-action opening date.
+Before a new successor commit, Storage walks immutable birth receipts through every predecessor.
+The retained source-event evidence binds each stable source action, including historical projections
+that omit its explicit source ID. An intervening action or later relief cannot hide a repeated ancestor
+action; missing, contradictory, cyclic or foreign-book ancestry refuses the new posting. Exact retries
+still return the already committed receipt before new-posting ancestry checks.
 
 Current-basis disposal follows with `V_ledger_041`; both migrations remain in their original order.
 AverageCost reporting certifies each canonical acquisition against its retained pre-relief pool,

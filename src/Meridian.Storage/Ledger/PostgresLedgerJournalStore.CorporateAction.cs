@@ -215,6 +215,15 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
         if (instruction.Successors.Any(target => FindCorporateActionLine(command.Journal.Entry.Lines, target.Lot, debit: true).Account
             != before.Account))
             throw new LedgerValidationException("Successor posting cannot transfer lots between ledger accounts.");
+        await CorporateActionSuccessorAncestry.ValidateAsync(before, instruction, async birthBatchId =>
+        {
+            var batch = await LoadAtomicTaxLotBatchAsync(connection, transaction, birthBatchId, ct).ConfigureAwait(false);
+            if (batch is null)
+                return null;
+            if (batch.LedgerBookId != command.LedgerBookId)
+                throw new LedgerValidationException("Successor ancestry must remain within the locked ledger book.");
+            return await LoadAtomicTaxLotResultAsync(connection, transaction, birthBatchId, false, ct).ConfigureAwait(false);
+        }, ct).ConfigureAwait(false);
         var history = await ReadDatedLotQuantitiesAsync(connection, transaction, command.LedgerBookId,
             [before.TaxLotRecordId], ct).ConfigureAwait(false);
         if (history.Any(mutation => mutation.EffectiveDate > effectiveDate)
