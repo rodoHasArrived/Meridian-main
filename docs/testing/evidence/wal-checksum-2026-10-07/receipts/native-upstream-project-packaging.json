@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "packagedAt": "2026-10-07T19:59:04.005145+00:00",
+  "reason": "Retain upstream third-party project source as evidence without repository project discovery treating it as a Meridian project.",
+  "method": "Python standard-library gzip; compression level 9; mtime 0; verified byte-identical decompression.",
+  "snapshots": [
+    {
+      "originalPath": "artifacts/wal-checksum-profile/native/src_Blake3.Native_Blake3.Native.csproj",
+      "storedPath": "artifacts/wal-checksum-profile/native/src_Blake3.Native_Blake3.Native.csproj.gz",
+      "encoding": "gzip",
+      "originalBytes": 1428,
+      "originalSha256": "eba773428329eb148aba17d80633463d85217aad25c5416e9cec765912cf77b3",
+      "bytes": 617,
+      "sha256": "d6489b17c1f3dbfad3f13dab6ff4fa1d089556e971c5dbb28e8a34c63199586b"
+    },
+    {
+      "originalPath": "docs/testing/evidence/wal-checksum-2026-10-07/components/native/src_Blake3.Native_Blake3.Native.csproj",
+      "storedPath": "docs/testing/evidence/wal-checksum-2026-10-07/components/native/src_Blake3.Native_Blake3.Native.csproj.gz",
+      "encoding": "gzip",
+      "originalBytes": 1428,
+      "originalSha256": "eba773428329eb148aba17d80633463d85217aad25c5416e9cec765912cf77b3",
+      "bytes": 617,
+      "sha256": "d6489b17c1f3dbfad3f13dab6ff4fa1d089556e971c5dbb28e8a34c63199586b"
+    },
+    {
+      "originalPath": "artifacts/wal-checksum-profile/durable-staging/components/native/src_Blake3.Native_Blake3.Native.csproj",
+      "storedPath": "artifacts/wal-checksum-profile/durable-staging/components/native/src_Blake3.Native_Blake3.Native.csproj.gz",
+      "encoding": "gzip",
+      "originalBytes": 1428,
+      "originalSha256": "eba773428329eb148aba17d80633463d85217aad25c5416e9cec765912cf77b3",
+      "bytes": 617,
+      "sha256": "d6489b17c1f3dbfad3f13dab6ff4fa1d089556e971c5dbb28e8a34c63199586b"
+    }
+  ],
+  "portableRunOriginals": "Unchanged; no portable run path, original run manifest, measurement, or verdict is modified."
+}

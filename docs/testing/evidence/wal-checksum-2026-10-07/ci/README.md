@@ -18,3 +18,10 @@ remediation; it does not substitute a focused test for the full repository gate.
 
 Files ending in `.gz` decompress to the exact original bytes. The packet manifest
 retains original sizes and SHA-256 digests as well as compressed-file digests.
+
+The [subsequent full command](canonical-evidence-packaging-failure/archive-manifest.json)
+exited 1 after all nineteen .NET shards and 3,651 browser tests passed. Its sole
+failure was central-package discovery treating retained upstream `.csproj`
+snapshots as Meridian projects. Those snapshots are now lossless gzip evidence;
+the original bytes remain verifiable, and package tests and pins are unchanged.
+The full command must be rerun on the provider and packaging change.

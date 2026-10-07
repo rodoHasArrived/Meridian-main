@@ -1,8 +1,10 @@
 # WAL checksum evidence packet
 
-All eight portable stages pass in [hosted run 37666873544](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37666873544) with the existing profile and budgets. Current full repository gate outcomes are recorded on [PR #3123](https://github.com/rodoHasArrived/Meridian-main/pull/3123). The initial container process-reaping failure and independently verified remediation are preserved in the [CI environment archive](ci/README.md).
+Historical eight-stage acceptance passed in [hosted run 37666873544](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37666873544) with the existing profile and budgets. Current full repository gate outcomes are recorded on [PR #3123](https://github.com/rodoHasArrived/Meridian-main/pull/3123). The initial container process-reaping failure and independently verified remediation are preserved in the [CI environment archive](ci/README.md).
 
-The [performance report](report.md) explains the accepted measurements, versioned integrity design, retained failures, representative JSON limits, and validation status. The accepted run tested clean merge `f7c1f6d77ec44b2a4924c892626678221fef3317` for production head `a65c3f3db71868724d5a3813e70575f75a903279`.
+The [latest-head run](runs/hosted-final-head-failure-37673101515/run.json) passed all WAL stages but failed dedup miss at 823.729 ns against 800 ns. The provider change passed 88 focused tests; final-source portable acceptance and full CI are pending.
+
+The [performance report](report.md) explains the accepted measurements, versioned integrity design, retained failures, representative JSON limits, and validation status. The historical accepted run tested clean merge `f7c1f6d77ec44b2a4924c892626678221fef3317` for production head `a65c3f3db71868724d5a3813e70575f75a903279`.
 
 - [Accepted run and original manifest](runs/hosted-final-pass/run.json): all sixteen text files, fifteen original hashes, eight passing stages, and 444 raw measurement records.
 - [Accepted validator evidence](runs/hosted-final-pass/budget-evidence.json): unchanged mean-latency and allocation limits; zero violations.
@@ -12,6 +14,8 @@ The [performance report](report.md) explains the accepted measurements, versione
 
 Run `python3 verify-evidence.py` from this directory or invoke the script by its full path. It requires only Python's standard library. Verification covers every copied file, unchanged original run manifests, interrupted-run receipts, component source hashes, and decompressed integrity evidence. It also requires a clean accepted run, benchmark and validator exit zero, all eight passing stages with raw samples, and profile/budget bytes equal to the baseline.
 
-Earlier failures and the interrupted local optimization remain preserved as recorded. Component diagnostics retain their exact timed source and raw measurements; scratch SHA-provider reuse was not applied to production. Compiled binaries, native libraries, packages, build outputs, and caches are excluded. The manifest excludes only itself and its checksum file, avoiding a circular hash definition.
+Earlier failures and the interrupted local optimization remain preserved as recorded. Component diagnostics retain their exact timed source and raw measurements; scratch SHA-provider reuse was not applied to production at the historical accepted head. The later provider change keeps exact SHA-256 keys and requires fresh eight-stage acceptance. Compiled binaries, native libraries, packages, build outputs, and caches are excluded. The manifest excludes only itself and its checksum file, avoiding a circular hash definition.
 
 The [source-binding receipt](receipts/current-main-integration.json) verifies the actual hosted tested merge against the integrated tree. [CI environment evidence](ci/README.md) preserves the initial failure and independently passing process-reaper proof. [Third-party notices](third-party-notices/README.md) preserve attribution for archived diagnostic source.
+
+The [upstream native project snapshot](components/native/src_Blake3.Native_Blake3.Native.csproj.gz) is retained as lossless gzip so repository project discovery does not treat third-party source material as a Meridian project. Decompression restores its original 1,428 bytes. The manifest and [packaging receipt](receipts/native-upstream-project-packaging.json) retain original and gzip SHA-256 hashes.

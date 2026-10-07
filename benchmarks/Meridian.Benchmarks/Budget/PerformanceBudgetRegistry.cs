@@ -18,7 +18,7 @@ public static class PerformanceBudgetRegistry
 {
     // -----------------------------------------------------------------------
     // Deduplication key computation — BOTTLENECK_REPORT.md P0 #1
-    // Current implementation: _prefixCache.GetOrAdd + SHA256.TryHashData + stackalloc
+    // Current implementation: _prefixCache.GetOrAdd + per-thread SHA-256 provider + stackalloc
     // Cache-hit path: only ConcurrentDictionary.TryGetValue + arithmetic
     // -----------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ public static class PerformanceBudgetRegistry
     /// <summary>
     /// Deduplication key computation — cache-miss path.
     /// Includes prefix lookup (GetOrAdd), SHA256 via <c>stackalloc</c>,
-    /// and <see cref="Convert.ToHexStringLower(byte[])"/> (one interned/short string).
+    /// and <c>Convert.TryToHexStringLower</c> into one short string.
     /// Budget: ≤128 managed bytes (one interned hex key string).
     /// </summary>
     /// <remarks>

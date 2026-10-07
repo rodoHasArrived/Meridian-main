@@ -1,11 +1,11 @@
 {
-  "total_files": 719,
-  "total_lines": 156891,
-  "orphaned_count": 240,
-  "no_heading_count": 155,
+  "total_files": 722,
+  "total_lines": 157214,
+  "orphaned_count": 243,
+  "no_heading_count": 156,
   "stale_count": 0,
-  "todo_count": 298,
-  "average_lines": 218.2,
+  "todo_count": 299,
+  "average_lines": 217.7,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -223,8 +223,11 @@
     "docs/source/source-diagram-standard.md",
     "docs/source/source-readme-template.md",
     "docs/source/source-todo-standard.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/ci/canonical-evidence-packaging-failure/dotnet-test-summary.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/ci/canonical-evidence-packaging-failure/quality-gate-summary.md",
     "docs/testing/evidence/wal-checksum-2026-10-07/components/candidates/RESULTS.md",
     "docs/testing/evidence/wal-checksum-2026-10-07/components/native/doc_benchmarks.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-final-head-failure-37673101515/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
     "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-final-pass/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
     "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-first-optimized/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
     "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-main-current/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
@@ -269,6 +272,7 @@
     "benchmarks/results/latest-manual/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
     "benchmarks/results/short-run-short/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
     "benchmarks/results/short-run-short2/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-final-head-failure-37673101515/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
     "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-final-pass/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
     "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-first-optimized/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
     "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-main-current/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
@@ -2802,7 +2806,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11746,
+      "line_count": 11776,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4057,8 +4061,24 @@
       "stale": false
     },
     {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/ci/canonical-evidence-packaging-failure/dotnet-test-summary.md",
+      "line_count": 154,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/ci/canonical-evidence-packaging-failure/quality-gate-summary.md",
+      "line_count": 97,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/testing/evidence/wal-checksum-2026-10-07/ci/README.md",
-      "line_count": 20,
+      "line_count": 27,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4122,7 +4142,7 @@
     },
     {
       "path": "docs/testing/evidence/wal-checksum-2026-10-07/README.md",
-      "line_count": 17,
+      "line_count": 21,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4130,8 +4150,16 @@
     },
     {
       "path": "docs/testing/evidence/wal-checksum-2026-10-07/report.md",
-      "line_count": 90,
+      "line_count": 95,
       "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-final-head-failure-37673101515/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+      "line_count": 22,
+      "has_heading": false,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
@@ -5626,7 +5654,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 953,
+      "line_count": 954,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5658,7 +5686,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1638,
+      "line_count": 1641,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

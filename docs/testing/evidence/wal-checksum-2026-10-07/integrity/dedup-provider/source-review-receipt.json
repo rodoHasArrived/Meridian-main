@@ -1,0 +1,90 @@
+{
+  "recordedAt": "2026-10-07T19:50:24.118628+00:00",
+  "mode": "Standard",
+  "coordinator": "root",
+  "scope": "Canonical synchronous span SHA256 provider reuse and dedup integration only; no benchmark fixtures, budgets, WAL or CI governance changes.",
+  "sourceBaseCommit": "cfe44c6e09a3779a85439f205b524a86cc59ea67",
+  "sourceDiffSha256": "63e89cab27c1bd6347b9f7af0b30dd0ccdebf3c19d00d6cdab0b5ab44da0e337",
+  "files": [
+    {
+      "path": "src/Meridian.Contracts/Integrity/Sha256Digest.cs",
+      "sha256": "fdd61ac6d504c27d5c7e5c50d9d9f8a8ca28e3e11bdc426638c7059032604f55",
+      "modifiedAtUnixNanoseconds": 1791402230666005657
+    },
+    {
+      "path": "src/Meridian.Application/Pipeline/PersistentDedupLedger.cs",
+      "sha256": "173db18bbda3f15eb17b0938e44159d2c30d3f0af0b2ddd067af777454799c10",
+      "modifiedAtUnixNanoseconds": 1791402231066013485
+    },
+    {
+      "path": "tests/Meridian.Tests/Contracts/Integrity/Sha256DigestTests.cs",
+      "sha256": "2cd39e2cca30e02ed18dfe6ca821c8c8c803641ecbd0cfd19e9870a0a7c4743e",
+      "modifiedAtUnixNanoseconds": 1791402502163149575
+    },
+    {
+      "path": "src/Meridian.Contracts/README.md",
+      "sha256": "4222b6db61140ba4bef77ddcbd06b8a5e05bf44640a741edc3e5325b3a3472cc",
+      "modifiedAtUnixNanoseconds": 1791402231494021860
+    },
+    {
+      "path": "src/Meridian.Application/README.md",
+      "sha256": "d9e17af02716c5e90805a40b633b51da32e81f709d4423781e06f922cf5ae6c3",
+      "modifiedAtUnixNanoseconds": 1791402502659158851
+    }
+  ],
+  "review": "Read-only test reviewer found no production correctness issues. Thread startup/gate calls moved inside captured-exception scope before test project compilation.",
+  "checks": [
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    },
+    {
+      "command": "python build/scripts/ci/check-inline-sha256.py",
+      "exitCode": 0,
+      "result": "21 call sites across15files; unchanged baseline satisfied."
+    },
+    {
+      "command": [
+        "/workspace/dotnet-10.0.100/dotnet",
+        "format",
+        "whitespace",
+        "src/Meridian.Contracts/Integrity",
+        "--folder",
+        "--verify-no-changes",
+        "--verbosity",
+        "minimal"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "/workspace/dotnet-10.0.100/dotnet",
+        "format",
+        "whitespace",
+        "tests/Meridian.Tests/Contracts/Integrity",
+        "--folder",
+        "--verify-no-changes",
+        "--verbosity",
+        "minimal"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "/workspace/dotnet-10.0.100/dotnet",
+        "format",
+        "whitespace",
+        "src/Meridian.Application/Pipeline",
+        "--folder",
+        "--include",
+        "/workspace/Meridian-dedup-provider/src/Meridian.Application/Pipeline/PersistentDedupLedger.cs",
+        "--verify-no-changes",
+        "--verbosity",
+        "minimal"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "validatedCommit": "00db380e0007b9a18ea3dd94a831b374c288ee3b",
+  "finalFilesMatchRecordedHashes": true
+}

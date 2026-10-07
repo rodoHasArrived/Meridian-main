@@ -2488,6 +2488,16 @@ Meridian-main
 │   │   │   │   └── verify_packet.py
 │   │   │   ├── wal-checksum-2026-10-07
 │   │   │   │   ├── ci
+│   │   │   │   │   ├── canonical-evidence-packaging-failure
+│   │   │   │   │   │   ├── archive-manifest.json
+│   │   │   │   │   │   ├── command.log.gz
+│   │   │   │   │   │   ├── dotnet-test-summary.json.gz
+│   │   │   │   │   │   ├── dotnet-test-summary.md
+│   │   │   │   │   │   ├── final-tree-binding.json
+│   │   │   │   │   │   ├── launch.json
+│   │   │   │   │   │   ├── quality-gate-steps.tsv
+│   │   │   │   │   │   ├── quality-gate-summary.md
+│   │   │   │   │   │   └── receipt.json
 │   │   │   │   │   ├── initial-failure
 │   │   │   │   │   │   └── archive-sha256.json
 │   │   │   │   │   ├── tool-process-subreaper-results
@@ -2542,7 +2552,7 @@ Meridian-main
 │   │   │   │   │   │   ├── native-sha256-measurements.csv
 │   │   │   │   │   │   ├── native_sha256.c
 │   │   │   │   │   │   ├── README.md
-│   │   │   │   │   │   ├── src_Blake3.Native_Blake3.Native.csproj
+│   │   │   │   │   │   ├── src_Blake3.Native_Blake3.Native.csproj.gz
 │   │   │   │   │   │   ├── src_Blake3.Native_Hasher.cs
 │   │   │   │   │   │   ├── src_Blake3_Hasher.cs
 │   │   │   │   │   │   └── summary.csv
@@ -2555,6 +2565,14 @@ Meridian-main
 │   │   │   │   │       ├── summary.csv
 │   │   │   │   │       └── WalChecksum.cs
 │   │   │   │   ├── integrity
+│   │   │   │   │   ├── dedup-provider
+│   │   │   │   │   │   ├── test-results
+│   │   │   │   │   │   │   └── dedup-provider-focused.trx.gz
+│   │   │   │   │   │   ├── final-validation-receipt.json
+│   │   │   │   │   │   ├── focused-test-receipt.json
+│   │   │   │   │   │   ├── focused-tests.log.gz
+│   │   │   │   │   │   ├── source-review-receipt.json
+│   │   │   │   │   │   └── validated-commit.patch
 │   │   │   │   │   ├── commands.json
 │   │   │   │   │   ├── integrity-tests.log.gz
 │   │   │   │   │   ├── local-time-tests.log.gz
@@ -2565,9 +2583,21 @@ Meridian-main
 │   │   │   │   ├── receipts
 │   │   │   │   │   ├── current-main-integration.json
 │   │   │   │   │   ├── initial-committed-packet-verification.json
+│   │   │   │   │   ├── native-upstream-project-packaging.json
 │   │   │   │   │   ├── optimized-interrupted-budget-evidence.json
 │   │   │   │   │   └── optimized-interrupted-receipt.json
 │   │   │   │   ├── runs
+│   │   │   │   │   ├── hosted-final-head-failure-37673101515
+│   │   │   │   │   │   ├── bdn
+│   │   │   │   │   │   │   ├── results
+│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json
+│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md
+│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv
+│   │   │   │   │   │   │   │   └── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html
+│   │   │   │   │   │   │   └── perf-budgets.json
+│   │   │   │   │   │   ├── budget-evidence.json
+│   │   │   │   │   │   ├── profile.json
+│   │   │   │   │   │   └── run.json
 │   │   │   │   │   ├── hosted-final-pass
 │   │   │   │   │   │   ├── bdn
 │   │   │   │   │   │   │   ├── results

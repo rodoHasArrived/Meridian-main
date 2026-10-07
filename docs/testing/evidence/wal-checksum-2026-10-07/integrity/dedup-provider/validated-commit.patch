@@ -1,0 +1,291 @@
+commit 00db380e0007b9a18ea3dd94a831b374c288ee3b
+Author:     Andrew Rowden <arowden11@gmail.com>
+AuthorDate: Wed Oct 7 19:58:53 2026 +0000
+Commit:     Andrew Rowden <arowden11@gmail.com>
+CommitDate: Wed Oct 7 19:58:53 2026 +0000
+
+    Reuse per-thread SHA-256 providers for dedup keys
+
+diff --git a/src/Meridian.Application/Pipeline/PersistentDedupLedger.cs b/src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+index 7fdc5db8e..7e5056b81 100644
+--- a/src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
++++ b/src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+@@ -3,11 +3,11 @@ using System.Buffers.Text;
+ using System.Collections.Concurrent;
+ using System.Collections.Generic;
+ using System.Runtime.CompilerServices;
+-using System.Security.Cryptography;
+ using System.Text;
+ using System.Text.Json;
+ using Meridian.Core.Logging;
+ using Meridian.Contracts.Domain.Enums;
++using Meridian.Contracts.Integrity;
+ using Meridian.Domain.Events;
+ using Serilog;
+ 
+@@ -95,14 +95,15 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
+ 
+     private static void WarmHashPath()
+     {
++        // Each constructor thread primes its own provider before the once-per-process warmup.
++        Span<byte> hash = stackalloc byte[32];
++        Sha256Digest.ComputeBytes(ReadOnlySpan<byte>.Empty, hash);
++
+         if (Interlocked.Exchange(ref _hashPathWarmed, 1) != 0)
+         {
+             return;
+         }
+ 
+-        Span<byte> payload = stackalloc byte[1];
+-        Span<byte> hash = stackalloc byte[32];
+-        SHA256.TryHashData(payload, hash, out _);
+         _ = Convert.ToHexStringLower(hash[..16]);
+         _ = CreateTradeKey(
+             "warm:AAPL:Trade:",
+@@ -523,7 +524,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
+         try
+         {
+             var written = WriteTradeIdentity(trade, buffer);
+-            SHA256.TryHashData(buffer[..written], destination, out _);
++            Sha256Digest.ComputeBytes(buffer[..written], destination);
+         }
+         finally
+         {
+@@ -546,7 +547,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
+         const int maxBytes = 160;
+         Span<byte> buffer = stackalloc byte[maxBytes];
+         var written = WriteQuoteIdentity(quote, buffer);
+-        SHA256.TryHashData(buffer[..written], destination, out _);
++        Sha256Digest.ComputeBytes(buffer[..written], destination);
+     }
+ 
+     private static string CreatePrefix(string? source, string? symbol, MarketEventType type)
+diff --git a/src/Meridian.Application/README.md b/src/Meridian.Application/README.md
+index 75e4d6fbf..9d8650829 100644
+--- a/src/Meridian.Application/README.md
++++ b/src/Meridian.Application/README.md
+@@ -391,9 +391,10 @@ Core workstation host. Do not introduce a second listener or independent monitor
+   Rejected batches cannot be counted twice to acknowledge a later valid event before its
+   storage append finishes; gated regression cases cover that ordering across separate batches.
+   Trade and quote dedup keys retain their existing SHA-256 identity and 128-bit lowercase
+-  digest suffix. Key construction uses the runtime span-based hex encoder inside a single
+-  `string.Create` allocation; culture and Unicode/pooled-buffer regressions compare the
+-  complete key with the original identity format.
++  digest suffix. Hashing uses the canonical `Sha256Digest` span overload with a reusable provider
++  per thread, primed on each constructor thread. Key construction uses the runtime span-based hex
++  encoder inside a single `string.Create` allocation; culture and Unicode/pooled-buffer regressions
++  compare the complete key with the original identity format.
+ - Event pipeline queueing consumes `Meridian.Platform.Tracing.EventTraceContext` for trace
+   propagation, platform-owned OpenTelemetry helpers for market-data activity/counter telemetry,
+   the Platform `DefaultEventMetrics` implementation, and the Platform `TracedEventMetrics`
+diff --git a/src/Meridian.Contracts/Integrity/Sha256Digest.cs b/src/Meridian.Contracts/Integrity/Sha256Digest.cs
+index bedda8c69..a1f900c1e 100644
+--- a/src/Meridian.Contracts/Integrity/Sha256Digest.cs
++++ b/src/Meridian.Contracts/Integrity/Sha256Digest.cs
+@@ -42,6 +42,10 @@ public static class Sha256Digest
+     /// <summary>Number of hex characters in a SHA-256 digest.</summary>
+     public const int HexLength = 64;
+ 
++    // The synchronous span path owns one provider per thread, never shared hash state or digests.
++    [ThreadStatic]
++    private static SHA256? _threadHash;
++
+     /// <summary>Computes the canonical (lowercase hex) SHA-256 digest of <paramref name="value"/>.</summary>
+     public static string Compute(ReadOnlySpan<byte> value) =>
+         Convert.ToHexStringLower(SHA256.HashData(value));
+@@ -85,6 +89,41 @@ public static class Sha256Digest
+     /// </summary>
+     public static byte[] ComputeBytes(ReadOnlySpan<byte> value) => SHA256.HashData(value);
+ 
++    /// <summary>
++    /// Writes the raw 32-byte SHA-256 digest of <paramref name="value"/> to the first 32 bytes of
++    /// <paramref name="destination"/>, leaving any remaining bytes unchanged.
++    /// </summary>
++    /// <remarks>
++    /// The synchronous operation reuses a private provider on the current thread, with no managed
++    /// allocation after that thread's first call. Successful hashing resets the provider for the
++    /// next input; a failed provider is discarded and disposed before the exception is propagated.
++    /// </remarks>
++    /// <exception cref="ArgumentException">The destination has fewer than 32 bytes.</exception>
++    public static void ComputeBytes(ReadOnlySpan<byte> value, Span<byte> destination)
++    {
++        if (destination.Length < SHA256.HashSizeInBytes)
++        {
++            throw new ArgumentException("The destination must contain at least 32 bytes.", nameof(destination));
++        }
++
++        var provider = _threadHash ??= SHA256.Create();
++        try
++        {
++            // TryComputeHash finalizes and resets the native provider before returning success.
++            if (!provider.TryComputeHash(value, destination, out var written) || written != SHA256.HashSizeInBytes)
++            {
++                throw new CryptographicException("The SHA-256 provider did not produce a complete digest.");
++            }
++        }
++        catch
++        {
++            // An exception may interrupt the native reset. Never reuse uncertain hash state.
++            _threadHash = null;
++            provider.Dispose();
++            throw;
++        }
++    }
++
+     /// <summary>
+     /// Computes the raw 32-byte SHA-256 digest of the UTF-8 encoding of <paramref name="value"/>.
+     /// See <see cref="ComputeBytes(ReadOnlySpan{byte})"/> for when the byte form is appropriate.
+diff --git a/src/Meridian.Contracts/README.md b/src/Meridian.Contracts/README.md
+index 08b3915d3..82dcf78dc 100644
+--- a/src/Meridian.Contracts/README.md
++++ b/src/Meridian.Contracts/README.md
+@@ -160,6 +160,9 @@ accepts older numeric status payloads; persisted queue records already use text
+   Comparison is case-insensitive, because hex casing is a presentation detail and not a security
+   property, and it reports a malformed digest distinctly from a genuine mismatch so callers can stop
+   surfacing a data-hygiene problem as an integrity failure.
++  Its span-destination `ComputeBytes` overload writes the same 32 SHA-256 bytes while reusing a
++  private provider per thread. Each successful call resets the provider; hashing failures discard
++  it. This synchronous path allocates no managed memory after the thread's first call.
+ - `Lifecycle/` - shared runtime state, readiness-check, shutdown-operation, shutdown-receipt,
+   supervisor-manifest, exact-process-identity, database-identity, and session-receipt contracts.
+   `LifecycleStartupTiming` defines the startup stage budget shared by the launcher and supervisor.
+diff --git a/tests/Meridian.Tests/Contracts/Integrity/Sha256DigestTests.cs b/tests/Meridian.Tests/Contracts/Integrity/Sha256DigestTests.cs
+index ac4209661..2f1f1b80f 100644
+--- a/tests/Meridian.Tests/Contracts/Integrity/Sha256DigestTests.cs
++++ b/tests/Meridian.Tests/Contracts/Integrity/Sha256DigestTests.cs
+@@ -79,6 +79,135 @@ public sealed class Sha256DigestTests
+         Sha256Digest.ComputeBytesUtf8("meridian").Should().Equal(SHA256.HashData(payload));
+     }
+ 
++    [Fact]
++    public void ComputeBytes_SpanDestination_ResetsBetweenChangingInputsAndBlockBoundaries()
++    {
++        int[] lengths = [0, 1, 55, 56, 63, 64, 65, 119, 120, 127, 128, 129, 256, 4096];
++        Span<byte> digest = stackalloc byte[32];
++
++        for (var repetition = 0; repetition < 4; repetition++)
++        {
++            foreach (var length in lengths)
++            {
++                var payload = new byte[length];
++                for (var i = 0; i < payload.Length; i++)
++                {
++                    payload[i] = (byte)(i * 31 + repetition * 17 + length);
++                }
++
++                var expected = SHA256.HashData(payload);
++                Sha256Digest.ComputeBytes(payload, digest);
++
++                Assert.True(digest.SequenceEqual(expected), $"SHA-256 mismatch at length {length}, repetition {repetition}.");
++            }
++        }
++    }
++
++    [Fact]
++    public void ComputeBytes_SpanDestination_IsolatesConcurrentDedicatedThreads()
++    {
++        const int workerCount = 4;
++        int[] lengths = [0, 1, 55, 56, 63, 64, 65, 119, 120, 127, 128, 129, 256, 4096];
++        using var start = new ManualResetEventSlim();
++        using var ready = new CountdownEvent(workerCount);
++        var failures = new Exception?[workerCount];
++        var workers = new Thread[workerCount];
++
++        for (var worker = 0; worker < workerCount; worker++)
++        {
++            var workerIndex = worker;
++            workers[worker] = new Thread(() =>
++            {
++                try
++                {
++                    ready.Signal();
++                    start.Wait();
++                    Span<byte> digest = stackalloc byte[32];
++                    for (var iteration = 0; iteration < 512; iteration++)
++                    {
++                        var payload = new byte[lengths[(iteration + workerIndex) % lengths.Length]];
++                        for (var i = 0; i < payload.Length; i++)
++                        {
++                            payload[i] = (byte)(workerIndex * 53 + iteration * 17 + i);
++                        }
++
++                        var expected = SHA256.HashData(payload);
++                        Sha256Digest.ComputeBytes(payload, digest);
++                        Assert.True(digest.SequenceEqual(expected), $"SHA-256 mismatch on worker {workerIndex}, iteration {iteration}.");
++                    }
++                }
++                catch (Exception exception)
++                {
++                    failures[workerIndex] = exception;
++                }
++            })
++            { IsBackground = true };
++            workers[worker].Start();
++        }
++
++        var allReady = ready.Wait(TimeSpan.FromSeconds(30));
++        start.Set();
++        foreach (var worker in workers)
++        {
++            Assert.True(worker.Join(TimeSpan.FromSeconds(30)), "A SHA-256 worker did not finish.");
++        }
++
++        Assert.True(allReady, "The dedicated SHA-256 workers did not become ready.");
++        Assert.All(failures, failure => Assert.Null(failure));
++    }
++
++    [Theory]
++    [InlineData(0)]
++    [InlineData(1)]
++    [InlineData(31)]
++    public void ComputeBytes_SpanDestination_RejectsShortOutputWithoutContaminatingNextHash(int length)
++    {
++        var digest = new byte[32];
++        Sha256Digest.ComputeBytes("previous input"u8, digest);
++        var destination = Enumerable.Repeat((byte)0xA5, length).ToArray();
++
++        var exception = Assert.Throws<ArgumentException>(() =>
++            Sha256Digest.ComputeBytes("rejected input"u8, destination));
++
++        Assert.Equal("destination", exception.ParamName);
++        Assert.All(destination, value => Assert.Equal((byte)0xA5, value));
++        Sha256Digest.ComputeBytes("next input"u8, digest);
++        Assert.Equal(SHA256.HashData("next input"u8), digest);
++    }
++
++    [Fact]
++    public void ComputeBytes_SpanDestination_PreservesBytesAfterDigest()
++    {
++        var destination = Enumerable.Repeat((byte)0xA5, 48).ToArray();
++
++        Sha256Digest.ComputeBytes("test"u8, destination);
++
++        Assert.True(destination.AsSpan(0, 32).SequenceEqual(Convert.FromHexString(LowercaseDigest)));
++        Assert.All(destination.Skip(32), value => Assert.Equal((byte)0xA5, value));
++    }
++
++    [Fact]
++    public void ComputeBytes_SpanDestination_WarmedCallsAllocateNoManagedBytes()
++    {
++        var payload = new byte[4096];
++        Span<byte> digest = stackalloc byte[32];
++        for (var iteration = 0; iteration < 256; iteration++)
++        {
++            Sha256Digest.ComputeBytes(payload, digest);
++        }
++
++        var before = GC.GetAllocatedBytesForCurrentThread();
++        for (var iteration = 0; iteration < 1024; iteration++)
++        {
++            payload[0] = (byte)iteration;
++            Sha256Digest.ComputeBytes(payload.AsSpan(0, iteration + 1), digest);
++        }
++        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
++
++        Assert.Equal(0L, allocated);
++        Assert.True(digest.SequenceEqual(SHA256.HashData(payload.AsSpan(0, 1024))));
++    }
++
+     [Fact]
+     public void ComputeBytes_IsTheDecodedFormOfCompute()
+     {

@@ -1,0 +1,1738 @@
+{
+  "schemaVersion": 1,
+  "command": [
+    "bash",
+    "scripts/ci.sh"
+  ],
+  "workingDirectory": "/workspace/Meridian-main",
+  "startedAt": "2026-10-07T19:08:23.529604+00:00",
+  "wrapperPid": 51823,
+  "beforeProcesses": [
+    {
+      "pid": 1,
+      "comm": "tail",
+      "state": "S",
+      "ppid": 0,
+      "processGroup": 0,
+      "session": 0,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 2,
+      "comm": "caas-prefix-tra",
+      "state": "S",
+      "ppid": 1,
+      "processGroup": 0,
+      "session": 0,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 199,
+      "comm": "dockerd",
+      "state": "S",
+      "ppid": 1,
+      "processGroup": 199,
+      "session": 199,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 250,
+      "comm": "containerd",
+      "state": "S",
+      "ppid": 199,
+      "processGroup": 250,
+      "session": 250,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 515,
+      "comm": "codex",
+      "state": "S",
+      "ppid": 0,
+      "processGroup": 0,
+      "session": 0,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 883,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 883,
+      "session": 883,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 956,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 956,
+      "session": 956,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1471,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1420,
+      "session": 1420,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1472,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1420,
+      "session": 1420,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1473,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1420,
+      "session": 1420,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1656,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1626,
+      "session": 1626,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1662,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1626,
+      "session": 1626,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1663,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1626,
+      "session": 1626,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1728,
+      "comm": "VBCSCompiler",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1626,
+      "session": 1626,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 3080,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 3017,
+      "session": 3017,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 6327,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 6295,
+      "session": 6295,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 8788,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8788,
+      "session": 8788,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 8895,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8845,
+      "session": 8845,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 8896,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8845,
+      "session": 8845,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 8897,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8845,
+      "session": 8845,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 9019,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8989,
+      "session": 8989,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 9020,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8989,
+      "session": 8989,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 9021,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8989,
+      "session": 8989,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 10022,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 10022,
+      "session": 10022,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 10132,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 10132,
+      "session": 10132,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 10295,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 10132,
+      "session": 10132,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 12621,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 12621,
+      "session": 12621,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 13398,
+      "comm": "VBCSCompiler",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13368,
+      "session": 13368,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 13677,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13677,
+      "session": 13677,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 13739,
+      "comm": "python3",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13739,
+      "session": 13739,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 13793,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13739,
+      "session": 13739,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 13794,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13739,
+      "session": 13739,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 13795,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13739,
+      "session": 13739,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 40052,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 40052,
+      "session": 40052,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 49805,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49804,
+      "session": 49804,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49814,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49804,
+      "session": 49804,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49846,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49836,
+      "session": 49836,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49852,
+      "comm": "sh",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49836,
+      "session": 49836,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49860,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49859,
+      "session": 49859,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49877,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49876,
+      "session": 49876,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49887,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49876,
+      "session": 49876,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49914,
+      "comm": "sh",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49903,
+      "session": 49903,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 50513,
+      "comm": "python3",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 50513,
+      "session": 50513,
+      "exitStatusRaw": 15
+    },
+    {
+      "pid": 50742,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 50742,
+      "session": 50742,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 51025,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 51025,
+      "session": 51025,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 51791,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 51791,
+      "session": 51791,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 51823,
+      "comm": "python3",
+      "state": "R",
+      "ppid": 1,
+      "processGroup": 51823,
+      "session": 51823,
+      "exitStatusRaw": 0
+    }
+  ],
+  "environment": {
+    "PATH": "/workspace/wal-tools/venv/bin:/workspace/wal-tools/bin:/workspace/dotnet-10.0.100:/home/agent/.local/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/opt/codex/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/agent/.local/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+    "DOTNET_ROOT": "/workspace/dotnet-10.0.100"
+  },
+  "reaped": [
+    {
+      "pid": 51881,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:29:48.254823+00:00"
+    },
+    {
+      "pid": 51883,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:29:48.254994+00:00"
+    },
+    {
+      "pid": 51882,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:29:48.263542+00:00"
+    },
+    {
+      "pid": 89081,
+      "statusRaw": 9,
+      "exitCode": -9,
+      "commandRoot": false,
+      "at": "2026-10-07T19:39:39.162318+00:00"
+    },
+    {
+      "pid": 89090,
+      "statusRaw": 9,
+      "exitCode": -9,
+      "commandRoot": false,
+      "at": "2026-10-07T19:39:39.162860+00:00"
+    },
+    {
+      "pid": 89126,
+      "statusRaw": 9,
+      "exitCode": -9,
+      "commandRoot": false,
+      "at": "2026-10-07T19:39:39.246936+00:00"
+    },
+    {
+      "pid": 89120,
+      "statusRaw": 9,
+      "exitCode": -9,
+      "commandRoot": false,
+      "at": "2026-10-07T19:39:39.247968+00:00"
+    },
+    {
+      "pid": 89134,
+      "statusRaw": 9,
+      "exitCode": -9,
+      "commandRoot": false,
+      "at": "2026-10-07T19:39:39.378972+00:00"
+    },
+    {
+      "pid": 89151,
+      "statusRaw": 9,
+      "exitCode": -9,
+      "commandRoot": false,
+      "at": "2026-10-07T19:39:40.503199+00:00"
+    },
+    {
+      "pid": 89160,
+      "statusRaw": 9,
+      "exitCode": -9,
+      "commandRoot": false,
+      "at": "2026-10-07T19:39:40.503237+00:00"
+    },
+    {
+      "pid": 89182,
+      "statusRaw": 9,
+      "exitCode": -9,
+      "commandRoot": false,
+      "at": "2026-10-07T19:39:40.638944+00:00"
+    },
+    {
+      "pid": 102387,
+      "statusRaw": 9,
+      "exitCode": -9,
+      "commandRoot": false,
+      "at": "2026-10-07T19:54:05.422375+00:00"
+    },
+    {
+      "pid": 103352,
+      "statusRaw": 15,
+      "exitCode": -15,
+      "commandRoot": false,
+      "at": "2026-10-07T19:54:49.504497+00:00"
+    },
+    {
+      "pid": 105515,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:05.352490+00:00"
+    },
+    {
+      "pid": 105561,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:05.742645+00:00"
+    },
+    {
+      "pid": 105591,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:06.004277+00:00"
+    },
+    {
+      "pid": 105622,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:06.167893+00:00"
+    },
+    {
+      "pid": 105632,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:06.238459+00:00"
+    },
+    {
+      "pid": 105661,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:06.515854+00:00"
+    },
+    {
+      "pid": 105671,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:06.563081+00:00"
+    },
+    {
+      "pid": 105678,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:06.643896+00:00"
+    },
+    {
+      "pid": 105707,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:06.883901+00:00"
+    },
+    {
+      "pid": 105725,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:07.060334+00:00"
+    },
+    {
+      "pid": 105742,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:07.124222+00:00"
+    },
+    {
+      "pid": 105775,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:07.426443+00:00"
+    },
+    {
+      "pid": 105785,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:07.476105+00:00"
+    },
+    {
+      "pid": 105816,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:07.776287+00:00"
+    },
+    {
+      "pid": 105826,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:07.847333+00:00"
+    },
+    {
+      "pid": 105833,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:07.912272+00:00"
+    },
+    {
+      "pid": 105864,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:08.110995+00:00"
+    },
+    {
+      "pid": 105882,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:08.183717+00:00"
+    },
+    {
+      "pid": 105924,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:08.679914+00:00"
+    },
+    {
+      "pid": 105934,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:08.847891+00:00"
+    },
+    {
+      "pid": 105964,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:09.127168+00:00"
+    },
+    {
+      "pid": 105974,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:09.191432+00:00"
+    },
+    {
+      "pid": 105981,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:09.251920+00:00"
+    },
+    {
+      "pid": 106013,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:10.039216+00:00"
+    },
+    {
+      "pid": 106043,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:10.277240+00:00"
+    },
+    {
+      "pid": 107140,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:52.253753+00:00"
+    },
+    {
+      "pid": 107146,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:52.270157+00:00"
+    },
+    {
+      "pid": 107152,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:52.305577+00:00"
+    },
+    {
+      "pid": 107183,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:52.500575+00:00"
+    },
+    {
+      "pid": 107189,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:52.513638+00:00"
+    },
+    {
+      "pid": 107194,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:52.529547+00:00"
+    },
+    {
+      "pid": 107222,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:52.657612+00:00"
+    },
+    {
+      "pid": 107228,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:52.672154+00:00"
+    },
+    {
+      "pid": 107233,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:52.693015+00:00"
+    },
+    {
+      "pid": 107261,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:52.826229+00:00"
+    },
+    {
+      "pid": 107269,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:52.838089+00:00"
+    },
+    {
+      "pid": 107275,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:52.857497+00:00"
+    },
+    {
+      "pid": 107304,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:53.002617+00:00"
+    },
+    {
+      "pid": 107321,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:53.117152+00:00"
+    },
+    {
+      "pid": 107326,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:53.131622+00:00"
+    },
+    {
+      "pid": 107331,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:53.148393+00:00"
+    },
+    {
+      "pid": 107353,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:53.267892+00:00"
+    },
+    {
+      "pid": 107360,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:53.279733+00:00"
+    },
+    {
+      "pid": 107366,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:53.298917+00:00"
+    },
+    {
+      "pid": 107388,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:53.410575+00:00"
+    },
+    {
+      "pid": 107393,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:53.423899+00:00"
+    },
+    {
+      "pid": 107398,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:53.440059+00:00"
+    },
+    {
+      "pid": 107445,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:53.637934+00:00"
+    },
+    {
+      "pid": 107450,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:53.658701+00:00"
+    },
+    {
+      "pid": 107455,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:56:53.674243+00:00"
+    },
+    {
+      "pid": 107730,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:02.466011+00:00"
+    },
+    {
+      "pid": 107735,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:02.479933+00:00"
+    },
+    {
+      "pid": 107780,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:02.581819+00:00"
+    },
+    {
+      "pid": 107785,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:02.612084+00:00"
+    },
+    {
+      "pid": 107826,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:02.679399+00:00"
+    },
+    {
+      "pid": 107831,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:02.713307+00:00"
+    },
+    {
+      "pid": 107878,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:02.811907+00:00"
+    },
+    {
+      "pid": 107884,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:02.821983+00:00"
+    },
+    {
+      "pid": 107932,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:02.934357+00:00"
+    },
+    {
+      "pid": 107937,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:02.948277+00:00"
+    },
+    {
+      "pid": 107992,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:03.077603+00:00"
+    },
+    {
+      "pid": 107997,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:03.136204+00:00"
+    },
+    {
+      "pid": 108037,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:03.238054+00:00"
+    },
+    {
+      "pid": 108042,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:03.252210+00:00"
+    },
+    {
+      "pid": 108081,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:03.347189+00:00"
+    },
+    {
+      "pid": 108086,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:03.358830+00:00"
+    },
+    {
+      "pid": 108638,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:13.106932+00:00"
+    },
+    {
+      "pid": 108656,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:13.208116+00:00"
+    },
+    {
+      "pid": 108673,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:13.340432+00:00"
+    },
+    {
+      "pid": 108688,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:13.437373+00:00"
+    },
+    {
+      "pid": 108693,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:13.448970+00:00"
+    },
+    {
+      "pid": 108710,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:13.539615+00:00"
+    },
+    {
+      "pid": 108730,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:13.663363+00:00"
+    },
+    {
+      "pid": 108745,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:13.740376+00:00"
+    },
+    {
+      "pid": 108756,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:13.769462+00:00"
+    },
+    {
+      "pid": 108771,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:13.830263+00:00"
+    },
+    {
+      "pid": 108776,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:13.851969+00:00"
+    },
+    {
+      "pid": 108789,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:13.907810+00:00"
+    },
+    {
+      "pid": 108814,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:13.965400+00:00"
+    },
+    {
+      "pid": 108834,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:14.051123+00:00"
+    },
+    {
+      "pid": 108851,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:14.114112+00:00"
+    },
+    {
+      "pid": 108859,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:14.134628+00:00"
+    },
+    {
+      "pid": 108883,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:14.266118+00:00"
+    },
+    {
+      "pid": 108898,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:14.332131+00:00"
+    },
+    {
+      "pid": 108913,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:14.389678+00:00"
+    },
+    {
+      "pid": 109012,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:16.452180+00:00"
+    },
+    {
+      "pid": 109016,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:16.462784+00:00"
+    },
+    {
+      "pid": 109030,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:16.507950+00:00"
+    },
+    {
+      "pid": 109034,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:16.516452+00:00"
+    },
+    {
+      "pid": 109047,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:16.569675+00:00"
+    },
+    {
+      "pid": 109051,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T19:57:16.579602+00:00"
+    },
+    {
+      "pid": 51825,
+      "statusRaw": 256,
+      "exitCode": 1,
+      "commandRoot": true,
+      "at": "2026-10-07T19:57:29.674797+00:00"
+    }
+  ],
+  "forwardedSignals": [],
+  "childSubreaperEnabled": true,
+  "commandPid": 51825,
+  "completedAt": "2026-10-07T19:57:29.679752+00:00",
+  "exitCode": 1,
+  "status": "failed",
+  "afterProcesses": [
+    {
+      "pid": 1,
+      "comm": "tail",
+      "state": "S",
+      "ppid": 0,
+      "processGroup": 0,
+      "session": 0,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 2,
+      "comm": "caas-prefix-tra",
+      "state": "S",
+      "ppid": 1,
+      "processGroup": 0,
+      "session": 0,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 199,
+      "comm": "dockerd",
+      "state": "S",
+      "ppid": 1,
+      "processGroup": 199,
+      "session": 199,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 250,
+      "comm": "containerd",
+      "state": "S",
+      "ppid": 199,
+      "processGroup": 250,
+      "session": 250,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 515,
+      "comm": "codex",
+      "state": "S",
+      "ppid": 0,
+      "processGroup": 0,
+      "session": 0,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 883,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 883,
+      "session": 883,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 956,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 956,
+      "session": 956,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1471,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1420,
+      "session": 1420,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1472,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1420,
+      "session": 1420,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1473,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1420,
+      "session": 1420,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1656,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1626,
+      "session": 1626,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1662,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1626,
+      "session": 1626,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1663,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1626,
+      "session": 1626,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1728,
+      "comm": "VBCSCompiler",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1626,
+      "session": 1626,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 3080,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 3017,
+      "session": 3017,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 6327,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 6295,
+      "session": 6295,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 8788,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8788,
+      "session": 8788,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 8895,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8845,
+      "session": 8845,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 8896,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8845,
+      "session": 8845,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 8897,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8845,
+      "session": 8845,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 9019,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8989,
+      "session": 8989,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 9020,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8989,
+      "session": 8989,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 9021,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8989,
+      "session": 8989,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 10022,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 10022,
+      "session": 10022,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 10132,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 10132,
+      "session": 10132,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 10295,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 10132,
+      "session": 10132,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 12621,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 12621,
+      "session": 12621,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 13398,
+      "comm": "VBCSCompiler",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13368,
+      "session": 13368,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 13677,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13677,
+      "session": 13677,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 13739,
+      "comm": "python3",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13739,
+      "session": 13739,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 13793,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13739,
+      "session": 13739,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 13794,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13739,
+      "session": 13739,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 13795,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13739,
+      "session": 13739,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 40052,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 40052,
+      "session": 40052,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 49805,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49804,
+      "session": 49804,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49814,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49804,
+      "session": 49804,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49846,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49836,
+      "session": 49836,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49852,
+      "comm": "sh",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49836,
+      "session": 49836,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49860,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49859,
+      "session": 49859,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49877,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49876,
+      "session": 49876,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49887,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49876,
+      "session": 49876,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49914,
+      "comm": "sh",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49903,
+      "session": 49903,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 50513,
+      "comm": "python3",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 50513,
+      "session": 50513,
+      "exitStatusRaw": 15
+    },
+    {
+      "pid": 50742,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 50742,
+      "session": 50742,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 51025,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 51025,
+      "session": 51025,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 51791,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 51791,
+      "session": 51791,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 51823,
+      "comm": "python3",
+      "state": "R",
+      "ppid": 1,
+      "processGroup": 51823,
+      "session": 51823,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 52020,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 52020,
+      "session": 52020,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 54101,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 54101,
+      "session": 54101,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 57192,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 57192,
+      "session": 57192,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 92516,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 92516,
+      "session": 92516,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 93140,
+      "comm": "bash",
+      "state": "S",
+      "ppid": 515,
+      "processGroup": 93140,
+      "session": 93140,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 93147,
+      "comm": "python",
+      "state": "S",
+      "ppid": 93140,
+      "processGroup": 93140,
+      "session": 93140,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 93171,
+      "comm": "dotnet",
+      "state": "S",
+      "ppid": 93147,
+      "processGroup": 93140,
+      "session": 93140,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 109488,
+      "comm": "dotnet",
+      "state": "S",
+      "ppid": 93171,
+      "processGroup": 93140,
+      "session": 93140,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 109501,
+      "comm": "dotnet",
+      "state": "S",
+      "ppid": 109488,
+      "processGroup": 93140,
+      "session": 93140,
+      "exitStatusRaw": 0
+    }
+  ],
+  "baselineZombiePids": [
+    883,
+    956,
+    1471,
+    1472,
+    1473,
+    1656,
+    1662,
+    1663,
+    1728,
+    3080,
+    6327,
+    8788,
+    8895,
+    8896,
+    8897,
+    9019,
+    9020,
+    9021,
+    10022,
+    10132,
+    10295,
+    12621,
+    13398,
+    13677,
+    13739,
+    13793,
+    13794,
+    13795,
+    40052,
+    49805,
+    49814,
+    49846,
+    49852,
+    49860,
+    49877,
+    49887,
+    49914,
+    50513,
+    50742,
+    51025,
+    51791
+  ],
+  "addedZombiePids": [
+    52020,
+    54101,
+    57192,
+    92516
+  ],
+  "remainingAdoptedProcesses": []
+}
