@@ -5,6 +5,10 @@ param(
     [string]$LaunchMode = 'Development',
     [string]$Profile = '',
     [string]$ProfileRoot = 'scripts/dev/workflow-profiles',
+    [ValidateSet('', 'Debug', 'Release')]
+    [string]$Configuration = '',
+    [string]$Framework = '',
+    [string]$BuildReceiptPath = '',
     [switch]$NoBuild,
     [switch]$BuildOnly,
     [switch]$Fixture,
@@ -20,6 +24,7 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '../..')
 Set-Location $repoRoot
 . (Join-Path $PSScriptRoot 'SharedBuild.ps1')
+. (Join-Path $PSScriptRoot 'SharedDesktopBuild.ps1')
 . (Join-Path $PSScriptRoot 'SharedWorkflowProfiles.ps1')
 
 $Profile = if ([string]::IsNullOrWhiteSpace($Profile)) {
@@ -43,6 +48,8 @@ $hostProject = 'src/Meridian/Meridian.csproj'
 $desktopProject = [string](Get-MeridianWorkflowProfileValue -Table $buildProfile -Key 'projectPath' -Fallback 'src/Meridian.Wpf/Meridian.Wpf.csproj')
 $desktopConfiguration = [string](Get-MeridianWorkflowProfileValue -Table $buildProfile -Key 'configuration' -Fallback 'Debug')
 $desktopFramework = [string](Get-MeridianWorkflowProfileValue -Table $buildProfile -Key 'framework' -Fallback 'net10.0-windows10.0.19041.0')
+if (-not [string]::IsNullOrWhiteSpace($Configuration)) { $desktopConfiguration = $Configuration }
+if (-not [string]::IsNullOrWhiteSpace($Framework)) { $desktopFramework = $Framework }
 $desktopExeName = [string](Get-MeridianWorkflowProfileValue -Table $buildProfile -Key 'exeName' -Fallback 'Meridian.Desktop.exe')
 $hostConfiguration = [string](Get-MeridianWorkflowProfileValue -Table $hostProfile -Key 'configuration' -Fallback $desktopConfiguration)
 $hostBaseUrl = [string](Get-MeridianWorkflowProfileValue -Table $hostProfile -Key 'baseUrl' -Fallback 'http://localhost:8080')
@@ -51,9 +58,16 @@ $hostStartupTimeoutSec = [int](Get-MeridianWorkflowProfileValue -Table $hostProf
 $hostMode = [string](Get-MeridianWorkflowProfileValue -Table $hostProfile -Key 'mode' -Fallback 'desktop')
 $hostPort = [int](Get-MeridianWorkflowProfileValue -Table $hostProfile -Key 'port' -Fallback 8080)
 $fixtureRequired = [bool](Get-MeridianWorkflowProfileValue -Table $fixtureProfile -Key 'required' -Fallback $false)
-$buildIsolationKey = if ($NoBuild) { '' } else { New-MeridianBuildIsolationKey -Prefix 'desktop-run' }
+$desktopBuildReceipt = $null
+if ($PSBoundParameters.ContainsKey('BuildReceiptPath')) {
+    $desktopBuildReceipt = Read-MeridianDesktopBuildReceipt -ReceiptPath $BuildReceiptPath -RepoRoot $repoRoot `
+        -ProjectPath $desktopProject -Configuration $desktopConfiguration -Framework $desktopFramework -BinaryName $desktopExeName
+}
+$buildIsolationKey = if ($null -ne $desktopBuildReceipt) { $desktopBuildReceipt.buildIsolationKey } elseif ($NoBuild) { '' } else { New-MeridianBuildIsolationKey -Prefix 'desktop-run' }
 $hostExe = Get-MeridianProjectBinaryPath -RepoRoot $repoRoot -ProjectPath $hostProject -Configuration $hostConfiguration -Framework 'net10.0' -BinaryName 'Meridian.exe' -IsolationKey $buildIsolationKey
-$desktopExe = Get-MeridianProjectBinaryPath -RepoRoot $repoRoot -ProjectPath $desktopProject -Configuration $desktopConfiguration -Framework $desktopFramework -BinaryName $desktopExeName -IsolationKey $buildIsolationKey
+$desktopExe = if ($null -ne $desktopBuildReceipt) { $desktopBuildReceipt.executablePath } else {
+    Get-MeridianProjectBinaryPath -RepoRoot $repoRoot -ProjectPath $desktopProject -Configuration $desktopConfiguration -Framework $desktopFramework -BinaryName $desktopExeName -IsolationKey $buildIsolationKey
+}
 $artifactsDir = Join-Path $repoRoot 'artifacts'
 $hostStdout = Join-Path $artifactsDir 'desktop-launcher-host.stdout.log'
 $hostStderr = Join-Path $artifactsDir 'desktop-launcher-host.stderr.log'
@@ -413,9 +427,12 @@ try {
     Remove-Item $hostStdout, $hostStderr, $desktopStdout, $desktopStderr -ErrorAction SilentlyContinue
 
     $desktopAlreadyRunning = @(Get-WorkspaceDesktopProcesses).Count -gt 0
+    $hostHealthy = -not $BuildOnly -and (Test-HealthyHost)
+    $buildDesktop = -not $NoBuild -and $null -eq $desktopBuildReceipt
+    $buildHost = -not $NoBuild -and -not $hostHealthy -and -not (Test-Path -LiteralPath $hostExe -PathType Leaf)
 
-    if (-not $NoBuild) {
-        if ($desktopAlreadyRunning) {
+    if ($buildDesktop -or $buildHost) {
+        if ($buildDesktop -and $desktopAlreadyRunning) {
             Stop-WorkspaceDesktopProcesses
         }
 
@@ -429,68 +446,82 @@ try {
             throw 'Active repo-owned build/test/restore/MSBuild or compiler processes were detected. Stop them before launching a desktop build to avoid WPF temporary-project contention.'
         }
 
-        Invoke-MeridianWpfTempProjectCleanup -RepoRoot $repoRoot -WpfProjectPath $desktopProject | Out-Null
+        if ($buildDesktop) {
+            Invoke-MeridianWpfTempProjectCleanup -RepoRoot $repoRoot -WpfProjectPath $desktopProject | Out-Null
+        }
         Test-SufficientDiskSpaceForBuild
 
-        Write-Info 'Restoring Meridian host packages...'
-        $sw = [System.Diagnostics.Stopwatch]::StartNew()
-        & dotnet restore $hostProject -v minimal @(
-            Get-MeridianBuildArguments -IsolationKey $buildIsolationKey
-        )
-        $sw.Stop()
-        if ($LASTEXITCODE -ne 0) {
-            Write-Fail 'Meridian host restore failed.'
-            Write-Warn 'If the error mentions disk space or a corrupt archive, run: dotnet nuget locals all --clear'
-            throw 'Meridian host restore failed.'
-        }
-        Write-Ok ("Host packages restored ({0:0.0}s)" -f $sw.Elapsed.TotalSeconds)
+        if ($buildDesktop) {
+            Write-Info 'Restoring Meridian desktop shell packages...'
+            $sw = [System.Diagnostics.Stopwatch]::StartNew()
+            & dotnet restore $desktopProject -v minimal @(
+                Get-MeridianBuildArguments -IsolationKey $buildIsolationKey -EnableFullWpfBuild
+            )
+            $sw.Stop()
+            if ($LASTEXITCODE -ne 0) {
+                Write-Fail 'Meridian desktop restore failed.'
+                Write-Warn 'If the error mentions disk space or a corrupt archive, run: dotnet nuget locals all --clear'
+                throw 'Meridian desktop restore failed.'
+            }
+            Write-Ok ("Desktop packages restored ({0:0.0}s)" -f $sw.Elapsed.TotalSeconds)
 
-        Write-Info 'Building Meridian host...'
-        $sw = [System.Diagnostics.Stopwatch]::StartNew()
-        & dotnet build $hostProject -c $hostConfiguration -v minimal -nologo --no-restore @(
-            Get-MeridianBuildArguments -IsolationKey $buildIsolationKey
-        )
-        $sw.Stop()
-        if ($LASTEXITCODE -ne 0) {
-            Write-Fail 'Meridian host build failed.'
-            throw 'Meridian host build failed.'
+            Write-Info 'Building Meridian desktop shell...'
+            $sw = [System.Diagnostics.Stopwatch]::StartNew()
+            & dotnet build $desktopProject -c $desktopConfiguration -v minimal -nologo --no-restore @(
+                Get-MeridianBuildArguments -IsolationKey $buildIsolationKey -TargetFramework $desktopFramework -EnableFullWpfBuild
+            )
+            $sw.Stop()
+            if ($LASTEXITCODE -ne 0) {
+                Write-Fail 'Meridian desktop build failed.'
+                throw 'Meridian desktop build failed.'
+            }
+            Write-Ok ("Desktop shell built ({0:0.0}s)" -f $sw.Elapsed.TotalSeconds)
         }
-        Write-Ok ("Host built ({0:0.0}s)" -f $sw.Elapsed.TotalSeconds)
 
-        Write-Info 'Restoring Meridian desktop shell packages...'
-        $sw = [System.Diagnostics.Stopwatch]::StartNew()
-        & dotnet restore $desktopProject -v minimal @(
-            Get-MeridianBuildArguments -IsolationKey $buildIsolationKey -EnableFullWpfBuild
-        )
-        $sw.Stop()
-        if ($LASTEXITCODE -ne 0) {
-            Write-Fail 'Meridian desktop restore failed.'
-            Write-Warn 'If the error mentions disk space or a corrupt archive, run: dotnet nuget locals all --clear'
-            throw 'Meridian desktop restore failed.'
-        }
-        Write-Ok ("Desktop packages restored ({0:0.0}s)" -f $sw.Elapsed.TotalSeconds)
+        # A standalone WPF build can take long enough for host readiness to change.
+        $hostHealthy = -not $BuildOnly -and (Test-HealthyHost)
+        $buildHost = -not $NoBuild -and -not $hostHealthy -and -not (Test-Path -LiteralPath $hostExe -PathType Leaf)
 
-        Write-Info 'Building Meridian desktop shell...'
-        $sw = [System.Diagnostics.Stopwatch]::StartNew()
-        & dotnet build $desktopProject -c $desktopConfiguration -v minimal -nologo --no-restore @(
-            Get-MeridianBuildArguments -IsolationKey $buildIsolationKey -TargetFramework $desktopFramework -EnableFullWpfBuild
-        )
-        $sw.Stop()
-        if ($LASTEXITCODE -ne 0) {
-            Write-Fail 'Meridian desktop build failed.'
-            throw 'Meridian desktop build failed.'
+        if ($buildHost) {
+            Write-Info 'Restoring Meridian host packages...'
+            $sw = [System.Diagnostics.Stopwatch]::StartNew()
+            & dotnet restore $hostProject -v minimal @(
+                Get-MeridianBuildArguments -IsolationKey $buildIsolationKey
+            )
+            $sw.Stop()
+            if ($LASTEXITCODE -ne 0) {
+                Write-Fail 'Meridian host restore failed.'
+                Write-Warn 'If the error mentions disk space or a corrupt archive, run: dotnet nuget locals all --clear'
+                throw 'Meridian host restore failed.'
+            }
+            Write-Ok ("Host packages restored ({0:0.0}s)" -f $sw.Elapsed.TotalSeconds)
+
+            Write-Info 'Building Meridian host...'
+            $sw = [System.Diagnostics.Stopwatch]::StartNew()
+            & dotnet build $hostProject -c $hostConfiguration -v minimal -nologo --no-restore @(
+                Get-MeridianBuildArguments -IsolationKey $buildIsolationKey
+            )
+            $sw.Stop()
+            if ($LASTEXITCODE -ne 0) {
+                Write-Fail 'Meridian host build failed.'
+                throw 'Meridian host build failed.'
+            }
+            Write-Ok ("Host built ({0:0.0}s)" -f $sw.Elapsed.TotalSeconds)
         }
-        Write-Ok ("Desktop shell built ({0:0.0}s)" -f $sw.Elapsed.TotalSeconds)
     }
     else {
-        Write-Info 'Skipping build step (-NoBuild).'
+        Write-Info 'Reusing existing build artifacts; no build is needed.'
     }
 
-    if (-not (Test-Path $hostExe)) {
+    if ($null -ne $desktopBuildReceipt) {
+        Write-Info "Reusing WPF binaries from receipt: $BuildReceiptPath"
+    }
+
+    if (-not $hostHealthy -and -not (Test-Path -LiteralPath $hostExe -PathType Leaf)) {
         throw "Host executable not found at '$hostExe'."
     }
 
-    if (-not (Test-Path $desktopExe)) {
+    if (-not (Test-Path -LiteralPath $desktopExe -PathType Leaf)) {
         throw "Desktop executable not found at '$desktopExe'."
     }
 
