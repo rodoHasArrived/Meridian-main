@@ -391,9 +391,10 @@ Core workstation host. Do not introduce a second listener or independent monitor
   Rejected batches cannot be counted twice to acknowledge a later valid event before its
   storage append finishes; gated regression cases cover that ordering across separate batches.
   Trade and quote dedup keys retain their existing SHA-256 identity and 128-bit lowercase
-  digest suffix. Key construction uses the runtime span-based hex encoder inside a single
-  `string.Create` allocation; culture and Unicode/pooled-buffer regressions compare the
-  complete key with the original identity format.
+  digest suffix. Hashing uses the canonical `Sha256Digest` span overload with a reusable provider
+  per thread, primed on each constructor thread. Key construction uses the runtime span-based hex
+  encoder inside a single `string.Create` allocation; culture and Unicode/pooled-buffer regressions
+  compare the complete key with the original identity format.
 - Event pipeline queueing consumes `Meridian.Platform.Tracing.EventTraceContext` for trace
   propagation, platform-owned OpenTelemetry helpers for market-data activity/counter telemetry,
   the Platform `DefaultEventMetrics` implementation, and the Platform `TracedEventMetrics`

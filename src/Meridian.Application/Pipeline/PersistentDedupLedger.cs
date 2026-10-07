@@ -3,11 +3,11 @@ using System.Buffers.Text;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Core.Logging;
 using Meridian.Contracts.Domain.Enums;
+using Meridian.Contracts.Integrity;
 using Meridian.Domain.Events;
 using Serilog;
 
@@ -95,14 +95,15 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
 
     private static void WarmHashPath()
     {
+        // Each constructor thread primes its own provider before the once-per-process warmup.
+        Span<byte> hash = stackalloc byte[32];
+        Sha256Digest.ComputeBytes(ReadOnlySpan<byte>.Empty, hash);
+
         if (Interlocked.Exchange(ref _hashPathWarmed, 1) != 0)
         {
             return;
         }
 
-        Span<byte> payload = stackalloc byte[1];
-        Span<byte> hash = stackalloc byte[32];
-        SHA256.TryHashData(payload, hash, out _);
         _ = Convert.ToHexStringLower(hash[..16]);
         _ = CreateTradeKey(
             "warm:AAPL:Trade:",
@@ -523,7 +524,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         try
         {
             var written = WriteTradeIdentity(trade, buffer);
-            SHA256.TryHashData(buffer[..written], destination, out _);
+            Sha256Digest.ComputeBytes(buffer[..written], destination);
         }
         finally
         {
@@ -546,7 +547,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         const int maxBytes = 160;
         Span<byte> buffer = stackalloc byte[maxBytes];
         var written = WriteQuoteIdentity(quote, buffer);
-        SHA256.TryHashData(buffer[..written], destination, out _);
+        Sha256Digest.ComputeBytes(buffer[..written], destination);
     }
 
     private static string CreatePrefix(string? source, string? symbol, MarketEventType type)

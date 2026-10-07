@@ -42,6 +42,10 @@ public static class Sha256Digest
     /// <summary>Number of hex characters in a SHA-256 digest.</summary>
     public const int HexLength = 64;
 
+    // The synchronous span path owns one provider per thread, never shared hash state or digests.
+    [ThreadStatic]
+    private static SHA256? _threadHash;
+
     /// <summary>Computes the canonical (lowercase hex) SHA-256 digest of <paramref name="value"/>.</summary>
     public static string Compute(ReadOnlySpan<byte> value) =>
         Convert.ToHexStringLower(SHA256.HashData(value));
@@ -84,6 +88,41 @@ public static class Sha256Digest
     /// hashing stays routed through, and auditable at, this primitive.
     /// </summary>
     public static byte[] ComputeBytes(ReadOnlySpan<byte> value) => SHA256.HashData(value);
+
+    /// <summary>
+    /// Writes the raw 32-byte SHA-256 digest of <paramref name="value"/> to the first 32 bytes of
+    /// <paramref name="destination"/>, leaving any remaining bytes unchanged.
+    /// </summary>
+    /// <remarks>
+    /// The synchronous operation reuses a private provider on the current thread, with no managed
+    /// allocation after that thread's first call. Successful hashing resets the provider for the
+    /// next input; a failed provider is discarded and disposed before the exception is propagated.
+    /// </remarks>
+    /// <exception cref="ArgumentException">The destination has fewer than 32 bytes.</exception>
+    public static void ComputeBytes(ReadOnlySpan<byte> value, Span<byte> destination)
+    {
+        if (destination.Length < SHA256.HashSizeInBytes)
+        {
+            throw new ArgumentException("The destination must contain at least 32 bytes.", nameof(destination));
+        }
+
+        var provider = _threadHash ??= SHA256.Create();
+        try
+        {
+            // TryComputeHash finalizes and resets the native provider before returning success.
+            if (!provider.TryComputeHash(value, destination, out var written) || written != SHA256.HashSizeInBytes)
+            {
+                throw new CryptographicException("The SHA-256 provider did not produce a complete digest.");
+            }
+        }
+        catch
+        {
+            // An exception may interrupt the native reset. Never reuse uncertain hash state.
+            _threadHash = null;
+            provider.Dispose();
+            throw;
+        }
+    }
 
     /// <summary>
     /// Computes the raw 32-byte SHA-256 digest of the UTF-8 encoding of <paramref name="value"/>.
