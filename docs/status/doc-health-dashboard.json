@@ -1,11 +1,11 @@
 {
-  "total_files": 701,
-  "total_lines": 155606,
+  "total_files": 702,
+  "total_lines": 155724,
   "orphaned_count": 233,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 295,
-  "average_lines": 222.0,
+  "average_lines": 221.8,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2772,7 +2772,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11582,
+      "line_count": 11626,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4043,8 +4043,16 @@
       "stale": false
     },
     {
+      "path": "docs/testing/evidence/w10-seam-reviewed-20261007/README.md",
+      "line_count": 71,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/testing/README.md",
-      "line_count": 26,
+      "line_count": 27,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4060,7 +4068,7 @@
     },
     {
       "path": "docs/testing/w10-mark-seam-operator-acceptance.md",
-      "line_count": 309,
+      "line_count": 311,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

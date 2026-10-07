@@ -1,0 +1,85 @@
+{
+  "sourceHead": "12565b938fff633cac2060b844487c4cf9454099",
+  "captureSourceHead": "12565b938fff633cac2060b844487c4cf9454099",
+  "capturedSourceHashesMatchCandidate": true,
+  "dependencyHashesStillMatch": true,
+  "npmLsExitStatus": 0,
+  "treeIds": {
+    "src": "e7dbaa5ae481f46886ed997b39933f13644b0956",
+    "tests": "ad1c8cfebdb5494b7fdaad07552ac6109945b1cc",
+    "src/Meridian.Ui/wwwroot/workstation": "1bf9675994466049b45d0e24f850ecbe29724fa5"
+  },
+  "focusedTests": {
+    "sourceHead": "12565b938fff633cac2060b844487c4cf9454099",
+    "reports": [
+      "focused-tests.json",
+      "snapshot-tests.json"
+    ],
+    "passed": 74,
+    "failed": 0,
+    "pending": 0,
+    "testFiles": [
+      {
+        "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.test.tsx",
+        "tests": 23,
+        "passed": 23
+      },
+      {
+        "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.test.ts",
+        "tests": 37,
+        "passed": 37
+      },
+      {
+        "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.workflow-selection.test.ts",
+        "tests": 14,
+        "passed": 14
+      }
+    ]
+  },
+  "renderedCount": 24,
+  "renderedPassed": 24,
+  "requestResponseCount": 105,
+  "allOperatorVerdictsPending": true,
+  "officialW03GStatus": "passed",
+  "officialW03GAttempts": 1,
+  "captureWindowUtc": [
+    "2026-10-07T16:56:17.437Z",
+    "2026-10-07T16:56:53.353Z"
+  ],
+  "relevantConsole": [
+    {
+      "phase": "rendered-response-simulation",
+      "type": "http-error",
+      "status": 409,
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/close"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "http-error",
+      "status": 503,
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "http-error",
+      "status": 409,
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/close"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    }
+  ],
+  "scope": "Rendered Vite source simulation; committed bundle tree identity only; no live operator acceptance or Windows execution"
+}

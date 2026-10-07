@@ -2558,6 +2558,50 @@ Meridian-main
 │   │   │   │   ├── README.md
 │   │   │   │   ├── source-hashes.json
 │   │   │   │   └── wpf-static.txt
+│   │   │   ├── w10-seam-reviewed-20261007
+│   │   │   │   ├── browser
+│   │   │   │   │   ├── official-w03g
+│   │   │   │   │   │   ├── screenshots
+│   │   │   │   │   │   │   └── web-accounting-operations-continuity.png
+│   │   │   │   │   │   └── manifest.json
+│   │   │   │   │   ├── screenshots
+│   │   │   │   │   │   ├── S19-same-version-matching-repair.png
+│   │   │   │   │   │   └── S20-same-version-repaired-publication.png
+│   │   │   │   │   ├── capture.log.gz
+│   │   │   │   │   ├── capture.mjs
+│   │   │   │   │   ├── cases-full.json.gz
+│   │   │   │   │   ├── cases.json
+│   │   │   │   │   ├── commands.json
+│   │   │   │   │   ├── dependencies.json
+│   │   │   │   │   ├── dependencies.log.gz
+│   │   │   │   │   ├── focused-test-summary.json
+│   │   │   │   │   ├── focused-tests.json.gz
+│   │   │   │   │   ├── focused-tests.log.gz
+│   │   │   │   │   ├── npm-ls-all.json.gz
+│   │   │   │   │   ├── npm-ls-all.stderr.txt.gz
+│   │   │   │   │   ├── official-w03g.log.gz
+│   │   │   │   │   ├── provenance.json
+│   │   │   │   │   ├── record-dependencies.mjs
+│   │   │   │   │   ├── requests-responses.json.gz
+│   │   │   │   │   ├── snapshot-tests.json.gz
+│   │   │   │   │   ├── snapshot-tests.log.gz
+│   │   │   │   │   ├── verification.json
+│   │   │   │   │   └── vite.log.gz
+│   │   │   │   ├── wpf
+│   │   │   │   │   ├── build.log.gz
+│   │   │   │   │   ├── capacity-cleanup.json
+│   │   │   │   │   ├── capacity-failed-build.log.gz
+│   │   │   │   │   ├── capacity-failed-working-tree-compilation.json.gz
+│   │   │   │   │   ├── historical-windows-summary.json.gz
+│   │   │   │   │   ├── historical-windows.json
+│   │   │   │   │   ├── metadata-verification-incomplete.json.gz
+│   │   │   │   │   ├── OperationsContinuityPage.baml.gz
+│   │   │   │   │   ├── run-build.py
+│   │   │   │   │   ├── working-tree-compilation.json
+│   │   │   │   │   └── worktree-before.json.gz
+│   │   │   │   ├── candidate-binding.json
+│   │   │   │   ├── manifest.json
+│   │   │   │   └── README.md
 │   │   │   └── endpoint-fixture-concurrency.json
 │   │   ├── accounting-trust-corrections.md
 │   │   ├── alpaca-paper-portfolio-sandbox.md

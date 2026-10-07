@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-05
+**Reviewed:** 2026-10-07
 
 Use [Engineering](../engineering/README.md#buildtestrun) for current build and test commands.
 This folder owns scenario-specific acceptance procedures and retained evidence.
@@ -19,6 +19,7 @@ This folder owns scenario-specific acceptance procedures and retained evidence.
 | Inspect retained W10 evidence | [Candidate evidence packet](evidence/w10-615abde9/README.md) | Results bound to its recorded commit and environment. |
 | Continue the SEAM refresh and blocker rechecks | [2026-10-06 SEAM continuation](evidence/w10-seam-refresh-20261006/README.md) | B1/D1 repair evidence, preserved operator decisions and SEAM-before-MARK session order. |
 | Review the integrated SEAM browser reproduction | [2026-10-07 browser packet](evidence/w10-seam-merge-20261007/README.md) | Candidate-bound tests, rendered simulations and dependency identity; live decisions remain pending. |
+| Review the SEAM selection and evidence consistency fixes | [Reviewed-source packet](evidence/w10-seam-reviewed-20261007/README.md) | Current source-bound browser checks, WPF compilation and preserved runtime history; live decisions remain pending. |
 | Validate endpoint isolation and concurrency | [Endpoint fixture isolation](endpoint-fixture-isolation.md) | Reproducible benchmark and recorded isolation evidence. |
 
 A procedure describes what to verify; a retained packet records what was actually observed. Keep
