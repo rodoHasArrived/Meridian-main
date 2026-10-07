@@ -24,6 +24,7 @@ if ($PSVersionTable.PSVersion.Major -ge 7) {
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 Set-Location $repoRoot
 . (Join-Path $PSScriptRoot 'SharedBuild.ps1')
+. (Join-Path $PSScriptRoot 'SharedDesktopBuild.ps1')
 . (Join-Path $PSScriptRoot 'SharedWorkflowProfiles.ps1')
 
 $wpfProject = 'src/Meridian.Wpf/Meridian.Wpf.csproj'
@@ -31,6 +32,7 @@ $wpfTestsProject = 'tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj'
 $uiServicesProject = 'src/Meridian.Ui.Services/Meridian.Ui.Services.csproj'
 $onWindows = $IsWindows -or ($env:OS -eq 'Windows_NT')
 $buildIsolationKey = if ($NoIsolation) { '' } else { New-MeridianBuildIsolationKey -Prefix 'desktop-dev' }
+$desktopBuildReceiptPath = ''
 
 $validationErrors = New-Object System.Collections.Generic.List[string]
 $validationWarnings = New-Object System.Collections.Generic.List[string]
@@ -266,6 +268,17 @@ if ($validationErrors.Count -eq 0 -and -not $SkipBuild) {
         -Name 'Build WPF desktop shell' `
         -Command (@('dotnet', 'build', $wpfProject, '-c', $Configuration, '--no-restore', '--verbosity', 'quiet') + $desktopBuildArgs) `
         -FixHint "Run: dotnet build $wpfProject -c $Configuration /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true"
+
+    if ($validationErrors.Count -eq 0 -and $onWindows) {
+        try {
+            $desktopBuildReceiptPath = New-MeridianDesktopBuildReceipt -RepoRoot $repoRoot -ProjectPath $wpfProject `
+                -Configuration $Configuration -Framework $Framework -IsolationKey $buildIsolationKey
+            Write-Ok "Desktop build receipt: $desktopBuildReceiptPath"
+        }
+        catch {
+            Add-ValidationError "Desktop build receipt could not be created: $($_.Exception.Message)"
+        }
+    }
 }
 elseif ($SkipBuild) {
     Write-Step 'Build desktop shell'
@@ -278,6 +291,12 @@ if ($validationErrors.Count -eq 0 -and -not $SkipTestBuild) {
         -IsolationKey $buildIsolationKey `
         -TargetFramework $Framework `
         -EnableFullWpfBuild
+
+    # The shell build already compiled this test project's references in the same output tree.
+    # Preserve the standalone test-build behavior when -SkipBuild was supplied.
+    if (-not [string]::IsNullOrWhiteSpace($desktopBuildReceiptPath)) {
+        $desktopTestBuildArgs += '--no-dependencies'
+    }
 
     Invoke-DesktopCommand `
         -Name 'Build WPF desktop tests' `
@@ -295,6 +314,9 @@ if ($validationErrors.Count -eq 0 -and -not $SkipLaunchSmoke) {
     if ($SkipRestore -or $SkipBuild) {
         Add-ValidationWarning 'Skipping fixture startup smoke because -SkipRestore or -SkipBuild was supplied. Run desktop-dev.ps1 without those switches, or run pwsh ./scripts/dev/run-desktop.ps1 -Fixture -StartupSmoke separately.'
     }
+    elseif (-not $onWindows) {
+        Add-ValidationWarning 'Skipping fixture startup smoke because the WPF desktop shell requires Windows.'
+    }
     else {
         Invoke-DesktopCommand `
             -Name 'Launch fixture desktop startup smoke' `
@@ -306,6 +328,9 @@ if ($validationErrors.Count -eq 0 -and -not $SkipLaunchSmoke) {
                 '-LaunchMode', 'Development',
                 '-Profile', $Profile,
                 '-ProfileRoot', $ProfileRoot,
+                '-Configuration', $Configuration,
+                '-Framework', $Framework,
+                '-BuildReceiptPath', $desktopBuildReceiptPath,
                 '-Fixture',
                 '-StartupSmoke'
             ) `
@@ -325,6 +350,7 @@ $summary = [ordered]@{
     framework = $Framework
     profile = $Profile
     buildIsolationKey = $buildIsolationKey
+    desktopBuildReceiptPath = $desktopBuildReceiptPath
     skipLaunchSmoke = [bool]$SkipLaunchSmoke
     errors = @($validationErrors.ToArray())
     warnings = @($validationWarnings.ToArray())
