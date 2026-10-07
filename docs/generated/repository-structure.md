@@ -3681,6 +3681,7 @@ Meridian-main
 │   │   │   ├── ProviderIntegrationOpenApiImportService.cs
 │   │   │   ├── ProviderIntegrationPromotionReadinessService.cs
 │   │   │   ├── ProviderIntegrationQuarantineReplayService.cs
+│   │   │   ├── ProviderIntegrationQuarantineReplayService.SourceFormat.cs
 │   │   │   ├── ProviderIntegrationQuarantineReviewService.cs
 │   │   │   ├── ProviderIntegrationReconciliationHandoffService.cs
 │   │   │   ├── ProviderIntegrationRestDryRunService.cs
@@ -4172,6 +4173,7 @@ Meridian-main
 │   │   │   ├── AccountingAuditChain.cs
 │   │   │   ├── AccountingAuditPendingMarker.cs
 │   │   │   ├── AccountingBookContextDtos.cs
+│   │   │   ├── AccountingClosePreparationDtos.cs
 │   │   │   ├── AccountingConfigurationCloseReportingDtos.cs
 │   │   │   ├── AccountingConfigurationDtos.cs
 │   │   │   ├── AccountingConfigurationPrivateCapitalDtos.cs
@@ -4746,9 +4748,14 @@ Meridian-main
 │   │   │   ├── AccountingCloseManagementService.CloseReadiness.cs
 │   │   │   ├── AccountingCloseManagementService.cs
 │   │   │   ├── AccountingCloseManagementService.PlanProjection.cs
+│   │   │   ├── AccountingCloseManagementService.PreparationGuard.cs
 │   │   │   ├── AccountingCloseManagementService.ValidationAndEvidence.cs
 │   │   │   ├── AccountingCloseModels.cs
 │   │   │   ├── AccountingClosePostingWorkbench.cs
+│   │   │   ├── AccountingClosePreparationService.Authority.cs
+│   │   │   ├── AccountingClosePreparationService.cs
+│   │   │   ├── AccountingClosePreparationService.Persistence.cs
+│   │   │   ├── AccountingClosePreparationService.Recovery.cs
 │   │   │   ├── AccountingCloseServices.cs
 │   │   │   └── AccountingReportPackageService.cs
 │   │   ├── AccountingSystem
@@ -4801,6 +4808,7 @@ Meridian-main
 │   │   │   ├── OperationsContinuityWorkflowService.ChecklistControls.cs
 │   │   │   ├── OperationsContinuityWorkflowService.CloseReadiness.cs
 │   │   │   ├── OperationsContinuityWorkflowService.cs
+│   │   │   ├── OperationsContinuityWorkflowService.PreparedStart.cs
 │   │   │   ├── OperationsContinuityWorkflowService.Projection.cs
 │   │   │   ├── OperationsContinuityWorkflowService.Transitions.cs
 │   │   │   ├── OperationsContinuityWorkflowText.cs
@@ -6658,6 +6666,8 @@ Meridian-main
 │   │   │   │   │   │   ├── banking-payments.api.ts
 │   │   │   │   │   │   ├── break-audit-rebuild.api.ts
 │   │   │   │   │   │   ├── capital-call-issuance.api.ts
+│   │   │   │   │   │   ├── close-preparation.api.test.ts
+│   │   │   │   │   │   ├── close-preparation.api.ts
 │   │   │   │   │   │   ├── corporate-actions.api.ts
 │   │   │   │   │   │   ├── covered-call.api.test.ts
 │   │   │   │   │   │   ├── covered-call.api.ts
@@ -6896,6 +6906,10 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.posted-ledger-panel.tsx
 │   │   │   │   │   ├── accounting-screen.posted-ledger.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.posted-ledger.view-model.ts
+│   │   │   │   │   ├── accounting-screen.prepare-next-period-calendar.tsx
+│   │   │   │   │   ├── accounting-screen.prepare-next-period.test-fixtures.ts
+│   │   │   │   │   ├── accounting-screen.prepare-next-period.test.tsx
+│   │   │   │   │   ├── accounting-screen.prepare-next-period.tsx
 │   │   │   │   │   ├── accounting-screen.reconciliation-panels.tsx
 │   │   │   │   │   ├── accounting-screen.reconciliation-queue-utils.ts
 │   │   │   │   │   ├── accounting-screen.reconciliation-readiness.test.tsx
@@ -7211,6 +7225,7 @@ Meridian-main
 │   │   │   │   │   ├── banking-payments.types.ts
 │   │   │   │   │   ├── brokerage-recovery.ts
 │   │   │   │   │   ├── canonical-symbol.ts
+│   │   │   │   │   ├── close-preparation.ts
 │   │   │   │   │   ├── covered-call.types.ts
 │   │   │   │   │   ├── data-operations-assurance.ts
 │   │   │   │   │   ├── data-quality-watch.types.ts
@@ -7502,6 +7517,7 @@ Meridian-main
 │   │   │   ├── LeanEndpoints.cs
 │   │   │   ├── LedgerEndpoints.AccountingConfiguration.cs
 │   │   │   ├── LedgerEndpoints.CloseExecution.cs
+│   │   │   ├── LedgerEndpoints.ClosePreparation.cs
 │   │   │   ├── LedgerEndpoints.cs
 │   │   │   ├── LedgerEndpoints.Dimensions.cs
 │   │   │   ├── LedgerEndpoints.JournalAutomation.cs
@@ -9641,6 +9657,7 @@ Meridian-main
 │   │   │   ├── OperationsContinuityWorkflowServiceTests.AutomationReview.cs
 │   │   │   ├── OperationsContinuityWorkflowServiceTests.CloseReadiness.cs
 │   │   │   ├── OperationsContinuityWorkflowServiceTests.cs
+│   │   │   ├── OperationsContinuityWorkflowServiceTests.PreparedStart.cs
 │   │   │   ├── ReconciliationGovernanceServiceTests.cs
 │   │   │   ├── ReconciliationRunServiceTests.cs
 │   │   │   ├── SecurityMasterCashFlowServiceTests.cs
@@ -9670,6 +9687,7 @@ Meridian-main
 │   │   │   ├── InMemoryAssetAccountingEventProjectionStoreTests.cs
 │   │   │   ├── InMemoryInstrumentPositionProjectionStoreSlice3Tests.cs
 │   │   │   ├── InstrumentPositionProjectionStoreTests.cs
+│   │   │   ├── OpenLotAmortizationCalendarTests.cs
 │   │   │   ├── OpenLotAmortizationPrecisionTests.cs
 │   │   │   ├── PortfolioCashLadderEngineTests.cs
 │   │   │   ├── PortfolioCashLadderReadServiceTests.cs
@@ -9888,6 +9906,10 @@ Meridian-main
 │   │   ├── FinancialOperations
 │   │   │   ├── AccountingClose
 │   │   │   │   ├── AccountingCloseServicesTests.cs
+│   │   │   │   ├── AccountingCloseServicesTests.Preparation.cs
+│   │   │   │   ├── AccountingCloseServicesTests.PreparationConcurrency.cs
+│   │   │   │   ├── AccountingCloseServicesTests.PreparationRetention.cs
+│   │   │   │   ├── AccountingCloseServicesTests.PreparationWorkflowScope.cs
 │   │   │   │   └── AccountingCloseServicesTests.Readiness.cs
 │   │   │   ├── Banking
 │   │   │   │   ├── BankTransactionSeedTests.cs
@@ -10402,6 +10424,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterMigrationRunnerTests.cs
 │   │   │   ├── SecurityMasterOperationalReadinessServiceTests.cs
 │   │   │   ├── SecurityMasterPostgresRoundTripTests.cs
+│   │   │   ├── SecurityMasterPostingAuthorityPostgresTests.cs
 │   │   │   ├── SecurityMasterPreferredEquityAmendmentTests.cs
 │   │   │   ├── SecurityMasterPricingServiceTests.cs
 │   │   │   ├── SecurityMasterProjectionCacheTests.cs
@@ -10828,6 +10851,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointContractCompatibilityTests.cs
 │   │   │   ├── WorkstationEndpoints.StatementAuthorityTests.cs
 │   │   │   ├── WorkstationEndpointsTests.AccountingConfiguration.cs
+│   │   │   ├── WorkstationEndpointsTests.ClosePreparation.cs
 │   │   │   ├── WorkstationEndpointsTests.CloseReadiness.cs
 │   │   │   ├── WorkstationEndpointsTests.cs
 │   │   │   ├── WorkstationEndpointsTests.DataReadAuthorization.cs
@@ -11342,7 +11366,8 @@ Meridian-main
 │   │   ├── test_windows_ci_runner.py
 │   │   ├── test_windows_desktop_build_workflow.py
 │   │   ├── test_wpf_msix_install_guidance.py
-│   │   └── test_wpf_msix_manifest.py
+│   │   ├── test_wpf_msix_manifest.py
+│   │   └── workflow_assertions.py
 │   ├── Shared
 │   │   └── CorporateActions
 │   │       ├── GoldenCorporateActionScenario.cs
