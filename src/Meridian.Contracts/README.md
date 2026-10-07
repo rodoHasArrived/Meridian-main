@@ -11,6 +11,13 @@ last_reviewed: 2026-10-06
 
 # src/Meridian.Contracts
 
+`Ledger/AccountingClosePreparationDtos.cs` describes immutable close template versions, explicit
+calendar deadline rules, owner mappings, authoritative target previews, and retained creation history.
+Create requests identify a retained preview and idempotency key rather than asserting dates or book
+policy. `ClosePeriodPlanConfigurationDto.Preparation` preserves server-owned template lineage and
+authoritative period bounds; public configuration JSON cannot supply that lineage. Explicit empty
+task dependencies remain empty through `CloseTaskConfigurationDto.HasExplicitDependencies`.
+
 `TradingBrokerageRecoveryDtos` extends shared Trading readiness with nullable broker balances,
 currency, observation/attempt/success timestamps, completeness and blocking reasons, plus affected
 account-scoped strategy runs. Existing execution-reconciliation DTOs remain the discrepancy source.

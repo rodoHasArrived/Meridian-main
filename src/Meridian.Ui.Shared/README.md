@@ -11,6 +11,13 @@ last_reviewed: 2026-10-06
 
 # src/Meridian.Ui.Shared
 
+Accounting close preparation exposes scoped template capture, retained template versions, preview,
+and creation under `/api/ledger/close-management`. Each request authorizes the source workflow;
+preview and creation also authorize the target book against the authenticated tenant and company.
+Mutation actors and action origin come from the trusted session. Target dates, policies, and locks
+are resolved by the shared preparation service from ledger authority. The browser submits choices
+and a retained preview identity; it cannot submit approved evidence or a prepared plan projection.
+
 Trading recovery uses `LiveBrokeragePortfolioSyncService` to publish account-scoped Alpaca
 holdings, cash, buying power, currency and completeness to the existing exposure provider.
 Broker holdings replace local projections for that account; remaining OMS exposure stays reserved.
@@ -298,6 +305,18 @@ Provider setup passes the server-resolved actor into credential persistence. Pla
 require an authenticated actor and never fall back to a request identity; signed webhook authentication
 remains independent of operator sessions.
 
+## Portfolio cash-ladder currency evidence
+
+`PortfolioCashLadderReadService` requires currency evidence for every opening cash balance and
+every contribution selected by `PortfolioCashLadderEngine`. Validation follows the engine's
+latest projection run, date window, held quantity, scenario, and recognized capital activity before any
+amount scaling or scenario arithmetic, including future principal pulled into an early-call
+scenario. Coupons discarded after the selected call date do not require currency or FX evidence;
+coupons due on or before the call and pulled-forward principal still do. An unused historical or
+out-of-window flow, or an excluded capital kind, cannot block otherwise
+complete cash evidence. A contributing amount with missing currency, or a foreign-currency
+amount without an authoritative FX source, returns the shared blocked result with no buckets
+or breach flags. Browser and WPF consumers receive the same decision state.
 ### Tenant composition
 
 The workstation replaces the core retained-worker tenant accessor with its request-aware adapter
