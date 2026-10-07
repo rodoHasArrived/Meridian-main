@@ -1517,6 +1517,17 @@ Focused workflow, stale-response and accessibility coverage lives in
 
 The Accounting route reuses fund-operations ledger views and now includes trial-balance source-event and approval drill-through affordances. Keep browser-only rendering in `src/screens/accounting-screen.tsx` and shared accounting close contracts in `src/features/accounting/accountingCloseModels.ts`.
 
+Accounting Ledger Explorer also includes the first W10-CONSOL-001 consolidation slice. Operators
+preview an authoritative effective-dated ownership perimeter, inspect gross/proposed/posted and
+consolidated account balances, retain unmatched reciprocal differences, and create drafts for the
+existing journal approval workflow. Source disclosures show the exact posting entity, counterparty,
+journal, book, line, debit, credit, and effective date; correction links and renewed-review status stay
+visible. Changing scope discards prior results, and failed requests require another preview. All
+amounts and eligibility are server-owned. This slice supports exactly two directly wholly owned
+entities, Primary basis, one shared functional currency, and a dedicated elimination book; it excludes
+foreign currency translation, minority interests, and nested ownership. Browser regression coverage
+is in `accounting-screen.consolidation-panel.test.tsx`.
+
 The close workspace (`/accounting`) exposes **Prepare next period**. Operators select an
 authoritative source plan, capture or reuse a retained template version, specify each task's
 calendar rule, select an authoritative target book and period, and resolve owner and policy

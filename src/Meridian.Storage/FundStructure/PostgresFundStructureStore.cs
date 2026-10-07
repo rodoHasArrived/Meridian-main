@@ -9,7 +9,7 @@ namespace Meridian.Storage.FundStructure;
 /// PostgreSQL-backed implementation of <see cref="IFundStructureStore"/>.
 /// Array/list fields are stored as JSONB. All writes use INSERT … ON CONFLICT DO UPDATE.
 /// </summary>
-public sealed class PostgresFundStructureStore : IFundStructureStore
+public sealed partial class PostgresFundStructureStore : IFundStructureStore
 {
     private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
     private readonly FundStructureStoreOptions _options;
