@@ -41,7 +41,7 @@ modules:
       - dotnet test tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj --configuration Release --disable-build-servers /m:1
     diagrams: []
     todos: []
-    last_reviewed: 2026-07-17
+    last_reviewed: 2026-10-07
 
   - id: SRC-LAUNCHER
     path: src/Meridian.Launcher
@@ -49,7 +49,7 @@ modules:
     layer: Host
     status: active
     owner_lane: Runtime Host
-    purpose: Thin installed-workstation entrypoint that launches the lifecycle supervisor, verifies the bound startup outcome, and opens the workstation only after exact readiness succeeds.
+    purpose: Thin installed-workstation entrypoint for start and open commands that launches the lifecycle supervisor and verifies the bound startup outcome; the supervisor owns readiness and browser opening.
     readme: src/Meridian.Launcher/README.md
     roadmap_items: []
     stage_gates: []
@@ -57,7 +57,7 @@ modules:
       - dotnet test tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj --configuration Release --disable-build-servers /m:1
     diagrams: []
     todos: []
-    last_reviewed: 2026-07-19
+    last_reviewed: 2026-10-07
 
   - id: SRC-APP
     path: src/Meridian.Application

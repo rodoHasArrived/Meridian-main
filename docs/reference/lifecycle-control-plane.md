@@ -2,7 +2,7 @@
 title: Lifecycle Control Plane Reference
 status: active
 owner: core-team
-reviewed: 2026-07-17
+reviewed: 2026-10-07
 audience: developers-and-operators
 ---
 
@@ -62,6 +62,12 @@ outcomes are `Pending`, `Succeeded`, `SucceededWithWarnings`, `TimedOut`, `Force
 
 ## Supervisor commands
 
+The consumer `<install-root>\Meridian.exe` launcher accepts `start` (the default) and `open`.
+Unsupported commands and extra arguments return exit code `2` before invoking the
+supervisor. It observes the request-bound terminal startup outcome and returns its stable exit
+code; the supervisor owns readiness and browser opening. Invoke the supervisor directly for
+maintenance commands below.
+
 Run commands from the installation root:
 
 ```powershell
@@ -106,6 +112,13 @@ Relative paths resolve beneath the installation root. A null `dataRoot` resolves
 `%LOCALAPPDATA%\Meridian\Data`; a null `httpPort` reserves an available loopback port. Timeouts must
 be 1-600 seconds and ports must be valid TCP ports.
 
+The shared startup stage budget is `startupTimeoutSeconds + 2 * databaseTimeoutSeconds + 5`
+seconds in dedicated database mode, covering first-run `initdb`, `pg_ctl start` and its tool
+allowance, and readiness. External mode uses only `startupTimeoutSeconds`. The launcher adds
+30 seconds to observe the terminal receipt (215 seconds by default for dedicated startup;
+90 seconds for external startup). Forwarded supervisor commands use the same stage budget with
+their own response allowance.
+
 ## Database ownership
 
 `Dedicated` is the installed default. PostgreSQL binaries resolve from
@@ -138,8 +151,13 @@ bootstrap token.
 
 Forwarded `open` commands remain pending until the owning supervisor has retained the validated
 terminal outcome and returns its state and path. The consumer launcher fingerprints receipt
-timestamp, length, and SHA-256 as well as path, so an atomic update to an existing supervisor
-session receipt is observable and cannot be mistaken for stale evidence or an early success.
+timestamp, length, and SHA-256 as well as path to distinguish retained evidence from a new outcome.
+
+Every forwarded `open` request carries its own `StartedAtUtc`; the terminal startup outcome uses
+that request timestamp even when the owning supervisor session began earlier. The launcher polls
+only receipt filenames for its request and requires the filename's attempt number to match the
+validated outcome. Malformed JSON, missing evidence, stale receipts, and another request's identity
+cannot satisfy the launch gate.
 
 The internal shutdown capability is stored only at
 `%LOCALAPPDATA%\Meridian\service\lifecycle-shutdown-token.dpapi`; the dedicated PostgreSQL SCRAM

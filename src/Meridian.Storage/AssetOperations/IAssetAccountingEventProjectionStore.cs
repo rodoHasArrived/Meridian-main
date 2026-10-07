@@ -509,7 +509,7 @@ internal static class AssetAccountingEventProjectionRules
                     || mutation.LotAfter.SourceJournalEntryId != batch.Journal.Entry.JournalEntryId
                     || mutation.LotAfter.BasisAdjustment is not { Reason: OpenLotBasisAdjustmentReasons.CorporateActionSuccessor } adjustment
                     || adjustment.MutationBatchId != batch.MutationBatchId || !PayloadEquals(adjustment.CorporateAction, instruction)
-                    || !PayloadEquals(mutation.LotAfter.ToOpenLot(), target.Lot))
+                    || !PayloadEquals(mutation.LotAfter.ToOpenLot(), OpenLotSuccessors.WithLineage(instruction, target.Lot)))
                     return false;
             }
         }
