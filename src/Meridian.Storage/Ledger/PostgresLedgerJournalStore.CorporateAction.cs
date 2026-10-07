@@ -174,10 +174,10 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
             throw new LedgerValidationException("Successor positions must retain the predecessor financial-account scope.");
         var sourceDimensions = CorporateActionPositionDimensions(sourcePosition);
         var sourceDimensionScope = JsonSerializer.SerializeToElement(sourceDimensions with
-            { InstrumentId = null, PositionId = null, TaxLotId = null });
+        { InstrumentId = null, PositionId = null, TaxLotId = null });
         foreach (var position in retainedPositions.Values)
             if (!JsonElement.DeepEquals(sourceDimensionScope, JsonSerializer.SerializeToElement(CorporateActionPositionDimensions(position) with
-                { InstrumentId = null, PositionId = null, TaxLotId = null })))
+            { InstrumentId = null, PositionId = null, TaxLotId = null })))
                 throw new LedgerValidationException("Successor positions must retain the predecessor canonical dimensions; cross-scope transfers require separate review.");
         foreach (var line in command.Journal.Entry.Lines)
         {

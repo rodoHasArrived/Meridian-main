@@ -100,9 +100,12 @@ public static class OpenLotAmortization
             var restored = reversal.RestoresLot;
             if (reversal.MutationBatchId == Guid.Empty || reversal.JournalEntryId == Guid.Empty
                 || restored.Version >= lot.Version
-                || !SameLot(restored with { Version = lot.Version,
+                || !SameLot(restored with
+                {
+                    Version = lot.Version,
                     OpenTransactionCostBasis = lot.OpenTransactionCostBasis,
-                    OpenFunctionalCostBasis = lot.OpenFunctionalCostBasis }, lot))
+                    OpenFunctionalCostBasis = lot.OpenFunctionalCostBasis
+                }, lot))
                 throw new ArgumentException("Amortization reversal must retain the original lot identity, quantity and acquisition facts.");
             return new(restored.OpenTransactionCostBasis, restored.OpenFunctionalCostBasis,
                 restored.OpenTransactionCostBasis - lot.OpenTransactionCostBasis,

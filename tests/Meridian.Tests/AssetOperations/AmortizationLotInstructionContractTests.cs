@@ -180,8 +180,11 @@ public sealed class AmortizationLotInstructionContractTests
         if (previouslyAdjusted)
         {
             var basis = premium ? 107m : 93m;
-            original = original with { ExpectedLot = original.ExpectedLot with
-            { OpenTransactionCostBasis = basis, OpenFunctionalCostBasis = basis * 1.1m } };
+            original = original with
+            {
+                ExpectedLot = original.ExpectedLot with
+                { OpenTransactionCostBasis = basis, OpenFunctionalCostBasis = basis * 1.1m }
+            };
         }
         var forward = OpenLotAmortization.Project(original);
         var reversal = ReversalInputs(original);
@@ -210,8 +213,11 @@ public sealed class AmortizationLotInstructionContractTests
         reversal = defect switch
         {
             "quantity" => reversal with { RestoresLot = before with { OpenQuantity = before.OpenQuantity - 1m } },
-            "acquisition" => reversal with { RestoresLot = before with
-                { Acquisition = before.Acquisition with { HoldingPeriodStartDate = before.AcquiredDate.AddDays(-1) } } },
+            "acquisition" => reversal with
+            {
+                RestoresLot = before with
+                { Acquisition = before.Acquisition with { HoldingPeriodStartDate = before.AcquiredDate.AddDays(-1) } }
+            },
             "position" => reversal with { RestoresLot = before with { BookPositionId = Guid.NewGuid() } },
             "version" => reversal with { RestoresLot = before with { Version = inputs.ExpectedLot.Version } },
             "batch" => reversal with { MutationBatchId = Guid.Empty },
@@ -282,8 +288,12 @@ public sealed class AmortizationLotInstructionContractTests
         { DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull };
         var priorShape = new
         {
-            inputs.ExpectedLot, inputs.Security, inputs.SecurityEvidence,
-            inputs.ExpectedBookPositionVersion, inputs.AsOfDate, inputs.CalculationVersion
+            inputs.ExpectedLot,
+            inputs.Security,
+            inputs.SecurityEvidence,
+            inputs.ExpectedBookPositionVersion,
+            inputs.AsOfDate,
+            inputs.CalculationVersion
         };
 
         JsonSerializer.Serialize(inputs, options).Should().Be(JsonSerializer.Serialize(priorShape, options));

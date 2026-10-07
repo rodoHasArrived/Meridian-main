@@ -413,8 +413,12 @@ internal static class OpenLotSuccessorTestData
         { PositionId = source.BookPositionId };
         var debitLines = instruction.Successors.Select(target => new ProjectedAccountingEffectLineDto("Assets:Successor",
             target.Lot.OpenFunctionalCostBasis, 0m, source.Acquisition.FunctionalCurrency,
-            Dimensions: dimensions with { InstrumentId = target.Lot.SecurityId, PositionId = target.Lot.BookPositionId,
-                TaxLotId = reusesSourceScope ? target.Lot.LotId : dimensions.TaxLotId })).ToArray();
+            Dimensions: dimensions with
+            {
+                InstrumentId = target.Lot.SecurityId,
+                PositionId = target.Lot.BookPositionId,
+                TaxLotId = reusesSourceScope ? target.Lot.LotId : dimensions.TaxLotId
+            })).ToArray();
         var effect = new ProjectedAccountingEffectDto(lineage.ProjectionRunId, lineage.ModelKey, lineage.ModelVersion,
             economicEvent.EffectiveDate, amount, amount, source.Acquisition.FunctionalCurrency,
             [

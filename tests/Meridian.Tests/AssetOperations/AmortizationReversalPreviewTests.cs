@@ -56,7 +56,8 @@ public sealed class AmortizationReversalPreviewTests
         await stalePreview.Should().ThrowAsync<ArgumentException>().WithMessage("*hash-bound versioned Security Master*");
         var reviewed = fixture.Inputs.SecurityEvidence with
         {
-            EvidenceId = "reviewed-replacement-security", EvidenceVersion = replacement.Version,
+            EvidenceId = "reviewed-replacement-security",
+            EvidenceVersion = replacement.Version,
             ContentHashSha256 = OpenLotAmortization.SecurityHash(replacement)
         };
 
@@ -80,8 +81,11 @@ public sealed class AmortizationReversalPreviewTests
         {
             "later-mutation" => fixture.After with { LastMutationBatchId = Guid.NewGuid() },
             "version" => fixture.After with { Version = fixture.After.Version + 1 },
-            "basis" => fixture.After with { BasisAdjustment = fixture.After.BasisAdjustment! with
-                { TransactionCostBasis = fixture.After.BasisAdjustment.TransactionCostBasis + 1m } },
+            "basis" => fixture.After with
+            {
+                BasisAdjustment = fixture.After.BasisAdjustment! with
+                { TransactionCostBasis = fixture.After.BasisAdjustment.TransactionCostBasis + 1m }
+            },
             _ => throw new ArgumentOutOfRangeException(nameof(change))
         };
         fixture.ReturnCurrent(changed);
@@ -146,7 +150,8 @@ public sealed class AmortizationReversalPreviewTests
                 OriginalFace: lot.OriginalQuantity, BookedFactor: 1m, ParBasis: 100m, Acquisition: lot.Acquisition);
             After = Before with
             {
-                Version = Before.Version + 1, LastMutationBatchId = BatchId,
+                Version = Before.Version + 1,
+                LastMutationBatchId = BatchId,
                 BasisAdjustment = new(BatchId, OpenLotBasisAdjustmentReasons.Amortization, Before.OpenQuantity,
                     Forward.TransactionCostBasis, Forward.FunctionalCostBasis, Inputs)
             };

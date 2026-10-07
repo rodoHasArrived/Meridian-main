@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 
 namespace Meridian.Tests.Storage;
@@ -81,7 +82,7 @@ public sealed partial class CanonicalOpenLotConsumerTests
             {
                 CorporateActionLineage = new(Guid.NewGuid(), CorporateActionAccountingTypeDto.MergerStock,
                     lot.AcquiredDate.AddDays(1), Guid.NewGuid(), 1, 100m, CorporateActionSuccessorRoleDto.Successor, [])
-                    { SourceCorporateActionId = Guid.NewGuid() }
+                { SourceCorporateActionId = Guid.NewGuid() }
             }
         };
 }

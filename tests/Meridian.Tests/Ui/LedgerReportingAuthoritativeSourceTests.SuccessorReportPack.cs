@@ -3,6 +3,7 @@ using FluentAssertions;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
 using Xunit;

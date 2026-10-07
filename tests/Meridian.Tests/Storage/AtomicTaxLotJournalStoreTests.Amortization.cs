@@ -629,8 +629,11 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 defect == "dimensions" ? line.Dimensions! with { FundId = "other-fund" } : line.Dimensions,
                 defect == "currency" ? new LedgerEntryCurrency("GBP", line.Currency!.FunctionalCurrency,
                     line.Currency.TransactionDebit, line.Currency.TransactionCredit, line.Currency.FxRateToFunctional) : line.Currency)).ToArray();
-            command = (command with { Journal = command.Journal with
-            { Entry = new JournalEntry(entry.JournalEntryId, entry.Timestamp, entry.Description, lines, entry.Metadata) } }).WithComputedFingerprint();
+            command = (command with
+            {
+                Journal = command.Journal with
+                { Entry = new JournalEntry(entry.JournalEntryId, entry.Timestamp, entry.Description, lines, entry.Metadata) }
+            }).WithComputedFingerprint();
 
             await AssertAmortizationRefusedAsync(fixture, command, original.MutatedLots.Single(), journalCount: 1);
         }
@@ -886,9 +889,13 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             };
             journal = journal with
             {
-                AccountingPolicyId = BookContext.AccountingPolicyId, AccountingPolicyVersion = BookContext.AccountingPolicyVersion,
-                RuleId = "amortization", RuleVersion = "1", PostingCommand = posting,
-                SourceJournalEntryId = posting.SourceJournalEntryId, PostingKind = LedgerPostingKindDto.Adjustment,
+                AccountingPolicyId = BookContext.AccountingPolicyId,
+                AccountingPolicyVersion = BookContext.AccountingPolicyVersion,
+                RuleId = "amortization",
+                RuleVersion = "1",
+                PostingCommand = posting,
+                SourceJournalEntryId = posting.SourceJournalEntryId,
+                PostingKind = LedgerPostingKindDto.Adjustment,
                 AdjustmentApproval = corrects is null ? null : new LedgerAdjustmentApprovalMetadataDto(
                     posting.ApprovalId!, LedgerAdjustmentApprovalStatusDto.Approved, "independent-controller",
                     journal.Entry.Timestamp, "amortization-correction", EvidenceLink: "evidence://amortization/correction-approval")
