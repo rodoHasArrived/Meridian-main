@@ -93,6 +93,45 @@ public sealed class ReportLedgerAmountProvenanceTests
     }
 
     [Theory]
+    [InlineData(false, null)]
+    [InlineData(false, "")]
+    [InlineData(false, " \t\r\n ")]
+    [InlineData(true, null)]
+    [InlineData(true, "")]
+    [InlineData(true, " \t\r\n ")]
+    public async Task MissingCheckpointIdentity_RejectsModernAndLegacyManifestsAndBlocksAmountProof(
+        bool legacy, string? checkpointId)
+    {
+        using var fixture = new Fixture();
+        await fixture.CaptureAsync();
+        var manifest = fixture.Manifest;
+        var source = legacy ? LegacyCheckpoint(manifest.AuthoritativeSource!) : manifest.AuthoritativeSource!;
+        source = source with { CheckpointId = checkpointId! };
+        manifest = manifest with
+        {
+            AuthoritativeSource = source,
+            CertifiedSnapshot = manifest.CertifiedSnapshot! with { SourceCheckpointId = checkpointId! }
+        };
+        fixture.Manifest = manifest with
+        {
+            CertifiedSnapshot = manifest.CertifiedSnapshot! with
+            {
+                SnapshotHash = ReportingCertifiedManifestValidation.ComputeSnapshotHash(manifest)
+            }
+        };
+        Action validatePopulation = () => ReportingRetainedLedgerPopulationValidation.Validate(
+            source, fixture.Manifest.CertifiedDatasetRows);
+        Action validateManifest = () => ReportingCertifiedManifestValidation.Validate(fixture.Manifest);
+        var produce = () => new DeterministicReportingCertifiedArtifactProducer().ProduceAsync(fixture.Manifest).AsTask();
+
+        validatePopulation.Should().Throw<InvalidDataException>();
+        validateManifest.Should().Throw<InvalidDataException>();
+        await produce.Should().ThrowAsync<ReportingGovernanceException>();
+        AssertBlocked(await fixture.Service.GetPacketAsync(fixture.ReportSubject, fixture.Scope, fixture.Access));
+        fixture.LiveJournals.VerifyNoOtherCalls();
+    }
+
+    [Theory]
     [MemberData(nameof(ArtifactPopulationTamperCases))]
     public async Task CertifiedArtifacts_AllFormatsRejectAlteredRetainedPopulationBeforeRendering(
         ReportingOutputFormatDto format, string condition)

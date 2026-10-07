@@ -20,6 +20,8 @@ public static class ReportingRetainedLedgerPopulationValidation
         ImmutableArray<IReadOnlyDictionary<string, string>> certifiedRows)
     {
         ArgumentNullException.ThrowIfNull(source);
+        if (string.IsNullOrWhiteSpace(source.CheckpointId))
+            throw Invalid("The authoritative source checkpoint identity is missing.");
         var markers = source.EvidenceIds.IsDefault ? [] : source.EvidenceIds
             .Where(id => id?.StartsWith(EvidencePrefix, StringComparison.Ordinal) == true).ToArray();
         if (source.LedgerPopulation is not { } population)

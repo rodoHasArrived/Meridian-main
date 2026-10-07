@@ -683,6 +683,59 @@ public sealed class LedgerReportingAuthoritativeSourceTests
             .WithMessage("*blocks canonical reporting*");
     }
 
+    [Theory]
+    [InlineData("ledger-validation")]
+    [InlineData("argument")]
+    [InlineData("invalid-operation")]
+    [InlineData("json")]
+    public async Task CaptureAsync_MalformedSnapshotHistory_ReturnsSourceUnavailableAndCanRetryAfterRepair(string fault)
+    {
+        var fixture = CreateFixture();
+        fixture.JournalStore.Records.Add(Record(
+            fixture, new DateTimeOffset(2026, 7, 10, 12, 0, 0, TimeSpan.Zero), 11));
+        const string reason = "Retained tax-lot history is malformed or incomplete.";
+        fixture.JournalStore.SnapshotCaptureException = fault switch
+        {
+            "ledger-validation" => new LedgerValidationException(reason),
+            "argument" => new ArgumentException(reason, "retainedHistory"),
+            "invalid-operation" => new InvalidOperationException(reason),
+            _ => new JsonException(reason)
+        };
+
+        var capture = () => fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access).AsTask();
+
+        await capture.Should().ThrowExactlyAsync<ReportingAuthoritativeSourceUnavailableException>()
+            .WithMessage($"*snapshot is unavailable*{reason}*");
+        fixture.JournalStore.QueryCount.Should().Be(1);
+        fixture.JournalStore.SnapshotCaptureException = null;
+        var repaired = await fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access);
+        repaired.DatasetRows.Should().HaveCount(2);
+        ReportingLedgerPopulationSnapshot.Decode(repaired.Checkpoint).Journals.Should().ContainSingle();
+    }
+
+    [Theory]
+    [InlineData("cancelled")]
+    [InlineData("foreign-tenant")]
+    [InlineData("already-unavailable")]
+    public async Task CaptureAsync_SnapshotAuthorityRejection_PreservesOriginalException(string fault)
+    {
+        var fixture = CreateFixture();
+        fixture.JournalStore.Records.Add(Record(
+            fixture, new DateTimeOffset(2026, 7, 10, 12, 0, 0, TimeSpan.Zero), 11));
+        Exception rejection = fault switch
+        {
+            "cancelled" => new OperationCanceledException("Snapshot capture was cancelled."),
+            "foreign-tenant" => new UnauthorizedAccessException("Snapshot belongs to another tenant."),
+            _ => new ReportingAuthoritativeSourceUnavailableException("Retained reporting period authority is unavailable.")
+        };
+        fixture.JournalStore.SnapshotCaptureException = rejection;
+
+        var capture = () => fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access).AsTask();
+
+        var failed = await capture.Should().ThrowAsync<Exception>();
+        failed.Which.Should().BeSameAs(rejection);
+    }
+
     private static Fixture CreateFixture(string periodStatus = "HardClosed")
     {
         const string tenantId = "tenant-reporting";
@@ -939,6 +992,7 @@ public sealed class LedgerReportingAuthoritativeSourceTests
         public LedgerJournalEntryQuery? LastQuery { get; private set; }
         public Func<Task>? AfterFirstQuerySnapshot { get; set; }
         public LedgerAccountingPeriod SnapshotPeriod { get; set; } = period;
+        public Exception? SnapshotCaptureException { get; set; }
 
         public async Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(
             LedgerJournalEntryQuery query,
@@ -955,6 +1009,10 @@ public sealed class LedgerReportingAuthoritativeSourceTests
             CancellationToken ct = default)
         {
             var journals = ReadQuerySnapshot(query);
+            if (SnapshotCaptureException is { } captureException)
+            {
+                throw captureException;
+            }
             var taxHistory = Disposals.ToArray();
             if (accountingPeriodId is not null)
             {

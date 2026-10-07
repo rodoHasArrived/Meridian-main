@@ -65,6 +65,7 @@
 - `build/scripts/check-execution-log-sanitization.py`
 - `build/scripts/ci/benchmark-ci.py`
 - `build/scripts/ci/benchmark-endpoints.py`
+- `build/scripts/ci/benchmark-pipeline.py`
 - `build/scripts/ci/check-action-origin-derivation.py`
 - `build/scripts/ci/check-apiclient-callers.py`
 - `build/scripts/ci/check-contract-type-parity.py`
@@ -72,4 +73,3 @@
 - `build/scripts/ci/check-duplicate-helpers.py`
 - `build/scripts/ci/check-endpoint-cancellation.py`
 - `build/scripts/ci/check-file-size.py`
-- `build/scripts/ci/check-inline-sha256.py`

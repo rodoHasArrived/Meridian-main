@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Globalization;
+using System.Text.Json;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Services;
@@ -212,6 +213,11 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
         {
             throw Unavailable(
                 $"The configured ledger journal store cannot provide an authoritative scoped as-of snapshot: {exception.Message}");
+        }
+        catch (Exception exception) when (exception is not ReportingAuthoritativeSourceUnavailableException
+            && exception is LedgerValidationException or ArgumentException or InvalidOperationException or JsonException)
+        {
+            throw Unavailable($"The authoritative ledger reporting snapshot is unavailable: {exception.Message}");
         }
 
         var orderedHistory = records

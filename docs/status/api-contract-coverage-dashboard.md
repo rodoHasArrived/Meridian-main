@@ -11,11 +11,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 20.5% |
-| Endpoint coverage | 31.3% |
-| Workstation contract coverage | 4.2% |
-| Endpoints documented | 207 / 661 |
-| Workstation contracts documented | 39 / 939 |
+| Weighted score | 20.1% |
+| Endpoint coverage | 30.8% |
+| Workstation contract coverage | 4.1% |
+| Endpoints documented | 207 / 673 |
+| Workstation contracts documented | 39 / 962 |
 
 ## Endpoint Coverage
 
@@ -41,6 +41,18 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/accounting-system/reconciliation/latest` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:430` |
 | `GET` | `/api/accounting-system/tenant-administration-profile` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:59` |
 | `POST` | `/api/accounting-system/tenant-administration-profile` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:83` |
+| `GET` | `/api/accounting/onboarding/workspaces` | Gap | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:46` |
+| `POST` | `/api/accounting/onboarding/workspaces` | Gap | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:52` |
+| `GET` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:76` |
+| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/comparisons` | Gap | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:100` |
+| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/comparisons/{comparisonId}/replay` | Gap | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:156` |
+| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/criteria` | Gap | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:92` |
+| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/differences/{differenceKey}/assignment` | Gap | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:108` |
+| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets` | Gap | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:128` |
+| `GET` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets/{packetId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:136` |
+| `GET` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets/{packetId:guid}/download` | Gap | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:145` |
+| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/reviews` | Gap | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:118` |
+| `GET` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/sources` | Gap | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:83` |
 | `POST` | `/api/admin/cleanup/execute` | Gap | `src/Meridian.Ui.Shared/Endpoints/AdminEndpoints.cs:272` |
 | `GET` | `/api/admin/cleanup/preview` | Gap | `src/Meridian.Ui.Shared/Endpoints/AdminEndpoints.cs:232` |
 | `GET` | `/api/admin/error-codes` | Gap | `src/Meridian.Ui.Shared/Endpoints/AdminEndpoints.cs:349` |
@@ -697,6 +709,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `ApproveSecurityMasterOverrides` | Gap | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:22` |
 | `ApproveSecurityMasterRevisionRequest` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:98` |
 | `ApproveWorkflow` | Gap | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:29` |
+| `AssignOnboardingDifferenceRequestDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:31` |
 | `AuditTrailExplorerQueryDto` | Gap | `src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:8` |
 | `AuditTrailExplorerResultDto` | Gap | `src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:54` |
 | `AuditTrailObjectKindDto` | Gap | `src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:64` |
@@ -725,6 +738,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `BulkResolveSecurityMasterConflictsResult` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:587` |
 | `CanonicalizationAssuranceDto` | Gap | `src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:109` |
 | `CanonicalizationProviderSummaryDto` | Gap | `src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:119` |
+| `CaptureOnboardingComparisonRequestDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:25` |
 | `CashFinancingSummary` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:141` |
 | `CashFlowEntryDto` | Gap | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:933` |
 | `CashFlowProjectionPoint` | Gap | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:34` |
@@ -746,6 +760,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `CorporateActionTimelineEntryDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:96` |
 | `CounterpartyExposureDto` | Gap | `src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:10` |
 | `CouponEvent` | Gap | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:20` |
+| `CreateOnboardingWorkspaceRequestDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:18` |
 | `CrossFundReportingConsolidationDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:323` |
 | `CrossFundReportingConsolidationScopeDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:313` |
 | `DailyValuationBatchLifecycleRequestDto` | Gap | `src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:54` |
@@ -858,6 +873,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `FinancialRecordExplorerSummaryItemDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:51` |
 | `FinancialRecordExplorerTone` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:6` |
 | `FirstRunStatusDto` | Gap | `src/Meridian.Contracts/Workstation/FirstRunDtos.cs:2` |
+| `FreezeOnboardingPacketRequestDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:37` |
 | `FundAccountBrokerageBalanceSnapshotDto` | Gap | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:200` |
 | `FundAccountBrokerageCashTransactionDto` | Gap | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:247` |
 | `FundAccountBrokerageCorporateActionDto` | Gap | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:256` |
@@ -987,6 +1003,23 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `MultiAssetReadinessBlockerDto` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:982` |
 | `NormalizeBrokerTransactions` | Gap | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:20` |
 | `NullReportingRunNotifier` | Gap | `src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs:21` |
+| `OnboardingComparisonDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:71` |
+| `OnboardingCriteriaDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:9` |
+| `OnboardingCriteriaRevisionDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:61` |
+| `OnboardingDifferenceAssignmentDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:80` |
+| `OnboardingDifferenceDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:66` |
+| `OnboardingMissingSourceDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:52` |
+| `OnboardingObservationDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:47` |
+| `OnboardingPacketContentDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:97` |
+| `OnboardingPeriodDifferenceDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:88` |
+| `OnboardingReadinessDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:91` |
+| `OnboardingReadinessPacketDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:109` |
+| `OnboardingReviewDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:84` |
+| `OnboardingScopeDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:4` |
+| `OnboardingSourceCaptureDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:56` |
+| `OnboardingSourceSelectionDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:28` |
+| `OnboardingSourceSnapshotDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:41` |
+| `OnboardingWorkspaceDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:112` |
 | `OpenLotSummary` | Gap | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1112` |
 | `OperationsAccountingRecordEvidenceCategoryDto` | Gap | `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1160` |
 | `OperationsAccountingRecordSummaryDto` | Gap | `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1150` |
@@ -1290,6 +1323,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `ResolveSourceConflictRequest` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:58` |
 | `RestatementCandidateDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:157` |
 | `RetainedLedgerAmountDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:580` |
+| `ReviewOnboardingWorkspaceRequestDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:34` |
 | `ReviewReconciliationBreakRequest` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1015` |
 | `RunAttributionSummary` | Gap | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:920` |
 | `RunCashFlowSummary` | Gap | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:967` |
@@ -1516,6 +1550,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `TradingTrustGateEvidenceDocumentDto` | Gap | `src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:273` |
 | `TradingTrustGateReadinessDto` | Gap | `src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:291` |
 | `TradingTrustGateSampleReviewDto` | Gap | `src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:262` |
+| `UpdateOnboardingCriteriaRequestDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:21` |
 | `UpdateSecurityFieldRequest` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:41` |
 | `ValidateLedgerDraft` | Gap | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:24` |
 | `ValuationFreshnessPreviewDto` | Gap | `src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs:16` |
@@ -1629,8 +1664,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 ## Follow-up Queue
 
-- Document or intentionally suppress 454 mapped endpoint gap(s).
-- Document or intentionally suppress 900 workstation contract gap(s).
+- Document or intentionally suppress 466 mapped endpoint gap(s).
+- Document or intentionally suppress 923 workstation contract gap(s).
 
 ---
 
