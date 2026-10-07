@@ -11,6 +11,10 @@ last_reviewed: 2026-09-02
 
 # src/Meridian.Ui/dashboard
 
+Tailwind is pinned to 3.4.19 to match the checked-in PostCSS plugin, Tailwind configuration, and
+`@tailwind` stylesheet directives. Upgrading its major version requires migrating that pipeline
+together; changing only the dependency prevents workstation styles and bundles from building.
+
 Trading includes an account-scoped brokerage recovery panel backed by the shared readiness and
 execution reconciliation projection. The operator can synchronize and reconcile Alpaca portfolio
 evidence through the governed recovery endpoint. Connection health, portfolio currency and cash,
@@ -128,10 +132,6 @@ instead of introducing one-off screen styling.
 - `src/lib/dev-fixtures.ts` - compatibility facade for no-host fixtures. Add new screen or domain fixture payloads under `src/lib/dev-fixtures/` and register them through the resolver map instead of adding another large block to the facade.
 - `package.json` - dashboard build, test, and tooling commands.
 - Test files - browser workflow and component coverage.
-
-The dashboard uses Tailwind CSS 4 through `@tailwindcss/postcss`. The main stylesheet imports
-Tailwind and explicitly loads `tailwind.config.ts` so the workstation's existing theme tokens,
-font stacks, and utility extensions remain available during compilation.
 
 Legacy `/overview/*` links remain compatibility redirects in the app shell. The retired overview
 screen, Today panel, and unrouted Settings admin operations console are recorded as comment-only
@@ -1485,3 +1485,22 @@ Browser extensibility route helpers expose the shared core extensibility catalog
 ## Accounting close browser surface
 
 The Accounting route reuses fund-operations ledger views and now includes trial-balance source-event and approval drill-through affordances. Keep browser-only rendering in `src/screens/accounting-screen.tsx` and shared accounting close contracts in `src/features/accounting/accountingCloseModels.ts`.
+
+The close workspace (`/accounting`) exposes **Prepare next period**. Operators select an
+authoritative source plan, capture or reuse a retained template version, specify each task's
+calendar rule, select an authoritative target book and period, and resolve owner and policy
+changes before previewing. Calendar dates, dependency preservation, fresh evidence and sign-off
+requirements, stale-preview checks, and duplicate prevention are owned by shared close services.
+The browser never calculates rollover deadlines or copies completed controls. Prior completions,
+approvals, reviewed evidence, journal references and locks remain on their original period.
+
+All preparation reads and writes disable development fallback. Target-book discovery uses the
+authoritative source book's fund identity; stale or mismatched responses are discarded. A lost or
+interrupted creation response is retried with the same preview and idempotency key. A typed stale
+or missing preview response requires a new preview. Before creation, the browser saves only the
+opaque request identity in session storage. Reload and navigation recover that same request after
+fresh authorized source, template and book reads; no cached approval or preview state is reused.
+The creation result retains template version and history
+and links back to the prepared close scope. Reloaded plans expose their retained preparation
+lineage and creation history through the shared plan configuration. Focused coverage lives in
+`accounting-screen.prepare-next-period.test.tsx` and `close-preparation.api.test.ts`.

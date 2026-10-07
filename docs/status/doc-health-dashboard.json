@@ -1,11 +1,11 @@
 {
   "total_files": 698,
-  "total_lines": 154816,
+  "total_lines": 155036,
   "orphaned_count": 233,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 295,
-  "average_lines": 221.8,
+  "average_lines": 222.1,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1236,7 +1236,7 @@
     },
     {
       "path": "docs/ai/context/accounting-context.md",
-      "line_count": 38,
+      "line_count": 46,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2532,7 +2532,7 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-02.md",
-      "line_count": 772,
+      "line_count": 768,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2540,7 +2540,7 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-03.md",
-      "line_count": 739,
+      "line_count": 698,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2548,7 +2548,7 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-04.md",
-      "line_count": 682,
+      "line_count": 871,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2764,7 +2764,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11456,
+      "line_count": 11478,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5476,7 +5476,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1608,
+      "line_count": 1615,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5540,7 +5540,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 890,
+      "line_count": 903,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5732,7 +5732,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2670,
+      "line_count": 2677,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5740,7 +5740,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1487,
+      "line_count": 1506,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
