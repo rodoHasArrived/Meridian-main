@@ -98,8 +98,11 @@ split successor and one stock-merger unit successor. Those one-target transfers 
 current bases exactly; exchange/refunding retain their independent currency allocations and final
 residuals. New successor acquisition facts retain immutable `CorporateActionLineage`, including
 projected event and stable source-action identities, action date, predecessor identity/version,
-allocation, role and reporting tags, even after relief. Re-reviewing the same source action under
-another case/version cannot apply it again to its successor.
+allocation, role and reporting tags, even after relief. Immutable predecessor receipts certify the
+full ancestor chain, so re-reviewing the same source action under another case/version cannot apply
+it again after an intervening action. Historical absent source-ID or lineage fields retain their
+wire shape; source-event evidence resolves stable identity for ancestry certification without
+rewriting retained instructions or fingerprints.
 The reviewed instruction remains unchanged for replay. Successor yield/schedule continuation
 requires a separately reviewed workflow.
 
