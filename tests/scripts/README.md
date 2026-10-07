@@ -50,6 +50,10 @@ python3 -m unittest discover -s tests/scripts -p 'test_*.py'
 
 The `verify-workflows` lane of `scripts/ci.sh` discovers these suites through
 `build/scripts/ci/run-script-tests.py`; its quarantine register makes exclusions explicit.
+By default, the runner uses at most two fresh module processes, starts the slower recovery suites first,
+and reports each module's result and duration. Modules retain their full tests and fixtures;
+process isolation keeps mocks, environment changes, and fixture summary files separate.
+Use `--workers 1` for sequential execution with the same discovery and quarantine rules.
 The recovery suites execute the PowerShell producer and validator. PostgreSQL tool stubs exercise
 receipt behavior with real encryption and file restoration; database integration and operator
 acceptance still require separate operational evidence.

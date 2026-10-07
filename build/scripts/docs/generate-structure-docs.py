@@ -69,6 +69,8 @@ EXCLUDED_ROOT_FILE_NAMES = {
 }
 EXCLUDED_FILE_NAMES = {
     "appsettings.json",
+    # Ignored output from scan-todos.py; its presence depends on validation order.
+    "todo-scan-results.json",
     # Runtime scheduler artifact (present only while a session has a cron scheduled); excluding it keeps
     # the generated tree deterministic across local and CI checkouts.
     "scheduled_tasks.lock",
