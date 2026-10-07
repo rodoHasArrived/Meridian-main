@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "applicationCandidateCommit": "7cbdaff7293f91f9d486275e6386ced11f8e893b",
+  "artifacts": [
+    {
+      "path": "README.md",
+      "bytes": 3920,
+      "sha256": "3a923e993e747fc895a38b7976a083e13ad20ce3b6e4947dac29f1a3407a5ff0"
+    },
+    {
+      "path": "candidate-binding.json",
+      "bytes": 4703,
+      "sha256": "4541df68fac26e95acb1ba7c31d4002cbcd85d11255ac9444f7f01464e49dc0c"
+    },
+    {
+      "path": "capture.log.gz",
+      "bytes": 242,
+      "sha256": "38c7a805ee3551897afe3e910277122fecfaad3b51f9acfac6a52c8eebaa4f39",
+      "uncompressedBytes": 433,
+      "uncompressedSha256": "98a6913792b998be784d4416640fe9d360421aea349c65cadcc90d107a5cdf32"
+    },
+    {
+      "path": "capture.mjs",
+      "bytes": 21443,
+      "sha256": "75cd71b9f73ed3dead7fc9f7ce5417a8b6fb148a3047e6fefa5efeb0e10820a9"
+    },
+    {
+      "path": "cases-full.json.gz",
+      "bytes": 22006,
+      "sha256": "75ed085e7cd904619b2cfd5477e806fe789ba09790a4c62f7696247dda851e11",
+      "uncompressedBytes": 406944,
+      "uncompressedSha256": "c18f83a0af20128ef574b4523ab4db1423545b78238ce00abfbe3b1e0c586bcf"
+    },
+    {
+      "path": "cases.json",
+      "bytes": 18072,
+      "sha256": "fe8559af464bfc20c7b5c31f203da50b78f7bfa18fff87595abae7162e17d7d0"
+    },
+    {
+      "path": "dependencies.json",
+      "bytes": 4683,
+      "sha256": "549c949b25363c9487af85035ccfacbb5b079fdce52c335c3a9f88e00ff38789"
+    },
+    {
+      "path": "dependencies.log.gz",
+      "bytes": 295,
+      "sha256": "bf3b5744ad99cb967998c47916e7b47ec8dd17c6aa55466181e83d372cdf7c42",
+      "uncompressedBytes": 870,
+      "uncompressedSha256": "bbf2b976aec263ba83cb622288000b2c6d5f29bf0893993845d5f11ab203f032"
+    },
+    {
+      "path": "focused-tests.json.gz",
+      "bytes": 2981,
+      "sha256": "0497b586cd9c9dac6998d4a2a076e6bb4b1ec3b094d8bbfa68e5dcd8f10bc5c4",
+      "uncompressedBytes": 21296,
+      "uncompressedSha256": "0bb32dd7e3010f78a5a9ef04e404ecb4333aa92bf574ededdc17439763440167"
+    },
+    {
+      "path": "focused-tests.log.gz",
+      "bytes": 894,
+      "sha256": "54d1b353d2c13079147baf2dcd727b6de12901500673adc3c49b56b4a5ce9f05",
+      "uncompressedBytes": 2257,
+      "uncompressedSha256": "aed5a298a4653397a6fb1df387e6dbd136c42924b14e8a8b265c711b3a5ad065"
+    },
+    {
+      "path": "npm-ls-all.json.gz",
+      "bytes": 10568,
+      "sha256": "d0d4de14b751cd95fc09a73e2229842667c1ed8e7a0af3dac40070309b6897e6",
+      "uncompressedBytes": 101643,
+      "uncompressedSha256": "2a1082bad11eedef85e3bfb1e9d69fa42d4239c5e59cb5567057f4c5df1d6731"
+    },
+    {
+      "path": "npm-ls-all.stderr.txt.gz",
+      "bytes": 20,
+      "sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+      "uncompressedBytes": 0,
+      "uncompressedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "provenance.json",
+      "bytes": 3328,
+      "sha256": "ddbd70c1630f6b41ae67186f1504c0f7faf372d8ed092d002ff39b7e804afceb"
+    },
+    {
+      "path": "record-dependencies.mjs",
+      "bytes": 2601,
+      "sha256": "33d698eeb871a8e4384d9c5b4231acdec00dc00a83c07f45c8166b887dcb6fc6"
+    },
+    {
+      "path": "requests-responses.json.gz",
+      "bytes": 130192,
+      "sha256": "bc53b3d8eedae9e800eb45dfaca99f50eeaf945760579f8fb6505301eb273653",
+      "uncompressedBytes": 1177456,
+      "uncompressedSha256": "e034ca55b0a121f44528fd45aa53eb4511019f1fc0c189866c1672f9e851005b"
+    },
+    {
+      "path": "screenshots/S4-repaired-v9.png",
+      "bytes": 140884,
+      "sha256": "abdc797c1f460ea4e8d459fe74f84b8b650a4e648aae4c419bed57a95563b910"
+    },
+    {
+      "path": "screenshots/S5-published-v10.png",
+      "bytes": 108664,
+      "sha256": "1cdb56af20920159036613fe39a94c758679e8ed2bee522b73dfa04a976dde52"
+    },
+    {
+      "path": "verification.json",
+      "bytes": 3092,
+      "sha256": "80e3be1c1b614f4fdaf644905c69b9ce9e318105c6e8b9d185b9f11e186c56e0"
+    },
+    {
+      "path": "vite.log.gz",
+      "bytes": 157,
+      "sha256": "3533067108636697c9e67b95f3964b4ce923511e4c98ce75800adda77ca08ebe",
+      "uncompressedBytes": 168,
+      "uncompressedSha256": "2cff5025c94e16d73397d11c4985be91dcacce66ebd32bbcf1dc26087b91d855"
+    }
+  ]
+}

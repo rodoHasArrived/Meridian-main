@@ -2483,6 +2483,28 @@ Meridian-main
 │   │   │   │   ├── README.md
 │   │   │   │   ├── validation.json
 │   │   │   │   └── verify_packet.py
+│   │   │   ├── w10-seam-merge-20261007
+│   │   │   │   ├── screenshots
+│   │   │   │   │   ├── S4-repaired-v9.png
+│   │   │   │   │   └── S5-published-v10.png
+│   │   │   │   ├── candidate-binding.json
+│   │   │   │   ├── capture.log.gz
+│   │   │   │   ├── capture.mjs
+│   │   │   │   ├── cases-full.json.gz
+│   │   │   │   ├── cases.json
+│   │   │   │   ├── dependencies.json
+│   │   │   │   ├── dependencies.log.gz
+│   │   │   │   ├── focused-tests.json.gz
+│   │   │   │   ├── focused-tests.log.gz
+│   │   │   │   ├── manifest.json
+│   │   │   │   ├── npm-ls-all.json.gz
+│   │   │   │   ├── npm-ls-all.stderr.txt.gz
+│   │   │   │   ├── provenance.json
+│   │   │   │   ├── README.md
+│   │   │   │   ├── record-dependencies.mjs
+│   │   │   │   ├── requests-responses.json.gz
+│   │   │   │   ├── verification.json
+│   │   │   │   └── vite.log.gz
 │   │   │   ├── w10-seam-refresh-20261006
 │   │   │   │   ├── browser
 │   │   │   │   │   ├── screenshots
