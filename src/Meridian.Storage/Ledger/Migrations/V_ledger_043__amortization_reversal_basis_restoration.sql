@@ -26,9 +26,19 @@ begin
             and original.result_version = old.version
             and original.quantity_delta = 0 and original.quantity_after = old.open_quantity
             and new.open_quantity = old.open_quantity
-            and old.basis_adjustment ->> 'reason' = 'Amortization'
-            and old.basis_adjustment ->> 'mutationBatchId' = old.last_mutation_batch_id::text
-            and original.lot_snapshot_after -> 'basisAdjustment' = old.basis_adjustment
+            and old.basis_adjustment ->> 'Reason' = 'Amortization'
+            and old.basis_adjustment ->> 'MutationBatchId' = old.last_mutation_batch_id::text
+            -- The column uses the historical default serializer (PascalCase, numeric enums),
+            -- while immutable snapshots use web JSON (camelCase, string enums). Bind their
+            -- exact financial/lineage facts explicitly; the atomic correction validator also
+            -- compares the complete typed lot, instruction, security and evidence before insert.
+            and jsonb_build_object(
+                'mutationBatchId', old.basis_adjustment -> 'MutationBatchId',
+                'reason', old.basis_adjustment -> 'Reason',
+                'openQuantity', old.basis_adjustment -> 'OpenQuantity',
+                'transactionCostBasis', old.basis_adjustment -> 'TransactionCostBasis',
+                'functionalCostBasis', old.basis_adjustment -> 'FunctionalCostBasis')
+                = (original.lot_snapshot_after -> 'basisAdjustment') - 'amortization' - 'corporateAction'
             and original.lot_snapshot_before is not null
             and (original.lot_snapshot_before -> 'basisAdjustment' is null
                 or original.lot_snapshot_before -> 'basisAdjustment' = 'null'::jsonb)
