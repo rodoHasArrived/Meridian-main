@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-07
 ---
 
 # src/Meridian.Contracts
@@ -149,10 +149,13 @@ accepts older numeric status payloads; persisted queue records already use text 
   surfacing a data-hygiene problem as an integrity failure.
 - `Lifecycle/` - shared runtime state, readiness-check, shutdown-operation, shutdown-receipt,
   supervisor-manifest, exact-process-identity, database-identity, and session-receipt contracts.
+  `LifecycleStartupTiming` defines the startup stage budget shared by the launcher and supervisor.
 - `Operations/` - the program-wide verified terminal-outcome contract and append-only operational
   case-history port. Terminal operations use only `Succeeded`, `CompletedWithWarnings`, `Failed`,
   or `Blocked`, with evaluated postconditions, retained evidence and artifacts, issues, and
   actionable recovery guidance. Durable stores assign case-event sequence and hash-chain values.
+  Null object entries in terminal receipt collections are validation errors, so malformed retained
+  JSON cannot crash consumers or satisfy the launcher's verified startup gate.
   `OperationsOriginGuard` owns the "reviewed automation may not perform this action; a human
   operator is required" control — the predicate and the canonical refusal message live there, so the
   rule evolves in one place instead of across every module that enforces it. Only the throwing gates

@@ -81,6 +81,36 @@ PROJECT_SEEDS: dict[str, ProjectSeed] = {
         ("src/Meridian.Application/Pipeline/EventPipeline.cs",),
         ("Composition", "Pipeline"),
     ),
+    "Meridian.Launcher": ProjectSeed(
+        "Meridian.Launcher",
+        "host-shell",
+        "launcher",
+        "Installed Windows entrypoint that validates consumer commands and verifies request-bound startup outcomes.",
+        ("consumer launch", "startup receipt verification", "launcher command validation"),
+        ("launcher", "installed", "lifecycle", "startup receipt", "consumer"),
+        ("src/Meridian.Launcher/StartupOutcomeReceiptMonitor.cs", "src/Meridian.Contracts/Lifecycle"),
+        ("Program.cs", "LauncherCommandPolicy.cs", "StartupOutcomeReceiptMonitor.cs"),
+    ),
+    "Meridian.LifecycleSupervisor": ProjectSeed(
+        "Meridian.LifecycleSupervisor",
+        "host-shell",
+        "supervisor",
+        "Persistent per-user ownership of installed host/database startup, readiness, browser opening, and shutdown.",
+        ("installed startup debugging", "lifecycle control", "database process ownership"),
+        ("supervisor", "installed", "lifecycle", "postgresql", "readiness"),
+        ("src/Meridian.Contracts/Lifecycle", "src/Meridian.Contracts/Operations"),
+        ("Program.cs", "LifecycleSupervisorRuntime.cs", "LifecycleStartupOutcome.cs"),
+    ),
+    "Meridian.Setup": ProjectSeed(
+        "Meridian.Setup",
+        "host-shell",
+        "installer",
+        "Consumer executable payload installation, repair, and uninstall.",
+        ("consumer installation", "payload verification", "installed repair"),
+        ("installer", "installed", "consumer", "payload", "repair"),
+        ("src/Meridian.Setup/PayloadPackage.cs", "src/Meridian.Setup/InstallationTransaction.cs"),
+        ("Program.cs", "PayloadPackage.cs", "InstallationTransaction.cs"),
+    ),
     "Meridian.Contracts": ProjectSeed(
         "Meridian.Contracts",
         "host-shell",
@@ -373,6 +403,27 @@ SUBSYSTEM_SEEDS: dict[str, SubsystemSeed] = {
 
 DOC_CATALOG: list[dict[str, Any]] = [
     {
+        "path": "docs/reference/lifecycle-control-plane.md",
+        "title": "Installed lifecycle control plane",
+        "area": "runtime",
+        "whenToConsult": "When debugging installed launcher commands, supervisor ownership, database startup, readiness, or receipts.",
+        "keywords": ["launcher", "supervisor", "installed", "lifecycle", "readiness"],
+    },
+    {
+        "path": "docs/operators/browser-workstation-installer.md",
+        "title": "Consumer workstation installation",
+        "area": "runtime",
+        "whenToConsult": "When packaging, installing, repairing, or validating the consumer workstation.",
+        "keywords": ["installer", "installed", "consumer", "payload", "repair"],
+    },
+    {
+        "path": "docs/reference/verified-operation-outcomes.md",
+        "title": "Verified operation outcomes",
+        "area": "runtime",
+        "whenToConsult": "When changing request-bound launcher receipts, terminal outcome validation, or recovery evidence.",
+        "keywords": ["launcher", "supervisor", "lifecycle", "startup receipt", "verified outcome"],
+    },
+    {
         "path": "CLAUDE.md",
         "title": "Root project context",
         "area": "root-context",
@@ -536,6 +587,22 @@ SYMBOL_CATALOG: list[dict[str, Any]] = [
 ]
 
 TASK_ROUTE_SEEDS: list[dict[str, Any]] = [
+    {
+        "id": "installed-runtime",
+        "title": "Consumer launcher, lifecycle supervisor, and installation",
+        "description": "Use when auditing or debugging the installed entrypoint, request-bound startup receipts, host/database ownership, or consumer installation.",
+        "keywords": ["launcher", "supervisor", "installed", "installer", "consumer", "lifecycle", "startup receipt"],
+        "subsystems": ["host-shell"],
+        "startProjects": ["Meridian.Launcher", "Meridian.LifecycleSupervisor", "Meridian.Setup"],
+        "startSymbols": [],
+        "docs": [
+            "docs/reference/lifecycle-control-plane.md",
+            "docs/reference/verified-operation-outcomes.md",
+            "docs/operators/browser-workstation-installer.md",
+        ],
+        "recommendedSkill": "meridian-code-review",
+        "recommendedAgent": "code-review-agent",
+    },
     {
         "id": "provider-work",
         "title": "Provider implementation and provider bugs",
