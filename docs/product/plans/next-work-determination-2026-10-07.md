@@ -118,6 +118,50 @@ merging.
 **If #3109 cannot land quickly, the acceptance route from the predecessor is still correct and still
 unmade.** It is the fallback, not the plan.
 
+## Late correction — the lane now fails on three jobs, not one, and #3109 fixes all three
+
+Everything above about "exactly one failing job" was measured on run **#189** (`2da026b5`) and was
+accurate there. Run **#190** on today's head `2bc041f1` completed afterwards and **three of the four
+certification jobs fail**. Read from the run's own jobs and its uploaded `production-certification-190-1`
+evidence artifact:
+
+| Job on `2bc041f1` | Result | Failing step |
+| --- | --- | --- |
+| `same-commit documentation evidence` | **failure** | `Reject generated documentation drift` |
+| `NuGet and npm dependency evidence` | **failure** | `Assert both dependency gates passed` |
+| `deterministic PostgreSQL integration and coverage evidence` | **failure** | `Run Meridian service-backed integration tests`, then `Reject missing, failed, skipped or empty deterministic test evidence` |
+| `encrypted backup and clean restore drill` | success | — |
+
+**The PostgreSQL failure is one test and the message is exact.** From the artifact's
+`meridian-integrations_*.trx` — 1089 executed, 1088 passed, **1 failed**, 0 skipped:
+
+```
+Meridian.Tests.Integration.EndpointStubDetectionTests.UiApiRoutes_CategorizedCorrectly
+Expected categories["Other"] to be less than or equal to 10 because Too many uncategorized
+routes - add new categories as needed, but found 21 (difference of 11).
+```
+
+**Both new failures trace to one merge.** The only thing between `2da026b5` (PostgreSQL green) and
+`2bc041f1` is **#3106**, bounded accounting onboarding. It adds **11** route constants under
+`/api/accounting/onboarding/` to `UiApiRoutes`, none matched by an existing category in
+`EndpointStubDetectionTests` — `AccountingSystem` matches `/api/accounting-system`, with a hyphen,
+not `/api/accounting/`. Pre-existing uncategorized routes were therefore 10, and 10 + 11 = the 21
+observed. The same merge added `OnboardingEndpoints.cs` without regenerating the API contract
+dashboard, which is the documentation-evidence failure.
+
+**This strengthens Tier 0 rather than weakening it.** #3109 carries a fix for **all three**:
+
+- the npm advisory, via the Tailwind 4 `package.json`/`package-lock.json` move;
+- the documentation drift, since it regenerates `coverage-report.md`,
+  `api-contract-coverage-dashboard.{md,json}` and `doc-health-dashboard.{md,json}`;
+- the PostgreSQL failure, via commit `7b575c3b2`, which adds the `Onboarding` category.
+
+One caveat on that last fix, worth knowing before it lands: categorizing 11 routes takes `Other`
+from 21 back to **exactly 10** against a `<= 10` assertion. It passes with **zero headroom**, so the
+next uncategorized route added anywhere re-breaks this test. Raising the cap, or asserting that
+`Other` is empty with an explicit allow-list, would be a more durable shape than a magic number that
+is now exactly full.
+
 ## Tier 1 — Two open PRs implement the same W10-LOT-002 criterion with incompatible contracts
 
 This is new and it will cost real work if it is not caught before a merge.
@@ -249,7 +293,7 @@ report `conclusion: success` while the job fails (they are `continue-on-error`).
 
 | Priority | Work | Why now |
 | --- | --- | --- |
-| **P0** | **Review and land the Tailwind 4 migration (#3109), ideally split so the dashboard/dependency slice lands alone** | Deletes `braces`/`micromatch` from the graph; its own evidence shows **zero vulnerabilities, gate `passed: true`, 3555 tests green** with the register still empty. Replaces a 5-day-old unmade governance decision with reviewable engineering |
+| **P0** | **Review and land #3109 — it is the only change that clears all three failing certification jobs** | Deletes `braces`/`micromatch` (zero vulnerabilities, gate `passed: true`, 3555 tests green, register still empty), regenerates the drifted documentation artifacts, **and** fixes the `UiApiRoutes_CategorizedCorrectly` failure #3106 introduced. Replaces a 5-day-old unmade governance decision with reviewable engineering |
 | **P0** | Re-run the dependency gate on the merge result | #3109's evidence is hashed against baseline `9c96c3f7`, not today's head |
 | **P0** | Decide the canonical W10-LOT-002 successor contract before #3109 or #3102 merges | Two incompatible shapes, neither containing the other, on the only `critical` row; both merge cleanly enough to land by accident |
 | **P0** | Then: signing secret, the ~1 GB installer decision, freeze a green head, tag `v0.1.0-rc.1` | Unchanged and not engineering work. One tag run mints the same-commit evidence five P0 rows wait on; no `v*` tag has ever existed |
