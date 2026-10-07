@@ -318,6 +318,8 @@ Portfolio Records creates accounts with `IFundAccountStore.TryCreateAccountAsync
 insert-only operation. A duplicate account ID returns false and retains the existing record;
 account updates and reviewed legacy imports continue to use the separate upsert operation.
 Both paths retain the store's tenant ownership checks.
+Ordinary account lookups and queries reject unresolved tenant scope before opening a database
+connection; the explicitly authorized query across tenants retains its separate admission path.
 
 ### Operational case history
 
