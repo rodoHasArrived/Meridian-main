@@ -78,8 +78,10 @@ public sealed class LedgerDisposalTaxEndpointTests
         parcel.DeferredLoss.Should().Be(0m);
 
         await fixture.Store.Received(1).QueryAsync(
-            new LedgerJournalEntryQuery(LedgerBookId: fixture.Book.LedgerBookId, PeriodId: fixture.Period.PeriodId),
+            new LedgerJournalEntryQuery(LedgerBookId: fixture.Book.LedgerBookId, PeriodId: fixture.Period.PeriodId,
+                JournalEntryId: fixture.Record.Entry.JournalEntryId),
             Arg.Any<CancellationToken>());
+        await fixture.Store.DidNotReceive().GetByPeriodAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
         await fixture.History.Received(1).GetTaxLotDisposalHistoryAsync(
             fixture.Book.LedgerBookId,
             Arg.Is<IReadOnlyList<Guid>>(ids => ids.Count == 1 && ids[0] == fixture.Record.Entry.JournalEntryId),

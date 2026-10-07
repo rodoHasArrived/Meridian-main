@@ -15,7 +15,9 @@ Tax-lot disposal history now returns the atomic batch's exact `PolicyRevision` a
 and restores each deferral's retained policy ID, replacement window and scope. These reads do not
 consult mutable standing policy rows. A recording timestamp is not evaluation coverage; activation
 dates and parcel deferral allocations absent from durable history remain unavailable. No schema or
-posting behavior changes are introduced by this W10-TAX-001 inspection slice.
+posting behavior changes are introduced by this W10-TAX-001 inspection slice. Retained deferral rows
+must agree on their repeated aggregate matched quantity before history can certify finality. Exact
+journal queries retain the existing book, period and tenant filters while hydrating every journal leg.
 
 Atomic file-write diagnostics retain operation outcomes, byte counts, OS error numbers and exception
 types. Paths, file contents, checksum values and exception messages are omitted because they can

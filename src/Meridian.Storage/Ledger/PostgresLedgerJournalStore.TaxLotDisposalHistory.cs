@@ -329,12 +329,14 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
 
             if (byBatch.TryGetValue(batchId, out var existing))
             {
+                if (reader.GetDecimal(3) != existing.MatchedQuantity)
+                    throw new LedgerValidationException("Retained wash-sale deferrals disagree on the disposal's aggregate matched replacement quantity.");
                 existing.Increases.Add(increase);
                 continue;
             }
 
-            // Every deferral row from one disposal records the same matched quantity, so the first
-            // row establishes it rather than the rows summing to a multiple of it.
+            // Matched quantity is a disposal aggregate repeated on every deferral row. Retain it
+            // once and certify agreement across all rows before exposing it as saturation evidence.
             byBatch[batchId] = (new List<WashSaleBasisIncrease> { increase }, reader.GetDecimal(3));
         }
 

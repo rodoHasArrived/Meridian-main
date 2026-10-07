@@ -29,7 +29,8 @@ public static partial class LedgerEndpoints
             var book = await store.GetLedgerBookAsync(bookId, ct).ConfigureAwait(false);
             if (book is null)
                 return Results.NotFound();
-            var entries = await store.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: bookId, PeriodId: periodId), ct)
+            var entries = await store.QueryAsync(new LedgerJournalEntryQuery(
+                    LedgerBookId: bookId, PeriodId: periodId, JournalEntryId: journalEntryId), ct)
                 .ConfigureAwait(false);
             var journal = entries.SingleOrDefault(record => record.Entry.JournalEntryId == journalEntryId && record.PeriodId == periodId);
             if (journal is null)
