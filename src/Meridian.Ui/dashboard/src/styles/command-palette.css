@@ -40,7 +40,42 @@
 }
 
 .command-palette-command {
+  min-width: 0;
   box-shadow: none;
+}
+
+.command-palette-command-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0.5rem;
+}
+
+.command-palette-command-copy {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.command-palette-command-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
+  gap: 0.375rem;
+}
+
+.command-palette-route {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.command-palette-command-meta .command-palette-status {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .command-palette-group {

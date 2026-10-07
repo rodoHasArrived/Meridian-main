@@ -301,13 +301,15 @@ export function CommandPalette({
                       closePalette();
                     }}
                   >
-                    <span className="flex items-start justify-between gap-3">
-                      <span className="min-w-0">
-                        <span className="block truncate font-semibold leading-snug">{item.commandLabel}</span>
-                        <span className="mt-0.5 block truncate text-xs text-muted-foreground">{item.description}</span>
+                    <span className="command-palette-command-content">
+                      <span className="command-palette-command-copy">
+                        <span className="block font-semibold leading-snug">{item.commandLabel}</span>
+                        <span className="mt-0.5 block text-xs text-muted-foreground">{item.description}</span>
                       </span>
-                      <span className="command-palette-route shrink-0" aria-label={`Route ${item.routeLabel}`}>
-                        {item.routeLabel}
+                      <span className="command-palette-command-meta">
+                        <span className="command-palette-route" aria-label={`Route ${item.routeLabel}`} title={item.routeLabel}>
+                          {item.routeLabel}
+                        </span>
                       </span>
                     </span>
                   </Link>
@@ -392,8 +394,8 @@ export function CommandPalette({
                       }
                     }}
                   >
-                    <span className="flex items-start justify-between gap-3">
-                      <span className="min-w-0">
+                    <span className="command-palette-command-content">
+                      <span className="command-palette-command-copy">
                         <span aria-live="polite" className="block font-semibold leading-snug">
                           {armedActionId === item.id
                             ? `Press Enter again to confirm — ${item.commandLabel}`
@@ -401,8 +403,8 @@ export function CommandPalette({
                         </span>
                         <span className="mt-0.5 block text-xs text-muted-foreground">{item.description}</span>
                       </span>
-                      <span className="flex shrink-0 flex-col items-end gap-1.5">
-                        <span className="command-palette-route">{item.routeLabel}</span>
+                      <span className="command-palette-command-meta">
+                        <span className="command-palette-route" title={item.routeLabel}>{item.routeLabel}</span>
                         {item.statusVisible && (
                           <span
                             className={cn(
@@ -440,13 +442,13 @@ export function CommandPalette({
                       closePalette();
                     }}
                   >
-                    <span className="flex items-start justify-between gap-3">
-                      <span className="min-w-0">
+                    <span className="command-palette-command-content">
+                      <span className="command-palette-command-copy">
                         <span className="block font-semibold leading-snug">{item.commandLabel}</span>
                         <span className="mt-0.5 block text-xs text-muted-foreground">{item.description}</span>
                       </span>
-                      <span className="flex shrink-0 flex-col items-end gap-1.5">
-                        <span className="command-palette-route" aria-label={`Route ${item.routeLabel}`}>
+                      <span className="command-palette-command-meta">
+                        <span className="command-palette-route" aria-label={`Route ${item.routeLabel}`} title={item.routeLabel}>
                           {item.routeLabel}
                         </span>
                         {(item.active || item.statusVisible) && (
