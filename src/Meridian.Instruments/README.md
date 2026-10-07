@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-INSTRUMENTS
 path: src/Meridian.Instruments
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-13
+last_reviewed: 2026-10-06
 ---
 
 # src/Meridian.Instruments
@@ -17,6 +17,13 @@ come from the retained projection as-of date, or the contract effective date whe
 Replay identity coverage is in `AssetOperationsReadServiceTests`; publication observation timestamps
 and cross-writer ordering require separate evidence before claiming exactly-once effects.
 
+
+Canonical split posting explicitly opts into `CanonicalLotTransferJournal`: the projection emits
+a reviewed cashless basis transfer for one whole-unit successor. Existing operational split
+callers retain their no-journal quantity projection. `CorporateActionAssetAccountingEventMapper`
+requires the complete canonical instruction for exchange/refunding and explicitly opted-in lot
+transfers; other split/merger projections keep their existing mapping behavior. Optional canonical
+instructions retain their exact reviewed payload on the Projected event.
 
 ## Purpose
 
@@ -116,6 +123,19 @@ SecurityId, book-position id and expected version, book/period/basis scope, econ
 projection lineage, projected balanced effect, and complete typed retained evidence. Generated
 obligations and service availability can explain pending work, but neither can manufacture evidence
 readiness or advance an event into Drafted or Posted state.
+`CorporateActionAssetAccountingEventMapper` requires a reviewed `OpenLotSuccessorInstructionDto`
+for cashless Reg S/144A exchange, advance-refunding handoffs and projections explicitly marked
+`CanonicalLotTransferJournal`. Whole-unit splits opt into that transfer mode; older operational and
+identifier-changing projections retain their existing mapping. The optional marker is omitted when
+false. Any supplied instruction must match the
+exact existing projection, source security version, predecessor and successor allocations, and
+retained evidence; its fingerprint participates in the posting identity. The mapper carries it as
+a typed corporate-action lot instruction into governed candidate preparation. It rejects missing
+or contradictory instructions and successor corrections, and cannot approve or persist lots.
+Corporate-action monetary projections use the Contracts `CurrencyMinorUnits` definition, including
+four-decimal CLF/UYW amounts, so projected carrying allocations and canonical successor validation
+agree. The successor handoff refuses non-`Successor` Reg S/144A roles and zero functional carrying
+allocations before governed drafting.
 The factor-paydown model computes `held face x (prior factor - current factor)`. Equal factors emit
 no posting candidate; factor increases, missing evidence, stale versions, invalid face/factors, and
 unrepresentable currency results fail closed. Its event identity excludes run timestamps so replay
@@ -138,6 +158,7 @@ UI Shared and strategy adapters consume `Meridian.Instruments.Options.OptionsCha
 <!-- source-roadmap-traceability:begin module=SRC-DESIGN-INSTRUMENTS -->
 | Roadmap item | Title |
 | --- | --- |
+| `W10-LOT-002` | Security-identified open-lot convergence |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
 | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |

@@ -71,6 +71,12 @@
       "rule_id": "migration-drop-table-member",
       "reason": "Requires human schema/storage review. The cost check is dropped and immediately recreated transactionally as a superset: canonical discrete disposals retain current basis in their pre-relief acquisition and governed-adjustment snapshot, while acquisition-cost, AverageCost and PR #3048 amortization cases remain admitted. No columns or data are removed. Follows PR #3048's ordinal 040 amortization migration.",
       "review_after": "2027-04-02"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_042__atomic_lot_successors.sql",
+      "rule_id": "migration-drop-table-member",
+      "reason": "Requires human schema/storage review. Replaces only named check constraints transactionally with supersets admitting governed CorporateAction predecessor closeout and successor opening. Existing acquisition, disposal, redistribution and amortization rules remain valid; no table, column, row or acquisition fact is removed. The new nullable instruction is required only for new successor batches, preserving historical replay. AtomicTaxLotSuccessorMigrationTests exercises a populated through-041 upgrade, preserves legacy row values and migration receipts, reapplies 042 after successor rows exist, and recreates the migration runner on restart. Its injected DDL failure verifies restoration of the prior constraints, absence of the new column and unchanged receipts before retry. This rollback evidence covers an unsuccessful upgrade transaction; it does not authorize a downgrade that removes retained successor instructions.",
+      "review_after": "2027-04-06"
     }
   ],
   "removed_migrations": [

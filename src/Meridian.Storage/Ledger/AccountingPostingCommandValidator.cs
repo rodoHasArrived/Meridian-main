@@ -285,6 +285,19 @@ public static class AccountingPostingCommandValidator
                 throw new LedgerValidationException("Canonical lot amortization inputs must match the governed posting scope and date.");
         }
 
+        if (command.LotCorporateAction is { } corporateAction)
+        {
+            try
+            { Meridian.Contracts.Accounting.Lots.OpenLotSuccessors.Validate(corporateAction); }
+            catch (ArgumentException exception) { throw new LedgerValidationException(exception.Message); }
+            if (eventKind != AssetAccountingEventKindDto.CorporateAction || command.LotAmortization is not null
+                || corporateAction.Projection.EconomicEvent?.EffectiveDate != command.EffectiveDate
+                || corporateAction.ExpectedLot.SecurityId != command.EconomicEvent.SecurityId
+                || corporateAction.ExpectedLot.BookPositionId != command.BookPositionId
+                || corporateAction.ExpectedLot.LedgerBookId != command.LedgerBookId)
+                throw new LedgerValidationException("Canonical successor inputs must match the governed posting scope and date.");
+        }
+
         if (command.Evidence.Any(item => item.EffectiveDate != command.EffectiveDate
             && (item.Kind != AccountingPostingEvidenceKindDto.Source || !AssetAccountingEvidenceSubjects.MatchesEventEvidenceDate(
             eventKind, command.EffectiveDate, command.EconomicEvent.SecurityId ?? Guid.Empty,
@@ -293,7 +306,7 @@ public static class AccountingPostingCommandValidator
                 item.SourceReference!, item.ReviewStatus!, item.Reviewer!, item.ReviewedAtUtc!.Value,
                 item.EffectiveDate!.Value, item.EvidenceVersion!.Value, item.RetainedAtUtc, item.RetainedBy,
                 item.SubjectType!, item.SubjectId!),
-            command.LotAmortization, requireInstruction: true))))
+            command.LotAmortization, requireInstruction: true, corporateAction: command.LotCorporateAction))))
         {
             throw new LedgerValidationException(
                 "Asset accounting posting evidence effective date must match the economic event effective date.");
@@ -451,7 +464,8 @@ public static class AccountingPostingCommandValidator
             entry.Lines,
             normalizedMetadata.Tags,
             typedSecurityId,
-            command.BookPositionId ?? command.EconomicEvent?.BookPositionId);
+            command.BookPositionId ?? command.EconomicEvent?.BookPositionId,
+            command.LotCorporateAction);
         return new JournalEntry(
             entry.JournalEntryId,
             entry.Timestamp,
@@ -608,7 +622,8 @@ public static class AccountingPostingCommandValidator
         IReadOnlyList<LedgerEntry> lines,
         IReadOnlyDictionary<string, string>? tags,
         Guid? typedInstrumentId,
-        Guid? typedPositionId)
+        Guid? typedPositionId,
+        Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? corporateAction)
     {
         if ((tags is null || tags.Count == 0) &&
             !typedInstrumentId.HasValue &&
@@ -624,9 +639,11 @@ public static class AccountingPostingCommandValidator
             var dimensions = line.Dimensions ??
                 (tags is null ? null : BuildLineDimensions(line.EntryId, tags));
 
+            var isReviewedSuccessor = corporateAction is not null && corporateAction.Successors.Any(target =>
+                target.Lot.SecurityId == dimensions?.InstrumentId && target.Lot.BookPositionId == dimensions?.PositionId);
             if (dimensions?.InstrumentId is Guid instrumentId &&
                 typedInstrumentId.HasValue &&
-                instrumentId != typedInstrumentId.Value)
+                instrumentId != typedInstrumentId.Value && !isReviewedSuccessor)
             {
                 throw new LedgerValidationException(
                     $"Ledger line '{line.EntryId:D}' instrument dimension conflicts with the typed economic event.");
@@ -634,7 +651,7 @@ public static class AccountingPostingCommandValidator
 
             if (dimensions?.PositionId is Guid positionId &&
                 typedPositionId.HasValue &&
-                positionId != typedPositionId.Value)
+                positionId != typedPositionId.Value && !isReviewedSuccessor)
             {
                 throw new LedgerValidationException(
                     $"Ledger line '{line.EntryId:D}' position dimension conflicts with the typed book position.");

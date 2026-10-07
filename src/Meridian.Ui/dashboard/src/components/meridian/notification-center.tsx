@@ -62,7 +62,7 @@ export function NotificationCenter({ overview, fundAccountId }: NotificationCent
         aria-label={bellLabel}
         title={bellLabel}
         onClick={() => setOpen(true)}
-        className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-transparent text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-transparent text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
       >
         <Bell className="h-4 w-4" aria-hidden="true" />
         {unreadCount > 0 ? (
@@ -87,7 +87,7 @@ export function NotificationCenter({ overview, fundAccountId }: NotificationCent
                     : `${unreadCount} unread of ${notifications.length}.`}
                 </SheetDescription>
               </div>
-              <div className="flex flex-shrink-0 items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2">
                 {unreadCount > 0 ? (
                   <Button size="sm" variant="outline" type="button" onClick={() => center.markAllRead()}>
                     <Check className="h-3.5 w-3.5" aria-hidden="true" />
@@ -153,7 +153,7 @@ function NotificationRow({ entry, onMarkRead, onDismiss, onOpenRoute }: Notifica
       <div className="flex items-start gap-2.5">
         <span
           aria-hidden="true"
-          className={cn("mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full", entry.read ? "bg-muted-foreground/40" : SEVERITY_DOT[entry.severity])}
+          className={cn("mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full", entry.read ? "bg-muted-foreground/40" : SEVERITY_DOT[entry.severity])}
         />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -167,7 +167,7 @@ function NotificationRow({ entry, onMarkRead, onDismiss, onOpenRoute }: Notifica
             <span>{formatRelativeAge(entry.timestamp)}</span>
           </div>
         </div>
-        <div className="flex flex-shrink-0 flex-col items-end gap-1.5">
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
           {entry.route ? (
             <Button asChild size="sm" variant="ghost">
               <Link to={entry.route} onClick={onOpenRoute} aria-label={`Open ${entry.title}`}>

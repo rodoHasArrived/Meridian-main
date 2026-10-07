@@ -369,7 +369,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
           <section
             id="family-office-ownership-detail"
             tabIndex={-1}
-            className="rounded-xl border border-border/70 bg-background/30 p-4 focus:outline-none focus:ring-2 focus:ring-primary/60"
+            className="rounded-xl border border-border/70 bg-background/30 p-4 focus:outline-hidden focus:ring-2 focus:ring-primary/60"
             role="region"
             aria-label={vm.ownershipGraph.selectedDetailTitle}
           >
@@ -439,7 +439,7 @@ function OwnershipNodeButton({
       ref={refCallback}
       type="button"
       className={cn(
-        "min-h-28 rounded-sm border px-4 py-3 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary/60",
+        "min-h-28 rounded-sm border px-4 py-3 text-left transition-colors focus:outline-hidden focus:ring-2 focus:ring-primary/60",
         graphNodeClassName[node.tone],
         node.isSelected ? "ring-2 ring-primary/70" : "hover:border-primary/50"
       )}

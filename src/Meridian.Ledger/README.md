@@ -19,6 +19,11 @@ source evidence at workbench validation and lifecycle boundaries. `RecurringTemp
 the generated event without granting submission, approval or posting authority. See
 [Recurring Journal](../../docs/domain/recurring-journal.md) for the retention and recovery contract.
 
+`CanonicalCorporateActionLotReport` packages the immutable predecessor closeout and successor
+acquisition snapshots. `LedgerReportPackBuilder` includes `corporate-action-lot-evidence.json` in
+the artifact manifest and signature when governed reporting supplies verified successor receipts.
+This proof preserves original/current currency bases, acquisition dates/FX and immutable origins.
+
 ## Shared close and lot convergence
 
 `OpenLotReliefService` uses the shared decimal consumption walk for canonical FIFO/LIFO/HIFO/SpecificId/AverageCost selection and retains transaction and functional basis separately. It refuses mixed security, position, book, quantity-basis, and currency scopes. The durable disposal writer and reporting capture consume the canonical evidence contract. Durable AverageCost posting restates the surviving pool atomically; discrete relief subsequently consumes that current basis and retains exact remaining basis. Acquisition facts stay immutable, and Reporting reproduces the certified posted result.

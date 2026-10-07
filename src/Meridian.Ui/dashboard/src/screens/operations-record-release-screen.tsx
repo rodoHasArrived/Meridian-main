@@ -143,7 +143,7 @@ export function OperationsRecordReleaseScreen({ data, reporting }: OperationsRec
                 aria-pressed={step.id === selectedStep?.id}
                 onClick={() => handleStepSelect(step.id)}
                 className={cn(
-                  "flex h-full w-full min-w-0 flex-col justify-between rounded-md border px-3 py-3 text-left text-sm transition-colors hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40",
+                  "flex h-full w-full min-w-0 flex-col justify-between rounded-md border px-3 py-3 text-left text-sm transition-colors hover:bg-secondary/45 focus:outline-hidden focus:ring-2 focus:ring-primary/40",
                   readinessToneToPanelClass(step.tone),
                   step.id === selectedStep?.id && "ring-2 ring-primary/35"
                 )}
@@ -430,7 +430,7 @@ function ReleaseEvidenceRow({ row }: { row: OperationsRecordReleaseEvidenceRow }
         to={row.href}
         role="listitem"
         aria-label={row.ariaLabel}
-        className={cn("block rounded-md border px-3 py-2 hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40", readinessToneToPanelClass(row.tone))}
+        className={cn("block rounded-md border px-3 py-2 hover:bg-secondary/45 focus:outline-hidden focus:ring-2 focus:ring-primary/40", readinessToneToPanelClass(row.tone))}
       >
         {content}
       </Link>

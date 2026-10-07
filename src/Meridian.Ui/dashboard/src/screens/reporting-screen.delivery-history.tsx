@@ -85,7 +85,7 @@ export function ReportingDeliveryHistoryPanel({
                           return safeHref ? (
                             <a
                               key={`${attempt.attemptId}-${link.kind}-${index}`}
-                              className="inline-flex min-w-0 items-center gap-1.5 rounded-sm border border-border/60 bg-secondary/20 px-2 py-1 text-[11px] text-muted-foreground hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                              className="inline-flex min-w-0 items-center gap-1.5 rounded-sm border border-border/60 bg-secondary/20 px-2 py-1 text-[11px] text-muted-foreground hover:bg-secondary/45 focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                               href={safeHref}
                               aria-label={`${redactReportingCredentialText(link.label)} ${link.requiresToken ? "fragment-token gated" : "internal route"}`}
                             >

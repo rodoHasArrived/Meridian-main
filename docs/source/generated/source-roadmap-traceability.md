@@ -80,6 +80,7 @@ do_not_edit: true
 | `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W10-PERF-001` | Portfolio and investor return measurement |
 | `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
 | `SRC-DESIGN-IDENTITY` | Meridian Identity design module | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-DESIGN-INSTRUMENTS` | Meridian Instruments design module | `W10-LOT-002` | Security-identified open-lot convergence |
 | `SRC-DESIGN-INSTRUMENTS` | Meridian Instruments design module | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-DESIGN-INSTRUMENTS` | Meridian Instruments design module | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
 | `SRC-DESIGN-INSTRUMENTS` | Meridian Instruments design module | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
@@ -170,6 +171,7 @@ do_not_edit: true
 | `SRC-UI-SERVICES` | UI services | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-UI-SERVICES` | UI services | `W4-RPT-001` | Governed report pack readiness |
 | `SRC-UI-SERVICES` | UI services | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-UI-SHARED` | UI shared contracts | `W10-LOT-002` | Security-identified open-lot convergence |
 | `SRC-UI-SHARED` | UI shared contracts | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `SRC-UI-SHARED` | UI shared contracts | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-UI-SHARED` | UI shared contracts | `W4-RECON-001` | Portfolio ledger reconciliation readiness |

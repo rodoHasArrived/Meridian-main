@@ -214,6 +214,22 @@ public sealed class AccountingPostingCandidateService :
             .Where(static group => group.Count() > 1)
             .Select(static group => group.Key)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        LedgerTaxLotRecord? predecessorLot = null;
+        if (request.AssetLotMutation?.CorporateAction is { } successorInstruction)
+        {
+            Meridian.Contracts.Accounting.Lots.OpenLotSuccessors.Validate(successorInstruction);
+            if (_taxLotStore is null)
+                throw new InvalidOperationException("Successor candidates require the authoritative lot store to preserve the predecessor account identity.");
+            predecessorLot = (await _taxLotStore.GetTaxLotsByIdsAsync(successorInstruction.ExpectedLot.LedgerBookId,
+                [successorInstruction.ExpectedLot.TaxLotRecordId], ct).ConfigureAwait(false)).SingleOrDefault()
+                ?? throw new InvalidOperationException("The predecessor lot is missing from the authoritative ledger book.");
+            // Account identity survives closeout, allowing a retained approved candidate to replay.
+            // Draft preparation and the atomic store independently compare the full reviewed lot.
+            if (predecessorLot.SecurityId != successorInstruction.ExpectedLot.SecurityId
+                || predecessorLot.BookPositionId != successorInstruction.ExpectedLot.BookPositionId
+                || predecessorLot.LotId != successorInstruction.ExpectedLot.LotId)
+                throw new InvalidOperationException("The predecessor account does not belong to the reviewed durable lot identity.");
+        }
         var lines = new List<AccountingJournalDraftLineRequest>(dryRun.GeneratedPostingLines.Count);
 
         for (var index = 0; index < dryRun.GeneratedPostingLines.Count; index++)
@@ -264,8 +280,19 @@ public sealed class AccountingPostingCandidateService :
             }
 
             var amount = Math.Abs(line.Amount);
+            var account = new LedgerAccount(chartNode.AccountName, accountType);
+            if (predecessorLot is not null && IsCanonicalSuccessorLine(request, line))
+                account = account with { FinancialAccountId = predecessorLot.Account.FinancialAccountId };
+            if (predecessorLot is not null && line.Side == AccountingTemplateLineSideDto.Credit
+                && line.Dimensions?.InstrumentId == predecessorLot.SecurityId
+                && line.Dimensions?.PositionId == predecessorLot.BookPositionId)
+            {
+                if (account.Name != predecessorLot.Account.Name || account.AccountType != predecessorLot.Account.AccountType)
+                    throw new InvalidOperationException("The mapped predecessor account must match the durable lot carrying account.");
+                account = predecessorLot.Account;
+            }
             lines.Add(new AccountingJournalDraftLineRequest(
-                new LedgerAccount(chartNode.AccountName, accountType),
+                account,
                 line.Side == AccountingTemplateLineSideDto.Debit ? amount : 0m,
                 line.Side == AccountingTemplateLineSideDto.Credit ? amount : 0m,
                 line.Description,
@@ -320,14 +347,17 @@ public sealed class AccountingPostingCandidateService :
                 ProjectionLineage = request.ProjectionLineage,
                 RulePackReference = request.RulePackReference,
                 LotAmortization = request.AssetLotMutation is { Intent: AssetLotMutationIntentDto.Amortize }
-                    ? request.AssetLotMutation.Amortization : null
+                    ? request.AssetLotMutation.Amortization : null,
+                LotCorporateAction = request.AssetLotMutation is { Intent: AssetLotMutationIntentDto.CorporateAction }
+                    ? request.AssetLotMutation.CorporateAction : null
             }
             : null;
         var write = draft.Write is null
             ? null
             : draft.Write with
             {
-                Entry = WithSecurityMasterLineage(draft.Write.Entry, authority, request.Currency),
+                Entry = WithSecurityMasterLineage(draft.Write.Entry, authority,
+                    request.AssetLotMutation?.CorporateAction?.ExpectedLot.Acquisition.AcquisitionCurrency ?? request.Currency),
                 PostingCommand = postingCommand
             };
 
@@ -1090,6 +1120,7 @@ public sealed class AccountingPostingCandidateService :
         for (var index = 0; index < generatedLines.Count; index++)
         {
             var dimensions = generatedLines[index].Dimensions;
+            var isSuccessorLine = IsCanonicalSuccessorLine(request, generatedLines[index]);
             AddMismatch(
                 issues,
                 TextEquals(dimensions?.FundId, book.FundProfileId),
@@ -1107,7 +1138,7 @@ public sealed class AccountingPostingCandidateService :
             {
                 AddMismatch(
                     issues,
-                    dimensions?.InstrumentId == instrumentId,
+                    dimensions?.InstrumentId == instrumentId || isSuccessorLine,
                     "posting-candidate.book-context-generated-line-instrument-mismatch",
                     "Every generated posting line instrument dimension must match the typed book context.",
                     $"generatedPostingLines[{index}].dimensions.instrumentId");
@@ -1117,13 +1148,22 @@ public sealed class AccountingPostingCandidateService :
             {
                 AddMismatch(
                     issues,
-                    dimensions?.PositionId == positionId,
+                    dimensions?.PositionId == positionId || isSuccessorLine,
                     "posting-candidate.book-context-generated-line-position-mismatch",
                     "Every generated posting line position dimension must match the typed book context.",
                     $"generatedPostingLines[{index}].dimensions.positionId");
             }
         }
     }
+
+    private static bool IsCanonicalSuccessorLine(
+        PostingRuleJournalCandidateRequestDto request,
+        GeneratedPostingLineDto line)
+        => request.AssetLotMutation is { Intent: AssetLotMutationIntentDto.CorporateAction, CorporateAction: { } instruction }
+           && line.Side == AccountingTemplateLineSideDto.Debit && instruction.Successors.Any(target =>
+               line.Amount == target.Lot.OpenFunctionalCostBasis
+               && line.Dimensions?.InstrumentId == target.Lot.SecurityId
+               && line.Dimensions?.PositionId == target.Lot.BookPositionId);
 
     private static void AddAuthoritativeBookMismatches(
         AccountingBookContextDto context,
@@ -1257,7 +1297,7 @@ public sealed class AccountingPostingCandidateService :
             var generatedPositionId = generatedLines[index].Dimensions?.PositionId;
             AddMismatch(
                 issues,
-                generatedPositionId.HasValue && generatedPositionId == positionId,
+                generatedPositionId.HasValue && (generatedPositionId == positionId || IsCanonicalSuccessorLine(request, generatedLines[index])),
                 "posting-candidate.book-position-generated-line-mismatch",
                 "Every generated posting line requires a position dimension matching the typed book-position id.",
                 $"generatedPostingLines[{index}].dimensions.positionId");

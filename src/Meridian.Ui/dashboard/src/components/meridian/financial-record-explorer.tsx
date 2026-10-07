@@ -256,7 +256,7 @@ export function FinancialRecordExplorerShell({
           ) : null}
           {dtoMode && onSaveView ? (
             <input
-              className="h-8 w-44 rounded-md border border-border/70 bg-background px-2 text-xs text-foreground outline-none placeholder:text-muted-foreground focus:border-primary/60"
+              className="h-8 w-44 rounded-md border border-border/70 bg-background px-2 text-xs text-foreground outline-hidden placeholder:text-muted-foreground focus:border-primary/60"
               value={viewName}
               onChange={(event) => setViewName(event.target.value)}
               placeholder="View name"
@@ -297,7 +297,7 @@ export function FinancialRecordExplorerShell({
             <div className="flex flex-wrap items-center gap-2 rounded-md border border-border/70 bg-background/60 px-3 py-2">
               <Search className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
               <input
-                className="min-w-[220px] flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                className="min-w-[220px] flex-1 bg-transparent text-sm outline-hidden placeholder:text-muted-foreground"
                 value={searchText}
                 onChange={(event) => setSearchText(event.target.value)}
                 placeholder="Search financial records"
@@ -646,7 +646,7 @@ function ExplorerGrid({
               tabIndex={rowIndex === activeRowIndex ? 0 : -1}
               aria-selected={selectedRecordId === row.recordId}
               aria-rowindex={rowIndex + 2}
-              className={cn("cursor-pointer border-t border-border/60 hover:bg-secondary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40", selectedRecordId === row.recordId ? "bg-primary/8" : "")}
+              className="cursor-pointer border-t border-border/60 hover:bg-secondary/25 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
               onFocus={() => setActiveRowIndex(rowIndex)}
               onClick={(event) => {
                 event.currentTarget.focus();

@@ -157,7 +157,7 @@ function StatementKindSummarySection({
             aria-pressed={summary.kind === selected?.kind}
             className={cn(
               "inline-flex items-center gap-1.5 rounded-[2px] border px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em]",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+              "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
               summary.kind === selected?.kind
                 ? "border-primary bg-primary/15 text-primary"
                 : "border-border bg-secondary/35 text-muted-foreground hover:border-[var(--ws-border-hover)]"

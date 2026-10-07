@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 3 of 5
 
-Objects 161-240 of 328. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 329. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -239,6 +239,8 @@ classDiagram
         +string? Actor
         +string IdempotencyKey
         +Guid PreviewId
+    }
+    class Meridian_Contracts_Ledger_CurrencyMinorUnits["CurrencyMinorUnits"] {
     }
     class Meridian_Contracts_Ledger_DimensionMappingProfileDto["DimensionMappingProfileDto"] {
         +AccountingCertificationStateDto CertificationState
@@ -663,16 +665,6 @@ classDiagram
         +string? Symbol
         +DateTimeOffset Timestamp
     }
-    class Meridian_Contracts_Ledger_LedgerJournalTaxResultsDto["LedgerJournalTaxResultsDto"] {
-        +IReadOnlyList~LedgerDisposalTaxResultDto~ Disposals
-        +DateTimeOffset EvaluatedAt
-        +string EvidenceState
-        +string FunctionalCurrency
-        +Guid JournalEntryId
-        +Guid LedgerBookId
-        +string Message
-        +Guid PeriodId
-    }
     Meridian_Contracts_Ledger_ClosePreparationPreviewDto --> Meridian_Contracts_Ledger_ClosePreparationCalendarDto
     Meridian_Contracts_Ledger_ClosePreparationPreviewDto --> Meridian_Contracts_Ledger_ClosePreparationIssueDto
     Meridian_Contracts_Ledger_ClosePreparationPreviewDto --> Meridian_Contracts_Ledger_ClosePreparationTaskDto
@@ -719,5 +711,4 @@ classDiagram
     Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerAdjustmentApprovalMetadataDto
     Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerJournalEntryLineDto
     Meridian_Contracts_Ledger_LedgerJournalEntryLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
-    Meridian_Contracts_Ledger_LedgerJournalTaxResultsDto --> Meridian_Contracts_Ledger_LedgerDisposalTaxResultDto
 ```

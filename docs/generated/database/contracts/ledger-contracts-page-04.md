@@ -2,11 +2,21 @@
 
 # `ledger-contracts` data objects - page 4 of 5
 
-Objects 241-320 of 328. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 329. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_LedgerJournalTaxResultsDto["LedgerJournalTaxResultsDto"] {
+        +IReadOnlyList~LedgerDisposalTaxResultDto~ Disposals
+        +DateTimeOffset EvaluatedAt
+        +string EvidenceState
+        +string FunctionalCurrency
+        +Guid JournalEntryId
+        +Guid LedgerBookId
+        +string Message
+        +Guid PeriodId
+    }
     class Meridian_Contracts_Ledger_LedgerPeriodCloseKindDto["LedgerPeriodCloseKindDto"] {
     }
     class Meridian_Contracts_Ledger_LedgerPeriodCloseResultDto["LedgerPeriodCloseResultDto"] {
@@ -783,17 +793,6 @@ classDiagram
         +IReadOnlyList~string~? ReportGroupPrincipalIds
         +string? TenantId
     }
-    class Meridian_Contracts_Ledger_SignOffCloseTaskRequestDto["SignOffCloseTaskRequestDto"] {
-        +OperationsActionOriginDto ActionOrigin
-        +string Actor
-        +string? CorrelationId
-        +ManualJournalEntryStatusDto Decision
-        +IReadOnlyList~string~ EvidenceLinks
-        +string Notes
-        +string Role
-        +string TaskId
-        +Guid WorkflowId
-    }
     Meridian_Contracts_Ledger_LedgerPeriodCloseResultDto --> Meridian_Contracts_Ledger_LedgerPeriodDto
     Meridian_Contracts_Ledger_LedgerPeriodCloseResultDto --> Meridian_Contracts_Ledger_LedgerPeriodSummaryDto
     Meridian_Contracts_Ledger_LedgerPeriodDto --> Meridian_Contracts_Ledger_LedgerPeriodStatusDto
@@ -877,5 +876,4 @@ classDiagram
     Meridian_Contracts_Ledger_ReviewLateAdjustmentRequestDto --> Meridian_Contracts_Ledger_ManualJournalEntryStatusDto
     Meridian_Contracts_Ledger_RulePromotionApprovalDto --> Meridian_Contracts_Ledger_ManualJournalEntryStatusDto
     Meridian_Contracts_Ledger_SaveManualJournalEntryDraftRequest --> Meridian_Contracts_Ledger_ManualJournalEntryDraftDto
-    Meridian_Contracts_Ledger_SignOffCloseTaskRequestDto --> Meridian_Contracts_Ledger_ManualJournalEntryStatusDto
 ```
