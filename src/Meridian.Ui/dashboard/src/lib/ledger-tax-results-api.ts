@@ -1,5 +1,6 @@
 import { apiGetJson, type ApiRequestOptions } from "@/lib/api";
 import { UI_API_ROUTES } from "@/lib/ui-api-routes.generated";
+import { isTaxDecimalText } from "@/lib/ledger-tax-results-format";
 import type { LedgerJournalTaxResults } from "@/types/ledger-tax-results";
 
 export interface LedgerTaxResultScope {
@@ -23,6 +24,15 @@ export async function getLedgerJournalEntryTaxResults(scope: LedgerTaxResultScop
     || !Array.isArray(result.disposals)
     || result.disposals.some((disposal) => !sameId(disposal.journalEntryId, scope.journalEntryId))) {
     throw new Error("Retained tax results do not match the selected book, period and journal entry.");
+  }
+  const nullableDecimal = (value: unknown) => value === null || isTaxDecimalText(value);
+  if (result.disposals.some((disposal) =>
+    ![disposal.economicGainOrLoss, disposal.recognizedGainOrLoss, disposal.deferredLoss].every(nullableDecimal)
+    || !Array.isArray(disposal.parcels)
+    || disposal.parcels.some((parcel) =>
+      ![parcel.quantity, parcel.proceeds, parcel.costBasis, parcel.economicGainOrLoss].every(isTaxDecimalText)
+      || ![parcel.recognizedGainOrLoss, parcel.deferredLoss].every(nullableDecimal)))) {
+    throw new Error("Retained tax amounts and quantities must be exact plain decimal text.");
   }
   return result;
 }

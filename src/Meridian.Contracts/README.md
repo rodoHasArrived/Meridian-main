@@ -16,6 +16,8 @@ the journal tax-results read route. It separates economic/recognized gain and de
 effective holding starts and exact retained policy revisions, and distinguishes settled, provisional,
 and missing-evidence states. Nullable amounts represent unavailable evidence rather than zero;
 `EvaluatedAt` is read time and `ReEvaluationRequired` does not claim tax finalization occurred.
+Tax-result amounts and parcel quantities use invariant decimal strings on the wire, preserving
+large values and fractional precision; absent evidence remains `null`.
 
 `Workstation/OnboardingDtos.cs` defines bounded onboarding scope, owner criteria, exact source
 snapshots, consecutive comparisons, difference assignments, independent review decisions and frozen

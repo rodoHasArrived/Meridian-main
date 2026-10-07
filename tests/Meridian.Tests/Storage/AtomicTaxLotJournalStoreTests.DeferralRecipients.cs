@@ -80,8 +80,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 result.EvidenceState.Should().Be("Available", scenario);
                 var disposal = result.Disposals.Should().ContainSingle().Which;
                 disposal.State.Should().Be("Settled", scenario);
-                disposal.EconomicGainOrLoss.Should().Be(-20m);
-                disposal.RecognizedGainOrLoss.Should().Be(0m);
+                disposal.EconomicGainOrLoss.Should().Be("-20");
+                disposal.RecognizedGainOrLoss.Should().Be("0");
             }
             else
             {

@@ -16,6 +16,7 @@ public static class CanonicalDisposalHistoryProjector
             throw new LedgerValidationException("Disposal history lacks canonical acquisition evidence. Resolve the open-lot backfill exception for this durable lot with reviewed acquisition evidence.");
         if (!Enum.IsDefined(disposal.ReliefMethod))
             throw new LedgerValidationException("Retained disposal has an unsupported relief method.");
+        var recipients = CertifyDeferralRecipients(disposal, canonical);
         var averageCost = disposal.ReliefMethod == LedgerTaxLotReliefMethod.AverageCost;
         if (averageCost)
             CertifyAverageCostRelief(disposal, canonical);
@@ -35,8 +36,9 @@ public static class CanonicalDisposalHistoryProjector
                 quantity <= 0m || quantity > lot.OpenQuantity ||
                 (!averageCost && (quantity == lot.OpenQuantity ? lot.OpenFunctionalCostBasis
                     : lot.OpenFunctionalCostBasis * quantity / lot.OpenQuantity) != retained.CostBasis) ||
-                entry.Lines.Any(line => line.Dimensions?.InstrumentId != lot.SecurityId ||
-                    line.Dimensions?.PositionId != lot.BookPositionId))
+                entry.Lines.Any(line => !IsRetainedRecipientDebit(line, recipients) &&
+                    (line.Dimensions?.InstrumentId != lot.SecurityId ||
+                        line.Dimensions?.PositionId != lot.BookPositionId)))
                 throw new LedgerValidationException("Retained disposal quantity, basis, or security/book-position scope differs from canonical lot evidence.");
             history.Add(retained with
             {
@@ -79,7 +81,7 @@ public static class CanonicalDisposalHistoryProjector
             throw new LedgerValidationException("Retained canonical disposal cannot produce nonnegative proceeds.");
         if (disposal.WashSaleBasisIncreases.Count > 0 || entry.Lines.Any(static line =>
                 line.Account.Name == LedgerAccounts.Cash.Name || line.Account.Name.StartsWith("Cash (", StringComparison.Ordinal)))
-            CertifyDeferredDisposalJournal(disposal.Account, entry, functionalCurrency, proceeds, disallowed);
+            CertifyDeferredDisposalJournal(disposal, entry, functionalCurrency, proceeds, disallowed);
         if (disposal.ProceedsAllocationVersion is not null and not LedgerTaxLotReliefProjector.CurrentProceedsAllocationVersion ||
             disposal.ProceedsAllocationVersion is null && disposal.SalePrice is not null)
             throw new LedgerValidationException("Retained canonical disposal has an unsupported proceeds allocation version or quote.");
@@ -185,9 +187,41 @@ public static class CanonicalDisposalHistoryProjector
         return line.Account == cashAccount || line.Account == currencyCashAccount;
     }
 
-    private static void CertifyDeferredDisposalJournal(LedgerAccount assetAccount, JournalEntry entry,
+    private static IReadOnlyList<LedgerTaxLotDisposalRecipientEvidence> CertifyDeferralRecipients(
+        LedgerTaxLotDisposalHistoryRecord disposal, IReadOnlyList<OpenLotDto> canonical)
+    {
+        var recipients = disposal.DeferralRecipients ?? [];
+        if (recipients.Count != disposal.WashSaleBasisIncreases.Count)
+            throw new LedgerValidationException("Retained wash-sale deferrals lack exact replacement recipient evidence.");
+        var seen = new HashSet<Guid>();
+        for (var index = 0; index < recipients.Count; index++)
+        {
+            var recipient = recipients[index];
+            var increase = disposal.WashSaleBasisIncreases[index];
+            if (recipient.ReplacementTaxLotRecordId == Guid.Empty || !seen.Add(recipient.ReplacementTaxLotRecordId) ||
+                canonical.Any(lot => lot.TaxLotRecordId == recipient.ReplacementTaxLotRecordId) ||
+                string.IsNullOrWhiteSpace(recipient.ReplacementLotId) ||
+                !string.Equals(recipient.ReplacementLotId, increase.ReplacementLotId, StringComparison.OrdinalIgnoreCase) ||
+                recipient.Account is null || recipient.Account.AccountType != LedgerAccountType.Asset ||
+                recipient.SecurityId == Guid.Empty || recipient.SecurityId != canonical[0].SecurityId ||
+                recipient.BookPositionId == Guid.Empty || recipient.DeferredLoss <= 0m ||
+                recipient.DeferredLoss != increase.Amount ||
+                (increase.ReplacementAccount is not null && increase.ReplacementAccount != recipient.Account))
+                throw new LedgerValidationException("Retained wash-sale deferral recipient identity or amount differs from its retained basis increase.");
+        }
+        return recipients;
+    }
+
+    private static bool IsRetainedRecipientDebit(LedgerEntry line,
+        IReadOnlyList<LedgerTaxLotDisposalRecipientEvidence> recipients)
+        => line.Credit == 0m && line.Debit > 0m && recipients.Any(recipient =>
+            line.Account == recipient.Account && line.Dimensions?.InstrumentId == recipient.SecurityId &&
+            line.Dimensions?.PositionId == recipient.BookPositionId);
+
+    private static void CertifyDeferredDisposalJournal(LedgerTaxLotDisposalHistoryRecord disposal, JournalEntry entry,
         string functionalCurrency, decimal proceeds, decimal disallowed)
     {
+        var assetAccount = disposal.Account;
         var financialAccountId = assetAccount.FinancialAccountId;
         var gainAccount = string.IsNullOrWhiteSpace(financialAccountId)
             ? LedgerAccounts.RealizedGain : LedgerAccounts.RealizedGainFor(financialAccountId);
@@ -214,6 +248,20 @@ public static class CanonicalDisposalHistoryProjector
         if (entry.Lines.Where(IsCash).Sum(static line => line.Debit) != proceeds ||
             entry.Lines.Where(IsReplacementBasis).Sum(static line => line.Debit) != disallowed)
             throw new LedgerValidationException("Retained wash-sale deferrals do not reconcile to journal cash proceeds and replacement basis.");
+
+        // A balanced debit to an unrelated asset is not evidence that the retained recipient
+        // received the deferred basis. Certify each exact account and security/position amount;
+        // multiple recipients sharing that posting scope can legitimately share a journal line.
+        var expected = (disposal.DeferralRecipients ?? [])
+            .GroupBy(static recipient => (recipient.Account, recipient.SecurityId, recipient.BookPositionId))
+            .ToDictionary(static group => group.Key, static group => group.Sum(recipient => recipient.DeferredLoss));
+        var actual = entry.Lines.Where(IsReplacementBasis)
+            .GroupBy(static line => (line.Account, SecurityId: line.Dimensions?.InstrumentId ?? Guid.Empty,
+                BookPositionId: line.Dimensions?.PositionId ?? Guid.Empty))
+            .ToDictionary(static group => group.Key, static group => group.Sum(line => line.Debit));
+        if (expected.Count != actual.Count || expected.Any(recipient =>
+                !actual.TryGetValue(recipient.Key, out var amount) || amount != recipient.Value))
+            throw new LedgerValidationException("Retained wash-sale deferrals do not reconcile to the exact replacement recipient journal basis.");
     }
 
     /// <summary>

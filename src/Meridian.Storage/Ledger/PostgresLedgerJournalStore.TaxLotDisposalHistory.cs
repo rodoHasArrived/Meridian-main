@@ -32,7 +32,21 @@ public sealed record LedgerTaxLotDisposalHistoryRecord(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     string? PolicyRevision = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    DateTimeOffset? RecordedAt = null);
+    DateTimeOffset? RecordedAt = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<LedgerTaxLotDisposalRecipientEvidence>? DeferralRecipients = null);
+
+/// <summary>
+/// Durable replacement identity and basis attribution, in the same order as the retained wash-sale increases.
+/// Missing evidence must not be inferred from an unrelated asset debit in the disposal journal.
+/// </summary>
+public sealed record LedgerTaxLotDisposalRecipientEvidence(
+    Guid ReplacementTaxLotRecordId,
+    string ReplacementLotId,
+    LedgerAccount Account,
+    Guid SecurityId,
+    Guid BookPositionId,
+    decimal DeferredLoss);
 
 /// <summary>
 /// Reads retained tax-lot disposal history so realized-gain reporting can be rebuilt from the
@@ -88,6 +102,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
                 lotsByBatch,
                 ct)
             .ConfigureAwait(false);
+        await CertifyReplacementClaimCapacityAsync(connection, ledgerBookId, lotsByBatch.Keys.ToArray(), ct)
+            .ConfigureAwait(false);
 
         return lotsByBatch
             .Select(batch =>
@@ -106,7 +122,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
                     batch.Value.ProceedsAllocationVersion,
                     batch.Value.SalePrice,
                     batch.Value.PolicyRevision,
-                    batch.Value.RecordedAt);
+                    batch.Value.RecordedAt,
+                    hasDeferrals ? retained.Recipients : null);
             })
             .OrderBy(static record => record.MutationBatchId)
             .ToArray();
@@ -242,7 +259,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
         return batches;
     }
 
-    private async Task CertifyCarriedHoldingPeriodsAsync(NpgsqlConnection connection, Guid ledgerBookId,
+    private async Task<List<CarriedHoldingPeriodEvidence>> LoadCarriedHoldingPeriodEvidenceAsync(NpgsqlConnection connection,
         IReadOnlyDictionary<Guid, DisposalBatchAccumulator> batches, CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
@@ -253,7 +270,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
                    carried.ledger_book_id, carried.security_id, carried.sale_date,
                    carried.disposal_account_name, carried.disposal_account_type,
                    carried.disposal_symbol, carried.disposal_financial_account_id,
-                   carried.replacement_lot_id, carried.window_days, carried.scope, carried.policy_id
+                   carried.replacement_lot_id, carried.window_days, carried.scope, carried.policy_id,
+                   carried.holding_period_carry_date
             from {Qualified("tax_lot_mutations")} target
             join {Qualified("atomic_tax_lot_posting_batches")} target_batch
               on target_batch.mutation_batch_id = target.mutation_batch_id
@@ -274,32 +292,10 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
                     reader.IsDBNull(3) ? Guid.Empty : reader.GetGuid(3), reader.GetGuid(4), reader.GetGuid(5),
                     DateOnly.FromDateTime(reader.GetDateTime(6)), ReadLedgerAccount(reader, 7),
                     reader.GetString(11), reader.GetInt32(12),
-                    Enum.Parse<WashSaleReplacementScope>(reader.GetString(13), ignoreCase: true), reader.GetString(14)));
+                    Enum.Parse<WashSaleReplacementScope>(reader.GetString(13), ignoreCase: true), reader.GetString(14),
+                    DateOnly.FromDateTime(reader.GetDateTime(15))));
         }
-        if (evidence.Count == 0)
-            return;
-
-        // Inspect only the immediate source's retained batch/journal/snapshot identities. This
-        // deliberately does not replay its tax result or recursively traverse earlier carries.
-        var sources = await LoadDisposalLotsAsync(connection, ledgerBookId,
-            evidence.Select(static item => item.SourceJournalId).Distinct().ToArray(), ct).ConfigureAwait(false);
-        foreach (var item in evidence)
-        {
-            var target = batches[item.TargetBatchId];
-            var recipient = target.CanonicalLots.Single(lot => lot.TaxLotRecordId == item.TargetLotId);
-            if (item.LedgerBookId != ledgerBookId ||
-                !sources.TryGetValue(item.SourceBatchId, out var source) ||
-                item.SecurityId != recipient.SecurityId || item.SecurityId != source.SecurityId ||
-                item.SaleDate != source.SaleDate || item.DisposalAccount != source.Account ||
-                string.IsNullOrWhiteSpace(source.PolicyRevision) ||
-                !string.Equals(item.PolicyId, source.PolicyRevision, StringComparison.Ordinal) ||
-                !string.Equals(item.ReplacementLotId, recipient.LotId, StringComparison.OrdinalIgnoreCase) ||
-                item.WindowDays < 0 || !Enum.IsDefined(item.Scope) ||
-                Math.Abs(recipient.AcquiredDate.DayNumber - source.SaleDate.DayNumber) > item.WindowDays ||
-                (item.Scope == WashSaleReplacementScope.DisposingAccount && target.Account != source.Account) ||
-                source.CanonicalLots.Any(lot => lot.TaxLotRecordId == item.TargetLotId))
-                throw new LedgerValidationException("Retained holding-period carry does not match its source disposal, recipient lot, or replacement window.");
-        }
+        return evidence;
     }
 
     /// <summary>
@@ -352,7 +348,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
             static batch => (IReadOnlyList<OpenLotDto>)batch.Value);
     }
 
-    private async Task<Dictionary<Guid, (IReadOnlyList<WashSaleBasisIncrease> Increases, decimal MatchedQuantity)>>
+    private async Task<Dictionary<Guid, (IReadOnlyList<WashSaleBasisIncrease> Increases, decimal MatchedQuantity,
+        IReadOnlyList<LedgerTaxLotDisposalRecipientEvidence> Recipients)>>
         LoadDeferralsByBatchAsync(
             NpgsqlConnection connection,
             Guid ledgerBookId,
@@ -385,7 +382,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
                    recipient.account_type,
                    recipient.symbol,
                    recipient.financial_account_id,
-                   recipient.original_quantity
+                   recipient.original_quantity,
+                   recipient.book_position_id
             from {Qualified("wash_sale_deferrals")} deferral
             left join {Qualified("tax_lots")} recipient
               on recipient.tax_lot_record_id = deferral.replacement_tax_lot_record_id
@@ -396,7 +394,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
         command.Parameters.AddWithValue("ledger_book_id", ledgerBookId);
         command.Parameters.AddWithValue("batch_ids", batches.Keys.ToArray());
 
-        var byBatch = new Dictionary<Guid, (List<WashSaleBasisIncrease> Increases, decimal MatchedQuantity)>();
+        var byBatch = new Dictionary<Guid, (List<WashSaleBasisIncrease> Increases, decimal MatchedQuantity,
+            List<LedgerTaxLotDisposalRecipientEvidence> Recipients)>();
         var recipientQuantities = new Dictionary<Guid, Dictionary<Guid, decimal>>();
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         while (await reader.ReadAsync(ct).ConfigureAwait(false))
@@ -413,6 +412,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
             if (!Enum.TryParse<WashSaleReplacementScope>(reader.GetString(7), ignoreCase: true, out var scope) ||
                 !Enum.IsDefined(scope) || windowDays < 0 || reader.IsDBNull(14) ||
                 reader.GetGuid(15) != ledgerBookId || reader.IsDBNull(17) || reader.GetGuid(17) != batch.SecurityId ||
+                reader.IsDBNull(24) || reader.GetGuid(24) == Guid.Empty ||
                 !string.Equals(reader.GetString(1), reader.GetString(16), StringComparison.OrdinalIgnoreCase) ||
                 Math.Abs(DateOnly.FromDateTime(reader.GetDateTime(18)).DayNumber - batch.SaleDate.DayNumber) > windowDays ||
                 (scope == WashSaleReplacementScope.DisposingAccount && ReadLedgerAccount(reader, 19) != batch.Account) ||
@@ -425,7 +425,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
             var increase = new WashSaleBasisIncrease(
                 reader.GetString(1),
                 reader.GetDecimal(2),
-                DateOnly.FromDateTime(reader.GetDateTime(4)))
+                DateOnly.FromDateTime(reader.GetDateTime(4)),
+                ReadLedgerAccount(reader, 19))
             {
                 // The deferral proves that this revision governed this disposal. Its retained
                 // window and scope are authoritative; the mutable current policy is not. The
@@ -435,18 +436,22 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
                     PolicyId = reader.GetString(5)
                 }
             };
+            var recipient = new LedgerTaxLotDisposalRecipientEvidence(reader.GetGuid(14), reader.GetString(16),
+                increase.ReplacementAccount!, reader.GetGuid(17), reader.GetGuid(24), increase.Amount);
 
             if (byBatch.TryGetValue(batchId, out var existing))
             {
                 if (reader.GetDecimal(3) != existing.MatchedQuantity)
                     throw new LedgerValidationException("Retained wash-sale deferrals disagree on the disposal's aggregate matched replacement quantity.");
                 existing.Increases.Add(increase);
+                existing.Recipients.Add(recipient);
                 continue;
             }
 
             // Matched quantity is a disposal aggregate repeated on every deferral row. Retain it
             // once and certify agreement across all rows before exposing it as saturation evidence.
-            byBatch[batchId] = (new List<WashSaleBasisIncrease> { increase }, reader.GetDecimal(3));
+            byBatch[batchId] = (new List<WashSaleBasisIncrease> { increase }, reader.GetDecimal(3),
+                new List<LedgerTaxLotDisposalRecipientEvidence> { recipient });
         }
 
         // The aggregate is repeated per row, while replacement capacity is additive across
@@ -458,7 +463,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
 
         return byBatch.ToDictionary(
             static entry => entry.Key,
-            static entry => ((IReadOnlyList<WashSaleBasisIncrease>)entry.Value.Increases, entry.Value.MatchedQuantity));
+            static entry => ((IReadOnlyList<WashSaleBasisIncrease>)entry.Value.Increases, entry.Value.MatchedQuantity,
+                (IReadOnlyList<LedgerTaxLotDisposalRecipientEvidence>)entry.Value.Recipients));
     }
 
     private sealed record DisposalBatchAccumulator(
@@ -477,5 +483,5 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
     private sealed record CarriedHoldingPeriodEvidence(Guid TargetBatchId, Guid TargetLotId,
         Guid SourceBatchId, Guid SourceJournalId, Guid LedgerBookId, Guid SecurityId, DateOnly SaleDate,
         LedgerAccount DisposalAccount, string ReplacementLotId, int WindowDays, WashSaleReplacementScope Scope,
-        string PolicyId);
+        string PolicyId, DateOnly HoldingPeriodCarryDate);
 }

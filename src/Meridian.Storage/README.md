@@ -19,10 +19,13 @@ posting behavior changes are introduced by this W10-TAX-001 inspection slice. Re
 must agree on their repeated aggregate matched quantity and match the disposed security, journal sale
 date and full disposing account before history can certify finality. Replacement recipients must match
 their durable lot, security, book, window and account scope; aggregate matches cannot exceed their
-distinct original quantities. Carried holding dates require the immediate retained source disposal's
-exact policy revision and a certified recipient relationship.
-Deferral amounts also reconcile to the retained cash and replacement-asset movements, including
-journals whose deferral rows are missing. Exact journal queries retain the existing book,
+distinct original quantities. Shared recipients require cumulative source claims within capacity;
+shared multi-recipient claims without per-recipient quantity allocations remain missing evidence.
+Carried dates must copy an unambiguous source holding date through certified policy and recipient
+links to retained acquisition evidence. Cycles and traversals beyond 32 links or 1,024 batches fail
+closed. Deferral amounts reconcile to the exact recipient account, security and position on the
+posted basis debits, as well as the retained cash movement, including journals whose deferral rows
+are missing. Exact journal queries retain the existing book,
 period and tenant filters while hydrating every journal leg.
 
 Atomic file-write diagnostics retain operation outcomes, byte counts, OS error numbers and exception

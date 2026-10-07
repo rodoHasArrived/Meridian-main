@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -61,21 +62,21 @@ public sealed class LedgerDisposalTaxEndpointTests
         disposal.CanChange.Should().BeFalse();
         disposal.ReEvaluationRequired.Should().BeFalse();
         disposal.Character.Should().Be("ShortTerm");
-        disposal.EconomicGainOrLoss.Should().Be(50m);
-        disposal.RecognizedGainOrLoss.Should().Be(50m);
-        disposal.DeferredLoss.Should().Be(0m);
+        disposal.EconomicGainOrLoss.Should().Be("50");
+        disposal.RecognizedGainOrLoss.Should().Be("50");
+        disposal.DeferredLoss.Should().Be("0");
         var parcel = disposal.Parcels.Should().ContainSingle().Which;
         parcel.LotId.Should().Be(fixture.Disposal.Lots[0].LotId);
         parcel.AcquiredDate.Should().Be(new DateOnly(2026, 1, 1));
         parcel.HoldingPeriodStart.Should().Be(new DateOnly(2026, 1, 1));
         parcel.HoldingPeriodCarried.Should().BeFalse();
         parcel.Character.Should().Be("ShortTerm");
-        parcel.Quantity.Should().Be(2.5m);
-        parcel.Proceeds.Should().Be(350m);
-        parcel.CostBasis.Should().Be(300m);
-        parcel.EconomicGainOrLoss.Should().Be(50m);
-        parcel.RecognizedGainOrLoss.Should().Be(50m);
-        parcel.DeferredLoss.Should().Be(0m);
+        parcel.Quantity.Should().Be("2.5");
+        parcel.Proceeds.Should().Be("350");
+        parcel.CostBasis.Should().Be("300");
+        parcel.EconomicGainOrLoss.Should().Be("50");
+        parcel.RecognizedGainOrLoss.Should().Be("50");
+        parcel.DeferredLoss.Should().Be("0");
 
         await fixture.Store.Received(1).QueryAsync(
             new LedgerJournalEntryQuery(LedgerBookId: fixture.Book.LedgerBookId, PeriodId: fixture.Period.PeriodId,
@@ -87,6 +88,55 @@ public sealed class LedgerDisposalTaxEndpointTests
             Arg.Is<IReadOnlyList<Guid>>(ids => ids.Count == 1 && ids[0] == fixture.Record.Entry.JournalEntryId),
             Arg.Any<CancellationToken>());
         await fixture.Store.DidNotReceive().ListTaxLotPoliciesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData("9007199254740993.01", "1", "9007199254740993.02", "9007199254740993.01", "18014398509481986.03")]
+    [InlineData("1", "0.0000000000000000000000000001", "0.0099999999999999999999999999", "0.0000000000000000000000000001", "0.01")]
+    public async Task TaxResults_JsonPreservesLargeCentsAndSmallQuantitiesAsExactStrings(
+        string unitCost, string quantity, string gain, string expectedBasis, string expectedProceeds)
+    {
+        var fixture = CreateFixture(decimal.Parse(unitCost, CultureInfo.InvariantCulture),
+            decimal.Parse(quantity, CultureInfo.InvariantCulture), decimal.Parse(gain, CultureInfo.InvariantCulture));
+        await using var app = await CreateAppAsync(UserPermission.ViewLedgerReports, fixture.Store, fixture.History);
+
+        var response = await app.GetTestClient().GetAsync(fixture.Url);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var disposal = json.RootElement.GetProperty("disposals")[0];
+        disposal.GetProperty("state").GetString().Should().Be("Settled");
+        AssertDecimalString(disposal, "economicGainOrLoss", gain);
+        AssertDecimalString(disposal, "recognizedGainOrLoss", gain);
+        AssertDecimalString(disposal, "deferredLoss", "0");
+        var parcel = disposal.GetProperty("parcels")[0];
+        AssertDecimalString(parcel, "quantity", quantity);
+        AssertDecimalString(parcel, "proceeds", expectedProceeds);
+        AssertDecimalString(parcel, "costBasis", expectedBasis);
+        AssertDecimalString(parcel, "economicGainOrLoss", gain);
+        AssertDecimalString(parcel, "recognizedGainOrLoss", gain);
+        AssertDecimalString(parcel, "deferredLoss", "0");
+    }
+
+    [Fact]
+    public async Task TaxResults_MissingCanonicalEvidenceSerializesUnknownAmountsAsNull()
+    {
+        var fixture = CreateFixture();
+        fixture.History.GetTaxLotDisposalHistoryAsync(Arg.Any<Guid>(), Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<LedgerTaxLotDisposalHistoryRecord>>(
+                [fixture.Disposal with { CanonicalLots = null }]));
+        await using var app = await CreateAppAsync(UserPermission.ViewLedgerReports, fixture.Store, fixture.History);
+
+        var response = await app.GetTestClient().GetAsync(fixture.Url);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var disposal = json.RootElement.GetProperty("disposals")[0];
+        disposal.GetProperty("state").GetString().Should().Be("MissingEvidence");
+        disposal.GetProperty("economicGainOrLoss").ValueKind.Should().Be(JsonValueKind.Null);
+        disposal.GetProperty("recognizedGainOrLoss").ValueKind.Should().Be(JsonValueKind.Null);
+        disposal.GetProperty("deferredLoss").ValueKind.Should().Be(JsonValueKind.Null);
+        disposal.GetProperty("parcels").GetArrayLength().Should().Be(0);
     }
 
     [Fact]
@@ -189,10 +239,20 @@ public sealed class LedgerDisposalTaxEndpointTests
         result.Disposals.Should().BeEmpty();
     }
 
-    private static Fixture CreateFixture()
+    private static void AssertDecimalString(JsonElement value, string propertyName, string expected)
     {
-        var lot = CanonicalOpenLotConsumerTests.DurableLot(1);
-        var entry = CanonicalOpenLotConsumerTests.DisposalJournal(lot);
+        var property = value.GetProperty(propertyName);
+        property.ValueKind.Should().Be(JsonValueKind.String, "financial decimals must reach the browser without numeric rounding");
+        property.GetString().Should().Be(expected);
+    }
+
+    private static Fixture CreateFixture(decimal? unitCost = null, decimal quantity = 2.5m, decimal recognized = 50m)
+    {
+        var lot = unitCost is { } cost
+            ? CanonicalOpenLotConsumerTests.DurableLot(1, cost, 1m)
+            : CanonicalOpenLotConsumerTests.DurableLot(1);
+        var basis = lot.UnitCost * quantity;
+        var entry = CanonicalOpenLotConsumerTests.DisposalJournal(lot, basis, recognized);
         var now = entry.Timestamp;
         var book = new LedgerBookRecord(lot.LedgerBookId, "fund-tax", Guid.NewGuid(), FundStructureNodeKindDto.Fund,
             "Tax result test book", "USD", now, now);
@@ -201,6 +261,7 @@ public sealed class LedgerDisposalTaxEndpointTests
         var record = new LedgerJournalEntryRecord(entry, Guid.NewGuid(), period.PeriodId, null, null, 1, now);
         var disposal = CanonicalOpenLotConsumerTests.History(lot, entry, lot.ToOpenLot()) with
         {
+            Lots = [new(lot.LotId, lot.AcquiredDate, lot.AcquiredDate, quantity, lot.UnitCost, basis)],
             PolicyRevision = "retained-tax-policy-v7",
             RecordedAt = now
         };

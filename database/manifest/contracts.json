@@ -3935,7 +3935,7 @@
       ]
     }
   ],
-  "fingerprint": "8592e0a51b230c0c172aa93678274925c081347dd4816d40d521b5a05c42cd68",
+  "fingerprint": "b174247951410647ef406a4b96b869709d04a887063ab4e724a3a5e6f922a625",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5367,7 +5367,7 @@
         "all-contracts",
         "ledger-contracts"
       ],
-      "fingerprint": "8390f148dca4269f70134efff7d115e247ab44f6e0918a304be8ad24bd031be8",
+      "fingerprint": "05f9b289477c88ffb484e02040517e77e01d1a95de2a353fb762df68c5104eb9",
       "mapped_schemas": [
         "ledger"
       ],
@@ -174543,7 +174543,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "87ae6256f058fa2edecf697f59beb5a5d2434e61ed397ea1c95b0eabc6659d57",
+      "fingerprint": "238295f2f1014259910e48da7c2f797db7096abcb24b4719fbc39eeb7e6bab6d",
       "full_name": "Meridian.Contracts.Ledger.LedgerDisposalTaxParcelDto",
       "id": "Meridian.Contracts.Ledger.LedgerDisposalTaxParcelDto",
       "kind": "record",
@@ -174562,7 +174562,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 37,
+          "source_line": 41,
           "type": "DateOnly"
         },
         {
@@ -174576,7 +174576,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 41,
+          "source_line": 45,
           "type": "string"
         },
         {
@@ -174589,9 +174589,9 @@
           "name": "CostBasis",
           "nullable": false,
           "origin": "positional_parameter",
-          "raw_type": "decimal",
-          "source_line": 44,
-          "type": "decimal"
+          "raw_type": "string",
+          "source_line": 48,
+          "type": "string"
         },
         {
           "collection": false,
@@ -174603,9 +174603,9 @@
           "name": "DeferredLoss",
           "nullable": true,
           "origin": "positional_parameter",
-          "raw_type": "decimal?",
-          "source_line": 47,
-          "type": "decimal?"
+          "raw_type": "string?",
+          "source_line": 51,
+          "type": "string?"
         },
         {
           "collection": false,
@@ -174617,9 +174617,9 @@
           "name": "EconomicGainOrLoss",
           "nullable": false,
           "origin": "positional_parameter",
-          "raw_type": "decimal",
-          "source_line": 45,
-          "type": "decimal"
+          "raw_type": "string",
+          "source_line": 49,
+          "type": "string"
         },
         {
           "collection": false,
@@ -174632,7 +174632,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 40,
+          "source_line": 44,
           "type": "bool"
         },
         {
@@ -174646,7 +174646,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 39,
+          "source_line": 43,
           "type": "int"
         },
         {
@@ -174660,7 +174660,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 38,
+          "source_line": 42,
           "type": "DateOnly"
         },
         {
@@ -174674,7 +174674,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 36,
+          "source_line": 40,
           "type": "string"
         },
         {
@@ -174687,9 +174687,9 @@
           "name": "Proceeds",
           "nullable": false,
           "origin": "positional_parameter",
-          "raw_type": "decimal",
-          "source_line": 43,
-          "type": "decimal"
+          "raw_type": "string",
+          "source_line": 47,
+          "type": "string"
         },
         {
           "collection": false,
@@ -174701,9 +174701,9 @@
           "name": "Quantity",
           "nullable": false,
           "origin": "positional_parameter",
-          "raw_type": "decimal",
-          "source_line": 42,
-          "type": "decimal"
+          "raw_type": "string",
+          "source_line": 46,
+          "type": "string"
         },
         {
           "collection": false,
@@ -174715,9 +174715,9 @@
           "name": "RecognizedGainOrLoss",
           "nullable": true,
           "origin": "positional_parameter",
-          "raw_type": "decimal?",
-          "source_line": 46,
-          "type": "decimal?"
+          "raw_type": "string?",
+          "source_line": 50,
+          "type": "string?"
         }
       ],
       "name": "LedgerDisposalTaxParcelDto",
@@ -174726,12 +174726,12 @@
       "qualified_name": "Meridian.Contracts.Ledger.LedgerDisposalTaxParcelDto",
       "references": [],
       "source": {
-        "line": 35,
+        "line": 39,
         "path": "src/Meridian.Contracts/Ledger/LedgerDisposalTaxDtos.cs"
       },
       "sources": [
         {
-          "line": 35,
+          "line": 39,
           "path": "src/Meridian.Contracts/Ledger/LedgerDisposalTaxDtos.cs"
         }
       ],
@@ -174750,7 +174750,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "4138088e212d4651a405c4e7d7caa98537dc53fa8202c132163a9a4f4c9b384a",
+      "fingerprint": "773ed8ddc0ec078f256d71c8ad9b8e861ffcef73fd47a86a35e282247399f522",
       "full_name": "Meridian.Contracts.Ledger.LedgerDisposalTaxResultDto",
       "id": "Meridian.Contracts.Ledger.LedgerDisposalTaxResultDto",
       "kind": "record",
@@ -174769,7 +174769,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 19,
+          "source_line": 22,
           "type": "string"
         },
         {
@@ -174783,7 +174783,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 26,
+          "source_line": 29,
           "type": "bool"
         },
         {
@@ -174797,7 +174797,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 29,
+          "source_line": 32,
           "type": "string?"
         },
         {
@@ -174810,9 +174810,9 @@
           "name": "DeferredLoss",
           "nullable": true,
           "origin": "positional_parameter",
-          "raw_type": "decimal?",
-          "source_line": 32,
-          "type": "decimal?"
+          "raw_type": "string?",
+          "source_line": 35,
+          "type": "string?"
         },
         {
           "collection": false,
@@ -174824,9 +174824,9 @@
           "name": "EconomicGainOrLoss",
           "nullable": true,
           "origin": "positional_parameter",
-          "raw_type": "decimal?",
-          "source_line": 30,
-          "type": "decimal?"
+          "raw_type": "string?",
+          "source_line": 33,
+          "type": "string?"
         },
         {
           "collection": false,
@@ -174839,7 +174839,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 17,
+          "source_line": 20,
           "type": "Guid"
         },
         {
@@ -174853,7 +174853,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 16,
+          "source_line": 19,
           "type": "Guid"
         },
         {
@@ -174867,7 +174867,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<LedgerDisposalTaxParcelDto>",
-          "source_line": 33,
+          "source_line": 36,
           "type": "IReadOnlyList<LedgerDisposalTaxParcelDto>"
         },
         {
@@ -174881,7 +174881,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 22,
+          "source_line": 25,
           "type": "string?"
         },
         {
@@ -174894,9 +174894,9 @@
           "name": "RecognizedGainOrLoss",
           "nullable": true,
           "origin": "positional_parameter",
-          "raw_type": "decimal?",
-          "source_line": 31,
-          "type": "decimal?"
+          "raw_type": "string?",
+          "source_line": 34,
+          "type": "string?"
         },
         {
           "collection": false,
@@ -174909,7 +174909,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 23,
+          "source_line": 26,
           "type": "DateTimeOffset?"
         },
         {
@@ -174923,7 +174923,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 27,
+          "source_line": 30,
           "type": "bool"
         },
         {
@@ -174937,7 +174937,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 21,
+          "source_line": 24,
           "type": "string"
         },
         {
@@ -174951,7 +174951,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateOnly?",
-          "source_line": 28,
+          "source_line": 31,
           "type": "DateOnly?"
         },
         {
@@ -174965,7 +174965,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 18,
+          "source_line": 21,
           "type": "DateOnly"
         },
         {
@@ -174979,7 +174979,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 24,
+          "source_line": 27,
           "type": "string"
         },
         {
@@ -174993,7 +174993,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 25,
+          "source_line": 28,
           "type": "string"
         },
         {
@@ -175007,7 +175007,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 20,
+          "source_line": 23,
           "type": "string?"
         }
       ],
@@ -175019,12 +175019,12 @@
         "Meridian.Contracts.Ledger.LedgerDisposalTaxParcelDto"
       ],
       "source": {
-        "line": 15,
+        "line": 18,
         "path": "src/Meridian.Contracts/Ledger/LedgerDisposalTaxDtos.cs"
       },
       "sources": [
         {
-          "line": 15,
+          "line": 18,
           "path": "src/Meridian.Contracts/Ledger/LedgerDisposalTaxDtos.cs"
         }
       ],

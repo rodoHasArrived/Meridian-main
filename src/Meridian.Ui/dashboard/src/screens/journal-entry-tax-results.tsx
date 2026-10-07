@@ -3,7 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
-import { formatCurrency, formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/format";
+import { formatTaxAmount as amount, formatTaxDecimal } from "@/lib/ledger-tax-results-format";
 import { getLedgerJournalEntryTaxResults, type LedgerTaxResultScope } from "@/lib/ledger-tax-results-api";
 import type { LedgerDisposalTaxResult, LedgerJournalTaxResults, LedgerDisposalTaxParcel } from "@/types/ledger-tax-results";
 
@@ -117,7 +118,7 @@ function ParcelResult({ parcel, currency }: { parcel: LedgerDisposalTaxParcel; c
         <TaxFact label="Holding-period days" value={formatNumber(parcel.holdingPeriodDays, { maximumFractionDigits: 0 })} />
         <TaxFact label="Holding period carried" value={parcel.holdingPeriodCarried ? "Yes" : "No"} />
         <TaxFact label="Tax character" value={characterLabels[parcel.character]} />
-        <TaxFact label="Quantity relieved" value={formatNumber(parcel.quantity, { maximumFractionDigits: 8 })} />
+        <TaxFact label="Quantity relieved" value={formatTaxDecimal(parcel.quantity)} />
         <TaxFact label="Proceeds" value={amount(parcel.proceeds, currency)} />
         <TaxFact label="Cost basis" value={amount(parcel.costBasis, currency)} />
         <TaxFact label="Economic gain / loss" value={amount(parcel.economicGainOrLoss, currency)} />
@@ -130,12 +131,6 @@ function ParcelResult({ parcel, currency }: { parcel: LedgerDisposalTaxParcel; c
 
 function TaxFact({ label, value }: { label: string; value: string }) {
   return <div className="min-w-0"><dt className="text-xs text-muted-foreground">{label}</dt><dd className="mt-1 break-words font-mono text-sm">{value}</dd></div>;
-}
-
-function amount(value: number | null, currency: string) {
-  return value === null ? "Missing evidence" : currency
-    ? formatCurrency(value, { currency })
-    : formatNumber(value, { minimumFractionDigits: 2 });
 }
 
 function retainedTime(value: string) {

@@ -523,28 +523,28 @@ classDiagram
     class Meridian_Contracts_Ledger_LedgerDisposalTaxParcelDto["LedgerDisposalTaxParcelDto"] {
         +DateOnly AcquiredDate
         +string Character
-        +decimal CostBasis
-        +decimal? DeferredLoss
-        +decimal EconomicGainOrLoss
+        +string CostBasis
+        +string? DeferredLoss
+        +string EconomicGainOrLoss
         +bool HoldingPeriodCarried
         +int HoldingPeriodDays
         +DateOnly HoldingPeriodStart
         +string LotId
-        +decimal Proceeds
-        +decimal Quantity
-        +decimal? RecognizedGainOrLoss
+        +string Proceeds
+        +string Quantity
+        +string? RecognizedGainOrLoss
     }
     class Meridian_Contracts_Ledger_LedgerDisposalTaxResultDto["LedgerDisposalTaxResultDto"] {
         +string AccountName
         +bool CanChange
         +string? Character
-        +decimal? DeferredLoss
-        +decimal? EconomicGainOrLoss
+        +string? DeferredLoss
+        +string? EconomicGainOrLoss
         +Guid JournalEntryId
         +Guid MutationBatchId
         +IReadOnlyList~LedgerDisposalTaxParcelDto~ Parcels
         +string? PolicyRevision
-        +decimal? RecognizedGainOrLoss
+        +string? RecognizedGainOrLoss
         +DateTimeOffset? RecordedAt
         +bool ReEvaluationRequired
     }

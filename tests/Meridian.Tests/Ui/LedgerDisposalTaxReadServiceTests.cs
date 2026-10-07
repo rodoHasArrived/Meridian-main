@@ -1,3 +1,4 @@
+using System.Globalization;
 using FluentAssertions;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.FixedIncome;
@@ -45,9 +46,9 @@ public sealed class LedgerDisposalTaxReadServiceTests
             HoldingPeriodDays = days,
             HoldingPeriodCarried = false,
             Character = character,
-            EconomicGainOrLoss = 20m,
-            RecognizedGainOrLoss = (decimal?)20m,
-            DeferredLoss = (decimal?)0m
+            EconomicGainOrLoss = "20",
+            RecognizedGainOrLoss = "20",
+            DeferredLoss = "0"
         });
     }
 
@@ -96,12 +97,12 @@ public sealed class LedgerDisposalTaxReadServiceTests
         result.State.Should().Be("Provisional", "a net gain must not hide a loss parcel's replacement exposure");
         result.Character.Should().Be("Mixed");
         result.CanChange.Should().BeTrue();
-        result.EconomicGainOrLoss.Should().Be(40m);
-        result.RecognizedGainOrLoss.Should().Be(50m);
-        result.DeferredLoss.Should().Be(10m);
-        result.Parcels.Select(parcel => parcel.EconomicGainOrLoss).Should().Equal(60m, -20m);
-        result.Parcels.Select(parcel => parcel.RecognizedGainOrLoss).Should().Equal(60m, -10m);
-        result.Parcels.Select(parcel => parcel.DeferredLoss).Should().Equal(0m, 10m);
+        result.EconomicGainOrLoss.Should().Be("40");
+        result.RecognizedGainOrLoss.Should().Be("50");
+        result.DeferredLoss.Should().Be("10");
+        result.Parcels.Select(parcel => parcel.EconomicGainOrLoss).Should().Equal("60", "-20");
+        result.Parcels.Select(parcel => parcel.RecognizedGainOrLoss).Should().Equal("60", "-10");
+        result.Parcels.Select(parcel => parcel.DeferredLoss).Should().Equal("0", "10");
         result.Parcels.Select(parcel => parcel.Character).Should().Equal("LongTerm", "ShortTerm");
     }
 
@@ -121,9 +122,9 @@ public sealed class LedgerDisposalTaxReadServiceTests
         result.CanChange.Should().Be(canChange);
         result.ReEvaluationRequired.Should().BeFalse();
         result.ReplacementWindowEnd.Should().Be(new DateOnly(2026, 8, 9));
-        result.EconomicGainOrLoss.Should().Be(-20m);
-        result.RecognizedGainOrLoss.Should().Be(-20m + deferred);
-        result.DeferredLoss.Should().Be(deferred);
+        result.EconomicGainOrLoss.Should().Be("-20");
+        decimal.Parse(result.RecognizedGainOrLoss!, CultureInfo.InvariantCulture).Should().Be(-20m + deferred);
+        decimal.Parse(result.DeferredLoss!, CultureInfo.InvariantCulture).Should().Be(deferred);
     }
 
     [Fact]
@@ -147,9 +148,9 @@ public sealed class LedgerDisposalTaxReadServiceTests
 
         result.State.Should().Be("Settled");
         result.CanChange.Should().BeFalse();
-        result.Parcels.Should().ContainSingle().Which.Quantity.Should().Be(100m);
-        result.DeferredLoss.Should().Be(20m);
-        result.RecognizedGainOrLoss.Should().Be(0m);
+        result.Parcels.Should().ContainSingle().Which.Quantity.Should().Be("100");
+        result.DeferredLoss.Should().Be("20");
+        result.RecognizedGainOrLoss.Should().Be("0");
     }
 
     [Theory]
@@ -213,7 +214,7 @@ public sealed class LedgerDisposalTaxReadServiceTests
         result.CanChange.Should().BeTrue();
         result.ReEvaluationRequired.Should().Be(requiresReview);
         result.ReplacementWindowEnd.Should().Be(new DateOnly(2026, 8, 9));
-        result.RecognizedGainOrLoss.Should().Be(-10m, "a read must preserve the retained recognized result");
+        result.RecognizedGainOrLoss.Should().Be("-10", "a read must preserve the retained recognized result");
         result.RecordedAt.Should().Be(RecordedAt);
     }
 
@@ -260,8 +261,8 @@ public sealed class LedgerDisposalTaxReadServiceTests
         result.State.Should().Be("MissingEvidence");
         result.StateReason.Should().Contain("exact applied policy revision");
         result.PolicyRevision.Should().BeNull();
-        result.EconomicGainOrLoss.Should().Be(20m);
-        result.RecognizedGainOrLoss.Should().Be(20m);
+        result.EconomicGainOrLoss.Should().Be("20");
+        result.RecognizedGainOrLoss.Should().Be("20");
     }
 
     [Fact]
@@ -275,7 +276,7 @@ public sealed class LedgerDisposalTaxReadServiceTests
         result.CanChange.Should().BeTrue();
         result.ReplacementWindowEnd.Should().BeNull();
         result.PolicyRevision.Should().Be(RetainedRevision);
-        result.RecognizedGainOrLoss.Should().Be(-20m);
+        result.RecognizedGainOrLoss.Should().Be("-20");
     }
 
     [Fact]
@@ -302,9 +303,9 @@ public sealed class LedgerDisposalTaxReadServiceTests
         var missing = Project(fixture, SaleDate);
 
         missing.State.Should().Be("MissingEvidence");
-        missing.EconomicGainOrLoss.Should().Be(-60m);
-        missing.RecognizedGainOrLoss.Should().Be(-30m);
-        missing.DeferredLoss.Should().Be(30m);
+        missing.EconomicGainOrLoss.Should().Be("-60");
+        missing.RecognizedGainOrLoss.Should().Be("-30");
+        missing.DeferredLoss.Should().Be("30");
         missing.Parcels.Should().OnlyContain(parcel => parcel.DeferredLoss == null && parcel.RecognizedGainOrLoss == null);
 
         var selections = CanonicalDisposalHistoryProjector.Project(fixture.Disposal, fixture.Journal, fixture.BookId, "USD").Selections;
@@ -322,9 +323,10 @@ public sealed class LedgerDisposalTaxReadServiceTests
         var attributed = Project(fixture, SaleDate);
 
         attributed.State.Should().Be("Provisional");
-        attributed.Parcels.Select(parcel => parcel.DeferredLoss).Should().Equal(20m, 10m);
-        attributed.Parcels.Select(parcel => parcel.RecognizedGainOrLoss).Should().Equal(0m, -30m);
-        attributed.Parcels.Sum(parcel => parcel.RecognizedGainOrLoss).Should().Be(attributed.RecognizedGainOrLoss);
+        attributed.Parcels.Select(parcel => parcel.DeferredLoss).Should().Equal("20", "10");
+        attributed.Parcels.Select(parcel => parcel.RecognizedGainOrLoss).Should().Equal("0", "-30");
+        attributed.Parcels.Sum(parcel => decimal.Parse(parcel.RecognizedGainOrLoss!, CultureInfo.InvariantCulture))
+            .Should().Be(decimal.Parse(attributed.RecognizedGainOrLoss!, CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -340,12 +342,43 @@ public sealed class LedgerDisposalTaxReadServiceTests
         result.State.Should().Be("Settled");
         result.CanChange.Should().BeFalse();
         result.Character.Should().Be("Mixed");
-        result.EconomicGainOrLoss.Should().Be(-60m);
-        result.RecognizedGainOrLoss.Should().Be(0m);
-        result.DeferredLoss.Should().Be(60m);
+        result.EconomicGainOrLoss.Should().Be("-60");
+        result.RecognizedGainOrLoss.Should().Be("0");
+        result.DeferredLoss.Should().Be("60");
         result.Parcels.Select(parcel => parcel.Character).Should().Equal("LongTerm", "ShortTerm");
-        result.Parcels.Select(parcel => parcel.DeferredLoss).Should().Equal(20m, 40m);
-        result.Parcels.Select(parcel => parcel.RecognizedGainOrLoss).Should().Equal(0m, 0m);
+        result.Parcels.Select(parcel => parcel.DeferredLoss).Should().Equal("20", "40");
+        result.Parcels.Select(parcel => parcel.RecognizedGainOrLoss).Should().Equal("0", "0");
+    }
+
+    [Fact]
+    public void Project_PreservesLargeMonetaryCentsAsCanonicalStringsUnderNonEnglishCulture()
+    {
+        var fixture = Create(SaleDate, [Lot(1, new(2025, 1, 1), 9007199254740993.0100m)],
+            proceeds: 18014398509481986.0300m);
+        var previousCulture = CultureInfo.CurrentCulture;
+        try
+        {
+            // CurrentCulture is scoped to this execution context; never change the process default.
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
+
+            var result = Project(fixture, SaleDate);
+
+            result.State.Should().Be("Settled");
+            result.EconomicGainOrLoss.Should().Be("9007199254740993.02");
+            result.RecognizedGainOrLoss.Should().Be("9007199254740993.02");
+            result.DeferredLoss.Should().Be("0");
+            var parcel = result.Parcels.Should().ContainSingle().Which;
+            parcel.Quantity.Should().Be("1");
+            parcel.Proceeds.Should().Be("18014398509481986.03");
+            parcel.CostBasis.Should().Be("9007199254740993.01");
+            parcel.EconomicGainOrLoss.Should().Be("9007199254740993.02");
+            parcel.RecognizedGainOrLoss.Should().Be("9007199254740993.02");
+            parcel.DeferredLoss.Should().Be("0");
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previousCulture;
+        }
     }
 
     [Fact]
@@ -365,8 +398,8 @@ public sealed class LedgerDisposalTaxReadServiceTests
         first.Disposals.Should().ContainSingle().Which.State.Should().Be("MissingEvidence");
         first.Disposals[0].PolicyRevision.Should().BeNull();
         refreshed.Disposals.Should().ContainSingle().Which.State.Should().Be("Settled");
-        refreshed.Disposals[0].RecognizedGainOrLoss.Should().Be(0m);
-        refreshed.Disposals[0].DeferredLoss.Should().Be(20m);
+        refreshed.Disposals[0].RecognizedGainOrLoss.Should().Be("0");
+        refreshed.Disposals[0].DeferredLoss.Should().Be("20");
         refreshed.Disposals[0].CanChange.Should().BeFalse();
         refreshed.Disposals[0].PolicyRevision.Should().Be(RetainedRevision);
         refreshed.Disposals[0].EconomicGainOrLoss.Should().Be(first.Disposals[0].EconomicGainOrLoss);
@@ -481,7 +514,10 @@ public sealed class LedgerDisposalTaxReadServiceTests
                 1m, lot.UnitCost, lot.UnitCost)).ToArray(), increases, matchedQuantity,
             lots.Select(lot => lot.ToOpenLot()).ToArray(),
             ProceedsAllocationVersion: LedgerTaxLotReliefProjector.CurrentProceedsAllocationVersion,
-            SalePrice: proceeds / lots.Count, PolicyRevision: RetainedRevision, RecordedAt: RecordedAt);
+            SalePrice: proceeds / lots.Count, PolicyRevision: RetainedRevision, RecordedAt: RecordedAt,
+            DeferralRecipients: deferred == 0m ? null :
+                [new(Guid.NewGuid(), "replacement-1", new LedgerAccount("Replacement investment", LedgerAccountType.Asset),
+                    first.SecurityId, first.BookPositionId, deferred)]);
         return new(first.LedgerBookId, journal, disposal);
     }
 

@@ -1,4 +1,4 @@
-/** Server-owned retained disposal results. Browser clients format these values only. */
+/** Server-owned retained disposal results. Quantities and amounts are exact plain decimal text. */
 export interface LedgerDisposalTaxParcel {
   lotId: string;
   acquiredDate: string;
@@ -6,12 +6,12 @@ export interface LedgerDisposalTaxParcel {
   holdingPeriodDays: number;
   holdingPeriodCarried: boolean;
   character: "ShortTerm" | "LongTerm";
-  quantity: number;
-  proceeds: number;
-  costBasis: number;
-  economicGainOrLoss: number;
-  recognizedGainOrLoss: number | null;
-  deferredLoss: number | null;
+  quantity: string;
+  proceeds: string;
+  costBasis: string;
+  economicGainOrLoss: string;
+  recognizedGainOrLoss: string | null;
+  deferredLoss: string | null;
 }
 
 export interface LedgerDisposalTaxResult {
@@ -29,9 +29,9 @@ export interface LedgerDisposalTaxResult {
   reEvaluationRequired: boolean;
   replacementWindowEnd: string | null;
   character: "ShortTerm" | "LongTerm" | "Mixed" | null;
-  economicGainOrLoss: number | null;
-  recognizedGainOrLoss: number | null;
-  deferredLoss: number | null;
+  economicGainOrLoss: string | null;
+  recognizedGainOrLoss: string | null;
+  deferredLoss: string | null;
   parcels: LedgerDisposalTaxParcel[];
 }
 

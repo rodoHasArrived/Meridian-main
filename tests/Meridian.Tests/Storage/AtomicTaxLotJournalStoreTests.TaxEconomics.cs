@@ -9,6 +9,70 @@ public sealed partial class AtomicTaxLotJournalStoreTests
 {
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
+    public async Task DisposalHistory_BindsRetainedReplacementRecipientToExactJournalBasisScope()
+    {
+        foreach (var mismatch in new[] { "none", "account", "position" })
+        {
+            await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+            var (command, lots, _) = await PrepareProceedsDisposalAsync(database, precisePrice: false, washSale: true);
+            var recipientAccount = lots[0].Account with { FinancialAccountId = "recipient-b" };
+            var timestamp = command.Journal.Entry.Timestamp;
+            var recipient = await database.JournalStore.SaveTaxLotAsync(new LedgerTaxLotRecord(
+                Guid.NewGuid(), command.LedgerBookId, recipientAccount, "retained-basis-recipient", new(2026, 5, 15),
+                1m, 1m, 80m, "USD", timestamp, timestamp, SecurityId: TestSecurityId,
+                BookPositionId: mismatch == "position" ? Guid.NewGuid() : TestBookPositionId));
+            var journal = command.Journal.Entry;
+            var journalRecipientAccount = mismatch == "account"
+                ? recipientAccount with { FinancialAccountId = "unrelated-c" } : recipientAccount;
+            command = (command with
+            {
+                Journal = command.Journal with
+                {
+                    Entry = new JournalEntry(journal.JournalEntryId, timestamp, journal.Description,
+                        journal.Lines.Select(line => line.Account.Name == LedgerAccounts.RealizedLoss.Name
+                            ? new LedgerEntry(line.EntryId, journal.JournalEntryId, timestamp, journalRecipientAccount,
+                                20m, 0m, journal.Description, line.Dimensions, line.Currency)
+                            : line).ToArray(), journal.Metadata)
+                }
+            }).WithComputedFingerprint();
+            var posted = await database.JournalStore.AppendAssetPostingAsync(command);
+            // These public writes preserve cash80, source basis100, and aggregate deferred20.
+            // Only the retained recipient identity distinguishes B's basis from an unrelated C debit.
+            await database.JournalStore.SaveWashSaleDeferralsAsync([new(Guid.NewGuid(), command.LedgerBookId,
+                command.MutationBatchId, TestSecurityId, new(2026, 5, 12), lots[0].Account,
+                recipient.TaxLotRecordId, recipient.LotId, 20m, 1m, lots[0].AcquiredDate,
+                "tax-policy-v1", 30, WashSaleReplacementScope.LedgerBook, timestamp)]);
+
+            var restarted = new PostgresLedgerJournalStore(database.Options);
+            var history = (await restarted.GetTaxLotDisposalHistoryAsync(command.LedgerBookId,
+                [journal.JournalEntryId])).Single();
+            history.DeferralRecipients.Should().ContainSingle().Which.Should().BeEquivalentTo(
+                new LedgerTaxLotDisposalRecipientEvidence(recipient.TaxLotRecordId, recipient.LotId,
+                    recipientAccount, recipient.SecurityId, recipient.BookPositionId, 20m));
+            var result = LedgerDisposalTaxReadService.Project(history, posted.Journal.Entry,
+                command.LedgerBookId, "USD", new(2026, 5, 20));
+            if (mismatch == "none")
+            {
+                result.State.Should().Be("Settled");
+                result.EconomicGainOrLoss.Should().Be("-20");
+                result.RecognizedGainOrLoss.Should().Be("0");
+                result.DeferredLoss.Should().Be("20");
+            }
+            else
+            {
+                result.State.Should().Be("MissingEvidence", mismatch);
+                result.EconomicGainOrLoss.Should().BeNull();
+                result.RecognizedGainOrLoss.Should().BeNull();
+                result.DeferredLoss.Should().BeNull();
+                var project = () => CanonicalDisposalHistoryProjector.Project(history, posted.Journal.Entry,
+                    command.LedgerBookId, "USD");
+                project.Should().Throw<LedgerValidationException>().WithMessage("*exact replacement recipient journal basis*");
+            }
+        }
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task DisposalHistory_UnquotedDeferralMustReconcileToRetainedJournalEconomics()
     {
         foreach (var retainedDeferred in new[] { 20m, 30m })
@@ -49,8 +113,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             if (retainedDeferred == 20m)
             {
                 result.State.Should().Be("Settled");
-                result.EconomicGainOrLoss.Should().Be(-20m);
-                result.RecognizedGainOrLoss.Should().Be(0m);
+                result.EconomicGainOrLoss.Should().Be("-20");
+                result.RecognizedGainOrLoss.Should().Be("0");
             }
             else
             {

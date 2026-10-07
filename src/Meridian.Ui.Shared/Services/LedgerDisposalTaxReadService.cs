@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
@@ -55,7 +56,7 @@ public sealed class LedgerDisposalTaxReadService(ILedgerTaxLotDisposalHistory? h
                 state, reason, state != "Settled", reevaluate, windowEnd,
                 projection is null ? null : projection.Selections.Select(static selection => selection.TaxCharacter)
                     .Distinct().Count() > 1 ? "Mixed" : projection.Selections[0].TaxCharacter.ToString(),
-                projection?.RealizedGainOrLoss, projection?.RecognizedGainOrLoss, projection?.DisallowedWashSaleLoss,
+                DecimalText(projection?.RealizedGainOrLoss), DecimalText(projection?.RecognizedGainOrLoss), DecimalText(projection?.DisallowedWashSaleLoss),
                 parcels ?? []);
 
         LedgerTaxLotReliefProjection projection;
@@ -100,8 +101,8 @@ public sealed class LedgerDisposalTaxReadService(ILedgerTaxLotDisposalHistory? h
                 : losses.Length == 1 ? deferred : null;
             return new LedgerDisposalTaxParcelDto(selection.Lot.LotId, selection.Lot.AcquiredDate,
                 selection.Lot.HoldingPeriodStart, selection.HoldingPeriodDays, selection.HoldingPeriodExtendedByWashSale,
-                selection.TaxCharacter.ToString(), selection.QuantityRelieved, selection.Proceeds, selection.CostBasis,
-                selection.RealizedGainOrLoss, selection.RealizedGainOrLoss + parcelDeferred, parcelDeferred);
+                selection.TaxCharacter.ToString(), DecimalText(selection.QuantityRelieved), DecimalText(selection.Proceeds), DecimalText(selection.CostBasis),
+                DecimalText(selection.RealizedGainOrLoss), DecimalText(selection.RealizedGainOrLoss + parcelDeferred), DecimalText(parcelDeferred));
         }).ToArray();
 
         if (string.IsNullOrWhiteSpace(disposal.PolicyRevision))
@@ -131,4 +132,12 @@ public sealed class LedgerDisposalTaxReadService(ILedgerTaxLotDisposalHistory? h
             ? Result("Provisional", "The replacement window remains open through the displayed date. Additional acquisitions can change the retained recognized loss.", projection, parcels, windowEnd)
             : Result("Provisional", "The replacement window has closed, but no completed re-evaluation or governed finalization is retained. Review and retain that evidence before treating this result as settled.", projection, parcels, windowEnd, reevaluate: true);
     }
+
+    // All tax arithmetic above remains decimal. The wire boundary uses plain, invariant text;
+    // G/G29 can introduce an exponent for very small values, and JSON numbers round in browsers.
+    private static string DecimalText(decimal value)
+        => value.ToString("0.############################", CultureInfo.InvariantCulture);
+
+    private static string? DecimalText(decimal? value)
+        => value.HasValue ? DecimalText(value.Value) : null;
 }

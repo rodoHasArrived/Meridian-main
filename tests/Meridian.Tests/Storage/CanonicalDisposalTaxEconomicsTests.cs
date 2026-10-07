@@ -41,12 +41,96 @@ public sealed class CanonicalDisposalTaxEconomicsTests
     }
 
     [Theory]
+    [InlineData("account")]
+    [InlineData("position")]
+    [InlineData("security")]
+    [InlineData("missing-recipient")]
+    [InlineData("recipient-amount")]
+    [InlineData("recipient-lot")]
+    [InlineData("recipient-source")]
+    public void DeferredDisposal_RequiresExactRecipientEvidenceAndJournalBasis(string mismatch)
+    {
+        var (lot, history, journal) = CreateDeferredDisposal();
+        var recipient = history.DeferralRecipients!.Single();
+        if (mismatch is "account" or "position" or "security")
+        {
+            journal = new(journal.JournalEntryId, journal.Timestamp, journal.Description,
+                journal.Lines.Select(line => line.Account == recipient.Account
+                    ? new LedgerEntry(line.EntryId, journal.JournalEntryId, journal.Timestamp,
+                        mismatch == "account" ? new LedgerAccount("Unrelated investment", LedgerAccountType.Asset) : line.Account,
+                        line.Debit, line.Credit, journal.Description,
+                        line.Dimensions! with
+                        {
+                            InstrumentId = mismatch == "security" ? Guid.NewGuid() : recipient.SecurityId,
+                            PositionId = mismatch == "position" ? Guid.NewGuid() : recipient.BookPositionId
+                        }) : line).ToArray(), journal.Metadata);
+        }
+        else
+        {
+            history = history with
+            {
+                DeferralRecipients = mismatch == "missing-recipient" ? null :
+                [recipient with
+                {
+                    DeferredLoss = mismatch == "recipient-amount" ? 19m : recipient.DeferredLoss,
+                    ReplacementLotId = mismatch == "recipient-lot" ? "foreign-lot" : recipient.ReplacementLotId,
+                    ReplacementTaxLotRecordId = mismatch == "recipient-source" ? lot.TaxLotRecordId : recipient.ReplacementTaxLotRecordId
+                }]
+            };
+        }
+
+        var project = () => CanonicalDisposalHistoryProjector.Project(history, journal, lot.LedgerBookId, "USD");
+        var result = LedgerDisposalTaxReadService.Project(history, journal, lot.LedgerBookId, "USD", new(2026, 5, 12));
+
+        project.Should().Throw<LedgerValidationException>();
+        result.State.Should().Be("MissingEvidence");
+        result.EconomicGainOrLoss.Should().BeNull();
+        result.RecognizedGainOrLoss.Should().BeNull();
+        result.DeferredLoss.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(8, 12, true)]
+    [InlineData(9, 11, false)]
+    public void DeferredDisposal_BindsEachRecipientPositionAmountDespiteUnchangedTotal(
+        int firstDebit, int secondDebit, bool certifies)
+    {
+        var (lot, history, journal) = CreateDeferredDisposal();
+        var recipient = history.DeferralRecipients!.Single();
+        var first = recipient with { BookPositionId = Guid.NewGuid(), DeferredLoss = 8m };
+        var second = recipient with
+        {
+            ReplacementTaxLotRecordId = Guid.NewGuid(),
+            ReplacementLotId = "replacement-2",
+            BookPositionId = Guid.NewGuid(),
+            DeferredLoss = 12m
+        };
+        history = history with
+        {
+            WashSaleBasisIncreases = [new(first.ReplacementLotId, 8m, lot.AcquiredDate), new(second.ReplacementLotId, 12m, lot.AcquiredDate)],
+            DeferralRecipients = [first, second]
+        };
+        journal = new(journal.JournalEntryId, journal.Timestamp, journal.Description,
+            journal.Lines.Where(line => line.Account != recipient.Account).Concat(new[] { (first, firstDebit), (second, secondDebit) }
+                .Select(item => new LedgerEntry(Guid.NewGuid(), journal.JournalEntryId, journal.Timestamp,
+                    item.Item1.Account, item.Item2, 0m, journal.Description,
+                    new LedgerLineDimensionSet(InstrumentId: item.Item1.SecurityId) { PositionId = item.Item1.BookPositionId }))).ToArray(),
+            journal.Metadata);
+
+        var project = () => CanonicalDisposalHistoryProjector.Project(history, journal, lot.LedgerBookId, "USD");
+        if (certifies)
+            project().DisallowedWashSaleLoss.Should().Be(20m);
+        else
+            project.Should().Throw<LedgerValidationException>().WithMessage("*exact replacement recipient journal basis*");
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void DeferredDisposal_MissingDeferralRowsCannotTurnACashLossIntoASettledGain(bool foreignCashAccount)
     {
         var (lot, history, journal) = CreateDeferredDisposal();
-        history = history with { WashSaleBasisIncreases = [], MatchedReplacementQuantity = 0m, PolicyRevision = "retained-policy" };
+        history = history with { WashSaleBasisIncreases = [], DeferralRecipients = null, MatchedReplacementQuantity = 0m, PolicyRevision = "retained-policy" };
         if (foreignCashAccount)
             journal = new(journal.JournalEntryId, journal.Timestamp, journal.Description,
                 journal.Lines.Select(line => line.Account.Name.StartsWith("Cash", StringComparison.Ordinal)
@@ -68,7 +152,7 @@ public sealed class CanonicalDisposalTaxEconomicsTests
     public void UnquotedDisposalWithoutDeferrals_PreservesExistingNonCashReporting()
     {
         var (lot, history, journal) = CreateDeferredDisposal();
-        history = history with { WashSaleBasisIncreases = [], MatchedReplacementQuantity = 0m };
+        history = history with { WashSaleBasisIncreases = [], DeferralRecipients = null, MatchedReplacementQuantity = 0m };
         journal = new(journal.JournalEntryId, journal.Timestamp, journal.Description,
         [
             journal.Lines.Single(line => line.Account == lot.Account),
@@ -101,7 +185,10 @@ public sealed class CanonicalDisposalTaxEconomicsTests
         var history = new LedgerTaxLotDisposalHistoryRecord(Guid.NewGuid(), id, lot.Account,
             LedgerTaxLotReliefMethod.Fifo, [new(lot.LotId, lot.AcquiredDate, lot.AcquiredDate, 1m, 100m, 100m)],
             [new("replacement", 20m, lot.AcquiredDate)], 1m, [lot.ToOpenLot()],
-            ProceedsAllocationVersion: LedgerTaxLotReliefProjector.CurrentProceedsAllocationVersion);
+            ProceedsAllocationVersion: LedgerTaxLotReliefProjector.CurrentProceedsAllocationVersion,
+            PolicyRevision: "retained-policy",
+            DeferralRecipients: [new(Guid.NewGuid(), "replacement", journal.Lines[^1].Account,
+                lot.SecurityId, lot.BookPositionId, 20m)]);
         return (lot, history, journal);
     }
 }

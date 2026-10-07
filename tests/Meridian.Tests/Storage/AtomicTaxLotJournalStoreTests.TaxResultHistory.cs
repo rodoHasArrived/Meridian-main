@@ -183,8 +183,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 var disposal = result.Disposals.Should().ContainSingle().Which;
                 disposal.State.Should().Be("Settled");
                 disposal.SaleDate.Should().Be(saleDate);
-                disposal.DeferredLoss.Should().Be(20m);
-                disposal.RecognizedGainOrLoss.Should().Be(0m);
+                disposal.DeferredLoss.Should().Be("20");
+                disposal.RecognizedGainOrLoss.Should().Be("0");
             }
             else
             {
@@ -232,7 +232,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var disposal = result.Disposals.Should().ContainSingle().Which;
         disposal.State.Should().Be("Settled");
         disposal.SaleDate.Should().Be(new DateOnly(2026, 5, 12));
-        disposal.DeferredLoss.Should().Be(20m);
-        disposal.RecognizedGainOrLoss.Should().Be(0m);
+        disposal.DeferredLoss.Should().Be("20");
+        disposal.RecognizedGainOrLoss.Should().Be("0");
     }
 }

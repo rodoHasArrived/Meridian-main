@@ -12,14 +12,14 @@ const disposal: LedgerDisposalTaxResult = {
   symbol: "AAPL", reliefMethod: "Fifo", policyRevision: "us-tax:2026.4/retained-17", recordedAt: "2026-08-03T16:00:00Z",
   state: "Provisional", stateReason: "Replacement acquisitions through September 2 can change the retained loss.",
   canChange: true, reEvaluationRequired: false, replacementWindowEnd: "2026-09-02", character: "Mixed",
-  economicGainOrLoss: -123.45, recognizedGainOrLoss: -23.45, deferredLoss: 100,
+  economicGainOrLoss: "-123.45", recognizedGainOrLoss: "-23.45", deferredLoss: "100",
   parcels: [
     { lotId: "lot-carried", acquiredDate: "2026-07-20", holdingPeriodStart: "2024-02-29", holdingPeriodDays: 886,
-      holdingPeriodCarried: true, character: "LongTerm", quantity: 2, proceeds: 300, costBasis: 400,
-      economicGainOrLoss: -100, recognizedGainOrLoss: 0, deferredLoss: 100 },
+      holdingPeriodCarried: true, character: "LongTerm", quantity: "2", proceeds: "300", costBasis: "400",
+      economicGainOrLoss: "-100", recognizedGainOrLoss: "0", deferredLoss: "100" },
     { lotId: "lot-short", acquiredDate: "2025-08-03", holdingPeriodStart: "2025-08-03", holdingPeriodDays: 365,
-      holdingPeriodCarried: false, character: "ShortTerm", quantity: 1, proceeds: 100, costBasis: 123.45,
-      economicGainOrLoss: -23.45, recognizedGainOrLoss: -23.45, deferredLoss: 0 }
+      holdingPeriodCarried: false, character: "ShortTerm", quantity: "1", proceeds: "100", costBasis: "123.45",
+      economicGainOrLoss: "-23.45", recognizedGainOrLoss: "-23.45", deferredLoss: "0" }
   ]
 };
 function result(overrides: Partial<LedgerJournalTaxResults> = {}): LedgerJournalTaxResults {
@@ -35,9 +35,9 @@ it("renders retained mixed character, carried holding start, exact revision and 
   const { container } = render(<JournalEntryTaxResults {...scope} />);
   expect(await screen.findByText("Mixed parcels")).toBeInTheDocument();
   expect(screen.getByText("us-tax:2026.4/retained-17")).toBeInTheDocument();
-  expect(screen.getByText("-€123.45")).toBeInTheDocument();
-  expect(screen.getAllByText("-€23.45")[0]).toBeVisible();
-  expect(screen.getAllByText("€100.00")[0]).toBeVisible();
+  expect(screen.getByText("-123.45 EUR")).toBeInTheDocument();
+  expect(screen.getAllByText("-23.45 EUR")[0]).toBeVisible();
+  expect(screen.getAllByText("100.00 EUR")[0]).toBeVisible();
   expect(screen.getByText("Tax result needs evidence")).toBeInTheDocument();
   const summary = screen.getByText(/lot-carried/).closest("summary")!;
   await userEvent.click(summary);
@@ -106,7 +106,7 @@ it("keeps missing disposal applicability and amounts unknown instead of implying
   expect(screen.queryByText("Not applicable")).not.toBeInTheDocument();
   expect(screen.queryByText("Not required by current evidence")).not.toBeInTheDocument();
   expect(screen.queryByText("Settled under the retained policy")).not.toBeInTheDocument();
-  expect(screen.queryByText("€0.00")).not.toBeInTheDocument();
+  expect(screen.queryByText("0.00 EUR")).not.toBeInTheDocument();
 });
 
 it("aborts and ignores late tax evidence when the selected journal changes", async () => {
@@ -123,4 +123,19 @@ it("aborts and ignores late tax evidence when the selected journal changes", asy
   await act(async () => resolveOld(result()));
   expect(screen.queryByText("us-tax:2026.4/retained-17")).not.toBeInTheDocument();
   expect(screen.getByText("No disposal for journal 2.")).toBeInTheDocument();
+});
+
+it("renders large cents, tiny amounts and fractional quantities exactly from retained decimal text", async () => {
+  vi.mocked(getLedgerJournalEntryTaxResults).mockResolvedValue(result({ disposals: [{
+    ...disposal, economicGainOrLoss: "9007199254740993.01", recognizedGainOrLoss: "9007199254740993.01", deferredLoss: "0",
+    parcels: [{ ...disposal.parcels[0], quantity: "0.1234567890123456789012345678", proceeds: "9007199254740993.010000000001",
+      costBasis: "0.000000000001", economicGainOrLoss: "9007199254740993.01", recognizedGainOrLoss: "9007199254740993.01", deferredLoss: "0" }]
+  }] }));
+  render(<JournalEntryTaxResults {...scope} />);
+  expect((await screen.findAllByText("9,007,199,254,740,993.01 EUR"))[0]).toBeVisible();
+  await userEvent.click(screen.getByText(/lot-carried/).closest("summary")!);
+  expect(screen.getByText("0.1234567890123456789012345678")).toBeVisible();
+  expect(screen.getByText("9,007,199,254,740,993.010000000001 EUR")).toBeVisible();
+  expect(screen.getByText("0.000000000001 EUR")).toBeVisible();
+  expect(screen.queryByText("9,007,199,254,740,994.00 EUR")).not.toBeInTheDocument();
 });

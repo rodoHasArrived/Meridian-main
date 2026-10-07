@@ -11,7 +11,10 @@ public sealed record LedgerJournalTaxResultsDto(
     string Message,
     IReadOnlyList<LedgerDisposalTaxResultDto> Disposals);
 
-/// <summary>Server-derived tax results; absent evidence is null rather than a settled zero.</summary>
+/// <summary>
+/// Server-derived tax results; absent evidence is null rather than a settled zero.
+/// Monetary values use invariant plain decimal text so clients retain every significant digit.
+/// </summary>
 public sealed record LedgerDisposalTaxResultDto(
     Guid MutationBatchId,
     Guid JournalEntryId,
@@ -27,11 +30,12 @@ public sealed record LedgerDisposalTaxResultDto(
     bool ReEvaluationRequired,
     DateOnly? ReplacementWindowEnd,
     string? Character,
-    decimal? EconomicGainOrLoss,
-    decimal? RecognizedGainOrLoss,
-    decimal? DeferredLoss,
+    string? EconomicGainOrLoss,
+    string? RecognizedGainOrLoss,
+    string? DeferredLoss,
     IReadOnlyList<LedgerDisposalTaxParcelDto> Parcels);
 
+/// <summary>Retained parcel evidence with exact invariant decimal text for quantity and amounts.</summary>
 public sealed record LedgerDisposalTaxParcelDto(
     string LotId,
     DateOnly AcquiredDate,
@@ -39,9 +43,9 @@ public sealed record LedgerDisposalTaxParcelDto(
     int HoldingPeriodDays,
     bool HoldingPeriodCarried,
     string Character,
-    decimal Quantity,
-    decimal Proceeds,
-    decimal CostBasis,
-    decimal EconomicGainOrLoss,
-    decimal? RecognizedGainOrLoss,
-    decimal? DeferredLoss);
+    string Quantity,
+    string Proceeds,
+    string CostBasis,
+    string EconomicGainOrLoss,
+    string? RecognizedGainOrLoss,
+    string? DeferredLoss);
