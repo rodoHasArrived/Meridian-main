@@ -93,6 +93,14 @@ Operations Continuity journal candidates carry a typed `Provenance` origin mark 
 command. Omitted marks remain `Real`; seeded or simulated evidence must be explicitly marked,
 and the governed ledger boundary rejects mismatches.
 
+The unified `OpenLotSuccessors` contract also admits one whole-unit same-security forward/reverse
+split successor and one stock-merger unit successor. Those one-target transfers carry original and
+current bases exactly; exchange/refunding retain their independent currency allocations and final
+residuals. New successor acquisition facts retain immutable `CorporateActionLineage`, including
+action date, predecessor identity/version, allocation, role and reporting tags, even after relief.
+The reviewed instruction remains unchanged for replay. Successor yield/schedule continuation
+requires a separately reviewed workflow.
+
 ## Shared close and lot convergence
 
 `OpenLotSuccessorInstructionDto` retains the reviewed corporate-action projection, exact

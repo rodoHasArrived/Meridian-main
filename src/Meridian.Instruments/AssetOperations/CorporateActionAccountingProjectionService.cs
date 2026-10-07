@@ -43,6 +43,9 @@ public sealed record CorporateActionAccountingProjectionRequest(
     Guid? ElectionId = null,
     IReadOnlyList<CorporateActionLotMutationDto>? AuthoritativeLotMutations = null)
 {
+    /// <summary>Explicit reviewed split basis transfer; other callers retain the operational no-journal projection.</summary>
+    public bool CanonicalLotTransferJournal { get; init; }
+
     public IReadOnlyList<CorporateActionProjectionEvidenceDependencyDto> EvidenceManifest { get; init; } =
         EvidenceManifest ?? [];
 
@@ -1325,6 +1328,9 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
             "A forward stock split ratio must be greater than one.");
         AddIf(blockers, reverse && splitRatio >= 1m, "corporate-action.reverse-split-ratio-invalid",
             "A reverse stock split ratio must be between zero and one.");
+
+        if (request.CanonicalLotTransferJournal)
+            return ProjectCanonicalSplitTransfer(request, currency, blockers, positionQuantity, splitRatio);
 
         if (request.Economics.IdentifierChanged)
         {

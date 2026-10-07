@@ -220,6 +220,15 @@ reproduces certified posted basis without rounding it through acquisition unit c
 `V_ledger_041` follows PR #3048's reserved amortization ordinal 040. PostgreSQL coverage lives in
 `AtomicTaxLotJournalStoreTests.CurrentBasis`; see the [lot convergence blueprint](../../docs/engineering/blueprints/security-lot-convergence-blueprint.md).
 
+Corporate-action posting uses the single retained successor instruction and migration 042 for
+cashless exchanges, whole-unit forward/reverse splits, stock mergers and two-successor refundings.
+The serializable transaction locks every source/target reference, position and lot; it checks
+accounting policy, financial-account and canonical dimension scope before any journal or lot write.
+Same-security/same-position splits bind distinct lot labels on debit/credit legs. New successors
+retain immutable acquisition origin, while old absent-lineage receipts replay their retained shape.
+The populated through-041 migration upgrade/reapply/restart and failure-recovery audit remains in
+`AtomicTaxLotSuccessorMigrationTests`.
+
 ## Purpose
 
 `Coordination/SharedStorageCoordinationStore.ExecuteUnderLeaseAsync` checks the retained owner,

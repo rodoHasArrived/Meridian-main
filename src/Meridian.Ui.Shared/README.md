@@ -342,6 +342,12 @@ environment accounts and development demo fallback, so a multi-company login sou
 silently run against an unpartitioned graph. This startup check does not certify account changes
 after startup or activate strict reads automatically.
 
+Canonical Reporting verifies unified successor receipts against the complete journal and retained
+reviewed instruction. It preserves exact evidence JSON and fingerprints on certified journal rows
+and adds verified predecessor/successor snapshots to `corporate-action-lot-evidence.json` in the
+signed ledger report pack. Whole-unit split legs sharing a security and position remain separate
+through their reviewed lot labels; only refunded successors receive Schedule D treatment.
+
 ## Purpose
 
 UI shared contains shared UI read models, endpoint adapters, and compatibility shims for browser

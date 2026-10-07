@@ -283,7 +283,8 @@ public sealed class AccountingPostingCandidateService :
             var account = new LedgerAccount(chartNode.AccountName, accountType);
             if (predecessorLot is not null && IsCanonicalSuccessorLine(request, line))
                 account = account with { FinancialAccountId = predecessorLot.Account.FinancialAccountId };
-            if (predecessorLot is not null && line.Dimensions?.InstrumentId == predecessorLot.SecurityId
+            if (predecessorLot is not null && line.Side == AccountingTemplateLineSideDto.Credit
+                && line.Dimensions?.InstrumentId == predecessorLot.SecurityId
                 && line.Dimensions?.PositionId == predecessorLot.BookPositionId)
             {
                 if (account.Name != predecessorLot.Account.Name || account.AccountType != predecessorLot.Account.AccountType)

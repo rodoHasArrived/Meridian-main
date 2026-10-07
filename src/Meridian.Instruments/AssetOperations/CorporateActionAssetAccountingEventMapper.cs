@@ -170,8 +170,7 @@ public sealed class CorporateActionAssetAccountingEventMapper : ICorporateAction
         ValidateMappedEffectAttestation(mappedEffect, projection, request.Scope, blockers);
         ValidateEvidence(request.RetainedEvidence, projection, economicEvent, blockers);
         var successorInstruction = request.SuccessorInstruction;
-        var supportedSuccessorAction = projection.Treatment.ActionType is CorporateActionAccountingTypeDto.RegS144AExchange
-            or CorporateActionAccountingTypeDto.AdvanceRefunding;
+        var supportedSuccessorAction = OpenLotSuccessors.IsSupported(projection.Treatment.ActionType);
         AssetLotMutationInstructionDto? lotInstruction = null;
         if (successorInstruction is not null || supportedSuccessorAction)
         {

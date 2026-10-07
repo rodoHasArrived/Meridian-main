@@ -170,6 +170,11 @@ Operations Continuity checklist acknowledgments are explicit retained reviewer a
 Private-capital close evidence is selected by fund event, period, and ledger entity. Partner statements must reference a selected event in the same month and match the capital account, investor, and currency. Each selected expense or fee event must retain allocation support; management-company evidence signals also come from selected event records. Cumulative capital-account balances, history, and evidence remain available as diagnostics, but prior-period or other-entity statement and allocation evidence cannot satisfy the selected close.
 `PrivateCapitalCloseCockpitServiceTests.EvidenceScope.cs` builds real cumulative subledgers for mixed May/June and mixed-entity scenarios, checks refusal with missing selected-scope support, and restores readiness by repairing that support while preserving cumulative balances and history. A separate scenario rejects a foreign-period statement even when it carries the selected event ID. These focused scenarios form part of W10-SEAM-001, whose acceptance remains in progress pending the required hosted integration evidence.
 
+`CanonicalLotCorporateActionService` connects the unified reviewed successor instruction to the
+existing Projected/Drafted rail for exchanges, whole-unit splits, stock mergers and refundings.
+Preview rereads exact predecessor and versioned source/successor reference authority; drafting
+retains the mapped instruction and requires independent approval before posting.
+
 ## Purpose
 
 OFX duplicate account or currency tags cannot overwrite conflicting evidence. A row account may

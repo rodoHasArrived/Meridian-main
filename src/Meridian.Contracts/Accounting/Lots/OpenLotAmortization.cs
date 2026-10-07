@@ -79,6 +79,8 @@ public static class OpenLotAmortization
         ArgumentNullException.ThrowIfNull(security);
         ArgumentNullException.ThrowIfNull(evidence);
         var acquisition = lot.Acquisition;
+        if (acquisition.CorporateActionLineage is not null)
+            throw new ArgumentException("Corporate-action successors require a separately reviewed amortization/yield continuation; inherited acquisition facts do not authorize a new schedule.");
         var terms = acquisition.FaceValueTerms;
         if (lot.Version <= 0 || lot.OpenQuantity <= 0 || acquisition.QuantityBasis != LotQuantityBasis.Face || terms is null
             || terms.BookedFactor != 1m || instruction.ExpectedBookPositionVersion <= 0)

@@ -63,7 +63,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         foreach (var target in expected.Successors)
         {
             var actual = successors.Single(lot => lot.TaxLotRecordId == target.Lot.TaxLotRecordId);
-            actual.Should().BeEquivalentTo(target.Lot);
+            actual.Should().BeEquivalentTo(OpenLotSuccessors.WithLineage(expected, target.Lot));
             actual.AcquiredDate.Should().Be(expected.ExpectedLot.AcquiredDate);
             actual.Acquisition.HoldingPeriodStartDate.Should().Be(expected.ExpectedLot.Acquisition.HoldingPeriodStartDate);
             actual.Acquisition.AcquisitionFxRateToFunctional.Should().Be(1.1m);
