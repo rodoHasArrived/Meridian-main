@@ -8,17 +8,17 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1031 |
-| Valid | 590 |
+| Total code blocks | 1034 |
+| Valid | 592 |
 | Invalid | 0 |
-| Skipped | 441 |
+| Skipped | 442 |
 
 ## Summary by Language
 
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 107 | 0 | 0 | 107 |
-| `bash` | 188 | 188 | 0 | 0 |
+| `bash` | 190 | 190 | 0 | 0 |
 | `cpp` | 1 | 0 | 0 | 1 |
 | `csharp` | 304 | 304 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
@@ -30,7 +30,7 @@
 | `markdown` | 6 | 0 | 0 | 6 |
 | `md` | 10 | 0 | 0 | 10 |
 | `mermaid` | 39 | 0 | 0 | 39 |
-| `powershell` | 96 | 0 | 0 | 96 |
+| `powershell` | 97 | 0 | 0 | 97 |
 | `python` | 3 | 3 | 0 | 0 |
 | `sql` | 12 | 0 | 0 | 12 |
 | `text` | 73 | 0 | 0 | 73 |
@@ -97,7 +97,7 @@ No invalid code examples found.
 | `docs/development/documentation-automation.md` | 19 |
 | `docs/development/documentation-contribution-guide.md` | 2 |
 | `docs/development/expanding-scripts.md` | 8 |
-| `docs/development/git-hooks.md` | 4 |
+| `docs/development/git-hooks.md` | 6 |
 | `docs/development/otlp-trace-visualization.md` | 5 |
 | `docs/development/provider-implementation.md` | 23 |
 | `docs/development/repository-organization-guide.md` | 8 |
