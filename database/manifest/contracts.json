@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "3a9b2ee67d2e711cd938c7dcdca9610fdeb651d11e1c693168130f8883ea908e",
+      "fingerprint": "92dd83dcae5a82cf4ebab37baeabf40cf5c53a608fb471d27041799b0b5aa86b",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -1191,6 +1191,7 @@
         "Meridian.Contracts.Ledger.CreateLedgerBookRequest",
         "Meridian.Contracts.Ledger.CreateLedgerPeriodRequest",
         "Meridian.Contracts.Ledger.CreatePreparedClosePlanRequestDto",
+        "Meridian.Contracts.Ledger.CurrencyMinorUnits",
         "Meridian.Contracts.Ledger.DimensionMappingProfileDto",
         "Meridian.Contracts.Ledger.ExecuteAccountingRuleTestCasesRequestDto",
         "Meridian.Contracts.Ledger.ExternalGlExportCertificationDto",
@@ -3272,7 +3273,7 @@
         "src/Meridian.Contracts/AccountingSystem",
         "src/Meridian.Contracts/Ledger"
       ],
-      "fingerprint": "79c9eb292fba5b273925c8efcc8eaa250a142f6551828589e0e758eca836ec62",
+      "fingerprint": "71a926eba987837ee27a8d06bc15db0c5802e5c7263b1f6724108bc3001d3c4d",
       "id": "ledger-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.AccountingSystem",
@@ -3458,6 +3459,7 @@
         "Meridian.Contracts.Ledger.CreateLedgerBookRequest",
         "Meridian.Contracts.Ledger.CreateLedgerPeriodRequest",
         "Meridian.Contracts.Ledger.CreatePreparedClosePlanRequestDto",
+        "Meridian.Contracts.Ledger.CurrencyMinorUnits",
         "Meridian.Contracts.Ledger.DimensionMappingProfileDto",
         "Meridian.Contracts.Ledger.ExecuteAccountingRuleTestCasesRequestDto",
         "Meridian.Contracts.Ledger.ExternalGlExportCertificationDto",
@@ -3932,7 +3934,7 @@
       ]
     }
   ],
-  "fingerprint": "99ef0975ddb49d9bc16e41c6e46027e46f7e76268c6f6ad705e217a76f31faf5",
+  "fingerprint": "49543ca19cd5a48642bf22cb915202b6314ed210fcd0be7e2fdd517e1a9891ab",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -3943,7 +3945,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "6aff2d60b3d984ebc37ad4a677caac848221f9238b105c6df80e78b5ebeccf66",
+      "fingerprint": "2e7f0408d23ccf7b23bdc5af8b35004d12b97bc5b182cc7c30a37576403b6dfc",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Accounting.Lots",
       "object_ids": [
@@ -5367,7 +5369,7 @@
         "all-contracts",
         "ledger-contracts"
       ],
-      "fingerprint": "55a483ba7cfa5a12040874b40da5a20a1e5802f75aeb72a068980c24b4d46922",
+      "fingerprint": "d0db350fdf77c1e55fcae35ad97839821d64f5c1c4b43270022fabcfa7e0998b",
       "mapped_schemas": [
         "ledger"
       ],
@@ -5486,6 +5488,7 @@
         "Meridian.Contracts.Ledger.CreateLedgerBookRequest",
         "Meridian.Contracts.Ledger.CreateLedgerPeriodRequest",
         "Meridian.Contracts.Ledger.CreatePreparedClosePlanRequestDto",
+        "Meridian.Contracts.Ledger.CurrencyMinorUnits",
         "Meridian.Contracts.Ledger.DimensionMappingProfileDto",
         "Meridian.Contracts.Ledger.ExecuteAccountingRuleTestCasesRequestDto",
         "Meridian.Contracts.Ledger.ExternalGlExportCertificationDto",
@@ -9686,7 +9689,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "798e760e7067bc51667c9b2942704a1d904ac08447de0391c87de345972a1d4c",
+      "fingerprint": "9b37f000a079740e5754529cd095c898ffdc2baa98884ff3a925e34d730081bf",
       "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto",
       "id": "Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto",
       "kind": "record",
@@ -9703,7 +9706,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OpenLotDto",
-          "source_line": 20,
+          "source_line": 21,
           "type": "OpenLotDto"
         },
         {
@@ -9717,7 +9720,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 23,
+          "source_line": 24,
           "type": "string"
         },
         {
@@ -9731,7 +9734,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 21,
+          "source_line": 22,
           "type": "long"
         },
         {
@@ -9745,7 +9748,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "CorporateActionAccountingProjectionDto",
-          "source_line": 19,
+          "source_line": 20,
           "type": "CorporateActionAccountingProjectionDto"
         },
         {
@@ -9759,7 +9762,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OpenLotSuccessorTargetDto>",
-          "source_line": 22,
+          "source_line": 23,
           "type": "IReadOnlyList<OpenLotSuccessorTargetDto>"
         }
       ],
@@ -9773,12 +9776,12 @@
         "Meridian.Contracts.AssetOperations.CorporateActionAccountingProjectionDto"
       ],
       "source": {
-        "line": 18,
+        "line": 19,
         "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotSuccessors.cs"
       },
       "sources": [
         {
-          "line": 18,
+          "line": 19,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotSuccessors.cs"
         }
       ],
@@ -9794,7 +9797,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "26db0b54eb055daa1dd90f21167d9f5e23112a7c5af977b20f3f7893f8159c33",
+      "fingerprint": "b70c78409f3a629f73582bae6c254958a55d9dfcc8dc5bf4399ecd4d24d153c8",
       "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotSuccessors",
       "id": "Meridian.Contracts.Accounting.Lots.OpenLotSuccessors",
       "kind": "class",
@@ -9806,12 +9809,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.OpenLotSuccessors",
       "references": [],
       "source": {
-        "line": 26,
+        "line": 27,
         "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotSuccessors.cs"
       },
       "sources": [
         {
-          "line": 26,
+          "line": 27,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotSuccessors.cs"
         }
       ],
@@ -9827,7 +9830,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "ad85e638b21a2f13360428bd46d3c75c645c2b7ecfec80182023b237f82f8b5b",
+      "fingerprint": "c6829ecaccc0d0f0f96a7df854f58f677f3aee5e7a13d3ff81d38ab831eda931",
       "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotSuccessorTargetDto",
       "id": "Meridian.Contracts.Accounting.Lots.OpenLotSuccessorTargetDto",
       "kind": "record",
@@ -9844,7 +9847,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 10,
+          "source_line": 11,
           "type": "long"
         },
         {
@@ -9858,7 +9861,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 12,
+          "source_line": 13,
           "type": "string"
         },
         {
@@ -9872,7 +9875,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 11,
+          "source_line": 12,
           "type": "long"
         },
         {
@@ -9886,7 +9889,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OpenLotDto",
-          "source_line": 9,
+          "source_line": 10,
           "type": "OpenLotDto"
         }
       ],
@@ -9898,12 +9901,12 @@
         "Meridian.Contracts.Accounting.Lots.OpenLotDto"
       ],
       "source": {
-        "line": 8,
+        "line": 9,
         "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotSuccessors.cs"
       },
       "sources": [
         {
-          "line": 8,
+          "line": 9,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotSuccessors.cs"
         }
       ],
@@ -168224,6 +168227,44 @@
         {
           "line": 64,
           "path": "src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "3c3d8606d6f47626f02d906b8216a76c7ed6c0e23d50267b6d6cb000b81a1e0c",
+      "full_name": "Meridian.Contracts.Ledger.CurrencyMinorUnits",
+      "id": "Meridian.Contracts.Ledger.CurrencyMinorUnits",
+      "kind": "class",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [],
+      "name": "CurrencyMinorUnits",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.CurrencyMinorUnits",
+      "references": [],
+      "source": {
+        "line": 4,
+        "path": "src/Meridian.Contracts/Ledger/CurrencyMinorUnits.cs"
+      },
+      "sources": [
+        {
+          "line": 4,
+          "path": "src/Meridian.Contracts/Ledger/CurrencyMinorUnits.cs"
         }
       ],
       "type_parameters": []

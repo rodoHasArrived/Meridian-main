@@ -4185,6 +4185,7 @@ Meridian-main
 │   │   │   ├── AccountingConfigurationPrivateCapitalDtos.cs
 │   │   │   ├── AccountingPostingCommandDtos.cs
 │   │   │   ├── AutomatedJournalEvidenceDtos.cs
+│   │   │   ├── CurrencyMinorUnits.cs
 │   │   │   ├── LedgerBookDtos.cs
 │   │   │   ├── LedgerCurrencyRounding.cs
 │   │   │   ├── LedgerDimensionTags.cs
@@ -7059,6 +7060,7 @@ Meridian-main
 │   │   │   │   │   ├── operations-continuity-screen.close-test-fixtures.ts
 │   │   │   │   │   ├── operations-continuity-screen.command-state.ts
 │   │   │   │   │   ├── operations-continuity-screen.date-format.ts
+│   │   │   │   │   ├── operations-continuity-screen.selection.ts
 │   │   │   │   │   ├── operations-continuity-screen.test.tsx
 │   │   │   │   │   ├── operations-continuity-screen.tsx
 │   │   │   │   │   ├── operations-continuity-screen.view-model.test.ts
@@ -9639,6 +9641,7 @@ Meridian-main
 │   │   │   │   ├── ReconciliationMatchKernelTests.cs
 │   │   │   │   ├── ReconciliationNormalizationServiceTests.cs
 │   │   │   │   ├── ReconciliationRunOrchestratorTests.cs
+│   │   │   │   ├── ScopedLedgerJournalInternalTransactionSourceTests.cs
 │   │   │   │   ├── StatementMatchingEngineSidedKernelTests.cs
 │   │   │   │   ├── StatementMatchingEngineTests.cs
 │   │   │   │   ├── StatementReconciliationContextAdapterTests.cs

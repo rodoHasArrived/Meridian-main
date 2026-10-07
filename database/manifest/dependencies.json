@@ -7084,6 +7084,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CurrencyMinorUnits"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.DimensionMappingProfileDto"
     },
     {
@@ -20099,6 +20105,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CreatePreparedClosePlanRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CurrencyMinorUnits"
     },
     {
       "kind": "contract-set-member",
@@ -48529,7 +48541,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "e582c8c3256caf501a86cc02b64a7d6444b6f3b4a696e7ef57a3678c7df57e3b",
+  "fingerprint": "776baec76f6e9120cf7141c54c8d4eac4a747ba69606b6851849d52e3bbf5476",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -55661,6 +55673,12 @@
       "id": "contract:Meridian.Contracts.Ledger.CreatePreparedClosePlanRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.CreatePreparedClosePlanRequestDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.CurrencyMinorUnits",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.CurrencyMinorUnits"
     },
     {
       "classification": "dto",
@@ -71015,10 +71033,10 @@
   ],
   "summary": {
     "contract_references": 3211,
-    "contract_set_memberships": 3770,
-    "edges": 8063,
+    "contract_set_memberships": 3772,
+    "edges": 8065,
     "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3895
+    "nodes": 3896
   }
 }
