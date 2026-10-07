@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "23b057e19b112046f746df41b008a6b61200ab2b9b2da59c935d095cdec876ee",
+      "fingerprint": "28d36716f200148a1a93990a180a06a1935c90de9ad1bd69cd901da5e8a8537d",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -1351,6 +1351,7 @@
         "Meridian.Contracts.Lifecycle.LifecycleShutdownRequestDto",
         "Meridian.Contracts.Lifecycle.LifecycleShutdownStage",
         "Meridian.Contracts.Lifecycle.LifecycleShutdownStageDto",
+        "Meridian.Contracts.Lifecycle.LifecycleStartupTiming",
         "Meridian.Contracts.Lifecycle.LifecycleSupervisorManifestDto",
         "Meridian.Contracts.Lifecycle.LifecycleSupervisorMessageDto",
         "Meridian.Contracts.Lifecycle.LifecycleSupervisorStatusDto",
@@ -3947,7 +3948,7 @@
       ]
     }
   ],
-  "fingerprint": "9b97d2f97c9951d96d8cb0c50e0b08fd97714b88d240ca7671990cc08cba7de9",
+  "fingerprint": "1a91e14073e33d1d1d467f60072a61517d7ee78d17ef200159de27d555bfce27",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5650,7 +5651,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "b5b31fdb6b9e66865838cdeff95b24df2f3bc383ef31ef072ffc9dbf06d3c197",
+      "fingerprint": "712ee79667447b66dd31cb30a33ee0d4f9f2c56117a34e6ecbc806029bfc89db",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Lifecycle",
       "object_ids": [
@@ -5671,6 +5672,7 @@
         "Meridian.Contracts.Lifecycle.LifecycleShutdownRequestDto",
         "Meridian.Contracts.Lifecycle.LifecycleShutdownStage",
         "Meridian.Contracts.Lifecycle.LifecycleShutdownStageDto",
+        "Meridian.Contracts.Lifecycle.LifecycleStartupTiming",
         "Meridian.Contracts.Lifecycle.LifecycleSupervisorManifestDto",
         "Meridian.Contracts.Lifecycle.LifecycleSupervisorMessageDto",
         "Meridian.Contracts.Lifecycle.LifecycleSupervisorStatusDto",
@@ -195699,6 +195701,39 @@
         {
           "line": 50,
           "path": "src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "92d1fa84c4b40cb2c2c8f4756b278aac68e74ba083ab7edf08fb9348027fbb7b",
+      "full_name": "Meridian.Contracts.Lifecycle.LifecycleStartupTiming",
+      "id": "Meridian.Contracts.Lifecycle.LifecycleStartupTiming",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "LifecycleStartupTiming",
+      "namespace": "Meridian.Contracts.Lifecycle",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Lifecycle.LifecycleStartupTiming",
+      "references": [],
+      "source": {
+        "line": 4,
+        "path": "src/Meridian.Contracts/Lifecycle/LifecycleStartupTiming.cs"
+      },
+      "sources": [
+        {
+          "line": 4,
+          "path": "src/Meridian.Contracts/Lifecycle/LifecycleStartupTiming.cs"
         }
       ],
       "type_parameters": []
