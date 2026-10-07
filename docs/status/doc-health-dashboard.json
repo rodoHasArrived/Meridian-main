@@ -1,11 +1,11 @@
 {
   "total_files": 701,
-  "total_lines": 156122,
+  "total_lines": 156380,
   "orphaned_count": 231,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 298,
-  "average_lines": 222.7,
+  "average_lines": 223.1,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1234,7 +1234,7 @@
     },
     {
       "path": "docs/ai/context/accounting-context.md",
-      "line_count": 50,
+      "line_count": 54,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2090,7 +2090,7 @@
     },
     {
       "path": "docs/domain/corporate-action-case.md",
-      "line_count": 198,
+      "line_count": 226,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2234,7 +2234,7 @@
     },
     {
       "path": "docs/engineering/blueprints/security-lot-convergence-blueprint.md",
-      "line_count": 500,
+      "line_count": 567,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2786,7 +2786,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11583,
+      "line_count": 11608,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3850,7 +3850,7 @@
     },
     {
       "path": "docs/security/known-vulnerabilities.md",
-      "line_count": 281,
+      "line_count": 298,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5466,7 +5466,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 949,
+      "line_count": 952,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5490,7 +5490,7 @@
     },
     {
       "path": "src/Meridian.Backtesting/README.md",
-      "line_count": 182,
+      "line_count": 184,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5498,7 +5498,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1652,
+      "line_count": 1667,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5562,7 +5562,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 942,
+      "line_count": 955,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5626,7 +5626,7 @@
     },
     {
       "path": "src/Meridian.Instruments/README.md",
-      "line_count": 199,
+      "line_count": 209,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5642,7 +5642,7 @@
     },
     {
       "path": "src/Meridian.Ledger/README.md",
-      "line_count": 321,
+      "line_count": 326,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5730,7 +5730,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 852,
+      "line_count": 896,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5754,7 +5754,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2738,
+      "line_count": 2747,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5762,7 +5762,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1543,
+      "line_count": 1559,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

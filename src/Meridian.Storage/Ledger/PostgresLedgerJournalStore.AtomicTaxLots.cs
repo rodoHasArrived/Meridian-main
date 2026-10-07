@@ -57,6 +57,11 @@ public sealed partial class PostgresLedgerJournalStore
             .BeginTransactionAsync(IsolationLevel.Serializable, ct)
             .ConfigureAwait(false);
 
+        // Take this table lock before the first MVCC read so a preceding deferral writer is
+        // visible in this serializable snapshot. Replay still precedes carry validation below.
+        if (command.MutationKind == AtomicTaxLotMutationKind.CorporateAction)
+            await LockSuccessorCarryBoundaryAsync(connection, transaction, forSuccessorPosting: true, ct).ConfigureAwait(false);
+
         await EnsureBookWriteAuthorityAsync(connection, transaction, command.LedgerBookId, ct).ConfigureAwait(false);
         await EnsureTenantRowAsync(connection, transaction, "accounting_periods", "period_id",
             command.Journal.PeriodId, false, ct).ConfigureAwait(false);

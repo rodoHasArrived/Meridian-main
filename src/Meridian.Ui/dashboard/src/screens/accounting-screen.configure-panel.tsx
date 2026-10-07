@@ -87,7 +87,7 @@ export function ConfigureCommandBar(): JSX.Element {
   const results = useMemo(() => filterConfigureSearch(query), [query]);
 
   return (
-    <div className="configure-command-bar sticky top-0 z-20 flex flex-col gap-2 rounded-md border border-border/70 bg-background/95 px-3 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <div className="configure-command-bar sticky top-0 z-20 flex flex-col gap-2 rounded-md border border-border/70 bg-background/95 px-3 py-2 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80">
       <div className="flex flex-wrap items-center gap-2">
         <nav aria-label="Accounting configuration sections" className="flex flex-wrap items-center gap-1.5">
           {CONFIGURE_SECTION_LINKS.map((section) => (
@@ -96,7 +96,7 @@ export function ConfigureCommandBar(): JSX.Element {
               type="button"
               title={section.description}
               onClick={() => scrollToConfigureAnchor(section.anchorId)}
-              className="rounded-full border border-border/70 bg-secondary/30 px-3 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              className="rounded-full border border-border/70 bg-secondary/30 px-3 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
             >
               {section.label}
             </button>
@@ -133,7 +133,7 @@ export function ConfigureCommandBar(): JSX.Element {
                       scrollToConfigureAnchor(entry.anchorId);
                       setQuery("");
                     }}
-                    className="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    className="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-secondary/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                   >
                     <span className="text-foreground">{entry.label}</span>
                     <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground">{entry.sectionLabel}</span>
@@ -189,7 +189,7 @@ export function ConfigureActivationRail({ view }: { view: AccountingConfiguratio
               <button
                 type="button"
                 onClick={() => scrollToConfigureAnchor(item.anchorId)}
-                className="mt-0.5 inline-flex shrink-0 items-center gap-0.5 rounded px-1 text-[11px] font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="mt-0.5 inline-flex shrink-0 items-center gap-0.5 rounded px-1 text-[11px] font-semibold text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                 aria-label={`Go to ${item.label}`}
               >
                 Go
@@ -420,7 +420,7 @@ export function ChartAccountPathBuilder({ editor }: { editor: AccountingChartAcc
               type="button"
               onClick={() => editor.updateDraft({ path: node.path })}
               title={`Set path to ${node.path}`}
-              className="inline-flex items-center gap-1 rounded border border-border/70 bg-background px-2 py-0.5 font-mono text-[11px] text-foreground hover:border-primary/40 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              className="inline-flex items-center gap-1 rounded border border-border/70 bg-background px-2 py-0.5 font-mono text-[11px] text-foreground hover:border-primary/40 hover:bg-primary/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
             >
               {index > 0 ? <span aria-hidden="true" className="text-muted-foreground">›</span> : null}
               {node.label}
@@ -689,7 +689,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                   type="button"
                   onClick={() => scrollToConfigureAnchor(item.anchorId)}
                   className={cn(
-                    "flex w-full items-start justify-between gap-3 rounded-md border px-3 py-2 text-left transition-colors hover:bg-secondary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                    "flex w-full items-start justify-between gap-3 rounded-md border px-3 py-2 text-left transition-colors hover:bg-secondary/25 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
                     accountingToolingBorderClass(item.tone)
                   )}
                 >
@@ -760,7 +760,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
           </div>
 
           <details className="group rounded-md border border-border/70 bg-secondary/10">
-            <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 [&::-webkit-details-marker]:hidden">
+            <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-sm font-semibold text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 [&::-webkit-details-marker]:hidden">
               <span>Production rollout setup and evidence</span>
               <span className="text-xs font-normal text-muted-foreground group-open:hidden">Open detailed controls</span>
               <span className="hidden text-xs font-normal text-muted-foreground group-open:inline">Hide detailed controls</span>
@@ -997,7 +997,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                         id="accounting-dimension-mapping-meridian-dimensions"
                         value={view.tenantAdministrationProfile.dimensionMappingSetup.meridianDimensionsValue}
                         onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ meridianDimensionsText: event.currentTarget.value })}
-                        className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
+                        className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
                         placeholder="fundId=fund-alpha&#10;bookId=book-primary&#10;costCenterId=fund-accounting"
                       />
                     </FormRow>
@@ -1021,7 +1021,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                         id="accounting-dimension-mapping-provider-dimensions"
                         value={view.tenantAdministrationProfile.dimensionMappingSetup.providerDimensionsValue}
                         onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ providerDimensionsText: event.currentTarget.value })}
-                        className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
+                        className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
                         placeholder="Class=fund-alpha&#10;Book=book-primary&#10;Department=fund-accounting"
                       />
                     </FormRow>
@@ -1115,7 +1115,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                       id="accounting-external-gl-account-mappings"
                       value={view.externalGlMappingProfile.accountMappingsValue}
                       onChange={(event) => view.externalGlMappingProfile.updateAccountMappings(event.currentTarget.value)}
-                      className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
+                      className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
                       placeholder="Meridian:Account=external-account-id"
                     />
                   </FormRow>
@@ -1126,7 +1126,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                   id="accounting-external-gl-mapping-evidence"
                   value={view.externalGlMappingProfile.evidenceValue}
                   onChange={(event) => view.externalGlMappingProfile.updateEvidence(event.currentTarget.value)}
-                  className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
+                  className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
                   placeholder="approval:external-gl-mapping:profile-id"
                 />
               </FormRow>
@@ -1150,7 +1150,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                       id="accounting-external-gl-meridian-dimensions"
                       value={view.externalGlMappingProfile.meridianDimensionsValue}
                       onChange={(event) => view.externalGlMappingProfile.updateMeridianDimensions(event.currentTarget.value)}
-                      className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
+                      className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
                       placeholder="fundId=fund-alpha&#10;bookId=book-primary&#10;Provider=quickbooks-fixture"
                     />
                   </FormRow>
@@ -1174,7 +1174,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                       id="accounting-external-gl-provider-dimensions"
                       value={view.externalGlMappingProfile.externalDimensionsValue}
                       onChange={(event) => view.externalGlMappingProfile.updateExternalDimensions(event.currentTarget.value)}
-                      className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
+                      className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
                       placeholder="Class=fund-alpha&#10;Book=book-primary&#10;customerId=qbo-customer"
                     />
                   </FormRow>

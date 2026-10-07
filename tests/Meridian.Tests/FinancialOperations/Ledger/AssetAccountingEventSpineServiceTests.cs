@@ -35,8 +35,27 @@ public sealed class AssetAccountingEventSpineServiceTests
         int? effectiveFromDayOffset, int? effectiveToDayOffset, bool successorIsEffective)
         => await AssertSuccessorWorkflowAsync(effectiveFromDayOffset, effectiveToDayOffset, successorIsEffective);
 
+    [Theory]
+    [InlineData("earlier", false)]
+    [InlineData("unchanged", true)]
+    [InlineData("later", true)]
+    [InlineData("other-lot", true)]
+    [InlineData("missing-provider", false)]
+    [InlineData("future-sale", false)]
+    [InlineData("ancestor-earlier", false)]
+    [InlineData("ancestor-clear", true)]
+    [InlineData("legacy-ancestor-earlier", false)]
+    [InlineData("legacy-birth-ancestor-earlier", false)]
+    [InlineData("legacy-birth-ancestor-clear", true)]
+    [InlineData("missing-birth-receipt", false)]
+    [InlineData("missing-ancestor", false)]
+    [InlineData("cyclic-ancestor", false)]
+    public async Task CorporateAction_RequiresRetainedHoldingPeriodCarryBeforeDrafting(string scenario, bool canDraft)
+        => await AssertSuccessorWorkflowAsync(null, null, true, scenario, canDraft);
+
     private static async Task AssertSuccessorWorkflowAsync(
-        int? effectiveFromDayOffset, int? effectiveToDayOffset, bool successorIsEffective)
+        int? effectiveFromDayOffset, int? effectiveToDayOffset, bool successorIsEffective,
+        string? carryScenario = null, bool carryAllowsDraft = true)
     {
         var baseline = BuildFixture(AssetAccountingEventKindDto.CorporateAction);
         var original = OpenLotSuccessorTestData.Predecessor();
@@ -47,8 +66,28 @@ public sealed class AssetAccountingEventSpineServiceTests
             LedgerBookId = baseline.Book.LedgerBookId,
             Acquisition = original.Acquisition with { QuantityBasis = LotQuantityBasis.Units, FaceValueTerms = null }
         };
+        var legacyBirth = carryScenario is "legacy-birth-ancestor-earlier" or "legacy-birth-ancestor-clear";
+        if (legacyBirth)
+            source = source with
+            {
+                OpenTransactionCostBasis = source.Acquisition.TransactionCostBasis * source.OpenQuantity / source.OriginalQuantity,
+                OpenFunctionalCostBasis = source.Acquisition.FunctionalCostBasis * source.OpenQuantity / source.OriginalQuantity
+            };
+        var ancestorId = Guid.NewGuid();
+        var hasAncestor = carryScenario is "ancestor-earlier" or "ancestor-clear" or "missing-ancestor" or "cyclic-ancestor";
+        if (hasAncestor)
+            source = source with
+            {
+                Acquisition = source.Acquisition with
+                {
+                    CorporateActionLineage = new OpenLotCorporateActionLineageDto(Guid.NewGuid(),
+                        CorporateActionAccountingTypeDto.RegS144AExchange, new DateOnly(2026, 7, 1), ancestorId,
+                        1, 100m, CorporateActionSuccessorRoleDto.Successor, [])
+                }
+            };
         var sourceSecurity = baseline.Security with { Currency = "EUR" };
         var target = OpenLotSuccessorTestData.Successor(source, 1m);
+        target = target with { Lot = target.Lot with { Acquisition = target.Lot.Acquisition with { CorporateActionLineage = null } } };
         var targetSecurity = sourceSecurity with { SecurityId = target.Lot.SecurityId, Version = target.ExpectedSecurityVersion };
         target = target with { ExpectedSecurityHash = new string('b', 64) };
         var instruction = OpenLotSuccessorTestData.Build(source, [target],
@@ -94,6 +133,36 @@ public sealed class AssetAccountingEventSpineServiceTests
             Acquisition: source.Acquisition, BasisAdjustment: new OpenLotBasisAdjustmentDto(Guid.NewGuid(),
                 OpenLotBasisAdjustmentReasons.Amortization, source.OpenQuantity, source.OpenTransactionCostBasis, source.OpenFunctionalCostBasis));
         sourceRecord.ToOpenLot().Should().BeEquivalentTo(source);
+        var ancestorRecord = sourceRecord with
+        {
+            TaxLotRecordId = ancestorId,
+            LotId = $"ancestor-{ancestorId:D}",
+            Acquisition = source.Acquisition with
+            {
+                CorporateActionLineage = carryScenario == "cyclic-ancestor"
+                    ? source.Acquisition.CorporateActionLineage! with { PredecessorTaxLotRecordId = source.TaxLotRecordId }
+                    : null,
+                Evidence = source.Acquisition.Evidence.Select(evidence => evidence with
+                {
+                    SubjectId = ancestorId.ToString("D")
+                }).ToArray()
+            }
+        };
+        if (carryScenario == "legacy-ancestor-earlier")
+            sourceRecord = sourceRecord with
+            {
+                BasisAdjustment = sourceRecord.BasisAdjustment! with
+                {
+                    CorporateAction = instruction with { ExpectedLot = ancestorRecord.ToOpenLot() }
+                }
+            };
+        if (legacyBirth || carryScenario == "missing-birth-receipt")
+            sourceRecord = sourceRecord with { OriginatingMutationBatchId = Guid.NewGuid() };
+        if (legacyBirth)
+        {
+            sourceRecord = sourceRecord with { BasisAdjustment = null };
+            sourceRecord.ToOpenLot().Should().BeEquivalentTo(source);
+        }
 
         var retained = new Dictionary<long, AssetAccountingEventProjectionRecord>();
         var eventStore = Substitute.For<IAssetAccountingEventProjectionStore>();
@@ -126,9 +195,35 @@ public sealed class AssetAccountingEventSpineServiceTests
         policies.ResolvePolicyAsync(Arg.Any<AccountingPolicyQuery>(), Arg.Any<CancellationToken>()).Returns(BuildPolicy());
         var configuration = Substitute.For<IAccountingConfigurationService>();
         configuration.DryRunPostingRuleAsync(Arg.Any<RuleDryRunRequestDto>(), Arg.Any<CancellationToken>()).Returns(BuildMatchingDryRun(fixture));
-        var ledger = Substitute.For<ILedgerJournalStore>();
+        var ledger = carryScenario == "missing-provider"
+            ? Substitute.For<ILedgerJournalStore>()
+            : Substitute.For<ILedgerJournalStore, IWashSaleDeferralStore>();
+        var lots = new List<LedgerTaxLotRecord> { sourceRecord };
+        if ((hasAncestor && carryScenario != "missing-ancestor") || carryScenario == "legacy-ancestor-earlier" || legacyBirth)
+            lots.Add(ancestorRecord);
         ledger.GetTaxLotsByIdsAsync(source.LedgerBookId, Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>())
-            .Returns(call => call.ArgAt<IReadOnlyList<Guid>>(1).Contains(source.TaxLotRecordId) ? [sourceRecord] : []);
+            .Returns(call => lots.Where(lot => call.ArgAt<IReadOnlyList<Guid>>(1).Contains(lot.TaxLotRecordId)).ToArray());
+        if (legacyBirth)
+        {
+            var birth = BuildLegacySuccessorBirthReceipt(sourceRecord, ancestorRecord, instruction);
+            ledger.GetAtomicTaxLotPostingAsync(birth.MutationBatchId, Arg.Any<CancellationToken>()).Returns(birth);
+        }
+        if (ledger is IWashSaleDeferralStore deferralStore)
+        {
+            IReadOnlyList<WashSaleDeferralRecord> deferrals = carryScenario is null or "ancestor-clear" or "missing-ancestor"
+                or "cyclic-ancestor" or "legacy-birth-ancestor-clear" or "missing-birth-receipt"
+                ? []
+                : [new WashSaleDeferralRecord(Guid.NewGuid(), source.LedgerBookId, Guid.NewGuid(), source.SecurityId,
+                    carryScenario == "future-sale" ? effectiveDate.AddDays(1) : effectiveDate.AddDays(-1), sourceRecord.Account,
+                    carryScenario == "other-lot" ? Guid.NewGuid()
+                        : carryScenario is "ancestor-earlier" or "legacy-ancestor-earlier" or "legacy-birth-ancestor-earlier"
+                            ? ancestorId : source.TaxLotRecordId,
+                    source.LotId, 1m, 1m, source.Acquisition.HoldingPeriodStartDate.AddDays(carryScenario switch
+                    { "unchanged" => 0, "later" => 1, _ => -1 }),
+                    "reviewed-wash-sale-policy", 30, WashSaleReplacementScope.LedgerBook, fixture.Request.ProjectedAtUtc)];
+            deferralStore.ListWashSaleDeferralsAsync(source.LedgerBookId, DateOnly.MinValue, DateOnly.MaxValue,
+                Arg.Any<CancellationToken>()).Returns(deferrals);
+        }
         ledger.GetLedgerBookAsync(source.LedgerBookId, Arg.Any<CancellationToken>()).Returns(new LedgerBookRecord(
             fixture.Book.LedgerBookId, fixture.Book.FundProfileId, fixture.Book.FundStructureNodeId, fixture.Book.FundStructureNodeKind,
             fixture.Book.DisplayName, fixture.Book.BaseCurrency, fixture.Book.CreatedAt, fixture.Book.UpdatedAt,
@@ -169,6 +264,18 @@ public sealed class AssetAccountingEventSpineServiceTests
         var omitSuccessors = () => spineService.BuildPostingCandidateAsync(BuildCandidateRequest(fixture));
         await omitSuccessors.Should().ThrowAsync<InvalidOperationException>();
         retained.Should().HaveCount(2, "omitting the retained successor plan must fail before Drafted is appended");
+        if (!carryAllowsDraft)
+        {
+            var draft = () => spineService.BuildPostingCandidateAsync(BuildCandidateRequest(fixture) with
+            {
+                LotMutation = mapped.Projection.LotMutation
+            });
+            await draft.Should().ThrowAsync<InvalidOperationException>().WithMessage("*holding-period carry*");
+            retained.Should().HaveCount(2, "unproved holding-period carry cannot append a Drafted or Approved stage");
+            await authority.DidNotReceiveWithAnyArgs().BuildAuthoritativeCandidateWriteAsync(default!, default!, default);
+            await atomic.DidNotReceiveWithAnyArgs().AppendAssetPostingAsync(default!, default);
+            return;
+        }
         if (!successorIsEffective)
         {
             var draft = () => spineService.BuildPostingCandidateAsync(BuildCandidateRequest(fixture) with
@@ -227,6 +334,35 @@ public sealed class AssetAccountingEventSpineServiceTests
             AssetAccountingLifecycleStageDto.Approved, AssetAccountingLifecycleStageDto.Posted);
         retained[5].Projection.TaxLotMutationBatchId.Should().Be(posted.TaxLotMutationBatchId);
         await atomic.Received(2).AppendAssetPostingAsync(Arg.Any<AtomicTaxLotJournalCommand>(), Arg.Any<CancellationToken>());
+    }
+
+    private static AtomicTaxLotJournalResult BuildLegacySuccessorBirthReceipt(
+        LedgerTaxLotRecord target, LedgerTaxLotRecord predecessor, OpenLotSuccessorInstructionDto instruction)
+    {
+        var batchId = target.OriginatingMutationBatchId!.Value;
+        var journalId = Guid.NewGuid();
+        var eventId = Guid.NewGuid();
+        const string description = "Retained legacy successor birth";
+        var amount = predecessor.ToOpenLot().OpenFunctionalCostBasis;
+        var journal = new JournalEntry(journalId, target.CreatedAt, description,
+            [new LedgerEntry(Guid.NewGuid(), journalId, target.CreatedAt, target.Account, amount, 0m, description),
+             new LedgerEntry(Guid.NewGuid(), journalId, target.CreatedAt, predecessor.Account, 0m, amount, description)]);
+        var closed = predecessor with { OpenQuantity = 0m, Version = predecessor.Version + 1 };
+        var mutations = new[]
+        {
+            new LedgerTaxLotMutationRecord(Guid.NewGuid(), batchId, AtomicTaxLotMutationKind.CorporateAction,
+                predecessor.TaxLotRecordId, predecessor.LotId, 0, predecessor.OpenQuantity, -predecessor.OpenQuantity,
+                0m, predecessor.UnitCost, amount, predecessor.Version, closed.Version, "predecessor-evidence", journalId,
+                eventId, predecessor.Acquisition!.Evidence, target.CreatedAt, predecessor, closed),
+            new LedgerTaxLotMutationRecord(Guid.NewGuid(), batchId, AtomicTaxLotMutationKind.CorporateAction,
+                target.TaxLotRecordId, target.LotId, 1, 0m, target.OriginalQuantity, target.OriginalQuantity,
+                target.UnitCost, amount, 0, 1, "successor-evidence", journalId, eventId, target.Acquisition!.Evidence,
+                target.CreatedAt, null, target)
+        };
+        return new AtomicTaxLotJournalResult(batchId, AtomicTaxLotMutationKind.CorporateAction, new string('a', 64), false,
+            new LedgerJournalEntryRecord(journal, target.LedgerBookId, Guid.NewGuid(), null, null, 1, target.CreatedAt),
+            [closed, target], mutations, target.Acquisition.Evidence,
+            CorporateAction: instruction with { ExpectedLot = predecessor.ToOpenLot() });
     }
 
     private static AccountingPostingCandidateWriteResult BuildSuccessorCandidateWrite(

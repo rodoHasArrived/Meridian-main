@@ -1555,7 +1555,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                 {isGovernanceTaskMode ? (
                 <>
                 <details className="mt-2 rounded-md border border-border/60 bg-background/25">
-                  <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                  <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
                     Version, validation, and audit details
                   </summary>
                 <div
@@ -1827,7 +1827,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                 {vm.workflowTaskPanel.publicationReview.summaryText}
               </p>
               <details className="mt-3 rounded-md border border-border/60 bg-background/25">
-                <summary className="flex cursor-pointer items-center justify-between gap-3 px-3 py-2 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                <summary className="flex cursor-pointer items-center justify-between gap-3 px-3 py-2 text-xs font-semibold text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
                   Publication evidence, provenance, and retained identifiers
                   <Badge variant="outline">{vm.workflowTaskPanel.publicationReview.evidenceSummary}</Badge>
                 </summary>
@@ -1954,7 +1954,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                 {vm.workflowTaskPanel.restatementReview.summaryText}
               </p>
               <details className="mt-3 rounded-md border border-border/60 bg-background/25">
-                <summary className="flex cursor-pointer items-center justify-between gap-3 px-3 py-2 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                <summary className="flex cursor-pointer items-center justify-between gap-3 px-3 py-2 text-xs font-semibold text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
                   Changed lines and restatement evidence
                   <Badge variant="outline">{vm.workflowTaskPanel.restatementReview.evidenceSummary}</Badge>
                 </summary>
@@ -1987,7 +1987,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                       {line.evidenceHref ? (
                         <a
                           href={line.evidenceHref}
-                          className="mt-2 inline-flex text-xs text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40"
+                          className="mt-2 inline-flex text-xs text-primary hover:underline focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                           aria-label={`Open evidence for ${line.lineKey}`}
                         >
                           {line.evidenceLabel}
@@ -2119,7 +2119,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                       target="_blank"
                       rel="noreferrer"
                       aria-label={link.ariaLabel}
-                      className="flex min-w-0 items-center gap-2 rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-sm hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="flex min-w-0 items-center gap-2 rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-sm hover:bg-secondary/45 focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                     >
                       <ReportingBackendReference link={link} />
                     </a>
@@ -2165,7 +2165,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                       tabIndex={profile.tabIndex}
                       onClick={() => vm.selectProfile(profile.id)}
                       className={cn(
-                        "w-full rounded-md border px-3 py-3 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40",
+                        "w-full rounded-md border px-3 py-3 text-left transition-colors focus:outline-hidden focus:ring-2 focus:ring-primary/40",
                         profile.isSelected
                           ? "border-primary/45 bg-primary/10"
                           : "border-border/70 bg-secondary/25 hover:bg-secondary/45"

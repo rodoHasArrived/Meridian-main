@@ -2,7 +2,7 @@
 
 **Status:** active AI context pack  
 **Owner:** core-team  
-**Reviewed:** 2026-06-16
+**Reviewed:** 2026-10-07
 
 ## Meridian Accounting Rules
 
@@ -15,6 +15,10 @@
 - Accounting UI must expose validation state, source, approval state, and audit trail before commit.
 - Generated code must not silently create accounting records from unverified market data.
 - Ledger writes must fail closed when required source evidence, reviewer state, period posture, idempotency key, or version/concurrency guard is missing.
+- Supported canonical corporate actions bind reviewed predecessor/successor identities and commit lot mutations with the journal in one transaction. Retain original acquisition facts separately from current carrying basis and preserve source-action lineage after disposal; see the [lot convergence blueprint](../../engineering/blueprints/security-lot-convergence-blueprint.md) for treatments and remaining gates.
+- New successor postings must certify the full immutable predecessor ancestry, resolving stable source-action identity from retained source evidence even when historical lineage or explicit stable-ID fields are absent. A later action or disposal cannot authorize repeating an earlier action; missing or contradictory receipts block posting.
+- Atomic successors require the canonical `AssetAccounting.CorporateAction` source type and complete approved typed context. Corporate-action corrections, reversal/rebook intents, corrected-batch/source-journal metadata and closing-entry posting remain outside this bounded successor path.
+- Migration 042 owns successor posting. Forward migration 043 permits an approved amortization reversal to restore the latest original mutation's retained null prior basis in the same scope/date; exact snapshot and inverse-journal validation, new version/batch requirements and ordinary removal refusal remain enforced.
 - Payment-related work starts as payment intent, cash expectation, approval evidence, bank confirmation, ledger intent, reconciliation, and report linkage. Full live payment execution remains deferred unless roadmap evidence reopens it.
 
 ## AI Usage

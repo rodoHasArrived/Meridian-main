@@ -296,7 +296,7 @@ export function DataScreen({
         <div className="space-y-4">
           <DataOverviewHub vm={vm} degradedPanelCount={analyticsUnavailable.size} />
           <details className="rounded-lg border border-border/70 bg-secondary/15 px-4 py-3">
-            <summary className="cursor-pointer font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+            <summary className="cursor-pointer font-semibold text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
               Review data diagnostics
             </summary>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -607,7 +607,7 @@ function DataUploadIntakePanel({
                 value={state.selectedTemplateId}
                 onChange={(event) => onTemplateSelect(event.currentTarget.value)}
                 aria-label="Data upload template"
-                className="min-h-10 rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="min-h-10 rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
               >
                 {state.templateOptions.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
@@ -715,7 +715,7 @@ function DataUploadIntakePanel({
               disabled={state.fileInput.disabled}
               aria-label={state.fileInput.ariaLabel}
               aria-describedby={joinDescribedByIds(statusId, `${state.fileInput.id}-help`, disabledReasonId)}
-              className="min-h-10 rounded-md border border-border bg-background px-3 py-2 text-sm file:mr-3 file:rounded-sm file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              className="min-h-10 rounded-md border border-border bg-background px-3 py-2 text-sm file:mr-3 file:rounded-sm file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-primary-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
               onChange={(event) => {
                 const file = event.currentTarget.files?.[0] ?? null;
                 void onFileSelect(file);
@@ -796,7 +796,7 @@ function DataUploadIntakePanel({
               type="file"
               accept=".xlsx"
               aria-label="Upload the Meridian onboarding workbook for multi-sheet preview"
-              className="min-h-10 rounded-md border border-border bg-background px-3 py-2 text-sm file:mr-3 file:rounded-sm file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              className="min-h-10 rounded-md border border-border bg-background px-3 py-2 text-sm file:mr-3 file:rounded-sm file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-primary-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
               onChange={(event) => {
                 const file = event.currentTarget.files?.[0] ?? null;
                 void onWorkbookSelect(file);
@@ -1215,7 +1215,7 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                 {vm.providerSetupDialogState.providerKindField.label}
                 <select
                   id={vm.providerSetupDialogState.providerKindField.id}
-                  className="rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                   value={vm.providerForm.kind}
                   aria-label={vm.providerSetupDialogState.providerKindField.ariaLabel}
                   disabled={vm.providerSetupDialogState.providerKindField.disabled}
@@ -1281,7 +1281,7 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                 {vm.providerSetupDialogState.displayNameField.label}
                 <input
                   id={vm.providerSetupDialogState.displayNameField.id}
-                  className="rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                   value={vm.providerSetupDialogState.displayNameField.value}
                   aria-label={vm.providerSetupDialogState.displayNameField.ariaLabel}
                   disabled={vm.providerSetupDialogState.displayNameField.disabled}
@@ -1298,7 +1298,7 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                 {vm.providerSetupDialogState.environmentField.label}
                 <select
                   id={vm.providerSetupDialogState.environmentField.id}
-                  className="rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                   value={vm.providerSetupDialogState.environmentField.value}
                   aria-label={vm.providerSetupDialogState.environmentField.ariaLabel}
                   disabled={vm.providerSetupDialogState.environmentField.disabled}
@@ -1341,7 +1341,7 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                     id={field.id}
                     type={field.type}
                     autoComplete={field.autoComplete}
-                    className="rounded-md border border-border bg-background px-3 py-2 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    className="rounded-md border border-border bg-background px-3 py-2 font-mono focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                     value={field.value}
                     aria-label={field.ariaLabel}
                     placeholder={field.placeholder ?? undefined}
@@ -1473,7 +1473,7 @@ function ProviderSetupInstitutionSearch({
             aria-expanded={state.results.length > 0}
             aria-controls={resultListId}
             aria-label={state.ariaLabel}
-            className="min-h-10 flex-1 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            className="min-h-10 flex-1 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
             value={state.value}
             placeholder={state.placeholder}
             disabled={state.disabled}
@@ -1519,7 +1519,7 @@ function ProviderSetupInstitutionSearch({
               role="option"
               aria-selected={institution.selected}
               className={cn(
-                "rounded-md border px-3 py-2 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                "rounded-md border px-3 py-2 text-left text-sm transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
                 institution.selected
                   ? "border-primary/45 bg-primary/[0.08]"
                   : "border-border/70 bg-background/55 hover:bg-secondary/35"
@@ -1730,7 +1730,7 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
             {vm.dialogState.providerField.label}
             <select
               id={vm.dialogState.providerField.id}
-              className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
+              className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
               value={vm.form.provider}
               aria-label={vm.dialogState.providerField.ariaLabel}
               disabled={vm.dialogState.providerField.disabled}
@@ -1778,7 +1778,7 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
             {vm.dialogState.symbolsField.label}
             <input
               id={vm.dialogState.symbolsField.id}
-              className="min-h-12 rounded-md border border-border bg-background px-3 py-2 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
+              className="min-h-12 rounded-md border border-border bg-background px-3 py-2 font-mono focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
               placeholder={vm.dialogState.symbolsField.placeholder}
               value={vm.form.symbols}
               aria-label={vm.dialogState.symbolsField.ariaLabel}
@@ -1801,7 +1801,7 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
               <input
                 id={vm.dialogState.fromField.id}
                 type="date"
-                className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
+                className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
                 value={vm.form.from}
                 aria-label={vm.dialogState.fromField.ariaLabel}
                 disabled={vm.dialogState.fromField.disabled}
@@ -1818,7 +1818,7 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
               <input
                 id={vm.dialogState.toField.id}
                 type="date"
-                className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
+                className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
                 value={vm.form.to}
                 aria-label={vm.dialogState.toField.ariaLabel}
                 disabled={vm.dialogState.toField.disabled}

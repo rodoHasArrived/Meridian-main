@@ -18,6 +18,13 @@ Replay identity coverage is in `AssetOperationsReadServiceTests`; publication ob
 and cross-writer ordering require separate evidence before claiming exactly-once effects.
 
 
+Canonical split posting explicitly opts into `CanonicalLotTransferJournal`: the projection emits
+a reviewed cashless basis transfer for one whole-unit successor. Existing operational split
+callers retain their no-journal quantity projection. `CorporateActionAssetAccountingEventMapper`
+requires the complete canonical instruction for exchange/refunding and explicitly opted-in lot
+transfers; other split/merger projections keep their existing mapping behavior. Optional canonical
+instructions retain their exact reviewed payload on the Projected event.
+
 ## Purpose
 
 Physical bounded-context module project for instrument terms, contracts, obligations,
@@ -117,7 +124,10 @@ projection lineage, projected balanced effect, and complete typed retained evide
 obligations and service availability can explain pending work, but neither can manufacture evidence
 readiness or advance an event into Drafted or Posted state.
 `CorporateActionAssetAccountingEventMapper` requires a reviewed `OpenLotSuccessorInstructionDto`
-for cashless Reg S/144A exchange and advance-refunding handoffs. The instruction must match the
+for cashless Reg S/144A exchange, advance-refunding handoffs and projections explicitly marked
+`CanonicalLotTransferJournal`. Whole-unit splits opt into that transfer mode; older operational and
+identifier-changing projections retain their existing mapping. The optional marker is omitted when
+false. Any supplied instruction must match the
 exact existing projection, source security version, predecessor and successor allocations, and
 retained evidence; its fingerprint participates in the posting identity. The mapper carries it as
 a typed corporate-action lot instruction into governed candidate preparation. It rejects missing

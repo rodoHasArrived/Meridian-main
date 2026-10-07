@@ -377,6 +377,12 @@ environment accounts and development demo fallback, so a multi-company login sou
 silently run against an unpartitioned graph. This startup check does not certify account changes
 after startup or activate strict reads automatically.
 
+Canonical Reporting verifies unified successor receipts against the complete journal and retained
+reviewed instruction. It preserves exact evidence JSON and fingerprints on certified journal rows
+and adds verified predecessor/successor snapshots to `corporate-action-lot-evidence.json` in the
+signed ledger report pack. Whole-unit split legs sharing a security and position remain separate
+through their reviewed lot labels; only refunded successors receive Schedule D treatment.
+
 ## Purpose
 
 UI shared contains shared UI read models, endpoint adapters, and compatibility shims for browser
@@ -2196,6 +2202,9 @@ provider-to-Security-Master trust without rebuilding mapping logic locally. The 
 composes the Security Master operations workbench with identity confidence, provider evidence,
 terms, readiness, and handoff panels, keeping valuation-ready, ledger-ready, reconciliation-ready,
 close-ready, and report-ready posture server-owned for browser and WPF clients.
+Scoped run-snapshot open lots use retained component cost basis for unrealized P&L in both
+directions, including legacy short lots whose direction is recovered from the account position.
+Their displayed entry price does not replace the retained basis when the two differ.
 Security Master trust and conflict summaries use downstream Data, Accounting, and Reporting
 workflow labels so browser and WPF clients do not surface retained Governance-era wording for
 operator-facing review.

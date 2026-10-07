@@ -89,7 +89,7 @@ export function OnboardingHeaderProgress({ controller }: { controller: Onboardin
       aria-expanded={expanded}
       title={label}
       onClick={() => setExpanded(!expanded)}
-      className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-transparent text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+      className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-transparent text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
     >
       <ProgressRing fraction={viewModel.progressFraction} />
     </button>
@@ -144,12 +144,12 @@ export function OnboardingCoachMark({ controller }: { controller: OnboardingTour
           </div>
           <p className="mt-0.5 text-xs text-muted-foreground">{viewModel.progressLabel} steps complete</p>
         </div>
-        <div className="flex flex-shrink-0 items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1">
           <button
             type="button"
             aria-label="Collapse getting-started tour"
             onClick={() => setExpanded(false)}
-            className="inline-flex h-7 w-7 items-center justify-center rounded-[2px] text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            className="inline-flex h-7 w-7 items-center justify-center rounded-[2px] text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
           >
             <ChevronDown className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -157,7 +157,7 @@ export function OnboardingCoachMark({ controller }: { controller: OnboardingTour
             type="button"
             aria-label="Skip getting-started tour"
             onClick={dismiss}
-            className="inline-flex h-7 w-7 items-center justify-center rounded-[2px] text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            className="inline-flex h-7 w-7 items-center justify-center rounded-[2px] text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -172,7 +172,7 @@ export function OnboardingCoachMark({ controller }: { controller: OnboardingTour
           id="onboarding-journey"
           value={viewModel.journeyId}
           onChange={(event) => selectJourney(event.target.value)}
-          className="min-h-8 w-full rounded-[2px] border border-border bg-background px-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="min-h-8 w-full rounded-[2px] border border-border bg-background px-2 text-sm text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
         >
           {viewModel.journeys.map((journey) => (
             <option key={journey.id} value={journey.id}>{journey.label}</option>

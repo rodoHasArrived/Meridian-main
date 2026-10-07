@@ -43,6 +43,9 @@ public sealed record CorporateActionAccountingProjectionRequest(
     Guid? ElectionId = null,
     IReadOnlyList<CorporateActionLotMutationDto>? AuthoritativeLotMutations = null)
 {
+    /// <summary>Explicit reviewed split basis transfer; other callers retain the operational no-journal projection.</summary>
+    public bool CanonicalLotTransferJournal { get; init; }
+
     public IReadOnlyList<CorporateActionProjectionEvidenceDependencyDto> EvidenceManifest { get; init; } =
         EvidenceManifest ?? [];
 
@@ -131,7 +134,11 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
                 request.LotSnapshotId ?? Guid.Empty,
                 request.LotSnapshotVersion ?? 0,
                 request.PolicyDecisionId ?? Guid.Empty,
-                request.ElectionId);
+                request.ElectionId)
+            {
+                SourceCorporateActionId = request.SourceCorporateActionId,
+                CanonicalLotTransferJournal = request.CanonicalLotTransferJournal
+            };
         }
 
         var eventId = DeterministicGuid(BuildEventIdentity(request));
@@ -186,7 +193,10 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
         return new CorporateActionAccountingProjectionDto(
             CorporateActionProjectionStatusDto.Projected,
             decision,
-            Round(computation.EventAmount, currency),
+            request.CanonicalLotTransferJournal
+                && (request.ActionType is CorporateActionAccountingTypeDto.StockSplit or CorporateActionAccountingTypeDto.ReverseStockSplit
+                    or CorporateActionAccountingTypeDto.MergerStock)
+                ? computation.EventAmount : Round(computation.EventAmount, currency),
             economicEvent,
             lineage,
             computation.Recipe,
@@ -212,7 +222,11 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
             request.LotSnapshotId ?? Guid.Empty,
             request.LotSnapshotVersion ?? 0,
             request.PolicyDecisionId ?? Guid.Empty,
-            request.ElectionId);
+            request.ElectionId)
+        {
+            SourceCorporateActionId = request.SourceCorporateActionId,
+            CanonicalLotTransferJournal = request.CanonicalLotTransferJournal
+        };
     }
 
     private static CorporateActionTreatmentDecisionDto ApplyPolicySelections(
@@ -1325,6 +1339,9 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
             "A forward stock split ratio must be greater than one.");
         AddIf(blockers, reverse && splitRatio >= 1m, "corporate-action.reverse-split-ratio-invalid",
             "A reverse stock split ratio must be between zero and one.");
+
+        if (request.CanonicalLotTransferJournal)
+            return ProjectCanonicalSplitTransfer(request, currency, blockers, positionQuantity, splitRatio);
 
         if (request.Economics.IdentifierChanged)
         {

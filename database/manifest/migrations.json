@@ -847,6 +847,15 @@
       "sha256": "73ad39e7136866946efcfb88b19c13734c88e8ee4f235e510f47d3e82f47b357"
     },
     {
+      "filename": "V_ledger_043__amortization_reversal_basis_restoration.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_043__amortization_reversal_basis_restoration.sql",
+      "schema": "ledger",
+      "sha256": "4f5a50c25dfe6fa1e323936f86d05fe2d990fd98f74881c28f384fa441394869"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1091,7 +1100,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "3be86e2a89f38535ec29cf2f1098e6d4e60f7582173c3fdbaaebf083b8bd11df",
+  "fingerprint": "3b9712f8bf64691651d854bf79ac78fcd11dfae2faa82e8e24953997613ceacc",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1329,7 +1338,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 121,
+    "files": 122,
     "migration_sets": 10,
     "waivers": 14,
     "warnings": 0

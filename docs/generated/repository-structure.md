@@ -2303,19 +2303,25 @@ Meridian-main
 │   │   │   │   ├── main-recheck-433ff.json
 │   │   │   │   ├── main-recheck.json
 │   │   │   │   └── manifest.json
-│   │   │   └── 2026-10-05-dependency-certification
-│   │   │       ├── braces-advisory-source.json
-│   │   │       ├── braces-bounded-reachability.json
-│   │   │       ├── dependency-source-evidence.json
-│   │   │       ├── hosted-npm-audit-gate.json
-│   │   │       ├── hosted-npm-audit.json
-│   │   │       ├── hosted-nuget-vulnerabilities.txt
+│   │   │   ├── 2026-10-05-dependency-certification
+│   │   │   │   ├── braces-advisory-source.json
+│   │   │   │   ├── braces-bounded-reachability.json
+│   │   │   │   ├── dependency-source-evidence.json
+│   │   │   │   ├── hosted-npm-audit-gate.json
+│   │   │   │   ├── hosted-npm-audit.json
+│   │   │   │   ├── hosted-nuget-vulnerabilities.txt
+│   │   │   │   ├── manifest.json
+│   │   │   │   ├── npm-audit-gate.json
+│   │   │   │   ├── npm-audit-production.json
+│   │   │   │   ├── npm-audit.json
+│   │   │   │   ├── npm-graph.json
+│   │   │   │   └── upstream-registry-metadata.json
+│   │   │   └── 2026-10-06-tailwind4
+│   │   │       ├── browser-summary.json
 │   │   │       ├── manifest.json
 │   │   │       ├── npm-audit-gate.json
-│   │   │       ├── npm-audit-production.json
 │   │   │       ├── npm-audit.json
-│   │   │       ├── npm-graph.json
-│   │   │       └── upstream-registry-metadata.json
+│   │   │       └── test-summary.json
 │   │   ├── codex-security-remediation-2026-05-20.md
 │   │   ├── known-vulnerabilities.md
 │   │   ├── README.md
@@ -4809,6 +4815,7 @@ Meridian-main
 │   │   │   ├── AssetAccountingCandidateCanonicalizer.cs
 │   │   │   ├── AssetAccountingEventSpineService.cs
 │   │   │   ├── CanonicalLotAmortizationService.cs
+│   │   │   ├── CanonicalLotCorporateActionService.cs
 │   │   │   ├── LedgerJournalConstruction.cs
 │   │   │   └── SpineAcquisitionLotFacts.cs
 │   │   ├── MiddleOffice
@@ -5269,6 +5276,7 @@ Meridian-main
 │   │   │   ├── AssetObligationProjectionService.cs
 │   │   │   ├── AssetOperationsReadService.cs
 │   │   │   ├── ClearwaterCorporateActionRuleProfileV1.cs
+│   │   │   ├── CorporateActionAccountingProjectionService.CanonicalLots.cs
 │   │   │   ├── CorporateActionAccountingProjectionService.cs
 │   │   │   ├── CorporateActionAccountingProjectionService.Fingerprints.cs
 │   │   │   ├── CorporateActionAccountingProjectionService.LotPlans.cs
@@ -5341,6 +5349,7 @@ Meridian-main
 │   │   ├── AutomatedJournalEventKind.cs
 │   │   ├── AutomatedJournalPostingTarget.cs
 │   │   ├── BuiltInLedgerReportBinaryRenderer.cs
+│   │   ├── CanonicalCorporateActionLotReport.cs
 │   │   ├── CapitalCallDraftFactory.cs
 │   │   ├── CapitalCallPlanBuilder.cs
 │   │   ├── CapitalCallScheduleDraftBuilder.cs
@@ -5932,12 +5941,14 @@ Meridian-main
 │   │   │   │   ├── V_ledger_039__tax_lot_proceeds_allocation.sql
 │   │   │   │   ├── V_ledger_040__canonical_lot_amortization.sql
 │   │   │   │   ├── V_ledger_041__current_basis_disposal.sql
-│   │   │   │   └── V_ledger_042__atomic_lot_successors.sql
+│   │   │   │   ├── V_ledger_042__atomic_lot_successors.sql
+│   │   │   │   └── V_ledger_043__amortization_reversal_basis_restoration.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
 │   │   │   ├── CanonicalDisposalHistoryProjector.cs
 │   │   │   ├── CanonicalOpenLotDisposalGuard.cs
+│   │   │   ├── CorporateActionSuccessorAncestry.cs
 │   │   │   ├── DurableAutomatedJournalPoster.cs
 │   │   │   ├── GovernedLedgerPostingTarget.cs
 │   │   │   ├── HistoricalTaxLotQuantity.cs
@@ -5971,6 +5982,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.PeriodLockOwner.cs
 │   │   │   ├── PostgresLedgerJournalStore.ProceedsAllocation.cs
 │   │   │   ├── PostgresLedgerJournalStore.Serialization.cs
+│   │   │   ├── PostgresLedgerJournalStore.SuccessorHoldingPeriod.cs
 │   │   │   ├── PostgresLedgerJournalStore.TaxLotDisposalHistory.cs
 │   │   │   ├── PostgresLedgerJournalStore.TaxLotHoldingPeriodEvidence.cs
 │   │   │   ├── PostgresLedgerJournalStore.TaxLotReplacementClaims.cs
@@ -7333,6 +7345,7 @@ Meridian-main
 │   │   │   │   ├── app.tsx
 │   │   │   │   ├── design-system-contract.test.ts
 │   │   │   │   ├── main.tsx
+│   │   │   │   ├── tailwind-build.test.ts
 │   │   │   │   ├── types.ts
 │   │   │   │   ├── vite-config.test.ts
 │   │   │   │   └── vite-env.d.ts
@@ -9736,6 +9749,7 @@ Meridian-main
 │   │   ├── AssetOperations
 │   │   │   ├── AmortizationHistoricalEvidenceTests.cs
 │   │   │   ├── AmortizationLotInstructionContractTests.cs
+│   │   │   ├── AmortizationReversalPreviewTests.cs
 │   │   │   ├── AssetAccountingEventSpineContractTests.cs
 │   │   │   ├── AssetAccountingEvidenceSubjectContractTests.cs
 │   │   │   ├── AssetAcquisitionLotPostgresRoundTripTests.cs
@@ -9744,6 +9758,7 @@ Meridian-main
 │   │   │   ├── AssetOperationsMigrationRunnerTests.cs
 │   │   │   ├── AssetOperationsReadServiceTests.cs
 │   │   │   ├── AssetOperationsReferenceProjectionServiceTests.cs
+│   │   │   ├── CanonicalLotCorporateActionServiceTests.cs
 │   │   │   ├── ClearwaterCorporateActionRuleProfileV1Tests.cs
 │   │   │   ├── CorporateActionAccountingProjectionServiceTests.cs
 │   │   │   ├── CorporateActionAssetAccountingEventMapperTests.cs
@@ -9753,6 +9768,7 @@ Meridian-main
 │   │   │   ├── InstrumentPositionProjectionStoreTests.cs
 │   │   │   ├── OpenLotAmortizationCalendarTests.cs
 │   │   │   ├── OpenLotAmortizationPrecisionTests.cs
+│   │   │   ├── OpenLotSuccessorTests.CorporateActions.cs
 │   │   │   ├── OpenLotSuccessorTests.cs
 │   │   │   ├── PortfolioCashLadderEngineTests.cs
 │   │   │   ├── PortfolioCashLadderReadServiceTests.cs
@@ -10576,14 +10592,19 @@ Meridian-main
 │   │   │   ├── AtomicTaxLotJournalStoreTests.HoldingPeriodEvidence.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.ProceedsAllocation.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.ReplacementClaims.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.SuccessorAncestry.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.SuccessorGuards.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.SuccessorHoldingPeriod.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.SuccessorPublication.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.Successors.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.SuccessorScope.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.TaxEconomics.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.TaxResultHistory.cs
 │   │   │   ├── AtomicTaxLotSuccessorMigrationTests.cs
 │   │   │   ├── AuditChainProcessTests.cs
 │   │   │   ├── AuditChainServiceTests.cs
 │   │   │   ├── CanonicalDisposalTaxEconomicsTests.cs
+│   │   │   ├── CanonicalOpenLotConsumerTests.CorporateActions.cs
 │   │   │   ├── CanonicalOpenLotConsumerTests.cs
 │   │   │   ├── CanonicalSymbolRegistryTests.cs
 │   │   │   ├── CompositeSinkTests.cs
@@ -10591,6 +10612,8 @@ Meridian-main
 │   │   │   ├── ConsolidationPostingGuardTests.cs
 │   │   │   ├── ConsolidationPostingLineageTests.cs
 │   │   │   ├── ConsolidationSourcesPostgresTests.cs
+│   │   │   ├── CorporateActionSuccessorAncestryTests.cs
+│   │   │   ├── CorporateActionSuccessorAncestryTests.Fixtures.cs
 │   │   │   ├── DataLineageServiceTests.cs
 │   │   │   ├── DataQualityScoringServiceTests.cs
 │   │   │   ├── DataReplacementCostEstimatorTests.cs
@@ -10847,6 +10870,8 @@ Meridian-main
 │   │   │   ├── LedgerDisposalTaxReadServiceTests.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceSuccessorTests.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceTests.cs
+│   │   │   ├── LedgerReportingAuthoritativeSourceTests.SuccessorOriginIntegrity.cs
+│   │   │   ├── LedgerReportingAuthoritativeSourceTests.SuccessorReportPack.cs
 │   │   │   ├── LegacyReportingRouteRetirementEndpointTests.cs
 │   │   │   ├── LiveBrokeragePortfolioSyncServiceTests.cs
 │   │   │   ├── LiveTradingEngineHostRegistrationTests.cs

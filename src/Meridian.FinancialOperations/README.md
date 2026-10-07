@@ -56,6 +56,8 @@ statement store so committed imports use Storage-owned directory durability with
 Infrastructure-to-Storage reference.
 
 `CanonicalLotAmortizationService` prepares read-only canonical face-lot projections from authoritative lot/reference records. Optional workstation postures may construct the service with absent stores, but preview requires ledger, Security Master, and book-position authority and refuses missing stores before any read. `AccountingPostingCandidatePostService` carries an `Amortize` instruction through the existing event-spine and independent approval rail to atomic journal/basis posting; the service itself cannot approve or post.
+`CanonicalLotAmortizationService.PreviewReversalAsync` derives an inverse from the immutable original lot mutation and refuses intervening lot changes. Drafting verifies the original snapshot and requires rebooks to reference a retained atomic reversal; independent approval remains mandatory. Reversals after reference changes require newly reviewed current Security Master evidence. Original retained journal lines and the prior lot snapshot determine inverse economics, including for a historical calculation-version receipt. New ordinary postings retain the current calculation-version requirement.
+
 New amortization postings require the current calculation version before approval is retained.
 Historical unversioned instructions remain readable for exact receipt replay; unposted legacy
 drafts require a fresh preview.
@@ -180,6 +182,13 @@ Operations Continuity checklist acknowledgments are explicit retained reviewer a
 
 Private-capital close evidence is selected by fund event, period, and ledger entity. Partner statements must reference a selected event in the same month and match the capital account, investor, and currency. Each selected expense or fee event must retain allocation support; management-company evidence signals also come from selected event records. Cumulative capital-account balances, history, and evidence remain available as diagnostics, but prior-period or other-entity statement and allocation evidence cannot satisfy the selected close.
 `PrivateCapitalCloseCockpitServiceTests.EvidenceScope.cs` builds real cumulative subledgers for mixed May/June and mixed-entity scenarios, checks refusal with missing selected-scope support, and restores readiness by repairing that support while preserving cumulative balances and history. A separate scenario rejects a foreign-period statement even when it carries the selected event ID. These focused scenarios form part of W10-SEAM-001, whose acceptance remains in progress pending the required hosted integration evidence.
+
+`CanonicalLotCorporateActionService` connects the unified reviewed successor instruction to the
+existing Projected/Drafted rail for exchanges, whole-unit splits, stock mergers and refundings.
+Preview binds the source chart path to its mapped predecessor credit and rereads exact predecessor
+and versioned source/successor reference authority; the candidate/storage boundary retains durable
+account identity checks. Drafting
+retains the mapped instruction and requires independent approval before posting.
 
 ## Purpose
 
@@ -820,7 +829,11 @@ Bounded cashless `RegS144AExchange` and `AdvanceRefunding` candidates use the sa
 with a retained `OpenLotSuccessorInstructionDto`. Independent approval covers its predecessor,
 create-only successors, reference versions and exact allocation. Before `Drafted` is retained, each
 successor Security Master record must cover the event's effective date within its inclusive UTC
-effective-date interval. Posting rechecks that instruction
+effective-date interval. Drafting also requires retained wash-sale deferral reads across all sale
+dates and follows at most 32 same-book predecessor lots, using immutable acquisition lineage,
+the legacy successor instruction, or the retained immutable birth receipt. A carry date earlier than the holding-period start copied to
+successors is refused until reviewed successor carry lineage is supported; missing, ambiguous or
+cyclic ancestry also fails closed. Deferrals are not copied or fabricated. Posting rechecks that instruction
 against the drafted event, embeds its fingerprint in the journal and sends the complete mutation
 set to the atomic store. The journal reclassifies the predecessor's current basis to its successors;
 the instruction also retains original acquisition basis, currency/FX, holding dates and refunded-only

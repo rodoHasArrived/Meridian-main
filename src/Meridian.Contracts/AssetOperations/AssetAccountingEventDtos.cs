@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 
@@ -748,9 +749,9 @@ public static class AssetAccountingEventSpineValidator
                 issues.Add("Posted journal impact lines must retain exact fund, book, Security Master, book-position, and canonical dimension scope.");
             if (spine.CorporateAction is { } postedSuccessors &&
                 (posted.Lines.Count != postedSuccessors.Successors.Count + 1
-                 || posted.Lines.Count(line => line.Dimensions?.InstrumentId == spine.Scope.SecurityId
+                 || posted.Lines.Count(line => line.Credit > 0m && line.Dimensions?.InstrumentId == spine.Scope.SecurityId
                      && line.Dimensions?.PositionId == spine.Scope.BookPositionId) != 1
-                 || postedSuccessors.Successors.Any(target => posted.Lines.Count(line =>
+                 || postedSuccessors.Successors.Any(target => posted.Lines.Count(line => line.Debit > 0m &&
                      line.Dimensions?.InstrumentId == target.Lot.SecurityId
                      && line.Dimensions?.PositionId == target.Lot.BookPositionId) != 1)))
                 issues.Add("Posted successor impact requires exactly one predecessor and each reviewed successor line.");
@@ -822,18 +823,27 @@ public static class AssetAccountingEventSpineValidator
     {
         if (spine.CorporateAction is not { } instruction)
             return PostedDimensionsMatchScope(line.Dimensions, spine.Scope);
-        if (line.Dimensions?.InstrumentId == spine.Scope.SecurityId && line.Dimensions?.PositionId == spine.Scope.BookPositionId)
+        if (line.Credit > 0m && line.Dimensions?.InstrumentId == spine.Scope.SecurityId && line.Dimensions?.PositionId == spine.Scope.BookPositionId)
             return line.Debit == 0m && line.Credit == instruction.ExpectedLot.OpenFunctionalCostBasis
+                && CorporateActionLotDimensionMatches(line.Dimensions, instruction.ExpectedLot, instruction)
                 && PostedDimensionsMatchScope(line.Dimensions, spine.Scope);
         var target = instruction.Successors.SingleOrDefault(target => target.Lot.SecurityId == line.Dimensions?.InstrumentId
             && target.Lot.BookPositionId == line.Dimensions?.PositionId);
         return target is not null && line.Credit == 0m && line.Debit == target.Lot.OpenFunctionalCostBasis
+            && CorporateActionLotDimensionMatches(line.Dimensions, target.Lot, instruction)
             && PostedDimensionsMatchScope(line.Dimensions, spine.Scope with
             {
                 SecurityId = target.Lot.SecurityId,
                 BookPositionId = target.Lot.BookPositionId
             });
     }
+
+    private static bool CorporateActionLotDimensionMatches(LedgerDimensionSetDto? dimensions,
+        OpenLotDto lot, OpenLotSuccessorInstructionDto instruction)
+        => instruction.Successors.Any(target => target.Lot.SecurityId == instruction.ExpectedLot.SecurityId
+                && target.Lot.BookPositionId == instruction.ExpectedLot.BookPositionId)
+            ? dimensions?.TaxLotId == lot.LotId
+            : dimensions?.TaxLotId is null || dimensions.TaxLotId == lot.LotId;
 
     private static bool PostedDimensionsMatchScope(
         LedgerDimensionSetDto? dimensions,
@@ -961,8 +971,14 @@ public static class AssetLotMutationInstructionValidator
             if (instruction is not { Intent: AssetLotMutationIntentDto.Amortize, Amortization: { } amortization }
                 || instruction.Acquisition is not null || instruction.DisposalSelections.Count != 0
                 || instruction.ReliefMethod is not null || instruction.PolicyRevision is not null
+                || instruction.DisposalSalePrice is not null
                 || string.IsNullOrWhiteSpace(instruction.AssetAccountId))
                 return ["Lot amortization requires one complete Amortize instruction and exact asset account."];
+            if (amortization.Reversal is { } reversal
+                && (instruction.CorrectsMutationBatchId != reversal.MutationBatchId
+                    || instruction.CorrectsJournalEntryId != reversal.JournalEntryId
+                    || instruction.CorrectionApproval is null))
+                issues.Add("Amortization reversal requires the exact original batch, journal and approved correction lineage.");
             try
             {
                 var projection = Meridian.Contracts.Accounting.Lots.OpenLotAmortization.Project(amortization);
@@ -1025,6 +1041,8 @@ public static class AssetLotMutationInstructionValidator
         var populatedCorrectionFields = correctionFields.Count(static value => value is not null);
         if (populatedCorrectionFields is > 0 and < 3)
             issues.Add("Lot corrections require the exact corrected mutation batch, corrected journal, and approved correction metadata together.");
+        if (instruction?.CorrectsMutationBatchId == Guid.Empty || instruction?.CorrectsJournalEntryId == Guid.Empty)
+            issues.Add("Lot correction identities must be nonempty.");
         if (instruction?.CorrectionApproval is { } approval &&
             (approval.Status != LedgerAdjustmentApprovalStatusDto.Approved ||
              string.IsNullOrWhiteSpace(approval.ApprovalId) ||

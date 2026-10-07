@@ -1000,6 +1000,14 @@ public sealed record CorporateActionAccountingProjectionDto(
     Guid PolicyDecisionId = default,
     Guid? ElectionId = null)
 {
+    /// <summary>Stable source action identity, independent of the projected event's reviewed case/version.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? SourceCorporateActionId { get; init; }
+
+    /// <summary>Explicit canonical lot transfer mode retained from the source request; omitted for legacy projections.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool CanonicalLotTransferJournal { get; init; }
+
     public IReadOnlyList<CorporateActionEconomicOperationDto> Recipe { get; init; } = Recipe ?? [];
 
     public IReadOnlyList<CorporateActionProjectionBlockerDto> Blockers { get; init; } = Blockers ?? [];

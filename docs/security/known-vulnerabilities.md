@@ -10,12 +10,29 @@ This document is the central registry for dependency vulnerabilities that have b
 - **Review cadence:** Accepted vulnerabilities must be reviewed at least quarterly and removed promptly when an upstream fix becomes available.
 - **Workflow integration:** the `dependency-evidence` job in `.github/workflows/production-certification.yml` is the enforcing gate. npm findings route through `build/scripts/ci/validate-npm-audit.py` against `build/config/security/npm-audit-accepted-advisories.json`, which fails closed on both unaccepted and stale entries. `Directory.Build.props` may suppress a NuGet restore-audit finding only by exact advisory URL after the same accepted-risk review; note that `NuGetAuditSuppress` does not affect `dotnet list package --vulnerable`, so a suppressed NuGet advisory still reds the gate.
 
-## Pending decision: braces stack exhaustion (2026-10-05)
+## KV-2026-003 — Tailwind 4 remediation candidate (2026-10-06)
 
-**Status: proposed, not accepted (KV-2026-003).** This investigation authorizes no exception. The active
-machine register remains `"accepted": []`; Production Certification must remain red for this
-finding until a supported remediation passes or an authorized human records a bounded decision.
-Merging this investigation alone does not accept the risk.
+**Status: implementation remediated; release certification remains separate.** The Tailwind 4
+integration replaces the vulnerable Tailwind 3 build graph without accepting the advisory.
+The active machine register remains `"accepted": []`. The October 5 exception proposal below is
+retained as historical investigation and is superseded by this remediation candidate.
+
+The version-only upgrade in PR #3090 removed `braces` but left the old PostCSS integration, which
+failed a clean workstation build. The completed integration pins `@tailwindcss/postcss` 4.3.3,
+loads the existing theme explicitly, bounds source scanning to the workstation, and preserves
+the previous utility, startup-style, pointer, focus, and semantic-badge behavior. The complete
+graph also updates transitive `source-map-js` to 1.2.2 for GHSA-68fv-2mgg-jv7q.
+
+The retained [full npm audit](evidence/2026-10-06-tailwind4/npm-audit.json) reports zero findings,
+and the unchanged [dependency gate](evidence/2026-10-06-tailwind4/npm-audit-gate.json) passes
+with no accepted or stale exceptions. Local build, test, and browser evidence is recorded in the
+[validation manifest](evidence/2026-10-06-tailwind4/manifest.json). This is evidence for the
+recorded inputs and audit date; it does not certify a release, replace hosted required checks,
+or supply Windows operator acceptance.
+
+### Historical October 5 investigation and unaccepted proposal
+
+The following records describe the earlier Tailwind 3 baselines. No exception was granted.
 
 ### Evidence and dependency exposure
 

@@ -82,15 +82,57 @@ public sealed partial class LedgerReportingAuthoritativeSource
                 ["openLotSuccessorEvidenceHash"] = retained.Hash,
                 ["openLotSuccessorEvidence"] = retained.Json
             };
-            var successor = retained.Instruction.Successors.SingleOrDefault(target =>
+            var successor = row["credit"] != "0" ? null : retained.Instruction.Successors.SingleOrDefault(target =>
                 row.GetValueOrDefault("instrumentId") == target.Lot.SecurityId.ToString("D")
-                && row.GetValueOrDefault("positionId") == target.Lot.BookPositionId.ToString("D"));
+                && row.GetValueOrDefault("positionId") == target.Lot.BookPositionId.ToString("D")
+                && (row.GetValueOrDefault("taxLotId") is null || row["taxLotId"] == target.Lot.LotId));
             var operation = successor is null ? null : retained.Instruction.Projection.Recipe.Single(item =>
                 item.Kind == CorporateActionEconomicOperationKindDto.ExchangeIn && item.SecurityId == successor.Lot.SecurityId);
             enriched["openLotSuccessorRole"] = operation?.SuccessorRole?.ToString() ?? "Predecessor";
             enriched["openLotScheduleD"] = operation?.SuccessorRole == CorporateActionSuccessorRoleDto.Refunded ? "true" : "false";
             return (IReadOnlyDictionary<string, string>)enriched;
         }).ToImmutableArray();
+    }
+    private async Task<IReadOnlyList<CanonicalCorporateActionLotReport>> BuildCorporateActionLotReportsAsync(
+        Guid ledgerBookId, IReadOnlyList<LedgerJournalEntryRecord> journals, string functionalCurrency,
+        LedgerLineDimensionSet selectedDimensions, CancellationToken cancellationToken)
+    {
+        var required = journals.Where(journal => journal.Entry.Metadata.Tags?.ContainsKey(OpenLotSuccessors.JournalFingerprintTag) == true
+            && journal.Entry.Lines.Any(line => line.Dimensions is { } dimensions
+                && MatchesSelectedDimensions(dimensions, selectedDimensions)))
+            .ToDictionary(journal => journal.Entry.JournalEntryId);
+        if (required.Count == 0)
+            return [];
+        if (_openLotSuccessorHistory is null)
+            throw Unavailable("Canonical successor history is required for corporate-action report-pack evidence.");
+        foreach (var journal in required.Values)
+            if (journal.Entry.Lines.Any(line => line.Dimensions is not { } dimensions
+                || !MatchesSelectedDimensions(dimensions, selectedDimensions)))
+                throw Unavailable("A corporate-action journal crosses the selected report-pack dimensions.");
+        try
+        {
+            var batches = await _openLotSuccessorHistory.GetOpenLotSuccessorHistoryAsync(
+                ledgerBookId, required.Keys.ToArray(), cancellationToken).ConfigureAwait(false);
+            if (batches.Count != required.Count || batches.Select(batch => batch.Journal.Entry.JournalEntryId).Distinct().Count() != required.Count)
+                throw new ArgumentException("Report-pack evidence requires one complete successor receipt per retained journal.");
+            var reports = new List<CanonicalCorporateActionLotReport>();
+            foreach (var batch in batches)
+            {
+                if (!required.TryGetValue(batch.Journal.Entry.JournalEntryId, out var journal))
+                    throw new ArgumentException("A successor receipt falls outside the requested report-pack scope.");
+                CanonicalOpenLotSuccessorEvidence.Validate(batch, journal, ledgerBookId, functionalCurrency);
+                var predecessor = batch.Mutations.Single(mutation => mutation.TaxLotRecordId == batch.CorporateAction!.ExpectedLot.TaxLotRecordId);
+                reports.Add(new CanonicalCorporateActionLotReport(batch.CorporateAction!.Projection.EconomicEvent!.EventId,
+                    journal.Entry.JournalEntryId, predecessor.LotBefore!.ToOpenLot(), predecessor.LotAfter.ToOpenLot(),
+                    batch.Mutations.Where(mutation => mutation.LotBefore is null).OrderBy(mutation => mutation.SelectionOrdinal)
+                        .Select(mutation => mutation.LotAfter.ToOpenLot()).ToArray()));
+            }
+            return reports;
+        }
+        catch (Exception exception) when (exception is NotSupportedException or ArgumentException or InvalidOperationException or JsonException or LedgerValidationException)
+        {
+            throw Unavailable($"Corporate-action report-pack proof is unavailable: {exception.Message}");
+        }
     }
 }
 
@@ -110,7 +152,7 @@ public static class CanonicalOpenLotSuccessorEvidence
         ArgumentNullException.ThrowIfNull(journal);
         var instruction = batch.CorporateAction
             ?? throw new ArgumentException("The retained successor instruction is missing.");
-        OpenLotSuccessors.Validate(instruction);
+        OpenLotSuccessors.ValidateRetained(instruction);
         var predecessor = instruction.ExpectedLot;
         Require(batch.MutationKind == AtomicTaxLotMutationKind.CorporateAction && batch.MutationBatchId != Guid.Empty
             && batch.CanonicalFingerprint.StartsWith("sha256:", StringComparison.Ordinal)
@@ -158,7 +200,9 @@ public static class CanonicalOpenLotSuccessorEvidence
             Require(mutation.RetainedEvidence.Count == batch.RetainedEvidence.Count
                 && mutation.RetainedEvidence.All(batch.RetainedEvidence.Contains)
                 && mutation.LotAfter.Account == journal.Entry.Lines.Single(line =>
-                    line.Dimensions?.InstrumentId == mutation.SecurityId && line.Dimensions?.PositionId == mutation.BookPositionId).Account,
+                    line.Dimensions?.InstrumentId == mutation.SecurityId && line.Dimensions?.PositionId == mutation.BookPositionId
+                    && (mutation.LotBefore is null ? line.Debit > 0m : line.Credit > 0m)
+                    && (line.Dimensions?.TaxLotId is null || line.Dimensions.TaxLotId == mutation.LotId)).Account,
                 "Mutation account or retained evidence differs from its journal and approved batch.");
             Require(mutation.QuantityBefore + mutation.QuantityDelta == mutation.QuantityAfter
                 && mutation.QuantityAfter == mutation.LotAfter.OpenQuantity
@@ -196,9 +240,16 @@ public static class CanonicalOpenLotSuccessorEvidence
                     && mutation.CostBasis == target!.Lot.OpenFunctionalCostBasis
                     && mutation.LotAfter.SourceJournalEntryId == journal.Entry.JournalEntryId
                     && mutation.LotAfter.OriginatingMutationBatchId == batch.MutationBatchId
+                    && (instruction.Projection.SourceCorporateActionId is null
+                        || mutation.LotAfter.Acquisition?.CorporateActionLineage is not null)
                     && mutation.LotAfter.BasisAdjustment is { Reason: OpenLotBasisAdjustmentReasons.CorporateActionSuccessor } adjustment
                     && adjustment.MutationBatchId == batch.MutationBatchId && Equal(adjustment.CorporateAction, instruction)
-                    && mutation.QuantityBefore == 0m && Equal(mutation.LotAfter.ToOpenLot(), target!.Lot),
+                    && mutation.QuantityBefore == 0m && Equal(mutation.LotAfter.ToOpenLot(),
+                        mutation.LotAfter.Acquisition?.CorporateActionLineage is { } retainedOrigin
+                            ? OpenLotSuccessors.WithRetainedLineage(instruction, target!.Lot, retainedOrigin)
+                            : instruction.Projection.Treatment.ActionType is CorporateActionAccountingTypeDto.StockSplit
+                                or CorporateActionAccountingTypeDto.ReverseStockSplit or CorporateActionAccountingTypeDto.MergerStock
+                            ? OpenLotSuccessors.WithLineage(instruction, target!.Lot) : target!.Lot),
                     "A persisted successor differs from its approved identity, allocated basis or acquisition facts.");
             }
         }
@@ -219,8 +270,11 @@ public static class CanonicalOpenLotSuccessorEvidence
 
     private static void ValidateLine(LedgerJournalEntryRecord journal, OpenLotDto lot, bool debit)
     {
-        var lines = journal.Entry.Lines.Where(line => line.Dimensions?.InstrumentId == lot.SecurityId
+        var scopeLines = journal.Entry.Lines.Where(line => line.Dimensions?.InstrumentId == lot.SecurityId
             && line.Dimensions?.PositionId == lot.BookPositionId).ToArray();
+        var lines = scopeLines.Where(line => (debit ? line.Debit > 0m && line.Credit == 0m : line.Credit > 0m && line.Debit == 0m)
+            && (scopeLines.Length > 1 ? line.Dimensions?.TaxLotId == lot.LotId
+                : line.Dimensions?.TaxLotId is null || line.Dimensions.TaxLotId == lot.LotId)).ToArray();
         Require(lines.Length == 1, "Each predecessor and successor requires an exact journal security and position line.");
         var line = lines[0];
         var acquisition = lot.Acquisition;

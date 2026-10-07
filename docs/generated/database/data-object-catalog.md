@@ -4,7 +4,7 @@
 
 This is a source inventory of public DTOs and related contract objects. Database-to-contract links are explicit module associations; they do not assert one-to-one structural equivalence.
 
-- Public contract objects: 2823
+- Public contract objects: 2825
 - Namespaces: 57
 
 ## Classifications
@@ -14,7 +14,7 @@ This is a source inventory of public DTOs and related contract objects. Database
 | `catalog` | 12 |
 | `class` | 229 |
 | `configuration` | 20 |
-| `dto` | 1395 |
+| `dto` | 1397 |
 | `enum` | 383 |
 | `event` | 5 |
 | `payload` | 63 |

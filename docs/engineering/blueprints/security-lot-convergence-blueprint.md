@@ -6,7 +6,7 @@
 
 **Owner:** Accounting and Ledger
 
-**Reviewed:** 2026-10-06
+**Reviewed:** 2026-10-07
 
 > **Breaking change**
 >
@@ -375,6 +375,10 @@ the event's functional currency; this partial delivery does not add a cross-curr
 The atomic boundary preserves the acquisition currencies and FX for supported store commands.
 Current-basis disposal relief is supplied by the separate PR #3050 slice described below. These
 amortization corrections preserve its existing relief implementation and acquisition evidence.
+`AtomicTaxLotJournalStoreTests.CanonicalAmortization_LaterFifoDisposalRelievesAmortizedBasisAndReportingCertifiesIt`
+proves relief for an amortized lot: it amortizes a premium face lot, then partially and fully
+relieves it under FIFO against PostgreSQL. Each disposal books exactly the amortized basis, retains
+the acquisition facts, replays exactly, and is certified by Reporting.
 
 Migration `V_ledger_040` widens existing mutation constraints without replacing acquisition facts or
 backfilling legacy rows. Exact command retries return the retained journal and mutation before
@@ -494,7 +498,70 @@ passed; the latter ran 1,552 script tests with zero failures/errors, 16 existing
 existing quarantined modules. These results are retained in
 [PR #3102](https://github.com/rodoHasArrived/Meridian-main/pull/3102).
 
-Full local and hosted acceptance remain blocked by the unchanged dashboard's Tailwind 4/PostCSS
-configuration mismatch, also present on the implementation's `main` base. This evidence does not
-claim a green full gate or operator acceptance. `W10-LOT-002` remains `in_progress`: wider corporate-action and
-consumer parity, remaining convergence work and live shadow-operation acceptance remain open.
+The results above describe that bounded implementation head. The Tailwind 4/PostCSS prerequisite
+is corrected in the consolidated continuation below. Historical checks do not validate a later
+combined head or supply independent operator acceptance.
+
+### Consolidated lot posting and correction continuation (2026-10-07)
+
+[PR #3102](https://github.com/rodoHasArrived/Meridian-main/pull/3102) is the single review surface
+for the changes originally presented in #3109, #3102, #3093, #3067, #3070 and #3074.
+The successor path uses one `OpenLotSuccessorInstructionDto`, one atomic store implementation and
+migration `V_ledger_042__atomic_lot_successors.sql`. Forward migration
+`V_ledger_043__amortization_reversal_basis_restoration.sql` separately corrects the prior basis-removal
+guard for approved amortization restoration. The successor migration's populated through-041 upgrade, historical
+predicate preservation, reapply, restart and failed-upgrade rollback audit remain attached to that
+migration. No historical migration is renumbered or overwritten.
+
+The governed path supports cashless Reg S/144A exchanges, whole-unit forward/reverse splits,
+stock mergers and proportional advance refundings. Each instruction fully closes one predecessor;
+exchange, split and merger create one successor, while refunding creates refunded/unrefunded face
+successors. Same-security splits explicitly opt into a basis-transfer journal; older operational
+and identifier-changing projection paths keep their existing behavior. The reviewed instruction
+survives Projected, Drafted and Approved lifecycle stages. Storage rechecks locked lot/reference
+versions, financial account, policy and canonical dimensions before committing every lot and journal
+leg together. Unsupported cash components, transfers and corporate-action corrections refuse posting.
+Atomic successor commands require the canonical `AssetAccounting.CorporateAction` source type,
+approved state, retained approval identity, named actor and complete typed accounting context.
+Type aliases, corrected-batch/source-journal metadata, reversal/rebook intents and closing-entry
+posting kinds cannot introduce unsupported successor corrections.
+
+Original acquisition and current carrying bases remain separate in both currencies. Acquisition
+FX and holding dates are retained. Immutable acquisition lineage survives later relief, distinguishes
+exclusive refunded Schedule D treatment. Before a new posting, Storage traverses immutable birth
+receipts through every predecessor and resolves stable source-action identity from retained,
+version/hash-bound source-event evidence. An intervening action, later disposal or a fresh case/version
+cannot hide a repeated ancestor action. Historical absent lineage or stable-ID fields retain their
+original serialized shape; ordinary legacy relief receipts can prove the path back to the original
+acquisition. Missing, contradictory, cyclic or foreign-book ancestry refuses posting, while exact
+retries return the committed receipt before new-posting ancestry checks.
+Reporting validates the immutable posting receipts, preserves exact batch JSON and hashes on
+journal rows, and includes `corporate-action-lot-evidence.json` under report-pack checksums and signing.
+AverageCost reporting compares acquisition evidence and successor lineage by value against its
+retained pre-relief pool; changed provenance fails certification even when all monetary facts match.
+
+Amortization reversal/rebook uses the latest unchanged retained mutation and exact original journal.
+A reviewed reversal restores the complete prior basis adjustment and inverses every financial line
+atomically. A same-date rebook requires that reversal receipt and approved correction lineage.
+Migration 043 permits restoration of a retained null prior adjustment only for the latest original
+amortization mutation and an approved correcting journal in the same scope and effective date.
+Complete typed snapshot and exact inverse-journal checks remain in the atomic application path;
+ordinary adjustment removal remains forbidden and every basis change requires a new version and batch.
+Historical receipts retain their calculation and wire shape; newly drafted ordinary amortization
+keeps the current calculation, evidence and currency guards already on main. The PostgreSQL FIFO
+proof above covers partial/closing disposal after amortization and exact Reporting reconstruction.
+Backtesting and shared Security Master lot projections also use retained cost basis for long,
+explicit short and recovered legacy-short unrealized P&L, while chained simulation transformations
+replace only generated composite summaries and preserve operator prose.
+
+Focused test coverage is retained in `AtomicTaxLotJournalStoreTests.Amortization.cs` for premium/discount
+null-basis restoration, approved rebook, refusal and rollback; `CorporateActionSuccessorAncestryTests.cs`
+and `AtomicTaxLotJournalStoreTests.SuccessorAncestry.cs` for ancestor replay, historical receipts and
+restart; and `AtomicTaxLotJournalStoreTests.SuccessorGuards.cs` for concurrent competing commands,
+successor collisions, type/approval/correction refusals and dimension tampering. These are test
+coverage references; current-run and hosted results are recorded on the canonical PR.
+
+The consolidated branch carries the Tailwind 4/PostCSS migration and rebuilt workstation assets.
+Validation results belong to the canonical PR and its exact head. `W10-LOT-002` stays `in_progress`:
+other corporate actions, successor amortization, remaining cross-consumer parity and live
+shadow-operation acceptance still require their own implementation and independent review.

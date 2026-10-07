@@ -414,7 +414,7 @@ function SecurityDetailFieldEditor({ field, value, onChange, onSubmit, onCancel 
   const def = field.def;
   const editor = field.editor;
   const disabledReasonId = `${editor.id}-disabled-reason`;
-  const baseClass = "w-full rounded-md border border-border bg-background px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40";
+  const baseClass = "w-full rounded-md border border-border bg-background px-2 py-1 text-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40";
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();

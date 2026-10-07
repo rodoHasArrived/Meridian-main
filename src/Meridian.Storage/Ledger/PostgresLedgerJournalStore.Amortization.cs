@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
@@ -25,16 +26,32 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException(exception.Message);
         }
         if (command.AcquisitionLot is not null || command.DisposalSelections is { Count: > 0 }
-            || command.ReliefMethod is not null || command.PolicyRevision is not null || command.CorrectsMutationBatchId is not null)
-            throw new LedgerValidationException("Amortization cannot carry acquisition, relief or correction inputs; corrections require reversal and rebook.");
+            || command.ReliefMethod is not null || command.PolicyRevision is not null || command.DisposalSalePrice is not null)
+            throw new LedgerValidationException("Amortization cannot carry acquisition, relief or disposal-price inputs.");
         var scope = ResolveAtomicAssetScope(command.Journal);
         var lot = instruction.ExpectedLot;
         var posting = command.Journal.PostingCommand;
-        if (!AssetAccountingEventTypeNames.TryParse(posting?.SourceEventType, out var eventKind)
+        if (!AssetAccountingEventTypeNames.TryParse(command.Journal.PostingCommand?.SourceEventType, out var eventKind)
             || eventKind != AssetAccountingEventKindDto.DepreciationAmortization
-            || !JsonElement.DeepEquals(JsonSerializer.SerializeToElement(posting?.LotAmortization),
-                JsonSerializer.SerializeToElement(instruction)))
+            || !OpenLotAmortization.SameInstruction(command.Journal.PostingCommand?.LotAmortization, instruction))
             throw new LedgerValidationException("The governed journal must retain the exact reviewed canonical amortization inputs.");
+        if (instruction.Reversal is { } reversal
+            && (command.CorrectsMutationBatchId != reversal.MutationBatchId
+                || command.Journal.SourceJournalEntryId != reversal.JournalEntryId))
+            throw new LedgerValidationException("Amortization reversal must identify the exact corrected mutation batch and journal.");
+        if (command.CorrectsMutationBatchId.HasValue)
+        {
+            var approval = command.Journal.AdjustmentApproval;
+            if (command.Journal.PostingKind != LedgerPostingKindDto.Adjustment
+                || command.Journal.PostingCommand?.ApprovalState != AccountingPostingApprovalStateDto.Approved
+                || approval is null || approval.Status != LedgerAdjustmentApprovalStatusDto.Approved
+                || string.IsNullOrWhiteSpace(approval.ApprovalId) || string.IsNullOrWhiteSpace(approval.ApprovedBy)
+                || string.IsNullOrWhiteSpace(approval.ReasonCode) || approval.ApprovedAt == default
+                || approval.ApprovedAt.Offset != TimeSpan.Zero || approval.ApprovedAt > command.Journal.Entry.Timestamp)
+                throw new LedgerValidationException("Amortization correction requires complete approved adjustment metadata before posting.");
+        }
+        else if (command.Journal.SourceJournalEntryId is not null || command.Journal.AdjustmentApproval is not null)
+            throw new LedgerValidationException("Amortization correction lineage requires an atomic corrected mutation batch.");
         var reviewedEvidence = lot.Acquisition.Evidence.Append(instruction.SecurityEvidence);
         if (lot.LedgerBookId != command.LedgerBookId || lot.SecurityId != scope.SecurityId || lot.BookPositionId != scope.BookPositionId
             || instruction.AsOfDate != command.Journal.Entry.Metadata.EffectiveDate
@@ -107,9 +124,22 @@ public sealed partial class PostgresLedgerJournalStore
             ?? throw new LedgerValidationException("Amortization lot no longer exists in the reviewed book.");
         if (before.Account.AccountType != LedgerAccountType.Asset)
             throw new LedgerValidationException("Amortization requires an asset carrying account.");
-        if (JsonSerializer.Serialize(before.ToOpenLot()) != JsonSerializer.Serialize(instruction.ExpectedLot))
+        if (!OpenLotAmortization.SameLot(before.ToOpenLot(), instruction.ExpectedLot))
             throw new LedgerValidationException("Amortization lot version or carrying basis changed; rebuild and review the projection.");
-        if (before.BasisAdjustment is { } prior
+        if (command.CorrectsMutationBatchId is { } correctedId)
+        {
+            var corrected = await LoadAtomicTaxLotResultAsync(connection, transaction, correctedId, false, ct).ConfigureAwait(false)
+                ?? throw new LedgerValidationException("Corrected amortization is unavailable.");
+            ValidateAmortizationCorrection(command, before, corrected);
+        }
+        else if (before.LastMutationBatchId is { } lastId && before.BasisAdjustment?.MutationBatchId != lastId)
+        {
+            var last = await LoadAtomicTaxLotResultAsync(connection, transaction, lastId, false, ct).ConfigureAwait(false);
+            if (last is { MutationKind: AtomicTaxLotMutationKind.Amortization, CorrectsMutationBatchId: not null }
+                && last.Journal.Entry.Metadata.EffectiveDate == instruction.AsOfDate)
+                throw new LedgerValidationException("Same-date amortization after reversal requires approved rebook lineage to the reversal receipt.");
+        }
+        if (instruction.Reversal is null && before.BasisAdjustment is { } prior
             && (prior.Reason != OpenLotBasisAdjustmentReasons.Amortization || prior.Amortization is null
                 || prior.Amortization.AsOfDate >= instruction.AsOfDate))
             throw new LedgerValidationException("Amortization requires a later period and cannot overwrite another basis treatment.");
@@ -126,8 +156,13 @@ public sealed partial class PostgresLedgerJournalStore
         LedgerTaxLotRecord before, DateTimeOffset recordedAt, CancellationToken ct)
     {
         var projection = OpenLotAmortization.Project(command.Amortization!);
-        var adjustment = new OpenLotBasisAdjustmentDto(command.MutationBatchId, OpenLotBasisAdjustmentReasons.Amortization,
+        OpenLotBasisAdjustmentDto? adjustment = new(command.MutationBatchId, OpenLotBasisAdjustmentReasons.Amortization,
             before.OpenQuantity, projection.TransactionCostBasis, projection.FunctionalCostBasis, command.Amortization);
+        if (command.Amortization!.Reversal is { } reversal)
+        {
+            var original = await LoadTaxLotMutationsAsync(connection, transaction, reversal.MutationBatchId, ct).ConfigureAwait(false);
+            adjustment = original.Single().LotBefore!.BasisAdjustment;
+        }
         await using var update = connection.CreateCommand();
         update.Transaction = transaction;
         update.CommandText = $"""
@@ -152,4 +187,65 @@ public sealed partial class PostgresLedgerJournalStore
         return BuildMutationRecord(command, after, before, 0, 0m, before.Version,
             command.Amortization!.SecurityEvidence.EvidenceId, recordedAt, Math.Abs(projection.FunctionalMovement));
     }
+
+    internal static void ValidateAmortizationCorrection(AtomicTaxLotJournalCommand command,
+        LedgerTaxLotRecord current, AtomicTaxLotJournalResult corrected)
+    {
+        var instruction = command.Amortization!;
+        if (corrected.MutationKind != AtomicTaxLotMutationKind.Amortization || corrected.Mutations.Count != 1
+            || corrected.Mutations[0].LotBefore is null
+            || current.LastMutationBatchId != corrected.MutationBatchId
+            || !SameAmortizationLot(current, corrected.Mutations[0].LotAfter)
+            || corrected.Journal.Entry.JournalEntryId != command.Journal.SourceJournalEntryId
+            || corrected.Journal.Entry.Metadata.EffectiveDate != instruction.AsOfDate)
+            throw new LedgerValidationException("Amortization correction requires the latest unchanged amortization lot and its exact effective date.");
+        var original = corrected.Mutations[0];
+        if (instruction.Reversal is { } reversal)
+        {
+            var originalInputs = original.LotAfter.BasisAdjustment?.Amortization;
+            if (original.LotAfter.BasisAdjustment?.MutationBatchId != corrected.MutationBatchId
+                || originalInputs is null || originalInputs.Reversal is not null
+                || !OpenLotAmortization.SameLot(reversal.RestoresLot, original.LotBefore!.ToOpenLot()))
+                throw new LedgerValidationException("Amortization reversal must restore the exact retained original lot basis.");
+            ValidateInverseAmortizationJournal(command.Journal.Entry, corrected.Journal.Entry);
+        }
+        else if (corrected.CorrectsMutationBatchId is null
+                 || original.LotAfter.BasisAdjustment?.MutationBatchId == corrected.MutationBatchId
+                 || original.LotBefore!.BasisAdjustment?.MutationBatchId != corrected.CorrectsMutationBatchId)
+            throw new LedgerValidationException("Amortization rebook requires an atomic reversal receipt; reverse the original posting first.");
+    }
+
+    private static bool SameAmortizationLot(LedgerTaxLotRecord left, LedgerTaxLotRecord right)
+        => JsonElement.DeepEquals(
+            JsonSerializer.SerializeToElement(left, AmortizationStorageJsonContext.Default.LedgerTaxLotRecord),
+            JsonSerializer.SerializeToElement(right, AmortizationStorageJsonContext.Default.LedgerTaxLotRecord));
+
+    private static void ValidateInverseAmortizationJournal(JournalEntry reversal, JournalEntry original)
+    {
+        var unmatched = original.Lines.ToList();
+        foreach (var line in reversal.Lines)
+        {
+            var index = unmatched.FindIndex(prior => prior.Account == line.Account
+                && prior.Debit == line.Credit && prior.Credit == line.Debit
+                && JsonElement.DeepEquals(
+                    JsonSerializer.SerializeToElement(prior.Dimensions, AmortizationStorageJsonContext.Default.LedgerLineDimensionSet),
+                    JsonSerializer.SerializeToElement(line.Dimensions, AmortizationStorageJsonContext.Default.LedgerLineDimensionSet))
+                && prior.Currency is { } oldCurrency && line.Currency is { } currency
+                && oldCurrency.TransactionCurrency == currency.TransactionCurrency
+                && oldCurrency.FunctionalCurrency == currency.FunctionalCurrency
+                && oldCurrency.FxRateToFunctional == currency.FxRateToFunctional
+                && oldCurrency.TransactionDebit == currency.TransactionCredit
+                && oldCurrency.TransactionCredit == currency.TransactionDebit);
+            if (index < 0)
+                throw new LedgerValidationException("Amortization reversal journal must exactly invert every retained financial line.");
+            unmatched.RemoveAt(index);
+        }
+        if (unmatched.Count != 0)
+            throw new LedgerValidationException("Amortization reversal journal must exactly invert every retained financial line.");
+    }
 }
+
+[JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Metadata)]
+[JsonSerializable(typeof(LedgerTaxLotRecord))]
+[JsonSerializable(typeof(LedgerLineDimensionSet))]
+internal sealed partial class AmortizationStorageJsonContext : JsonSerializerContext;

@@ -394,9 +394,18 @@ internal static class OpenLotSuccessorTestData
         IReadOnlyList<decimal>? allocationPercents = null,
         string fundProfileId = "fund-alpha",
         long expectedPeriodVersion = 1,
+        CorporateActionAccountingTypeDto? actionType = null,
+        CorporateActionPolicyInputsDto? policyInputs = null,
+        decimal? splitRatio = null,
+        Guid? actionId = null,
+        DateOnly? effectiveDate = null,
+        bool identifierChanged = false,
+        bool? canonicalLotTransferJournal = null,
+        long sourceEventVersion = 1,
         CorporateActionSuccessorRoleDto exchangeRole = CorporateActionSuccessorRoleDto.Successor)
     {
-        var sourceId = Guid.NewGuid();
+        var sourceId = actionId ?? Guid.NewGuid();
+        var actionDate = effectiveDate ?? EffectiveDate;
         var positionSnapshotId = Guid.NewGuid();
         var lotSnapshotId = Guid.NewGuid();
         var policyId = Guid.NewGuid();
@@ -409,17 +418,19 @@ internal static class OpenLotSuccessorTestData
             item.Lot.OpenQuantity,
             advanceRefunding ? allocationPercents?[index] ?? item.Lot.OpenQuantity / totalTargetQuantity : null)).ToArray();
         var request = new CorporateActionAccountingProjectionRequest(
-            sourceId, 1,
-            advanceRefunding ? CorporateActionAccountingTypeDto.AdvanceRefunding : CorporateActionAccountingTypeDto.RegS144AExchange,
+            sourceId, sourceEventVersion,
+            actionType ?? (advanceRefunding ? CorporateActionAccountingTypeDto.AdvanceRefunding : CorporateActionAccountingTypeDto.RegS144AExchange),
             advanceRefunding ? AccountingBasisKindDto.Statutory : AccountingBasisKindDto.Gaap,
             predecessor.SecurityId, predecessor.BookPositionId, expectedPositionVersion, expectedPositionVersion,
-            EffectiveDate, EffectiveDate, ObservedAt,
+            actionDate, EffectiveDate, ObservedAt,
             predecessor.Acquisition.FunctionalCurrency, "SecurityMaster", sourceId.ToString("D"), new string('a', 64),
-            new CorporateActionEconomicsDto(AffectedQuantity: predecessor.OpenQuantity,
-                CarryingAmount: predecessor.OpenFunctionalCostBasis, Successors: allocations),
+            new CorporateActionEconomicsDto(PositionQuantity: predecessor.OpenQuantity, AffectedQuantity: predecessor.OpenQuantity,
+                CarryingAmount: predecessor.OpenFunctionalCostBasis, Successors: allocations, SplitRatio: splitRatio,
+                IdentifierChanged: identifierChanged),
+            PolicyInputs: policyInputs,
             EvidenceManifest:
             [
-                Dependency(CorporateActionProjectionEvidenceRoleDto.SourceEvent, sourceId, 1, "SecurityMasterCorporateAction", 'a'),
+                Dependency(CorporateActionProjectionEvidenceRoleDto.SourceEvent, sourceId, sourceEventVersion, "SecurityMasterCorporateAction", 'a'),
                 Dependency(CorporateActionProjectionEvidenceRoleDto.PositionSnapshot, positionSnapshotId, expectedPositionVersion, "PositionSnapshot", 'b'),
                 Dependency(CorporateActionProjectionEvidenceRoleDto.LotSnapshot, lotSnapshotId, predecessor.Version, "LotSnapshot", 'c'),
                 Dependency(CorporateActionProjectionEvidenceRoleDto.PolicyDecision, policyId, 2, "CorporateActionPolicyDecision", 'd')
@@ -427,7 +438,11 @@ internal static class OpenLotSuccessorTestData
             CaseId: Guid.NewGuid(), CaseVersion: 3, PolicyDecisionVersion: 2, PositionSnapshotId: positionSnapshotId,
             AccountingScope: new CorporateActionAccountingProjectionScopeDto("tenant-alpha", "company-alpha", fundProfileId,
                 predecessor.LedgerBookId, periodId ?? Guid.NewGuid(), expectedPeriodVersion, "US"),
-            LotSnapshotId: lotSnapshotId, LotSnapshotVersion: predecessor.Version, PolicyDecisionId: policyId);
+            LotSnapshotId: lotSnapshotId, LotSnapshotVersion: predecessor.Version, PolicyDecisionId: policyId)
+        {
+            CanonicalLotTransferJournal = canonicalLotTransferJournal
+                ?? (actionType is CorporateActionAccountingTypeDto.StockSplit or CorporateActionAccountingTypeDto.ReverseStockSplit)
+        };
         var service = new CorporateActionAccountingProjectionService();
         var intent = service.Project(request);
         intent.Status.Should().Be(CorporateActionProjectionStatusDto.Projected, "the reusable fixture must use a supported registered projection");
@@ -493,17 +508,25 @@ internal static class OpenLotSuccessorTestData
             scope.PeriodId, projection.Treatment.AccountingBasis, scope.FundProfileId, scope.TenantId, scope.CompanyId,
             Dimensions: dimensions);
         var amount = projection.EventAmount;
+        var reusesSourceScope = instruction.Successors.Any(target => target.Lot.SecurityId == source.SecurityId
+            && target.Lot.BookPositionId == source.BookPositionId);
         dimensions ??= new LedgerDimensionSetDto(FundId: scope.FundProfileId, InstrumentId: source.SecurityId,
-            BookId: source.LedgerBookId.ToString("D"))
+            BookId: source.LedgerBookId.ToString("D"), TaxLotId: reusesSourceScope ? source.LotId : null)
         { PositionId = source.BookPositionId };
         var debitLines = instruction.Successors.Select(target => new ProjectedAccountingEffectLineDto("Assets:Successor",
             target.Lot.OpenFunctionalCostBasis, 0m, source.Acquisition.FunctionalCurrency,
-            Dimensions: dimensions with { InstrumentId = target.Lot.SecurityId, PositionId = target.Lot.BookPositionId })).ToArray();
+            Dimensions: dimensions with
+            {
+                InstrumentId = target.Lot.SecurityId,
+                PositionId = target.Lot.BookPositionId,
+                TaxLotId = reusesSourceScope ? target.Lot.LotId : dimensions.TaxLotId
+            })).ToArray();
         var effect = new ProjectedAccountingEffectDto(lineage.ProjectionRunId, lineage.ModelKey, lineage.ModelVersion,
             economicEvent.EffectiveDate, amount, amount, source.Acquisition.FunctionalCurrency,
             [
                 .. debitLines,
-                new ProjectedAccountingEffectLineDto("Assets:Investment", 0m, amount, source.Acquisition.FunctionalCurrency, Dimensions: dimensions)
+                new ProjectedAccountingEffectLineDto("Assets:Investment", 0m, amount, source.Acquisition.FunctionalCurrency,
+                    Dimensions: dimensions with { TaxLotId = reusesSourceScope ? source.LotId : dimensions.TaxLotId })
             ]);
         var mapped = CorporateActionMappedAccountingEffectAttestor.Create(projection, eventScope, effect,
             new AccountingRulePackReferenceDto("pack-asset", "v7", "rule-valuation", "v2"),

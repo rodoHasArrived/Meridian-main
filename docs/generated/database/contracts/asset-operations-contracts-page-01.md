@@ -364,6 +364,7 @@ classDiagram
     class Meridian_Contracts_AssetOperations_CorporateActionAccountingProjectionDto["CorporateActionAccountingProjectionDto"] {
         +CorporateActionAccountingProjectionScopeDto? AccountingScope
         +IReadOnlyList~CorporateActionProjectionBlockerDto~ Blockers
+        +bool CanonicalLotTransferJournal
         +Guid CaseId
         +long CaseVersion
         +EconomicEventReferenceDto? EconomicEvent
@@ -373,7 +374,6 @@ classDiagram
         +IReadOnlyList~CorporateActionProjectionEvidenceDependencyDto~ EvidenceManifest
         +CorporateActionLotMutationSetDto? LotMutations
         +Guid LotSnapshotId
-        +long LotSnapshotVersion
     }
     class Meridian_Contracts_AssetOperations_CorporateActionAccountingProjectionScopeDto["CorporateActionAccountingProjectionScopeDto"] {
         +string CompanyId

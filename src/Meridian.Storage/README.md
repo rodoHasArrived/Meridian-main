@@ -60,6 +60,8 @@ journal. Missing or mismatched inputs are refused before mutation. Posting locks
 parent and its hashed identifiers/aliases through commit; alias writes touch the parent in the same
 transaction so a posting with an older serializable snapshot refuses concurrent reference drift.
 
+A reviewed amortization reversal restores the latest original mutation's complete prior basis adjustment and exactly inverts every retained financial journal line in the same transaction. It preserves acquisition facts, increments the lot version, and appends correction evidence. Same-date rebooks require the reversal receipt and approved lineage; intervening mutations, forged snapshots, wrong source journals and changed counteraccounts fail closed. Forward migration `V_ledger_043` permits restoration of a retained null prior adjustment only against the latest exact original amortization snapshot and an approved correction journal in the same scope and effective date; general adjustment removal remains forbidden. Earlier migrations, migration 040 constraints and current calculation/evidence guards remain intact.
+
 Bounded corporate-action successor posting uses `V_ledger_042` and that same serializable atomic
 boundary. A cashless Reg S/144A exchange closes one predecessor into one new lot; advance refunding
 closes one face lot into exactly two new lots. The transaction locks reviewed Security Master and
@@ -74,12 +76,38 @@ batches to Reporting; unsupported actions, cash components, cross-account transf
 instructions and unrepresentable durable precision fail closed. Successor lines must retain the
 predecessor's complete ledger-account identity, including name and symbol when the financial-account
 ID is absent; a mapped asset account cannot silently transfer the lot.
+Atomic commands require the canonical `AssetAccounting.CorporateAction` type, approved state,
+retained approval identity, named actor and complete typed context. Corrected batch/source-journal
+metadata, reversal/rebook intents and closing-entry posting kinds refuse before any journal or lot write.
 Both public journal-only append paths reject successor instructions. The private atomic lot append
 path also refuses consolidation evidence, whose standalone transaction must hold its own authority lease.
 Migration 042 leaves earlier batches unchanged. Historical quantity reads open successors on the
 corporate-action effective date while preserving their inherited acquisition date. Journal-only
 append cannot bypass the atomic successor boundary. Disposal eligibility excludes successors
 before their retained corporate-action opening date.
+Before a new successor commit, Storage walks immutable birth receipts through every predecessor.
+It refuses any earlier wash-sale holding-period carry retained separately for that predecessor or
+its ancestry, regardless of the deferral's sale date, until inherited carry lineage is supported.
+The successor transaction locks deferral retention before its first snapshot read; deferral writers
+take the matching lock and refuse an earlier carry after the recipient has become a predecessor.
+Unchanged holding dates remain admissible, and an exact committed successor replay still returns
+its original receipt before revalidating carry authority. No deferral or replacement claim is copied.
+An identical historical deferral may also replay after successor posting; every retained field must
+match before that exception applies, so a reused disposal/recipient key cannot introduce changed carry evidence.
+The retained source-event evidence binds each stable source action, including historical projections
+and acquisition origins that omit its explicit source ID, or receipts without acquisition lineage.
+Ordinary legacy relief receipts can prove the path back to a pristine retained acquisition; valid
+AverageCost disposal batches include both disposal and survivor basis-redistribution rows.
+An intervening action or later relief cannot hide a repeated ancestor
+action; missing, contradictory, cyclic or foreign-book ancestry refuses the new posting. Exact retries
+still return the already committed receipt before new-posting ancestry checks.
+
+Current-basis disposal uses `V_ledger_041`, following amortization migration 040 in its original order.
+Migration 042 owns successor posting; migration 043 adds only the approved null-basis restoration guard.
+AverageCost reporting certifies each canonical acquisition against its retained pre-relief pool,
+including the ordered evidence identities by value. Separately deserialized lists and evidence
+records with equal facts are accepted; changed source, hash, review, retention, subject, or sequence
+contents block canonical reporting. `CanonicalOpenLotConsumerTests` covers this certification boundary.
 
 The durable replacement resolver excludes relieved lot IDs only within the disposing account's
 complete identity. LedgerBook scope retains same-ID acquisitions in sibling accounts. Prior-deferral
@@ -241,6 +269,22 @@ relief of an adjusted lot stores exact remaining transaction and functional basi
 reproduces certified posted basis without rounding it through acquisition unit cost. Migration
 `V_ledger_041` follows PR #3048's reserved amortization ordinal 040. PostgreSQL coverage lives in
 `AtomicTaxLotJournalStoreTests.CurrentBasis`; see the [lot convergence blueprint](../../docs/engineering/blueprints/security-lot-convergence-blueprint.md).
+
+Corporate-action posting uses the single retained successor instruction and migration 042 for
+cashless exchanges, whole-unit forward/reverse splits, stock mergers and two-successor refundings.
+The serializable transaction locks every source/target reference, position and lot; it checks
+accounting policy, financial-account and canonical dimension scope before any journal or lot write.
+Same-security/same-position splits bind distinct lot labels on debit/credit legs. New successors
+retain immutable acquisition origin, while old absent-lineage receipts replay their retained shape.
+Only retained projections without the later stable source-ID field receive historical origin
+compatibility. Explicit-source receipts require complete origin for ancestry and Reporting.
+The populated through-041 migration upgrade/reapply/restart and failure-recovery audit remains in
+`AtomicTaxLotSuccessorMigrationTests`.
+Ancestry coverage lives in `CorporateActionSuccessorAncestryTests` and
+`AtomicTaxLotJournalStoreTests.SuccessorAncestry`; atomic type/approval/correction, competing-command,
+collision and dimension refusals live in `AtomicTaxLotJournalStoreTests.SuccessorGuards`.
+`AtomicTaxLotJournalStoreTests.Amortization` covers migration 043 null-basis reversal/rebook and
+ungoverned adjustment-removal refusal. Current validation results are recorded on the canonical PR.
 
 ## Purpose
 

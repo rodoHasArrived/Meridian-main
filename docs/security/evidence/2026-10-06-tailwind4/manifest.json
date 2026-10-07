@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "recorded_on": "2026-10-06",
+  "baseline_commit": "9c96c3f72dd60111b62b8368d29e553ec58fd7a0",
+  "evidence_posture": "Local implementation validation; hosted required checks, release certification and Windows operator acceptance remain separate.",
+  "inputs_sha256": {
+    "src/Meridian.Ui/dashboard/package.json": "c1dedbb2c2d0ba65fc69263bdbfc59ae17fc29d5e22b34480126fb509c83ee30",
+    "src/Meridian.Ui/dashboard/package-lock.json": "f5a96eef42d8f15adf92dea0e629e1c8b22da67958391ca9f18b1134c98002ec",
+    "src/Meridian.Ui/dashboard/postcss.config.cjs": "82e9cc8a8243ae76c3790a37580a80ef725c718a6a1a00dcae7715c32552cd0c",
+    "src/Meridian.Ui/dashboard/tailwind.config.ts": "77a1674134f7af1f58485393777060813619a548a34edd3886a3a4bd3e868638",
+    "src/Meridian.Ui/dashboard/index.html": "144982ec2e67131797d2ee0a0953f4ea2d8e001e61c60551b96dd595a1176f38",
+    "src/Meridian.Ui/dashboard/src/styles/index.css": "b1e800ba9ac09f8427126ab3360a10d68d0226ae7cd67a7d24124dd039d7d9b4",
+    "src/Meridian.Ui/dashboard/src/tailwind-build.test.ts": "e49181f9b770ab683839f2956e95e504ca37a1ffb483114a028edc3c7b3e2f44",
+    "build/config/security/npm-audit-accepted-advisories.json": "8895a530e09ef1631eed36c0a09b45cc8569485701ab5070da072a064c5c3720",
+    "build/scripts/ci/validate-npm-audit.py": "f162b0b997a736b727af38419345a6bc063697df945649be2c7d5994bf53244f"
+  },
+  "commands": [
+    {
+      "command": "npm ci",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "result": "passed; canonical workstation assets regenerated"
+    },
+    {
+      "command": "npm run typecheck:strict",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed; zero errors and 105 existing warnings"
+    },
+    {
+      "command": "npm test",
+      "result": "3555 passed, zero failed or skipped, 327 files; stable runner with 8-file batches and 2 workers"
+    },
+    {
+      "command": "npm audit --json",
+      "result": "zero vulnerabilities across full dependency graph"
+    },
+    {
+      "command": "python3 build/scripts/ci/validate-npm-audit.py",
+      "result": "passed; no accepted or stale exceptions"
+    }
+  ],
+  "browser_validation": "browser-summary.json",
+  "tests": "test-summary.json",
+  "retained_evidence_sha256": {
+    "browser-summary.json": "daa2ecdb18349cd34a70cdf63b7a4bd441891ca9be6b4c1a1b5e0274cd58239a",
+    "npm-audit-gate.json": "17b973c23853ff9360eb8c1c8d24c66bf9d4bc7d3b2d23cdeb0d58ed87204362",
+    "npm-audit.json": "4104057675636a85b061951e8f00062d183444938c7d3b0c1dcacbe87ac9c61a",
+    "test-summary.json": "c1f59aa4074c8ca2944740ae5fdd548d136887add82457fcb31da071fe4446b5"
+  },
+  "limits": [
+    "Browser checks use repository fixture data on Linux Chromium, not connected operator sessions.",
+    "Existing accessibility findings are retained and are not certified by this change.",
+    "Audit findings describe the installed graph and registry response on the recorded date."
+  ]
+}

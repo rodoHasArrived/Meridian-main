@@ -218,6 +218,8 @@ public sealed partial class LedgerReportingAuthoritativeSourceTests
     private static LedgerTaxLotRecord DurableSuccessorSnapshot(OpenLotDto lot, Guid batchId, DateTimeOffset at,
         OpenLotSuccessorInstructionDto? instruction = null, Guid? journalId = null)
     {
+        if (instruction is not null)
+            lot = OpenLotSuccessors.WithLineage(instruction, lot);
         var scale = lot.Acquisition.QuantityBasis == LotQuantityBasis.Face ? LedgerTaxLotFaceValueTerms.LedgerLotParBasis : 1m;
         var quantity = lot.OriginalQuantity / scale;
         return new LedgerTaxLotRecord(lot.TaxLotRecordId, lot.LedgerBookId,

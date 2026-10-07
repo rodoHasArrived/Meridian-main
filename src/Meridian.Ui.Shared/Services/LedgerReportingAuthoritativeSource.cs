@@ -413,10 +413,14 @@ public sealed partial class LedgerReportingAuthoritativeSource : IReportingAutho
                 cancellationToken)
             .ConfigureAwait(false);
 
+        var corporateActionLotReports = await BuildCorporateActionLotReportsAsync(
+                book.LedgerBookId, orderedHistory, book.BaseCurrency, selectedDimensions, cancellationToken)
+            .ConfigureAwait(false);
         return LedgerReportPackBuilder.Build(
             ledger,
             reportRequest,
-            taxLotReliefProjections: taxLotReliefProjections);
+            taxLotReliefProjections: taxLotReliefProjections,
+            corporateActionLotReports: corporateActionLotReports);
     }
 
     /// <summary>

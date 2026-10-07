@@ -316,7 +316,7 @@ export function DataQueryWorkstream({
             className="w-full rounded-md border border-border/70 bg-background p-2 font-mono text-sm"
           />
           <details className="rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
-            <summary className="cursor-pointer text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+            <summary className="cursor-pointer text-sm font-semibold text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
               Query library
             </summary>
             <p className="mt-2 text-xs leading-5 text-muted-foreground">

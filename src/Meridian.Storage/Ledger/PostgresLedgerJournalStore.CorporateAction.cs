@@ -29,11 +29,16 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
         catch (ArgumentException exception) { throw new LedgerValidationException(exception.Message); }
         if (command.AcquisitionLot is not null || command.DisposalSelections is { Count: > 0 }
             || command.Amortization is not null || command.ReliefMethod is not null || command.PolicyRevision is not null
-            || command.CorrectsMutationBatchId is not null)
+            || command.CorrectsMutationBatchId is not null || command.Journal.SourceJournalEntryId is not null
+            || command.Journal.PostingCommand?.SourceJournalEntryId is not null
+            || command.Journal.PostingCommand?.Intent is not (AccountingPostingIntentDto.Originating or AccountingPostingIntentDto.Adjustment)
+            || command.Journal.PostingKind is not (LedgerPostingKindDto.Originating or LedgerPostingKindDto.Adjustment))
             throw new LedgerValidationException("Successor posting cannot combine acquisition, relief, amortization or correction instructions.");
         if (command.Journal.PostingCommand is not { ApprovalState: AccountingPostingApprovalStateDto.Approved } posting
-            || string.IsNullOrWhiteSpace(posting.ApprovalId) || string.IsNullOrWhiteSpace(posting.Actor))
-            throw new LedgerValidationException("Successor posting requires a retained reviewer approval and named posting actor.");
+            || string.IsNullOrWhiteSpace(posting.ApprovalId) || string.IsNullOrWhiteSpace(posting.Actor)
+            || !AssetAccountingEventTypeNames.TryParse(posting.SourceEventType, out var eventKind)
+            || eventKind != AssetAccountingEventKindDto.CorporateAction)
+            throw new LedgerValidationException("Successor posting requires a canonical approved corporate-action command, retained reviewer approval and named posting actor.");
         if (!JsonElement.DeepEquals(JsonSerializer.SerializeToElement(command.Journal.PostingCommand?.LotCorporateAction),
                 JsonSerializer.SerializeToElement(instruction)))
             throw new LedgerValidationException("The governed journal must retain the exact reviewed successor instruction.");
@@ -70,15 +75,18 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
         var lines = command.Journal.Entry.Lines;
         if (lines.Count != instruction.Successors.Count + 1)
             throw new LedgerValidationException("Cashless successor posting requires exactly one predecessor credit and one debit per successor.");
-        ValidateCorporateActionLine(FindCorporateActionLine(lines, source), source, debit: false);
+        ValidateCorporateActionLine(FindCorporateActionLine(lines, source, debit: false), source, debit: false);
         foreach (var target in instruction.Successors)
-            ValidateCorporateActionLine(FindCorporateActionLine(lines, target.Lot), target.Lot, debit: true);
+            ValidateCorporateActionLine(FindCorporateActionLine(lines, target.Lot, debit: true), target.Lot, debit: true);
     }
 
-    private static LedgerEntry FindCorporateActionLine(IReadOnlyList<LedgerEntry> lines, OpenLotDto lot)
+    private static LedgerEntry FindCorporateActionLine(IReadOnlyList<LedgerEntry> lines, OpenLotDto lot, bool debit)
     {
-        var matches = lines.Where(line => line.Dimensions?.InstrumentId == lot.SecurityId
+        var scopeLines = lines.Where(line => line.Dimensions?.InstrumentId == lot.SecurityId
             && line.Dimensions?.PositionId == lot.BookPositionId).ToArray();
+        var matches = scopeLines.Where(line => (debit ? line.Debit > 0m && line.Credit == 0m : line.Credit > 0m && line.Debit == 0m)
+            && (scopeLines.Length > 1 ? line.Dimensions?.TaxLotId == lot.LotId
+                : line.Dimensions?.TaxLotId is null || line.Dimensions.TaxLotId == lot.LotId)).ToArray();
         return matches.Length == 1 ? matches[0]
             : throw new LedgerValidationException("Successor journals require one exact security and book-position line per predecessor and successor.");
     }
@@ -143,8 +151,12 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
         var positionGuards = instruction.Successors.Select(target =>
                 (Lot: target.Lot, Version: target.ExpectedBookPositionVersion))
             .Append((Lot: source, Version: instruction.Projection.LotMutations!.ExpectedPositionVersion)).ToArray();
-        foreach (var guard in positionGuards.OrderBy(guard => guard.Lot.BookPositionId))
+        var retainedPositions = new Dictionary<Guid, BookPositionDto>();
+        foreach (var group in positionGuards.GroupBy(guard => guard.Lot.BookPositionId).OrderBy(group => group.Key))
         {
+            if (group.Select(guard => (guard.Lot.SecurityId, guard.Version)).Distinct().Count() != 1)
+                throw new LedgerValidationException("Successor position authority contains inconsistent expected versions or security identities.");
+            var guard = group.First();
             var position = await positions.LockForLotPostingAsync(connection, transaction, guard.Lot.BookPositionId, ct).ConfigureAwait(false);
             if (position is null || position.Version != guard.Version || position.PositionId != guard.Lot.BookPositionId
                 || position.SecurityId != guard.Lot.SecurityId || position.Status != "Active"
@@ -155,8 +167,37 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
                 || position.BookContext.FundProfileId != book.FundProfileId
                 || position.BookContext.FundStructureNodeId != book.FundStructureNodeId
                 || position.BookContext.FundStructureNodeKind != book.FundStructureNodeKind
+                || !RequiredAuthoritativeTextEquals(position.BookContext.AccountingPolicyId, book.AccountingPolicyId)
+                || !RequiredAuthoritativeTextEquals(position.BookContext.AccountingPolicyVersion, book.AccountingPolicyVersion)
                 || position.EffectiveFrom > effectiveDate || (position.EffectiveTo is { } end && end < effectiveDate))
                 throw new LedgerValidationException("Successor book-position version or accounting scope is missing or stale.");
+            retainedPositions.Add(position.PositionId, position);
+        }
+        var sourcePosition = retainedPositions[source.BookPositionId];
+        if (retainedPositions.Values.Any(position => !string.Equals(position.PrimaryAccountId, sourcePosition.PrimaryAccountId,
+                StringComparison.OrdinalIgnoreCase)))
+            throw new LedgerValidationException("Successor positions must retain the predecessor financial-account scope.");
+        var sourceDimensions = CorporateActionPositionDimensions(sourcePosition);
+        var sourceDimensionScope = JsonSerializer.SerializeToElement(sourceDimensions with
+        { InstrumentId = null, PositionId = null, TaxLotId = null });
+        foreach (var position in retainedPositions.Values)
+            if (!JsonElement.DeepEquals(sourceDimensionScope, JsonSerializer.SerializeToElement(CorporateActionPositionDimensions(position) with
+            { InstrumentId = null, PositionId = null, TaxLotId = null })))
+                throw new LedgerValidationException("Successor positions must retain the predecessor canonical dimensions; cross-scope transfers require separate review.");
+        foreach (var line in command.Journal.Entry.Lines)
+        {
+            if (line.Dimensions is not { } dimensions || dimensions.PositionId is not { } positionId
+                || !retainedPositions.TryGetValue(positionId, out var position))
+                throw new LedgerValidationException("Successor journal leg lacks a locked authoritative book-position scope.");
+            var expected = CorporateActionPositionDimensions(position);
+            // Reviewed lot labels may change at a split/transfer, independently of position dimensions.
+            // ValidateCorporateActionJournal already binds each label to its exact source/target lot.
+            if (dimensions.InstrumentId != expected.InstrumentId
+                || (!string.IsNullOrWhiteSpace(dimensions.FundId) && dimensions.FundId != expected.FundId)
+                || (!string.IsNullOrWhiteSpace(dimensions.BookId) && !string.Equals(dimensions.BookId, expected.BookId, StringComparison.OrdinalIgnoreCase))
+                || !JsonElement.DeepEquals(JsonSerializer.SerializeToElement(expected with { TaxLotId = dimensions.TaxLotId }),
+                    JsonSerializer.SerializeToElement(dimensions with { FundId = expected.FundId, BookId = expected.BookId })))
+                throw new LedgerValidationException("Successor journal legs must retain the exact locked canonical position dimensions.");
         }
         await using (var targetGuard = connection.CreateCommand())
         {
@@ -171,12 +212,24 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
         if (existing.Count != 1 || existing[0].TaxLotRecordId != source.TaxLotRecordId)
             throw new LedgerValidationException("Successor targets must be new lots and the exact predecessor must still exist.");
         var before = existing[0];
-        if (!JsonElement.DeepEquals(JsonSerializer.SerializeToElement(before.ToOpenLot()), JsonSerializer.SerializeToElement(source))
-            || before.Account != FindCorporateActionLine(command.Journal.Entry.Lines, source).Account)
+        if ((sourcePosition.PrimaryAccountId is not null
+                && !string.Equals(sourcePosition.PrimaryAccountId, before.Account.FinancialAccountId, StringComparison.OrdinalIgnoreCase))
+            || !JsonElement.DeepEquals(JsonSerializer.SerializeToElement(before.ToOpenLot()), JsonSerializer.SerializeToElement(source))
+            || before.Account != FindCorporateActionLine(command.Journal.Entry.Lines, source, debit: false).Account)
             throw new LedgerValidationException("Successor predecessor version, identity, acquisition facts or current basis changed; rebuild and review.");
-        if (instruction.Successors.Any(target => FindCorporateActionLine(command.Journal.Entry.Lines, target.Lot).Account
+        if (instruction.Successors.Any(target => FindCorporateActionLine(command.Journal.Entry.Lines, target.Lot, debit: true).Account
             != before.Account))
             throw new LedgerValidationException("Successor posting cannot transfer lots between ledger accounts.");
+        await CorporateActionSuccessorAncestry.ValidateAsync(before, instruction, async birthBatchId =>
+        {
+            var batch = await LoadAtomicTaxLotBatchAsync(connection, transaction, birthBatchId, ct).ConfigureAwait(false);
+            if (batch is null)
+                return null;
+            if (batch.LedgerBookId != command.LedgerBookId)
+                throw new LedgerValidationException("Successor ancestry must remain within the locked ledger book.");
+            return await LoadAtomicTaxLotResultAsync(connection, transaction, birthBatchId, false, ct).ConfigureAwait(false);
+        }, ct, ancestor => RejectUnsupportedSuccessorCarryAsync(connection, transaction,
+            command.LedgerBookId, ancestor.TaxLotRecordId, source.Acquisition.HoldingPeriodStartDate, ct)).ConfigureAwait(false);
         var history = await ReadDatedLotQuantitiesAsync(connection, transaction, command.LedgerBookId,
             [before.TaxLotRecordId], ct).ConfigureAwait(false);
         if (history.Any(mutation => mutation.EffectiveDate > effectiveDate)
@@ -188,9 +241,23 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
         return before;
     }
 
+    private static LedgerDimensionSetDto CorporateActionPositionDimensions(BookPositionDto position)
+    {
+        var dimensions = position.BookContext.Dimensions ?? new LedgerDimensionSetDto();
+        var fundId = position.BookContext.FundProfileId;
+        var bookId = position.BookContext.LedgerBookId.ToString("D");
+        if ((!string.IsNullOrWhiteSpace(dimensions.FundId) && dimensions.FundId != fundId)
+            || (!string.IsNullOrWhiteSpace(dimensions.BookId) && !string.Equals(dimensions.BookId, bookId, StringComparison.OrdinalIgnoreCase))
+            || (dimensions.InstrumentId.HasValue && dimensions.InstrumentId != position.SecurityId)
+            || (dimensions.PositionId.HasValue && dimensions.PositionId != position.PositionId))
+            throw new LedgerValidationException("Successor position dimensions contradict its authoritative fund, book, security or position identity.");
+        return dimensions with { FundId = fundId, BookId = bookId, InstrumentId = position.SecurityId, PositionId = position.PositionId };
+    }
+
     private static LedgerTaxLotRecord CreateCorporateActionSuccessor(
         AtomicTaxLotJournalCommand command, OpenLotDto target, DateTimeOffset recordedAt)
     {
+        target = OpenLotSuccessors.WithLineage(command.CorporateAction!, target);
         var face = target.Acquisition.QuantityBasis == LotQuantityBasis.Face;
         var quantity = target.OriginalQuantity / (face ? LedgerTaxLotFaceValueTerms.LedgerLotParBasis : 1m);
         var unitCost = target.Acquisition.FunctionalCostBasis / quantity;
@@ -203,7 +270,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
             OpenLotBasisAdjustmentReasons.CorporateActionSuccessor, quantity,
             target.OpenTransactionCostBasis, target.OpenFunctionalCostBasis, CorporateAction: command.CorporateAction);
         var result = new LedgerTaxLotRecord(target.TaxLotRecordId, command.LedgerBookId,
-            FindCorporateActionLine(command.Journal.Entry.Lines, target).Account, target.LotId, target.AcquiredDate,
+            FindCorporateActionLine(command.Journal.Entry.Lines, target, debit: true).Account, target.LotId, target.AcquiredDate,
             quantity, quantity, unitCost, target.Acquisition.FunctionalCurrency, recordedAt, recordedAt, command.Journal.Entry.JournalEntryId,
             target.Acquisition.Evidence.First(evidence => evidence.SubjectType == "OpenLotAcquisition"
                 && evidence.SubjectId == target.TaxLotRecordId.ToString("D")).EvidenceId,

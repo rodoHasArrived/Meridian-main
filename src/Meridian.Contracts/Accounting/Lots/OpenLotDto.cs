@@ -24,7 +24,11 @@ public sealed record OpenLotAcquisitionDto(
     decimal FunctionalCostBasis,
     DateOnly HoldingPeriodStartDate,
     FaceValueAcquisitionTermsDto? FaceValueTerms,
-    IReadOnlyList<RetainedEvidenceIdentityDto> Evidence);
+    IReadOnlyList<RetainedEvidenceIdentityDto> Evidence)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public OpenLotCorporateActionLineageDto? CorporateActionLineage { get; init; }
+}
 
 /// <summary>
 /// A governed restatement of a lot's open basis after acquisition, retained on the lot of record
