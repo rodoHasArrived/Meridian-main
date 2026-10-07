@@ -39,6 +39,10 @@ The package-local `npm --prefix src/Meridian.Ui/dashboard run dev` remains a sta
 command with its legacy automatic fallback when no mode is configured. Use the root launcher
 commands above when you need an explicit fixture-only or backend-connected session.
 
+For named API states, use the [shared browser scenario guide](../development/browser-scenarios.md).
+The accounting preview URL selector, Vitest helper, and Playwright capture consume the same typed
+scenario modules, including explicit empty, delayed, forbidden, and failed responses.
+
 ## Options and readiness
 
 Pass options after npm's `--`, or invoke the script with an explicit mode:

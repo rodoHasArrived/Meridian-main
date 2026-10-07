@@ -21,6 +21,8 @@ WEB_SCREENSHOT_CAPTURE_SCRIPT = REPO_ROOT / "scripts" / "dev" / "capture-web-scr
 DESKTOP_WORKFLOWS = REPO_ROOT / "scripts" / "dev" / "desktop-workflows.json"
 WORKSTATION_ROUTE_CATALOG = REPO_ROOT / "src" / "Meridian.Ui" / "dashboard" / "src" / "lib" / "workspace.ts"
 WORKSTATION_APP_SHELL = REPO_ROOT / "src" / "Meridian.Ui" / "dashboard" / "src" / "app.tsx"
+ACCOUNTING_SCENARIO_PAYLOAD = REPO_ROOT / "src" / "Meridian.Ui" / "dashboard" / "src" / "scenarios" / "accounting-payload.ts"
+WEB_SCREENSHOT_SCENARIOS = REPO_ROOT / "scripts" / "dev" / "web-screenshot-scenarios.mjs"
 
 
 class RefreshScreenshotsWorkflowTests(unittest.TestCase):
@@ -37,6 +39,8 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         cls.desktop_workflows = json.loads(DESKTOP_WORKFLOWS.read_text(encoding="utf-8"))
         cls.workstation_route_catalog = WORKSTATION_ROUTE_CATALOG.read_text(encoding="utf-8")
         cls.workstation_app_shell = WORKSTATION_APP_SHELL.read_text(encoding="utf-8")
+        cls.accounting_scenario_payload = ACCOUNTING_SCENARIO_PAYLOAD.read_text(encoding="utf-8")
+        cls.web_screenshot_scenarios = WEB_SCREENSHOT_SCENARIOS.read_text(encoding="utf-8")
 
     def test_web_screenshot_job_installs_optional_native_packages(self) -> None:
         self.assertIn("run: npm ci --prefix src/Meridian.Ui/dashboard --include=optional", self.web_workflow)
@@ -320,10 +324,9 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn(close_calendar_path, captures["W03I3"].get("requiredApiRoutes", []))
         self.assertEqual("acct-cash", fixture_routes[trial_balance_path][0]["financialAccountId"])
         self.assertEqual("workflow-close-1", fixture_routes[close_calendar_path]["items"][0]["workflowId"])
-        self.assertEqual(
-            "Pending review",
-            fixture_routes["/api/workstation/accounting"]["closePlans"][0]["approvals"][0]["status"],
-        )
+        self.assertNotIn("/api/workstation/accounting", fixture_routes)
+        self.assertIn("accountingPayload: AccountingWorkspaceResponse", self.accounting_scenario_payload)
+        self.assertIn('"accounting.normal"', self.web_screenshot_scenarios)
         self.assertIn("Open source journal entry", captures["W03I1"].get("waitForTexts", []))
         self.assertIn("Open Operations Continuity", captures["W03I3"].get("waitForTexts", []))
         self.assertEqual(
@@ -489,6 +492,10 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         captures = self.web_screenshot_routes.get("captures", [])
         fixture_routes = self.web_screenshot_fixtures.get("routes", {})
         fixture_route_names = set(fixture_routes.keys())
+        # The typed scenario owns accounting; its payload is verified through
+        # the real Vite loader in web-screenshot-scenarios.test.mjs.
+        self.assertNotIn("/api/workstation/accounting", fixture_route_names)
+        fixture_route_names.add("/api/workstation/accounting")
 
         self.assertGreater(len(captures), 0)
         for capture in captures:
@@ -505,7 +512,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
                 self.assertIn(
                     required_route,
                     fixture_route_names,
-                    f"{capture_name} requires fixture route '{required_route}' that is missing from web-screenshot-fixtures.json",
+                    f"{capture_name} requires fixture route '{required_route}' that is missing from screenshot fixtures and typed scenarios",
                 )
 
     def test_web_screenshot_routes_do_not_reuse_an_unqualified_route_state(self) -> None:
@@ -531,9 +538,9 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         )
 
     def test_web_screenshot_api_mocks_do_not_intercept_vite_source_modules(self) -> None:
-        self.assertIn('await page.route("**/api/**"', self.web_screenshot_capture_script)
-        self.assertIn('if (!pathname.startsWith("/api/"))', self.web_screenshot_capture_script)
-        self.assertIn("return route.continue();", self.web_screenshot_capture_script)
+        self.assertIn('await page.route("**/api/**"', self.web_screenshot_scenarios)
+        self.assertIn('if (!url.pathname.startsWith("/api/"))', self.web_screenshot_scenarios)
+        self.assertIn("return route.continue();", self.web_screenshot_scenarios)
 
     def test_web_screenshot_capture_script_enforces_route_coverage(self) -> None:
         self.assertIn(
@@ -612,7 +619,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("route(s) failed to render", self.web_screenshot_capture_script)
         self.assertIn("readiness-timeout-ms", self.web_screenshot_capture_script)
 
-        capture_loop = self.web_screenshot_capture_script.split("for (const capture of captures)", 1)[1]
+        capture_loop = self.web_screenshot_capture_script.split("for (const capture of captures) {\n      // Each capture", 1)[1]
         capture_loop = capture_loop.split("const proxyErrors = logs.filter", 1)[0]
         self.assertNotIn("throw error;", capture_loop)
 
@@ -708,7 +715,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         # The app shell persists workflow-continuity, activity, and focus state
         # across navigations, so captures sharing one browser context would
         # depend on visit order instead of showing each route's first-load state.
-        self.assertIn("const context = await browser.newContext();", self.web_screenshot_capture_script)
+        self.assertIn("context = await browser.newContext();", self.web_screenshot_capture_script)
         self.assertIn("await context.close();", self.web_screenshot_capture_script)
         self.assertNotIn("const page = await browser.newPage();", self.web_screenshot_capture_script)
 
