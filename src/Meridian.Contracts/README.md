@@ -113,6 +113,10 @@ current carrying basis separately in transaction and functional currency, assign
 residual exactly, and preserves acquisition FX, holding dates, face terms and source evidence.
 Only the refunded successor receives `ScheduleD`; unsupported action or allocation shapes fail
 validation. Optional instruction fields are omitted when absent to preserve earlier payloads.
+Reg S/144A exchange requires the `Successor` role. Every successor must receive positive functional
+carrying basis before journal drafting, including the final residual. Currency-specific allocations
+share `Ledger/CurrencyMinorUnits` with the corporate-action projector, including four decimals for
+CLF and UYW; original acquisition and current carrying bases retain independent currency rounding.
 
 `AssetLotMutationInstructionDto.DisposalSalePrice` optionally retains the original disposal quote
 through governed drafting and posting. It is omitted from JSON when absent so existing retained

@@ -91,6 +91,107 @@ public sealed class OpenLotSuccessorTests
         instruction.Successors.Sum(item => item.Lot.Acquisition.FunctionalCostBasis).Should().Be(110.01m);
     }
 
+    [Theory]
+    [InlineData("CLF", "UYW")]
+    [InlineData("UYW", "CLF")]
+    public void AdvanceRefunding_PreservesFourDecimalAcquisitionAndCurrentBasesThroughProjection(
+        string transactionCurrency, string functionalCurrency)
+    {
+        var predecessor = OpenLotSuccessorTestData.Predecessor();
+        var source = predecessor with
+        {
+            OpenQuantity = 100m,
+            OpenTransactionCostBasis = 100.0301m,
+            OpenFunctionalCostBasis = 110.0301m,
+            Acquisition = predecessor.Acquisition with
+            {
+                AcquisitionCurrency = transactionCurrency,
+                FunctionalCurrency = functionalCurrency,
+                TransactionCostBasis = 100.0101m,
+                FunctionalCostBasis = 110.0111m
+            }
+        };
+        var first = OpenLotSuccessorTestData.Successor(source, 0.5m);
+        var roundedSecond = OpenLotSuccessorTestData.Successor(source, 0.5m);
+        var second = roundedSecond with
+        {
+            Lot = roundedSecond.Lot with
+            {
+                OpenTransactionCostBasis = 50.0150m,
+                OpenFunctionalCostBasis = 55.0150m,
+                Acquisition = roundedSecond.Lot.Acquisition with
+                {
+                    TransactionCostBasis = 50.0050m,
+                    FunctionalCostBasis = 55.0055m
+                }
+            }
+        };
+        var instruction = OpenLotSuccessorTestData.Build(source, [first, second], advanceRefunding: true);
+
+        var validate = () => OpenLotSuccessors.Validate(instruction);
+
+        validate.Should().NotThrow();
+        instruction.Projection.EventAmount.Should().Be(110.0301m);
+        instruction.Projection.LotMutations!.Mutations.Select(item => item.CarryingAmount)
+            .Should().Equal(55.0151m, 55.0150m);
+        first.Lot.OpenTransactionCostBasis.Should().Be(50.0151m);
+        first.Lot.Acquisition.TransactionCostBasis.Should().Be(50.0051m);
+        first.Lot.Acquisition.FunctionalCostBasis.Should().Be(55.0056m);
+        instruction.Successors.Sum(item => item.Lot.OpenTransactionCostBasis).Should().Be(100.0301m);
+        instruction.Successors.Sum(item => item.Lot.OpenFunctionalCostBasis).Should().Be(110.0301m);
+        instruction.Successors.Sum(item => item.Lot.Acquisition.TransactionCostBasis).Should().Be(100.0101m);
+        instruction.Successors.Sum(item => item.Lot.Acquisition.FunctionalCostBasis).Should().Be(110.0111m);
+        instruction.Successors.Should().OnlyContain(item => item.Lot.Acquisition.AcquisitionFxRateToFunctional == 1.1m);
+    }
+
+    [Theory]
+    [InlineData(CorporateActionSuccessorRoleDto.Refunded)]
+    [InlineData(CorporateActionSuccessorRoleDto.Unrefunded)]
+    [InlineData(CorporateActionSuccessorRoleDto.Escrow)]
+    [InlineData(CorporateActionSuccessorRoleDto.Child)]
+    public void Exchange_RejectsRolesOutsideTheApprovedSuccessorWorkflow(CorporateActionSuccessorRoleDto role)
+    {
+        var source = OpenLotSuccessorTestData.Predecessor();
+        var instruction = OpenLotSuccessorTestData.Build(source,
+            [OpenLotSuccessorTestData.Successor(source, 1m)], exchangeRole: role);
+
+        var validate = () => OpenLotSuccessors.Validate(instruction);
+
+        instruction.Projection.CanPreparePostingCandidate.Should().BeTrue();
+        instruction.Projection.LotMutations!.Mutations.Single().ReportingTags.Should().BeEmpty();
+        validate.Should().Throw<ArgumentException>().WithMessage("*role must match*");
+    }
+
+    [Theory]
+    [InlineData(10)]
+    [InlineData(50)]
+    [InlineData(90)]
+    public void AdvanceRefunding_RejectsZeroRoundedOrResidualFunctionalBasisBeforeDrafting(int firstAllocationPercent)
+    {
+        var source = OpenLotSuccessorTestData.Predecessor() with { OpenFunctionalCostBasis = 0.01m };
+        var fraction = firstAllocationPercent / 100m;
+        var first = OpenLotSuccessorTestData.Successor(source, fraction);
+        var roundedSecond = OpenLotSuccessorTestData.Successor(source, 1m - fraction);
+        var second = roundedSecond with
+        {
+            Lot = roundedSecond.Lot with
+            {
+                OpenFunctionalCostBasis = source.OpenFunctionalCostBasis - first.Lot.OpenFunctionalCostBasis
+            }
+        };
+        var instruction = OpenLotSuccessorTestData.Build(source, [first, second], advanceRefunding: true);
+
+        var validate = () => OpenLotSuccessors.Validate(instruction);
+        var issues = AssetLotMutationInstructionValidator.Validate(AssetAccountingEventKindDto.CorporateAction,
+            new AssetLotMutationInstructionDto(AssetLotMutationIntentDto.CorporateAction, CorporateAction: instruction),
+            instruction.Projection.EventAmount, OpenLotSuccessorTestData.EffectiveDate, []);
+
+        instruction.Projection.CanPreparePostingCandidate.Should().BeTrue();
+        instruction.Successors.Should().ContainSingle(item => item.Lot.OpenFunctionalCostBasis == 0m);
+        validate.Should().Throw<ArgumentException>().WithMessage("*positive functional carrying-basis allocation*");
+        issues.Should().Equal("Every successor requires a positive functional carrying-basis allocation before journal drafting.");
+    }
+
     [Fact]
     public void Validate_RejectsPredecessorSnapshotOrVersionDifferentFromTheReviewedPlan()
     {
@@ -300,7 +401,8 @@ internal static class OpenLotSuccessorTestData
         DateOnly? effectiveDate = null,
         bool identifierChanged = false,
         bool? canonicalLotTransferJournal = null,
-        long sourceEventVersion = 1)
+        long sourceEventVersion = 1,
+        CorporateActionSuccessorRoleDto exchangeRole = CorporateActionSuccessorRoleDto.Successor)
     {
         var sourceId = actionId ?? Guid.NewGuid();
         var actionDate = effectiveDate ?? EffectiveDate;
@@ -312,7 +414,7 @@ internal static class OpenLotSuccessorTestData
             item.Lot.SecurityId,
             advanceRefunding
                 ? index == 0 ? CorporateActionSuccessorRoleDto.Refunded : CorporateActionSuccessorRoleDto.Unrefunded
-                : CorporateActionSuccessorRoleDto.Successor,
+                : exchangeRole,
             item.Lot.OpenQuantity,
             advanceRefunding ? allocationPercents?[index] ?? item.Lot.OpenQuantity / totalTargetQuantity : null)).ToArray();
         var request = new CorporateActionAccountingProjectionRequest(
@@ -382,12 +484,12 @@ internal static class OpenLotSuccessorTestData
         var acquisition = predecessor.Acquisition;
         var lot = new OpenLotDto(id, Guid.NewGuid(), Guid.NewGuid(), predecessor.LedgerBookId, $"successor-{id:D}",
             predecessor.AcquiredDate, predecessor.OpenQuantity * fraction, predecessor.OpenQuantity * fraction,
-            decimal.Round(predecessor.OpenTransactionCostBasis * fraction, 2, MidpointRounding.AwayFromZero),
-            decimal.Round(predecessor.OpenFunctionalCostBasis * fraction, 2, MidpointRounding.AwayFromZero), 1,
+            OpenLotSuccessors.Allocate(predecessor.OpenTransactionCostBasis, fraction, acquisition.AcquisitionCurrency),
+            OpenLotSuccessors.Allocate(predecessor.OpenFunctionalCostBasis, fraction, acquisition.FunctionalCurrency), 1,
             acquisition with
             {
-                TransactionCostBasis = decimal.Round(acquisition.TransactionCostBasis * remainingFraction * fraction, 2, MidpointRounding.AwayFromZero),
-                FunctionalCostBasis = decimal.Round(acquisition.FunctionalCostBasis * remainingFraction * fraction, 2, MidpointRounding.AwayFromZero),
+                TransactionCostBasis = OpenLotSuccessors.Allocate(acquisition.TransactionCostBasis * remainingFraction, fraction, acquisition.AcquisitionCurrency),
+                FunctionalCostBasis = OpenLotSuccessors.Allocate(acquisition.FunctionalCostBasis * remainingFraction, fraction, acquisition.FunctionalCurrency),
                 Evidence = [.. acquisition.Evidence, AcquisitionEvidence(id, predecessor.AcquiredDate)]
             });
         return new OpenLotSuccessorTargetDto(lot, 1, 1, Sha256Digest.ComputeUtf8($"successor-security-{id:D}"));

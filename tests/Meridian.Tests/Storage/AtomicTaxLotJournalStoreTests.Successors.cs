@@ -147,6 +147,38 @@ public sealed partial class AtomicTaxLotJournalStoreTests
 
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
+    public async Task CorporateActionSuccessors_DifferentSuccessorAccount_RefusesWithoutAnyWrite()
+    {
+        await using var fixture = await AmortFixture.CreateAsync(premium: true);
+        var command = await SuccessorCommandAsync(fixture, advanceRefunding: true);
+        foreach (var account in new[]
+        {
+            AmortAccount with { Name = "Different investment lots" },
+            AmortAccount with { Symbol = "OTHER" },
+            AmortAccount with { FinancialAccountId = "different-financial-account" }
+        })
+        {
+            var lines = command.Journal.Entry.Lines.ToArray();
+            var successor = lines[0];
+            lines[0] = new(successor.EntryId, successor.JournalEntryId, successor.Timestamp, account,
+                successor.Debit, successor.Credit, successor.Description, successor.Dimensions, successor.Currency);
+            var changed = command with
+            {
+                Journal = command.Journal with
+                {
+                    Entry = new JournalEntry(command.Journal.Entry.JournalEntryId, command.Journal.Entry.Timestamp,
+                        command.Journal.Entry.Description, lines, command.Journal.Entry.Metadata)
+                }
+            };
+            var attempt = () => fixture.Restart().AppendAssetPostingAsync(changed.WithComputedFingerprint());
+            await attempt.Should().ThrowAsync<LedgerValidationException>().WithMessage("*between ledger accounts*");
+            await AssertSuccessorUnchangedAsync(fixture, command);
+        }
+        (await fixture.Restart().AppendAssetPostingAsync(command)).IsExactReplay.Should().BeFalse();
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task CorporateActionSuccessors_StaleLotAfterAnotherPosting_RefusesWithoutAnotherJournal()
     {
         await using var fixture = await AmortFixture.CreateAsync(premium: true);

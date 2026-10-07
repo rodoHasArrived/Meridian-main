@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 3 of 4
 
-Objects 161-240 of 316. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 317. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -160,6 +160,8 @@ classDiagram
         +string? Actor
         +string IdempotencyKey
         +Guid PreviewId
+    }
+    class Meridian_Contracts_Ledger_CurrencyMinorUnits["CurrencyMinorUnits"] {
     }
     class Meridian_Contracts_Ledger_DimensionMappingProfileDto["DimensionMappingProfileDto"] {
         +AccountingCertificationStateDto CertificationState
@@ -638,12 +640,6 @@ classDiagram
         +string? RuleId
     }
     class Meridian_Contracts_Ledger_LedgerPostingKindDto["LedgerPostingKindDto"] {
-    }
-    class Meridian_Contracts_Ledger_LedgerReportSignatureDto["LedgerReportSignatureDto"] {
-        +string Algorithm
-        +string PayloadChecksumSha256
-        +DateTimeOffset SignedAtUtc
-        +string SignedBy
     }
     Meridian_Contracts_Ledger_ClosePreparationPreviewDto --> Meridian_Contracts_Ledger_ClosePreparationCalendarDto
     Meridian_Contracts_Ledger_ClosePreparationPreviewDto --> Meridian_Contracts_Ledger_ClosePreparationIssueDto

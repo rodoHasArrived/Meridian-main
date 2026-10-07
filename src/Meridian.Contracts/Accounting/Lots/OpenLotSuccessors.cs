@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Ledger;
 
 namespace Meridian.Contracts.Accounting.Lots;
 
@@ -172,6 +173,8 @@ public static class OpenLotSuccessors
                 : Allocate(source.OpenTransactionCostBasis, weight, sourceAcquisition.AcquisitionCurrency);
             var functional = last ? source.OpenFunctionalCostBasis - assignedFunctional
                 : Allocate(source.OpenFunctionalCostBasis, weight, sourceAcquisition.FunctionalCurrency);
+            Require(functional > 0m,
+                "Every successor requires a positive functional carrying-basis allocation before journal drafting.");
             var originalTx = last ? originalTransaction - assignedOriginalTransaction
                 : Allocate(originalTransaction, weight, sourceAcquisition.AcquisitionCurrency);
             var originalFx = last ? originalFunctional - assignedOriginalFunctional
@@ -207,8 +210,10 @@ public static class OpenLotSuccessors
                 "Successors must preserve acquisition FX, dates, face terms and evidence while allocating both bases exactly.");
             var operation = projection.Recipe.SingleOrDefault(operation => operation.Kind == CorporateActionEconomicOperationKindDto.ExchangeIn
                 && operation.SecurityId == lot.SecurityId);
-            Require(operation is not null && operation.Quantity == lot.OpenQuantity,
-                "Successor quantity and identity must match the retained exchange recipe.");
+            Require(operation is not null && operation.Quantity == lot.OpenQuantity
+                && (refunding || operation.SuccessorRole == CorporateActionSuccessorRoleDto.Successor
+                    || (merger && operation.SuccessorRole == CorporateActionSuccessorRoleDto.Acquirer)),
+                "Successor quantity, identity and role must match the retained exchange recipe.");
             if (split || merger)
                 Require(mutation.LinkedCaseId is null && (split
                     ? operation!.SuccessorRole == CorporateActionSuccessorRoleDto.Successor
@@ -248,13 +253,7 @@ public static class OpenLotSuccessors
 
     /// <summary>Independent currency allocation; the final successor receives the exact residual.</summary>
     public static decimal Allocate(decimal basis, decimal fraction, string currency)
-        => decimal.Round(basis * fraction, currency switch
-        {
-            "BHD" or "IQD" or "JOD" or "KWD" or "LYD" or "OMR" or "TND" => 3,
-            "BIF" or "CLP" or "DJF" or "GNF" or "ISK" or "JPY" or "KMF" or "KRW" or "PYG" or
-                "RWF" or "UGX" or "UYI" or "VND" or "VUV" or "XAF" or "XOF" or "XPF" => 0,
-            _ => 2
-        }, MidpointRounding.AwayFromZero);
+        => decimal.Round(basis * fraction, CurrencyMinorUnits.GetPrecision(currency), MidpointRounding.AwayFromZero);
 
     public static string Fingerprint(OpenLotSuccessorInstructionDto instruction)
     {
