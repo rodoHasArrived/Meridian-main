@@ -14,12 +14,12 @@
                 <StackPanel>
                     <TextBlock Text="{Binding Blocker.Message}" FontWeight="SemiBold" TextWrapping="Wrap" />
                     <WrapPanel Margin="0,4,0,0">
-                        <TextBlock Margin="0,0,12,0"><Run Text="Type: " /><Run Text="{Binding Blocker.Type}" /></TextBlock>
-                        <TextBlock Margin="0,0,12,0"><Run Text="Count: " /><Run Text="{Binding Blocker.Count}" /></TextBlock>
-                        <TextBlock Margin="0,0,12,0"><Run Text="Severity: " /><Run Text="{Binding Blocker.Severity}" /></TextBlock>
-                        <TextBlock TextWrapping="Wrap"><Run Text="Owner: " /><Run Text="{Binding OwnerLabel}" /></TextBlock>
+                        <TextBlock Margin="0,0,12,0"><Run Text="Type: " /><Run Text="{Binding Blocker.Type, Mode=OneWay}" /></TextBlock>
+                        <TextBlock Margin="0,0,12,0"><Run Text="Count: " /><Run Text="{Binding Blocker.Count, Mode=OneWay}" /></TextBlock>
+                        <TextBlock Margin="0,0,12,0"><Run Text="Severity: " /><Run Text="{Binding Blocker.Severity, Mode=OneWay}" /></TextBlock>
+                        <TextBlock TextWrapping="Wrap"><Run Text="Owner: " /><Run Text="{Binding OwnerLabel, Mode=OneWay}" /></TextBlock>
                     </WrapPanel>
-                    <TextBlock TextWrapping="Wrap" Margin="0,4,0,0"><Run Text="Contributor: " /><Run Text="{Binding Blocker.ContributorId}" /><Run Text=" · Code: " /><Run Text="{Binding Blocker.Code}" /></TextBlock>
+                    <TextBlock TextWrapping="Wrap" Margin="0,4,0,0"><Run Text="Contributor: " /><Run Text="{Binding Blocker.ContributorId, Mode=OneWay}" /><Run Text=" · Code: " /><Run Text="{Binding Blocker.Code, Mode=OneWay}" /></TextBlock>
                     <TextBlock Text="Causing records" FontWeight="SemiBold" Margin="0,6,0,2" />
                     <ItemsControl ItemsSource="{Binding Blocker.RecordIds}" AutomationProperties.Name="Shared blocker causing records">
                         <ItemsControl.ItemTemplate>
