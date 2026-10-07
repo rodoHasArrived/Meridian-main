@@ -29,6 +29,34 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/run-desktop.ps1 -Launc
 make desktop-test-dev
 ```
 
+On Windows, `desktop-dev.ps1` restores the desktop projects, builds the WPF shell once, and writes
+`desktop-build-receipt.json` beside the shell executable. The receipt records the repository,
+project, isolation key, configuration, framework, output directory, and exact executable,
+assembly, dependency manifest, and runtime configuration paths. The test-project build uses
+`--no-dependencies` after that successful shell build, then the fixture startup smoke passes
+the receipt to `run-desktop.ps1` so it launches those same binaries.
+
+The launcher checks the receipt's schema, repository/project identity, configuration/framework,
+output paths, and artifact existence before building or launching. An explicitly supplied missing
+or incompatible receipt fails instead of falling back to another output tree. Without a receipt,
+the launcher builds the shell as usual; `-NoBuild` keeps its existing prebuilt-output behavior.
+A healthy existing host is reused without requiring a local host executable. Otherwise the launcher
+builds the host only if its executable is missing from the selected output tree; `-BuildOnly` ensures
+the host artifact exists without starting either process. Host health polling, fixture overrides,
+desktop window detection, and owned-process cleanup also apply when using a receipt.
+
+To reuse a receipt in a later launch, supply its path and matching build settings:
+
+```powershell
+pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development -Fixture -StartupSmoke `
+    -BuildReceiptPath '<output-directory>/desktop-build-receipt.json' -Configuration Debug `
+    -Framework net10.0-windows10.0.19041.0
+```
+
+`desktop-dev.ps1 -EmitJson` includes `desktopBuildReceiptPath` in its summary. Receipts also work
+with `-NoIsolation`. A skipped shell build does not issue a receipt, and `-SkipRestore` or
+`-SkipBuild` continues to skip the bootstrap's launch smoke.
+
 ## Default WPF validation lane
 
 Run the repeatable Release build and focused desktop workflow slice with:
