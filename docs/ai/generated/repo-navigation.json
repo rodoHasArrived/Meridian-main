@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-04T00:49:22Z",
+  "generatedAt": "2026-10-07T17:19:13Z",
   "generatorVersion": "1.0",
-  "repositoryRoot": "pr-3011",
+  "repositoryRoot": "Meridian-main",
   "subsystems": [
     {
       "id": "host-shell",
@@ -11,13 +11,19 @@
         "Meridian",
         "Meridian.Application",
         "Meridian.Contracts",
-        "Meridian.Core"
+        "Meridian.Core",
+        "Meridian.Launcher",
+        "Meridian.LifecycleSupervisor",
+        "Meridian.Setup"
       ],
       "projectPaths": [
         "src/Meridian",
         "src/Meridian.Application",
         "src/Meridian.Contracts",
-        "src/Meridian.Core"
+        "src/Meridian.Core",
+        "src/Meridian.Launcher",
+        "src/Meridian.LifecycleSupervisor",
+        "src/Meridian.Setup"
       ],
       "commonTasks": [
         "startup debugging",
@@ -32,23 +38,39 @@
         "cli",
         "composition",
         "config",
+        "consumer",
         "contracts",
         "core",
         "dto",
         "exceptions",
         "host",
+        "installed",
+        "installer",
+        "launcher",
+        "lifecycle",
         "logging",
         "orchestration",
+        "payload",
         "pipeline",
+        "postgresql",
+        "readiness",
+        "repair",
         "serialization",
         "services",
         "shared",
-        "startup"
+        "startup",
+        "startup receipt",
+        "supervisor"
       ],
       "keyContracts": [
         "src/Meridian.Application/Pipeline/EventPipeline.cs",
         "src/Meridian.Contracts",
+        "src/Meridian.Contracts/Lifecycle",
+        "src/Meridian.Contracts/Operations",
         "src/Meridian.Core/Serialization/MarketDataJsonContext.cs",
+        "src/Meridian.Launcher/StartupOutcomeReceiptMonitor.cs",
+        "src/Meridian.Setup/InstallationTransaction.cs",
+        "src/Meridian.Setup/PayloadPackage.cs",
         "src/Meridian/Program.cs"
       ],
       "entrypoints": [
@@ -56,15 +78,25 @@
         "src/Meridian.Application/Pipeline",
         "src/Meridian.Contracts",
         "src/Meridian.Core/Serialization",
+        "src/Meridian.Launcher/LauncherCommandPolicy.cs",
+        "src/Meridian.Launcher/Program.cs",
+        "src/Meridian.Launcher/StartupOutcomeReceiptMonitor.cs",
+        "src/Meridian.LifecycleSupervisor/LifecycleStartupOutcome.cs",
+        "src/Meridian.LifecycleSupervisor/LifecycleSupervisorRuntime.cs",
+        "src/Meridian.LifecycleSupervisor/Program.cs",
+        "src/Meridian.Setup/InstallationTransaction.cs",
+        "src/Meridian.Setup/PayloadPackage.cs",
+        "src/Meridian.Setup/Program.cs",
         "src/Meridian/Program.cs"
       ],
       "relatedDocs": [
         "docs/ai/README.md",
         "docs/ai/ai-known-errors.md",
-        "docs/ai/navigation/README.md"
+        "docs/ai/navigation/README.md",
+        "docs/reference/verified-operation-outcomes.md"
       ],
       "recommendedStart": "Meridian",
-      "docCoverageHint": "medium"
+      "docCoverageHint": "high"
     },
     {
       "id": "providers-data",
@@ -453,7 +485,9 @@
         "Meridian.Ui.Services",
         "Meridian.Ui.Shared"
       ],
-      "relatedDocs": []
+      "relatedDocs": [
+        "docs/reference/verified-operation-outcomes.md"
+      ]
     },
     {
       "name": "Meridian.Application",
@@ -750,6 +784,42 @@
       ]
     },
     {
+      "name": "Meridian.Launcher",
+      "path": "src/Meridian.Launcher",
+      "kind": "launcher",
+      "subsystem": "host-shell",
+      "summary": "Installed Windows entrypoint that validates consumer commands and verifies request-bound startup outcomes.",
+      "commonTasks": [
+        "consumer launch",
+        "startup receipt verification",
+        "launcher command validation"
+      ],
+      "keywords": [
+        "consumer",
+        "installed",
+        "launcher",
+        "lifecycle",
+        "startup receipt"
+      ],
+      "entrypoints": [
+        "src/Meridian.Launcher/Program.cs",
+        "src/Meridian.Launcher/LauncherCommandPolicy.cs",
+        "src/Meridian.Launcher/StartupOutcomeReceiptMonitor.cs"
+      ],
+      "keyContracts": [
+        "src/Meridian.Launcher/StartupOutcomeReceiptMonitor.cs",
+        "src/Meridian.Contracts/Lifecycle"
+      ],
+      "projectReferences": [
+        "Meridian.Contracts"
+      ],
+      "relatedDocs": [
+        "docs/reference/lifecycle-control-plane.md",
+        "docs/operators/browser-workstation-installer.md",
+        "docs/reference/verified-operation-outcomes.md"
+      ]
+    },
+    {
       "name": "Meridian.Ledger",
       "path": "src/Meridian.Ledger",
       "kind": "ledger",
@@ -776,6 +846,42 @@
         "Meridian.FSharp.Ledger"
       ],
       "relatedDocs": []
+    },
+    {
+      "name": "Meridian.LifecycleSupervisor",
+      "path": "src/Meridian.LifecycleSupervisor",
+      "kind": "supervisor",
+      "subsystem": "host-shell",
+      "summary": "Persistent per-user ownership of installed host/database startup, readiness, browser opening, and shutdown.",
+      "commonTasks": [
+        "installed startup debugging",
+        "lifecycle control",
+        "database process ownership"
+      ],
+      "keywords": [
+        "installed",
+        "lifecycle",
+        "postgresql",
+        "readiness",
+        "supervisor"
+      ],
+      "entrypoints": [
+        "src/Meridian.LifecycleSupervisor/Program.cs",
+        "src/Meridian.LifecycleSupervisor/LifecycleSupervisorRuntime.cs",
+        "src/Meridian.LifecycleSupervisor/LifecycleStartupOutcome.cs"
+      ],
+      "keyContracts": [
+        "src/Meridian.Contracts/Lifecycle",
+        "src/Meridian.Contracts/Operations"
+      ],
+      "projectReferences": [
+        "Meridian.Contracts"
+      ],
+      "relatedDocs": [
+        "docs/reference/lifecycle-control-plane.md",
+        "docs/operators/browser-workstation-installer.md",
+        "docs/reference/verified-operation-outcomes.md"
+      ]
     },
     {
       "name": "Meridian.Mcp",
@@ -909,6 +1015,39 @@
       "relatedDocs": []
     },
     {
+      "name": "Meridian.Setup",
+      "path": "src/Meridian.Setup",
+      "kind": "installer",
+      "subsystem": "host-shell",
+      "summary": "Consumer executable payload installation, repair, and uninstall.",
+      "commonTasks": [
+        "consumer installation",
+        "payload verification",
+        "installed repair"
+      ],
+      "keywords": [
+        "consumer",
+        "installed",
+        "installer",
+        "payload",
+        "repair"
+      ],
+      "entrypoints": [
+        "src/Meridian.Setup/Program.cs",
+        "src/Meridian.Setup/PayloadPackage.cs",
+        "src/Meridian.Setup/InstallationTransaction.cs"
+      ],
+      "keyContracts": [
+        "src/Meridian.Setup/PayloadPackage.cs",
+        "src/Meridian.Setup/InstallationTransaction.cs"
+      ],
+      "projectReferences": [],
+      "relatedDocs": [
+        "docs/reference/lifecycle-control-plane.md",
+        "docs/operators/browser-workstation-installer.md"
+      ]
+    },
+    {
       "name": "Meridian.Storage",
       "path": "src/Meridian.Storage",
       "kind": "storage",
@@ -981,7 +1120,10 @@
         "Meridian.Infrastructure",
         "Meridian.Instruments"
       ],
-      "relatedDocs": []
+      "relatedDocs": [
+        "docs/reference/lifecycle-control-plane.md",
+        "docs/reference/verified-operation-outcomes.md"
+      ]
     },
     {
       "name": "Meridian.Ui.Services",
@@ -1258,6 +1400,45 @@
   ],
   "documents": [
     {
+      "path": "docs/reference/lifecycle-control-plane.md",
+      "title": "Installed lifecycle control plane",
+      "area": "runtime",
+      "whenToConsult": "When debugging installed launcher commands, supervisor ownership, database startup, readiness, or receipts.",
+      "keywords": [
+        "launcher",
+        "supervisor",
+        "installed",
+        "lifecycle",
+        "readiness"
+      ]
+    },
+    {
+      "path": "docs/operators/browser-workstation-installer.md",
+      "title": "Consumer workstation installation",
+      "area": "runtime",
+      "whenToConsult": "When packaging, installing, repairing, or validating the consumer workstation.",
+      "keywords": [
+        "installer",
+        "installed",
+        "consumer",
+        "payload",
+        "repair"
+      ]
+    },
+    {
+      "path": "docs/reference/verified-operation-outcomes.md",
+      "title": "Verified operation outcomes",
+      "area": "runtime",
+      "whenToConsult": "When changing request-bound launcher receipts, terminal outcome validation, or recovery evidence.",
+      "keywords": [
+        "launcher",
+        "supervisor",
+        "lifecycle",
+        "startup receipt",
+        "verified outcome"
+      ]
+    },
+    {
       "path": "CLAUDE.md",
       "title": "Root project context",
       "area": "root-context",
@@ -1511,6 +1692,39 @@
     }
   ],
   "taskRoutes": [
+    {
+      "id": "installed-runtime",
+      "title": "Consumer launcher, lifecycle supervisor, and installation",
+      "description": "Use when auditing or debugging the installed entrypoint, request-bound startup receipts, host/database ownership, or consumer installation.",
+      "keywords": [
+        "launcher",
+        "supervisor",
+        "installed",
+        "installer",
+        "consumer",
+        "lifecycle",
+        "startup receipt"
+      ],
+      "subsystems": [
+        "host-shell"
+      ],
+      "subsystemTitles": [
+        "Host and Composition"
+      ],
+      "startProjects": [
+        "Meridian.Launcher",
+        "Meridian.LifecycleSupervisor",
+        "Meridian.Setup"
+      ],
+      "startSymbols": [],
+      "authoritativeDocs": [
+        "docs/reference/lifecycle-control-plane.md",
+        "docs/reference/verified-operation-outcomes.md",
+        "docs/operators/browser-workstation-installer.md"
+      ],
+      "recommendedSkill": "meridian-code-review",
+      "recommendedAgent": "code-review-agent"
+    },
     {
       "id": "provider-work",
       "title": "Provider implementation and provider bugs",
@@ -1928,6 +2142,11 @@
       "reason": "Meridian.Infrastructure references Meridian.ProviderSdk directly via project reference."
     },
     {
+      "from": "Meridian.Launcher",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.Launcher references Meridian.Contracts directly via project reference."
+    },
+    {
       "from": "Meridian.Ledger",
       "to": "Meridian.Core",
       "reason": "Meridian.Ledger references Meridian.Core directly via project reference."
@@ -1936,6 +2155,11 @@
       "from": "Meridian.Ledger",
       "to": "Meridian.FSharp.Ledger",
       "reason": "Meridian.Ledger references Meridian.FSharp.Ledger directly via project reference."
+    },
+    {
+      "from": "Meridian.LifecycleSupervisor",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.LifecycleSupervisor references Meridian.Contracts directly via project reference."
     },
     {
       "from": "Meridian.Mcp",
@@ -2220,323 +2444,323 @@
   ],
   "recentChanges": [
     {
+      "path": "src/Meridian.Ui.Shared/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 27
+    },
+    {
       "path": "src/Meridian.Contracts/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 9
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 14
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
       "subsystem": "Unmapped",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Storage/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ledger/README.md",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/ILedgerJournalStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ledger/LedgerTaxLotReliefHistoryProjector.cs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/AtomicTaxLotJournalFingerprint.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_039__tax_lot_proceeds_allocation.sql",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ProceedsAllocation.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T13:47:30-07:00",
-      "lastCommit": "d1f68e14a",
-      "lastSummary": "Fix backfill timeout spans and preserve opt-in pipeline telemetry",
-      "touches": 18
-    },
-    {
-      "path": "src/Meridian.Infrastructure/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T13:47:30-07:00",
-      "lastCommit": "d1f68e14a",
-      "lastSummary": "Fix backfill timeout spans and preserve opt-in pipeline telemetry",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Application/Pipeline/EventPipeline.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T13:47:30-07:00",
-      "lastCommit": "d1f68e14a",
-      "lastSummary": "Fix backfill timeout spans and preserve opt-in pipeline telemetry",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T13:47:30-07:00",
-      "lastCommit": "d1f68e14a",
-      "lastSummary": "Fix backfill timeout spans and preserve opt-in pipeline telemetry",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/ConfigurationFeatureRegistration.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T13:47:30-07:00",
-      "lastCommit": "d1f68e14a",
-      "lastSummary": "Fix backfill timeout spans and preserve opt-in pipeline telemetry",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Platform/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-02T13:47:30-07:00",
-      "lastCommit": "d1f68e14a",
-      "lastSummary": "Fix backfill timeout spans and preserve opt-in pipeline telemetry",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Platform/Tracing/OpenTelemetrySetup.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-02T13:47:30-07:00",
-      "lastCommit": "d1f68e14a",
-      "lastSummary": "Fix backfill timeout spans and preserve opt-in pipeline telemetry",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.WashSale.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T13:42:28-07:00",
-      "lastCommit": "fdcb99488",
-      "lastSummary": "fix(ledger): preserve parcel signs and account-scoped wash-sale identities",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Core/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Application/Composition/ServiceCompositionRoot.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Core/Config/AppConfig.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Composition/HostStartup.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Core/Config/SensitiveKeyRegistry.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Core/Config/TracingConfig.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Core/Serialization/MarketDataJsonContext.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/Backfill/MarketDataTracing.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.ProviderSdk/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
-      "touches": 5
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 14
     },
     {
       "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/types.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Contracts/Api/UiApiRoutes.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
       "touches": 5
     },
     {
-      "path": "src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
+      "path": "src/Meridian.Ui/dashboard/src/lib/api.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/ui-api-routes.generated.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
       "touches": 3
     },
     {
-      "path": "src/Meridian.Application/Composition/Features/ProviderFeatureRegistration.cs",
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.Onboarding.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/api/accounting-onboarding.api.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/api/accounting-onboarding.api.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.onboarding-panel.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.onboarding-panel.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/types/accounting-onboarding.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:19:30-07:00",
+      "lastCommit": "a701eee58",
+      "lastSummary": "Add bounded accounting onboarding workspace",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Instruments/AssetOperations/PortfolioCashLadderEngine.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-06T23:45:13-07:00",
+      "lastCommit": "5c6e222c4",
+      "lastSummary": "Validate cash ladder currency evidence after scenario selection (#2920)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Instruments/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-06T23:45:13-07:00",
+      "lastCommit": "5c6e222c4",
+      "lastSummary": "Validate cash ladder currency evidence after scenario selection (#2920)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-06T23:45:13-07:00",
+      "lastCommit": "5c6e222c4",
+      "lastSummary": "Validate cash ladder currency evidence after scenario selection (#2920)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/package-lock.json",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-06T16:11:10-07:00",
+      "lastCommit": "4176336ec",
+      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/package.json",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-06T16:11:10-07:00",
+      "lastCommit": "4176336ec",
+      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/types/workstation-3.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-06T16:11:10-07:00",
+      "lastCommit": "4176336ec",
+      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Reconciliation/StatementDurabilityInfrastructure.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/BackfillFeatureRegistration.cs",
+      "path": "src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
+      "lastModified": "2026-10-06T16:11:10-07:00",
+      "lastCommit": "4176336ec",
+      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-06T16:11:10-07:00",
+      "lastCommit": "4176336ec",
+      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/AccountingClose/AccountingCloseManagementService.PlanProjection.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-06T16:11:10-07:00",
+      "lastCommit": "4176336ec",
+      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/AccountingClose/AccountingCloseManagementService.PreparationGuard.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-06T16:11:10-07:00",
+      "lastCommit": "4176336ec",
+      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/AccountingClose/AccountingCloseManagementService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-06T16:11:10-07:00",
+      "lastCommit": "4176336ec",
+      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/AccountingClose/AccountingClosePreparationService.Authority.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-06T16:11:10-07:00",
+      "lastCommit": "4176336ec",
+      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/AccountingClose/AccountingClosePreparationService.Persistence.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-06T16:11:10-07:00",
+      "lastCommit": "4176336ec",
+      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/AccountingClose/AccountingClosePreparationService.Recovery.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-06T16:11:10-07:00",
+      "lastCommit": "4176336ec",
+      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/AccountingClose/AccountingClosePreparationService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-06T16:11:10-07:00",
+      "lastCommit": "4176336ec",
+      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-06T16:11:10-07:00",
+      "lastCommit": "4176336ec",
+      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
       "touches": 1
     }
   ],
