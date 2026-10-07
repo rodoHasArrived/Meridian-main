@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using ApplicationStatusEndpointHandlers = Meridian.Application.UI.StatusEndpointHandlers;
@@ -29,9 +30,9 @@ public static class UiEndpoints
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="configPath">Optional path to configuration file.</param>
-    public static IServiceCollection AddUiSharedServices(this IServiceCollection services, string? configPath = null)
+    public static IServiceCollection AddUiSharedServices(this IServiceCollection services, string? configPath = null, IConfiguration? configuration = null)
     {
-        return services.AddUiSharedServicesCore(configPath, statusHandlers: null);
+        return services.AddUiSharedServicesCore(configPath, statusHandlers: null, configuration);
     }
 
     /// <summary>
@@ -41,26 +42,27 @@ public static class UiEndpoints
     /// <param name="services">The service collection.</param>
     /// <param name="statusHandlers">Status endpoint handlers to register.</param>
     /// <param name="configPath">Optional path to configuration file.</param>
-    public static IServiceCollection AddUiSharedServices(this IServiceCollection services, ApplicationStatusEndpointHandlers statusHandlers, string? configPath = null)
+    public static IServiceCollection AddUiSharedServices(this IServiceCollection services, ApplicationStatusEndpointHandlers statusHandlers, string? configPath = null, IConfiguration? configuration = null)
     {
         ArgumentNullException.ThrowIfNull(statusHandlers);
-        return services.AddUiSharedServicesCore(configPath, statusHandlers);
+        return services.AddUiSharedServicesCore(configPath, statusHandlers, configuration);
     }
 
     private static IServiceCollection AddUiSharedServicesCore(
         this IServiceCollection services,
         string? configPath,
-        ApplicationStatusEndpointHandlers? statusHandlers)
+        ApplicationStatusEndpointHandlers? statusHandlers,
+        IConfiguration? configuration)
     {
-        var options = CompositionOptions.WebDashboard with { ConfigPath = configPath };
+        var options = CompositionOptions.WebDashboard with { ConfigPath = configPath, Configuration = configuration };
         services.AddMarketDataServices(options);
-        services.AddWorkstationSharedServices();
+        services.AddWorkstationSharedServices(configuration);
         if (statusHandlers is not null)
         {
             services.AddSingleton(statusHandlers);
         }
 
-        services.AddMutationRateLimiter();
+        services.AddMutationRateLimiter(configuration: configuration);
         services.AddLeanAutoExportHostedService();
         services.AddStatementFetchSchedulerHostedService();
         return services;
@@ -195,6 +197,7 @@ public static class UiEndpoints
         // Organization-rooted governance structure endpoints
         app.MapFundStructureEndpoints(jsonOptions);
         app.MapReportingGovernanceEndpoints(jsonOptions);
+        app.MapReportingIncomeComparisonEndpoints(jsonOptions);
         app.MapSecureReportingDistributionEndpoints();
         app.MapReportingRunStreamEndpoints(jsonOptions);
         app.MapEnvironmentDesignerEndpoints(jsonOptions);
@@ -309,9 +312,12 @@ public static class UiEndpoints
     /// limiting only in explicit development/test hosts outside production, packaged and customer
     /// postures. Rejections expose the fixed-window retry delay through Retry-After.
     /// </summary>
-    public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false)
+    public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null)
     {
-        services.TryAddSingleton(new RateLimitBypassPolicy(services));
+        var hostConfiguration = configuration is null
+            ? CompositionConfiguration.Resolve(services)
+            : new CompositionConfiguration(configuration);
+        services.TryAddSingleton(new RateLimitBypassPolicy(services, hostConfiguration));
 
         services.AddRateLimiter(options =>
         {
@@ -358,14 +364,14 @@ public static class UiEndpoints
     }
 
     internal static bool CanBypassRateLimiting(HttpContext context)
-        => string.Equals(Environment.GetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT"), "true", StringComparison.OrdinalIgnoreCase)
-            && context.RequestServices.GetService<RateLimitBypassPolicy>()?.CanBypass(context) == true;
+        => context.RequestServices.GetService<RateLimitBypassPolicy>()?.CanBypass(context) == true;
 
-    private sealed class RateLimitBypassPolicy(IServiceCollection services)
+    private sealed class RateLimitBypassPolicy(IServiceCollection services, CompositionConfiguration configuration)
     {
         public bool CanBypass(HttpContext context)
         {
-            if (ProductionServiceRegistrationPolicy.IsProductionComposition(services)
+            if (!configuration.GetBoolean("MDC_DISABLE_RATE_LIMIT", false)
+                || ProductionServiceRegistrationPolicy.IsProductionComposition(services)
                 || IsEnabled("MDC_PACKAGED_BUILD") || IsEnabled("MERIDIAN_CUSTOMER_BUILD"))
             {
                 return false;
@@ -376,8 +382,8 @@ public static class UiEndpoints
                 && (environment.IsDevelopment() || environment.IsEnvironment("Test"));
         }
 
-        private static bool IsEnabled(string name)
-            => Environment.GetEnvironmentVariable(name)?.Trim().ToLowerInvariant() is "true" or "1" or "yes";
+        private bool IsEnabled(string name)
+            => configuration[name]?.Trim().ToLowerInvariant() is "true" or "1" or "yes";
     }
 
 }

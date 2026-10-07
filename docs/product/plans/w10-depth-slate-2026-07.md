@@ -241,21 +241,17 @@ Baseline constraints at registration, retained as the rationale for this behavio
 
 ### `W10-PROV-001` — amount provenance
 
-- The amount-provenance service is served by one legacy route and has **no client consumer** in the
-  browser workstation, the shared UI services, or the desktop workstation.
-- The Number Passport component exists and never fetches provenance — it infers all its rows by
-  keyword-scanning relationship labels.
-- The proof drawer is a private, unexported function inside one explorer screen.
-- The evidence graph service already fans out over a registered contributor collection behind a
-  subject-addressed route family, which is the seam to extend rather than duplicate.
-- The provenance service currently substring-matches a full break-queue scan and scrapes provider
-  detail out of delimited key-value strings; that fragility should not be carried forward.
-- **Related-case lookup matches on text, not identity.** It scans the tenant and company queue and
-  substring-matches break ID, routing text, explainability text, account name, and symbol, without
-  enforcing the report's fund, ledger book, period, or an exact evidence identifier. Two funds with
-  overlapping account names or symbols in one tenant can therefore attach each other's cases to an
-  amount, and the passport would present unrelated support as proof. Wiring the service unchanged
-  reproduces that; exact scope matching and collision tests are prerequisites.
+The first posted-ledger amount slice is implemented on 2026-10-01. Browser Ledger Explorer and WPF
+Posted Ledger select an individual immutable journal line and debit/credit side, then consume the
+same subject-addressed proof payload. Exact tenant/company/fund/book/period and retained vault
+subject identity replace account-name, symbol, routing-text, and explainability matching. Source
+hash, retention, and accepted review checks fail closed. Number Passport consumes the typed payload;
+the extracted browser proof drawer and WPF drawer expose missing or stale support explicitly.
+
+The legacy report-pack service no longer infers cases or provider metadata from prose. It requires
+explicit retained amount bindings; existing report generation does not yet emit them. Other amount
+surfaces remain subsequent slices. The roadmap stays in progress, with implementation paths and
+validation recorded in [the acceptance record](../../testing/w10-amount-provenance.md).
 
 ### `W10-RECON-002` — clustering and bulk resolution
 

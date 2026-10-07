@@ -191,5 +191,9 @@ public sealed class ProviderIntegrationSyncPlanningServiceTests : IDisposable
             RecordsAccepted: 10,
             RecordsQuarantined: 0,
             RawPayloadId: $"payload-{syncRunId}",
-            Issues: []);
+            Issues: [])
+        {
+            ManifestReference = ProviderIntegrationManifestIdentity.Create(manifest),
+            OriginalManifestReference = ProviderIntegrationManifestIdentity.Create(manifest)
+        };
 }

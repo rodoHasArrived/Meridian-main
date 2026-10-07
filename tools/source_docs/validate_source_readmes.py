@@ -87,7 +87,7 @@ def _extract_front_matter(text: str) -> tuple[dict[str, Any], str]:
     if yaml is None:
         raise ReadmeContractError("PyYAML is required for README front matter validation")
     if not text.startswith("---\n"):
-        raise ReadmeContractError("front matter opening marker '---' is missing")
+        raise ReadmeContractError("front matter block is missing (opening marker '---' is missing)")
 
     closing = text.find("\n---\n", 4)
     if closing == -1:
@@ -256,9 +256,7 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
     for module in coverage_modules:
         module_id = str(_get_module_id(module) or "<unknown>")
         readme_path = module.get("readme_path")
-        readme_exists = (repo_root / readme_path).exists() if readme_path else False
         declared_exists = module.get("exists")
-        if readme_path and declared_exists is True and not readme_exists:
         if not readme_path:
             continue
 
@@ -269,7 +267,8 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
         if resolved_readme_path is None:
             continue
 
-        if not resolved_readme_path.exists():
+        readme_exists = resolved_readme_path.exists()
+        if not readme_exists:
             errors.append(f"README path does not exist: {readme_path}")
         if readme_path and declared_exists is False and readme_exists:
             errors.append(f"README path exists but coverage declares exists=false: {readme_path}")
@@ -277,9 +276,7 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
             errors.append(
                 f"Stale README path '{readme_path}' referenced after move/rename; update to current path."
             )
-        if readme_path and readme_exists:
-            readme_errors = validate_readme_contract(repo_root / readme_path, module_id)
-        if resolved_readme_path.exists():
+        if readme_exists:
             readme_errors = validate_readme_contract(resolved_readme_path, module_id)
             for element_error in readme_errors:
                 errors.append(

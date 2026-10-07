@@ -11,6 +11,15 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Infrastructure
 
+Robinhood read-only synchronization logs failed HTTP status codes without endpoint URLs or response
+bodies, which can contain account identifiers or provider-returned private details.
+
+Alpaca portfolio snapshots carry explicit completeness evidence. Missing cash, equity, buying
+power, restrictions, or position fields cannot be certified as zero balances or an empty book.
+The connection epoch revokes live risk evidence after credential/environment changes and stream
+reconnects. Recovery queries the original client order identity, including terminal fills, and
+never resubmits an order.
+
 Persistence is supplied through `Core.IO.IAtomicFileWriter`, `Contracts.Etl.IEtlStagingStore`, and
 ProviderSdk `IBackfillBarWriter`. Infrastructure has no project-reference path to Storage;
 application/host composition supplies Storage implementations. See the PRD-108 inventory in
@@ -36,6 +45,14 @@ This layer owns external integration details while depending on lower contracts 
   SFTP publisher adapter for the Contracts-owned ETL publisher port.
 
 ## Important workflows
+
+Canonical statement imports stream JSON to an exclusive temporary file, force its contents to
+disk, then publish with a no-overwrite rename and the host-supplied `IAtomicFileWriter`
+directory-sync policy. Caller
+cancellation is checked before publication and is not observed after the rename commits.
+Subprocess tests cover interrupted serialization, restart after acknowledged publication,
+and concurrent writers claiming one complete import. These are process-crash tests; they do
+not certify physical power-loss behavior on every filesystem or storage device.
 
 Backfill request admission captures the current activity context; queued worker execution restores
 that parent explicitly rather than inheriting the worker's ambient context. Provider fetch and bar
@@ -89,8 +106,11 @@ and `AddProviderServices` consume those same descriptors; the merged catalog der
 factory flags from them without constructing disabled adapters. Module discovery runs before
 `BuildServiceProvider` and excludes descriptor-owned families, so a discovered Alpaca module
 cannot replace configured built-in factories. Explicit plugin assemblies retain ownership of
-their module-registered concrete factories and lifetimes. Attribute metadata alone cannot bypass
-module configuration. External discovery metadata projects module-only corporate-action and
+their module-registered concrete factories and lifetimes. Every built-in capability slot must
+declare a factory; metadata-only descriptors explicitly designate module ownership instead of
+falling back to reflection-based construction. Composition consumes the SDK's successful module
+capability registrations, so attribute metadata and unrelated DI registrations cannot bypass
+module configuration or failed registration. External discovery metadata projects module-only corporate-action and
 brokerage families into inventory without constructing them, including when disabled or awaiting
 configuration. Synthetic, Polygon and NYSE compatibility data sources are also recorded.
 OpenFIGI's `ISymbolResolver` remains in the adapter inventory, while the operator matrix
@@ -104,7 +124,12 @@ Polygon's corporate-action fetcher, EDGAR reference-data ingestion, and NYSE com
 history retain their explicit exclusions from unsupported shared contracts. `ProviderCompositionTests`, `ProviderCatalogCompositionTests`, and
 `ProviderModuleCompositionTests` exercise application features or the public registration method,
 configured aliases, every declared capability, module factory precedence, and template/mapper
-exclusions. Catalog presence alone does not establish live-provider readiness, and merged granular
+exclusions. Tests load every accepted family alias from serialized configuration, including
+disabled families, and verify all six contracts through the actual application registration path.
+The registry keeps streaming in the same family/contract factory store as other capabilities;
+both streaming entry points share replacement and disable behavior. If streaming and search use
+the same implementation type, concrete DI resolution reuses the search singleton while streaming
+factory calls create independent clients. Catalog presence alone does not establish live-provider readiness, and merged granular
 product metadata retains feed, entitlement, pacing, source timestamp, and quality declarations.
 Search instrument coverage is also independent of options coverage. The NYSE registration helper
 can bind configuration from the final host service provider; its compatibility interfaces resolve
@@ -361,6 +386,10 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 ```
 
 ## Change rules
+
+Provider composition registers an instance-owned `IProviderCatalog` for application and endpoint
+consumers. The legacy `ProviderCatalog` callback publication remains a process-startup compatibility
+path; ordinary endpoint fixtures replace the registry and catalog with their own dependencies.
 
 Do not add an Infrastructure to Application dependency. Provider abstractions should remain in ProviderSdk or Contracts.
 

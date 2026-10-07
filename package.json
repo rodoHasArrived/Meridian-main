@@ -4,6 +4,10 @@
   "private": true,
   "description": "Build tools for Meridian",
   "scripts": {
+    "dev": "node scripts/dev/web-dev.mjs --mode backend-connected",
+    "dev:backend": "node scripts/dev/web-dev.mjs --mode backend-connected",
+    "dev:fixtures": "node scripts/dev/web-dev.mjs --mode fixture-only",
+    "dev:test": "node --test scripts/dev/web-dev.test.mjs",
     "generate-icons": "node build/node/generate-icons.mjs",
     "generate-diagrams": "node scripts/generate-diagrams.mjs",
     "generate-wpf-screen-tracker": "node scripts/generate-diagrams.mjs --tracker-only",
@@ -13,6 +17,6 @@
   },
   "devDependencies": {
     "@viz-js/viz": "^3.29.0",
-    "sharp": "^0.35.2"
+    "sharp": "^0.35.5"
   }
 }

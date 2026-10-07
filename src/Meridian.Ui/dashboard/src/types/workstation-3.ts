@@ -1,3 +1,4 @@
+import type { ClosePlanPreparationLineage } from "./close-preparation";
 import type {
   AccountingCashFlowSummary,
   AccountingCertificationState,
@@ -320,6 +321,7 @@ export interface ClosePeriodPlanConfiguration {
   configuredBy?: string | null;
   configuredAtUtc?: string | null;
   evidenceLinks?: string[] | null;
+  preparation?: ClosePlanPreparationLineage | null;
 }
 
 export interface UpsertClosePeriodPlanConfigurationRequest {
@@ -868,6 +870,7 @@ export interface TradingOperatorReadiness {
   trustGate: TradingTrustGateReadiness;
   brokerageSync: WorkstationBrokerageSyncStatus | null;
   executionReconciliation?: TradingExecutionReconciliationReadiness | null;
+  brokerageRecovery?: import("./brokerage-recovery").TradingBrokerageRecovery | null;
   workItems: OperatorWorkItem[];
   warnings: string[];
 }

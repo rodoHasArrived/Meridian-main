@@ -333,6 +333,8 @@ public static partial class WorkstationEndpoints
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationTrading), async (Guid? fundAccountId, HttpContext context) =>
         {
+            if (!await CanReadTradingAccountAsync(fundAccountId, context).ConfigureAwait(false))
+                return EndpointHelpers.Forbidden();
             var payload = await BuildTradingPayloadAsync(context, fundAccountId).ConfigureAwait(false);
             return payload is null
                 ? WorkstationServiceUnavailable(
@@ -347,6 +349,8 @@ public static partial class WorkstationEndpoints
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationTradingReadiness), async (Guid? fundAccountId, HttpContext context) =>
         {
+            if (!await CanReadTradingAccountAsync(fundAccountId, context).ConfigureAwait(false))
+                return EndpointHelpers.Forbidden();
             var readiness = await GetTradingOperatorReadinessAsync(fundAccountId, context).ConfigureAwait(false);
             return Results.Json(readiness, jsonOptions);
         })
@@ -355,9 +359,53 @@ public static partial class WorkstationEndpoints
         .Produces(403)
         .RequireWorkstationTenantCompanyScope();
 
+        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationTradingBrokerageRecovery), async (
+            TradingBrokerageRecoveryRequestDto request, HttpContext context) =>
+        {
+            if (request.FundAccountId == Guid.Empty)
+            {
+                return Results.BadRequest(new { error = "Select a fund account before synchronizing broker state." });
+            }
+
+            if (!await FundAccountEndpoints.CanAccessFundAccountBrokerageSyncAsync(
+                    request.FundAccountId, context, requireWriteAccess: true).ConfigureAwait(false))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var sync = context.RequestServices.GetService<LiveBrokeragePortfolioSyncService>();
+            var links = context.RequestServices.GetService<BrokeragePortfolioSyncService>();
+            if (sync is null || links is null)
+            {
+                return WorkstationServiceUnavailable("Brokerage portfolio recovery is unavailable.");
+            }
+
+            var link = await links.GetStatusAsync(request.FundAccountId, context.RequestAborted).ConfigureAwait(false);
+            if (!link.IsLinked || !string.Equals(link.ProviderId, "alpaca", StringComparison.OrdinalIgnoreCase)
+                || string.IsNullOrWhiteSpace(link.ExternalAccountId))
+            {
+                return Results.Conflict(new { error = "Link this account to the active Alpaca brokerage account before recovery." });
+            }
+
+            await sync.SynchronizeAsync(request.FundAccountId, link.ExternalAccountId, context.RequestAborted)
+                .ConfigureAwait(false);
+            var readiness = await GetTradingOperatorReadinessAsync(request.FundAccountId, context).ConfigureAwait(false);
+            return Results.Json(readiness, jsonOptions);
+        })
+        .WithName("SynchronizeTradingBrokerageRecovery")
+        .RequireAnyPermission(UserPermission.ExecuteTrades, UserPermission.ManageOrders)
+        .Produces<TradingOperatorReadinessDto>(200)
+        .Produces(400)
+        .Produces(403)
+        .Produces(409)
+        .Produces(503)
+        .RequireWorkstationTenantCompanyScope();
+
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationOperatorInbox), async (Guid? fundAccountId, HttpContext context) =>
         {
+            if (!await CanReadTradingAccountAsync(fundAccountId, context).ConfigureAwait(false))
+                return EndpointHelpers.Forbidden();
             var inbox = await BuildOperatorInboxAsync(fundAccountId, context).ConfigureAwait(false);
             return Results.Json(inbox, jsonOptions);
         })
@@ -3074,7 +3122,7 @@ public static partial class WorkstationEndpoints
         }).DeclareOpenRead("Browser workstation shell fallback and its static assets from wwwroot/workstation; same shell and same reasoning as /workstation.").ExcludeFromDescription();
     }
 
-    private static Task<TradingOperatorReadinessDto> GetTradingOperatorReadinessAsync(
+    private static async Task<TradingOperatorReadinessDto> GetTradingOperatorReadinessAsync(
         Guid? fundAccountId,
         HttpContext context)
     {
@@ -3086,11 +3134,16 @@ public static partial class WorkstationEndpoints
             readinessService = new TradingOperatorReadinessService(context.RequestServices, logger);
         }
 
-        return readinessService.GetAsync(
+        return await readinessService.GetAsync(
             fundAccountId,
             ResolveStrategyRunReadScope(context),
-            context.RequestAborted);
+            context.RequestAborted).ConfigureAwait(false);
     }
+
+    private static Task<bool> CanReadTradingAccountAsync(Guid? fundAccountId, HttpContext context) =>
+        fundAccountId.HasValue && context.RequestServices.GetService<LiveBrokeragePortfolioSyncService>()?.IsActive == true
+            ? FundAccountEndpoints.CanAccessFundAccountBrokerageSyncAsync(fundAccountId.Value, context)
+            : Task.FromResult(true);
 
     private static string NormalizeOperatorInboxToken(string value)
     {

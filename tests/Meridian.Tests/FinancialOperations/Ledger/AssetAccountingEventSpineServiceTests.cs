@@ -1,7 +1,9 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
@@ -391,6 +393,211 @@ public sealed class AssetAccountingEventSpineServiceTests
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*requires a retained Posted attestation*");
         await eventStore.DidNotReceiveWithAnyArgs().AppendAsync(default!, default, default, default);
+    }
+
+    [Theory]
+    [InlineData("Fifo", false, false)]
+    [InlineData("Lifo", false, false)]
+    [InlineData("Hifo", false, false)]
+    [InlineData("SpecificId", false, false)]
+    [InlineData("AverageCost", false, false)]
+    [InlineData("Fifo", true, false)]
+    [InlineData("Lifo", true, false)]
+    [InlineData("Hifo", true, false)]
+    [InlineData("SpecificId", true, false)]
+    [InlineData("AverageCost", true, false)]
+    [InlineData("Fifo", false, true)]
+    [InlineData("Fifo", true, true)]
+    public async Task BuildPostingCandidateAsync_AdjustedBasis_RetainsCurrentReliefAndAcquisitionFacts(
+        string method, bool full, bool face)
+    {
+        const decimal adjustedBasis = 360.024691357802m;
+        var quantity = full ? 8m : 4m;
+        var expectedBasis = full ? adjustedBasis : 180.012345678901m;
+        var fixture = BuildDisposalFixture(expectedBasis);
+        var lot = BuildAdjustedDisposalLot(fixture, face, adjustedBasis);
+        var instruction = BuildDisposalInstruction(fixture, lot, quantity, expectedBasis, method);
+        var (service, _) = BuildDisposalService(fixture, [lot], [lot]);
+
+        var result = await service.BuildPostingCandidateAsync(
+            BuildCandidateRequest(fixture) with { LotMutation = instruction });
+
+        var retained = result.Spine.DraftedLotMutation!.DisposalSelections.Should().ContainSingle().Subject;
+        retained.ExpectedCostBasis.Should().Be(expectedBasis);
+        retained.ExpectedUnitCost.Should().Be(25m);
+        retained.ExpectedOpenQuantity.Should().Be(8m);
+        retained.Quantity.Should().Be(quantity);
+        lot.UnitCost.Should().Be(25m);
+        lot.Acquisition!.FunctionalCostBasis.Should().Be(250m);
+        lot.Acquisition.TransactionCostBasis.Should().Be(250m);
+        lot.Acquisition.AcquisitionFxRateToFunctional.Should().Be(1m);
+        if (face)
+        {
+            lot.OriginalFace.Should().Be(1_000m);
+            lot.BookedFactor.Should().Be(1m);
+            lot.ParBasis.Should().Be(100m);
+        }
+    }
+
+    [Fact]
+    public async Task BuildPostingCandidateAsync_AverageCost_CertifiesCurrentWholePoolInExactAssetScope()
+    {
+        var fixture = BuildDisposalFixture(120m);
+        var selected = BuildAdjustedDisposalLot(fixture, face: false, adjustedBasis: 360m);
+        var survivor = BuildAdjustedDisposalLot(fixture, face: false, adjustedBasis: 120m) with
+        {
+            TaxLotRecordId = Guid.NewGuid(),
+            LotId = "later-lot",
+            AcquiredDate = new DateOnly(2026, 2, 1),
+            UnitCost = 15m
+        };
+        survivor = survivor with
+        {
+            Acquisition = survivor.Acquisition! with
+            {
+                TransactionCostBasis = 150m,
+                FunctionalCostBasis = 150m,
+                HoldingPeriodStartDate = survivor.AcquiredDate,
+                Evidence = [survivor.Acquisition.Evidence[0] with
+                {
+                    SubjectId = survivor.TaxLotRecordId.ToString("D"),
+                    EffectiveDate = survivor.AcquiredDate
+                }]
+            }
+        };
+        var unrelated = selected with { TaxLotRecordId = Guid.NewGuid(), BookPositionId = Guid.NewGuid() };
+        var future = selected with { TaxLotRecordId = Guid.NewGuid(), AcquiredDate = new DateOnly(2026, 7, 1) };
+        var instruction = BuildDisposalInstruction(fixture, selected, 4m, 120m, "AverageCost");
+        var (service, _) = BuildDisposalService(fixture, [selected], [selected, survivor, unrelated, future]);
+
+        var result = await service.BuildPostingCandidateAsync(
+            BuildCandidateRequest(fixture) with { LotMutation = instruction });
+
+        var retained = result.Spine.DraftedLotMutation!.DisposalSelections.Should().ContainSingle().Subject;
+        retained.ExpectedCostBasis.Should().Be(120m,
+            "the pool has 480 current basis over 16 units, so four units relieve 120");
+        retained.ExpectedUnitCost.Should().Be(25m);
+        survivor.UnitCost.Should().Be(15m);
+    }
+
+    [Theory]
+    [InlineData("basis")]
+    [InlineData("unit cost")]
+    [InlineData("version")]
+    [InlineData("open quantity")]
+    public async Task BuildPostingCandidateAsync_StaleDisposalAssertions_FailBeforeCandidateBuild(string stale)
+    {
+        var fixture = BuildDisposalFixture(180m);
+        var lot = BuildAdjustedDisposalLot(fixture, face: false, adjustedBasis: 360m);
+        var instruction = BuildDisposalInstruction(fixture, lot, 4m, 180m, "Fifo");
+        var selection = instruction.DisposalSelections[0];
+        selection = stale switch
+        {
+            "basis" => selection with { ExpectedCostBasis = 100m },
+            "unit cost" => selection with { ExpectedUnitCost = 45m },
+            "version" => selection with { ExpectedVersion = selection.ExpectedVersion - 1 },
+            _ => selection with { ExpectedOpenQuantity = 10m }
+        };
+        var (service, builder) = BuildDisposalService(fixture, [lot], [lot]);
+
+        var act = () => service.BuildPostingCandidateAsync(BuildCandidateRequest(fixture) with
+        {
+            LotMutation = instruction with { DisposalSelections = [selection] }
+        });
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        await builder.DidNotReceiveWithAnyArgs().BuildAuthoritativeCandidateWriteAsync(default!, default!, default);
+    }
+
+    private static Fixture BuildDisposalFixture(decimal basis)
+    {
+        var fixture = BuildFixture(AssetAccountingEventKindDto.Disposal);
+        var projected = fixture.Request.ProjectedEffect with
+        {
+            TotalDebits = basis,
+            TotalCredits = basis,
+            Lines =
+            [
+                fixture.Request.ProjectedEffect.Lines[0] with { AccountId = "Assets:Cash", Debit = basis },
+                fixture.Request.ProjectedEffect.Lines[1] with { AccountId = "Assets:Investment", Credit = basis }
+            ]
+        };
+        return fixture with { Request = fixture.Request with { EventAmount = basis, ProjectedEffect = projected } };
+    }
+
+    private static LedgerTaxLotRecord BuildAdjustedDisposalLot(Fixture fixture, bool face, decimal adjustedBasis)
+    {
+        var lotId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var acquiredDate = new DateOnly(2026, 1, 1);
+        var acquisitionEvidence = fixture.Request.RetainedEvidence[0] with
+        {
+            SubjectType = "OpenLotAcquisition",
+            SubjectId = lotId.ToString("D"),
+            EffectiveDate = acquiredDate
+        };
+        var acquisition = new OpenLotAcquisitionDto(
+            face ? LotQuantityBasis.Face : LotQuantityBasis.Units,
+            "USD", "USD", 1m, 250m, 250m, acquiredDate,
+            face ? new FaceValueAcquisitionTermsDto(100m, 1m, BondAmortizationMethod.NoAmortization, null) : null,
+            [acquisitionEvidence]);
+        return new LedgerTaxLotRecord(lotId, fixture.Book.LedgerBookId,
+            new LedgerAccount("Assets:Investment", LedgerAccountType.Asset), "adjusted-lot",
+            acquiredDate, 10m, 8m, 25m, "USD", fixture.Request.ProjectedAtUtc,
+            fixture.Request.ProjectedAtUtc, Version: 4, SecurityId: fixture.Security.SecurityId,
+            BookPositionId: fixture.Position.PositionId,
+            OriginalFace: face ? 1_000m : null, BookedFactor: face ? 1m : null, ParBasis: face ? 100m : null,
+            Acquisition: acquisition,
+            BasisAdjustment: new OpenLotBasisAdjustmentDto(Guid.NewGuid(),
+                OpenLotBasisAdjustmentReasons.AverageCostRedistribution, 8m, adjustedBasis, adjustedBasis));
+    }
+
+    private static AssetLotMutationInstructionDto BuildDisposalInstruction(Fixture fixture,
+        LedgerTaxLotRecord lot, decimal quantity, decimal basis, string method)
+        => new(AssetLotMutationIntentDto.Dispose,
+            DisposalSelections: [new AssetDisposalLotSelectionDto(lot.TaxLotRecordId, lot.LotId,
+                lot.Version, lot.OpenQuantity, quantity, 0, fixture.Request.RetainedEvidence[0].EvidenceId,
+                lot.UnitCost, basis)],
+            ReliefMethod: method, PolicyRevision: "approved-policy-v2", AssetAccountId: lot.Account.ToString());
+
+    private static (AssetAccountingEventSpineService Service, IAccountingPostingCandidateAuthorityBuilder Builder)
+        BuildDisposalService(Fixture fixture, IReadOnlyList<LedgerTaxLotRecord> selectedLots,
+            IReadOnlyList<LedgerTaxLotRecord> pool)
+    {
+        var spine = BuildProjectedSpine(fixture);
+        var eventStore = Substitute.For<IAssetAccountingEventProjectionStore>();
+        eventStore.GetAsync(spine.EventId, 1, 2, Arg.Any<CancellationToken>())
+            .Returns(new AssetAccountingEventProjectionRecord(spine, ComputeFingerprint(spine)));
+        eventStore.AppendAsync(Arg.Any<AssetAccountingEventSpineDto>(), 2, fixture.Position.Version,
+                Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            var next = call.ArgAt<AssetAccountingEventSpineDto>(0);
+            return new AssetAccountingEventAppendResult(next, ComputeFingerprint(next), WasReplay: false);
+        });
+        var positionStore = Substitute.For<IInstrumentPositionProjectionStore>();
+        positionStore.GetBookPositionAsync(fixture.Position.PositionId, Arg.Any<CancellationToken>())
+            .Returns(fixture.Position);
+        var security = Substitute.For<ISecurityMasterQueryService>();
+        security.GetRecordedByIdAsOfAsync(fixture.Security.SecurityId,
+                BuildCandidateRequest(fixture).AccountingTimestamp, Arg.Any<CancellationToken>()).Returns(fixture.Security);
+        var books = Substitute.For<ILedgerBookService>();
+        books.GetBookAsync(fixture.Book.LedgerBookId, Arg.Any<CancellationToken>()).Returns(fixture.Book);
+        books.ListPeriodsAsync(Arg.Any<LedgerPeriodQuery>(), Arg.Any<CancellationToken>()).Returns([fixture.Period]);
+        var policies = Substitute.For<IAccountingPolicyService>();
+        policies.ResolvePolicyAsync(Arg.Any<AccountingPolicyQuery>(), Arg.Any<CancellationToken>()).Returns(BuildPolicy());
+        var configuration = Substitute.For<IAccountingConfigurationService>();
+        configuration.DryRunPostingRuleAsync(Arg.Any<RuleDryRunRequestDto>(), Arg.Any<CancellationToken>())
+            .Returns(BuildMatchingDryRun(fixture));
+        var builder = Substitute.For<IAccountingPostingCandidateAuthorityBuilder>();
+        builder.BuildAuthoritativeCandidateWriteAsync(Arg.Any<PostingRuleJournalCandidateRequestDto>(),
+                Arg.Any<AssetAccountingCandidateAuthorityContext>(), Arg.Any<CancellationToken>())
+            .Returns(call => BuildPreApprovedCandidateWrite(call.ArgAt<PostingRuleJournalCandidateRequestDto>(0)));
+        var ledger = Substitute.For<ILedgerJournalStore>();
+        ledger.GetTaxLotsByIdsAsync(fixture.Book.LedgerBookId, Arg.Any<IReadOnlyList<Guid>>(),
+            Arg.Any<CancellationToken>()).Returns(selectedLots);
+        ledger.ListOpenTaxLotsAsync(fixture.Book.LedgerBookId, selectedLots[0].Account,
+            Arg.Any<CancellationToken>()).Returns(pool);
+        return (new AssetAccountingEventSpineService(eventStore, positionStore, security, books,
+            policies, configuration, builder, ledger), builder);
     }
 
     private static AssetAccountingEventSpineService BuildService(

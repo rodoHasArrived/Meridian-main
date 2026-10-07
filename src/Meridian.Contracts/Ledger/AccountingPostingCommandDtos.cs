@@ -99,6 +99,10 @@ public sealed record AccountingPostingCommandDto(
 
     public AccountingRulePackReferenceDto? RulePackReference { get; init; }
 
+    /// <summary>Reviewed canonical lot inputs for the atomic amortization posting boundary.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? LotAmortization { get; init; }
+
     /// <summary>
     /// Origin of the figures this posting carries. Defaults to <see cref="DataProvenance.Real"/>.
     /// A non-real value is the retained "simulated mark": the append boundary refuses to persist a

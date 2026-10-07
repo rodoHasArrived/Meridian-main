@@ -272,4 +272,6 @@ jobs:
           name: windows-desktop-smoke-${{ github.run_number }}
           path: artifacts/publish/desktop-smoke/
           if-no-files-found: ignore
-          retention-days: 14
+          # Routine binaries are not release/certification evidence. Retain the
+          # two-week window when failure/cancellation is known at upload time.
+          retention-days: ${{ job.status == 'success' && 7 || 14 }}

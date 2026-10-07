@@ -9,7 +9,6 @@ using Xunit;
 namespace Meridian.Tests.Integration.EndpointTests;
 
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class EnvironmentDesignerEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     // Drafts, published versions, and the resolved runtime are the deployment's own configuration,

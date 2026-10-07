@@ -245,6 +245,7 @@ describe("workstation API endpoint catalog", () => {
       strategyBriefing: "/api/workstation/strategy/briefing",
       trading: "/api/workstation/trading",
       tradingReadiness: "/api/workstation/trading/readiness",
+      tradingBrokerageRecovery: "/api/workstation/trading/brokerage-recovery",
       portfolio: "/api/workstation/portfolio",
       assetOperations: "/api/workstation/assets",
       data: "/api/workstation/data",

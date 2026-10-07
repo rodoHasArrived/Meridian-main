@@ -4,7 +4,10 @@
 **Generated:** 2026-02-22
 **Schema Version:** 1
 
-This document provides comprehensive data dictionaries for all event types in the Meridian system, including field descriptions, data types, valid ranges, and exchange-specific codes.
+This document describes selected Meridian event contracts, field types, ranges, and provider codes.
+The generation date above identifies the original baseline, not a fresh schema or release
+certification. Follow the linked source types for the complete current contract; the runtime
+envelope and JSONL serialization sections below distinguish those from compatibility DTOs.
 
 ---
 
@@ -43,36 +46,51 @@ This document provides comprehensive data dictionaries for all event types in th
 
 ### MarketEvent
 
-The primary container record that wraps all market data events with common metadata.
+The runtime container wraps market data payloads with provider, ordering, timing, and
+canonicalization metadata. The table covers its persisted fields; source remains authoritative
+for the complete model and computed properties.
 
-**Location:** `src/Meridian.Contracts/Domain/Events/MarketEvent.cs`
-**JSON Discriminator:** Uses `Type` field for polymorphism
+**Runtime model:** [`Meridian.Domain.Events.MarketEvent`](../../src/Meridian.Domain/Events/MarketEvent.cs).
+**Compatibility DTO:** [`MarketEventDto`](../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs)
+is a separate, narrower transport contract; its constructor still defaults `Source` to `IB`.
+Runtime event factories require an explicit source; direct runtime construction defaults to
+`UNKNOWN`, as defined in [`MarketDataSources`](../../src/Meridian.Contracts/Domain/MarketDataSources.cs).
+**JSON discriminator:** the envelope's `type` identifies the event; `payload.kind` selects the
+concrete polymorphic payload during deserialization.
 
 | Field | Type | Description | Required | Valid Range | Default | Example |
 |-------|------|-------------|----------|-------------|---------|---------|
-| `Timestamp` | `DateTimeOffset` | Event timestamp in UTC with nanosecond precision | Yes | Any valid datetime | - | `2026-01-09T14:30:00.123456789Z` |
+| `Timestamp` | `DateTimeOffset` | Event timestamp; .NET tick precision is 100 ns, at most seven fractional-second digits | Yes | Any valid datetime | - | `2026-01-09T14:30:00.1234567Z` |
 | `Symbol` | `string` | Trading symbol/ticker | Yes | Non-empty string | - | `"AAPL"`, `"SPY"` |
 | `Type` | `MarketEventType` | Event type discriminator | Yes | See [MarketEventType](#marketeventtype) | - | `Trade` |
-| `Payload` | `MarketEventPayload?` | Polymorphic event payload | No | Depends on Type | `null` | See event types below |
+| `Payload` | `MarketEventPayload` | Non-null polymorphic payload; heartbeats use `HeartbeatPayload` | Yes | Must match event type | - | See event types below |
 | `Sequence` | `long` | Sequence number for ordering and replay | No | >= 0 | `0` | `123456789` |
-| `Source` | `string` | Data source/provider identifier | No | Non-empty string | `"IB"` | `"Alpaca"`, `"NYSE"` |
-| `SchemaVersion` | `int` | Event schema version for compatibility | No | >= 1 | `1` | `1` |
-| `Tier` | `MarketEventTier` | Processing tier classification | No | `Raw`, `Derived` | `Raw` | `Raw` |
+| `Source` | `string` | Provider identity, explicitly supplied by runtime factories | No for direct construction | Non-empty source identifier | `"UNKNOWN"` | `"ALPACA"`, `"NYSE"` |
+| `SchemaVersion` | `byte` | Event schema version for compatibility | No | >= 1 | `1` | `1` |
+| `Tier` | `MarketEventTier` | Processing tier classification | No | `Raw`, `Derived`, `Enriched`, `Processed` | `Raw` | `Raw` |
+| `ExchangeTimestamp` | `DateTimeOffset?` | Original exchange timestamp when available | No | Valid datetime | `null` | Provider timestamp |
+| `ReceivedAtUtc` | `DateTimeOffset` | Local wall-clock receive timestamp | No | Valid datetime | `default` | UTC receive time |
+| `ReceivedAtMonotonic` | `long` | Local monotonic receive counter; interpreted using `Stopwatch.Frequency` | No | Counter ticks | `0` | Process-local timing counter |
+| `CanonicalSymbol` / `CanonicalVenue` | `string?` | Resolved symbol and venue identities | No | Registry/mapping values | `null` | `AAPL`, `XNAS` |
+| `CanonicalizationVersion` | `byte` | Version of canonicalization applied | No | Version byte | `0` | `1` |
+| `SecurityId` | `Guid?` | Security Master cross-reference | No | Security identity | `null` | UUID |
+| `TraceId` / `ParentSpanId` | `string?` | Trace context captured at pipeline ingress | No | Trace identifiers | `null` | OpenTelemetry context |
 
-**Sample JSON:**
+**JSON excerpt** (payload shortened; see serialization details below):
 ```json
 {
-  "timestamp": "2026-01-09T14:30:00.123456789Z",
+  "timestamp": "2026-01-09T14:30:00.1234567Z",
   "symbol": "AAPL",
-  "type": "Trade",
+  "type": 3,
   "sequence": 123456789,
-  "source": "Alpaca",
+  "source": "ALPACA",
   "schemaVersion": 1,
-  "tier": "Raw",
+  "tier": 0,
   "payload": {
+    "kind": "trade",
     "price": 189.42,
     "size": 100,
-    "exchange": "NASDAQ"
+    "venue": "XNAS"
   }
 }
 ```
@@ -785,6 +803,8 @@ Processing tier classification for events.
 |-------|------|-------------|
 | `Raw` | `0` | Raw events from data source |
 | `Derived` | `1` | Enriched/calculated events |
+| `Enriched` | `2` | Canonicalized symbol, conditions, and venue |
+| `Processed` | `3` | All processing stages complete |
 
 ---
 
@@ -960,29 +980,36 @@ Event payloads use JSON polymorphic serialization with a `"kind"` discriminator 
 
 ### Serialization Settings
 
-The system uses `System.Text.Json` with the following default settings:
+JSONL storage uses [`MarketDataJsonContext`](../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs)
+through `HighPerformanceJson` with these settings:
 - `PropertyNamingPolicy`: camelCase
-- `WriteIndented`: false (production), true (export)
+- `WriteIndented`: false for JSONL; the separate pretty-print options are for readable diagnostics/configuration
 - `DefaultIgnoreCondition`: WhenWritingNull
+- Enum fields are numbers with this context (`Trade` = `3`, `Raw` = `0`, `Buy` = `1`);
+  `payload.kind` remains a string discriminator. An HTTP endpoint can use different JSON options.
+- Decimal prices are JSON numbers, not quoted strings. Preserve decimal precision in downstream readers.
 
-### Complete Event Example
+### Trade Event Excerpt
+
+This excerpt omits additional envelope fields and computed properties; it illustrates the storage
+types and discriminator rather than an exact serializer snapshot.
 
 ```json
 {
-  "timestamp": "2026-01-09T14:30:00.123456789Z",
+  "timestamp": "2026-01-09T14:30:00.1234567Z",
   "symbol": "AAPL",
-  "type": "Trade",
+  "type": 3,
   "sequence": 123456789,
-  "source": "Alpaca",
+  "source": "ALPACA",
   "schemaVersion": 1,
-  "tier": "Raw",
+  "tier": 0,
   "payload": {
     "kind": "trade",
-    "timestamp": "2026-01-09T14:30:00.123456789Z",
+    "timestamp": "2026-01-09T14:30:00.1234567Z",
     "symbol": "AAPL",
     "price": 185.25,
     "size": 100,
-    "aggressor": "Buy",
+    "aggressor": 1,
     "sequenceNumber": 123456789,
     "venue": "XNAS"
   }

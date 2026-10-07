@@ -1,8 +1,10 @@
 using System.Text.Json;
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Ledger;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
 using static Meridian.Contracts.Text.TextPrimitives;
@@ -901,6 +903,33 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             return requested;
         }
 
+        if (source.EventKind == AssetAccountingEventKindDto.DepreciationAmortization && requested is not null)
+        {
+            var amortization = requested.Amortization
+                ?? throw new InvalidOperationException("Canonical lot amortization requires retained reviewed inputs.");
+            var projection = OpenLotAmortization.Project(amortization);
+            RequireAssertion(amortization.ExpectedLot.SecurityId == source.Scope.SecurityId
+                && amortization.ExpectedLot.BookPositionId == source.Scope.BookPositionId
+                && amortization.ExpectedLot.LedgerBookId == book.LedgerBookId
+                && amortization.Security.Version == source.Scope.ExpectedSecurityVersion
+                && amortization.ExpectedBookPositionVersion == position.Version
+                && amortization.AsOfDate == source.EffectiveDate
+                && Math.Abs(projection.FunctionalMovement) == source.EventAmount,
+                "Amortization inputs must match the authoritative event, book, position, reference version, date and carrying movement.");
+            var retained = (await _journalStore.GetTaxLotsByIdsAsync(book.LedgerBookId,
+                [amortization.ExpectedLot.TaxLotRecordId], ct).ConfigureAwait(false)).SingleOrDefault()
+                ?? throw new InvalidOperationException("The reviewed amortization lot is missing from the authoritative book.");
+            RequireAssertion(retained.Account.AccountType == LedgerAccountType.Asset
+                && PayloadEquals(retained.ToOpenLot(), amortization.ExpectedLot),
+                "The reviewed amortization lot version, quantity or carrying basis changed; rebuild the projection.");
+            var assetLines = source.ProjectedEffect!.Lines.Where(line => line.AccountId == requested.AssetAccountId).ToArray();
+            RequireAssertion(assetLines.Length == 1
+                && assetLines[0].Debit == Math.Max(projection.FunctionalMovement, 0m)
+                && assetLines[0].Credit == Math.Max(-projection.FunctionalMovement, 0m),
+                "Amortization projected accounting must contain the exact reviewed asset carrying-value movement.");
+            return requested;
+        }
+
         if (source.EventKind != AssetAccountingEventKindDto.Disposal)
             return null;
 
@@ -945,17 +974,50 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
                              lot.OpenQuantity == selection.ExpectedOpenQuantity &&
                              selection.Quantity <= lot.OpenQuantity &&
                              string.Equals(lot.Currency, source.Currency, StringComparison.Ordinal) &&
-                             lot.UnitCost == selection.ExpectedUnitCost &&
-                             selection.ExpectedCostBasis == selection.Quantity * lot.UnitCost,
-                $"Disposal lot '{selection.TaxLotRecordId:D}' does not match authoritative book, security, position, account, version, open quantity, currency, or cost basis.");
+                             lot.UnitCost == selection.ExpectedUnitCost,
+                $"Disposal lot '{selection.TaxLotRecordId:D}' does not match authoritative book, security, position, account, version, open quantity, currency, or acquisition unit cost.");
             canonicalSelections.Add(selection with
             {
                 LotId = lot.LotId,
                 ExpectedVersion = lot.Version,
                 ExpectedOpenQuantity = lot.OpenQuantity,
-                ExpectedUnitCost = lot.UnitCost,
-                ExpectedCostBasis = selection.Quantity * lot.UnitCost
+                ExpectedUnitCost = lot.UnitCost
             });
+        }
+
+        RequireAssertion(Enum.TryParse<LedgerTaxLotReliefMethod>(instruction.ReliefMethod,
+                ignoreCase: true, out var reliefMethod) && Enum.IsDefined(reliefMethod),
+            "Disposal requires a supported canonical lot-relief method.");
+        IReadOnlyList<LedgerTaxLotRecord> accountLots;
+        try
+        {
+            accountLots = await _journalStore.ListOpenTaxLotsAsync(book.LedgerBookId, lots[0].Account, ct)
+                .ConfigureAwait(false);
+        }
+        catch (NotSupportedException ex)
+        {
+            throw new InvalidOperationException(
+                "Disposal candidate authority requires current open lots in the exact authoritative account and asset scope.", ex);
+        }
+        var openLots = accountLots.Where(lot => lot.LedgerBookId == book.LedgerBookId &&
+            lot.Account == lots[0].Account && lot.SecurityId == source.Scope.SecurityId &&
+            lot.BookPositionId == source.Scope.BookPositionId && lot.OpenQuantity > 0m &&
+            lot.AcquiredDate <= source.EffectiveDate).ToArray();
+        // Certify the asserted relief against the current canonical pool. Acquisition unit cost
+        // remains an immutable snapshot assertion; governed open basis determines disposal cost.
+        // Posting re-resolves and locks this pool together with the effective policy revision.
+        try
+        {
+            _ = CanonicalOpenLotDisposalGuard.Validate(openLots,
+                canonicalSelections.Select(static selection => new LedgerTaxLotDisposalSelection(
+                    selection.TaxLotRecordId, selection.LotId, selection.ExpectedVersion,
+                    selection.ExpectedOpenQuantity, selection.Quantity, selection.SelectionOrdinal,
+                    selection.SelectionEvidenceId, selection.ExpectedUnitCost, selection.ExpectedCostBasis)).ToArray(),
+                reliefMethod, source.Currency);
+        }
+        catch (LedgerValidationException ex)
+        {
+            throw new InvalidOperationException("Disposal candidate does not match authoritative current canonical lot relief.", ex);
         }
 
         var aggregateCostBasis = canonicalSelections.Sum(static selection => selection.ExpectedCostBasis);
