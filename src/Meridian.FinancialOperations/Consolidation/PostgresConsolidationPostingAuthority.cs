@@ -40,7 +40,8 @@ public sealed class PostgresConsolidationPostingAuthority(ConsolidationService c
         {
             if (Interlocked.Exchange(ref _disposed, 1) != 0)
                 return;
-            try { await ownership.DisposeAsync().ConfigureAwait(false); }
+            try
+            { await ownership.DisposeAsync().ConfigureAwait(false); }
             finally { await policy.DisposeAsync().ConfigureAwait(false); }
         }
     }

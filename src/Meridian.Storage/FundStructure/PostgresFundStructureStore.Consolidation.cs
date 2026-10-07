@@ -48,7 +48,8 @@ public sealed partial class PostgresFundStructureStore
         {
             if (Interlocked.Exchange(ref _disposed, 1) != 0)
                 return;
-            try { await transaction.DisposeAsync().ConfigureAwait(false); }
+            try
+            { await transaction.DisposeAsync().ConfigureAwait(false); }
             finally { await connection.DisposeAsync().ConfigureAwait(false); }
         }
     }
