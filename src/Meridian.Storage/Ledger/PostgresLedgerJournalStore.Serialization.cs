@@ -127,6 +127,11 @@ public sealed partial class PostgresLedgerJournalStore
                 where 1 = 1
             """;
 
+        if (query?.JournalEntryId.HasValue == true)
+        {
+            sql += " and je_filter.journal_entry_id = @journal_entry_id";
+        }
+
         if (query?.SourceEventId.HasValue == true)
         {
             sql += " and je_filter.source_event_id = @source_event_id";
