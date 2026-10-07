@@ -5,10 +5,12 @@ using FluentAssertions;
 using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Plaid;
+using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -23,6 +25,151 @@ namespace Meridian.Tests.Ui;
 
 public sealed class ProviderReadinessEndpointTests
 {
+    [Fact]
+    public async Task GetProviderCatalog_UsesRegisteredInventoryEvenWhenFamilyCatalogContainsMoreProviders()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<ProviderRegistry>();
+            services.AddSingleton<IProviderCatalog>(new RuntimeProviderCatalog());
+        });
+        app.Services.GetRequiredService<IProviderCatalog>().Get("yahoo").Should().NotBeNull();
+
+        using var client = app.GetTestClient();
+        using var response = await client.GetAsync(UiApiRoutes.ProviderCatalog);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var catalog = await response.Content.ReadFromJsonAsync<ProviderCatalogResponse>(JsonOptions);
+        catalog.Should().NotBeNull();
+        catalog!.Providers.Should().BeEmpty("the family metadata must not add unregistered adapters to this endpoint");
+        catalog.TotalCount.Should().Be(0);
+
+        using var detail = await client.GetAsync(UiApiRoutes.ProviderCatalog + "/yahoo");
+        detail.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Theory]
+    [InlineData("interactive-brokers", "")]
+    [InlineData("interactive-brokers", "Streaming")]
+    [InlineData("named-gateway", " IB ")]
+    public async Task GetProviderReadiness_AliasedMetricsRetainConnectionFailureEvidence(string providerId, string providerType)
+    {
+        using var env = ProviderConnectionEnvironmentScope.Clear();
+        await using var app = await CreateAppAsync();
+        var configStore = app.Services.GetRequiredService<ConfigStore>();
+        var observedAt = new DateTimeOffset(2026, 10, 5, 12, 0, 0, TimeSpan.Zero);
+        var metrics = new ProviderMetricsStatus(observedAt,
+        [
+            new ProviderMetrics(providerId, providerType, IsConnected: false,
+                TradesReceived: 0, DepthUpdatesReceived: 0, QuotesReceived: 0,
+                ConnectionAttempts: 1, ConnectionFailures: 1, MessagesDropped: 0,
+                ActiveSubscriptions: 0, AverageLatencyMs: 0, MinLatencyMs: 0, MaxLatencyMs: 0,
+                DataQualityScore: 0, ConnectionSuccessRate: 0, Timestamp: observedAt)
+        ], TotalProviders: 1, HealthyProviders: 0);
+        var statusDirectory = Path.Combine(configStore.GetDataRoot(), "_status");
+        Directory.CreateDirectory(statusDirectory);
+        await File.WriteAllTextAsync(Path.Combine(statusDirectory, "providers.json"),
+            System.Text.Json.JsonSerializer.Serialize(metrics, JsonOptions));
+
+        var connections = await app.Services.GetRequiredService<ProviderConnectionLifecycleService>().GetConnectionsAsync();
+        connections.Should().ContainSingle(row => row.ProviderId == "ibkr").Subject.Health
+            .Should().Be(ProviderContinuityHealthDto.Degraded);
+        connections.Should().ContainSingle(row => row.ProviderId == "alpaca").Subject.Health
+            .Should().NotBe(ProviderContinuityHealthDto.Degraded);
+
+        var readiness = await app.GetTestClient().GetFromJsonAsync<ProviderReadinessSummaryDto>(UiApiRoutes.ProviderReadiness, JsonOptions);
+
+        var row = readiness!.Providers.Should().ContainSingle(provider => provider.ProviderId == "ibkr").Subject;
+        row.Status.Should().Be(ProviderReadinessStatusDto.Degraded);
+        row.ConnectionHealth.Should().Be(ProviderContinuityHealthDto.Degraded);
+        row.FallbackActive.Should().BeTrue();
+        row.LastFailureAt.Should().Be(observedAt);
+    }
+
+    [Theory]
+    [InlineData("IB", true)]
+    [InlineData("IB", false)]
+    [InlineData("Streaming", true)]
+    public async Task GetProviderReadiness_ConnectionMetricsDoNotCrossProviderFamilies(string providerType, bool configureSource)
+    {
+        using var env = ProviderConnectionEnvironmentScope.Clear();
+        await using var app = await CreateAppAsync();
+        var configStore = app.Services.GetRequiredService<ConfigStore>();
+        if (configureSource)
+        {
+            await configStore.SaveAsync(configStore.Load() with
+            {
+                DataSources = new DataSourcesConfig(Sources:
+                [
+                    new DataSourceConfig("alpaca", "Named IB connection", DataSourceKind.IB, Enabled: true)
+                ])
+            });
+        }
+
+        var observedAt = new DateTimeOffset(2026, 10, 5, 12, 0, 0, TimeSpan.Zero);
+        var metrics = new ProviderMetricsStatus(observedAt,
+        [
+            new ProviderMetrics("alpaca", providerType, IsConnected: false,
+                TradesReceived: 0, DepthUpdatesReceived: 0, QuotesReceived: 0,
+                ConnectionAttempts: 1, ConnectionFailures: 1, MessagesDropped: 0,
+                ActiveSubscriptions: 0, AverageLatencyMs: 0, MinLatencyMs: 0, MaxLatencyMs: 0,
+                DataQualityScore: 0, ConnectionSuccessRate: 0, Timestamp: observedAt)
+        ], TotalProviders: 1, HealthyProviders: 0);
+        var statusDirectory = Path.Combine(configStore.GetDataRoot(), "_status");
+        Directory.CreateDirectory(statusDirectory);
+        await File.WriteAllTextAsync(Path.Combine(statusDirectory, "providers.json"),
+            System.Text.Json.JsonSerializer.Serialize(metrics, JsonOptions));
+
+        var connections = await app.Services.GetRequiredService<ProviderConnectionLifecycleService>().GetConnectionsAsync();
+        connections.Should().ContainSingle(row => row.ProviderId == "ibkr").Subject.Health
+            .Should().Be(ProviderContinuityHealthDto.Degraded);
+        connections.Should().ContainSingle(row => row.ProviderId == "alpaca").Subject.Health
+            .Should().NotBe(ProviderContinuityHealthDto.Degraded);
+
+        var readiness = await app.GetTestClient().GetFromJsonAsync<ProviderReadinessSummaryDto>(UiApiRoutes.ProviderReadiness, JsonOptions);
+
+        var ibkr = readiness!.Providers.Should().ContainSingle(provider => provider.ProviderId == "ibkr").Subject;
+        ibkr.Status.Should().Be(ProviderReadinessStatusDto.Degraded);
+        ibkr.ConnectionHealth.Should().Be(ProviderContinuityHealthDto.Degraded);
+        ibkr.FallbackActive.Should().BeTrue();
+        ibkr.LastFailureAt.Should().Be(observedAt);
+        var alpaca = readiness.Providers.Should().ContainSingle(provider => provider.ProviderId == "alpaca").Subject;
+        alpaca.ConnectionHealth.Should().NotBe(ProviderContinuityHealthDto.Degraded);
+        alpaca.FallbackActive.Should().BeFalse();
+        alpaca.LastFailureAt.Should().BeNull();
+        alpaca.Evidence.Should().NotContain(evidence =>
+            evidence.Kind == ProviderReadinessEvidenceKindDto.Connection &&
+            evidence.Detail.Contains("1 failure(s)", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("primary-account")]
+    [InlineData("alpaca")]
+    public async Task GetProviderReadiness_ConfiguredConnectionIdDoesNotCreateOrShadowProviderFamily(string connectionId)
+    {
+        using var env = ProviderConnectionEnvironmentScope.Clear();
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+        var baseline = await client.GetFromJsonAsync<ProviderReadinessSummaryDto>(UiApiRoutes.ProviderReadiness, JsonOptions);
+        var configStore = app.Services.GetRequiredService<ConfigStore>();
+        await configStore.SaveAsync(configStore.Load() with
+        {
+            DataSources = new DataSourcesConfig(Sources:
+            [
+                new DataSourceConfig(connectionId, "Named IB connection", DataSourceKind.IB, Enabled: false)
+            ])
+        });
+
+        var readiness = await client.GetFromJsonAsync<ProviderReadinessSummaryDto>(UiApiRoutes.ProviderReadiness, JsonOptions);
+
+        readiness.Should().NotBeNull();
+        readiness!.Providers.Select(row => row.ProviderId).Should()
+            .BeEquivalentTo(baseline!.Providers.Select(row => row.ProviderId));
+        readiness.Providers.Should().ContainSingle(row => row.ProviderId == "ibkr")
+            .Subject.IsEnabled.Should().BeFalse();
+        readiness.Providers.Should().ContainSingle(row => row.ProviderId == "alpaca")
+            .Subject.IsEnabled.Should().BeTrue("an IB connection ID cannot disable the Alpaca family");
+    }
+
     [Theory]
     [InlineData("interactive-brokers")]
     [InlineData(" IB ")]
@@ -79,6 +226,38 @@ public sealed class ProviderReadinessEndpointTests
         row.IsEnabled.Should().BeFalse();
         readiness.Providers.Should().NotContain(provider =>
             provider.ProviderId == "ib" || provider.ProviderId == "interactive-brokers" || provider.ProviderId == "interactivebrokers");
+    }
+
+    [Fact]
+    public async Task GetProviderReadiness_NamedConnectionJoinsMetricsWithoutCreatingAnotherProviderFamily()
+    {
+        using var env = ProviderConnectionEnvironmentScope.Clear();
+        await using var app = await CreateAppAsync();
+        var configStore = app.Services.GetRequiredService<ConfigStore>();
+        const string connectionId = "paper-trading-session-1";
+        var timestamp = new DateTimeOffset(2026, 10, 1, 12, 0, 0, TimeSpan.Zero);
+        await configStore.SaveAsync(configStore.Load() with
+        {
+            DataSources = new DataSourcesConfig(Sources:
+            [
+                new DataSourceConfig(connectionId, "Configured IB connection", DataSourceKind.IB, Enabled: true)
+            ])
+        });
+        var metricsPath = new Meridian.Application.UI.ConfigStore(configStore.ConfigPath).GetProviderMetricsPath();
+        Directory.CreateDirectory(Path.GetDirectoryName(metricsPath)!);
+        var metrics = new ProviderMetricsStatus(timestamp,
+        [
+            new ProviderMetrics(connectionId, "Streaming", true, 0, 0, 0, 1, 0, 0, 1, 5, 5, 5, 1, 1, timestamp)
+        ], 1, 1);
+        await File.WriteAllTextAsync(metricsPath, System.Text.Json.JsonSerializer.Serialize(metrics, JsonOptions));
+
+        var readiness = await app.GetTestClient().GetFromJsonAsync<ProviderReadinessSummaryDto>(UiApiRoutes.ProviderReadiness, JsonOptions);
+
+        var row = readiness!.Providers.Should().ContainSingle(provider => provider.ProviderId == "ibkr").Subject;
+        row.IsConnected.Should().BeTrue();
+        row.LastSuccessfulAt.Should().Be(timestamp);
+        readiness.Providers.Should().NotContain(provider => provider.ProviderId == connectionId);
+        configStore.Load().DataSources!.Sources!.Should().ContainSingle().Subject.Id.Should().Be(connectionId);
     }
 
     [Fact]
@@ -176,7 +355,7 @@ public sealed class ProviderReadinessEndpointTests
         raw.Should().NotContain("plaid-secret");
     }
 
-    private static async Task<WebApplication> CreateAppAsync()
+    private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection>? configureServices = null)
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-readiness", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
@@ -195,6 +374,7 @@ public sealed class ProviderReadinessEndpointTests
         builder.Services.AddSingleton(NullLogger<ProviderConnectionLifecycleService>.Instance);
         builder.Services.AddSingleton<ProviderConnectionLifecycleService>();
         builder.Services.AddSingleton<ProviderReadinessService>();
+        configureServices?.Invoke(builder.Services);
         builder.Services.AddRateLimiter(options =>
         {
             options.AddPolicy(UiEndpoints.MutationRateLimitPolicy, _ =>
@@ -204,7 +384,7 @@ public sealed class ProviderReadinessEndpointTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ManageCredentials;
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ManageCredentials | UserPermission.ViewConfig;
             context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
             context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-test";
             context.Items[LoginSessionMiddleware.CurrentUserKey] = "provider-readiness-test-operator";

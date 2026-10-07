@@ -24,7 +24,8 @@ internal sealed class CredentialFeatureRegistration : IServiceFeatureRegistratio
         {
             var configStore = sp.GetRequiredService<ConfigStore>();
             var config = configStore.Load();
-            return new FileProviderCredentialStore(config.DataRoot);
+            return new FileProviderCredentialStore(config.DataRoot,
+                options.Configuration is { } configuration ? name => configuration[name] : null);
         });
 
         services.AddSingleton<IScopedProviderCredentialStore>(sp =>

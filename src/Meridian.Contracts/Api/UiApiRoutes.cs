@@ -5,6 +5,19 @@ namespace Meridian.Contracts.Api;
 /// </summary>
 public static class UiApiRoutes
 {
+    // Bounded accounting onboarding; retained comparisons and readiness never transfer authority.
+    public const string OnboardingWorkspaces = "/api/accounting/onboarding/workspaces";
+    public const string OnboardingWorkspace = "/api/accounting/onboarding/workspaces/{workspaceId:guid}";
+    public const string OnboardingCriteria = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/criteria";
+    public const string OnboardingSources = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/sources";
+    public const string OnboardingComparisons = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/comparisons";
+    public const string OnboardingDifferenceAssignment = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/differences/{differenceKey}/assignment";
+    public const string OnboardingReviews = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/reviews";
+    public const string OnboardingPackets = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets";
+    public const string OnboardingPacket = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets/{packetId:guid}";
+    public const string OnboardingPacketExport = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets/{packetId:guid}/download";
+    public const string OnboardingReplay = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/comparisons/{comparisonId}/replay";
+
     // Health and status endpoints served by the ASP.NET Core workstation host
     public const string Health = "/health";
     public const string HealthDetailed = "/health/detailed";
@@ -703,6 +716,8 @@ public static class UiApiRoutes
     public const string WorkstationFinancialRecordExplorerRecord = "/api/workstation/financial-record-explorers/{explorerId}/records/{recordId}";
     public const string WorkstationFinancialRecordExplorerSavedViews = "/api/workstation/financial-record-explorers/{explorerId}/saved-views";
     public const string WorkstationTradingReadiness = "/api/workstation/trading/readiness";
+
+    public const string WorkstationTradingBrokerageRecovery = "/api/workstation/trading/brokerage-recovery";
     public const string WorkstationOperatorInbox = "/api/workstation/operator/inbox";
     public const string WorkstationEvidenceSubjects = "/api/workstation/evidence/subjects";
     public const string WorkstationEvidenceSubjectPacket = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/packet";
@@ -832,6 +847,10 @@ public static class UiApiRoutes
     public const string LedgerAccountingConfigurationAudit = "/api/ledger/accounting-configuration/audit";
     public const string LedgerCloseManagementPeriodPlan = "/api/ledger/close-management/period-plan/{workflowId:guid}";
     public const string LedgerCloseManagementPeriodPlanConfiguration = "/api/ledger/close-management/period-plan/configuration";
+    public const string LedgerCloseManagementTemplates = "/api/ledger/close-management/templates";
+    public const string LedgerCloseManagementTemplate = "/api/ledger/close-management/templates/{templateId:guid}";
+    public const string LedgerCloseManagementPreparationPreview = "/api/ledger/close-management/prepare/preview";
+    public const string LedgerCloseManagementPreparationCreate = "/api/ledger/close-management/prepare/create";
     public const string LedgerCloseManagementLateAdjustments = "/api/ledger/close-management/late-adjustments";
     public const string LedgerCloseManagementLateAdjustmentReview = "/api/ledger/close-management/late-adjustments/review";
     public const string LedgerCloseManagementTaskSignOffs = "/api/ledger/close-management/task-signoffs";

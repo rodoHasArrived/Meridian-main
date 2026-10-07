@@ -207,6 +207,10 @@ jobs:
           mkdir -p artifacts/targeted-browser
           cp -R src/Meridian.Ui/dashboard/dist artifacts/targeted-browser/dist
 
+      - name: Install documentation parser dependencies
+        if: inputs.mode == 'docs-source'
+        run: python3 -m pip install --requirement build/scripts/docs/requirements.txt
+
       - name: Run docs/source validation
         if: inputs.mode == 'docs-source'
         shell: bash

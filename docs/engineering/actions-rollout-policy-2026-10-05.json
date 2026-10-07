@@ -1,0 +1,45 @@
+{
+  "baseline": {
+    "start": "2026-09-26T00:00:00Z",
+    "end": "2026-09-28T21:28:54Z"
+  },
+  "rollout": {
+    "start": "2026-10-03T00:00:00Z",
+    "end": "2026-10-05T00:00:00Z"
+  },
+  "requiredChecks": [
+    {
+      "name": "quality-gate",
+      "workflow": "Meridian CI",
+      "appId": 15368
+    },
+    {
+      "name": "Secret Scan",
+      "workflow": "CI",
+      "appId": 15368
+    },
+    {
+      "name": "Analyze csharp",
+      "workflow": "CodeQL",
+      "appId": 15368
+    },
+    {
+      "name": "Analyze javascript-typescript",
+      "workflow": "CodeQL",
+      "appId": 15368
+    }
+  ],
+  "qualityGate": {
+    "name": "quality-gate",
+    "workflow": "Meridian CI",
+    "executionJobs": [
+      "verify-dotnet",
+      "verify-browser",
+      "verify-docs",
+      "verify-workflows",
+      "quality-gate"
+    ]
+  },
+  "policyBasis": "Documented intended required-check names from docs/engineering/ci-cd-optimization.md. Actual job names and GitHub Actions app ID verified in collected check records. Classic branch protection and effective rules were inaccessible; historical requirement equivalence is unverified, so requiredChecksEvidence is deliberately absent.",
+  "rolloutBasis": "Baseline ends at the first consolidation-stage merge at 2026-09-28T21:28:54Z, exactly covering the inclusive collected end at 21:28:53Z. The post-rollout observation window is 2026-10-03T00:00:00Z to 2026-10-05T00:00:00Z. Baseline and rollout collection intervals are disjoint, not a continuous inventory."
+}

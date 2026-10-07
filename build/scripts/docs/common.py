@@ -103,19 +103,6 @@ def write_text_if_changed(path: Path, text: str) -> bool:
     return True
 
 
-def _strip_comment(line: str) -> str:
-    in_single = False
-    in_double = False
-    for index, char in enumerate(line):
-        if char == "'" and not in_double:
-            in_single = not in_single
-        elif char == '"' and not in_single:
-            in_double = not in_double
-        elif char == "#" and not in_single and not in_double:
-            return line[:index]
-    return line
-
-
 def _scalar(value: str) -> Any:
     value = value.strip()
     if value in {"", "null", "Null", "NULL", "~"}:
@@ -139,82 +126,31 @@ def _scalar(value: str) -> Any:
     return value
 
 
-def _parse_yaml_subset(text: str) -> Any:
-    prepared: list[tuple[int, str]] = []
-    for raw in text.splitlines():
-        line = _strip_comment(raw).rstrip()
-        if not line.strip():
-            continue
-        prepared.append((len(line) - len(line.lstrip(" ")), line.lstrip(" ")))
-
-    def parse_block(index: int, indent: int) -> tuple[Any, int]:
-        if index >= len(prepared):
-            return {}, index
-        is_list = prepared[index][0] == indent and prepared[index][1].startswith("- ")
-        if is_list:
-            items: list[Any] = []
-            while index < len(prepared):
-                current_indent, content = prepared[index]
-                if current_indent != indent or not content.startswith("- "):
-                    break
-                item_text = content[2:].strip()
-                index += 1
-                if not item_text:
-                    value, index = parse_block(index, indent + 2)
-                    items.append(value)
-                    continue
-                if ":" in item_text:
-                    key, value_text = item_text.split(":", 1)
-                    item: dict[str, Any] = {}
-                    if value_text.strip():
-                        item[key.strip()] = _scalar(value_text.strip())
-                    else:
-                        value, index = parse_block(index, indent + 2)
-                        item[key.strip()] = value
-                    while index < len(prepared) and prepared[index][0] == indent + 2 and not prepared[index][1].startswith("- "):
-                        nested_key, nested_value_text = prepared[index][1].split(":", 1)
-                        index += 1
-                        if nested_value_text.strip():
-                            item[nested_key.strip()] = _scalar(nested_value_text.strip())
-                        else:
-                            nested, index = parse_block(index, indent + 4)
-                            item[nested_key.strip()] = nested
-                    items.append(item)
-                else:
-                    items.append(_scalar(item_text))
-            return items, index
-
-        mapping: dict[str, Any] = {}
-        while index < len(prepared):
-            current_indent, content = prepared[index]
-            if current_indent < indent or content.startswith("- "):
-                break
-            if current_indent > indent:
-                index += 1
-                continue
-            key, value_text = content.split(":", 1)
-            index += 1
-            if value_text.strip():
-                mapping[key.strip()] = _scalar(value_text.strip())
-            else:
-                value, index = parse_block(index, indent + 2)
-                mapping[key.strip()] = value
-        return mapping, index
-
-    parsed, _ = parse_block(0, prepared[0][0] if prepared else 0)
-    return parsed
-
-
 def load_data(path: Path) -> Any:
+    """Load JSON or standard YAML; malformed registries must never be recovered."""
     text = path.read_text(encoding="utf-8")
     if path.suffix.lower() == ".json":
         return json.loads(text)
+    return load_yaml_text(text, path)
+
+
+def load_yaml_text(text: str, path: Path, *, line_offset: int = 0) -> Any:
+    """Parse YAML with the source location, including embedded front matter."""
     try:
         import yaml  # type: ignore
-
-        return yaml.safe_load(text) or {}
-    except Exception:
-        return _parse_yaml_subset(text)
+    except ImportError as exc:
+        raise RuntimeError(
+            f"{path}: YAML parsing requires PyYAML; install it with "
+            "python -m pip install --requirement build/scripts/docs/requirements.txt"
+        ) from exc
+    try:
+        value = yaml.safe_load(text)
+    except yaml.YAMLError as exc:
+        mark = getattr(exc, "problem_mark", None)
+        location = f":{mark.line + 1 + line_offset}:{mark.column + 1}" if mark is not None else ""
+        problem = getattr(exc, "problem", None) or str(exc)
+        raise ValueError(f"{path}{location}: malformed YAML: {problem}") from exc
+    return {} if value is None else value
 
 
 def front_matter(markdown: str) -> dict[str, str]:

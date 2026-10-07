@@ -1,3 +1,4 @@
+import type { LedgerAmountProof } from "./ledger-amount-proof";
 import type {
   AccountingConfigurationValidationIssue,
   OperationsActionOrigin,
@@ -599,6 +600,7 @@ export interface EvidenceProofChain {
 }
 
 export interface EvidencePacket {
+  ledgerAmount?: LedgerAmountProof | null;
   subject: EvidenceSubject;
   generatedAt: string;
   nodes: EvidenceNode[];

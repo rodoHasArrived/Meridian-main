@@ -13,6 +13,68 @@ The `xero-fixture` and `netsuite-fixture` providers remain separate demo sources
 All four advertise `SupportsPosting=false`. Certification produces a retained
 review artifact; it never sends a journal to an external system.
 
+## Bounded onboarding
+
+Accounting → External GL reconciliation includes **Bounded onboarding**. Create a workspace for
+one retained entity and ledger book, an explicit financial account population (account GUIDs), and
+an inclusive date range. Account membership and the book profile's tenant/company ownership must
+already be established. The signed-in creator becomes the onboarding owner; scope stays fixed.
+
+The owner defines required dates, balance/position/NAV tolerances, required comparison categories,
+coverage threshold, independent reviewer identities and review criteria. Every required date needs
+a retained comparison under the current criteria. Missing required sources always block readiness,
+including when the configured coverage floor is below 100 percent.
+
+1. Prepare one required date at a time: retain its external import, certify its mapping and run
+   the existing account opening and provider/ledger reconciliations. Onboarding source selection
+   lists the current retained import and mapping content versions; it does not fetch new data
+   automatically.
+2. Capture that date before refreshing source workflows for the next date. Those workflows keep
+   their latest inputs, while onboarding retains every captured payload. Inspect source payloads,
+   hashes, mapping identity, coverage and balance, position and NAV differences. Assign owners and
+   supporting retained evidence, then repeat for the next required date.
+3. Correct exceptions in their owning workflow, then capture again. A correction appends a new
+   result; it never rewrites the earlier comparison. Missing rows or sources cannot mark an
+   exception resolved. A clean later date does not clear an unresolved earlier required date.
+   To correct an earlier date, prepare that date's source inputs again before the corrective capture.
+4. Designated reviewers sign in and record **Approved** or **Changes requested**, with rationale
+   and retained evidence. Difference-owner changes, criteria changes and new comparisons invalidate previous
+   revision approvals. The owner cannot act as an independent reviewer.
+5. Freeze and download the readiness packet. It contains the fixed scope, criteria history, full
+   snapshots, comparisons, unresolved differences by required date, missing sources, assignments
+   and reviewer decisions. A blocked packet remains visibly blocked. Subsequent work does not
+   change its contents or SHA-256 hash. Use **Replay retained comparison** to verify historical
+   results without reading newer imports or mappings.
+
+The executable multi-period example is `OnboardingWorkspaceServiceTests`: January starts with
+balance/position differences and missing NAV, February retains a balance difference and introduces
+a NAV difference while the position resolves, and March clears the differences. January and
+February then receive corrective captures before independent review. Reopening the durable store
+and changing subsequent inputs, assignments or criteria leaves prior results and the frozen packet
+unchanged. `AccountingSystemIntegrationServiceTests.Onboarding` verifies real GL reconciliation
+capture and full-precision mapping/source retention.
+
+Run the onboarding acceptance cases with
+`dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~Onboarding`.
+The cases also check foreign-scope refusal, concurrent updates, missing sources, retained-content
+corruption, historical economic dates and exact-decimal packet downloads.
+
+External books remain read-only. A readiness packet is evidence for a separate accounting-authority
+decision; neither capture, review nor freezing enables posting or changes the system of record.
+
+## Prerequisites and execution context
+
+Complete [preflight](preflight-checklist.md) and use a signed-in operator in the intended company,
+fund/account, ledger book, and accounting period. Provider connection changes require
+`ManageCredentials`. Import preview/reads require `AdminMaintenance` or `ManageFundStructure`;
+creating and certifying export packages require `AdminMaintenance` plus the scoped workflow
+evidence described below. Possessing a provider credential does not grant Meridian workflow access.
+
+The procedure uses the Windows browser/WPF workstation and its current loopback host. For API
+inspection, use PowerShell 7 and the [preflight operator session](preflight-checklist.md#authenticated-evidence-collection)
+in a separate terminal. Perform mutations through the governed UI or a client that supplies the
+session's CSRF protection and the exact request scope; a bare endpoint path is not a complete request.
+
 ## Configure and verify
 
 Save credentials through Settings / provider connections. The provider credential
@@ -182,6 +244,22 @@ package until verification succeeds. A failed verification also blocks review.
 Changing the external connection or retaining a new import invalidates old
 provider-control references; create a new review package with fresh evidence.
 Live posting stays disabled even after successful certification.
+
+## Expected result and failure recovery
+
+A successful retained import identifies the provider connection generation, exact scope/period,
+and content hashes. Reconciliation matches the provider's stated trial-balance basis; an export
+review package retains its own mapping and approval references. Certification still leaves
+`SupportsPosting=false`. Retain the import/reconciliation/package identifiers and evidence before
+replacing credentials or importing a new period.
+
+| Failure | Next action |
+| --- | --- |
+| `401/403` or missing accounting scope | Correct the operator session, permissions, company/fund/book assignment, and exact period. |
+| Token rotation cannot be retained | Repair primary/recovery vault storage; verify the retained credential generation before another provider read. |
+| Expired consent or provider permission/entitlement error | Restore the selected organisation/subsidiary/book access, verify the connection, then rerun the full period import. |
+| Incomplete pages, unsupported report basis, unbalanced totals, or currency mismatch | Preserve the failed evidence and repair/narrow the source or supported scope. No partial import can replace the last accepted one. |
+| Review invalidated after credential/import replacement | Verify the current generation and create fresh package-specific review evidence; stale approvals cannot certify the replacement. |
 
 ## Validation evidence
 

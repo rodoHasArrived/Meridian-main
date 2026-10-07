@@ -232,7 +232,11 @@ public sealed class ProviderIntegrationMonitoringServiceTests : IDisposable
             accepted,
             quarantined,
             $"payload-{syncRunId}",
-            issues);
+            issues)
+        {
+            ManifestReference = ProviderIntegrationManifestIdentity.Create(manifest),
+            OriginalManifestReference = ProviderIntegrationManifestIdentity.Create(manifest)
+        };
 
     private static ProviderIntegrationManifestDto CreateManifest()
         => new(

@@ -1,0 +1,266 @@
+{
+  "retrievedAt": "2026-10-05T18:05:21.276555+00:00",
+  "node": "v24.19.0",
+  "lockCommit": "e3bf60bae577c132d8444a827ca4dc3181cc48a1",
+  "limits": {
+    "timeoutSecondsPerCase": 5,
+    "maxOldSpaceSizeMB": 128,
+    "errorsCaught": true
+  },
+  "cases": [
+    {
+      "api": "compile",
+      "depth": 1,
+      "exitCode": 0,
+      "stdout": "{\"api\":\"compile\",\"depth\":1,\"length\":3,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "compile",
+      "depth": 3500,
+      "exitCode": 0,
+      "stdout": "{\"api\":\"compile\",\"depth\":3500,\"length\":7001,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "compile",
+      "depth": 4000,
+      "exitCode": 0,
+      "stdout": "{\"api\":\"compile\",\"depth\":4000,\"length\":8001,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "compile",
+      "depth": 4500,
+      "exitCode": 0,
+      "stdout": "{\"api\":\"compile\",\"depth\":4500,\"length\":9001,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "expand",
+      "depth": 1,
+      "exitCode": 0,
+      "stdout": "{\"api\":\"expand\",\"depth\":1,\"length\":3,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "expand",
+      "depth": 3500,
+      "exitCode": 0,
+      "stdout": "{\"api\":\"expand\",\"depth\":3500,\"length\":7001,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "expand",
+      "depth": 4000,
+      "exitCode": 0,
+      "stdout": "{\"api\":\"expand\",\"depth\":4000,\"length\":8001,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "expand",
+      "depth": 4500,
+      "exitCode": 0,
+      "stdout": "{\"api\":\"expand\",\"depth\":4500,\"length\":9001,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "fast-glob",
+      "depth": 1,
+      "exitCode": 0,
+      "stdout": "{\"api\":\"fast-glob\",\"depth\":1,\"length\":3,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "fast-glob",
+      "depth": 3500,
+      "exitCode": 0,
+      "stdout": "{\"api\":\"fast-glob\",\"depth\":3500,\"length\":7001,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "fast-glob",
+      "depth": 4000,
+      "exitCode": 0,
+      "stdout": "{\"api\":\"fast-glob\",\"depth\":4000,\"length\":8001,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "fast-glob",
+      "depth": 4500,
+      "exitCode": 0,
+      "stdout": "{\"api\":\"fast-glob\",\"depth\":4500,\"length\":9001,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "compile",
+      "depth": 4800,
+      "inner": "a",
+      "exitCode": 0,
+      "stdout": "{\"api\":\"compile\",\"depth\":4800,\"inner\":\"a\",\"length\":9601,\"outcome\":\"RangeError\",\"message\":\"Maximum call stack size exceeded\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "compile",
+      "depth": 4900,
+      "inner": "a",
+      "exitCode": 0,
+      "stdout": "{\"api\":\"compile\",\"depth\":4900,\"inner\":\"a\",\"length\":9801,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "compile",
+      "depth": 4990,
+      "inner": "a",
+      "exitCode": 0,
+      "stdout": "{\"api\":\"compile\",\"depth\":4990,\"inner\":\"a\",\"length\":9981,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "expand",
+      "depth": 4800,
+      "inner": "a",
+      "exitCode": 0,
+      "stdout": "{\"api\":\"expand\",\"depth\":4800,\"inner\":\"a\",\"length\":9601,\"outcome\":\"RangeError\",\"message\":\"Maximum call stack size exceeded\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "expand",
+      "depth": 4900,
+      "inner": "a",
+      "exitCode": 0,
+      "stdout": "{\"api\":\"expand\",\"depth\":4900,\"inner\":\"a\",\"length\":9801,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "expand",
+      "depth": 4990,
+      "inner": "a",
+      "exitCode": 0,
+      "stdout": "{\"api\":\"expand\",\"depth\":4990,\"inner\":\"a\",\"length\":9981,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "fast-glob",
+      "depth": 4800,
+      "inner": "a",
+      "exitCode": 0,
+      "stdout": "{\"api\":\"fast-glob\",\"depth\":4800,\"inner\":\"a\",\"length\":9601,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "fast-glob",
+      "depth": 4900,
+      "inner": "a",
+      "exitCode": 0,
+      "stdout": "{\"api\":\"fast-glob\",\"depth\":4900,\"inner\":\"a\",\"length\":9801,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "fast-glob",
+      "depth": 4990,
+      "inner": "a",
+      "exitCode": 0,
+      "stdout": "{\"api\":\"fast-glob\",\"depth\":4990,\"inner\":\"a\",\"length\":9981,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "compile",
+      "depth": 4800,
+      "inner": "a,b",
+      "exitCode": 0,
+      "stdout": "{\"api\":\"compile\",\"depth\":4800,\"inner\":\"a,b\",\"length\":9603,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "compile",
+      "depth": 4900,
+      "inner": "a,b",
+      "exitCode": 0,
+      "stdout": "{\"api\":\"compile\",\"depth\":4900,\"inner\":\"a,b\",\"length\":9803,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "compile",
+      "depth": 4990,
+      "inner": "a,b",
+      "exitCode": 0,
+      "stdout": "{\"api\":\"compile\",\"depth\":4990,\"inner\":\"a,b\",\"length\":9983,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "expand",
+      "depth": 4800,
+      "inner": "a,b",
+      "exitCode": 0,
+      "stdout": "{\"api\":\"expand\",\"depth\":4800,\"inner\":\"a,b\",\"length\":9603,\"outcome\":\"RangeError\",\"message\":\"Maximum call stack size exceeded\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "expand",
+      "depth": 4900,
+      "inner": "a,b",
+      "exitCode": 0,
+      "stdout": "{\"api\":\"expand\",\"depth\":4900,\"inner\":\"a,b\",\"length\":9803,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "expand",
+      "depth": 4990,
+      "inner": "a,b",
+      "exitCode": 0,
+      "stdout": "{\"api\":\"expand\",\"depth\":4990,\"inner\":\"a,b\",\"length\":9983,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "fast-glob",
+      "depth": 4800,
+      "inner": "a,b",
+      "exitCode": 0,
+      "stdout": "{\"api\":\"fast-glob\",\"depth\":4800,\"inner\":\"a,b\",\"length\":9603,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "fast-glob",
+      "depth": 4900,
+      "inner": "a,b",
+      "exitCode": 0,
+      "stdout": "{\"api\":\"fast-glob\",\"depth\":4900,\"inner\":\"a,b\",\"length\":9803,\"outcome\":\"RangeError\",\"message\":\"Maximum call stack size exceeded\"}\n",
+      "stderr": ""
+    },
+    {
+      "api": "fast-glob",
+      "depth": 4990,
+      "inner": "a,b",
+      "exitCode": 0,
+      "stdout": "{\"api\":\"fast-glob\",\"depth\":4990,\"inner\":\"a,b\",\"length\":9983,\"outcome\":\"returned\"}\n",
+      "stderr": ""
+    }
+  ],
+  "currentConfigTasks": [
+    {
+      "dynamic": false,
+      "positive": [
+        "./index.html"
+      ],
+      "negative": [],
+      "base": ".",
+      "patterns": [
+        "./index.html"
+      ]
+    },
+    {
+      "dynamic": true,
+      "positive": [
+        "./src/**/*.ts",
+        "./src/**/*.tsx"
+      ],
+      "negative": [],
+      "base": "./src",
+      "patterns": [
+        "./src/**/*.ts",
+        "./src/**/*.tsx"
+      ]
+    }
+  ]
+}

@@ -117,7 +117,7 @@ public static class ProductionServiceRegistrationPolicy
     /// </summary>
     public static bool IsProductionComposition(IServiceCollection services)
         => ResolveDeclaredPosture(services) == MeridianDeploymentPosture.ProductionApi
-           || IsProductionEnvironment();
+           || IsProductionEnvironment(CompositionConfiguration.Resolve(services));
 
     /// <summary>
     /// Rejects Quant Lab in every supported production or customer-distribution posture until the
@@ -135,8 +135,8 @@ public static class ProductionServiceRegistrationPolicy
         }
 
         if (IsProductionComposition(services) ||
-            IsTruthy(Environment.GetEnvironmentVariable("MDC_PACKAGED_BUILD")) ||
-            IsTruthy(Environment.GetEnvironmentVariable("MERIDIAN_CUSTOMER_BUILD")))
+            IsTruthy(CompositionConfiguration.Resolve(services)["MDC_PACKAGED_BUILD"]) ||
+            IsTruthy(CompositionConfiguration.Resolve(services)["MERIDIAN_CUSTOMER_BUILD"]))
         {
             throw new StartupRefusedException(
                 "QuantLab:Enabled cannot be used in a production, packaged, or customer build. " +
@@ -171,12 +171,12 @@ public static class ProductionServiceRegistrationPolicy
         }
 
         return ResolveDeclaredPosture(services) == MeridianDeploymentPosture.LocalWorkstation
-               || IsLocalWorkstationEnvironment();
+               || IsLocalWorkstationEnvironment(CompositionConfiguration.Resolve(services));
     }
 
-    internal static bool IsLocalWorkstationEnvironment()
+    internal static bool IsLocalWorkstationEnvironment(CompositionConfiguration? configuration = null)
         => string.Equals(
-            Environment.GetEnvironmentVariable("MERIDIAN_API_DEPLOYMENT_MODE"),
+            (configuration ?? new CompositionConfiguration())["MERIDIAN_API_DEPLOYMENT_MODE"],
             nameof(MeridianDeploymentPosture.LocalWorkstation),
             StringComparison.OrdinalIgnoreCase);
 
@@ -286,15 +286,16 @@ public static class ProductionServiceRegistrationPolicy
         return MeridianDeploymentPosture.Unspecified;
     }
 
-    internal static bool IsProductionEnvironment()
+    internal static bool IsProductionEnvironment(CompositionConfiguration? configuration = null)
     {
-        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
-                          ?? Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
-                          ?? Environment.GetEnvironmentVariable("MERIDIAN_ENVIRONMENT")
-                          ?? Environment.GetEnvironmentVariable("MERIDIAN_DEPLOYMENT_ENVIRONMENT");
+        configuration ??= new CompositionConfiguration();
+        var environment = configuration["ASPNETCORE_ENVIRONMENT"]
+                          ?? configuration["DOTNET_ENVIRONMENT"]
+                          ?? configuration["MERIDIAN_ENVIRONMENT"]
+                          ?? configuration["MERIDIAN_DEPLOYMENT_ENVIRONMENT"];
 
-        var mode = Environment.GetEnvironmentVariable("MERIDIAN_MODE");
-        var apiDeploymentMode = Environment.GetEnvironmentVariable("MERIDIAN_API_DEPLOYMENT_MODE");
+        var mode = configuration["MERIDIAN_MODE"];
+        var apiDeploymentMode = configuration["MERIDIAN_API_DEPLOYMENT_MODE"];
 
         return string.Equals(environment, "Production", StringComparison.OrdinalIgnoreCase)
                || string.Equals(mode, "Production", StringComparison.OrdinalIgnoreCase)

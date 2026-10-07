@@ -30,7 +30,7 @@ public static class ReconciliationServiceRegistration
             new FileStatementReconciliationCheckpointStore(
                 sp.GetRequiredService<StorageOptions>().RootPath,
                 sp.GetService<ILogger<FileStatementReconciliationCheckpointStore>>()));
-        services.TryAddSingleton<ICanonicalStatementStore>(sp => new JsonCanonicalStatementStore(sp.GetRequiredService<StorageOptions>().RootPath));
+        services.TryAddSingleton<ICanonicalStatementStore>(sp => new JsonCanonicalStatementStore(sp.GetRequiredService<StorageOptions>().RootPath, sp.GetRequiredService<IAtomicFileWriter>()));
         services.TryAddSingleton<IReconciliationCaseStore>(sp => new JsonReconciliationCaseStore(sp.GetRequiredService<StorageOptions>().RootPath, sp.GetRequiredService<IAtomicFileWriter>()));
         services.TryAddSingleton<IReconciliationBreakStore>(sp => new JsonReconciliationBreakStore(sp.GetRequiredService<StorageOptions>().RootPath, sp.GetRequiredService<IAtomicFileWriter>()));
         services.TryAddSingleton<IStatementRunRecoveryRepository>(sp =>
@@ -56,7 +56,7 @@ public static class ReconciliationServiceRegistration
             new FileStatementReconciliationCheckpointStore(
                 dataRoot,
                 sp.GetService<ILogger<FileStatementReconciliationCheckpointStore>>()));
-        services.TryAddSingleton<ICanonicalStatementStore>(_ => new JsonCanonicalStatementStore(dataRoot));
+        services.TryAddSingleton<ICanonicalStatementStore>(sp => new JsonCanonicalStatementStore(dataRoot, sp.GetRequiredService<IAtomicFileWriter>()));
         services.TryAddSingleton<IReconciliationCaseStore>(sp => new JsonReconciliationCaseStore(dataRoot, sp.GetRequiredService<IAtomicFileWriter>()));
         services.TryAddSingleton<IReconciliationBreakStore>(sp => new JsonReconciliationBreakStore(dataRoot, sp.GetRequiredService<IAtomicFileWriter>()));
         services.TryAddSingleton<IStatementRunRecoveryRepository>(_ => new FileStatementRunRecoveryRepository(dataRoot));

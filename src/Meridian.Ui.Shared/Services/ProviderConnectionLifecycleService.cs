@@ -150,12 +150,13 @@ public sealed class ProviderConnectionLifecycleService
     public async Task<IReadOnlyList<ProviderConnectionRowDto>> GetConnectionsAsync(CancellationToken ct = default)
     {
         var metrics = _configStore.TryLoadProviderMetrics();
+        var sources = _configStore.Load().DataSources?.Sources ?? [];
         var rows = new List<ProviderConnectionRowDto>();
 
         foreach (var descriptor in ProviderCredentialCatalog.All)
         {
             var status = await _credentialStore.GetStatusAsync(descriptor.ProviderId, ct).ConfigureAwait(false);
-            var providerMetrics = FindMetrics(metrics, descriptor.ProviderId);
+            var providerMetrics = ProviderMetricsLookup.Find(metrics, sources, descriptor.ProviderId);
             rows.Add(BuildRow(descriptor, status, providerMetrics));
         }
 
@@ -554,11 +555,6 @@ public sealed class ProviderConnectionLifecycleService
         => status.CredentialSource == ProviderCredentialSourceDto.Environment
             ? ["Local credentials were deleted, but legacy environment variables are still visible as read-only fallback."]
             : ["Local provider credentials were deleted from the encrypted Meridian store."];
-
-    private static ProviderMetrics? FindMetrics(ProviderMetricsStatus? metrics, string providerId)
-        => metrics?.Providers.FirstOrDefault(provider =>
-            provider.ProviderId.Equals(providerId, StringComparison.OrdinalIgnoreCase) ||
-            provider.ProviderType.Equals(providerId, StringComparison.OrdinalIgnoreCase));
 
     private static ProviderCredentialCatalogEntry RequireDescriptor(string providerId)
         => ProviderCredentialCatalog.Find(providerId)

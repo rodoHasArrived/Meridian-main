@@ -84,17 +84,23 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
         // Unified persistence config must resolve before any per-domain in-memory-vs-Postgres
         // decision below reads the per-domain variables.
-        MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+        var configuration = options.Configuration is null
+            ? CompositionConfiguration.Resolve(services)
+            : new CompositionConfiguration(options.Configuration);
+        services.TryAddSingleton(configuration);
+        if (configuration.UsesEnvironment)
+        {
+            MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+            SecurityMasterStartup.EnsureEnvironmentDefaults();
+            AssetOperationsStartup.EnsureEnvironmentDefaults();
+            DirectLendingStartup.EnsureEnvironmentDefaults();
+            LedgerStartup.EnsureEnvironmentDefaults();
+        }
 
-        SecurityMasterStartup.EnsureEnvironmentDefaults();
-        AssetOperationsStartup.EnsureEnvironmentDefaults();
-        DirectLendingStartup.EnsureEnvironmentDefaults();
-        LedgerStartup.EnsureEnvironmentDefaults();
-
-        var securityMasterOptions = CreateSecurityMasterOptions();
-        var assetOperationsOptions = CreateAssetOperationsOptions();
-        var directLendingOptions = CreateDirectLendingOptions();
-        var ledgerOptions = CreateLedgerOptions(
+        var securityMasterOptions = CreateSecurityMasterOptions(configuration);
+        var assetOperationsOptions = CreateAssetOperationsOptions(configuration);
+        var directLendingOptions = CreateDirectLendingOptions(configuration);
+        var ledgerOptions = CreateLedgerOptions(configuration,
             ProductionServiceRegistrationPolicy.IsProductionComposition(services));
 
         services.TryAddSingleton<ISecurityValidationSnapshotStore, FileSecurityValidationSnapshotStore>();
@@ -138,12 +144,12 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ProviderIntegrationReconciliationHandoffService>();
         services.TryAddSingleton<ProviderIntegrationQuarantineReviewService>();
         services.TryAddSingleton<ProviderIntegrationQuarantineReplayService>();
-        if (IsScopedAccessPostgresConfigured())
+        if (configuration.IsConfigured("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING"))
         {
             services.TryAddSingleton(new ScopedAccessStoreOptions
             {
-                ConnectionString = Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")!,
-                Schema = Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_SCHEMA") ?? "identity_access"
+                ConnectionString = configuration.GetConnectionString("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")!,
+                Schema = configuration["MERIDIAN_SCOPED_ACCESS_SCHEMA"] ?? "identity_access"
             });
             services.TryAddSingleton<PostgresScopedAccessAssignmentStore>(sp =>
                 new PostgresScopedAccessAssignmentStore(sp.GetRequiredService<ScopedAccessStoreOptions>()));
@@ -223,9 +229,14 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         // LifecyclePolicyEngine governs retention automatically (ADR-002 / ADR-007).
         services.AddSingleton<IPositionSnapshotStore, JsonlPositionSnapshotStore>();
 
-        if (LedgerStartup.IsConfigured())
+        if (configuration.IsConfigured(LedgerStartup.ConnectionStringVariable))
         {
             services.AddSingleton(ledgerOptions);
+            // Resolve posting authorities on use: the position store itself consumes the ledger.
+            services.AddSingleton<Func<ISecurityMasterStore?>>(sp =>
+                () => sp.GetService<ISecurityMasterStore>());
+            services.AddSingleton<Func<IInstrumentPositionProjectionStore?>>(sp =>
+                () => sp.GetService<IInstrumentPositionProjectionStore>());
             services.AddSingleton<PostgresLedgerJournalStore>();
             services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
@@ -263,7 +274,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IEdgarReferenceDataProvider, EdgarReferenceDataProvider>();
         services.TryAddSingleton<IEdgarIngestOrchestrator, EdgarIngestOrchestrator>();
 
-        if (SecurityMasterStartup.IsConfigured())
+        if (configuration.IsConfigured(SecurityMasterStartup.ConnectionStringVariable))
         {
             services.AddSingleton(securityMasterOptions);
             services.AddSingleton<IValidateOptions<SecurityMasterOptions>, SecurityMasterOptionsValidator>();
@@ -403,7 +414,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<CorporateActionIngestOrchestrator>();
         }
 
-        if (AssetOperationsStartup.IsConfigured())
+        if (configuration.IsConfigured(AssetOperationsStartup.ConnectionStringVariable))
         {
             services.AddSingleton(assetOperationsOptions);
             services.AddSingleton<AssetOperationsMigrationRunner>();
@@ -456,7 +467,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IUflProjectionRebuilder, NullUflProjectionRebuilder>();
         // Passport Workbench conflict-authority policy is storage-independent (pure precedence logic).
         services.TryAddSingleton<ISecurityMasterConflictAuthorityPolicy, SecurityMasterConflictAuthorityPolicy>();
-        if (!AssetOperationsStartup.IsConfigured())
+        if (!configuration.IsConfigured(AssetOperationsStartup.ConnectionStringVariable))
         {
             services.TryAddSingleton<InMemoryAssetOperationsProjectionStore>();
             services.TryAddSingleton<IAssetOperationsProjectionStore>(sp =>
@@ -471,7 +482,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IAssetOperationsQueryService, AssetOperationsReadService>();
         services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();
 
-        if (DirectLendingStartup.IsConfigured())
+        if (!string.IsNullOrWhiteSpace(directLendingOptions.ConnectionString))
         {
             services.AddSingleton(directLendingOptions);
             services.AddSingleton<DirectLendingEventRebuilder>();
@@ -498,8 +509,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             }
         }
 
-        var useInMemoryGovernanceServices = IsInMemoryGovernanceProfileEnabled();
-        EnsureGovernancePersistenceProfile(useInMemoryGovernanceServices);
+        var useInMemoryGovernanceServices = IsInMemoryGovernanceProfileEnabled(configuration);
+        EnsureGovernancePersistenceProfile(configuration, useInMemoryGovernanceServices);
 
         // Authoritative multi-tenant scope fan-out. Composed only where every input authority is:
         // custodied holdings say who holds the security, the fund-profile tenancy registry says who
@@ -507,9 +518,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         // on. A deployment missing any of them cannot enumerate an affected set, so the gate is left
         // unregistered rather than registered in a state where it could only ever refuse — that
         // keeps the read-side decision posture honest instead of offering controls that never work.
-        if (SecurityMasterStartup.IsConfigured()
-            && FundAccountsStartup.IsConfigured()
-            && LedgerStartup.IsConfigured())
+        if (configuration.IsConfigured(SecurityMasterStartup.ConnectionStringVariable)
+            && configuration.IsConfigured(FundAccountsStartup.ConnectionStringVariable)
+            && configuration.IsConfigured(LedgerStartup.ConnectionStringVariable))
         {
             services.AddSingleton<IScopeAssignmentProvider>(sp => new FundAccountHoldingScopeAssignmentProvider(
                 sp.GetService<IFundAccountStore>(),
@@ -522,11 +533,12 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         }
 
         // Fund accounts and governance structure.
-        if (FundAccountsStartup.IsConfigured())
+        if (configuration.IsConfigured(FundAccountsStartup.ConnectionStringVariable))
         {
-            FundAccountsStartup.EnsureEnvironmentDefaults();
-            var faConnectionString = Environment.GetEnvironmentVariable(FundAccountsStartup.ConnectionStringVariable)!;
-            var faSchema = Environment.GetEnvironmentVariable(FundAccountsStartup.SchemaVariable) ?? FundAccountsStartup.DefaultSchema;
+            if (configuration.UsesEnvironment)
+                FundAccountsStartup.EnsureEnvironmentDefaults();
+            var faConnectionString = configuration.GetConnectionString(FundAccountsStartup.ConnectionStringVariable)!;
+            var faSchema = configuration.GetSchema(FundAccountsStartup.SchemaVariable, FundAccountsStartup.DefaultSchema);
             services.TryAddSingleton(new FundAccountStoreOptions { ConnectionString = faConnectionString, Schema = faSchema });
             services.TryAddSingleton<IFundAccountStore, PostgresFundAccountStore>();
             services.TryAddSingleton<PostgresFundAccountService>();
@@ -552,13 +564,14 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 sp.GetService<HistoricalDataQueryService>(),
                 sp.GetService<BackfillCoordinator>()));
         services.TryAddSingleton<IFundStructurePolicyService, FundStructurePolicyService>();
-        if (FundStructureStartup.IsConfigured())
+        if (configuration.IsConfigured(FundStructureStartup.ConnectionStringVariable))
         {
-            FundStructureStartup.EnsureEnvironmentDefaults();
+            if (configuration.UsesEnvironment)
+                FundStructureStartup.EnsureEnvironmentDefaults();
             services.TryAddSingleton(new FundStructureStoreOptions
             {
-                ConnectionString = Environment.GetEnvironmentVariable(FundStructureStartup.ConnectionStringVariable)!,
-                Schema = Environment.GetEnvironmentVariable(FundStructureStartup.SchemaVariable) ?? FundStructureStartup.DefaultSchema
+                ConnectionString = configuration.GetConnectionString(FundStructureStartup.ConnectionStringVariable)!,
+                Schema = configuration.GetSchema(FundStructureStartup.SchemaVariable, FundStructureStartup.DefaultSchema)
             });
             services.TryAddSingleton<IFundStructureStore, PostgresFundStructureStore>();
             services.TryAddSingleton<PostgresFundStructureService>();
@@ -579,13 +592,14 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             });
         }
         // ── Banking ──────────────────────────────────────────────────────────
-        if (BankingStartup.IsConfigured())
+        if (configuration.IsConfigured(BankingStartup.ConnectionStringVariable))
         {
-            BankingStartup.EnsureEnvironmentDefaults();
+            if (configuration.UsesEnvironment)
+                BankingStartup.EnsureEnvironmentDefaults();
             services.TryAddSingleton(new BankingStoreOptions
             {
-                ConnectionString = Environment.GetEnvironmentVariable(BankingStartup.ConnectionStringVariable)!,
-                Schema = Environment.GetEnvironmentVariable(BankingStartup.SchemaVariable) ?? BankingStartup.DefaultSchema
+                ConnectionString = configuration.GetConnectionString(BankingStartup.ConnectionStringVariable)!,
+                Schema = configuration.GetSchema(BankingStartup.SchemaVariable, BankingStartup.DefaultSchema)
             });
             services.TryAddSingleton<IBankingStore, PostgresBankingStore>();
             services.TryAddSingleton<PostgresBankingService>();
@@ -599,13 +613,14 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.TryAddSingleton<Meridian.Contracts.Banking.IBankTransactionSource>(sp => sp.GetRequiredService<InMemoryBankingService>());
         }
         // ── Money Market Fund ─────────────────────────────────────────────────
-        if (MoneyMarketStartup.IsConfigured())
+        if (configuration.IsConfigured(MoneyMarketStartup.ConnectionStringVariable))
         {
-            MoneyMarketStartup.EnsureEnvironmentDefaults();
+            if (configuration.UsesEnvironment)
+                MoneyMarketStartup.EnsureEnvironmentDefaults();
             services.TryAddSingleton(new MoneyMarketStoreOptions
             {
-                ConnectionString = Environment.GetEnvironmentVariable(MoneyMarketStartup.ConnectionStringVariable)!,
-                Schema = Environment.GetEnvironmentVariable(MoneyMarketStartup.SchemaVariable) ?? MoneyMarketStartup.DefaultSchema
+                ConnectionString = configuration.GetConnectionString(MoneyMarketStartup.ConnectionStringVariable)!,
+                Schema = configuration.GetSchema(MoneyMarketStartup.SchemaVariable, MoneyMarketStartup.DefaultSchema)
             });
             services.TryAddSingleton<IMoneyMarketFundAuxStore, PostgresMoneyMarketFundStore>();
             services.TryAddSingleton<PostgresMoneyMarketFundService>();
@@ -677,15 +692,15 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         return services;
     }
 
-    private static void EnsureGovernancePersistenceProfile(bool useInMemoryGovernanceServices)
+    private static void EnsureGovernancePersistenceProfile(CompositionConfiguration configuration, bool useInMemoryGovernanceServices)
     {
         if (useInMemoryGovernanceServices)
             return;
 
         var missing = new List<string>();
-        if (!FundAccountsStartup.IsConfigured())
+        if (!configuration.IsConfigured(FundAccountsStartup.ConnectionStringVariable))
             missing.Add(FundAccountsStartup.ConnectionStringVariable);
-        if (!FundStructureStartup.IsConfigured())
+        if (!configuration.IsConfigured(FundStructureStartup.ConnectionStringVariable))
             missing.Add(FundStructureStartup.ConnectionStringVariable);
 
         if (missing.Count == 0)
@@ -697,16 +712,16 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             "or set MERIDIAN_USE_INMEMORY_GOVERNANCE=true only for local/dev fixture scenarios.");
     }
 
-    private static bool IsInMemoryGovernanceProfileEnabled()
+    private static bool IsInMemoryGovernanceProfileEnabled(CompositionConfiguration configuration)
     {
-        var explicitOptIn = ParseBool("MERIDIAN_USE_INMEMORY_GOVERNANCE", false);
+        var explicitOptIn = configuration.GetBoolean("MERIDIAN_USE_INMEMORY_GOVERNANCE", false);
         if (!explicitOptIn)
         {
             return false;
         }
 
-        var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
-            ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+        var environment = configuration["DOTNET_ENVIRONMENT"]
+            ?? configuration["ASPNETCORE_ENVIRONMENT"]
             ?? "Production";
 
         if (string.Equals(environment, "Production", StringComparison.OrdinalIgnoreCase))
@@ -719,56 +734,53 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         return true;
     }
 
-    private static SecurityMasterOptions CreateSecurityMasterOptions()
+    private static SecurityMasterOptions CreateSecurityMasterOptions(CompositionConfiguration configuration)
         => new()
         {
-            ConnectionString = Environment.GetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable) ?? string.Empty,
-            Schema = Environment.GetEnvironmentVariable(SecurityMasterStartup.SchemaVariable) ?? SecurityMasterStartup.DefaultSchema,
-            SnapshotIntervalVersions = ParseInt("MERIDIAN_SECURITY_MASTER_SNAPSHOT_INTERVAL", 50),
-            ProjectionReplayBatchSize = ParseInt("MERIDIAN_SECURITY_MASTER_REPLAY_BATCH_SIZE", 500),
-            PreloadProjectionCache = ParseBool("MERIDIAN_SECURITY_MASTER_PRELOAD_CACHE", true),
-            ResolveInactiveByDefault = ParseBool("MERIDIAN_SECURITY_MASTER_RESOLVE_INACTIVE", true)
+            ConnectionString = configuration.GetConnectionString(SecurityMasterStartup.ConnectionStringVariable) ?? string.Empty,
+            Schema = configuration.GetSchema(SecurityMasterStartup.SchemaVariable, SecurityMasterStartup.DefaultSchema),
+            SnapshotIntervalVersions = configuration.GetInt32("MERIDIAN_SECURITY_MASTER_SNAPSHOT_INTERVAL", 50),
+            ProjectionReplayBatchSize = configuration.GetInt32("MERIDIAN_SECURITY_MASTER_REPLAY_BATCH_SIZE", 500),
+            PreloadProjectionCache = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_PRELOAD_CACHE", true),
+            ResolveInactiveByDefault = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_RESOLVE_INACTIVE", true)
         };
 
-    private static DirectLendingOptions CreateDirectLendingOptions()
+    private static DirectLendingOptions CreateDirectLendingOptions(CompositionConfiguration configuration)
         => new()
         {
-            ConnectionString = DirectLendingStartup.GetEffectiveConnectionString(),
-            Schema = DirectLendingStartup.GetEffectiveSchema(),
-            SnapshotIntervalVersions = ParseInt("MERIDIAN_DIRECT_LENDING_SNAPSHOT_INTERVAL", 50),
-            CurrentEventSchemaVersion = ParseInt("MERIDIAN_DIRECT_LENDING_EVENT_SCHEMA_VERSION", 1),
-            ProjectionEngineVersion = Environment.GetEnvironmentVariable("MERIDIAN_DIRECT_LENDING_PROJECTION_ENGINE_VERSION") ?? "dl-engine-v1",
-            OutboxBatchSize = ParseInt("MERIDIAN_DIRECT_LENDING_OUTBOX_BATCH_SIZE", 50),
-            OutboxPollIntervalSeconds = ParseInt("MERIDIAN_DIRECT_LENDING_OUTBOX_POLL_SECONDS", 5),
-            ReplayBatchSize = ParseInt("MERIDIAN_DIRECT_LENDING_REPLAY_BATCH_SIZE", 250),
-            RequireSecurityMasterReferenceForDurableWrites = ParseBool("MERIDIAN_DIRECT_LENDING_REQUIRE_SECURITY_MASTER_REFERENCE", false)
+            ConnectionString = FirstConfiguredValue(configuration.GetConnectionString(DirectLendingStartup.ConnectionStringVariable),
+                configuration.GetConnectionString(SecurityMasterStartup.ConnectionStringVariable)),
+            Schema = FirstConfiguredValue(configuration[DirectLendingStartup.SchemaVariable],
+                configuration[SecurityMasterStartup.SchemaVariable], DirectLendingStartup.DefaultSchema),
+            SnapshotIntervalVersions = configuration.GetInt32("MERIDIAN_DIRECT_LENDING_SNAPSHOT_INTERVAL", 50),
+            CurrentEventSchemaVersion = configuration.GetInt32("MERIDIAN_DIRECT_LENDING_EVENT_SCHEMA_VERSION", 1),
+            ProjectionEngineVersion = configuration["MERIDIAN_DIRECT_LENDING_PROJECTION_ENGINE_VERSION"] ?? "dl-engine-v1",
+            OutboxBatchSize = configuration.GetInt32("MERIDIAN_DIRECT_LENDING_OUTBOX_BATCH_SIZE", 50),
+            OutboxPollIntervalSeconds = configuration.GetInt32("MERIDIAN_DIRECT_LENDING_OUTBOX_POLL_SECONDS", 5),
+            ReplayBatchSize = configuration.GetInt32("MERIDIAN_DIRECT_LENDING_REPLAY_BATCH_SIZE", 250),
+            RequireSecurityMasterReferenceForDurableWrites = configuration.GetBoolean("MERIDIAN_DIRECT_LENDING_REQUIRE_SECURITY_MASTER_REFERENCE", false)
         };
 
-    private static AssetOperationsOptions CreateAssetOperationsOptions()
+    private static AssetOperationsOptions CreateAssetOperationsOptions(CompositionConfiguration configuration)
         => new()
         {
-            ConnectionString = Environment.GetEnvironmentVariable(AssetOperationsStartup.ConnectionStringVariable) ?? string.Empty,
-            Schema = Environment.GetEnvironmentVariable(AssetOperationsStartup.SchemaVariable) ?? AssetOperationsStartup.DefaultSchema
+            ConnectionString = configuration.GetConnectionString(AssetOperationsStartup.ConnectionStringVariable) ?? string.Empty,
+            Schema = configuration.GetSchema(AssetOperationsStartup.SchemaVariable, AssetOperationsStartup.DefaultSchema)
         };
 
-    private static LedgerJournalStoreOptions CreateLedgerOptions(bool requireGovernedProductionWrites)
+    private static LedgerJournalStoreOptions CreateLedgerOptions(CompositionConfiguration configuration, bool requireGovernedProductionWrites)
         => new()
         {
-            ConnectionString = Environment.GetEnvironmentVariable(LedgerStartup.ConnectionStringVariable) ?? string.Empty,
-            SchemaName = Environment.GetEnvironmentVariable(LedgerStartup.SchemaVariable) ?? LedgerStartup.DefaultSchema,
-            EnablePeriodLocking = ParseBool("MERIDIAN_LEDGER_ENABLE_PERIOD_LOCKING", true),
+            ConnectionString = configuration.GetConnectionString(LedgerStartup.ConnectionStringVariable) ?? string.Empty,
+            SchemaName = configuration.GetSchema(LedgerStartup.SchemaVariable, LedgerStartup.DefaultSchema),
+            EnablePeriodLocking = configuration.GetBoolean("MERIDIAN_LEDGER_ENABLE_PERIOD_LOCKING", true),
             RequireGovernedPostingCommand = requireGovernedProductionWrites,
             RequireExpectedVersion = requireGovernedProductionWrites
         };
 
-    private static bool IsScopedAccessPostgresConfigured()
-        => !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING"));
+    private static string FirstConfiguredValue(params string?[] values)
+        => values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value)) ?? string.Empty;
 
-    private static int ParseInt(string name, int defaultValue)
-        => int.TryParse(Environment.GetEnvironmentVariable(name), out var value) ? value : defaultValue;
-
-    private static bool ParseBool(string name, bool defaultValue)
-        => bool.TryParse(Environment.GetEnvironmentVariable(name), out var value) ? value : defaultValue;
     private sealed class ScopedAccessAssignmentStoreMigrationHostedService : IHostedService
     {
         private readonly PostgresScopedAccessAssignmentStore _store;

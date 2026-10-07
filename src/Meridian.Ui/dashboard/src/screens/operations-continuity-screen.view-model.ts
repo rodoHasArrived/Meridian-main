@@ -14,6 +14,17 @@ import { describeApiError, isAbortError } from "@/lib/api-errors";
 import { humanizeStatus } from "@/components/operations/status";
 import { normalizeLocalWorkstationRoute, workstationRouteWithQuery } from "@/lib/workspace";
 import {
+  buildCloseCalendarQuery,
+  buildCloseCockpitQuery,
+  buildRequestedWorkflowUnavailableError,
+  buildWorkflowFilters,
+  normalizeWorkflowSelection,
+  selectWorkflowId,
+  selectWorkflowSummary,
+  type OperationsContinuityScreenSelection,
+  type OperationsContinuityWorkflowFilters
+} from "@/screens/operations-continuity-screen.selection";
+import {
   buildReviewedAutomationViewModel,
   evidenceStatusLabel,
   evidenceStatusTone
@@ -47,6 +58,7 @@ import type {
   PrivateCapitalCloseCockpitWorkflow,
   PrivateCapitalNavSupportPackage
 } from "@/types";
+export type { OperationsContinuityScreenSelection, OperationsContinuityWorkflowFilters } from "@/screens/operations-continuity-screen.selection";
 
 export type OperationsContinuityTone = "ready" | "review" | "blocked" | "neutral";
 export type OperationsContinuityRowClassName = "bg-success/5" | "bg-warning/5" | "bg-danger/5" | undefined;
@@ -671,18 +683,6 @@ export interface OperationsContinuityScreenServices {
   ) => Promise<OperationsCloseCalendar>;
 }
 
-export interface OperationsContinuityWorkflowFilters {
-  fundAccountId?: string;
-  ledgerBookId?: string;
-  periodId?: string;
-  status?: string;
-}
-
-export interface OperationsContinuityScreenSelection {
-  initialWorkflowId?: string | null;
-  filters?: OperationsContinuityWorkflowFilters;
-}
-
 export interface BuildOperationsContinuityScreenViewModelOptions {
   commandCenter?: FinancialOperationsCommandCenter | null;
   expectedCloseScope?: PrivateCapitalCloseCockpitQuery;
@@ -719,11 +719,7 @@ export function useOperationsContinuityScreenViewModel(
   closeScope: PrivateCapitalCloseCockpitQuery = emptyCloseScope,
   selection: OperationsContinuityScreenSelection = {}
 ): OperationsContinuityScreenViewModel {
-  const initialWorkflowId = selection.initialWorkflowId?.trim() || null;
-  const fundAccountId = selection.filters?.fundAccountId?.trim() || undefined;
-  const ledgerBookId = selection.filters?.ledgerBookId?.trim() || undefined;
-  const periodId = selection.filters?.periodId?.trim() || undefined;
-  const status = selection.filters?.status?.trim() || undefined;
+  const { initialWorkflowId, fundAccountId, ledgerBookId, periodId, status } = normalizeWorkflowSelection(selection);
   const [workflows, setWorkflows] = useState<OperationsContinuityWorkflowSummary[]>([]);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
   const [detail, setDetail] = useState<OperationsContinuityWorkflow | null>(null);
@@ -792,12 +788,7 @@ export function useOperationsContinuityScreenViewModel(
     }
 
     try {
-      const filters: OperationsContinuityWorkflowFilters = {
-        ...(fundAccountId ? { fundAccountId } : {}),
-        ...(ledgerBookId ? { ledgerBookId } : {}),
-        ...(periodId ? { periodId } : {}),
-        ...(status ? { status } : {})
-      };
+      const filters = buildWorkflowFilters({ fundAccountId, ledgerBookId, periodId, status });
       const rows = await services.listWorkflows(filters, { signal: controller.signal });
       if (!mountedRef.current || listRevisionRef.current !== revision) {
         return;
@@ -809,13 +800,7 @@ export function useOperationsContinuityScreenViewModel(
         if (sorted.some((workflow) => workflow.workflowId === initialWorkflowId)) {
           setSelectedWorkflowId(initialWorkflowId);
         } else {
-          const scopeLabel = [
-            ledgerBookId ? `ledger book ${ledgerBookId}` : null,
-            periodId ? `accounting period ${periodId}` : null
-          ].filter(Boolean).join(" and ");
-          setSelectionError(
-            `Requested trusted close workflow ${initialWorkflowId} is not available${scopeLabel ? ` for ${scopeLabel}` : " in this workstation scope"}.`
-          );
+          setSelectionError(buildRequestedWorkflowUnavailableError(initialWorkflowId, filters));
           setSelectedWorkflowId(null);
           setDetail(null);
           setCloseCalendar(null);
@@ -824,13 +809,7 @@ export function useOperationsContinuityScreenViewModel(
         return;
       }
 
-      setSelectedWorkflowId((current) => {
-        if (current && sorted.some((workflow) => workflow.workflowId === current)) {
-          return current;
-        }
-
-        return sorted[0]?.workflowId ?? null;
-      });
+      setSelectedWorkflowId((current) => selectWorkflowId(sorted, current));
       if (sorted.length === 0) {
         setDetail(null);
       }
@@ -896,13 +875,9 @@ export function useOperationsContinuityScreenViewModel(
       });
   }, [selectedWorkflowId, services]);
 
-  const closeCockpitScope = useMemo(() => {
-    if (selectionError) {
-      return null;
-    }
-
-    return workflows.find((workflow) => workflow.workflowId === selectedWorkflowId) ?? workflows[0] ?? null;
-  }, [selectedWorkflowId, selectionError, workflows]);
+  const closeCockpitScope = useMemo(() =>
+    selectWorkflowSummary(workflows, selectedWorkflowId, !!selectionError),
+  [selectedWorkflowId, selectionError, workflows]);
 
   useEffect(() => {
     if (loading || selectionError) {
@@ -1037,9 +1012,7 @@ export function buildOperationsContinuityScreenViewModel({
   refresh,
   selectWorkflow
 }: BuildOperationsContinuityScreenViewModelOptions): OperationsContinuityScreenViewModel {
-  const selectedSummary = selectionBlocked
-    ? null
-    : workflows.find((workflow) => workflow.workflowId === selectedWorkflowId) ?? workflows[0] ?? null;
+  const selectedSummary = selectWorkflowSummary(workflows, selectedWorkflowId, selectionBlocked);
   const effectiveDetail = detail?.workflowId === selectedSummary?.workflowId ? detail : null;
   const gateSource = effectiveDetail?.gates ?? selectedSummary?.gates ?? [];
   const nextAction = buildNextActionViewModel({
@@ -3186,20 +3159,6 @@ function collectReopenWorkflowEvidenceLinks(workflow: OperationsContinuityWorkfl
       .filter((packageSummary) => packageSummary.packageId.toLowerCase().includes("period-lock"))
       .flatMap((packageSummary) => packageSummary.evidenceLinks)
   ]);
-}
-
-function buildCloseCockpitQuery(workflow: OperationsContinuityWorkflowSummary): PrivateCapitalCloseCockpitQuery {
-  return {
-    fundAccountId: workflow.fundAccountId,
-    periodId: workflow.periodId
-  };
-}
-
-function buildCloseCalendarQuery(workflow: OperationsContinuityWorkflowSummary): { fundAccountId: string; periodId: string } {
-  return {
-    fundAccountId: workflow.fundAccountId,
-    periodId: workflow.periodId
-  };
 }
 
 const FINANCIAL_OPERATIONS_PROOF_LANE_LABELS: Record<string, string> = {

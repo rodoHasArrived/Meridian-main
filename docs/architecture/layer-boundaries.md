@@ -63,9 +63,23 @@ Meridian (Host/Exe)   →  Application (+ transitive)
 3. **Evaluated project graph**: `Infrastructure_ShouldNot_Reference_Storage_DirectlyOrTransitively`
    in `LayerBoundaryTests` evaluates MSBuild's actual `ProjectReference` items for Debug and
    Release, including imports, properties and conditions, then traverses the dependency closure.
+   Each child inherits the effective reference-specific global properties, including overrides
+   and removals, including `_GlobalPropertiesToRemoveFromProjectReferences`. For projects
+   importing `PrepareProjectReferences`, inspection runs that target and reads its prepared
+   `_MSBuildProjectReferenceExistent` items so negotiated framework/platform metadata is included.
+   Distinct declared contexts unmatched to prepared metadata are retained, including same-path references.
+   Reference-specific `ToolsVersion` is part of context identity and is forwarded to child MSBuild.
+   Unsupported toolsets fail closed, including when the same path also has a valid toolset context.
+   Bare projects without that target retain evaluation-only inspection. Neither route restores
+   or compiles projects. Residual MSBuild escapes are preserved as literal property values, matching the
+   [MSBuild task parser](https://source.dot.net/Microsoft.Build/parent/Shared/PropertyParser.cs.html)
+   and the task oracle for `Marker=west%253Beast=1`, and escaped for command-line forwarding. Traversal distinguishes the same project under different contexts,
+   with fail-closed budgets of 32 contexts per project and 1,024 overall; exceeding a budget
+   reports the project chain and possible non-stabilizing cycle rather than passing the gate.
    A direct edge or any intermediate path from Infrastructure to Storage fails with its chain.
    `ProjectReferenceGraphTests` includes source-free negative fixtures, including an unused
-   `ReferenceOutputAssembly="false"` edge, an indirect path and a conditional imported edge.
+   `ReferenceOutputAssembly="false"` edge, an indirect path, a conditional imported edge and
+   a transitive edge enabled by `AdditionalProperties` on its parent reference.
    These tests require the repository checkout and .NET SDK; they do not compile fixture types.
 
 4. **CI gate**: The maintained .NET test lane executes the architecture tests. Run the scoped
