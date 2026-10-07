@@ -1,0 +1,81 @@
+# PRD-112: workflow changes require human governance review before merge/activation.
+name: Pipeline Budget Benchmark
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/pipeline-benchmark.yml'
+      - 'benchmarks/**'
+      - 'build/config/testing/pipeline-benchmark-profile.json'
+      - 'build/scripts/ci/benchmark-pipeline.py'
+      - 'build/scripts/validate_budget.py'
+      - 'build/scripts/tests/test_validate_budget.py'
+      - 'tests/scripts/test_benchmark_pipeline.py'
+      - 'src/Meridian.Application/Pipeline/**'
+      - 'src/Meridian.Storage/Archival/**'
+      - 'src/Meridian.Core/Serialization/**'
+      - 'src/Meridian.Contracts/**'
+      - 'src/Meridian.Domain/**'
+      - 'Directory.*.props'
+      - 'global.json'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/pipeline-benchmark.yml'
+      - 'benchmarks/**'
+      - 'build/config/testing/pipeline-benchmark-profile.json'
+      - 'build/scripts/ci/benchmark-pipeline.py'
+      - 'build/scripts/validate_budget.py'
+      - 'src/Meridian.Application/Pipeline/**'
+      - 'src/Meridian.Storage/Archival/**'
+      - 'src/Meridian.Core/Serialization/**'
+      - 'src/Meridian.Contracts/**'
+      - 'src/Meridian.Domain/**'
+      - 'Directory.*.props'
+      - 'global.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pipeline-benchmark-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  pipeline-budget:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      CI: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: 'true'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+        env:
+          # global.json permits SDK roll-forward; isolate this lane from preinstalled SDKs.
+          DOTNET_INSTALL_DIR: ${{ runner.temp }}/pipeline-dotnet
+        with:
+          dotnet-version: '10.0.100'
+      - name: Install validator test dependency
+        run: python -m pip install pytest==8.4.2
+      - name: Prove harness and validator failure propagation
+        run: python -m pytest tests/scripts/test_benchmark_pipeline.py build/scripts/tests/test_validate_budget.py -q
+      - name: Measure fixed pipeline stages and enforce existing budgets
+        run: python build/scripts/ci/benchmark-pipeline.py
+      - name: Retain commit-bound measurements and verdict, including failures
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pipeline-budget-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/pipeline-benchmark/
+          retention-days: 30
+          if-no-files-found: error
+          compression-level: 1
