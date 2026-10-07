@@ -13,7 +13,7 @@ This report marks registered source modules whose code or README hashes differ f
 
 | Module | Path | README | Reason |
 | --- | --- | --- | --- |
-| `SRC-APP` | `src/Meridian.Application` | `src/Meridian.Application/README.md` | `source_hash_drift` |
+| `SRC-APP` | `src/Meridian.Application` | `src/Meridian.Application/README.md` | `source_hash_drift`, `readme_hash_drift` |
 | `SRC-BACKTESTING` | `src/Meridian.Backtesting` | `src/Meridian.Backtesting/README.md` | `source_hash_drift`, `readme_hash_drift` |
 | `SRC-CONTRACTS` | `src/Meridian.Contracts` | `src/Meridian.Contracts/README.md` | `source_hash_drift`, `readme_hash_drift` |
 | `SRC-DESIGN-FINANCIAL-OPERATIONS` | `src/Meridian.FinancialOperations` | `src/Meridian.FinancialOperations/README.md` | `source_hash_drift`, `readme_hash_drift` |

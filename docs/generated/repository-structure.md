@@ -5931,12 +5931,14 @@ Meridian-main
 │   │   │   │   ├── V_ledger_039__tax_lot_proceeds_allocation.sql
 │   │   │   │   ├── V_ledger_040__canonical_lot_amortization.sql
 │   │   │   │   ├── V_ledger_041__current_basis_disposal.sql
-│   │   │   │   └── V_ledger_042__atomic_lot_successors.sql
+│   │   │   │   ├── V_ledger_042__atomic_lot_successors.sql
+│   │   │   │   └── V_ledger_043__amortization_reversal_basis_restoration.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
 │   │   │   ├── CanonicalDisposalHistoryProjector.cs
 │   │   │   ├── CanonicalOpenLotDisposalGuard.cs
+│   │   │   ├── CorporateActionSuccessorAncestry.cs
 │   │   │   ├── DurableAutomatedJournalPoster.cs
 │   │   │   ├── GovernedLedgerPostingTarget.cs
 │   │   │   ├── HistoricalTaxLotQuantity.cs
@@ -10540,6 +10542,8 @@ Meridian-main
 │   │   │   ├── AtomicTaxLotJournalStoreTests.CurrentBasis.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.HistoricalQuantity.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.ProceedsAllocation.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.SuccessorAncestry.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.SuccessorGuards.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.SuccessorPublication.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.Successors.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.SuccessorScope.cs
@@ -10550,6 +10554,8 @@ Meridian-main
 │   │   │   ├── CanonicalOpenLotConsumerTests.cs
 │   │   │   ├── CanonicalSymbolRegistryTests.cs
 │   │   │   ├── CompositeSinkTests.cs
+│   │   │   ├── CorporateActionSuccessorAncestryTests.cs
+│   │   │   ├── CorporateActionSuccessorAncestryTests.Fixtures.cs
 │   │   │   ├── DataLineageServiceTests.cs
 │   │   │   ├── DataQualityScoringServiceTests.cs
 │   │   │   ├── DataReplacementCostEstimatorTests.cs
@@ -10802,6 +10808,7 @@ Meridian-main
 │   │   │   ├── LedgerAndCompliancePermissionSplitTests.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceSuccessorTests.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceTests.cs
+│   │   │   ├── LedgerReportingAuthoritativeSourceTests.SuccessorOriginIntegrity.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceTests.SuccessorReportPack.cs
 │   │   │   ├── LegacyReportingRouteRetirementEndpointTests.cs
 │   │   │   ├── LiveBrokeragePortfolioSyncServiceTests.cs
