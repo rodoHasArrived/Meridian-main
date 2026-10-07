@@ -73,6 +73,7 @@ import { BankingPaymentApprovalsPanel } from "@/screens/accounting-screen.paymen
 import { BreakAuditRebuildCheck } from "@/screens/accounting-screen.break-audit-rebuild";
 import { ReconciliationReadinessPanel } from "@/screens/accounting-screen.reconciliation-readiness";
 import { StatementRunDetailTabs } from "@/screens/accounting-screen.statement-run-detail";
+import { AccountingOnboardingPanel } from "@/screens/accounting-screen.onboarding-panel";
 import {
   ChartAccountPathBuilder,
   ConfigureActivationRail,
@@ -2386,6 +2387,10 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
             </a>
           </CardContent>
         </Card>
+      ) : null}
+
+      {sectionVisibility.showExternalGl ? (
+      <AccountingOnboardingPanel />
       ) : null}
 
       {sectionVisibility.showExternalGl ? (

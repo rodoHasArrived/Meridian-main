@@ -31,6 +31,8 @@ describe("command palette view model", () => {
   it.each([
     ["cash forecast", "/portfolio/cash-ladder"],
     ["import statement", "/accounting/statement-import"],
+    ["accounting onboarding", "/accounting/reconciliation/external-gl"],
+    ["onboard accounting", "/accounting/reconciliation/external-gl"],
     ["run a report", "/reporting/run"],
     ["historical prices", "/data/operations"],
     ["SQL", "/data/query"],

@@ -114,6 +114,8 @@ The shared dense-row keyboard contract supports row selection, detail focus, and
 and local command search. Purpose descriptions and search-only aliases expose intents such as
 cash forecast, statement import, historical prices, and running reports. Local destinations remain
 searchable when remote command or entity search is unavailable; unwired routes stay excluded.
+Accounting onboarding searches open the existing External GL surface, which hosts the bounded
+onboarding workspace and its retained comparison and readiness evidence.
 The masthead places operator controls on a second row at laptop widths so search stays readable.
 
 ## Purpose
@@ -1502,6 +1504,17 @@ Browser reconciliation route helpers include the shared Accounting casework fami
 Browser extensibility route helpers expose the shared core extensibility catalog plus tenant-template activation-readiness, activation, and activation-history endpoints; keep `src/types.ts` aligned with `Meridian.Contracts.Extensibility` instead of adding UI-local workflow or rule shapes.
 
 ## Accounting close browser surface
+
+The External GL route also hosts bounded accounting onboarding for one entity, explicit account
+population and date range. Its shared onboarding API retains criteria revisions, exact import and
+mapping identities, comparison snapshots, difference ownership, independent reviewer decisions and
+frozen readiness packets. Historical comparisons can be reproduced from retained inputs. Readiness
+shows unresolved differences across every required date; a later clean period does not clear an
+earlier required period. The browser never substitutes fixtures for these authoritative reads or
+writes, computes readiness, imports missing sources automatically, or grants accounting authority.
+Focused workflow, stale-response and accessibility coverage lives in
+`accounting-screen.onboarding-panel.test.tsx`; API boundary coverage lives in
+`lib/api/accounting-onboarding.api.test.ts`.
 
 The Accounting route reuses fund-operations ledger views and now includes trial-balance source-event and approval drill-through affordances. Keep browser-only rendering in `src/screens/accounting-screen.tsx` and shared accounting close contracts in `src/features/accounting/accountingCloseModels.ts`.
 
