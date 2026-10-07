@@ -30,7 +30,8 @@ Paths below are relative to `src/`. Use the [source-module index](../docs/source
 | Area | Entry points and responsibility |
 | --- | --- |
 | Runtime host | [Meridian](Meridian/README.md) owns the host, CLI, and runtime composition. |
-| Installed startup | [Meridian.Launcher](Meridian.Launcher/README.md) opens the workstation after readiness; [Meridian.LifecycleSupervisor](Meridian.LifecycleSupervisor/README.md) owns installed host and dedicated database lifecycle. |
+| Installed startup | [Meridian.Launcher](Meridian.Launcher/README.md) verifies request-bound startup outcomes; [Meridian.LifecycleSupervisor](Meridian.LifecycleSupervisor/README.md) owns installed host and dedicated database lifecycle, readiness, and browser opening. |
+| Consumer installation | [Meridian.Setup](Meridian.Setup/README.md) owns bundled payload installation, repair, and uninstall. |
 | Application | [Meridian.Application](Meridian.Application/README.md) owns use cases, orchestration, commands, and pipelines. |
 | Shared foundations | [Meridian.Core](Meridian.Core/README.md), [Meridian.Domain](Meridian.Domain/README.md), and [Meridian.Contracts](Meridian.Contracts/README.md) provide shared primitives, domain contracts, and DTOs. |
 | Providers and storage | [Meridian.ProviderSdk](Meridian.ProviderSdk/README.md), [Meridian.Infrastructure](Meridian.Infrastructure/README.md), and [Meridian.Storage](Meridian.Storage/README.md) own provider extension seams, adapters, and persistence. |
