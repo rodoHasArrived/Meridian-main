@@ -11,6 +11,11 @@ last_reviewed: 2026-10-05
 
 # src/Meridian.Ui.Shared
 
+Trading readiness includes every supplied acceptance gate in aggregate status and evidence
+summaries, including broker execution reconciliation and portfolio recovery. Every non-ready
+acceptance gate contributes a live-operation blocker independently of aggregate status, so new
+gate IDs cannot disappear from the shared browser and desktop readiness contract.
+
 `OnboardingEndpoints` exposes tenant/company-scoped workspaces under
 `/api/accounting/onboarding/workspaces`. Authenticated identity owns configuration and capture;
 designated independent reviewers record decisions. Exact source selection comes from retained
