@@ -635,7 +635,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
 
         var post = () => fixture.Restart().AppendAssetPostingAsync(forged);
         await post.Should().ThrowAsync<LedgerValidationException>()
-            .WithMessage("Amortization correction requires the latest unchanged amortization lot and its exact effective date.");
+            .WithMessage("Correction journal lineage must identify the journal retained by the corrected tax-lot batch.");
         (await fixture.Restart().GetByPeriodAsync(fixture.Period.PeriodId)).Should().ContainSingle();
         (await fixture.Restart().GetAtomicTaxLotPostingAsync(forged.MutationBatchId)).Should().BeNull();
         (await fixture.Restart().ListOpenTaxLotsAsync(fixture.BookId, AmortAccount)).Single()
