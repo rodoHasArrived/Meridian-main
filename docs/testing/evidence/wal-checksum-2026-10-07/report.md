@@ -2,7 +2,7 @@
 
 All eight portable benchmark stages pass with the existing profile and budgets in [hosted run 37666873544](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37666873544). The accepted run retains complete measurements and verifies the versioned WAL checksum together with the compatible deduplication key formatter.
 
-Canonical repository CI has **not passed**. The local `bash scripts/ci.sh` run exited 1 after four MCP `ToolProcessRunnerTests` failed on process containment and exit handling, outside the changed checksum and formatter paths. Remediation and final integration verification remain pending. Portable benchmark acceptance is established independently by the completed hosted benchmark run.
+Current repository integration outcomes are reported on [PR #3123](https://github.com/rodoHasArrived/Meridian-main/pull/3123). This packet preserves portable acceptance, the initial CI environment failure, and the independently verified process-reaping remediation as historical evidence.
 
 ## Accepted measurements
 
@@ -20,6 +20,8 @@ The clean hosted checkout tested merge `f7c1f6d77ec44b2a4924c892626678221fef3317
 | `AlpacaParse_Quote_SourceGenerated` | 950.710 | 1,200 | 472 | 640 | Pass |
 
 The [original run manifest](runs/hosted-final-pass/run.json), [validator evidence](runs/hosted-final-pass/budget-evidence.json), and [full BenchmarkDotNet report](runs/hosted-final-pass/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json) retain eight complete stage rows and **444 raw measurement records**, including warmup, overhead, and excluded outlier records. All sixteen original text files and the fifteen original manifest hashes are preserved.
+
+After integrating main `1f94c380d`, a [source-binding receipt](receipts/current-main-integration.json) verifies that seventeen checksum, deduplication, test, benchmark and toolchain files remain byte-identical to both the accepted branch head and the fetched actual hosted tested merge.
 
 The accepted [profile](runs/hosted-final-pass/profile.json) and [exported budgets](runs/hosted-final-pass/bdn/perf-budgets.json) are byte-identical to the [clean local baseline](runs/local-baseline/run.json). Their SHA-256 digests are respectively `f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26` and `73c03f00210faac0b1d7bd5838d491cb8daae989ddc4304b30d9283997ebedce`.
 
@@ -83,6 +85,6 @@ The standalone `python3 verify-evidence.py` checks packet hashes, unchanged orig
 
 The initial local canonical CI attempt on `a65c3f3db71868724d5a3813e70575f75a903279` retained 19,338 passing tests, four failing `ToolProcessRunnerTests`, and five registered skips across nineteen shards, then exited 1. Diagnosis found that the container's PID 1 retained killed descendants as zombies, affecting process-exit assertions.
 
-An artifact-only Linux subreaper wrapper now adopts and reaps orphaned child processes while executing the unchanged CI command. Its focused proof passed seven process-runner tests with zero failures/skips in thirteen seconds; eight adopted SIGKILL descendants were reaped, with no new zombies or residual adopted processes. The exact full `bash scripts/ci.sh` rerun started through this wrapper at 19:04:55 UTC on October 7, 2026 and remains pending. The wrapper changes execution-environment process reaping; it does not weaken tests or modify production code.
+The retained [artifact-only Linux subreaper](ci/linux-subreaper.py) adopts and reaps orphaned child processes while executing the unchanged command. Its [focused proof](ci/tool-process-subreaper-receipt.json) passed seven process-runner tests with zero failures/skips in thirteen seconds; eight adopted SIGKILL descendants were reaped, with no new zombies or residual adopted processes. This supplies the process reaping normally provided by init without changing production code or weakening tests.
 
-Hosted `verify-dotnet` and `verify-browser` checks passed for the same production head. An earlier documentation freshness failure was corrected in documentation commit `2068f34b42ba1fa5b685a0f509034d3bfb3f13b3` and checked locally. **Canonical CI remains pending remediation; this report does not claim a passing repository integration gate.** Required GitHub Actions checks on the final PR head remain the merge authority. The accepted portable result and retained measurements remain valid while the separate integration failure is resolved.
+The [CI environment archive](ci/README.md) preserves the initial failure and focused remediation evidence. Full canonical local and hosted runs, including their actual outcomes and source revisions, are recorded on [PR #3123](https://github.com/rodoHasArrived/Meridian-main/pull/3123). Required GitHub Actions checks on the final PR head remain the merge authority. The accepted portable benchmark result is independently complete and retained here.

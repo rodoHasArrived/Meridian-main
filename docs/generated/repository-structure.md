@@ -2487,6 +2487,15 @@ Meridian-main
 │   │   │   │   ├── validation.json
 │   │   │   │   └── verify_packet.py
 │   │   │   ├── wal-checksum-2026-10-07
+│   │   │   │   ├── ci
+│   │   │   │   │   ├── initial-failure
+│   │   │   │   │   │   └── archive-sha256.json
+│   │   │   │   │   ├── tool-process-subreaper-results
+│   │   │   │   │   │   └── tool-process-subreaper.trx.gz
+│   │   │   │   │   ├── linux-subreaper.py
+│   │   │   │   │   ├── README.md
+│   │   │   │   │   ├── tool-process-subreaper-receipt.json
+│   │   │   │   │   └── tool-process-subreaper.log.gz
 │   │   │   │   ├── component-profiles
 │   │   │   │   │   └── dedup
 │   │   │   │   │       ├── BaselineDedupLedger.cs
@@ -2554,6 +2563,8 @@ Meridian-main
 │   │   │   │   │   ├── wal-checksum-local-time.trx.gz
 │   │   │   │   │   └── wal-checksum-scalar.trx.gz
 │   │   │   │   ├── receipts
+│   │   │   │   │   ├── current-main-integration.json
+│   │   │   │   │   ├── initial-committed-packet-verification.json
 │   │   │   │   │   ├── optimized-interrupted-budget-evidence.json
 │   │   │   │   │   └── optimized-interrupted-receipt.json
 │   │   │   │   ├── runs
@@ -2633,6 +2644,13 @@ Meridian-main
 │   │   │   │   │       │   └── perf-budgets.json
 │   │   │   │   │       ├── profile.json
 │   │   │   │   │       └── run.json
+│   │   │   │   ├── third-party-notices
+│   │   │   │   │   ├── K4os.Compression.LZ4-1.3.8-LICENSE.txt
+│   │   │   │   │   ├── K4os.Compression.LZ4-1.3.8.nuspec
+│   │   │   │   │   ├── LZ4-library-LICENSE.txt
+│   │   │   │   │   ├── LZ4-license-scope.txt
+│   │   │   │   │   ├── provenance.json
+│   │   │   │   │   └── README.md
 │   │   │   │   ├── .gitattributes
 │   │   │   │   ├── manifest.json
 │   │   │   │   ├── manifest.sha256

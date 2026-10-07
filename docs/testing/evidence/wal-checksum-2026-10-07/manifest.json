@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "createdAt": "2026-10-07T18:23:28.444200+00:00",
-  "status": "portable-passed-ci-pending",
+  "status": "portable-passed",
   "intendedTrackedLocation": "docs/testing/evidence/wal-checksum-2026-10-07/",
   "portableRuns": [
     {
@@ -225,10 +225,113 @@
     },
     {
       "path": "README.md",
-      "bytes": 2268,
-      "sha256": "3258cac37793efedb01a43996e943174932975b8108c6d59f9074c6e90d70919",
+      "bytes": 2631,
+      "sha256": "0e213df24a074e78f80883b9b46493b92909d3f59679b32b3800286531d7d207",
       "encoding": "verbatim",
       "source": "generated evidence landing page"
+    },
+    {
+      "path": "ci/README.md",
+      "bytes": 1312,
+      "sha256": "e2d960b379fb097d2103f7dbf616d346c7499b2d35fbc99a3387f3555df5f74f"
+    },
+    {
+      "path": "ci/initial-failure/archive-sha256.json",
+      "bytes": 1178,
+      "sha256": "b7d0240d7f7854772e08375360648563cde6f3030e8ad20832da59d56de996aa"
+    },
+    {
+      "encoding": "gzip",
+      "originalBytes": 195062,
+      "originalSha256": "433847695b676c6f6820b65a132380fffbd9d755f26f1f2903ba3560a1c9dcad",
+      "originalSource": "artifacts/wal-checksum-profile/canonical-ci-initial-failure/artifacts/build-logs/web-workstation-build.log",
+      "path": "ci/initial-failure/artifacts/build-logs/web-workstation-build.log.gz",
+      "bytes": 16884,
+      "sha256": "4e78384bd08f29c5dfc860839e76ae5b696ceb5a92fd57a9368e0e4f84236994"
+    },
+    {
+      "path": "ci/initial-failure/artifacts/ci-summary/quality-gate/steps.tsv",
+      "bytes": 654,
+      "sha256": "9349e57d0c5b11215a38bf072a28817f092e51ac424ac465fece4fb3d8f87a28"
+    },
+    {
+      "path": "ci/initial-failure/artifacts/ci-summary/quality-gate/summary.md",
+      "bytes": 2626,
+      "sha256": "29fee9e3c26f4b54cff55d5650ae2ae4142af5e444ae244989e3172218142f26"
+    },
+    {
+      "encoding": "gzip",
+      "originalBytes": 3973610,
+      "originalSha256": "fdc75d7309b73f2a3628f412d1f4dd822af8e65e0bebb9f9719ccb386a4c4f89",
+      "originalSource": "artifacts/wal-checksum-profile/canonical-ci-initial-failure/artifacts/test-results/dotnet/ci-dotnet-test-summary.json",
+      "path": "ci/initial-failure/artifacts/test-results/dotnet/ci-dotnet-test-summary.json.gz",
+      "bytes": 386071,
+      "sha256": "13bd008001fcaa37c2f2fee8302e8e9c71d13a941cdf0221553a4a47d524e435"
+    },
+    {
+      "encoding": "gzip",
+      "originalBytes": 169211,
+      "originalSha256": "b9b72972649741868f1c2482d456718dc1ca396c30225e88e1b9bd5f0a56df3e",
+      "originalSource": "artifacts/wal-checksum-profile/canonical-ci-initial-failure/artifacts/test-results/dotnet/core-remainder/core-remainder_net10.0_20261007185852.trx",
+      "path": "ci/initial-failure/artifacts/test-results/dotnet/core-remainder/core-remainder_net10.0_20261007185852.trx.gz",
+      "bytes": 28575,
+      "sha256": "45f9d62ff0c5d278e932917d7ef8a99f6d18c2aa721df9de29f879a4ec01e4b2"
+    },
+    {
+      "encoding": "gzip",
+      "originalBytes": 8913,
+      "originalSha256": "26f569240565e691019695fa56a0da77b93b4e9cf2ec4d340ee01abf61c8a943",
+      "originalSource": "artifacts/wal-checksum-profile/canonical-ci-initial-failure/artifacts/test-results/dotnet/core-remainder/dotnet-test.log",
+      "path": "ci/initial-failure/artifacts/test-results/dotnet/core-remainder/dotnet-test.log.gz",
+      "bytes": 1886,
+      "sha256": "79738ffff610a8da42d142dc2bfce8fc8d030aabcae37c6a93885c6b0de7a873"
+    },
+    {
+      "path": "ci/initial-failure/artifacts/wal-checksum-profile/canonical-ci-documentation-receipt.json",
+      "bytes": 550,
+      "sha256": "75e6b6f1a9002288441a38c9123613778b2f40641c7cd1f1bec2fae09b0c6349"
+    },
+    {
+      "path": "ci/initial-failure/artifacts/wal-checksum-profile/canonical-ci-receipt.json",
+      "bytes": 414,
+      "sha256": "ab35e912700d5b1149931b7a04636d4e6b8da172d91eca686065ce7bdf15b382"
+    },
+    {
+      "encoding": "gzip",
+      "originalBytes": 214766,
+      "originalSha256": "0df7608c9c062a30f59d51870a782a9dbbc9dfd1e8c060ac9647d2b2c6e21bec",
+      "originalSource": "artifacts/wal-checksum-profile/canonical-ci-initial-failure/artifacts/wal-checksum-profile/canonical-ci.log",
+      "path": "ci/initial-failure/artifacts/wal-checksum-profile/canonical-ci.log.gz",
+      "bytes": 21507,
+      "sha256": "7fa5f94e2b90df864cfb16bcf035a859772a8a37eb878af11678b69342780f51"
+    },
+    {
+      "path": "ci/linux-subreaper.py",
+      "bytes": 6797,
+      "sha256": "09668360d71d7b4560a231874c11d4cf21a217b896c712bfb291fad1bd7828e8"
+    },
+    {
+      "path": "ci/tool-process-subreaper-receipt.json",
+      "bytes": 18710,
+      "sha256": "949ef6e3e4c3996f02db68dc207618de8385d9817070c3b079f9b64566dd9706"
+    },
+    {
+      "encoding": "gzip",
+      "originalBytes": 11792,
+      "originalSha256": "054d8226e81a994764f0b0f79c0fe0b128fdbc22516a81756552eaa25f98e66e",
+      "originalSource": "artifacts/wal-checksum-profile/tool-process-subreaper-results/tool-process-subreaper.trx",
+      "path": "ci/tool-process-subreaper-results/tool-process-subreaper.trx.gz",
+      "bytes": 2452,
+      "sha256": "ebedd924969d9458af3ba9aa1a22f2393d883002a656de349f68b0a478d697a0"
+    },
+    {
+      "encoding": "gzip",
+      "originalBytes": 496,
+      "originalSha256": "a62b3f04bc48ec185a12d84a3fe7fe3a7d42f01cae6c7fb4d2bc9f5fa08f60f0",
+      "originalSource": "artifacts/wal-checksum-profile/tool-process-subreaper.log",
+      "path": "ci/tool-process-subreaper.log.gz",
+      "bytes": 306,
+      "sha256": "c41c5dbe7088839916d9dc1103657a9c022e9be4b3f7e623e7c93ef1cffc8f28"
     },
     {
       "path": "component-profiles/dedup/BaselineDedupLedger.cs",
@@ -852,6 +955,16 @@
       "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/test-results/wal-checksum-scalar.trx"
     },
     {
+      "path": "receipts/current-main-integration.json",
+      "bytes": 3691,
+      "sha256": "978b642d608f9c42a098ad8d70e93d75af017b765a470c2ce129d08c52f9545f"
+    },
+    {
+      "path": "receipts/initial-committed-packet-verification.json",
+      "bytes": 479,
+      "sha256": "8a32bdbb609eb79e0629e9b44ce7173af5d239ace34bea5d81f4edc3bc80766b"
+    },
+    {
       "path": "receipts/optimized-interrupted-budget-evidence.json",
       "bytes": 3776,
       "sha256": "474ae46f7aee7b626a15c3cca7ff871496a6cf3f0150cc523985aae116b5f03b",
@@ -889,8 +1002,8 @@
     },
     {
       "path": "report.md",
-      "bytes": 13047,
-      "sha256": "96fced4d615412245f7803bc832a993a4d1439d4f614e8fcd772c1b018fc6650",
+      "bytes": 13078,
+      "sha256": "539c21c61cb42e533a8264fc6afc91c7bb8d3cd197882e2124e067b002a37ddd",
       "encoding": "verbatim",
       "source": "polished from artifacts/wal-checksum-profile/report-working.md and retained receipts"
     },
@@ -1885,6 +1998,36 @@
       "source": "/workspace/Meridian-main/artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1/sdk.log"
     },
     {
+      "path": "third-party-notices/K4os.Compression.LZ4-1.3.8-LICENSE.txt",
+      "bytes": 1073,
+      "sha256": "ef5a021fc2ae3658f4ad8d2526c87fb2cf394285f47abfb784cf73a27ffd9522"
+    },
+    {
+      "path": "third-party-notices/K4os.Compression.LZ4-1.3.8.nuspec",
+      "bytes": 1639,
+      "sha256": "8d71ea7ef627f0d3db76d528411cfb4d126dabc2fe4f7e93713068bb40d5c8df"
+    },
+    {
+      "path": "third-party-notices/LZ4-library-LICENSE.txt",
+      "bytes": 1311,
+      "sha256": "d15d99c8dc6b0ec22174c0e563a95bc40f9363ca7f9d9d793bb5c5a8e8d0af71"
+    },
+    {
+      "path": "third-party-notices/LZ4-license-scope.txt",
+      "bytes": 565,
+      "sha256": "2ba56d6195e9bb84500784a49099edae53eb103785b25928c194809dba5a025c"
+    },
+    {
+      "path": "third-party-notices/README.md",
+      "bytes": 2171,
+      "sha256": "c90490a10a6ed8525c1a861f5f01334239f35ae0b707a5be92f56ebcae90b3df"
+    },
+    {
+      "path": "third-party-notices/provenance.json",
+      "bytes": 3941,
+      "sha256": "67b25da314a2ee428c3d32c5385633a0c6a7feb7478eb8f31e959ed17257d9b8"
+    },
+    {
       "path": "verify-evidence.py",
       "bytes": 6994,
       "sha256": "be361bfff8685538fface8b7182a387176cce524da561892eab295aa9307043a",
@@ -1924,7 +2067,7 @@
       ]
     }
   ],
-  "updatedAt": "2026-10-07T19:07:25.386882+00:00",
+  "updatedAt": "2026-10-07T19:14:05.321964+00:00",
   "acceptedPortableRun": "runs/hosted-final-pass",
   "acceptanceContractBaseline": "runs/local-baseline",
   "canonicalCiStatus": {
@@ -1951,5 +2094,7 @@
       "residualAdoptedProcesses": 0
     }
   },
-  "bytePreservation": "Packet-scoped .gitattributes disables Git text normalization; retained files preserve original bytes."
+  "bytePreservation": "Packet-scoped .gitattributes disables Git text normalization; retained files preserve original bytes.",
+  "ciEvidence": "Historical initial canonical failure and independent process-reaping remediation; current full gate results are recorded on PR3123.",
+  "sourceBindingReceipt": "receipts/current-main-integration.json"
 }

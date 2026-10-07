@@ -1,11 +1,11 @@
 {
-  "total_files": 717,
-  "total_lines": 156829,
+  "total_files": 719,
+  "total_lines": 156891,
   "orphaned_count": 240,
   "no_heading_count": 155,
   "stale_count": 0,
   "todo_count": 298,
-  "average_lines": 218.7,
+  "average_lines": 218.2,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2802,7 +2802,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11728,
+      "line_count": 11746,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4057,6 +4057,14 @@
       "stale": false
     },
     {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/ci/README.md",
+      "line_count": 20,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/testing/evidence/wal-checksum-2026-10-07/component-profiles/dedup/README.md",
       "line_count": 39,
       "has_heading": true,
@@ -4114,7 +4122,7 @@
     },
     {
       "path": "docs/testing/evidence/wal-checksum-2026-10-07/README.md",
-      "line_count": 15,
+      "line_count": 17,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4122,7 +4130,7 @@
     },
     {
       "path": "docs/testing/evidence/wal-checksum-2026-10-07/report.md",
-      "line_count": 88,
+      "line_count": 90,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4180,6 +4188,14 @@
       "path": "docs/testing/evidence/wal-checksum-2026-10-07/runs/local-first-optimized-interrupted/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
       "line_count": 22,
       "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/third-party-notices/README.md",
+      "line_count": 20,
+      "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
