@@ -98,6 +98,13 @@ because its 32-bit and 64-bit encoders can produce different bytes for one input
 
 ## Evidence and failure behavior
 
+The [October 7 checksum investigation](../testing/evidence/wal-checksum-2026-10-07/report.md)
+retains the baseline, profiles and complete passing run outside the temporary Actions
+artifact retention window. [Run 37666873544](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37666873544)
+passed all eight stages with the original profile and budgets: WAL means were
+199.240/253.192/574.056 ns for 64/900/4096-byte payloads, with zero allocation.
+The packet includes all 444 raw measurements and a standalone hash verifier.
+
 Evidence lives under
 `artifacts/pipeline-benchmark/<commit>/<run-id>-<attempt>/` and is retained for 30 days
 in an artifact named with the commit, Actions run ID and attempt. Every invocation
