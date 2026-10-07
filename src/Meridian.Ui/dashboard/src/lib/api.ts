@@ -823,6 +823,15 @@ export function apiGetJson<T>(path: string, options: ApiRequestOptions = {}): Pr
   return getJson<T>(path, options);
 }
 
+/** Retain authoritative artifact bytes without JSON number conversion or fixture fallback. */
+export async function apiGetBlob(path: string, options: ApiRequestOptions = {}): Promise<Blob> {
+  const response = await fetch(path, { signal: options.signal, headers: { Accept: "application/json" } });
+  if (!response.ok) {
+    throw await buildApiError(path, response);
+  }
+  return response.blob();
+}
+
 export function apiPostJson<T>(path: string, body?: unknown, options: ApiRequestOptions = {}): Promise<T> {
   return postJson<T>(path, body, options);
 }

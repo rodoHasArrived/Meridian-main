@@ -18,6 +18,20 @@ policy rule. Same-currency Primary books only; unmatched balances remain explici
 [the first-slice contract](../../docs/domain/intercompany-consolidation.md) for exact chart,
 perimeter, correction and currency limits.
 
+`Onboarding/OnboardingWorkspaceService` owns bounded accounting onboarding across required dates.
+Comparisons retain full source payloads, exact mapping versions, criteria and predecessor hashes.
+Balance, position and NAV differences retain new/persistent/resolved lineage, owners and evidence.
+Missing observations cannot resolve a previous difference. Corrective captures append to the same
+date; readiness uses the latest capture for every required date, while earlier results remain
+replayable. Independent reviewer decisions bind the current data revision. Frozen packets include
+blocked states and complete retained history; they confer no accounting authority.
+
+`AccountingSystemIntegrationService.Onboarding` adds a read-only capture seam over an already
+retained import and explicitly selected certified mapping. Existing GL reconciliation runs against
+a private retained ledger snapshot. Mapping content and full decimal payloads are retained without
+using the legacy rounded import hash as the onboarding content identity. See
+[onboarding procedure](../../docs/operators/external-gl-providers.md#bounded-onboarding).
+
 `AccountingClosePreparationService` captures immutable versions of close configuration and previews
 them against authoritative ledger books and periods. Deadline rules specify a period anchor,
 calendar/business-day offset, and subsequent weekend/holiday adjustment using an explicit retained

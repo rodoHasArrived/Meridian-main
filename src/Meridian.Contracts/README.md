@@ -16,6 +16,13 @@ evidence and shared gross/proposed/posted/consolidated read model. Manual journa
 server-owned consolidation evidence, digest and required-evidence marker across the existing review
 lifecycle. Proposed balances and unmatched amounts are distinct from posted accounting truth.
 
+`Workstation/OnboardingDtos.cs` defines bounded onboarding scope, owner criteria, exact source
+snapshots, consecutive comparisons, difference assignments, independent review decisions and frozen
+readiness packets. Account populations use financial account GUIDs; financial comparisons use
+decimal amounts, explicit currencies and nullable missing values. Scope is immutable, mutations
+carry expected versions, and approvals refer to a particular data revision. These contracts convey
+read-only support evidence and never grant accounting or external posting authority.
+
 `Ledger/AccountingClosePreparationDtos.cs` describes immutable close template versions, explicit
 calendar deadline rules, owner mappings, authoritative target previews, and retained creation history.
 Create requests identify a retained preview and idempotency key rather than asserting dates or book

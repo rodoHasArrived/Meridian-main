@@ -5,6 +5,19 @@ namespace Meridian.Contracts.Api;
 /// </summary>
 public static class UiApiRoutes
 {
+    // Bounded accounting onboarding; retained comparisons and readiness never transfer authority.
+    public const string OnboardingWorkspaces = "/api/accounting/onboarding/workspaces";
+    public const string OnboardingWorkspace = "/api/accounting/onboarding/workspaces/{workspaceId:guid}";
+    public const string OnboardingCriteria = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/criteria";
+    public const string OnboardingSources = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/sources";
+    public const string OnboardingComparisons = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/comparisons";
+    public const string OnboardingDifferenceAssignment = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/differences/{differenceKey}/assignment";
+    public const string OnboardingReviews = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/reviews";
+    public const string OnboardingPackets = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets";
+    public const string OnboardingPacket = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets/{packetId:guid}";
+    public const string OnboardingPacketExport = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets/{packetId:guid}/download";
+    public const string OnboardingReplay = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/comparisons/{comparisonId}/replay";
+
     // Health and status endpoints served by the ASP.NET Core workstation host
     public const string Health = "/health";
     public const string HealthDetailed = "/health/detailed";
