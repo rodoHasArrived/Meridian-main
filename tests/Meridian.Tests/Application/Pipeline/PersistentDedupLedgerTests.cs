@@ -1,3 +1,4 @@
+using System.Globalization;
 using FluentAssertions;
 using Meridian.Application.Pipeline;
 using Meridian.Contracts.Domain.Enums;
@@ -120,6 +121,39 @@ public sealed class PersistentDedupLedgerTests : IAsyncLifetime
             .Should().BeFalse("a second-timeframe bar sharing the start instant is a distinct event");
         (await _firstLedger.IsDuplicateAsync(nextMinuteBar, CancellationToken.None))
             .Should().BeFalse("the next window is a distinct event despite the constant 0 sequence");
+    }
+
+    [Theory]
+    [InlineData("en-US")]
+    [InlineData("fr-FR")]
+    [InlineData("tr-TR")]
+    public void ComputeKeyForBenchmark_TradeAndQuote_PreserveLegacySha256Identity(string cultureName)
+    {
+        _firstLedger = new PersistentDedupLedger(_ledgerDirectory);
+        var previousCulture = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
+            var timestamp = new DateTimeOffset(2024, 1, 3, 14, 30, 0, TimeSpan.FromHours(2));
+            // Independently computed legacy SHA-256 vectors cover every hex digit and
+            // all 16 retained bytes. The long UTF-8 venue also exercises the pooled buffer.
+            var venue = string.Concat(Enumerable.Repeat("市場", 128));
+            var trade = new Trade(timestamp, "AAPL", 100.25m, 107,
+                AggressorSide.Buy, 42, "TEST", venue);
+            var tradeEvent = MarketEvent.Trade(timestamp, "AAPL", trade, "TEST", 42);
+            _firstLedger.ComputeKeyForBenchmark(tradeEvent).Should().Be(
+                "TEST:AAPL:Trade:5605e6849fa1c641313682a0d62478b0");
+
+            var quote = new BboQuotePayload(timestamp, "AAPL", 100.25m, 133,
+                100.50m, 150, 100.375m, 0.25m, 43, "TEST", "XNAS");
+            var quoteEvent = MarketEvent.BboQuote(timestamp, "AAPL", quote, "TEST", 43);
+            _firstLedger.ComputeKeyForBenchmark(quoteEvent).Should().Be(
+                "TEST:AAPL:BboQuote:da5f2e7484eb67c84bbb99901a4438a0");
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previousCulture;
+        }
     }
 
     private static MarketEvent CreateAggregateEvent(
