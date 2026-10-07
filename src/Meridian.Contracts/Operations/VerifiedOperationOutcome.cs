@@ -159,11 +159,11 @@ public static class VerifiedOperationOutcomeValidator
         RequireText(outcome.CorrelationId, nameof(outcome.CorrelationId), errors);
         ValidateRequiredHash(outcome.InputHashSha256, nameof(outcome.InputHashSha256), errors);
 
-        var postconditions = outcome.Postconditions ?? [];
-        var evidence = outcome.Evidence ?? [];
-        var artifacts = outcome.Artifacts ?? [];
-        var issues = outcome.Issues ?? [];
-        var recovery = outcome.Recovery ?? [];
+        var postconditions = ValidateCollectionEntries(outcome.Postconditions, nameof(outcome.Postconditions), errors);
+        var evidence = ValidateCollectionEntries(outcome.Evidence, nameof(outcome.Evidence), errors);
+        var artifacts = ValidateCollectionEntries(outcome.Artifacts, nameof(outcome.Artifacts), errors);
+        var issues = ValidateCollectionEntries(outcome.Issues, nameof(outcome.Issues), errors);
+        var recovery = ValidateCollectionEntries(outcome.Recovery, nameof(outcome.Recovery), errors);
 
         if (evidence.Count == 0)
         {
@@ -405,6 +405,33 @@ public static class VerifiedOperationOutcomeValidator
         }
 
         return outcome;
+    }
+
+    private static IReadOnlyList<T> ValidateCollectionEntries<T>(
+        IReadOnlyList<T>? items,
+        string label,
+        ICollection<string> errors)
+        where T : class
+    {
+        if (items is null)
+            return [];
+
+        List<T>? nonNullEntries = null;
+        for (var index = 0; index < items.Count; index++)
+        {
+            var item = items[index];
+            if (item is null)
+            {
+                errors.Add($"{label}[{index}] cannot be null.");
+                nonNullEntries ??= items.Take(index).ToList();
+            }
+            else
+            {
+                nonNullEntries?.Add(item);
+            }
+        }
+
+        return nonNullEntries is null ? items : nonNullEntries;
     }
 
     private static void ValidateUnique(IEnumerable<string?> values, string label, ICollection<string> errors)
