@@ -1,1 +1,0 @@
-import{E as e,O as t,c as n,s as r}from"./button-BCZT_G4P.js";var i=t(e(),1),a=r(),o=(0,i.forwardRef)(({className:e,...t},r)=>(0,a.jsx)(`label`,{ref:r,className:n(`text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground`,e),...t}));o.displayName=`Label`;export{o as t};

@@ -6,6 +6,8 @@ import textwrap
 import unittest
 from pathlib import Path
 
+from tests.scripts.workflow_assertions import assert_pinned_action
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW_PATH = REPO_ROOT / ".github" / "workflows" / "schema-control.yml"
@@ -17,12 +19,12 @@ class SchemaControlWorkflowTests(unittest.TestCase):
         cls.workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
 
     def test_workflow_uses_repository_pinned_actions(self) -> None:
-        self.assertIn("uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", self.workflow)
-        self.assertIn("persist-credentials: false", self.workflow)
-        self.assertIn("fetch-depth: 0", self.workflow)
-        self.assertIn("uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97", self.workflow)
-        self.assertIn('python-version: "3.12"', self.workflow)
-        self.assertIn("uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a", self.workflow)
+        checkout = assert_pinned_action(self, self.workflow, "schema-control", "actions/checkout")
+        self.assertEqual(checkout.get("with", {}).get("persist-credentials"), "false")
+        self.assertEqual(checkout.get("with", {}).get("fetch-depth"), "0")
+        setup_python = assert_pinned_action(self, self.workflow, "schema-control", "actions/setup-python")
+        self.assertEqual(setup_python.get("with", {}).get("python-version"), "3.12")
+        assert_pinned_action(self, self.workflow, "schema-control", "actions/upload-artifact")
 
     def test_workflow_runs_postgres_16_service(self) -> None:
         for expected in [

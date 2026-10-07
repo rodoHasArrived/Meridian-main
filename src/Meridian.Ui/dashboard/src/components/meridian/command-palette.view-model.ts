@@ -8,6 +8,7 @@ import {
   workspacePath
 } from "@/lib/workspace";
 import { WORKSPACE_NAVIGATION_FEATURES, WORKSTATION_SEARCH_FEATURES } from "@/lib/workstation-features";
+import { appendAccountingNavigationContextToRoute } from "@/lib/accounting-navigation";
 import { decodeViewStateEnvelope, VIEW_STATE_QUERY_KEY } from "@/lib/view-state-envelope";
 import {
   appendOperatingScopeToRoute,
@@ -208,7 +209,7 @@ export function buildCommandPaletteViewModel(
   const focusItems = buildFocusItems(workflowData.operatorFocusItems ?? [], pathname, operatingScope);
   const actionItems = buildActionItems(workflowData.actionItems ?? []);
   const entityItems = buildEntityItems(workflowData.entityItems ?? [], pathname);
-  const workspaceItems = buildWorkspaceItems(visibleWorkspaces, activeKey, operatingScope);
+  const workspaceItems = buildWorkspaceItems(visibleWorkspaces, activeKey, operatingScope, activeRouteParts.search);
   const routeItems = buildRouteItems(pathname, operatingScope);
   const presetItems = buildPresetItems(workflowData.workflowPresets?.presets ?? [], pathname, operatingScope);
   const workflowItems = buildWorkflowItems(workflowData.workflowLibrary?.workflows ?? [], pathname, operatingScope);
@@ -465,11 +466,12 @@ export function resolveCommandPaletteKeyCommand({
 function buildWorkspaceItems(
   workspaces: WorkspaceSummary[],
   activeKey: WorkspaceKey,
-  operatingScope: AppShellOperatingScopeState
+  operatingScope: AppShellOperatingScopeState,
+  navigationSearch: string
 ): CommandPaletteItem[] {
   return workspaces.map<CommandPaletteItem>((workspace) => {
     const active = workspace.key === activeKey;
-    const route = appendOperatingScopeToRoute(workspacePath(workspace.key), operatingScope);
+    const route = materializeCommandRoute(workspacePath(workspace.key), operatingScope, navigationSearch);
     const rootFeature = WORKSPACE_NAVIGATION_FEATURES[workspace.key]
       .find((entry) => entry.route === workspacePath(workspace.key));
 
@@ -599,10 +601,11 @@ function formatFocusTone(tone: CommandPaletteFocusAction["tone"]) {
 }
 
 function buildRouteItems(pathname: string, operatingScope: AppShellOperatingScopeState): CommandPaletteItem[] {
+  const navigationSearch = splitActiveRoute(pathname).search;
   return WORKSTATION_SEARCH_FEATURES.filter(
     (routeCommand) => !UNWIRED_WORKSTATION_ROUTES.has(routeCommand.route)
   ).map<CommandPaletteItem>((routeCommand) => {
-    const route = materializeCommandRoute(routeCommand.route, operatingScope);
+    const route = materializeCommandRoute(routeCommand.route, operatingScope, navigationSearch);
     const carriedScopeSummary = summarizeOperatingScopeForRoute(routeCommand.route, operatingScope);
     const description = carriedScopeSummary && route !== routeCommand.route
       ? `${routeCommand.description} ${carriedScopeSummary}.`
@@ -880,8 +883,16 @@ function splitActiveRoute(route: string) {
   };
 }
 
-function materializeCommandRoute(route: string, operatingScope: AppShellOperatingScopeState) {
-  return appendOperatingScopeToRoute(route, operatingScope);
+function materializeCommandRoute(
+  route: string,
+  operatingScope: AppShellOperatingScopeState,
+  navigationSearch = ""
+) {
+  const scopedRoute = appendOperatingScopeToRoute(route, operatingScope);
+  const pathname = splitActiveRoute(scopedRoute).pathname;
+  return pathname === "/accounting" || pathname.startsWith("/accounting/")
+    ? appendAccountingNavigationContextToRoute(scopedRoute, navigationSearch)
+    : scopedRoute;
 }
 
 function routeSearchMatches(

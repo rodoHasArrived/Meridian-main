@@ -74,6 +74,46 @@ describe("command palette view model", () => {
       .toBe("/data/quotes?view=alerts&symbol=MSFT&provider=Alpaca");
   });
 
+  it("preserves shared Accounting context across sidebar and palette without carrying route-local selections", () => {
+    const search = "?symbol=msft&fundAccountId=account-alpha&runId=run-42&provider=Alpaca"
+      + "&fundProfileId=fund-alpha&ledgerBookId=book-alpha&periodId=2026-05&workflowStatus=Blocked"
+      + "&approvalId=approval-1&tab=reference&frexRecord=record-1&journalEntryId=entry-1";
+    const storedScope = { symbol: "AAPL", fundAccountId: "stored-account", provider: "IBKR" };
+    const navigation = buildWorkspaceNavViewModel("/accounting/approvals", undefined, search, storedScope);
+    const model = buildCommandPaletteViewModel(`/accounting/approvals${search}`, undefined, {}, "", null, storedScope);
+
+    for (const workspace of navigation.items) {
+      for (const destination of [workspace, ...workspace.subItems]) {
+        expect(model.items.map((item) => item.route), `${workspace.label}: ${destination.label}`)
+          .toContain(destination.route);
+      }
+    }
+
+    const accounting = model.items.filter((item) => item.kind === "workspace" || item.kind === "route");
+    for (const item of accounting) {
+      const [pathname, query] = item.route.split("?");
+      const parameters = new URLSearchParams(query);
+      if (pathname === "/accounting" || pathname.startsWith("/accounting/")) {
+        expect(Object.fromEntries(parameters)).toMatchObject({
+          fundAccountId: "account-alpha",
+          fundProfileId: "fund-alpha",
+          ledgerBookId: "book-alpha",
+          periodId: "2026-05",
+          workflowStatus: "Blocked"
+        });
+      } else {
+        expect(parameters.has("fundProfileId")).toBe(false);
+        expect(parameters.has("ledgerBookId")).toBe(false);
+        expect(parameters.has("periodId")).toBe(false);
+        expect(parameters.has("workflowStatus")).toBe(false);
+      }
+      expect(parameters.has("approvalId")).toBe(false);
+      expect(parameters.has("tab")).toBe(false);
+      expect(parameters.has("frexRecord")).toBe(false);
+      expect(parameters.has("journalEntryId")).toBe(false);
+    }
+  });
+
   it("focuses a selected deep-link view before its broader parent route", () => {
     const model = buildCommandPaletteViewModel("/data/quotes?view=alerts");
 
