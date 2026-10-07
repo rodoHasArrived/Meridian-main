@@ -103,12 +103,13 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             600m, 660m, date, null, [evidence]);
         var dimensions = new LedgerLineDimensionSet(InstrumentId: fixture.Security.SecurityId)
         { PositionId = fixture.PositionId };
-        var entry = new JournalEntry(journalId, at, "Reviewed unit acquisition for split ancestry",
+        const string description = "Reviewed unit acquisition for split ancestry";
+        var entry = new JournalEntry(journalId, at, description,
             [
                 new LedgerEntry(Guid.NewGuid(), journalId, at, AmortAccount, 660m, 0m,
-                    "Reviewed unit acquisition", dimensions, new LedgerEntryCurrency("EUR", "USD", 600m, 0m, 1.1m)),
+                    description, dimensions, new LedgerEntryCurrency("EUR", "USD", 600m, 0m, 1.1m)),
                 new LedgerEntry(Guid.NewGuid(), journalId, at, new("Cash", LedgerAccountType.Asset), 0m, 660m,
-                    "Reviewed unit acquisition", dimensions, new LedgerEntryCurrency("EUR", "USD", 0m, 600m, 1.1m))
+                    description, dimensions, new LedgerEntryCurrency("EUR", "USD", 0m, 600m, 1.1m))
             ], new(SecurityId: fixture.Security.SecurityId, EffectiveDate: date, IdempotencyKey: key,
                 Tags: SecurityMasterLineageTags(fixture.Security.SecurityId)));
         var posting = new AccountingPostingCommandDto(Guid.NewGuid(), fixture.BookId, fixture.Period.PeriodId,
@@ -180,13 +181,14 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var at = new DateTimeOffset(date.ToDateTime(new TimeOnly(12, 0)), TimeSpan.Zero);
         LedgerLineDimensionSet Dimensions(OpenLotDto lot) => new(FundId: "amort-fund", InstrumentId: lot.SecurityId,
             BookId: fixture.BookId.ToString("D"), TaxLotId: lot.LotId) { PositionId = lot.BookPositionId };
-        var entry = new JournalEntry(journalId, at, "Independently reviewed canonical split",
+        const string description = "Independently reviewed canonical split";
+        var entry = new JournalEntry(journalId, at, description,
             [
                 new LedgerEntry(Guid.NewGuid(), journalId, at, retained.Account, target.OpenFunctionalCostBasis, 0m,
-                    "Carry basis to whole-unit split successor", Dimensions(target),
+                    description, Dimensions(target),
                     new LedgerEntryCurrency("EUR", "USD", target.OpenTransactionCostBasis, 0m, 1.1m)),
                 new LedgerEntry(Guid.NewGuid(), journalId, at, retained.Account, 0m, predecessor.OpenFunctionalCostBasis,
-                    "Relieve split predecessor", Dimensions(predecessor),
+                    description, Dimensions(predecessor),
                     new LedgerEntryCurrency("EUR", "USD", 0m, predecessor.OpenTransactionCostBasis, 1.1m))
             ], new(SecurityId: predecessor.SecurityId, EffectiveDate: date, IdempotencyKey: key,
                 Tags: new Dictionary<string, string>(SecurityMasterLineageTags(predecessor.SecurityId))

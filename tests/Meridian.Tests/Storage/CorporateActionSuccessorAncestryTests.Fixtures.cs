@@ -118,9 +118,10 @@ public sealed partial class CorporateActionSuccessorAncestryTests
         var book = mutations[0].LotAfter.LedgerBookId;
         var amount = mutations.Max(item => item.CostBasis);
         var eventId = mutations[0].SourceEventId;
-        var journal = new JournalEntry(journalId, RecordedAt, "Retained immutable successor ancestry receipt",
-            [new LedgerEntry(Guid.NewGuid(), journalId, RecordedAt, Investment, amount, 0m, "Successor opening"),
-             new LedgerEntry(Guid.NewGuid(), journalId, RecordedAt, Investment, 0m, amount, "Predecessor relief")]);
+        const string description = "Retained immutable successor ancestry receipt";
+        var journal = new JournalEntry(journalId, RecordedAt, description,
+            [new LedgerEntry(Guid.NewGuid(), journalId, RecordedAt, Investment, amount, 0m, description),
+             new LedgerEntry(Guid.NewGuid(), journalId, RecordedAt, Investment, 0m, amount, description)]);
         var rows = mutations.Select(item => item with { JournalEntryId = journalId }).ToArray();
         return new(batch, kind, new string('a', 64), false,
             new LedgerJournalEntryRecord(journal, book, Guid.NewGuid(), null, null, 1, RecordedAt, SourceEventId: eventId),
