@@ -11,6 +11,13 @@ last_reviewed: 2026-10-05
 
 # src/Meridian.Ui.Shared
 
+Accounting close preparation exposes scoped template capture, retained template versions, preview,
+and creation under `/api/ledger/close-management`. Each request authorizes the source workflow;
+preview and creation also authorize the target book against the authenticated tenant and company.
+Mutation actors and action origin come from the trusted session. Target dates, policies, and locks
+are resolved by the shared preparation service from ledger authority. The browser submits choices
+and a retained preview identity; it cannot submit approved evidence or a prepared plan projection.
+
 Trading recovery uses `LiveBrokeragePortfolioSyncService` to publish account-scoped Alpaca
 holdings, cash, buying power, currency and completeness to the existing exposure provider.
 Broker holdings replace local projections for that account; remaining OMS exposure stays reserved.

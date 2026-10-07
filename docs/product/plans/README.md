@@ -19,9 +19,10 @@ or certify a release.
 
 | Plan | Purpose |
 |---|---|
-| [What To Work On Next (2026-10-04)](next-work-determination-2026-10-04.md) | Latest prioritization input |
-| [What To Work On Next (2026-10-02)](next-work-determination-2026-10-02.md) | Superseded by the 2026-10-04 determination |
-| [What To Work On Next (2026-09-27)](next-work-determination-2026-09-27.md) | Superseded by the 2026-10-04 determination; retained in place because `docs/roadmap/data/program-state.yml` and the readiness tracker cite it as the recorded operator-session plan |
+| [What To Work On Next (2026-10-05)](next-work-determination-2026-10-05.md) | Latest prioritization input |
+| [What To Work On Next (2026-10-04)](next-work-determination-2026-10-04.md) | Superseded by the 2026-10-05 determination |
+| [What To Work On Next (2026-10-02)](next-work-determination-2026-10-02.md) | Superseded by the 2026-10-05 determination |
+| [What To Work On Next (2026-09-27)](next-work-determination-2026-09-27.md) | Superseded by the 2026-10-05 determination; retained in place because `docs/roadmap/data/program-state.yml` and the readiness tracker cite it as the recorded operator-session plan |
 
 ## Delivery Plans and Slates
 

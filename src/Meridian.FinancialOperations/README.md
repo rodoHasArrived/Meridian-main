@@ -11,17 +11,33 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.FinancialOperations
 
+`AccountingClosePreparationService` captures immutable versions of close configuration and previews
+them against authoritative ledger books and periods. Deadline rules specify a period anchor,
+calendar/business-day offset, and subsequent weekend/holiday adjustment using an explicit retained
+calendar. Owners require confirmed mappings; accounting policy differences require review.
+Creation starts fresh workflow controls and evidence requirements while leaving source approvals,
+reviewed evidence, journal references, and locks in their original period. A durable creation claim
+and process-independent lease make retries resume one workflow. Preview fingerprints reject changed
+source or target authority; an already retained configuration recovers its original creation receipt.
+Ambiguous interrupted starts retain their claim and require recovery instead of creating another plan.
+`OperationsContinuityWorkflowService.StartPreparedWorkflowAsync` supplies the atomic fresh workflow
+and exact-identity recovery boundary. Focused proof lives in `AccountingCloseServicesTests.Preparation`
+and `OperationsContinuityWorkflowServiceTests.PreparedStart`.
+
 Statement reconciliation composition supplies the shared `IAtomicFileWriter` to the canonical
 statement store so committed imports use Storage-owned directory durability without an
 Infrastructure-to-Storage reference.
 
 `CanonicalLotAmortizationService` prepares read-only canonical face-lot projections from authoritative lot/reference records. Optional workstation postures may construct the service with absent stores, but preview requires ledger, Security Master, and book-position authority and refuses missing stores before any read. `AccountingPostingCandidatePostService` carries an `Amortize` instruction through the existing event-spine and independent approval rail to atomic journal/basis posting; the service itself cannot approve or post.
+New amortization postings require the current calculation version before approval is retained.
+Historical unversioned instructions remain readable for exact receipt replay; unposted legacy
+drafts require a fresh preview.
 
 The governed event-spine path retains its existing requirement that the Security Master currency
 equal the event's functional currency. The atomic lot boundary preserves acquisition currency and
-FX, but this delivery does not extend the event spine's cross-currency workflow. A later discrete
-disposal of a restated lot continues to fail closed when acquisition unit cost differs from its
-canonical basis; relief of an amortized basis remains a separate lot-convergence slice.
+FX, but this delivery does not extend the event spine's cross-currency workflow. Current-basis
+disposal relief is supplied by the separate PR #3050 implementation; these amortization corrections
+preserve that relief path and its retained acquisition facts.
 
 `FundAdministration/RecurringJournalState.cs` and `FileRecurringJournalStore` own versioned
 recurring schedules and templates, exact source evidence, one claim per schedule/effective date,

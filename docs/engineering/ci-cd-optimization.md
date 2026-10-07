@@ -47,6 +47,85 @@ or replace the existing `quality-gate` requirement.
 The [October 5 Actions storage audit](actions-storage-audit-2026-10-05.md) inventories workflow
 uploads, measures recent artifacts, and separates routine retention savings from protected
 certification/recovery evidence. Its snapshot is bounded and does not reconcile account billing.
+The [October 5 rollout measurement](actions-rollout-measurement-2026-10-05.md) retains 24
+comparable completed post-rollout PR observations, unsuccessful-attempt accounting and the
+strict matched-cohort decision. Six baseline matches do not establish either improvement target.
+
+Collect a bounded Actions history with `build/scripts/ci/collect-actions.py`, then pass its
+snapshot to `ci-metrics.py`. Collection is read-only: it does not dispatch, rerun, cancel or
+delete workflows, modify checks or protections, or change concurrency. Keep the raw snapshot
+with the report so workflow/run/attempt/job IDs and collection gaps can be audited. A first-page
+or latest-attempt-only export is insufficient for rollout acceptance.
+
+The report separates PRs, main pushes and other events. It measures time from the first workflow
+creation for a change until all configured required checks finish, quality-gate latency,
+quality-gate execution, job queue delay and total runner minutes. Median and nearest-rank p95
+describe latency distributions; runner minutes sum job execution intervals across workflows and
+attempts, including unsuccessful work. They are elapsed runner usage, not a billable-minutes or
+dollar estimate. Missing timestamps remain unavailable rather than becoming zero-duration jobs.
+
+Quality-gate execution is the union of execution intervals for the configured gate-job roster up
+to completion of `quality-gate`, across all attempts. Without a roster, all jobs in its workflow
+provide a proxy. Overlapping intervals count once; idle queue and manual-retry gaps do not count
+as execution. It is distinct from the brief aggregation job
+itself and from creation-to-completion latency. Required-check completion includes checks owned by
+other workflows. Unfinished, failed and cancelled attempts remain in waste and reliability
+accounting even when a later retry succeeds. Retry time overlaps failure/cancellation time;
+use the report's failure/cancellation/retry union instead of adding overlapping categories.
+
+Before evaluating rollout targets, supply disjoint baseline and rollout windows and the
+required-check policy that actually applied in those windows. A current branch-rule read
+does not prove historical settings. Match changes within each event using complete change
+categories and equivalent check, runner, attempt and optional-workflow evidence; report unmatched
+and excluded samples explicitly. Dropping a specialist workflow must not count as savings. If an
+intentional consolidation changes that workflow set, retain the mismatch until its coverage
+equivalence is established separately. Similar categories are observational cohorts, not identical-commit
+benchmarks or proof that optimization alone caused a difference.
+
+Run from the repository root with GitHub CLI read access to Actions, checks and the relevant
+repository rules:
+
+```bash
+python build/scripts/ci/collect-actions.py \
+  --repo rodoHasArrived/Meridian-main \
+  --since 2026-09-26T00:00:00Z --until 2026-10-04T23:59:59Z \
+  --output artifacts/actions-rollout/runs.json
+python build/scripts/ci/ci-metrics.py \
+  --input artifacts/actions-rollout/runs.json \
+  --comparison artifacts/actions-rollout/comparison-policy.json \
+  --output artifacts/actions-rollout/report.json \
+  --markdown artifacts/actions-rollout/report.md
+```
+
+The collector's `--since` and `--until` bounds are inclusive UTC timestamps. It paginates
+repository runs and attempt-specific jobs, splits windows that reach the Actions 1,000-run
+search cap, and reports incomplete collection with a nonzero exit. The snapshot is still written
+with separate completeness flags and access errors, preserving successfully collected run evidence.
+`--api-cache` replays an endpoint-to-JSON map exported through another read-only API client,
+with no network fallback
+for missing responses. Preserve API failures in that map as `{"error": "reason"}`.
+`--push-base-map` accepts verified push head-to-before SHA mappings: Actions run metadata
+alone does not identify the full diff of a multi-commit push.
+
+Historical Actions PR associations can reflect a later head or a reused branch. PR categories
+therefore require the actual tested merge commit, recovered from a reusable-workflow reference
+or retained checkout evidence, with its parents verified against the run's head SHA. A live PR
+file list or the current base branch is not a substitute for that boundary.
+Use `--checkout-evidence` for a saved-log manifest when reusable references are unavailable;
+the collector verifies the log digest, exact fetch and checked-out commit, source job ownership,
+and merge parents. Log paths resolve relative to the manifest. Failed verification remains
+unavailable evidence and cannot establish a comparison category.
+Each manifest entry supplies `runId`, `jobId`, `headSha`, `pullNumber`, `checkoutMergeSha`,
+`checkoutRef`, `jobLogUrl`, `logSha256` and `logPath`; the same log bytes may instead come from
+the API cache. None of these assertions replaces the collector's ownership and commit checks.
+
+The comparison policy contains `baseline` and `rollout` objects with timezone-qualified
+`start` and `end` (half-open intervals), plus `requiredChecks` entries containing `name`,
+`workflow` and, when required, `appId`. `qualityGate` selects the gate's name and workflow;
+its `executionJobs` can identify the four canonical lanes and `quality-gate`, excluding the
+independent integration companion from quality-gate execution. `requiredChecksEvidence`
+must cite verified historical check equivalence. Omit it when that equivalence is unknown:
+the report still shows observations and match counts but does not evaluate savings targets.
 
 ### Queue, execution, retries and cancellations
 
@@ -82,7 +161,7 @@ version 1. Existing workflow/event/attempt groups, `runs`, `successfulSamples` a
 
 | Evidence | Interpretation |
 | --- | --- |
-| `queueSeconds` | Job creation to an evidenced start. Includes scheduler delay after job creation; not workflow trigger/dependency time or proof of runner saturation. |
+| `queueSeconds` | Job creation to an evidenced start. This observed interval can include scheduling and dependency waits; it is not a pure runner-scheduler delay or proof of runner saturation. |
 | `waitSeconds`, `waitEnd` | Creation to an evidenced start, completion of a never-started job, or fixed observation for a still-queued job. `waitEnd` distinguishes `started`, `completed` and `observed`; these populations must not be treated as interchangeable queue samples. |
 | `executionSeconds` | Valid start-to-completion time for fresh execution in this attempt. In-progress, never-started, invalid and carried-forward execution is null. |
 | `startState`, `timingIssue` | Distinguish `started`, `not_started` and `unknown`, and preserve invalid-start or start-before-creation evidence. GitHub can synthesize `started_at` for jobs with no assigned runner and no executed steps. |
@@ -92,6 +171,13 @@ version 1. Existing workflow/event/attempt groups, `runs`, `successfulSamples` a
 | `cancelledRunKnownRunnerSeconds`, `retryKnownRunnerSeconds` | Available fresh execution in cancelled run attempts or attempts numbered above 1. These can overlap; neither is a complete waste total or an attribution of cancellation cause. |
 | `retryHistory` | Observed and missing attempt numbers per run. `retryAttempts` counts exported retry attempts, not inferred missing attempts, retried steps or job retries. |
 
+The rollout cost ledger is separate from raw measured execution. `accountedExecutionSeconds`,
+`accountedRunnerSeconds` and `accountedKnownRunnerSeconds` feed `runnerMinutes` and
+`knownRunnerMinutes`. Proven terminal jobs that never started, explicit skips, and verified
+inherited work add zero new runner cost while their raw execution timing remains null.
+An inherited row retains `inheritedFromAttempt` and must match prior execution evidence;
+missing evidence never becomes measured execution or a zero-cost assertion.
+
 Rows retain job IDs, raw timestamps, status, conclusion, runner identity and requested labels.
 Legacy timestamp-only exports remain readable but cannot distinguish synthetic starts; use the
 original runner/step metadata before drawing availability or waste conclusions.
@@ -99,7 +185,7 @@ Partial reruns can copy successful results under **new job IDs and the new attem
 with their execution timestamps before their new creation timestamp. These rows remain visible
 as `started_before_created` and contribute no timing to the new attempt. Missing, malformed,
 timezone-naive or reversed timestamps remain unavailable; they are never clamped to zero.
-Duplicate run/attempt rows and explicitly mismatched job attempts are rejected. The tool cannot
+Duplicate run/attempt rows are rejected. Earlier-attempt jobs must be bound to matching prior-attempt evidence before being treated as inherited; other mismatches are rejected. The tool cannot
 prove that an externally prepared job list is fully paginated or that later attempts were not
 omitted: retain export coverage alongside the report. Successful medians require a successful
 run and successful, measurable jobs; cancelled/incomplete/inherited rows cannot improve them.
@@ -186,6 +272,11 @@ Dispatch **CI Concurrency Benchmark** at a fixed commit with `subject=dotnet`, `
 Decision artifacts include discovered-test digests, counts and test-only wall time. Failed or
 incomplete samples reject promotion. Vitest retains two workers and process recycling.
 
+For local diagnostics, `benchmark-ci.py --local` records the actual checkout, local runner
+identity, worktree state and fresh per-variant evidence. Local measurements cannot authorize
+hosted-default promotion. Keep local failures and missing discovery/timing in the decision
+artifacts; never substitute synthetic Actions IDs or call the local machine `ubuntu-latest`.
+
 The workflow lane requires actionlint 1.7.12 on PATH and Python dependencies from
 `build/scripts/ci/requirements.txt`. Hosted installation verifies the actionlint archive digest.
 External actions use verified full commit SHAs with version comments; Dependabot maintains
@@ -216,9 +307,14 @@ Pillow is now explicit. Screenshot diff and screenshot capture validation suites
 ordinary script lane. New exclusions require an owner, reason, deadline, tracked defect and
 human governance review; a test failure cannot add an exclusion automatically.
 
-After rollout, compare at least twenty completed runs by event and attempt. Targets are 25%
-lower median quality-gate execution and 30% fewer total runner minutes, not certified savings.
-Retain cancelled runs for waste accounting but exclude them from successful performance cohorts.
+After rollout, require at least twenty comparable completed successful change observations in
+each evaluated event cohort, with an equally sized matched baseline. Count a change once across
+its relevant workflows; retries do not increase the sample count. Targets remain 25% lower
+median quality-gate execution and 30% fewer aggregate runner minutes across those matched
+observations, including their earlier attempts. These targets are separate from the 15%
+five-pair concurrency adoption rule. Insufficient, incomplete or unmatched samples produce an
+unevaluated target, never a savings claim. Failed and cancelled final outcomes remain separately
+visible and cannot enter successful performance cohorts.
 
 ## Review sequence and rollback
 
