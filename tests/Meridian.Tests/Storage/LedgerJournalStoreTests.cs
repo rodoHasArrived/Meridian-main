@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
+using Meridian.Contracts.Tenancy;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Microsoft.Extensions.DependencyInjection;
@@ -243,6 +244,58 @@ public sealed class LedgerJournalStoreTests
 
         await capture.Should().ThrowAsync<ArgumentException>()
             .WithMessage("*valid accounting period is required*");
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task QueryAsync_ExactJournalPreservesCompleteEntryAndBookPeriodTenantScope()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var registry = new PostgresFundProfileTenancyRegistry(database.Options);
+        await registry.BindAsync("fund-journal-detail", "tenant-alpha");
+        var now = DateTimeOffset.Parse("2026-05-15T12:00:00Z");
+        var book = new LedgerBookRecord(Guid.NewGuid(), "fund-journal-detail", Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund, "Journal detail book", "USD", now, now);
+        await database.JournalStore.SaveLedgerBookAsync(book);
+        var otherBook = book with { LedgerBookId = Guid.NewGuid(), FundStructureNodeId = Guid.NewGuid() };
+        await database.JournalStore.SaveLedgerBookAsync(otherBook);
+        var period = await database.JournalStore.SavePeriodAsync(new LedgerAccountingPeriod(
+            Guid.NewGuid(), book.LedgerBookId, 2026, 5, "2026-05", new(2026, 5, 1), new(2026, 5, 31),
+            "Open", now, null, 0), expectedVersion: 0);
+        var otherPeriod = await database.JournalStore.SavePeriodAsync(new LedgerAccountingPeriod(
+            Guid.NewGuid(), book.LedgerBookId, 2026, 6, "2026-06", new(2026, 6, 1), new(2026, 6, 30),
+            "Open", now, null, 0), expectedVersion: 0);
+        var target = BuildBalancedJournalWrite(period.PeriodId, now) with
+        {
+            AggregateId = book.LedgerBookId,
+            LedgerBookId = book.LedgerBookId
+        };
+        var neighbor = BuildBalancedJournalWrite(period.PeriodId, now.AddMinutes(1)) with
+        {
+            AggregateId = book.LedgerBookId,
+            LedgerBookId = book.LedgerBookId
+        };
+        await database.JournalStore.AppendAsync(target);
+        await database.JournalStore.AppendAsync(neighbor);
+        var owner = new PostgresLedgerJournalStore(database.Options, new FixedQueryTenantAccessor("tenant-alpha"),
+            TenantScopeEnforcementOptions.FailClosed);
+        var query = new LedgerJournalEntryQuery(LedgerBookId: book.LedgerBookId,
+            PeriodId: period.PeriodId, JournalEntryId: target.Entry.JournalEntryId);
+
+        var selected = await owner.QueryAsync(query);
+
+        var entry = selected.Should().ContainSingle().Which.Entry;
+        entry.JournalEntryId.Should().Be(target.Entry.JournalEntryId);
+        entry.Lines.Should().BeEquivalentTo(target.Entry.Lines);
+        entry.IsBalanced.Should().BeTrue("exact selection must hydrate every leg of the requested journal");
+        (await owner.QueryAsync(new LedgerJournalEntryQuery(JournalEntryId: target.Entry.JournalEntryId)))
+            .Should().ContainSingle().Which.Entry.JournalEntryId.Should().Be(target.Entry.JournalEntryId);
+        (await owner.QueryAsync(query with { LedgerBookId = otherBook.LedgerBookId })).Should().BeEmpty();
+        (await owner.QueryAsync(query with { PeriodId = otherPeriod.PeriodId })).Should().BeEmpty();
+        (await owner.QueryAsync(query with { JournalEntryId = Guid.NewGuid() })).Should().BeEmpty();
+        var foreign = new PostgresLedgerJournalStore(database.Options, new FixedQueryTenantAccessor("tenant-beta"),
+            TenantScopeEnforcementOptions.FailClosed);
+        (await foreign.QueryAsync(query)).Should().BeEmpty("knowing the journal identity must not bypass tenant scope");
     }
 
     [LedgerDatabaseFact]
@@ -2597,6 +2650,11 @@ public sealed class LedgerJournalStoreTests
             IReadOnlyDictionary<string, string> externalGlDimensions => externalGlDimensions.Count > 0,
             _ => true
         };
+
+    private sealed class FixedQueryTenantAccessor(string tenantId) : IFundScopeTenantAccessor
+    {
+        public string? ResolveCallerTenant() => tenantId;
+    }
 
     private static string ToCamelCase(string name)
         => char.ToLowerInvariant(name[0]) + name[1..];

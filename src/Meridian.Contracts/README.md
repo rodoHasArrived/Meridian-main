@@ -16,6 +16,14 @@ and journal/line identities. Generated amount source evidence additionally carri
 `SourceScope` and `SourceSubjectId`, so historical opening-balance support preserves its own posted
 period while the shared proof drawer and guarded source route remain bound to the selected report.
 
+`Ledger/LedgerDisposalTaxDtos.cs` defines shared, server-derived disposal and parcel tax results for
+the journal tax-results read route. It separates economic/recognized gain and deferred loss, exposes
+effective holding starts and exact retained policy revisions, and distinguishes settled, provisional,
+and missing-evidence states. Nullable amounts represent unavailable evidence rather than zero;
+`EvaluatedAt` is read time and `ReEvaluationRequired` does not claim tax finalization occurred.
+Tax-result amounts and parcel quantities use invariant decimal strings on the wire, preserving
+large values and fractional precision; absent evidence remains `null`.
+
 `Ledger/ConsolidationDtos.cs` defines the two-entity same-currency request, retained source/version
 evidence and shared gross/proposed/posted/consolidated read model. Manual journal drafts retain
 server-owned consolidation evidence, digest and required-evidence marker across the existing review
