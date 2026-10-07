@@ -3,11 +3,15 @@ import os
 import re
 import shutil
 import socket
+import sys
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from core.utils import colorize
+from prerequisites import check_node, check_prerequisites, check_python
 
 
 @dataclass
@@ -38,12 +42,20 @@ _POSTGRES_DOCKER_FIX = (
 
 
 class Doctor:
-    def __init__(self, root: Path, quick: bool) -> None:
+    def __init__(self, root: Path, quick: bool, profile: str | None = None) -> None:
         self.root = root
         self.quick = quick
+        self.profile = profile
         self.results: list[DoctorResult] = []
 
     def run(self) -> list[DoctorResult]:
+        if self.profile:
+            self.results = [
+                DoctorResult(**result.__dict__)
+                for result in check_prerequisites(self.root, self.profile)
+            ]
+            return self.results
+
         self._check_dotnet()
         self._check_node()
         self._check_python()
@@ -86,64 +98,19 @@ class Doctor:
         )
 
     def _check_node(self) -> None:
-        if shutil.which("node") is None:
-            self.results.append(
-                DoctorResult(
-                    name="Node.js",
-                    status="warn",
-                    details="Not installed (required for diagram generation)",
-                    expected="node 18+",
-                    fix="Install from https://nodejs.org",
-                )
-            )
-            return
-        version = self._command_version(["node", "--version"])
-        # version is e.g. "v20.11.0"; strip leading 'v'
-        ver_str = version.lstrip("v")
-        major = int(ver_str.split(".")[0]) if ver_str and ver_str[0].isdigit() else 0
-        status = "pass" if major >= 18 else "warn"
+        result = check_node(self.root)
         self.results.append(
             DoctorResult(
-                name="Node.js",
-                status=status,
-                details=f"Installed {version}",
-                expected="node 18+",
-                fix="Update Node.js to v18 or later from https://nodejs.org" if status != "pass" else None,
+                name=result.name,
+                status="warn" if result.status == "fail" else result.status,
+                details=f"{result.details} (optional browser tooling)",
+                expected=result.expected,
+                fix=result.fix,
             )
         )
 
     def _check_python(self) -> None:
-        python_bin = shutil.which("python3") or shutil.which("python")
-        if python_bin is None:
-            self.results.append(
-                DoctorResult(
-                    name="Python",
-                    status="warn",
-                    details="Not installed (required for build tooling)",
-                    expected="python 3.10+",
-                    fix="Install from https://www.python.org/downloads",
-                )
-            )
-            return
-        cmd = [python_bin, "--version"]
-        version = self._command_version(cmd)
-        # version is e.g. "Python 3.11.4"
-        ver_part = version.split()[-1] if version else ""
-        parts = ver_part.split(".")
-        try:
-            major, minor = int(parts[0]), int(parts[1]) if len(parts) > 1 else 0
-        except (ValueError, IndexError):
-            major, minor = 0, 0
-        status = "pass" if (major > 3 or (major == 3 and minor >= 10)) else "warn"
-        self.results.append(
-            DoctorResult(
-                name="Python",
-                status=status,
-                details=f"Installed {version}",
-                expected="python 3.10+",
-                fix="Update Python to 3.10 or later from https://www.python.org/downloads" if status != "pass" else None,
-            )
-        )
+        self.results.append(DoctorResult(**check_python().__dict__))
 
     def _check_git(self) -> None:
         if shutil.which("git") is None:
@@ -541,8 +508,11 @@ def exit_code(results: list[DoctorResult], fail_on_warn: bool = True) -> int:
     return 0
 
 
-def run_doctor(root: Path, quick: bool, json_output: bool, fail_on_warn: bool = True) -> int:
-    doctor = Doctor(root, quick)
+def run_doctor(
+    root: Path, quick: bool, json_output: bool, fail_on_warn: bool = True,
+    profile: str | None = None,
+) -> int:
+    doctor = Doctor(root, quick, profile=profile)
     results = doctor.run()
     if json_output:
         payload = [result.__dict__ for result in results]
