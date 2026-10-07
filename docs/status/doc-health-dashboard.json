@@ -1,11 +1,11 @@
 {
   "total_files": 699,
-  "total_lines": 155317,
+  "total_lines": 155379,
   "orphaned_count": 233,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 295,
-  "average_lines": 222.2,
+  "average_lines": 222.3,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2164,7 +2164,7 @@
     },
     {
       "path": "docs/engineering/blueprints/accounting/equalization-and-series-accounting.md",
-      "line_count": 1388,
+      "line_count": 1392,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2204,7 +2204,7 @@
     },
     {
       "path": "docs/engineering/blueprints/README.md",
-      "line_count": 224,
+      "line_count": 238,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2244,7 +2244,7 @@
     },
     {
       "path": "docs/engineering/blueprints/w10-mark-001-fail-closed-marks.md",
-      "line_count": 3029,
+      "line_count": 3026,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2380,7 +2380,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 367,
+      "line_count": 380,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2772,7 +2772,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11503,
+      "line_count": 11506,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5940,7 +5940,7 @@
     },
     {
       "path": "tools/schema_control/README.md",
-      "line_count": 123,
+      "line_count": 154,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
