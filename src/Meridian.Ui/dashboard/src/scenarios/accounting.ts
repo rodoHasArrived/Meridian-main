@@ -1,16 +1,17 @@
 import type { AccountingWorkspaceResponse } from "../types";
 import { RECONCILIATION_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "../lib/workstation-endpoints";
-import { accountingPayload } from "./accounting-payload";
+import { accountingPayload, type AccountingScenarioPayload } from "./accounting-payload";
 import { createAccountingSupportRoutes } from "./accounting-support";
 import type { ApiScenario, ScenarioResponse, ScenarioProblem } from "./types";
 
 export { accountingPayload } from "./accounting-payload";
 
-const emptyAccountingPayload: AccountingWorkspaceResponse = {
+const emptyAccountingPayload: AccountingScenarioPayload = {
   ...accountingPayload,
   metrics: [],
   reconciliationQueue: [],
   breakQueue: [],
+  closePlans: [],
   cashFlow: {
     totalCash: 0,
     totalLedgerCash: 0,

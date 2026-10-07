@@ -65,8 +65,8 @@ watch-build: ## Watch for changes and rebuild
 	@echo "$(BLUE)Watching for changes... (Ctrl+C to stop)$(NC)"
 	dotnet watch build --project $(PROJECT)
 
-install-hooks: ## Install git pre-commit and commit-msg hooks
-	@./build/scripts/hooks/install-hooks.sh
+install-hooks: ## Enable the tracked pre-commit hook (including linked worktrees)
+	@./scripts/dev/install-git-hooks.sh
 
 setup-dev: install-hooks setup-config ## Full local dev setup (hooks, config, restore, build)
 	@echo "$(BLUE)Setting up development environment...$(NC)"

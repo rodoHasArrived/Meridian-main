@@ -106,11 +106,11 @@ Total items: **238**
 | `src/Meridian.Ui/dashboard/src/lib/security-schedule-dev-fixtures.ts` | 91 | `NOTE` | ❌ | note: "Validation coupon row used by browser workbench checks." |
 | `src/Meridian.Ui/dashboard/src/lib/security-schedule-dev-fixtures.ts` | 111 | `NOTE` | ❌ | note: "Validation amortization row keeps schedule selection consistent." |
 | `src/Meridian.Ui/dashboard/src/lib/view-state-envelope.test.ts` | 21 | `NOTE` | ❌ | note: "Fónd Δ — ünïcode" |
-| `src/Meridian.Ui/dashboard/src/scenarios/accounting-payload.ts` | 335 | `NOTE` | ❌ | note: "Board portal delivery." |
-| `src/Meridian.Ui/dashboard/src/scenarios/accounting-payload.ts` | 341 | `NOTE` | ❌ | note: "Investor email-link delivery." |
-| `src/Meridian.Ui/dashboard/src/scenarios/accounting-payload.ts` | 363 | `NOTE` | ❌ | note: "Board portal delivery.", |
-| `src/Meridian.Ui/dashboard/src/scenarios/accounting-payload.ts` | 387 | `NOTE` | ❌ | note: "Investor email-link delivery.", |
-| `src/Meridian.Ui/dashboard/src/scenarios/accounting-payload.ts` | 492 | `NOTE` | ❌ | note: "pricing-correction" |
+| `src/Meridian.Ui/dashboard/src/scenarios/accounting-payload.ts` | 376 | `NOTE` | ❌ | note: "Board portal delivery." |
+| `src/Meridian.Ui/dashboard/src/scenarios/accounting-payload.ts` | 382 | `NOTE` | ❌ | note: "Investor email-link delivery." |
+| `src/Meridian.Ui/dashboard/src/scenarios/accounting-payload.ts` | 404 | `NOTE` | ❌ | note: "Board portal delivery.", |
+| `src/Meridian.Ui/dashboard/src/scenarios/accounting-payload.ts` | 428 | `NOTE` | ❌ | note: "Investor email-link delivery.", |
+| `src/Meridian.Ui/dashboard/src/scenarios/accounting-payload.ts` | 533 | `NOTE` | ❌ | note: "pricing-correction" |
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 528 | `NOTE` | ❌ | note: "Coupon posted." |
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 548 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 2205 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |

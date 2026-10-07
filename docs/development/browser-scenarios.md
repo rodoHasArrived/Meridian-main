@@ -10,6 +10,10 @@ screenshot. The scenario registry lives in
 Each response declares its HTTP status, body, and optional delay. The consumers use this registry
 directly rather than maintaining separate copies of the accounting response.
 
+The shared payload also retains the Approval Inbox sample. Its legacy close-plan summaries have
+an explicit scenario-only type extension; the production workspace contract stays separate.
+The empty scenario clears those summaries along with the reconciliation queues.
+
 ## Preview an accounting state
 
 Use Node.js 22.12 or newer and npm on Windows, macOS, or Linux. Run commands from the repository
@@ -54,7 +58,7 @@ Known read-only development fixtures supply supporting shell requests; writes re
 scenario route. Routes match the HTTP method and complete pathname rather than a pathname prefix.
 
 The [accounting scenario suite](../../src/Meridian.Ui/dashboard/src/scenarios/scenarios.test.tsx)
-uses the real API client and production reconciliation queue card, and covers empty states,
+uses the real API client, production reconciliation queue card, and Approval Inbox, and covers empty states,
 delays, cancellation, status preservation, and strict request failures. Run it with the Vite adapter
 and screenshot adapter checks:
 

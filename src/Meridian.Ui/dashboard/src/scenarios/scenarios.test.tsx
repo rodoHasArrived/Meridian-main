@@ -4,6 +4,7 @@ import { getAccountingWorkspace, getReconciliationBreakQueue } from "@/lib/api";
 import { RECONCILIATION_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import { getScenario, resolveScenarioResponse, scenarioPreviewUrl } from "@/scenarios";
 import { accountingPayload } from "@/scenarios/accounting-payload";
+import { ApprovalInboxScreen } from "@/screens/finance-standard-pages-screen";
 import { ReconciliationQueueSummaryCard } from "@/screens/accounting-screen.operations-panels";
 import { buildReconciliationQueuePanelViewState } from "@/screens/accounting-screen.reconciliation.view-model";
 import { requireFirst } from "@/test/fixtures";
@@ -69,6 +70,27 @@ describe("shared accounting scenarios", () => {
     expect(screen.getByText("No reconciliation runs are available for this accounting scope.")).toBeVisible();
     const record = requireFirst(accountingPayload.reconciliationQueue, "accounting reconciliation queue");
     expect(screen.queryByText(record.strategyName)).not.toBeInTheDocument();
+  });
+
+  it("retains the shared approval inbox sample and its decision link through the real API client", async () => {
+    installScenario("accounting.normal");
+    const workspace = await getAccountingWorkspace();
+    renderWithRouter(<ApprovalInboxScreen data={workspace} />);
+    const closePlan = requireFirst(accountingPayload.closePlans, "accounting close-plan summaries");
+    const approval = requireFirst(closePlan.approvals, "accounting pending approvals");
+    expect(screen.getByRole("heading", { name: "Approval queue" })).toBeVisible();
+    expect(screen.getByText(approval.label)).toBeVisible();
+    expect(screen.getByRole("link", { name: `Review and decide ${approval.label}` })).toHaveAttribute(
+      "href", `/accounting/approvals?approvalId=${approval.approvalId}`
+    );
+  });
+
+  it("keeps the empty approval inbox free of populated scenario rows", async () => {
+    installScenario("accounting.empty");
+    const workspace = await getAccountingWorkspace();
+    renderWithRouter(<ApprovalInboxScreen data={workspace} />);
+    expect(screen.getByText("No approvals in the supplied accounting scope")).toBeVisible();
+    expect(screen.queryByRole("heading", { name: "Approval queue" })).not.toBeInTheDocument();
   });
 
   it("holds the delayed response pending until its declared delay has elapsed", async () => {

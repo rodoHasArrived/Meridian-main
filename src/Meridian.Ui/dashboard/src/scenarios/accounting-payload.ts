@@ -1,7 +1,28 @@
 import type { AccountingWorkspaceResponse } from "../types";
 
+// Sample close-plan summaries support the legacy Approval Inbox preview. Keep
+// this fixture extension separate from the production workspace API contract.
+export interface AccountingScenarioPayload extends AccountingWorkspaceResponse {
+  closePlans: {
+    periodId: string;
+    fundAccountId: string;
+    status: string;
+    approvals: {
+      approvalId: string;
+      label: string;
+      status: string;
+      owner: string;
+      dueAtUtc: string;
+      changedSummary: string;
+      evidenceCount: number;
+      downstreamEffect: string;
+      riskSummary: string;
+    }[];
+  }[];
+}
+
 // Single source for development previews, Vitest, and screenshot capture.
-export const accountingPayload: AccountingWorkspaceResponse = {
+export const accountingPayload: AccountingScenarioPayload = {
   metrics: [
     { id: "breaks", label: "Open Breaks", value: "2", delta: "+1", tone: "warning" },
     { id: "drift", label: "Timing Drift", value: "1", delta: "0%", tone: "warning" },
@@ -59,6 +80,26 @@ export const accountingPayload: AccountingWorkspaceResponse = {
     tone: "warning",
     summary: "Cash-flow coverage is available for 4 runs; 1 run needs variance review."
   },
+  closePlans: [
+    {
+      periodId: "2026-06",
+      fundAccountId: "fund-alpha",
+      status: "ApprovalReview",
+      approvals: [
+        {
+          approvalId: "close-2026-06-controller-review",
+          label: "Controller review of the June close package",
+          status: "Pending review",
+          owner: "Fund Controller",
+          dueAtUtc: "2026-07-13T20:00:00Z",
+          changedSummary: "Cash variance evidence and the final trial balance were added.",
+          evidenceCount: 3,
+          downstreamEffect: "Approval releases the governed report-pack handoff.",
+          riskSummary: "One reconciliation variance remains under documented review."
+        }
+      ]
+    }
+  ],
   reporting: {
     profileCount: 4,
     fundProfileId: "default-fund",

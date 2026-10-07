@@ -28,6 +28,21 @@ test("default accounting screenshots use the typed payload without a JSON copy",
   resolver.assertNoUnexpectedRequests();
 });
 
+test("the shared accounting payload retains the approval inbox capture's populated queue", async () => {
+  const routeConfig = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-routes.json"), "utf8"));
+  const capture = routeConfig.captures.find((item) => item.path === "/accounting/approvals/inbox");
+  assert.ok(capture, "Approval inbox capture must remain registered");
+  const resolver = createScreenshotApiResolver(source.module, {}, { strict: true });
+  const response = resolver.resolve("/api/workstation/accounting");
+  const approvals = response.body.closePlans?.flatMap((plan) => plan.approvals) ?? [];
+  assert.ok(approvals.length > 0, "Approval inbox screenshot requires a populated approval queue");
+  for (const approval of approvals) {
+    assert.ok(approval.approvalId, "Approval rows must link to a retained decision reference");
+    assert.ok(capture.waitForTexts.includes(approval.label), "Approval readiness must match the shared payload");
+  }
+  resolver.assertNoUnexpectedRequests();
+});
+
 test("every screenshot variant preserves shared bodies, explicit status, headers, and delay", () => {
   for (const [id, status] of Object.entries({
     "accounting.normal": 200,
