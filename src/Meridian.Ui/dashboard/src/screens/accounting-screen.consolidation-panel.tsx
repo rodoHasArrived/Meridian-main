@@ -30,6 +30,7 @@ function ConsolidationScopePanel({ initialBookId, initialPeriodId }: Consolidati
   useEffect(() => () => activeRequest.current?.abort(), []);
 
   const ready = Object.values(request).every((value) => value.trim().length > 0);
+  const canCreateDrafts = view?.canCreateDrafts === true;
   function updateField(field: keyof ConsolidationRequest, value: string) {
     setRequest((current) => ({ ...current, [field]: value }));
     setView(null);
@@ -38,7 +39,7 @@ function ConsolidationScopePanel({ initialBookId, initialPeriodId }: Consolidati
   }
 
   async function run(action: "preview" | "drafts") {
-    if (!ready || activeRequest.current || (action === "drafts" && (!view || view.blockers.length > 0))) return;
+    if (!ready || activeRequest.current || (action === "drafts" && (!canCreateDrafts || !view || view.blockers.length > 0))) return;
     const controller = new AbortController();
     activeRequest.current = controller;
     setBusy(action);
@@ -94,8 +95,9 @@ function ConsolidationScopePanel({ initialBookId, initialPeriodId }: Consolidati
             <p className="text-xs leading-5 text-muted-foreground">Book and period start from the current ledger selection. Select the dedicated elimination book and its period. Authoritative effective-dated ownership determines the included entities.</p>
             <div className="flex flex-wrap gap-2">
               <Button type="submit" variant="outline" disabled={!ready || busy !== null}>{busy === "preview" ? "Refreshing preview…" : "Preview consolidation"}</Button>
-              <Button type="button" disabled={!view || view.blockers.length > 0 || busy !== null} onClick={() => void run("drafts")}>{busy === "drafts" ? "Creating review drafts…" : "Create review drafts"}</Button>
+              <Button type="button" disabled={!canCreateDrafts || !view || view.blockers.length > 0 || busy !== null} aria-describedby={view && !canCreateDrafts ? "consolidation-draft-permission" : undefined} onClick={() => void run("drafts")}>{busy === "drafts" ? "Creating review drafts…" : "Create review drafts"}</Button>
             </div>
+            {view && !canCreateDrafts ? <p id="consolidation-draft-permission" className="text-sm text-muted-foreground">You can inspect this preview. Creating review drafts requires an authenticated session with ledger management permission.</p> : null}
           </fieldset>
         </form>
         <p role="status" aria-live="polite" className="text-sm text-muted-foreground">{message || (busy ? "Refreshing authoritative consolidation evidence…" : "Preview the effective ownership perimeter to inspect balances and reciprocal matches.")}</p>

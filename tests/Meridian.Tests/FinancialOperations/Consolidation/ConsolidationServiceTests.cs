@@ -381,6 +381,7 @@ public sealed partial class ConsolidationServiceTests
         };
         internal Mock<ILedgerJournalStore> Store { get; } = new(MockBehavior.Strict);
         internal Mock<IFundStructureService> Structure { get; } = new(MockBehavior.Strict);
+        internal AccountingPolicyService Policies { get; } = new();
         internal ConsolidationService Service { get; }
         internal Dictionary<Guid, List<LedgerJournalEntryRecord>> Records => _records;
 
@@ -408,9 +409,8 @@ public sealed partial class ConsolidationServiceTests
                         .Where(record => !query.EffectiveTo.HasValue ||
                             (record.Entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(record.Entry.Timestamp.UtcDateTime)) <= query.EffectiveTo.Value)
                         .ToArray());
-            var policies = new AccountingPolicyService();
             Service = new ConsolidationService(new ConsolidationPerimeterResolver(Structure.Object), Store.Object,
-                policies, new AccountingJournalDraftService(policies, new AccountingBasisProjectionService(policies)));
+                Policies, new AccountingJournalDraftService(Policies, new AccountingBasisProjectionService(Policies)));
             AddSource(FirstBookId, FirstId, 1,
                 (ConsolidationService.ReceivableAccount, 100m, SecondId.ToString("D")), ("Equity:Opening", -100m, null));
             AddSource(SecondBookId, SecondId, 2,

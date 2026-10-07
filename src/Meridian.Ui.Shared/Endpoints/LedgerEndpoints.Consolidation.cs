@@ -53,7 +53,11 @@ public static partial class LedgerEndpoints
             var result = create
                 ? await service.CreateDraftAsync(request, actor, tenant.TenantId, tenant.CompanyId, context.RequestAborted).ConfigureAwait(false)
                 : await service.GetAsync(request, tenant.TenantId, tenant.CompanyId, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(result, options);
+            return Results.Json(result with
+            {
+                CanCreateDrafts = !EndpointAuthorization.IsNonSessionPrincipal(context) &&
+                    EndpointAuthorization.HasAnyPermission(context, UserPermission.AdminMaintenance, UserPermission.ManageLedgerReports)
+            }, options);
         }
         catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
         {

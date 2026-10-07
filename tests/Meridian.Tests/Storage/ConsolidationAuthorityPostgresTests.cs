@@ -21,6 +21,36 @@ namespace Meridian.Tests.Storage;
 public sealed class ConsolidationAuthorityPostgresTests
 {
     [LedgerDatabaseFact]
+    public async Task DirectCorrectionAppend_RequiresAdjustmentClassificationAndRetainsApprovedLineage()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+        var ct = timeout.Token;
+        await using var fixture = await AuthorityFixture.CreateAsync(ct);
+        await fixture.Store.AppendAsync(fixture.Write, ct);
+        var correction = await fixture.BuildCorrectionAsync(ct);
+        var invalid = correction with
+        {
+            PostingKind = LedgerPostingKindDto.Originating,
+            AdjustmentApproval = null,
+            PostingCommand = correction.PostingCommand! with { Intent = AccountingPostingIntentDto.Originating }
+        };
+        var append = () => fixture.Store.AppendAsync(invalid, ct);
+        await append.Should().ThrowAsync<LedgerValidationException>().WithMessage("*adjustment posting semantics*");
+        (await fixture.Database.JournalStore.GetByPeriodAsync(fixture.Period.PeriodId, ct)).Should().ContainSingle();
+
+        var noApproval = () => fixture.Store.AppendAsync(correction with { AdjustmentApproval = null }, ct);
+        await noApproval.Should().ThrowAsync<LedgerValidationException>().WithMessage("*adjustment posting semantics*");
+        await fixture.Store.AppendAsync(correction, ct);
+        var posted = await fixture.Database.JournalStore.GetByPeriodAsync(fixture.Period.PeriodId, ct);
+        posted.Should().HaveCount(2);
+        var retained = posted.Single(record => record.Entry.JournalEntryId == correction.Entry.JournalEntryId);
+        retained.PostingKind.Should().Be(LedgerPostingKindDto.Adjustment);
+        retained.SourceJournalEntryId.Should().Be(fixture.Write.Entry.JournalEntryId);
+        retained.AdjustmentApproval!.ApprovalId.Should().Be(correction.PostingCommand!.ApprovalId);
+        (await fixture.Service.CalculateAsync(fixture.Evidence.Request, ct)).ProposedLines.Should().BeEmpty();
+    }
+
+    [LedgerDatabaseFact]
     public async Task DedicatedBook_RejectsOrdinaryWritesWithoutTagsRegardlessOfCallerPolicy()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
@@ -253,15 +283,7 @@ public sealed class ConsolidationAuthorityPostgresTests
                 var calculation = await service.CalculateAsync(new(CoreFixture.OrganizationId, CoreFixture.RootId,
                     CoreFixture.OverlayBookId, periods[2].PeriodId, CoreFixture.Date), ct);
                 var authority = new PostgresConsolidationPostingAuthority(service, ownership, policies);
-                var write = ConsolidationStorageFixture.Write(books[2], periods[2], CoreFixture.Date) with
-                { AccountingPolicyId = books[2].AccountingPolicyId, AccountingPolicyVersion = books[2].AccountingPolicyVersion };
-                var lines = calculation.Evidence.ExpectedLines.Select(line => new LedgerEntry(Guid.NewGuid(), write.Entry.JournalEntryId,
-                    write.Entry.Timestamp, new(line.AccountPath, line.AccountPath == ConsolidationService.ReceivableAccount ? LedgerAccountType.Asset : LedgerAccountType.Liability),
-                    line.Side == AccountingTemplateLineSideDto.Debit ? line.Amount : 0m,
-                    line.Side == AccountingTemplateLineSideDto.Credit ? line.Amount : 0m, write.Entry.Description,
-                    new(FundId: line.Dimensions!.FundId, EntityId: line.EntityId, CounterpartyId: line.Dimensions.CounterpartyId))).ToArray();
-                write = write with { Entry = new(write.Entry.JournalEntryId, write.Entry.Timestamp, write.Entry.Description, lines) };
-                write = ConsolidationStorageFixture.WithEvidence(write, calculation.Evidence);
+                var write = CreateReviewedWrite(calculation);
                 return new AuthorityFixture
                 {
                     Database = database,
@@ -289,6 +311,29 @@ public sealed class ConsolidationAuthorityPostgresTests
                 policy.Version, "Changed after review", policy.EffectiveFrom, policy.EffectiveTo, policy.IsDefault,
                 policy.RulesJson, FundProfileId: policy.FundProfileId, FundStructureNodeId: policy.FundStructureNodeId,
                 RulePack: policy.RulePack), ct);
+        }
+
+        public async Task<LedgerJournalEntryWrite> BuildCorrectionAsync(CancellationToken ct)
+        {
+            var book = (await Database.JournalStore.GetLedgerBookAsync(CoreFixture.SecondBookId, ct))!;
+            var source = await Database.JournalStore.QueryAsync(new(LedgerBookId: book.LedgerBookId), ct);
+            var period = (await Database.JournalStore.GetPeriodAsync(source[0].PeriodId, ct))!;
+            await AppendSourceAsync(Database, book, period, CoreFixture.SecondId, CoreFixture.FirstId, false, ct);
+            var calculation = await Service.CalculateAsync(Evidence.Request, ct);
+            return ConsolidationStorageFixture.AsReviewedCorrection(CreateReviewedWrite(calculation), Write.Entry.JournalEntryId);
+        }
+
+        private static LedgerJournalEntryWrite CreateReviewedWrite(ConsolidationCalculation calculation)
+        {
+            var write = ConsolidationStorageFixture.Write(calculation.Book, calculation.Period, calculation.Request.AsOf) with
+            { AccountingPolicyId = calculation.Book.AccountingPolicyId, AccountingPolicyVersion = calculation.Book.AccountingPolicyVersion };
+            var lines = calculation.Evidence.ExpectedLines.Select(line => new LedgerEntry(Guid.NewGuid(), write.Entry.JournalEntryId,
+                write.Entry.Timestamp, new(line.AccountPath, line.AccountPath == ConsolidationService.ReceivableAccount ? LedgerAccountType.Asset : LedgerAccountType.Liability),
+                line.Side == AccountingTemplateLineSideDto.Debit ? line.Amount : 0m,
+                line.Side == AccountingTemplateLineSideDto.Credit ? line.Amount : 0m, write.Entry.Description,
+                new(FundId: line.Dimensions!.FundId, EntityId: line.EntityId, CounterpartyId: line.Dimensions.CounterpartyId))).ToArray();
+            write = write with { Entry = new(write.Entry.JournalEntryId, write.Entry.Timestamp, write.Entry.Description, lines) };
+            return ConsolidationStorageFixture.WithEvidence(write, calculation.Evidence);
         }
 
         public async Task AssertNoEliminationAsync(CancellationToken ct) =>

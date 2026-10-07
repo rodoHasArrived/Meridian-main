@@ -25,6 +25,7 @@ public sealed class ConsolidationWorkbenchService(ConsolidationService consolida
         var draft = await consolidation.BuildDraftAsync(calculation, actor, tenant, company, ct).ConfigureAwait(false);
         if (draft is not null)
         {
+            await ConsolidationChartValidation.ValidateAsync(configuration, draft, ct).ConfigureAwait(false);
             var existing = await drafts.GetAsync(draft.FundProfileId, draft.JournalEntryId, ct, tenant, company).ConfigureAwait(false);
             if (existing is not null && IsEditable(existing.Status))
             {
@@ -35,17 +36,6 @@ public sealed class ConsolidationWorkbenchService(ConsolidationService consolida
             }
             if (existing is null || NeedsAuthoritativeRepair(existing, draft))
             {
-                var workspace = await configuration.GetWorkspaceAsync(draft.FundProfileId, draft.LedgerBookId,
-                    ct, tenant, company).ConfigureAwait(false);
-                foreach (var line in draft.Lines)
-                {
-                    var account = workspace.ChartOfAccounts.SingleOrDefault(x => x.Path == line.AccountPath);
-                    if (account is null || account.IsArchived || account.AccountName != line.AccountPath ||
-                        account.Symbol is not null || account.FinancialAccountId is not null ||
-                        !string.Equals(account.AccountType, line.AccountPath == ConsolidationService.ReceivableAccount
-                            ? "Asset" : "Liability", StringComparison.OrdinalIgnoreCase))
-                        throw new InvalidOperationException("The elimination chart must contain the supported unscoped intercompany account paths with identical account names; Symbol and FinancialAccountId must be absent.");
-                }
                 // Keep the retained optimistic version, evidence and lifecycle trail. Governed
                 // intake checks editability again and clears prior review before saving a repair.
                 var intake = existing is null ? draft : existing with

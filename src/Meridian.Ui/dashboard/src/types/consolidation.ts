@@ -64,4 +64,5 @@ export interface ConsolidationView {
   drafts: ConsolidationDraftSummary[];
   blockers: string[];
   sourceFingerprint: string;
+  canCreateDrafts?: boolean;
 }

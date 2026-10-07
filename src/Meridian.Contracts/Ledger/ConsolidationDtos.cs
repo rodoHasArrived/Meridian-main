@@ -50,4 +50,4 @@ public sealed record ConsolidationViewDto(
     IReadOnlyList<string> EntityIds, IReadOnlyList<Guid> OwnershipLinkIds,
     IReadOnlyList<ConsolidationBalanceDto> Balances, IReadOnlyList<ConsolidationMatchDto> Matches,
     IReadOnlyList<ConsolidationDraftSummaryDto> Drafts, IReadOnlyList<string> Blockers,
-    string SourceFingerprint);
+    string SourceFingerprint, bool CanCreateDrafts = false);

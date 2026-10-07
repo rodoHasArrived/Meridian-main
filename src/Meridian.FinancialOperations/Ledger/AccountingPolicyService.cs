@@ -44,7 +44,8 @@ public sealed record AccountingBasisProjectionRequest(
     LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating,
     LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null,
     Guid? LedgerBookId = null,
-    AccountingPostingCommandDto? PostingCommand = null);
+    AccountingPostingCommandDto? PostingCommand = null,
+    string? PolicyVersion = null);
 
 public sealed record AccountingBasisProjectionResult(
     AccountingPolicyDto Policy,
@@ -118,6 +119,8 @@ public sealed class AccountingPolicyService : IAccountingPolicyService
             .Where(policy => policy.AccountingBasis == query.AccountingBasis)
             .Where(policy => string.IsNullOrWhiteSpace(query.PolicyId)
                              || string.Equals(policy.PolicyId, query.PolicyId, StringComparison.OrdinalIgnoreCase))
+            .Where(policy => string.IsNullOrWhiteSpace(query.PolicyVersion)
+                             || string.Equals(policy.Version, query.PolicyVersion, StringComparison.Ordinal))
             .Where(policy => policy.EffectiveFrom <= effectiveDate
                              && (policy.EffectiveTo is null || effectiveDate <= policy.EffectiveTo.Value))
             .Where(policy => MatchesOptionalTextScope(policy.FundProfileId, query.FundProfileId))
@@ -317,7 +320,8 @@ public sealed class AccountingBasisProjectionService(IAccountingPolicyService ac
                     request.FundProfileId,
                     request.FundStructureNodeId,
                     request.InstrumentId,
-                    request.SourceEventId),
+                    request.SourceEventId,
+                    request.PolicyVersion),
                 ct)
             .ConfigureAwait(false);
 

@@ -277,9 +277,10 @@ public sealed partial class ConsolidationServiceTests
         var workbench = new ManualJournalEntryWorkbenchService(drafts, configuration, audit,
             journalStore: engine.Store.Object, consolidationGuard: engine.Service);
         var bridge = new ConsolidationWorkbenchService(engine.Service, drafts, workbench, configuration);
-        return new WorkbenchFixture(engine, drafts, workbench, bridge, calculation.Request);
+        return new WorkbenchFixture(engine, drafts, workbench, bridge, calculation.Request, configuration);
     }
 
     private sealed record WorkbenchFixture(Fixture Engine, InMemoryManualJournalEntryDraftStore Drafts,
-        ManualJournalEntryWorkbenchService Workbench, ConsolidationWorkbenchService Bridge, ConsolidationRequestDto Request);
+        ManualJournalEntryWorkbenchService Workbench, ConsolidationWorkbenchService Bridge, ConsolidationRequestDto Request,
+        AccountingConfigurationService Configuration);
 }

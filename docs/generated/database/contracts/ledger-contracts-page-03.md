@@ -178,6 +178,7 @@ classDiagram
     class Meridian_Contracts_Ledger_ConsolidationViewDto["ConsolidationViewDto"] {
         +IReadOnlyList~ConsolidationBalanceDto~ Balances
         +IReadOnlyList~string~ Blockers
+        +bool CanCreateDrafts
         +string Currency
         +IReadOnlyList~ConsolidationDraftSummaryDto~ Drafts
         +IReadOnlyList~string~ EntityIds

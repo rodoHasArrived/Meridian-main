@@ -158,6 +158,20 @@ internal static class ConsolidationPostingEvidenceGuard
                     || !evidence.PriorPostedJournalIds.Contains(command.SourceJournalEntryId.Value))))
             throw new LedgerValidationException("Consolidation corrections require linked prior posted elimination evidence.");
 
+        if (evidence.PriorPostedJournalIds.Count > 0)
+        {
+            // The shared normalizer promotes Adjustment intent to Adjustment posting kind.
+            // Workbench corrections use Rebook intent and explicitly retain that posting kind.
+            var postingKind = command.Intent == AccountingPostingIntentDto.Adjustment
+                ? LedgerPostingKindDto.Adjustment : write.PostingKind;
+            if (command.Intent is not (AccountingPostingIntentDto.Rebook or AccountingPostingIntentDto.Adjustment)
+                || postingKind != LedgerPostingKindDto.Adjustment
+                || write.AdjustmentApproval is not { Status: LedgerAdjustmentApprovalStatusDto.Approved } approval
+                || !string.Equals(approval.ApprovalId?.Trim(), command.ApprovalId.Trim(), StringComparison.Ordinal))
+                throw new LedgerValidationException(
+                    "Consolidation corrections require adjustment posting semantics and approved correction metadata matching the command approval.");
+        }
+
         ValidateLines(write, evidence);
         return evidence;
     }

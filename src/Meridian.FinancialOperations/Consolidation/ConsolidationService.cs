@@ -39,7 +39,8 @@ public sealed class ConsolidationService(
         if (period.LedgerBookId != book.LedgerBookId || request.AsOf < period.StartDate || request.AsOf > period.EndDate)
             throw new InvalidOperationException("The consolidation date must fall within the elimination book's period.");
         var policy = await policies.ResolvePolicyAsync(new AccountingPolicyQuery(AccountingBasisKindDto.Primary,
-            request.AsOf, book.AccountingPolicyId, book.FundProfileId, book.FundStructureNodeId), ct).ConfigureAwait(false);
+            request.AsOf, book.AccountingPolicyId, book.FundProfileId, book.FundStructureNodeId,
+            PolicyVersion: book.AccountingPolicyVersion), ct).ConfigureAwait(false);
         var rule = policy.RulePack?.Rules.SingleOrDefault(x => x.RuleId == RuleId);
         if (rule is null || rule.TreatmentKind != AccountingTreatmentKindDto.ConsolidationElimination ||
             rule.RuleVersion != RuleVersion || policy.Version != book.AccountingPolicyVersion || !rule.RequiresApproval || !rule.RequiresEvidence || rule.AllowsAutoPosting)
@@ -51,6 +52,7 @@ public sealed class ConsolidationService(
             request.OrganizationId,
             request.OwnershipRootId,
             request.EliminationBookId,
+            request.PeriodId,
             request.AsOf,
             Entities = ids,
             RuleVersion
@@ -203,7 +205,8 @@ public sealed class ConsolidationService(
             EffectiveDate: calculation.Request.AsOf, FundProfileId: calculation.Book.FundProfileId,
             FundStructureNodeId: calculation.Book.FundStructureNodeId, PolicyId: calculation.Policy.PolicyId,
             RuleId: RuleId, TreatmentKind: AccountingTreatmentKindDto.ConsolidationElimination,
-            LedgerBookId: calculation.Book.LedgerBookId, EvidenceLinks: evidenceLinks), ct).ConfigureAwait(false);
+            LedgerBookId: calculation.Book.LedgerBookId, EvidenceLinks: evidenceLinks,
+            PolicyVersion: calculation.Policy.Version), ct).ConfigureAwait(false);
         if (!typed.CanSubmitForApproval || typed.CanPostWithoutAdditionalApproval || typed.Rule?.RuleId != RuleId)
             throw new InvalidOperationException("The accounting policy did not produce a reviewable elimination draft.");
         var now = DateTimeOffset.UtcNow;

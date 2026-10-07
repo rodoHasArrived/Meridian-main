@@ -140,6 +140,7 @@ classDiagram
         +Guid? FundStructureNodeId
         +string? InstrumentId
         +string? PolicyId
+        +string? PolicyVersion
         +Guid? SourceEventId
     }
     class Meridian_Contracts_Ledger_AccountingPolicyRuleDto["AccountingPolicyRuleDto"] {

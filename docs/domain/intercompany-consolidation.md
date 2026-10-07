@@ -25,6 +25,7 @@ the proposed increment. Unmatched receivable and payable amounts remain separate
 - A dedicated Primary elimination book belongs to the fund root, with policy `consolidation-v1`
   version `w10-v1` and an open period containing the consolidation date. The entity books are not
   mutated by elimination posting. The dedicated book must contain only this perimeter's overlays.
+  Policy resolution uses the book's exact ID and version even when another version is effective.
 - The first typed treatment is `ConsolidationElimination`, rule
   `consolidation.receivable-payable`, version `w10-v1`. It requires evidence and independent
   approval and never permits auto-posting. Configure chart paths **and account names** exactly as
@@ -52,13 +53,16 @@ link IDs are retained for drill-through.
 
 `ManageLedgerReports` can create consolidation drafts and open the existing manual-journal review
 workbench, subject to the same fund ownership checks. `ViewLedgerReports` remains read-only and does
-not grant access to pre-posting review. Ordinary manual journals cannot enter a book designated with
+not grant access to pre-posting review. Preview responses carry a server-calculated draft capability;
+read-only viewers retain the balance view with draft creation disabled. Ordinary manual journals cannot enter a book designated with
 the consolidation policy, even when the caller omits consolidation tags.
 
 ## Freshness, reruns and corrections
 
 Evidence binds both source books, the elimination book, exact source lines, authoritative ownership,
 policy, period/date and expected draft lines. Review is checked at submit, approve, post and recovery.
+The current intercompany chart configuration is rechecked at each review and posting transition;
+archived, renamed, retyped or newly scoped accounts block the retained draft.
 A changed source book (including a backdated or amount-neutral new journal) invalidates the draft;
 the operator reruns and obtains renewed review. Old drafts remain inspectable and explicitly stale.
 The PostgreSQL append boundary rechecks the as-of journal count and maximum sequence for all three
@@ -72,11 +76,14 @@ leases through an external commit. These first-slice locks serialize ownership c
 configuration changes during elimination posting; ordinary source journal appends retain their
 existing audit-lock ordering.
 
-Deterministic scope and evidence keys include perimeter, date, reciprocal entities and rule version.
+Deterministic scope and evidence keys include perimeter, period, date, reciprocal entities and rule version.
+Overlapping periods have separate pending-draft views while posted overlays remain cumulative.
 An unchanged rerun returns the same retained draft, and an already-posted target creates no new
 elimination. Posted eliminations through the as-of date are included in the cumulative target;
 subsequent dates propose only the remaining increment. Corrections create signed adjustments linked
-to a prior posted journal. Reductions reverse the excess through a newly reviewed adjustment;
+to a prior posted journal. The append boundary requires correction intent, adjustment classification
+and approved adjustment metadata as well as the source-journal link.
+Reductions reverse the excess through a newly reviewed adjustment;
 no posted entry is replaced. Generic manual reversal/rebook is blocked for these drafts so that
 corrections always use current consolidation evidence. Exact committed posting receipts can finish
 recovery even if source balances have subsequently moved.
@@ -99,21 +106,8 @@ Implementation: `ConsolidationPerimeterResolver`, `ConsolidationService`,
 The full roadmap item remains planned: governed FX translation and separate translation breaks,
 additional treatment families and full desktop presentation remain outside this first slice.
 
-Validation on 2026-10-06: 249 focused .NET tests passed, including the accounting workflow,
-authorization/query-binding checks and four live PostgreSQL tests for freshness and concurrent
-appends; 55 ownership policy/service tests also passed. The full .NET CI roster passed 19,047
-tests with five registered skips. Workflow tests exercise actual policy, draft, approval, posting
-and projection services.
-
-Initial browser validation passed 114 relevant tests, TypeScript, Vite, touched-file lint and axe
-checks using preprovisioned dependencies. Chromium exercised the canonical Ledger Explorer at
-1440×900 and 1366×768 using intercepted API fixtures. After a clean dependency install, strict
-TypeScript and all nine consolidation panel/API tests passed. The first full repository CI attempt
-stopped on a baseline dependency mismatch: Tailwind 4.3.3 with the Tailwind 3 PostCSS interface.
-
-Integration on 2026-10-07 incorporates upstream's Tailwind 3.4.19 correction. A fresh install from
-the merged lockfile, the canonical production bundle build and all 73 relevant app/consolidation
-browser tests passed. Chromium rechecked preview, source disclosure, draft creation and scope
-invalidation at both desktop sizes with no console errors or overflow. The bundle is regenerated
-from those locked dependencies; the earlier clean-install blocker is resolved. Final repository
-and hosted CI results are tracked with the pull request.
+Validation covers actual policy, drafting, approval, posting and projection services, live PostgreSQL
+freshness and concurrency checks, authorization, and browser preview/draft flows. Chromium exercised
+source disclosure, draft creation and scope invalidation at 1440×900 and 1366×768 using intercepted
+API fixtures. The canonical browser bundle uses the locked dependencies. Final repository test counts
+and authoritative GitHub Actions results are recorded in the pull request.

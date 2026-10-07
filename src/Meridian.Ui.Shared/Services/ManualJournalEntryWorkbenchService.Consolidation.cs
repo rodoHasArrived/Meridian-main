@@ -20,6 +20,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
             throw new InvalidOperationException("Consolidation source evidence is unavailable; rerun consolidation and obtain renewed review.");
         var guard = _consolidationGuard ?? throw new InvalidOperationException(
             "Authoritative consolidation source validation is unavailable; elimination approval and posting are blocked.");
+        await ConsolidationChartValidation.ValidateAsync(_configurationService, draft, ct).ConfigureAwait(false);
         await guard.ValidateCurrentAsync(draft, ct).ConfigureAwait(false);
     }
 

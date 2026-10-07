@@ -21,7 +21,7 @@ function response(overrides: Partial<ConsolidationView> = {}): ConsolidationView
     entityIds: ["entity-a", "entity-b"], ownershipLinkIds: ["effective-ownership-link"], sourceFingerprint: "sources-v1", blockers: [],
     balances: [{ accountPath: source.accountPath, accountType: "Asset", grossBalance: 120, proposedEliminations: -100, postedEliminations: 0, consolidatedBalance: 120, previewBalance: 20, sources: [source] }],
     matches: [{ postingEntityId: "entity-a", counterpartyId: "entity-b", receivable: 120, payable: 100, matchedAmount: 100, unmatchedReceivable: 20, unmatchedPayable: 0, sources: [source] }],
-    drafts: [], ...overrides
+    drafts: [], canCreateDrafts: true, ...overrides
   };
 }
 function fillScope() {
@@ -45,6 +45,22 @@ beforeEach(() => {
 });
 
 describe("Accounting consolidation", () => {
+  it.each([false, undefined])("keeps preview and source details available without draft authority (%s)", async (canCreateDrafts) => {
+    vi.mocked(previewConsolidation).mockResolvedValue(response({ canCreateDrafts }));
+    renderPanel();
+    await preview();
+    const create = screen.getByRole("button", { name: "Create review drafts" });
+    expect(create).toBeDisabled();
+    expect(create).toHaveAccessibleDescription(/Creating review drafts requires an authenticated session with ledger management permission/);
+    fireEvent.click(create);
+    expect(createConsolidationDrafts).not.toHaveBeenCalled();
+    const balance = within(screen.getByRole("region", { name: "Group balance table" }));
+    fireEvent.click(balance.getByText("Sources for Assets:Intercompany Receivable (1)"));
+    expect(balance.getByText("source-journal-a")).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Group balances" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Preview consolidation" })).toBeEnabled();
+  });
+
   it("keeps gross, proposed, posted, consolidated, and unmatched balances distinct with retained source evidence", async () => {
     const { container } = renderPanel();
     expect(screen.getByRole("button", { name: "Create review drafts" })).toBeDisabled();

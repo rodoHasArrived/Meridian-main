@@ -114,14 +114,68 @@ public sealed class ConsolidationPostingGuardTests
             ConsolidationStorageFixture.ReadEvidence(write) with { PriorPostedJournalIds = [prior] });
         var validate = () => AccountingPostingCommandValidator.NormalizeAndValidate(write);
         validate.Should().Throw<LedgerValidationException>().WithMessage("*linked prior posted elimination*");
-        write = write with { PostingCommand = write.PostingCommand! with { SourceJournalEntryId = prior } };
+        write = ConsolidationStorageFixture.AsReviewedCorrection(write, prior);
         AccountingPostingCommandValidator.NormalizeAndValidate(write).SourceJournalEntryId.Should().Be(prior);
+    }
+
+    [Theory]
+    [InlineData("originating-intent")]
+    [InlineData("originating-kind")]
+    [InlineData("missing-approval")]
+    [InlineData("rejected-approval")]
+    [InlineData("different-approval")]
+    public void Correction_RejectsMisclassifiedOrUnapprovedCorrection(string change)
+    {
+        var prior = Guid.NewGuid();
+        var write = ConsolidationStorageFixture.ReviewedWrite();
+        write = ConsolidationStorageFixture.WithEvidence(write,
+            ConsolidationStorageFixture.ReadEvidence(write) with { PriorPostedJournalIds = [prior] });
+        write = ConsolidationStorageFixture.AsReviewedCorrection(write, prior);
+        write = change switch
+        {
+            "originating-intent" => write with { PostingCommand = write.PostingCommand! with { Intent = AccountingPostingIntentDto.Originating } },
+            "originating-kind" => write with { PostingKind = LedgerPostingKindDto.Originating },
+            "missing-approval" => write with { AdjustmentApproval = null },
+            "rejected-approval" => write with { AdjustmentApproval = write.AdjustmentApproval! with { Status = LedgerAdjustmentApprovalStatusDto.Rejected } },
+            "different-approval" => write with { AdjustmentApproval = write.AdjustmentApproval! with { ApprovalId = "unrelated-review" } },
+            _ => throw new ArgumentOutOfRangeException(nameof(change))
+        };
+        var validate = () => AccountingPostingCommandValidator.NormalizeAndValidate(write);
+        validate.Should().Throw<LedgerValidationException>().WithMessage("*adjustment posting semantics*");
+    }
+
+    [Theory]
+    [InlineData(AccountingPostingIntentDto.Rebook)]
+    [InlineData(AccountingPostingIntentDto.Adjustment)]
+    public void Correction_AcceptsReviewedRebookAndNormalizedAdjustment(AccountingPostingIntentDto intent)
+    {
+        var prior = Guid.NewGuid();
+        var write = ConsolidationStorageFixture.ReviewedWrite();
+        write = ConsolidationStorageFixture.WithEvidence(write,
+            ConsolidationStorageFixture.ReadEvidence(write) with { PriorPostedJournalIds = [prior] });
+        write = ConsolidationStorageFixture.AsReviewedCorrection(write, prior) with
+        {
+            PostingCommand = write.PostingCommand! with { Intent = intent, SourceJournalEntryId = prior },
+            PostingKind = intent == AccountingPostingIntentDto.Adjustment ? LedgerPostingKindDto.Originating : LedgerPostingKindDto.Adjustment
+        };
+        var normalized = AccountingPostingCommandValidator.NormalizeAndValidate(write);
+        normalized.PostingKind.Should().Be(LedgerPostingKindDto.Adjustment);
+        normalized.SourceJournalEntryId.Should().Be(prior);
+        normalized.AdjustmentApproval!.ApprovalId.Should().Be(normalized.PostingCommand!.ApprovalId);
     }
 }
 
 internal static class ConsolidationStorageFixture
 {
     internal static readonly DateOnly AsOf = new(2026, 5, 31);
+
+    internal static LedgerJournalEntryWrite AsReviewedCorrection(LedgerJournalEntryWrite write, Guid prior) => write with
+    {
+        PostingKind = LedgerPostingKindDto.Adjustment,
+        PostingCommand = write.PostingCommand! with { Intent = AccountingPostingIntentDto.Rebook, SourceJournalEntryId = prior },
+        AdjustmentApproval = new(write.PostingCommand!.ApprovalId!, LedgerAdjustmentApprovalStatusDto.Approved,
+            "reviewing-controller", DateTimeOffset.UtcNow, "consolidation-correction", GovernanceCaseId: $"journal-correction:{prior:D}")
+    };
 
     internal static LedgerBookRecord Book(string name) => new(Guid.NewGuid(), "fund-consolidation", Guid.NewGuid(),
         FundStructureNodeKindDto.Fund, name, "USD", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
