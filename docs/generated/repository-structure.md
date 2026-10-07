@@ -1309,6 +1309,7 @@ Meridian-main
 │   ├── policies
 │   │   ├── migration-waivers.json
 │   │   └── schema-control.json
+│   ├── migration-reservations.json
 │   └── schema-control.json
 ├── deploy
 │   ├── docker
@@ -11437,6 +11438,7 @@ Meridian-main
 │   │   ├── test_schema_control_migrations.py
 │   │   ├── test_schema_control_policies.py
 │   │   ├── test_schema_control_render.py
+│   │   ├── test_schema_control_reservations.py
 │   │   ├── test_schema_control_workflow.py
 │   │   ├── test_screenshot_diff_report.py
 │   │   ├── test_screenshot_workflow_plan.py
@@ -11518,7 +11520,8 @@ Meridian-main
 │   │   ├── policies.py
 │   │   ├── README.md
 │   │   ├── render.py
-│   │   └── requirements.txt
+│   │   ├── requirements.txt
+│   │   └── reservations.py
 │   ├── source_docs
 │   │   ├── fixtures
 │   │   │   ├── readme_contract

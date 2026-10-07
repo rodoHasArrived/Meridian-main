@@ -278,6 +278,7 @@ public sealed class EndpointStubDetectionTests
             ["ReferenceData"] = routes.Count(r => r.Route.StartsWith("/api/reference-data")),
             ["FundStructure"] = routes.Count(r => r.Route.StartsWith("/api/fund-structure")),
             ["FundAccounts"] = routes.Count(r => r.Route.StartsWith("/api/fund-accounts")),
+            ["DirectLending"] = routes.Count(r => r.Route.StartsWith("/api/loans")),
             ["Ledger"] = routes.Count(r => r.Route.StartsWith("/api/ledger")),
             ["AccountingSystem"] = routes.Count(r => r.Route.StartsWith("/api/accounting-system")),
             ["AccountingOnboarding"] = routes.Count(r => r.Route.StartsWith("/api/accounting/onboarding")),
@@ -285,6 +286,8 @@ public sealed class EndpointStubDetectionTests
             ["Strategies"] = routes.Count(r => r.Route.StartsWith("/api/strategies")),
             ["Quant"] = routes.Count(r => r.Route.StartsWith("/api/quant")),
             ["Demo"] = routes.Count(r => r.Route.StartsWith("/api/demo")),
+            ["ReportingPortal"] = routes.Count(r => r.Route.StartsWith("/portal/reporting")),
+            ["ReportingWebhooks"] = routes.Count(r => r.Route.StartsWith("/hooks/reporting")),
             ["Other"] = 0
         };
 
