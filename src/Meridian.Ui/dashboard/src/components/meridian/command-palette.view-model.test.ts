@@ -37,6 +37,10 @@ describe("command palette view model", () => {
     ["intercompany balances", "/accounting/ledger"],
     ["intercompany eliminations", "/accounting/ledger"],
     ["elimination journals", "/accounting/ledger"],
+    ["disposal tax results", "/accounting/ledger"],
+    ["tax character", "/accounting/ledger"],
+    ["recognized gain or loss", "/accounting/ledger"],
+    ["deferred loss", "/accounting/ledger"],
     ["run a report", "/reporting/run"],
     ["historical prices", "/data/operations"],
     ["SQL", "/data/query"],
@@ -64,15 +68,16 @@ describe("command palette view model", () => {
     expect(cashLadder?.description).not.toContain("cash forecast");
   });
 
-  it("finds consolidation in the ledger tab while preserving the current Accounting book and period", () => {
+  it.each(["group consolidation", "disposal tax results"])("finds %s in the ledger tab while preserving the current Accounting book and period", (query) => {
     const model = buildCommandPaletteViewModel(
       "/accounting/ledger?view=trial-balance&fundProfileId=fund-alpha&ledgerBookId=book-alpha&periodId=2026-05&workflowStatus=Blocked",
-      undefined, {}, "group consolidation"
+      undefined, {}, query
     );
     const ledger = model.filteredItems.find((item) => item.route.startsWith("/accounting/ledger"));
 
     expect(ledger?.description).toContain("preview group consolidation");
     expect(ledger?.description).toContain("elimination drafts for review");
+    expect(ledger?.description).toContain("Open retained disposal tax results from posted journal details.");
     expect(ledger?.route).toBe("/accounting/ledger?fundProfileId=fund-alpha&ledgerBookId=book-alpha&periodId=2026-05&workflowStatus=Blocked");
   });
 

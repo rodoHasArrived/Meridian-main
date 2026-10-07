@@ -27,6 +27,7 @@ public static partial class LedgerEndpoints
 
     public static void MapLedgerEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        MapDisposalTaxEndpoints(app, jsonOptions);
         MapConsolidationEndpoints(app, jsonOptions);
         app.MapGet(UiApiRoutes.LedgerBooks, async (
             string? fundProfileId,
