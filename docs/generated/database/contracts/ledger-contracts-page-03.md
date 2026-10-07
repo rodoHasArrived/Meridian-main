@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 3 of 5
 
-Objects 161-240 of 326. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 329. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -610,6 +610,34 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_LedgerDimensionTags["LedgerDimensionTags"] {
     }
+    class Meridian_Contracts_Ledger_LedgerDisposalTaxParcelDto["LedgerDisposalTaxParcelDto"] {
+        +DateOnly AcquiredDate
+        +string Character
+        +string CostBasis
+        +string? DeferredLoss
+        +string EconomicGainOrLoss
+        +bool HoldingPeriodCarried
+        +int HoldingPeriodDays
+        +DateOnly HoldingPeriodStart
+        +string LotId
+        +string Proceeds
+        +string Quantity
+        +string? RecognizedGainOrLoss
+    }
+    class Meridian_Contracts_Ledger_LedgerDisposalTaxResultDto["LedgerDisposalTaxResultDto"] {
+        +string AccountName
+        +bool CanChange
+        +string? Character
+        +string? DeferredLoss
+        +string? EconomicGainOrLoss
+        +Guid JournalEntryId
+        +Guid MutationBatchId
+        +IReadOnlyList~LedgerDisposalTaxParcelDto~ Parcels
+        +string? PolicyRevision
+        +string? RecognizedGainOrLoss
+        +DateTimeOffset? RecordedAt
+        +bool ReEvaluationRequired
+    }
     class Meridian_Contracts_Ledger_LedgerJournalEntryDto["LedgerJournalEntryDto"] {
         +AccountingBasisKindDto AccountingBasis
         +string AccountingPolicyId
@@ -636,13 +664,6 @@ classDiagram
         +Guid JournalEntryId
         +string? Symbol
         +DateTimeOffset Timestamp
-    }
-    class Meridian_Contracts_Ledger_LedgerPeriodCloseKindDto["LedgerPeriodCloseKindDto"] {
-    }
-    class Meridian_Contracts_Ledger_LedgerPeriodCloseResultDto["LedgerPeriodCloseResultDto"] {
-        +LedgerPeriodDto Period
-        +LedgerPeriodSummaryDto Summary
-        +OperatorWorkItemDto WorkItem
     }
     Meridian_Contracts_Ledger_ClosePreparationPreviewDto --> Meridian_Contracts_Ledger_ClosePreparationCalendarDto
     Meridian_Contracts_Ledger_ClosePreparationPreviewDto --> Meridian_Contracts_Ledger_ClosePreparationIssueDto
@@ -686,6 +707,7 @@ classDiagram
     Meridian_Contracts_Ledger_LedgerBookRolloutIssueDto --> Meridian_Contracts_Ledger_LedgerBookRolloutIssueSeverityDto
     Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceReportDto --> Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceLineDto
+    Meridian_Contracts_Ledger_LedgerDisposalTaxResultDto --> Meridian_Contracts_Ledger_LedgerDisposalTaxParcelDto
     Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerAdjustmentApprovalMetadataDto
     Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerJournalEntryLineDto
     Meridian_Contracts_Ledger_LedgerJournalEntryLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto

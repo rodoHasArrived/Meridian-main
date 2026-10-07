@@ -4194,6 +4194,7 @@ Meridian-main
 │   │   │   ├── LedgerBookDtos.cs
 │   │   │   ├── LedgerCurrencyRounding.cs
 │   │   │   ├── LedgerDimensionTags.cs
+│   │   │   ├── LedgerDisposalTaxDtos.cs
 │   │   │   ├── LedgerToleranceConstants.cs
 │   │   │   └── PrivateCapitalActivityRoutes.cs
 │   │   ├── Lifecycle
@@ -5971,6 +5972,8 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.ProceedsAllocation.cs
 │   │   │   ├── PostgresLedgerJournalStore.Serialization.cs
 │   │   │   ├── PostgresLedgerJournalStore.TaxLotDisposalHistory.cs
+│   │   │   ├── PostgresLedgerJournalStore.TaxLotHoldingPeriodEvidence.cs
+│   │   │   ├── PostgresLedgerJournalStore.TaxLotReplacementClaims.cs
 │   │   │   ├── PostgresLedgerJournalStore.TaxLots.cs
 │   │   │   ├── PostgresLedgerJournalStore.TenantWrites.cs
 │   │   │   ├── PostgresLedgerJournalStore.Validation.cs
@@ -6803,6 +6806,10 @@ Meridian-main
 │   │   │   │   │   ├── ledger-amount-proof-api.test.ts
 │   │   │   │   │   ├── ledger-amount-proof-api.ts
 │   │   │   │   │   ├── ledger-reports-api.ts
+│   │   │   │   │   ├── ledger-tax-results-api.test.ts
+│   │   │   │   │   ├── ledger-tax-results-api.ts
+│   │   │   │   │   ├── ledger-tax-results-format.test.ts
+│   │   │   │   │   ├── ledger-tax-results-format.ts
 │   │   │   │   │   ├── mark-freshness.ts
 │   │   │   │   │   ├── onboarding.ts
 │   │   │   │   │   ├── plaid-link.ts
@@ -7062,6 +7069,8 @@ Meridian-main
 │   │   │   │   │   ├── journal-entry-detail-screen.test.tsx
 │   │   │   │   │   ├── journal-entry-detail-screen.tsx
 │   │   │   │   │   ├── journal-entry-detail-screen.view-model.ts
+│   │   │   │   │   ├── journal-entry-tax-results.test.tsx
+│   │   │   │   │   ├── journal-entry-tax-results.tsx
 │   │   │   │   │   ├── live-quotes-screen.quick-trade.ts
 │   │   │   │   │   ├── live-quotes-screen.test.tsx
 │   │   │   │   │   ├── live-quotes-screen.tsx
@@ -7277,6 +7286,7 @@ Meridian-main
 │   │   │   │   │   ├── instrument-accounting.ts
 │   │   │   │   │   ├── jest-axe.d.ts
 │   │   │   │   │   ├── ledger-amount-proof.ts
+│   │   │   │   │   ├── ledger-tax-results.ts
 │   │   │   │   │   ├── lifecycle.ts
 │   │   │   │   │   ├── mark-freshness.ts
 │   │   │   │   │   ├── market-data.ts
@@ -7565,6 +7575,7 @@ Meridian-main
 │   │   │   ├── LedgerEndpoints.OpenLotBackfill.cs
 │   │   │   ├── LedgerEndpoints.RecurringJournals.cs
 │   │   │   ├── LedgerEndpoints.Reporting.cs
+│   │   │   ├── LedgerEndpoints.Tax.cs
 │   │   │   ├── LiveDataEndpoints.cs
 │   │   │   ├── LoginSessionMiddleware.cs
 │   │   │   ├── MaintenanceScheduleEndpoints.cs
@@ -7790,6 +7801,7 @@ Meridian-main
 │   │   │   ├── LedgerBookOrdering.cs
 │   │   │   ├── LedgerClientReportExportService.cs
 │   │   │   ├── LedgerDimensionMapper.cs
+│   │   │   ├── LedgerDisposalTaxReadService.cs
 │   │   │   ├── LedgerMarkToMarketCarryingValueSource.cs
 │   │   │   ├── LedgerReportingAuthoritativeSource.cs
 │   │   │   ├── LedgerReportingAuthoritativeSource.Successors.cs
@@ -10556,15 +10568,22 @@ Meridian-main
 │   │   │   ├── AtomicSnapshotTestWriter.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.Amortization.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.AverageCost.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.CarryDateLineage.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.CurrentBasis.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.DeferralRecipients.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.HistoricalQuantity.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.HoldingPeriodEvidence.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.ProceedsAllocation.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.ReplacementClaims.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.SuccessorPublication.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.Successors.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.TaxEconomics.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.TaxResultHistory.cs
 │   │   │   ├── AtomicTaxLotSuccessorMigrationTests.cs
 │   │   │   ├── AuditChainProcessTests.cs
 │   │   │   ├── AuditChainServiceTests.cs
+│   │   │   ├── CanonicalDisposalTaxEconomicsTests.cs
 │   │   │   ├── CanonicalOpenLotConsumerTests.cs
 │   │   │   ├── CanonicalSymbolRegistryTests.cs
 │   │   │   ├── CompositeSinkTests.cs
@@ -10824,6 +10843,8 @@ Meridian-main
 │   │   │   ├── LedgerAmountProvenanceEndpointTests.cs
 │   │   │   ├── LedgerAmountProvenanceServiceTests.cs
 │   │   │   ├── LedgerAndCompliancePermissionSplitTests.cs
+│   │   │   ├── LedgerDisposalTaxEndpointTests.cs
+│   │   │   ├── LedgerDisposalTaxReadServiceTests.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceSuccessorTests.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceTests.cs
 │   │   │   ├── LegacyReportingRouteRetirementEndpointTests.cs

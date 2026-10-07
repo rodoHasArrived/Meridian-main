@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "36b3c93eea877ab5bfcb520e2bb484f2991c4b597263c220c6da1070a5aa60c7",
+      "fingerprint": "dcfbc2f9578a28627acd8a7b3252e53bb5c02b021993e2808bd47dd1546f9f97",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -1248,8 +1248,11 @@
         "Meridian.Contracts.Ledger.LedgerCurrencyRounding",
         "Meridian.Contracts.Ledger.LedgerDimensionSetDto",
         "Meridian.Contracts.Ledger.LedgerDimensionTags",
+        "Meridian.Contracts.Ledger.LedgerDisposalTaxParcelDto",
+        "Meridian.Contracts.Ledger.LedgerDisposalTaxResultDto",
         "Meridian.Contracts.Ledger.LedgerJournalEntryDto",
         "Meridian.Contracts.Ledger.LedgerJournalEntryLineDto",
+        "Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto",
         "Meridian.Contracts.Ledger.LedgerPeriodCloseKindDto",
         "Meridian.Contracts.Ledger.LedgerPeriodCloseResultDto",
         "Meridian.Contracts.Ledger.LedgerPeriodDto",
@@ -3283,7 +3286,7 @@
         "src/Meridian.Contracts/AccountingSystem",
         "src/Meridian.Contracts/Ledger"
       ],
-      "fingerprint": "f2962675e681fb41f6cb6b547907b055fd39d3b373f05674344b6ac6f5a1ffd8",
+      "fingerprint": "1f3467742d388e625df88e5b5d461397cc062fd374dd4c4e168a3f03285257b7",
       "id": "ledger-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.AccountingSystem",
@@ -3526,8 +3529,11 @@
         "Meridian.Contracts.Ledger.LedgerCurrencyRounding",
         "Meridian.Contracts.Ledger.LedgerDimensionSetDto",
         "Meridian.Contracts.Ledger.LedgerDimensionTags",
+        "Meridian.Contracts.Ledger.LedgerDisposalTaxParcelDto",
+        "Meridian.Contracts.Ledger.LedgerDisposalTaxResultDto",
         "Meridian.Contracts.Ledger.LedgerJournalEntryDto",
         "Meridian.Contracts.Ledger.LedgerJournalEntryLineDto",
+        "Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto",
         "Meridian.Contracts.Ledger.LedgerPeriodCloseKindDto",
         "Meridian.Contracts.Ledger.LedgerPeriodCloseResultDto",
         "Meridian.Contracts.Ledger.LedgerPeriodDto",
@@ -3953,7 +3959,7 @@
       ]
     }
   ],
-  "fingerprint": "620e81ab9fed9948934f4a2bb2fdfc8279a96a3c8eb27fa9160a3e3eb2f93641",
+  "fingerprint": "bdfebfd9202bc7710b913293d8c59b03984d0638af13361829698bbf0d84f2e8",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5388,7 +5394,7 @@
         "all-contracts",
         "ledger-contracts"
       ],
-      "fingerprint": "9436268734ceb6cee0488dfb731edba5e7f3b34866778cdba28eee14c1c9c0c4",
+      "fingerprint": "c02c8f767e5648f61df7a6244c59d9050a79ef5c7cd2a6560d9454c81eee6a51",
       "mapped_schemas": [
         "ledger"
       ],
@@ -5564,8 +5570,11 @@
         "Meridian.Contracts.Ledger.LedgerCurrencyRounding",
         "Meridian.Contracts.Ledger.LedgerDimensionSetDto",
         "Meridian.Contracts.Ledger.LedgerDimensionTags",
+        "Meridian.Contracts.Ledger.LedgerDisposalTaxParcelDto",
+        "Meridian.Contracts.Ledger.LedgerDisposalTaxResultDto",
         "Meridian.Contracts.Ledger.LedgerJournalEntryDto",
         "Meridian.Contracts.Ledger.LedgerJournalEntryLineDto",
+        "Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto",
         "Meridian.Contracts.Ledger.LedgerPeriodCloseKindDto",
         "Meridian.Contracts.Ledger.LedgerPeriodCloseResultDto",
         "Meridian.Contracts.Ledger.LedgerPeriodDto",
@@ -176213,6 +176222,506 @@
         "ledger-contracts"
       ],
       "enum_members": [],
+      "fingerprint": "238295f2f1014259910e48da7c2f797db7096abcb24b4719fbc39eeb7e6bab6d",
+      "full_name": "Meridian.Contracts.Ledger.LedgerDisposalTaxParcelDto",
+      "id": "Meridian.Contracts.Ledger.LedgerDisposalTaxParcelDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AcquiredDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 41,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Character",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 45,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CostBasis",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 48,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DeferredLoss",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 51,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EconomicGainOrLoss",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 49,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "HoldingPeriodCarried",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 44,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "HoldingPeriodDays",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 43,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "HoldingPeriodStart",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 42,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LotId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 40,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Proceeds",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 47,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Quantity",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 46,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RecognizedGainOrLoss",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 50,
+          "type": "string?"
+        }
+      ],
+      "name": "LedgerDisposalTaxParcelDto",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.LedgerDisposalTaxParcelDto",
+      "references": [],
+      "source": {
+        "line": 39,
+        "path": "src/Meridian.Contracts/Ledger/LedgerDisposalTaxDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 39,
+          "path": "src/Meridian.Contracts/Ledger/LedgerDisposalTaxDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "773ed8ddc0ec078f256d71c8ad9b8e861ffcef73fd47a86a35e282247399f522",
+      "full_name": "Meridian.Contracts.Ledger.LedgerDisposalTaxResultDto",
+      "id": "Meridian.Contracts.Ledger.LedgerDisposalTaxResultDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountName",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 22,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CanChange",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 29,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Character",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 32,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DeferredLoss",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 35,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EconomicGainOrLoss",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 33,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "JournalEntryId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 20,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MutationBatchId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 19,
+          "type": "Guid"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "LedgerDisposalTaxParcelDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Parcels",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<LedgerDisposalTaxParcelDto>",
+          "source_line": 36,
+          "type": "IReadOnlyList<LedgerDisposalTaxParcelDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PolicyRevision",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 25,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RecognizedGainOrLoss",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 34,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RecordedAt",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 26,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReEvaluationRequired",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 30,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReliefMethod",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 24,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReplacementWindowEnd",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 31,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SaleDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 21,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "State",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 27,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "StateReason",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 28,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Symbol",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 23,
+          "type": "string?"
+        }
+      ],
+      "name": "LedgerDisposalTaxResultDto",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.LedgerDisposalTaxResultDto",
+      "references": [
+        "Meridian.Contracts.Ledger.LedgerDisposalTaxParcelDto"
+      ],
+      "source": {
+        "line": 18,
+        "path": "src/Meridian.Contracts/Ledger/LedgerDisposalTaxDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 18,
+          "path": "src/Meridian.Contracts/Ledger/LedgerDisposalTaxDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
       "fingerprint": "f2bac16a465c4dcd51085139551a9f75af033f49f8c17fc86e957a31add45054",
       "full_name": "Meridian.Contracts.Ledger.LedgerJournalEntryDto",
       "id": "Meridian.Contracts.Ledger.LedgerJournalEntryDto",
@@ -176767,6 +177276,159 @@
         {
           "line": 342,
           "path": "src/Meridian.Contracts/Ledger/LedgerBookDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "7046b980d113481abc92f5aa77d861f089322a48952d8416dc967f8ea883a145",
+      "full_name": "Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto",
+      "id": "Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "LedgerDisposalTaxResultDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Disposals",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<LedgerDisposalTaxResultDto>",
+          "source_line": 12,
+          "type": "IReadOnlyList<LedgerDisposalTaxResultDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvaluatedAt",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 9,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvidenceState",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 10,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FunctionalCurrency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 8,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "JournalEntryId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 7,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LedgerBookId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 5,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Message",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 11,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PeriodId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 6,
+          "type": "Guid"
+        }
+      ],
+      "name": "LedgerJournalTaxResultsDto",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto",
+      "references": [
+        "Meridian.Contracts.Ledger.LedgerDisposalTaxResultDto"
+      ],
+      "source": {
+        "line": 4,
+        "path": "src/Meridian.Contracts/Ledger/LedgerDisposalTaxDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 4,
+          "path": "src/Meridian.Contracts/Ledger/LedgerDisposalTaxDtos.cs"
         }
       ],
       "type_parameters": []

@@ -5,7 +5,7 @@
 This is an explicit module association, not a claim that a DTO is identical to a table.
 
 Mapped physical schemas: `ledger`.
-Catalogued objects: 326.
+Catalogued objects: 329.
 
 The catalog is split into 5 reviewable diagrams; no objects are omitted.
 
@@ -13,4 +13,4 @@ The catalog is split into 5 reviewable diagrams; no objects are omitted.
 - [Page 2: objects 81-160](ledger-contracts-page-02.md)
 - [Page 3: objects 161-240](ledger-contracts-page-03.md)
 - [Page 4: objects 241-320](ledger-contracts-page-04.md)
-- [Page 5: objects 321-326](ledger-contracts-page-05.md)
+- [Page 5: objects 321-329](ledger-contracts-page-05.md)
