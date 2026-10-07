@@ -3449,6 +3449,7 @@ Meridian-main
 │   │   ├── screenshot_workflow_plan.py
 │   │   ├── SharedBuild.ps1
 │   │   ├── SharedCheckpoint.ps1
+│   │   ├── SharedDesktopBuild.ps1
 │   │   ├── SharedPreflight.ps1
 │   │   ├── SharedWorkflowProfiles.ps1
 │   │   ├── summarize-desktop-workflow-bundle.ps1
@@ -4195,6 +4196,7 @@ Meridian-main
 │   │   │   ├── LifecycleContractsJsonContext.cs
 │   │   │   ├── LifecycleDtos.cs
 │   │   │   ├── LifecycleEnums.cs
+│   │   │   ├── LifecycleStartupTiming.cs
 │   │   │   └── LifecycleSupervisorDtos.cs
 │   │   ├── Manifest
 │   │   │   └── DataManifest.cs
@@ -5314,6 +5316,7 @@ Meridian-main
 │   │   ├── Meridian.Instruments.csproj
 │   │   └── README.md
 │   ├── Meridian.Launcher
+│   │   ├── LauncherCommandPolicy.cs
 │   │   ├── Meridian.Launcher.csproj
 │   │   ├── Program.cs
 │   │   ├── README.md
@@ -7057,6 +7060,7 @@ Meridian-main
 │   │   │   │   │   ├── operations-continuity-screen.close-test-fixtures.ts
 │   │   │   │   │   ├── operations-continuity-screen.command-state.ts
 │   │   │   │   │   ├── operations-continuity-screen.date-format.ts
+│   │   │   │   │   ├── operations-continuity-screen.selection.ts
 │   │   │   │   │   ├── operations-continuity-screen.test.tsx
 │   │   │   │   │   ├── operations-continuity-screen.tsx
 │   │   │   │   │   ├── operations-continuity-screen.view-model.test.ts
@@ -8851,13 +8855,15 @@ Meridian-main
 │   │   ├── RuntimeShutdownSequenceTests.cs
 │   │   └── WorkstationModeRunnerTests.cs
 │   ├── Meridian.LifecycleSupervisor.Tests
+│   │   ├── LauncherPolicyTests.cs
 │   │   ├── LifecycleDatabaseAclTests.cs
 │   │   ├── LifecycleDatabaseToolTests.cs
 │   │   ├── LifecycleStartupOutcomeTests.cs
 │   │   ├── LifecycleSupervisorConfigurationTests.cs
 │   │   ├── LifecycleSupervisorPipeTests.cs
 │   │   ├── LifecycleSupervisorRuntimeTests.cs
-│   │   └── Meridian.LifecycleSupervisor.Tests.csproj
+│   │   ├── Meridian.LifecycleSupervisor.Tests.csproj
+│   │   └── SupervisorReceiptPreservationTests.cs
 │   ├── Meridian.ProcessTestHelper
 │   │   ├── Meridian.ProcessTestHelper.csproj
 │   │   ├── Meridian.ProcessTestHelper.runtimeconfig.json
@@ -9636,6 +9642,7 @@ Meridian-main
 │   │   │   │   ├── ReconciliationMatchKernelTests.cs
 │   │   │   │   ├── ReconciliationNormalizationServiceTests.cs
 │   │   │   │   ├── ReconciliationRunOrchestratorTests.cs
+│   │   │   │   ├── ScopedLedgerJournalInternalTransactionSourceTests.cs
 │   │   │   │   ├── StatementMatchingEngineSidedKernelTests.cs
 │   │   │   │   ├── StatementMatchingEngineTests.cs
 │   │   │   │   ├── StatementReconciliationContextAdapterTests.cs
@@ -11312,6 +11319,7 @@ Meridian-main
 │   │   ├── test_consumer_certification_processes.py
 │   │   ├── test_consumer_predecessor.py
 │   │   ├── test_dashboard_package_lock.py
+│   │   ├── test_desktop_build_receipt.py
 │   │   ├── test_desktop_msix_packaging.py
 │   │   ├── test_desktop_screen_blueprint_checklist.py
 │   │   ├── test_direct_lending_outbox_claim_sql.py
@@ -11328,6 +11336,7 @@ Meridian-main
 │   │   ├── test_generate_ui_api_routes_ts.py
 │   │   ├── test_generate_ui_route_wiring_report.py
 │   │   ├── test_generate_workspace_catalog_ts.py
+│   │   ├── test_git_hooks.py
 │   │   ├── test_golden_path_validation_workflow.py
 │   │   ├── test_ibapi_smoke_workflow.py
 │   │   ├── test_lane_manifest.py
