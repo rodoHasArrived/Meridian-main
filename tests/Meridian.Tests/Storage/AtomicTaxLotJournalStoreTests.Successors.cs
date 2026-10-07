@@ -438,6 +438,28 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 SubjectId = item.SubjectId,
                 EffectiveDate = date
             })).DistinctBy(item => item.EvidenceId).ToArray();
+        var eventEvidence = BuildEvidence("successor-event-" + eventId.ToString("N"), 'a') with
+        { SubjectType = AssetAccountingEvidenceSubjects.Event, SubjectId = eventId.ToString("D"), EffectiveDate = date };
+        retained = [.. retained, eventEvidence];
+        var economicEvent = instruction.Projection.EconomicEvent! with
+        { RetainedEvidence = retained, EvidenceLinks = retained.Select(item => item.EvidenceUri).ToArray() };
+        posting = posting with
+        {
+            SourceEventType = AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.CorporateAction),
+            BookContext = sourcePosition.BookContext with { PeriodId = fixture.Period.PeriodId },
+            BookPositionId = predecessor.BookPositionId,
+            EconomicEvent = economicEvent,
+            ProjectionLineage = instruction.Projection.ProjectionLineage! with
+            { TriggerEvent = economicEvent, BookPositionId = predecessor.BookPositionId,
+                RetainedEvidence = retained, EvidenceLinks = economicEvent.EvidenceLinks },
+            RulePackReference = new("canonical-successors", "1", "cashless-successor", "1"),
+            Evidence = retained.Select(item => new AccountingPostingEvidenceReferenceDto(item.EvidenceId,
+                item.EvidenceUri, AccountingPostingEvidenceKindDto.Source, item.SourceSystem, item.RetainedAtUtc,
+                item.RetainedBy, item.SubjectId, item.ContentHashSha256, SourceReference: item.SourceReference,
+                Reviewer: item.ReviewedBy, ReviewedAtUtc: item.ReviewedAtUtc, EffectiveDate: item.EffectiveDate,
+                EvidenceVersion: item.EvidenceVersion, ReviewStatus: item.ReviewStatus, SubjectType: item.SubjectType)).ToArray()
+        };
+        journal = journal with { PostingCommand = posting };
         return AtomicTaxLotJournalCommand.Create(Guid.NewGuid(), fixture.BookId, journal, eventId, key,
             fixture.Period.Version, AtomicTaxLotMutationKind.CorporateAction, retained, corporateAction: instruction);
     }

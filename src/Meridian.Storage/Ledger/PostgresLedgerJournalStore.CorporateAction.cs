@@ -29,11 +29,16 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
         catch (ArgumentException exception) { throw new LedgerValidationException(exception.Message); }
         if (command.AcquisitionLot is not null || command.DisposalSelections is { Count: > 0 }
             || command.Amortization is not null || command.ReliefMethod is not null || command.PolicyRevision is not null
-            || command.CorrectsMutationBatchId is not null)
+            || command.CorrectsMutationBatchId is not null || command.Journal.SourceJournalEntryId is not null
+            || command.Journal.PostingCommand?.SourceJournalEntryId is not null
+            || command.Journal.PostingCommand?.Intent is not (AccountingPostingIntentDto.Originating or AccountingPostingIntentDto.Adjustment)
+            || command.Journal.PostingKind is not (LedgerPostingKindDto.Originating or LedgerPostingKindDto.Adjustment))
             throw new LedgerValidationException("Successor posting cannot combine acquisition, relief, amortization or correction instructions.");
         if (command.Journal.PostingCommand is not { ApprovalState: AccountingPostingApprovalStateDto.Approved } posting
-            || string.IsNullOrWhiteSpace(posting.ApprovalId) || string.IsNullOrWhiteSpace(posting.Actor))
-            throw new LedgerValidationException("Successor posting requires a retained reviewer approval and named posting actor.");
+            || string.IsNullOrWhiteSpace(posting.ApprovalId) || string.IsNullOrWhiteSpace(posting.Actor)
+            || !AssetAccountingEventTypeNames.TryParse(posting.SourceEventType, out var eventKind)
+            || eventKind != AssetAccountingEventKindDto.CorporateAction)
+            throw new LedgerValidationException("Successor posting requires a canonical approved corporate-action command, retained reviewer approval and named posting actor.");
         if (!JsonElement.DeepEquals(JsonSerializer.SerializeToElement(command.Journal.PostingCommand?.LotCorporateAction),
                 JsonSerializer.SerializeToElement(instruction)))
             throw new LedgerValidationException("The governed journal must retain the exact reviewed successor instruction.");
