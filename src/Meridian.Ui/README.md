@@ -11,9 +11,17 @@ last_reviewed: 2026-07-27
 
 # src/Meridian.Ui
 
+Accounting's External GL surface includes bounded onboarding backed by shared retained workspace
+services. Rebuild the dashboard to serve source selection, comparison history, review controls and
+canonical frozen packet downloads. The host exposes no onboarding posting or authority transition.
+
 The checked-in workstation bundle includes retained manual-journal amount proof and durable
 reconciliation lineage display. Regenerate it from the dashboard after related source changes;
 close and report authority remains in the shared endpoint and service layer.
+
+Reporting's retained investment-income comparison is included in the host-served bundle. Both
+run status and governed run detail provide explicit published/restated baseline selection and
+retained contribution drill-through; comparison persistence and compatibility remain server-owned.
 
 ## Purpose
 

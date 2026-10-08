@@ -102,12 +102,9 @@ public sealed class RobinhoodReadOnlyBrokerageSyncAdapter :
         using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
             _logger.LogWarning(
-                "Robinhood read-only brokerage sync failed for {Endpoint} with status {StatusCode}: {Body}",
-                endpoint,
-                response.StatusCode,
-                body);
+                "Robinhood read-only brokerage sync failed with status {StatusCode}.",
+                (int)response.StatusCode);
             throw new InvalidOperationException($"Robinhood read-only sync endpoint failed with status {(int)response.StatusCode}.");
         }
 

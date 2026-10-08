@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
-import type { ProxyOptions } from "vite";
+import type { Plugin, ProxyOptions } from "vite";
 import { resolveDevFixture } from "./src/lib/dev-fixtures";
 import { COVERED_CALL_API_ENDPOINTS, QUANT_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "./src/lib/workstation-endpoints";
 
@@ -12,6 +12,8 @@ export const meridianDevFixtureHeader = "x-meridian-dev-fixture";
 export const meridianApiAvailabilityCacheMs = 2_000;
 export const meridianApiAvailabilityTimeoutMs = 200;
 export const meridianScreenshotCaptureEnv = "MERIDIAN_SCREENSHOT_CAPTURE";
+export const meridianDevSessionHeader = "x-meridian-dev-session";
+export type MeridianDevMode = "fixture-only" | "backend-connected";
 
 export interface MeridianApiAvailabilityProbe {
   isAvailable: () => Promise<boolean>;
@@ -22,9 +24,39 @@ export function resolveMeridianApiBaseUrl(env: NodeJS.ProcessEnv = process.env):
   return (configured?.trim() || defaultMeridianApiBaseUrl).replace(/\/+$/, "");
 }
 
+export function resolveMeridianDevMode(env: NodeJS.ProcessEnv = process.env): MeridianDevMode | undefined {
+  const serverMode = env.MERIDIAN_DEV_MODE?.trim() || undefined;
+  const clientMode = env.VITE_MERIDIAN_DEV_MODE?.trim() || undefined;
+  for (const mode of [serverMode, clientMode]) {
+    if (mode !== undefined && mode !== "fixture-only" && mode !== "backend-connected") {
+      throw new Error(`Invalid Meridian development mode "${mode}". Use fixture-only or backend-connected.`);
+    }
+  }
+  if (serverMode && clientMode && serverMode !== clientMode) {
+    throw new Error("MERIDIAN_DEV_MODE and VITE_MERIDIAN_DEV_MODE must select the same development mode.");
+  }
+  return (serverMode ?? clientMode) as MeridianDevMode | undefined;
+}
+
 export function resolveViteHmrConfig(env: NodeJS.ProcessEnv = process.env): false | undefined {
   const value = env[meridianScreenshotCaptureEnv]?.trim().toLowerCase();
   return value === "1" || value === "true" || value === "yes" ? false : undefined;
+}
+
+export function createMeridianDevSessionPlugin(env: NodeJS.ProcessEnv = process.env): Plugin {
+  const session = env.MERIDIAN_DEV_SESSION?.trim();
+  return {
+    name: "meridian-dev-session",
+    apply: "serve",
+    configureServer(server) {
+      if (session) {
+        server.middlewares.use((_req, res, next) => {
+          res.setHeader(meridianDevSessionHeader, session);
+          next();
+        });
+      }
+    }
+  };
 }
 
 export function createMeridianApiAvailabilityProbe(
@@ -71,14 +103,24 @@ export function createMeridianApiAvailabilityProbe(
 
 export function createMeridianApiFallbackBypass(
   target = resolveMeridianApiBaseUrl(),
-  availabilityProbe: MeridianApiAvailabilityProbe = createMeridianApiAvailabilityProbe(target)
+  availabilityProbe: MeridianApiAvailabilityProbe = createMeridianApiAvailabilityProbe(target),
+  mode = resolveMeridianDevMode()
 ): NonNullable<ProxyOptions["bypass"]> {
   return async (req, res) => {
-    if (!res || !isDevelopmentFixtureRequest(req)) {
+    if (!res || mode === "backend-connected") {
       return undefined;
     }
 
-    const fixture = resolveDevFixture<unknown>(req.url ?? "");
+    const fixture = isDevelopmentFixtureRequest(req) ? resolveDevFixture<unknown>(req.url ?? "") : undefined;
+    if (mode === "fixture-only") {
+      if (fixture === undefined) {
+        writeUnsupportedFixtureResponse(req, res);
+      } else {
+        writeDevelopmentFixtureResponse(req, res, fixture);
+      }
+      return req.url ?? "";
+    }
+
     if (fixture === undefined || await availabilityProbe.isAvailable()) {
       return undefined;
     }
@@ -88,13 +130,16 @@ export function createMeridianApiFallbackBypass(
   };
 }
 
-export function createMeridianApiProxy(target = resolveMeridianApiBaseUrl()): Record<string, ProxyOptions> {
+export function createMeridianApiProxy(
+  target = resolveMeridianApiBaseUrl(),
+  mode = resolveMeridianDevMode()
+): Record<string, ProxyOptions> {
   return {
     "/api": {
       target,
       changeOrigin: true,
       secure: false,
-      bypass: createMeridianApiFallbackBypass(target)
+      bypass: createMeridianApiFallbackBypass(target, undefined, mode)
     }
   };
 }
@@ -152,7 +197,19 @@ function writeDevelopmentFixtureResponse(req: IncomingMessage, res: ServerRespon
   res.end(body);
 }
 
+function writeUnsupportedFixtureResponse(req: IncomingMessage, res: ServerResponse) {
+  res.statusCode = 501;
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader("Cache-Control", "no-store");
+  res.end(req.method === "HEAD" ? "" : JSON.stringify({
+    title: "Development fixture unavailable",
+    detail: `No fixture supports ${req.method ?? "GET"} ${req.url ?? "/api"}. Start backend-connected mode to use the Meridian host.`,
+    mode: "fixture-only"
+  }));
+}
+
 const apiBaseUrl = resolveMeridianApiBaseUrl();
+const devMode = resolveMeridianDevMode();
 const appRoot = path.resolve(__dirname);
 
 // Read at config time, in Node, so package.json never enters the client module graph. A
@@ -168,16 +225,17 @@ const { version: appVersion } = JSON.parse(
 export default defineConfig({
   root: appRoot,
   base: "/workstation/",
-  plugins: [react()],
+  plugins: [react(), createMeridianDevSessionPlugin()],
   define: {
-    __APP_VERSION__: JSON.stringify(appVersion)
+    __APP_VERSION__: JSON.stringify(appVersion),
+    "import.meta.env.VITE_MERIDIAN_DEV_MODE": JSON.stringify(devMode ?? "")
   },
   server: {
     hmr: resolveViteHmrConfig(),
-    proxy: createMeridianApiProxy(apiBaseUrl)
+    proxy: createMeridianApiProxy(apiBaseUrl, devMode)
   },
   preview: {
-    proxy: createMeridianApiProxy(apiBaseUrl)
+    proxy: createMeridianApiProxy(apiBaseUrl, devMode)
   },
   resolve: {
     alias: {

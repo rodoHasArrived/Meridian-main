@@ -1,11 +1,13 @@
 # Wave 2 Paper Trading Cockpit Acceptance Tests
 
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-10-05
+**Original scope:** Wave 2 exit criteria, defined 2026-05-08
+
 **Location:** `tests/Meridian.Tests/Ui/`
 - `Wave2PaperTradingCockpitAcceptanceTests.cs` - Core acceptance gate validation
 - `Wave2OperatorInboxAcceptanceTests.cs` - Operator inbox integration
-
-**Last Updated:** 2026-05-08
-**Status:** Comprehensive test suite for Wave 2 exit criteria
 
 ---
 
@@ -24,34 +26,25 @@ Plus, operator inbox integration tests validate that work items flow correctly a
 
 ## Running the Tests
 
-### Run all Wave 2 acceptance tests:
+Prerequisites: the SDK in [global.json](../../global.json), restored NuGet packages (or network
+access for the implicit restore), and a writable temporary directory. Run from the repository
+root in Bash or PowerShell. These fixture-backed tests do not require a running operator host.
+
+Run both classes through their project:
+
 ```bash
-dotnet test tests/Meridian.Tests/Ui/Wave2PaperTradingCockpitAcceptanceTests.cs -c Release
-dotnet test tests/Meridian.Tests/Ui/Wave2OperatorInboxAcceptanceTests.cs -c Release
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --filter "FullyQualifiedName~Wave2PaperTradingCockpitAcceptanceTests|FullyQualifiedName~Wave2OperatorInboxAcceptanceTests"
 ```
 
-### Run a specific acceptance gate:
+To select one gate, use its method-name prefix. For example:
+
 ```bash
-# Replay confidence gate only
-dotnet test tests/Meridian.Tests/Ui/Wave2PaperTradingCockpitAcceptanceTests.cs -c Release -k ReplayConfidenceGate
-
-# Session persistence gate only
-dotnet test tests/Meridian.Tests/Ui/Wave2PaperTradingCockpitAcceptanceTests.cs -c Release -k SessionPersistenceGate
-
-# Risk auditability gate only
-dotnet test tests/Meridian.Tests/Ui/Wave2PaperTradingCockpitAcceptanceTests.cs -c Release -k RiskAuditabilityGate
-
-# Promotion traceability gate only
-dotnet test tests/Meridian.Tests/Ui/Wave2PaperTradingCockpitAcceptanceTests.cs -c Release -k PromotionTraceabilityGate
-
-# Operator inbox tests
-dotnet test tests/Meridian.Tests/Ui/Wave2OperatorInboxAcceptanceTests.cs -c Release -k OperatorInbox
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --filter "FullyQualifiedName~Wave2PaperTradingCockpitAcceptanceTests.ReplayConfidenceGate"
 ```
 
-### Run with detailed output:
-```bash
-dotnet test tests/Meridian.Tests/Ui/Wave2PaperTradingCockpitAcceptanceTests.cs -c Release -v detailed
-```
+Other prefixes are `SessionPersistenceGate`, `RiskAuditabilityGate`, and
+`PromotionTraceabilityGate`. Filter `FullyQualifiedName~Wave2OperatorInboxAcceptanceTests` for
+inbox coverage. A `.cs` file is not the test project, and `-k` is not the VSTest filter option.
 
 ---
 
@@ -163,20 +156,10 @@ dotnet test tests/Meridian.Tests/Ui/Wave2PaperTradingCockpitAcceptanceTests.cs -
 
 ## Expected Test Results
 
-### When all gates pass:
-```
-Wave2PaperTradingCockpitAcceptanceTests: 16 tests
-  ✓ All replay confidence tests pass
-  ✓ All session persistence tests pass
-  ✓ All risk auditability tests pass
-  ✓ All promotion traceability tests pass
-  ✓ Both end-to-end scenario tests pass
-
-Wave2OperatorInboxAcceptanceTests: 13 tests
-  ✓ All inbox aggregation tests pass
-  ✓ All status/tone tests pass
-  ✓ All stability/churn tests pass
-```
+Expected result: the selected tests are discovered, execute, and pass with exit code zero.
+Treat no matching tests, skips, or a build/restore failure as missing evidence. Record the commit,
+filter, test summary, and log with the evidence packet; this fixture slice alone does not certify
+an installed workstation or production persistence.
 
 ### Typical implementation issues that tests catch:
 
@@ -235,25 +218,17 @@ These tests directly validate the Wave 2 exit signal from [Roadmap Registry Summ
 
 ## Debugging Test Failures
 
-### Enable detailed logging:
+Rerun only the failing class or method with detailed output:
+
 ```bash
-dotnet test tests/Meridian.Tests/Ui/Wave2PaperTradingCockpitAcceptanceTests.cs \
-  -c Release --logger "console;verbosity=detailed" 2>&1 | less
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --filter "FullyQualifiedName~Wave2PaperTradingCockpitAcceptanceTests.ReplayConfidenceGate_OperatorCanVerifySessionWithExplicitEvidence" --logger "console;verbosity=detailed"
 ```
 
-### Inspect test artifacts:
-Tests create temporary audit trail files in `Path.GetTempPath()/meridian-tests/[TestName]/`. 
-These can be inspected for audit content:
-```bash
-ls -la /tmp/meridian-tests/
-cat /tmp/meridian-tests/TestName/audit.jsonl
-```
-
-### Run single test:
-```bash
-dotnet test tests/Meridian.Tests/Ui/Wave2PaperTradingCockpitAcceptanceTests.cs \
-  -c Release -k ReplayConfidenceGate_OperatorCanVerifySessionWithExplicitEvidence
-```
+Audit helpers write under `Path.GetTempPath()/meridian-tests/[TestName]/`; the temporary root
+varies by operating system. Inspect the files for the failing test and retain them with its log.
+Do not assume a fixed `/tmp` path or a particular audit filename. If a stale fixture is suspected,
+stop that test process and copy its evidence before resetting only its test-owned directory.
+For SDK, restore, or build contention failures, follow [Engineering](../engineering/README.md#buildtestrun).
 
 ---
 

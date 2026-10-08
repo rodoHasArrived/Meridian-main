@@ -96,6 +96,9 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
         _streamReady &&
         _failure is null;
 
+    private long _connectionGeneration;
+    public long ConnectionGeneration => Interlocked.Read(ref _connectionGeneration);
+
     /// <summary>When any frame -- control acknowledgement or trade update -- last arrived.</summary>
     public DateTimeOffset? LastActivityAt => _lastUpdateAt;
 
@@ -389,6 +392,7 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
         var delay = TimeSpan.FromSeconds(1);
         while (!ct.IsCancellationRequested)
         {
+            Interlocked.Increment(ref _connectionGeneration);
             try
             {
                 var credentials = _scopedCredentials ?? AlpacaCredentialEnvironment.Resolve(_options);

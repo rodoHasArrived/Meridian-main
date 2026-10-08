@@ -6,10 +6,44 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-06
 ---
 
 # src/Meridian.Storage
+
+Tax-lot disposal history now returns the atomic batch's exact `PolicyRevision` and `RecordedAt`,
+and restores each deferral's retained policy ID, replacement window and scope. These reads do not
+consult mutable standing policy rows. A recording timestamp is not evaluation coverage; activation
+dates and parcel deferral allocations absent from durable history remain unavailable. No schema or
+posting behavior changes are introduced by this W10-TAX-001 inspection slice. Retained deferral rows
+must agree on their repeated aggregate matched quantity and match the disposed security, journal sale
+date and full disposing account before history can certify finality. Replacement recipients must match
+their durable lot, security, book, window and account scope; aggregate matches cannot exceed their
+distinct original quantities. Shared recipients require cumulative source claims within capacity;
+shared multi-recipient claims without per-recipient quantity allocations remain missing evidence.
+Carried dates must copy an unambiguous source holding date through certified policy and recipient
+links to retained acquisition evidence. Cycles and traversals beyond 32 links or 1,024 batches fail
+closed. Deferral amounts reconcile to the exact recipient account, security and position on the
+posted basis debits, as well as the retained cash movement, including journals whose deferral rows
+are missing. Exact journal queries retain the existing book,
+period and tenant filters while hydrating every journal leg.
+
+Consolidation append validates explicit approval, reviewed lines, currency, correction ancestry and
+source evidence. Its owned transaction excludes ledger-book changes and retains an authoritative
+ownership/policy validation lease through journal commit. Ownership locks use the configured fund
+structure database and schema and exclude new competing claims as well as updates. Missing authority
+providers and caller-owned transactions refuse consolidation posting. Under the existing global
+ledger audit lock it also rechecks both source books and the elimination book as of the reviewed
+date, including earlier periods and backdated journals. Changed authority or sources require renewed review. See
+[consolidation scope](../../docs/domain/intercompany-consolidation.md).
+
+Atomic file-write diagnostics retain operation outcomes, byte counts, OS error numbers and exception
+types. Paths, file contents, checksum values and exception messages are omitted because they can
+contain financial account identities or other private data.
+
+Reporting governance supports bounded run-ID batches within one tenant transaction. Bulk state and
+audit reads preserve the same checksum, row binding, audit-chain, and restatement verification as
+individual reads, avoiding a separate transaction for every retained comparison candidate.
 
 `Archival/AtomicFileWriterAdapter.cs`, `EtlStagingStore` in `Etl/EtlStores.cs`, and `Backfill/JsonlBackfillBarWriter.cs`
 implement lower-level persistence ports consumed by Infrastructure. Application/host composition
@@ -19,6 +53,13 @@ owns their construction; atomic durability, staging and JSONL naming policies re
 into wash-sale projection evidence together with the configured window, scope and activation date.
 This adds no persisted policy field or schema migration.
 
+Partial W10-LOT-002 amortization uses migration `V_ledger_040` and the existing atomic posting transaction. Period, Security Master, book-position and lot locks bind the reviewed state through commit. A CAS open-basis adjustment and zero-quantity append-only mutation preserve acquisition facts, tie exactly to the journal carrying movement, and replay without another journal or mutation. PostgreSQL reference stores must share the ledger database.
+Amortization requires the canonical depreciation/amortization source type, the exact reviewed
+instruction, and matching acquisition/reference evidence in both the atomic request and governed
+journal. Missing or mismatched inputs are refused before mutation. Posting locks the Security Master
+parent and its hashed identifiers/aliases through commit; alias writes touch the parent in the same
+transaction so a posting with an older serializable snapshot refuses concurrent reference drift.
+
 The durable replacement resolver excludes relieved lot IDs only within the disposing account's
 complete identity. LedgerBook scope retains same-ID acquisitions in sibling accounts. Prior-deferral
 basis adjustments use that same full account identity (name, type, symbol and financial account ID),
@@ -27,6 +68,10 @@ so a sibling account's same-ID lot cannot change the disposing lot's basis or ho
 Ledger migration `039` adds nullable disposal allocation-version and sale-price evidence to immutable
 atomic batches without backfilling existing rows. New disposal inserts retain the current convention
 after the exact-replay check, leaving legacy retries and absent-price command fingerprints unchanged.
+New disposal validation requires exact disposing-account realized gain credits and realized loss debits
+for both aggregate inferred proceeds and explicit quotes; sibling, incorrectly typed/symbol-scoped,
+and incorrectly sided result lines are rejected transactionally. Retained exact retries bypass this
+new-insert validation without rewriting immutable history or fingerprints.
 An explicit original quote must reproduce supported, account-scoped cash journal proceeds; fees and
 other unsupported expense shapes cannot supply that assertion. Aggregate-only governed commands
 retain the current version with a null price, deriving their canonical price at reporting from the
@@ -166,6 +211,15 @@ Public tax-lot, historical disposal, and wash-sale APIs also check the retained 
 Wash-sale deferrals require their referenced replacement lot and disposal batch to belong to
 that book. Global posting-identity collision checks reject foreign authority before returning
 any retained journal contents.
+
+## Current-basis lot relief
+
+All supported durable relief methods certify current canonical basis under the locked effective
+policy while keeping acquisition unit cost and acquisition evidence immutable. Partial discrete
+relief of an adjusted lot stores exact remaining transaction and functional basis on its existing mutation; Reporting
+reproduces certified posted basis without rounding it through acquisition unit cost. Migration
+`V_ledger_041` follows PR #3048's reserved amortization ordinal 040. PostgreSQL coverage lives in
+`AtomicTaxLotJournalStoreTests.CurrentBasis`; see the [lot convergence blueprint](../../docs/engineering/blueprints/security-lot-convergence-blueprint.md).
 
 ## Purpose
 
@@ -585,6 +639,14 @@ quarantined records, staging records, and sync-run summaries under the resolved 
 source payloads without reacquiring provider data. Workstation-hosted flows can request a
 tenant-scoped store partition so provider manifests, connections, dry-run evidence, and activation
 state remain isolated by the authenticated tenant session.
+Manifest revisions are immutable by id and version; identical saves are idempotent and changed
+content under an existing version is rejected. A cross-process compare-and-set promotion updates
+the durable current pointer only after revision content has been written. Restart follows that
+pointer, preserving unpromoted candidates without treating the highest stored version as current.
+Payloads and sync runs retain exact manifest version/digest bindings. Legacy migration preserves
+only the revision actually available and does not manufacture overwritten versions or backfill
+unprovable historical provenance. This store owns integration configuration persistence; provider
+alias and capability-factory composition remain in their existing ProviderSdk/Infrastructure owners.
 
 Accounting configuration persistence keeps rich posting-rule payloads and saved Accounting Rules
 Studio regression cases as durable workspace-owned records. PostgreSQL stores saved rule test cases

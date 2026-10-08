@@ -268,18 +268,24 @@ public sealed class FundStructurePolicyService : IFundStructurePolicyService
             return;
         }
 
-        var siblingTotal = existingLinks
+        // Owns measures each parent's share of the child. AllocatesTo measures the
+        // parent's allocation across children. A parent can wholly own several entities.
+        var relatedTotal = existingLinks
             .Where(link => link.OwnershipLinkId != candidate.OwnershipLinkId)
-            .Where(link => link.ParentNodeId == candidate.ParentNodeId)
+            .Where(link => candidate.RelationshipType == OwnershipRelationshipTypeDto.Owns
+                ? link.ChildNodeId == candidate.ChildNodeId
+                : link.ParentNodeId == candidate.ParentNodeId)
             .Where(link => link.RelationshipType == candidate.RelationshipType)
             .Where(link => link.OwnershipPercent.HasValue)
             .Where(link => WindowsOverlap(candidate, link))
             .Sum(link => link.OwnershipPercent!.Value);
 
-        if (siblingTotal + candidate.OwnershipPercent.Value > 100m)
+        if (relatedTotal + candidate.OwnershipPercent.Value > 100m)
         {
             throw new InvalidOperationException(
-                "Active sibling ownership percentages cannot exceed 100 for the same parent and relationship type.");
+                candidate.RelationshipType == OwnershipRelationshipTypeDto.Owns
+                    ? "Active ownership percentages cannot exceed 100 for the same child."
+                    : "Active allocation percentages cannot exceed 100 for the same parent.");
         }
     }
 

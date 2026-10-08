@@ -15,6 +15,12 @@ Prior to implementation, the `MarketEvent.Symbol` field stored whatever string t
 
 All of these gaps are now closed. The sections below document the design, the actual implementation, and the remaining operational guidance.
 
+> Maintenance check 2026-10-05: configuration names and activation boundaries were verified against
+> [`CanonicalizationConfig`](../../src/Meridian.Core/Config/CanonicalizationConfig.cs),
+> [`PipelineFeatureRegistration`](../../src/Meridian.Application/Composition/Features/PipelineFeatureRegistration.cs),
+> and [`CanonicalizationFeatureRegistration`](../../src/Meridian.Application/Composition/Features/CanonicalizationFeatureRegistration.cs).
+> Historical phase checkmarks below retain their original scope; they are not a new acceptance run.
+
 ## Goal
 
 Equivalent market events from different providers for the same instrument should produce **structurally comparable canonical records** without losing the raw provider payload for auditability.
@@ -47,14 +53,14 @@ Equivalent market events from different providers for the same instrument should
 | `ConditionCodeMapper` | `DataIntegration/Canonicalization/ConditionCodeMapper.cs` | ✅ Loaded from `config/condition-codes.json` into `FrozenDictionary`. Supports halt/resume detection helpers. |
 | `VenueMicMapper` | `DataIntegration/Canonicalization/VenueMicMapper.cs` | ✅ Loaded from `config/venue-mapping.json` into `FrozenDictionary`. Case-insensitive provider and venue lookup. |
 | `CanonicalizationMetrics` | `DataIntegration/Canonicalization/CanonicalizationMetrics.cs` | ✅ Static thread-safe counters with per-provider `ProviderParityStats` and immutable snapshot export. |
-| `CanonicalizationConfig` | `Core/Config/AppConfig.cs` | ✅ `Enabled`, `PilotSymbols`, `DualWriteRawAndCanonical`, `ConditionCodesPath`, `VenueMappingPath`, `Version`. |
+| `CanonicalizationConfig` | `Core/Config/CanonicalizationConfig.cs` | ✅ `Enabled`, `PilotSymbols`, `EnableDualWrite`, `ConditionCodesPath`, `VenueMappingPath`, `Version`. |
 | `SymbolRegistry.ProviderMappings` | `Contracts/Catalog/SymbolRegistry.cs` | ✅ Populated by config tooling; queried by `CanonicalSymbolRegistry.ResolveToCanonical()`. |
 | `SymbolNormalization` | `Infrastructure/Utilities/SymbolNormalization.cs` | ✅ Per-provider format normalization (uppercase, Tiingo dashes, etc.). Runs before canonicalization. |
 | `MarketEventTier` enum | `Contracts/Domain/Enums/` | ✅ `Raw` → `Enriched` transition applied by `EventCanonicalizer`. |
 | `EffectiveSymbol` property | `Domain/Events/MarketEvent.cs` | ✅ `CanonicalSymbol ?? Symbol` — used by storage sinks, dedup ledger, and audit trail. |
 | `DataQualityMonitoringService` | `DataIntegration/Monitoring/DataQuality/` | ✅ Full quality pipeline including cross-provider comparison. |
 | `CanonicalizationEndpoints` | `Ui.Shared/Endpoints/CanonicalizationEndpoints.cs` | ✅ REST API for status, per-provider parity breakdown, and config view. |
-| `AddCanonicalizationServices()` | `Application/Composition/ServiceCompositionRoot.cs` | ✅ DI wiring: mappers → canonicalizer → publisher decorator. Enabled by default in all presets. |
+| `CanonicalizationFeatureRegistration` | `Application/Composition/Features/CanonicalizationFeatureRegistration.cs` | DI registration is controlled by `CompositionOptions.EnableCanonicalizationServices`; runtime publisher selection also requires `Canonicalization.Enabled`. |
 
 ### Convergence layer (collectors)
 
@@ -612,16 +618,16 @@ These integrate with the existing monitoring dashboard and `CrossProviderCompari
 ### Phase 2: Dual-Write Validation *(Done)*
 
 - ✅ `CanonicalizingPublisher` decorator wraps `IMarketEventPublisher` with pilot symbol filtering and dual-write support.
-- ✅ `DualWriteRawAndCanonical` flag in `CanonicalizationConfig` controls dual-write behavior.
-- ✅ `CanonicalizationConfig` added to `AppConfig` with `Enabled`, `PilotSymbols`, `DualWriteRawAndCanonical`, `ConditionCodesPath`, `VenueMappingPath`, and `Version` settings.
-- ✅ `AddCanonicalizationServices()` in `ServiceCompositionRoot` registers mapping tables, canonicalizer, and publisher decorator via DI. Enabled by default in all presets.
+- ✅ `EnableDualWrite` flag in `CanonicalizationConfig` controls dual-write behavior.
+- ✅ `CanonicalizationConfig` added to `AppConfig` with `Enabled`, `PilotSymbols`, `EnableDualWrite`, `ConditionCodesPath`, `VenueMappingPath`, and `Version` settings.
+- ✅ `CanonicalizationFeatureRegistration` registers mapping tables, canonicalizer, and publisher decorator when the composition preset enables those services. `PipelineFeatureRegistration` selects the canonicalizing publisher only when `Canonicalization.Enabled` is true.
 - ✅ `CanonicalizationMetrics` static class with per-provider `ProviderParityStats` and Prometheus export.
 - ✅ `CanonicalizationEndpoints` exposes `/api/canonicalization/status`, `/api/canonicalization/parity`, `/api/canonicalization/parity/{provider}`, and `/api/canonicalization/config`.
 - **Gate:** >= 99% canonical identity match rate for pilot symbols. < 0.5% unresolved mapping rate.
 
 ### Phase 3: Default Canonical Read Path *(Done)*
 
-- ✅ All symbols canonicalized by default: clear `PilotSymbols` in config and set `Enabled = true`.
+- ✅ All-symbol mode is available when `PilotSymbols` is empty and `Enabled = true`. The configuration record and sample configuration default `Enabled` and `EnableDualWrite` to false; this requires an explicit runtime opt-in.
 - ✅ Critical consumers updated to use `EffectiveSymbol`:
   - `JsonlStoragePolicy.GetPath()` — storage path generation
   - `ParquetStorageSink` — buffer keys, file paths, and all symbol column writes
@@ -629,7 +635,7 @@ These integrate with the existing monitoring dashboard and `CrossProviderCompari
   - `CatalogSyncSink` — catalog metadata
   - `DroppedEventAuditTrail` — audit trail grouping
 - ✅ `EventCanonicalizer.ExtractVenue()` covers `LOBSnapshot` and `L2SnapshotPayload` for venue extraction.
-- ✅ Dual-write can be disabled by setting `DualWriteRawAndCanonical = false` once parity is confirmed.
+- ✅ Dual-write can be disabled by setting `EnableDualWrite = false` once parity is confirmed.
 - **Gate:** ✅ All acceptance criteria met.
 
 ### Remaining work
@@ -666,7 +672,7 @@ All items listed below were delivered as part of Phases 1–3.
 | `src/Meridian.Application/Composition/ServiceCompositionRoot.cs` | Added `AddCanonicalizationServices()` and `EnableCanonicalizationServices` option |
 | `src/Meridian.Application/Monitoring/PrometheusMetrics.cs` | Added `mdc_canonicalization_*` counters and histogram |
 | `src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs` | New: status, parity, and config endpoints |
-| `src/Meridian.Core/Config/AppConfig.cs` | Added `CanonicalizationConfig` record with `Enabled`, `PilotSymbols`, `DualWriteRawAndCanonical`, etc. |
+| `src/Meridian.Core/Config/AppConfig.cs` | Added `CanonicalizationConfig` record with `Enabled`, `PilotSymbols`, `EnableDualWrite`, etc. |
 | `src/Meridian.Storage/Policies/JsonlStoragePolicy.cs` | Uses `EffectiveSymbol` for path generation |
 | `src/Meridian.Storage/Sinks/ParquetStorageSink.cs` | Uses `EffectiveSymbol` for buffer keys, paths, and column writes |
 | `src/Meridian.Storage/Sinks/CatalogSyncSink.cs` | Uses `EffectiveSymbol` for catalog metadata |

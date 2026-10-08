@@ -1,6 +1,8 @@
 # Meridian
 
-Meridian is a .NET 10 operational-finance and trading-platform codebase in active delivery. It is built for financial operations teams that need to import data, validate it, reconcile it, approve decisions, retain evidence, and publish governed reports without losing the chain of proof.
+Meridian is a .NET 10 operational-finance and trading platform in active delivery. It connects source data, reconciliation, accounting, approvals, and governed reporting so financial operations teams can trace a reported number back to its evidence. Fund management is a first-class specialization within the common financial core.
+
+Start with the [seeded demo](#see-it-working-in-one-command), the [source setup guide](docs/start/README.md), or the [documentation index](docs/README.md).
 
 The core product promise is simple:
 
@@ -15,10 +17,21 @@ For an end user, Meridian is intended to reduce disconnected spreadsheets, inbox
 
 ## Get Meridian Running
 
-**There is no downloadable installer yet.** No release has been published, so the only way to run
-Meridian today is from source. The desktop installer lane exists and builds signed MSIX and
-one-click setup artifacts, but publishing a release needs a code-signing certificate that is not in
-the repository; until then, use the path below.
+Run source commands from the repository root. Choose prerequisites for your task:
+
+| Task | Prerequisites |
+| --- | --- |
+| Run the tracked browser workstation or seeded demo | Git and the .NET SDK pinned by [global.json](global.json) |
+| Develop the browser workstation | Node.js 24 and npm, plus .NET for the connected backend |
+| Use Windows development helpers | PowerShell 7 |
+| Run build and documentation automation | Python 3.11 or newer; GNU Make is optional |
+
+See [Start Here](docs/start/README.md#prerequisites) for the complete setup path.
+
+Choose the [source setup path](docs/start/README.md) below, or use the
+[Windows installer guide](docs/operators/browser-workstation-installer.md) to check release
+artifacts and installation requirements. The [release list](https://github.com/rodoHasArrived/Meridian-main/releases)
+is the authority for downloadable builds.
 
 ### See it working in one command
 
@@ -37,22 +50,14 @@ see the workstation: the browser bundle is tracked in the repository.
 
 ### Running against your own data
 
-`--seed-demo` and `--demo` configure a database-less local profile for you. Any other launch —
-including `--mode workstation` — requires you to choose a persistence profile first, and fails
-closed with a diagnostic naming the variable if you have not:
+`--seed-demo` and `--demo` select a database-less local profile. Normal workstation launches
+require configured governance persistence and an operator credential path. Follow
+[operator preflight](docs/operators/preflight-checklist.md) for prerequisites, separate host and
+request terminals, authenticated checks, and recovery steps.
 
-```bash
-# Real local persistence (recommended): point Meridian at a PostgreSQL instance
-export MERIDIAN_DATABASE_URL=postgres://user:password@localhost:5432/meridian
-dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080
-
-# Or, for local/dev fixture scenarios only, file-backed governance stores
-export MERIDIAN_USE_INMEMORY_GOVERNANCE=true
-```
-
-Authentication defaults to required outside Development, so plan credentials before a
-non-demo launch. See [Start Here](docs/start/README.md) for the full setup path and
-[environment variables](docs/reference/environment-variables.md) for the complete list.
+Use the [environment reference](docs/reference/environment-variables.md) for PostgreSQL connection
+precedence and the explicitly non-production, file-backed governance opt-in. That opt-in does not
+make every money-path store durable. The environment defaults to Production when none is named.
 
 ### What is supported today
 
@@ -67,36 +72,18 @@ gate in the
 
 ## Current Product Status
 
-Meridian's current baseline is the closed W1-W5 operational record plus completed W5X shared
-explorer, Financial Operations, statement connector, and bounded W7 live-readiness governance
-milestones. Evidence Vault productization, statement reconciliation onboarding, browser workstation
-screen consolidation, WPF workstation parity, and the Asset Accounting Event Spine are active
-delivery work, and the ranked W9 first-order improvement slate (`W9-TRUTH-001` through
-`W9-INGEST-009`) is the accepted planned priority order for the next delivery decisions.
+Use the owning records for status instead of a second capability checklist here:
 
-These are bounded roadmap acceptance claims, not blanket production certification. A completed row
-means its named scope closed with linked evidence; release and support decisions still require fresh
-operator preflight, packaging, deployment, and required GitHub Actions evidence. Production
-readiness is tracked in the canonical
-[Implementation and Readiness Tracker](docs/product/implementation-todo-list.md), whose release gate
-requires every P0 row to be complete on the same release commit.
-
-That means the repository contains accepted evidence for:
-
-| Capability | Current status |
+| Question | Authoritative record |
 | --- | --- |
-| Data confidence and provider validation | Complete baseline. Provider trust gates, source evidence, validation packets, setup orchestration, and data-quality checks are part of the W1 evidence record. |
-| Paper trading and research continuity | Complete baseline. Research-to-paper handoff, paper-session readiness, promotion evidence, and operator acceptance are supported before live promotion is allowed. |
-| Portfolio, accounting, and reconciliation workflows | Complete baseline. Portfolio ledger reconciliation, accounting record summaries, retained source evidence, reconciliation cases, ledger evidence, approvals, and report-pack lineage are connected through shared contracts and read models. |
-| Governed reporting | Complete baseline. Report-pack lifecycle, approval evidence, export provenance, restatement posture, report-line provenance, and evidence retention are represented in shared services and workstation surfaces. |
-| Multi-asset operational coverage | Complete bounded proof lane. Security Master and asset operations cover the accepted public and private/structured asset-class baseline through provider evidence, identifier confidence, terms, obligations, ledger classification, reconciliation signals, and close blockers. Broader provider and lifecycle depth remains separate work. |
-| Shared Financial Record Explorers | Complete W5X milestone. Ledger, Portfolio, Security & Instrument, and Report-Line Provenance explorers share contracts, saved views, dense grids, proof ribbons, record drawers, evidence links, approval state, reconciliation state, report usage, and audit timelines. |
-| Financial Operations control center | Complete W5X milestone. Operations Continuity and Fund Ledger surfaces expose reconciliation queues, exception casework, close readiness, workflow controls, approval policy, audit evidence, checklist state, and governed reopen posture. |
-| Statement connector library | Complete W5X milestone. Declarative CSV and OFX mapping profiles, IB Flex XML, OFX bank/investment files, and Alpaca activity/portfolio statements normalize into canonical statement records with preview, confidence, drift warning, and reconciliation handoff support. |
-| Evidence Vault and statement onboarding | In progress. Evidence Vault primitives exist for retained source documents, manifests, review state, object links, and audit trails; the first acceptance path is browser-first statement reconciliation onboarding. |
-| Browser and WPF workstation delivery | In progress. Both operator clients are active, co-equal product lanes over shared contracts and read models. `W8-UX-CONSOL-001` folds closely related browser screens into deeper host screens behind the seven root workspaces, and `W8-WPF-PARITY-001` tracks browser-first screens that still need a WPF equivalent or an explicit parity decision. |
-| Live-readiness governance | Complete bounded W7 milestone. Paper-to-live promotion requires trusted-data review, paper-validation evidence, reconciliation evidence, accounting-record evidence, governed-reporting evidence, governance sign-off, exception-handling evidence, rollback/kill-switch evidence, audit retention, live brokerage enablement, and an active manual override. This is governance, not full live execution productization. |
-| Asset accounting event spine | Complete W9 milestone. `W9-ASSET-010` established one evidence-backed Asset Accounting Event Spine across acquisition, capitalization, valuation, income, corporate action, impairment, depreciation/amortization, and disposal. All eight kinds resolve Security Master, position, ledger, period, basis, rule-pack, lineage, and retained-evidence authority before drafting; lifecycle states never collapse; and acquisition lot creation plus versioned selected-lot disposal join the governed journal append in one serializable transaction. |
+| What does the product intend to do? | [Design charter](docs/product/meridian-design-document.md) |
+| What is implemented, and what blocks release? | [Implementation and Readiness Tracker](docs/product/implementation-todo-list.md) |
+| Which milestones have accepted evidence? | [Generated roadmap summary](docs/roadmap/generated/ROADMAP_SUMMARY.md), rendered from the [roadmap registry](docs/roadmap/README.md) |
+| What should be worked on next? | [Product Plans](docs/product/plans/README.md) |
+
+A completed roadmap row applies to its named scope and linked evidence. Release decisions still
+require current preflight, packaging, deployment, and required GitHub Actions evidence for the
+release commit.
 
 Active operator UI work spans both:
 
@@ -130,129 +117,85 @@ The near-term product wedge is a Close, Data, and Evidence Control Tower: a fina
 
 ## Future Plans
 
-The roadmap remains evidence-led. A future capability is treated as complete only when the roadmap registry, generated roadmap evidence, source/test artifacts, and operator documentation agree.
-
-Near-term work:
-
-| Plan | Direction |
-| --- | --- |
-| Evidence Vault productization | Turn retained documents, source manifests, request lists, extracted-field review, object links, and audit primitives into a reusable evidence layer for Accounting, Reporting, and Data workflows. |
-| Statement reconciliation onboarding | Make statement import the first browser-first onboarding path: import, preview, commit, retain Evidence Vault proof, route reconciliation breaks, and guide the operator to next actions. |
-| WPF workstation parity | Close tracked browser-first screen gaps through shared DTOs, endpoints, and read models while preserving desktop MVVM, validation, and release workflows. |
-| Browser workstation screen consolidation | Fold closely related browser workstation screens into deeper host screens behind the seven root workspaces (`W8-UX-CONSOL-001`), keeping retired routes as scope-preserving redirects and refreshing the WPF parity matrix with each fold. |
-| Ranked W9 improvement slate | Execute the accepted `W9-TRUTH-001` through `W9-INGEST-009` priority order: truthful simulation posture, seeded demo evaluation, paper-trading realism, live fill streaming, client-grade reporting, fund economics, execution safety, governance hardening, and institutional statement ingestion. The completed `W9-ASSET-010` spine (retained immutable journals as the only Posted authority) is the accounting baseline these lanes build on. |
-
-Longer-term or explicitly deferred lanes:
-
-- broader live execution productization and live portfolio operations beyond bounded W7 governance;
-- Backtesting Studio (`W6-BTSTUDIO-001`) remains planned, with broader research-workbench expansion deferred;
-- full treasury payment execution and bank-release automation;
-- full alternative asset operations beyond the current multi-asset proof lane;
-- forecasting and scenario engines;
-- enterprise risk platform;
-- client portal and stakeholder self-service workflows;
-- no-code workflow designer and policy compiler;
-- broad reporting/analytics platform expansion beyond the governed report-pack baseline;
-- mobile applications, which remain out of scope unless the roadmap explicitly reopens that lane.
+[Product Plans](docs/product/plans/README.md) identifies the current priority determination and
+links supporting engineering plans. The [roadmap registry](docs/roadmap/README.md) owns milestone
+state; the [design charter](docs/product/meridian-design-document.md) owns product scope and
+deferred boundaries. Consult these records before treating a proposal or dated review as an
+active commitment.
 
 ## Start Here
 
-Use the documentation front door and audience paths for current guidance:
-
-- [Documentation Index](docs/README.md)
-- [Start Here](docs/start/README.md)
-- [Product Direction](docs/product/README.md)
-- [Design Charter](docs/product/meridian-design-document.md)
-- [Implementation and Readiness Tracker](docs/product/implementation-todo-list.md)
-- [Engineering Guide](docs/engineering/README.md)
-- [Operator Guide](docs/operators/README.md)
-- [Reference Lookup](docs/reference/README.md)
-- [Roadmap Registry](docs/roadmap/README.md)
-- [Generated Roadmap Summary](docs/roadmap/generated/ROADMAP_SUMMARY.md)
-- [Source Documentation Mesh](docs/source/README.md)
-- [AI Guide](docs/ai/README.md)
-- [Documentation Ownership Contract](docs/documentation-ownership.md)
+| Task | Start with |
+| --- | --- |
+| Run a demo or set up a checkout | [Start Here](docs/start/README.md) |
+| Understand scope, readiness, and priorities | [Product](docs/product/README.md) |
+| Build, test, or contribute | [Engineering](docs/engineering/README.md) |
+| Install, configure, or recover a workstation | [Operators](docs/operators/README.md) |
+| Look up APIs, configuration, or providers | [Reference](docs/reference/README.md) |
+| Find documentation or its owner | [Documentation index](docs/README.md) and [ownership contract](docs/documentation-ownership.md) |
 
 ## Repository Map
 
-Major solution areas include:
+Use [Project Structure](docs/architecture/project-structure.md) and [Module Map](docs/architecture/module-map.md) for maintained ownership and dependency boundaries.
 
-| Area | Paths |
+| Area | Entry point |
 | --- | --- |
-| Host, application, domain, contracts, infrastructure, and storage | `src/Meridian`, `src/Meridian.Application`, `src/Meridian.Domain`, `src/Meridian.Core`, `src/Meridian.Contracts`, `src/Meridian.Infrastructure`, `src/Meridian.Storage` |
-| Bounded-context domain modules | `src/Meridian.Entities`, `src/Meridian.Identity`, `src/Meridian.Instruments`, `src/Meridian.PortfolioRecords`, `src/Meridian.ReferenceData`, `src/Meridian.DataIntegration`, `src/Meridian.Documents`, `src/Meridian.Workflow`, `src/Meridian.Platform` |
-| Providers, execution, risk, and strategies | `src/Meridian.ProviderSdk`, `src/Meridian.Execution`, `src/Meridian.Execution.Sdk`, `src/Meridian.Risk`, `src/Meridian.Strategies` |
-| Backtesting and replay | `src/Meridian.Backtesting`, `src/Meridian.Backtesting.Sdk` |
-| Accounting, financial operations, audit, and F# domain work | `src/Meridian.Ledger`, `src/Meridian.FinancialOperations`, `src/Meridian.Audit`, `src/Meridian.FSharp`, `src/Meridian.FSharp.Ledger`, `src/Meridian.FSharp.Trading`, `src/Meridian.FSharp.DirectLending.Aggregates` |
-| Reporting and analytics support | `src/Meridian.Reporting`, `src/Meridian.QuantScript` |
-| MCP tooling | `src/Meridian.Mcp` |
-| Browser workstation and shared UI/API read models | `src/Meridian.Ui/dashboard`, `src/Meridian.Ui/wwwroot/workstation`, `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared` |
-| Windows desktop workstation | `src/Meridian.Wpf` |
-| Installed workstation launch, lifecycle, and setup | `src/Meridian.Launcher`, `src/Meridian.LifecycleSupervisor`, `src/Meridian.Setup` |
+| Host and application orchestration | `src/Meridian/`, `src/Meridian.Application/` |
+| Domain, contracts, providers, and storage | [Source Documentation Mesh](docs/source/README.md) |
+| Accounting, financial operations, and audit | `src/Meridian.Ledger/`, `src/Meridian.FinancialOperations/`, `src/Meridian.Audit/` |
+| Trading, execution, risk, and backtesting | `src/Meridian.Execution/`, `src/Meridian.Risk/`, `src/Meridian.Strategies/`, `src/Meridian.Backtesting/` |
+| Browser workstation and shared services | `src/Meridian.Ui/dashboard/`, `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/` |
+| Windows workstation and installed lifecycle | `src/Meridian.Wpf/`, `src/Meridian.Launcher/`, `src/Meridian.LifecycleSupervisor/`, `src/Meridian.Setup/` |
 | Tests and benchmarks | `tests/`, `benchmarks/` |
-
-For maintained ownership and dependency boundaries, use [Project Structure](docs/architecture/project-structure.md), [Module Map](docs/architecture/module-map.md), and the generated [repository structure](docs/generated/repository-structure.md).
 
 ## Quick Commands
 
-Start with the maintained command references when in doubt:
-
-- [Start Here](docs/start/README.md)
-- [Engineering Guide](docs/engineering/README.md)
-- [Operator Guide](docs/operators/README.md)
-- [docs/HELP.md](docs/HELP.md)
-
-Direct commands:
-
-```bash
-dotnet run --project src/Meridian/Meridian.csproj -- --help
-dotnet run --project src/Meridian/Meridian.csproj -- --seed-demo
-dotnet run --project src/Meridian/Meridian.csproj -- --setup
-python build/python/cli/buildctl.py --help
-```
-
-`--mode workstation --http-port 8080` serves the host and `http://localhost:8080/workstation/`, but
-only once a persistence profile is configured — see [Running against your own
-data](#running-against-your-own-data). Unlike `--seed-demo`, it does not choose one for you.
-
-GNU Make targets are optional convenience wrappers when `make` is installed:
-
-```bash
-make help
-make bootstrap
-make verify-fast
-make verify-full
-make verify-docs
-make verify-desktop
-make verify-release
-```
+Use [Start Here](docs/start/README.md) for setup and launch profiles,
+[Engineering](docs/engineering/README.md) for build and test commands, and
+[Operator preflight](docs/operators/preflight-checklist.md) before using your own data.
+The [command help](docs/HELP.md) and [reference index](docs/reference/README.md) own detailed lookup material.
 
 ### Main CLI host - `src/Meridian`
 
-The primary runnable project supports collector, desktop-local API host, setup, self-test, backfill, provider recommendation, symbol-management, and ledger-reporting modes.
+Discover host commands directly:
 
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --help
-dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-symbols AAPL,MSFT --backfill-from 2024-01-01 --backfill-to 2024-12-31
-dotnet run --project src/Meridian/Meridian.csproj -- ledger -f ledger.dat balance
+python build/python/cli/buildctl.py --help
 ```
 
-When launched from the repository root, the local workstation/API host binds to `http://localhost:8080` by default. Config path resolution is `--config <path>` -> `MDC_CONFIG_PATH` -> `config/appsettings.json`.
+For a configured local browser host, use `--mode workstation --http-port 8080`;
+it serves `http://localhost:8080/workstation/`. Complete
+[operator preflight](docs/operators/preflight-checklist.md) first.
+Config path resolution is `--config <path>` → `MDC_CONFIG_PATH` → `config/appsettings.json`.
 
 ### Browser workstation - `src/Meridian.Ui/dashboard`
 
-The browser workstation builds static assets served from `src/Meridian.Ui/wwwroot/workstation/`.
+Install root and dashboard dependencies, then launch the coordinated development environment:
 
 ```bash
-cd src/Meridian.Ui/dashboard
-npm install
+npm ci
+npm --prefix src/Meridian.Ui/dashboard ci
 npm run dev
-npm run preview
-npm run test
-npm run build
 ```
 
-`npm run dev` serves `/workstation/`; `npm run preview` serves the built workstation assets. Both commands proxy `/api` to `MERIDIAN_API_BASE_URL` when set, or `http://localhost:8080` by default.
+The root launcher seeds the demo backend, starts the host in watch mode, and starts Vite at
+`http://localhost:5173/workstation/`. Use `npm run dev:fixtures` for fixture-only UI work
+without a backend. See [browser development](docs/engineering/web-development.md) for
+prerequisites, modes, readiness checks, and shutdown behavior.
+
+For Vite alone, use `npm --prefix src/Meridian.Ui/dashboard run dev` and start a configured
+API host separately. Vite proxies `/api` to `MERIDIAN_API_BASE_URL`, or
+`http://localhost:8080` by default.
+
+When dashboard source changes, regenerate and commit the tracked bundle:
+
+```bash
+npm --prefix src/Meridian.Ui/dashboard run build
+```
+
+CI checks that `src/Meridian.Ui/wwwroot/workstation/` matches the dashboard source.
+See [Start Here](docs/start/README.md#the-workstation-bundle-the-demo-serves) for the bundle contract.
 
 ### MCP server
 
@@ -277,21 +220,25 @@ pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly
 
 ## Validation Lanes
 
-| Lane | Use when | Command |
-| --- | --- | --- |
-| `bootstrap` | Setting up or repairing a local development environment. | `make bootstrap` |
-| `verify-fast` | Tight-loop validation for most code changes. | `make verify-fast` |
-| `verify-full` | Broad pre-PR validation and coverage collection. | `make verify-full` |
-| `verify-docs` | Changing docs, workflow docs, AI/TODO governance references, or lane vocabulary. | `make verify-docs` |
-| `verify-desktop` | Touching WPF desktop shell, routing, or shared contracts that need desktop confidence. | `make verify-desktop` |
-| `verify-release` | Validating publish outputs or release packaging paths. | `make verify-release` |
+Use the smallest lane that covers your change during development:
 
-Build safety notes:
+| Change | Focused command |
+| --- | --- |
+| Documentation and generated-doc contracts | `bash scripts/ci.sh --lane verify-docs` |
+| Browser source and tracked bundle | `bash scripts/ci.sh --lane verify-browser` |
+| .NET source and tests | `bash scripts/ci.sh --lane verify-dotnet` |
+| Workflow and lane contracts | `bash scripts/ci.sh --lane verify-workflows` |
 
-- Prefer one solution or project build at a time when multiple entrypoints share referenced projects.
-- Use `python build/python/cli/buildctl.py build --project Meridian.sln --configuration Release` for a restore-once, single-node solution build.
-- For automation or concurrent local runs, pass `--isolation-key <name>` to `buildctl.py` so outputs write under isolated `artifacts/bin/<name>/` and `artifacts/obj/<name>/` roots.
-- Keep the F# test project's transitive `xunit.v3` runtime pin aligned with `xunit.runner.visualstudio`; Linux/macOS VSTest discovery depends on the v3 JSON handshake.
+Before completing PR work, run the canonical repository gate:
+
+```bash
+bash scripts/ci.sh
+```
+
+Contribute through a `codex/<short-task-name>` branch and a pull request targeting `main`.
+Required GitHub Actions checks remain the merge authority.
+See [Engineering](docs/engineering/README.md#buildtestrun) for desktop and release validation,
+build isolation, and hosted validation when local tooling is unavailable.
 
 ## Planning Source Of Truth
 

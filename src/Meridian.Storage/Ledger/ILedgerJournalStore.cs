@@ -264,6 +264,7 @@ public sealed record LedgerJournalEntryWrite(
     AccountingPostingCommandDto? PostingCommand = null,
     Guid? LedgerBookId = null);
 
+/// <summary>Conjunctive journal filters; an exact journal identity remains subject to every supplied scope filter.</summary>
 public sealed record LedgerJournalEntryQuery(
     Guid? LedgerBookId = null,
     Guid? PeriodId = null,
@@ -274,7 +275,8 @@ public sealed record LedgerJournalEntryQuery(
     DateTimeOffset? OccurredTo = null,
     Guid? SourceEventId = null,
     DateOnly? EffectiveFrom = null,
-    DateOnly? EffectiveTo = null);
+    DateOnly? EffectiveTo = null,
+    Guid? JournalEntryId = null);
 
 public sealed record LedgerJournalEntryRecord(
     JournalEntry Entry,
@@ -408,7 +410,8 @@ public enum AtomicTaxLotMutationKind
     Acquisition = 0,
     Disposal = 1,
     // Mutation rows only: a surviving pool lot restated within a disposal batch.
-    BasisRedistribution = 2
+    BasisRedistribution = 2,
+    Amortization = 3
 }
 
 public sealed record LedgerTaxLotDisposalSelection(
@@ -438,7 +441,9 @@ public sealed record AtomicTaxLotJournalCommand(
     string? ReliefMethod = null,
     string? PolicyRevision = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    decimal? DisposalSalePrice = null)
+    decimal? DisposalSalePrice = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? Amortization = null)
 {
     public static AtomicTaxLotJournalCommand Create(
         Guid mutationBatchId,
@@ -454,7 +459,8 @@ public sealed record AtomicTaxLotJournalCommand(
         Guid? correctsMutationBatchId = null,
         string? reliefMethod = null,
         string? policyRevision = null,
-        decimal? disposalSalePrice = null)
+        decimal? disposalSalePrice = null,
+        Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? amortization = null)
     {
         var command = new AtomicTaxLotJournalCommand(
             mutationBatchId,
@@ -471,7 +477,8 @@ public sealed record AtomicTaxLotJournalCommand(
             correctsMutationBatchId,
             reliefMethod,
             policyRevision,
-            disposalSalePrice);
+            disposalSalePrice,
+            amortization);
         return command.WithComputedFingerprint();
     }
 

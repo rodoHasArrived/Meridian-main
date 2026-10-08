@@ -1,0 +1,21 @@
+{
+  "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+  "results": [
+    {
+      "exercise": "intact copied package",
+      "exitCode": 0,
+      "result": "packet integrity passed; acceptance pending"
+    },
+    {
+      "exercise": "changed artifact bytes",
+      "exitCode": 1,
+      "result": "packet integrity failed: Checksum mismatch: case-records.json; acceptance pending"
+    },
+    {
+      "exercise": "rehashed unsupplied acceptance decision",
+      "exitCode": 1,
+      "result": "packet integrity failed: MARK-C1: operator state must remain pending; acceptance pending"
+    }
+  ],
+  "scope": "copied temporary package only; original retained artifacts unchanged"
+}

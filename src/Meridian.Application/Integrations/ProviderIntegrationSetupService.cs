@@ -64,7 +64,22 @@ public sealed class ProviderIntegrationSetupService
         };
 
         var scopedStore = ResolveStore(tenantId);
-        await scopedStore.SaveManifestAsync(savedManifest, ct).ConfigureAwait(false);
+        var current = await scopedStore.GetManifestAsync(savedManifest.ManifestId, ct).ConfigureAwait(false);
+        ProviderIntegrationManifestPromotion.ValidateExpected(current, request.ExpectedManifestReference);
+        if (current is not null && current.ManifestVersion != request.Manifest.ManifestVersion)
+        {
+            throw new InvalidOperationException("The provider integration manifest changed. Reload the current version before saving again.");
+        }
+
+        var expected = current is null ? null : ProviderIntegrationManifestIdentity.Create(current);
+        if (current is not null && !ProviderIntegrationManifestIdentity.Matches(
+                expected, ProviderIntegrationManifestIdentity.Create(savedManifest)))
+        {
+            savedManifest = savedManifest with { ManifestVersion = checked(current.ManifestVersion + 1) };
+        }
+
+        savedManifest = await ProviderIntegrationManifestPromotion.SelectAvailableVersionAsync(scopedStore, savedManifest, ct).ConfigureAwait(false);
+        await ProviderIntegrationManifestPromotion.SaveAsync(scopedStore, savedManifest, expected, ct).ConfigureAwait(false);
         await scopedStore.SaveConnectionAsync(savedConnection, ct).ConfigureAwait(false);
 
         var readiness = ProviderIntegrationActivationReadinessService.Evaluate(
@@ -86,7 +101,10 @@ public sealed class ProviderIntegrationSetupService
             savedManifest.State,
             savedConnection.State,
             readiness,
-            BuildSaveMessage(request, manifestStateNormalized, connectionStateNormalized));
+            BuildSaveMessage(request, manifestStateNormalized, connectionStateNormalized))
+        {
+            ManifestReference = ProviderIntegrationManifestIdentity.Create(savedManifest)
+        };
     }
 
     private static string BuildSaveMessage(

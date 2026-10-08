@@ -6,10 +6,65 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-02
 ---
 
 # src/Meridian.FinancialOperations
+
+`Consolidation/ConsolidationService` resolves two directly wholly owned entities from authoritative
+effective-dated ownership, compares reciprocal receivables/payables using posting entity and
+counterparty, and produces evidence-bound drafts through the typed `ConsolidationElimination`
+policy rule. Same-currency Primary books only; unmatched balances remain explicit. Read
+[the first-slice contract](../../docs/domain/intercompany-consolidation.md) for exact chart,
+perimeter, correction and currency limits.
+
+`PostgresConsolidationPostingAuthority` revalidates the complete reviewed evidence at the durable
+append boundary while holding the configured ownership store's read lease and the accounting
+policy service's mutation lock. Both leases survive until the ledger transaction commits. A changed
+perimeter, currency, source-book mapping or policy requires a new draft and renewed review; a caller
+cannot bypass this check by appending directly to the journal store.
+
+`Onboarding/OnboardingWorkspaceService` owns bounded accounting onboarding across required dates.
+Comparisons retain full source payloads, exact mapping versions, criteria and predecessor hashes.
+Balance, position and NAV differences retain new/persistent/resolved lineage, owners and evidence.
+Missing observations cannot resolve a previous difference. Corrective captures append to the same
+date; readiness uses the latest capture for every required date, while earlier results remain
+replayable. Independent reviewer decisions bind the current data revision. Frozen packets include
+blocked states and complete retained history; they confer no accounting authority.
+
+`AccountingSystemIntegrationService.Onboarding` adds a read-only capture seam over an already
+retained import and explicitly selected certified mapping. Existing GL reconciliation runs against
+a private retained ledger snapshot. Mapping content and full decimal payloads are retained without
+using the legacy rounded import hash as the onboarding content identity. See
+[onboarding procedure](../../docs/operators/external-gl-providers.md#bounded-onboarding).
+
+`AccountingClosePreparationService` captures immutable versions of close configuration and previews
+them against authoritative ledger books and periods. Deadline rules specify a period anchor,
+calendar/business-day offset, and subsequent weekend/holiday adjustment using an explicit retained
+calendar. Owners require confirmed mappings; accounting policy differences require review.
+Creation starts fresh workflow controls and evidence requirements while leaving source approvals,
+reviewed evidence, journal references, and locks in their original period. A durable creation claim
+and process-independent lease make retries resume one workflow. Preview fingerprints reject changed
+source or target authority; an already retained configuration recovers its original creation receipt.
+Ambiguous interrupted starts retain their claim and require recovery instead of creating another plan.
+`OperationsContinuityWorkflowService.StartPreparedWorkflowAsync` supplies the atomic fresh workflow
+and exact-identity recovery boundary. Focused proof lives in `AccountingCloseServicesTests.Preparation`
+and `OperationsContinuityWorkflowServiceTests.PreparedStart`.
+
+Statement reconciliation composition supplies the shared `IAtomicFileWriter` to the canonical
+statement store so committed imports use Storage-owned directory durability without an
+Infrastructure-to-Storage reference.
+
+`CanonicalLotAmortizationService` prepares read-only canonical face-lot projections from authoritative lot/reference records. Optional workstation postures may construct the service with absent stores, but preview requires ledger, Security Master, and book-position authority and refuses missing stores before any read. `AccountingPostingCandidatePostService` carries an `Amortize` instruction through the existing event-spine and independent approval rail to atomic journal/basis posting; the service itself cannot approve or post.
+New amortization postings require the current calculation version before approval is retained.
+Historical unversioned instructions remain readable for exact receipt replay; unposted legacy
+drafts require a fresh preview.
+
+The governed event-spine path retains its existing requirement that the Security Master currency
+equal the event's functional currency. The atomic lot boundary preserves acquisition currency and
+FX, but this delivery does not extend the event spine's cross-currency workflow. Current-basis
+disposal relief is supplied by the separate PR #3050 implementation; these amortization corrections
+preserve that relief path and its retained acquisition facts.
 
 `FundAdministration/RecurringJournalState.cs` and `FileRecurringJournalStore` own versioned
 recurring schedules and templates, exact source evidence, one claim per schedule/effective date,
@@ -764,8 +819,9 @@ identity and balanced posted amounts returned by that boundary.
 For this spine, a same-source journal is a replay only when its deterministic journal identity,
 complete Drafted candidate/result fingerprints, policy/rule pack, approval evidence, amounts,
 lines, currencies, and dimensions all match. Lots retain Security Master and book-position scope;
-disposal rechecks selected unit cost and aggregate cost basis against the exact asset-relief journal
-line under the same serializable transaction. A mismatch is a collision and blocks posting.
+disposal retains selected acquisition unit cost as a snapshot assertion, certifies current canonical
+relief basis across the scoped pool, and rechecks the exact asset-relief journal line under the same
+serializable transaction and effective policy revision. A mismatch is a collision and blocks posting.
 External accounting-system providers remain read-only import, reconciliation, and export-package
 surfaces; this service appends only Meridian-owned ledger facts.
 The retained approval evidence for generated candidate append must name approval intent, fund,

@@ -4,6 +4,9 @@
 **Owner:** core-team
 **Reviewed:** 2026-06-08
 
+**Maintenance check (2026-10-05):** current scope and validation links were refreshed; this does not
+change the original book assessment or claim that its examples were executed.
+
 This guide maps *Practical C# and WPF for Financial Markets: Advanced C#, WPF, and MVVM Programming for Quant Developers/Analysts and Individual Traders* by Jack Xu / Ji-Hai Xu to Meridian's current engineering practice. Use it as a study companion for developers who want market-domain C#, WPF, and MVVM context without treating the book as Meridian architecture authority.
 
 ## How To Use This Resource
@@ -21,7 +24,7 @@ This guide maps *Practical C# and WPF for Financial Markets: Advanced C#, WPF, a
 | WPF and MVVM | Binding, commands, view models, and desktop operator workflow composition | `docs/architecture/mvvm-guidelines.md`, `docs/architecture/wpf-shell-mvvm.md`, and `src/Meridian.Wpf/README.md` |
 | Market data access | Provider abstraction, normalization, and operator trust signals | `src/Meridian.ProviderSdk/README.md`, `src/Meridian.Infrastructure/README.md`, and `docs/reference/provider-capability-matrix.md` |
 | Financial analytics | Pricing, time-series analysis, and strategy research concepts | `src/Meridian.QuantScript/README.md`, `src/Meridian.Strategies/README.md`, and `docs/reference/backtest-preflight-and-stage-telemetry.md` |
-| Strategy development and backtesting | Research-to-paper validation vocabulary and backtest discipline | `src/Meridian.Backtesting/README.md`, `src/Meridian.QuantScript/README.md`, and roadmap W1-W5 operational-record priorities |
+| Strategy development and backtesting | Research-to-paper validation vocabulary and backtest discipline | `src/Meridian.Backtesting/README.md`, `src/Meridian.QuantScript/README.md`, and the [current roadmap](../roadmap/README.md) |
 | Desktop charting and operator panels | UI composition concepts for dense data and inspection surfaces | `docs/architecture/mvvm-guidelines.md`, `src/Meridian.Wpf/README.md`, and browser/WPF shared read-model guidance in `docs/engineering/README.md` |
 
 ## Meridian Guardrails While Studying
@@ -30,7 +33,9 @@ This guide maps *Practical C# and WPF for Financial Markets: Advanced C#, WPF, a
 - Do not add mobile, MAUI, React Native, Flutter, or mobile-first variants while adapting any UI example.
 - Do not adopt credentials, provider keys, local data paths, or market-data storage examples until they are reconciled with Meridian's config, credential-store, and provider-validation rules.
 - Do not use the book's older package or framework choices as proof that a dependency is acceptable for Meridian; validate current licensing, maintenance, security, and testability first.
-- Do not move Meridian toward broad backtesting-studio expansion unless the work directly strengthens trusted data, source evidence, reconciliation, approvals, accounting records, multi-asset operational coverage, or governed reports.
+- Scope new work against the [current design charter](../product/meridian-design-document.md),
+  current source, and roadmap evidence. Historical baseline phases are not ceilings on authorized
+  strategy, backtesting, or other product expansion.
 
 ## Practical Exercises For Meridian Contributors
 
@@ -41,7 +46,8 @@ This guide maps *Practical C# and WPF for Financial Markets: Advanced C#, WPF, a
 
 ## Validation Before Applying Ideas
 
-Before implementing any idea inspired by this book:
+From the repository root, select the relevant check. WPF execution requires Windows and PowerShell 7;
+shared .NET tests use the SDK selected by `global.json` and Python:
 
 ```powershell
 # Documentation-only study-note changes
@@ -51,7 +57,8 @@ git diff --check -- docs/engineering/practical-csharp-wpf-financial-markets.md d
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -Restore
 
 # Shared service or contract slices
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --filter "Category!=Integration" /p:EnableWindowsTargeting=true
+python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --queue
 ```
 
 Broaden validation only when the touched layer requires it, and cite the owning source README or registry row in the implementation summary.
+Use [Engineering](README.md#buildtestrun) for the required pre-PR gate and hosted validation rules.

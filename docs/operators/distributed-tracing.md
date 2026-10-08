@@ -17,6 +17,14 @@ override for this section.
 
 ## Inspect a local operation
 
+Use a running, configured host with the provider/storage prerequisites from
+[preflight](preflight-checklist.md). For a Windows source checkout, edit its local runtime config
+and run commands in PowerShell 7 from the repository root; leave the host in terminal 1 and initiate
+the bounded operation from the workstation or an authenticated client in terminal 2. Installed
+hosts use supervisor restart and the configuration path in their lifecycle manifest. Retain a copy
+of the prior tracing section so the diagnostic change can be reversed. Trace configuration is
+diagnostic setup, not a credential/persistence substitute.
+
 1. Add this section to the host's runtime JSON configuration:
 
    ```json

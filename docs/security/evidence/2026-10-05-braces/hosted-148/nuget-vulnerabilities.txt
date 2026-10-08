@@ -1,0 +1,62 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+
+The following sources were used:
+   https://api.nuget.org/v3/index.json
+
+The given project `Meridian` has no vulnerable packages given the current sources.
+The given project `Meridian.Backtesting.Sdk` has no vulnerable packages given the current sources.
+The given project `Meridian.Ledger` has no vulnerable packages given the current sources.
+The given project `Meridian.Backtesting` has no vulnerable packages given the current sources.
+The given project `Meridian.Backtesting.Tests` has no vulnerable packages given the current sources.
+The given project `Meridian.ProviderSdk` has no vulnerable packages given the current sources.
+The given project `Meridian.Contracts` has no vulnerable packages given the current sources.
+The given project `Meridian.Ui.Shared` has no vulnerable packages given the current sources.
+The given project `Meridian.Tests` has no vulnerable packages given the current sources.
+The given project `Meridian.Benchmarks` has no vulnerable packages given the current sources.
+The given project `Meridian.FSharp` has no vulnerable packages given the current sources.
+The given project `Meridian.FSharp.Tests` has no vulnerable packages given the current sources.
+The given project `Meridian.Domain` has no vulnerable packages given the current sources.
+The given project `Meridian.Core` has no vulnerable packages given the current sources.
+The given project `Meridian.Application` has no vulnerable packages given the current sources.
+The given project `Meridian.Infrastructure` has no vulnerable packages given the current sources.
+The given project `Meridian.Storage` has no vulnerable packages given the current sources.
+The given project `Meridian.Mcp` has no vulnerable packages given the current sources.
+The given project `Meridian.Ui.Tests` has no vulnerable packages given the current sources.
+The given project `Meridian.Execution.Sdk` has no vulnerable packages given the current sources.
+The given project `Meridian.Execution` has no vulnerable packages given the current sources.
+The given project `Meridian.Risk` has no vulnerable packages given the current sources.
+The given project `Meridian.Strategies` has no vulnerable packages given the current sources.
+The given project `Meridian.FSharp.Trading` has no vulnerable packages given the current sources.
+The given project `Meridian.FSharp.Ledger` has no vulnerable packages given the current sources.
+The given project `Meridian.FSharp.DirectLending.Aggregates` has no vulnerable packages given the current sources.
+The given project `Meridian.DirectLending.Tests` has no vulnerable packages given the current sources.
+The given project `Meridian.Ui.Services` has no vulnerable packages given the current sources.
+The given project `Meridian.Wpf` has no vulnerable packages given the current sources.
+The given project `Meridian.Wpf.Tests` has no vulnerable packages given the current sources.
+The given project `Meridian.QuantScript` has no vulnerable packages given the current sources.
+The given project `Meridian.ProcessIsolation` has no vulnerable packages given the current sources.
+The given project `Meridian.QuantScript.Worker` has no vulnerable packages given the current sources.
+The given project `Meridian.QuantScript.Tests` has no vulnerable packages given the current sources.
+The given project `Meridian.FundStructure.Tests` has no vulnerable packages given the current sources.
+The given project `Meridian.IbApi.SmokeStub` has no vulnerable packages given the current sources.
+The given project `Meridian.Platform` has no vulnerable packages given the current sources.
+The given project `Meridian.Identity` has no vulnerable packages given the current sources.
+The given project `Meridian.Entities` has no vulnerable packages given the current sources.
+The given project `Meridian.DataIntegration` has no vulnerable packages given the current sources.
+The given project `Meridian.ReferenceData` has no vulnerable packages given the current sources.
+The given project `Meridian.Instruments` has no vulnerable packages given the current sources.
+The given project `Meridian.PortfolioRecords` has no vulnerable packages given the current sources.
+The given project `Meridian.FinancialOperations` has no vulnerable packages given the current sources.
+The given project `Meridian.Workflow` has no vulnerable packages given the current sources.
+The given project `Meridian.Audit` has no vulnerable packages given the current sources.
+The given project `Meridian.Reporting` has no vulnerable packages given the current sources.
+The given project `Meridian.Documents` has no vulnerable packages given the current sources.
+The given project `Meridian.DesignModules.Tests` has no vulnerable packages given the current sources.
+The given project `Meridian.TestSupport` has no vulnerable packages given the current sources.
+The given project `Meridian.ProcessTestHelper` has no vulnerable packages given the current sources.
+The given project `Meridian.Lifecycle.Tests` has no vulnerable packages given the current sources.
+The given project `Meridian.LifecycleSupervisor` has no vulnerable packages given the current sources.
+The given project `Meridian.LifecycleSupervisor.Tests` has no vulnerable packages given the current sources.
+The given project `Meridian.Setup` has no vulnerable packages given the current sources.
+The given project `Meridian.Setup.Tests` has no vulnerable packages given the current sources.

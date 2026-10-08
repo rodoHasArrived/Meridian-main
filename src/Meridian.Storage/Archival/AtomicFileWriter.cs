@@ -14,7 +14,9 @@ namespace Meridian.Storage.Archival;
 /// </summary>
 public static partial class AtomicFileWriter
 {
-    private static readonly ILogger Log = LoggingSetup.ForContext(typeof(AtomicFileWriter));
+    // Storage paths can contain financial account identities. Diagnostics retain operation
+    // outcomes only; exception text can expose the same paths and must not be logged either.
+    private static ILogger Log => LoggingSetup.ForContext(typeof(AtomicFileWriter));
 
     // UTF-8 without a byte-order mark. A BOM would prefix text files (e.g. the .sha256 checksum
     // sidecar) with U+FEFF, which token-splitting readers must not see as part of the content.
@@ -56,8 +58,7 @@ public static partial class AtomicFileWriter
             File.Move(tempPath, destinationPath, overwrite: true);
             SyncDirectory(directory!);
 
-            Log.Debug("Atomically wrote {Bytes} bytes to {Path}",
-                Encoding.UTF8.GetByteCount(content), destinationPath);
+            Log.Debug("Atomically wrote {Bytes} bytes", Encoding.UTF8.GetByteCount(content));
         }
         catch
         {
@@ -127,8 +128,7 @@ public static partial class AtomicFileWriter
             // Sync the directory to ensure rename is persisted (post-commit: non-cancellable)
             await SyncCommittedDirectoryAsync(directory!);
 
-            Log.Debug("Atomically wrote {Bytes} bytes to {Path}",
-                Encoding.UTF8.GetByteCount(content), destinationPath);
+            Log.Debug("Atomically wrote {Bytes} bytes", Encoding.UTF8.GetByteCount(content));
         }
         catch
         {
@@ -201,7 +201,7 @@ public static partial class AtomicFileWriter
             // Sync the directory (post-commit: non-cancellable)
             await SyncCommittedDirectoryAsync(directory!);
 
-            Log.Debug("Atomically wrote {Bytes} bytes to {Path}", content.Length, destinationPath);
+            Log.Debug("Atomically wrote {Bytes} bytes", content.Length);
         }
         catch
         {
@@ -467,8 +467,7 @@ public static partial class AtomicFileWriter
             // Sync directory (post-commit: non-cancellable)
             await SyncCommittedDirectoryAsync(directory!);
 
-            Log.Debug("Wrote {Bytes} bytes with checksum {Checksum} to {Path}",
-                content.Length, checksum[..16], destinationPath);
+            Log.Debug("Wrote {Bytes} bytes with a checksum sidecar", content.Length);
 
             return checksum;
         }
@@ -488,7 +487,7 @@ public static partial class AtomicFileWriter
 
         if (!File.Exists(checksumPath))
         {
-            Log.Warning("Checksum file not found: {Path}", checksumPath);
+            Log.Warning("Checksum sidecar file not found");
             return false;
         }
 
@@ -502,12 +501,11 @@ public static partial class AtomicFileWriter
 
         if (expectedChecksum == actualChecksum)
         {
-            Log.Debug("Checksum verified for {Path}", filePath);
+            Log.Debug("File checksum verified");
             return true;
         }
 
-        Log.Warning("Checksum mismatch for {Path}: expected {Expected}, got {Actual}",
-            filePath, expectedChecksum, actualChecksum);
+        Log.Warning("File checksum mismatch");
         return false;
     }
 
@@ -562,7 +560,7 @@ public static partial class AtomicFileWriter
                 File.Delete(backupPath);
             }
 
-            Log.Debug("Atomically replaced {Path}", destinationPath);
+            Log.Debug("Atomically replaced file");
         }
         catch (Exception writeException)
         {
@@ -575,7 +573,7 @@ public static partial class AtomicFileWriter
                 }
                 catch (Exception restoreException)
                 {
-                    Log.Error(restoreException, "Failed to restore backup for {Path}", destinationPath);
+                    Log.Error("Failed to restore file backup ({FailureType})", restoreException.GetType().Name);
                 }
             }
 
@@ -631,9 +629,8 @@ public static partial class AtomicFileWriter
         }
         catch (Exception ex)
         {
-            Log.Warning(ex,
-                "Failed to preserve file security metadata while atomically writing {Path}",
-                sourcePath);
+            Log.Warning("Failed to preserve file security metadata during atomic write ({FailureType})",
+                ex.GetType().Name);
         }
     }
 
@@ -697,8 +694,7 @@ public static partial class AtomicFileWriter
         int fd = PosixInterop.open(directory, PosixInterop.O_RDONLY);
         if (fd < 0)
         {
-            Log.Warning("Unable to open directory for fsync: {Directory} (errno {Errno})",
-                directory, Marshal.GetLastPInvokeError());
+            Log.Warning("Unable to open directory for fsync (errno {Errno})", Marshal.GetLastPInvokeError());
             return;
         }
 
@@ -706,8 +702,7 @@ public static partial class AtomicFileWriter
         {
             if (PosixInterop.fsync(fd) < 0)
             {
-                Log.Warning("Directory fsync failed: {Directory} (errno {Errno})",
-                    directory, Marshal.GetLastPInvokeError());
+                Log.Warning("Directory fsync failed (errno {Errno})", Marshal.GetLastPInvokeError());
             }
         }
         finally
@@ -741,7 +736,7 @@ public static partial class AtomicFileWriter
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, "Failed to delete temp file: {Path}", path);
+            Log.Warning("Failed to delete temporary file ({FailureType})", ex.GetType().Name);
         }
     }
 }

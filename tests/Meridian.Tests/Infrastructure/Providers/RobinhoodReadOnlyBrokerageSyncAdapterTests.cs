@@ -2,6 +2,8 @@ using System.Net;
 using FluentAssertions;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Adapters.Robinhood;
+using Meridian.Tests.TestHelpers;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Tests.Infrastructure.Providers;
@@ -149,9 +151,42 @@ public sealed class RobinhoodReadOnlyBrokerageSyncAdapterTests
             .WithMessage("*ROBINHOOD_BROKERAGE_ACCESS_TOKEN*");
     }
 
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized)]
+    [InlineData(HttpStatusCode.TooManyRequests)]
+    public async Task Scenario_ProviderFailure_LogsStatusWithoutAccountEndpointOrErrorBody(HttpStatusCode statusCode)
+    {
+        const string accountId = "private-brokerage-account-17";
+        const string accessToken = "fixture-sensitive-bearer-token";
+        var responseBody = $"Provider rejected account {accountId} using bearer {accessToken}; confidential diagnostic.";
+        var logger = new RecordingLogger<RobinhoodReadOnlyBrokerageSyncAdapter>();
+        var adapter = CreateAdapter(
+            new Dictionary<string, string> { [$"/portfolio/{accountId}"] = responseBody },
+            accessToken,
+            logger,
+            statusCode);
+
+        var act = () => adapter.GetPortfolioSnapshotAsync(accountId);
+
+        var exception = (await act.Should().ThrowAsync<InvalidOperationException>()).Which;
+        exception.Message.Should().Be($"Robinhood read-only sync endpoint failed with status {(int)statusCode}.");
+        var log = logger.Entries.Should().ContainSingle().Which;
+        log.LogLevel.Should().Be(LogLevel.Warning);
+        log.Exception.Should().BeNull();
+        log.Message.Should().Be($"Robinhood read-only brokerage sync failed with status {(int)statusCode}.");
+        var diagnostics = log.Message + exception;
+        diagnostics.Should().NotContain(accountId)
+            .And.NotContain(accessToken)
+            .And.NotContain(responseBody)
+            .And.NotContain("aggregator.example.test")
+            .And.NotContain("/portfolio/");
+    }
+
     private static RobinhoodReadOnlyBrokerageSyncAdapter CreateAdapter(
         IReadOnlyDictionary<string, string> responses,
-        string accessToken = "test-token")
+        string accessToken = "test-token",
+        ILogger<RobinhoodReadOnlyBrokerageSyncAdapter>? logger = null,
+        HttpStatusCode statusCode = HttpStatusCode.OK)
     {
         var options = new RobinhoodReadOnlyBrokerageOptions(
             AccessToken: accessToken,
@@ -159,9 +194,9 @@ public sealed class RobinhoodReadOnlyBrokerageSyncAdapterTests
             PortfolioEndpointTemplate: "https://aggregator.example.test/portfolio/{accountId}",
             ActivityEndpointTemplate: "https://aggregator.example.test/activity/{accountId}?since={since}");
         return new RobinhoodReadOnlyBrokerageSyncAdapter(
-            new FixedHttpClientFactory(new FixedResponseHandler(responses)),
+            new FixedHttpClientFactory(new FixedResponseHandler(responses, statusCode)),
             options,
-            NullLogger<RobinhoodReadOnlyBrokerageSyncAdapter>.Instance);
+            logger ?? NullLogger<RobinhoodReadOnlyBrokerageSyncAdapter>.Instance);
     }
 
     private sealed class FixedHttpClientFactory(HttpMessageHandler handler) : IHttpClientFactory
@@ -172,7 +207,9 @@ public sealed class RobinhoodReadOnlyBrokerageSyncAdapterTests
         };
     }
 
-    private sealed class FixedResponseHandler(IReadOnlyDictionary<string, string> responses) : HttpMessageHandler
+    private sealed class FixedResponseHandler(
+        IReadOnlyDictionary<string, string> responses,
+        HttpStatusCode statusCode = HttpStatusCode.OK) : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
@@ -187,7 +224,7 @@ public sealed class RobinhoodReadOnlyBrokerageSyncAdapterTests
                 });
             }
 
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            return Task.FromResult(new HttpResponseMessage(statusCode)
             {
                 Content = new StringContent(json)
             });

@@ -15,6 +15,7 @@ import { ReportingLineageSummary } from "@/components/meridian/reporting-lineage
 import { ReportingProductionSurface } from "@/components/meridian/reporting-production-surface";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { ReportingIncomeComparisonPanel } from "@/screens/reporting-income-comparison";
 import {
   approveReportTemplateDraft,
   pauseReportingSchedule,
@@ -1728,6 +1729,8 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       {isReportBuilderTaskMode ? (
         <ReportingPrivateCapitalReadinessPanel data={accountingData} />
       ) : null}
+
+      {isRunStatusTaskMode ? <ReportingIncomeComparisonPanel /> : null}
 
       {isSchedulesTaskMode || isDeliveryEvidenceTaskMode ? (
       <section className="grid items-start gap-4 xl:grid-cols-[0.95fr_1.05fr]">

@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.Storage;
 using Meridian.Testing;
@@ -13,13 +14,12 @@ namespace Meridian.Tests.Integration.EndpointTests;
 
 /// <summary>
 /// Integration tests for RBAC (Role-Based Access Control):
-/// - Multi-user login via <c>MDC_USERS</c> JSON environment variable.
+/// - Multi-user login via <c>MDC_USERS</c> JSON configuration setting.
 /// - Login response includes <c>role</c> and <c>permissions</c>.
 /// - <c>GET /api/auth/me</c> returns the current user's profile.
 /// - Each built-in role is mapped to the expected permission set.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
 {
     private static readonly JsonSerializerOptions JsonOpts =
@@ -187,11 +187,12 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         var usersJson = $$"""
             [{"username":"ledger-admin","passwordHash":"{{PwHash}}","role":"Accounting","roleProfileName":"Ledger Admin","companyId":"company-alpha","permissions":["ViewTrades","ViewAnalytics","ViewConfig","ModifyConfig"]}]
             """;
-        Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
+        Fixture.Configuration["MDC_USERS"] = usersJson;
 
         try
         {
-            var registry = new Meridian.Identity.UserProfileRegistry();
+            var registry = new UserProfileRegistry(
+                null, null, configuration: new AuthenticationConfiguration(Fixture.Configuration));
 
             var profile = registry.Authenticate("ledger-admin", "pw");
 
@@ -204,7 +205,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERS", null);
+            Fixture.Configuration["MDC_USERS"] = null;
         }
     }
 
@@ -252,11 +253,12 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         var usersJson = $$"""
             [{"username":"ledger-reviewer","passwordHash":"{{PwHash}}","role":"Accounting","roleProfileName":"Ledger Reviewer"}]
             """;
-        Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
+        Fixture.Configuration["MDC_USERS"] = usersJson;
 
         try
         {
-            var registry = new Meridian.Identity.UserProfileRegistry(store);
+            var registry = new UserProfileRegistry(
+                store, null, configuration: new AuthenticationConfiguration(Fixture.Configuration));
 
             var profile = registry.Authenticate("ledger-reviewer", "pw");
 
@@ -268,7 +270,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERS", null);
+            Fixture.Configuration["MDC_USERS"] = null;
         }
     }
 
@@ -277,7 +279,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     {
         await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
         var profileName = $"Close Reviewer {Guid.NewGuid():N}";
-        Environment.SetEnvironmentVariable("MDC_USERS", $$"""[{"username":"admin","passwordHash":"{{PwHash}}","role":"Admin"}]""");
+        isolated.Fixture.Configuration["MDC_USERS"] = $$"""[{"username":"admin","passwordHash":"{{PwHash}}","role":"Admin"}]""";
         try
         {
             using var cookieClient = isolated.Fixture.CreateNoRedirectClient();
@@ -311,10 +313,10 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERS", null);
+            isolated.Fixture.Configuration["MDC_USERS"] = null;
         }
 
-        Environment.SetEnvironmentVariable("MDC_USERS", $$"""[{"username":"reviewer","passwordHash":"{{PwHash}}","role":"Accounting","roleProfileName":"{{profileName}}"}]""");
+        isolated.Fixture.Configuration["MDC_USERS"] = $$"""[{"username":"reviewer","passwordHash":"{{PwHash}}","role":"Accounting","roleProfileName":"{{profileName}}"}]""";
         try
         {
             using var reviewerClient = isolated.Fixture.CreateNoRedirectClient();
@@ -342,7 +344,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERS", null);
+            isolated.Fixture.Configuration["MDC_USERS"] = null;
         }
     }
 
@@ -350,7 +352,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     public async Task AuthRoleProfiles_InvalidPermission_ReturnsBadRequest()
     {
         await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
-        Environment.SetEnvironmentVariable("MDC_USERS", $$"""[{"username":"admin","passwordHash":"{{PwHash}}","role":"Admin"}]""");
+        isolated.Fixture.Configuration["MDC_USERS"] = $$"""[{"username":"admin","passwordHash":"{{PwHash}}","role":"Admin"}]""";
         try
         {
             using var cookieClient = isolated.Fixture.CreateNoRedirectClient();
@@ -378,7 +380,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERS", null);
+            isolated.Fixture.Configuration["MDC_USERS"] = null;
         }
     }
 
@@ -398,19 +400,20 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     [Fact]
     public void UserProfileRegistry_MultiUser_PlaintextPasswordFieldDoesNotConfigureAccount()
     {
-        Environment.SetEnvironmentVariable("MDC_USERS", """[{"username":"plain","password":"pw","role":"Admin"}]""");
-        Environment.SetEnvironmentVariable("MDC_USERNAME", null);
-        Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", null);
+        Fixture.Configuration["MDC_USERS"] = """[{"username":"plain","password":"pw","role":"Admin"}]""";
+        Fixture.Configuration["MDC_USERNAME"] = null;
+        Fixture.Configuration["MDC_PASSWORD_HASH"] = null;
         try
         {
-            var registry = new Meridian.Identity.UserProfileRegistry();
+            var registry = new UserProfileRegistry(
+                null, null, configuration: new AuthenticationConfiguration(Fixture.Configuration));
 
             registry.IsConfigured.Should().BeFalse();
             registry.Authenticate("plain", "pw").Should().BeNull();
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERS", null);
+            Fixture.Configuration["MDC_USERS"] = null;
         }
     }
 
@@ -485,14 +488,15 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     }
 
     [Fact]
-    public void UserProfileRegistry_Legacy_AdminRoleAssignedForSingleUserPasswordHashEnvVar()
+    public void UserProfileRegistry_Legacy_AdminRoleAssignedForSingleUserPasswordHashSetting()
     {
-        Environment.SetEnvironmentVariable("MDC_USERNAME", "admin");
-        Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", Pass1Hash);
-        Environment.SetEnvironmentVariable("MDC_USERS", null);
+        Fixture.Configuration["MDC_USERNAME"] = "admin";
+        Fixture.Configuration["MDC_PASSWORD_HASH"] = Pass1Hash;
+        Fixture.Configuration["MDC_USERS"] = null;
         try
         {
-            var registry = new Meridian.Identity.UserProfileRegistry();
+            var registry = new UserProfileRegistry(
+                null, null, configuration: new AuthenticationConfiguration(Fixture.Configuration));
             registry.IsConfigured.Should().BeTrue();
 
             var profile = registry.Authenticate("admin", "pass1");
@@ -502,8 +506,8 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERNAME", null);
-            Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", null);
+            Fixture.Configuration["MDC_USERNAME"] = null;
+            Fixture.Configuration["MDC_PASSWORD_HASH"] = null;
         }
     }
 
@@ -516,12 +520,13 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
               {"username":"bob","passwordHash":"{{Pass2Hash}}","role":"Accounting"}
             ]
             """;
-        Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
-        Environment.SetEnvironmentVariable("MDC_USERNAME", null);
-        Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", null);
+        Fixture.Configuration["MDC_USERS"] = usersJson;
+        Fixture.Configuration["MDC_USERNAME"] = null;
+        Fixture.Configuration["MDC_PASSWORD_HASH"] = null;
         try
         {
-            var registry = new Meridian.Identity.UserProfileRegistry();
+            var registry = new UserProfileRegistry(
+                null, null, configuration: new AuthenticationConfiguration(Fixture.Configuration));
             registry.IsConfigured.Should().BeTrue();
 
             var alice = registry.Authenticate("alice", "pass1");
@@ -534,7 +539,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERS", null);
+            Fixture.Configuration["MDC_USERS"] = null;
         }
     }
 
@@ -542,29 +547,31 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     public void UserProfileRegistry_MultiUser_WrongPasswordReturnsNull()
     {
         var usersJson = $$"""[{"username":"alice","passwordHash":"{{CorrectHash}}","role":"Developer"}]""";
-        Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
+        Fixture.Configuration["MDC_USERS"] = usersJson;
         try
         {
-            var registry = new Meridian.Identity.UserProfileRegistry();
+            var registry = new UserProfileRegistry(
+                null, null, configuration: new AuthenticationConfiguration(Fixture.Configuration));
             var result = registry.Authenticate("alice", "wrong");
             result.Should().BeNull();
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERS", null);
+            Fixture.Configuration["MDC_USERS"] = null;
         }
     }
 
     [Fact]
-    public void UserProfileRegistry_MultiUser_TakesPrecedenceOverLegacyEnvVars()
+    public void UserProfileRegistry_MultiUser_TakesPrecedenceOverLegacySettings()
     {
         var usersJson = $$"""[{"username":"power","passwordHash":"{{PwHash}}","role":"Developer"}]""";
-        Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
-        Environment.SetEnvironmentVariable("MDC_USERNAME", "legacy");
-        Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", PassHash);
+        Fixture.Configuration["MDC_USERS"] = usersJson;
+        Fixture.Configuration["MDC_USERNAME"] = "legacy";
+        Fixture.Configuration["MDC_PASSWORD_HASH"] = PassHash;
         try
         {
-            var registry = new Meridian.Identity.UserProfileRegistry();
+            var registry = new UserProfileRegistry(
+                null, null, configuration: new AuthenticationConfiguration(Fixture.Configuration));
 
             // MDC_USERS takes precedence — legacy user should not authenticate
             registry.Authenticate("legacy", "pass").Should().BeNull();
@@ -572,9 +579,9 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERS", null);
-            Environment.SetEnvironmentVariable("MDC_USERNAME", null);
-            Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", null);
+            Fixture.Configuration["MDC_USERS"] = null;
+            Fixture.Configuration["MDC_USERNAME"] = null;
+            Fixture.Configuration["MDC_PASSWORD_HASH"] = null;
         }
     }
 
@@ -584,7 +591,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     public async Task LoginJson_WithValidMultiUserCredentials_ReturnsRoleInResponse()
     {
         var usersJson = $$"""[{"username":"trader","passwordHash":"{{T1Hash}}","role":"TradeDesk"}]""";
-        Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
+        Fixture.Configuration["MDC_USERS"] = usersJson;
         try
         {
             var body = await LoginJsonAsync("trader", "t1");
@@ -598,16 +605,16 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERS", null);
+            Fixture.Configuration["MDC_USERS"] = null;
         }
     }
 
     [Fact]
     public async Task LoginJson_WithLegacyAdminPasswordHashCredentials_ReturnsAdminRole()
     {
-        Environment.SetEnvironmentVariable("MDC_USERNAME", "sysadmin");
-        Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", AdminPassHash);
-        Environment.SetEnvironmentVariable("MDC_USERS", null);
+        Fixture.Configuration["MDC_USERNAME"] = "sysadmin";
+        Fixture.Configuration["MDC_PASSWORD_HASH"] = AdminPassHash;
+        Fixture.Configuration["MDC_USERS"] = null;
         try
         {
             var body = await LoginJsonAsync("sysadmin", "adminpass");
@@ -618,8 +625,8 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERNAME", null);
-            Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", null);
+            Fixture.Configuration["MDC_USERNAME"] = null;
+            Fixture.Configuration["MDC_PASSWORD_HASH"] = null;
         }
     }
 
@@ -640,7 +647,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     public async Task AuthRoles_AfterLogin_ReturnsTheCatalog()
     {
         var usersJson = $$"""[{"username":"analyst","passwordHash":"{{A1Hash}}","role":"Analysis","companyId":"company-alpha"}]""";
-        Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
+        Fixture.Configuration["MDC_USERS"] = usersJson;
         try
         {
             using var loginContent = new StringContent(
@@ -668,7 +675,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERS", null);
+            Fixture.Configuration["MDC_USERS"] = null;
         }
     }
 
@@ -686,7 +693,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     public async Task AuthMe_AfterLogin_ReturnsCurrentUserProfile()
     {
         var usersJson = $$"""[{"username":"analyst","passwordHash":"{{A1Hash}}","role":"Analysis","companyId":"company-alpha"}]""";
-        Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
+        Fixture.Configuration["MDC_USERS"] = usersJson;
         try
         {
             // Login first
@@ -722,7 +729,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERS", null);
+            Fixture.Configuration["MDC_USERS"] = null;
         }
     }
 
@@ -730,7 +737,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     public async Task AuthMe_WithCustomAdminPermissionOverride_DoesNotRegainBuiltInAdminPermissions()
     {
         var usersJson = $$"""[{"username":"limited-admin","passwordHash":"{{PwHash}}","role":"Admin","roleProfileName":"Limited Admin","permissions":["ViewMarketData"]}]""";
-        Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
+        Fixture.Configuration["MDC_USERS"] = usersJson;
         try
         {
             using var loginContent = new StringContent(
@@ -771,7 +778,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERS", null);
+            Fixture.Configuration["MDC_USERS"] = null;
         }
     }
 
@@ -962,7 +969,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     public async Task AccountAdministration_SessionlessMalformedBody_IsRefusedBeforeBinding()
     {
         await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
-        Environment.SetEnvironmentVariable("MDC_USERS", $$"""[{"username":"admin","passwordHash":"{{PwHash}}","role":"Admin"}]""");
+        isolated.Fixture.Configuration["MDC_USERS"] = $$"""[{"username":"admin","passwordHash":"{{PwHash}}","role":"Admin"}]""";
         try
         {
             using var client = isolated.Fixture.CreateNoRedirectClient();
@@ -991,7 +998,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERS", null);
+            isolated.Fixture.Configuration["MDC_USERS"] = null;
         }
     }
 
@@ -999,9 +1006,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     public async Task AccountAdministration_MalformedBodyWithoutManageUsers_IsForbiddenBeforeBinding()
     {
         await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
-        Environment.SetEnvironmentVariable(
-            "MDC_USERS",
-            $$"""[{"username":"fund-ops","passwordHash":"{{PwHash}}","role":"Accounting"}]""");
+        isolated.Fixture.Configuration["MDC_USERS"] = $$"""[{"username":"fund-ops","passwordHash":"{{PwHash}}","role":"Accounting"}]""";
         try
         {
             using var client = isolated.Fixture.CreateNoRedirectClient();
@@ -1024,7 +1029,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERS", null);
+            isolated.Fixture.Configuration["MDC_USERS"] = null;
         }
     }
 
@@ -1032,7 +1037,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     public async Task AccountAdministration_MalformedBodyWithManageUsers_StillFailsBinding()
     {
         await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
-        Environment.SetEnvironmentVariable("MDC_USERS", $$"""[{"username":"admin","passwordHash":"{{PwHash}}","role":"Admin"}]""");
+        isolated.Fixture.Configuration["MDC_USERS"] = $$"""[{"username":"admin","passwordHash":"{{PwHash}}","role":"Admin"}]""";
         try
         {
             using var client = isolated.Fixture.CreateNoRedirectClient();
@@ -1055,7 +1060,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERS", null);
+            isolated.Fixture.Configuration["MDC_USERS"] = null;
         }
     }
 

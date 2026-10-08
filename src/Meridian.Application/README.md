@@ -11,6 +11,20 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Application
 
+PostgreSQL ledger composition resolves consolidation posting authority through a deferred factory.
+The workstation supplies the authoritative ownership and policy provider, avoiding a dependency
+cycle with the ledger reader; missing providers block consolidation posting.
+
+Composition accepts host-owned runtime settings through `CompositionOptions.Configuration`.
+An explicit configuration is authoritative for storage, governance and deployment posture, including
+missing values, without writing environment defaults; omitted configuration preserves process-startup
+resolution. Unified database URLs are resolved locally for explicit configurations.
+
+Ledger composition registers the read-only `CanonicalLotAmortizationService` alongside existing governed candidate services. Its registration preserves workstation startup when amortization stores are absent; preview requires the authoritative ledger, Security Master, and book-position stores and rejects missing authority before any read. Amortization posting remains on the shared Asset Accounting Event Spine approval and atomic ledger path.
+Primary-host storage composition supplies deferred Security Master and book-position resolvers to
+the PostgreSQL journal store. Deferred resolution preserves the shared singleton authorities while
+avoiding the journal/position constructor cycle; absent durable authority fails closed at posting.
+
 Governed statement reconciliation carries its resolved fund, primary ledger book, and exact period
 through the retained population provider into journal queries. The journal source validates that
 authority before reading, excludes journals from other periods, and denominates legacy cash legs
@@ -285,8 +299,11 @@ Core workstation host. Do not introduce a second listener or independent monitor
   manual CSV upload, custodian positions, brokerage transactions, and fixed income security master.
   The setup service saves draft manifests and connection instances through the Storage-owned
   integration manifest store, preserving tenant partitioning and returning readiness blockers before
-  dry runs or activation. The OpenAPI import service parses OpenAPI/Swagger JSON into tenant-scoped
-  draft `OpenApiRest` manifests, imports endpoint definitions, response record paths, query
+  dry runs or activation. Setup edits and activation publish new immutable manifest revisions with
+  an expected-current-version guard; stale concurrent edits fail instead of replacing retained
+  mappings or approvals. Manual CSV and REST runs bind their payloads and run summaries to the
+  exact manifest version and digest selected for execution. The OpenAPI import service parses
+  OpenAPI/Swagger JSON into tenant-scoped draft `OpenApiRest` manifests, imports endpoint definitions, response record paths, query
   parameters, and schema-backed mapping suggestions, and keeps trading actions blocked behind
   certified-adapter activation readiness. The manual CSV dry-run service consumes contract-owned manifests and the
   Storage-owned integration manifest store, parses operator-uploaded samples, applies configured
@@ -344,9 +361,15 @@ Core workstation host. Do not introduce a second listener or independent monitor
   record, so retrying a row that already has handoff evidence is blocked and surfaced as a
   retained-history review issue. The quarantine
   review service groups rejected records by operator-safe issue code and records durable review decisions
-  without mutating the retained raw rejected records. The quarantine replay service remaps reviewed
-  rejected records after mapping changes, writes a replay raw payload, stages accepted records, and
-  re-quarantines records that still fail validation. The activation-readiness service evaluates
+  without mutating the retained raw rejected records. The quarantine replay service distinguishes
+  original-mapping replay from remediation with an explicitly selected newer revision. It verifies
+  the retained version and digest, preserves source and execution provenance, writes a replay raw
+  payload, stages accepted records, and re-quarantines records that still fail validation. Missing
+  historical provenance blocks both replay modes rather than substituting the current mapping.
+  Retained manual CSV rows reuse the ingestion mapper during replay, preserving case-insensitive
+  literal column names and conditional transforms inside the retained `fields` wrapper. Repeated
+  replay keeps that raw wrapper intact; REST records retain their JSON-path mapping semantics.
+  The activation-readiness service evaluates
   those manifests before enablement, blocking unresolved required mappings, missing approval
   evidence, and order-preview/place/cancel capabilities unless they use a certified provider
   adapter with production-write activation policy. The activation service
@@ -749,6 +772,12 @@ Core workstation host. Do not introduce a second listener or independent monitor
 
 Use this module when changing command behavior, workflow orchestration, feature registration, or
 application service contracts consumed by host and UI surfaces.
+
+`ApplicationLifecycleCoordinator` routes POSIX SIGTERM through the same cooperative stop-work,
+drain, and flush lifecycle as external cancellation. This lets `dotnet watch` restart the host
+without leaving its listener behind. The signal registration is disposed with the coordinator;
+Windows retains the existing console-cancellation path. Signal callback coverage lives in
+`tests/Meridian.Lifecycle.Tests/ApplicationLifecycleCoordinatorTests.cs`.
 
 Shared host composition registers the Platform tracing provider only when `AppConfig.Tracing.Enabled`
 or the legacy code option `CompositionOptions.EnableOpenTelemetry` explicitly opts in. Registration
