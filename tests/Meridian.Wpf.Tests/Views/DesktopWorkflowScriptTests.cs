@@ -446,6 +446,7 @@ public sealed class DesktopWorkflowScriptTests
         script.Should().Contain("[string]$Profile = 'desktop-development'");
         script.Should().Contain("[switch]$SkipLaunchSmoke");
         script.Should().Contain(". (Join-Path $PSScriptRoot 'SharedBuild.ps1')");
+        script.Should().Contain(". (Join-Path $PSScriptRoot 'SharedDesktopBuild.ps1')");
         script.Should().Contain(". (Join-Path $PSScriptRoot 'SharedWorkflowProfiles.ps1')");
         script.Should().Contain("$buildIsolationKey = if ($NoIsolation) { '' } else { New-MeridianBuildIsolationKey -Prefix 'desktop-dev' }");
         script.Should().Contain("Get-MeridianWorkflowProfile -RepoRoot $repoRoot -ProfileName $Profile -ProfileRoot $ProfileRoot");
@@ -459,6 +460,11 @@ public sealed class DesktopWorkflowScriptTests
         script.Should().Contain("run-desktop.ps1");
         script.Should().Contain("'-LaunchMode', 'Development'");
         script.Should().Contain("'-StartupSmoke'");
+        script.Should().Contain("New-MeridianDesktopBuildReceipt");
+        script.Should().Contain("$desktopTestBuildArgs += '--no-dependencies'");
+        script.Should().Contain("'-BuildReceiptPath', $desktopBuildReceiptPath");
+        script.Should().Contain("'-Configuration', $Configuration");
+        script.Should().Contain("'-Framework', $Framework");
         script.Should().Contain("make desktop-test-position-blotter-route");
         script.Should().Contain("pwsh ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup");
         script.Should().Contain("python ./scripts/dev/desktop_screen_blueprint_checklist.py --summary");
@@ -473,7 +479,12 @@ public sealed class DesktopWorkflowScriptTests
         launcher.Should().Contain("$hostConfiguration = [string](Get-MeridianWorkflowProfileValue -Table $hostProfile -Key 'configuration' -Fallback $desktopConfiguration)");
         launcher.Should().Contain("[switch]$StartupSmoke");
         launcher.Should().Contain("[int]$StartupSmokeTimeoutSec = 45");
-        launcher.Should().Contain("$buildIsolationKey = if ($NoBuild) { '' } else { New-MeridianBuildIsolationKey -Prefix 'desktop-run' }");
+        launcher.Should().Contain("Read-MeridianDesktopBuildReceipt");
+        launcher.Should().Contain("$buildIsolationKey = if ($null -ne $desktopBuildReceipt) { $desktopBuildReceipt.buildIsolationKey }");
+        launcher.Should().Contain("$desktopExe = if ($null -ne $desktopBuildReceipt) { $desktopBuildReceipt.executablePath }");
+        launcher.Should().Contain("$buildDesktop = -not $NoBuild -and $null -eq $desktopBuildReceipt");
+        launcher.Should().Contain("$hostHealthy = -not $BuildOnly -and (Test-HealthyHost)");
+        launcher.Should().Contain("$buildHost = -not $NoBuild -and -not $hostHealthy -and -not (Test-Path -LiteralPath $hostExe -PathType Leaf)");
         launcher.Should().Contain("Get-MeridianRepoOwnedBuildProcesses -RepoRoot $repoRoot");
         launcher.Should().Contain("Invoke-MeridianWpfTempProjectCleanup -RepoRoot $repoRoot -WpfProjectPath $desktopProject");
         launcher.Should().Contain("function Apply-DesktopLaunchMode");
