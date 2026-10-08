@@ -1,11 +1,11 @@
 {
   "total_files": 701,
-  "total_lines": 156065,
+  "total_lines": 156118,
   "orphaned_count": 231,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 298,
-  "average_lines": 222.6,
+  "average_lines": 222.7,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1114,7 +1114,7 @@
     },
     {
       "path": "docs/ai/claude/CLAUDE.fsharp.md",
-      "line_count": 922,
+      "line_count": 936,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2786,7 +2786,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11578,
+      "line_count": 11582,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5586,7 +5586,7 @@
     },
     {
       "path": "src/Meridian.FSharp.Trading/README.md",
-      "line_count": 63,
+      "line_count": 77,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5594,7 +5594,7 @@
     },
     {
       "path": "src/Meridian.FSharp/README.md",
-      "line_count": 86,
+      "line_count": 90,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5738,7 +5738,7 @@
     },
     {
       "path": "src/Meridian.Strategies/README.md",
-      "line_count": 184,
+      "line_count": 196,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5754,7 +5754,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2728,
+      "line_count": 2733,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
