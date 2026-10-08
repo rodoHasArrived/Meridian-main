@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import io
 import json
 import os
 import subprocess
 import tempfile
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -20,6 +22,110 @@ from tools.schema_control.cli import (
 
 
 class SchemaControlCliTests(unittest.TestCase):
+    def test_inventory_detects_new_collisions_against_exact_git_base(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            migrations = root / "src/Ledger/Migrations"
+            migrations.mkdir(parents=True)
+            for name in ("closing_entry_posting_kind", "operations_continuity"):
+                (migrations / f"V_ledger_008__{name}.sql").write_text("select 1;\n")
+            config = {
+                "migration_sets": [
+                    {"id": "ledger", "directory": "src/Ledger/Migrations", "schema": "ledger"}
+                ],
+                "migration_reservations": "database/migration-reservations.json",
+            }
+            register = {"version": 1, "migration_sets": [{
+                "id": "ledger", "filename_template": "V_ledger_{ordinal:03d}__{slug}.sql",
+                "ordinal_pattern": "^V_ledger_(?P<ordinal>\\d+)__", "reservations": [],
+            }]}
+            (root / "database/policies").mkdir(parents=True)
+            for path, value in (
+                ("database/schema-control.json", config),
+                ("database/migration-reservations.json", register),
+                ("database/policies/schema-control.json", {}),
+                ("database/policies/migration-waivers.json", {}),
+            ):
+                (root / path).write_text(json.dumps(value))
+            docs = root / "docs/engineering/blueprints/README.md"
+            docs.parent.mkdir(parents=True)
+            docs.write_text("<!-- migration-reservations:start -->\n<!-- migration-reservations:end -->\n")
+            prefix = ["--root", str(root)]
+            with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                self.assertEqual(0, main(prefix + ["generate-migration-docs"]))
+                for args in (
+                    ["init", "-q"], ["add", "."],
+                    ["-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "base"],
+                ):
+                    subprocess.run(["git", *args], cwd=root, check=True, capture_output=True)
+                baseline = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip()
+                self.assertEqual(0, main(prefix + ["inventory", "--base-ref", baseline]))
+                for name in ("V_ledger_008__third.sql", "V_ledger_009__first.sql", "V_ledger_009__second.sql"):
+                    (migrations / name).write_text("select 1;\n")
+                self.assertEqual(1, main(prefix + ["inventory", "--base-ref", baseline]))
+            manifest = json.loads((root / "build/schema-control/migrations.json").read_text())
+            collisions = [item for item in manifest["findings"] if item["rule_id"] == "migration-ordinal-duplicate"]
+            self.assertEqual(2, len(collisions))
+            self.assertTrue(any(item["path"].endswith("V_ledger_008__third.sql") for item in collisions))
+            self.assertTrue(any("ordinal 9 collision" in item["message"] for item in collisions))
+
+    def test_new_migration_cli_and_generated_docs_fail_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            migrations = root / "src/Ledger/Migrations"
+            migrations.mkdir(parents=True)
+            (migrations / "V_ledger_041__existing.sql").write_text("select 1;\n")
+            config = {
+                "migration_sets": [
+                    {"id": "ledger", "directory": "src/Ledger/Migrations", "schema": "ledger"}
+                ],
+                "migration_reservations": "database/migration-reservations.json",
+                "detect_unregistered_migration_directories": False,
+            }
+            register = {
+                "version": 1,
+                "migration_sets": [{
+                    "id": "ledger",
+                    "filename_template": "V_ledger_{ordinal:03d}__{slug}.sql",
+                    "ordinal_pattern": "^V_ledger_(?P<ordinal>\\d+)__",
+                    "reservations": [{
+                        "ordinal": 42, "slug": "reserved", "description": "Planned migration",
+                        "blueprint": "docs/engineering/blueprints/plan.md",
+                    }],
+                }],
+            }
+            (root / "database").mkdir()
+            (root / "database/schema-control.json").write_text(json.dumps(config))
+            register_path = root / "database/migration-reservations.json"
+            register_path.write_text(json.dumps(register))
+            readme = root / "docs/engineering/blueprints/README.md"
+            readme.parent.mkdir(parents=True)
+            readme.write_text(
+                "Preserve this introduction.\n<!-- migration-reservations:start -->\n"
+                "<!-- migration-reservations:end -->\nPreserve this footer.\n"
+            )
+            (readme.parent / "plan.md").write_text("Plan\n")
+            prefix = ["--root", str(root)]
+            with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                self.assertEqual(1, main(prefix + ["generate-migration-docs", "--check"]))
+                self.assertEqual(0, main(prefix + ["generate-migration-docs"]))
+                self.assertEqual(0, main(prefix + ["generate-migration-docs", "--check"]))
+                before = {p: p.read_bytes() for p in root.rglob("*") if p.is_file()}
+                for ordinal in (41, 42):
+                    self.assertEqual(2, main(prefix + [
+                        "new-migration", "--migration-set", "ledger", "--name", "new_work",
+                        "--ordinal", str(ordinal),
+                    ]))
+                self.assertEqual(before, {p: p.read_bytes() for p in root.rglob("*") if p.is_file()})
+                self.assertEqual(0, main(prefix + [
+                    "new-migration", "--migration-set", "ledger", "--name", "new_work",
+                ]))
+                self.assertEqual(0, main(prefix + ["generate-migration-docs", "--check"]))
+            self.assertTrue((migrations / "V_ledger_043__new_work.sql").is_file())
+            self.assertEqual(before[register_path], register_path.read_bytes())
+            self.assertTrue(readme.read_text().startswith("Preserve this introduction.\n"))
+            self.assertTrue(readme.read_text().endswith("Preserve this footer.\n"))
+
     def test_configured_output_paths_reject_absolute_and_escaping_paths(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "repository"

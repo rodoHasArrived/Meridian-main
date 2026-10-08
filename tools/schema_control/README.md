@@ -40,6 +40,13 @@ $baselineSha = git rev-parse --verify 'origin/main^{commit}'
 # Fast checks that do not need PostgreSQL.
 python build/scripts/schema-control.py inventory --base-ref $baselineSha
 
+# Scaffold a migration with the next available ordinal and refresh the reservation table.
+python build/scripts/schema-control.py new-migration --migration-set ledger --name example
+
+# Regenerate the reservation table, or check that the committed table is current.
+python build/scripts/schema-control.py generate-migration-docs
+python build/scripts/schema-control.py generate-migration-docs --check
+
 # Build a candidate snapshot from a disposable PostgreSQL database.
 python -m pip install --requirement tools/schema_control/requirements.txt
 python build/scripts/schema-control.py snapshot `
@@ -59,6 +66,28 @@ python build/scripts/schema-control.py promote `
 `snapshot` and `verify` enforce a disposable, empty database preflight before running any DDL. The
 hosted workflow supplies a fresh database; do not point either command at a shared or production
 database.
+
+### Migration authoring and reservations
+
+[Migration reservations](../../database/migration-reservations.json) is the machine-readable
+register for filename conventions and pending ordinal claims in all registered migration sets.
+The [blueprint reservation table](../../docs/engineering/blueprints/README.md#ledger-migration-ordinals)
+is generated from that register and the SQL files on disk.
+
+`new-migration --migration-set <id> --name <snake_case_name>` selects the next ordinal after the
+highest file ordinal, skips reservations, writes a SQL scaffold, and refreshes the documentation
+table. Add `--ordinal N` to request a particular free number. Occupied numbers and reserved numbers
+are always refused, including the historical duplicate Ledger ordinal `008`.
+
+Reservations are pending plans. To implement a reserved migration, remove its pending claim from
+the register before scaffolding that number. Move remaining reservations when delivery sequencing
+changes, preserving the planned dependency order. Preserve every applied migration's filename and
+ordinal. The two historical Ledger `008` scripts remain in place; comparison against `--base-ref`
+rejects newly introduced ordinal collisions while retaining that existing history.
+
+Run `generate-migration-docs` after editing the register directly. Its `--check` mode reports a
+stale generated block without updating the documentation. Run `inventory --base-ref <base-sha>`
+to validate migration changes against the intended PR base.
 
 ### Baseline and candidate evidence
 
@@ -91,6 +120,7 @@ change their contents solely because the candidate SHA changed.
 | Layer | Canonical source | Generated output |
 | --- | --- | --- |
 | Migration modules and schema placement | `database/schema-control.json` | `database/manifest/migrations.json` |
+| Migration filenames and pending ordinal claims | `database/migration-reservations.json` plus SQL filenames | Reservation block in `docs/engineering/blueprints/README.md` |
 | Physical PostgreSQL objects | SQL migrations plus a migrated PostgreSQL catalog | `database/manifest/catalog.json`, `database/manifest/schemas/*.json` |
 | Public DTOs and data objects | C# source configured by `contract_sets` | `database/manifest/contracts.json` |
 | Cross-object relationships | PostgreSQL dependencies, C# type references, and explicit registry edges | `database/manifest/dependencies.json` |
@@ -107,7 +137,8 @@ rejects absolute paths, repository escapes, and symlinks that resolve outside th
 The policy engine currently checks primary keys, foreign-key index coverage, use of the `public`
 schema, table comments, selected row-level security expectations, and legacy reapply migration
 modules. Migration checks separately enforce registered directories, unique tracked ordinals,
-immutable applied history, reviewed removal waivers, and destructive-change detection for new SQL.
+new ordinal collisions against the comparison baseline, immutable applied history, reviewed
+removal waivers, and destructive-change detection for new SQL.
 
 Policy severities and narrowly reviewed exceptions belong in `database/policies/`; do not suppress
 checks in the workflow or generator.
