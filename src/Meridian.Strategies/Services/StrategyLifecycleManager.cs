@@ -69,7 +69,24 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
         var (strategy, priorRun) = await GetRegisteredEntryWithHistoryAsync(strategyId, ct)
             .ConfigureAwait(false);
 
-        var startTransition = StrategyLifecycleInterop.EvaluateStart(strategy.Status.ToString());
+        if (strategy.Status == StrategyStatus.Paused)
+        {
+            if (priorRun is null)
+            {
+                throw new InvalidOperationException(
+                    $"Strategy '{strategyId}' cannot resume without a retained current run.");
+            }
+
+            if (priorRun.RunType != runType)
+            {
+                throw new InvalidOperationException(
+                    $"Strategy '{strategyId}' must resume its retained {priorRun.RunType} run. " +
+                    "Stop the strategy before changing its run type.");
+            }
+        }
+
+        var startTransition = StrategyLifecycleInterop.EvaluateStart(
+            strategy.Status.ToString(), strategy.FaultReason ?? string.Empty);
         if (!startTransition.IsValid)
         {
             throw new InvalidOperationException(startTransition.Reason);
@@ -143,6 +160,7 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
         try
         {
             await strategy.StartAsync(ctx, ct).ConfigureAwait(false);
+            RequireExternalStatus(strategy, StrategyStatus.Running, "start");
         }
         catch (OperationCanceledException exception)
         {
@@ -196,7 +214,8 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
     {
         var (strategy, currentRun) = await GetRegisteredEntryWithHistoryAsync(strategyId, ct)
             .ConfigureAwait(false);
-        var pauseTransition = StrategyLifecycleInterop.EvaluatePause(strategy.Status.ToString());
+        var pauseTransition = StrategyLifecycleInterop.EvaluatePause(
+            strategy.Status.ToString(), strategy.FaultReason ?? string.Empty);
         if (!pauseTransition.IsValid)
         {
             throw new InvalidOperationException(pauseTransition.Reason);
@@ -224,6 +243,7 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
         try
         {
             await strategy.PauseAsync(ct).ConfigureAwait(false);
+            RequireExternalStatus(strategy, StrategyStatus.Paused, "pause");
         }
         catch (OperationCanceledException exception)
         {
@@ -280,7 +300,8 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
     {
         var (strategy, currentRun) = await GetRegisteredEntryWithHistoryAsync(strategyId, ct)
             .ConfigureAwait(false);
-        var stopTransition = StrategyLifecycleInterop.EvaluateStop(strategy.Status.ToString());
+        var stopTransition = StrategyLifecycleInterop.EvaluateStop(
+            strategy.Status.ToString(), strategy.FaultReason ?? string.Empty);
         if (!stopTransition.IsValid)
         {
             throw new InvalidOperationException(stopTransition.Reason);
@@ -308,6 +329,7 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
         try
         {
             await strategy.StopAsync(ct).ConfigureAwait(false);
+            RequireExternalStatus(strategy, StrategyStatus.Stopped, "stop");
         }
         catch (OperationCanceledException exception)
         {
@@ -315,6 +337,7 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
             {
                 ActorId = LifecycleActorId
             };
+            cancelled = cancelled with { EndedAt = requested.EndedAt ?? cancelled.EndedAt };
             return await PersistTerminalAndUpdateAsync(
                 strategyId,
                 strategy,
@@ -338,6 +361,7 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
             ActorId = LifecycleActorId,
             TerminalStatus = StrategyRunStatus.Stopped
         };
+        completed = completed with { EndedAt = requested.EndedAt ?? completed.EndedAt };
         return await PersistExternallyCompletedAsync(
             strategyId,
             strategy,
@@ -643,6 +667,20 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
         StrategyRunStore.CreateLifecycleOutcome(entry, eventType)
         ?? throw new InvalidOperationException(
             $"Lifecycle event '{eventType}' did not produce a terminal operation receipt.");
+
+    private static void RequireExternalStatus(
+        ILiveStrategy strategy,
+        StrategyStatus expectedStatus,
+        string command)
+    {
+        var observedStatus = strategy.Status;
+        if (observedStatus != expectedStatus)
+        {
+            throw new InvalidOperationException(
+                $"Strategy '{strategy.StrategyId}' returned from {command} with state '{observedStatus}'; " +
+                $"expected '{expectedStatus}'.");
+        }
+    }
 
     /// <inheritdoc/>
     public async ValueTask DisposeAsync()

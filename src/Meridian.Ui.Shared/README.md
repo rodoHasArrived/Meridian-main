@@ -11,6 +11,11 @@ last_reviewed: 2026-10-06
 
 # src/Meridian.Ui.Shared
 
+Trading readiness includes every supplied acceptance gate in aggregate status and evidence
+summaries, including broker execution reconciliation and portfolio recovery. Every non-ready
+acceptance gate contributes a live-operation blocker independently of aggregate status, so new
+gate IDs cannot disappear from the shared browser and desktop readiness contract.
+
 `LedgerDisposalTaxReadService` serves the bounded W10-TAX-001 retained-disposal slice through
 `GET /api/ledger/periods/{periodId}/journal-entries/{journalEntryId}/tax-results`. The existing
 journal-detail browser surface consumes the same shared contract available to other clients. The

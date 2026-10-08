@@ -44,6 +44,20 @@ src/Meridian.FSharp/
 
 **Important:** F# requires explicit file ordering in `.fsproj`. Files are compiled in order, and each file can only reference types defined in files listed above it.
 
+### Strategy lifecycle and trading readiness
+
+`src/Meridian.FSharp.Trading/` owns strategy lifecycle transition policy. Start and stop requests
+require explicit completion signals; pause/resume cannot skip warmup, and fault recovery requires
+successful cleanup before restart. C# `LiveStrategyBase` consumes the same interop verdicts, while
+`StrategyLifecycleManager` retains intent and checks the adapter's resulting state before success.
+Interop rejects missing or unsupported state tokens as structured invalid verdicts and preserves
+fault diagnostics. Follow the [trading source guide](../../../src/Meridian.FSharp.Trading/README.md)
+and the `Trading` F# test slice when changing these rules.
+
+`Operations/TradingReadinessRules.fs` evaluates every supplied gate rather than an enumerated ID
+subset. Keep aggregate readiness, evidence classification, and consumer live blockers consistent
+when introducing a new gate; missing or unsupported statuses require review.
+
 ---
 
 ## Domain Naming Quick Reference

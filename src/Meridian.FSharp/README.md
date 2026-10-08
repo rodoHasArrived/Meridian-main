@@ -43,6 +43,10 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   identifiers. For `ProviderSymbol`, the provider namespace carried by the identifier kind remains
   authoritative and contradictory provider metadata is rejected as structured validation.
 - Operations kernels should remain pure and deterministic: inputs in, decisions/issues/statuses out.
+- Trading readiness evaluates every supplied acceptance gate, including newly introduced and
+  duplicate IDs. Any blocked gate blocks the aggregate; all supplied gates must be ready for
+  ready status. Unsupported or missing statuses require review, and empty input remains unknown.
+  Evidence summaries use the same status classification.
 - Stream-oriented helpers should receive ordered, bounded inputs. Page large storage/backfill batches before crossing into F#, and keep `mergeStreams` / `bufferByTime` on timestamp-ordered streams so they can avoid whole-batch sorting and grouping.
 - Sensitive-action policy evaluates explicit guardrails such as MFA, dual approval, privileged roles, and segregation-of-duties before C# services write audit or workflow state.
 
