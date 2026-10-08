@@ -295,6 +295,8 @@ public sealed class EndpointStubDetectionTests
         categories["Other"] = routes.Count - categorizedCount;
 
         // Assert - all routes should fall into known categories
+        categories["Other"].Should().BeGreaterThanOrEqualTo(0,
+            "Route categories must not double-count routes");
         categories["Other"].Should().BeLessThanOrEqualTo(10,
             "Too many uncategorized routes - add new categories as needed");
 

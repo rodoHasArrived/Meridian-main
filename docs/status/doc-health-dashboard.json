@@ -1,6 +1,6 @@
 {
   "total_files": 701,
-  "total_lines": 156079,
+  "total_lines": 156118,
   "orphaned_count": 231,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2786,7 +2786,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11579,
+      "line_count": 11582,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5162,7 +5162,7 @@
     },
     {
       "path": "Meridian Design System/docs/COOKBOOK.md",
-      "line_count": 142,
+      "line_count": 157,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5762,7 +5762,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1543,
+      "line_count": 1564,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

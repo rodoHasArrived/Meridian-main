@@ -9,7 +9,6 @@ import {
   isWorkspacePathActive,
   UNWIRED_WORKSTATION_ROUTES,
   WORKSPACES,
-  WORKSTATION_ROUTE_CATALOG,
   workspacePath
 } from "@/lib/workspace";
 import {
@@ -18,6 +17,7 @@ import {
   isAccountingNavigationItemActive,
   type AccountingNavigationItemDefinition
 } from "@/lib/accounting-navigation";
+import { WORKSPACE_NAVIGATION_FEATURES, type WorkstationFeatureDefinition } from "@/lib/workstation-features";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
 
 export interface WorkspaceNavSubItemViewModel {
@@ -82,63 +82,7 @@ export interface WorkspaceNavViewModel {
 
 export type WorkspaceNavMaturityTone = "available" | "preview" | "setup";
 
-type WorkspaceSubrouteDefinition = { label: string; route: string; match?: "exact" | "prefix" };
-
-const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinition[]>> = {
-  trading: [
-    { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.trading, match: "exact" },
-    { label: "Orders", route: WORKSTATION_ROUTE_CATALOG.tradingOrders },
-    { label: "Positions", route: WORKSTATION_ROUTE_CATALOG.tradingPositions },
-    { label: "Risk", route: WORKSTATION_ROUTE_CATALOG.tradingRisk },
-    { label: "Readiness", route: WORKSTATION_ROUTE_CATALOG.tradingReadiness }
-  ],
-  portfolio: [
-    { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.portfolio, match: "exact" },
-    { label: "Attribution", route: WORKSTATION_ROUTE_CATALOG.portfolioAttribution },
-    { label: "Asset detail", route: WORKSTATION_ROUTE_CATALOG.portfolioAssetDetail },
-    { label: "Brokerage sync", route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync },
-    { label: "Cash ladder", route: WORKSTATION_ROUTE_CATALOG.portfolioCashLadder },
-    { label: "Family office", route: WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice },
-    { label: "Loan book", route: WORKSTATION_ROUTE_CATALOG.portfolioLoanBook }
-  ],
-  reporting: [
-    { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.reporting, match: "exact" },
-    { label: "Report Library", route: WORKSTATION_ROUTE_CATALOG.reportingLibrary },
-    { label: "Scheduled Reports", route: WORKSTATION_ROUTE_CATALOG.reportingScheduled },
-    { label: "Run Report", route: WORKSTATION_ROUTE_CATALOG.reportingRunParameters },
-    { label: "Operations record", route: WORKSTATION_ROUTE_CATALOG.reportingOperationsRecord },
-    { label: "Report packs", route: WORKSTATION_ROUTE_CATALOG.reportingReportPacks },
-    { label: "Evidence", route: WORKSTATION_ROUTE_CATALOG.reportingEvidence },
-    { label: "Exports", route: WORKSTATION_ROUTE_CATALOG.reportingExports }
-  ],
-  strategy: [
-    { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.strategy, match: "exact" },
-    { label: "Designer", route: WORKSTATION_ROUTE_CATALOG.strategyDesigner },
-    { label: "Covered call", route: WORKSTATION_ROUTE_CATALOG.strategyCoveredCall },
-    { label: "Promotions", route: WORKSTATION_ROUTE_CATALOG.strategyPromotions },
-    { label: "Strategy Lab", route: WORKSTATION_ROUTE_CATALOG.strategyLab },
-    { label: "Quant Lab", route: WORKSTATION_ROUTE_CATALOG.strategyQuantLab },
-    { label: "Run Ledger Explorer", route: WORKSTATION_ROUTE_CATALOG.strategyRunLedger }
-  ],
-  data: [
-    { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.data, match: "exact" },
-    { label: "Import data", route: WORKSTATION_ROUTE_CATALOG.dataImport },
-    { label: "Providers", route: WORKSTATION_ROUTE_CATALOG.dataProviders },
-    { label: "Market data", route: WORKSTATION_ROUTE_CATALOG.dataQuotes },
-    { label: "Ingestion operations", route: WORKSTATION_ROUTE_CATALOG.dataOperations },
-    { label: "Storage assurance", route: WORKSTATION_ROUTE_CATALOG.dataAssurance },
-    { label: "Exports", route: WORKSTATION_ROUTE_CATALOG.dataExports },
-    { label: "SQL query", route: WORKSTATION_ROUTE_CATALOG.dataQuery }
-  ],
-  settings: [
-    { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.settings, match: "exact" },
-    { label: "Preferences", route: WORKSTATION_ROUTE_CATALOG.settingsPreferences },
-    { label: "Access", route: WORKSTATION_ROUTE_CATALOG.settingsAccess },
-    { label: "Provider Connections", route: WORKSTATION_ROUTE_CATALOG.settingsProviders },
-    { label: "Accounting Systems", route: WORKSTATION_ROUTE_CATALOG.settingsAccountingSystems },
-    { label: "Diagnostics", route: WORKSTATION_ROUTE_CATALOG.settingsDiagnostics }
-  ]
-};
+type WorkspaceSubrouteDefinition = WorkstationFeatureDefinition;
 
 export function buildWorkspaceNavViewModel(
   pathname: string,
@@ -249,13 +193,7 @@ export function buildWorkspaceNavViewModel(
 }
 
 function visibleWorkspaceSubroutes(workspaceKey: WorkspaceKey): WorkspaceSubrouteDefinition[] {
-  if (workspaceKey === "accounting") {
-    return ACCOUNTING_NAVIGATION_GROUPS
-      .flatMap((group) => group.items)
-      .filter((sub) => !UNWIRED_WORKSTATION_ROUTES.has(sub.route));
-  }
-
-  return (WORKSPACE_SUBROUTES[workspaceKey] ?? []).filter((sub) => !UNWIRED_WORKSTATION_ROUTES.has(sub.route));
+  return WORKSPACE_NAVIGATION_FEATURES[workspaceKey].filter((sub) => !UNWIRED_WORKSTATION_ROUTES.has(sub.route));
 }
 
 function visibleWorkspaceSubrouteGroups(workspaceKey: WorkspaceKey) {
