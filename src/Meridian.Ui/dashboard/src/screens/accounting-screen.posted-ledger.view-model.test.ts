@@ -507,8 +507,9 @@ describe("useAccountingPostedLedgerViewModel", () => {
 
     await waitFor(() => {
       expect(result.current.view.periodSelector.loading).toBe(true);
+      // Book discovery also reports loading; cancellation needs the period request to have started.
+      expect(releasePeriods).not.toBeNull();
     });
-    expect(releasePeriods).not.toBeNull();
 
     // The books go away while that request is still outstanding, so nothing will replace it.
     services.getBooks = vi.fn().mockRejectedValue(new Error("Ledger books are unavailable."));

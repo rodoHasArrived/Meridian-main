@@ -80,6 +80,135 @@ public sealed class Sha256DigestTests
     }
 
     [Fact]
+    public void ComputeBytes_SpanDestination_ResetsBetweenChangingInputsAndBlockBoundaries()
+    {
+        int[] lengths = [0, 1, 55, 56, 63, 64, 65, 119, 120, 127, 128, 129, 256, 4096];
+        Span<byte> digest = stackalloc byte[32];
+
+        for (var repetition = 0; repetition < 4; repetition++)
+        {
+            foreach (var length in lengths)
+            {
+                var payload = new byte[length];
+                for (var i = 0; i < payload.Length; i++)
+                {
+                    payload[i] = (byte)(i * 31 + repetition * 17 + length);
+                }
+
+                var expected = SHA256.HashData(payload);
+                Sha256Digest.ComputeBytes(payload, digest);
+
+                Assert.True(digest.SequenceEqual(expected), $"SHA-256 mismatch at length {length}, repetition {repetition}.");
+            }
+        }
+    }
+
+    [Fact]
+    public void ComputeBytes_SpanDestination_IsolatesConcurrentDedicatedThreads()
+    {
+        const int workerCount = 4;
+        int[] lengths = [0, 1, 55, 56, 63, 64, 65, 119, 120, 127, 128, 129, 256, 4096];
+        using var start = new ManualResetEventSlim();
+        using var ready = new CountdownEvent(workerCount);
+        var failures = new Exception?[workerCount];
+        var workers = new Thread[workerCount];
+
+        for (var worker = 0; worker < workerCount; worker++)
+        {
+            var workerIndex = worker;
+            workers[worker] = new Thread(() =>
+            {
+                try
+                {
+                    ready.Signal();
+                    start.Wait();
+                    Span<byte> digest = stackalloc byte[32];
+                    for (var iteration = 0; iteration < 512; iteration++)
+                    {
+                        var payload = new byte[lengths[(iteration + workerIndex) % lengths.Length]];
+                        for (var i = 0; i < payload.Length; i++)
+                        {
+                            payload[i] = (byte)(workerIndex * 53 + iteration * 17 + i);
+                        }
+
+                        var expected = SHA256.HashData(payload);
+                        Sha256Digest.ComputeBytes(payload, digest);
+                        Assert.True(digest.SequenceEqual(expected), $"SHA-256 mismatch on worker {workerIndex}, iteration {iteration}.");
+                    }
+                }
+                catch (Exception exception)
+                {
+                    failures[workerIndex] = exception;
+                }
+            })
+            { IsBackground = true };
+            workers[worker].Start();
+        }
+
+        var allReady = ready.Wait(TimeSpan.FromSeconds(30));
+        start.Set();
+        foreach (var worker in workers)
+        {
+            Assert.True(worker.Join(TimeSpan.FromSeconds(30)), "A SHA-256 worker did not finish.");
+        }
+
+        Assert.True(allReady, "The dedicated SHA-256 workers did not become ready.");
+        Assert.All(failures, failure => Assert.Null(failure));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(31)]
+    public void ComputeBytes_SpanDestination_RejectsShortOutputWithoutContaminatingNextHash(int length)
+    {
+        var digest = new byte[32];
+        Sha256Digest.ComputeBytes("previous input"u8, digest);
+        var destination = Enumerable.Repeat((byte)0xA5, length).ToArray();
+
+        var exception = Assert.Throws<ArgumentException>(() =>
+            Sha256Digest.ComputeBytes("rejected input"u8, destination));
+
+        Assert.Equal("destination", exception.ParamName);
+        Assert.All(destination, value => Assert.Equal((byte)0xA5, value));
+        Sha256Digest.ComputeBytes("next input"u8, digest);
+        Assert.Equal(SHA256.HashData("next input"u8), digest);
+    }
+
+    [Fact]
+    public void ComputeBytes_SpanDestination_PreservesBytesAfterDigest()
+    {
+        var destination = Enumerable.Repeat((byte)0xA5, 48).ToArray();
+
+        Sha256Digest.ComputeBytes("test"u8, destination);
+
+        Assert.True(destination.AsSpan(0, 32).SequenceEqual(Convert.FromHexString(LowercaseDigest)));
+        Assert.All(destination.Skip(32), value => Assert.Equal((byte)0xA5, value));
+    }
+
+    [Fact]
+    public void ComputeBytes_SpanDestination_WarmedCallsAllocateNoManagedBytes()
+    {
+        var payload = new byte[4096];
+        Span<byte> digest = stackalloc byte[32];
+        for (var iteration = 0; iteration < 256; iteration++)
+        {
+            Sha256Digest.ComputeBytes(payload, digest);
+        }
+
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        for (var iteration = 0; iteration < 1024; iteration++)
+        {
+            payload[0] = (byte)iteration;
+            Sha256Digest.ComputeBytes(payload.AsSpan(0, iteration + 1), digest);
+        }
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.Equal(0L, allocated);
+        Assert.True(digest.SequenceEqual(SHA256.HashData(payload.AsSpan(0, 1024))));
+    }
+
+    [Fact]
     public void ComputeBytes_IsTheDecodedFormOfCompute()
     {
         var payload = Encoding.UTF8.GetBytes("meridian");

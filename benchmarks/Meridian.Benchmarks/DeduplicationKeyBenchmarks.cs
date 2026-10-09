@@ -15,7 +15,7 @@ namespace Meridian.Benchmarks;
 /// BOTTLENECK_REPORT.md #1 (P0) identified the original key computation as a 5–6 alloc/event path
 /// using string interpolation + <c>Encoding.UTF8.GetBytes</c> + <c>SHA256.HashData</c>.
 /// The production implementation now uses a prefix cache, <c>stackalloc</c> buffers, and
-/// <see cref="SHA256.TryHashData"/>.
+/// a private per-thread SHA-256 provider through the canonical digest primitive.
 /// </para>
 /// <para>
 /// Three methods are measured:

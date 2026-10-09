@@ -63,6 +63,11 @@ cross-blueprint contracts that stop two independently written designs from colli
 
 Prefer the narrowest proof lane for the files you change.
 
+Enable the [staged-source Git hook](../development/git-hooks.md) with
+`./scripts/dev/install-git-hooks.sh` or `make install-hooks`, including in linked worktrees.
+The hook checks an isolated snapshot of staged C#/VB whitespace and skips .NET for commits
+without supported source files. CI continues to check whitespace across `Meridian.sln`.
+
 For hosted CI cache behavior, artifact locations, and timing comparisons, see
 [dependency caches and artifacts](../../.github/workflows/README.md#dependency-caches-and-artifacts).
 
@@ -189,6 +194,10 @@ $baselineSha = git rev-parse --verify 'origin/main^{commit}'
 # Local, database-free migration inventory and safety checks
 python build/scripts/schema-control.py inventory --base-ref $baselineSha
 
+# Scaffold the next free migration ordinal and regenerate the reservation table
+python build/scripts/schema-control.py new-migration --migration-set ledger --name example
+python build/scripts/schema-control.py generate-migration-docs --check
+
 # Rebuild and verify against a disposable PostgreSQL database
 python -m pip install --requirement tools/schema_control/requirements.txt
 python build/scripts/schema-control.py verify `
@@ -204,6 +213,15 @@ PR checks compare against the pull-request event's base SHA. Both manual modes r
 checked-out candidate SHA (normally the GitHub merge commit for PRs). Use that same pair to
 reproduce a comparison independently of later `origin/main` advances; see the schema-control guide
 for evidence paths and local working-tree details.
+
+The [machine-readable migration reservation register](../../database/migration-reservations.json)
+owns pending ordinal claims; the [blueprint table](blueprints/README.md#ledger-migration-ordinals)
+is generated from it and existing SQL filenames. `new-migration` advances past the highest on-disk
+ordinal and skips reservations. An explicit `--ordinal N` also refuses occupied or reserved numbers.
+Release a pending claim before scaffolding its implementation, and run
+`python build/scripts/schema-control.py generate-migration-docs` after editing reservations.
+Preserve applied filenames and ordinals, including the two historical Ledger `008` scripts.
+PR-base comparison rejects newly introduced ordinal collisions.
 
 Never point `snapshot` or `verify` at a shared or production database. The workflow's check mode is
 read-only with respect to the repository and fails when `database/manifest/**` or

@@ -1,5 +1,7 @@
 namespace Meridian.FSharp.Trading
 
+open System
+
 type TransitionResult = {
     PreviousState: StrategyLifecycleState
     NextState: StrategyLifecycleState
@@ -31,20 +33,29 @@ module StrategyLifecycleTransitions =
             }
 
         match state, command with
+        | _, StrategyCommand.Fail reason when String.IsNullOrWhiteSpace reason ->
+            invalid "A strategy failure must include a nonblank reason."
         | StrategyLifecycleState.Registered, StrategyCommand.Start ->
             valid StrategyLifecycleState.WarmingUp [ "strategy-start-requested"; "strategy-warmup-entered" ]
         | StrategyLifecycleState.Stopped, StrategyCommand.Start ->
             valid StrategyLifecycleState.WarmingUp [ "strategy-restart-requested"; "strategy-warmup-entered" ]
+        | StrategyLifecycleState.WarmingUp, StrategyCommand.WarmupCompleted ->
+            valid StrategyLifecycleState.Running [ "strategy-warmup-completed"; "strategy-running-entered" ]
+        | _, StrategyCommand.WarmupCompleted ->
+            invalid "Warmup can only complete while a strategy is warming up."
         | StrategyLifecycleState.Paused, StrategyCommand.Resume ->
             valid StrategyLifecycleState.Running [ "strategy-resume-requested"; "strategy-running-entered" ]
-        | StrategyLifecycleState.WarmingUp, StrategyCommand.Pause
         | StrategyLifecycleState.Running, StrategyCommand.Pause ->
             valid StrategyLifecycleState.Paused [ "strategy-paused" ]
         | StrategyLifecycleState.WarmingUp, StrategyCommand.Stop
         | StrategyLifecycleState.Running, StrategyCommand.Stop
-        | StrategyLifecycleState.Stopping, StrategyCommand.Stop
-        | StrategyLifecycleState.Paused, StrategyCommand.Stop ->
-            valid StrategyLifecycleState.Stopped [ "strategy-stop-requested"; "strategy-stopped" ]
+        | StrategyLifecycleState.Paused, StrategyCommand.Stop
+        | StrategyLifecycleState.Faulted _, StrategyCommand.Stop ->
+            valid StrategyLifecycleState.Stopping [ "strategy-stop-requested"; "strategy-stopping-entered" ]
+        | StrategyLifecycleState.Stopping, StrategyCommand.StopCompleted ->
+            valid StrategyLifecycleState.Stopped [ "strategy-stopped" ]
+        | _, StrategyCommand.StopCompleted ->
+            invalid "Stop can only complete while a strategy is stopping."
         | _, StrategyCommand.Fail reason ->
             valid (StrategyLifecycleState.Faulted reason) [ "strategy-faulted" ]
         | StrategyLifecycleState.Registered, StrategyCommand.Pause ->
@@ -65,20 +76,23 @@ module StrategyLifecycleTransitions =
             invalid "Strategy is stopping and cannot accept new run commands."
         | StrategyLifecycleState.Stopping, StrategyCommand.Pause ->
             invalid "Strategy is already stopping."
+        | StrategyLifecycleState.Stopping, StrategyCommand.Stop ->
+            invalid "Strategy is already stopping."
         | StrategyLifecycleState.Stopped, StrategyCommand.Pause ->
             invalid "Cannot pause a stopped strategy."
         | StrategyLifecycleState.Stopped, StrategyCommand.Stop ->
             invalid "Strategy is already stopped."
         | StrategyLifecycleState.Faulted _, StrategyCommand.Start ->
-            invalid "Faulted strategies must be re-created before starting."
+            invalid "Faulted strategies must be stopped successfully before restarting."
         | StrategyLifecycleState.Faulted _, StrategyCommand.Resume ->
             invalid "Faulted strategies cannot resume."
         | StrategyLifecycleState.Faulted _, StrategyCommand.Pause ->
             invalid "Faulted strategies cannot pause."
-        | StrategyLifecycleState.Faulted _, StrategyCommand.Stop ->
-            valid StrategyLifecycleState.Stopped [ "faulted-strategy-stopped" ]
         | StrategyLifecycleState.Paused, StrategyCommand.Pause ->
             invalid "Strategy is already paused."
-        | StrategyLifecycleState.WarmingUp, StrategyCommand.Resume
+        | StrategyLifecycleState.WarmingUp, StrategyCommand.Pause ->
+            invalid "Cannot pause a strategy before warmup has completed."
+        | StrategyLifecycleState.WarmingUp, StrategyCommand.Resume ->
+            invalid "Cannot resume a strategy before warmup has completed."
         | StrategyLifecycleState.Running, StrategyCommand.Resume ->
             invalid "Strategy is already running."

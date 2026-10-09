@@ -47,7 +47,8 @@ public sealed record AccountingJournalDraftRequest(
     IReadOnlyList<string>? EvidenceLinks = null,
     string? PostingRuleId = null,
     string? PostingRuleVersion = null,
-    string? DryRunCorrelationId = null);
+    string? DryRunCorrelationId = null,
+    string? PolicyVersion = null);
 
 public sealed record AccountingJournalDraftResult(
     AccountingPolicyDto Policy,
@@ -95,7 +96,8 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
                     request.FundProfileId,
                     request.FundStructureNodeId,
                     request.InstrumentId,
-                    request.SourceEventId),
+                    request.SourceEventId,
+                    request.PolicyVersion),
                 ct)
             .ConfigureAwait(false);
 
@@ -200,7 +202,8 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
                         request.PostingKind,
                         request.AdjustmentApproval,
                         request.LedgerBookId,
-                        BuildPostingCommand(request, rule, draftEntry, treasuryContext, evidenceLinks, effectiveDate)),
+                        BuildPostingCommand(request, rule, draftEntry, treasuryContext, evidenceLinks, effectiveDate),
+                        PolicyVersion: policy.Version),
                     ct)
                 .ConfigureAwait(false);
 

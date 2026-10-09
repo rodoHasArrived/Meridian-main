@@ -19,5 +19,8 @@ public enum StrategyStatus
     Stopped,
 
     /// <summary>Strategy encountered a fatal error and is no longer running.</summary>
-    Faulted
+    Faulted,
+
+    /// <summary>Strategy is finalising its state; cleanup has not completed.</summary>
+    Stopping
 }

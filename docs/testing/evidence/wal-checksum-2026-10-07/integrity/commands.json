@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "workingDirectory": "/workspace/Meridian-main",
+  "providedBy": "root coordinator; exact execution commands",
+  "testsPrecededFormatting": true,
+  "formattingScope": "narrow dotnet-format whitespace-only change after tests",
+  "runs": [
+    {
+      "label": "normal",
+      "passed": 132,
+      "failed": 0,
+      "skipped": 0,
+      "command": "PATH=/workspace/dotnet-10.0.100:$PATH DOTNET_ROOT=/workspace/dotnet-10.0.100 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --filter 'FullyQualifiedName~WriteAheadLog|FullyQualifiedName~AllocationBudgetIntegrationTests' -p:EnableWindowsTargeting=true --logger 'trx;LogFileName=wal-checksum-integrity.trx' --results-directory artifacts/wal-checksum-profile/test-results > artifacts/wal-checksum-profile/integrity-tests.log 2>&1",
+      "log": "integrity/integrity-tests.log.gz",
+      "trx": "integrity/wal-checksum-integrity.trx.gz"
+    },
+    {
+      "label": "scalar",
+      "passed": 82,
+      "failed": 0,
+      "skipped": 0,
+      "command": "PATH=/workspace/dotnet-10.0.100:$PATH DOTNET_ROOT=/workspace/dotnet-10.0.100 DOTNET_EnableHWIntrinsic=0 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-build --filter 'FullyQualifiedName~WriteAheadLogChecksum' --logger 'trx;LogFileName=wal-checksum-scalar.trx' --results-directory artifacts/wal-checksum-profile/test-results > artifacts/wal-checksum-profile/scalar-tests.log 2>&1",
+      "log": "integrity/scalar-tests.log.gz",
+      "trx": "integrity/wal-checksum-scalar.trx.gz"
+    },
+    {
+      "label": "timezone",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "command": "PATH=/workspace/dotnet-10.0.100:$PATH DOTNET_ROOT=/workspace/dotnet-10.0.100 TZ=America/New_York dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-build --filter 'FullyQualifiedName~V2_ChecksumSurvivesTimestampTextRoundtrip' --logger 'trx;LogFileName=wal-checksum-local-time.trx' --results-directory artifacts/wal-checksum-profile/test-results > artifacts/wal-checksum-profile/local-time-tests.log 2>&1",
+      "log": "integrity/local-time-tests.log.gz",
+      "trx": "integrity/wal-checksum-local-time.trx.gz"
+    }
+  ]
+}

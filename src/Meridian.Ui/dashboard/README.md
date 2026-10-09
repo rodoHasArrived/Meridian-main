@@ -11,6 +11,16 @@ last_reviewed: 2026-09-02
 
 # src/Meridian.Ui/dashboard
 
+Governed Journal Entry Detail exposes retained disposal tax results from the shared period and
+journal read model. Operators can inspect mixed parcel character, carried holding-period starts,
+economic and recognized gain/loss, deferred loss, and the exact retained policy revision. Settled,
+provisional and missing-evidence results retain the server's reason, replacement-window end and
+re-evaluation posture. Refresh reads retained evidence only; the browser never derives character,
+settles an elapsed window, or recalculates tax amounts. Missing parcel allocation amounts stay
+unknown. Reads prohibit development fallback and reject a different book, period or journal.
+Focused coverage lives in `journal-entry-tax-results.test.tsx`,
+`journal-entry-detail-screen.test.tsx` and `ledger-tax-results-api.test.ts`.
+
 Tailwind is pinned to 3.4.19 to match the checked-in PostCSS plugin, Tailwind configuration, and
 `@tailwind` stylesheet directives. Upgrading its major version requires migrating that pipeline
 together; changing only the dependency prevents workstation styles and bundles from building.
@@ -63,6 +73,11 @@ retained subject are never assigned inferred provenance. Reads disable developme
 show loading, unavailable, empty, stale and mismatched-subject states. Escape and focus restoration
 use the shared sheet behavior. Full evidence links retain the selected ledger book.
 
+Statement import links to the exact retained Operations Continuity workflow, book, and period.
+An unavailable requested workflow fails closed. Close publication continues to require the full
+fund/account/entity/book/period scope and current server readiness; the import handoff alone
+does not supply that complete close authority.
+
 Ledger Explorer clears the selected amount when its tab becomes inactive, its book or period
 changes, or its posted journal no longer contains that amount. Returning to the prior scope
 requires a new amount click; a late evidence response cannot restore the previous drawer.
@@ -105,6 +120,27 @@ Focused proof: `operations-continuity-screen.test.tsx` and `operations-continuit
 
 Operations Continuity submits checklist controls from the shared workflow's explicit acknowledgment actor and time, including the first submission before any close package exists. Missing controls block submission. Rejected or reopened workflows can submit a newly reviewed cycle without reusing old package approvals. Approval decisions carry retained submission evidence; an assigned reviewer is not counted as having approved until the server records the actual decision. Close publication uses the current submission and decision history together with current prerequisite acknowledgments.
 Focused proof: `operations-continuity-screen.view-model.test.ts` and `operations-continuity-screen.test.tsx`.
+
+## Work-first Portfolio and Reporting
+
+Portfolio opens on selectable holdings before the supporting retained-record explorer and
+readiness handoff. Reporting opens on its selectable daily work queue before period production
+tools. Their compact data-confidence disclosures keep source, scope, freshness, completeness,
+and blockers visible; expanding them reveals explanations and recovery actions. The existing
+native disclosure pattern also retains full Portfolio readiness and Reporting production tools.
+
+Reporting queue selection uses `reportingWork` in the URL, preserving other query parameters
+and the hash. The selected item owns the inspector's evidence and actions. Removed or unknown
+items are explicitly unavailable, and changing financial scope clears the prior selection.
+The shared dense-row keyboard contract supports row selection, detail focus, and return focus.
+
+`src/lib/workstation-features.ts` supplies wired browser destinations to both sidebar navigation
+and local command search. Purpose descriptions and search-only aliases expose intents such as
+cash forecast, statement import, historical prices, and running reports. Local destinations remain
+searchable when remote command or entity search is unavailable; unwired routes stay excluded.
+Accounting onboarding searches open the existing External GL surface, which hosts the bounded
+onboarding workspace and its retained comparison and readiness evidence.
+The masthead places operator controls on a second row at laptop widths so search stays readable.
 
 ## Purpose
 
@@ -1505,6 +1541,17 @@ Focused workflow, stale-response and accessibility coverage lives in
 `lib/api/accounting-onboarding.api.test.ts`.
 
 The Accounting route reuses fund-operations ledger views and now includes trial-balance source-event and approval drill-through affordances. Keep browser-only rendering in `src/screens/accounting-screen.tsx` and shared accounting close contracts in `src/features/accounting/accountingCloseModels.ts`.
+
+Accounting Ledger Explorer also includes the first W10-CONSOL-001 consolidation slice. Operators
+preview an authoritative effective-dated ownership perimeter, inspect gross/proposed/posted and
+consolidated account balances, retain unmatched reciprocal differences, and create drafts for the
+existing journal approval workflow. Source disclosures show the exact posting entity, counterparty,
+journal, book, line, debit, credit, and effective date; correction links and renewed-review status stay
+visible. Changing scope discards prior results, and failed requests require another preview. All
+amounts and eligibility are server-owned. This slice supports exactly two directly wholly owned
+entities, Primary basis, one shared functional currency, and a dedicated elimination book; it excludes
+foreign currency translation, minority interests, and nested ownership. Browser regression coverage
+is in `accounting-screen.consolidation-panel.test.tsx`.
 
 The close workspace (`/accounting`) exposes **Prepare next period**. Operators select an
 authoritative source plan, capture or reuse a retained template version, specify each task's

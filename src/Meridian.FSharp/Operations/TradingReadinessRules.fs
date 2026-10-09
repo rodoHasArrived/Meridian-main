@@ -34,21 +34,17 @@ type TradingEvidenceCompletenessDto =
 
 module TradingReadinessRules =
 
-    let private canonicalGateOrder =
-        [|
-            "replay"
-            "reconciliation"
-            "audit-controls"
-            "risk-rules"
-            "promotion"
-            "dk1-trust"
-            "report-pack"
-            "session"
-            "brokerage-sync"
-        |]
-
     let private sameText left right =
         String.Equals(left, right, StringComparison.OrdinalIgnoreCase)
+
+    let private arrayOrEmpty (values: 'T array) =
+        if isNull values then [||] else values
+
+    // Missing or unsupported statuses require review and must never authorize readiness.
+    let private gateStatus (gate: TradingAcceptanceGateFactDto) =
+        if sameText gate.Status "Blocked" then "Blocked"
+        elif sameText gate.Status "Ready" then "Ready"
+        else "ReviewRequired"
 
     let private distinctOrdinalIgnoreCase (items: string seq) =
         let seen = HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -57,35 +53,34 @@ module TradingReadinessRules =
         |> Seq.toArray
 
     let evaluateOverallPosture (gates: TradingAcceptanceGateFactDto array) =
-        let ordered =
-            canonicalGateOrder
-            |> Array.choose (fun gateId ->
-                gates
-                |> Array.tryFind (fun gate -> sameText gate.GateId gateId))
+        let gates = arrayOrEmpty gates
 
-        if ordered.Length = 0 then
+        if gates.Length = 0 then
             "Unknown"
-        elif ordered |> Array.exists (fun gate -> sameText gate.Status "Blocked") then
+        elif gates |> Array.exists (fun gate -> gateStatus gate = "Blocked") then
             "Blocked"
-        elif ordered |> Array.forall (fun gate -> sameText gate.Status "Ready") then
+        elif gates |> Array.forall (fun gate -> gateStatus gate = "Ready") then
             "Ready"
         else
             "ReviewRequired"
 
     let summarizeEvidence (gates: TradingAcceptanceGateFactDto array) (workItems: TradingWorkItemEvidenceFactDto array) =
+        let gates = arrayOrEmpty gates
+        let workItems = arrayOrEmpty workItems
+
         let readyGateIds =
             gates
-            |> Array.filter (fun gate -> sameText gate.Status "Ready")
+            |> Array.filter (fun gate -> gateStatus gate = "Ready")
             |> Array.map _.GateId
 
         let blockingGateIds =
             gates
-            |> Array.filter (fun gate -> sameText gate.Status "Blocked")
+            |> Array.filter (fun gate -> gateStatus gate = "Blocked")
             |> Array.map _.GateId
 
         let reviewGateIds =
             gates
-            |> Array.filter (fun gate -> sameText gate.Status "ReviewRequired")
+            |> Array.filter (fun gate -> gateStatus gate = "ReviewRequired")
             |> Array.map _.GateId
 
         let criticalCount =

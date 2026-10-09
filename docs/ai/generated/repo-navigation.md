@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-10-04T00:49:22Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-10-07T18:21:09Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -8,6 +8,7 @@ Use this file when an assistant needs fast orientation before reading subsystem-
 
 | Task shape | Start here | Authoritative docs |
 |---|---|---|
+| Consumer launcher, lifecycle supervisor, and installation | `Meridian.Launcher`, `Meridian.LifecycleSupervisor`, `Meridian.Setup` | `docs/reference/lifecycle-control-plane.md`, `docs/reference/verified-operation-outcomes.md`, `docs/operators/browser-workstation-installer.md` |
 | Provider implementation and provider bugs | `Meridian.ProviderSdk`, `Meridian.Infrastructure`, `Meridian.Storage` | `docs/ai/claude/CLAUDE.providers.md`, `docs/development/provider-implementation.md`, `docs/ai/ai-known-errors.md` |
 | Browser workstation and dashboard UI issues | `Meridian.Ui.Dashboard`, `Meridian.Ui.Services`, `Meridian.Ui.Shared` | `docs/ai/navigation/README.md`, `docs/ai/ai-known-errors.md` |
 | WPF and workstation workflow issues | `Meridian.Wpf`, `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian` | `docs/engineering/plans/wpf-web-ui-alignment-plan.md`, `docs/ai/ai-known-errors.md` |
@@ -20,11 +21,11 @@ Use this file when an assistant needs fast orientation before reading subsystem-
 
 Runtime startup, application composition, shared contracts, and cross-cutting infrastructure.
 
-- Projects: `Meridian`, `Meridian.Application`, `Meridian.Contracts`, `Meridian.Core`
+- Projects: `Meridian`, `Meridian.Application`, `Meridian.Contracts`, `Meridian.Core`, `Meridian.Launcher`, `Meridian.LifecycleSupervisor`, `Meridian.Setup`
 - Entrypoints: `src/Meridian.Application/Composition`, `src/Meridian.Application/Pipeline`, `src/Meridian.Contracts`, `src/Meridian.Core/Serialization`
-- Key contracts: `src/Meridian.Application/Pipeline/EventPipeline.cs`, `src/Meridian.Contracts`, `src/Meridian.Core/Serialization/MarketDataJsonContext.cs`, `src/Meridian/Program.cs`
+- Key contracts: `src/Meridian.Application/Pipeline/EventPipeline.cs`, `src/Meridian.Contracts`, `src/Meridian.Contracts/Lifecycle`, `src/Meridian.Contracts/Operations`
 - Common tasks: startup debugging, service composition, configuration, shared contracts
-- Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`
+- Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`, `docs/reference/verified-operation-outcomes.md`
 
 ### Providers and Storage
 
@@ -133,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Contracts/README.md` | Host and Composition | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 9 |
-| `src/Meridian.FinancialOperations/README.md` | Unmapped | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 9 |
-| `src/Meridian.Storage/README.md` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 9 |
-| `src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs` | Unmapped | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 4 |
-| `src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs` | Domain, Ledger, and F# | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 4 |
-| `src/Meridian.Ledger/README.md` | Domain, Ledger, and F# | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 4 |
-| `src/Meridian.Storage/Ledger/ILedgerJournalStore.cs` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 4 |
-| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 3 |
-| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 3 |
-| `src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs` | Host and Composition | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 2 |
-| `src/Meridian.Ledger/LedgerTaxLotReliefHistoryProjector.cs` | Domain, Ledger, and F# | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 2 |
-| `src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 2 |
-| `src/Meridian.Storage/Ledger/AtomicTaxLotJournalFingerprint.cs` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 1 |
-| `src/Meridian.Storage/Ledger/Migrations/V_ledger_039__tax_lot_proceeds_allocation.sql` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 1 |
-| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ProceedsAllocation.cs` | Providers and Storage | `e4d01ca49` (2026-10-02T18:13:40-07:00) | 1 |
+| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Consolidation.cs` | Providers and Storage | `baeea857d` (2026-10-07T17:17:54Z) | 6 |
+| `src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs` | Unmapped | `baeea857d` (2026-10-07T17:17:54Z) | 5 |
+| `src/Meridian.Ui.Shared/Services/ConsolidationWorkbenchService.cs` | Desktop and UI Workflows | `baeea857d` (2026-10-07T17:17:54Z) | 5 |
+| `src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs` | Unmapped | `405dc1f3f` (2026-10-07T16:51:14Z) | 3 |
+| `src/Meridian.Contracts/Ledger/ConsolidationDtos.cs` | Host and Composition | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
+| `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Consolidation.cs` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
+| `src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Consolidation.cs` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.consolidation-panel.test.tsx` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.consolidation-panel.tsx` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
+| `src/Meridian.Ui/dashboard/src/types/consolidation.ts` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
+| `src/Meridian.Contracts/Ledger/LedgerBookDtos.cs` | Host and Composition | `405dc1f3f` (2026-10-07T16:51:14Z) | 1 |
+| `src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs` | Unmapped | `405dc1f3f` (2026-10-07T16:51:14Z) | 1 |
+| `src/Meridian.Ui.Shared/Services/ConsolidationChartValidation.cs` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 1 |
+| `src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs` | Unmapped | `4c039f269` (2026-10-07T16:17:55Z) | 2 |
+| `src/Meridian.Storage/FundStructure/PostgresFundStructureStore.Consolidation.cs` | Providers and Storage | `4c039f269` (2026-10-07T16:17:55Z) | 2 |
 

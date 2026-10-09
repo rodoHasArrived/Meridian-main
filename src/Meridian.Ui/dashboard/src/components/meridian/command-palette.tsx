@@ -205,7 +205,7 @@ export function CommandPalette({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center px-4 py-24"
+      className="fixed inset-0 z-50 flex items-start justify-center px-4 py-6"
       style={{ background: "rgba(14, 17, 19, 0.32)" }}
       data-testid="command-palette-backdrop"
       onClick={(event) => {
@@ -272,7 +272,7 @@ export function CommandPalette({
           className="mt-3 h-10 w-full rounded-md border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-primary/70 focus-visible:ring-2 focus-visible:ring-primary/35"
           onChange={(event) => setQuery(event.target.value)}
         />
-        <nav className="mt-3 max-h-[62vh] overflow-y-auto pr-1" aria-label={viewModel.commandListLabel}>
+        <nav className="command-palette-results mt-3 overflow-y-auto pr-1" aria-label={viewModel.commandListLabel}>
           <div className="flex items-center justify-between gap-3 pb-2">
             <div className="eyebrow-label">{viewModel.itemCountLabel}</div>
             <div id="command-palette-filter-count" className="text-xs text-muted-foreground" aria-live="polite">
@@ -301,13 +301,15 @@ export function CommandPalette({
                       closePalette();
                     }}
                   >
-                    <span className="flex items-start justify-between gap-3">
-                      <span className="min-w-0">
-                        <span className="block truncate font-semibold leading-snug">{item.commandLabel}</span>
-                        <span className="mt-0.5 block truncate text-xs text-muted-foreground">{item.description}</span>
+                    <span className="command-palette-command-content">
+                      <span className="command-palette-command-copy">
+                        <span className="block font-semibold leading-snug">{item.commandLabel}</span>
+                        <span className="mt-0.5 block text-xs text-muted-foreground">{item.description}</span>
                       </span>
-                      <span className="command-palette-route shrink-0" aria-label={`Route ${item.routeLabel}`}>
-                        {item.routeLabel}
+                      <span className="command-palette-command-meta">
+                        <span className="command-palette-route" aria-label={`Route ${item.routeLabel}`} title={item.routeLabel}>
+                          {item.routeLabel}
+                        </span>
                       </span>
                     </span>
                   </Link>
@@ -392,8 +394,8 @@ export function CommandPalette({
                       }
                     }}
                   >
-                    <span className="flex items-start justify-between gap-3">
-                      <span className="min-w-0">
+                    <span className="command-palette-command-content">
+                      <span className="command-palette-command-copy">
                         <span aria-live="polite" className="block font-semibold leading-snug">
                           {armedActionId === item.id
                             ? `Press Enter again to confirm — ${item.commandLabel}`
@@ -401,8 +403,8 @@ export function CommandPalette({
                         </span>
                         <span className="mt-0.5 block text-xs text-muted-foreground">{item.description}</span>
                       </span>
-                      <span className="flex shrink-0 flex-col items-end gap-1.5">
-                        <span className="command-palette-route">{item.routeLabel}</span>
+                      <span className="command-palette-command-meta">
+                        <span className="command-palette-route" title={item.routeLabel}>{item.routeLabel}</span>
                         {item.statusVisible && (
                           <span
                             className={cn(
@@ -440,13 +442,13 @@ export function CommandPalette({
                       closePalette();
                     }}
                   >
-                    <span className="flex items-start justify-between gap-3">
-                      <span className="min-w-0">
+                    <span className="command-palette-command-content">
+                      <span className="command-palette-command-copy">
                         <span className="block font-semibold leading-snug">{item.commandLabel}</span>
                         <span className="mt-0.5 block text-xs text-muted-foreground">{item.description}</span>
                       </span>
-                      <span className="flex shrink-0 flex-col items-end gap-1.5">
-                        <span className="command-palette-route" aria-label={`Route ${item.routeLabel}`}>
+                      <span className="command-palette-command-meta">
+                        <span className="command-palette-route" aria-label={`Route ${item.routeLabel}`} title={item.routeLabel}>
                           {item.routeLabel}
                         </span>
                         {(item.active || item.statusVisible) && (

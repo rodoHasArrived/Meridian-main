@@ -1,0 +1,11 @@
+{
+  "artifacts/build-logs/web-workstation-build.log": "433847695b676c6f6820b65a132380fffbd9d755f26f1f2903ba3560a1c9dcad",
+  "artifacts/ci-summary/quality-gate/steps.tsv": "9349e57d0c5b11215a38bf072a28817f092e51ac424ac465fece4fb3d8f87a28",
+  "artifacts/ci-summary/quality-gate/summary.md": "29fee9e3c26f4b54cff55d5650ae2ae4142af5e444ae244989e3172218142f26",
+  "artifacts/test-results/dotnet/ci-dotnet-test-summary.json": "fdc75d7309b73f2a3628f412d1f4dd822af8e65e0bebb9f9719ccb386a4c4f89",
+  "artifacts/test-results/dotnet/core-remainder/core-remainder_net10.0_20261007185852.trx": "b9b72972649741868f1c2482d456718dc1ca396c30225e88e1b9bd5f0a56df3e",
+  "artifacts/test-results/dotnet/core-remainder/dotnet-test.log": "26f569240565e691019695fa56a0da77b93b4e9cf2ec4d340ee01abf61c8a943",
+  "artifacts/wal-checksum-profile/canonical-ci-documentation-receipt.json": "75e6b6f1a9002288441a38c9123613778b2f40641c7cd1f1bec2fae09b0c6349",
+  "artifacts/wal-checksum-profile/canonical-ci-receipt.json": "ab35e912700d5b1149931b7a04636d4e6b8da172d91eca686065ce7bdf15b382",
+  "artifacts/wal-checksum-profile/canonical-ci.log": "0df7608c9c062a30f59d51870a782a9dbbc9dfd1e8c060ac9647d2b2c6e21bec"
+}

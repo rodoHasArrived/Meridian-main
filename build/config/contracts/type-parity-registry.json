@@ -596,6 +596,24 @@
       "csharp_record": "StrategyDesignValidationResult",
       "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-8.ts",
       "typescript_interface": "StrategyDesignValidationResult"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Ledger/LedgerDisposalTaxDtos.cs",
+      "csharp_record": "LedgerJournalTaxResultsDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/ledger-tax-results.ts",
+      "typescript_interface": "LedgerJournalTaxResults"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Ledger/LedgerDisposalTaxDtos.cs",
+      "csharp_record": "LedgerDisposalTaxResultDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/ledger-tax-results.ts",
+      "typescript_interface": "LedgerDisposalTaxResult"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Ledger/LedgerDisposalTaxDtos.cs",
+      "csharp_record": "LedgerDisposalTaxParcelDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/ledger-tax-results.ts",
+      "typescript_interface": "LedgerDisposalTaxParcel"
     }
   ],
   "known_divergences": [

@@ -6,10 +6,23 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-07
 ---
 
 # src/Meridian.Contracts
+
+`Ledger/LedgerDisposalTaxDtos.cs` defines shared, server-derived disposal and parcel tax results for
+the journal tax-results read route. It separates economic/recognized gain and deferred loss, exposes
+effective holding starts and exact retained policy revisions, and distinguishes settled, provisional,
+and missing-evidence states. Nullable amounts represent unavailable evidence rather than zero;
+`EvaluatedAt` is read time and `ReEvaluationRequired` does not claim tax finalization occurred.
+Tax-result amounts and parcel quantities use invariant decimal strings on the wire, preserving
+large values and fractional precision; absent evidence remains `null`.
+
+`Ledger/ConsolidationDtos.cs` defines the two-entity same-currency request, retained source/version
+evidence and shared gross/proposed/posted/consolidated read model. Manual journal drafts retain
+server-owned consolidation evidence, digest and required-evidence marker across the existing review
+lifecycle. Proposed balances and unmatched amounts are distinct from posted accounting truth.
 
 `Workstation/OnboardingDtos.cs` defines bounded onboarding scope, owner criteria, exact source
 snapshots, consecutive comparisons, difference assignments, independent review decisions and frozen
@@ -147,12 +160,18 @@ accepts older numeric status payloads; persisted queue records already use text 
   Comparison is case-insensitive, because hex casing is a presentation detail and not a security
   property, and it reports a malformed digest distinctly from a genuine mismatch so callers can stop
   surfacing a data-hygiene problem as an integrity failure.
+  Its span-destination `ComputeBytes` overload writes the same 32 SHA-256 bytes while reusing a
+  private provider per thread. Each successful call resets the provider; hashing failures discard
+  it. This synchronous path allocates no managed memory after the thread's first call.
 - `Lifecycle/` - shared runtime state, readiness-check, shutdown-operation, shutdown-receipt,
   supervisor-manifest, exact-process-identity, database-identity, and session-receipt contracts.
+  `LifecycleStartupTiming` defines the startup stage budget shared by the launcher and supervisor.
 - `Operations/` - the program-wide verified terminal-outcome contract and append-only operational
   case-history port. Terminal operations use only `Succeeded`, `CompletedWithWarnings`, `Failed`,
   or `Blocked`, with evaluated postconditions, retained evidence and artifacts, issues, and
   actionable recovery guidance. Durable stores assign case-event sequence and hash-chain values.
+  Null object entries in terminal receipt collections are validation errors, so malformed retained
+  JSON cannot crash consumers or satisfy the launcher's verified startup gate.
   `OperationsOriginGuard` owns the "reviewed automation may not perform this action; a human
   operator is required" control — the predicate and the canonical refusal message live there, so the
   rule evolves in one place instead of across every module that enforces it. Only the throwing gates

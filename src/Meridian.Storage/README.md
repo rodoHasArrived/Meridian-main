@@ -6,10 +6,47 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-07
 ---
 
 # src/Meridian.Storage
+
+New WAL segments use `MDCWAL02|2` with BLAKE3-256 over length-framed, canonically
+PackBits-encoded fields. Existing `MDCWAL01|1` segments retain SHA-256 validation.
+Recovery, commit scans and repair support mixed versions; repair keeps original
+headers and valid digests. Unsupported recognized formats halt recovery and are
+preserved from truncation. Older binaries cannot replay v2 segments, so drain them
+before downgrading. The [checksum format and benchmark boundary](../../docs/engineering/pipeline-benchmark.md)
+define the encoding and the unchanged portable budgets. Focused proof is
+`WriteAheadLogChecksumTests` and `WriteAheadLogChecksumVersionTests`; run
+`dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --filter "FullyQualifiedName~WriteAheadLog" -p:EnableWindowsTargeting=true`
+and `python3 build/scripts/ci/benchmark-pipeline.py --local`.
+
+Tax-lot disposal history now returns the atomic batch's exact `PolicyRevision` and `RecordedAt`,
+and restores each deferral's retained policy ID, replacement window and scope. These reads do not
+consult mutable standing policy rows. A recording timestamp is not evaluation coverage; activation
+dates and parcel deferral allocations absent from durable history remain unavailable. No schema or
+posting behavior changes are introduced by this W10-TAX-001 inspection slice. Retained deferral rows
+must agree on their repeated aggregate matched quantity and match the disposed security, journal sale
+date and full disposing account before history can certify finality. Replacement recipients must match
+their durable lot, security, book, window and account scope; aggregate matches cannot exceed their
+distinct original quantities. Shared recipients require cumulative source claims within capacity;
+shared multi-recipient claims without per-recipient quantity allocations remain missing evidence.
+Carried dates must copy an unambiguous source holding date through certified policy and recipient
+links to retained acquisition evidence. Cycles and traversals beyond 32 links or 1,024 batches fail
+closed. Deferral amounts reconcile to the exact recipient account, security and position on the
+posted basis debits, as well as the retained cash movement, including journals whose deferral rows
+are missing. Exact journal queries retain the existing book,
+period and tenant filters while hydrating every journal leg.
+
+Consolidation append validates explicit approval, reviewed lines, currency, correction ancestry and
+source evidence. Its owned transaction excludes ledger-book changes and retains an authoritative
+ownership/policy validation lease through journal commit. Ownership locks use the configured fund
+structure database and schema and exclude new competing claims as well as updates. Missing authority
+providers and caller-owned transactions refuse consolidation posting. Under the existing global
+ledger audit lock it also rechecks both source books and the elimination book as of the reviewed
+date, including earlier periods and backdated journals. Changed authority or sources require renewed review. See
+[consolidation scope](../../docs/domain/intercompany-consolidation.md).
 
 Atomic file-write diagnostics retain operation outcomes, byte counts, OS error numbers and exception
 types. Paths, file contents, checksum values and exception messages are omitted because they can

@@ -1,9 +1,12 @@
 import { screen } from "@testing-library/react";
 import * as api from "@/lib/api";
 import * as ledgerReportsApi from "@/lib/ledger-reports-api";
+import { getLedgerJournalEntryTaxResults } from "@/lib/ledger-tax-results-api";
 import { JournalEntryDetailScreen } from "@/screens/journal-entry-detail-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import type { LedgerJournalLine, ManualJournalEntryDraft, ManualJournalEntryWorkbench } from "@/types";
+
+vi.mock("@/lib/ledger-tax-results-api", () => ({ getLedgerJournalEntryTaxResults: vi.fn() }));
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
@@ -98,6 +101,9 @@ async function renderScreen(initialEntry: string) {
 describe("JournalEntryDetailScreen", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(getLedgerJournalEntryTaxResults).mockImplementation(async (scope) => ({
+      ...scope, functionalCurrency: "EUR", evaluatedAt: "2026-06-30T00:00:00Z", evidenceState: "Available", message: "No retained disposal for this posting.", disposals: []
+    }));
   });
 
   it("prompts for a journal entry when no id is provided", async () => {
@@ -272,5 +278,10 @@ describe("JournalEntryDetailScreen", () => {
     // Book currency, not dollars.
     expect(screen.getByRole("table")).toHaveTextContent("€");
     expect(screen.getByRole("table")).not.toHaveTextContent("$");
+    expect(screen.getByRole("heading", { name: "Disposal tax results" })).toBeInTheDocument();
+    expect(getLedgerJournalEntryTaxResults).toHaveBeenCalledWith(
+      { ledgerBookId: "book-eur", periodId: "period-7", journalEntryId: "je-posted-1" },
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    );
   });
 });
