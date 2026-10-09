@@ -1,11 +1,11 @@
 {
-  "total_files": 701,
-  "total_lines": 156118,
-  "orphaned_count": 231,
-  "no_heading_count": 148,
+  "total_files": 727,
+  "total_lines": 157776,
+  "orphaned_count": 248,
+  "no_heading_count": 157,
   "stale_count": 0,
-  "todo_count": 298,
-  "average_lines": 222.7,
+  "todo_count": 300,
+  "average_lines": 217.0,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -223,6 +223,23 @@
     "docs/source/source-diagram-standard.md",
     "docs/source/source-readme-template.md",
     "docs/source/source-todo-standard.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/ci/canonical-evidence-packaging-failure/dotnet-test-summary.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/ci/canonical-evidence-packaging-failure/quality-gate-summary.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/ci/provider-documentation-drift/ai-handoff-docs-automation-summary.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/ci/provider-documentation-drift/browser-test-summary.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/ci/provider-documentation-drift/dotnet-test-summary.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/ci/provider-documentation-drift/quality-gate-summary.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/components/candidates/RESULTS.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/components/native/doc_benchmarks.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-final-head-failure-37673101515/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-final-pass/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-first-optimized/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-main-current/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-main-prior/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-pr-3109/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-provider-pass-37678970064/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/local-baseline/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/local-first-optimized-interrupted/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
     "plugins/frontend-web-dev/agents/electron-angular-native.md",
     "plugins/frontend-web-dev/agents/expert-react-frontend-engineer.md",
     "plugins/frontend-web-dev/skills/playwright-explore-website/SKILL.md",
@@ -260,6 +277,15 @@
     "benchmarks/results/latest-manual/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
     "benchmarks/results/short-run-short/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
     "benchmarks/results/short-run-short2/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-final-head-failure-37673101515/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-final-pass/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-first-optimized/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-main-current/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-main-prior/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-pr-3109/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-provider-pass-37678970064/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/local-baseline/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/local-first-optimized-interrupted/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
     "Meridian Design System/components/accounting/AccountTree.prompt.md",
     "Meridian Design System/components/accounting/AgingTable.prompt.md",
     "Meridian Design System/components/accounting/AllocationEditor.prompt.md",
@@ -2322,7 +2348,7 @@
     },
     {
       "path": "docs/engineering/pipeline-benchmark.md",
-      "line_count": 147,
+      "line_count": 190,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2786,7 +2812,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11582,
+      "line_count": 11816,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4035,6 +4061,214 @@
     {
       "path": "docs/testing/evidence/w10-615abde9/server/server-evidence.md",
       "line_count": 47,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/ci/canonical-evidence-packaging-failure/dotnet-test-summary.md",
+      "line_count": 154,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/ci/canonical-evidence-packaging-failure/quality-gate-summary.md",
+      "line_count": 97,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/ci/provider-documentation-drift/ai-handoff-docs-automation-summary.md",
+      "line_count": 13,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/ci/provider-documentation-drift/browser-test-summary.md",
+      "line_count": 52,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/ci/provider-documentation-drift/dotnet-test-summary.md",
+      "line_count": 154,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/ci/provider-documentation-drift/quality-gate-summary.md",
+      "line_count": 81,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/ci/README.md",
+      "line_count": 53,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/component-profiles/dedup/README.md",
+      "line_count": 39,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/components/candidates/README.md",
+      "line_count": 25,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/components/candidates/RESULTS.md",
+      "line_count": 35,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/components/compression/README.md",
+      "line_count": 18,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/components/native/doc_benchmarks.md",
+      "line_count": 235,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/components/native/README.md",
+      "line_count": 14,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/components/packbits/README.md",
+      "line_count": 28,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/README.md",
+      "line_count": 21,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/report.md",
+      "line_count": 125,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-final-head-failure-37673101515/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+      "line_count": 22,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-final-pass/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+      "line_count": 22,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-first-optimized/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+      "line_count": 22,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-main-current/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+      "line_count": 22,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-main-prior/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+      "line_count": 22,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-pr-3109/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+      "line_count": 22,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-provider-pass-37678970064/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+      "line_count": 22,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/runs/local-baseline/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+      "line_count": 22,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/runs/local-first-optimized-interrupted/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+      "line_count": 22,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/third-party-notices/README.md",
+      "line_count": 20,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5466,7 +5700,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 949,
+      "line_count": 954,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5498,7 +5732,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1638,
+      "line_count": 1641,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5730,7 +5964,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 831,
+      "line_count": 842,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

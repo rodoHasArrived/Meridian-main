@@ -19,13 +19,13 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 701 |
-| Total lines | 156,118 |
-| Average file size (lines) | 222.7 |
-| Orphaned files | 231 |
-| Files without headings | 148 |
+| Total documentation files | 727 |
+| Total lines | 157,776 |
+| Average file size (lines) | 217.0 |
+| Orphaned files | 248 |
+| Files without headings | 157 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 298 |
+| TODO/FIXME markers | 300 |
 | **Health score** | **82/100** |
 
 ### Score Breakdown
@@ -59,7 +59,7 @@ These files lack a Markdown heading, making them harder to navigate:
 - `Meridian Design System/components/accounting/TaxLotTable.prompt.md`
 - `Meridian Design System/components/accounting/TrialBalance.prompt.md`
 - `Meridian Design System/components/charts/BarChart.prompt.md`
-- ... and 133 more
+- ... and 142 more
 
 ### Orphaned Documentation
 
@@ -85,7 +85,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-06-provider-health-usability-lab.md`
 - `.agents/skills/meridian-simulated-user-panel/references/artifact-bundles.md`
 - `.agents/skills/meridian-simulated-user-panel/references/personas.md`
-- ... and 211 more
+- ... and 228 more
 
 ## Trend
 
@@ -93,7 +93,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 82 | 701 | 231 | 0 |
+| 1970-01-01 | 82 | 727 | 248 | 0 |
 
 ---
 

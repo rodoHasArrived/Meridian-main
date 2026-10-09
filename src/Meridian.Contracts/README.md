@@ -160,6 +160,9 @@ accepts older numeric status payloads; persisted queue records already use text 
   Comparison is case-insensitive, because hex casing is a presentation detail and not a security
   property, and it reports a malformed digest distinctly from a genuine mismatch so callers can stop
   surfacing a data-hygiene problem as an integrity failure.
+  Its span-destination `ComputeBytes` overload writes the same 32 SHA-256 bytes while reusing a
+  private provider per thread. Each successful call resets the provider; hashing failures discard
+  it. This synchronous path allocates no managed memory after the thread's first call.
 - `Lifecycle/` - shared runtime state, readiness-check, shutdown-operation, shutdown-receipt,
   supervisor-manifest, exact-process-identity, database-identity, and session-receipt contracts.
   `LifecycleStartupTiming` defines the startup stage budget shared by the launcher and supervisor.

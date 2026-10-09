@@ -1,0 +1,234 @@
+{
+  "sourceHead": "bba13ca9c156a42b5ca7f0f9c196d9199a70ef75",
+  "testedMerge": "f06b91711cadea591e09076f1e4e8ddad0643a35",
+  "githubRunId": "37678970064",
+  "githubJobId": "112989725955",
+  "githubArtifactId": "11508497650",
+  "githubRunUrl": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37678970064",
+  "originalZipPath": "/workspace/Meridian-main/artifacts/wal-checksum-profile/hosted-provider-final/wal-checksum-provider-bba13ca9-run37678970064.zip",
+  "originalDownloadPath": "/workspace/attachments/a8ab0219-2307-40ee-b0af-6ec1141deeb8/wal-checksum-provider-bba13ca9-run37678970064.zip",
+  "extractedRunPath": "/workspace/Meridian-main/artifacts/wal-checksum-profile/hosted-provider-final/f06b91711cadea591e09076f1e4e8ddad0643a35/37678970064-1",
+  "archiveBytes": 70984,
+  "archiveSha256": "9867614926cce2358902bb6a5a87434eae013c13e5ca1e0e0f110c325977e8c6",
+  "originalManifestSha256": "e966842d18dd3a0804c3d90066ecc2d4d894c96ffa16e2c7c32f6514ea866bac",
+  "originalHashedFileCount": 15,
+  "retainedFileCount": 16,
+  "retainedTextBytes": 497394,
+  "rawMeasurementCount": 433,
+  "rawMeasurementCountsByMethod": {
+    "DedupKey_CacheHit": 55,
+    "DedupKey_CacheMiss": 55,
+    "WalChecksum_Small": 56,
+    "WalChecksum_Medium_1KB": 54,
+    "WalChecksum_Large_4KB": 52,
+    "NewlineScan_Portable": 53,
+    "AlpacaParse_Trade_SourceGenerated": 53,
+    "AlpacaParse_Quote_SourceGenerated": 55
+  },
+  "conclusion": "success",
+  "worktreeDirty": false,
+  "commands": {
+    "benchmark": {
+      "exitCode": 0,
+      "timedOut": false
+    },
+    "validator": {
+      "exitCode": 0,
+      "timedOut": false
+    }
+  },
+  "profileSha256": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26",
+  "budgetsSha256": "73c03f00210faac0b1d7bd5838d491cb8daae989ddc4304b30d9283997ebedce",
+  "measuredCount": 8,
+  "benchmarkResultRows": 8,
+  "violationCount": 0,
+  "unmeasuredCount": 0,
+  "metrics": [
+    {
+      "stage": "AlpacaParse_Quote_SourceGenerated",
+      "meanNanos": 468.82936331775704,
+      "allocatedBytes": 472.0,
+      "maxMeanNanos": 1200,
+      "maxAllocatedBytes": 640,
+      "status": "pass"
+    },
+    {
+      "stage": "AlpacaParse_Trade_SourceGenerated",
+      "meanNanos": 367.0780207621812,
+      "allocatedBytes": 384.0,
+      "maxMeanNanos": 900,
+      "maxAllocatedBytes": 512,
+      "status": "pass"
+    },
+    {
+      "stage": "DedupKey_CacheHit",
+      "meanNanos": 42.38508601773003,
+      "allocatedBytes": 0.0,
+      "maxMeanNanos": 200,
+      "maxAllocatedBytes": 0,
+      "status": "pass"
+    },
+    {
+      "stage": "DedupKey_CacheMiss",
+      "meanNanos": 326.9992626349298,
+      "allocatedBytes": 128.0,
+      "maxMeanNanos": 800,
+      "maxAllocatedBytes": 256,
+      "status": "pass"
+    },
+    {
+      "stage": "NewlineScan_Portable",
+      "meanNanos": 0.7029065092819519,
+      "allocatedBytes": 0.0,
+      "maxMeanNanos": 50,
+      "maxAllocatedBytes": 0,
+      "status": "pass"
+    },
+    {
+      "stage": "WalChecksum_Large_4KB",
+      "meanNanos": 357.71355193544235,
+      "allocatedBytes": 0.0,
+      "maxMeanNanos": 1200,
+      "maxAllocatedBytes": 1024,
+      "status": "pass"
+    },
+    {
+      "stage": "WalChecksum_Medium_1KB",
+      "meanNanos": 170.50145785872698,
+      "allocatedBytes": 0.0,
+      "maxMeanNanos": 600,
+      "maxAllocatedBytes": 0,
+      "status": "pass"
+    },
+    {
+      "stage": "WalChecksum_Small",
+      "meanNanos": 154.69031088255582,
+      "allocatedBytes": 0.0,
+      "maxMeanNanos": 400,
+      "maxAllocatedBytes": 0,
+      "status": "pass"
+    }
+  ],
+  "retainedFiles": [
+    "bdn/Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-200455.log",
+    "bdn/perf-budgets.json",
+    "bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json",
+    "bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+    "bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv",
+    "bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html",
+    "benchmark.log",
+    "budget-evidence.json",
+    "budget-validation.log",
+    "build.log",
+    "dotnet-info.log",
+    "profile.json",
+    "restore.log",
+    "run.json",
+    "runtime.log",
+    "sdk.log"
+  ],
+  "proof": "Original ZIP digest matched GitHub artifact digest; all original run artifact hashes verified; clean successful run; eight distinct passing portable stages with raw samples; evidence budgets and profile/exported budget bytes equal retained baseline.",
+  "sourceHeadFileHashes": [
+    {
+      "path": "src/Meridian.Storage/Archival/WalChecksum.cs",
+      "bytes": 8103,
+      "sha256": "d184f707b85e6b6830ae4d54c691fb297ccaa6fef6068ee3e1f99a19b798d3bb"
+    },
+    {
+      "path": "src/Meridian.Storage/Archival/WriteAheadLog.cs",
+      "bytes": 57271,
+      "sha256": "19699aa6acef6d3be94eac9efbaedfde15668412f821068d797cd648428e211a"
+    },
+    {
+      "path": "src/Meridian.Storage/Meridian.Storage.csproj",
+      "bytes": 3057,
+      "sha256": "138253dea8b389a7fee737c1117c94f8a40886243d2d32191dd3fdbca67f91c3"
+    },
+    {
+      "path": "src/Meridian.Application/Pipeline/PersistentDedupLedger.cs",
+      "bytes": 37581,
+      "sha256": "173db18bbda3f15eb17b0938e44159d2c30d3f0af0b2ddd067af777454799c10"
+    },
+    {
+      "path": "tests/Meridian.Tests/Storage/WriteAheadLogChecksumTests.cs",
+      "bytes": 11906,
+      "sha256": "d320b1051ddc2e3a9375986db00cda0468cf137724ccbf9779d6acb90640a6d4"
+    },
+    {
+      "path": "tests/Meridian.Tests/Storage/WriteAheadLogChecksumVersionTests.cs",
+      "bytes": 15517,
+      "sha256": "2ef2532c321d9344e3723a2bebc02a166f09336e132d4f5cecb00a14604a19f0"
+    },
+    {
+      "path": "tests/Meridian.Tests/Application/Pipeline/PersistentDedupLedgerTests.cs",
+      "bytes": 7929,
+      "sha256": "c60ec8bacade6436f3c6c5699196438ed2d57e186d8e80d93a675ba0788e6279"
+    },
+    {
+      "path": "tests/Meridian.Tests/Performance/AllocationBudgetIntegrationTests.cs",
+      "bytes": 19649,
+      "sha256": "87cd96cbc00654595a4eb1a596c43650978ad4fcb11216d3db3793f6ab687104"
+    },
+    {
+      "path": "benchmarks/Meridian.Benchmarks/PipelineBudgetBenchmarks.cs",
+      "bytes": 5292,
+      "sha256": "617d7c67cd5d6666d3f24e5052d06949519c2311dd20e6b6ce31bef6f8d4eff3"
+    },
+    {
+      "path": "benchmarks/Meridian.Benchmarks/Budget/PerformanceBudgetRegistry.cs",
+      "bytes": 8461,
+      "sha256": "5ad67bb123328d745e3f0a4825ac89f93acdd7fbfe349049804937ae6e17827e"
+    },
+    {
+      "path": "benchmarks/Meridian.Benchmarks/WalChecksumBenchmarks.cs",
+      "bytes": 7899,
+      "sha256": "8aef1c3df02c2e0f449a49b10dd22534991aef4bfec4bfdaefab6bbea4a03a98"
+    },
+    {
+      "path": "build/config/testing/pipeline-benchmark-profile.json",
+      "bytes": 979,
+      "sha256": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26"
+    },
+    {
+      "path": "build/scripts/ci/benchmark-pipeline.py",
+      "bytes": 11875,
+      "sha256": "ee2b6588a5dec6c968275798c7898d8b42ab947bf3522975eea1b4b12aa97b5a"
+    },
+    {
+      "path": "build/scripts/validate_budget.py",
+      "bytes": 24767,
+      "sha256": "6e9916dae0d7d11c7eb48a7a3ad43d2b03f6aabbc1507ad710b5525a25b334f4"
+    },
+    {
+      "path": "Directory.Packages.props",
+      "bytes": 13142,
+      "sha256": "9d813f30753520936022dc06cc57b9ad8c532f8e76a0131b4de405ad351ea3bd"
+    },
+    {
+      "path": "Directory.Build.props",
+      "bytes": 4763,
+      "sha256": "4eb45de30383a18a041cb41404f0efc2c0c3b8302eee3a05e11e76db914b6db0"
+    },
+    {
+      "path": "global.json",
+      "bytes": 108,
+      "sha256": "c7ad0ac5b8129ae0a35f79bf578121bce3ba093099289e76f790e72444b729e0"
+    },
+    {
+      "path": "src/Meridian.Contracts/Integrity/Sha256Digest.cs",
+      "bytes": 10693,
+      "sha256": "fdd61ac6d504c27d5c7e5c50d9d9f8a8ca28e3e11bdc426638c7059032604f55"
+    },
+    {
+      "path": "tests/Meridian.Tests/Contracts/Integrity/Sha256DigestTests.cs",
+      "bytes": 12244,
+      "sha256": "2cd39e2cca30e02ed18dfe6ca821c8c8c803641ecbd0cfd19e9870a0a7c4743e"
+    },
+    {
+      "path": "benchmarks/Meridian.Benchmarks/DeduplicationKeyBenchmarks.cs",
+      "bytes": 10714,
+      "sha256": "47cc817c2c2a05d9dfd4a48b840979808dcf290282ed94f9c35dfa1fe8750b49"
+    }
+  ],
+  "sourceHeadFileHashScope": "Git blobs at the declared source head only; root must independently compare fetched original tested merge and final source revision when creating source-binding receipt."
+}

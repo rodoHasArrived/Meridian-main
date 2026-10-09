@@ -1,0 +1,16 @@
+Verify .NET SDK	0	0
+Verify Python	0	0
+Restore .NET solution	0	12
+Verify .NET formatting	0	47
+Validate warning suppression inventory	0	0
+Enforce ApiClientService caller ratchet	0	0
+Enforce no-new-god-file ratchet	0	0
+Enforce consolidated-helper duplication ratchet	0	8
+Enforce inline SHA-256 hashing ratchet	0	2
+Enforce posture-environment test serialization	0	3
+Enforce server-derived ActionOrigin at endpoints	0	0
+Enforce declared file-store concurrency postures	0	2
+Enforce ledger-book-native accounting scope	0	0
+Enforce ledger dimension coverage across surfaces	0	0
+Build web workstation .NET lane	0	181
+Run .NET non-integration test projects	1	1682

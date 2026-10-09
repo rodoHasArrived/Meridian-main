@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-174403</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Linux Ubuntu 24.04.5 LTS (Noble Numbat)
+AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.100
+  [Host]     : .NET 10.0.0 (10.0.0, 10.0.25.52411), X64 RyuJIT x86-64-v3
+  Job-HDUCDG : .NET 10.0.0 (10.0.0, 10.0.25.52411), X64 RyuJIT x86-64-v3
+</code></pre>
+<pre><code>IterationCount=8  IterationTime=250ms  LaunchCount=1  
+WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method                     </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Gen0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>DedupKey_CacheHit</td><td>59.251 ns</td><td>0.2390 ns</td><td>0.1061 ns</td><td>-</td><td>-</td>
+</tr><tr><td>DedupKey_CacheMiss</td><td>835.531 ns</td><td>8.4600 ns</td><td>3.7563 ns</td><td>0.0067</td><td>128 B</td>
+</tr><tr><td>WalChecksum_Small</td><td>196.866 ns</td><td>0.6275 ns</td><td>0.2786 ns</td><td>-</td><td>-</td>
+</tr><tr><td>WalChecksum_Medium_1KB</td><td>250.886 ns</td><td>0.3252 ns</td><td>0.1444 ns</td><td>-</td><td>-</td>
+</tr><tr><td>WalChecksum_Large_4KB</td><td>649.619 ns</td><td>0.6881 ns</td><td>0.3599 ns</td><td>-</td><td>-</td>
+</tr><tr><td>NewlineScan_Portable</td><td>2.432 ns</td><td>0.0069 ns</td><td>0.0031 ns</td><td>-</td><td>-</td>
+</tr><tr><td>AlpacaParse_Trade_SourceGenerated</td><td>728.788 ns</td><td>7.5111 ns</td><td>3.9285 ns</td><td>0.0205</td><td>384 B</td>
+</tr><tr><td>AlpacaParse_Quote_SourceGenerated</td><td>911.533 ns</td><td>7.6055 ns</td><td>3.9778 ns</td><td>0.0255</td><td>472 B</td>
+</tr></tbody></table>
+</body>
+</html>

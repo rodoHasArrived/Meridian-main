@@ -1,0 +1,7 @@
+pattern,implementation,samples,median_ns,min_ns,max_ns,max_allocated_bytes_per_event
+fixed,span_hex,7,1062.106,733.893,2259.228,128.0
+fixed,span_hex_reused_SHA_scratch_only,7,967.458,697.401,1130.536,128.0
+fixed,baseline,7,1170.382,929.432,1639.185,128.0
+varied256,span_hex,7,1044.171,698.44,1139.714,128.0
+varied256,span_hex_reused_SHA_scratch_only,7,933.28,779.776,2294.349,128.0
+varied256,baseline,7,1126.954,1016.225,1601.725,128.0

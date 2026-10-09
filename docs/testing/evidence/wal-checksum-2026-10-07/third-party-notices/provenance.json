@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "retrievedAt": "2026-10-07T19:12:22.424639+00:00",
+  "packageId": "K4os.Compression.LZ4",
+  "packageVersion": "1.3.8",
+  "packageSource": "/home/agent/.nuget/packages/k4os.compression.lz4/1.3.8/k4os.compression.lz4.nuspec",
+  "packageProvenanceFile": "K4os.Compression.LZ4-1.3.8.nuspec",
+  "packageProvenanceSha256": "8d71ea7ef627f0d3db76d528411cfb4d126dabc2fe4f7e93713068bb40d5c8df",
+  "repository": "MiloszKrajewski/K4os.Compression.LZ4",
+  "releaseTag": "1.3.8",
+  "releaseCommit": "f5a25b7d72e2e41550fe20662597169ff11c3b60",
+  "releaseTagResolutionUrl": "https://api.github.com/repos/MiloszKrajewski/K4os.Compression.LZ4/git/ref/tags/1.3.8",
+  "licenses": [
+    {
+      "file": "K4os.Compression.LZ4-1.3.8-LICENSE.txt",
+      "upstreamPath": "LICENSE",
+      "url": "https://raw.githubusercontent.com/MiloszKrajewski/K4os.Compression.LZ4/f5a25b7d72e2e41550fe20662597169ff11c3b60/LICENSE",
+      "bytes": 1073,
+      "sha256": "ef5a021fc2ae3658f4ad8d2526c87fb2cf394285f47abfb784cf73a27ffd9522"
+    },
+    {
+      "file": "LZ4-library-LICENSE.txt",
+      "upstreamPath": "orig/lib/LICENSE",
+      "url": "https://raw.githubusercontent.com/MiloszKrajewski/K4os.Compression.LZ4/f5a25b7d72e2e41550fe20662597169ff11c3b60/orig/lib/LICENSE",
+      "bytes": 1311,
+      "sha256": "d15d99c8dc6b0ec22174c0e563a95bc40f9363ca7f9d9d793bb5c5a8e8d0af71"
+    },
+    {
+      "file": "LZ4-license-scope.txt",
+      "upstreamPath": "orig/LICENSE",
+      "url": "https://raw.githubusercontent.com/MiloszKrajewski/K4os.Compression.LZ4/f5a25b7d72e2e41550fe20662597169ff11c3b60/orig/LICENSE",
+      "bytes": 565,
+      "sha256": "2ba56d6195e9bb84500784a49099edae53eb103785b25928c194809dba5a025c"
+    }
+  ],
+  "sources": [
+    {
+      "name": "LZ4Codec.cs",
+      "upstreamPath": "src/K4os.Compression.LZ4/LZ4Codec.cs",
+      "url": "https://raw.githubusercontent.com/MiloszKrajewski/K4os.Compression.LZ4/f5a25b7d72e2e41550fe20662597169ff11c3b60/src/K4os.Compression.LZ4/LZ4Codec.cs",
+      "upstreamSha256": "8eed1c8e8bb4cb785520500b9c9ffe5103e4f401cdcc0ae19aaf9185a4b47852",
+      "upstreamBytes": 10126,
+      "archivedSnapshotPresent": true,
+      "archivedPath": "components/candidates/LZ4Codec.cs",
+      "archivedSha256": "8eed1c8e8bb4cb785520500b9c9ffe5103e4f401cdcc0ae19aaf9185a4b47852",
+      "archivedBytes": 10126,
+      "archivedBytesEqualRelease": true
+    },
+    {
+      "name": "LLxx.cs",
+      "upstreamPath": "src/K4os.Compression.LZ4/Engine/LLxx.cs",
+      "url": "https://raw.githubusercontent.com/MiloszKrajewski/K4os.Compression.LZ4/f5a25b7d72e2e41550fe20662597169ff11c3b60/src/K4os.Compression.LZ4/Engine/LLxx.cs",
+      "upstreamSha256": "9699c39e0d8849d91bf0f6bb32ffc7a96f0f619bddc1ed703096018eaebee5cf",
+      "upstreamBytes": 4776,
+      "archivedSnapshotPresent": true,
+      "archivedPath": "components/candidates/LLxx.cs",
+      "archivedSha256": "9699c39e0d8849d91bf0f6bb32ffc7a96f0f619bddc1ed703096018eaebee5cf",
+      "archivedBytes": 4776,
+      "archivedBytesEqualRelease": true
+    },
+    {
+      "name": "LL32.fast.cs",
+      "upstreamPath": "src/K4os.Compression.LZ4/Engine/x32/LL32.fast.cs",
+      "url": "https://raw.githubusercontent.com/MiloszKrajewski/K4os.Compression.LZ4/f5a25b7d72e2e41550fe20662597169ff11c3b60/src/K4os.Compression.LZ4/Engine/x32/LL32.fast.cs",
+      "upstreamSha256": "7a8a9612bc6f0daf4c85b7bda859f51a3cb47a10fadcb37a05c6cc15a90c59bb",
+      "upstreamBytes": 19157,
+      "archivedSnapshotPresent": false
+    },
+    {
+      "name": "LL64.fast.cs",
+      "upstreamPath": "src/K4os.Compression.LZ4/Engine/x64/LL64.fast.cs",
+      "url": "https://raw.githubusercontent.com/MiloszKrajewski/K4os.Compression.LZ4/f5a25b7d72e2e41550fe20662597169ff11c3b60/src/K4os.Compression.LZ4/Engine/x64/LL64.fast.cs",
+      "upstreamSha256": "741f0c9d8593ec16aa68472be90f60a8c72f1ff7ec0a37ec9e6251d23ccb8c62",
+      "upstreamBytes": 18918,
+      "archivedSnapshotPresent": false
+    }
+  ]
+}
