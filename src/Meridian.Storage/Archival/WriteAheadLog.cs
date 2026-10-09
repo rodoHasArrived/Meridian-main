@@ -1,8 +1,5 @@
-using System.Buffers;
-using System.Buffers.Text;
 using System.Globalization;
 using System.IO.Compression;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -56,8 +53,9 @@ public sealed class WriteAheadLog : IAsyncDisposable
     private long _skippedRecordCount;
 
     // WAL file header constants
-    private const string WalMagic = "MDCWAL01";
-    private const int WalVersion = 1;
+    private const string LegacyWalMagic = "MDCWAL01";
+    private const string WalMagic = "MDCWAL02";
+    private const int WalVersion = WalChecksum.CurrentVersion;
 
     private static int _checksumPathWarmed;
 
@@ -852,8 +850,12 @@ public sealed class WriteAheadLog : IAsyncDisposable
             yield break;
         }
 
-        if (!header.StartsWith(WalMagic))
+        if (!TryParseWalHeader(header, out var version))
         {
+            // A recognized format family with an unsupported/malformed version must stop even
+            // in Skip mode: ignoring it could restart sequence numbering over retained records.
+            if (header.StartsWith("MDCWAL", StringComparison.Ordinal))
+                throw new InvalidDataException($"Unsupported or malformed WAL format in '{walFile}'. File preserved.");
             // A non-empty file with the wrong magic may still hold records. Header corruption
             // follows the same policy as record corruption; TruncateAsync independently refuses
             // to delete files whose header is invalid, so skipping here cannot cause deletion.
@@ -933,7 +935,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
             var payload = parts[4];
 
             // Validate checksum
-            var expectedChecksum = ComputeChecksum(sequence, timestamp, recordType, payload);
+            var expectedChecksum = WalChecksum.Compute(sequence, timestamp, recordType, payload, version);
             if (!string.Equals(checksum, expectedChecksum, StringComparison.Ordinal))
             {
                 _log.Warning(
@@ -965,7 +967,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
             walFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         using var reader = new StreamReader(stream);
         var header = await reader.ReadLineAsync(ct);
-        return header == null || header.StartsWith(WalMagic);
+        return header == null || TryParseWalHeader(header, out _);
     }
 
     private async Task<long> GetLastSequenceNumberAsync(CancellationToken ct)
@@ -984,66 +986,22 @@ public sealed class WriteAheadLog : IAsyncDisposable
         return maxSequence;
     }
 
-    /// <summary>
-    /// Computes a SHA-256 checksum for a WAL record using incremental hashing
-    /// to avoid allocating a single large concatenated string.
-    /// </summary>
-    private static string ComputeChecksum(long sequence, DateTime timestamp, string recordType, string payload)
+    private static bool TryParseWalHeader(string header, out int version)
     {
-        Span<byte> hashBytes = stackalloc byte[32]; // SHA-256 = 32 bytes
-        ComputeChecksumCore(sequence, timestamp, recordType, payload, hashBytes);
-        return Convert.ToHexStringLower(hashBytes);
+        version = 0;
+        var parts = header.Split('|');
+        return parts.Length == 3 &&
+            int.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out version) &&
+            DateTime.TryParse(parts[2], CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out _) &&
+            ((parts[0] == LegacyWalMagic && version == WalChecksum.LegacyVersion) ||
+             (parts[0] == WalMagic && version == WalVersion));
     }
 
-    private static void ComputeChecksumCore(long sequence, DateTime timestamp, string recordType, string payload, Span<byte> destination)
-    {
-        var recordTypeByteCount = Encoding.UTF8.GetByteCount(recordType);
-        var payloadByteCount = Encoding.UTF8.GetByteCount(payload);
-        var totalByteCount = 20 + 33 + 3 + recordTypeByteCount + payloadByteCount;
+    private static string ComputeChecksum(long sequence, DateTime timestamp, string recordType, string payload) =>
+        WalChecksum.Compute(sequence, timestamp, recordType, payload);
 
-        byte[]? rented = null;
-        var buffer = totalByteCount <= 4608
-            ? stackalloc byte[4608]
-            : (rented = ArrayPool<byte>.Shared.Rent(totalByteCount));
-
-        var recordBytes = buffer[..totalByteCount];
-
-        try
-        {
-            var written = 0;
-
-            if (!Utf8Formatter.TryFormat(sequence, recordBytes[written..], out var sequenceWritten))
-            {
-                throw new InvalidOperationException("Failed to format WAL sequence.");
-            }
-
-            written += sequenceWritten;
-            recordBytes[written++] = (byte)'|';
-
-            if (!Utf8Formatter.TryFormat(timestamp, recordBytes[written..], out var timestampWritten, 'O'))
-            {
-                throw new InvalidOperationException("Failed to format WAL timestamp.");
-            }
-
-            written += timestampWritten;
-            recordBytes[written++] = (byte)'|';
-            written += Encoding.UTF8.GetBytes(recordType, recordBytes[written..]);
-            recordBytes[written++] = (byte)'|';
-            written += Encoding.UTF8.GetBytes(payload, recordBytes[written..]);
-
-            if (!SHA256.TryHashData(recordBytes[..written], destination, out _))
-            {
-                throw new InvalidOperationException("Failed to compute WAL checksum.");
-            }
-        }
-        finally
-        {
-            if (rented is not null)
-            {
-                ArrayPool<byte>.Shared.Return(rented);
-            }
-        }
-    }
+    private static void ComputeChecksumCore(long sequence, DateTime timestamp, string recordType, string payload,
+        Span<byte> destination) => WalChecksum.ComputeCore(sequence, timestamp, recordType, payload, destination);
 
     /// <summary>
     /// Repairs all WAL files by scanning every record, validating checksums,
@@ -1082,6 +1040,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
             var fileValidRecords = new List<WalRecord>();
             int fileCorruptedCount = 0;
+            var retainedHeader = string.Empty;
 
             // Read the raw file directly to count both valid and corrupted records,
             // rather than going through ReadWalFileAsync which filters corrupted ones out.
@@ -1092,11 +1051,12 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
                 // Read and validate header
                 var header = await reader.ReadLineAsync();
-                if (header == null || !header.StartsWith(WalMagic))
+                if (header == null || !TryParseWalHeader(header, out var version))
                 {
-                    _log.Warning("Skipping WAL file with invalid header during repair: {File}", walFile);
+                    _log.Warning("Skipping WAL file with invalid or unsupported header during repair: {File}", walFile);
                     continue;
                 }
+                retainedHeader = header;
 
                 while (!reader.EndOfStream && !ct.IsCancellationRequested)
                 {
@@ -1120,7 +1080,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
                     var checksum = parts[3];
                     var payload = parts[4];
 
-                    var expectedChecksum = ComputeChecksum(sequence, timestamp, recordType, payload);
+                    var expectedChecksum = WalChecksum.Compute(sequence, timestamp, recordType, payload, version);
                     if (!string.Equals(checksum, expectedChecksum, StringComparison.Ordinal))
                     {
                         _log.Warning(
@@ -1155,7 +1115,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
                     await using var writer = new StreamWriter(outStream, Encoding.UTF8, bufferSize: 32 * 1024);
 
                     // Write header
-                    await writer.WriteLineAsync($"{WalMagic}|{WalVersion}|{DateTime.UtcNow:O}");
+                    await writer.WriteLineAsync(retainedHeader);
 
                     // Write valid records
                     foreach (var record in fileValidRecords)
@@ -1283,10 +1243,8 @@ public sealed class WriteAheadLog : IAsyncDisposable
     /// Idempotent: only runs once per process lifetime.
     /// </summary>
     /// <remarks>
-    /// The medium-payload warm-up (900 chars) specifically pre-initialises the
-    /// SIMD UTF-8 encoding path that .NET 9 uses for strings longer than ~64
-    /// characters; without it, the first call allocates ~120 bytes of lazy-init
-    /// state that inflates allocation-budget tests.
+    /// Warms UTF-8 encoding, canonical PackBits scanning and the stateless native BLAKE3
+    /// provider before steady-state allocation measurements. No record digests are cached.
     /// </remarks>
     [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
     internal static void WarmChecksumPath()
@@ -1297,7 +1255,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
         }
 
         Span<byte> dest = stackalloc byte[32];
-        // Small payload: warms the stackalloc + SHA-256 + Utf8Formatter paths.
+        // Small payload: warms framing, PackBits and the BLAKE3 one-shot provider.
         ComputeChecksumCore(0, DateTime.UtcNow, "Trade", new string('x', 64), dest);
         // Medium payload: pre-initialises the SIMD UTF-8 GetByteCount/GetBytes
         // code path that triggers ~120 bytes of one-time managed allocation on

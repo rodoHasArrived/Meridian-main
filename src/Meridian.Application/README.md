@@ -6,10 +6,14 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-07
 ---
 
 # src/Meridian.Application
+
+PostgreSQL ledger composition resolves consolidation posting authority through a deferred factory.
+The workstation supplies the authoritative ownership and policy provider, avoiding a dependency
+cycle with the ledger reader; missing providers block consolidation posting.
 
 Composition accepts host-owned runtime settings through `CompositionOptions.Configuration`.
 An explicit configuration is authoritative for storage, governance and deployment posture, including
@@ -393,6 +397,11 @@ Core workstation host. Do not introduce a second listener or independent monitor
   Explicit flush waits for completed consumption, which already includes rejected events.
   Rejected batches cannot be counted twice to acknowledge a later valid event before its
   storage append finishes; gated regression cases cover that ordering across separate batches.
+  Trade and quote dedup keys retain their existing SHA-256 identity and 128-bit lowercase
+  digest suffix. Hashing uses the canonical `Sha256Digest` span overload with a reusable provider
+  per thread, primed on each constructor thread. Key construction uses the runtime span-based hex
+  encoder inside a single `string.Create` allocation; culture and Unicode/pooled-buffer regressions
+  compare the complete key with the original identity format.
 - Event pipeline queueing consumes `Meridian.Platform.Tracing.EventTraceContext` for trace
   propagation, platform-owned OpenTelemetry helpers for market-data activity/counter telemetry,
   the Platform `DefaultEventMetrics` implementation, and the Platform `TracedEventMetrics`

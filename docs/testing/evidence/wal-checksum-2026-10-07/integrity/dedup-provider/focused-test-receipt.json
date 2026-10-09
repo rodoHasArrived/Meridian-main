@@ -1,0 +1,35 @@
+{
+  "command": [
+    "/workspace/dotnet-10.0.100/dotnet",
+    "test",
+    "tests/Meridian.Tests/Meridian.Tests.csproj",
+    "-c",
+    "Release",
+    "--filter",
+    "FullyQualifiedName~Sha256DigestTests|FullyQualifiedName~PersistentDedupLedgerTests|FullyQualifiedName~DedupWalOrderingTests|FullyQualifiedName~AllocationBudgetIntegrationTests",
+    "--logger",
+    "trx;LogFileName=dedup-provider-focused.trx",
+    "--results-directory",
+    "/workspace/Meridian-dedup-provider/artifacts/dedup-provider-validation/test-results",
+    "-p:EnableWindowsTargeting=true",
+    "-p:UseAppHost=false",
+    "-p:UseSharedCompilation=false",
+    "-p:BuildInParallel=false",
+    "-m:1",
+    "-nr:false",
+    "-v:minimal"
+  ],
+  "workingDirectory": "/workspace/Meridian-dedup-provider",
+  "startedAt": "2026-10-07T19:46:54.598858+00:00",
+  "sourceBaseCommit": "cfe44c6e09a3779a85439f205b524a86cc59ea67",
+  "sourceDiffSha256": "b6f4bb6a3a133c28a70e0c31076f0ea4b12bcd2b01e82c0cfd4d5eba88d241cc",
+  "environmentOverrides": {
+    "DOTNET_ROOT": "/workspace/dotnet-10.0.100",
+    "DOTNET_NOLOGO": "true",
+    "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+    "DOTNET_PROCESSOR_COUNT": "2"
+  },
+  "processId": 93171,
+  "exitCode": 0,
+  "finishedAt": "2026-10-07T19:58:00.223563+00:00"
+}

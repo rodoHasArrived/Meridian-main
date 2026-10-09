@@ -238,7 +238,7 @@ public sealed class InMemoryFundStructureServiceTests
     }
 
     [Fact]
-    public async Task LinkNodesAsync_WhenSiblingOwnershipPercentagesWouldExceedOneHundred_ThrowsInvalidOperation()
+    public async Task LinkNodesAsync_AllowsTwoWhollyOwnedEntitiesAndRetainsBothOwnershipRecords()
     {
         var service = CreateStructureService();
         var now = new DateTimeOffset(2026, 01, 01, 0, 0, 0, TimeSpan.Zero);
@@ -292,16 +292,25 @@ public sealed class InMemoryFundStructureServiceTests
             OwnershipRelationshipTypeDto.Owns,
             now,
             "test",
-            OwnershipPercent: 60m));
+            OwnershipPercent: 100m));
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => service.LinkNodesAsync(new LinkFundStructureNodesRequest(
+        await service.LinkNodesAsync(new LinkFundStructureNodesRequest(
             Guid.NewGuid(),
             fund.FundId,
             secondEntity.EntityId,
             OwnershipRelationshipTypeDto.Owns,
             now,
             "test",
-            OwnershipPercent: 50m)));
+            OwnershipPercent: 100m));
+
+        var graph = await service.GetOrganizationStructureAsync(new OrganizationStructureQuery(
+            OrganizationId: organization.OrganizationId, AsOf: now));
+        var ownedEntities = graph.OwnershipLinks.Where(link => link.ParentNodeId == fund.FundId
+            && link.RelationshipType == OwnershipRelationshipTypeDto.Owns).ToArray();
+        Assert.Equal(2, ownedEntities.Length);
+        Assert.All(ownedEntities, link => Assert.Equal(100m, link.OwnershipPercent));
+        Assert.Contains(ownedEntities, link => link.ChildNodeId == firstEntity.EntityId);
+        Assert.Contains(ownedEntities, link => link.ChildNodeId == secondEntity.EntityId);
     }
 
     [Fact]

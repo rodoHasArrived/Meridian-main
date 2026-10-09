@@ -1,0 +1,56 @@
+[
+  {
+    "stage_name": "DedupKey_CacheHit",
+    "max_allocated_bytes_per_event": 0,
+    "max_mean_nanos_per_event": 200,
+    "requires_simd": false
+  },
+  {
+    "stage_name": "DedupKey_CacheMiss",
+    "max_allocated_bytes_per_event": 256,
+    "max_mean_nanos_per_event": 800,
+    "requires_simd": false
+  },
+  {
+    "stage_name": "WalChecksum_Small",
+    "max_allocated_bytes_per_event": 0,
+    "max_mean_nanos_per_event": 400,
+    "requires_simd": false
+  },
+  {
+    "stage_name": "WalChecksum_Medium_1KB",
+    "max_allocated_bytes_per_event": 0,
+    "max_mean_nanos_per_event": 600,
+    "requires_simd": false
+  },
+  {
+    "stage_name": "WalChecksum_Large_4KB",
+    "max_allocated_bytes_per_event": 1024,
+    "max_mean_nanos_per_event": 1200,
+    "requires_simd": false
+  },
+  {
+    "stage_name": "NewlineScan_Portable",
+    "max_allocated_bytes_per_event": 0,
+    "max_mean_nanos_per_event": 50,
+    "requires_simd": false
+  },
+  {
+    "stage_name": "NewlineScan_Avx2",
+    "max_allocated_bytes_per_event": 0,
+    "max_mean_nanos_per_event": 20,
+    "requires_simd": true
+  },
+  {
+    "stage_name": "AlpacaParse_Trade_SourceGenerated",
+    "max_allocated_bytes_per_event": 512,
+    "max_mean_nanos_per_event": 900,
+    "requires_simd": false
+  },
+  {
+    "stage_name": "AlpacaParse_Quote_SourceGenerated",
+    "max_allocated_bytes_per_event": 640,
+    "max_mean_nanos_per_event": 1200,
+    "requires_simd": false
+  }
+]

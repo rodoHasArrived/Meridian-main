@@ -1,4 +1,6 @@
 import type { WorkspaceSummary } from "@/types";
+import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import { REPORTING_WORK_SELECTION_PARAM } from "@/components/meridian/reporting-hub.selection";
 
 export interface AppShellRouteFocusState {
   routeKey: string;
@@ -19,7 +21,7 @@ export function buildRouteFocusState(
   const targetLabel = targetElementId ? formatHashTargetLabel(targetElementId) : null;
 
   return {
-    routeKey: `${pathname}${search}${hash}`,
+    routeKey: `${pathname}${routeFocusSearch(pathname, search)}${hash}`,
     announcement: targetLabel
       ? `${workspaceTitle} loaded. Jumping to ${targetLabel}.`
       : `${workspaceTitle} loaded.`,
@@ -27,6 +29,18 @@ export function buildRouteFocusState(
     targetElementId,
     fallbackElementId: "workbench-content"
   };
+}
+
+function routeFocusSearch(pathname: string, search: string): string {
+  const normalizedPath = pathname.replace(/\/$/, "").toLowerCase();
+  if (normalizedPath !== WORKSTATION_ROUTE_CATALOG.reporting) return search;
+
+  // Selecting a queue item stays in the same workbench. Treating its URL state
+  // as navigation would steal the row/detail focus managed by the shared table.
+  const params = new URLSearchParams(search);
+  params.delete(REPORTING_WORK_SELECTION_PARAM);
+  const focusSearch = params.toString();
+  return focusSearch ? `?${focusSearch}` : "";
 }
 
 function normalizeHashTarget(hash: string): string | null {

@@ -1,0 +1,17 @@
+{
+  "canonicalCiStartCommit": "ea846ee8fa26f37315a61420b7db2f4694c2e256",
+  "currentHead": "cfe44c6e09a3779a85439f205b524a86cc59ea67",
+  "verifiedAt": "2026-10-07T19:15:21.531024+00:00",
+  "sourceAndConfigurationDiff": [],
+  "comparisonCommand": [
+    "git",
+    "diff",
+    "--name-only",
+    "ea846ee8fa26f37315a61420b7db2f4694c2e256",
+    "cfe44c6e09a3779a85439f205b524a86cc59ea67",
+    "--",
+    ".",
+    ":!docs"
+  ],
+  "conclusion": "Only documentation/evidence changes occurred while canonical CI ran; all source, tests, toolchain, budgets, harness, scripts and workflows are unchanged."
+}

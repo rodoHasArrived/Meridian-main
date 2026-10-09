@@ -15,10 +15,15 @@ public interface IStrategyLifecycle
     /// <summary>Current lifecycle state.</summary>
     StrategyStatus Status { get; }
 
+    /// <summary>The retained failure detail when the strategy is faulted, if available.</summary>
+    string? FaultReason => null;
+
     /// <summary>
     /// Starts the strategy against the provided execution context. Transitions the strategy
     /// from <see cref="StrategyStatus.Registered"/> (or <see cref="StrategyStatus.Stopped"/>)
     /// to <see cref="StrategyStatus.WarmingUp"/> and then <see cref="StrategyStatus.Running"/>.
+    /// Resuming from <see cref="StrategyStatus.Paused"/> retains the warmed state and context.
+    /// A faulted strategy must successfully stop before it can restart.
     /// </summary>
     Task StartAsync(IExecutionContext ctx, CancellationToken ct = default);
 
@@ -30,7 +35,8 @@ public interface IStrategyLifecycle
 
     /// <summary>
     /// Stops the strategy, finalises its state, and records the completed run.
-    /// Transitions to <see cref="StrategyStatus.Stopped"/>.
+    /// Transitions through <see cref="StrategyStatus.Stopping"/> and reports
+    /// <see cref="StrategyStatus.Stopped"/> only after cleanup succeeds.
     /// </summary>
     Task StopAsync(CancellationToken ct = default);
 }

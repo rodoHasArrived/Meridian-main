@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-193517</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Linux Ubuntu 24.04.5 LTS (Noble Numbat)
+AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.100
+  [Host]     : .NET 10.0.0 (10.0.0, 10.0.25.52411), X64 RyuJIT x86-64-v3
+  Job-HDUCDG : .NET 10.0.0 (10.0.0, 10.0.25.52411), X64 RyuJIT x86-64-v3
+</code></pre>
+<pre><code>IterationCount=8  IterationTime=250ms  LaunchCount=1  
+WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method                     </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Gen0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>DedupKey_CacheHit</td><td>60.250 ns</td><td>1.3816 ns</td><td>0.6134 ns</td><td>-</td><td>-</td>
+</tr><tr><td>DedupKey_CacheMiss</td><td>823.729 ns</td><td>13.4863 ns</td><td>5.9880 ns</td><td>0.0066</td><td>128 B</td>
+</tr><tr><td>WalChecksum_Small</td><td>202.600 ns</td><td>0.3551 ns</td><td>0.1857 ns</td><td>-</td><td>-</td>
+</tr><tr><td>WalChecksum_Medium_1KB</td><td>246.756 ns</td><td>0.4066 ns</td><td>0.1805 ns</td><td>-</td><td>-</td>
+</tr><tr><td>WalChecksum_Large_4KB</td><td>581.680 ns</td><td>2.3361 ns</td><td>1.0372 ns</td><td>-</td><td>-</td>
+</tr><tr><td>NewlineScan_Portable</td><td>2.481 ns</td><td>0.0172 ns</td><td>0.0076 ns</td><td>-</td><td>-</td>
+</tr><tr><td>AlpacaParse_Trade_SourceGenerated</td><td>729.215 ns</td><td>8.8407 ns</td><td>3.9253 ns</td><td>0.0203</td><td>384 B</td>
+</tr><tr><td>AlpacaParse_Quote_SourceGenerated</td><td>931.821 ns</td><td>2.6571 ns</td><td>1.1798 ns</td><td>0.0260</td><td>472 B</td>
+</tr></tbody></table>
+</body>
+</html>

@@ -637,9 +637,8 @@
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Report packs, governed exports",
-        "Reporting workbench",
         "Daily reporting cockpit",
+        "Triage queue",
         "Report family organizer"
       ],
       "waitForAbsentTexts": [

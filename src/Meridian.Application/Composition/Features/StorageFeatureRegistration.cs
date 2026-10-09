@@ -236,6 +236,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 () => sp.GetService<ISecurityMasterStore>());
             services.AddSingleton<Func<IInstrumentPositionProjectionStore?>>(sp =>
                 () => sp.GetService<IInstrumentPositionProjectionStore>());
+            services.AddSingleton<Func<IConsolidationPostingAuthority?>>(sp =>
+                () => sp.GetService<IConsolidationPostingAuthority>());
             services.AddSingleton<PostgresLedgerJournalStore>();
             services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());

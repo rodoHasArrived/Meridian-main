@@ -1,0 +1,24 @@
+{
+  "command": [
+    "python3",
+    "/workspace/Meridian-main/artifacts/wal-checksum-profile/linux-subreaper.py",
+    "--cwd",
+    "/workspace/Meridian-main",
+    "--receipt",
+    "/workspace/Meridian-main/artifacts/wal-checksum-profile/canonical-ci-subreaper-receipt.json",
+    "--log",
+    "/workspace/Meridian-main/artifacts/wal-checksum-profile/canonical-ci-subreaper.log",
+    "--",
+    "bash",
+    "scripts/ci.sh"
+  ],
+  "canonicalCommand": [
+    "bash",
+    "scripts/ci.sh"
+  ],
+  "sourceCommit": "ea846ee8fa26f37315a61420b7db2f4694c2e256",
+  "startedAt": "2026-10-07T19:08:23.457242+00:00",
+  "wrapperPid": 51823,
+  "wrapperSha256": "09668360d71d7b4560a231874c11d4cf21a217b896c712bfb291fad1bd7828e8",
+  "reason": "Container PID1 is tail and does not reap orphaned children; supplies Linux init reaping without repository/test changes."
+}

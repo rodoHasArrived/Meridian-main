@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "commitSha": "5ce795c47fc7c67734c4baa970c3bc4434c0e3de",
+  "worktreeDirty": false,
+  "executionEnvironment": "local",
+  "runId": "local-0abffcf2a2844b5eb1141779ff2ee9a0",
+  "runAttempt": "1",
+  "startedAt": "2026-10-07T17:28:46.667142+00:00",
+  "conclusion": "running",
+  "profileId": "prd112-linux-x64-net10-v1",
+  "profileSha256": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26",
+  "runnerLabel": "local-Linux-x86_64",
+  "commands": {
+    "sdk": {
+      "command": [
+        "dotnet",
+        "--version"
+      ],
+      "workingDirectory": "/workspace/Meridian-main",
+      "startedAt": "2026-10-07T17:28:46.668277+00:00",
+      "exitCode": 0,
+      "timedOut": false,
+      "error": null,
+      "seconds": 0.2153626169999825,
+      "completedAt": "2026-10-07T17:28:46.883657+00:00"
+    },
+    "runtime": {
+      "command": [
+        "dotnet",
+        "--list-runtimes"
+      ],
+      "workingDirectory": "/workspace/Meridian-main",
+      "startedAt": "2026-10-07T17:28:46.884612+00:00",
+      "exitCode": 0,
+      "timedOut": false,
+      "error": null,
+      "seconds": 0.004195314000071448,
+      "completedAt": "2026-10-07T17:28:46.888819+00:00"
+    },
+    "dotnetInfo": {
+      "command": [
+        "dotnet",
+        "--info"
+      ],
+      "workingDirectory": "/workspace/Meridian-main",
+      "startedAt": "2026-10-07T17:28:46.889181+00:00",
+      "exitCode": 0,
+      "timedOut": false,
+      "error": null,
+      "seconds": 0.31517205000000104,
+      "completedAt": "2026-10-07T17:28:47.204363+00:00"
+    },
+    "restore": {
+      "command": [
+        "dotnet",
+        "restore",
+        "benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj",
+        "-p:EnableWindowsTargeting=true"
+      ],
+      "workingDirectory": "/workspace/Meridian-main",
+      "startedAt": "2026-10-07T17:28:47.205852+00:00",
+      "exitCode": 0,
+      "timedOut": false,
+      "error": null,
+      "seconds": 6.158641683000042,
+      "completedAt": "2026-10-07T17:28:53.364612+00:00"
+    },
+    "build": {
+      "command": [
+        "dotnet",
+        "build",
+        "benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj",
+        "-c",
+        "Release",
+        "--no-restore",
+        "-p:EnableWindowsTargeting=true"
+      ],
+      "workingDirectory": "/workspace/Meridian-main",
+      "startedAt": "2026-10-07T17:28:53.365455+00:00",
+      "exitCode": 0,
+      "timedOut": false,
+      "error": null,
+      "seconds": 141.392371358,
+      "completedAt": "2026-10-07T17:31:14.757838+00:00"
+    }
+  },
+  "errors": [],
+  "runtimeEnvironment": {
+    "DOTNET_ROLL_FORWARD": "Disable",
+    "DOTNET_ROLL_FORWARD_TO_PRERELEASE": "0",
+    "DOTNET_TieredCompilation": "1",
+    "DOTNET_TieredPGO": "1",
+    "DOTNET_gcServer": "0"
+  },
+  "hardware": {
+    "os": "Linux",
+    "architecture": "x86_64",
+    "kernel": "6.18.44",
+    "cpuModels": [
+      "AMD EPYC 9V74 80-Core Processor"
+    ],
+    "logicalCpuCount": 5,
+    "cpuAffinity": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "memoryTotal": "MemTotal:       18488520 kB",
+    "osRelease": "PRETTY_NAME=\"Debian GNU/Linux 13 (trixie)\"\nNAME=\"Debian GNU/Linux\"\nVERSION_ID=\"13\"\nVERSION=\"13 (trixie)\"\nVERSION_CODENAME=trixie\nDEBIAN_VERSION_FULL=13.6\nID=debian\nHOME_URL=\"https://www.debian.org/\"\nSUPPORT_URL=\"https://www.debian.org/support\"\nBUG_REPORT_URL=\"https://bugs.debian.org/\"\n",
+    "runner": {
+      "RUNNER_NAME": null,
+      "RUNNER_OS": null,
+      "RUNNER_ARCH": null,
+      "ImageOS": null,
+      "ImageVersion": null
+    },
+    "cgroup": {
+      "cpu.max": "400000 100000",
+      "memory.max": "17179869184"
+    }
+  }
+}
