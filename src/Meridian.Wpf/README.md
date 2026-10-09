@@ -97,13 +97,16 @@ repair instruction names the owning lane, and Evaluate close reloads the selecte
 detail and shared decision after repair. The workflow list, detail and shared decision must
 agree on the workflow version, account, period and nullable ledger book. The detail and shared
 decision must also agree on report-pack identity/readiness and the retained evidence identities
-used for publication, including source, route and full-precision capture time. Labels and link
+used for publication, including source, route and full-precision capture time. Publication
+checklist approvals must also match each task, actor and timestamp identity sent by the close
+command, including maker/checker decisions and acknowledged checklist items. Task/actor
+normalization and first-occurrence precedence follow the shared publication guard. Labels and link
 ordering do not identify retained evidence; duplicate IDs use the same first-link precedence as
 the browser publication command. Unlisted workflows, mismatched scope or evidence, and superseded
 selections cannot establish readiness or contribute blocker records. Selection completion,
 refusal and cancellation replace the loading status without clearing other panels' errors.
 `OperationsContinuityViewModelTests` covers structured fields, stale-version recovery,
-wrong-workflow/scope refusal, same-version evidence changes and delayed-response isolation,
+wrong-workflow/scope refusal, same-version evidence and approval-identity changes, and delayed-response isolation,
 plus a Windows-only rendering test for
 the shared blocker template and repair refresh. A Linux stub build does not execute these tests
 or certify WPF rendering; the joint live acceptance session still runs SEAM before MARK and

@@ -359,6 +359,20 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn(policy_path, capture["requiredApiRoutes"])
         self.assertIsInstance(fixtures[policy_path]["rows"], list)
 
+        # The cockpit and shared decision are loaded together; a missing shared
+        # endpoint rejects both even when selected workflow detail is available.
+        command_center_path = "/api/workstation/operations/financial-operations-command-center"
+        self.assertIn(command_center_path, capture["requiredApiRoutes"])
+        command_center = fixtures[command_center_path]
+        self.assertEqual(detail, command_center["activeWorkflow"])
+        self.assertFalse(command_center["isReadyToComplete"])
+        self.assertFalse(command_center["closeReadiness"]["isReadyToClose"])
+        self.assertEqual(detail["fundAccountId"], command_center["closeReadiness"]["scope"]["fundAccountId"])
+        self.assertEqual(detail["periodId"], command_center["closeReadiness"]["scope"]["periodId"])
+        self.assertIn("3/7 lanes ready across 1 close workflow.", capture["waitForTexts"])
+        self.assertIn("Private-capital close cockpit unavailable", capture["waitForAbsentTexts"])
+        self.assertIn("Private-capital close evidence is unavailable.", capture["waitForAbsentTexts"])
+
     def test_accounting_capture_contracts_use_current_operator_labels(self) -> None:
         captures = {
             capture.get("id"): capture

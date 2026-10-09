@@ -1,7 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import { formatDate, formatDateOnly } from "@/screens/operations-continuity-screen.date-format";
-import { collectCloseWorkflowEvidenceLinks, compareWorkflowSummaries, workflowMatchesPublicationSnapshot, workflowMatchesSummary } from "@/screens/operations-continuity-screen.workflow-selection";
+import {
+  collectCloseWorkflowEvidenceLinks,
+  collectCloseWorkflowChecklistControlApprovals,
+  collectSubmitApprovalChecklistControlApprovals,
+  collectApprovalDecisionChecklistControlApprovals,
+  compareWorkflowSummaries,
+  isChecklistTaskReady,
+  isChecklistTaskBlocked,
+  isPendingWorkflowApprovalState,
+  workflowMatchesPublicationSnapshot,
+  workflowMatchesSummary
+} from "@/screens/operations-continuity-screen.workflow-selection";
 import {
   getOperationsCloseCalendar,
   getFinancialOperationsCommandCenter,
@@ -1427,10 +1438,6 @@ function buildRejectWorkflowDecisionDisabledReason(
   return null;
 }
 
-function isPendingWorkflowApprovalState(status: OperationsContinuityWorkflow["approvalState"]): boolean {
-  return status === "Submitted" || status === "ReviewerAssigned";
-}
-
 function buildNextActionViewModel({
   workflow,
   gates,
@@ -1923,92 +1930,6 @@ function collectRejectDecisionEvidenceLinks(
 function distinctOperationsEvidenceLinks(links: OperationsEvidenceLink[]): OperationsEvidenceLink[] {
   return links.filter((link, index, source) =>
     source.findIndex((candidate) => candidate.evidenceId === link.evidenceId) === index
-  );
-}
-
-function collectSubmitApprovalChecklistControlApprovals(
-  workflow: OperationsContinuityWorkflow | null
-): OperationsChecklistControlApproval[] {
-  if (!workflow) {
-    return [];
-  }
-
-  const approvals: OperationsChecklistControlApproval[] = [];
-  workflow.closeChecklist
-    .filter((task) => task.gate !== "Approval"
-      && isChecklistTaskReady(task)
-      && !isChecklistTaskBlocked(task)
-      && Boolean(task.evidencePointer?.trim()))
-    .forEach((task) => {
-      appendChecklistControlApproval(approvals, task.taskId, task.acknowledgedBy, task.acknowledgedAtUtc);
-    });
-
-  return distinctChecklistControlApprovals(approvals);
-}
-
-function collectCloseWorkflowChecklistControlApprovals(
-  workflow: OperationsContinuityWorkflow | null
-): OperationsChecklistControlApproval[] {
-  const approvals = collectSubmitApprovalChecklistControlApprovals(workflow);
-  if (!workflow || workflow.approvalState !== "Approved") {
-    return approvals;
-  }
-
-  const approvalTaskId = workflow.closeChecklist.find((task) => task.gate === "Approval")?.taskId ?? "close-gate-approval";
-  const decision = workflow.approvals.at(-1);
-  if (decision?.status === "Approved") {
-    // Legacy records retain submission and decision as separate history entries.
-    const submission = decision.submittedAtUtc
-      ? decision
-      : workflow.approvals.at(-2);
-    if (submission && (submission === decision || isPendingWorkflowApprovalState(submission.status))) {
-      appendChecklistControlApproval(approvals, approvalTaskId, submission.operator, submission.submittedAtUtc);
-    }
-    appendChecklistControlApproval(approvals, approvalTaskId, decision.reviewer, decision.decidedAtUtc);
-  }
-
-  return distinctChecklistControlApprovals(approvals);
-}
-
-function collectApprovalDecisionChecklistControlApprovals(
-  workflow: OperationsContinuityWorkflow,
-  approval: OperationsContinuityWorkflow["approvals"][number]
-): OperationsChecklistControlApproval[] {
-  const approvals = collectSubmitApprovalChecklistControlApprovals(workflow);
-  const approvalTaskId = workflow.closeChecklist.find((task) => task.gate === "Approval")?.taskId ?? "close-gate-approval";
-  appendChecklistControlApproval(approvals, approvalTaskId, approval.operator, approval.submittedAtUtc);
-
-  return distinctChecklistControlApprovals(approvals);
-}
-
-function appendChecklistControlApproval(
-  approvals: OperationsChecklistControlApproval[],
-  taskId: string | null | undefined,
-  approvedBy: string | null | undefined,
-  approvedAtUtc: string | null | undefined
-): void {
-  const cleanTaskId = taskId?.trim();
-  const cleanApprover = approvedBy?.trim();
-  const cleanTimestamp = approvedAtUtc?.trim();
-  if (!cleanTaskId || !cleanApprover || !cleanTimestamp) {
-    return;
-  }
-
-  approvals.push({
-    taskId: cleanTaskId,
-    approvedBy: cleanApprover,
-    approvedAtUtc: cleanTimestamp
-  });
-}
-
-function distinctChecklistControlApprovals(
-  approvals: OperationsChecklistControlApproval[]
-): OperationsChecklistControlApproval[] {
-  return approvals.filter((approval, index, source) =>
-    source.findIndex((candidate) =>
-      candidate.taskId.toLowerCase() === approval.taskId.toLowerCase()
-        && candidate.approvedBy.toLowerCase() === approval.approvedBy.toLowerCase()
-    ) === index
   );
 }
 
@@ -3847,22 +3768,6 @@ function buildChecklistSummary(tasks: OperationsCloseChecklistTask[]): Operation
     dueSoonLabel: dueSoon?.dueDate ? `Next due ${formatDate(dueSoon.dueDate)}: ${dueSoon.label || gateLabel(dueSoon.gate)}` : "No open due dates",
     statusTone: tone
   };
-}
-
-function isChecklistTaskReady(task: OperationsCloseChecklistTask): boolean {
-  const normalized = task.status?.trim().toLowerCase() ?? "";
-  return normalized === "done" ||
-    normalized === "complete" ||
-    normalized === "completed" ||
-    normalized === "acknowledged" ||
-    Boolean(task.acknowledgedAtUtc);
-}
-
-function isChecklistTaskBlocked(task: OperationsCloseChecklistTask): boolean {
-  const normalized = task.status?.trim().toLowerCase() ?? "";
-  return normalized === "blocked" ||
-    normalized === "expired" ||
-    Boolean(task.blockingReason?.trim());
 }
 
 function collectGateBlockers(gates: OperationsGate[]): OperationsWorkflowBlocker[] {

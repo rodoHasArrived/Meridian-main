@@ -394,16 +394,20 @@
         "/api/accounting-system/reconciliation/latest",
         "/api/workstation/operations/continuity",
         "/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
-        "/api/workstation/operations/continuity/approval-policy-matrix"
+        "/api/workstation/operations/continuity/approval-policy-matrix",
+        "/api/workstation/operations/financial-operations-command-center"
       ],
       "waitForTexts": [
         "1 operations continuity workflows loaded.",
         "Workflows",
         "Ledger Posting Draft",
-        "Journal validation is still required."
+        "Journal validation is still required.",
+        "3/7 lanes ready across 1 close workflow."
       ],
       "waitForAbsentTexts": [
-        "Selected workflow detail failed to load:"
+        "Selected workflow detail failed to load:",
+        "Private-capital close cockpit unavailable",
+        "Private-capital close evidence is unavailable."
       ]
     },
     {

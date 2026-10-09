@@ -46,7 +46,53 @@ public sealed record OperationsContinuityClosePresentation(bool IsReady, string 
         => selected.ReportPackReadiness.ReportPackId == active.ReportPackReadiness.ReportPackId &&
            selected.ReportPackReadiness.IsReady == active.ReportPackReadiness.IsReady &&
            EvidenceIdentitiesMatch(selected.ReportPackReadiness.EvidenceLinks, active.ReportPackReadiness.EvidenceLinks) &&
-           EvidenceIdentitiesMatch(PublicationEvidence(selected), PublicationEvidence(active));
+           EvidenceIdentitiesMatch(PublicationEvidence(selected), PublicationEvidence(active)) &&
+           ChecklistApprovalIdentitiesMatch(selected, active);
+
+    private static bool ChecklistApprovalIdentitiesMatch(OperationsContinuityWorkflowDto selected, OperationsContinuityWorkflowDto active)
+    {
+        var selectedIdentities = PublicationChecklistApprovals(selected);
+        var activeIdentities = PublicationChecklistApprovals(active);
+        return selectedIdentities.Count == activeIdentities.Count && selectedIdentities.All(pair =>
+            activeIdentities.TryGetValue(pair.Key, out var approvedAtUtc) && pair.Value == approvedAtUtc);
+    }
+
+    private static Dictionary<(string TaskId, string ApprovedBy), DateTimeOffset> PublicationChecklistApprovals(
+        OperationsContinuityWorkflowDto workflow)
+    {
+        var identities = new Dictionary<(string TaskId, string ApprovedBy), DateTimeOffset>();
+        foreach (var task in workflow.CloseChecklist)
+        {
+            var status = task.Status.Trim().ToLowerInvariant();
+            var ready = task.AcknowledgedAtUtc is not null || status is "done" or "complete" or "completed" or "acknowledged";
+            if (task.Gate != OperationsGateKeyDto.Approval && ready && status is not ("blocked" or "expired") &&
+                string.IsNullOrWhiteSpace(task.BlockingReason) && !string.IsNullOrWhiteSpace(task.EvidencePointer))
+                Add(task.TaskId, task.AcknowledgedBy, task.AcknowledgedAtUtc);
+        }
+
+        if (workflow.ApprovalState == OperationsApprovalStateDto.Approved &&
+            workflow.Approvals.LastOrDefault() is { Status: OperationsApprovalStateDto.Approved } decision)
+        {
+            var taskId = workflow.CloseChecklist.FirstOrDefault(static task => task.Gate == OperationsGateKeyDto.Approval)?.TaskId
+                ?? "close-gate-approval";
+            if (decision.SubmittedAtUtc is not null)
+                Add(taskId, decision.Operator, decision.SubmittedAtUtc);
+            else if (workflow.Approvals.Count > 1 && workflow.Approvals[^2] is
+                     { Status: OperationsApprovalStateDto.Submitted or OperationsApprovalStateDto.ReviewerAssigned } submission)
+                Add(taskId, submission.Operator, submission.SubmittedAtUtc);
+            Add(taskId, decision.Reviewer, decision.DecidedAtUtc);
+        }
+
+        return identities;
+
+        void Add(string? taskId, string? approvedBy, DateTimeOffset? approvedAtUtc)
+        {
+            if (string.IsNullOrWhiteSpace(taskId) || string.IsNullOrWhiteSpace(approvedBy) || approvedAtUtc is null)
+                return;
+            // Publication forwards the first trimmed task/actor pair, compared case-insensitively by the shared guard.
+            identities.TryAdd((taskId.Trim().ToLowerInvariant(), approvedBy.Trim().ToLowerInvariant()), approvedAtUtc.Value);
+        }
+    }
 
     private static IEnumerable<OperationsEvidenceLinkDto> PublicationEvidence(OperationsContinuityWorkflowDto workflow)
         => workflow.ReportPackReadiness.EvidenceLinks

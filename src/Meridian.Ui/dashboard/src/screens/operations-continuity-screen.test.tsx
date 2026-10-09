@@ -1810,6 +1810,62 @@ describe("OperationsContinuityScreen", () => {
     expect(vi.mocked(closeOperationsContinuityWorkflow).mock.calls[0]?.[1].evidenceLinks).not.toEqual(expect.arrayContaining([oldEvidence]));
   });
 
+  it.each([
+    ["current", "detail"], ["current", "shared decision"],
+    ["legacy", "detail"], ["legacy", "shared decision"]
+  ])("blocks %s approval controls from a stale %s, then publishes their matching repair", async (history, staleResponse) => {
+    const retainedEvidence: OperationsEvidenceLink = {
+      evidenceId: "report-evidence", label: "Retained report evidence", source: "reporting",
+      route: "/workstation/reporting/report-packs/report-pack-2026-05/evidence",
+      capturedAtUtc: "2026-05-10T18:00:00.1234567Z"
+    };
+    const oldDetail = createCloseReadyDetail(retainedEvidence);
+    if (history === "legacy") {
+      const approval = oldDetail.approvals[0]!;
+      oldDetail.approvals = [
+        { ...approval, approvalId: "submission", status: "Submitted", decidedAtUtc: null },
+        { ...approval, operator: null, submittedAtUtc: null }
+      ];
+    }
+    const repairedDetail = structuredClone(oldDetail);
+    repairedDetail.closeChecklist[0]!.acknowledgedBy = "repaired-operator";
+    repairedDetail.closeChecklist[0]!.acknowledgedAtUtc = "2026-05-10T17:00:00.0000001Z";
+    repairedDetail.approvals[0]!.operator = "repaired-submitter";
+    repairedDetail.approvals[0]!.submittedAtUtc = "2026-05-10T17:30:00.0000001Z";
+    repairedDetail.approvals.at(-1)!.reviewer = "repaired-reviewer";
+    repairedDetail.approvals.at(-1)!.decidedAtUtc = "2026-05-10T17:45:00.0000001Z";
+    vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(staleResponse === "detail" ? oldDetail : repairedDetail);
+    vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(sharedCloseDecision(staleResponse === "shared decision" ? oldDetail : repairedDetail));
+    const user = userEvent.setup();
+    renderScreen();
+    const publish = await screen.findByRole("button", { name: "Publish close package for 2026-05" });
+    await waitFor(() => expect(getFinancialOperationsCommandCenter).toHaveBeenCalledTimes(1));
+    expect(publish).toBeDisabled();
+    expect(screen.getAllByText("Close evidence no longer matches this workflow. Refresh workflows before publishing a close package.").length).toBeGreaterThan(0);
+    await user.click(publish);
+    expect(closeOperationsContinuityWorkflow).not.toHaveBeenCalled();
+
+    const repairedProjection = structuredClone(repairedDetail);
+    repairedProjection.reportPackReadiness.evidenceLinks[0]!.capturedAtUtc = "2026-05-10T11:00:00.1234567-07:00";
+    repairedProjection.closeChecklist[0]!.acknowledgedAtUtc = "2026-05-10T10:00:00.0000001-07:00";
+    repairedProjection.approvals[0]!.submittedAtUtc = "2026-05-10T10:30:00.0000001-07:00";
+    repairedProjection.approvals.at(-1)!.decidedAtUtc = "2026-05-10T10:45:00.0000001-07:00";
+    vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(repairedDetail);
+    vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(sharedCloseDecision(repairedProjection));
+    await user.click(screen.getByRole("button", { name: "Refresh operations continuity workflows" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Publish close package for 2026-05" })).toBeEnabled());
+    await user.click(screen.getByRole("button", { name: "Publish close package for 2026-05" }));
+    await waitFor(() => expect(closeOperationsContinuityWorkflow).toHaveBeenCalledWith(workflowId, expect.objectContaining({
+      expectedVersion: 4,
+      evidenceLinks: expect.arrayContaining([retainedEvidence]),
+      checklistControlApprovals: expect.arrayContaining([
+        { taskId: "close-gate-brokeringest", approvedBy: "repaired-operator", approvedAtUtc: "2026-05-10T17:00:00.0000001Z" },
+        { taskId: "close-gate-approval", approvedBy: "repaired-submitter", approvedAtUtc: "2026-05-10T17:30:00.0000001Z" },
+        { taskId: "close-gate-approval", approvedBy: "repaired-reviewer", approvedAtUtc: "2026-05-10T17:45:00.0000001Z" }
+      ])
+    })));
+  });
+
   it("reopens a closed period from close governance with entered incident metadata", async () => {
     const closeEvidence = {
       evidenceId: "close-package-2026-05-manifest",

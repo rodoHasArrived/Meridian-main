@@ -11465,6 +11465,7 @@ Meridian-main
 │   │   │   └── ServiceCollectionRegistrationAssertions.cs
 │   │   ├── Models
 │   │   │   ├── DataConfidenceIndicatorModelTests.cs
+│   │   │   ├── OperationsContinuityClosePresentationApprovalTests.cs
 │   │   │   ├── PaneLayoutTests.cs
 │   │   │   ├── ShellNavigationCatalogTests.cs
 │   │   │   └── WorkspaceShellChromeContributionTests.cs
