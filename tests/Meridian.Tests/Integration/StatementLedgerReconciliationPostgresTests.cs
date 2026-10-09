@@ -17,21 +17,36 @@ namespace Meridian.Tests.Integration;
 /// <summary>
 /// W9-INGEST-009 / #2634: retained bank evidence crosses the PostgreSQL accounting and
 /// reporting authorities and the durable statement matcher and operator casework stores.
+/// Month-end bank closes guard against lost split-settlement membership, cash balances
+/// falsely marked complete, and changed journal populations replacing retained decisions on restart.
 /// </summary>
 [Trait("Category", "Integration")]
 public sealed partial class StatementLedgerReconciliationPostgresTests
 {
     [ReportingDatabaseFact]
-    public async Task Bai2Statement_JournalMatchesAndCaseworkSurviveFreshServicesAndRetries()
+    public Task Bai2Statement_JournalMatchesAndCaseworkSurviveFreshServicesAndRetries()
+        => AssertJournalMatchesAndCaseworkSurviveFreshServicesAndRetriesAsync(Bai2Scenario);
+
+    /// <summary>May EUR close: a split wire and signed debit retain booking and settlement dates through restart.</summary>
+    [ReportingDatabaseFact]
+    public Task Camt053Statement_JournalMatchesAndCaseworkSurviveFreshServicesAndRetries()
+        => AssertJournalMatchesAndCaseworkSurviveFreshServicesAndRetriesAsync(Camt053Scenario);
+
+    private static async Task AssertJournalMatchesAndCaseworkSurviveFreshServicesAndRetriesAsync(
+        BankStatementScenario scenario)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
         var ct = timeout.Token;
-        await using var database = await ScenarioDatabase.CreateAsync(ct);
+        await using var database = await ScenarioDatabase.CreateAsync(ct, scenario);
         var services = database.CreateServices();
-        var splitA = database.Journal(1_500m);
-        var splitB = database.Journal(1_000m);
-        var pair = database.Journal(-154.33m, "CUSTREF02");
-        var otherBook = database.Journal(2_500m, "CUSTREF01", otherBook: true);
+        var splitA = database.Journal(1_500m, tradeDate: scenario.SplitTradeDate,
+            settlementDate: scenario.SplitSettlementDate);
+        var splitB = database.Journal(1_000m, tradeDate: scenario.SplitTradeDate,
+            settlementDate: scenario.SplitSettlementDate);
+        var pair = database.Journal(-154.33m, scenario.PairExternalId,
+            tradeDate: scenario.PairTradeDate, settlementDate: scenario.PairSettlementDate);
+        var otherBook = database.Journal(2_500m, scenario.SplitExternalId, otherBook: true,
+            tradeDate: scenario.SplitTradeDate, settlementDate: scenario.SplitSettlementDate);
         using var postingTarget = new DurableLedgerPostingTarget(services.Journals);
         foreach (var journal in new[] { splitA, splitB, pair, otherBook })
         {
@@ -46,14 +61,25 @@ public sealed partial class StatementLedgerReconciliationPostgresTests
         }
 
         var source = new LedgerJournalInternalTransactionSource(database.CreateServices().Journals);
+        // The retained book must override the caller's USD fallback for the EUR statement.
         var transactions = await source.GetTransactionsAsync(new InternalLedgerTransactionQuery(
-            ExternalAccountId, [database.AccountId.ToString("D"), ExternalAccountId], PeriodStart, PeriodEnd, "USD")
+            scenario.ExternalAccountId, [database.AccountId.ToString("D"), scenario.ExternalAccountId],
+            PeriodStart, PeriodEnd, "USD")
         {
             AccountingScope = database.Scope
         }, ct);
         transactions.Select(item => item.EvidenceReference).Should().BeEquivalentTo(
             new[] { splitA, splitB, pair }.Select(JournalEvidence),
             "the same bank account's parallel book must not satisfy the primary book statement");
+        transactions.Should().OnlyContain(item => item.Currency == scenario.Currency,
+            "currency-blind cash legs inherit the retained book's denomination");
+        var splitTransaction = transactions.Single(item => item.EvidenceReference == JournalEvidence(splitA));
+        splitTransaction.TradeDate.Should().Be(scenario.SplitTradeDate);
+        splitTransaction.SettlementDate.Should().Be(scenario.SplitSettlementDate);
+        var pairTransaction = transactions.Single(item => item.EvidenceReference == JournalEvidence(pair));
+        pairTransaction.TradeDate.Should().Be(scenario.PairTradeDate);
+        pairTransaction.SettlementDate.Should().Be(scenario.PairSettlementDate);
+        pairTransaction.ExternalTransactionId.Should().Be(scenario.PairExternalId);
 
         var command = database.Command();
         var first = await services.Coordinator.StartAsync(command, ct);
@@ -88,7 +114,7 @@ public sealed partial class StatementLedgerReconciliationPostgresTests
         var authorityScope = new StatementReconciliationReportAuthorityScope(TenantId, CompanyId, first.Workflow.WorkflowId);
         var retained = await ReadAuthorityAsync(services.Authority, authorityScope, ct);
         var sourceArtifact = committed.EvidenceVaultIdentity!.Artifacts.Single(item => item.Kind == "statement-source");
-        retained[sourceArtifact.RelativePath].Content.Should().Equal(StatementConnectorTestData.ReadFixture("bai2-sample.bai"));
+        retained[sourceArtifact.RelativePath].Content.Should().Equal(StatementConnectorTestData.ReadFixture(scenario.FixtureName));
         var canonicalArtifact = committed.EvidenceVaultIdentity.Artifacts.Single(item => item.Kind == "statement-canonical");
         var canonicalBytes = await File.ReadAllBytesAsync(Path.Combine(database.Root, committed.RetainedCanonicalPath), ct);
         retained[canonicalArtifact.RelativePath].Content.Should().Equal(canonicalBytes);
@@ -119,7 +145,8 @@ public sealed partial class StatementLedgerReconciliationPostgresTests
 
         // Today's book now offers an exact pair that would win ahead of the retained split.
         // Resuming yesterday's completed matching decision must not consume this new posting.
-        var laterPair = database.Journal(2_500m, "CUSTREF01");
+        var laterPair = database.Journal(2_500m, scenario.SplitExternalId,
+            tradeDate: scenario.SplitTradeDate, settlementDate: scenario.SplitSettlementDate);
         await database.CreateServices().Journals.AppendAsync(laterPair, ct);
 
         // Only the reporting coordinator's node-local workspace is discarded. The supported

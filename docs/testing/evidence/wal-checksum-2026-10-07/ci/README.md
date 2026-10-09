@@ -4,7 +4,9 @@ Hosted [Meridian CI 37678971005](https://github.com/rodoHasArrived/Meridian-main
 quality and integration gates passed at source checkpoint `bba13ca9`, and its
 [portable provider run](../runs/hosted-provider-pass-37678970064/run.json) passed
 all eight stages with unchanged limits. These results are scoped to that
-checkpoint. Newer-main integration and final repository checks remain pending.
+checkpoint. Main `83d6440e` is integrated in the resolved merge result; the
+[current-main receipt](../receipts/current-main-provider-integration.json) verifies
+all twenty accepted source files unchanged. Final stable-tree CI remains pending.
 
 The [completed local provider command](provider-documentation-drift/archive-manifest.json)
 started at 2026-10-07 20:01:55 UTC and completed at 20:40:25 UTC with **exit 1**.

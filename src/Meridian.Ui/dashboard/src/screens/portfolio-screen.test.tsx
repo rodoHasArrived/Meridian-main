@@ -415,6 +415,24 @@ describe("PortfolioScreen", () => {
     expect(screen.getByText(/\$18,900 exposure with \+\$90 unrealized p&l/i)).toBeDefined();
   });
 
+  it("puts holdings before supporting records and lets the operator expand readiness", async () => {
+    const user = userEvent.setup();
+    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
+      initialEntries: ["/portfolio"]
+    });
+    const holdings = screen.getByRole("treegrid", { name: /open positions/i });
+    const explorer = screen.getByRole("region", { name: "Portfolio Explorer" });
+    const handoff = screen.getByRole("region", { name: "Portfolio readiness handoff" });
+    expect(holdings.compareDocumentPosition(explorer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(holdings.compareDocumentPosition(handoff) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const disclosure = handoff.querySelector("details")!;
+    expect(disclosure).not.toHaveAttribute("open");
+    expect(disclosure.querySelector("summary")).toHaveTextContent("Review blockers");
+    await user.click(disclosure.querySelector("summary")!);
+    expect(disclosure).toHaveAttribute("open");
+    expect(within(handoff).getByRole("link", { name: "Open brokerage sync review from Portfolio readiness" })).toBeInTheDocument();
+  });
+
   it("offers a way out of an empty holdings table instead of only stating it is empty", async () => {
     // /portfolio is where the recommended first goal lands, so a new operator with no data hits
     // this table before anything else. It used to be a bare statement of fact.
@@ -824,8 +842,8 @@ describe("PortfolioScreen", () => {
     });
 
     const panel = screen.getByRole("region", { name: /brokerage sync task/i });
-    expect(within(panel).getByText(/brokerage sync review/i)).toBeDefined();
-    expect(within(panel).getByText(/brokerage synced/i)).toBeDefined();
+    expect(within(panel).getByRole("heading", { name: /brokerage sync review/i })).toBeDefined();
+    expect(within(panel).getAllByText(/brokerage synced/i).length).toBeGreaterThan(0);
     expect(within(panel).getByText(/alpaca \/ paper account pa-demo/i)).toBeDefined();
     expect(within(panel).getByRole("link", { name: /open trading readiness from brokerage sync review/i })).toHaveAttribute(
       "href",

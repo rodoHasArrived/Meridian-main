@@ -1,5 +1,6 @@
 using Meridian.Backtesting.Sdk;
 using Meridian.Execution.Interfaces;
+using Meridian.FSharp.Trading;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 
@@ -15,7 +16,9 @@ namespace Meridian.Strategies.Live;
 public abstract class LiveStrategyBase : BacktestStrategyBase, ILiveStrategy
 {
     private readonly Lock _stateLock = new();
+    private readonly SemaphoreSlim _lifecycleGate = new(1, 1);
     private StrategyStatus _status = StrategyStatus.Registered;
+    private string? _faultReason;
 
     /// <inheritdoc/>
     public abstract string StrategyId { get; }
@@ -32,6 +35,18 @@ public abstract class LiveStrategyBase : BacktestStrategyBase, ILiveStrategy
         }
     }
 
+    /// <inheritdoc/>
+    public string? FaultReason
+    {
+        get
+        {
+            lock (_stateLock)
+            {
+                return _faultReason;
+            }
+        }
+    }
+
     /// <summary>The execution context supplied to <see cref="StartAsync"/>, if started.</summary>
     protected IExecutionContext? ExecutionContext { get; private set; }
 
@@ -39,69 +54,100 @@ public abstract class LiveStrategyBase : BacktestStrategyBase, ILiveStrategy
     public async Task StartAsync(IExecutionContext ctx, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(ctx);
-        lock (_stateLock)
-        {
-            if (_status is StrategyStatus.Running or StrategyStatus.WarmingUp)
-            {
-                throw new InvalidOperationException(
-                    $"Strategy '{StrategyId}' cannot start because it is already {_status}.");
-            }
-
-            _status = StrategyStatus.WarmingUp;
-        }
-
-        ExecutionContext = ctx;
+        await _lifecycleGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await OnStartingAsync(ctx, ct).ConfigureAwait(false);
-        }
-        catch
-        {
-            lock (_stateLock)
+            var transition = ApplyTransition(StrategyLifecycleInterop.EvaluateStart);
+            if (transition.NextState == nameof(StrategyStatus.Running))
             {
-                _status = StrategyStatus.Stopped;
+                // Resuming preserves the warmed strategy and the context that owns its state.
+                return;
             }
 
-            throw;
+            ExecutionContext = ctx;
+            try
+            {
+                await OnStartingAsync(ctx, ct).ConfigureAwait(false);
+                ApplyTransition(StrategyLifecycleInterop.EvaluateWarmupCompleted);
+            }
+            catch (Exception ex)
+            {
+                RecordFailure(ex);
+                throw;
+            }
         }
-
-        lock (_stateLock)
+        finally
         {
-            _status = StrategyStatus.Running;
+            _lifecycleGate.Release();
         }
     }
 
     /// <inheritdoc/>
-    public Task PauseAsync(CancellationToken ct = default)
+    public async Task PauseAsync(CancellationToken ct = default)
     {
-        lock (_stateLock)
+        await _lifecycleGate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            if (_status != StrategyStatus.Running)
-            {
-                throw new InvalidOperationException(
-                    $"Strategy '{StrategyId}' cannot pause because it is {_status}.");
-            }
-
-            _status = StrategyStatus.Paused;
+            ApplyTransition(StrategyLifecycleInterop.EvaluatePause);
         }
-
-        return Task.CompletedTask;
+        finally
+        {
+            _lifecycleGate.Release();
+        }
     }
 
     /// <inheritdoc/>
     public async Task StopAsync(CancellationToken ct = default)
     {
-        lock (_stateLock)
+        await _lifecycleGate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            if (_status == StrategyStatus.Stopped)
+            if (Status == StrategyStatus.Stopped)
             {
                 return;
             }
 
-            _status = StrategyStatus.Stopped;
+            ApplyTransition(StrategyLifecycleInterop.EvaluateStop);
+            try
+            {
+                await OnStoppedAsync(ct).ConfigureAwait(false);
+                ApplyTransition(StrategyLifecycleInterop.EvaluateStopCompleted);
+                ExecutionContext = null;
+            }
+            catch (Exception ex)
+            {
+                RecordFailure(ex);
+                throw;
+            }
         }
+        finally
+        {
+            _lifecycleGate.Release();
+        }
+    }
 
-        await OnStoppedAsync(ct).ConfigureAwait(false);
+    private StrategyTransitionDto ApplyTransition(Func<string, string?, StrategyTransitionDto> evaluate)
+    {
+        lock (_stateLock)
+        {
+            var transition = evaluate(_status.ToString(), _faultReason);
+            if (!transition.IsValid)
+            {
+                throw new InvalidOperationException($"Strategy '{StrategyId}': {transition.Reason}");
+            }
+
+            _status = Enum.Parse<StrategyStatus>(transition.NextState);
+            _faultReason = string.IsNullOrEmpty(transition.FaultReason) ? null : transition.FaultReason;
+            return transition;
+        }
+    }
+
+    private void RecordFailure(Exception exception)
+    {
+        var reason = string.IsNullOrWhiteSpace(exception.Message)
+            ? exception.GetType().Name
+            : exception.Message;
+        ApplyTransition((state, faultReason) => StrategyLifecycleInterop.EvaluateFail(state, faultReason, reason));
     }
 
     /// <summary>
@@ -110,6 +156,10 @@ public abstract class LiveStrategyBase : BacktestStrategyBase, ILiveStrategy
     /// </summary>
     protected virtual Task OnStartingAsync(IExecutionContext ctx, CancellationToken ct) => Task.CompletedTask;
 
-    /// <summary>Hook invoked after the strategy transitions to <see cref="StrategyStatus.Stopped"/>.</summary>
+    /// <summary>
+    /// Cleanup hook invoked while the strategy is <see cref="StrategyStatus.Stopping"/>.
+    /// Successful completion transitions to <see cref="StrategyStatus.Stopped"/>; failure or
+    /// cancellation faults the strategy and requires another successful stop before restart.
+    /// </summary>
     protected virtual Task OnStoppedAsync(CancellationToken ct) => Task.CompletedTask;
 }

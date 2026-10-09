@@ -1309,6 +1309,7 @@ Meridian-main
 │   ├── policies
 │   │   ├── migration-waivers.json
 │   │   └── schema-control.json
+│   ├── migration-reservations.json
 │   └── schema-control.json
 ├── deploy
 │   ├── docker
@@ -2500,6 +2501,20 @@ Meridian-main
 │   │   │   │   │   │   └── receipt.json
 │   │   │   │   │   ├── initial-failure
 │   │   │   │   │   │   └── archive-sha256.json
+│   │   │   │   │   ├── provider-documentation-drift
+│   │   │   │   │   │   ├── ai-handoff-docs-automation-summary.json
+│   │   │   │   │   │   ├── ai-handoff-docs-automation-summary.md
+│   │   │   │   │   │   ├── archive-manifest.json
+│   │   │   │   │   │   ├── browser-test-summary.json.gz
+│   │   │   │   │   │   ├── browser-test-summary.md
+│   │   │   │   │   │   ├── command.log.gz
+│   │   │   │   │   │   ├── dotnet-test-summary.json.gz
+│   │   │   │   │   │   ├── dotnet-test-summary.md
+│   │   │   │   │   │   ├── launch.json
+│   │   │   │   │   │   ├── quality-gate-steps.tsv
+│   │   │   │   │   │   ├── quality-gate-summary.md
+│   │   │   │   │   │   ├── receipt.json
+│   │   │   │   │   │   └── source-freeze-receipt.json
 │   │   │   │   │   ├── tool-process-subreaper-results
 │   │   │   │   │   │   └── tool-process-subreaper.trx.gz
 │   │   │   │   │   ├── linux-subreaper.py
@@ -2582,6 +2597,7 @@ Meridian-main
 │   │   │   │   │   └── wal-checksum-scalar.trx.gz
 │   │   │   │   ├── receipts
 │   │   │   │   │   ├── current-main-integration.json
+│   │   │   │   │   ├── current-main-provider-integration.json
 │   │   │   │   │   ├── initial-committed-packet-verification.json
 │   │   │   │   │   ├── native-upstream-project-packaging.json
 │   │   │   │   │   ├── optimized-interrupted-budget-evidence.json
@@ -6711,6 +6727,7 @@ Meridian-main
 │   │   │   │   │   │   ├── quant-plot.view-model.ts
 │   │   │   │   │   │   ├── report-writer-chart-preview.tsx
 │   │   │   │   │   │   ├── report-writer-grid-diff-view.tsx
+│   │   │   │   │   │   ├── reporting-hub.selection.ts
 │   │   │   │   │   │   ├── reporting-hub.test.tsx
 │   │   │   │   │   │   ├── reporting-hub.tsx
 │   │   │   │   │   │   ├── reporting-lineage-summary.test.tsx
@@ -7106,6 +7123,7 @@ Meridian-main
 │   │   │   │   │   ├── workspace.ts
 │   │   │   │   │   ├── workstation-endpoints.test.ts
 │   │   │   │   │   ├── workstation-endpoints.ts
+│   │   │   │   │   ├── workstation-features.ts
 │   │   │   │   │   ├── workstation-screen-view-states.test.ts
 │   │   │   │   │   └── workstation-screen-view-states.ts
 │   │   │   │   ├── screens
@@ -7531,6 +7549,7 @@ Meridian-main
 │   │   │   │   ├── app-shell.operating-scope.test.ts
 │   │   │   │   ├── app-shell.operating-scope.ts
 │   │   │   │   ├── app-shell.operator-focus.ts
+│   │   │   │   ├── app-shell.route-focus.test.ts
 │   │   │   │   ├── app-shell.route-focus.ts
 │   │   │   │   ├── app-shell.status-panel.ts
 │   │   │   │   ├── app-shell.trust-strip.ts
@@ -10886,6 +10905,7 @@ Meridian-main
 │   │   │   ├── GovernanceExceptionServiceTests.cs
 │   │   │   ├── LedgerReadServiceTests.cs
 │   │   │   ├── LiveRunMetricsTrackerTests.cs
+│   │   │   ├── LiveStrategyBaseTests.cs
 │   │   │   ├── LiveStrategyCatalogFallbackTests.cs
 │   │   │   ├── LiveTradingEngineTests.cs
 │   │   │   ├── PortfolioReadServiceTests.cs
@@ -10902,6 +10922,8 @@ Meridian-main
 │   │   │   ├── StrategyDesignServiceTests.cs
 │   │   │   ├── StrategyEngineValidationServiceTests.cs
 │   │   │   ├── StrategyLifecycleManagerTests.cs
+│   │   │   ├── StrategyLifecyclePostconditionTests.cs
+│   │   │   ├── StrategyLifecycleRecoveryTests.cs
 │   │   │   ├── StrategyRunContinuityServiceTests.cs
 │   │   │   ├── StrategyRunDrillInTests.cs
 │   │   │   ├── StrategyRunReadServiceTests.cs
@@ -11148,6 +11170,7 @@ Meridian-main
 │   │   │   ├── TradeFillLedgerPostingHostCompositionTests.cs
 │   │   │   ├── TradingBrokerageRecoveryEndpointTests.cs
 │   │   │   ├── TradingOperatorLiveOrderReadinessGateTests.cs
+│   │   │   ├── TradingOperatorReadinessAggregationTests.cs
 │   │   │   ├── TradingOperatorReadinessServiceTests.cs
 │   │   │   ├── Wave2OperatorInboxAcceptanceTests.cs
 │   │   │   ├── Wave2PaperTradingCockpitAcceptanceTests.cs
@@ -11656,6 +11679,7 @@ Meridian-main
 │   │   ├── test_schema_control_migrations.py
 │   │   ├── test_schema_control_policies.py
 │   │   ├── test_schema_control_render.py
+│   │   ├── test_schema_control_reservations.py
 │   │   ├── test_schema_control_workflow.py
 │   │   ├── test_screenshot_diff_report.py
 │   │   ├── test_screenshot_workflow_plan.py
@@ -11737,7 +11761,8 @@ Meridian-main
 │   │   ├── policies.py
 │   │   ├── README.md
 │   │   ├── render.py
-│   │   └── requirements.txt
+│   │   ├── requirements.txt
+│   │   └── reservations.py
 │   ├── source_docs
 │   │   ├── fixtures
 │   │   │   ├── readme_contract

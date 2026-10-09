@@ -281,15 +281,15 @@
     },
     {
       "path": "README.md",
-      "bytes": 4456,
-      "sha256": "5619827862fa520dde187e9224660ee7e03f80e4f322502e0d43821d1e33555d",
+      "bytes": 4803,
+      "sha256": "1ea6b2a1d10125991e7841715a41a8afe4d694bdc376cb674a405b192284a2f1",
       "encoding": "verbatim",
       "source": "generated evidence landing page"
     },
     {
       "path": "ci/README.md",
-      "bytes": 3388,
-      "sha256": "e22def30c70a94a58bbdd74be447742af2044093e9235ac13f373c57cffaafe1"
+      "bytes": 3551,
+      "sha256": "37fc567d6c93005814e8edf7d240aa8057a7004905a95e12e35ae03eab599054"
     },
     {
       "path": "ci/canonical-evidence-packaging-failure/archive-manifest.json",
@@ -1282,6 +1282,11 @@
       "sha256": "978b642d608f9c42a098ad8d70e93d75af017b765a470c2ce129d08c52f9545f"
     },
     {
+      "path": "receipts/current-main-provider-integration.json",
+      "bytes": 13858,
+      "sha256": "dc8d44f469b3f49dcb59c05d83e69d09dc696fa49dac12eb287394fd69a22851"
+    },
+    {
       "path": "receipts/initial-committed-packet-verification.json",
       "bytes": 479,
       "sha256": "8a32bdbb609eb79e0629e9b44ce7173af5d239ace34bea5d81f4edc3bc80766b"
@@ -1349,8 +1354,8 @@
     },
     {
       "path": "report.md",
-      "bytes": 19712,
-      "sha256": "ec4d76f4676f25edd793eeb5b6577c7e2c8ccb3da48feed96519334ce00001c1",
+      "bytes": 20429,
+      "sha256": "12c86bd09727f646cbedbfa25d3e74ff5b5cd90aa5f5f0296fd2cafb3791c2fb",
       "encoding": "verbatim",
       "source": "polished from artifacts/wal-checksum-profile/report-working.md and retained receipts"
     },
@@ -2702,11 +2707,11 @@
       ]
     }
   ],
-  "updatedAt": "2026-10-09T15:31:57.141834+00:00",
+  "updatedAt": "2026-10-09T15:35:16.260477+00:00",
   "acceptedPortableRun": "runs/hosted-provider-pass-37678970064",
   "acceptanceContractBaseline": "runs/local-baseline",
   "canonicalCiStatus": {
-    "status": "pending-final-integration-validation",
+    "status": "pending-final-stable-tree-rerun",
     "initialAttemptExitCode": 1,
     "initialAttemptPassed": 19338,
     "initialAttemptFailed": 4,
@@ -2814,8 +2819,8 @@
     ]
   },
   "bytePreservation": "Packet-scoped .gitattributes disables Git text normalization; retained files preserve original bytes.",
-  "ciEvidence": "Provider portable acceptance and required hosted Meridian CI gates passed at bba13ca9; local canonical command failed on generated documentation drift after all .NET/browser tests passed. Newer-main integration and final validation remain pending.",
-  "sourceBindingReceipt": "receipts/provider-source-binding.json",
+  "ciEvidence": "Provider portable acceptance and required hosted gates passed at bba13ca9; main83d6440 is integrated in the resolved merge result with twenty accepted source files verified unchanged. Final stable-tree local and hosted CI remain pending.",
+  "sourceBindingReceipt": "receipts/current-main-provider-integration.json",
   "providerValidation": {
     "sourceCommit": "00db380e0007b9a18ea3dd94a831b374c288ee3b",
     "integratedCommit": "3164bfd35",
@@ -2833,6 +2838,13 @@
       "sourceBindingReceipt": "receipts/provider-source-binding.json",
       "sourceBindingFileCount": 20,
       "rawMeasurementCount": 433
+    },
+    "currentMainIntegration": {
+      "mainCommit": "83d6440e50c6bdb7fbc334c8aaec791c151c573f",
+      "evidenceParentCommit": "a9daba63f849af05f338b76c2d2b90f13ad6fb06",
+      "sourceBindingReceipt": "receipts/current-main-provider-integration.json",
+      "unchangedFileCount": 20,
+      "finalStableTreeCi": "pending"
     }
   },
   "hostedCiStatus": {
