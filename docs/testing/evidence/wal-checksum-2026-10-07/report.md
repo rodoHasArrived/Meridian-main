@@ -1,8 +1,31 @@
 # WAL checksum performance evidence
 
-Historical eight-stage acceptance passed with the existing profile and budgets in [hosted run 37666873544](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37666873544). The accepted run retains complete measurements and verifies the versioned WAL checksum together with the compatible deduplication key formatter.
+All eight portable benchmark stages pass with the existing profile and budgets in [provider run 37678970064](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37678970064). Acceptance is scoped to source checkpoint `bba13ca9c156a42b5ca7f0f9c196d9199a70ef75` and its actual hosted tested merge `f06b91711cadea591e09076f1e4e8ddad0643a35`.
 
-Current repository integration outcomes are reported on [PR #3123](https://github.com/rodoHasArrived/Meridian-main/pull/3123). This packet preserves portable acceptance, the initial CI environment failure, and the independently verified process-reaping remediation as historical evidence.
+Hosted Meridian CI quality and integration gates passed at that checkpoint. The completed local canonical command still exited 1 at a generated-document commitment check after all .NET and browser tests passed. Integration with newer main and fresh final repository checks remain pending. Current outcomes are reported on [PR #3123](https://github.com/rodoHasArrived/Meridian-main/pull/3123); the packet preserves the original successes and failures separately.
+
+## Accepted provider measurements at bba13ca9
+
+The clean hosted checkout used Ubuntu 24.04.5, AMD EPYC 9V45, four logical CPUs, .NET SDK 10.0.100 and runtime 10.0.0. Both the benchmark command and existing budget validator exited zero without timeout.
+
+| Portable stage | Mean ns/op | Existing limit ns/op | Allocation B/op | Existing limit B/op | Verdict |
+|---|---:|---:|---:|---:|---|
+| `DedupKey_CacheHit` | 42.385 | 200 | 0 | 0 | Pass |
+| `DedupKey_CacheMiss` | 326.999 | 800 | 128 | 256 | Pass |
+| `WalChecksum_Small` | 154.690 | 400 | 0 | 0 | Pass |
+| `WalChecksum_Medium_1KB` | 170.501 | 600 | 0 | 0 | Pass |
+| `WalChecksum_Large_4KB` | 357.714 | 1,200 | 0 | 1,024 | Pass |
+| `NewlineScan_Portable` | 0.703 | 50 | 0 | 0 | Pass |
+| `AlpacaParse_Trade_SourceGenerated` | 367.078 | 900 | 384 | 512 | Pass |
+| `AlpacaParse_Quote_SourceGenerated` | 468.829 | 1,200 | 472 | 640 | Pass |
+
+The [original manifest](runs/hosted-provider-pass-37678970064/run.json), [validator evidence](runs/hosted-provider-pass-37678970064/budget-evidence.json) and [full BenchmarkDotNet report](runs/hosted-provider-pass-37678970064/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json) retain eight complete stage rows and **433 raw measurement records**, including warmup, overhead and excluded outlier records. All sixteen original text files and fifteen original artifact hashes are preserved. The [artifact verification receipt](receipts/provider-artifact-verification.json) records the independent checks.
+
+The [provider source-binding receipt](receipts/provider-source-binding.json) retains twenty production, test, benchmark and toolchain file hashes. The [actual signed merge metadata](receipts/provider-tested-merge-metadata.json) records merge parents `1f94c380d3756063ebe4e4d73951ee0e3dfd58d0` and `bba13ca9c156a42b5ca7f0f9c196d9199a70ef75`, with a complete Git tree identical to the source checkpoint. This supersedes the historical seventeen-file binding for current acceptance while preserving that earlier receipt.
+
+The accepted [profile](runs/hosted-provider-pass-37678970064/profile.json) and [exported budgets](runs/hosted-provider-pass-37678970064/bdn/perf-budgets.json) are byte-identical to the clean local baseline. Their SHA-256 digests remain `f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26` and `73c03f00210faac0b1d7bd5838d491cb8daae989ddc4304b30d9283997ebedce`; every latency/allocation limit, fixture, filter and validator failure rule is unchanged.
+
+This EPYC 9V45 host differs from the earlier EPYC 7763 hosts. The results establish budget acceptance on the recorded machines; cross-host timing differences do not isolate a causal provider speedup or a hardware-independent percentage improvement.
 
 ## Historical accepted measurements
 
@@ -71,16 +94,17 @@ Repeated main and PR #3109 failures remain visible alongside the passing result.
 | [First hosted v2 37659411104](runs/hosted-first-optimized/run.json) | EPYC 7763 | 196.866 / 250.886 / 649.619 | WAL passes; dedup miss fails at 835.531 ns |
 | [Historical accepted run 37666873544](runs/hosted-final-pass/run.json) | EPYC 7763 | 199.240 / 253.192 / 574.056 | All eight portable stages pass |
 | [Latest pre-provider head 37673101515](runs/hosted-final-head-failure-37673101515/run.json) | EPYC 7763 | 202.600 / 246.756 / 581.680 | WAL passes; dedup miss fails at 823.729 ns |
+| [Accepted provider checkpoint 37678970064](runs/hosted-provider-pass-37678970064/run.json) | EPYC 9V45 | 154.690 / 170.501 / 357.714 | All eight portable stages pass |
 
 The [first local v2 run](runs/local-first-optimized-interrupted/run.json) completed all eight BenchmarkDotNet measurements, but its execution session was interrupted before the harness recorded benchmark exit or invoked validation. Its original `running` manifest remains unchanged. The separate [interruption receipt](receipts/optimized-interrupted-receipt.json) and validator output record complete measurements and a dedup miss failure at 935.735 ns. This run is not represented as a completed or passing canonical run.
 
 Different CPU models, quotas, and contention limit causal comparisons across these hosts. The retained results establish repeated failures and a successful unchanged-profile run; they do not establish a hardware-independent percentage improvement.
 
-The accepted [GitHub artifact 11502599845](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37666873544/artifacts/11502599845) was 70,610 ZIP bytes with SHA-256 `c20314268e904ae4091b65b4f5379edb3226b0b0ce7bc8761f31c246b7b53086`. Its sixteen retained text files total 498,412 bytes. The packet [manifest](manifest.json) records archive provenance, original source locations, and copied-file hashes for every run and component snapshot. Original manifests and failed verdicts are preserved byte for byte; compiled binaries, packages, native libraries, and caches are excluded.
+The accepted provider [GitHub artifact 11508497650](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37678970064/artifacts/11508497650) was 70,984 ZIP bytes with SHA-256 `9867614926cce2358902bb6a5a87434eae013c13e5ca1e0e0f110c325977e8c6`. Its sixteen retained text files total 497,394 bytes. The historical [GitHub artifact 11502599845](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37666873544/artifacts/11502599845) remains 70,610 ZIP bytes with SHA-256 `c20314268e904ae4091b65b4f5379edb3226b0b0ce7bc8761f31c246b7b53086`, with sixteen text files totaling 498,412 bytes. The packet [manifest](manifest.json) records archive provenance, original source locations and copied-file hashes for every run and component snapshot. Original manifests and failed verdicts are preserved byte for byte; compiled binaries, packages, native libraries and caches are excluded.
 
 ## Validation status
 
-The reusable provider change passed **88** focused hashing, exact key compatibility, dedup ordering/replay and allocation tests with zero failures or skips. Tests compare changing inputs against independent framework SHA-256 across padding/block boundaries and four dedicated concurrent threads, check short and oversized destinations, and verify zero warmed managed allocation. Fresh final-source portable acceptance remains pending.
+The reusable provider change passed **88** focused hashing, exact key compatibility, dedup ordering/replay and allocation tests with zero failures or skips. Tests compare changing inputs against independent framework SHA-256 across padding/block boundaries and four dedicated concurrent threads, check short and oversized destinations, and verify zero warmed managed allocation. Provider portable acceptance is complete at the retained `bba13ca9` checkpoint; later integrated source revisions require their own validation.
 
 The [exact command receipt](integrity/commands.json) and lossless log/TRX copies independently confirm **132** focused WAL/allocation tests, **82** checksum tests with hardware intrinsics disabled, and **3** timestamp round-trip tests under `TZ=America/New_York`, all passing with zero failures or skips. Coverage includes legacy and pinned v2 digests, official BLAKE3 vectors, canonical encoding oracle/round-trip checks, buffer/run boundaries, UTF-8 fallback, cultures and timestamp kinds, concurrent calls, field tampering, mixed-version recovery/rotation/commits/repair, and unsupported-header preservation.
 
@@ -90,6 +114,10 @@ The initial local canonical CI attempt on `a65c3f3db71868724d5a3813e70575f75a903
 
 The retained [artifact-only Linux subreaper](ci/linux-subreaper.py) adopts and reaps orphaned child processes while executing the unchanged command. Its [focused proof](ci/tool-process-subreaper-receipt.json) passed seven process-runner tests with zero failures/skips in thirteen seconds; eight adopted SIGKILL descendants were reaped, with no new zombies or residual adopted processes. This supplies the process reaping normally provided by init without changing production code or weakening tests.
 
-The subsequent canonical command completed every .NET shard (19,639 passes, zero failures, five existing registered skips) and 3,651 browser tests, but exited 1 because central-package discovery treated three archived upstream `.csproj` snapshots as Meridian projects. The [complete failure archive](ci/canonical-evidence-packaging-failure/archive-manifest.json) retains all command outcomes. The snapshots are now lossless `.csproj.gz` evidence, retaining exact decompressed hashes; project discovery, package pins and tests are unchanged. Fresh canonical CI on the provider and packaging change remains pending.
+The subsequent canonical command completed every .NET shard (19,639 passes, zero failures, five existing registered skips) and 3,651 browser tests, but exited 1 because central-package discovery treated three archived upstream `.csproj` snapshots as Meridian projects. The [complete failure archive](ci/canonical-evidence-packaging-failure/archive-manifest.json) retains all command outcomes. The snapshots are now lossless `.csproj.gz` evidence, retaining exact decompressed hashes; project discovery, package pins and tests are unchanged.
 
-The [CI environment archive](ci/README.md) preserves the initial failure and focused remediation evidence. Full canonical local and hosted runs, including their actual outcomes and source revisions, are recorded on [PR #3123](https://github.com/rodoHasArrived/Meridian-main/pull/3123). Required GitHub Actions checks on the final PR head remain the merge authority. The accepted portable benchmark result is independently complete and retained here.
+The later clean `bba13ca9` canonical command ran from **2026-10-07 20:01:55 to 20:40:25 UTC** and exited **1**. All **19 .NET shards** passed with **19,646 passing tests, zero failures and five existing registered skips**. All **42 browser batches** passed with **3,651 passing tests and zero failures or skips**. Adding the accepted run and receipts during execution changed generated repository-structure and documentation-health output, so `Verify whole-repo generated documentation is committed` failed. The later full workflow/script suite was not reached. The [complete documentation-drift archive](ci/provider-documentation-drift/archive-manifest.json) retains the exact receipt, launch, logs, summaries and logged diffs; its [source-freeze check](ci/provider-documentation-drift/source-freeze-receipt.json) confirms the twenty bound source files and relevant runtime/test/toolchain paths still match `bba13ca9`.
+
+Hosted [Meridian CI 37678971005](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37678971005) quality and integration gates passed at `bba13ca9`, along with CodeQL, Windows Desktop Build, Documentation Automation, Maintenance and Roadmap Source Docs. The separate PostgreSQL Schema Control check failed because the added provider shifted contract source line numbers and therefore generated provenance; the [refresh receipt](receipts/schema-manifest-refresh.json) records that manifest correction. Newer-main integration and a fresh complete local/hosted validation remain pending.
+
+The [CI environment archive](ci/README.md) preserves the original failures and focused remediation evidence. Full canonical local and hosted runs, including their actual outcomes and source revisions, are recorded on [PR #3123](https://github.com/rodoHasArrived/Meridian-main/pull/3123). Required GitHub Actions checks on the final PR head remain the merge authority. The accepted portable result is independently complete for its recorded source checkpoint.

@@ -213,6 +213,34 @@
       "githubArtifactId": "11506197949",
       "archiveSha256": "1d40ca6539636241f7aac29eedf8946a317ba161964efca9938d465835a38009",
       "archiveBytes": 71025
+    },
+    {
+      "label": "hosted-provider-pass-37678970064",
+      "path": "runs/hosted-provider-pass-37678970064",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/hosted-provider-final/wal-checksum-provider-bba13ca9-run37678970064.zip",
+      "commitSha": "f06b91711cadea591e09076f1e4e8ddad0643a35",
+      "originalManifestSha256": "e966842d18dd3a0804c3d90066ecc2d4d894c96ffa16e2c7c32f6514ea866bac",
+      "originalHashedFileCount": 15,
+      "retainedFileCount": 16,
+      "retainedTextBytes": 497394,
+      "originalHarnessConclusion": "success",
+      "measuredStages": [
+        "AlpacaParse_Quote_SourceGenerated",
+        "AlpacaParse_Trade_SourceGenerated",
+        "DedupKey_CacheHit",
+        "DedupKey_CacheMiss",
+        "NewlineScan_Portable",
+        "WalChecksum_Large_4KB",
+        "WalChecksum_Medium_1KB",
+        "WalChecksum_Small"
+      ],
+      "rawMeasurementCount": 433,
+      "githubRunId": "37678970064",
+      "githubRunUrl": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37678970064",
+      "pullRequestHeadSha": "bba13ca9c156a42b5ca7f0f9c196d9199a70ef75",
+      "githubArtifactId": "11508497650",
+      "archiveSha256": "9867614926cce2358902bb6a5a87434eae013c13e5ca1e0e0f110c325977e8c6",
+      "archiveBytes": 70984
     }
   ],
   "componentSourceHashProofs": [
@@ -253,15 +281,15 @@
     },
     {
       "path": "README.md",
-      "bytes": 3524,
-      "sha256": "e9db80150a5cc9e75fa9e77b98f5a535dc3d6e4b04969a885cdc66014da60b88",
+      "bytes": 4456,
+      "sha256": "5619827862fa520dde187e9224660ee7e03f80e4f322502e0d43821d1e33555d",
       "encoding": "verbatim",
       "source": "generated evidence landing page"
     },
     {
       "path": "ci/README.md",
-      "bytes": 1788,
-      "sha256": "91ec228143c8d2a60df2f3ba559d30c72fa2655004674665c39082b46ef56895"
+      "bytes": 3388,
+      "sha256": "e22def30c70a94a58bbdd74be447742af2044093e9235ac13f373c57cffaafe1"
     },
     {
       "path": "ci/canonical-evidence-packaging-failure/archive-manifest.json",
@@ -422,6 +450,132 @@
       "path": "ci/linux-subreaper.py",
       "bytes": 6797,
       "sha256": "09668360d71d7b4560a231874c11d4cf21a217b896c712bfb291fad1bd7828e8"
+    },
+    {
+      "path": "ci/provider-documentation-drift/ai-handoff-docs-automation-summary.json",
+      "bytes": 2953,
+      "sha256": "396cdf409c71af505cab0484c082737f26fa4d4fce9b38bfb64b26bfc1651011",
+      "encoding": "verbatim",
+      "originalBytes": 2953,
+      "originalSha256": "396cdf409c71af505cab0484c082737f26fa4d4fce9b38bfb64b26bfc1651011",
+      "originalSource": "artifacts/ci-summary/quality-gate/ai-handoff-docs-automation-summary.json"
+    },
+    {
+      "path": "ci/provider-documentation-drift/ai-handoff-docs-automation-summary.md",
+      "bytes": 619,
+      "sha256": "5c60a59d0476f4c02b34ba6cbd7024b79bc0a0f6868b450bad6b5541c9c92a5f",
+      "encoding": "verbatim",
+      "originalBytes": 619,
+      "originalSha256": "5c60a59d0476f4c02b34ba6cbd7024b79bc0a0f6868b450bad6b5541c9c92a5f",
+      "originalSource": "artifacts/ci-summary/quality-gate/ai-handoff-docs-automation-summary.md"
+    },
+    {
+      "path": "ci/provider-documentation-drift/archive-manifest.json",
+      "bytes": 7704,
+      "sha256": "45fd0ff3ac63207bcd945270bb783bbd7dc4fa7010a29f30ce5c0ad9c0da1f4a",
+      "encoding": "verbatim",
+      "originalBytes": 7704,
+      "originalSha256": "45fd0ff3ac63207bcd945270bb783bbd7dc4fa7010a29f30ce5c0ad9c0da1f4a",
+      "source": "generated complete provider documentation-drift archive manifest"
+    },
+    {
+      "path": "ci/provider-documentation-drift/browser-test-summary.json.gz",
+      "bytes": 92470,
+      "sha256": "901bd0d0b2e70d724ebdd3b1eb80a8c0ccd79686383a89500469850e44c3880f",
+      "encoding": "gzip",
+      "originalBytes": 572129,
+      "originalSha256": "a76b413cdf4607d2bd707d608b692d4c55f0e6b3e6e257199dc82da145d43f1d",
+      "originalSource": "artifacts/test-results/browser/summary.json"
+    },
+    {
+      "path": "ci/provider-documentation-drift/browser-test-summary.md",
+      "bytes": 1153,
+      "sha256": "a431205ef931bf86aec2f366fc8f1f5f6db5430e30aa75d5fc49f0d9ddd925e2",
+      "encoding": "verbatim",
+      "originalBytes": 1153,
+      "originalSha256": "a431205ef931bf86aec2f366fc8f1f5f6db5430e30aa75d5fc49f0d9ddd925e2",
+      "originalSource": "artifacts/test-results/browser/summary.md"
+    },
+    {
+      "path": "ci/provider-documentation-drift/command.log.gz",
+      "bytes": 45966,
+      "sha256": "6b2acb7f9916c988e4378ed2475d9eac334f942991bde213167d3db495d23130",
+      "encoding": "gzip",
+      "originalBytes": 500281,
+      "originalSha256": "42c91d8e3013c9b37295238b19ef8a3afb3c82f1df78c92ecdecb595327f4701",
+      "originalSource": "artifacts/wal-checksum-profile/canonical-final-provider/command.log"
+    },
+    {
+      "path": "ci/provider-documentation-drift/dotnet-test-summary.json.gz",
+      "bytes": 391886,
+      "sha256": "1ae74bf4451849eedc006edf8f1e16409d981ef902ca67da1a2de893e3bd4d74",
+      "encoding": "gzip",
+      "originalBytes": 4045677,
+      "originalSha256": "a1d9d135b6233cb5b18022e061923e8ff12c0f168713f2d343356c7337ed668b",
+      "originalSource": "artifacts/test-results/dotnet/ci-dotnet-test-summary.json"
+    },
+    {
+      "path": "ci/provider-documentation-drift/dotnet-test-summary.md",
+      "bytes": 20821,
+      "sha256": "6b70957282af0de44a317b2af5536821b91ff09f039f4b31c0d829954fa2a7b4",
+      "encoding": "verbatim",
+      "originalBytes": 20821,
+      "originalSha256": "6b70957282af0de44a317b2af5536821b91ff09f039f4b31c0d829954fa2a7b4",
+      "originalSource": "artifacts/test-results/dotnet/ci-dotnet-test-summary.md"
+    },
+    {
+      "path": "ci/provider-documentation-drift/launch.json",
+      "bytes": 956,
+      "sha256": "346cc6b4dbcbdb40204570f42e75afea46f0c87c0989a6f13b7401a58eaa7c9a",
+      "encoding": "verbatim",
+      "originalBytes": 956,
+      "originalSha256": "346cc6b4dbcbdb40204570f42e75afea46f0c87c0989a6f13b7401a58eaa7c9a",
+      "originalSource": "artifacts/wal-checksum-profile/canonical-final-provider/launch.json"
+    },
+    {
+      "path": "ci/provider-documentation-drift/quality-gate-steps.tsv",
+      "bytes": 1726,
+      "sha256": "3f81ad81e24894b9db59e04cba5e12d23e73e18157f410d46b2720110ec83674",
+      "encoding": "verbatim",
+      "originalBytes": 1726,
+      "originalSha256": "3f81ad81e24894b9db59e04cba5e12d23e73e18157f410d46b2720110ec83674",
+      "originalSource": "artifacts/ci-summary/quality-gate/steps.tsv"
+    },
+    {
+      "path": "ci/provider-documentation-drift/quality-gate-summary.md",
+      "bytes": 4117,
+      "sha256": "d5b7048b25a5439b887ff18ddcd8e07bfac576fd2ceaa3e4481807221030710c",
+      "encoding": "verbatim",
+      "originalBytes": 4117,
+      "originalSha256": "d5b7048b25a5439b887ff18ddcd8e07bfac576fd2ceaa3e4481807221030710c",
+      "originalSource": "artifacts/ci-summary/quality-gate/summary.md"
+    },
+    {
+      "path": "ci/provider-documentation-drift/receipt.json",
+      "bytes": 22749,
+      "sha256": "a1deb56f7839b3eb3bd030e11425467ff4ee74c506bf4e55b2256c50d46f4fbe",
+      "encoding": "verbatim",
+      "originalBytes": 22749,
+      "originalSha256": "a1deb56f7839b3eb3bd030e11425467ff4ee74c506bf4e55b2256c50d46f4fbe",
+      "originalSource": "artifacts/wal-checksum-profile/canonical-final-provider/receipt.json"
+    },
+    {
+      "path": "ci/provider-documentation-drift/source-freeze-receipt.json",
+      "bytes": 6149,
+      "sha256": "294819fdd1dd9b12813976babe9e7521423af3ec99415e0b7d2a61cd01070e4c",
+      "encoding": "verbatim",
+      "originalBytes": 6149,
+      "originalSha256": "294819fdd1dd9b12813976babe9e7521423af3ec99415e0b7d2a61cd01070e4c",
+      "source": "generated checkpoint comparison during evidence packaging"
+    },
+    {
+      "path": "ci/provider-documentation-drift/wrapper.log",
+      "bytes": 72,
+      "sha256": "9a8bf5317c4d53ae7a75f4de456ecdee61b79313ce0f83446371a99a36618334",
+      "encoding": "verbatim",
+      "originalBytes": 72,
+      "originalSha256": "9a8bf5317c4d53ae7a75f4de456ecdee61b79313ce0f83446371a99a36618334",
+      "originalSource": "artifacts/wal-checksum-profile/canonical-final-provider/wrapper.log"
     },
     {
       "path": "ci/tool-process-subreaper-receipt.json",
@@ -1174,9 +1328,29 @@
       "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/optimized-pipeline-console.log"
     },
     {
+      "path": "receipts/provider-artifact-verification.json",
+      "bytes": 8391,
+      "sha256": "1d3166470b13171538da472d6e5ff73db5e3a70e3f6fa5fb6faefc81db5a73a8"
+    },
+    {
+      "path": "receipts/provider-source-binding.json",
+      "bytes": 5867,
+      "sha256": "e78dcfb28099486f6b6dc29090f4a42b7a1634a7dacdae130b34d2f886f62558"
+    },
+    {
+      "path": "receipts/provider-tested-merge-metadata.json",
+      "bytes": 2946,
+      "sha256": "b661f93a704dc4b7d58ece4f9a1f363cb77af835cc1189958eea905d0570c2ba"
+    },
+    {
+      "path": "receipts/schema-manifest-refresh.json",
+      "bytes": 20016,
+      "sha256": "442b6665ca5d007f60eedf5e19dede79a0e474f83c6c45a0b36f76bfe523f8c6"
+    },
+    {
       "path": "report.md",
-      "bytes": 14754,
-      "sha256": "e0c55eb6c361e128aa764a6a0719d38b2de5743ca9e929422158b4051d855d40",
+      "bytes": 19712,
+      "sha256": "ec4d76f4676f25edd793eeb5b6577c7e2c8ccb3da48feed96519334ce00001c1",
       "encoding": "verbatim",
       "source": "polished from artifacts/wal-checksum-profile/report-working.md and retained receipts"
     },
@@ -2045,6 +2219,150 @@
       "source": "/workspace/attachments/ed58931a-0e03-4063-b430-e06f9c0d77b0/pr-3109-pipeline-budget-failure.zip!/66064c4ec0252212a4c4be059ad56ce5f77b417d/37652037382-1/sdk.log"
     },
     {
+      "path": "runs/hosted-provider-pass-37678970064/bdn/Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-200455.log",
+      "encoding": "verbatim",
+      "originalBytes": 54454,
+      "originalSha256": "fdd0a7cee9938077e2bb01e0feb91a8e274fb2c292fb833a4605621b0087d983",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/hosted-provider-final/wal-checksum-provider-bba13ca9-run37678970064.zip!/f06b91711cadea591e09076f1e4e8ddad0643a35/37678970064-1/bdn/Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-200455.log",
+      "bytes": 54454,
+      "sha256": "fdd0a7cee9938077e2bb01e0feb91a8e274fb2c292fb833a4605621b0087d983"
+    },
+    {
+      "path": "runs/hosted-provider-pass-37678970064/bdn/perf-budgets.json",
+      "encoding": "verbatim",
+      "originalBytes": 1422,
+      "originalSha256": "73c03f00210faac0b1d7bd5838d491cb8daae989ddc4304b30d9283997ebedce",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/hosted-provider-final/wal-checksum-provider-bba13ca9-run37678970064.zip!/f06b91711cadea591e09076f1e4e8ddad0643a35/37678970064-1/bdn/perf-budgets.json",
+      "bytes": 1422,
+      "sha256": "73c03f00210faac0b1d7bd5838d491cb8daae989ddc4304b30d9283997ebedce"
+    },
+    {
+      "path": "runs/hosted-provider-pass-37678970064/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json",
+      "encoding": "verbatim",
+      "originalBytes": 142246,
+      "originalSha256": "d6babd55c64c0dbaa01ccce61dd35deb290506b10044c9c6ab7cab6ea31a6fe0",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/hosted-provider-final/wal-checksum-provider-bba13ca9-run37678970064.zip!/f06b91711cadea591e09076f1e4e8ddad0643a35/37678970064-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json",
+      "bytes": 142246,
+      "sha256": "d6babd55c64c0dbaa01ccce61dd35deb290506b10044c9c6ab7cab6ea31a6fe0"
+    },
+    {
+      "path": "runs/hosted-provider-pass-37678970064/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+      "encoding": "verbatim",
+      "originalBytes": 1352,
+      "originalSha256": "a2afff33826105793021736a38a31d8a6bb77167eee714ce6655e96568b49ad6",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/hosted-provider-final/wal-checksum-provider-bba13ca9-run37678970064.zip!/f06b91711cadea591e09076f1e4e8ddad0643a35/37678970064-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+      "bytes": 1352,
+      "sha256": "a2afff33826105793021736a38a31d8a6bb77167eee714ce6655e96568b49ad6"
+    },
+    {
+      "path": "runs/hosted-provider-pass-37678970064/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv",
+      "encoding": "verbatim",
+      "originalBytes": 3772,
+      "originalSha256": "766458bc41d7f41f7067f5f090a526315bca8e94555ad4e7695ed6e237dc95e1",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/hosted-provider-final/wal-checksum-provider-bba13ca9-run37678970064.zip!/f06b91711cadea591e09076f1e4e8ddad0643a35/37678970064-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv",
+      "bytes": 3772,
+      "sha256": "766458bc41d7f41f7067f5f090a526315bca8e94555ad4e7695ed6e237dc95e1"
+    },
+    {
+      "path": "runs/hosted-provider-pass-37678970064/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html",
+      "encoding": "verbatim",
+      "originalBytes": 2016,
+      "originalSha256": "5cf8a7367e6a7914bc05d616e9ad831532e91a084a5b2d90831326d55a58fb4c",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/hosted-provider-final/wal-checksum-provider-bba13ca9-run37678970064.zip!/f06b91711cadea591e09076f1e4e8ddad0643a35/37678970064-1/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html",
+      "bytes": 2016,
+      "sha256": "5cf8a7367e6a7914bc05d616e9ad831532e91a084a5b2d90831326d55a58fb4c"
+    },
+    {
+      "path": "runs/hosted-provider-pass-37678970064/benchmark.log",
+      "encoding": "verbatim",
+      "originalBytes": 54650,
+      "originalSha256": "f7098a1e2490eef43ce5c36f70392af55a82ecc9b34fc6c0711aee9fa26720bc",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/hosted-provider-final/wal-checksum-provider-bba13ca9-run37678970064.zip!/f06b91711cadea591e09076f1e4e8ddad0643a35/37678970064-1/benchmark.log",
+      "bytes": 54650,
+      "sha256": "f7098a1e2490eef43ce5c36f70392af55a82ecc9b34fc6c0711aee9fa26720bc"
+    },
+    {
+      "path": "runs/hosted-provider-pass-37678970064/budget-evidence.json",
+      "encoding": "verbatim",
+      "originalBytes": 3775,
+      "originalSha256": "153751ec495b7371c0c310f7d15c3537cc7f79ecae498d5c4a717d3d1989017a",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/hosted-provider-final/wal-checksum-provider-bba13ca9-run37678970064.zip!/f06b91711cadea591e09076f1e4e8ddad0643a35/37678970064-1/budget-evidence.json",
+      "bytes": 3775,
+      "sha256": "153751ec495b7371c0c310f7d15c3537cc7f79ecae498d5c4a717d3d1989017a"
+    },
+    {
+      "path": "runs/hosted-provider-pass-37678970064/budget-validation.log",
+      "encoding": "verbatim",
+      "originalBytes": 675,
+      "originalSha256": "958937414d4a58f35e5489454d67bd73f2d59c3bae10da50644695f328b335cd",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/hosted-provider-final/wal-checksum-provider-bba13ca9-run37678970064.zip!/f06b91711cadea591e09076f1e4e8ddad0643a35/37678970064-1/budget-validation.log",
+      "bytes": 675,
+      "sha256": "958937414d4a58f35e5489454d67bd73f2d59c3bae10da50644695f328b335cd"
+    },
+    {
+      "path": "runs/hosted-provider-pass-37678970064/build.log",
+      "encoding": "verbatim",
+      "originalBytes": 214024,
+      "originalSha256": "c04476caec6dfb78d2dab9ae8350a1b4771b1ed06389c4dac823fcc918e4ffd5",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/hosted-provider-final/wal-checksum-provider-bba13ca9-run37678970064.zip!/f06b91711cadea591e09076f1e4e8ddad0643a35/37678970064-1/build.log",
+      "bytes": 214024,
+      "sha256": "c04476caec6dfb78d2dab9ae8350a1b4771b1ed06389c4dac823fcc918e4ffd5"
+    },
+    {
+      "path": "runs/hosted-provider-pass-37678970064/dotnet-info.log",
+      "encoding": "verbatim",
+      "originalBytes": 1796,
+      "originalSha256": "2303f1d40e454449978a7ff748bd5e31f50df114d36e318a926fc43ab59bf4c7",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/hosted-provider-final/wal-checksum-provider-bba13ca9-run37678970064.zip!/f06b91711cadea591e09076f1e4e8ddad0643a35/37678970064-1/dotnet-info.log",
+      "bytes": 1796,
+      "sha256": "2303f1d40e454449978a7ff748bd5e31f50df114d36e318a926fc43ab59bf4c7"
+    },
+    {
+      "path": "runs/hosted-provider-pass-37678970064/profile.json",
+      "encoding": "verbatim",
+      "originalBytes": 979,
+      "originalSha256": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/hosted-provider-final/wal-checksum-provider-bba13ca9-run37678970064.zip!/f06b91711cadea591e09076f1e4e8ddad0643a35/37678970064-1/profile.json",
+      "bytes": 979,
+      "sha256": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26"
+    },
+    {
+      "path": "runs/hosted-provider-pass-37678970064/restore.log",
+      "encoding": "verbatim",
+      "originalBytes": 4534,
+      "originalSha256": "6a6e0ac9e17a375411f6bffa6afd8fb67e04fbd2c726505fb6f589f5575b8718",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/hosted-provider-final/wal-checksum-provider-bba13ca9-run37678970064.zip!/f06b91711cadea591e09076f1e4e8ddad0643a35/37678970064-1/restore.log",
+      "bytes": 4534,
+      "sha256": "6a6e0ac9e17a375411f6bffa6afd8fb67e04fbd2c726505fb6f589f5575b8718"
+    },
+    {
+      "path": "runs/hosted-provider-pass-37678970064/run.json",
+      "encoding": "verbatim",
+      "originalBytes": 11383,
+      "originalSha256": "e966842d18dd3a0804c3d90066ecc2d4d894c96ffa16e2c7c32f6514ea866bac",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/hosted-provider-final/wal-checksum-provider-bba13ca9-run37678970064.zip!/f06b91711cadea591e09076f1e4e8ddad0643a35/37678970064-1/run.json",
+      "bytes": 11383,
+      "sha256": "e966842d18dd3a0804c3d90066ecc2d4d894c96ffa16e2c7c32f6514ea866bac"
+    },
+    {
+      "path": "runs/hosted-provider-pass-37678970064/runtime.log",
+      "encoding": "verbatim",
+      "originalBytes": 307,
+      "originalSha256": "83adb39fc56c8c6ca08b8d98083ec5629ac7b76f83e77b56a0fd55bb3760cfc8",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/hosted-provider-final/wal-checksum-provider-bba13ca9-run37678970064.zip!/f06b91711cadea591e09076f1e4e8ddad0643a35/37678970064-1/runtime.log",
+      "bytes": 307,
+      "sha256": "83adb39fc56c8c6ca08b8d98083ec5629ac7b76f83e77b56a0fd55bb3760cfc8"
+    },
+    {
+      "path": "runs/hosted-provider-pass-37678970064/sdk.log",
+      "encoding": "verbatim",
+      "originalBytes": 9,
+      "originalSha256": "a807ca80c392730f0b9a4114bcd64d2c7258ea2f97fbeab0b9c5b3f88194ce94",
+      "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/hosted-provider-final/wal-checksum-provider-bba13ca9-run37678970064.zip!/f06b91711cadea591e09076f1e4e8ddad0643a35/37678970064-1/sdk.log",
+      "bytes": 9,
+      "sha256": "a807ca80c392730f0b9a4114bcd64d2c7258ea2f97fbeab0b9c5b3f88194ce94"
+    },
+    {
       "path": "runs/local-baseline/bdn/Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-170553.log",
       "bytes": 55856,
       "sha256": "9f86ae104ac34e28a6add343b61169c1fe436eb7f2d9ded9417933c8a960d1f4",
@@ -2384,11 +2702,11 @@
       ]
     }
   ],
-  "updatedAt": "2026-10-07T20:00:56.832874+00:00",
-  "acceptedPortableRun": "runs/hosted-final-pass",
+  "updatedAt": "2026-10-09T15:31:57.141834+00:00",
+  "acceptedPortableRun": "runs/hosted-provider-pass-37678970064",
   "acceptanceContractBaseline": "runs/local-baseline",
   "canonicalCiStatus": {
-    "status": "pending-provider-and-packaging-rerun",
+    "status": "pending-final-integration-validation",
     "initialAttemptExitCode": 1,
     "initialAttemptPassed": 19338,
     "initialAttemptFailed": 4,
@@ -2441,12 +2759,63 @@
           "existingSkipped": 16,
           "existingQuarantinedModules": 7
         }
+      },
+      {
+        "status": "failed",
+        "command": [
+          "bash",
+          "scripts/ci.sh"
+        ],
+        "sourceCommit": "bba13ca9c156a42b5ca7f0f9c196d9199a70ef75",
+        "startedAt": "2026-10-07T20:01:55.193215+00:00",
+        "completedAt": "2026-10-07T20:40:25.283279+00:00",
+        "seconds": 2310.090064,
+        "worktreeDirtyAtLaunch": false,
+        "exitCode": 1,
+        "reason": "Accepted portable evidence was added while the canonical command ran; generated repository-structure and documentation-health files differed from committed output. Runtime source remained unchanged.",
+        "failedStep": "Verify whole-repo generated documentation is committed",
+        "generatedDocumentationDiffPaths": [
+          "docs/generated/repository-structure.md",
+          "docs/status/doc-health-dashboard.json",
+          "docs/status/doc-health-dashboard.md"
+        ],
+        "receipt": "ci/provider-documentation-drift/receipt.json",
+        "launch": "ci/provider-documentation-drift/launch.json",
+        "commandLog": "ci/provider-documentation-drift/command.log.gz",
+        "archiveManifest": "ci/provider-documentation-drift/archive-manifest.json",
+        "sourceFreezeReceipt": "ci/provider-documentation-drift/source-freeze-receipt.json",
+        "dotnet": {
+          "shards": 19,
+          "passed": 19646,
+          "failed": 0,
+          "registeredSkipped": 5,
+          "other": 0,
+          "testSeconds": 1390.0866555320008
+        },
+        "browser": {
+          "batches": 42,
+          "testFiles": 335,
+          "passed": 3651,
+          "failed": 0,
+          "skipped": 0,
+          "other": 0,
+          "testSeconds": 377.044675995
+        },
+        "fullWorkflowAndScriptSuitesReached": false,
+        "processReceipt": {
+          "addedZombiePids": [
+            116915,
+            117623
+          ],
+          "remainingAdoptedProcesses": [],
+          "wrapperLog": "ci/provider-documentation-drift/wrapper.log"
+        }
       }
     ]
   },
   "bytePreservation": "Packet-scoped .gitattributes disables Git text normalization; retained files preserve original bytes.",
-  "ciEvidence": "Historical initial canonical failure and independent process-reaping remediation; current full gate results are recorded on PR3123.",
-  "sourceBindingReceipt": "receipts/current-main-integration.json",
+  "ciEvidence": "Provider portable acceptance and required hosted Meridian CI gates passed at bba13ca9; local canonical command failed on generated documentation drift after all .NET/browser tests passed. Newer-main integration and final validation remain pending.",
+  "sourceBindingReceipt": "receipts/provider-source-binding.json",
   "providerValidation": {
     "sourceCommit": "00db380e0007b9a18ea3dd94a831b374c288ee3b",
     "integratedCommit": "3164bfd35",
@@ -2455,6 +2824,34 @@
     "passed": 88,
     "failed": 0,
     "skipped": 0,
-    "seconds": 25
+    "seconds": 25,
+    "portableAcceptance": {
+      "status": "passed",
+      "sourceHead": "bba13ca9c156a42b5ca7f0f9c196d9199a70ef75",
+      "testedMerge": "f06b91711cadea591e09076f1e4e8ddad0643a35",
+      "run": "runs/hosted-provider-pass-37678970064",
+      "sourceBindingReceipt": "receipts/provider-source-binding.json",
+      "sourceBindingFileCount": 20,
+      "rawMeasurementCount": 433
+    }
+  },
+  "hostedCiStatus": {
+    "sourceHead": "bba13ca9c156a42b5ca7f0f9c196d9199a70ef75",
+    "meridianCiRunId": "37678971005",
+    "qualityGate": "success",
+    "integrationGate": "success",
+    "additionalPassingChecks": [
+      "CodeQL",
+      "Windows Desktop Build",
+      "Documentation Automation",
+      "Maintenance",
+      "Roadmap Source Docs"
+    ],
+    "schemaControl": {
+      "conclusion": "failure",
+      "reason": "Provider source line shifts changed generated contract provenance; refresh is retained separately.",
+      "refreshReceipt": "receipts/schema-manifest-refresh.json"
+    },
+    "finalIntegratedHeadValidation": "pending"
   }
 }

@@ -1,0 +1,1182 @@
+{
+  "schemaVersion": 1,
+  "command": [
+    "bash",
+    "scripts/ci.sh"
+  ],
+  "workingDirectory": "/workspace/Meridian-main",
+  "startedAt": "2026-10-07T20:01:55.193215+00:00",
+  "wrapperPid": 110376,
+  "beforeProcesses": [
+    {
+      "pid": 1,
+      "comm": "tail",
+      "state": "S",
+      "ppid": 0,
+      "processGroup": 0,
+      "session": 0,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 2,
+      "comm": "caas-prefix-tra",
+      "state": "S",
+      "ppid": 1,
+      "processGroup": 0,
+      "session": 0,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 199,
+      "comm": "dockerd",
+      "state": "S",
+      "ppid": 1,
+      "processGroup": 199,
+      "session": 199,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 250,
+      "comm": "containerd",
+      "state": "S",
+      "ppid": 199,
+      "processGroup": 250,
+      "session": 250,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 515,
+      "comm": "codex",
+      "state": "S",
+      "ppid": 0,
+      "processGroup": 0,
+      "session": 0,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 883,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 883,
+      "session": 883,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 956,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 956,
+      "session": 956,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1471,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1420,
+      "session": 1420,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1472,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1420,
+      "session": 1420,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1473,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1420,
+      "session": 1420,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1656,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1626,
+      "session": 1626,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1662,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1626,
+      "session": 1626,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1663,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1626,
+      "session": 1626,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1728,
+      "comm": "VBCSCompiler",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1626,
+      "session": 1626,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 3080,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 3017,
+      "session": 3017,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 6327,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 6295,
+      "session": 6295,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 8788,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8788,
+      "session": 8788,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 8895,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8845,
+      "session": 8845,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 8896,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8845,
+      "session": 8845,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 8897,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8845,
+      "session": 8845,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 9019,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8989,
+      "session": 8989,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 9020,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8989,
+      "session": 8989,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 9021,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8989,
+      "session": 8989,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 10022,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 10022,
+      "session": 10022,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 10132,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 10132,
+      "session": 10132,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 10295,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 10132,
+      "session": 10132,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 12621,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 12621,
+      "session": 12621,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 13398,
+      "comm": "VBCSCompiler",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13368,
+      "session": 13368,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 13677,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13677,
+      "session": 13677,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 13739,
+      "comm": "python3",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13739,
+      "session": 13739,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 13793,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13739,
+      "session": 13739,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 13794,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13739,
+      "session": 13739,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 13795,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13739,
+      "session": 13739,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 40052,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 40052,
+      "session": 40052,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 49805,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49804,
+      "session": 49804,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49814,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49804,
+      "session": 49804,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49846,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49836,
+      "session": 49836,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49852,
+      "comm": "sh",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49836,
+      "session": 49836,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49860,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49859,
+      "session": 49859,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49877,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49876,
+      "session": 49876,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49887,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49876,
+      "session": 49876,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49914,
+      "comm": "sh",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49903,
+      "session": 49903,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 50513,
+      "comm": "python3",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 50513,
+      "session": 50513,
+      "exitStatusRaw": 15
+    },
+    {
+      "pid": 50742,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 50742,
+      "session": 50742,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 51025,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 51025,
+      "session": 51025,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 51791,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 51791,
+      "session": 51791,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 51823,
+      "comm": "python3",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 51823,
+      "session": 51823,
+      "exitStatusRaw": 256
+    },
+    {
+      "pid": 52020,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 52020,
+      "session": 52020,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 54101,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 54101,
+      "session": 54101,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 57192,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 57192,
+      "session": 57192,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 92516,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 92516,
+      "session": 92516,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 109999,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 109999,
+      "session": 109999,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 110285,
+      "comm": "git",
+      "state": "S",
+      "ppid": 515,
+      "processGroup": 110285,
+      "session": 110285,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 110352,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 110352,
+      "session": 110352,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 110376,
+      "comm": "python3",
+      "state": "R",
+      "ppid": 1,
+      "processGroup": 110376,
+      "session": 110376,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 110377,
+      "comm": "git",
+      "state": "S",
+      "ppid": 110285,
+      "processGroup": 110285,
+      "session": 110285,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 110378,
+      "comm": "git-remote-http",
+      "state": "S",
+      "ppid": 110377,
+      "processGroup": 110285,
+      "session": 110285,
+      "exitStatusRaw": 0
+    }
+  ],
+  "environment": {
+    "PATH": "/workspace/wal-tools/venv/bin:/workspace/wal-tools/bin:/workspace/dotnet-10.0.100:/home/agent/.local/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/opt/codex/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/agent/.local/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+    "DOTNET_ROOT": "/workspace/dotnet-10.0.100"
+  },
+  "reaped": [
+    {
+      "pid": 110430,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T20:22:56.149125+00:00"
+    },
+    {
+      "pid": 110431,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T20:22:56.162758+00:00"
+    },
+    {
+      "pid": 110429,
+      "statusRaw": 0,
+      "exitCode": 0,
+      "commandRoot": false,
+      "at": "2026-10-07T20:22:56.168437+00:00"
+    },
+    {
+      "pid": 147119,
+      "statusRaw": 9,
+      "exitCode": -9,
+      "commandRoot": false,
+      "at": "2026-10-07T20:31:04.446534+00:00"
+    },
+    {
+      "pid": 147128,
+      "statusRaw": 9,
+      "exitCode": -9,
+      "commandRoot": false,
+      "at": "2026-10-07T20:31:04.447383+00:00"
+    },
+    {
+      "pid": 147157,
+      "statusRaw": 9,
+      "exitCode": -9,
+      "commandRoot": false,
+      "at": "2026-10-07T20:31:04.578107+00:00"
+    },
+    {
+      "pid": 147163,
+      "statusRaw": 9,
+      "exitCode": -9,
+      "commandRoot": false,
+      "at": "2026-10-07T20:31:04.578151+00:00"
+    },
+    {
+      "pid": 147170,
+      "statusRaw": 9,
+      "exitCode": -9,
+      "commandRoot": false,
+      "at": "2026-10-07T20:31:04.723659+00:00"
+    },
+    {
+      "pid": 147187,
+      "statusRaw": 9,
+      "exitCode": -9,
+      "commandRoot": false,
+      "at": "2026-10-07T20:31:05.797472+00:00"
+    },
+    {
+      "pid": 147196,
+      "statusRaw": 9,
+      "exitCode": -9,
+      "commandRoot": false,
+      "at": "2026-10-07T20:31:05.797511+00:00"
+    },
+    {
+      "pid": 147219,
+      "statusRaw": 9,
+      "exitCode": -9,
+      "commandRoot": false,
+      "at": "2026-10-07T20:31:05.900499+00:00"
+    },
+    {
+      "pid": 110380,
+      "statusRaw": 256,
+      "exitCode": 1,
+      "commandRoot": true,
+      "at": "2026-10-07T20:40:25.276104+00:00"
+    }
+  ],
+  "forwardedSignals": [],
+  "childSubreaperEnabled": true,
+  "commandPid": 110380,
+  "completedAt": "2026-10-07T20:40:25.283279+00:00",
+  "exitCode": 1,
+  "status": "failed",
+  "afterProcesses": [
+    {
+      "pid": 1,
+      "comm": "tail",
+      "state": "S",
+      "ppid": 0,
+      "processGroup": 0,
+      "session": 0,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 2,
+      "comm": "caas-prefix-tra",
+      "state": "S",
+      "ppid": 1,
+      "processGroup": 0,
+      "session": 0,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 199,
+      "comm": "dockerd",
+      "state": "S",
+      "ppid": 1,
+      "processGroup": 199,
+      "session": 199,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 250,
+      "comm": "containerd",
+      "state": "S",
+      "ppid": 199,
+      "processGroup": 250,
+      "session": 250,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 515,
+      "comm": "codex",
+      "state": "S",
+      "ppid": 0,
+      "processGroup": 0,
+      "session": 0,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 883,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 883,
+      "session": 883,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 956,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 956,
+      "session": 956,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1471,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1420,
+      "session": 1420,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1472,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1420,
+      "session": 1420,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1473,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1420,
+      "session": 1420,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1656,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1626,
+      "session": 1626,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1662,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1626,
+      "session": 1626,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1663,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1626,
+      "session": 1626,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 1728,
+      "comm": "VBCSCompiler",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 1626,
+      "session": 1626,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 3080,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 3017,
+      "session": 3017,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 6327,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 6295,
+      "session": 6295,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 8788,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8788,
+      "session": 8788,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 8895,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8845,
+      "session": 8845,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 8896,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8845,
+      "session": 8845,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 8897,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8845,
+      "session": 8845,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 9019,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8989,
+      "session": 8989,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 9020,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8989,
+      "session": 8989,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 9021,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 8989,
+      "session": 8989,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 10022,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 10022,
+      "session": 10022,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 10132,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 10132,
+      "session": 10132,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 10295,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 10132,
+      "session": 10132,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 12621,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 12621,
+      "session": 12621,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 13398,
+      "comm": "VBCSCompiler",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13368,
+      "session": 13368,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 13677,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13677,
+      "session": 13677,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 13739,
+      "comm": "python3",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13739,
+      "session": 13739,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 13793,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13739,
+      "session": 13739,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 13794,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13739,
+      "session": 13739,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 13795,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 13739,
+      "session": 13739,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 40052,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 40052,
+      "session": 40052,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 49805,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49804,
+      "session": 49804,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49814,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49804,
+      "session": 49804,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49846,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49836,
+      "session": 49836,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49852,
+      "comm": "sh",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49836,
+      "session": 49836,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49860,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49859,
+      "session": 49859,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49877,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49876,
+      "session": 49876,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49887,
+      "comm": "dotnet",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49876,
+      "session": 49876,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 49914,
+      "comm": "sh",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 49903,
+      "session": 49903,
+      "exitStatusRaw": 9
+    },
+    {
+      "pid": 50513,
+      "comm": "python3",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 50513,
+      "session": 50513,
+      "exitStatusRaw": 15
+    },
+    {
+      "pid": 50742,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 50742,
+      "session": 50742,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 51025,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 51025,
+      "session": 51025,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 51791,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 51791,
+      "session": 51791,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 51823,
+      "comm": "python3",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 51823,
+      "session": 51823,
+      "exitStatusRaw": 256
+    },
+    {
+      "pid": 52020,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 52020,
+      "session": 52020,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 54101,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 54101,
+      "session": 54101,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 57192,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 57192,
+      "session": 57192,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 92516,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 92516,
+      "session": 92516,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 109999,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 109999,
+      "session": 109999,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 110352,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 110352,
+      "session": 110352,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 110376,
+      "comm": "python3",
+      "state": "R",
+      "ppid": 1,
+      "processGroup": 110376,
+      "session": 110376,
+      "exitStatusRaw": 0
+    },
+    {
+      "pid": 116915,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 116912,
+      "session": 116912,
+      "exitStatusRaw": 32768
+    },
+    {
+      "pid": 117623,
+      "comm": "git",
+      "state": "Z",
+      "ppid": 1,
+      "processGroup": 117620,
+      "session": 117620,
+      "exitStatusRaw": 32768
+    }
+  ],
+  "baselineZombiePids": [
+    883,
+    956,
+    1471,
+    1472,
+    1473,
+    1656,
+    1662,
+    1663,
+    1728,
+    3080,
+    6327,
+    8788,
+    8895,
+    8896,
+    8897,
+    9019,
+    9020,
+    9021,
+    10022,
+    10132,
+    10295,
+    12621,
+    13398,
+    13677,
+    13739,
+    13793,
+    13794,
+    13795,
+    40052,
+    49805,
+    49814,
+    49846,
+    49852,
+    49860,
+    49877,
+    49887,
+    49914,
+    50513,
+    50742,
+    51025,
+    51791,
+    51823,
+    52020,
+    54101,
+    57192,
+    92516,
+    109999,
+    110352
+  ],
+  "addedZombiePids": [
+    116915,
+    117623
+  ],
+  "remainingAdoptedProcesses": []
+}

@@ -3954,7 +3954,7 @@
       ]
     }
   ],
-  "fingerprint": "37c2cc063a2f47ba9f63d9d91be8e21f2f890f4a1c4e9a12c636b833db1f3c4b",
+  "fingerprint": "f989b218be1ed52b09a5bc44f7b739ae8ef93b3825c18d0fcb0bcabeab68e6e5",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5373,7 +5373,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "9cd75c9d9d72686549bf91bb47821c9e932cea89d2878d4cbe1cd3c55323616e",
+      "fingerprint": "d38c1be276271b73f5f9a2ba6a53d8203cf709c93f04bd6c859f78e0d9f4ea58",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Integrity",
       "object_ids": [
@@ -150622,35 +150622,35 @@
         {
           "explicit_value": true,
           "name": "Match",
-          "source_line": 202,
+          "source_line": 241,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "Mismatch",
-          "source_line": 205,
+          "source_line": 244,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "MalformedLeft",
-          "source_line": 208,
+          "source_line": 247,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "MalformedRight",
-          "source_line": 211,
+          "source_line": 250,
           "value": "3"
         },
         {
           "explicit_value": true,
           "name": "MalformedBoth",
-          "source_line": 214,
+          "source_line": 253,
           "value": "4"
         }
       ],
-      "fingerprint": "15010d35b9745f44ada7597c2db865bbb667da1182c6a51800a811213fa10b1d",
+      "fingerprint": "c8e4818d715fa0d2c1a49dff6a90a902235160c10761c2b61bd0c1adcb9f7d97",
       "full_name": "Meridian.Contracts.Integrity.Sha256DigestComparison",
       "id": "Meridian.Contracts.Integrity.Sha256DigestComparison",
       "kind": "enum",
@@ -150662,12 +150662,12 @@
       "qualified_name": "Meridian.Contracts.Integrity.Sha256DigestComparison",
       "references": [],
       "source": {
-        "line": 199,
+        "line": 238,
         "path": "src/Meridian.Contracts/Integrity/Sha256Digest.cs"
       },
       "sources": [
         {
-          "line": 199,
+          "line": 238,
           "path": "src/Meridian.Contracts/Integrity/Sha256Digest.cs"
         }
       ],

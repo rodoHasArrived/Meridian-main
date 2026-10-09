@@ -2585,7 +2585,11 @@ Meridian-main
 │   │   │   │   │   ├── initial-committed-packet-verification.json
 │   │   │   │   │   ├── native-upstream-project-packaging.json
 │   │   │   │   │   ├── optimized-interrupted-budget-evidence.json
-│   │   │   │   │   └── optimized-interrupted-receipt.json
+│   │   │   │   │   ├── optimized-interrupted-receipt.json
+│   │   │   │   │   ├── provider-artifact-verification.json
+│   │   │   │   │   ├── provider-source-binding.json
+│   │   │   │   │   ├── provider-tested-merge-metadata.json
+│   │   │   │   │   └── schema-manifest-refresh.json
 │   │   │   │   ├── runs
 │   │   │   │   │   ├── hosted-final-head-failure-37673101515
 │   │   │   │   │   │   ├── bdn
@@ -2643,6 +2647,17 @@ Meridian-main
 │   │   │   │   │   │   ├── profile.json
 │   │   │   │   │   │   └── run.json
 │   │   │   │   │   ├── hosted-pr-3109
+│   │   │   │   │   │   ├── bdn
+│   │   │   │   │   │   │   ├── results
+│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json
+│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md
+│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv
+│   │   │   │   │   │   │   │   └── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html
+│   │   │   │   │   │   │   └── perf-budgets.json
+│   │   │   │   │   │   ├── budget-evidence.json
+│   │   │   │   │   │   ├── profile.json
+│   │   │   │   │   │   └── run.json
+│   │   │   │   │   ├── hosted-provider-pass-37678970064
 │   │   │   │   │   │   ├── bdn
 │   │   │   │   │   │   │   ├── results
 │   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json

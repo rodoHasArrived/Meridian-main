@@ -1,11 +1,11 @@
 {
-  "total_files": 722,
-  "total_lines": 157214,
-  "orphaned_count": 243,
-  "no_heading_count": 156,
+  "total_files": 723,
+  "total_lines": 157251,
+  "orphaned_count": 244,
+  "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 299,
-  "average_lines": 217.7,
+  "average_lines": 217.5,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -233,6 +233,7 @@
     "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-main-current/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
     "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-main-prior/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
     "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-pr-3109/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-provider-pass-37678970064/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
     "docs/testing/evidence/wal-checksum-2026-10-07/runs/local-baseline/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
     "docs/testing/evidence/wal-checksum-2026-10-07/runs/local-first-optimized-interrupted/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
     "plugins/frontend-web-dev/agents/electron-angular-native.md",
@@ -278,6 +279,7 @@
     "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-main-current/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
     "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-main-prior/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
     "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-pr-3109/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+    "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-provider-pass-37678970064/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
     "docs/testing/evidence/wal-checksum-2026-10-07/runs/local-baseline/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
     "docs/testing/evidence/wal-checksum-2026-10-07/runs/local-first-optimized-interrupted/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
     "Meridian Design System/components/accounting/AccountTree.prompt.md",
@@ -2806,7 +2808,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11776,
+      "line_count": 11791,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4198,6 +4200,14 @@
     },
     {
       "path": "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-pr-3109/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+      "line_count": 22,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-provider-pass-37678970064/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
       "line_count": 22,
       "has_heading": false,
       "todo_count": 0,
