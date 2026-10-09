@@ -91,6 +91,16 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
 
     // ── Account definition ────────────────────────────────────────────────────
 
+    public async Task<bool> TryCreateAccountAsync(AccountSummaryDto account, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(account);
+        ct.ThrowIfCancellationRequested();
+        var callerTenant = RequireWriteTenant();
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        return await UpsertAccountAsync(connection, transaction: null, account, ct,
+            callerTenant, allowUnattributed: !_tenantScope.IsFailClosed, createOnly: true).ConfigureAwait(false);
+    }
+
     public async Task UpsertAccountAsync(AccountSummaryDto account, CancellationToken ct = default)
     {
         var callerTenant = RequireWriteTenant();
@@ -99,28 +109,19 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             callerTenant, allowUnattributed: !_tenantScope.IsFailClosed).ConfigureAwait(false);
     }
 
-    private async Task UpsertAccountAsync(
+    private async Task<bool> UpsertAccountAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction? transaction,
         AccountSummaryDto account,
         CancellationToken ct,
         string? callerTenantStamp = null,
-        bool allowUnattributed = true)
+        bool allowUnattributed = true,
+        bool createOnly = false)
     {
         await using var cmd = connection.CreateCommand();
         cmd.Transaction = transaction;
-        cmd.CommandText = $"""
-            INSERT INTO {Qualified("account_definition")}
-                (account_id, account_type, entity_id, fund_id, sleeve_id, vehicle_id,
-                 account_code, display_name, base_currency, institution, is_active,
-                 effective_from, effective_to, portfolio_id, ledger_reference,
-                 strategy_id, run_id, operational_status, custodian_details, bank_details, tenant_id, updated_at)
-            VALUES
-                (@account_id, @account_type, @entity_id, @fund_id, @sleeve_id, @vehicle_id,
-                 @account_code, @display_name, @base_currency, @institution, @is_active,
-                 @effective_from, @effective_to, @portfolio_id, @ledger_reference,
-                 @strategy_id, @run_id, @operational_status, @custodian_details::jsonb, @bank_details::jsonb, @tenant_id, now())
-            ON CONFLICT (account_id) DO UPDATE SET
+        var conflictAction = createOnly ? "DO NOTHING" : """
+            DO UPDATE SET
                 account_type        = EXCLUDED.account_type,
                 entity_id           = EXCLUDED.entity_id,
                 fund_id             = EXCLUDED.fund_id,
@@ -150,6 +151,19 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             WHERE (@allow_unattributed AND (account_definition.tenant_id IS NULL OR @tenant_id IS NULL))
                OR lower(trim(account_definition.tenant_id)) = lower(trim(@tenant_id))
             """;
+        cmd.CommandText = $"""
+            INSERT INTO {Qualified("account_definition")}
+                (account_id, account_type, entity_id, fund_id, sleeve_id, vehicle_id,
+                 account_code, display_name, base_currency, institution, is_active,
+                 effective_from, effective_to, portfolio_id, ledger_reference,
+                 strategy_id, run_id, operational_status, custodian_details, bank_details, tenant_id, updated_at)
+            VALUES
+                (@account_id, @account_type, @entity_id, @fund_id, @sleeve_id, @vehicle_id,
+                 @account_code, @display_name, @base_currency, @institution, @is_active,
+                 @effective_from, @effective_to, @portfolio_id, @ledger_reference,
+                 @strategy_id, @run_id, @operational_status, @custodian_details::jsonb, @bank_details::jsonb, @tenant_id, now())
+            ON CONFLICT (account_id) {conflictAction}
+            """;
         cmd.Parameters.AddWithValue("account_id", account.AccountId);
         cmd.Parameters.AddWithValue("account_type", account.AccountType.ToString());
         cmd.Parameters.AddWithValue("entity_id", account.EntityId.HasValue ? (object)account.EntityId.Value : DBNull.Value);
@@ -178,6 +192,9 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             string.IsNullOrWhiteSpace(callerTenantStamp) ? DBNull.Value : callerTenantStamp.Trim());
 
         var affected = await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        if (createOnly)
+            return affected > 0;
+
         if (affected == 0)
         {
             if (!allowUnattributed)
@@ -188,10 +205,16 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             throw new InvalidOperationException(
                 $"Fund account '{account.AccountId}' is owned by a different tenant and cannot be modified.");
         }
+
+        return true;
     }
 
     public async Task<AccountSummaryDto?> GetAccountAsync(Guid accountId, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
+        var callerTenant = ResolveCallerTenant();
+        RejectUnscopedRead(callerTenant);
+
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = $"""
@@ -206,8 +229,6 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         // SEC-005 slice 4c: scope by the account's stamped tenant_id so a foreign account GUID resolves
         // to not-found. Under the deployment-boundary posture an unstamped (legacy) account still
         // resolves; under fail-closed it does not, and a tenantless caller is refused above.
-        var callerTenant = ResolveCallerTenant();
-        RejectUnscopedRead(callerTenant);
         if (TenantReadPredicate.ShouldFilter(callerTenant))
         {
             cmd.CommandText += TenantReadPredicate.FilterClause("tenant_id", _tenantScope.Mode);
@@ -235,6 +256,16 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         bool applyCallerTenantPredicate,
         CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(query);
+        ct.ThrowIfCancellationRequested();
+        var callerTenant = applyCallerTenantPredicate ? ResolveCallerTenant() : null;
+        if (applyCallerTenantPredicate)
+        {
+            // Validate caller authority before requiring database connectivity. The named
+            // cross-tenant fan-out path deliberately bypasses this caller predicate.
+            RejectUnscopedRead(callerTenant);
+        }
+
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var cmd = connection.CreateCommand();
 
@@ -302,16 +333,6 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         // alternate-identifier residual). The predicate is skipped only for the deliberate
         // cross-tenant enumeration used by the scope fan-out authority, which must see holdings in
         // every tenant to answer at all.
-        var callerTenant = applyCallerTenantPredicate ? ResolveCallerTenant() : null;
-        if (applyCallerTenantPredicate)
-        {
-            // W9-GOV-008 criterion 2: an ordinary caller whose tenant cannot be resolved is refused
-            // rather than served unfiltered. Deliberately NOT applied to the fan-out path above --
-            // that one arrives through its own named entry point having declared it wants every
-            // tenant, which is a resolved scope, not an unresolvable one. Guarding it here would
-            // refuse the authority outright and it could no longer answer at all.
-            RejectUnscopedRead(callerTenant);
-        }
         if (TenantReadPredicate.ShouldFilter(callerTenant))
         {
             sb.AppendLine(TenantReadPredicate.FilterClause("tenant_id", _tenantScope.Mode));
@@ -1051,6 +1072,23 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         MarginSnapshotDto snapshot,
         CancellationToken ct)
     {
+        // Correlated retries retain their snapshot identity even when a provider corrects
+        // the effective time. Move that identity before applying the effective-time upsert;
+        // both statements commit in the caller's owner-checked transaction.
+        await using (var move = connection.CreateCommand())
+        {
+            move.Transaction = transaction;
+            move.CommandText = $"""
+                UPDATE {Qualified("account_margin_snapshot")}
+                SET effective_at = @effective_at
+                WHERE margin_snapshot_id = @margin_snapshot_id AND account_id = @account_id
+                """;
+            move.Parameters.AddWithValue("effective_at", snapshot.EffectiveAt);
+            move.Parameters.AddWithValue("margin_snapshot_id", snapshot.MarginSnapshotId);
+            move.Parameters.AddWithValue("account_id", snapshot.AccountId);
+            await move.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
+
         await using var cmd = connection.CreateCommand();
         cmd.Transaction = transaction;
         cmd.CommandText = $"""

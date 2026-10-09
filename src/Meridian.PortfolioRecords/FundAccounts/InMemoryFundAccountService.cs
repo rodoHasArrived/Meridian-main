@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Meridian.Contracts.FundStructure;
 using Meridian.Storage.Archival;
@@ -76,6 +77,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         CreateAccountRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
 
         var dto = new AccountSummaryDto(
             request.AccountId,
@@ -166,6 +168,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
 
         AccountSummaryDto? updated;
         (long Version, string Json)? snapshot = null;
@@ -192,6 +195,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
 
         AccountSummaryDto? updated;
         (long Version, string Json)? snapshot = null;
@@ -215,6 +219,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
     public async Task<AccountSummaryDto?> DeactivateAccountAsync(
         Guid accountId, string deactivatedBy, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         AccountSummaryDto? updated;
         (long Version, string Json)? snapshot = null;
         lock (_gate)
@@ -263,6 +268,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         RecordAccountBalanceSnapshotRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
 
         var dto = new AccountBalanceSnapshotDto(
             Guid.NewGuid(),
@@ -284,7 +290,8 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         lock (_gate)
         {
             var stored = RequireAccountLocked(request.AccountId);
-            EnsureAllowed(stored.Summary, "record-balance-snapshot");
+            EnsureAllowed(stored.Summary, "record-balance-snapshot", request.IsBackfill);
+            dto = dto with { FundId = stored.Summary.FundId };
             stored.Snapshots.Add(dto);
             snapshot = CaptureSnapshotLocked();
         }
@@ -337,6 +344,8 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         IngestCustodianStatementRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+        FundAccountStatementValidation.Validate(request);
 
         var batch = new CustodianStatementBatchDto(
             request.BatchId,
@@ -352,7 +361,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         lock (_gate)
         {
             var stored = RequireAccountLocked(request.AccountId);
-            EnsureAllowed(stored.Summary, "ingest-custodian-statement", allowSuspended: true);
+            EnsureAllowed(stored.Summary, "ingest-custodian-statement", request.IsBackfill, allowSuspended: true);
             stored.CustodianBatches.Add(batch);
             UpsertCustodianPositions(stored.CustodianPositions, request.Lines);
             snapshot = CaptureSnapshotLocked();
@@ -366,6 +375,8 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         IngestBankStatementRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+        FundAccountStatementValidation.Validate(request);
 
         var batch = new BankStatementBatchDto(
             request.BatchId,
@@ -380,7 +391,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         lock (_gate)
         {
             var stored = RequireAccountLocked(request.AccountId);
-            EnsureAllowed(stored.Summary, "ingest-bank-statement", allowSuspended: true);
+            EnsureAllowed(stored.Summary, "ingest-bank-statement", request.IsBackfill, allowSuspended: true);
             stored.BankBatches.Add(batch);
             UpsertBankStatementLines(stored.BankLines, request.Lines);
             snapshot = CaptureSnapshotLocked();
@@ -456,8 +467,10 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         ReconcileAccountRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
 
         AccountBalanceSnapshotDto? snapshot;
+        List<AccountBalanceSnapshotDto> snapshots;
         List<CustodianPositionLineDto> positions;
         List<CustodianStatementBatchDto> custodianBatches;
         List<BankStatementLineDto> bankLines;
@@ -466,8 +479,10 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         {
             var stored = RequireAccountLocked(request.AccountId);
 
-            snapshot = stored.Snapshots
+            snapshots = stored.Snapshots
                 .Where(s => s.AsOfDate == request.AsOfDate)
+                .ToList();
+            snapshot = snapshots
                 .OrderByDescending(s => s.RecordedAt)
                 .FirstOrDefault();
 
@@ -494,7 +509,11 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             results.Add(cashCheck);
         }
 
-        AddContinuityCheckResults(runId, request.AsOfDate, results, request.AccountId);
+        var continuityCheck = AccountReconciliationChecks.BuildCashContinuityCheck(runId, snapshots);
+        if (continuityCheck is not null)
+        {
+            results.Add(continuityCheck);
+        }
 
         var positionCheck = AccountReconciliationChecks.BuildPositionCountCheck(runId, positions, custodianBatches);
         if (positionCheck is not null)
@@ -558,56 +577,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         => $"{line.AccountId:N}|{line.AsOfDate:yyyyMMdd}|{line.IdentifierType}|{line.Identifier}".ToUpperInvariant();
 
     private static string BuildBankDedupKey(BankStatementLineDto line)
-        => $"{line.AccountId:N}|{line.TransactionDate:yyyyMMdd}|{line.ValueDate:yyyyMMdd}|{line.Currency}|{line.Amount:0.########}|{line.TransactionType}|{line.Reference ?? line.Description}".ToUpperInvariant();
-
-    private void AddContinuityCheckResults(
-        Guid runId,
-        DateOnly asOfDate,
-        List<AccountReconciliationResultDto> results,
-        Guid accountId)
-    {
-        AccountBalanceSnapshotDto? accountSync = null;
-        AccountBalanceSnapshotDto? runDerived = null;
-
-        lock (_gate)
-        {
-            if (!_accounts.TryGetValue(accountId, out var stored))
-            {
-                return;
-            }
-
-            accountSync = stored.Snapshots
-                .Where(static s => s.Source is not null && s.Source.StartsWith("brokerage-sync:", StringComparison.OrdinalIgnoreCase))
-                .Where(s => s.AsOfDate == asOfDate)
-                .OrderByDescending(static s => s.RecordedAt)
-                .FirstOrDefault();
-            runDerived = stored.Snapshots
-                .Where(static s => s.Source is null || !s.Source.StartsWith("brokerage-sync:", StringComparison.OrdinalIgnoreCase))
-                .Where(s => s.AsOfDate == asOfDate)
-                .OrderByDescending(static s => s.RecordedAt)
-                .FirstOrDefault();
-        }
-
-        if (accountSync is null || runDerived is null)
-        {
-            return;
-        }
-
-        var variance = accountSync.CashBalance - runDerived.CashBalance;
-        results.Add(new AccountReconciliationResultDto(
-            Guid.NewGuid(),
-            runId,
-            CheckLabel: "RunVsAccountSyncCashContinuity",
-            IsMatch: variance == 0m,
-            Category: "Continuity",
-            Status: variance == 0m ? "Matched" : "Break",
-            ExpectedAmount: runDerived.CashBalance,
-            ActualAmount: accountSync.CashBalance,
-            Variance: variance,
-            Reason: variance == 0m
-                ? "Run-derived and account-sync-derived balances agree."
-                : "Run-derived and account-sync-derived balances diverge."));
-    }
+        => $"{line.AccountId:N}|{line.TransactionDate:yyyyMMdd}|{line.ValueDate:yyyyMMdd}|{line.Currency}|{line.Amount.ToString("G29", CultureInfo.InvariantCulture)}|{line.TransactionType}|{line.Reference ?? line.Description}".ToUpperInvariant();
 
     public Task<IReadOnlyList<AccountReconciliationRunDto>> GetReconciliationRunsAsync(
         Guid accountId, CancellationToken ct = default)
@@ -619,7 +589,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
                 return Task.FromResult<IReadOnlyList<AccountReconciliationRunDto>>([]);
             }
 
-            return Task.FromResult<IReadOnlyList<AccountReconciliationRunDto>>(stored.ReconciliationRuns.AsReadOnly());
+            return Task.FromResult<IReadOnlyList<AccountReconciliationRunDto>>(stored.ReconciliationRuns.ToArray());
         }
     }
 
@@ -876,6 +846,14 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
                     existing.AccountId == request.AccountId
                     && string.Equals(existing.CorrelationId, correlationId, StringComparison.OrdinalIgnoreCase));
 
+            if (existingIndex >= 0
+                && stored.MarginSnapshots[existingIndex].EffectiveAt != request.EffectiveAt
+                && stored.MarginSnapshots.Any(existing => existing.EffectiveAt == request.EffectiveAt
+                    && existing.MarginSnapshotId != stored.MarginSnapshots[existingIndex].MarginSnapshotId))
+            {
+                throw new InvalidOperationException("A different margin snapshot already exists at the corrected effective time.");
+            }
+
             snapshot = new MarginSnapshotDto(
                 existingIndex >= 0 ? stored.MarginSnapshots[existingIndex].MarginSnapshotId : Guid.NewGuid(),
                 request.AccountId,
@@ -982,7 +960,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             .OrderByDescending(static entry => entry.CompletedAt ?? entry.AttemptedAt)
             .FirstOrDefault();
         var providerLinkStatus = latestSync?.ProviderLinkStatus ?? InferProviderLinkStatus(account);
-        var issues = new List<AccountReadinessIssueDto>();
+        var issues = AccountReadinessChecks.BuildStatusIssues(account, latestSync).ToList();
 
         if (providerLinkStatus == AccountProviderLinkStatusDto.NotLinked)
         {
