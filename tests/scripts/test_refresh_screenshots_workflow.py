@@ -334,6 +334,45 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("Evidence Workbench", captures["W03I5"].get("waitForTexts", []))
         self.assertIn("Document intake", captures["W03I5"].get("waitForTexts", []))
 
+    def test_operations_continuity_capture_retains_matching_detail_without_fallback(self) -> None:
+        capture = next(c for c in self.web_screenshot_routes["captures"] if c["id"] == "W03G")
+        fixtures = self.web_screenshot_fixtures["routes"]
+        list_path = "/api/workstation/operations/continuity"
+        self.assertIn(list_path, capture["requiredApiRoutes"])
+        summaries = fixtures[list_path]
+        self.assertEqual(1, len(summaries))
+        summary = summaries[0]
+        detail_path = f"{list_path}/{summary['workflowId']}"
+        self.assertIn(detail_path, capture["requiredApiRoutes"])
+        detail = fixtures[detail_path]
+        for field in ("workflowId", "version", "fundAccountId", "periodId", "ledgerBookId"):
+            self.assertEqual(summary.get(field), detail.get(field), field)
+
+        # A loaded-list announcement can appear briefly before a detail failure.
+        # Require retained detail content as well as the existing list readiness.
+        self.assertTrue(any(event["rationale"] in capture["waitForTexts"] for event in detail["timeline"]))
+        self.assertIn("Selected workflow detail failed to load:", capture["waitForAbsentTexts"])
+
+        # The list fixture is also a prefix match. Preserve this sibling's object
+        # contract instead of accidentally answering it with the workflow array.
+        policy_path = f"{list_path}/approval-policy-matrix"
+        self.assertIn(policy_path, capture["requiredApiRoutes"])
+        self.assertIsInstance(fixtures[policy_path]["rows"], list)
+
+        # The cockpit and shared decision are loaded together; a missing shared
+        # endpoint rejects both even when selected workflow detail is available.
+        command_center_path = "/api/workstation/operations/financial-operations-command-center"
+        self.assertIn(command_center_path, capture["requiredApiRoutes"])
+        command_center = fixtures[command_center_path]
+        self.assertEqual(detail, command_center["activeWorkflow"])
+        self.assertFalse(command_center["isReadyToComplete"])
+        self.assertFalse(command_center["closeReadiness"]["isReadyToClose"])
+        self.assertEqual(detail["fundAccountId"], command_center["closeReadiness"]["scope"]["fundAccountId"])
+        self.assertEqual(detail["periodId"], command_center["closeReadiness"]["scope"]["periodId"])
+        self.assertIn("3/7 lanes ready across 1 close workflow.", capture["waitForTexts"])
+        self.assertIn("Private-capital close cockpit unavailable", capture["waitForAbsentTexts"])
+        self.assertIn("Private-capital close evidence is unavailable.", capture["waitForAbsentTexts"])
+
     def test_accounting_capture_contracts_use_current_operator_labels(self) -> None:
         captures = {
             capture.get("id"): capture

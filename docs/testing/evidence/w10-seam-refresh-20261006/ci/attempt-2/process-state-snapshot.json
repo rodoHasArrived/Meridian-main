@@ -1,0 +1,287 @@
+{
+  "source": "Captured attempt-2 process snapshot; command and elapsed columns intentionally omitted.",
+  "rows": [
+    {
+      "pid": 1,
+      "ppid": 0,
+      "pgid": 0,
+      "sid": 0,
+      "state": "S+"
+    },
+    {
+      "pid": 652,
+      "ppid": 1,
+      "pgid": 652,
+      "sid": 652,
+      "state": "Zs"
+    },
+    {
+      "pid": 1283,
+      "ppid": 1,
+      "pgid": 1230,
+      "sid": 1230,
+      "state": "Z"
+    },
+    {
+      "pid": 1284,
+      "ppid": 1,
+      "pgid": 1230,
+      "sid": 1230,
+      "state": "Z"
+    },
+    {
+      "pid": 1285,
+      "ppid": 1,
+      "pgid": 1230,
+      "sid": 1230,
+      "state": "Z"
+    },
+    {
+      "pid": 1794,
+      "ppid": 1,
+      "pgid": 1793,
+      "sid": 1793,
+      "state": "Z"
+    },
+    {
+      "pid": 1797,
+      "ppid": 1,
+      "pgid": 1795,
+      "sid": 1795,
+      "state": "Z"
+    },
+    {
+      "pid": 1799,
+      "ppid": 1,
+      "pgid": 1779,
+      "sid": 1779,
+      "state": "Z"
+    },
+    {
+      "pid": 1800,
+      "ppid": 1,
+      "pgid": 1779,
+      "sid": 1779,
+      "state": "Z"
+    },
+    {
+      "pid": 2311,
+      "ppid": 1,
+      "pgid": 2310,
+      "sid": 2310,
+      "state": "Z"
+    },
+    {
+      "pid": 2314,
+      "ppid": 1,
+      "pgid": 2295,
+      "sid": 2295,
+      "state": "Z"
+    },
+    {
+      "pid": 2315,
+      "ppid": 1,
+      "pgid": 2313,
+      "sid": 2313,
+      "state": "Z"
+    },
+    {
+      "pid": 2316,
+      "ppid": 1,
+      "pgid": 2295,
+      "sid": 2295,
+      "state": "Z"
+    },
+    {
+      "pid": 2778,
+      "ppid": 1,
+      "pgid": 2777,
+      "sid": 2777,
+      "state": "Z"
+    },
+    {
+      "pid": 2780,
+      "ppid": 1,
+      "pgid": 2762,
+      "sid": 2762,
+      "state": "Z"
+    },
+    {
+      "pid": 2781,
+      "ppid": 1,
+      "pgid": 2762,
+      "sid": 2762,
+      "state": "Z"
+    },
+    {
+      "pid": 2783,
+      "ppid": 1,
+      "pgid": 2782,
+      "sid": 2782,
+      "state": "Z"
+    },
+    {
+      "pid": 3525,
+      "ppid": 1,
+      "pgid": 3524,
+      "sid": 3524,
+      "state": "Z"
+    },
+    {
+      "pid": 3527,
+      "ppid": 1,
+      "pgid": 3526,
+      "sid": 3526,
+      "state": "Z"
+    },
+    {
+      "pid": 3529,
+      "ppid": 1,
+      "pgid": 3509,
+      "sid": 3509,
+      "state": "Z"
+    },
+    {
+      "pid": 3530,
+      "ppid": 1,
+      "pgid": 3509,
+      "sid": 3509,
+      "state": "Z"
+    },
+    {
+      "pid": 4456,
+      "ppid": 1,
+      "pgid": 4455,
+      "sid": 4455,
+      "state": "Z"
+    },
+    {
+      "pid": 4458,
+      "ppid": 1,
+      "pgid": 4440,
+      "sid": 4440,
+      "state": "Z"
+    },
+    {
+      "pid": 4460,
+      "ppid": 1,
+      "pgid": 4440,
+      "sid": 4440,
+      "state": "Z"
+    },
+    {
+      "pid": 4461,
+      "ppid": 1,
+      "pgid": 4459,
+      "sid": 4459,
+      "state": "Z"
+    },
+    {
+      "pid": 12414,
+      "ppid": 1,
+      "pgid": 12414,
+      "sid": 250,
+      "state": "Z"
+    },
+    {
+      "pid": 12534,
+      "ppid": 1,
+      "pgid": 12534,
+      "sid": 12534,
+      "state": "Zs"
+    },
+    {
+      "pid": 12623,
+      "ppid": 1,
+      "pgid": 12623,
+      "sid": 250,
+      "state": "Z"
+    },
+    {
+      "pid": 13008,
+      "ppid": 1,
+      "pgid": 12964,
+      "sid": 12964,
+      "state": "Z"
+    },
+    {
+      "pid": 13009,
+      "ppid": 1,
+      "pgid": 12964,
+      "sid": 12964,
+      "state": "Z"
+    },
+    {
+      "pid": 13010,
+      "ppid": 1,
+      "pgid": 12964,
+      "sid": 12964,
+      "state": "Z"
+    },
+    {
+      "pid": 13268,
+      "ppid": 1,
+      "pgid": 12964,
+      "sid": 12964,
+      "state": "Z"
+    },
+    {
+      "pid": 49372,
+      "ppid": 1,
+      "pgid": 49371,
+      "sid": 49371,
+      "state": "Z"
+    },
+    {
+      "pid": 49382,
+      "ppid": 1,
+      "pgid": 49371,
+      "sid": 49371,
+      "state": "Z"
+    },
+    {
+      "pid": 49423,
+      "ppid": 1,
+      "pgid": 49412,
+      "sid": 49412,
+      "state": "Z"
+    },
+    {
+      "pid": 49429,
+      "ppid": 1,
+      "pgid": 49412,
+      "sid": 49412,
+      "state": "Z"
+    },
+    {
+      "pid": 49441,
+      "ppid": 1,
+      "pgid": 49440,
+      "sid": 49440,
+      "state": "Z"
+    },
+    {
+      "pid": 49464,
+      "ppid": 1,
+      "pgid": 49462,
+      "sid": 49462,
+      "state": "Z"
+    },
+    {
+      "pid": 49473,
+      "ppid": 1,
+      "pgid": 49462,
+      "sid": 49462,
+      "state": "Z"
+    },
+    {
+      "pid": 49502,
+      "ppid": 1,
+      "pgid": 49493,
+      "sid": 49493,
+      "state": "Z"
+    }
+  ],
+  "diagnosis": "Container PID1 was not reaping exited descendants; root inspection found only PPID1 zombies in the failed process groups.",
+  "limitation": "Snapshot is environment evidence; it does not change test expectations or mark the failed gate passed."
+}

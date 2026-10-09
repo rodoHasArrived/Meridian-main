@@ -1,0 +1,126 @@
+{
+  "sourceHead": "12565b938fff633cac2060b844487c4cf9454099",
+  "sourceHashes": [
+    {
+      "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.ts",
+      "sha256": "07ec39508888fe364051d96672cbf9864f0c4786dcd5c83d732c1ed791c720ce"
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.workflow-selection.ts",
+      "sha256": "0bf906359090e00372838692e7a4166d1831ad9bbb3ba12f57e03aee6ac51350"
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.tsx",
+      "sha256": "f778d5e63c5bcf8025297e39a9b862eec13a0942ea29d81ed019082f8747991b"
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.close-test-fixtures.ts",
+      "sha256": "2f0211b58ec7e472abc2c1b3acfdc32889a84357ec23ad9c44f1d697c5a6f376"
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts",
+      "sha256": "ed0a5f471a1e17376b2da853c02ee552d132128700d2f5352a45abcdeef2f9ae"
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.ts",
+      "sha256": "d9a0e366d831b03a8885db3ba68e5955356aa38120f4e72def8048afecf367df"
+    },
+    {
+      "file": "scripts/dev/web-screenshot-fixtures.json",
+      "sha256": "97a98bf1f9688c95acfacfd3934d693335629ff47a7b2c90eeb4ee09969bd3be"
+    },
+    {
+      "file": "scripts/dev/web-screenshot-routes.json",
+      "sha256": "3fa7d6001b6d4aec8087ccfb7dccb4e69fddc0998c82b5aefc641ef00ce48039"
+    }
+  ],
+  "workingTree": true,
+  "sessionStartUtc": "2026-10-07T16:56:17.437Z",
+  "sessionEndUtc": "2026-10-07T16:56:53.353Z",
+  "browserVersion": "151.0.7922.173",
+  "playwrightVersion": "1.63.0",
+  "url": "http://127.0.0.1:4173/workstation",
+  "browserPlugin": "not available; installed Playwright fallback",
+  "tier": "Rendered response simulation; all governed API scenarios intercepted by Playwright",
+  "client": "browser",
+  "actualAccountingPopulation": "not provisioned",
+  "operatorIdentity": null,
+  "operatorDecision": "pending",
+  "implementationOrder": "LOT → MARK → SEAM",
+  "exerciseOrder": "SEAM only; MARK not exercised and live acceptance ordering remains SEAM → MARK",
+  "consoleMessages": [
+    {
+      "phase": "rendered-response-simulation",
+      "type": "http-error",
+      "status": 409,
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/close"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "http-error",
+      "status": 503,
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "http-error",
+      "status": 409,
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/close"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    }
+  ],
+  "relevantConsole": [
+    {
+      "phase": "rendered-response-simulation",
+      "type": "http-error",
+      "status": 409,
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/close"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "http-error",
+      "status": 503,
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "http-error",
+      "status": 409,
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/close"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    }
+  ],
+  "limitations": [
+    "No backend persistence, real authorization, PostgreSQL or installed WPF is exercised",
+    "No human operator verdict is fabricated",
+    "Plan/evidence revisions are simulated contributor record identities; no separate version fields exist on this projection DTO"
+  ]
+}

@@ -2487,6 +2487,125 @@ Meridian-main
 │   │   │   │   ├── README.md
 │   │   │   │   ├── validation.json
 │   │   │   │   └── verify_packet.py
+│   │   │   ├── w10-seam-merge-20261007
+│   │   │   │   ├── screenshots
+│   │   │   │   │   ├── S4-repaired-v9.png
+│   │   │   │   │   └── S5-published-v10.png
+│   │   │   │   ├── candidate-binding.json
+│   │   │   │   ├── capture.log.gz
+│   │   │   │   ├── capture.mjs
+│   │   │   │   ├── cases-full.json.gz
+│   │   │   │   ├── cases.json
+│   │   │   │   ├── dependencies.json
+│   │   │   │   ├── dependencies.log.gz
+│   │   │   │   ├── focused-tests.json.gz
+│   │   │   │   ├── focused-tests.log.gz
+│   │   │   │   ├── manifest.json
+│   │   │   │   ├── npm-ls-all.json.gz
+│   │   │   │   ├── npm-ls-all.stderr.txt.gz
+│   │   │   │   ├── provenance.json
+│   │   │   │   ├── README.md
+│   │   │   │   ├── record-dependencies.mjs
+│   │   │   │   ├── requests-responses.json.gz
+│   │   │   │   ├── verification.json
+│   │   │   │   └── vite.log.gz
+│   │   │   ├── w10-seam-refresh-20261006
+│   │   │   │   ├── browser
+│   │   │   │   │   ├── screenshots
+│   │   │   │   │   │   ├── S4-repaired-v9.png
+│   │   │   │   │   │   └── S5-published-v10.png
+│   │   │   │   │   ├── build-blocker.json
+│   │   │   │   │   ├── capture.mjs
+│   │   │   │   │   ├── cases-full.json.gz
+│   │   │   │   │   ├── cases.json
+│   │   │   │   │   ├── clean-build.log.gz
+│   │   │   │   │   ├── clean-dependencies.json
+│   │   │   │   │   ├── clean-install-tests.log.gz
+│   │   │   │   │   ├── provenance.json
+│   │   │   │   │   ├── requests-responses.json.gz
+│   │   │   │   │   └── vitest.log.gz
+│   │   │   │   ├── ci
+│   │   │   │   │   ├── attempt-2
+│   │   │   │   │   │   ├── ci-dotnet-test-summary.json.gz
+│   │   │   │   │   │   ├── core-remainder.log.gz
+│   │   │   │   │   │   ├── full-ci.log.gz
+│   │   │   │   │   │   ├── process-state-snapshot.json
+│   │   │   │   │   │   ├── steps.tsv.gz
+│   │   │   │   │   │   └── summary.md.gz
+│   │   │   │   │   ├── attempt-3
+│   │   │   │   │   │   ├── dashboard-test.log.gz
+│   │   │   │   │   │   └── full-ci.log.gz
+│   │   │   │   │   ├── quality-gate
+│   │   │   │   │   │   ├── steps.tsv
+│   │   │   │   │   │   └── summary.md.gz
+│   │   │   │   │   ├── workflows
+│   │   │   │   │   │   ├── attempt-1-summary.md.gz
+│   │   │   │   │   │   ├── attempt-1.log.gz
+│   │   │   │   │   │   ├── final.log.gz
+│   │   │   │   │   │   ├── steps.tsv
+│   │   │   │   │   │   └── summary.md.gz
+│   │   │   │   │   ├── child-reaper-context.json
+│   │   │   │   │   ├── dotnet-summary.json.gz
+│   │   │   │   │   ├── reaper-check.log.gz
+│   │   │   │   │   ├── reaper-check.trx.gz
+│   │   │   │   │   └── run-with-child-reaper.py
+│   │   │   │   ├── server
+│   │   │   │   │   ├── seam-support.trx.gz
+│   │   │   │   │   ├── summary.json
+│   │   │   │   │   └── validation-run.json
+│   │   │   │   ├── wpf
+│   │   │   │   │   ├── build-retry.log.gz
+│   │   │   │   │   └── compilation.json
+│   │   │   │   ├── artifact-manifest.json
+│   │   │   │   ├── candidate-binding.json
+│   │   │   │   ├── continuation.json
+│   │   │   │   ├── README.md
+│   │   │   │   ├── source-hashes.json
+│   │   │   │   └── wpf-static.txt
+│   │   │   ├── w10-seam-reviewed-20261007
+│   │   │   │   ├── browser
+│   │   │   │   │   ├── official-w03g
+│   │   │   │   │   │   ├── screenshots
+│   │   │   │   │   │   │   └── web-accounting-operations-continuity.png
+│   │   │   │   │   │   └── manifest.json
+│   │   │   │   │   ├── screenshots
+│   │   │   │   │   │   ├── S19-same-version-matching-repair.png
+│   │   │   │   │   │   └── S20-same-version-repaired-publication.png
+│   │   │   │   │   ├── capture.log.gz
+│   │   │   │   │   ├── capture.mjs
+│   │   │   │   │   ├── cases-full.json.gz
+│   │   │   │   │   ├── cases.json
+│   │   │   │   │   ├── commands.json
+│   │   │   │   │   ├── dependencies.json
+│   │   │   │   │   ├── dependencies.log.gz
+│   │   │   │   │   ├── focused-test-summary.json
+│   │   │   │   │   ├── focused-tests.json.gz
+│   │   │   │   │   ├── focused-tests.log.gz
+│   │   │   │   │   ├── npm-ls-all.json.gz
+│   │   │   │   │   ├── npm-ls-all.stderr.txt.gz
+│   │   │   │   │   ├── official-w03g.log.gz
+│   │   │   │   │   ├── provenance.json
+│   │   │   │   │   ├── record-dependencies.mjs
+│   │   │   │   │   ├── requests-responses.json.gz
+│   │   │   │   │   ├── snapshot-tests.json.gz
+│   │   │   │   │   ├── snapshot-tests.log.gz
+│   │   │   │   │   ├── verification.json
+│   │   │   │   │   └── vite.log.gz
+│   │   │   │   ├── wpf
+│   │   │   │   │   ├── build.log.gz
+│   │   │   │   │   ├── capacity-cleanup.json
+│   │   │   │   │   ├── capacity-failed-build.log.gz
+│   │   │   │   │   ├── capacity-failed-working-tree-compilation.json.gz
+│   │   │   │   │   ├── historical-windows-summary.json.gz
+│   │   │   │   │   ├── historical-windows.json
+│   │   │   │   │   ├── metadata-verification-incomplete.json.gz
+│   │   │   │   │   ├── OperationsContinuityPage.baml.gz
+│   │   │   │   │   ├── run-build.py
+│   │   │   │   │   ├── working-tree-compilation.json
+│   │   │   │   │   └── worktree-before.json.gz
+│   │   │   │   ├── candidate-binding.json
+│   │   │   │   ├── manifest.json
+│   │   │   │   └── README.md
 │   │   │   ├── wal-checksum-2026-10-07
 │   │   │   │   ├── ci
 │   │   │   │   │   ├── canonical-evidence-packaging-failure
@@ -7324,6 +7443,8 @@ Meridian-main
 │   │   │   │   │   ├── operations-continuity-screen.tsx
 │   │   │   │   │   ├── operations-continuity-screen.view-model.test.ts
 │   │   │   │   │   ├── operations-continuity-screen.view-model.ts
+│   │   │   │   │   ├── operations-continuity-screen.workflow-selection.test.ts
+│   │   │   │   │   ├── operations-continuity-screen.workflow-selection.ts
 │   │   │   │   │   ├── operations-record-release-screen.test.tsx
 │   │   │   │   │   ├── operations-record-release-screen.tsx
 │   │   │   │   │   ├── operations-record-release-screen.view-model.test.ts
@@ -11344,6 +11465,7 @@ Meridian-main
 │   │   │   └── ServiceCollectionRegistrationAssertions.cs
 │   │   ├── Models
 │   │   │   ├── DataConfidenceIndicatorModelTests.cs
+│   │   │   ├── OperationsContinuityClosePresentationApprovalTests.cs
 │   │   │   ├── PaneLayoutTests.cs
 │   │   │   ├── ShellNavigationCatalogTests.cs
 │   │   │   └── WorkspaceShellChromeContributionTests.cs
@@ -11462,6 +11584,8 @@ Meridian-main
 │   │   │   ├── MessagingHubViewModelTests.cs
 │   │   │   ├── NotificationCenterViewModelTests.cs
 │   │   │   ├── OperationsContinuityViewModelTests.cs
+│   │   │   ├── OperationsContinuityViewModelTests.SelectionConsistency.cs
+│   │   │   ├── OperationsContinuityViewModelTests.SharedBlockers.cs
 │   │   │   ├── OperationsRecordReleaseViewModelTests.cs
 │   │   │   ├── OperatorReadinessConsoleViewModelTests.cs
 │   │   │   ├── OptionsViewModelConcurrencyTests.cs

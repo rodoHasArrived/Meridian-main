@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "applicationCandidateCommit": "2f3bef7feb23f5fa9be1a9ad27dd3d08b9a5a732",
+  "sourceBaseCommit": "9c96c3f72dd60111b62b8368d29e553ec58fd7a0",
+  "treeIds": {
+    "src": "c1229a71ce5e95dc325c0577b59baf4e27e65b2b",
+    "tests": "e388a319338a297368edce3a9aed69f9c180f161"
+  },
+  "sourceFiles": [
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.ts",
+      "sha256": "90e7f68d6a8c5c1093ac4716e65e3872d38245a170c6b15b5886489482998abb",
+      "origin": "retained_browser_source_hash",
+      "matchesCandidateAndWorktree": true
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.tsx",
+      "sha256": "f778d5e63c5bcf8025297e39a9b862eec13a0942ea29d81ed019082f8747991b",
+      "origin": "retained_browser_source_hash",
+      "matchesCandidateAndWorktree": true
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.close-test-fixtures.ts",
+      "sha256": "2f0211b58ec7e472abc2c1b3acfdc32889a84357ec23ad9c44f1d697c5a6f376",
+      "origin": "retained_browser_source_hash",
+      "matchesCandidateAndWorktree": true
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.workflow-selection.ts",
+      "sha256": "299fe05eab16bb6ac27354be35fee9963e0e2cac6d9ad6c8934dc0fa43b1626d",
+      "origin": "retained_browser_source_hash",
+      "matchesCandidateAndWorktree": true
+    },
+    {
+      "path": "src/Meridian.Wpf/Views/OperationsContinuityPage.xaml",
+      "sha256": "7a6577b5c98a89c4ab80554700474e78d47a548f8ca472c5df775887d395528c",
+      "origin": "retained_wpf_compilation_hash",
+      "matchesCandidateAndWorktree": true
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/OperationsContinuityViewModel.cs",
+      "sha256": "6c1b8935b751191e694867329bfdc0cf2d4d9c1f110936fe8005dd371e845a1a",
+      "origin": "retained_wpf_compilation_hash",
+      "matchesCandidateAndWorktree": true
+    },
+    {
+      "path": "src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs",
+      "sha256": "1fe6e7ef7372be47d94ed7d671c7aac04754abba67929ceaa1e5bc54ede7abf7",
+      "origin": "retained_wpf_compilation_hash",
+      "matchesCandidateAndWorktree": true
+    },
+    {
+      "path": "src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs",
+      "sha256": "beb51587c25e2aaf2cf9a2717bef6cf530eb5e32616e1a479073aa84c6bae538",
+      "origin": "retained_wpf_compilation_hash",
+      "matchesCandidateAndWorktree": true
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/ViewModels/OperationsContinuityViewModelTests.SharedBlockers.cs",
+      "sha256": "bb93467d1b79086bb4912ca876bc69896d4c95ab56b994815bc4a0360a10e63a",
+      "origin": "retained_wpf_compilation_hash",
+      "matchesCandidateAndWorktree": true
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.test.tsx",
+      "sha256": "2e67f670e201dc5e56b61ca4cb0c4c5ee2cdd90f1e329a713a3b50ad69ac5faf",
+      "origin": "candidate_regression_source",
+      "matchesCandidateAndWorktree": true
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.test.ts",
+      "sha256": "9b423d31916f953e934c91765f1f706afe833ee7e74726c5f0c61c02b38391ec",
+      "origin": "candidate_regression_source",
+      "matchesCandidateAndWorktree": true
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/ViewModels/OperationsContinuityViewModelTests.cs",
+      "sha256": "15494b39308b52c9dff404141a6f82994b102391c54d4d58aeaa643e9279f6cb",
+      "origin": "candidate_regression_source",
+      "matchesCandidateAndWorktree": true
+    }
+  ],
+  "originalCaptureArtifactsModified": false,
+  "captureBoundary": "Browser captured working-tree source; retained source hashes match this implementation commit. Original provenance/source-hashes remain unchanged.",
+  "dependencyReproducibility": "Not established by source hashes. Initial installed closure was not recorded; current lockfile CSS imports/build fail. See browser/build-blocker.json.",
+  "liveAcceptanceCandidate": null,
+  "operatorDecision": "pending",
+  "remoteMainObservation": {
+    "commit": "ddea88c5fef7adb2ce9069265b38b85a5e2a4a36",
+    "source": "Root read-only git ls-remote origin main and fetch during final review.",
+    "relationship": "Remote main advanced after the pinned application base; this observation does not bind acceptance or establish latest-main validation.",
+    "reportedChanges": "Buildctl reuse guards, amortization/reference/coupon fixes in PR 3098, and CSV manifest replay in PR 3099.",
+    "tailwindBoundaryChanged": false,
+    "lotMarkQueueCompletionEstablished": false
+  }
+}

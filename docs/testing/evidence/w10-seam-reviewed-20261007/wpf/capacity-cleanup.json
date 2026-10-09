@@ -1,0 +1,14 @@
+{
+  "cleanedAtUtc": "2026-10-07T16:52:39.234367+00:00",
+  "removedDisposableOutputPaths": [
+    "/workspace/Meridian-main/artifacts/bin/profile-db80d70bcfb9a0c6fdeb6777",
+    "/workspace/Meridian-main/artifacts/obj/profile-db80d70bcfb9a0c6fdeb6777"
+  ],
+  "reason": "Prior profile rejected as incompatible in buildDefinitions; current isolated build exhausted workspace during dependency copies.",
+  "freeBytesAfterCleanup": 3847180288,
+  "preservedEvidenceAndLogs": true,
+  "failedAttemptErrorCodesIncludingRepeatedSummary": {
+    "MSB3027": 98,
+    "MSB3021": 98
+  }
+}

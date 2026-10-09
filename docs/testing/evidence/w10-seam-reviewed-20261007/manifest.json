@@ -1,0 +1,229 @@
+{
+  "schemaVersion": 1,
+  "applicationCandidateCommit": "12565b938fff633cac2060b844487c4cf9454099",
+  "artifacts": [
+    {
+      "path": "README.md",
+      "bytes": 6327,
+      "sha256": "315a32925fb05706f358d06fb46068f5a616e1f1e25c2939e111f6a1e7e1d46c"
+    },
+    {
+      "path": "browser/capture.log.gz",
+      "bytes": 335,
+      "sha256": "8c38d53b72f479b33de1c172bdfd230fd158b681ff18ad703267405b8c1c7871",
+      "uncompressedBytes": 772,
+      "uncompressedSha256": "91c2cf4861c731cc2989f21633022a8610e04674e987515a5890288f3c930030"
+    },
+    {
+      "path": "browser/capture.mjs",
+      "bytes": 27536,
+      "sha256": "479e6d85f3340a6fe6575d7279e02ee61e2df680cc58270a16d361588765b38c"
+    },
+    {
+      "path": "browser/cases-full.json.gz",
+      "bytes": 26019,
+      "sha256": "66c294829feecc3d0f654444e7f714253cfe8cb112936eddda73d408e4732f2a",
+      "uncompressedBytes": 666510,
+      "uncompressedSha256": "5361616e0e9a4e192fd675b685051e497eedfbe03ac55c6d71fc2f3d2125e909"
+    },
+    {
+      "path": "browser/cases.json",
+      "bytes": 47411,
+      "sha256": "3413f9b5ee526cb19aefc061917a9995484787913c0e97bae9e7c38c48184901"
+    },
+    {
+      "path": "browser/commands.json",
+      "bytes": 3632,
+      "sha256": "6c2f90feb9dc28160d4336b905d2d38ac48a3671f9d6bf62bf93c5d01547233f"
+    },
+    {
+      "path": "browser/dependencies.json",
+      "bytes": 4683,
+      "sha256": "4b7a41955fbd7b0f6b99936dec3fcba59974c2bc80d67df58a8b0f80e3011e3f"
+    },
+    {
+      "path": "browser/dependencies.log.gz",
+      "bytes": 295,
+      "sha256": "c4aae7d55cfca5ed55cda6362457c3570c5ae3029c8a8d3bacec964ca83a8a16",
+      "uncompressedBytes": 870,
+      "uncompressedSha256": "54d5ac49ad6505c3096e07d4b97a5cae761a3703f156dc88b2a85237d31e7fa1"
+    },
+    {
+      "path": "browser/focused-test-summary.json",
+      "bytes": 662,
+      "sha256": "3fc6f74f25ae129ff37afeafd82cf544c211229651e7847ae0981cc82497264d"
+    },
+    {
+      "path": "browser/focused-tests.json.gz",
+      "bytes": 3027,
+      "sha256": "cbd34c455d39e8a9b47e69442887704feb263b2445c4670c339b5d65fbbd46e8",
+      "uncompressedBytes": 22134,
+      "uncompressedSha256": "8b97e4c835e118c1ddf176b8658fb94a0618219895798956d594463d53c7aa32"
+    },
+    {
+      "path": "browser/focused-tests.log.gz",
+      "bytes": 948,
+      "sha256": "1d282929d632f2e18cb1b0fe595075441e3df9bef1f8858dcef16a4c474d000b",
+      "uncompressedBytes": 2580,
+      "uncompressedSha256": "6b68f480c59a106e5de8b37345387264522879709e64fa6a172730d88c1de9a6"
+    },
+    {
+      "path": "browser/npm-ls-all.json.gz",
+      "bytes": 10568,
+      "sha256": "d0d4de14b751cd95fc09a73e2229842667c1ed8e7a0af3dac40070309b6897e6",
+      "uncompressedBytes": 101643,
+      "uncompressedSha256": "2a1082bad11eedef85e3bfb1e9d69fa42d4239c5e59cb5567057f4c5df1d6731"
+    },
+    {
+      "path": "browser/npm-ls-all.stderr.txt.gz",
+      "bytes": 20,
+      "sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+      "uncompressedBytes": 0,
+      "uncompressedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "browser/official-w03g/manifest.json",
+      "bytes": 1639,
+      "sha256": "bdbd469a0e8fea4a21d5844ff6ea69e69c511835344565c26e445eed8ccc0fc9"
+    },
+    {
+      "path": "browser/official-w03g/screenshots/web-accounting-operations-continuity.png",
+      "bytes": 1549322,
+      "sha256": "e3ddac9868e0aabaef46d70036ffe756807022c9e8c9f4d86b9a1c559e86f2f4"
+    },
+    {
+      "path": "browser/official-w03g.log.gz",
+      "bytes": 166,
+      "sha256": "f30fa78da4d75bc5f02d6d9bd25ce23e6ae4e962e0583edfa9a672b01eb0dbc2",
+      "uncompressedBytes": 226,
+      "uncompressedSha256": "4c66fa28f46809946834ce1ef46a321e794438b7482ae4dbefdb96e9394e90ea"
+    },
+    {
+      "path": "browser/provenance.json",
+      "bytes": 4979,
+      "sha256": "2e7bcc9439e74558870aced44a6c8a10c98c72c3fb53972fa79caee6a8fbe708"
+    },
+    {
+      "path": "browser/record-dependencies.mjs",
+      "bytes": 2598,
+      "sha256": "1d7d48e0c84e2f8e0a325353fbd584d5eae661511baa0c7185fed75313208ca7"
+    },
+    {
+      "path": "browser/requests-responses.json.gz",
+      "bytes": 197803,
+      "sha256": "15eecfbd8b5bb790f9e42a3e010bd4c33c632e8964361e97f4dfd1695cdf34d5",
+      "uncompressedBytes": 1780490,
+      "uncompressedSha256": "c8e051f8411f114a0ff2b6157f2b5bb415c493d6b672476f1a96dbb5ab2483ed"
+    },
+    {
+      "path": "browser/screenshots/S19-same-version-matching-repair.png",
+      "bytes": 140771,
+      "sha256": "2bb3472dc63c19aaaa224bc9d9f6c46b84465f80b410cb258156aa8d00ab92c3"
+    },
+    {
+      "path": "browser/screenshots/S20-same-version-repaired-publication.png",
+      "bytes": 105937,
+      "sha256": "5df2c97fcebd3980f60cb095100d9879779bf78aec959fe10cb65ee0ef454380"
+    },
+    {
+      "path": "browser/snapshot-tests.json.gz",
+      "bytes": 934,
+      "sha256": "1907f7af7174ab341f11292cf31752ad9b0083fc1cfdaad3e6a0bb67eb17638f",
+      "uncompressedBytes": 5893,
+      "uncompressedSha256": "cb9f19376cefa94628555d9bc6e0ad9e28b2f7bb2ca8a6a5ba176c48aaa90b14"
+    },
+    {
+      "path": "browser/snapshot-tests.log.gz",
+      "bytes": 300,
+      "sha256": "c5eecbbc3314fd0b73fbbe86e199b891ae294404ffb7cbd5306aeb071b0b87ab",
+      "uncompressedBytes": 416,
+      "uncompressedSha256": "ebcf665fb64b82294740562fc077fffe84c4f57939c1d19af0500fd2255ff854"
+    },
+    {
+      "path": "browser/verification.json",
+      "bytes": 2837,
+      "sha256": "2d7cc97cbb610b543fe59afbbc4f3c58eefcf9208bc862f607bbf3626694c46d"
+    },
+    {
+      "path": "browser/vite.log.gz",
+      "bytes": 538,
+      "sha256": "be96df6bc45c5817119755f6d3694d8a0b45bacedb0985196062956c43b8bcc3",
+      "uncompressedBytes": 1775,
+      "uncompressedSha256": "3170e236f3208cb2ad74eed2d3636941c3dd7c1530cab8f344ceda0cfdca0ac4"
+    },
+    {
+      "path": "candidate-binding.json",
+      "bytes": 8582,
+      "sha256": "eeec880a0244b82a78392b0b2f7a5c95a1309e2d52332189d39760181084b08f"
+    },
+    {
+      "path": "wpf/OperationsContinuityPage.baml.gz",
+      "bytes": 3501,
+      "sha256": "f446627dee1e634e4b346b03c09dfbf0368aadf0109c1c63bb3ba2039040ad46",
+      "uncompressedBytes": 9786,
+      "uncompressedSha256": "d05d424fce95e095ca2dbb006b36db39be4f4af3dc8257cfbfcecc53847f6a9d"
+    },
+    {
+      "path": "wpf/build.log.gz",
+      "bytes": 136,
+      "sha256": "4d542b437b3fa4184960e7607d18a343af39e8210fb0bdd819b6c2c257bc3c2c",
+      "uncompressedBytes": 137,
+      "uncompressedSha256": "9fd9e8e4b1ac62a7fc966facd1801f9e23310606c09321bc4bf33244364b6d31"
+    },
+    {
+      "path": "wpf/capacity-cleanup.json",
+      "bytes": 571,
+      "sha256": "1ec9b928613154888c1ba4999ddd1ed8def0ec0e34c97c0cd3ac98dd8d0441f2"
+    },
+    {
+      "path": "wpf/capacity-failed-build.log.gz",
+      "bytes": 29791,
+      "sha256": "ef560d8d8e3a57d88547fae78eb4a3679dcff707ee936dc7fdd2413eed32bd49",
+      "uncompressedBytes": 1033745,
+      "uncompressedSha256": "7653f04977b96ef63819536b50d4d849c9b65664c86ccd4370da851dabc7a41f"
+    },
+    {
+      "path": "wpf/capacity-failed-working-tree-compilation.json.gz",
+      "bytes": 1551,
+      "sha256": "0ef432c369f1ad6f349d597aa84f014ff07a8aaef6610480d28f4aa777da70aa",
+      "uncompressedBytes": 5327,
+      "uncompressedSha256": "58ab741ca8b950fc0f55ab150299cf6483c62dc2d5eeae1312cc815ff141771c"
+    },
+    {
+      "path": "wpf/historical-windows-summary.json.gz",
+      "bytes": 56887,
+      "sha256": "fe96be70909c8789a332267350260905c40b155b67d21e64002126b497e369cc",
+      "uncompressedBytes": 541947,
+      "uncompressedSha256": "056d8a6b1144486c609cc9325d3eb89a69ab4bf0fa0a41b055d893c5c0508a3c"
+    },
+    {
+      "path": "wpf/historical-windows.json",
+      "bytes": 1798,
+      "sha256": "9575832cbd3dffe60cb118339c323e394cb6b6acc8530d218163065938eec165"
+    },
+    {
+      "path": "wpf/metadata-verification-incomplete.json.gz",
+      "bytes": 1540,
+      "sha256": "40f00009e471d81c8f8da6da48d922bf23b2415f135fb955e23a2d1be50ab074",
+      "uncompressedBytes": 5324,
+      "uncompressedSha256": "2e3c3eb23de2b2655e4b066945de5dab399cd1787c8549c37c8e526df6de54a5"
+    },
+    {
+      "path": "wpf/run-build.py",
+      "bytes": 4330,
+      "sha256": "29b9eddb869333ae86060bb9ee81cb74562cf3edffeed585030c0fb7eae8f278"
+    },
+    {
+      "path": "wpf/working-tree-compilation.json",
+      "bytes": 7935,
+      "sha256": "e02d8b4c7790a2244a77fa01caeba43ed5077d29dd6b3b66728a77a451b7dcae"
+    },
+    {
+      "path": "wpf/worktree-before.json.gz",
+      "bytes": 862,
+      "sha256": "1a1b7b96f090a9f584fb0c120fedaab3dfdd72f3d03c61a28f43a4eac5a82957",
+      "uncompressedBytes": 2002,
+      "uncompressedSha256": "c50441fc5e696c6efd271c82555985d509fe58905edebefebe207dded1b318b9"
+    }
+  ]
+}

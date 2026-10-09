@@ -1,0 +1,8 @@
+Verify Python	0	0
+Validate Actions syntax with actionlint	0	0
+Check script test dependencies	0	0
+Validate lane manifest	0	0
+Validate lane vocabulary	0	0
+Validate workflow hygiene	0	0
+Validate test skip register	0	2
+Run repo script test suite (quarantine-aware)	0	738

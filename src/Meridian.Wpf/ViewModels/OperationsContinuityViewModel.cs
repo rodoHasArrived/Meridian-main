@@ -362,21 +362,34 @@ public sealed class OperationsContinuityViewModel : BindableBase, IDisposable
         }
 
         var revision = ++_loadRevision;
+        IsRefreshing = false;
+        StatusText = "Loading selected continuity workflow.";
         SelectedWorkflowId = workflowId;
         _closeCommandCenter = null;
         ApplyDetail(null);
-        var (detail, detailError) = await LoadDetailAsync(workflowId, ct).ConfigureAwait(true);
-        if (IsStale(revision))
+        try
         {
-            return;
-        }
+            var (detail, detailError) = await LoadDetailAsync(workflowId, ct).ConfigureAwait(true);
+            if (IsStale(revision))
+            {
+                return;
+            }
 
-        DetailErrorText = detailError;
-        var commandCenter = await LoadCloseReadinessAsync(ct).ConfigureAwait(true);
-        if (IsStale(revision))
-            return;
-        _closeCommandCenter = commandCenter;
-        ApplyDetail(detail);
+            DetailErrorText = detailError;
+            var commandCenter = await LoadCloseReadinessAsync(ct).ConfigureAwait(true);
+            if (IsStale(revision))
+                return;
+            _closeCommandCenter = commandCenter;
+            ApplyDetail(detail);
+            StatusText = HasDetailError
+                ? "Selected continuity workflow failed to load. Resolve the detail error and refresh."
+                : $"Selected continuity workflow refreshed {OperationsContinuityMapper.FormatTimestamp(DateTimeOffset.UtcNow)}.";
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            if (!IsStale(revision))
+                StatusText = "Selected continuity workflow load cancelled. Refresh the selected workflow.";
+        }
     }
 
     private async Task<(IReadOnlyList<OperationsContinuityWorkflowSummaryDto>? Workflows, string Error)> LoadWorkflowsAsync(CancellationToken ct)
@@ -413,10 +426,20 @@ public sealed class OperationsContinuityViewModel : BindableBase, IDisposable
 
         try
         {
+            var selectedRow = WorkflowRows.FirstOrDefault(row => row.WorkflowId == workflowId);
+            if (selectedRow is null)
+                return (null, "The selected workflow is not in the current workflow list. Refresh workflows before reviewing close readiness.");
             var detail = await _client.GetWorkflowAsync(workflowId, ct).ConfigureAwait(true);
-            return detail is null
-                ? (null, "The selected workflow detail failed to load from the shared workstation API.")
-                : (detail, string.Empty);
+            if (detail is null)
+                return (null, "The selected workflow detail failed to load from the shared workstation API.");
+            if (detail.WorkflowId != workflowId)
+                return (null, "The returned detail does not match the selected workflow. Refresh the selected workflow before reviewing close readiness.");
+            if (detail.Version != selectedRow.Version)
+                return (null, "The workflow list and selected detail have different versions. Refresh the selected workflow before reviewing close readiness.");
+            if (detail.FundAccountId != selectedRow.FundAccountId ||
+                detail.PeriodId != selectedRow.PeriodId || detail.LedgerBookId != selectedRow.LedgerBookId)
+                return (null, "The workflow list and selected detail have different account, period, or ledger-book scope. Refresh the selected workflow before reviewing close readiness.");
+            return (detail, string.Empty);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
