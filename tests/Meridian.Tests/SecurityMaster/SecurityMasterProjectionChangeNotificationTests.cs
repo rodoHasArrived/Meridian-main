@@ -131,6 +131,23 @@ public sealed class SecurityMasterProjectionChangeNotificationTests
     }
 
     [Fact]
+    public async Task EqualVersionNotification_RereadsChangedContent()
+    {
+        // Alias writes and projection replacements change cached content without moving the
+        // event-stream version, so an equal version must not short-circuit the reread.
+        var securityId = Guid.NewGuid();
+        _cache.Upsert(CreateProjection(securityId, "Before alias correction", 2));
+        _store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(CreateProjection(securityId, "After alias correction", 2));
+
+        var outcome = await CreateHandler().HandleAsync(
+            SecurityProjectionChangeNotification.ForSecurity(RemoteNode, securityId, 2).ToPayload());
+
+        outcome.Should().Be(SecurityProjectionChangeOutcome.Refreshed);
+        _cache.Get(securityId)!.DisplayName.Should().Be("After alias correction");
+    }
+
+    [Fact]
     public async Task DurableReadOlderThanTheCache_DoesNotDowngradeTheCachedEntry()
     {
         // The notification claims a newer version, but the durable read returns an older row (the

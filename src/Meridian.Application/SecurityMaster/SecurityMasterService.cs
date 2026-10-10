@@ -1705,8 +1705,19 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         // alias revision for a material correction, and rejects re-pointing an alias ID at another
         // security. A null result cannot be treated as success because that would tell the caller a
         // correction landed when no revision was recorded.
-        var persisted = await _store.UpsertAliasAsync(alias, ct).ConfigureAwait(false);
-        return persisted ?? throw new SecurityAliasHistoryConflictException(alias.AliasId);
+        var persisted = await _store.UpsertAliasAsync(alias, ct).ConfigureAwait(false)
+            ?? throw new SecurityAliasHistoryConflictException(alias.AliasId);
+
+        // Aliases are part of the cached projection and seed the canonical registry, so a new or
+        // corrected alias refreshes both here; other nodes refresh from the store's notification.
+        if (_projectionCache is not null
+            && await _store.GetProjectionAsync(alias.SecurityId, ct).ConfigureAwait(false) is { } projection)
+        {
+            _projectionCache.Upsert(projection);
+            TryReseedRegistryInBackground();
+        }
+
+        return persisted;
     }
 
     private Task SaveSnapshotIfNeededAsync(SecurityEconomicDefinitionRecord definition, CancellationToken ct)

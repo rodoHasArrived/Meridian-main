@@ -104,6 +104,13 @@ public sealed class SecurityMasterProjectionChangeListener : BackgroundService
                     while (pending.TryDequeue(out var payload))
                     {
                         var outcome = await _handler.HandleAsync(payload, stoppingToken).ConfigureAwait(false);
+                        // A notification whose durable reread failed is not replayed by PostgreSQL;
+                        // fall back to a resync on the next idle wait so the change is not lost.
+                        if (outcome == SecurityProjectionChangeOutcome.Failed)
+                        {
+                            resyncPending = true;
+                        }
+
                         NotificationHandled?.Invoke(payload, outcome);
                     }
 

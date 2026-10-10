@@ -100,6 +100,29 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         value.GetRawText().Should().Be(original.GetProperty(flatKey).GetRawText());
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ReplayWithoutLegacyTerms_CommercialPaperKeepsItsRequiredAssetBackedFlag(bool isAssetBacked)
+    {
+        var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+            "CommercialPaper",
+            new
+            {
+                issuerName = "Meridian Funding LLC",
+                maturity = "2026-11-15",
+                discountRate = 5.05m,
+                dayCount = "ACT/360",
+                isAssetBacked
+            });
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("CommercialPaper", original));
+
+        var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
+
+        rebuilt.GetProperty("isAssetBacked").GetBoolean().Should().Be(isAssetBacked);
+    }
+
     [Fact]
     public void Convert_UnknownOrMissingClass_FallsBackToTheClassIndependentBridge()
     {

@@ -207,6 +207,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
 
             foreach (var mapping in mappings)
             {
+                var written = false;
                 foreach (var (module, field) in mapping.Sources)
                 {
                     var source = GetObject(economicTerms, module);
@@ -228,7 +229,16 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
                         value.WriteTo(writer);
                     }
 
+                    written = true;
                     break;
+                }
+
+                // A label flag is false when its label is absent: the economic definition writes a
+                // null issuerProgram for commercial paper that is not asset-backed, and the flat
+                // schema declares isAssetBacked required.
+                if (!written && mapping.EqualsLabel is not null)
+                {
+                    writer.WriteBoolean(mapping.FlatKey, false);
                 }
             }
 

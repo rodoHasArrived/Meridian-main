@@ -51,6 +51,36 @@ public sealed class SecurityMasterPostgresProjectionNotificationTests : IClassFi
     }
 
     [SecurityMasterDatabaseFact]
+    public async Task AliasCorrectionOnOneNode_RefreshesAnotherNodesCachedAliases()
+    {
+        await using var nodeB = await ListeningNode.StartAsync(_fixture.Options);
+        var storeA = new PostgresSecurityMasterStore(_fixture.Options, new SecurityMasterNodeIdentity(Guid.NewGuid()));
+        var securityId = Guid.NewGuid();
+        var created = nodeB.WaitForAsync(securityId, SecurityProjectionChangeOutcome.Refreshed);
+        await storeA.UpsertProjectionAsync(CreateProjection(securityId, UniqueTicker(), "Aliased", 1));
+        await created.WaitAsync(DeliveryTimeout);
+
+        var effectiveFrom = DateTimeOffset.UtcNow.AddDays(-1);
+        var alias = new SecurityAliasDto(
+            Guid.NewGuid(), securityId, "Ticker", "ACME.O", null, SecurityAliasScope.Operations, null,
+            "creator", effectiveFrom, effectiveFrom, null, true);
+        var inserted = nodeB.WaitForAsync(securityId, SecurityProjectionChangeOutcome.Refreshed);
+        await storeA.UpsertAliasAsync(alias);
+        await inserted.WaitAsync(DeliveryTimeout);
+        nodeB.Cache.Get(securityId)!.Aliases.Should().ContainSingle().Which.AliasValue.Should().Be("ACME.O");
+
+        // The correction leaves the event-stream version unchanged; the equal-version
+        // notification must still reach node B's cache.
+        var corrected = nodeB.WaitForAsync(securityId, SecurityProjectionChangeOutcome.Refreshed);
+        await storeA.UpsertAliasAsync(alias with { AliasValue = "ACME.OQ" });
+        await corrected.WaitAsync(DeliveryTimeout);
+
+        var cached = nodeB.Cache.Get(securityId)!;
+        cached.Version.Should().Be(1);
+        cached.Aliases.Should().ContainSingle().Which.AliasValue.Should().Be("ACME.OQ");
+    }
+
+    [SecurityMasterDatabaseFact]
     public async Task OwnNodesCommittedWrite_IsIgnoredByItsListener()
     {
         await using var nodeB = await ListeningNode.StartAsync(_fixture.Options);

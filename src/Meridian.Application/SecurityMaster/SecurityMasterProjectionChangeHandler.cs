@@ -46,19 +46,22 @@ public sealed class SecurityMasterProjectionChangeHandler
     private readonly SecurityMasterNodeIdentity _nodeIdentity;
     private readonly SecurityMasterOptions _options;
     private readonly ILogger<SecurityMasterProjectionChangeHandler> _logger;
+    private readonly SecurityMasterCanonicalSymbolSeedService? _seedService;
 
     public SecurityMasterProjectionChangeHandler(
         SecurityMasterProjectionService projectionService,
         SecurityMasterProjectionCache cache,
         SecurityMasterNodeIdentity nodeIdentity,
         SecurityMasterOptions options,
-        ILogger<SecurityMasterProjectionChangeHandler> logger)
+        ILogger<SecurityMasterProjectionChangeHandler> logger,
+        SecurityMasterCanonicalSymbolSeedService? seedService = null)
     {
         _projectionService = projectionService;
         _cache = cache;
         _nodeIdentity = nodeIdentity;
         _options = options;
         _logger = logger;
+        _seedService = seedService;
     }
 
     public async Task<SecurityProjectionChangeOutcome> HandleAsync(string? payload, CancellationToken ct = default)
@@ -84,7 +87,9 @@ public sealed class SecurityMasterProjectionChangeHandler
                 return SecurityProjectionChangeOutcome.Resynchronized;
             }
 
-            if (_cache.Get(notification.SecurityId) is { } cached && cached.Version >= notification.Version)
+            // Only a strictly newer cached version can skip the reread: alias writes and projection
+            // replacements change cached content without moving the event-stream version.
+            if (_cache.Get(notification.SecurityId) is { } cached && cached.Version > notification.Version)
             {
                 return SecurityProjectionChangeOutcome.AlreadyCurrent;
             }
@@ -96,6 +101,13 @@ public sealed class SecurityMasterProjectionChangeHandler
                 notification.Version,
                 notification.OriginNodeId,
                 result);
+            if (result != SecurityProjectionRefreshResult.KeptNewer)
+            {
+                // Local writes reseed the canonical registry after touching the cache; a remote
+                // change to a primary ticker or provider alias must reach the hot-path lookup too.
+                await ReseedCanonicalSymbolsAsync(ct).ConfigureAwait(false);
+            }
+
             return result switch
             {
                 SecurityProjectionRefreshResult.Refreshed => SecurityProjectionChangeOutcome.Refreshed,
@@ -119,6 +131,9 @@ public sealed class SecurityMasterProjectionChangeHandler
         }
     }
 
+    private Task ReseedCanonicalSymbolsAsync(CancellationToken ct)
+        => _seedService is null ? Task.CompletedTask : _seedService.SeedAsync(ct);
+
     /// <summary>
     /// Re-synchronises the whole cache after notifications may have been missed (a listener
     /// reconnect) or after a bulk publish on another node. A pre-warmed cache is re-warmed with the
@@ -130,14 +145,17 @@ public sealed class SecurityMasterProjectionChangeHandler
         if (_options.PreloadProjectionCache)
         {
             await _projectionService.WarmAsync(ct).ConfigureAwait(false);
-            return;
+        }
+        else
+        {
+            foreach (var record in _cache.Snapshot())
+            {
+                ct.ThrowIfCancellationRequested();
+                await _projectionService.RefreshSecurityAsync(record.SecurityId, ct).ConfigureAwait(false);
+            }
         }
 
-        foreach (var record in _cache.Snapshot())
-        {
-            ct.ThrowIfCancellationRequested();
-            await _projectionService.RefreshSecurityAsync(record.SecurityId, ct).ConfigureAwait(false);
-        }
+        await ReseedCanonicalSymbolsAsync(ct).ConfigureAwait(false);
     }
 
     private static string Truncate(string? payload)

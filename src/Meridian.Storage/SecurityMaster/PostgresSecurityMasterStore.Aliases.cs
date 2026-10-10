@@ -24,6 +24,7 @@ public sealed partial class PostgresSecurityMasterStore
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        long? projectionVersion;
         await using (var authority = connection.CreateCommand())
         {
             authority.Transaction = transaction;
@@ -33,13 +34,14 @@ public sealed partial class PostgresSecurityMasterStore
             // newly inserted or corrected alias. A row lock alone does not invalidate that older
             // snapshot. The same row lock serializes concurrent alias writers for this security, so
             // revision numbers below are assigned without a race.
-            authority.CommandText = $"update {Qualified("securities")} set security_id = security_id where security_id = @security_id;";
+            authority.CommandText = $"update {Qualified("securities")} set security_id = security_id where security_id = @security_id returning version;";
             authority.Parameters.AddWithValue("security_id", alias.SecurityId);
-            await authority.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            projectionVersion = await authority.ExecuteScalarAsync(ct).ConfigureAwait(false) is long version ? version : null;
         }
 
         var existing = await ReadAliasForUpdateAsync(connection, transaction, alias, ct).ConfigureAwait(false);
         SecurityAliasDto persisted;
+        var aliasChanged = existing is null || !existing.Unchanged;
         if (existing is null)
         {
             await EnsureAliasHistoryBelongsToSecurityAsync(connection, transaction, alias.SecurityId, [alias.AliasId], ct).ConfigureAwait(false);
@@ -65,6 +67,18 @@ public sealed partial class PostgresSecurityMasterStore
                 await AppendAliasRevisionAsync(connection, transaction, alias, alias.CreatedBy, ct).ConfigureAwait(false);
                 await UpdateCurrentAliasAsync(connection, transaction, alias, ct).ConfigureAwait(false);
             }
+        }
+
+        // Aliases are part of the cached projection (and seed the canonical symbol registry), so a
+        // new or corrected alias is announced like any other projection write. The projection's
+        // event-stream version does not move, so receivers must refresh on an equal version.
+        if (aliasChanged && projectionVersion is { } announcedVersion)
+        {
+            await NotifyProjectionChangedAsync(
+                connection,
+                transaction,
+                SecurityProjectionChangeNotification.ForSecurity(_nodeIdentity.NodeId, alias.SecurityId, announcedVersion),
+                ct).ConfigureAwait(false);
         }
 
         await transaction.CommitAsync(ct).ConfigureAwait(false);
