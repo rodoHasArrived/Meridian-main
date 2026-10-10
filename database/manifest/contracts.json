@@ -3954,7 +3954,7 @@
       ]
     }
   ],
-  "fingerprint": "0ab8cd18d7d780962f273bbaba5bda86c60cd873d36d34481e16c75114179ad1",
+  "fingerprint": "325e1902d24d45c8010a4be76c4dfb20e9a27a550c3c24f30a17162b1bc8d66a",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5916,7 +5916,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "59f8d4bd2ec23f2925af2115b5dd0884577d968c7c8f3204da9d4e18f0414194",
+      "fingerprint": "dac04733aec24ea5bc296efddd632dc968b32c85e9d56a71f01532817fdc1271",
       "mapped_schemas": [
         "security_master"
       ],
@@ -232601,7 +232601,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "ad4e3fcd637bdcbaf8d2b2e2e1fb89d76c289e1c08d2281f4b8ff5804bc749ba",
+      "fingerprint": "bbe81392ebceb761067f861cc824b45f1f55dac4d4d12685ce295fbca879aef2",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain",
       "kind": "class",
@@ -232615,12 +232615,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain",
       "references": [],
       "source": {
-        "line": 453,
+        "line": 463,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
       },
       "sources": [
         {
-          "line": 453,
+          "line": 463,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
         }
       ],
@@ -232641,7 +232641,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "eba0627afbbe62ed3acca4abd23afb796d46edcb68b12bb64a75aa5c28837c2f",
+      "fingerprint": "22663d1df1fd004d882ef6bb1716cd97b97a123226290248be26e922d4d8164a",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline",
       "kind": "class",
@@ -232660,7 +232660,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "SecurityAssetSpecificTermsUpcasterPipeline",
-          "source_line": 508,
+          "source_line": 518,
           "type": "SecurityAssetSpecificTermsUpcasterPipeline"
         }
       ],
@@ -232673,12 +232673,12 @@
         "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms"
       ],
       "source": {
-        "line": 505,
+        "line": 515,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
       },
       "sources": [
         {
-          "line": 505,
+          "line": 515,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
         }
       ],
