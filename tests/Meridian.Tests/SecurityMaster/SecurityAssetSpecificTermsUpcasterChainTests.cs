@@ -220,7 +220,7 @@ public sealed class SecurityAssetSpecificTermsUpcasterChainTests
         var version = SecurityAssetSpecificTermsV0ToCurrentUpcaster.ResolveSchemaVersion(projection.AssetSpecificTerms);
         version.Should().Be(AssetSpecificTermsSchema.Legacy);
         AssetSpecificTermsSchema.IsAccepted(version, isProfileBacked: false).Should().BeTrue();
-        projection.AssetSpecificTerms.GetProperty("maturityDate").GetString().Should().Be("2031-03-01");
+        projection.AssetSpecificTerms.GetProperty("maturity").GetString().Should().Be("2031-03-01");
         projection.AssetSpecificTerms.GetProperty("couponRate").GetDecimal().Should().Be(5.0m);
         // The route is lossy, and the rebuilt payload says so.
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.WasFlattenedFromEconomicTerms(projection.AssetSpecificTerms).Should().BeTrue();

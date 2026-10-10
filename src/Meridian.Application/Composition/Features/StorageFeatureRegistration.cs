@@ -317,6 +317,10 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityFieldProvenanceStore, PostgresSecurityFieldProvenanceStore>();
             services.AddSingleton<SecurityMasterMigrationRunner>();
             services.AddSingleton<SecurityMasterAggregateRebuilder>();
+            // One node identity per service graph (not per process): the store stamps it on the
+            // projection-change notifications it emits, and this graph's listener ignores only its
+            // own writes, so another container in the same process still refreshes its cache.
+            services.AddSingleton(_ => SecurityMasterNodeIdentity.CreateNew());
             services.AddSingleton<SecurityMasterProjectionCache>();
             services.AddSingleton<SecurityMasterProjectionService>();
             services.AddSingleton<SecurityMasterRebuildOrchestrator>();
@@ -349,6 +353,12 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IStructuredCreditReferenceService, StructuredCreditProjectionService>();
             services.AddSingleton<ISecurityResolver, SecurityResolver>();
             services.AddHostedService<SecurityMasterProjectionWarmupService>();
+            services.AddSingleton<SecurityMasterProjectionChangeHandler>();
+            if (securityMasterOptions.ProjectionCacheNotificationsEnabled)
+            {
+                // Cross-node cache coherence: LISTEN for projection writes committed elsewhere.
+                services.AddHostedService<SecurityMasterProjectionChangeListener>();
+            }
             if (options.EnableHttpClientFactory)
             {
                 services.AddSingleton<IPolygonCorporateActionFetcher, PolygonCorporateActionFetcher>();
@@ -744,7 +754,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             SnapshotIntervalVersions = configuration.GetInt32("MERIDIAN_SECURITY_MASTER_SNAPSHOT_INTERVAL", 50),
             ProjectionReplayBatchSize = configuration.GetInt32("MERIDIAN_SECURITY_MASTER_REPLAY_BATCH_SIZE", 500),
             PreloadProjectionCache = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_PRELOAD_CACHE", true),
-            ResolveInactiveByDefault = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_RESOLVE_INACTIVE", true)
+            ResolveInactiveByDefault = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_RESOLVE_INACTIVE", true),
+            ProjectionCacheNotificationsEnabled = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_PROJECTION_NOTIFICATIONS", true)
         };
 
     private static DirectLendingOptions CreateDirectLendingOptions(CompositionConfiguration configuration)

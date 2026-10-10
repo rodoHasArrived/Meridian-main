@@ -2,8 +2,8 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-09-10
-**Review history:** scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Reviewed:** 2026-10-10
+**Review history:** resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -288,6 +288,17 @@ This is the right governance instinct.
 > holds to shrink-only. `IntentionallyUnprojectedAssetClasses` keeps the nine classes that are
 > genuine decisions. Every passage below that reads "11 projected / 15 declared gaps" describes the
 > state before that change; the partition guard itself is unchanged in intent.
+
+> **Updated 2026-10-10 — writer split.** Six of the 13 projected classes are now written by the
+> declarative `SecurityTermsProjectionRegistry` (`src/Meridian.Storage/SecurityMaster/`):
+> `DirectLoan` and `StructuredCredit`, plus `CryptoCurrency`, `Deposit`, `MoneyMarketFund` and
+> `CertificateOfDeposit`, whose hand-written writers were migrated behaviour-preserving behind a
+> database-backed parity guard (now kept as `RegistryMigratedProjectionGoldenTests`). The other
+> seven stay hand-written in `PostgresSecurityMasterStore.cs` because their projections carry real
+> decisions: `Bond`, `Option`, `Swap`, `FxSpot`, `Future` (derived lifecycle, legs, pair codes,
+> fallbacks), `Equity` (common-terms columns), and `Commodity`, which projects `exchangeCode` and
+> `deliveryCountry` — keys `SecurityAssetTermsSchema` does not declare and the canonical serializer
+> never writes. The projection tables and read-side stores are unchanged.
 
 **Open-lot modeling for par instruments is careful.** `FaceValueLot` makes previously implicit
 conventions explicit — quote basis (`ParBasis`, so a per-unit-priced lot cannot silently
@@ -597,6 +608,18 @@ for: a per-asset workaround on a surface that is otherwise generic.
 > full catalog-class coverage are test-locked (the lock immediately caught five catalog classes no
 > pack claimed). Valid-time term history remains reachable only by event replay — still declared
 > and deferred.
+>
+> **Status (2026-10-10):** distributed projection-cache invalidation landed. Every committed
+> projection write in `PostgresSecurityMasterStore` (create/amend/deactivate upserts, rebuild
+> batches) issues `pg_notify` on a schema-scoped channel inside its own transaction, so the
+> notification is delivered only on commit. Each node's `SecurityMasterProjectionChangeListener`
+> holds a dedicated `LISTEN` connection, ignores its own node's notifications, re-reads the
+> announced security from the durable store, and applies it through the cache's version-guarded
+> `Upsert` (evicting it if the store no longer holds it). Bulk rebuilds above 256 records announce a
+> single resync instead. After a lost connection the listener reconnects with backoff and
+> re-synchronises the whole cache, since PostgreSQL does not replay missed notifications;
+> `ProjectionCacheRefreshMinutes` remains a backstop and `ProjectionCacheNotificationsEnabled`
+> (`MERIDIAN_SECURITY_MASTER_PROJECTION_NOTIFICATIONS`) can disable the listener.
 
 - **`SecurityMasterProjectionCache` is a per-process `ConcurrentDictionary`** with no eviction and a
   `Snapshot()` that materializes every record. Publishing on node A does not invalidate node B, and
@@ -633,7 +656,7 @@ for: a per-asset workaround on a surface that is otherwise generic.
 | Effective-interest amortization | Enum only | GAAP-compliant premium amortization for material portfolios |
 | Bond principal / step / inflation schedules | Absent | Sinking funds, step-rate, TIPS — already classifiable, not computable |
 | Asset-class-scoped projection replay | Argument ignored | Bounded rebuild cost as class count grows |
-| Distributed projection cache invalidation | Per-process only | Multi-node deployment coherence |
+| Distributed projection cache invalidation | Closed 2026-10-10: transactional `pg_notify` + per-node `LISTEN` refresh, resync after reconnect | — |
 | Relational projections for 15 of 26 classes | Declared gap, test-guarded | Any query path that needs typed columns for private/alternative assets |
 
 ---
@@ -695,7 +718,8 @@ document one canonical modeling route for MBS/ABS/CLO and make the validators re
 the partition is enforced rather than conventional.
 
 *Deferred but worth tracking:* generic corporate-action payload envelope (item 7);
-effective-interest amortization (item 10); distributed projection-cache invalidation (item 10).
+effective-interest amortization (item 10); distributed projection-cache invalidation (item 10; since
+closed, see the 2026-10-10 status note).
 
 ---
 
@@ -765,7 +789,8 @@ means every new type is another nullable column, and six declared types already 
 **5. Make the projection cache multi-node-safe.**
 Per-process with no invalidation, and a clear-then-fill `ReplaceAll` that exposes an empty master to
 concurrent readers. Migration 025 moved the conflict and revision stores off process-local memory
-specifically for scale-out; this cache did not follow.
+specifically for scale-out; this cache did not follow. *(Atomic swap closed 2026-08-24; cross-node
+invalidation closed 2026-10-10 — see item 10.)*
 
 *Deferred but worth tracking:* effective-interest amortization (GAAP materiality question, not an
 architecture question); relational projections for the private/alternative classes; valid-time term
@@ -788,7 +813,7 @@ An implementation pass addressed the open findings from the 2026-08-14 verificat
 | 8 | Factor schedules exist in incompatible shapes | The `Meridian.Strategies` type renamed to `SecurityFactorObservation` and documented as a per-period observation derived FROM the canonical typed schedule — one canonical dated-factor shape remains |
 | 7 | Corporate actions: wide table, per-event-type columns | Migration 029 adds the generic `payload jsonb` envelope; `CorporateActionDto.Payload` round-trips it and `CorporateActionPayloads` documents well-known keys with tolerant readers |
 | 9 | Equity has bespoke amendment endpoints | `RequireGovernedTermAmendments` gates the generic and bespoke direct amendment routes uniformly behind the workbench maker-checker path; the bespoke endpoints stay as the whole-block replacement surface |
-| 10 | Per-process projection cache | Atomic-swap `ReplaceAll` (no empty-master window), eviction, deactivate-path coherence, and a `ProjectionCacheRefreshMinutes` bounded-staleness re-warm for multi-node deployments |
+| 10 | Per-process projection cache | Atomic-swap `ReplaceAll` (no empty-master window), eviction, deactivate-path coherence, and a `ProjectionCacheRefreshMinutes` bounded-staleness re-warm for multi-node deployments (cross-node invalidation via PostgreSQL `LISTEN/NOTIFY` followed on 2026-10-10; the re-warm is now a backstop) |
 | 10 | Straight-line amortization only | `FaceValueLot.ConstantYieldAmortizedBasisAsOf` implements the effective-interest method, with routing across `BondAmortizationMethod` (NoAmortization, AuctionRate, StraightLine fallbacks) |
 | — | Asset-class-scoped projection replay | `RebuildAssetClassAsync` re-folds only the requested class; `IUflProjectionRebuilder` now delivers what its signature promises |
 | — | `SecurityAssetPackRegistry` unenforced | `ValidateAll()` plus full catalog-class coverage are test-locked; five previously unclaimed catalog classes (`Commodity`, `CryptoCurrency`, `Cfd`, `Warrant`, `InvestmentFund`) are now claimed by packs |
@@ -1787,6 +1812,17 @@ against, two paragraphs after the correction that withdrew that target.
   wrong; they differ only in which direction they lie" — and precisely the outcome it asked not to be
   mistaken for closure. The interim state is defensible if chosen deliberately; what the item asks is
   that recorded-as-of's promise for aliases then be narrowed explicitly, which has not happened.
+
+  > **Update 2026-10-10 — P3b resolved by versioned alias state.** Migration
+  > `036_security_master_alias_revisions.sql` adds the append-only `security_alias_revisions` table
+  > (backfilled with revision 1 for every existing alias at its `created_at`). `UpsertAliasAsync` keeps
+  > an identical replay a no-op, and records a material correction by appending the next revision
+  > (attributed to the correcting actor, which also answers the "P1 (alias corrections)" row) before
+  > updating the current row; re-pointing an alias ID at another security still returns 409.
+  > Projection replacement appends revisions for changed or dropped aliases. `GetRecordedByIdAsOfAsync`
+  > reads aliases through `ISecurityMasterStore.GetAliasesRecordedAsOfAsync`, so a January view keeps
+  > January's value after a June correction. Current-state reads and identifier resolution still use
+  > the current rows.
 
 **Verified still open.**
 
@@ -5315,6 +5351,27 @@ remains the authoritative full run.
 - The three 2026-09-10 smaller notes are unchanged, except that
   `SecurityAssetSpecificTermsUpcasterPipeline.ToSchemaVersion` is now documented as a property of the
   pipeline, not of any result.
+
+---
+
+## Resolution pass — 2026-10-10
+
+An implementation pass on the five priorities of the 2026-10-09 scheduled review (no review PR was
+opened for that interval; its findings matched the standing open items above).
+
+| # | Priority | What landed | Still open |
+| --- | --- | --- | --- |
+| 1 | Lossy v2 → v1 rebuild bridge | `SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(JsonElement, string?)` inverts the per-class module assignment of `SecurityMasterLegacyUpgrade.termsFromKind`; the rebuild fallback in `SecurityEconomicDefinitionAdapter.ToProjection` passes the record's class, so call, issuer, sweep, fund, financing, auction and structured-product values land at the class's declared flat keys (previously dropped, and maturity was written as an undeclared `maturityDate`). `SecurityEconomicTermsClassAwareBridgeTests` asserts every written key is declared and that each class's fully populated v1 record survives v1 → economic → v1 at every recovered key. | What the economic document never carries (`UnrecoverableKeys`: option strike/put-call, swap legs, bond subclass and schedules) is still lost on this route, and the marker stays. Codec generation from the schema is not started. |
+| 2 | Hand-written projection writers | MoneyMarketFund, CertificateOfDeposit, Deposit and CryptoCurrency moved onto `SecurityTermsProjectionRegistry` behind a DB-backed parity guard (see the writer-split note above). | Bond, Option, Swap, FxSpot, Future, Equity and Commodity stay hand-written for the reasons in that note. |
+| 3 | Constant-yield amortization refuses odd periods | `FaceValueLot.ConstantYieldAmortizedBasisAsOf` supports an odd (short) first period for mid-period acquisitions: schedule built backward from maturity, clean-price basis with purchased accrued interest excluded, decimal-only fractional powers; regular schedules are bit-identical. | Posting under calculation model v2 still refuses odd schedules by test-locked design; enabling it needs a governed v3 calculation version and human review. Odd last periods are not modelled. |
+| 4 | Aliases immutable | Append-only alias revisions (P3b note above). | — |
+| 5 | Per-process projection cache | Transactional `pg_notify` + per-node `LISTEN` refresh (status note above); the listener also re-synchronises on its first subscription, closing the startup-warm window. | — |
+
+**Validation.** `tests/Meridian.Tests` built in Release; with the Security Master and ledger
+connection strings pointed at a local PostgreSQL, the filter
+`SecurityMaster|AssetOperations|Amortization|Projection|AtomicTaxLot|CostBasis` ran 2,718 tests:
+2,707 passed, 0 failed, 11 skipped (suites gated on other connection strings). Schema-control
+`verify` passed against a fresh database after `snapshot`/`promote`.
 
 ---
 

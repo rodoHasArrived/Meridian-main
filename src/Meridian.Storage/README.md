@@ -461,6 +461,15 @@ every accepted upsert during that build, reconcile those writes by record versio
 result with one reference swap. Readers therefore see a complete old or new master, while a write
 accepted during `ReplaceAll` materialization is not discarded by the swap.
 
+Every projection-writing transaction also issues `pg_notify` on a per-schema channel, so other nodes'
+`SecurityMasterProjectionChangeListener` refresh the changed security (version-guarded) once the write
+commits; rolled-back writes announce nothing. Aliases keep an append-only revision history
+(`036_security_master_alias_revisions.sql`): corrections append a revision and recorded-as-of reads
+resolve each alias from the revision current at the cutoff. An alias ID stays bound to its first security even after it is
+retired, so neither alias upserts nor projection replacement can continue its history elsewhere. MoneyMarketFund, CertificateOfDeposit,
+Deposit and CryptoCurrency projections are written by `SecurityTermsProjectionRegistry` descriptors
+rather than hand-written writers.
+
 Ledger journal writes fail closed for instrument-bearing postings. In practice, this means Meridian
 will not save a securities, dividend, accrued-interest, corporate-action, option, futures, short, or
 symbol-scoped accounting line unless the line carries approved Security Master provenance and ledger

@@ -21,6 +21,12 @@ missing values, without writing environment defaults; omitted configuration pres
 resolution. Unified database URLs are resolved locally for explicit configurations.
 
 Ledger composition registers the read-only `CanonicalLotAmortizationService` alongside existing governed candidate services. Its registration preserves workstation startup when amortization stores are absent; preview requires the authoritative ledger, Security Master, and book-position stores and rejects missing authority before any read. Amortization posting remains on the shared Asset Accounting Event Spine approval and atomic ledger path.
+
+Security Master event replay that lacks retained flat terms flattens the economic-terms document onto
+the record's asset class, so carried values land at that class's declared keys. The Postgres
+composition registers `SecurityMasterProjectionChangeListener` (disable with
+`MERIDIAN_SECURITY_MASTER_PROJECTION_NOTIFICATIONS=false`) to keep the projection cache coherent
+across nodes; it re-synchronises on first subscription and after every reconnect.
 Primary-host storage composition supplies deferred Security Master and book-position resolvers to
 the PostgreSQL journal store. Deferred resolution preserves the shared singleton authorities while
 avoiding the journal/position constructor cycle; absent durable authority fails closed at posting.

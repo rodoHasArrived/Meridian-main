@@ -3954,7 +3954,7 @@
       ]
     }
   ],
-  "fingerprint": "f989b218be1ed52b09a5bc44f7b739ae8ef93b3825c18d0fcb0bcabeab68e6e5",
+  "fingerprint": "325e1902d24d45c8010a4be76c4dfb20e9a27a550c3c24f30a17162b1bc8d66a",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5916,7 +5916,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "ce8548f7091df46fd62fa5562fad15981ec23d2a5ceff6cbc680347b5f4a1410",
+      "fingerprint": "dac04733aec24ea5bc296efddd632dc968b32c85e9d56a71f01532817fdc1271",
       "mapped_schemas": [
         "security_master"
       ],
@@ -232601,7 +232601,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "a89e900871b7c437314ec49f94f36841ccf8e35b986c33978e2f87621eab734a",
+      "fingerprint": "bbe81392ebceb761067f861cc824b45f1f55dac4d4d12685ce295fbca879aef2",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain",
       "kind": "class",
@@ -232615,12 +232615,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain",
       "references": [],
       "source": {
-        "line": 211,
+        "line": 463,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
       },
       "sources": [
         {
-          "line": 211,
+          "line": 463,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
         }
       ],
@@ -232641,7 +232641,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "ac82525e2297c1e8c79c4f261161adacf8e50bc2478d6b97b127f0f157cd4148",
+      "fingerprint": "22663d1df1fd004d882ef6bb1716cd97b97a123226290248be26e922d4d8164a",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline",
       "kind": "class",
@@ -232660,7 +232660,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "SecurityAssetSpecificTermsUpcasterPipeline",
-          "source_line": 255,
+          "source_line": 518,
           "type": "SecurityAssetSpecificTermsUpcasterPipeline"
         }
       ],
@@ -232673,12 +232673,12 @@
         "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms"
       ],
       "source": {
-        "line": 252,
+        "line": 515,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
       },
       "sources": [
         {
-          "line": 252,
+          "line": 515,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
         }
       ],
@@ -233928,7 +233928,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "6af53d5584ef68eaa75987c25e854b370e0c14a279b9b7c08f72e47b2d3ccbaa",
+      "fingerprint": "91cbcc7e0cee835c543ebfe7a28ac9bf48520083f16402609027f4d1d6b5068e",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster",
       "id": "Meridian.Contracts.SecurityMaster.SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster",
       "kind": "class",
@@ -233947,7 +233947,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 44,
+          "source_line": 48,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -233961,7 +233961,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 52,
+          "source_line": 56,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -233975,7 +233975,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 60,
+          "source_line": 64,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -233989,7 +233989,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster",
-          "source_line": 33,
+          "source_line": 37,
           "type": "SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster"
         }
       ],
@@ -234002,12 +234002,12 @@
         "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms"
       ],
       "source": {
-        "line": 30,
+        "line": 34,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
       },
       "sources": [
         {
-          "line": 30,
+          "line": 34,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
         }
       ],
@@ -235915,7 +235915,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "ca9d7d58549a0bdba8fa5b1177b94dece5c2dd9d0ab1967ada3d56f45cd05ea6",
+      "fingerprint": "147dd8766284c35107d198b3dadeb5ee70f24f4e368ed63e1cedc80c5ac9f42d",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityMasterOptions",
       "id": "Meridian.Contracts.SecurityMaster.SecurityMasterOptions",
       "kind": "class",
@@ -235949,6 +235949,20 @@
           "origin": "property",
           "raw_type": "bool",
           "source_line": 9,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProjectionCacheNotificationsEnabled",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "bool",
+          "source_line": 31,
           "type": "bool"
         },
         {

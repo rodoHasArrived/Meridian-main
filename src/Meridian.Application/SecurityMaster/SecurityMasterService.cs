@@ -292,8 +292,8 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             request.Scope,
             request.Reason,
             request.CreatedBy,
-            // Proposed creation stamp. It is applied only to a new alias. An existing alias ID may be
-            // replayed idempotently, but material correction must use an append-only revision path.
+            // Proposed creation stamp. It is applied only to a new alias. For an existing alias ID the
+            // store retains the original creation facts; a material correction appends an alias revision.
             DateTimeOffset.UtcNow,
             request.ValidFrom,
             request.ValidTo,
@@ -1701,11 +1701,23 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
     private async Task<SecurityAliasDto> UpsertAliasAsyncCore(SecurityAliasDto alias, CancellationToken ct)
     {
-        // The store retains the original created_at/created_by for an idempotent replay and rejects a
-        // material change to an existing alias ID. A null result cannot be treated as success because
-        // that would tell the caller a correction landed when no append-only revision was recorded.
-        var persisted = await _store.UpsertAliasAsync(alias, ct).ConfigureAwait(false);
-        return persisted ?? throw new SecurityAliasHistoryConflictException(alias.AliasId);
+        // The store retains the original created_at/created_by for an existing alias ID, appends an
+        // alias revision for a material correction, and rejects re-pointing an alias ID at another
+        // security. A null result cannot be treated as success because that would tell the caller a
+        // correction landed when no revision was recorded.
+        var persisted = await _store.UpsertAliasAsync(alias, ct).ConfigureAwait(false)
+            ?? throw new SecurityAliasHistoryConflictException(alias.AliasId);
+
+        // Aliases are part of the cached projection and seed the canonical registry, so a new or
+        // corrected alias refreshes both here; other nodes refresh from the store's notification.
+        if (_projectionCache is not null
+            && await _store.GetProjectionAsync(alias.SecurityId, ct).ConfigureAwait(false) is { } projection)
+        {
+            _projectionCache.Upsert(projection);
+            TryReseedRegistryInBackground();
+        }
+
+        return persisted;
     }
 
     private Task SaveSnapshotIfNeededAsync(SecurityEconomicDefinitionRecord definition, CancellationToken ct)
