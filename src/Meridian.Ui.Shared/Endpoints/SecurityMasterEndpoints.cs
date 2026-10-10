@@ -977,6 +977,10 @@ public static partial class SecurityMasterEndpoints
                     : await workbenchService.PatchOperatorOverridesAsync(securityId, request, actor, ct).ConfigureAwait(false);
                 return Results.Json(updated, jsonOptions);
             }
+            catch (SecurityMasterMutationConflictException exception)
+            {
+                return Results.Conflict(new { error = exception.Message });
+            }
             catch (InvalidOperationException exception) when (exception.Message.Contains("governed revision workflow", StringComparison.Ordinal))
             {
                 // Staged revisions are mid-review — a conflicting-state condition, not a client
@@ -1031,6 +1035,10 @@ public static partial class SecurityMasterEndpoints
             catch (ArgumentException exception)
             {
                 return Results.BadRequest(new { error = exception.Message });
+            }
+            catch (SecurityMasterMutationConflictException exception)
+            {
+                return Results.Conflict(new { error = exception.Message });
             }
             catch (InvalidOperationException exception) when (exception.Message.Contains("governed revision workflow", StringComparison.Ordinal))
             {
