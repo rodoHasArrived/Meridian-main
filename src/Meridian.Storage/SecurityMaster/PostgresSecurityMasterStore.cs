@@ -80,10 +80,12 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         ProjectionWriters.Select(static writer => writer.AssetClass).ToArray();
 
     private readonly SecurityMasterOptions _options;
+    private readonly SecurityMasterNodeIdentity _nodeIdentity;
 
-    public PostgresSecurityMasterStore(SecurityMasterOptions options)
+    public PostgresSecurityMasterStore(SecurityMasterOptions options, SecurityMasterNodeIdentity? nodeIdentity = null)
     {
         _options = options;
+        _nodeIdentity = nodeIdentity ?? SecurityMasterNodeIdentity.Process;
     }
 
     public async Task UpsertProjectionAsync(SecurityProjectionRecord record, CancellationToken ct = default)
@@ -91,6 +93,11 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
         await UpsertProjectionCoreAsync(connection, transaction, record, ct).ConfigureAwait(false);
+        await NotifyProjectionChangedAsync(
+            connection,
+            transaction,
+            SecurityProjectionChangeNotification.ForSecurity(_nodeIdentity.NodeId, record.SecurityId, record.Version),
+            ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
 
@@ -108,6 +115,26 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             await UpsertProjectionCoreAsync(connection, transaction, record, ct).ConfigureAwait(false);
         }
 
+        if (records.Count > SecurityProjectionChangeNotification.MaxPerSecurityNotificationsPerBatch)
+        {
+            await NotifyProjectionChangedAsync(
+                connection,
+                transaction,
+                SecurityProjectionChangeNotification.ForResync(_nodeIdentity.NodeId),
+                ct).ConfigureAwait(false);
+        }
+        else
+        {
+            foreach (var record in records)
+            {
+                await NotifyProjectionChangedAsync(
+                    connection,
+                    transaction,
+                    SecurityProjectionChangeNotification.ForSecurity(_nodeIdentity.NodeId, record.SecurityId, record.Version),
+                    ct).ConfigureAwait(false);
+            }
+        }
+
         await SaveCheckpointCoreAsync(connection, transaction, projectionName, lastGlobalSequence, ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
@@ -115,18 +142,58 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
     public async Task DeactivateProjectionAsync(Guid securityId, DateTimeOffset effectiveTo, long version, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        int updated;
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText =
+                $"""
+                update {Qualified("securities")}
+                set status = 'Inactive',
+                    effective_to = @effective_to,
+                    version = @version
+                where security_id = @security_id;
+                """;
+            command.Parameters.AddWithValue("security_id", securityId);
+            command.Parameters.AddWithValue("effective_to", effectiveTo.UtcDateTime);
+            command.Parameters.AddWithValue("version", version);
+            updated = await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
+
+        if (updated > 0)
+        {
+            await NotifyProjectionChangedAsync(
+                connection,
+                transaction,
+                SecurityProjectionChangeNotification.ForSecurity(_nodeIdentity.NodeId, securityId, version),
+                ct).ConfigureAwait(false);
+        }
+
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Queues a projection-change notification on the writing transaction. PostgreSQL delivers a
+    /// <c>NOTIFY</c> issued inside a transaction only when that transaction commits (and drops it on
+    /// rollback), so other nodes can never observe a change the durable store does not hold.
+    /// </summary>
+    private async Task NotifyProjectionChangedAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        SecurityProjectionChangeNotification notification,
+        CancellationToken ct)
+    {
+        if (!_options.ProjectionCacheNotificationsEnabled)
+        {
+            return;
+        }
+
         await using var command = connection.CreateCommand();
-        command.CommandText =
-            $"""
-            update {Qualified("securities")}
-            set status = 'Inactive',
-                effective_to = @effective_to,
-                version = @version
-            where security_id = @security_id;
-            """;
-        command.Parameters.AddWithValue("security_id", securityId);
-        command.Parameters.AddWithValue("effective_to", effectiveTo.UtcDateTime);
-        command.Parameters.AddWithValue("version", version);
+        command.Transaction = transaction;
+        command.CommandText = "select pg_notify(@channel, @payload);";
+        command.Parameters.AddWithValue("channel", SecurityProjectionChangeNotification.ChannelFor(_options.Schema));
+        command.Parameters.AddWithValue("payload", notification.ToPayload());
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 

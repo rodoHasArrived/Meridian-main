@@ -12,10 +12,21 @@ public sealed class SecurityMasterOptions
     /// <summary>
     /// Interval, in minutes, at which the projection warmup service re-warms the per-process
     /// projection cache from the durable store. Zero (the default) disables periodic re-warm —
-    /// single-node deployments stay coherent through per-write cache upserts. Multi-node
-    /// deployments should set this to bound cross-node staleness: a publish on one node reaches
-    /// another node's cache within one refresh interval (authoritative reads always go to the
-    /// durable store regardless).
+    /// single-node deployments stay coherent through per-write cache upserts, and multi-node
+    /// deployments through <see cref="ProjectionCacheNotificationsEnabled"/>. A positive value adds
+    /// a backstop re-warm that bounds cross-node staleness even if a change notification is lost
+    /// (authoritative reads always go to the durable store regardless).
     /// </summary>
     public int ProjectionCacheRefreshMinutes { get; set; }
+
+    /// <summary>
+    /// When true (the default), every committed projection write emits a PostgreSQL
+    /// <c>NOTIFY</c> on the schema's projection channel inside the writing transaction, and each
+    /// node runs a listener that refreshes its per-process projection cache from the durable store
+    /// when another node commits a change. Cross-node staleness is then bounded by notification
+    /// delivery rather than by <see cref="ProjectionCacheRefreshMinutes"/>, which remains a
+    /// backstop. Disable only for single-node deployments that want to avoid the dedicated
+    /// listener connection.
+    /// </summary>
+    public bool ProjectionCacheNotificationsEnabled { get; set; } = true;
 }

@@ -16,12 +16,21 @@ namespace Meridian.Storage.SecurityMaster;
 /// published rebuild cannot be discarded by a concurrent warm; and an upsert older than the record
 /// a rebuild installed does not downgrade it.</para>
 ///
-/// <para>Multi-node deployments: publishes on one node do not invalidate another node's cache.
-/// Coherence is bounded by the periodic re-warm
-/// (<c>SecurityMasterOptions.ProjectionCacheRefreshMinutes</c>, run by
-/// <c>SecurityMasterProjectionWarmupService</c>) plus the per-security rebuild each node performs
-/// on its own writes; reads that must be authoritative (governed workflows) go to the durable
-/// store, not this cache.</para>
+/// <para>Multi-node deployments: each node upserts its own writes directly, and every committed
+/// projection write also emits a PostgreSQL <c>NOTIFY</c> from inside its transaction
+/// (<see cref="PostgresSecurityMasterStore"/>, channel
+/// <see cref="SecurityProjectionChangeNotification.ChannelFor"/>), so it is delivered only on
+/// commit and never for a rolled-back write. Every other node's
+/// <c>SecurityMasterProjectionChangeListener</c> re-reads the announced security from the durable
+/// store and applies it through the version-guarded <see cref="Upsert"/> (or <see cref="Remove"/>
+/// when it is gone), ignoring its own node's notifications. Cross-node staleness is therefore
+/// bounded by notification delivery, not by a timer. PostgreSQL does not replay notifications to a
+/// disconnected listener, so after the listener reconnects it re-synchronises the whole cache; the
+/// periodic re-warm (<c>SecurityMasterOptions.ProjectionCacheRefreshMinutes</c>, run by
+/// <c>SecurityMasterProjectionWarmupService</c>) remains a backstop, and
+/// <c>SecurityMasterOptions.ProjectionCacheNotificationsEnabled = false</c> falls back to it alone.
+/// Reads that must be authoritative (governed workflows) still go to the durable store, not this
+/// cache.</para>
 /// </summary>
 public sealed class SecurityMasterProjectionCache
 {

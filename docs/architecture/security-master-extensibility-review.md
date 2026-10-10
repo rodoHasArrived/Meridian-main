@@ -597,6 +597,18 @@ for: a per-asset workaround on a surface that is otherwise generic.
 > full catalog-class coverage are test-locked (the lock immediately caught five catalog classes no
 > pack claimed). Valid-time term history remains reachable only by event replay — still declared
 > and deferred.
+>
+> **Status (2026-10-10):** distributed projection-cache invalidation landed. Every committed
+> projection write in `PostgresSecurityMasterStore` (create/amend/deactivate upserts, rebuild
+> batches) issues `pg_notify` on a schema-scoped channel inside its own transaction, so the
+> notification is delivered only on commit. Each node's `SecurityMasterProjectionChangeListener`
+> holds a dedicated `LISTEN` connection, ignores its own node's notifications, re-reads the
+> announced security from the durable store, and applies it through the cache's version-guarded
+> `Upsert` (evicting it if the store no longer holds it). Bulk rebuilds above 256 records announce a
+> single resync instead. After a lost connection the listener reconnects with backoff and
+> re-synchronises the whole cache, since PostgreSQL does not replay missed notifications;
+> `ProjectionCacheRefreshMinutes` remains a backstop and `ProjectionCacheNotificationsEnabled`
+> (`MERIDIAN_SECURITY_MASTER_PROJECTION_NOTIFICATIONS`) can disable the listener.
 
 - **`SecurityMasterProjectionCache` is a per-process `ConcurrentDictionary`** with no eviction and a
   `Snapshot()` that materializes every record. Publishing on node A does not invalidate node B, and
@@ -633,7 +645,7 @@ for: a per-asset workaround on a surface that is otherwise generic.
 | Effective-interest amortization | Enum only | GAAP-compliant premium amortization for material portfolios |
 | Bond principal / step / inflation schedules | Absent | Sinking funds, step-rate, TIPS — already classifiable, not computable |
 | Asset-class-scoped projection replay | Argument ignored | Bounded rebuild cost as class count grows |
-| Distributed projection cache invalidation | Per-process only | Multi-node deployment coherence |
+| Distributed projection cache invalidation | Closed 2026-10-10: transactional `pg_notify` + per-node `LISTEN` refresh, resync after reconnect | — |
 | Relational projections for 15 of 26 classes | Declared gap, test-guarded | Any query path that needs typed columns for private/alternative assets |
 
 ---
@@ -695,7 +707,8 @@ document one canonical modeling route for MBS/ABS/CLO and make the validators re
 the partition is enforced rather than conventional.
 
 *Deferred but worth tracking:* generic corporate-action payload envelope (item 7);
-effective-interest amortization (item 10); distributed projection-cache invalidation (item 10).
+effective-interest amortization (item 10); distributed projection-cache invalidation (item 10; since
+closed, see the 2026-10-10 status note).
 
 ---
 
@@ -765,7 +778,8 @@ means every new type is another nullable column, and six declared types already 
 **5. Make the projection cache multi-node-safe.**
 Per-process with no invalidation, and a clear-then-fill `ReplaceAll` that exposes an empty master to
 concurrent readers. Migration 025 moved the conflict and revision stores off process-local memory
-specifically for scale-out; this cache did not follow.
+specifically for scale-out; this cache did not follow. *(Atomic swap closed 2026-08-24; cross-node
+invalidation closed 2026-10-10 — see item 10.)*
 
 *Deferred but worth tracking:* effective-interest amortization (GAAP materiality question, not an
 architecture question); relational projections for the private/alternative classes; valid-time term
@@ -788,7 +802,7 @@ An implementation pass addressed the open findings from the 2026-08-14 verificat
 | 8 | Factor schedules exist in incompatible shapes | The `Meridian.Strategies` type renamed to `SecurityFactorObservation` and documented as a per-period observation derived FROM the canonical typed schedule — one canonical dated-factor shape remains |
 | 7 | Corporate actions: wide table, per-event-type columns | Migration 029 adds the generic `payload jsonb` envelope; `CorporateActionDto.Payload` round-trips it and `CorporateActionPayloads` documents well-known keys with tolerant readers |
 | 9 | Equity has bespoke amendment endpoints | `RequireGovernedTermAmendments` gates the generic and bespoke direct amendment routes uniformly behind the workbench maker-checker path; the bespoke endpoints stay as the whole-block replacement surface |
-| 10 | Per-process projection cache | Atomic-swap `ReplaceAll` (no empty-master window), eviction, deactivate-path coherence, and a `ProjectionCacheRefreshMinutes` bounded-staleness re-warm for multi-node deployments |
+| 10 | Per-process projection cache | Atomic-swap `ReplaceAll` (no empty-master window), eviction, deactivate-path coherence, and a `ProjectionCacheRefreshMinutes` bounded-staleness re-warm for multi-node deployments (cross-node invalidation via PostgreSQL `LISTEN/NOTIFY` followed on 2026-10-10; the re-warm is now a backstop) |
 | 10 | Straight-line amortization only | `FaceValueLot.ConstantYieldAmortizedBasisAsOf` implements the effective-interest method, with routing across `BondAmortizationMethod` (NoAmortization, AuctionRate, StraightLine fallbacks) |
 | — | Asset-class-scoped projection replay | `RebuildAssetClassAsync` re-folds only the requested class; `IUflProjectionRebuilder` now delivers what its signature promises |
 | — | `SecurityAssetPackRegistry` unenforced | `ValidateAll()` plus full catalog-class coverage are test-locked; five previously unclaimed catalog classes (`Commodity`, `CryptoCurrency`, `Cfd`, `Warrant`, `InvestmentFund`) are now claimed by packs |
