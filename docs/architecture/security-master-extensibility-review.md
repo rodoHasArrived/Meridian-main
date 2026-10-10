@@ -2,8 +2,8 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-09-10
-**Review history:** scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Reviewed:** 2026-10-10
+**Review history:** resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -5351,6 +5351,27 @@ remains the authoritative full run.
 - The three 2026-09-10 smaller notes are unchanged, except that
   `SecurityAssetSpecificTermsUpcasterPipeline.ToSchemaVersion` is now documented as a property of the
   pipeline, not of any result.
+
+---
+
+## Resolution pass — 2026-10-10
+
+An implementation pass on the five priorities of the 2026-10-09 scheduled review (no review PR was
+opened for that interval; its findings matched the standing open items above).
+
+| # | Priority | What landed | Still open |
+| --- | --- | --- | --- |
+| 1 | Lossy v2 → v1 rebuild bridge | `SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(JsonElement, string?)` inverts the per-class module assignment of `SecurityMasterLegacyUpgrade.termsFromKind`; the rebuild fallback in `SecurityEconomicDefinitionAdapter.ToProjection` passes the record's class, so call, issuer, sweep, fund, financing, auction and structured-product values land at the class's declared flat keys (previously dropped, and maturity was written as an undeclared `maturityDate`). `SecurityEconomicTermsClassAwareBridgeTests` asserts every written key is declared and that each class's fully populated v1 record survives v1 → economic → v1 at every recovered key. | What the economic document never carries (`UnrecoverableKeys`: option strike/put-call, swap legs, bond subclass and schedules) is still lost on this route, and the marker stays. Codec generation from the schema is not started. |
+| 2 | Hand-written projection writers | MoneyMarketFund, CertificateOfDeposit, Deposit and CryptoCurrency moved onto `SecurityTermsProjectionRegistry` behind a DB-backed parity guard (see the writer-split note above). | Bond, Option, Swap, FxSpot, Future, Equity and Commodity stay hand-written for the reasons in that note. |
+| 3 | Constant-yield amortization refuses odd periods | `FaceValueLot.ConstantYieldAmortizedBasisAsOf` supports an odd (short) first period for mid-period acquisitions: schedule built backward from maturity, clean-price basis with purchased accrued interest excluded, decimal-only fractional powers; regular schedules are bit-identical. | Posting under calculation model v2 still refuses odd schedules by test-locked design; enabling it needs a governed v3 calculation version and human review. Odd last periods are not modelled. |
+| 4 | Aliases immutable | Append-only alias revisions (P3b note above). | — |
+| 5 | Per-process projection cache | Transactional `pg_notify` + per-node `LISTEN` refresh (status note above); the listener also re-synchronises on its first subscription, closing the startup-warm window. | — |
+
+**Validation.** `tests/Meridian.Tests` built in Release; with the Security Master and ledger
+connection strings pointed at a local PostgreSQL, the filter
+`SecurityMaster|AssetOperations|Amortization|Projection|AtomicTaxLot|CostBasis` ran 2,718 tests:
+2,707 passed, 0 failed, 11 skipped (suites gated on other connection strings). Schema-control
+`verify` passed against a fresh database after `snapshot`/`promote`.
 
 ---
 

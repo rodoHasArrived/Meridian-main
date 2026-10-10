@@ -549,7 +549,8 @@ institution and external-account evidence match the statement source. `AdminMain
 override account scope; other callers require account-scoped `ManageDirectLending` authorization.
 `SecurityMasterWorkbenchQueryService` is published under
 `Meridian.Ui.Shared.Services` and composes Application Security Master services into the shared
-workstation drill-in projection. `FamilyOfficeReadService` composes the family-office
+workstation drill-in projection. The Security Master alias upsert route accepts corrections to an
+existing alias ID as a new revision; re-pointing an alias at a different security returns 409. `FamilyOfficeReadService` composes the family-office
 workstation overview from fund-structure, fund-account, reconciliation, and strategy-run read
 services, and emits degraded guidance when linked accounts cannot provide balances, liabilities,
 reconciliation state, or evidence completeness. Workstation endpoint registration is split by domain through

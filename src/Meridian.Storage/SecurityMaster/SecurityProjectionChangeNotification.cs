@@ -1,6 +1,6 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.SecurityMaster;
 
@@ -144,7 +144,7 @@ public sealed record SecurityProjectionChangeNotification(
 
         // Normalization or truncation could alias two schemas; a hash of the exact schema keeps
         // the channel distinct.
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(schema)))[..16].ToLowerInvariant();
+        var hash = Sha256Digest.ComputeUtf8(schema)[..16];
         var room = maxIdentifierLength - prefix.Length - hash.Length - 1;
         var head = normalized.Length <= room ? normalized.ToString() : normalized.ToString(0, room);
         return $"{prefix}{head}_{hash}";
