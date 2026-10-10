@@ -11,6 +11,10 @@ last_reviewed: 2026-10-06
 
 # src/Meridian.Ui.Shared
 
+Security Master override PATCH and decision endpoints return HTTP 409 when another instance
+advances the durable workbench generation. The governed workbench endpoints use their existing
+conflict response for the same condition. Operators must reload before retrying the edit or review.
+
 Trading readiness includes every supplied acceptance gate in aggregate status and evidence
 summaries, including broker execution reconciliation and portfolio recovery. Every non-ready
 acceptance gate contributes a live-operation blocker independently of aggregate status, so new

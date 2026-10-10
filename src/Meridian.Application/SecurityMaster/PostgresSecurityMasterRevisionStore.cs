@@ -2,6 +2,7 @@ using System.Data.Common;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Npgsql;
+using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Application.SecurityMaster;
 
@@ -12,7 +13,7 @@ namespace Meridian.Application.SecurityMaster;
 /// across restarts or multiple instances. State transitions are compare-and-set at the database so
 /// concurrent or out-of-order lifecycle calls are rejected rather than silently advancing the revision.
 /// </summary>
-public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisionStore
+public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisionStore, ISecurityMasterMutationParticipant
 {
     private const string RevisionsTable = "security_master_revisions";
 
@@ -23,13 +24,16 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
 
     private readonly SecurityMasterOptions _options;
 
+    public SecurityMasterOptions MutationOptions => _options;
+
     public PostgresSecurityMasterRevisionStore(SecurityMasterOptions options)
     {
         _options = options;
     }
 
     public Task<SecurityMasterRevisionRecord> CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default)
-        => CreateDraftCoreAsync(securityId, actor, fieldPath: null, fieldEffectiveFrom: null, fieldJustification: null, fundProfileId: null, fieldValue: null, ct);
+        => PostgresSecurityMasterMutation.ExecuteAsync(_options, securityId,
+            () => CreateDraftCoreAsync(securityId, actor, fieldPath: null, fieldEffectiveFrom: null, fieldJustification: null, fundProfileId: null, fieldValue: null, ct), ct);
 
     public Task<SecurityMasterRevisionRecord> CreateDraftAsync(
         Guid securityId,
@@ -40,7 +44,8 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
         string? fundProfileId = null,
         SecurityMasterRevisionFieldValue? fieldValue = null,
         CancellationToken ct = default)
-        => CreateDraftCoreAsync(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification, fundProfileId, fieldValue, ct);
+        => PostgresSecurityMasterMutation.ExecuteAsync(_options, securityId,
+            () => CreateDraftCoreAsync(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification, fundProfileId, fieldValue, ct), ct);
 
     private async Task<SecurityMasterRevisionRecord> CreateDraftCoreAsync(
         Guid securityId,
@@ -68,7 +73,8 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
             FieldValue: fieldValue?.Value,
             FieldValueRecorded: fieldValue is not null);
 
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
+        var connection = lease.Connection;
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""
@@ -101,7 +107,8 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
 
     public async Task<SecurityMasterRevisionRecord?> GetAsync(Guid revisionId, CancellationToken ct = default)
     {
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
+        var connection = lease.Connection;
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""
@@ -118,7 +125,8 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
     public async Task<IReadOnlyList<SecurityMasterRevisionRecord>> ListBySecurityAsync(
         Guid securityId, CancellationToken ct = default)
     {
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
+        var connection = lease.Connection;
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""
@@ -139,6 +147,16 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
     }
 
     public async Task<SecurityMasterRevisionRecord> TransitionAsync(
+        Guid revisionId, SecurityMasterRevisionStateDto expected, SecurityMasterRevisionStateDto next,
+        string actor, Guid? workflowIdForSubmit = null, CancellationToken ct = default)
+    {
+        var revision = await GetAsync(revisionId, ct).ConfigureAwait(false)
+            ?? throw new SecurityMasterRevisionStateException(revisionId, "no such revision.");
+        return await PostgresSecurityMasterMutation.ExecuteAsync(_options, revision.SecurityId,
+            () => TransitionCoreAsync(revisionId, expected, next, actor, workflowIdForSubmit, ct), ct).ConfigureAwait(false);
+    }
+
+    private async Task<SecurityMasterRevisionRecord> TransitionCoreAsync(
         Guid revisionId,
         SecurityMasterRevisionStateDto expected,
         SecurityMasterRevisionStateDto next,
@@ -150,7 +168,8 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
         // preserve the existing binding so approval can be restricted to the same lane.
         var bindWorkflow = next == SecurityMasterRevisionStateDto.Submitted && workflowIdForSubmit.HasValue;
 
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
+        var connection = lease.Connection;
         await using var command = connection.CreateCommand();
 
         // Compare-and-set at the database: the row transitions only when its current state still
@@ -182,7 +201,11 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
         }
 
         // Zero rows updated: report whether the revision is missing or simply in a different state.
-        var current = await GetAsync(revisionId, ct).ConfigureAwait(false);
+        // Reuse the held connection lease; opening another enlisted lease here would wait on
+        // ourselves when passport readers share this mutation's connection.
+        command.CommandText = $"select {RevisionColumns} from {Qualified(RevisionsTable)} where revision_id = @revision_id;";
+        await using var currentReader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        var current = await currentReader.ReadAsync(ct).ConfigureAwait(false) ? MapRevision(currentReader) : null;
         throw current is null
             ? new SecurityMasterRevisionStateException(revisionId, $"no such revision (expected state {expected}).")
             : new SecurityMasterRevisionStateException(revisionId, $"expected state {expected} but the revision is {current.State}.");
@@ -202,18 +225,6 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
         FundProfileId: reader.IsDBNull(10) ? null : reader.GetString(10),
         FieldValue: reader.IsDBNull(11) ? null : reader.GetString(11),
         FieldValueRecorded: !reader.IsDBNull(12) && reader.GetBoolean(12));
-
-    private async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken ct)
-    {
-        if (string.IsNullOrWhiteSpace(_options.ConnectionString))
-        {
-            throw new InvalidOperationException("SecurityMasterOptions.ConnectionString is not configured.");
-        }
-
-        var connection = new NpgsqlConnection(_options.ConnectionString);
-        await connection.OpenAsync(ct).ConfigureAwait(false);
-        return connection;
-    }
 
     private string Qualified(string table) => $"{_options.Schema}.{table}";
 }

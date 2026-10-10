@@ -11,6 +11,15 @@ last_reviewed: 2026-10-07
 
 # src/Meridian.Storage
 
+Security Master migration `036_security_master_workbench_generations.sql` adds the durable
+compare-and-set generation used by `PostgresSecurityMasterMutation`. Overlay values, their audit
+trail, governed drafts and lifecycle transitions share one connection and transaction. Discard-time
+field provenance also enlists; standalone provenance writes retain their prior behavior. Failed
+or cancelled mutations roll back the generation and all enlisted writes. Parallel passport reads
+serialize their commands on that connection. Independent stores and application instances use the
+database fence; in-memory compositions retain their local gate. Deploy with all old writers drained,
+as described in [the rollout contract](../../docs/domain/security.md#governed-edit-concurrency).
+
 New WAL segments use `MDCWAL02|2` with BLAKE3-256 over length-framed, canonically
 PackBits-encoded fields. Existing `MDCWAL01|1` segments retain SHA-256 validation.
 Recovery, commit scans and repair support mixed versions; repair keeps original
