@@ -86,7 +86,9 @@ public sealed class SecurityMasterAggregateRebuilder
     /// recorded at or before <paramref name="asOfUtc"/>. Accounting as-of workflows use this
     /// strict variant so a projection-only current definition cannot masquerade as history.
     /// Aliases are retained only when they were both recorded and effective at the cutoff;
-    /// their enabled state is preserved for downstream resolution policy.
+    /// their enabled state is preserved for downstream resolution policy. Callers supply the
+    /// aliases as recorded at the cutoff (<see cref="ISecurityMasterStore.GetAliasesRecordedAsOfAsync"/>)
+    /// so a later alias correction does not leak into the historical view.
     /// </summary>
     public async Task<SecurityProjectionRecord?> RebuildRecordedAsOfAsync(
         Guid securityId,

@@ -1788,6 +1788,17 @@ against, two paragraphs after the correction that withdrew that target.
   mistaken for closure. The interim state is defensible if chosen deliberately; what the item asks is
   that recorded-as-of's promise for aliases then be narrowed explicitly, which has not happened.
 
+  > **Update 2026-10-10 — P3b resolved by versioned alias state.** Migration
+  > `036_security_master_alias_revisions.sql` adds the append-only `security_alias_revisions` table
+  > (backfilled with revision 1 for every existing alias at its `created_at`). `UpsertAliasAsync` keeps
+  > an identical replay a no-op, and records a material correction by appending the next revision
+  > (attributed to the correcting actor, which also answers the "P1 (alias corrections)" row) before
+  > updating the current row; re-pointing an alias ID at another security still returns 409.
+  > Projection replacement appends revisions for changed or dropped aliases. `GetRecordedByIdAsOfAsync`
+  > reads aliases through `ISecurityMasterStore.GetAliasesRecordedAsOfAsync`, so a January view keeps
+  > January's value after a June correction. Current-state reads and identifier resolution still use
+  > the current rows.
+
 **Verified still open.**
 
 - **P5, this pass's top priority.** No Security Master view model calls

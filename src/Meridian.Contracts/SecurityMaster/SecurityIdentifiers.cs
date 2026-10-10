@@ -75,16 +75,16 @@ public sealed record SecurityAliasDto(
     bool IsEnabled);
 
 /// <summary>
-/// Raised when a request would mutate an existing alias row without an append-only alias revision.
-/// The current projection table is consumed by recorded-as-of reads, so an in-place correction
-/// would rewrite history and must be reported as a state conflict.
+/// Raised when an alias write cannot be recorded as a revision of that alias's history: the alias ID
+/// is already recorded against a different security (an alias ID stays bound to the security it was
+/// first recorded against), or the store could not confirm that the write was persisted.
 /// </summary>
 public sealed class SecurityAliasHistoryConflictException : InvalidOperationException
 {
     public SecurityAliasHistoryConflictException(Guid aliasId)
         : base(
-            $"Alias '{aliasId}' already exists with different recorded facts. " +
-            "In-place replacement or retirement is unavailable until append-only alias revisions are implemented.")
+            $"Alias '{aliasId}' conflicts with its recorded history. " +
+            "An alias ID stays bound to the security it was first recorded against; corrections append an alias revision, and re-pointing requires a new alias ID.")
     {
         AliasId = aliasId;
     }

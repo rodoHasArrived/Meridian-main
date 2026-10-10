@@ -46999,6 +46999,31 @@
       "target": "schema:asset_operations"
     },
     {
+      "constraint": "security_alias_revisions_security_id_fkey",
+      "kind": "foreign-key",
+      "label": "security_id",
+      "source": "database:security_master.security_alias_revisions",
+      "target": "database:security_master.securities"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_alias_revisions_revision_check on security_master.security_alias_revisions",
+      "target": "database:security_master.security_alias_revisions.revision"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_alias_revisions_security_id_fkey on security_master.security_alias_revisions",
+      "target": "database:security_master.securities.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_alias_revisions_security_id_fkey on security_master.security_alias_revisions",
+      "target": "database:security_master.securities_pkey"
+    },
+    {
       "constraint": "security_aliases_security_id_fkey",
       "kind": "foreign-key",
       "label": "security_id",
@@ -48477,6 +48502,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.security_alias_revisions"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.security_aliases"
     },
     {
@@ -48667,7 +48698,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "064a4c7f072df1d6399f68e9e9fe0620ceae280e1023af461ee59e090a31c3d4",
+  "fingerprint": "60b4bdea1847180cfad3c20ad4c88d618918685d39fa350379548c41f82c78df",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -70797,6 +70828,27 @@
       "label": "security_master.securities_pkey"
     },
     {
+      "id": "database:security_master.security_alias_revisions",
+      "kind": "database-table",
+      "label": "security_master.security_alias_revisions",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_alias_revisions.revision",
+      "kind": "database-object",
+      "label": "security_master.security_alias_revisions.revision"
+    },
+    {
+      "id": "database:security_master.security_alias_revisions_revision_check on security_master.security_alias_revisions",
+      "kind": "database-object",
+      "label": "security_master.security_alias_revisions_revision_check on security_master.security_alias_revisions"
+    },
+    {
+      "id": "database:security_master.security_alias_revisions_security_id_fkey on security_master.security_alias_revisions",
+      "kind": "database-object",
+      "label": "security_master.security_alias_revisions_security_id_fkey on security_master.security_alias_revisions"
+    },
+    {
       "id": "database:security_master.security_aliases",
       "kind": "database-table",
       "label": "security_master.security_aliases",
@@ -71204,9 +71256,9 @@
   "summary": {
     "contract_references": 3215,
     "contract_set_memberships": 3792,
-    "edges": 8086,
-    "foreign_keys": 134,
+    "edges": 8091,
+    "foreign_keys": 135,
     "logical_references": 6,
-    "nodes": 3903
+    "nodes": 3907
   }
 }

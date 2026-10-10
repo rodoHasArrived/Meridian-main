@@ -38,6 +38,16 @@ public sealed class SecurityMasterQueryService :
         CancellationToken ct = default)
     {
         var current = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
+        if (current is not null)
+        {
+            // Aliases come from the append-only revision history, not the current rows: a correction
+            // recorded after the cutoff must not change what this view reports.
+            var recordedAliases = await _store
+                .GetAliasesRecordedAsOfAsync(securityId, asOfUtc, ct)
+                .ConfigureAwait(false);
+            current = current with { Aliases = recordedAliases };
+        }
+
         var asOfProjection = await _rebuilder
             .RebuildRecordedAsOfAsync(securityId, asOfUtc, current, ct)
             .ConfigureAwait(false);

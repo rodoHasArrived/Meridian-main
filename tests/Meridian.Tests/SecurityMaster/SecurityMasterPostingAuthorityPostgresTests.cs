@@ -55,15 +55,20 @@ public sealed class SecurityMasterPostingAuthorityPostgresTests : IClassFixture<
         """);
 
     [SecurityMasterDatabaseFact]
-    public async Task PostingAuthority_BlocksStandaloneAliasInsertAndReplayUntilCommit()
+    public async Task PostingAuthority_BlocksStandaloneAliasInsertReplayAndCorrectionUntilCommit()
     {
-        foreach (var replay in new[] { false, true })
+        foreach (var mode in new[] { "insert", "replay", "correction" })
         {
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
             var ct = timeout.Token;
             var store = new PostgresSecurityMasterStore(_fixture.Options);
             var security = await SeedAsync(store, ct);
-            var alias = replay ? security.Aliases.Single() : Alias(security.SecurityId);
+            var alias = mode switch
+            {
+                "insert" => Alias(security.SecurityId),
+                "replay" => security.Aliases.Single(),
+                _ => security.Aliases.Single() with { Reason = "concurrent correction" }
+            };
             var writerName = $"alias-authority-{Guid.NewGuid():N}";
             var writerOptions = new SecurityMasterOptions
             {
@@ -92,8 +97,12 @@ public sealed class SecurityMasterPostingAuthorityPostgresTests : IClassFixture<
 
             (await write).Should().BeEquivalentTo(alias);
             var after = await store.GetProjectionAsync(security.SecurityId, ct);
-            after!.Aliases.Should().HaveCount(replay ? 1 : 2);
+            after!.Aliases.Should().HaveCount(mode == "insert" ? 2 : 1);
             after.Version.Should().Be(security.Version, "alias writes must preserve the event-stream version");
+            if (mode == "correction")
+            {
+                after.Aliases.Single().Reason.Should().Be("concurrent correction");
+            }
         }
     }
 
@@ -131,7 +140,7 @@ public sealed class SecurityMasterPostingAuthorityPostgresTests : IClassFixture<
     }
 
     [SecurityMasterDatabaseFact]
-    public async Task StandaloneAliasConflict_RollsBackParentTouchAndRetainsProjection()
+    public async Task PostingAuthority_RefusesAliasCorrectionCommittedAfterSerializableSnapshot()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
         var ct = timeout.Token;
@@ -147,10 +156,50 @@ public sealed class SecurityMasterPostingAuthorityPostgresTests : IClassFixture<
             await snapshot.ExecuteScalarAsync(ct);
         }
 
-        var alias = security.Aliases.Single() with { Reason = "rewrite retained history" };
+        // A correction appends a revision and rewrites the current alias row. Committed after the
+        // posting snapshot, it must refuse posting through the parent lock exactly as an insert does.
+        var corrected = security.Aliases.Single() with { Reason = "corrected after snapshot" };
+        await store.UpsertAliasAsync(corrected, ct);
+        var act = () => store.LockForLotPostingAsync(posting, transaction, security.SecurityId, ct);
+        var refusal = await act.Should().ThrowAsync<PostgresException>();
+        refusal.Which.SqlState.Should().Be(PostgresErrorCodes.SerializationFailure);
+        await transaction.RollbackAsync(ct);
+
+        await using var retry = await posting.BeginTransactionAsync(IsolationLevel.Serializable, ct);
+        var fresh = await store.LockForLotPostingAsync(posting, retry, security.SecurityId, ct);
+        fresh!.Aliases.Single().Reason.Should().Be("corrected after snapshot");
+        fresh.Version.Should().Be(security.Version);
+        OpenLotAmortization.SecurityHash(fresh).Should().NotBe(OpenLotAmortization.SecurityHash(security));
+        await retry.CommitAsync(ct);
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task StandaloneAliasRepointConflict_RollsBackParentTouchAndRetainsProjection()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+        var ct = timeout.Token;
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var security = await SeedAsync(store, ct);
+        var other = await SeedAsync(store, ct);
+        await using var posting = await OpenAsync(ct);
+        await using var transaction = await posting.BeginTransactionAsync(IsolationLevel.Serializable, ct);
+        await using (var snapshot = posting.CreateCommand())
+        {
+            snapshot.Transaction = transaction;
+            snapshot.CommandText = $"select version from {Schema}.securities where security_id in (@id, @other);";
+            snapshot.Parameters.AddWithValue("id", security.SecurityId);
+            snapshot.Parameters.AddWithValue("other", other.SecurityId);
+            await snapshot.ExecuteScalarAsync(ct);
+        }
+
+        // An alias ID stays bound to its security; re-pointing it is refused and its parent touch
+        // on the target security rolls back with it.
+        var alias = security.Aliases.Single() with { SecurityId = other.SecurityId };
         var conflict = () => store.UpsertAliasAsync(alias, ct);
         await conflict.Should().ThrowAsync<SecurityAliasHistoryConflictException>();
 
+        var retainedOther = await store.LockForLotPostingAsync(posting, transaction, other.SecurityId, ct);
+        OpenLotAmortization.SecurityHash(retainedOther!).Should().Be(OpenLotAmortization.SecurityHash(other));
         var retained = await store.LockForLotPostingAsync(posting, transaction, security.SecurityId, ct);
         OpenLotAmortization.SecurityHash(retained!).Should().Be(OpenLotAmortization.SecurityHash(security));
         await transaction.CommitAsync(ct);

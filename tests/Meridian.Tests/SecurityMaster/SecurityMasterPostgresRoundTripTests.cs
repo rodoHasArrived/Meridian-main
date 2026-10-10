@@ -750,11 +750,11 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
     }
 
     /// <summary>
-    /// The current table has no append-only alias revision. A material correction must therefore
-    /// fail closed instead of rewriting the row used by every recorded-as-of reconstruction.
+    /// A material correction appends an alias revision and updates the current row, while creation
+    /// facts stay frozen and a recorded-as-of read before the correction still reports the original.
     /// </summary>
     [SecurityMasterDatabaseFact]
-    public async Task UpsertAliasAsync_RejectsMaterialCorrection_AndPreservesRecordedFacts()
+    public async Task UpsertAliasAsync_MaterialCorrection_AppendsRevisionAndPreservesRecordedAsOf()
     {
         var store = new PostgresSecurityMasterStore(_fixture.Options);
         var securityId = Guid.NewGuid();
@@ -790,29 +790,223 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
         replayed.Should().NotBeNull();
         replayed!.CreatedBy.Should().Be("january.operator");
         replayed.CreatedAt.Should().Be(recordedAt);
+        (await ReadAliasRevisionsAsync(aliasId)).Should().ContainSingle("an idempotent replay records no revision");
 
-        // The June correction supplies a new value AND a new creation stamp, as the service does.
+        // The correction supplies a new value AND a new creation stamp, as the service does.
         var corrected = original with
         {
             AliasValue = "ACME.OQ",
-            Reason = "corrected in June",
-            CreatedBy = "june.operator",
+            Reason = "corrected later",
+            CreatedBy = "correcting.operator",
             CreatedAt = new DateTimeOffset(2026, 6, 20, 0, 0, 0, TimeSpan.Zero)
         };
 
-        var act = () => store.UpsertAliasAsync(corrected);
+        var persisted = await store.UpsertAliasAsync(corrected);
 
-        await act.Should().ThrowAsync<SecurityAliasHistoryConflictException>()
-            .WithMessage("*append-only alias revisions*");
+        persisted.Should().NotBeNull();
+        persisted!.AliasValue.Should().Be("ACME.OQ");
+        persisted.Reason.Should().Be("corrected later");
+        persisted.CreatedBy.Should().Be("january.operator", "creation facts are frozen across corrections");
+        persisted.CreatedAt.Should().Be(recordedAt);
 
-        var storedValue = await ReadAliasColumnAsync(aliasId, "alias_value");
-        storedValue.Should().Be("ACME.O");
-        var storedReason = await ReadAliasColumnAsync(aliasId, "reason");
-        storedReason.Should().Be("recorded in January");
-
+        (await ReadAliasColumnAsync(aliasId, "alias_value")).Should().Be("ACME.OQ");
+        (await ReadAliasColumnAsync(aliasId, "reason")).Should().Be("corrected later");
         var storedCreatedAt = await ReadAliasColumnAsync(aliasId, "created_at");
         Convert.ToDateTime(storedCreatedAt, System.Globalization.CultureInfo.InvariantCulture)
-            .Should().Be(recordedAt.UtcDateTime, "the durable column, not just the returned DTO, must be unchanged");
+            .Should().Be(recordedAt.UtcDateTime, "the durable creation column must be unchanged");
+
+        var revisions = await ReadAliasRevisionsAsync(aliasId);
+        revisions.Select(static r => r.Revision).Should().Equal(1, 2);
+        revisions[0].AliasValue.Should().Be("ACME.O");
+        revisions[0].RecordedBy.Should().Be("january.operator");
+        revisions[0].RecordedAt.Should().Be(recordedAt);
+        revisions[1].AliasValue.Should().Be("ACME.OQ");
+        revisions[1].RecordedBy.Should().Be("correcting.operator", "the revision records the correcting actor");
+        revisions[1].RecordedAt.Should().BeAfter(revisions[0].RecordedAt);
+
+        // An older recorded-as-of view keeps reporting the alias as it was recorded then.
+        var beforeCorrection = await store.GetAliasesRecordedAsOfAsync(securityId, recordedAt.AddMonths(1));
+        beforeCorrection.Should().ContainSingle();
+        beforeCorrection[0].AliasValue.Should().Be("ACME.O");
+        beforeCorrection[0].Reason.Should().Be("recorded in January");
+        beforeCorrection[0].CreatedBy.Should().Be("january.operator");
+        beforeCorrection[0].CreatedAt.Should().Be(recordedAt);
+
+        var afterCorrection = await store.GetAliasesRecordedAsOfAsync(securityId, DateTimeOffset.UtcNow.AddMinutes(1));
+        afterCorrection.Should().ContainSingle();
+        afterCorrection[0].AliasValue.Should().Be("ACME.OQ");
+        afterCorrection[0].CreatedAt.Should().Be(recordedAt);
+
+        (await store.GetAliasesRecordedAsOfAsync(securityId, recordedAt.AddDays(-1)))
+            .Should().BeEmpty("the alias was not recorded before its creation");
+
+        // Replaying the corrected content is idempotent and appends nothing further.
+        await store.UpsertAliasAsync(corrected with { CreatedBy = "retry.operator" });
+        (await ReadAliasRevisionsAsync(aliasId)).Should().HaveCount(2);
+
+        // Current-state reads report the corrected alias.
+        var current = await store.GetProjectionAsync(securityId);
+        current!.Aliases.Single(a => a.AliasId == aliasId).AliasValue.Should().Be("ACME.OQ");
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task GetRecordedByIdAsOfAsync_ReportsAliasAsRecordedBeforeCorrection()
+    {
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var eventStore = new PostgresSecurityMasterEventStore(_fixture.Options, NullLogger<PostgresSecurityMasterEventStore>.Instance);
+        var snapshotStore = new PostgresSecurityMasterSnapshotStore(_fixture.Options);
+        var queryService = new SecurityMasterQueryService(
+            eventStore, store, new SecurityMasterAggregateRebuilder(eventStore, snapshotStore));
+        var securityId = Guid.NewGuid();
+        var aliasId = Guid.NewGuid();
+        var effectiveFrom = DateTimeOffset.UtcNow.AddDays(-30);
+
+        await CreateMinimalSecurityAsync(store, securityId, effectiveFrom);
+        var original = new SecurityAliasDto(
+            aliasId, securityId, SecurityIdentifierKind.Ric.ToString(), "MRDN.O", "refinitiv",
+            SecurityAliasScope.Collector, "original", "first.operator", DateTimeOffset.UtcNow,
+            effectiveFrom, null, true);
+        await store.UpsertAliasAsync(original);
+        var betweenRecordings = DateTimeOffset.UtcNow;
+
+        await store.UpsertAliasAsync(original with
+        {
+            AliasValue = "MRDN.OQ",
+            Reason = "corrected",
+            CreatedBy = "second.operator",
+            CreatedAt = DateTimeOffset.UtcNow
+        });
+
+        var historical = await queryService.GetRecordedByIdAsOfAsync(securityId, betweenRecordings);
+        historical.Should().NotBeNull();
+        historical!.Aliases.Should().ContainSingle().Which.AliasValue.Should().Be("MRDN.O");
+
+        var latest = await queryService.GetRecordedByIdAsOfAsync(securityId, DateTimeOffset.UtcNow.AddMinutes(1));
+        latest!.Aliases.Should().ContainSingle().Which.AliasValue.Should().Be("MRDN.OQ");
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task UpsertAliasAsync_ConcurrentCorrections_AppendContiguousOrderedRevisions()
+    {
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var securityId = Guid.NewGuid();
+        var aliasId = Guid.NewGuid();
+        var effectiveFrom = DateTimeOffset.UtcNow.AddDays(-1);
+        await CreateMinimalSecurityAsync(store, securityId, effectiveFrom);
+        var original = new SecurityAliasDto(
+            aliasId, securityId, "Ticker", "CONC", null, SecurityAliasScope.Operations, "original",
+            "creator", effectiveFrom, effectiveFrom, null, true);
+        await store.UpsertAliasAsync(original);
+
+        const int writers = 8;
+        await Task.WhenAll(Enumerable.Range(0, writers).Select(i => Task.Run(() =>
+            new PostgresSecurityMasterStore(_fixture.Options).UpsertAliasAsync(
+                original with { Reason = $"correction {i}", CreatedBy = $"writer.{i}" }))));
+
+        var revisions = await ReadAliasRevisionsAsync(aliasId);
+        revisions.Select(static r => r.Revision).Should().Equal(Enumerable.Range(1, writers + 1));
+        revisions.Select(static r => r.RecordedAt).Should().BeInAscendingOrder();
+        revisions.Select(static r => r.RecordedAt).Should().OnlyHaveUniqueItems();
+        revisions.Skip(1).Select(static r => r.Reason).Should().OnlyHaveUniqueItems();
+        (await ReadAliasColumnAsync(aliasId, "reason")).Should().Be(
+            revisions[^1].Reason, "the current row must equal the latest revision");
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task UpsertAliasAsync_RepointingAliasToAnotherSecurity_IsRejectedAndRecordsNothing()
+    {
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var securityId = Guid.NewGuid();
+        var otherSecurityId = Guid.NewGuid();
+        var aliasId = Guid.NewGuid();
+        var effectiveFrom = DateTimeOffset.UtcNow.AddDays(-1);
+        await CreateMinimalSecurityAsync(store, securityId, effectiveFrom);
+        await CreateMinimalSecurityAsync(store, otherSecurityId, effectiveFrom);
+        var original = new SecurityAliasDto(
+            aliasId, securityId, "Ticker", "BOUND", null, SecurityAliasScope.Operations, null,
+            "creator", effectiveFrom, effectiveFrom, null, true);
+        await store.UpsertAliasAsync(original);
+
+        var act = () => store.UpsertAliasAsync(original with { SecurityId = otherSecurityId });
+
+        await act.Should().ThrowAsync<SecurityAliasHistoryConflictException>()
+            .WithMessage("*conflicts with its recorded history*");
+        (await ReadAliasColumnAsync(aliasId, "security_id")).Should().Be(securityId);
+        (await ReadAliasRevisionsAsync(aliasId)).Should().ContainSingle();
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task UpsertProjectionAsync_AliasChangeAndRemoval_AreRecordedAsRevisions()
+    {
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var securityId = Guid.NewGuid();
+        var aliasId = Guid.NewGuid();
+        var effectiveFrom = DateTimeOffset.UtcNow.AddDays(-1);
+        await CreateMinimalSecurityAsync(store, securityId, effectiveFrom);
+        var alias = new SecurityAliasDto(
+            aliasId, securityId, "Ticker", "PROJ", null, SecurityAliasScope.Operations, "original",
+            "creator", effectiveFrom, effectiveFrom, null, true);
+        await store.UpsertAliasAsync(alias);
+        var projection = (await store.GetProjectionAsync(securityId))!;
+
+        // Replaying the unchanged projection leaves the history untouched.
+        await store.UpsertProjectionAsync(projection);
+        (await ReadAliasRevisionsAsync(aliasId)).Should().ContainSingle();
+
+        await store.UpsertProjectionAsync(projection with { Aliases = [alias with { Reason = "projection change" }] });
+        var afterChange = DateTimeOffset.UtcNow;
+        await store.UpsertProjectionAsync(projection with { Aliases = [] });
+
+        var revisions = await ReadAliasRevisionsAsync(aliasId);
+        revisions.Select(static r => (r.Revision, r.Reason, r.IsRetired)).Should().Equal(
+            (1, "original", false),
+            (2, "projection change", false),
+            (3, "projection change", true));
+        revisions[1].RecordedBy.Should().Be(PostgresSecurityMasterStore.ProjectionReplacementAliasActor);
+
+        (await store.GetAliasesRecordedAsOfAsync(securityId, effectiveFrom.AddMinutes(1)))
+            .Should().ContainSingle().Which.Reason.Should().Be("original");
+        (await store.GetAliasesRecordedAsOfAsync(securityId, afterChange))
+            .Should().ContainSingle().Which.Reason.Should().Be("projection change");
+        (await store.GetAliasesRecordedAsOfAsync(securityId, DateTimeOffset.UtcNow.AddMinutes(1)))
+            .Should().BeEmpty("a retired alias is absent from later recorded-as-of views");
+    }
+
+    private sealed record AliasRevisionRow(
+        int Revision,
+        string AliasValue,
+        string? Reason,
+        bool IsRetired,
+        string RecordedBy,
+        DateTimeOffset RecordedAt);
+
+    private async Task<IReadOnlyList<AliasRevisionRow>> ReadAliasRevisionsAsync(Guid aliasId)
+    {
+        await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select revision, alias_value, reason, is_retired, recorded_by, recorded_at
+            from {_fixture.Options.Schema}.security_alias_revisions
+            where alias_id = @alias_id
+            order by revision;
+            """;
+        command.Parameters.AddWithValue("alias_id", aliasId);
+        var rows = new List<AliasRevisionRow>();
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new AliasRevisionRow(
+                reader.GetInt32(0),
+                reader.GetString(1),
+                reader.IsDBNull(2) ? null : reader.GetString(2),
+                reader.GetBoolean(3),
+                reader.GetString(4),
+                new DateTimeOffset(reader.GetDateTime(5), TimeSpan.Zero)));
+        }
+
+        return rows;
     }
 
     private Task<SecurityDetailDto> CreateMinimalSecurityAsync(
