@@ -37,9 +37,11 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
     /// <summary>
     /// The projection writers that predate <see cref="SecurityTermsProjectionRegistry"/>: classes
     /// whose projection needs real decisions rather than a column list — a derived lifecycle state,
-    /// a swap type scanned out of legs, a concatenated pair code, a legacy nested-coupon fallback.
-    /// They stay hand-written until each is migrated behind its own regression guard; the registry
-    /// is the destination for new classes, not a sweep over the shipped ones.
+    /// a swap type scanned out of legs, a concatenated pair code, a legacy nested-coupon fallback,
+    /// columns sourced from common terms, or (Commodity) terms the terms schema does not declare.
+    /// CryptoCurrency, Deposit, MoneyMarketFund and CertificateOfDeposit were migrated onto the
+    /// registry behind a database-backed parity guard; the rest stay hand-written until each is
+    /// migrated behind its own.
     /// </summary>
     private static readonly IReadOnlyList<AssetProjectionWriter> HandWrittenProjectionWriters =
     [
@@ -50,10 +52,6 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         new("FxSpot", static (store, c, t, r, ct) => store.UpsertFxSpotProjectionAsync(c, t, r, ct)),
         new("Swap", static (store, c, t, r, ct) => store.UpsertSwapProjectionAsync(c, t, r, ct)),
         new("Commodity", static (store, c, t, r, ct) => store.UpsertCommodityProjectionAsync(c, t, r, ct)),
-        new("CryptoCurrency", static (store, c, t, r, ct) => store.UpsertCryptoProjectionAsync(c, t, r, ct)),
-        new("Deposit", static (store, c, t, r, ct) => store.UpsertDepositProjectionAsync(c, t, r, ct)),
-        new("MoneyMarketFund", static (store, c, t, r, ct) => store.UpsertMoneyMarketFundProjectionAsync(c, t, r, ct)),
-        new("CertificateOfDeposit", static (store, c, t, r, ct) => store.UpsertCertificateOfDepositProjectionAsync(c, t, r, ct)),
     ];
 
     /// <summary>
