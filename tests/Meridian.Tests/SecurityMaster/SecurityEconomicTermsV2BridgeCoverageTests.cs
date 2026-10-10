@@ -12,9 +12,9 @@ namespace Meridian.Tests.SecurityMaster;
 /// <see cref="SecurityAssetTermsSchemaRoundTripTests"/> guards the v1 codec: the economic-terms
 /// modules the serializer emits are enumerated, each is classified as <b>bridged</b> (survives the
 /// v2 → v1 → read cycle at a named flat key) or <b>dropped</b> (does not), and the flattened key set
-/// is asserted exactly. The bridge is lossy by construction — the flat family is keyed per asset
-/// class and the bridge does not know the class — so this suite does not make it lossless; it makes
-/// the loss a test failure rather than a discovery in a restatement. A fifteenth module added to
+/// is asserted exactly. This suite covers the class-independent fallback, which is lossy by
+/// construction because the flat family is keyed per asset class; the class-aware route the rebuild
+/// path takes is guarded by <see cref="SecurityEconomicTermsClassAwareBridgeTests"/>. A fifteenth module added to
 /// <c>SecurityEconomicDefinitionAdapter.BuildEconomicTermsJson</c> fails
 /// <see cref="EconomicSerializer_EmitsExactlyTheModulesTheBridgeClassifies"/> until it is placed in
 /// <see cref="SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.BridgedModules"/> or
@@ -245,8 +245,13 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
 
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.WasFlattenedFromEconomicTerms(rebuilt.AssetSpecificTerms)
             .Should().BeTrue("a projection reconstructed by the lossy route must be distinguishable from one that always carried flat terms");
-        rebuilt.AssetSpecificTerms.GetProperty("maturityDate").GetString().Should().Be("2030-01-15");
-        rebuilt.AssetSpecificTerms.TryGetProperty("isCallable", out _).Should().BeFalse("the call module is dropped on this route");
+        // The record's asset class is known on this route, so the class-aware flattening places
+        // the economic values at the bond's declared flat keys (maturity, callDate) instead of the
+        // class-independent spellings the bridge falls back to without a class.
+        rebuilt.AssetSpecificTerms.GetProperty("maturity").GetString().Should().Be("2030-01-15");
+        rebuilt.AssetSpecificTerms.TryGetProperty("maturityDate", out _).Should().BeFalse("maturityDate is not a declared Bond key");
+        rebuilt.AssetSpecificTerms.GetProperty("isCallable").GetBoolean().Should().BeTrue("the call module is carried at the bond's declared keys");
+        rebuilt.AssetSpecificTerms.GetProperty("callDate").GetString().Should().Be("2025-01-15");
 
         // The authoritative path: the retained v1 payload is used verbatim and is never marked.
         var retainedTerms = Json("""{"schemaVersion":1,"maturity":"2030-01-15","couponType":"Fixed","isCallable":true,"callDate":"2025-01-15"}""");
