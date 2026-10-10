@@ -125,8 +125,10 @@ public static class OpenLotAmortization
             {
                 // The shared kernel validates calendar coupon boundaries. An Actual day-count
                 // year fraction measures accrual, not the number of contractual payments.
-                fullBasis = faceLot.ConstantYieldAmortizedBasisAsOf(convention, maturity, instruction.AsOfDate, coupon,
-                    frequency, annualYield);
+                // Model v2 admits regular calendar schedules only: the kernel's odd-first-period
+                // support needs a new governed calculation version before it can post.
+                fullBasis = faceLot.RegularScheduleConstantYieldAmortizedBasisAsOf(convention, maturity,
+                    instruction.AsOfDate, coupon, frequency, annualYield);
             }
         }
         else

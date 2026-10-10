@@ -348,7 +348,12 @@ unadjusted bullet principal, explicit supported day-count terms, and level const
 Constant yield consumes the retained annual decimal yield and verifies it against acquisition price.
 Coupon counts follow regular calendar boundaries, including month ends and leap years, for monthly,
 quarterly, semiannual and annual schedules. Actual day-count fractions interpolate within the current
-coupon period rather than being rounded into coupon counts; odd schedules remain unsupported.
+coupon period rather than being rounded into coupon counts; model v2 still refuses odd schedules.
+The shared `FaceValueLot` constant-yield kernel now prices an odd (short) first period for
+mid-period acquisitions (schedule generated backward from maturity, fractional stub exponent, clean
+price excluding purchased accrued interest, retained-yield reconciliation through the same pricing);
+admitting those schedules to posting needs a new governed calculation version. Odd last periods
+remain unmodelled.
 New instructions carry calculation model v2. Previously retained unversioned instructions preserve
 v1 economics and their original serialization so receipt replay remains recoverable. Unposted legacy
 instructions require a fresh preview before approval/posting.
