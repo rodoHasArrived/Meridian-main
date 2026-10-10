@@ -289,6 +289,17 @@ This is the right governance instinct.
 > genuine decisions. Every passage below that reads "11 projected / 15 declared gaps" describes the
 > state before that change; the partition guard itself is unchanged in intent.
 
+> **Updated 2026-10-10 — writer split.** Six of the 13 projected classes are now written by the
+> declarative `SecurityTermsProjectionRegistry` (`src/Meridian.Storage/SecurityMaster/`):
+> `DirectLoan` and `StructuredCredit`, plus `CryptoCurrency`, `Deposit`, `MoneyMarketFund` and
+> `CertificateOfDeposit`, whose hand-written writers were migrated behaviour-preserving behind a
+> database-backed parity guard (now kept as `RegistryMigratedProjectionGoldenTests`). The other
+> seven stay hand-written in `PostgresSecurityMasterStore.cs` because their projections carry real
+> decisions: `Bond`, `Option`, `Swap`, `FxSpot`, `Future` (derived lifecycle, legs, pair codes,
+> fallbacks), `Equity` (common-terms columns), and `Commodity`, which projects `exchangeCode` and
+> `deliveryCountry` — keys `SecurityAssetTermsSchema` does not declare and the canonical serializer
+> never writes. The projection tables and read-side stores are unchanged.
+
 **Open-lot modeling for par instruments is careful.** `FaceValueLot` makes previously implicit
 conventions explicit — quote basis (`ParBasis`, so a per-unit-priced lot cannot silently
 mis-amortize through math assuming 100), booked pool factor, and Security Master identity — and owns

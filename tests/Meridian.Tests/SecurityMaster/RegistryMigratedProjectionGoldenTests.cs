@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using FluentAssertions;
@@ -9,18 +8,23 @@ using Npgsql;
 namespace Meridian.Tests.SecurityMaster;
 
 /// <summary>
-/// Parity guard for the flat projection writers migrated onto
-/// <see cref="SecurityTermsProjectionRegistry"/>: for every record in a matrix per class, the
-/// hand-written writer and the registry writer run into the same table (each in its own rolled-back
-/// transaction) and must leave identical rows — or identically no row. Every case also states the
-/// row it expects, so the matrix stays a golden test once the hand-written writers are gone.
+/// Golden rows for the flat projections migrated onto <see cref="SecurityTermsProjectionRegistry"/>
+/// (CryptoCurrency, Deposit, MoneyMarketFund, CertificateOfDeposit).
+/// <para>
+/// This matrix began as a parity guard: each hand-written <c>Upsert*ProjectionAsync</c> writer and
+/// its registry descriptor ran into the same table for every case and had to leave identical rows,
+/// and only once it passed were the hand-written writers deleted. The expectations below are what
+/// those writers persisted — gate hits and misses (including whitespace-only gate terms), stale rows
+/// cleared on a gate miss or class change, trimming and upper-casing, verbatim optional strings,
+/// explicit JSON nulls, wrong JSON kinds, and NOT NULL flags defaulting to false — so any change to
+/// the registry path that would alter a persisted row fails here.
+/// </para>
 /// </summary>
 [Trait("Category", "Integration")]
 public sealed class RegistryMigratedProjectionGoldenTests : IClassFixture<SecurityMasterDatabaseFixture>
 {
     private const string DisplayName = "Golden fixture";
     private const string Currency = "USD";
-    private const string PrimaryIdentifierValue = "GOLDEN-1";
     private const long Version = 7;
 
     private readonly SecurityMasterDatabaseFixture _fixture;
@@ -163,59 +167,89 @@ public sealed class RegistryMigratedProjectionGoldenTests : IClassFixture<Securi
     ];
 
     [SecurityMasterDatabaseFact]
-    public Task MoneyMarketFund_HandWrittenAndRegistryWritersLeaveIdenticalRows()
-        => AssertParityAsync("MoneyMarketFund", "money_market_fund_projection", "UpsertMoneyMarketFundProjectionAsync", MoneyMarketFundCases);
+    public Task MoneyMarketFund_RegistryWriterLeavesTheGoldenRows()
+        => AssertGoldenRowsAsync("MoneyMarketFund", "money_market_fund_projection", MoneyMarketFundCases);
 
     [SecurityMasterDatabaseFact]
-    public Task CertificateOfDeposit_HandWrittenAndRegistryWritersLeaveIdenticalRows()
-        => AssertParityAsync("CertificateOfDeposit", "certificate_of_deposit_projection", "UpsertCertificateOfDepositProjectionAsync", CertificateOfDepositCases);
+    public Task CertificateOfDeposit_RegistryWriterLeavesTheGoldenRows()
+        => AssertGoldenRowsAsync("CertificateOfDeposit", "certificate_of_deposit_projection", CertificateOfDepositCases);
 
     [SecurityMasterDatabaseFact]
-    public Task Deposit_HandWrittenAndRegistryWritersLeaveIdenticalRows()
-        => AssertParityAsync("Deposit", "deposit_projection", "UpsertDepositProjectionAsync", DepositCases);
+    public Task Deposit_RegistryWriterLeavesTheGoldenRows()
+        => AssertGoldenRowsAsync("Deposit", "deposit_projection", DepositCases);
 
     [SecurityMasterDatabaseFact]
-    public Task CryptoCurrency_HandWrittenAndRegistryWritersLeaveIdenticalRows()
-        => AssertParityAsync("CryptoCurrency", "crypto_projection", "UpsertCryptoProjectionAsync", CryptoCases, projectsCurrency: false);
+    public Task CryptoCurrency_RegistryWriterLeavesTheGoldenRows()
+        => AssertGoldenRowsAsync("CryptoCurrency", "crypto_projection", CryptoCases, projectsCurrency: false);
 
-    private async Task AssertParityAsync(
+    [SecurityMasterDatabaseFact]
+    public async Task MigratedProjections_StayReadableThroughTheirReferenceProjectionStores()
+    {
+        // The read side was not touched by the migration; this proves the rows the registry writes
+        // still decode through the unchanged query stores, end to end through UpsertProjectionAsync.
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+
+        var fundId = Guid.NewGuid();
+        await store.UpsertProjectionAsync(Record(fundId, MoneyMarketFundFull));
+        var fund = await new PostgresMoneyMarketFundReferenceProjectionStore(_fixture.Options).GetMoneyMarketFundAsync(fundId);
+        fund.Should().NotBeNull();
+        fund!.FundFamily.Should().Be("Vanguard Treasury");
+        fund.SweepEligible.Should().BeTrue();
+        fund.WeightedAverageMaturityDays.Should().Be(42);
+
+        var cdId = Guid.NewGuid();
+        await store.UpsertProjectionAsync(Record(cdId, CertificateOfDepositFull));
+        var cd = await new PostgresCertificateOfDepositReferenceProjectionStore(_fixture.Options).GetCertificateOfDepositAsync(cdId);
+        cd.Should().NotBeNull();
+        cd!.IssuerName.Should().Be("First Meridian Bank");
+        cd.Maturity.Should().Be(new DateOnly(2027, 6, 30));
+
+        var depositId = Guid.NewGuid();
+        await store.UpsertProjectionAsync(Record(depositId, DepositFull));
+        var deposit = await new PostgresDepositReferenceProjectionStore(_fixture.Options).GetDepositAsync(depositId);
+        deposit.Should().NotBeNull();
+        deposit!.InstitutionName.Should().Be("JPMorgan Chase");
+        deposit.IsCallable.Should().BeTrue();
+
+        var cryptoId = Guid.NewGuid();
+        await store.UpsertProjectionAsync(Record(cryptoId, CryptoFull));
+        var crypto = await new PostgresCryptoReferenceProjectionStore(_fixture.Options).GetCryptoAsync(cryptoId);
+        crypto.Should().NotBeNull();
+        crypto!.BaseCurrency.Should().Be("BTC");
+        crypto.QuoteCurrency.Should().Be("USDT");
+    }
+
+    private async Task AssertGoldenRowsAsync(
         string assetClass,
         string table,
-        string handWrittenMethod,
         IReadOnlyList<GoldenCase> cases,
         bool projectsCurrency = true)
     {
         var store = new PostgresSecurityMasterStore(_fixture.Options);
-        var descriptor = SecurityTermsProjectionRegistry.Descriptors.Single(d => d.AssetClass == assetClass);
-        descriptor.TableName.Should().Be(table);
-
-        var legacy = typeof(PostgresSecurityMasterStore).GetMethod(handWrittenMethod, BindingFlags.Instance | BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException($"{handWrittenMethod} not found.");
-        var registry = typeof(PostgresSecurityMasterStore).GetMethod("WriteTermsProjectionAsync", BindingFlags.Instance | BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("WriteTermsProjectionAsync not found.");
-
-        Task Legacy(NpgsqlConnection c, NpgsqlTransaction t, SecurityProjectionRecord r)
-            => (Task)legacy.Invoke(store, [c, t, r, CancellationToken.None])!;
-
-        Task Registry(NpgsqlConnection c, NpgsqlTransaction t, SecurityProjectionRecord r)
-            => (Task)registry.Invoke(store, [descriptor, c, t, r, CancellationToken.None])!;
+        SecurityTermsProjectionRegistry.Descriptors.Single(d => d.AssetClass == assetClass)
+            .TableName.Should().Be(table);
 
         var failures = new List<string>();
         foreach (var golden in cases)
         {
             var securityId = Guid.NewGuid();
-            var legacyRow = await RunAsync(Legacy, table, securityId, golden);
-            var registryRow = await RunAsync(Registry, table, securityId, golden);
 
-            if (!await JsonbEqualAsync(legacyRow, registryRow))
+            // Through the public write path, so the fan-out registration is covered too: every
+            // writer runs for every record, which is what clears a row on a class change.
+            if (golden.Prior is { } prior)
             {
-                failures.Add($"[{golden.Name}] hand-written {legacyRow ?? "<no row>"} vs registry {registryRow ?? "<no row>"}");
+                await store.UpsertProjectionAsync(Record(securityId, prior));
+                (await ReadRowAsync(table, securityId))
+                    .Should().NotBeNull($"the prior record of [{golden.Name}] must project a row for the clear to be meaningful");
             }
 
-            var expected = ExpectedRow(golden.Expected, projectsCurrency);
-            if (!await JsonbEqualAsync(expected, registryRow))
+            await store.UpsertProjectionAsync(Record(securityId, golden));
+            var row = await ReadRowAsync(table, securityId);
+
+            var expected = ExpectedRow(golden.Expected, projectsCurrency, securityId);
+            if (!await JsonbEqualAsync(expected, row))
             {
-                failures.Add($"[{golden.Name}] expected {expected ?? "<no row>"} but registry wrote {registryRow ?? "<no row>"}");
+                failures.Add($"[{golden.Name}] expected {expected ?? "<no row>"} but the store wrote {row ?? "<no row>"}");
             }
         }
 
@@ -223,37 +257,11 @@ public sealed class RegistryMigratedProjectionGoldenTests : IClassFixture<Securi
         failures.Should().BeEmpty();
     }
 
-    /// <summary>
-    /// Writes the case (and its prior record, if any) through <paramref name="writer"/> inside a
-    /// transaction, reads the resulting row as jsonb text, then rolls back.
-    /// </summary>
-    private async Task<string?> RunAsync(
-        Func<NpgsqlConnection, NpgsqlTransaction, SecurityProjectionRecord, Task> writer,
-        string table,
-        Guid securityId,
-        GoldenCase golden)
+    private async Task<string?> ReadRowAsync(string table, Guid securityId)
     {
         await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);
         await connection.OpenAsync();
-        await using var transaction = await connection.BeginTransactionAsync();
-
-        if (golden.Prior is { } prior)
-        {
-            await writer(connection, transaction, Record(securityId, prior));
-            (await ReadRowAsync(connection, transaction, table, securityId))
-                .Should().NotBeNull($"the prior record of [{golden.Name}] must project a row for the clear to be meaningful");
-        }
-
-        await writer(connection, transaction, Record(securityId, golden));
-        var row = await ReadRowAsync(connection, transaction, table, securityId);
-        await transaction.RollbackAsync();
-        return row;
-    }
-
-    private async Task<string?> ReadRowAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, string table, Guid securityId)
-    {
         await using var command = connection.CreateCommand();
-        command.Transaction = transaction;
         command.CommandText = $"select (to_jsonb(t) - 'security_id')::text from {_fixture.Options.Schema}.{table} t where security_id = @security_id;";
         command.Parameters.AddWithValue("security_id", securityId);
         return (string?)await command.ExecuteScalarAsync();
@@ -276,7 +284,7 @@ public sealed class RegistryMigratedProjectionGoldenTests : IClassFixture<Securi
         return (bool)(await command.ExecuteScalarAsync())!;
     }
 
-    private static string? ExpectedRow(string? classColumns, bool projectsCurrency)
+    private static string? ExpectedRow(string? classColumns, bool projectsCurrency, Guid securityId)
     {
         if (classColumns is null)
         {
@@ -290,29 +298,32 @@ public sealed class RegistryMigratedProjectionGoldenTests : IClassFixture<Securi
             row["currency"] = Currency;
         }
 
-        row["primary_identifier_value"] = PrimaryIdentifierValue;
+        row["primary_identifier_value"] = IdentifierValue(securityId);
         row["version"] = Version;
         return row.ToJsonString();
     }
 
+    private static string IdentifierValue(Guid securityId) => $"GOLDEN-{securityId:N}";
+
     private static SecurityProjectionRecord Record(Guid securityId, GoldenCase golden)
     {
         using var terms = JsonDocument.Parse(golden.Terms);
+        var effectiveFrom = DateTimeOffset.UtcNow.AddDays(-1);
         return new(
             securityId,
             golden.AssetClass,
             SecurityStatusDto.Active,
             DisplayName,
             Currency,
-            "InternalCode",
-            PrimaryIdentifierValue,
-            JsonSerializer.SerializeToElement(new { }),
+            SecurityIdentifierKind.InternalCode.ToString(),
+            IdentifierValue(securityId),
+            JsonSerializer.SerializeToElement(new { displayName = DisplayName, currency = Currency }),
             terms.RootElement.Clone(),
-            JsonSerializer.SerializeToElement(new { }),
+            JsonSerializer.SerializeToElement(new { sourceSystem = "integration-test", updatedBy = "registry-golden-fixture" }),
             Version,
-            DateTimeOffset.UtcNow,
+            effectiveFrom,
             null,
-            [],
+            [new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, IdentifierValue(securityId), true, effectiveFrom)],
             []);
     }
 }
