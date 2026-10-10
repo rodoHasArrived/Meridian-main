@@ -79,7 +79,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
     public PostgresSecurityMasterStore(SecurityMasterOptions options, SecurityMasterNodeIdentity? nodeIdentity = null)
     {
         _options = options;
-        _nodeIdentity = nodeIdentity ?? SecurityMasterNodeIdentity.Process;
+        _nodeIdentity = nodeIdentity ?? SecurityMasterNodeIdentity.CreateNew();
     }
 
     public async Task UpsertProjectionAsync(SecurityProjectionRecord record, CancellationToken ct = default)

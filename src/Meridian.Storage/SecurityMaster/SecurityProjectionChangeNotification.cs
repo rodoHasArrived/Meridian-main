@@ -5,14 +5,16 @@ using Meridian.Contracts.Integrity;
 namespace Meridian.Storage.SecurityMaster;
 
 /// <summary>
-/// Identifies this process as a Security Master "node" for cross-node projection-cache
-/// notifications. A node ignores the notifications it emitted itself, because its own write path
-/// already upserted its cache.
+/// Identifies one Security Master service graph — a store and the projection cache its writes
+/// upsert — as a "node" for projection-cache notifications. A node ignores the notifications it
+/// emitted itself, because its own write path already upserted its cache. The identity is scoped
+/// to the graph, not the process: two graphs in one process (the desktop shell's parent and
+/// feature containers) own separate caches and must each see the other's writes.
 /// </summary>
 public sealed class SecurityMasterNodeIdentity
 {
-    /// <summary>The identity shared by every component of this process.</summary>
-    public static SecurityMasterNodeIdentity Process { get; } = new(Guid.NewGuid());
+    /// <summary>Creates a fresh identity for a new service graph.</summary>
+    public static SecurityMasterNodeIdentity CreateNew() => new(Guid.NewGuid());
 
     public SecurityMasterNodeIdentity(Guid nodeId)
     {

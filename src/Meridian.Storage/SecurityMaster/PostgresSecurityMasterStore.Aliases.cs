@@ -42,6 +42,7 @@ public sealed partial class PostgresSecurityMasterStore
         SecurityAliasDto persisted;
         if (existing is null)
         {
+            await EnsureAliasHistoryBelongsToSecurityAsync(connection, transaction, alias.SecurityId, [alias.AliasId], ct).ConfigureAwait(false);
             persisted = await InsertCurrentAliasAsync(connection, transaction, alias, ct).ConfigureAwait(false);
             await AppendAliasRevisionAsync(connection, transaction, alias, alias.CreatedBy, ct).ConfigureAwait(false);
         }
@@ -314,7 +315,50 @@ public sealed partial class PostgresSecurityMasterStore
             await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
 
+        await EnsureAliasHistoryBelongsToSecurityAsync(connection, transaction, securityId, aliasIds: null, ct).ConfigureAwait(false);
         await SyncAliasRevisionsAsync(connection, transaction, securityId, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// An alias ID stays bound to the security it was first recorded against, including after it is
+    /// retired: its current row may be gone, but its revision history still belongs to that
+    /// security. Refuses a write that would continue another security's history under this one.
+    /// <paramref name="aliasIds"/> names the IDs to check; <see langword="null"/> checks every
+    /// current alias row of <paramref name="securityId"/> (the projection-replacement path).
+    /// </summary>
+    private async Task EnsureAliasHistoryBelongsToSecurityAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        Guid securityId,
+        IReadOnlyList<Guid>? aliasIds,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = aliasIds is null
+            ? $"""
+              select r.alias_id
+              from {Qualified("security_alias_revisions")} r
+              join {Qualified("security_aliases")} a on a.alias_id = r.alias_id
+              where a.security_id = @security_id and r.security_id <> @security_id
+              limit 1;
+              """
+            : $"""
+              select r.alias_id
+              from {Qualified("security_alias_revisions")} r
+              where r.alias_id = any(@alias_ids) and r.security_id <> @security_id
+              limit 1;
+              """;
+        command.Parameters.AddWithValue("security_id", securityId);
+        if (aliasIds is not null)
+        {
+            command.Parameters.AddWithValue("alias_ids", aliasIds.ToArray());
+        }
+
+        if (await command.ExecuteScalarAsync(ct).ConfigureAwait(false) is Guid conflicting)
+        {
+            throw new SecurityAliasHistoryConflictException(conflicting);
+        }
     }
 
     /// <summary>

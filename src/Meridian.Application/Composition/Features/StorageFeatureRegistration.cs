@@ -317,9 +317,10 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityFieldProvenanceStore, PostgresSecurityFieldProvenanceStore>();
             services.AddSingleton<SecurityMasterMigrationRunner>();
             services.AddSingleton<SecurityMasterAggregateRebuilder>();
-            // One node identity per process: the store stamps it on the projection-change
-            // notifications it emits, and the listener ignores its own node's notifications.
-            services.AddSingleton(SecurityMasterNodeIdentity.Process);
+            // One node identity per service graph (not per process): the store stamps it on the
+            // projection-change notifications it emits, and this graph's listener ignores only its
+            // own writes, so another container in the same process still refreshes its cache.
+            services.AddSingleton(_ => SecurityMasterNodeIdentity.CreateNew());
             services.AddSingleton<SecurityMasterProjectionCache>();
             services.AddSingleton<SecurityMasterProjectionService>();
             services.AddSingleton<SecurityMasterRebuildOrchestrator>();

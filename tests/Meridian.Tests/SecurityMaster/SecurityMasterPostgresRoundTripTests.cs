@@ -972,6 +972,36 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
             .Should().BeEmpty("a retired alias is absent from later recorded-as-of views");
     }
 
+    [SecurityMasterDatabaseFact]
+    public async Task RetiredAliasId_CannotContinueItsHistoryUnderAnotherSecurity()
+    {
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var securityId = Guid.NewGuid();
+        var otherSecurityId = Guid.NewGuid();
+        var aliasId = Guid.NewGuid();
+        var effectiveFrom = DateTimeOffset.UtcNow.AddDays(-1);
+        await CreateMinimalSecurityAsync(store, securityId, effectiveFrom);
+        await CreateMinimalSecurityAsync(store, otherSecurityId, effectiveFrom);
+        var alias = new SecurityAliasDto(
+            aliasId, securityId, "Ticker", "RETIRED", null, SecurityAliasScope.Operations, null,
+            "creator", effectiveFrom, effectiveFrom, null, true);
+        await store.UpsertAliasAsync(alias);
+        var projection = (await store.GetProjectionAsync(securityId))!;
+        await store.UpsertProjectionAsync(projection with { Aliases = [] });
+        (await ReadAliasRevisionsAsync(aliasId)).Last().IsRetired.Should().BeTrue();
+
+        // The retired ID has no current row, but its history still belongs to the first security:
+        // neither write path may append to it under the other security.
+        var other = (await store.GetProjectionAsync(otherSecurityId))!;
+        var viaProjection = () => store.UpsertProjectionAsync(other with { Aliases = [alias with { SecurityId = otherSecurityId }] });
+        var viaUpsert = () => store.UpsertAliasAsync(alias with { SecurityId = otherSecurityId });
+
+        await viaProjection.Should().ThrowAsync<SecurityAliasHistoryConflictException>();
+        await viaUpsert.Should().ThrowAsync<SecurityAliasHistoryConflictException>();
+        (await ReadAliasRevisionsAsync(aliasId)).Should().HaveCount(2, "the rejected writes record nothing");
+        (await store.GetProjectionAsync(otherSecurityId))!.Aliases.Should().BeEmpty("the rejected replacement rolls back");
+    }
+
     private sealed record AliasRevisionRow(
         int Revision,
         string AliasValue,

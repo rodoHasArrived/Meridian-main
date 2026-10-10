@@ -505,7 +505,7 @@ public sealed record FaceValueLot
         for (var iteration = 0; iteration < 100; iteration++)
         {
             var mid = (low + high) / 2m;
-            if (CleanPricePerUnitAtYield(couponPerPeriod, totalCoupons, stubFraction, mid) > pricePerUnit)
+            if (CleanPriceExceeds(pricePerUnit, couponPerPeriod, totalCoupons, stubFraction, mid))
             {
                 low = mid;
             }
@@ -516,6 +516,22 @@ public sealed record FaceValueLot
         }
 
         return (low + high) / 2m;
+    }
+
+    // Price falls strictly as yield rises, so a probe whose price overflows decimal (a long
+    // schedule discounted at a deeply negative yield) prices above any finite target: the root
+    // lies at a higher yield. Treating the overflow that way keeps the fixed bracket safe for
+    // every schedule within the coupon limit instead of throwing mid-bisection.
+    private static bool CleanPriceExceeds(decimal pricePerUnit, decimal couponPerPeriod, int totalCoupons, decimal stubFraction, decimal yieldPerPeriod)
+    {
+        try
+        {
+            return CleanPricePerUnitAtYield(couponPerPeriod, totalCoupons, stubFraction, yieldPerPeriod) > pricePerUnit;
+        }
+        catch (OverflowException)
+        {
+            return true;
+        }
     }
 
     // Deterministic decimal power for a positive base and an exponent in [0, 1]. Pure decimal

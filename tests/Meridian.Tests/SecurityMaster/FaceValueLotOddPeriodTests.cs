@@ -129,6 +129,25 @@ public sealed class FaceValueLotOddPeriodTests
     }
 
     [Fact]
+    public void LongMonthlyZeroCouponAtAPremium_SolvesANegativeYieldWithoutOverflow()
+    {
+        // ~1,197 monthly coupons priced above par imply a negative yield. The bisection's early
+        // probes discount that many periods at a deeply negative rate, which overflows decimal;
+        // the solver must treat that as "price above target" rather than throwing.
+        var maturity = new DateOnly(2126, 1, 1);
+        var acquired = new DateOnly(2026, 4, 15);
+        var lot = new FaceValueLot("odd-long", SecurityId, acquired, 1000m, 100.5m);
+
+        var atAcquisition = lot.ConstantYieldAmortizedBasisAsOf(DayCountConvention.Thirty360, maturity, acquired, 0m, 12);
+        var midway = lot.ConstantYieldAmortizedBasisAsOf(DayCountConvention.Thirty360, maturity, new DateOnly(2076, 1, 1), 0m, 12);
+        var atMaturity = lot.ConstantYieldAmortizedBasisAsOf(DayCountConvention.Thirty360, maturity, maturity, 0m, 12);
+
+        atAcquisition.Should().Be(lot.CostBasis);
+        midway.Should().BeLessThan(lot.CostBasis).And.BeGreaterThan(1000m);
+        atMaturity.Should().Be(1000m);
+    }
+
+    [Fact]
     public void MidPeriodPremium_LastCouponPeriodConvergesExactlyToPar()
     {
         // The solved yield prices the odd schedule, so rolling every coupon forward lands on par
