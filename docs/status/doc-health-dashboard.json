@@ -1,11 +1,11 @@
 {
-  "total_files": 730,
-  "total_lines": 158189,
+  "total_files": 731,
+  "total_lines": 158499,
   "orphaned_count": 248,
   "no_heading_count": 157,
   "stale_count": 0,
-  "todo_count": 300,
-  "average_lines": 216.7,
+  "todo_count": 301,
+  "average_lines": 216.8,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2812,7 +2812,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11940,
+      "line_count": 11941,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3291,6 +3291,14 @@
       "stale": false
     },
     {
+      "path": "docs/product/plans/next-work-determination-2026-10-10.md",
+      "line_count": 308,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/product/plans/product-roadmap-priorities-2026-07.md",
       "line_count": 93,
       "has_heading": true,
@@ -3308,7 +3316,7 @@
     },
     {
       "path": "docs/product/plans/README.md",
-      "line_count": 40,
+      "line_count": 41,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

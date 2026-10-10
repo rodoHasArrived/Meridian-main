@@ -1952,6 +1952,7 @@ Meridian-main
 │   │   │   ├── next-work-determination-2026-10-02.md
 │   │   │   ├── next-work-determination-2026-10-04.md
 │   │   │   ├── next-work-determination-2026-10-05.md
+│   │   │   ├── next-work-determination-2026-10-10.md
 │   │   │   ├── product-roadmap-priorities-2026-07.md
 │   │   │   ├── production-readiness-backlog-2026-08.md
 │   │   │   ├── README.md
