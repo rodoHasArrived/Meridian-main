@@ -11,14 +11,29 @@ public interface ISecurityMasterStore
         IReadOnlyList<SecurityProjectionRecord> records,
         CancellationToken ct = default);
     /// <summary>
-    /// Inserts or updates an alias, returning the row as persisted. <c>created_at</c>/<c>created_by</c>
-    /// are immutable recording facts: on conflict the stored values are retained, so the returned DTO
-    /// can differ from <paramref name="alias"/> in those two members. Callers must surface the returned
-    /// value rather than the one they passed — as-of rebuilds filter on <c>CreatedAt</c>, so a caller
-    /// that echoes a freshly stamped creation time would report an identifier as newer than it is.
+    /// Inserts or corrects an alias, returning the row as persisted. <c>created_at</c>/<c>created_by</c>
+    /// are immutable recording facts: for an existing alias ID the stored values are retained, so the
+    /// returned DTO can differ from <paramref name="alias"/> in those two members. Callers must surface
+    /// the returned value rather than the one they passed — as-of rebuilds filter on <c>CreatedAt</c>,
+    /// so a caller that echoes a freshly stamped creation time would report an identifier as newer than
+    /// it is. An identical replay records nothing; a material change appends an alias revision recorded
+    /// by <see cref="SecurityAliasDto.CreatedBy"/> and then updates the current row, leaving earlier
+    /// recorded-as-of views (<see cref="GetAliasesRecordedAsOfAsync"/>) unchanged. Re-pointing an alias
+    /// ID at a different security throws <see cref="SecurityAliasHistoryConflictException"/>.
     /// Returns <c>null</c> only when the store cannot read the row back.
     /// </summary>
     Task<SecurityAliasDto?> UpsertAliasAsync(SecurityAliasDto alias, CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns the security's aliases as they were recorded at <paramref name="recordedAsOfUtc"/>
+    /// (transaction time): for each alias, the latest revision recorded at or before the cutoff,
+    /// omitting aliases not yet recorded or already retired by then. <c>CreatedBy</c>/<c>CreatedAt</c>
+    /// carry the alias's original creation facts. Valid-time filtering is left to the caller.
+    /// </summary>
+    Task<IReadOnlyList<SecurityAliasDto>> GetAliasesRecordedAsOfAsync(
+        Guid securityId,
+        DateTimeOffset recordedAsOfUtc,
+        CancellationToken ct = default);
     Task DeactivateProjectionAsync(Guid securityId, DateTimeOffset effectiveTo, long version, CancellationToken ct = default);
     Task<SecurityDetailDto?> GetDetailAsync(Guid securityId, CancellationToken ct = default);
     Task<SecurityProjectionRecord?> GetProjectionAsync(Guid securityId, CancellationToken ct = default);

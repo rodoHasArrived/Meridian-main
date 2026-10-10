@@ -819,6 +819,24 @@ erDiagram
         text normalized_primary_identifier_value
         integer schema_version
     }
+    security_master_security_alias_revisions {
+        uuid alias_id PK
+        integer revision PK
+        uuid security_id FK
+        text alias_kind
+        text alias_value
+        text normalized_alias_value
+        text provider
+        text normalized_provider
+        text scope
+        text reason
+        timestamp_with_time_zone valid_from
+        timestamp_with_time_zone valid_to
+        boolean is_enabled
+        boolean is_retired
+        text recorded_by
+        timestamp_with_time_zone recorded_at
+    }
     security_master_security_aliases {
         uuid alias_id PK
         uuid security_id FK
@@ -1224,6 +1242,7 @@ erDiagram
     security_master_securities ||--o{ security_master_fxspot_projection : "fxspot_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_option_contract_projection : "option_contract_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_option_contract_projection : "option_contract_projection_underlying_security_id_fkey"
+    security_master_securities ||--o{ security_master_security_alias_revisions : "security_alias_revisions_security_id_fkey"
     security_master_securities ||--o{ security_master_security_aliases : "security_aliases_security_id_fkey"
     security_master_securities ||--o{ security_master_security_cashflow_source_assignments : "security_cashflow_source_assignments_security_id_fkey"
     security_master_securities ||--o{ security_master_security_identifiers : "security_identifiers_security_id_fkey"

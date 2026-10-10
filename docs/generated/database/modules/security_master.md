@@ -2,9 +2,9 @@
 
 # `security_master` schema
 
-- Relations: 90
-- Functions/procedures: 3
-- Triggers: 5
+- Relations: 91
+- Functions/procedures: 4
+- Triggers: 6
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -831,6 +831,24 @@ erDiagram
         text normalized_primary_identifier_value
         integer schema_version
     }
+    security_master_security_alias_revisions {
+        uuid alias_id PK
+        integer revision PK
+        uuid security_id FK
+        text alias_kind
+        text alias_value
+        text normalized_alias_value
+        text provider
+        text normalized_provider
+        text scope
+        text reason
+        timestamp_with_time_zone valid_from
+        timestamp_with_time_zone valid_to
+        boolean is_enabled
+        boolean is_retired
+        text recorded_by
+        timestamp_with_time_zone recorded_at
+    }
     security_master_security_aliases {
         uuid alias_id PK
         uuid security_id FK
@@ -1236,6 +1254,7 @@ erDiagram
     security_master_securities ||--o{ security_master_fxspot_projection : "fxspot_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_option_contract_projection : "option_contract_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_option_contract_projection : "option_contract_projection_underlying_security_id_fkey"
+    security_master_securities ||--o{ security_master_security_alias_revisions : "security_alias_revisions_security_id_fkey"
     security_master_securities ||--o{ security_master_security_aliases : "security_aliases_security_id_fkey"
     security_master_securities ||--o{ security_master_security_cashflow_source_assignments : "security_cashflow_source_assignments_security_id_fkey"
     security_master_securities ||--o{ security_master_security_identifiers : "security_identifiers_security_id_fkey"
@@ -1317,6 +1336,7 @@ erDiagram
 | `reconciliation_run` | table | 6 | `reconciliation_run_id` | 2 | 1 | - |
 | `schema_migrations` | table | 4 | `filename` | 0 | 1 | - |
 | `securities` | table | 21 | `security_id` | 0 | 4 | - |
+| `security_alias_revisions` | table | 16 | `alias_id`, `revision` | 1 | 2 | Append-only Security Master alias revisions. Revision 1 carries the alias creation facts; later revisions record corrections or retirement with the recording actor and timestamp, and recorded-as-of alias reads select the latest revision recorded at or before the cutoff. |
 | `security_aliases` | table | 14 | `alias_id` | 1 | 3 | - |
 | `security_cashflow_source_assignments` | table | 6 | `security_id` | 1 | 2 | - |
 | `security_events` | table | 10 | `global_sequence` | 0 | 3 | - |
