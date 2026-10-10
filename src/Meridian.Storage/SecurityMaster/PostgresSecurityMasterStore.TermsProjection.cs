@@ -100,18 +100,27 @@ public sealed partial class PostgresSecurityMasterStore
         {
             new("security_id", record.SecurityId),
             new("display_name", record.DisplayName),
-            new("currency", record.Currency ?? string.Empty),
         };
+
+        if (descriptor.ProjectsCurrency)
+        {
+            columns.Add(new("currency", record.Currency ?? string.Empty));
+        }
 
         foreach (var column in descriptor.Columns)
         {
-            var value = ReadTermValue(terms, profileFields, column.TermKey, column.Type);
-            if (column.Gates && value is null)
+            var value = ReadTermValue(terms, profileFields, column.TermKey, column.Type, column.Normalization);
+
+            // A gate is satisfied only by a present, non-blank value. Under the default
+            // normalization a blank string already decodes as absent; under Verbatim or Trim it
+            // would decode as "" or "  ", so the gate checks for blank text itself — the same
+            // IsNullOrWhiteSpace gate the hand-written writers applied before they were migrated.
+            if (column.Gates && (value is null || value is string text && string.IsNullOrWhiteSpace(text)))
             {
                 return false;
             }
 
-            columns.Add(new(column.ColumnName, value ?? DBNull.Value));
+            columns.Add(new(column.ColumnName, value ?? column.DefaultWhenAbsent ?? DBNull.Value));
         }
 
         columns.Add(new("primary_identifier_value", record.PrimaryIdentifierValue));
@@ -253,16 +262,18 @@ public sealed partial class PostgresSecurityMasterStore
         JsonElement root,
         JsonElement? profileFields,
         string key,
-        SecurityAssetTermFieldType type)
-        => TryResolveTerm(root, profileFields, key, out var element) ? DecodeTerm(element, type) : null;
+        SecurityAssetTermFieldType type,
+        SecurityTermsProjectionTextNormalization normalization = SecurityTermsProjectionTextNormalization.TrimBlankAsAbsent)
+        => TryResolveTerm(root, profileFields, key, out var element) ? DecodeTerm(element, type, normalization) : null;
 
-    private static object? DecodeTerm(JsonElement element, SecurityAssetTermFieldType type)
+    private static object? DecodeTerm(
+        JsonElement element,
+        SecurityAssetTermFieldType type,
+        SecurityTermsProjectionTextNormalization normalization)
         => type switch
         {
-            // NormalizeOptional: blank reads as absent and surrounding whitespace is trimmed, so a
-            // padded vendor value and a clean one land on the same indexed column value.
             SecurityAssetTermFieldType.String => element.ValueKind == JsonValueKind.String
-                ? TextPrimitives.NormalizeOptional(element.GetString())
+                ? NormalizeText(element.GetString(), normalization)
                 : null,
             SecurityAssetTermFieldType.Decimal => element.ValueKind == JsonValueKind.Number && element.TryGetDecimal(out var decimalValue)
                 ? decimalValue
@@ -277,6 +288,18 @@ public sealed partial class PostgresSecurityMasterStore
                 ? date.ToDateTime(TimeOnly.MinValue)
                 : null,
             _ => null
+        };
+
+    /// <summary>Applies a column's declared <see cref="SecurityTermsProjectionTextNormalization"/>.</summary>
+    private static string? NormalizeText(string? value, SecurityTermsProjectionTextNormalization normalization)
+        => normalization switch
+        {
+            SecurityTermsProjectionTextNormalization.Verbatim => value,
+            SecurityTermsProjectionTextNormalization.Trim => value?.Trim(),
+            SecurityTermsProjectionTextNormalization.TrimUpperInvariant => TextPrimitives.NormalizeOptional(value)?.ToUpperInvariant(),
+            // TrimBlankAsAbsent: blank reads as absent and surrounding whitespace is trimmed, so a
+            // padded vendor value and a clean one land on the same indexed column value.
+            _ => TextPrimitives.NormalizeOptional(value)
         };
 
     /// <summary>
@@ -352,7 +375,7 @@ public sealed partial class PostgresSecurityMasterStore
         => $"delete from {schema}.{tableName} where security_id = @security_id;";
 
     private static IReadOnlyList<string> ProjectedColumnNames(SecurityTermsProjectionDescriptor descriptor)
-        => SecurityTermsProjectionRegistry.LeadingIdentityColumns
+        => SecurityTermsProjectionRegistry.LeadingIdentityColumnsFor(descriptor)
             .Concat(descriptor.Columns.Select(static column => column.ColumnName))
             .Concat(SecurityTermsProjectionRegistry.TrailingIdentityColumns)
             .ToArray();

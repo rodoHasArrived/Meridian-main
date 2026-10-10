@@ -122,6 +122,143 @@ public sealed class SecurityTermsProjectionRegistryTests
     }
 
     [Fact]
+    public void Validate_RejectsTextNormalizationOnANonStringColumn()
+    {
+        var issues = SecurityTermsProjectionRegistry.Validate(
+        [
+            new(
+                AssetClass: "DirectLoan",
+                TableName: "direct_loan_probe_projection",
+                Columns:
+                [
+                    SecurityTermsProjectionColumn.Optional(
+                        "spread_bps", "spreadBps", SecurityAssetTermFieldType.Decimal, SecurityTermsProjectionTextNormalization.Verbatim)
+                ],
+                ChildTables: [])
+        ]);
+
+        issues.Should().ContainSingle().Which.Should().Contain("normalization applies only to String terms");
+    }
+
+    [Fact]
+    public void Validate_RejectsADefaultOnANonBooleanColumn()
+    {
+        var issues = SecurityTermsProjectionRegistry.Validate(
+        [
+            new(
+                AssetClass: "DirectLoan",
+                TableName: "direct_loan_probe_projection",
+                Columns: [new("spread_bps", "spreadBps", SecurityAssetTermFieldType.Decimal, DefaultWhenAbsent: 0m)],
+                ChildTables: [])
+        ]);
+
+        issues.Should().ContainSingle().Which.Should().Contain("only a bool default on a Boolean column");
+    }
+
+    [Fact]
+    public void Validate_RejectsAGateThatAlsoDeclaresADefault()
+    {
+        var issues = SecurityTermsProjectionRegistry.Validate(
+        [
+            new(
+                AssetClass: "Deposit",
+                TableName: "deposit_probe_projection",
+                Columns: [new("is_callable", "isCallable", SecurityAssetTermFieldType.Boolean, Gates: true, DefaultWhenAbsent: false)],
+                ChildTables: [])
+        ]);
+
+        issues.Should().ContainSingle().Which.Should().Contain("makes the gate unreachable");
+    }
+
+    [Fact]
+    public void Validate_StillReservesTheCurrencyColumnForADescriptorThatDoesNotProjectIt()
+    {
+        var issues = SecurityTermsProjectionRegistry.Validate(
+        [
+            new(
+                AssetClass: "CryptoCurrency",
+                TableName: "crypto_probe_projection",
+                Columns: [SecurityTermsProjectionColumn.Optional("currency", "network", SecurityAssetTermFieldType.String)],
+                ChildTables: [],
+                ProjectsCurrency: false)
+        ]);
+
+        issues.Should().ContainSingle().Which.Should().Contain("identity-spine column");
+    }
+
+    [Fact]
+    public void UpsertSql_OmitsCurrencyForADescriptorThatDoesNotProjectIt()
+    {
+        var descriptor = Descriptor("CryptoCurrency");
+
+        var sql = PostgresSecurityMasterStore.BuildTermsProjectionUpsertSql(descriptor, "security_master");
+
+        sql.Should().StartWith("insert into security_master.crypto_projection (security_id, display_name, base_currency, quote_currency, network, primary_identifier_value, version)");
+        sql.Should().NotContain("@currency");
+        PostgresSecurityMasterStore.TryBuildTermsProjection(
+                descriptor,
+                Record("CryptoCurrency", new { baseCurrency = "btc", quoteCurrency = "usd" }),
+                out var plan)
+            .Should().BeTrue();
+        plan.Columns.Select(column => column.ColumnName).Should().NotContain("currency");
+    }
+
+    [Fact]
+    public void TryBuild_AppliesEachColumnsDeclaredTextNormalizationAndBooleanDefault()
+    {
+        var crypto = Build("CryptoCurrency", new { baseCurrency = " btc ", quoteCurrency = "usd", network = "  Bitcoin " });
+        crypto.Value("base_currency").Should().Be("BTC");
+        crypto.Value("quote_currency").Should().Be("USD");
+        crypto.Value("network").Should().Be("  Bitcoin ", "network was always projected verbatim");
+
+        var fund = Build("MoneyMarketFund", new { fundFamily = "   " });
+        fund.Value("fund_family").Should().Be(string.Empty, "fund family is trimmed but never nulled");
+        fund.Value("sweep_eligible").Should().Be(false);
+        fund.Value("liquidity_fee_eligible").Should().Be(false);
+        fund.Value("weighted_average_maturity_days").Should().Be(DBNull.Value);
+
+        var flagged = Build("MoneyMarketFund", new { sweepEligible = true, liquidityFeeEligible = "yes" });
+        flagged.Value("sweep_eligible").Should().Be(true);
+        flagged.Value("liquidity_fee_eligible").Should().Be(false, "a wrong JSON kind falls back to the default");
+
+        static PostgresSecurityMasterStore.SecurityTermsProjectionPlan Build(string assetClass, object terms)
+        {
+            PostgresSecurityMasterStore.TryBuildTermsProjection(Descriptor(assetClass), Record(assetClass, terms), out var plan)
+                .Should().BeTrue();
+            return plan;
+        }
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void TryBuild_ABlankGateSuppressesTheProjectionWhateverItsNormalization(string blank)
+    {
+        // CryptoCurrency gates under TrimUpperInvariant; the gate must refuse blank text itself rather
+        // than rely on the normalization having nulled it.
+        PostgresSecurityMasterStore.TryBuildTermsProjection(
+                Descriptor("CryptoCurrency"),
+                Record("CryptoCurrency", new { baseCurrency = blank, quoteCurrency = "USD" }),
+                out _)
+            .Should().BeFalse();
+
+        var verbatimGate = new SecurityTermsProjectionDescriptor(
+            "Deposit",
+            "deposit_projection",
+            [
+                SecurityTermsProjectionColumn.Gate(
+                    "deposit_type", "depositType", SecurityAssetTermFieldType.String, SecurityTermsProjectionTextNormalization.Verbatim)
+            ],
+            []);
+
+        PostgresSecurityMasterStore.TryBuildTermsProjection(
+                verbatimGate,
+                Record("Deposit", new { depositType = blank }),
+                out _)
+            .Should().BeFalse();
+    }
+
+    [Fact]
     public void UpsertSql_RestatesEveryNonKeyColumnFromExcluded()
     {
         var descriptor = Descriptor("StructuredCredit");
@@ -543,7 +680,7 @@ public sealed class SecurityTermsProjectionRegistryTests
             AssertTableDeclares(
                 ddl,
                 descriptor.TableName,
-                SecurityTermsProjectionRegistry.LeadingIdentityColumns
+                SecurityTermsProjectionRegistry.LeadingIdentityColumnsFor(descriptor)
                     .Concat(descriptor.Columns.Select(column => column.ColumnName))
                     .Concat(SecurityTermsProjectionRegistry.TrailingIdentityColumns));
 
