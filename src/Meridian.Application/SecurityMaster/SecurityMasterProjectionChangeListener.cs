@@ -19,7 +19,8 @@ namespace Meridian.Application.SecurityMaster;
 /// PostgreSQL does not replay notifications to a listener that was not connected when they were
 /// sent. When the listening connection is lost (or could not be established), the listener
 /// reconnects with exponential backoff and then re-synchronises the whole cache, because changes
-/// committed while it was away were never announced to it. The periodic re-warm
+/// committed while it was away were never announced to it. The first subscription re-synchronises
+/// too, closing the window between the startup warm and the first <c>LISTEN</c>. The periodic re-warm
 /// (<see cref="SecurityMasterOptions.ProjectionCacheRefreshMinutes"/>) remains a backstop.
 /// </remarks>
 public sealed class SecurityMasterProjectionChangeListener : BackgroundService
@@ -61,8 +62,10 @@ public sealed class SecurityMasterProjectionChangeListener : BackgroundService
         var channel = SecurityProjectionChangeNotification.ChannelFor(_options.Schema);
         var connectionString = BuildListenerConnectionString(_options.ConnectionString);
         var reconnectDelay = InitialReconnectDelay;
-        // Set whenever notifications may have been missed: after any failed or lost connection.
-        var resyncPending = false;
+        // Set whenever notifications may have been missed: after any failed or lost connection,
+        // and before the first LISTEN — a write committed between the startup warm and the first
+        // subscription was never announced to this node, and the periodic re-warm is off by default.
+        var resyncPending = true;
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -143,7 +146,7 @@ public sealed class SecurityMasterProjectionChangeListener : BackgroundService
         {
             await _handler.ResynchronizeAsync(ct).ConfigureAwait(false);
             _logger.LogInformation(
-                "Security Master projection cache re-synchronised after the change listener reconnected");
+                "Security Master projection cache re-synchronised after the change listener subscribed");
             return true;
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
