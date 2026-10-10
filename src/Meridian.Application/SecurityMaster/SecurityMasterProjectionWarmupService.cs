@@ -9,10 +9,11 @@ namespace Meridian.Application.SecurityMaster;
 /// <see cref="SecurityMasterOptions.PreloadProjectionCache"/> is enabled.
 /// This eliminates cold-start latency for the first queries after deployment.
 /// When <see cref="SecurityMasterOptions.ProjectionCacheRefreshMinutes"/> is positive, the service
-/// also re-warms the cache on that interval so multi-node deployments have BOUNDED cross-node
-/// staleness: a publish on one node reaches another node's per-process cache within one refresh
-/// interval (the cache's atomic <c>ReplaceAll</c> swap keeps concurrent readers on a complete set
-/// throughout).
+/// also re-warms the cache on that interval (the cache's atomic <c>ReplaceAll</c> swap keeps
+/// concurrent readers on a complete set throughout). Cross-node coherence is primarily delivered by
+/// <see cref="SecurityMasterProjectionChangeListener"/> (PostgreSQL <c>LISTEN/NOTIFY</c>); the
+/// periodic re-warm is the backstop that bounds staleness if a notification is lost or the
+/// listener is disabled.
 /// </summary>
 public sealed class SecurityMasterProjectionWarmupService : IHostedService, IDisposable
 {
@@ -79,7 +80,7 @@ public sealed class SecurityMasterProjectionWarmupService : IHostedService, IDis
     {
         var interval = TimeSpan.FromMinutes(_options.ProjectionCacheRefreshMinutes);
         _logger.LogInformation(
-            "Security Master projection cache periodic re-warm enabled every {Minutes} minute(s); cross-node cache staleness is bounded by this interval.",
+            "Security Master projection cache periodic re-warm enabled every {Minutes} minute(s) as a backstop to cross-node change notifications.",
             _options.ProjectionCacheRefreshMinutes);
         using var timer = new PeriodicTimer(interval);
         while (true)
