@@ -365,6 +365,72 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         return SecurityMasterMapping.ToDetail(projection);
     }
 
+    /// <summary>First delay before retrying a failed post-commit alias cache refresh; doubles up to a minute.</summary>
+    internal TimeSpan AliasCacheRefreshRetryDelay { get; init; } = TimeSpan.FromSeconds(5);
+
+    /// <summary>
+    /// Rereads the security after a committed alias write and installs it in the cache, then reseeds
+    /// the registry. The alias is durable once the store returns, so this never turns a committed
+    /// write into a reported failure: it ignores the request token and returns <see langword="false"/>
+    /// on a failed reread instead of throwing. Inside the cache's refresh gate the reread starts after
+    /// every earlier refresh (local or from a remote notification) finished, so the last update
+    /// reflects the latest committed alias state.
+    /// </summary>
+    private async Task<bool> TryRefreshAliasCacheAsync(Guid securityId, Guid aliasId)
+    {
+        await _projectionCache!.RefreshGate.WaitAsync(_serviceCts.Token).ConfigureAwait(false);
+        try
+        {
+            if (await _store.GetProjectionAsync(securityId, _serviceCts.Token).ConfigureAwait(false) is { } projection)
+            {
+                _projectionCache.Upsert(projection);
+                TryReseedRegistryInBackground();
+            }
+
+            return true;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !_serviceCts.IsCancellationRequested)
+        {
+            _logger.LogWarning(
+                ex,
+                "Security Master alias {AliasId} committed but the local projection cache refresh for {SecurityId} failed; it will be retried",
+                aliasId,
+                securityId);
+            return false;
+        }
+        finally
+        {
+            _projectionCache.RefreshGate.Release();
+        }
+    }
+
+    /// <summary>
+    /// Retries a failed post-commit alias cache refresh until it succeeds or the service stops. This
+    /// node ignores its own projection-change notification and periodic re-warm is off by default, so
+    /// without a retry nothing would revisit the security and the cache and registry would keep
+    /// serving the superseded alias.
+    /// </summary>
+    private void RetryAliasCacheRefreshInBackground(Guid securityId, Guid aliasId)
+    {
+        var ct = _serviceCts.Token;
+        _ = Task.Run(async () =>
+        {
+            var delay = AliasCacheRefreshRetryDelay;
+            try
+            {
+                do
+                {
+                    await Task.Delay(delay, ct).ConfigureAwait(false);
+                    delay = TimeSpan.FromTicks(Math.Min(delay.Ticks * 2, TimeSpan.FromMinutes(1).Ticks));
+                }
+                while (!await TryRefreshAliasCacheAsync(securityId, aliasId).ConfigureAwait(false));
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+            }
+        }, CancellationToken.None);
+    }
+
     private void TryReseedRegistryInBackground()
     {
         if (_seedService is null)
@@ -1711,34 +1777,10 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
         // Aliases are part of the cached projection and seed the canonical registry, so a new or
         // corrected alias refreshes both here; other nodes refresh from the store's notification.
-        if (_projectionCache is not null)
+        if (_projectionCache is not null
+            && !await TryRefreshAliasCacheAsync(alias.SecurityId, alias.AliasId).ConfigureAwait(false))
         {
-            // The alias is durable once the store returns, so the cache refresh must not be able to
-            // turn a committed write into a reported failure: it ignores the request token and a
-            // failed reread is logged rather than thrown. Inside the cache's refresh gate the reread
-            // starts after every earlier refresh (local or from a remote notification) finished,
-            // so the last update reflects the latest committed alias state.
-            await _projectionCache.RefreshGate.WaitAsync(_serviceCts.Token).ConfigureAwait(false);
-            try
-            {
-                if (await _store.GetProjectionAsync(alias.SecurityId, _serviceCts.Token).ConfigureAwait(false) is { } projection)
-                {
-                    _projectionCache.Upsert(projection);
-                    TryReseedRegistryInBackground();
-                }
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException || !_serviceCts.IsCancellationRequested)
-            {
-                _logger.LogWarning(
-                    ex,
-                    "Security Master alias {AliasId} committed but the local projection cache refresh for {SecurityId} failed; the next refresh or re-warm will pick it up",
-                    alias.AliasId,
-                    alias.SecurityId);
-            }
-            finally
-            {
-                _projectionCache.RefreshGate.Release();
-            }
+            RetryAliasCacheRefreshInBackground(alias.SecurityId, alias.AliasId);
         }
 
         return persisted;

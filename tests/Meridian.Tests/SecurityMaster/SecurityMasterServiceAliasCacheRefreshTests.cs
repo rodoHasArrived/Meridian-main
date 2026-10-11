@@ -81,6 +81,44 @@ public sealed class SecurityMasterServiceAliasCacheRefreshTests
     }
 
     [Fact]
+    public async Task FailedPostCommitRefresh_IsRetriedUntilTheCacheHoldsTheCorrection()
+    {
+        // This node ignores its own notification and periodic re-warm is off by default, so a
+        // transient reread failure must be retried rather than left for a refresh that never comes.
+        var securityId = Guid.NewGuid();
+        var cache = new SecurityMasterProjectionCache();
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.UpsertAliasAsync(Arg.Any<SecurityAliasDto>(), Arg.Any<CancellationToken>())
+            .Returns(call => call.Arg<SecurityAliasDto>());
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(
+                _ => Task.FromException<SecurityProjectionRecord?>(new InvalidOperationException("transient reread failure")),
+                _ => Task.FromException<SecurityProjectionRecord?>(new InvalidOperationException("still failing")),
+                _ => Task.FromResult<SecurityProjectionRecord?>(Projection(securityId, "ACME.OQ")));
+        using var service = new SecurityMasterService(
+            Substitute.For<ISecurityMasterEventStore>(),
+            Substitute.For<ISecurityMasterSnapshotStore>(),
+            store,
+            new SecurityMasterAggregateRebuilder(Substitute.For<ISecurityMasterEventStore>(), Substitute.For<ISecurityMasterSnapshotStore>()),
+            new SecurityMasterOptions { ConnectionString = "Host=unused", Schema = "security_master" },
+            NullLogger<SecurityMasterService>.Instance,
+            projectionCache: cache)
+        {
+            AliasCacheRefreshRetryDelay = TimeSpan.FromMilliseconds(10)
+        };
+
+        await service.UpsertAliasAsync(Request(securityId, "ACME.OQ"));
+
+        var deadline = DateTime.UtcNow.AddSeconds(10);
+        while (cache.Get(securityId) is null && DateTime.UtcNow < deadline)
+        {
+            await Task.Delay(10);
+        }
+
+        cache.Get(securityId)!.Aliases.Should().ContainSingle().Which.AliasValue.Should().Be("ACME.OQ");
+    }
+
+    [Fact]
     public async Task RemoteRefreshAndLocalAliasWrite_ShareTheCacheRefreshGate()
     {
         // A remote notification's reread holds the cache's refresh gate; a local alias write's

@@ -29,7 +29,8 @@ composition registers `SecurityMasterProjectionChangeListener` (disable with
 across nodes; it re-synchronises on first subscription and after every reconnect. Failed durable
 refreshes schedule a monotonic 30-second retry that incoming notifications cannot postpone; with
 pre-warm disabled the retry rereads the failed securities directly, so a remote creation the lazy
-cache never held is not lost. Canonical
+cache never held is not lost. A local alias write whose post-commit cache reread fails retries that
+reread in the background with backoff, since the node ignores its own notification. Canonical
 reseeds are serialized and reconcile Security-Master-owned aliases and non-override provider mappings
 for cached security IDs, including the ISIN/CUSIP/FIGI/SEDOL identifiers Security Master supplies;
 operator/provider authority outside that ownership remains intact.
