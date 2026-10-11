@@ -51,6 +51,25 @@ public sealed class SecurityMasterAliasSnapshotCacheTests
         cache.Get(SecurityId)!.Aliases.Should().ContainSingle().Which.AliasValue.Should().Be("CORRECTED");
     }
 
+    [Fact]
+    public async Task ReplaceAllAsync_KeepsAnUpsertAcceptedWhileTheReplacementWasBeingRead()
+    {
+        var cache = new SecurityMasterProjectionCache();
+        var createdDuringRead = SecurityMasterProjectionChangeNotificationTests.CreateProjection(Guid.NewGuid(), "Created", 1);
+
+        await cache.ReplaceAllAsync(_ =>
+        {
+            // The warm's durable read has completed without the new security; the local create
+            // commits and upserts before the swap.
+            IReadOnlyList<SecurityProjectionRecord> readBeforeTheCreate = [Record(version: 1, aliasValue: "A", stamp: 1)];
+            cache.Upsert(createdDuringRead);
+            return Task.FromResult(readBeforeTheCreate);
+        });
+
+        cache.Get(createdDuringRead.SecurityId).Should().NotBeNull();
+        cache.Get(SecurityId).Should().NotBeNull();
+    }
+
     private static SecurityProjectionRecord Record(long version, string aliasValue, long? stamp)
     {
         var effectiveFrom = DateTimeOffset.UtcNow.AddDays(-1);

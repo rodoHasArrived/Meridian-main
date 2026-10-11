@@ -40,6 +40,7 @@ public sealed partial class SymbolRegistryService
 
                 // Source is authority, not a spelling heuristic. In particular, never infer
                 // ownership of an operator/legacy/provider alias from a ticker suffix.
+                ClaimLegacySecurityMasterIdentifierAliases(entry);
                 var ownedValues = entry.Aliases
                     .Where(alias => IsSecurityMasterSource(alias.Source))
                     .Select(alias => alias.Alias)
@@ -87,6 +88,34 @@ public sealed partial class SymbolRegistryService
         finally
         {
             _registryLock.Release();
+        }
+    }
+
+    // Sources the pre-reconciliation seed inferred from an identifier alias's spelling.
+    private static readonly HashSet<string> LegacyIdentifierAliasSources =
+        new(["isin", "figi", "manual"], StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// One-way upgrade of registries seeded before identifier aliases carried Security Master
+    /// provenance: that seed wrote each identifier both as the typed identifier and as a plain alias
+    /// whose source was inferred from its spelling. An alias with such an inferred source whose
+    /// value equals the entry's typed ISIN, CUSIP, FIGI or SEDOL is that seed's copy, so it is
+    /// claimed as Security Master-owned and reconciled like the aliases the current seed writes.
+    /// Aliases with explicit provenance (operator, provider, registry) are never claimed.
+    /// </summary>
+    private static void ClaimLegacySecurityMasterIdentifierAliases(SymbolRegistryEntry entry)
+    {
+        var identifiers = entry.Identifiers;
+        string?[] identifierValues = [identifiers.Isin, identifiers.Cusip, identifiers.Figi, identifiers.Sedol];
+        foreach (var alias in entry.Aliases)
+        {
+            if (alias.Source is { } source
+                && LegacyIdentifierAliasSources.Contains(source)
+                && string.IsNullOrWhiteSpace(alias.Provider)
+                && identifierValues.Any(value => string.Equals(value, alias.Alias, StringComparison.OrdinalIgnoreCase)))
+            {
+                alias.Source = SymbolMappingSources.SecurityMaster;
+            }
         }
     }
 

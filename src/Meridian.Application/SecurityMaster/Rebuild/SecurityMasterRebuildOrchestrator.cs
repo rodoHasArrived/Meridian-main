@@ -50,13 +50,20 @@ public sealed class SecurityMasterRebuildOrchestrator
 
         if (checkpoint is null || _cache.Count == 0)
         {
-            var rebuiltRecords = await _projectionService.BuildWarmSetAsync(ct).ConfigureAwait(false);
-            await _store.PersistProjectionBatchAsync(ProjectionName, latestSequence, rebuiltRecords, ct).ConfigureAwait(false);
             // The cache must catch up with the committed batch before the cancellable conflict
             // scan: the checkpoint has already advanced, so a cancellation escaping the scan
             // would otherwise leave a nonempty cache permanently stale — the next rebuild takes
-            // the checkpoint-current path and never revisits these records.
-            _cache.ReplaceAll(rebuiltRecords);
+            // the checkpoint-current path and never revisits these records. The replacement
+            // capture opens before the durable read, so a local write upserted during the read,
+            // rebuild or persist is replayed into the swap instead of being dropped.
+            var rebuiltRecords = await _cache.ReplaceAllAsync(
+                async token =>
+                {
+                    var records = await _projectionService.BuildWarmSetAsync(token).ConfigureAwait(false);
+                    await _store.PersistProjectionBatchAsync(ProjectionName, latestSequence, records, token).ConfigureAwait(false);
+                    return records;
+                },
+                ct).ConfigureAwait(false);
             var deferredWarmSecurityIds = await TryRecordConflictsAsync(rebuiltRecords, ct).ConfigureAwait(false);
             await RetryDeferredConflictDetectionAsync(deferredWarmSecurityIds, ct).ConfigureAwait(false);
             _logger.LogInformation(

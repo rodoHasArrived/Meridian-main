@@ -138,10 +138,39 @@ public sealed class SecurityMasterProjectionChangeNotificationTests
         var outcome = await CreateHandler().HandleAsync(
             SecurityProjectionChangeNotification.ForSecurity(RemoteNode, securityId, 2).ToPayload());
 
-        outcome.Should().Be(SecurityProjectionChangeOutcome.AlreadyCurrent);
+        outcome.Should().Be(SecurityProjectionChangeOutcome.KeptNewer);
         _cache.Get(securityId)!.DisplayName.Should().Be("Newest");
         _cache.Get(securityId)!.Version.Should().Be(3);
     }
+
+    [Fact]
+    public async Task OlderVersionAliasNotification_StillRereadsTheCorrectedAliases()
+    {
+        // This node installed version 3 from aliases read before another node's alias correction;
+        // the correction's notification carries the older version 2.
+        var securityId = Guid.NewGuid();
+        _cache.Upsert(WithAlias(CreateProjection(securityId, "Amended", 3), "SUPERSEDED", stamp: 1));
+        _store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(WithAlias(CreateProjection(securityId, "Amended", 3), "CORRECTED", stamp: 2));
+
+        var outcome = await CreateHandler().HandleAsync(
+            SecurityProjectionChangeNotification.ForSecurity(RemoteNode, securityId, 2).ToPayload());
+
+        outcome.Should().Be(SecurityProjectionChangeOutcome.Refreshed);
+        _cache.Get(securityId)!.Aliases.Should().ContainSingle().Which.AliasValue.Should().Be("CORRECTED");
+    }
+
+    private static SecurityProjectionRecord WithAlias(SecurityProjectionRecord record, string aliasValue, long stamp)
+        => record with
+        {
+            Aliases = new SecurityAliasSnapshot(
+                [
+                    new SecurityAliasDto(
+                        Guid.Empty, record.SecurityId, "Ticker", aliasValue, null, SecurityAliasScope.Operations, null,
+                        "tester", record.EffectiveFrom, record.EffectiveFrom, null, true)
+                ],
+                stamp)
+        };
 
     [Fact]
     public async Task EqualVersionNotification_RereadsChangedContent()

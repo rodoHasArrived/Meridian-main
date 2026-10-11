@@ -77,8 +77,9 @@ public sealed class SecurityMasterProjectionService
         await _cache.RefreshGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            rebuiltRecords = await BuildWarmSetAsync(ct).ConfigureAwait(false);
-            _cache.ReplaceAll(rebuiltRecords);
+            // The replacement capture opens before the durable read, so a local create or amend
+            // upserted while the warm reads or rebuilds is replayed into the swap, not dropped.
+            rebuiltRecords = await _cache.ReplaceAllAsync(BuildWarmSetAsync, ct).ConfigureAwait(false);
         }
         finally
         {

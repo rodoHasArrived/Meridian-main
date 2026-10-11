@@ -441,7 +441,9 @@ even when the same spelling also appears in the plain alias list. Historical ali
 Security Master provenance are not deleted by guessing ownership from their spelling.
 Security Master-governed identifiers (ISIN, CUSIP, FIGI, SEDOL) are seeded as Security Master-owned
 aliases; reconciliation replaces those identifiers with the supplied values and clears ones Security
-Master no longer supplies, while identifiers another source populated are kept.
+Master no longer supplies, while identifiers another source populated are kept. Identifier aliases written by the earlier seed
+(source inferred from spelling, value equal to the typed identifier) are claimed as Security
+Master-owned on the next reconciliation.
 Security Master identifier lookup preserves provider authority: a provider-bound canonical
 identifier resolves only for the exact normalized provider. The legacy primary-identifier fallback
 is available only for providerless records that have no authoritative identifier row, so an omitted
@@ -478,7 +480,11 @@ retired, so neither alias upserts nor projection replacement can continue its hi
 Projection reads stamp their alias list with the security's revision count (`SecurityAliasSnapshot`);
 a projection write carrying aliases read before a later alias write keeps the current alias rows
 instead of writing the superseded snapshot back, and the projection cache keeps the newer-stamped
-alias list, so an overlapping rebuild or amendment cannot undo an alias correction. MoneyMarketFund, CertificateOfDeposit,
+alias list, so an overlapping rebuild or amendment cannot undo an alias correction. Warms and full
+rebuilds install through `SecurityMasterProjectionCache.ReplaceAllAsync`, which opens the upsert
+capture before the durable read, so a local create or amend landing mid-warm survives the swap.
+Every remote notification rereads, even one older than the cached version, because aliases move
+independently of the projection version. MoneyMarketFund, CertificateOfDeposit,
 Deposit and CryptoCurrency projections are written by `SecurityTermsProjectionRegistry` descriptors
 rather than hand-written writers.
 

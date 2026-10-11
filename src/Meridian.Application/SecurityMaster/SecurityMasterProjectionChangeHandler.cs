@@ -14,9 +14,6 @@ public enum SecurityProjectionChangeOutcome
     /// <summary>The notification came from this node, whose own write path already updated the cache.</summary>
     IgnoredOwnNode,
 
-    /// <summary>The cache already held a strictly newer version; no durable read was needed.</summary>
-    AlreadyCurrent,
-
     /// <summary>The security was re-read from the durable store and installed.</summary>
     Refreshed,
 
@@ -105,13 +102,10 @@ public sealed class SecurityMasterProjectionChangeHandler
                 return SecurityProjectionChangeOutcome.Resynchronized;
             }
 
-            // Only a strictly newer cached version can skip the reread: alias writes and projection
-            // replacements change cached content without moving the event-stream version.
-            if (_cache.Get(notification.SecurityId) is { } cached && cached.Version > notification.Version)
-            {
-                return SecurityProjectionChangeOutcome.AlreadyCurrent;
-            }
-
+            // Every notification rereads, even one older than the cached version: aliases have
+            // their own revision history, so a cached record at a newer version can still carry
+            // aliases read before the change this notification announces. The reread's version and
+            // alias-stamp guards keep whichever terms and aliases are newer.
             // Shares the cache's refresh gate with local alias writes, so a remote reread cannot
             // interleave with a local one and land a superseded equal-version record last.
             SecurityProjectionRefreshResult result;

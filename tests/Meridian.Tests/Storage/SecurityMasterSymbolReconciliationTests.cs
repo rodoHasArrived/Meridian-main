@@ -107,6 +107,28 @@ public sealed class SecurityMasterSymbolReconciliationTests : IDisposable
         registry.GetDefinition("SMTEST")!.Isin.Should().BeNull();
     }
 
+    [Fact]
+    public async Task IdentifierAliasFromThePreReconciliationSeed_IsClaimedAndReconciled()
+    {
+        var registry = new CanonicalSymbolRegistry(new SymbolRegistryService(_directory));
+        var id = Guid.NewGuid();
+        // The earlier seed registered identifiers as plain aliases, whose source is inferred ("isin").
+        await registry.RegisterBatchAsync([new CanonicalSymbolDefinition
+        {
+            Canonical = "SMTEST",
+            SecurityId = id,
+            Aliases = ["US0000000001", "LEGACYOP"],
+            Isin = "US0000000001"
+        }]);
+        registry.ResolveToCanonical("US0000000001").Should().Be("SMTEST");
+
+        await registry.ReconcileSecurityMasterAsync([id], [IdentifierDefinition(id, isin: "US0000000002")]);
+
+        registry.ResolveToCanonical("US0000000001").Should().BeNull("the legacy identifier alias was the seed's copy");
+        registry.ResolveToCanonical("US0000000002").Should().Be("SMTEST");
+        registry.ResolveToCanonical("LEGACYOP").Should().Be("SMTEST", "a non-identifier alias is not claimed");
+    }
+
     // Mirrors the definitions SecurityMasterCanonicalSymbolSeedService builds for identifiers.
     private static CanonicalSymbolDefinition IdentifierDefinition(Guid id, string? isin)
         => new()
