@@ -28,6 +28,23 @@ public sealed class SecurityMasterAliasSnapshotCacheTests
     }
 
     [Fact]
+    public void Upsert_OlderTermsWithNewerAliases_MergesTheAliasesIntoTheInstalledTerms()
+    {
+        // A remote alias correction reread at version 1 lands after a local amendment, built from
+        // the pre-correction aliases, installed version 2.
+        var cache = new SecurityMasterProjectionCache();
+        cache.Upsert(Record(version: 2, aliasValue: "SUPERSEDED", stamp: 1));
+
+        cache.Upsert(Record(version: 1, aliasValue: "CORRECTED", stamp: 2)).Should().BeTrue();
+
+        var installed = cache.Get(SecurityId)!;
+        installed.Version.Should().Be(2, "the newer terms are kept");
+        installed.Aliases.Should().ContainSingle().Which.AliasValue.Should().Be("CORRECTED");
+        cache.Upsert(Record(version: 1, aliasValue: "OLDER", stamp: 1)).Should().BeFalse(
+            "older terms with older aliases change nothing");
+    }
+
+    [Fact]
     public void Upsert_WithNewerOrUnstampedAliases_TakesTheIncomingAliases()
     {
         var cache = new SecurityMasterProjectionCache();

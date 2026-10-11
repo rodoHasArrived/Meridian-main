@@ -420,7 +420,10 @@ public sealed record FaceValueLot
                     - pricePerUnit) > 0.0000000001m))
             throw new ArgumentException("Retained effective yield does not reconcile to acquisition price and the odd-first-period contractual schedule.");
 
-        if (PremiumDiscount == 0m)
+        // A par clean price is not a par yield across a stub: the dirty amount grows over the stub
+        // at a fractional exponent, so the implied yield differs from the coupon rate and the basis
+        // moves away from par before returning to it. Only a full first period may skip the solve.
+        if (PremiumDiscount == 0m && stubFraction == 1m)
             return CostBasis;
         if (asOf <= AcquiredDate)
             return CostBasis;

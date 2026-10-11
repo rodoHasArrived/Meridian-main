@@ -83,21 +83,33 @@ public sealed class SecurityMasterProjectionCache
     /// content.
     /// </para>
     /// </remarks>
-    public void Upsert(SecurityProjectionRecord record)
+    /// <returns>
+    /// <see langword="true"/> when the cache changed: the record was installed, or an older record
+    /// contributed newer-stamped aliases to the installed one; <see langword="false"/> when the
+    /// installed record was kept unchanged.
+    /// </returns>
+    public bool Upsert(SecurityProjectionRecord record)
     {
         lock (_writeGate)
         {
             var current = Current;
             if (current.TryGetValue(record.SecurityId, out var installed))
             {
+                // Aliases do not move the version, so either side can carry the newer alias list:
+                // an older record keeps the installed terms but contributes newer-stamped aliases,
+                // and an equal or newer record keeps the installed aliases when they are newer.
                 if (record.Version < installed.Version)
                 {
-                    return;
+                    record = SecurityAliasSnapshot.KeepNewerAliases(installed, record);
+                    if (ReferenceEquals(record, installed))
+                    {
+                        return false;
+                    }
                 }
-
-                // Aliases do not move the version, so an equal or newer record can still carry an
-                // alias list read before the installed one; keep the newer-stamped aliases.
-                record = SecurityAliasSnapshot.KeepNewerAliases(record, installed);
+                else
+                {
+                    record = SecurityAliasSnapshot.KeepNewerAliases(record, installed);
+                }
             }
 
             current[record.SecurityId] = record;
@@ -105,6 +117,8 @@ public sealed class SecurityMasterProjectionCache
             {
                 _upsertsDuringReplacement[record.SecurityId] = record;
             }
+
+            return true;
         }
     }
 

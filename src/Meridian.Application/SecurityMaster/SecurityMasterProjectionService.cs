@@ -62,8 +62,9 @@ public sealed class SecurityMasterProjectionService
         }
 
         var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(rebuiltEconomic, seed.Aliases);
-        _cache.Upsert(rebuilt);
-        return _cache.Get(securityId)?.Version == rebuilt.Version
+        // A reread older than the cached terms still counts as a refresh when its newer-stamped
+        // aliases were merged in, so callers reseed the canonical registry for the correction.
+        return _cache.Upsert(rebuilt)
             ? SecurityProjectionRefreshResult.Refreshed
             : SecurityProjectionRefreshResult.KeptNewer;
     }

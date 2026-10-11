@@ -41,6 +41,22 @@ public sealed class FaceValueLotOddPeriodTests
     }
 
     [Fact]
+    public void ParCleanPriceAcrossAStub_StillAmortizesAtTheImpliedYield()
+    {
+        // 20% semiannual coupon, same half-period stub: a clean price of exactly 100 implies
+        // 9.96598540484406…% per period, not the 10% coupon rate, so the ex-coupon basis after the
+        // first payment is the PV of the 4 remaining flows at that yield, not par.
+        var lot = new FaceValueLot("odd-par-clean", SecurityId, HandAcquired, 100m, 100m);
+
+        var afterFirstCoupon = lot.ConstantYieldAmortizedBasisAsOf(
+            DayCountConvention.Thirty360, HandMaturity, new DateOnly(2026, 7, 1), 20m);
+
+        afterFirstCoupon.Should().BeApproximately(100.107901128320750244m, 0.000000001m);
+        lot.ConstantYieldAmortizedBasisAsOf(DayCountConvention.Thirty360, HandMaturity, HandMaturity, 20m)
+            .Should().Be(100m);
+    }
+
+    [Fact]
     public void HandCheckedStub_InterpolatesLinearlyByDayCountInsideTheStub()
     {
         var lot = new FaceValueLot("odd-hand", SecurityId, HandAcquired, 100m, HandCleanPrice);
