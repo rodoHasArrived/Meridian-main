@@ -345,14 +345,19 @@ public sealed partial class PostgresSecurityMasterStore
         {
             await using var insert = connection.CreateCommand();
             insert.Transaction = transaction;
+            // Creation facts are immutable once recorded: an alias ID that already has history
+            // keeps revision 1's creator and timestamp whatever the replacement DTO carries.
             insert.CommandText =
                 $"""
                 insert into {Qualified("security_aliases")} (
                     alias_id, security_id, {AliasMaterialColumns}, created_by, created_at)
-                values (
+                select
                     @alias_id, @security_id, @alias_kind, @alias_value, @normalized_alias_value, @provider,
                     @normalized_provider, @scope, @reason, @valid_from, @valid_to, @is_enabled,
-                    @created_by, @created_at);
+                    coalesce(r.recorded_by, @created_by), coalesce(r.recorded_at, @created_at)
+                from (select 1) as seed
+                left join {Qualified("security_alias_revisions")} r
+                    on r.alias_id = @alias_id and r.revision = 1;
                 """;
             AddAliasParameters(insert, alias with { SecurityId = securityId });
             AddCreationParameters(insert, alias);

@@ -2734,6 +2734,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Catalog.ICanonicalSymbolRegistrySecurityMasterWriter"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Catalog.ISymbolResolutionMismatchReader"
     },
     {
@@ -48698,7 +48704,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "60b4bdea1847180cfad3c20ad4c88d618918685d39fa350379548c41f82c78df",
+  "fingerprint": "8cef3031cdb64d67b16200dec0d34463255ff911d5886ae3aa916ca88a04c46e",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -51480,6 +51486,12 @@
       "id": "contract:Meridian.Contracts.Catalog.ICanonicalSymbolRegistryMigrationWriter",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Catalog.ICanonicalSymbolRegistryMigrationWriter"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Catalog.ICanonicalSymbolRegistrySecurityMasterWriter",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Catalog.ICanonicalSymbolRegistrySecurityMasterWriter"
     },
     {
       "classification": "service_contract",
@@ -71255,10 +71267,10 @@
   ],
   "summary": {
     "contract_references": 3215,
-    "contract_set_memberships": 3792,
-    "edges": 8091,
+    "contract_set_memberships": 3793,
+    "edges": 8092,
     "foreign_keys": 135,
     "logical_references": 6,
-    "nodes": 3907
+    "nodes": 3908
   }
 }

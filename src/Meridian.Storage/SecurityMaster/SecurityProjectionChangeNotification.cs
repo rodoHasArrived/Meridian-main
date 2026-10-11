@@ -131,6 +131,13 @@ public sealed record SecurityProjectionChangeNotification(
         const string prefix = "meridian_sm_projection_";
         const int maxIdentifierLength = 63;
 
+        // The store interpolates the schema into SQL, so PostgreSQL folds an unquoted name to lower
+        // case and keeps a double-quoted one exact. Derive the channel from that effective name, so
+        // nodes configured as "security_master" and "SECURITY_MASTER" share one channel.
+        schema = schema.Length > 1 && schema[0] == '"' && schema[^1] == '"'
+            ? schema[1..^1].Replace("\"\"", "\"", StringComparison.Ordinal)
+            : schema.ToLowerInvariant();
+
         var normalized = new StringBuilder(schema.Length);
         foreach (var c in schema.ToLowerInvariant())
         {

@@ -1028,6 +1028,30 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
     }
 
     [SecurityMasterDatabaseFact]
+    public async Task ProjectionReplacement_KeepsRecordedAliasCreationFacts()
+    {
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var securityId = Guid.NewGuid();
+        var effectiveFrom = DateTimeOffset.UtcNow.AddDays(-2);
+        await CreateMinimalSecurityAsync(store, securityId, effectiveFrom);
+        var alias = new SecurityAliasDto(
+            Guid.NewGuid(), securityId, "Ticker", "KEEP", null, SecurityAliasScope.Operations, null,
+            "original-creator", effectiveFrom, effectiveFrom, null, true);
+        await store.UpsertAliasAsync(alias);
+        var projection = (await store.GetProjectionAsync(securityId))!;
+
+        await store.UpsertProjectionAsync(projection with
+        {
+            Aliases = [alias with { CreatedBy = "rewriter", CreatedAt = DateTimeOffset.UtcNow }]
+        });
+
+        var current = (await store.GetProjectionAsync(securityId))!.Aliases.Should().ContainSingle().Subject;
+        current.CreatedBy.Should().Be("original-creator");
+        current.CreatedAt.Should().BeCloseTo(effectiveFrom, TimeSpan.FromMilliseconds(1));
+        (await ReadAliasRevisionsAsync(alias.AliasId)).Should().ContainSingle("creation facts are not material alias content");
+    }
+
+    [SecurityMasterDatabaseFact]
     public async Task AliasRevisions_RejectUpdateDeleteAndTruncate()
     {
         var store = new PostgresSecurityMasterStore(_fixture.Options);

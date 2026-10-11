@@ -67,6 +67,19 @@ public sealed class SecurityMasterProjectionChangeNotificationTests
     }
 
     [Fact]
+    public void ChannelFor_FollowsPostgresIdentifierFolding()
+    {
+        // Unquoted schema names fold to lower case in PostgreSQL, so differently cased spellings of
+        // the same schema must share a channel; a quoted name stays exact and distinct.
+        var folded = SecurityProjectionChangeNotification.ChannelFor("security_master");
+
+        SecurityProjectionChangeNotification.ChannelFor("SECURITY_MASTER").Should().Be(folded);
+        SecurityProjectionChangeNotification.ChannelFor("Security_Master").Should().Be(folded);
+        SecurityProjectionChangeNotification.ChannelFor("\"security_master\"").Should().Be(folded);
+        SecurityProjectionChangeNotification.ChannelFor("\"Security_Master\"").Should().NotBe(folded);
+    }
+
+    [Fact]
     public async Task OtherNodeNotification_RefreshesTheCachedEntryFromTheDurableStore()
     {
         var securityId = Guid.NewGuid();
