@@ -140,25 +140,34 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
                 {
                     case SecurityIdentifierKind.Isin:
                         isin = id.Value;
-                        if (!string.IsNullOrWhiteSpace(id.Value))
-                            aliases.Add(id.Value);
                         break;
                     case SecurityIdentifierKind.Cusip:
                         cusip = id.Value;
-                        if (!string.IsNullOrWhiteSpace(id.Value))
-                            aliases.Add(id.Value);
                         break;
                     case SecurityIdentifierKind.Figi:
                         figi = id.Value;
-                        if (!string.IsNullOrWhiteSpace(id.Value))
-                            aliases.Add(id.Value);
                         break;
                     case SecurityIdentifierKind.Sedol:
                         sedol = id.Value;
-                        if (!string.IsNullOrWhiteSpace(id.Value))
-                            aliases.Add(id.Value);
                         break;
+                    default:
+                        continue;
                 }
+
+                if (string.IsNullOrWhiteSpace(id.Value))
+                    continue;
+
+                // Identifier aliases are Security Master-owned like the record's own aliases, so
+                // reconciliation drops a corrected or removed identifier instead of keeping it as
+                // an alias whose source was only inferred from its spelling.
+                aliases.Add(id.Value);
+                aliasDefinitions.Add(new CanonicalSymbolAliasDefinition(
+                    id.Value,
+                    Source: SymbolMappingSources.SecurityMaster,
+                    Provider: null,
+                    ValidFrom: null,
+                    ValidTo: null,
+                    IsActive: true));
             }
 
             definitions.Add(new CanonicalSymbolDefinition

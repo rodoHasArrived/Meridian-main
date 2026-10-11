@@ -886,6 +886,38 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
     }
 
     [SecurityMasterDatabaseFact]
+    public async Task ProjectionReplacement_ReadBeforeAnAliasCorrection_DoesNotUndoIt()
+    {
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var securityId = Guid.NewGuid();
+        var effectiveFrom = DateTimeOffset.UtcNow.AddDays(-1);
+        await CreateMinimalSecurityAsync(store, securityId, effectiveFrom);
+        var original = new SecurityAliasDto(
+            Guid.NewGuid(), securityId, "Ticker", "STALE", null, SecurityAliasScope.Operations, "original",
+            "creator", effectiveFrom, effectiveFrom, null, true);
+        await store.UpsertAliasAsync(original);
+
+        // A rebuild or amendment reads the projection, an operator corrects and adds aliases, then
+        // the writer persists the projection it read.
+        var readBeforeCorrection = (await store.GetProjectionAsync(securityId))!;
+        await store.UpsertAliasAsync(original with { AliasValue = "FRESH", Reason = "corrected", CreatedBy = "operator" });
+        var added = original with { AliasId = Guid.NewGuid(), AliasValue = "ADDED", CreatedBy = "operator" };
+        await store.UpsertAliasAsync(added);
+        await store.PersistProjectionBatchAsync("alias-race-test", 1, [readBeforeCorrection with { Version = 2 }]);
+
+        var persisted = (await store.GetProjectionAsync(securityId))!;
+        persisted.Version.Should().Be(2, "the projection's own terms still persist");
+        persisted.Aliases.Select(static alias => alias.AliasValue).Should().BeEquivalentTo(["ADDED", "FRESH"]);
+        (await ReadAliasRevisionsAsync(original.AliasId)).Should().HaveCount(2, "the stale snapshot records no revision");
+        (await ReadAliasRevisionsAsync(added.AliasId)).Should().ContainSingle("the alias added after the read is not retired");
+
+        // A projection read after the correction is current and still replaces aliases as given.
+        var current = (await store.GetProjectionAsync(securityId))!;
+        await store.UpsertProjectionAsync(current with { Aliases = current.Aliases.Where(static alias => alias.AliasValue == "FRESH").ToArray() });
+        (await store.GetProjectionAsync(securityId))!.Aliases.Should().ContainSingle().Which.AliasValue.Should().Be("FRESH");
+    }
+
+    [SecurityMasterDatabaseFact]
     public async Task UpsertAliasAsync_ConcurrentCorrections_AppendContiguousOrderedRevisions()
     {
         var store = new PostgresSecurityMasterStore(_fixture.Options);

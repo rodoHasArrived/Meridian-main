@@ -411,7 +411,22 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         }
 
         await ReplaceIdentifiersAsync(connection, transaction, record.SecurityId, record.Identifiers, ct).ConfigureAwait(false);
-        await ReplaceAliasesAsync(connection, transaction, record.SecurityId, record.Aliases, ct).ConfigureAwait(false);
+        // The securities upsert above holds the parent row lock that alias writes also take first,
+        // so the recorded alias history cannot move between this stamp check and the replacement.
+        // A record carrying aliases read before a later alias write is an echo of superseded state:
+        // writing it back would durably undo that correction, so the current rows are kept instead.
+        if (record.Aliases is SecurityAliasSnapshot snapshot
+            && await ReadAliasRevisionStampAsync(connection, record.SecurityId, ct).ConfigureAwait(false) != snapshot.RevisionStamp)
+        {
+            record = record with
+            {
+                Aliases = await LoadAliasesAsync(connection, record.SecurityId, ct).ConfigureAwait(false)
+            };
+        }
+        else
+        {
+            await ReplaceAliasesAsync(connection, transaction, record.SecurityId, record.Aliases, ct).ConfigureAwait(false);
+        }
 
         // Fan out to every registered per-asset-class projection writer. Each writer upserts its own
         // projection when the record matches its asset class and deletes any stale row otherwise, so
@@ -662,8 +677,22 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         return results;
     }
 
-    private async Task<IReadOnlyList<SecurityAliasDto>> LoadAliasesAsync(NpgsqlConnection connection, Guid securityId, CancellationToken ct)
+    private async Task<long> ReadAliasRevisionStampAsync(NpgsqlConnection connection, Guid securityId, CancellationToken ct)
     {
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"select count(*) from {Qualified("security_alias_revisions")} where security_id = @security_id;";
+        command.Parameters.AddWithValue("security_id", securityId);
+        return (long)(await command.ExecuteScalarAsync(ct).ConfigureAwait(false))!;
+    }
+
+    /// <summary>
+    /// Reads the current aliases as a <see cref="SecurityAliasSnapshot"/>. The revision stamp is read
+    /// first: an alias write committing between the two reads leaves the stamp older than the rows,
+    /// which a later projection replacement treats as stale (it keeps the rows) rather than current.
+    /// </summary>
+    private async Task<SecurityAliasSnapshot> LoadAliasesAsync(NpgsqlConnection connection, Guid securityId, CancellationToken ct)
+    {
+        var revisionStamp = await ReadAliasRevisionStampAsync(connection, securityId, ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""
@@ -694,7 +723,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                 reader.GetBoolean(10)));
         }
 
-        return results;
+        return new SecurityAliasSnapshot(results, revisionStamp);
     }
 
     private async Task<Guid?> ResolveSecurityIdAsync(

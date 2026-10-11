@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging;
@@ -47,6 +48,11 @@ public sealed class SecurityMasterProjectionChangeHandler
     private readonly SecurityMasterOptions _options;
     private readonly ILogger<SecurityMasterProjectionChangeHandler> _logger;
     private readonly SecurityMasterCanonicalSymbolSeedService? _seedService;
+
+    // Securities whose notification reread failed. A lazily-populated cache does not hold a security
+    // created on another node until its notification is applied, so the resync scheduled after the
+    // failure retries these directly; walking the cache snapshot alone would never revisit them.
+    private readonly ConcurrentDictionary<Guid, byte> _failedSecurityIds = new();
 
     public SecurityMasterProjectionChangeHandler(
         SecurityMasterProjectionService projectionService,
@@ -118,6 +124,8 @@ public sealed class SecurityMasterProjectionChangeHandler
             {
                 _cache.RefreshGate.Release();
             }
+
+            _failedSecurityIds.TryRemove(notification.SecurityId, out _);
             _logger.LogDebug(
                 "Applied Security Master projection change for {SecurityId} version {Version} from node {OriginNodeId}: {Result}",
                 notification.SecurityId,
@@ -144,6 +152,11 @@ public sealed class SecurityMasterProjectionChangeHandler
         }
         catch (Exception ex)
         {
+            if (notification.Kind != SecurityProjectionChangeKind.Resync)
+            {
+                _failedSecurityIds.TryAdd(notification.SecurityId, 0);
+            }
+
             _logger.LogWarning(
                 ex,
                 "Failed to apply Security Master projection change {Kind} for {SecurityId} from node {OriginNodeId}; the listener will schedule a resynchronization retry",
@@ -161,30 +174,45 @@ public sealed class SecurityMasterProjectionChangeHandler
     /// <summary>
     /// Re-synchronises the whole cache after notifications may have been missed (a listener
     /// reconnect) or after a bulk publish on another node. A pre-warmed cache is re-warmed with the
-    /// atomic <c>ReplaceAll</c> swap; a lazily-populated cache (pre-warm disabled) refreshes only the
-    /// securities it already holds, so a resync never changes its memory profile.
+    /// atomic <c>ReplaceAll</c> swap; a lazily-populated cache (pre-warm disabled) refreshes the
+    /// securities it already holds plus any whose notification reread failed, so a resync keeps its
+    /// memory profile without losing a remote creation whose first reread failed.
     /// </summary>
     public async Task ResynchronizeAsync(CancellationToken ct = default)
     {
+        // Taken before the reads below: a failure recorded while they run stays pending for the
+        // next resync instead of being cleared by a read that may have preceded its write.
+        var failedSecurityIds = _failedSecurityIds.Keys.ToArray();
         if (_options.PreloadProjectionCache)
         {
             // WarmAsync holds the cache's refresh gate across its durable read and swap.
             await _projectionService.WarmAsync(ct).ConfigureAwait(false);
+            foreach (var securityId in failedSecurityIds)
+            {
+                _failedSecurityIds.TryRemove(securityId, out _);
+            }
         }
         else
         {
-            foreach (var record in _cache.Snapshot())
+            // Cached securities plus those whose notification failed before they were ever cached.
+            var securityIds = _cache.Snapshot().Select(static record => record.SecurityId)
+                .Concat(failedSecurityIds)
+                .Distinct()
+                .ToArray();
+            foreach (var securityId in securityIds)
             {
                 ct.ThrowIfCancellationRequested();
                 await _cache.RefreshGate.WaitAsync(ct).ConfigureAwait(false);
                 try
                 {
-                    await _projectionService.RefreshSecurityAsync(record.SecurityId, ct).ConfigureAwait(false);
+                    await _projectionService.RefreshSecurityAsync(securityId, ct).ConfigureAwait(false);
                 }
                 finally
                 {
                     _cache.RefreshGate.Release();
                 }
+
+                _failedSecurityIds.TryRemove(securityId, out _);
             }
         }
 

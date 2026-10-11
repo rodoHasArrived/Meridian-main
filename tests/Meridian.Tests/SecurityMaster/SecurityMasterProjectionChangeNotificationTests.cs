@@ -262,6 +262,27 @@ public sealed class SecurityMasterProjectionChangeNotificationTests
         await _store.DidNotReceive().LoadAllAsync(Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task Resynchronize_WithoutPreload_RetriesAnUncachedSecurityWhoseRereadFailed()
+    {
+        var createdRemotely = Guid.NewGuid();
+        _store.GetProjectionAsync(createdRemotely, Arg.Any<CancellationToken>())
+            .Returns(
+                _ => Task.FromException<SecurityProjectionRecord?>(new InvalidOperationException("database unavailable")),
+                _ => Task.FromResult<SecurityProjectionRecord?>(CreateProjection(createdRemotely, "Created", 1)));
+        var handler = CreateHandler(preload: false);
+
+        var outcome = await handler.HandleAsync(
+            SecurityProjectionChangeNotification.ForSecurity(RemoteNode, createdRemotely, 1).ToPayload());
+        outcome.Should().Be(SecurityProjectionChangeOutcome.Failed);
+        _cache.Get(createdRemotely).Should().BeNull();
+
+        await handler.ResynchronizeAsync();
+
+        _cache.Get(createdRemotely)!.DisplayName.Should().Be(
+            "Created", "the resync retries the failed security even though the lazy cache never held it");
+    }
+
     private SecurityMasterProjectionChangeHandler CreateHandler(bool preload = false)
     {
         var options = new SecurityMasterOptions { PreloadProjectionCache = preload };

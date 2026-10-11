@@ -88,10 +88,16 @@ public sealed class SecurityMasterProjectionCache
         lock (_writeGate)
         {
             var current = Current;
-            if (current.TryGetValue(record.SecurityId, out var installed)
-                && record.Version < installed.Version)
+            if (current.TryGetValue(record.SecurityId, out var installed))
             {
-                return;
+                if (record.Version < installed.Version)
+                {
+                    return;
+                }
+
+                // Aliases do not move the version, so an equal or newer record can still carry an
+                // alias list read before the installed one; keep the newer-stamped aliases.
+                record = SecurityAliasSnapshot.KeepNewerAliases(record, installed);
             }
 
             current[record.SecurityId] = record;
@@ -179,7 +185,21 @@ public sealed class SecurityMasterProjectionCache
                         replacement.AddOrUpdate(
                             upsert.SecurityId,
                             upsert,
-                            (_, candidate) => upsert.Version >= candidate.Version ? upsert : candidate);
+                            (_, candidate) => upsert.Version >= candidate.Version
+                                ? SecurityAliasSnapshot.KeepNewerAliases(upsert, candidate)
+                                : SecurityAliasSnapshot.KeepNewerAliases(candidate, upsert));
+                    }
+
+                    // The replacement is authoritative about membership and terms as of its snapshot,
+                    // but an alias correction refreshed into the outgoing map after that snapshot was
+                    // read must not be rolled back by the swap.
+                    var outgoing = Current;
+                    foreach (var (securityId, candidate) in replacement)
+                    {
+                        if (outgoing.TryGetValue(securityId, out var installed))
+                        {
+                            replacement[securityId] = SecurityAliasSnapshot.KeepNewerAliases(candidate, installed);
+                        }
                     }
 
                     Volatile.Write(ref _byId, replacement);

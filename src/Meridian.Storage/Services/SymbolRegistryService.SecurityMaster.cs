@@ -40,7 +40,12 @@ public sealed partial class SymbolRegistryService
 
                 // Source is authority, not a spelling heuristic. In particular, never infer
                 // ownership of an operator/legacy/provider alias from a ticker suffix.
+                var ownedValues = entry.Aliases
+                    .Where(alias => IsSecurityMasterSource(alias.Source))
+                    .Select(alias => alias.Alias)
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
                 entry.Aliases.RemoveAll(alias => IsSecurityMasterSource(alias.Source));
+                ClearSecurityMasterIdentifiers(entry.Identifiers, ownedValues);
                 foreach (var provider in entry.ProviderSymbols.Keys.ToArray())
                 {
                     if (entry.ProviderSymbolMetadata.TryGetValue(provider, out var metadata)
@@ -58,7 +63,13 @@ public sealed partial class SymbolRegistryService
                 ct.ThrowIfCancellationRequested();
                 entry.Canonical = entry.Canonical.Trim().ToUpperInvariant();
                 NormalizeEntry(entry);
-                RegisterEntry(candidate, indexes.SecurityIdCache, entry, merge: true, _log);
+                var registered = RegisterEntry(candidate, indexes.SecurityIdCache, entry, merge: true, _log);
+                // The merge only fills empty identifiers; an identifier Security Master supplies
+                // replaces whatever the entry held, so a corrected value takes effect.
+                if (!ReferenceEquals(registered, entry))
+                {
+                    ApplySecurityMasterIdentifiers(registered.Identifiers, entry.Identifiers);
+                }
             }
 
             candidate.LastUpdatedAt = DateTime.UtcNow;
@@ -77,6 +88,35 @@ public sealed partial class SymbolRegistryService
         {
             _registryLock.Release();
         }
+    }
+
+    /// <summary>
+    /// Clears the Security Master-governed identifiers (ISIN, CUSIP, FIGI, SEDOL) whose value the
+    /// entry also carried as a Security Master-owned alias, so a removed identifier stops resolving.
+    /// Identifiers another source supplied are kept.
+    /// </summary>
+    private static void ClearSecurityMasterIdentifiers(SymbolIdentifiers identifiers, HashSet<string> ownedValues)
+    {
+        if (identifiers.Isin is { } isin && ownedValues.Contains(isin))
+            identifiers.Isin = null;
+        if (identifiers.Cusip is { } cusip && ownedValues.Contains(cusip))
+            identifiers.Cusip = null;
+        if (identifiers.Figi is { } figi && ownedValues.Contains(figi))
+            identifiers.Figi = null;
+        if (identifiers.Sedol is { } sedol && ownedValues.Contains(sedol))
+            identifiers.Sedol = null;
+    }
+
+    private static void ApplySecurityMasterIdentifiers(SymbolIdentifiers target, SymbolIdentifiers incoming)
+    {
+        if (!string.IsNullOrWhiteSpace(incoming.Isin))
+            target.Isin = incoming.Isin;
+        if (!string.IsNullOrWhiteSpace(incoming.Cusip))
+            target.Cusip = incoming.Cusip;
+        if (!string.IsNullOrWhiteSpace(incoming.Figi))
+            target.Figi = incoming.Figi;
+        if (!string.IsNullOrWhiteSpace(incoming.Sedol))
+            target.Sedol = incoming.Sedol;
     }
 
     private static bool IsSecurityMasterSource(string? source)

@@ -81,6 +81,43 @@ public sealed class SecurityMasterSymbolReconciliationTests : IDisposable
             .Which.Source.Should().Be(SymbolMappingSources.SecurityMaster);
     }
 
+    [Fact]
+    public async Task CorrectedSecurityMasterIdentifier_StopsResolvingWhileOtherAuthorityIsKept()
+    {
+        var registry = new CanonicalSymbolRegistry(new SymbolRegistryService(_directory));
+        var id = Guid.NewGuid();
+        await registry.RegisterAsync(new CanonicalSymbolDefinition
+        {
+            Canonical = "SMTEST",
+            SecurityId = id,
+            Figi = "BBG000OPERATR"
+        });
+
+        await registry.ReconcileSecurityMasterAsync([id], [IdentifierDefinition(id, isin: "US0000000001")]);
+        registry.ResolveToCanonical("US0000000001").Should().Be("SMTEST");
+
+        await registry.ReconcileSecurityMasterAsync([id], [IdentifierDefinition(id, isin: "US0000000002")]);
+        registry.ResolveToCanonical("US0000000001").Should().BeNull("the superseded ISIN was Security Master-owned");
+        registry.ResolveToCanonical("US0000000002").Should().Be("SMTEST");
+        registry.GetDefinition("SMTEST")!.Isin.Should().Be("US0000000002");
+        registry.GetDefinition("SMTEST")!.Figi.Should().Be("BBG000OPERATR", "an identifier another source supplied is kept");
+
+        await registry.ReconcileSecurityMasterAsync([id], [IdentifierDefinition(id, isin: null)]);
+        registry.ResolveToCanonical("US0000000002").Should().BeNull("a removed Security Master identifier stops resolving");
+        registry.GetDefinition("SMTEST")!.Isin.Should().BeNull();
+    }
+
+    // Mirrors the definitions SecurityMasterCanonicalSymbolSeedService builds for identifiers.
+    private static CanonicalSymbolDefinition IdentifierDefinition(Guid id, string? isin)
+        => new()
+        {
+            Canonical = "SMTEST",
+            SecurityId = id,
+            Aliases = isin is null ? [] : [isin],
+            AliasDefinitions = isin is null ? [] : [new(isin, SymbolMappingSources.SecurityMaster)],
+            Isin = isin
+        };
+
     private static CanonicalSymbolDefinition Definition(Guid id, string ticker, string alias, string source)
         => new()
         {

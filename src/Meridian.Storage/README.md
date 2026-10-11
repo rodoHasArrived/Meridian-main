@@ -439,6 +439,9 @@ security IDs, independent alias provenance and operator overrides survive, and t
 is replaced after durable success. Rich aliases retain their explicit source and disabled state
 even when the same spelling also appears in the plain alias list. Historical aliases without
 Security Master provenance are not deleted by guessing ownership from their spelling.
+Security Master-governed identifiers (ISIN, CUSIP, FIGI, SEDOL) are seeded as Security Master-owned
+aliases; reconciliation replaces those identifiers with the supplied values and clears ones Security
+Master no longer supplies, while identifiers another source populated are kept.
 Security Master identifier lookup preserves provider authority: a provider-bound canonical
 identifier resolves only for the exact normalized provider. The legacy primary-identifier fallback
 is available only for providerless records that have no authoritative identifier row, so an omitted
@@ -471,7 +474,11 @@ Every projection-writing transaction also issues `pg_notify` on a per-schema cha
 commits; rolled-back writes announce nothing. Aliases keep an append-only revision history
 (`036_security_master_alias_revisions.sql`): corrections append a revision and recorded-as-of reads
 resolve each alias from the revision current at the cutoff. An alias ID stays bound to its first security even after it is
-retired, so neither alias upserts nor projection replacement can continue its history elsewhere. MoneyMarketFund, CertificateOfDeposit,
+retired, so neither alias upserts nor projection replacement can continue its history elsewhere.
+Projection reads stamp their alias list with the security's revision count (`SecurityAliasSnapshot`);
+a projection write carrying aliases read before a later alias write keeps the current alias rows
+instead of writing the superseded snapshot back, and the projection cache keeps the newer-stamped
+alias list, so an overlapping rebuild or amendment cannot undo an alias correction. MoneyMarketFund, CertificateOfDeposit,
 Deposit and CryptoCurrency projections are written by `SecurityTermsProjectionRegistry` descriptors
 rather than hand-written writers.
 
