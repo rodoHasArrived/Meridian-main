@@ -50,7 +50,7 @@ public sealed class SecurityMasterProjectionChangeListener : BackgroundService
     /// <summary>Raised after each successful <c>LISTEN</c> (and any post-reconnect resync); test seam.</summary>
     internal event Action? Listening;
 
-    /// <summary>Raised after each notification is applied; test seam.</summary>
+    /// <summary>Raised for each notification once its batch, registry reseed included, is applied; test seam.</summary>
     internal event Action<string, SecurityProjectionChangeOutcome>? NotificationHandled;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -105,21 +105,42 @@ public sealed class SecurityMasterProjectionChangeListener : BackgroundService
 
                 while (true)
                 {
+                    var cacheChanged = false;
+                    var handled = new List<(string Payload, SecurityProjectionChangeOutcome Outcome)>();
                     while (pending.TryDequeue(out var payload))
                     {
-                        var outcome = await _handler.HandleAsync(payload, stoppingToken).ConfigureAwait(false);
-                        // A notification whose durable reread failed is not replayed by PostgreSQL;
-                        // Start one deadline. Later failures and successful notifications must
-                        // not postpone it, even when unrelated writes keep the connection busy.
+                        var outcome = await _handler
+                            .HandleAsync(payload, reseedCanonicalSymbols: false, stoppingToken)
+                            .ConfigureAwait(false);
+                        cacheChanged |= outcome is SecurityProjectionChangeOutcome.Refreshed or SecurityProjectionChangeOutcome.Evicted;
+
+                        // A notification whose durable reread failed is not replayed by PostgreSQL,
+                        // so it starts one resync deadline. Later failures and successful
+                        // notifications must not postpone it, even when unrelated writes keep the
+                        // connection busy.
                         if (outcome == SecurityProjectionChangeOutcome.Failed && !resyncPending)
                         {
                             resyncPending = true;
                             retryStarted = Clock.GetTimestamp();
                         }
 
-                        NotificationHandled?.Invoke(payload, outcome);
+                        handled.Add((payload, outcome));
                         if (resyncPending && Clock.GetElapsedTime(retryStarted) >= ResyncRetryInterval)
                             break;
+                    }
+
+                    // One registry reseed per drained batch: a bulk publish announces each security,
+                    // and reseeding rescans the cache and rewrites the registry.
+                    if (cacheChanged && !await TryReseedCanonicalSymbolsAsync(stoppingToken).ConfigureAwait(false) && !resyncPending)
+                    {
+                        resyncPending = true;
+                        retryStarted = Clock.GetTimestamp();
+                    }
+
+                    // Raised once the batch, registry reseed included, has been applied.
+                    foreach (var (handledPayload, handledOutcome) in handled)
+                    {
+                        NotificationHandled?.Invoke(handledPayload, handledOutcome);
                     }
 
                     if (resyncPending && Clock.GetElapsedTime(retryStarted) >= ResyncRetryInterval)
@@ -162,6 +183,25 @@ public sealed class SecurityMasterProjectionChangeListener : BackgroundService
                 var doubled = TimeSpan.FromTicks(reconnectDelay.Ticks * 2);
                 reconnectDelay = doubled > MaxReconnectDelay ? MaxReconnectDelay : doubled;
             }
+        }
+    }
+
+    private async Task<bool> TryReseedCanonicalSymbolsAsync(CancellationToken ct)
+    {
+        try
+        {
+            await _handler.ReseedCanonicalSymbolsAsync(ct).ConfigureAwait(false);
+            return true;
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            // The resync that follows reseeds as well, so a failed reseed is retried with it.
+            _logger.LogWarning(ex, "Security Master canonical symbol reseed failed after projection changes; scheduling a resync");
+            return false;
         }
     }
 

@@ -144,6 +144,51 @@ public sealed class FaceValueLotOddPeriodTests
         midStub.Should().BeApproximately(3000m, 0.000001m);
     }
 
+    [Theory]
+    [InlineData(105.0)]
+    [InlineData(95.0)]
+    [InlineData(250.0)]
+    [InlineData(40.0)]
+    public void TwoDayStub_SolvesExtremeYieldsAndCarriesTheDirtyPriceToPar(double price)
+    {
+        // A two-day Actual/365 stub to a single zero-coupon payment: the price barely depends on
+        // yield (p = (1 + y)^−f with f = 2/365). At 105 and 95 the roots, ln(1 + y) ≈ ∓9, lie far
+        // outside a fixed yield bracket but inside the solver's range, and must carry the price
+        // exactly to par at the coupon date (linear inside the stub: the midpoint is halfway
+        // between cost and par). At 250 and 40 the roots, ln(1 + y) ≈ −167 and +167, are beyond
+        // what decimal can price, and must be refused rather than clamped to a wrong yield.
+        var acquired = new DateOnly(2026, 12, 30);
+        var maturity = new DateOnly(2027, 1, 1);
+        var lot = new FaceValueLot("odd-short", SecurityId, acquired, 1000m, (decimal)price);
+        var midStub = new DateOnly(2026, 12, 31);
+
+        var act = () => lot.ConstantYieldAmortizedBasisAsOf(DayCountConvention.Actual365, maturity, midStub, 0m, 1);
+
+        if (price is 105.0 or 95.0)
+        {
+            act().Should().BeApproximately((lot.CostBasis + 1000m) / 2m, 0.000001m);
+        }
+        else
+        {
+            act.Should().Throw<ArgumentException>().WithMessage("*representable yield*");
+        }
+    }
+
+    [Fact]
+    public void ShortStub_BasisAtCouponDateReachesParFromTheSolvedRoot()
+    {
+        // Ten Actual/365 days of an annual zero-coupon period at 102: the solved growth must carry
+        // the dirty price exactly to par at the coupon date, which a clamped yield cannot.
+        var acquired = new DateOnly(2026, 12, 22);
+        var maturity = new DateOnly(2027, 1, 1);
+        var lot = new FaceValueLot("odd-ten-day", SecurityId, acquired, 1000m, 102m);
+
+        var dayBefore = lot.ConstantYieldAmortizedBasisAsOf(DayCountConvention.Actual365, maturity, new DateOnly(2026, 12, 31), 0m, 1);
+
+        // Linear inside the stub from 1020 toward 1000: 9 of 10 days elapsed.
+        dayBefore.Should().BeApproximately(1020m - (20m * 9m / 10m), 0.000001m);
+    }
+
     [Fact]
     public void LongMonthlyZeroCouponAtAPremium_SolvesANegativeYieldWithoutOverflow()
     {

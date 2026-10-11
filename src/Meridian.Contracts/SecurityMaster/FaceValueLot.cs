@@ -415,8 +415,9 @@ public sealed record FaceValueLot
         // Canonical acquisitions retain annual yield as a decimal (0.05 = 5%). It must price the
         // odd-first-period schedule to the clean acquisition price before it is used.
         if (retainedAnnualEffectiveYield is { } retainedYield
-            && Math.Abs(CleanPricePerUnitAtYield(couponPerPeriod, totalCoupons, stubFraction, retainedYield / paymentsPerYear)
-                - pricePerUnit) > 0.0000000001m)
+            && (1m + (retainedYield / paymentsPerYear) <= 0m
+                || Math.Abs(CleanPricePerUnitAtLogGrowth(couponPerPeriod, totalCoupons, stubFraction, DecimalLn(1m + (retainedYield / paymentsPerYear)))
+                    - pricePerUnit) > 0.0000000001m))
             throw new ArgumentException("Retained effective yield does not reconcile to acquisition price and the odd-first-period contractual schedule.");
 
         if (PremiumDiscount == 0m)
@@ -426,13 +427,16 @@ public sealed record FaceValueLot
         if (asOf >= maturity)
             return OriginalFace;
 
-        var yieldPerPeriod = retainedAnnualEffectiveYield is { } annualYield
-            ? annualYield / paymentsPerYear
-            : SolveOddFirstPeriodYield(pricePerUnit, couponPerPeriod, totalCoupons, stubFraction);
+        // Work in log growth d = ln(1 + y): fractional powers become exp(f·d) without taking the
+        // logarithm of a base near zero, which the series cannot do accurately.
+        var logGrowthPerPeriod = retainedAnnualEffectiveYield is { } annualYield
+            ? DecimalLn(1m + (annualYield / paymentsPerYear))
+            : SolveOddFirstPeriodLogGrowth(pricePerUnit, couponPerPeriod, totalCoupons, stubFraction);
+        var growthPerPeriod = DecimalExp(logGrowthPerPeriod);
 
         // Ex-coupon carrying value at the first coupon date: the dirty acquisition amount grown at
         // the constant yield over the stub, less the full coupon received.
-        var afterFirstCoupon = ((pricePerUnit + accruedPerUnit) * DecimalPow(1m + yieldPerPeriod, stubFraction))
+        var afterFirstCoupon = ((pricePerUnit + accruedPerUnit) * DecimalExp(stubFraction * logGrowthPerPeriod))
             - couponPerPeriod;
 
         if (asOf < firstCoupon)
@@ -456,12 +460,12 @@ public sealed record FaceValueLot
         var basis = afterFirstCoupon;
         for (var period = 1; period < wholePeriods; period++)
         {
-            basis = (basis * (1m + yieldPerPeriod)) - couponPerPeriod;
+            basis = (basis * growthPerPeriod) - couponPerPeriod;
         }
 
         if (partialPeriod > 0m)
         {
-            var nextBasis = (basis * (1m + yieldPerPeriod)) - couponPerPeriod;
+            var nextBasis = (basis * growthPerPeriod) - couponPerPeriod;
             basis += (nextBasis - basis) * partialPeriod;
         }
 
@@ -490,34 +494,44 @@ public sealed record FaceValueLot
     }
 
     /// <summary>
-    /// Clean price per unit of face with a short first period of fraction <paramref name="stubFraction"/>:
-    /// the dirty value <c>Σ c / (1 + y)^(f + k) + 1 / (1 + y)^(f + n − 1)</c> — equal to
-    /// <c>(1 + y)^(1 − f)</c> times the regular n-period price — less accrued interest <c>c × (1 − f)</c>.
+    /// Clean price per unit of face with a short first period of fraction <paramref name="stubFraction"/>,
+    /// at per-period log growth <c>d = ln(1 + y)</c>: the dirty value
+    /// <c>Σ c / (1 + y)^(f + k) + 1 / (1 + y)^(f + n − 1)</c> — equal to <c>e^((1 − f)·d)</c> times the
+    /// regular n-period price — less accrued interest <c>c × (1 − f)</c>.
     /// </summary>
-    private static decimal CleanPricePerUnitAtYield(decimal couponPerPeriod, int totalCoupons, decimal stubFraction, decimal yieldPerPeriod)
-        => (DecimalPow(1m + yieldPerPeriod, 1m - stubFraction) * PricePerUnitAtYield(couponPerPeriod, totalCoupons, yieldPerPeriod))
+    private static decimal CleanPricePerUnitAtLogGrowth(decimal couponPerPeriod, int totalCoupons, decimal stubFraction, decimal logGrowthPerPeriod)
+        => (DecimalExp((1m - stubFraction) * logGrowthPerPeriod)
+                * PricePerUnitAtGrowth(couponPerPeriod, totalCoupons, DecimalExp(logGrowthPerPeriod)))
             - (couponPerPeriod * (1m - stubFraction));
 
-    // The bracket spans every yield a positive price can imply: just above −100% per period at the
-    // low end (any long schedule prices above target there, overflow included) and an upper bound
-    // that doubles until the price falls below target. A fixed [−0.5, 5] bracket silently converged
-    // to an endpoint for deep-premium or deep-discount stubs instead of to the root.
-    private const decimal OddPeriodYieldFloor = -0.999999m;
-    private const decimal OddPeriodYieldCeiling = 1_000_000m;
-
-    private static decimal SolveOddFirstPeriodYield(decimal pricePerUnit, decimal couponPerPeriod, int totalCoupons, decimal stubFraction)
+    private static decimal PricePerUnitAtGrowth(decimal couponPerPeriod, int totalPeriods, decimal growthPerPeriod)
     {
-        var low = OddPeriodYieldFloor;
-        var high = 5m;
-        while (CleanPriceExceeds(pricePerUnit, couponPerPeriod, totalCoupons, stubFraction, high))
+        var discount = 1m;
+        var price = 0m;
+        for (var period = 1; period < totalPeriods + 1; period++)
         {
-            high *= 2m;
-            if (high > OddPeriodYieldCeiling)
-                throw new ArgumentException("Constant-yield amortization cannot find a yield that prices this odd-first-period schedule to the acquisition price.");
+            discount /= growthPerPeriod;
+            price += couponPerPeriod * discount;
         }
 
-        if (!CleanPriceExceeds(pricePerUnit, couponPerPeriod, totalCoupons, stubFraction, low))
-            throw new ArgumentException("Constant-yield amortization cannot find a yield that prices this odd-first-period schedule to the acquisition price.");
+        return price + discount;
+    }
+
+    // The search runs over d = ln(1 + y), so a short stub — whose price barely moves with yield
+    // and so implies yields within a hair of −100% or in the millions of percent — still brackets
+    // its root. The range stops at |d| = 40, where e^±d and its reciprocal still carry ten or more
+    // significant digits in decimal; further out the discount factor underflows and the price is
+    // no longer trustworthy, so a price no yield in range reaches is refused rather than guessed.
+    private const decimal OddPeriodLogGrowthFloor = -40m;
+    private const decimal OddPeriodLogGrowthCeiling = 40m;
+
+    private static decimal SolveOddFirstPeriodLogGrowth(decimal pricePerUnit, decimal couponPerPeriod, int totalCoupons, decimal stubFraction)
+    {
+        var low = OddPeriodLogGrowthFloor;
+        var high = OddPeriodLogGrowthCeiling;
+        if (!CleanPriceExceeds(pricePerUnit, couponPerPeriod, totalCoupons, stubFraction, low)
+            || CleanPriceExceeds(pricePerUnit, couponPerPeriod, totalCoupons, stubFraction, high))
+            throw new ArgumentException("Constant-yield amortization cannot find a representable yield that prices this odd-first-period schedule to the acquisition price.");
 
         for (var iteration = 0; iteration < 120; iteration++)
         {
@@ -537,13 +551,13 @@ public sealed record FaceValueLot
 
     // Price falls strictly as yield rises, so a probe whose price overflows decimal (a long
     // schedule discounted at a deeply negative yield) prices above any finite target: the root
-    // lies at a higher yield. Treating the overflow that way keeps the fixed bracket safe for
-    // every schedule within the coupon limit instead of throwing mid-bisection.
-    private static bool CleanPriceExceeds(decimal pricePerUnit, decimal couponPerPeriod, int totalCoupons, decimal stubFraction, decimal yieldPerPeriod)
+    // lies at a higher yield. Treating the overflow that way keeps the bracket safe for every
+    // schedule within the coupon limit instead of throwing mid-bisection.
+    private static bool CleanPriceExceeds(decimal pricePerUnit, decimal couponPerPeriod, int totalCoupons, decimal stubFraction, decimal logGrowthPerPeriod)
     {
         try
         {
-            return CleanPricePerUnitAtYield(couponPerPeriod, totalCoupons, stubFraction, yieldPerPeriod) > pricePerUnit;
+            return CleanPricePerUnitAtLogGrowth(couponPerPeriod, totalCoupons, stubFraction, logGrowthPerPeriod) > pricePerUnit;
         }
         catch (OverflowException)
         {
@@ -551,17 +565,8 @@ public sealed record FaceValueLot
         }
     }
 
-    // Deterministic decimal power for a positive base and an exponent in [0, 1]. Pure decimal
-    // series rather than double Math.Pow, so replayed amortization is platform-independent.
-    private static decimal DecimalPow(decimal value, decimal exponent)
-    {
-        if (exponent == 0m || value == 1m)
-            return 1m;
-        if (exponent == 1m)
-            return value;
-        return DecimalExp(exponent * DecimalLn(value));
-    }
-
+    // Deterministic decimal logarithm and exponential. Pure decimal series rather than double
+    // Math.Log/Math.Exp, so replayed amortization is platform-independent.
     private static decimal DecimalLn(decimal value)
     {
         if (value <= 0m)

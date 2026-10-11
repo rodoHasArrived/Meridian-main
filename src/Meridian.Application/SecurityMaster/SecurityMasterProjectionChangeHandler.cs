@@ -64,7 +64,19 @@ public sealed class SecurityMasterProjectionChangeHandler
         _seedService = seedService;
     }
 
-    public async Task<SecurityProjectionChangeOutcome> HandleAsync(string? payload, CancellationToken ct = default)
+    public Task<SecurityProjectionChangeOutcome> HandleAsync(string? payload, CancellationToken ct = default)
+        => HandleAsync(payload, reseedCanonicalSymbols: true, ct);
+
+    /// <summary>
+    /// Applies one notification. With <paramref name="reseedCanonicalSymbols"/> false the caller
+    /// owns reseeding: the listener drains a batch of notifications and reseeds the canonical
+    /// registry once afterwards, rather than rescanning the cache and rewriting the registry per
+    /// notification.
+    /// </summary>
+    public async Task<SecurityProjectionChangeOutcome> HandleAsync(
+        string? payload,
+        bool reseedCanonicalSymbols,
+        CancellationToken ct = default)
     {
         if (!SecurityProjectionChangeNotification.TryParse(payload, out var notification) || notification is null)
         {
@@ -101,7 +113,7 @@ public sealed class SecurityMasterProjectionChangeHandler
                 notification.Version,
                 notification.OriginNodeId,
                 result);
-            if (result != SecurityProjectionRefreshResult.KeptNewer)
+            if (reseedCanonicalSymbols && result != SecurityProjectionRefreshResult.KeptNewer)
             {
                 // Local writes reseed the canonical registry after touching the cache; a remote
                 // change to a primary ticker or provider alias must reach the hot-path lookup too.
@@ -131,7 +143,8 @@ public sealed class SecurityMasterProjectionChangeHandler
         }
     }
 
-    private Task ReseedCanonicalSymbolsAsync(CancellationToken ct)
+    /// <summary>Reseeds the canonical symbol registry from the current cache, when one is wired.</summary>
+    public Task ReseedCanonicalSymbolsAsync(CancellationToken ct = default)
         => _seedService is null ? Task.CompletedTask : _seedService.SeedAsync(ct);
 
     /// <summary>

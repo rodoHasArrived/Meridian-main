@@ -37,6 +37,11 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     // Owned lifetime token so background fire-and-forget tasks are cancelled on disposal.
     private readonly CancellationTokenSource _serviceCts = new();
 
+    // Serializes the post-commit alias reread and cache update. Alias writes keep the projection
+    // version, and the cache accepts an equal version, so without the gate an earlier write's
+    // reread could land after a later write's and leave this node holding the superseded alias.
+    private readonly SemaphoreSlim _aliasCacheRefreshGate = new(1, 1);
+
     public SecurityMasterService(
         ISecurityMasterEventStore eventStore,
         ISecurityMasterSnapshotStore snapshotStore,
@@ -680,6 +685,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     {
         _serviceCts.Cancel();
         _serviceCts.Dispose();
+        _aliasCacheRefreshGate.Dispose();
     }
 
     /// <summary>
@@ -1710,11 +1716,23 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
         // Aliases are part of the cached projection and seed the canonical registry, so a new or
         // corrected alias refreshes both here; other nodes refresh from the store's notification.
-        if (_projectionCache is not null
-            && await _store.GetProjectionAsync(alias.SecurityId, ct).ConfigureAwait(false) is { } projection)
+        if (_projectionCache is not null)
         {
-            _projectionCache.Upsert(projection);
-            TryReseedRegistryInBackground();
+            // Inside the gate the reread happens after every earlier write committed, so the
+            // last cache update reflects the latest committed alias state.
+            await _aliasCacheRefreshGate.WaitAsync(ct).ConfigureAwait(false);
+            try
+            {
+                if (await _store.GetProjectionAsync(alias.SecurityId, ct).ConfigureAwait(false) is { } projection)
+                {
+                    _projectionCache.Upsert(projection);
+                    TryReseedRegistryInBackground();
+                }
+            }
+            finally
+            {
+                _aliasCacheRefreshGate.Release();
+            }
         }
 
         return persisted;
