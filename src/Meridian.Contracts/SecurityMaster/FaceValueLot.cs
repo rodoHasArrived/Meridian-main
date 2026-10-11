@@ -572,6 +572,31 @@ public sealed record FaceValueLot
         if (value <= 0m)
             throw new ArgumentOutOfRangeException(nameof(value), value, "Logarithm requires a positive value.");
         // ln(x) = 2 · atanh((x − 1) / (x + 1)), convergent for every positive x.
+        // Range reduction: value = m · 2^k with m in [0.75, 1.5), so the atanh series below runs on
+        // |z| ≤ 0.2 and converges in a few dozen terms for any positive decimal, including bases
+        // near zero (short-stub growth factors) where an unreduced series does not converge.
+        var exponent = 0;
+        var mantissa = value;
+        while (mantissa >= 1.5m)
+        {
+            mantissa /= 2m;
+            exponent++;
+        }
+
+        while (mantissa < 0.75m)
+        {
+            mantissa *= 2m;
+            exponent--;
+        }
+
+        return AtanhLogSeries(mantissa) + (exponent * Ln2);
+    }
+
+    private static readonly decimal Ln2 = AtanhLogSeries(2m);
+
+    // ln(x) = 2 · atanh((x − 1) / (x + 1)); converges for every positive x, quickly when x is near 1.
+    private static decimal AtanhLogSeries(decimal value)
+    {
         var z = (value - 1m) / (value + 1m);
         var zSquared = z * z;
         var power = z;

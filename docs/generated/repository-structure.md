@@ -10842,6 +10842,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterAliasRecordedHistoryTests.cs
 │   │   │   ├── SecurityMasterAmortizationLedgerBridgeTests.cs
 │   │   │   ├── SecurityMasterAssetClassSupportTests.cs
+│   │   │   ├── SecurityMasterCanonicalSymbolSeedFallbackTests.cs
 │   │   │   ├── SecurityMasterConflictServiceTests.cs
 │   │   │   ├── SecurityMasterConvertibleEquityAmendmentTests.cs
 │   │   │   ├── SecurityMasterCorporateActionCommandServiceTests.cs

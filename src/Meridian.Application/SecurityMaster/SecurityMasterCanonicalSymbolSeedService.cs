@@ -179,11 +179,13 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
             reverseMap[ticker] = record.SecurityId;
         }
 
-        if (_registry is not ICanonicalSymbolRegistrySecurityMasterWriter writer)
-            throw new InvalidOperationException("The canonical registry does not support Security Master reconciliation.");
-
-        var registered = await writer.ReconcileSecurityMasterAsync(
-            snapshot.Select(record => record.SecurityId).ToArray(), definitions, ct).ConfigureAwait(false);
+        // Registries that can reconcile Security Master-owned entries drop superseded aliases; a
+        // registry implementing only the base contract keeps the merge-only seed it always had,
+        // so the reverse lookup below is still populated in that host.
+        var registered = _registry is ICanonicalSymbolRegistrySecurityMasterWriter writer
+            ? await writer.ReconcileSecurityMasterAsync(
+                snapshot.Select(record => record.SecurityId).ToArray(), definitions, ct).ConfigureAwait(false)
+            : await _registry.RegisterBatchAsync(definitions, ct).ConfigureAwait(false);
 
         // Atomically replace the reverse lookup so readers immediately see the new map.
         _tickerToSecurityId = reverseMap;

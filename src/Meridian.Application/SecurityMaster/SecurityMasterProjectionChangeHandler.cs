@@ -168,6 +168,7 @@ public sealed class SecurityMasterProjectionChangeHandler
     {
         if (_options.PreloadProjectionCache)
         {
+            // WarmAsync holds the cache's refresh gate across its durable read and swap.
             await _projectionService.WarmAsync(ct).ConfigureAwait(false);
         }
         else

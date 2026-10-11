@@ -175,6 +175,23 @@ public sealed class FaceValueLotOddPeriodTests
     }
 
     [Fact]
+    public void ShortStub_RetainedYieldNearMinusOneHundredPercent_Reconciles()
+    {
+        // The retained yield for a two-day Actual/365 zero-coupon stub at 105 is (1 + y) = 1.05^(−365/2),
+        // about 1.36e−4. Reconciling it needs ln(1 + y) ≈ −8.9 to ten-plus digits, which the
+        // unreduced atanh series could not reach for a base that close to zero.
+        var acquired = new DateOnly(2026, 12, 30);
+        var maturity = new DateOnly(2027, 1, 1);
+        var lot = new FaceValueLot("odd-retained", SecurityId, acquired, 1000m, 105m);
+        var retainedYield = (decimal)(Math.Pow(1.05, -365.0 / 2.0) - 1.0);
+
+        var midStub = lot.ConstantYieldAmortizedBasisAsOf(
+            DayCountConvention.Actual365, maturity, new DateOnly(2026, 12, 31), 0m, 1, retainedYield);
+
+        midStub.Should().BeApproximately(1025m, 0.0001m);
+    }
+
+    [Fact]
     public void ShortStub_BasisAtCouponDateReachesParFromTheSolvedRoot()
     {
         // Ten Actual/365 days of an annual zero-coupon period at 102: the solved growth must carry

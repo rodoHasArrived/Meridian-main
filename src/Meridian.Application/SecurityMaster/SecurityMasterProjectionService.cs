@@ -70,8 +70,21 @@ public sealed class SecurityMasterProjectionService
 
     public async Task WarmAsync(CancellationToken ct = default)
     {
-        var rebuiltRecords = await BuildWarmSetAsync(ct).ConfigureAwait(false);
-        _cache.ReplaceAll(rebuiltRecords);
+        // Held across the durable read and the swap, so an alias refresh that commits during a warm
+        // (startup, periodic, or a listener resync) either lands before the warm reads or waits and
+        // lands after the swap; otherwise the swap could reinstate the superseded equal-version record.
+        IReadOnlyList<SecurityProjectionRecord> rebuiltRecords;
+        await _cache.RefreshGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            rebuiltRecords = await BuildWarmSetAsync(ct).ConfigureAwait(false);
+            _cache.ReplaceAll(rebuiltRecords);
+        }
+        finally
+        {
+            _cache.RefreshGate.Release();
+        }
+
         _logger.LogInformation(
             "Warmed security master projection cache with {Count} rebuilt records from snapshots/events",
             rebuiltRecords.Count);
