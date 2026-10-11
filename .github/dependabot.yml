@@ -74,7 +74,7 @@ updates:
           - "@eslint/*"
           - "eslint-plugin-*"
           - "tailwindcss"
-          - "@tailwindcss/*"
+          - "autoprefixer"
           - "postcss"
         update-types:
           - "minor"
