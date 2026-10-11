@@ -173,7 +173,7 @@ export function EvidenceWorkbenchScreen() {
                       to={vm.openSubjectHref(subject)}
                       aria-label={`Select evidence subject ${subject.label}${subject.subjectKind === vm.selectedSubjectKind && subject.subjectId === vm.selectedSubjectId ? " (selected)" : ""}`}
                       aria-current={subject.subjectKind === vm.selectedSubjectKind && subject.subjectId === vm.selectedSubjectId ? "page" : undefined}
-                      className="block rounded-t-md px-4 py-3 transition-colors hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="block rounded-t-md px-4 py-3 transition-colors hover:bg-secondary/45 focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                     >
                       <span className="flex items-center justify-between gap-3">
                         <span className="font-semibold text-foreground">{subject.label}</span>
@@ -1284,7 +1284,7 @@ function EvidenceVaultDocumentQueueItem({
       aria-label={document.ariaLabel}
       className={cn(
         "rounded-md border bg-secondary/25 px-3 py-3 text-sm",
-        selected ? "border-primary/60 shadow-sm" : "border-border/70"
+        selected ? "border-primary/60 shadow-xs" : "border-border/70"
       )}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1392,7 +1392,7 @@ function EvidenceVaultDocumentDetailPanel({ detail }: { detail: EvidenceVaultDoc
         </div>
       </TechnicalDetails>
       <details open className="mt-4 rounded-md border border-border/70 bg-secondary/10 px-3 py-2">
-        <summary className="cursor-pointer text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+        <summary className="cursor-pointer text-sm font-semibold text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
           Review fields
         </summary>
         <div className="mt-3">
@@ -1400,7 +1400,7 @@ function EvidenceVaultDocumentDetailPanel({ detail }: { detail: EvidenceVaultDoc
         </div>
       </details>
       <details className="mt-4 rounded-md border border-border/70 bg-secondary/10 px-3 py-2">
-        <summary className="cursor-pointer text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+        <summary className="cursor-pointer text-sm font-semibold text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
           Audit trail and support requests
         </summary>
         <div className="mt-3 grid gap-4 xl:grid-cols-2">

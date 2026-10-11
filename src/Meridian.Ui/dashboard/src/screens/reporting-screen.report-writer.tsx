@@ -1068,7 +1068,7 @@ export function ReportWriterDesignerGrid({
             value={customDatasetText}
             onChange={(event) => onCustomDatasetChange(grid, event.target.value)}
             aria-label={`${grid.title} custom dataset rows`}
-            className="min-h-28 w-full resize-y rounded-md border border-input bg-background px-3 py-2 font-mono text-xs text-foreground shadow-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+            className="min-h-28 w-full resize-y rounded-md border border-input bg-background px-3 py-2 font-mono text-xs text-foreground shadow-xs outline-hidden transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
             spellCheck={false}
             placeholder={'[{"sector":"Technology","strategy":"Core","marketValue":"150","pnl":"15"}]\n\nsector,strategy,marketValue,pnl\nTechnology,Core,150,15'}
           />
@@ -1683,7 +1683,7 @@ function ReportWriterTokenChip({
         <span className="ml-0.5 inline-flex shrink-0 items-center gap-0.5">
           <button
             type="button"
-            className="inline-flex h-4 w-4 items-center justify-center rounded-sm text-muted-foreground hover:bg-background/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-35"
+            className="inline-flex h-4 w-4 items-center justify-center rounded-sm text-muted-foreground hover:bg-background/80 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-35"
             aria-label={`Move ${token.label} left`}
             disabled={!canMovePrevious}
             onClick={(event) => {
@@ -1696,7 +1696,7 @@ function ReportWriterTokenChip({
           </button>
           <button
             type="button"
-            className="inline-flex h-4 w-4 items-center justify-center rounded-sm text-muted-foreground hover:bg-background/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-35"
+            className="inline-flex h-4 w-4 items-center justify-center rounded-sm text-muted-foreground hover:bg-background/80 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-35"
             aria-label={`Move ${token.label} right`}
             disabled={!canMoveNext}
             onClick={(event) => {
@@ -1712,7 +1712,7 @@ function ReportWriterTokenChip({
       {onRemove ? (
         <button
           type="button"
-          className="ml-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-background/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="ml-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-background/80 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           aria-label={`Remove ${token.label}`}
           onClick={(event) => {
             event.preventDefault();

@@ -360,7 +360,7 @@ export function CashLadderScreen({ fundAccountId }: CashLadderScreenProps = {}) 
                       role="button"
                       tabIndex={0}
                       aria-label={bar.ariaLabel}
-                      className="cursor-pointer focus:outline-none"
+                      className="cursor-pointer focus:outline-hidden"
                       onClick={() => setSelectedBucket(bar.index === selectedBucket ? null : bar.index)}
                       onKeyDown={(event) => {
                         if (event.key === "Enter" || event.key === " ") {
