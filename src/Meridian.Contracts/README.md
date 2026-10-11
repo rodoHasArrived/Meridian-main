@@ -1585,7 +1585,10 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 Canonical symbol registries retain their stable read/write interfaces. Implementations that can
 apply a startup seed batch atomically opt into `ICanonicalSymbolRegistryMigrationWriter`; callers
 must require that additive capability rather than widening the general registry contract or
-falling back to per-definition writes.
+falling back to per-definition writes. Security Master seeding similarly requires the additive
+`ICanonicalSymbolRegistrySecurityMasterWriter` capability. It supplies an explicit security-ID scope
+and the current active definitions, replacing only that source's aliases and non-override provider
+mappings while preserving independent authority.
 
 `WorkstationWorkspaceCatalog` classifies browser workspaces by product maturity only:
 `Preview`, `Setup`, or `Available`. Execution environment (`Demo`, `Paper`, or `Live`) and runtime

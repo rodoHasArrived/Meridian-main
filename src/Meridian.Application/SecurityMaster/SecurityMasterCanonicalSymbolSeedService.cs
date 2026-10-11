@@ -29,6 +29,8 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
     private readonly ICanonicalSymbolRegistry _registry;
     private readonly ILogger<SecurityMasterCanonicalSymbolSeedService> _logger;
 
+    private readonly SemaphoreSlim _seedLock = new(1, 1);
+
     // Thread-safe reverse lookup: canonical ticker (case-insensitive) → SecurityId.
     // Replaced atomically by SeedAsync; read concurrently by EventCanonicalizer.
     private volatile IReadOnlyDictionary<string, Guid> _tickerToSecurityId =
@@ -63,12 +65,22 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
     /// </summary>
     public async Task SeedAsync(CancellationToken ct = default)
     {
-        var snapshot = _cache.Snapshot();
-        if (snapshot.Count == 0)
+        await _seedLock.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            _logger.LogDebug("Security Master projection cache is empty; canonical registry seed skipped.");
-            return;
+            await ReconcileSnapshotAsync(ct).ConfigureAwait(false);
         }
+        finally
+        {
+            _seedLock.Release();
+        }
+    }
+
+    private async Task ReconcileSnapshotAsync(CancellationToken ct)
+    {
+        // Capture only after taking the gate: a slow earlier seed must never overwrite a
+        // later projection refresh with an older snapshot.
+        var snapshot = _cache.Snapshot();
 
         var definitions = new List<CanonicalSymbolDefinition>(snapshot.Count);
         var reverseMap = new Dictionary<string, Guid>(snapshot.Count, StringComparer.OrdinalIgnoreCase);
@@ -167,13 +179,11 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
             reverseMap[ticker] = record.SecurityId;
         }
 
-        if (definitions.Count == 0)
-        {
-            _logger.LogDebug("No active securities found in Security Master projection cache; registry seed skipped.");
-            return;
-        }
+        if (_registry is not ICanonicalSymbolRegistrySecurityMasterWriter writer)
+            throw new InvalidOperationException("The canonical registry does not support Security Master reconciliation.");
 
-        var registered = await _registry.RegisterBatchAsync(definitions, ct).ConfigureAwait(false);
+        var registered = await writer.ReconcileSecurityMasterAsync(
+            snapshot.Select(record => record.SecurityId).ToArray(), definitions, ct).ConfigureAwait(false);
 
         // Atomically replace the reverse lookup so readers immediately see the new map.
         _tickerToSecurityId = reverseMap;

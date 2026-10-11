@@ -27,6 +27,8 @@ public sealed class SecurityMasterProjectionChangeListener : BackgroundService
 {
     private static readonly TimeSpan ResyncRetryInterval = TimeSpan.FromSeconds(30);
 
+    internal TimeProvider Clock { get; init; } = TimeProvider.System;
+
     private readonly SecurityMasterOptions _options;
     private readonly SecurityMasterProjectionChangeHandler _handler;
     private readonly ILogger<SecurityMasterProjectionChangeListener> _logger;
@@ -97,6 +99,8 @@ public sealed class SecurityMasterProjectionChangeListener : BackgroundService
                     resyncPending = !await TryResynchronizeAsync(stoppingToken).ConfigureAwait(false);
                 }
 
+                var retryStarted = Clock.GetTimestamp();
+
                 Listening?.Invoke();
 
                 while (true)
@@ -105,20 +109,34 @@ public sealed class SecurityMasterProjectionChangeListener : BackgroundService
                     {
                         var outcome = await _handler.HandleAsync(payload, stoppingToken).ConfigureAwait(false);
                         // A notification whose durable reread failed is not replayed by PostgreSQL;
-                        // fall back to a resync on the next idle wait so the change is not lost.
-                        if (outcome == SecurityProjectionChangeOutcome.Failed)
+                        // Start one deadline. Later failures and successful notifications must
+                        // not postpone it, even when unrelated writes keep the connection busy.
+                        if (outcome == SecurityProjectionChangeOutcome.Failed && !resyncPending)
                         {
                             resyncPending = true;
+                            retryStarted = Clock.GetTimestamp();
                         }
 
                         NotificationHandled?.Invoke(payload, outcome);
+                        if (resyncPending && Clock.GetElapsedTime(retryStarted) >= ResyncRetryInterval)
+                            break;
                     }
 
-                    var notified = await connection.WaitAsync(ResyncRetryInterval, stoppingToken).ConfigureAwait(false);
-                    if (!notified && resyncPending)
+                    if (resyncPending && Clock.GetElapsedTime(retryStarted) >= ResyncRetryInterval)
                     {
                         resyncPending = !await TryResynchronizeAsync(stoppingToken).ConfigureAwait(false);
+                        retryStarted = Clock.GetTimestamp();
                     }
+
+                    if (!pending.IsEmpty)
+                        continue;
+
+                    var wait = resyncPending
+                        ? ResyncRetryInterval - Clock.GetElapsedTime(retryStarted)
+                        : ResyncRetryInterval;
+                    if (wait <= TimeSpan.Zero)
+                        continue;
+                    await connection.WaitAsync(wait, stoppingToken).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)

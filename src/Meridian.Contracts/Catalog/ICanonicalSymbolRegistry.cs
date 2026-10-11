@@ -136,6 +136,20 @@ public interface ICanonicalSymbolRegistryMigrationWriter
         CancellationToken ct = default);
 }
 
+/// <summary>Optional atomic reconciliation of Security-Master-owned symbol authority.</summary>
+public interface ICanonicalSymbolRegistrySecurityMasterWriter
+{
+    /// <summary>
+    /// Replaces Security Master aliases and non-override provider mappings for the supplied
+    /// security IDs only. Definitions describe active securities; an ID without a definition
+    /// withdraws its Security Master mappings. Other sources and securities are preserved.
+    /// </summary>
+    Task<int> ReconcileSecurityMasterAsync(
+        IReadOnlyCollection<Guid> securityIds,
+        IEnumerable<CanonicalSymbolDefinition> definitions,
+        CancellationToken ct = default);
+}
+
 /// <summary>
 /// Defines a canonical symbol with all known identifiers, aliases, and metadata.
 /// This is the standardized representation used for symbol naming consistency.

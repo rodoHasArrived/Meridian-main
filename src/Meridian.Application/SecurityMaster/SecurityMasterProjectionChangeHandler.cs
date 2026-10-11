@@ -13,7 +13,7 @@ public enum SecurityProjectionChangeOutcome
     /// <summary>The notification came from this node, whose own write path already updated the cache.</summary>
     IgnoredOwnNode,
 
-    /// <summary>The cache already held the notified version or newer; no durable read was needed.</summary>
+    /// <summary>The cache already held a strictly newer version; no durable read was needed.</summary>
     AlreadyCurrent,
 
     /// <summary>The security was re-read from the durable store and installed.</summary>
@@ -28,7 +28,7 @@ public enum SecurityProjectionChangeOutcome
     /// <summary>The whole cache was re-synchronised from the durable store.</summary>
     Resynchronized,
 
-    /// <summary>The durable re-read failed; the periodic re-warm remains the backstop.</summary>
+    /// <summary>The durable re-read failed; the listener schedules a full resynchronization retry.</summary>
     Failed
 }
 
@@ -123,7 +123,7 @@ public sealed class SecurityMasterProjectionChangeHandler
         {
             _logger.LogWarning(
                 ex,
-                "Failed to apply Security Master projection change {Kind} for {SecurityId} from node {OriginNodeId}; the periodic re-warm remains the backstop",
+                "Failed to apply Security Master projection change {Kind} for {SecurityId} from node {OriginNodeId}; the listener will schedule a resynchronization retry",
                 notification.Kind,
                 notification.SecurityId,
                 notification.OriginNodeId);
