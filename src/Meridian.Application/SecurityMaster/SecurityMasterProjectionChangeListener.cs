@@ -228,12 +228,15 @@ public sealed class SecurityMasterProjectionChangeListener : BackgroundService
         }
     }
 
-    private static string BuildListenerConnectionString(string connectionString)
+    internal static string BuildListenerConnectionString(string connectionString)
     {
         var builder = new NpgsqlConnectionStringBuilder(connectionString)
         {
             // A dedicated, never-pooled session: returning it to a pool would UNLISTEN it.
-            Pooling = false
+            // Multiplexing requires pooling (Npgsql rejects the combination), and a LISTEN session
+            // must own its physical connection anyway, so it is turned off with pooling.
+            Pooling = false,
+            Multiplexing = false
         };
 
         if (builder.KeepAlive <= 0)

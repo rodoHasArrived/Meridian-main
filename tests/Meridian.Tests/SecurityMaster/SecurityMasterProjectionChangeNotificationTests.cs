@@ -312,6 +312,17 @@ public sealed class SecurityMasterProjectionChangeNotificationTests
             "Created", "the resync retries the failed security even though the lazy cache never held it");
     }
 
+    [Fact]
+    public void ListenerConnectionString_DisablesPoolingAndMultiplexing()
+    {
+        var listener = new Npgsql.NpgsqlConnectionStringBuilder(
+            SecurityMasterProjectionChangeListener.BuildListenerConnectionString(
+                "Host=localhost;Database=sm;Pooling=true;Multiplexing=true"));
+
+        listener.Pooling.Should().BeFalse("returning the LISTEN session to a pool would unlisten it");
+        listener.Multiplexing.Should().BeFalse("Npgsql rejects multiplexing without pooling");
+    }
+
     private SecurityMasterProjectionChangeHandler CreateHandler(bool preload = false)
     {
         var options = new SecurityMasterOptions { PreloadProjectionCache = preload };

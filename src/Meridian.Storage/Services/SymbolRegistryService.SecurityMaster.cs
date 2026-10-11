@@ -32,6 +32,7 @@ public sealed partial class SymbolRegistryService
             var json = JsonSerializer.Serialize(_registry, MarketDataJsonContext.Default.SymbolRegistry);
             var candidate = JsonSerializer.Deserialize(json, MarketDataJsonContext.Default.SymbolRegistry)
                 ?? throw new InvalidDataException("Unable to clone the retained symbol registry.");
+            var incomingBySecurityId = incoming.ToDictionary(entry => entry.SecurityId!.Value);
             foreach (var entry in candidate.Symbols.Values)
             {
                 ct.ThrowIfCancellationRequested();
@@ -40,7 +41,11 @@ public sealed partial class SymbolRegistryService
 
                 // Source is authority, not a spelling heuristic. In particular, never infer
                 // ownership of an operator/legacy/provider alias from a ticker suffix.
-                ClaimLegacySecurityMasterIdentifierAliases(entry);
+                if (incomingBySecurityId.TryGetValue(id, out var supplied))
+                {
+                    ClaimLegacySecurityMasterIdentifierAliases(entry, supplied.Identifiers);
+                }
+
                 // Only aliases emitted from a Security Master identifier field prove that the
                 // matching typed identifier came from Security Master; an ordinary alias sharing
                 // the value does not, so it never clears another source's identifier.
@@ -101,24 +106,37 @@ public sealed partial class SymbolRegistryService
     /// <summary>
     /// One-way upgrade of registries seeded before identifier aliases carried Security Master
     /// provenance: that seed wrote each identifier both as the typed identifier and as a plain alias
-    /// whose source was inferred from its spelling. An alias with such an inferred source whose
-    /// value equals the entry's typed ISIN, CUSIP, FIGI or SEDOL is that seed's copy, so it is
-    /// claimed as Security Master-owned and reconciled like the aliases the current seed writes.
-    /// Aliases with explicit provenance (operator, provider, registry) are never claimed.
+    /// whose source was inferred from its spelling. Spelling alone cannot tell that copy from a plain
+    /// alias another caller added, so an alias is claimed only for an identifier kind Security Master
+    /// supplies in this reconciliation, where Security Master is authoritative for the typed field
+    /// anyway: an inferred-source, providerless alias equal to the entry's typed value of that kind.
+    /// A kind Security Master does not supply is never claimed, so another authority's identifier
+    /// and alias survive. Aliases with explicit provenance (operator, provider, registry) are never
+    /// claimed.
     /// </summary>
-    private static void ClaimLegacySecurityMasterIdentifierAliases(SymbolRegistryEntry entry)
+    private static void ClaimLegacySecurityMasterIdentifierAliases(SymbolRegistryEntry entry, SymbolIdentifiers supplied)
     {
         var identifiers = entry.Identifiers;
-        string?[] identifierValues = [identifiers.Isin, identifiers.Cusip, identifiers.Figi, identifiers.Sedol];
+        var claimable = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        AddWhenSupplied(identifiers.Isin, supplied.Isin);
+        AddWhenSupplied(identifiers.Cusip, supplied.Cusip);
+        AddWhenSupplied(identifiers.Figi, supplied.Figi);
+        AddWhenSupplied(identifiers.Sedol, supplied.Sedol);
         foreach (var alias in entry.Aliases)
         {
             if (alias.Source is { } source
                 && LegacyIdentifierAliasSources.Contains(source)
                 && string.IsNullOrWhiteSpace(alias.Provider)
-                && identifierValues.Any(value => string.Equals(value, alias.Alias, StringComparison.OrdinalIgnoreCase)))
+                && claimable.Contains(alias.Alias))
             {
                 alias.Source = SymbolMappingSources.SecurityMasterIdentifier;
             }
+        }
+
+        void AddWhenSupplied(string? current, string? suppliedValue)
+        {
+            if (!string.IsNullOrWhiteSpace(current) && !string.IsNullOrWhiteSpace(suppliedValue))
+                claimable.Add(current);
         }
     }
 

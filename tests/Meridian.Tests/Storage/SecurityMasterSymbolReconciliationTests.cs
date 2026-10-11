@@ -151,6 +151,26 @@ public sealed class SecurityMasterSymbolReconciliationTests : IDisposable
         registry.ResolveToCanonical("BBG000OPENFIG").Should().Be("SMTEST");
     }
 
+    [Fact]
+    public async Task InferredSourceAliasForAnIdentifierSecurityMasterDoesNotSupply_IsNotClaimed()
+    {
+        var registry = new CanonicalSymbolRegistry(new SymbolRegistryService(_directory));
+        var id = Guid.NewGuid();
+        // Another caller registered a CUSIP and the same value as a plain alias ("manual" source).
+        await registry.RegisterBatchAsync([new CanonicalSymbolDefinition
+        {
+            Canonical = "SMTEST",
+            SecurityId = id,
+            Aliases = ["037833100"],
+            Cusip = "037833100"
+        }]);
+
+        await registry.ReconcileSecurityMasterAsync([id], [IdentifierDefinition(id, isin: "US0000000002")]);
+
+        registry.GetDefinition("SMTEST")!.Cusip.Should().Be("037833100", "Security Master supplies no CUSIP");
+        registry.ResolveToCanonical("037833100").Should().Be("SMTEST");
+    }
+
     // Mirrors the definitions SecurityMasterCanonicalSymbolSeedService builds for identifiers.
     private static CanonicalSymbolDefinition IdentifierDefinition(Guid id, string? isin)
         => new()

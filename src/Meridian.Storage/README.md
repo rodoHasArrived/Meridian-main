@@ -443,7 +443,7 @@ Security Master-governed identifiers (ISIN, CUSIP, FIGI, SEDOL) are seeded as Se
 aliases; reconciliation replaces those identifiers with the supplied values and clears ones Security
 Master no longer supplies, while identifiers another source populated are kept. Identifier aliases written by the earlier seed
 (source inferred from spelling, value equal to the typed identifier) are claimed as Security
-Master-owned on the next reconciliation.
+Master-owned on the next reconciliation, but only for identifier kinds Security Master supplies.
 Security Master identifier lookup preserves provider authority: a provider-bound canonical
 identifier resolves only for the exact normalized provider. The legacy primary-identifier fallback
 is available only for providerless records that have no authoritative identifier row, so an omitted
