@@ -26,7 +26,10 @@ Security Master event replay that lacks retained flat terms flattens the economi
 the record's asset class, so carried values land at that class's declared keys. The Postgres
 composition registers `SecurityMasterProjectionChangeListener` (disable with
 `MERIDIAN_SECURITY_MASTER_PROJECTION_NOTIFICATIONS=false`) to keep the projection cache coherent
-across nodes; it re-synchronises on first subscription and after every reconnect.
+across nodes; it re-synchronises on first subscription and after every reconnect. Failed durable
+refreshes schedule a monotonic 30-second retry that incoming notifications cannot postpone. Canonical
+reseeds are serialized and reconcile Security-Master-owned aliases and non-override provider mappings
+for cached security IDs; operator/provider authority outside that ownership remains intact.
 Primary-host storage composition supplies deferred Security Master and book-position resolvers to
 the PostgreSQL journal store. Deferred resolution preserves the shared singleton authorities while
 avoiding the journal/position constructor cycle; absent durable authority fails closed at posting.

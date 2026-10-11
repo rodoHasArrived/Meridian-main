@@ -13,8 +13,9 @@ namespace Meridian.Storage.Services;
 /// Service for managing the symbol registry with comprehensive alias resolution.
 /// Stored at _catalog/symbols.json.
 /// </summary>
-public sealed class SymbolRegistryService :
+public sealed partial class SymbolRegistryService :
     ISymbolRegistryService,
+    ISymbolRegistrySecurityMasterWriter,
     ISymbolRegistryMigrationWriter
 {
     private const string CatalogDirectoryName = "_catalog";
@@ -815,7 +816,7 @@ public sealed class SymbolRegistryService :
         entry.Aliases = entry.Aliases
             .Where(static alias => !string.IsNullOrWhiteSpace(alias.Alias))
             .GroupBy(
-                static alias => $"{alias.Provider}\u001f{alias.Alias}",
+                static alias => $"{alias.Provider}\u001f{alias.Alias}\u001f{alias.Source}",
                 StringComparer.OrdinalIgnoreCase)
             .Select(static group => group.First())
             .ToList();
@@ -957,7 +958,8 @@ public sealed class SymbolRegistryService :
 
     private static bool AliasIdentityMatches(SymbolAlias left, SymbolAlias right)
         => left.Alias.Equals(right.Alias, StringComparison.OrdinalIgnoreCase)
-           && string.Equals(left.Provider, right.Provider, StringComparison.OrdinalIgnoreCase);
+           && string.Equals(left.Provider, right.Provider, StringComparison.OrdinalIgnoreCase)
+           && string.Equals(left.Source, right.Source, StringComparison.OrdinalIgnoreCase);
 
     private void UpdateIdentifierIndex(SymbolRegistryEntry entry)
         => UpdateIdentifierIndex(_registry, entry);

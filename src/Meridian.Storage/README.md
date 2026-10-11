@@ -433,7 +433,12 @@ and profile presets.
 Canonical symbol resolution is Storage-owned because it wraps the durable symbol registry and its
 identifier indexes. Application composition registers the Storage implementation behind
 `Meridian.Contracts.Catalog.ICanonicalSymbolRegistry` for canonicalization and Security Master seed
-workflows.
+workflows. `ICanonicalSymbolRegistrySecurityMasterWriter` provides bounded, atomic source
+reconciliation: obsolete Security Master aliases and provider mappings are removed for supplied
+security IDs, independent alias provenance and operator overrides survive, and the resolver cache
+is replaced after durable success. Rich aliases retain their explicit source and disabled state
+even when the same spelling also appears in the plain alias list. Historical aliases without
+Security Master provenance are not deleted by guessing ownership from their spelling.
 Security Master identifier lookup preserves provider authority: a provider-bound canonical
 identifier resolves only for the exact normalized provider. The legacy primary-identifier fallback
 is available only for providerless records that have no authoritative identifier row, so an omitted
