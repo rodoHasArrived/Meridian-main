@@ -41,8 +41,11 @@ public sealed partial class SymbolRegistryService
                 // Source is authority, not a spelling heuristic. In particular, never infer
                 // ownership of an operator/legacy/provider alias from a ticker suffix.
                 ClaimLegacySecurityMasterIdentifierAliases(entry);
+                // Only aliases emitted from a Security Master identifier field prove that the
+                // matching typed identifier came from Security Master; an ordinary alias sharing
+                // the value does not, so it never clears another source's identifier.
                 var ownedValues = entry.Aliases
-                    .Where(alias => IsSecurityMasterSource(alias.Source))
+                    .Where(alias => string.Equals(alias.Source, SymbolMappingSources.SecurityMasterIdentifier, StringComparison.OrdinalIgnoreCase))
                     .Select(alias => alias.Alias)
                     .ToHashSet(StringComparer.OrdinalIgnoreCase);
                 entry.Aliases.RemoveAll(alias => IsSecurityMasterSource(alias.Source));
@@ -114,14 +117,14 @@ public sealed partial class SymbolRegistryService
                 && string.IsNullOrWhiteSpace(alias.Provider)
                 && identifierValues.Any(value => string.Equals(value, alias.Alias, StringComparison.OrdinalIgnoreCase)))
             {
-                alias.Source = SymbolMappingSources.SecurityMaster;
+                alias.Source = SymbolMappingSources.SecurityMasterIdentifier;
             }
         }
     }
 
     /// <summary>
     /// Clears the Security Master-governed identifiers (ISIN, CUSIP, FIGI, SEDOL) whose value the
-    /// entry also carried as a Security Master-owned alias, so a removed identifier stops resolving.
+    /// entry also carried as a Security Master identifier alias, so a removed identifier stops resolving.
     /// Identifiers another source supplied are kept.
     /// </summary>
     private static void ClearSecurityMasterIdentifiers(SymbolIdentifiers identifiers, HashSet<string> ownedValues)
@@ -149,5 +152,6 @@ public sealed partial class SymbolRegistryService
     }
 
     private static bool IsSecurityMasterSource(string? source)
-        => string.Equals(source, SymbolMappingSources.SecurityMaster, StringComparison.OrdinalIgnoreCase);
+        => string.Equals(source, SymbolMappingSources.SecurityMaster, StringComparison.OrdinalIgnoreCase)
+           || string.Equals(source, SymbolMappingSources.SecurityMasterIdentifier, StringComparison.OrdinalIgnoreCase);
 }

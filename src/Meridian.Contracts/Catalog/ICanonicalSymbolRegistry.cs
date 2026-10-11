@@ -277,6 +277,11 @@ public static class SymbolMappingSources
 {
     public const string Operator = "operator";
     public const string SecurityMaster = "security-master";
+    /// <summary>
+    /// A Security Master-owned alias emitted from the security's ISIN, CUSIP, FIGI or SEDOL field,
+    /// as distinct from an ordinary Security Master alias that happens to share the value.
+    /// </summary>
+    public const string SecurityMasterIdentifier = "security-master-identifier";
     public const string LegacyConfig = "legacy-config";
     public const string OpenFigi = "openfigi";
     public const string Registry = "registry";

@@ -3955,7 +3955,7 @@
       ]
     }
   ],
-  "fingerprint": "55ebd8fb34db13cff15fa90e4a2fc8f4cc70c051612249578a937193d9cbaf8f",
+  "fingerprint": "e43b871cd100b6e7912f1e1ae642e8c577bf12c7ca85bc143d5ba11f9c9bd57e",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4506,7 +4506,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "f9ff88e9f04cc0408c83ea090c1fc6ec23c9379659041c272b221bc46f6c3123",
+      "fingerprint": "6ea8daf00fb4bfdf644d68d79ec6c97bba92c992a8efee885ee038a547552fad",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Catalog",
       "object_ids": [
@@ -71219,7 +71219,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "a384929506b8ab10d12202989092669f3a0b456dce33b5f99f3d313ed3647015",
+      "fingerprint": "be3c87e1abc529fa2dc4c662b2db542ec51ca61983f970399fe6c03027b73621",
       "full_name": "Meridian.Contracts.Catalog.ISymbolResolutionMismatchReader",
       "id": "Meridian.Contracts.Catalog.ISymbolResolutionMismatchReader",
       "kind": "interface",
@@ -71231,12 +71231,12 @@
       "qualified_name": "Meridian.Contracts.Catalog.ISymbolResolutionMismatchReader",
       "references": [],
       "source": {
-        "line": 316,
+        "line": 321,
         "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
       },
       "sources": [
         {
-          "line": 316,
+          "line": 321,
           "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
         }
       ],
@@ -73222,7 +73222,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "c9aca399c551517989b3a9b308e9faebd6027bfaa94cc1d30624c95f1b3d4f52",
+      "fingerprint": "de11e91ae4806f4083029c1d19c128931baa23fd8d5dd455226fe4fd997a4423",
       "full_name": "Meridian.Contracts.Catalog.SymbolResolutionMismatch",
       "id": "Meridian.Contracts.Catalog.SymbolResolutionMismatch",
       "kind": "record",
@@ -73239,7 +73239,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 308,
+          "source_line": 313,
           "type": "string?"
         },
         {
@@ -73253,7 +73253,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 305,
+          "source_line": 310,
           "type": "string"
         },
         {
@@ -73267,7 +73267,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 304,
+          "source_line": 309,
           "type": "string"
         },
         {
@@ -73281,7 +73281,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 307,
+          "source_line": 312,
           "type": "string?"
         },
         {
@@ -73295,7 +73295,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 310,
+          "source_line": 315,
           "type": "DateTimeOffset"
         },
         {
@@ -73309,7 +73309,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 309,
+          "source_line": 314,
           "type": "Guid?"
         },
         {
@@ -73323,7 +73323,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 306,
+          "source_line": 311,
           "type": "string"
         }
       ],
@@ -73333,12 +73333,12 @@
       "qualified_name": "Meridian.Contracts.Catalog.SymbolResolutionMismatch",
       "references": [],
       "source": {
-        "line": 303,
+        "line": 308,
         "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
       },
       "sources": [
         {
-          "line": 303,
+          "line": 308,
           "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
         }
       ],
@@ -73357,23 +73357,23 @@
         {
           "explicit_value": false,
           "name": "Legacy",
-          "source_line": 293,
+          "source_line": 298,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "Compare",
-          "source_line": 295,
+          "source_line": 300,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "Canonical",
-          "source_line": 297,
+          "source_line": 302,
           "value": null
         }
       ],
-      "fingerprint": "a6ae20b20bc6b23bc99d6aaba76caacfc311d07973fa07956f34246ac56c4926",
+      "fingerprint": "258c6a9323d3c9e43485081ac8757e343275a649d9702d9f511489c55dc2cb8a",
       "full_name": "Meridian.Contracts.Catalog.SymbolResolutionMode",
       "id": "Meridian.Contracts.Catalog.SymbolResolutionMode",
       "kind": "enum",
@@ -73385,12 +73385,12 @@
       "qualified_name": "Meridian.Contracts.Catalog.SymbolResolutionMode",
       "references": [],
       "source": {
-        "line": 290,
+        "line": 295,
         "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
       },
       "sources": [
         {
-          "line": 290,
+          "line": 295,
           "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
         }
       ],

@@ -400,11 +400,7 @@ public sealed record FaceValueLot
         var couponDates = BackwardCouponDates(maturity, paymentsPerYear);
         var totalCoupons = couponDates.Length - 1;
         var firstCoupon = couponDates[1];
-        var firstPeriodFraction = DayCountConventions.Fraction(convention, couponDates[0], firstCoupon);
-        if (firstPeriodFraction <= 0m)
-            throw new ArgumentException("Constant-yield amortization requires a positive coupon-period day-count fraction.");
-        var stubToCoupon = DayCountConventions.Fraction(convention, AcquiredDate, firstCoupon);
-        var stubFraction = Math.Min(1m, stubToCoupon / firstPeriodFraction);
+        var stubFraction = Math.Min(1m, CouponPeriodShare(convention, AcquiredDate, firstCoupon, couponDates[0], firstCoupon, paymentsPerYear));
 
         var pricePerUnit = PricePercentOfPar / ParBasis;
         var couponPerPeriod = annualCouponRatePercent / 100m / paymentsPerYear;
@@ -444,8 +440,8 @@ public sealed record FaceValueLot
 
         if (asOf < firstCoupon)
         {
-            var stubWeight = stubToCoupon > 0m
-                ? DayCountConventions.Fraction(convention, AcquiredDate, asOf) / stubToCoupon
+            var stubWeight = stubFraction > 0m
+                ? CouponPeriodShare(convention, AcquiredDate, asOf, couponDates[0], firstCoupon, paymentsPerYear) / stubFraction
                 : 0m;
             return (pricePerUnit + ((afterFirstCoupon - pricePerUnit) * stubWeight)) * OriginalFace;
         }
@@ -455,10 +451,7 @@ public sealed record FaceValueLot
             wholePeriods++;
         var periodStart = couponDates[wholePeriods];
         var periodEnd = couponDates[wholePeriods + 1];
-        var periodFraction = DayCountConventions.Fraction(convention, periodStart, periodEnd);
-        if (periodFraction <= 0m)
-            throw new ArgumentException("Constant-yield amortization requires a positive coupon-period day-count fraction.");
-        var partialPeriod = DayCountConventions.Fraction(convention, periodStart, asOf) / periodFraction;
+        var partialPeriod = CouponPeriodShare(convention, periodStart, asOf, periodStart, periodEnd, paymentsPerYear);
 
         var basis = afterFirstCoupon;
         for (var period = 1; period < wholePeriods; period++)
@@ -473,6 +466,27 @@ public sealed record FaceValueLot
         }
 
         return basis * OriginalFace;
+    }
+
+    // Share of the coupon period [periodStart, periodEnd) covered by [start, end). Actual/Actual
+    // (ICMA) is defined against the coupon period itself (actual days over actual days in the
+    // period), which the period-less fraction cannot express: it degrades ICMA to ISDA and weights
+    // days by calendar year when the period crosses a year end.
+    private static decimal CouponPeriodShare(
+        DayCountConvention convention,
+        DateOnly start,
+        DateOnly end,
+        DateOnly periodStart,
+        DateOnly periodEnd,
+        int paymentsPerYear)
+    {
+        if (convention == DayCountConvention.ActualActualIcma)
+            return DayCountConventions.ActualActualIcmaFraction(start, end, periodStart, periodEnd, paymentsPerYear) * paymentsPerYear;
+
+        var periodFraction = DayCountConventions.Fraction(convention, periodStart, periodEnd);
+        if (periodFraction <= 0m)
+            throw new ArgumentException("Constant-yield amortization requires a positive coupon-period day-count fraction.");
+        return DayCountConventions.Fraction(convention, start, end) / periodFraction;
     }
 
     // Regular coupon dates generated backward from maturity (market convention), each anchored

@@ -57,6 +57,22 @@ public sealed class FaceValueLotOddPeriodTests
     }
 
     [Fact]
+    public void IcmaStubAcrossAYearEnd_UsesActualDaysInTheCouponPeriod()
+    {
+        // 5% semiannual Act/Act ICMA, coupons Apr 1 / Oct 1, acquired 2026-12-01: the stub is 121 of
+        // the 182 actual days in the Oct 1 – Apr 1 period, which crosses a year end. At 3% per
+        // period: dirty = 1.03^-(121/182) × [2.5 + 2.5 / 1.03 + 102.5 / 1.03^2], clean = dirty −
+        // 2.5 × 61/182. Act/Act ISDA would weight the 2026 and 2027 days by different years.
+        var lot = new FaceValueLot("odd-icma", SecurityId, new DateOnly(2026, 12, 1), 100m,
+            98.729331828407805344m);
+
+        var afterFirstCoupon = lot.ConstantYieldAmortizedBasisAsOf(
+            DayCountConvention.ActualActualIcma, new DateOnly(2028, 4, 1), new DateOnly(2027, 4, 1), 5m, 2, 0.06m);
+
+        afterFirstCoupon.Should().BeApproximately(99.043265152229239325m, 0.000000001m);
+    }
+
+    [Fact]
     public void HandCheckedStub_InterpolatesLinearlyByDayCountInsideTheStub()
     {
         var lot = new FaceValueLot("odd-hand", SecurityId, HandAcquired, 100m, HandCleanPrice);

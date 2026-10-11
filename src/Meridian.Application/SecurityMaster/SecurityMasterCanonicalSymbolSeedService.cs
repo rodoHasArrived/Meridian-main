@@ -163,7 +163,7 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
                 aliases.Add(id.Value);
                 aliasDefinitions.Add(new CanonicalSymbolAliasDefinition(
                     id.Value,
-                    Source: SymbolMappingSources.SecurityMaster,
+                    Source: SymbolMappingSources.SecurityMasterIdentifier,
                     Provider: null,
                     ValidFrom: null,
                     ValidTo: null,

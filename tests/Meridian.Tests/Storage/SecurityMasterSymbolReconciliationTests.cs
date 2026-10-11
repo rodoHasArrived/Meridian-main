@@ -129,6 +129,28 @@ public sealed class SecurityMasterSymbolReconciliationTests : IDisposable
         registry.ResolveToCanonical("LEGACYOP").Should().Be("SMTEST", "a non-identifier alias is not claimed");
     }
 
+    [Fact]
+    public async Task OrdinarySecurityMasterAlias_SharingAnotherSourcesIdentifier_DoesNotClearIt()
+    {
+        var registry = new CanonicalSymbolRegistry(new SymbolRegistryService(_directory));
+        var id = Guid.NewGuid();
+        await registry.RegisterAsync(new CanonicalSymbolDefinition
+        {
+            Canonical = "SMTEST",
+            SecurityId = id,
+            Figi = "BBG000OPENFIG"
+        });
+        var withAlias = Definition(id, "SMTEST", "BBG000OPENFIG", SymbolMappingSources.SecurityMaster);
+
+        await registry.ReconcileSecurityMasterAsync([id], [withAlias]);
+        await registry.ReconcileSecurityMasterAsync([id], [withAlias]);
+        await registry.ReconcileSecurityMasterAsync([id], [Definition(id, "SMTEST", "OTHER", SymbolMappingSources.SecurityMaster)]);
+
+        registry.GetDefinition("SMTEST")!.Figi.Should().Be(
+            "BBG000OPENFIG", "Security Master never supplied the FIGI, only an alias with the same spelling");
+        registry.ResolveToCanonical("BBG000OPENFIG").Should().Be("SMTEST");
+    }
+
     // Mirrors the definitions SecurityMasterCanonicalSymbolSeedService builds for identifiers.
     private static CanonicalSymbolDefinition IdentifierDefinition(Guid id, string? isin)
         => new()
@@ -136,7 +158,7 @@ public sealed class SecurityMasterSymbolReconciliationTests : IDisposable
             Canonical = "SMTEST",
             SecurityId = id,
             Aliases = isin is null ? [] : [isin],
-            AliasDefinitions = isin is null ? [] : [new(isin, SymbolMappingSources.SecurityMaster)],
+            AliasDefinitions = isin is null ? [] : [new(isin, SymbolMappingSources.SecurityMasterIdentifier)],
             Isin = isin
         };
 
