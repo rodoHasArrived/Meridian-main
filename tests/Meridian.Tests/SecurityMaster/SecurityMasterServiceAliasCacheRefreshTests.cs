@@ -62,6 +62,59 @@ public sealed class SecurityMasterServiceAliasCacheRefreshTests
         cache.Get(securityId)!.Aliases.Should().ContainSingle().Which.AliasValue.Should().Be("ACME.OQ");
     }
 
+    [Fact]
+    public async Task CommittedAliasWrite_ReportsSuccessWhenTheCacheRereadFails()
+    {
+        // The alias is durable once the store returns; a failed or cancelled post-commit cache
+        // refresh must not surface as a failed write.
+        var securityId = Guid.NewGuid();
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.UpsertAliasAsync(Arg.Any<SecurityAliasDto>(), Arg.Any<CancellationToken>())
+            .Returns(call => call.Arg<SecurityAliasDto>());
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns<SecurityProjectionRecord?>(_ => throw new InvalidOperationException("transient reread failure"));
+        using var service = CreateService(store, new SecurityMasterProjectionCache());
+
+        var persisted = await service.UpsertAliasAsync(Request(securityId, "ACME.OQ"));
+
+        persisted.AliasValue.Should().Be("ACME.OQ");
+    }
+
+    [Fact]
+    public async Task RemoteRefreshAndLocalAliasWrite_ShareTheCacheRefreshGate()
+    {
+        // A remote notification's reread holds the cache's refresh gate; a local alias write's
+        // reread must wait for it, so the later local state is the one left in the cache.
+        var securityId = Guid.NewGuid();
+        var cache = new SecurityMasterProjectionCache();
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.UpsertAliasAsync(Arg.Any<SecurityAliasDto>(), Arg.Any<CancellationToken>())
+            .Returns(call => call.Arg<SecurityAliasDto>());
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(Projection(securityId, "ACME.OQ"));
+        using var service = CreateService(store, cache);
+
+        await cache.RefreshGate.WaitAsync();
+        var write = service.UpsertAliasAsync(Request(securityId, "ACME.OQ"));
+        await Task.Delay(50);
+        write.IsCompleted.Should().BeFalse("the local reread waits for the in-flight remote refresh");
+        cache.Upsert(Projection(securityId, "ACME.O"));
+        cache.RefreshGate.Release();
+        await write;
+
+        cache.Get(securityId)!.Aliases.Should().ContainSingle().Which.AliasValue.Should().Be("ACME.OQ");
+    }
+
+    private static SecurityMasterService CreateService(ISecurityMasterStore store, SecurityMasterProjectionCache cache)
+        => new(
+            Substitute.For<ISecurityMasterEventStore>(),
+            Substitute.For<ISecurityMasterSnapshotStore>(),
+            store,
+            new SecurityMasterAggregateRebuilder(Substitute.For<ISecurityMasterEventStore>(), Substitute.For<ISecurityMasterSnapshotStore>()),
+            new SecurityMasterOptions { ConnectionString = "Host=unused", Schema = "security_master" },
+            NullLogger<SecurityMasterService>.Instance,
+            projectionCache: cache);
+
     private static UpsertSecurityAliasRequest Request(Guid securityId, string value)
         => new(Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001"), securityId, "Ticker", value, null,
             SecurityAliasScope.Operations, "tests", DateTimeOffset.UtcNow.AddDays(-1), null, null);

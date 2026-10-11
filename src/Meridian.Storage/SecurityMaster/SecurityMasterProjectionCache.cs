@@ -44,6 +44,15 @@ public sealed class SecurityMasterProjectionCache
     private readonly Lock _replacementGate = new();
 
     private ConcurrentDictionary<Guid, SecurityProjectionRecord> _byId = new();
+
+    /// <summary>
+    /// Orders "reread the durable projection, then upsert it" refreshes against each other. Alias
+    /// writes keep the projection version and <see cref="Upsert"/> accepts an equal version, so two
+    /// refreshes of the same security — a local alias write and a remote notification, or two
+    /// local writes — must not interleave, or an earlier reread can land last. Every such refresh
+    /// path holds this gate across its reread and upsert.
+    /// </summary>
+    public SemaphoreSlim RefreshGate { get; } = new(1, 1);
     private Dictionary<Guid, SecurityProjectionRecord>? _upsertsDuringReplacement;
 
     private ConcurrentDictionary<Guid, SecurityProjectionRecord> Current

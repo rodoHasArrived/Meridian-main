@@ -37,10 +37,6 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     // Owned lifetime token so background fire-and-forget tasks are cancelled on disposal.
     private readonly CancellationTokenSource _serviceCts = new();
 
-    // Serializes the post-commit alias reread and cache update. Alias writes keep the projection
-    // version, and the cache accepts an equal version, so without the gate an earlier write's
-    // reread could land after a later write's and leave this node holding the superseded alias.
-    private readonly SemaphoreSlim _aliasCacheRefreshGate = new(1, 1);
 
     public SecurityMasterService(
         ISecurityMasterEventStore eventStore,
@@ -685,7 +681,6 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     {
         _serviceCts.Cancel();
         _serviceCts.Dispose();
-        _aliasCacheRefreshGate.Dispose();
     }
 
     /// <summary>
@@ -1718,20 +1713,31 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         // corrected alias refreshes both here; other nodes refresh from the store's notification.
         if (_projectionCache is not null)
         {
-            // Inside the gate the reread happens after every earlier write committed, so the
-            // last cache update reflects the latest committed alias state.
-            await _aliasCacheRefreshGate.WaitAsync(ct).ConfigureAwait(false);
+            // The alias is durable once the store returns, so the cache refresh must not be able to
+            // turn a committed write into a reported failure: it ignores the request token and a
+            // failed reread is logged rather than thrown. Inside the cache's refresh gate the reread
+            // starts after every earlier refresh (local or from a remote notification) finished,
+            // so the last update reflects the latest committed alias state.
+            await _projectionCache.RefreshGate.WaitAsync(_serviceCts.Token).ConfigureAwait(false);
             try
             {
-                if (await _store.GetProjectionAsync(alias.SecurityId, ct).ConfigureAwait(false) is { } projection)
+                if (await _store.GetProjectionAsync(alias.SecurityId, _serviceCts.Token).ConfigureAwait(false) is { } projection)
                 {
                     _projectionCache.Upsert(projection);
                     TryReseedRegistryInBackground();
                 }
             }
+            catch (Exception ex) when (ex is not OperationCanceledException || !_serviceCts.IsCancellationRequested)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "Security Master alias {AliasId} committed but the local projection cache refresh for {SecurityId} failed; the next refresh or re-warm will pick it up",
+                    alias.AliasId,
+                    alias.SecurityId);
+            }
             finally
             {
-                _aliasCacheRefreshGate.Release();
+                _projectionCache.RefreshGate.Release();
             }
         }
 

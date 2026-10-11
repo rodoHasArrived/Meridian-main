@@ -106,7 +106,18 @@ public sealed class SecurityMasterProjectionChangeHandler
                 return SecurityProjectionChangeOutcome.AlreadyCurrent;
             }
 
-            var result = await _projectionService.RefreshSecurityAsync(notification.SecurityId, ct).ConfigureAwait(false);
+            // Shares the cache's refresh gate with local alias writes, so a remote reread cannot
+            // interleave with a local one and land a superseded equal-version record last.
+            SecurityProjectionRefreshResult result;
+            await _cache.RefreshGate.WaitAsync(ct).ConfigureAwait(false);
+            try
+            {
+                result = await _projectionService.RefreshSecurityAsync(notification.SecurityId, ct).ConfigureAwait(false);
+            }
+            finally
+            {
+                _cache.RefreshGate.Release();
+            }
             _logger.LogDebug(
                 "Applied Security Master projection change for {SecurityId} version {Version} from node {OriginNodeId}: {Result}",
                 notification.SecurityId,
@@ -164,7 +175,15 @@ public sealed class SecurityMasterProjectionChangeHandler
             foreach (var record in _cache.Snapshot())
             {
                 ct.ThrowIfCancellationRequested();
-                await _projectionService.RefreshSecurityAsync(record.SecurityId, ct).ConfigureAwait(false);
+                await _cache.RefreshGate.WaitAsync(ct).ConfigureAwait(false);
+                try
+                {
+                    await _projectionService.RefreshSecurityAsync(record.SecurityId, ct).ConfigureAwait(false);
+                }
+                finally
+                {
+                    _cache.RefreshGate.Release();
+                }
             }
         }
 
