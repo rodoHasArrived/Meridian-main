@@ -38,6 +38,9 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   fixings, notionals, payment frequencies, and day-count conventions through serialization, plus
   the principal-exchange flag. Legacy legs may omit these terms. Supplied notionals must be
   positive and directions must be Pay or Receive; missing economics remain unresolved.
+- The bond economic definition carries the record's issue date, payment frequency, call flag and
+  first call date, and issuer name in its maturity, coupon, call, and issuer modules, so a replay
+  from economic terms alone keeps a callable bond callable.
 - C# callers should enter through C#-friendly interop wrappers and should not depend on internal F# domain types.
 - Security Master identifier interop retains optional provider/source metadata for standard
   identifiers. For `ProviderSymbol`, the provider namespace carried by the identifier kind remains

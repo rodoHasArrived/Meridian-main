@@ -50,3 +50,6 @@ $$;
 create trigger security_alias_revisions_append_only
     before update or delete on __SCHEMA__.security_alias_revisions
     for each row execute function __SCHEMA__.reject_security_alias_revision_mutation();
+create trigger security_alias_revisions_no_truncate
+    before truncate on __SCHEMA__.security_alias_revisions
+    for each statement execute function __SCHEMA__.reject_security_alias_revision_mutation();

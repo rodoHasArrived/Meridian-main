@@ -129,6 +129,22 @@ public sealed class FaceValueLotOddPeriodTests
     }
 
     [Fact]
+    public void DeepPremiumStub_SolvesTheRootOutsideTheOldBracket()
+    {
+        // One annual zero-coupon period, acquired halfway through (30/360: f = 0.5) at 500% of par.
+        // The implied yield solves 5 = 1 / (1 + y)^0.5, so 1 + y = 0.04 (y = −96% per period), and
+        // the carrying value reaches par at the coupon date. Halfway through the stub the basis
+        // interpolates linearly from 5 to 1 per unit: 3 per unit, 3000 on 1000 face. A solver
+        // pinned at −0.5 would carry 5 × √0.5 ≈ 3.54 per unit at the coupon date instead.
+        var lot = new FaceValueLot("odd-deep", SecurityId, new DateOnly(2026, 7, 1), 1000m, 500m);
+        var maturity = new DateOnly(2027, 1, 1);
+
+        var midStub = lot.ConstantYieldAmortizedBasisAsOf(DayCountConvention.Thirty360, maturity, new DateOnly(2026, 10, 1), 0m, 1);
+
+        midStub.Should().BeApproximately(3000m, 0.000001m);
+    }
+
+    [Fact]
     public void LongMonthlyZeroCouponAtAPremium_SolvesANegativeYieldWithoutOverflow()
     {
         // ~1,197 monthly coupons priced above par imply a negative yield. The bisection's early

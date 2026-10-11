@@ -4,7 +4,7 @@
 
 - Relations: 91
 - Functions/procedures: 4
-- Triggers: 6
+- Triggers: 7
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.

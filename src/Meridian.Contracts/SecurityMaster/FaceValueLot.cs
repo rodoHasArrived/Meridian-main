@@ -498,11 +498,28 @@ public sealed record FaceValueLot
         => (DecimalPow(1m + yieldPerPeriod, 1m - stubFraction) * PricePerUnitAtYield(couponPerPeriod, totalCoupons, yieldPerPeriod))
             - (couponPerPeriod * (1m - stubFraction));
 
+    // The bracket spans every yield a positive price can imply: just above −100% per period at the
+    // low end (any long schedule prices above target there, overflow included) and an upper bound
+    // that doubles until the price falls below target. A fixed [−0.5, 5] bracket silently converged
+    // to an endpoint for deep-premium or deep-discount stubs instead of to the root.
+    private const decimal OddPeriodYieldFloor = -0.999999m;
+    private const decimal OddPeriodYieldCeiling = 1_000_000m;
+
     private static decimal SolveOddFirstPeriodYield(decimal pricePerUnit, decimal couponPerPeriod, int totalCoupons, decimal stubFraction)
     {
-        var low = -0.5m;
+        var low = OddPeriodYieldFloor;
         var high = 5m;
-        for (var iteration = 0; iteration < 100; iteration++)
+        while (CleanPriceExceeds(pricePerUnit, couponPerPeriod, totalCoupons, stubFraction, high))
+        {
+            high *= 2m;
+            if (high > OddPeriodYieldCeiling)
+                throw new ArgumentException("Constant-yield amortization cannot find a yield that prices this odd-first-period schedule to the acquisition price.");
+        }
+
+        if (!CleanPriceExceeds(pricePerUnit, couponPerPeriod, totalCoupons, stubFraction, low))
+            throw new ArgumentException("Constant-yield amortization cannot find a yield that prices this odd-first-period schedule to the acquisition price.");
+
+        for (var iteration = 0; iteration < 120; iteration++)
         {
             var mid = (low + high) / 2m;
             if (CleanPriceExceeds(pricePerUnit, couponPerPeriod, totalCoupons, stubFraction, mid))

@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "095c450b0219b4e1a8f3d4393a4b1667e51c273e306f6494f23b46660a72985c",
+  "database_fingerprint": "17be5cc7a287f18413f86b647a0aad9b2874f79adbd72bc004c2f7d271170042",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -25789,7 +25789,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "4003f98b9164e25e8c396e1ef7a1d3d1ba1813c1f766d149b22c47ab48b8535b",
+      "fingerprint": "3ad9f5d57f89b29dbbed3d11e988967e6b1b7554f3029c0c4d88ab1439ee931f",
       "object": "schema:security_master"
     },
     {
@@ -26465,7 +26465,7 @@
       "object": "table:security_master.securities"
     },
     {
-      "fingerprint": "c1c1e42bb0b879f00f15ff60ce9b90dfb93b2627daf059f388b501146a7d0f9d",
+      "fingerprint": "1992fa2e7ae7f8a1ee8cbd68b8734be1f2a4ea9e0a2cf8eea368d1afbe9df723",
       "object": "table:security_master.security_alias_revisions"
     },
     {
@@ -26779,6 +26779,10 @@
     {
       "fingerprint": "a25f9fa32330751bf5464dd892b7545043540e44ba88b7b80a41cf321d46b2c2",
       "object": "trigger:security_master.security_alias_revisions.security_alias_revisions_append_only"
+    },
+    {
+      "fingerprint": "170cdf64f626576e09bdf014bec4185755f93c317796ce24efa7c4bef36653d6",
+      "object": "trigger:security_master.security_alias_revisions.security_alias_revisions_no_truncate"
     },
     {
       "fingerprint": "b34b65eb6dc61b5f3c65b55225b1c6f08a2f1af97d6113c0362a3d267aa249e7",
@@ -122760,7 +122764,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "4003f98b9164e25e8c396e1ef7a1d3d1ba1813c1f766d149b22c47ab48b8535b",
+      "fingerprint": "3ad9f5d57f89b29dbbed3d11e988967e6b1b7554f3029c0c4d88ab1439ee931f",
       "foreign_tables": [],
       "functions": [
         {
@@ -145792,7 +145796,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "c1c1e42bb0b879f00f15ff60ce9b90dfb93b2627daf059f388b501146a7d0f9d",
+          "fingerprint": "1992fa2e7ae7f8a1ee8cbd68b8734be1f2a4ea9e0a2cf8eea368d1afbe9df723",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -145872,6 +145876,23 @@
               "function_signature": "reject_security_alias_revision_mutation()",
               "level": "row",
               "name": "security_alias_revisions_append_only",
+              "relation": "security_alias_revisions",
+              "schema": "security_master",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER security_alias_revisions_no_truncate BEFORE TRUNCATE ON security_master.security_alias_revisions FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_security_alias_revision_mutation()",
+              "definition_hash": "00698511641c13939fcb72e897ce1dcfa83ddcbd0c265f8ee05773fd8511c934",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "170cdf64f626576e09bdf014bec4185755f93c317796ce24efa7c4bef36653d6",
+              "function_schema": "security_master",
+              "function_signature": "reject_security_alias_revision_mutation()",
+              "level": "statement",
+              "name": "security_alias_revisions_no_truncate",
               "relation": "security_alias_revisions",
               "schema": "security_master",
               "timing": "before"
@@ -178475,7 +178496,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "c1c1e42bb0b879f00f15ff60ce9b90dfb93b2627daf059f388b501146a7d0f9d",
+          "fingerprint": "1992fa2e7ae7f8a1ee8cbd68b8734be1f2a4ea9e0a2cf8eea368d1afbe9df723",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -178555,6 +178576,23 @@
               "function_signature": "reject_security_alias_revision_mutation()",
               "level": "row",
               "name": "security_alias_revisions_append_only",
+              "relation": "security_alias_revisions",
+              "schema": "security_master",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER security_alias_revisions_no_truncate BEFORE TRUNCATE ON security_master.security_alias_revisions FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_security_alias_revision_mutation()",
+              "definition_hash": "00698511641c13939fcb72e897ce1dcfa83ddcbd0c265f8ee05773fd8511c934",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "170cdf64f626576e09bdf014bec4185755f93c317796ce24efa7c4bef36653d6",
+              "function_schema": "security_master",
+              "function_signature": "reject_security_alias_revision_mutation()",
+              "level": "statement",
+              "name": "security_alias_revisions_no_truncate",
               "relation": "security_alias_revisions",
               "schema": "security_master",
               "timing": "before"
@@ -187420,6 +187458,23 @@
           "function_signature": "reject_security_alias_revision_mutation()",
           "level": "row",
           "name": "security_alias_revisions_append_only",
+          "relation": "security_alias_revisions",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_alias_revisions_no_truncate BEFORE TRUNCATE ON security_master.security_alias_revisions FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_security_alias_revision_mutation()",
+          "definition_hash": "00698511641c13939fcb72e897ce1dcfa83ddcbd0c265f8ee05773fd8511c934",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "170cdf64f626576e09bdf014bec4185755f93c317796ce24efa7c4bef36653d6",
+          "function_schema": "security_master",
+          "function_signature": "reject_security_alias_revision_mutation()",
+          "level": "statement",
+          "name": "security_alias_revisions_no_truncate",
           "relation": "security_alias_revisions",
           "schema": "security_master",
           "timing": "before"

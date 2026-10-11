@@ -45,8 +45,17 @@ public sealed partial class PostgresSecurityMasterStore
         if (existing is null)
         {
             await EnsureAliasHistoryBelongsToSecurityAsync(connection, transaction, alias.SecurityId, [alias.AliasId], ct).ConfigureAwait(false);
+            // An alias retired by projection replacement has no current row but keeps its history;
+            // reinstating it keeps the creation facts revision 1 recorded, as a correction does, while
+            // the reinstating revision is still attributed to the caller.
+            var actor = alias.CreatedBy;
+            if (await ReadRecordedCreationFactsAsync(connection, transaction, alias.AliasId, ct).ConfigureAwait(false) is { } creation)
+            {
+                alias = alias with { CreatedBy = creation.CreatedBy, CreatedAt = creation.CreatedAt };
+            }
+
             persisted = await InsertCurrentAliasAsync(connection, transaction, alias, ct).ConfigureAwait(false);
-            await AppendAliasRevisionAsync(connection, transaction, alias, alias.CreatedBy, ct).ConfigureAwait(false);
+            await AppendAliasRevisionAsync(connection, transaction, alias, actor, ct).ConfigureAwait(false);
         }
         else
         {
@@ -207,6 +216,27 @@ public sealed partial class PostgresSecurityMasterStore
             CreatedBy = reader.GetString(0),
             CreatedAt = new DateTimeOffset(reader.GetDateTime(1), TimeSpan.Zero)
         };
+    }
+
+    private async Task<(string CreatedBy, DateTimeOffset CreatedAt)?> ReadRecordedCreationFactsAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        Guid aliasId,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select recorded_by, recorded_at
+            from {Qualified("security_alias_revisions")}
+            where alias_id = @alias_id and revision = 1;
+            """;
+        command.Parameters.AddWithValue("alias_id", aliasId);
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        return await reader.ReadAsync(ct).ConfigureAwait(false)
+            ? (reader.GetString(0), new DateTimeOffset(reader.GetDateTime(1), TimeSpan.Zero))
+            : null;
     }
 
     private async Task UpdateCurrentAliasAsync(

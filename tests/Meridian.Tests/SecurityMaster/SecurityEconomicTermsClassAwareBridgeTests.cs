@@ -84,6 +84,11 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     [InlineData("CommercialPaper", "isAssetBacked")]
     [InlineData("Bond", "maturity")]
     [InlineData("Bond", "couponType")]
+    [InlineData("Bond", "issueDate")]
+    [InlineData("Bond", "isCallable")]
+    [InlineData("Bond", "callDate")]
+    [InlineData("Bond", "issuerName")]
+    [InlineData("Bond", "paymentFrequency")]
     [InlineData("Swap", "maturityDate")]
     [InlineData("Option", "expiry")]
     public void ReplayWithoutLegacyTerms_RecoversPreviouslyDroppedTerms(string assetClass, string flatKey)

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Hosting;
@@ -97,6 +98,9 @@ public sealed class SecurityMasterProjectionChangeListener : BackgroundService
                     resyncPending = !await TryResynchronizeAsync(stoppingToken).ConfigureAwait(false);
                 }
 
+                // Retries are paced by elapsed time, not by idle waits: a steady stream of
+                // notifications must not starve a pending resync after a failed reread.
+                var sinceResyncAttempt = Stopwatch.StartNew();
                 Listening?.Invoke();
 
                 while (true)
@@ -105,7 +109,7 @@ public sealed class SecurityMasterProjectionChangeListener : BackgroundService
                     {
                         var outcome = await _handler.HandleAsync(payload, stoppingToken).ConfigureAwait(false);
                         // A notification whose durable reread failed is not replayed by PostgreSQL;
-                        // fall back to a resync on the next idle wait so the change is not lost.
+                        // fall back to a paced resync so the change is not lost.
                         if (outcome == SecurityProjectionChangeOutcome.Failed)
                         {
                             resyncPending = true;
@@ -114,11 +118,13 @@ public sealed class SecurityMasterProjectionChangeListener : BackgroundService
                         NotificationHandled?.Invoke(payload, outcome);
                     }
 
-                    var notified = await connection.WaitAsync(ResyncRetryInterval, stoppingToken).ConfigureAwait(false);
-                    if (!notified && resyncPending)
+                    if (resyncPending && sinceResyncAttempt.Elapsed >= ResyncRetryInterval)
                     {
                         resyncPending = !await TryResynchronizeAsync(stoppingToken).ConfigureAwait(false);
+                        sinceResyncAttempt.Restart();
                     }
+
+                    await connection.WaitAsync(ResyncRetryInterval, stoppingToken).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)

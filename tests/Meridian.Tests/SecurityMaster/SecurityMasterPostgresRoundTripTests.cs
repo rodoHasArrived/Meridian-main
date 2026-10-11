@@ -1002,6 +1002,61 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
         (await store.GetProjectionAsync(otherSecurityId))!.Aliases.Should().BeEmpty("the rejected replacement rolls back");
     }
 
+    [SecurityMasterDatabaseFact]
+    public async Task ReinstatingARetiredAlias_KeepsItsRecordedCreationFacts()
+    {
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var securityId = Guid.NewGuid();
+        var effectiveFrom = DateTimeOffset.UtcNow.AddDays(-2);
+        await CreateMinimalSecurityAsync(store, securityId, effectiveFrom);
+        var alias = new SecurityAliasDto(
+            Guid.NewGuid(), securityId, "Ticker", "BACK", null, SecurityAliasScope.Operations, null,
+            "original-creator", effectiveFrom, effectiveFrom, null, true);
+        await store.UpsertAliasAsync(alias);
+        var projection = (await store.GetProjectionAsync(securityId))!;
+        await store.UpsertProjectionAsync(projection with { Aliases = [] });
+
+        var reinstated = await store.UpsertAliasAsync(alias with { CreatedBy = "reinstater", CreatedAt = DateTimeOffset.UtcNow });
+
+        reinstated!.CreatedBy.Should().Be("original-creator");
+        reinstated.CreatedAt.Should().BeCloseTo(effectiveFrom, TimeSpan.FromMilliseconds(1));
+        (await store.GetProjectionAsync(securityId))!.Aliases.Should().ContainSingle()
+            .Which.CreatedBy.Should().Be("original-creator");
+        var revisions = await ReadAliasRevisionsAsync(alias.AliasId);
+        revisions.Select(static r => (r.Revision, r.IsRetired)).Should().Equal((1, false), (2, true), (3, false));
+        revisions[2].RecordedBy.Should().Be("reinstater");
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task AliasRevisions_RejectUpdateDeleteAndTruncate()
+    {
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var securityId = Guid.NewGuid();
+        var aliasId = Guid.NewGuid();
+        var effectiveFrom = DateTimeOffset.UtcNow.AddDays(-1);
+        await CreateMinimalSecurityAsync(store, securityId, effectiveFrom);
+        await store.UpsertAliasAsync(new SecurityAliasDto(
+            aliasId, securityId, "Ticker", "AUDITED", null, SecurityAliasScope.Operations, null,
+            "creator", effectiveFrom, effectiveFrom, null, true));
+
+        await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        foreach (var sql in new[]
+                 {
+                     $"update {_fixture.Options.Schema}.security_alias_revisions set reason = 'x' where alias_id = @id",
+                     $"delete from {_fixture.Options.Schema}.security_alias_revisions where alias_id = @id",
+                     $"truncate {_fixture.Options.Schema}.security_alias_revisions"
+                 })
+        {
+            await using var mutation = connection.CreateCommand();
+            mutation.CommandText = sql;
+            mutation.Parameters.AddWithValue("id", aliasId);
+            await mutation.Invoking(c => c.ExecuteNonQueryAsync()).Should().ThrowAsync<PostgresException>();
+        }
+
+        (await ReadAliasRevisionsAsync(aliasId)).Should().ContainSingle();
+    }
+
     private sealed record AliasRevisionRow(
         int Revision,
         string AliasValue,
