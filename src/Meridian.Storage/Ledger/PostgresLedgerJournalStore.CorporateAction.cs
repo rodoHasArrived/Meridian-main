@@ -229,7 +229,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
                 throw new LedgerValidationException("Successor ancestry must remain within the locked ledger book.");
             return await LoadAtomicTaxLotResultAsync(connection, transaction, birthBatchId, false, ct).ConfigureAwait(false);
         }, ct, ancestor => RejectUnsupportedSuccessorCarryAsync(connection, transaction,
-            command.LedgerBookId, ancestor.TaxLotRecordId, source.Acquisition.HoldingPeriodStartDate, ct)).ConfigureAwait(false);
+            command.LedgerBookId, ancestor.TaxLotRecordId, ct)).ConfigureAwait(false);
         var history = await ReadDatedLotQuantitiesAsync(connection, transaction, command.LedgerBookId,
             [before.TaxLotRecordId], ct).ConfigureAwait(false);
         if (history.Any(mutation => mutation.EffectiveDate > effectiveDate)

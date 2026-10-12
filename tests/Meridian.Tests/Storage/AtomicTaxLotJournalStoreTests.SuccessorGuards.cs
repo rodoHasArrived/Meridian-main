@@ -56,12 +56,13 @@ public sealed partial class AtomicTaxLotJournalStoreTests
     public async Task CorporateActionSuccessors_SecondNaturalKeyCollision_RollsBackJournalEveryLotEvidenceAndAudit()
     {
         await using var fixture = await AmortFixture.CreateAsync(premium: true);
+        var existing = await AcquireSplitAncestryUnitsAsync(fixture);
         var valid = await SuccessorCommandAsync(fixture, advanceRefunding: true);
         var instruction = valid.CorporateAction!;
         var ordered = instruction.Successors.OrderBy(target => target.Lot.TaxLotRecordId).ToArray();
-        // The target IDs and reference scopes are distinct. The first insertion succeeds, then
-        // the second collides on the durable book/account/lot-label key in the same transaction.
-        var collision = ordered[1] with { Lot = ordered[1].Lot with { LotId = ordered[0].Lot.LotId } };
+        // Both target labels are distinct. The first insertion succeeds, then the second collides
+        // with a separately acquired lot on the durable book/account/lot-label key.
+        var collision = ordered[1] with { Lot = ordered[1].Lot with { LotId = existing.LotId } };
         instruction = instruction with
         {
             Successors = instruction.Successors.Select(target =>
@@ -69,12 +70,18 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         };
         var command = BindSuccessorGuardInstruction(valid, instruction);
         var auditBefore = await fixture.Restart().VerifyLedgerEventAuditAsync();
+        var countsBefore = await ReadSplitAncestryCountsAsync(fixture);
         var post = () => fixture.Store.AppendAssetPostingAsync(command);
 
         await post.Should().ThrowAsync<PostgresException>()
             .Where(exception => exception.SqlState == PostgresErrorCodes.UniqueViolation);
 
-        await AssertSuccessorUnchangedAsync(fixture, command);
+        (await ReadSplitAncestryCountsAsync(fixture)).Should().Be(countsBefore);
+        (await fixture.Restart().GetAtomicTaxLotPostingAsync(command.MutationBatchId)).Should().BeNull();
+        (await fixture.Restart().GetTaxLotsByIdsAsync(fixture.BookId,
+            [fixture.Lot.TaxLotRecordId, existing.TaxLotRecordId])).Should().BeEquivalentTo([fixture.Lot, existing]);
+        (await fixture.Restart().GetTaxLotsByIdsAsync(fixture.BookId,
+            command.CorporateAction!.Successors.Select(target => target.Lot.TaxLotRecordId).ToArray())).Should().BeEmpty();
         (await fixture.Restart().VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(auditBefore.ChainedEvents);
         (await fixture.Restart().GetOpenLotSuccessorHistoryAsync(fixture.BookId,
             [command.Journal.Entry.JournalEntryId])).Should().BeEmpty();

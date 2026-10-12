@@ -57,6 +57,23 @@ public sealed class OpenLotSuccessorTests
     }
 
     [Fact]
+    public void AdvanceRefunding_RejectsDuplicateLotLabelsBeforeMappingOrDrafting()
+    {
+        var source = OpenLotSuccessorTestData.Predecessor();
+        var first = OpenLotSuccessorTestData.Successor(source, 0.6m);
+        var second = OpenLotSuccessorTestData.Successor(source, 0.4m);
+        second = second with { Lot = second.Lot with { LotId = first.Lot.LotId } };
+        var instruction = OpenLotSuccessorTestData.Build(source, [first, second], advanceRefunding: true);
+
+        var validate = () => OpenLotSuccessors.Validate(instruction);
+        validate.Should().Throw<ArgumentException>().WithMessage("*distinct*lot labels*");
+
+        var mapped = new CorporateActionAssetAccountingEventMapper().Map(OpenLotSuccessorTestData.MapRequest(instruction));
+        mapped.IsMapped.Should().BeFalse();
+        mapped.Blockers.Should().Contain(item => item.Code == "corporate-action.canonical-successors-invalid");
+    }
+
+    [Fact]
     public void AdvanceRefunding_AssignsFinalCurrencyResidualsWithoutRecomputingAtSpotFx()
     {
         var predecessor = OpenLotSuccessorTestData.Predecessor();

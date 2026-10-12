@@ -104,12 +104,13 @@ corporate-action effective date while preserving their inherited acquisition dat
 append cannot bypass the atomic successor boundary. Disposal eligibility excludes successors
 before their retained corporate-action opening date.
 Before a new successor commit, Storage walks immutable birth receipts through every predecessor.
-It refuses any earlier wash-sale holding-period carry retained separately for that predecessor or
-its ancestry, regardless of the deferral's sale date, until inherited carry lineage is supported.
+It refuses any wash-sale deferral retained separately for that predecessor or its ancestry,
+regardless of the sale or holding-period date, until inherited deferral lineage is supported.
+Even an unchanged holding date carries a separate positive basis claim that successors cannot drop.
 The successor transaction locks deferral retention before its first snapshot read; deferral writers
-take the matching lock and refuse an earlier carry after the recipient has become a predecessor.
-Unchanged holding dates remain admissible, and an exact committed successor replay still returns
-its original receipt before revalidating carry authority. No deferral or replacement claim is copied.
+take the matching lock and refuse a new claim after the recipient has become a predecessor.
+An exact committed successor replay still returns its original receipt before revalidating deferral
+authority. No deferral or replacement claim is copied.
 An identical historical deferral may also replay after successor posting; every retained field must
 match before that exception applies, so a reused disposal/recipient key cannot introduce changed carry evidence.
 The retained source-event evidence binds each stable source action, including historical projections

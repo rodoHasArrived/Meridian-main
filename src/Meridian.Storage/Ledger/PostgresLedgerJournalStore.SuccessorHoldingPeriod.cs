@@ -18,22 +18,21 @@ public sealed partial class PostgresLedgerJournalStore
     }
 
     private async Task RejectUnsupportedSuccessorCarryAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
-        Guid bookId, Guid lotId, DateOnly inheritedHoldingDate, CancellationToken ct)
+        Guid bookId, Guid lotId, CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         // Sale date is not a retention boundary: later sales can already have retained a carry
-        // onto this lot. Neither those rows nor ancestor rows may disappear at a new lot identity.
+        // onto this lot. Every deferral also retains basis, even when the holding date is unchanged.
+        // Neither those rows nor ancestor rows may disappear at a new lot identity.
         command.CommandText = $"""
             select exists(select 1 from {Qualified("wash_sale_deferrals")}
-                where ledger_book_id = @book and replacement_tax_lot_record_id = @lot
-                  and holding_period_carry_date < @inherited_date);
+                where ledger_book_id = @book and replacement_tax_lot_record_id = @lot);
             """;
         command.Parameters.AddWithValue("book", bookId);
         command.Parameters.AddWithValue("lot", lotId);
-        command.Parameters.AddWithValue("inherited_date", inheritedHoldingDate);
         if ((bool)(await command.ExecuteScalarAsync(ct).ConfigureAwait(false))!)
-            throw new LedgerValidationException("Successor posting cannot preserve a separately retained wash-sale holding-period carry; reviewed inherited carry lineage is required.");
+            throw new LedgerValidationException("Successor posting cannot preserve a separately retained wash-sale basis or holding-period claim; reviewed inherited deferral lineage is required.");
     }
 
     private async Task RejectCarryAfterSuccessorPostingAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
@@ -49,16 +48,13 @@ public sealed partial class PostgresLedgerJournalStore
                 join {Qualified("tax_lots")} lot on lot.tax_lot_record_id = mutation.tax_lot_record_id
                 where batch.ledger_book_id = @book and lot.ledger_book_id = @book
                   and mutation.tax_lot_record_id = @lot and mutation.mutation_kind = 'CorporateAction'
-                  and mutation.quantity_delta < 0
-                  and @carry < coalesce((lot.acquisition_terms ->> 'HoldingPeriodStartDate')::date,
-                      (lot.acquisition_terms ->> 'holdingPeriodStartDate')::date, lot.acquired_date));
+                  and mutation.quantity_delta < 0);
             """;
         command.Parameters.AddWithValue("book", deferral.LedgerBookId);
         command.Parameters.AddWithValue("lot", deferral.ReplacementTaxLotRecordId);
-        command.Parameters.AddWithValue("carry", deferral.HoldingPeriodCarryDate);
         if ((bool)(await command.ExecuteScalarAsync(ct).ConfigureAwait(false))!
             && !await IsExactRetainedSuccessorCarryAsync(connection, transaction, deferral, ct).ConfigureAwait(false))
-            throw new LedgerValidationException("A wash-sale holding-period carry cannot be retained after its replacement lot became a successor predecessor; reviewed inherited carry lineage is required.");
+            throw new LedgerValidationException("A wash-sale basis or holding-period claim cannot be retained after its replacement lot became a successor predecessor; reviewed inherited deferral lineage is required.");
     }
 
     private async Task<bool> IsExactRetainedSuccessorCarryAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,

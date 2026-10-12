@@ -535,6 +535,12 @@ cannot hide a repeated ancestor action. Historical absent lineage or stable-ID f
 original serialized shape; ordinary legacy relief receipts can prove the path back to the original
 acquisition. Missing, contradictory, cyclic or foreign-book ancestry refuses posting, while exact
 retries return the committed receipt before new-posting ancestry checks.
+Any separately retained wash-sale deferral on a predecessor or its ancestry blocks a new successor,
+including unchanged or later holding dates: the deferral's positive basis claim cannot yet follow
+the new identity. Concurrent retention shares the posting lock, later new claims refuse, and exact
+historical successor/deferral replays retain their original evidence. Successor lot labels must also
+be distinct before mapping or drafting; database collision rollback remains covered for a separate
+previously acquired lot with the same natural key.
 Reporting validates the immutable posting receipts, preserves exact batch JSON and hashes on
 journal rows, and includes `corporate-action-lot-evidence.json` under report-pack checksums and signing.
 AverageCost reporting compares acquisition evidence and successor lineage by value against its

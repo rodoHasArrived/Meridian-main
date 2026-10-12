@@ -152,9 +152,10 @@ public static class OpenLotSuccessors
             && mutations.Mutations.Count == targets.Count,
             "The supported exchange, split or merger requires one successor; advance refunding requires exactly two.");
         Require(targets.Select(static target => target.Lot.TaxLotRecordId).Distinct().Count() == targets.Count
+            && targets.Select(static target => target.Lot.LotId).Distinct(StringComparer.Ordinal).Count() == targets.Count
             && targets.Select(static target => target.Lot.SecurityId).Distinct().Count() == targets.Count
             && targets.Select(static target => target.Lot.BookPositionId).Distinct().Count() == targets.Count,
-            "Successors require distinct durable lot, Security Master and book-position identities.");
+            "Successors require distinct durable lot identities, lot labels, Security Master and book-position identities.");
         Require(projection.Recipe.Count == targets.Count + 1
             && projection.Recipe.Count(operation => operation.Kind == CorporateActionEconomicOperationKindDto.ExchangeOut
                 && operation.SecurityId == source.SecurityId && operation.Quantity == source.OpenQuantity
