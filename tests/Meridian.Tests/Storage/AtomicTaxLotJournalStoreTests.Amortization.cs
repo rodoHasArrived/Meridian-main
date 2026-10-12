@@ -294,7 +294,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         await repeatPeriod.Should().ThrowAsync<LedgerValidationException>().WithMessage("*later period*");
         await AssertAmortizationRefusedAsync(fixture,
             fixture.Command(expectedLot: current.ToOpenLot(), asOf: new DateOnly(2026, 1, 15)), current, journalCount: 2);
-        (await fixture.Store.GetAtomicTaxLotPostingAsync(receipt.MutationBatchId))!.Mutations.Should().BeEquivalentTo(receipt.Mutations);
+        (await fixture.Store.GetAtomicTaxLotPostingAsync(receipt.MutationBatchId))!.Mutations
+            .Should().BeEquivalentTo(receipt.Mutations, options => AmortizationSnapshotOptions(options));
         await fixture.Restart().AppendAssetPostingAsync(fixture.Command(expectedLot: current.ToOpenLot(), asOf: date));
         (await fixture.Store.GetByPeriodAsync(fixture.Period.PeriodId)).Should().HaveCount(3);
     }
