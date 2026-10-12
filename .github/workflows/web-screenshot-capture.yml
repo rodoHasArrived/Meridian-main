@@ -209,7 +209,7 @@ jobs:
         # Upload whatever screenshots were captured even when some routes failed
         # to render, so a partial run still surfaces the screens that worked.
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: web-screenshots-${{ github.run_number }}
           path: ${{ steps.validate_output_dir.outputs.safe_output_dir }}/*.png
@@ -222,7 +222,7 @@ jobs:
         # (including failures) makes a broken capture diagnosable without a
         # re-run.
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: web-screenshots-manifest-${{ github.run_number }}
           path: artifacts/web-screenshots/manifest.json
@@ -370,7 +370,7 @@ jobs:
         # Uploaded even on failure: the PNGs that did render are how a reviewer
         # tells a broken route from a broken harness.
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: web-screenshots-pr${{ github.event.pull_request.number }}-${{ github.run_number }}
           path: docs/screenshots/web/*.png
@@ -382,7 +382,7 @@ jobs:
         # dev-server logs -- what makes a failed capture diagnosable without a
         # re-run.
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: web-screenshots-pr${{ github.event.pull_request.number }}-manifest-${{ github.run_number }}
           path: artifacts/web-screenshots/manifest.json
