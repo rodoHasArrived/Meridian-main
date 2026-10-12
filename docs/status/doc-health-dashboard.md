@@ -11,7 +11,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 ## Overall Health Score
 
 ```text
-  [#########################-----] 82/100
+  [#########################-----] 83/100
   Rating: Good
 ```
 
@@ -19,14 +19,14 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 701 |
-| Total lines | 156,380 |
-| Average file size (lines) | 223.1 |
-| Orphaned files | 231 |
-| Files without headings | 148 |
+| Total documentation files | 768 |
+| Total lines | 170,914 |
+| Average file size (lines) | 222.5 |
+| Orphaned files | 248 |
+| Files without headings | 157 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 298 |
-| **Health score** | **82/100** |
+| TODO/FIXME markers | 301 |
+| **Health score** | **83/100** |
 
 ### Score Breakdown
 
@@ -59,7 +59,7 @@ These files lack a Markdown heading, making them harder to navigate:
 - `Meridian Design System/components/accounting/TaxLotTable.prompt.md`
 - `Meridian Design System/components/accounting/TrialBalance.prompt.md`
 - `Meridian Design System/components/charts/BarChart.prompt.md`
-- ... and 133 more
+- ... and 142 more
 
 ### Orphaned Documentation
 
@@ -85,7 +85,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-06-provider-health-usability-lab.md`
 - `.agents/skills/meridian-simulated-user-panel/references/artifact-bundles.md`
 - `.agents/skills/meridian-simulated-user-panel/references/personas.md`
-- ... and 211 more
+- ... and 228 more
 
 ## Trend
 
@@ -93,7 +93,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 82 | 701 | 231 | 0 |
+| 1970-01-01 | 83 | 768 | 248 | 0 |
 
 ---
 

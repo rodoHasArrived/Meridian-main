@@ -1,0 +1,7 @@
+{
+  "commit": "ea846ee8fa26f37315a61420b7db2f4694c2e256",
+  "verifiedAt": "2026-10-07T19:09:14.926609+00:00",
+  "method": "git archive committed packet into an independent temporary directory; run standalone verifier on committed bytes",
+  "commandExit": 0,
+  "stdout": "PASS: 187 copied files; 7 portable runs; 104 original manifest/receipt hashes; 6 lossless gzip files\nPASS: accepted hosted run; eight passing stages with raw measurements; unchanged profile and budgets\n"
+}

@@ -5746,6 +5746,1627 @@
           "lastPaymentDate": null
         }
       ]
+    },
+    "/api/workstation/operations/continuity": [
+      {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "securityMasterSnapshotId": "9f2f0d07-f8d3-4d6e-a2f1-3116286de3d4",
+        "brokerSource": "alpaca-paper",
+        "status": "LedgerPostingDraft",
+        "version": 4,
+        "createdAtUtc": "2026-05-08T14:00:00Z",
+        "updatedAtUtc": "2026-05-08T15:10:00Z",
+        "gates": [
+          {
+            "gateKey": "BrokerIngest",
+            "displayName": "Broker intake",
+            "status": "Passed",
+            "isRequired": true,
+            "description": "Broker activity has been imported and normalized.",
+            "blockers": [],
+            "nextActions": [],
+            "completedAtUtc": "2026-05-08T14:20:00Z",
+            "completedBy": "ops-user"
+          },
+          {
+            "gateKey": "SecurityMaster",
+            "displayName": "Security Master",
+            "status": "Passed",
+            "isRequired": true,
+            "description": "External instruments are mapped to canonical Security Master records.",
+            "blockers": [],
+            "nextActions": [],
+            "completedAtUtc": "2026-05-08T14:40:00Z",
+            "completedBy": "ops-user"
+          },
+          {
+            "gateKey": "LedgerPosting",
+            "displayName": "Ledger posting",
+            "status": "Blocked",
+            "isRequired": true,
+            "description": "Balanced journal preview must be validated before posting.",
+            "blockers": [
+              {
+                "code": "LEDGER_VALIDATION_REQUIRED",
+                "message": "Ledger posting requires a balanced and validated journal draft.",
+                "gate": "LedgerPosting",
+                "severity": "Critical",
+                "evidenceLinks": []
+              }
+            ],
+            "nextActions": [
+              {
+                "code": "RESOLVE_LEDGERPOSTING_BLOCKERS",
+                "label": "Resolve Ledger Posting blockers",
+                "route": "/workstation/accounting",
+                "gate": "LedgerPosting"
+              }
+            ],
+            "completedAtUtc": null,
+            "completedBy": null
+          },
+          {
+            "gateKey": "Reconciliation",
+            "displayName": "Reconciliation",
+            "status": "NotStarted",
+            "isRequired": true,
+            "description": "Expected broker activity must match posted ledger entries.",
+            "blockers": [],
+            "nextActions": [],
+            "completedAtUtc": null,
+            "completedBy": null
+          },
+          {
+            "gateKey": "Approval",
+            "displayName": "Approval",
+            "status": "NotStarted",
+            "isRequired": true,
+            "description": "Operations lead approval closes the workflow.",
+            "blockers": [],
+            "nextActions": [],
+            "completedAtUtc": null,
+            "completedBy": null
+          }
+        ],
+        "nextActions": [
+          {
+            "code": "RESOLVE_LEDGERPOSTING_BLOCKERS",
+            "label": "Resolve Ledger Posting blockers",
+            "route": "/workstation/accounting",
+            "gate": "LedgerPosting"
+          }
+        ]
+      }
+    ],
+    "/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6": {
+      "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+      "periodId": "2026-05",
+      "securityMasterSnapshotId": "9f2f0d07-f8d3-4d6e-a2f1-3116286de3d4",
+      "brokerSource": "alpaca-paper",
+      "status": "LedgerPostingDraft",
+      "version": 4,
+      "createdAtUtc": "2026-05-08T14:00:00Z",
+      "updatedAtUtc": "2026-05-08T15:10:00Z",
+      "brokerIntakeState": "Complete",
+      "securityMasterState": "Complete",
+      "ledgerPostingState": "Drafted",
+      "reconciliationState": "Pending",
+      "approvalState": "Pending",
+      "gates": [
+        {
+          "gateKey": "BrokerIngest",
+          "displayName": "Broker intake",
+          "status": "Passed",
+          "isRequired": true,
+          "description": "Broker activity has been imported and normalized.",
+          "blockers": [],
+          "nextActions": [],
+          "completedAtUtc": "2026-05-08T14:20:00Z",
+          "completedBy": "ops-user"
+        },
+        {
+          "gateKey": "SecurityMaster",
+          "displayName": "Security Master",
+          "status": "Passed",
+          "isRequired": true,
+          "description": "External instruments are mapped to canonical Security Master records.",
+          "blockers": [],
+          "nextActions": [],
+          "completedAtUtc": "2026-05-08T14:40:00Z",
+          "completedBy": "ops-user"
+        },
+        {
+          "gateKey": "LedgerPosting",
+          "displayName": "Ledger posting",
+          "status": "Blocked",
+          "isRequired": true,
+          "description": "Balanced journal preview must be validated before posting.",
+          "blockers": [
+            {
+              "code": "LEDGER_VALIDATION_REQUIRED",
+              "message": "Ledger posting requires a balanced and validated journal draft.",
+              "gate": "LedgerPosting",
+              "severity": "Critical",
+              "evidenceLinks": []
+            }
+          ],
+          "nextActions": [
+            {
+              "code": "RESOLVE_LEDGERPOSTING_BLOCKERS",
+              "label": "Resolve Ledger Posting blockers",
+              "route": "/workstation/accounting",
+              "gate": "LedgerPosting"
+            }
+          ],
+          "completedAtUtc": null,
+          "completedBy": null
+        },
+        {
+          "gateKey": "Reconciliation",
+          "displayName": "Reconciliation",
+          "status": "NotStarted",
+          "isRequired": true,
+          "description": "Expected broker activity must match posted ledger entries.",
+          "blockers": [],
+          "nextActions": [],
+          "completedAtUtc": null,
+          "completedBy": null
+        },
+        {
+          "gateKey": "Approval",
+          "displayName": "Approval",
+          "status": "NotStarted",
+          "isRequired": true,
+          "description": "Operations lead approval closes the workflow.",
+          "blockers": [],
+          "nextActions": [],
+          "completedAtUtc": null,
+          "completedBy": null
+        }
+      ],
+      "timeline": [
+        {
+          "auditId": "cdb9449e-7402-48b7-9acf-8568b7363e16",
+          "occurredAtUtc": "2026-05-08T14:00:00Z",
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "eventType": "workflow-started",
+          "fromState": "NotStarted",
+          "toState": "CollectingBrokerData",
+          "gate": "BrokerIngest",
+          "fromGateStatus": "NotStarted",
+          "toGateStatus": "InProgress",
+          "actor": "ops-user",
+          "rationale": "Open monthly close lane.",
+          "correlationId": "dev-continuity",
+          "references": [],
+          "previousHash": null,
+          "currentHash": "devhash-started"
+        },
+        {
+          "auditId": "2fb7a2f4-6301-4958-b3d1-76ca78390ad8",
+          "occurredAtUtc": "2026-05-08T15:10:00Z",
+          "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "periodId": "2026-05",
+          "eventType": "ledger-draft-blocked",
+          "fromState": "LedgerPostingDraft",
+          "toState": "Blocked",
+          "gate": "LedgerPosting",
+          "fromGateStatus": "InProgress",
+          "toGateStatus": "Blocked",
+          "actor": "ops-user",
+          "rationale": "Journal validation is still required.",
+          "correlationId": "dev-continuity",
+          "references": [],
+          "previousHash": "devhash-started",
+          "currentHash": "devhash-ledger"
+        }
+      ],
+      "breakCases": [
+        {
+          "breakId": "recon-break-factor-1",
+          "checkId": "mbs-factor-reconciliation",
+          "category": "MBS factor reconciliation",
+          "severity": "Warning",
+          "status": "Open",
+          "owner": null,
+          "dueDate": "2026-05-09T18:00:00Z",
+          "expectedSource": "custodian factor file",
+          "actualSource": "Security Master factor snapshot",
+          "expectedAmount": 0.847125,
+          "actualAmount": 0.8425,
+          "variance": 0.004625,
+          "securityId": "fixture-mbs-001",
+          "symbol": "FNMA 30Y 5.5",
+          "suggestedAction": "Assign controller review, validate the factor source, and retain resolution evidence before close approval.",
+          "evidenceLinks": [
+            {
+              "evidenceId": "fixture-factor-break-evidence",
+              "label": "Fixture factor variance evidence",
+              "route": "/workstation/accounting/reconciliation/recon-break-factor-1",
+              "source": "development-fixture",
+              "capturedAtUtc": "2026-05-08T15:36:00Z"
+            }
+          ],
+          "escalationLevel": "Controller review",
+          "escalationReason": "Factor variance blocks NAV support and close package publication.",
+          "escalatedAtUtc": "2026-05-08T15:45:00Z",
+          "slaState": "DueSoon",
+          "slaDueAtUtc": "2026-05-09T18:00:00Z",
+          "materiality": 0.004625,
+          "rootCauseCode": "FactorSourceMismatch",
+          "approvalState": "Pending",
+          "blockedOutputs": [
+            "NAV support package",
+            "Close package"
+          ]
+        }
+      ],
+      "reconciliationLanes": [
+        {
+          "laneId": "cash-reconciliation",
+          "label": "Cash reconciliation",
+          "status": "Ready",
+          "isReady": true,
+          "breakCount": 0,
+          "summary": "Cash reconciliation is covered by retained bank and custodian cash evidence.",
+          "routeHint": "/workstation/accounting/reconciliation",
+          "evidenceLinks": [
+            {
+              "evidenceId": "fixture-cash-reconciliation-evidence",
+              "label": "Fixture cash reconciliation evidence",
+              "route": "/workstation/accounting/reconciliation/cash",
+              "source": "development-fixture",
+              "capturedAtUtc": "2026-05-08T15:35:00Z"
+            }
+          ],
+          "requiredActions": []
+        },
+        {
+          "laneId": "position-reconciliation",
+          "label": "Position reconciliation",
+          "status": "Ready",
+          "isReady": true,
+          "breakCount": 0,
+          "summary": "Position reconciliation has matched portfolio and custodian positions.",
+          "routeHint": "/workstation/accounting/reconciliation",
+          "evidenceLinks": [],
+          "requiredActions": []
+        },
+        {
+          "laneId": "trade-reconciliation",
+          "label": "Trade reconciliation",
+          "status": "Ready",
+          "isReady": true,
+          "breakCount": 0,
+          "summary": "Trade reconciliation matched fills, orders, and execution activity.",
+          "routeHint": "/workstation/accounting/reconciliation",
+          "evidenceLinks": [],
+          "requiredActions": []
+        },
+        {
+          "laneId": "income-reconciliation",
+          "label": "Income reconciliation",
+          "status": "Ready",
+          "isReady": true,
+          "breakCount": 0,
+          "summary": "Income reconciliation retained expected dividend, interest, and accrual evidence.",
+          "routeHint": "/workstation/accounting/reconciliation",
+          "evidenceLinks": [],
+          "requiredActions": []
+        },
+        {
+          "laneId": "mbs-factor-reconciliation",
+          "label": "MBS factor reconciliation",
+          "status": "ReviewRequired",
+          "isReady": false,
+          "breakCount": 1,
+          "summary": "MBS factor reconciliation has 1 open break requiring controller review.",
+          "routeHint": "/workstation/accounting/reconciliation",
+          "evidenceLinks": [
+            {
+              "evidenceId": "fixture-factor-break-evidence",
+              "label": "Fixture factor variance evidence",
+              "route": "/workstation/accounting/reconciliation/recon-break-factor-1",
+              "source": "development-fixture",
+              "capturedAtUtc": "2026-05-08T15:36:00Z"
+            }
+          ],
+          "requiredActions": [
+            "Resolve or assign MBS factor reconciliation breaks and retain evidence."
+          ]
+        },
+        {
+          "laneId": "bank-reconciliation",
+          "label": "Bank reconciliation",
+          "status": "Ready",
+          "isReady": true,
+          "breakCount": 0,
+          "summary": "Bank reconciliation retained normalized bank transaction evidence.",
+          "routeHint": "/workstation/accounting/reconciliation",
+          "evidenceLinks": [],
+          "requiredActions": []
+        },
+        {
+          "laneId": "gl-reconciliation",
+          "label": "GL reconciliation support",
+          "status": "Ready",
+          "isReady": true,
+          "breakCount": 0,
+          "summary": "GL reconciliation support has expected journal preview evidence.",
+          "routeHint": "/workstation/accounting/ledger",
+          "evidenceLinks": [],
+          "requiredActions": []
+        }
+      ],
+      "ledgerPreview": {
+        "previewId": "ledger-preview-dev",
+        "status": "Drafted",
+        "ledgerBatchId": null,
+        "generatedAtUtc": "2026-05-08T15:00:00Z",
+        "evidenceLinks": []
+      },
+      "approvals": [],
+      "reportPackReadiness": {
+        "isReady": false,
+        "reportPackId": null,
+        "blockingReason": "Close workflow has unresolved ledger blockers.",
+        "evidenceLinks": []
+      },
+      "accountingRecordSummary": {
+        "recordId": "accounting-record-2026-05",
+        "isAuditReady": false,
+        "completeCategoryCount": 3,
+        "requiredCategoryCount": 8,
+        "summary": "Demo accounting record is partially retained; approvals, case history, report pack, exports, and restatement lineage still require review.",
+        "evidenceCategories": [
+          {
+            "key": "source-records",
+            "label": "Retained source data",
+            "isComplete": true,
+            "status": "Complete",
+            "routeHint": "/reporting/evidence?subjectKind=accounting-record&subjectId=79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+            "evidenceLinks": [
+              {
+                "evidenceId": "devhash-accounting-record-journal",
+                "label": "Journal and ledger evidence",
+                "route": "/reporting/evidence?subjectKind=accounting-record&subjectId=79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+                "source": "development-fixture",
+                "capturedAtUtc": "2026-05-08T15:15:00Z"
+              }
+            ],
+            "requiredEvidence": [
+              "provider statement",
+              "custodian activity file",
+              "bank or account source record"
+            ]
+          },
+          {
+            "key": "normalized-activity",
+            "label": "Normalized activity",
+            "isComplete": true,
+            "status": "Complete",
+            "routeHint": "/reporting/evidence?subjectKind=accounting-record&subjectId=79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+            "evidenceLinks": [],
+            "requiredEvidence": [
+              "normalized activity projection"
+            ]
+          },
+          {
+            "key": "reconciliation-case-history",
+            "label": "Reconciliation case history",
+            "isComplete": false,
+            "status": "Review required",
+            "routeHint": "/accounting/reconciliation",
+            "evidenceLinks": [],
+            "requiredEvidence": [
+              "case transition history",
+              "operator decision notes"
+            ]
+          },
+          {
+            "key": "ledger-evidence",
+            "label": "Journal and ledger evidence",
+            "isComplete": true,
+            "status": "Complete",
+            "routeHint": "/accounting/ledger",
+            "evidenceLinks": [
+              {
+                "evidenceId": "devhash-accounting-record-journal",
+                "label": "Journal and ledger evidence",
+                "route": "/reporting/evidence?subjectKind=accounting-record&subjectId=79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+                "source": "development-fixture",
+                "capturedAtUtc": "2026-05-08T15:15:00Z"
+              }
+            ],
+            "requiredEvidence": [
+              "journal preview",
+              "trial balance impact"
+            ]
+          },
+          {
+            "key": "approvals",
+            "label": "Close approvals",
+            "isComplete": false,
+            "status": "Review required",
+            "routeHint": "/accounting/operations-continuity",
+            "evidenceLinks": [],
+            "requiredEvidence": [
+              "distinct operator approval",
+              "close checklist sign-off"
+            ]
+          },
+          {
+            "key": "report-pack",
+            "label": "Report pack",
+            "isComplete": false,
+            "status": "Review required",
+            "routeHint": "/reporting/evidence",
+            "evidenceLinks": [],
+            "requiredEvidence": [
+              "report-pack manifest",
+              "report-pack provenance",
+              "report-pack validation"
+            ]
+          },
+          {
+            "key": "exports",
+            "label": "Exports and retained evidence",
+            "isComplete": false,
+            "status": "Review required",
+            "routeHint": "/reporting/evidence",
+            "evidenceLinks": [],
+            "requiredEvidence": [
+              "export manifest",
+              "retained evidence hash",
+              "close-package publication"
+            ]
+          },
+          {
+            "key": "restatement-lineage",
+            "label": "Restatement lineage",
+            "isComplete": false,
+            "status": "Review required",
+            "routeHint": "/reporting/evidence",
+            "evidenceLinks": [],
+            "requiredEvidence": [
+              "published baseline",
+              "prior-version pointer when restated",
+              "changed-line evidence"
+            ]
+          }
+        ],
+        "evidenceLinks": [
+          {
+            "evidenceId": "devhash-accounting-record-journal",
+            "label": "Journal and ledger evidence",
+            "route": "/reporting/evidence?subjectKind=accounting-record&subjectId=79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+            "source": "development-fixture",
+            "capturedAtUtc": "2026-05-08T15:15:00Z"
+          }
+        ],
+        "auditPackReadiness": {
+          "isComplete": false,
+          "generatedInSeconds": 0,
+          "slaTargetSeconds": 60,
+          "slaMet": true,
+          "missingEvidenceCategories": [
+            "ReconciliationCases",
+            "Approvals",
+            "ReportPack",
+            "Exports",
+            "RestatementLineage"
+          ],
+          "warnings": [
+            "Demo accounting record is missing required audit-pack evidence."
+          ],
+          "evidenceCategorySummaries": []
+        }
+      },
+      "closeChecklist": [
+        {
+          "taskId": "close-gate-brokeringest",
+          "gate": "BrokerIngest",
+          "label": "Broker intake close gate",
+          "owner": "ops-user",
+          "requiredEvidence": "Normalized broker statement evidence retained for the close period.",
+          "dueDate": "2026-05-10",
+          "requiredApprovalCount": 1,
+          "expiresOn": "2026-05-15",
+          "status": "Done",
+          "blockingReason": null,
+          "evidencePointer": "ev-broker-ingest",
+          "remediationRoute": null,
+          "canAcknowledge": true,
+          "acknowledgedAtUtc": "2026-05-08T14:20:00Z",
+          "acknowledgedBy": "ops-user"
+        }
+      ],
+      "closeReadiness": null,
+      "closePackage": null,
+      "dashboardSummary": {
+        "dashboardId": "operations-dashboard:fixture:2026-05",
+        "stage": "Resolve Exceptions",
+        "status": "Blocked",
+        "isReady": false,
+        "readyMetricCount": 2,
+        "totalMetricCount": 6,
+        "summary": "Financial Operations dashboard is in Resolve Exceptions with 4 metrics requiring review.",
+        "metrics": [
+          {
+            "metricId": "receive-activity",
+            "label": "Receive Activity",
+            "value": "Complete",
+            "status": "Ready",
+            "detail": "Broker activity has been received and normalized for this account-period workflow.",
+            "routeHint": "/workstation/accounting",
+            "evidenceLinks": [],
+            "requiredActions": []
+          },
+          {
+            "metricId": "match-records",
+            "label": "Match Records",
+            "value": "6/7 lanes ready",
+            "status": "ReviewRequired",
+            "detail": "Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.",
+            "routeHint": "/workstation/accounting/reconciliation",
+            "evidenceLinks": [],
+            "requiredActions": [
+              "Complete source-backed reconciliation lanes before approval."
+            ]
+          },
+          {
+            "metricId": "resolve-exceptions",
+            "label": "Resolve Exceptions",
+            "value": "1 open",
+            "status": "Blocked",
+            "detail": "1 reconciliation break requires assignment, escalation, or resolution evidence.",
+            "routeHint": "/workstation/accounting/reconciliation",
+            "evidenceLinks": [],
+            "requiredActions": [
+              "Assign, escalate, or resolve open exceptions and retain resolution evidence."
+            ]
+          },
+          {
+            "metricId": "approve-results",
+            "label": "Approve Results",
+            "value": "Pending",
+            "status": "ReviewRequired",
+            "detail": "Approval history is not complete for this workflow.",
+            "routeHint": "/workstation/accounting/approvals",
+            "evidenceLinks": [],
+            "requiredActions": [
+              "Complete workflow approval and checklist-control approvals."
+            ]
+          },
+          {
+            "metricId": "produce-evidence",
+            "label": "Produce Evidence",
+            "value": "Evidence package pending",
+            "status": "Missing",
+            "detail": "Close workflow has unresolved ledger blockers.",
+            "routeHint": "/workstation/reporting/report-packs",
+            "evidenceLinks": [],
+            "requiredActions": [
+              "Publish and retain the evidence package before period close."
+            ]
+          },
+          {
+            "metricId": "close-support",
+            "label": "Close Support",
+            "value": "Close readiness pending",
+            "status": "Missing",
+            "detail": "Close checklist, period lock, and reopen evidence are governed by the shared workflow.",
+            "routeHint": "/workstation/accounting/operations-continuity",
+            "evidenceLinks": [],
+            "requiredActions": [
+              "Clear close readiness blockers and retain period-lock or reopen evidence."
+            ]
+          }
+        ],
+        "evidenceLinks": [],
+        "requiredActions": [
+          "Assign, escalate, or resolve open exceptions and retain resolution evidence.",
+          "Publish and retain the evidence package before period close."
+        ]
+      },
+      "reviewedAutomation": {
+        "summaryId": "reviewed-automation:fixture:2026-05",
+        "stage": "Report commentary and audit request list draft review",
+        "status": "ReviewRequired",
+        "requiresHumanReview": true,
+        "summary": "Demo automation may draft close commentary and audit request lists, but publication remains behind human approval.",
+        "allowedUseCases": [
+          "Draft report commentary",
+          "Draft audit request lists"
+        ],
+        "prohibitedActions": [
+          "Approve workflow",
+          "Publish close package",
+          "Erase evidence"
+        ],
+        "evidenceLinks": [
+          {
+            "evidenceId": "ev-reviewed-automation",
+            "label": "Reviewed automation draft packet",
+            "route": "/workstation/reporting/report-packs/automation-review",
+            "source": "operations-continuity",
+            "capturedAtUtc": "2026-05-08T15:40:00Z"
+          }
+        ],
+        "requiredActions": [
+          "Review drafted report commentary and audit request lists against retained evidence before submission."
+        ],
+        "artifacts": [
+          {
+            "artifactId": "reviewed-automation:report-commentary-draft",
+            "artifactKind": "Report commentary",
+            "title": "Report commentary draft",
+            "status": "ReviewRequired",
+            "requiresHumanReview": true,
+            "confidencePercent": 84,
+            "sourceSummary": "Draft commentary is generated from retained close, ledger, reconciliation, and report-pack evidence.",
+            "suggestedOperatorAction": "Review commentary against retained evidence before report approval or publication.",
+            "blockedMaterialAction": "Cannot publish reports or release support packages.",
+            "evidenceLinks": [
+              {
+                "evidenceId": "ev-reviewed-automation",
+                "label": "Reviewed automation draft packet",
+                "route": "/workstation/reporting/report-packs/automation-review",
+                "source": "operations-continuity",
+                "capturedAtUtc": "2026-05-08T15:40:00Z"
+              }
+            ],
+            "reviewChecklist": [
+              "Review drafted report commentary and audit request lists against retained evidence before submission."
+            ]
+          },
+          {
+            "artifactId": "reviewed-automation:audit-request-list-draft",
+            "artifactKind": "Audit request list",
+            "title": "Audit request list draft",
+            "status": "ReviewRequired",
+            "requiresHumanReview": true,
+            "confidencePercent": 79,
+            "sourceSummary": "Draft audit request lists summarize missing support and unresolved evidence gaps.",
+            "suggestedOperatorAction": "Review each requested support item and assign an owner before audit release.",
+            "blockedMaterialAction": "Cannot erase evidence or satisfy audit requests without retained support.",
+            "evidenceLinks": [],
+            "reviewChecklist": [
+              "Review drafted report commentary and audit request lists against retained evidence before submission."
+            ]
+          },
+          {
+            "artifactId": "reviewed-automation:missing-support-flag",
+            "artifactKind": "Missing support",
+            "title": "Missing support flag",
+            "status": "ReviewRequired",
+            "requiresHumanReview": true,
+            "confidencePercent": 72,
+            "sourceSummary": "Missing support flags are derived from incomplete evidence package categories.",
+            "suggestedOperatorAction": "Attach or waive missing support through governed human review.",
+            "blockedMaterialAction": "Cannot approve its own missing-support disposition.",
+            "evidenceLinks": [],
+            "reviewChecklist": [
+              "Review drafted report commentary and audit request lists against retained evidence before submission."
+            ]
+          }
+        ]
+      },
+      "evidencePackages": [
+        {
+          "packageId": "accounting-record-2026-05",
+          "label": "Accounting record evidence",
+          "status": "ReviewRequired",
+          "isReady": false,
+          "summary": "Demo accounting record is partially retained; approvals, case history, report pack, exports, and restatement lineage still require review.",
+          "routeHint": "/workstation/accounting/operations-continuity",
+          "completeCategoryCount": 3,
+          "requiredCategoryCount": 8,
+          "evidenceLinkCount": 1,
+          "evidenceLinks": [
+            {
+              "evidenceId": "devhash-accounting-record-journal",
+              "label": "Journal and ledger evidence",
+              "route": "/reporting/evidence?subjectKind=accounting-record&subjectId=79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+              "source": "development-fixture",
+              "capturedAtUtc": "2026-05-08T15:15:00Z"
+            }
+          ],
+          "requiredActions": [
+            "Complete all accounting-record evidence categories before publishing the evidence package."
+          ]
+        },
+        {
+          "packageId": "report-pack:fixture:2026-05",
+          "label": "Report pack evidence",
+          "status": "Missing",
+          "isReady": false,
+          "summary": "Close workflow has unresolved ledger blockers.",
+          "routeHint": "/workstation/reporting/report-packs",
+          "completeCategoryCount": 0,
+          "requiredCategoryCount": 1,
+          "evidenceLinkCount": 0,
+          "evidenceLinks": [],
+          "requiredActions": [
+            "Link ready report-pack evidence before close publication."
+          ]
+        },
+        {
+          "packageId": "close-package:fixture:2026-05",
+          "label": "Close package manifest",
+          "status": "Missing",
+          "isReady": false,
+          "summary": "Close package manifest and retained evidence hash have not been published.",
+          "routeHint": "/workstation/accounting/operations-continuity",
+          "completeCategoryCount": 0,
+          "requiredCategoryCount": 1,
+          "evidenceLinkCount": 0,
+          "evidenceLinks": [],
+          "requiredActions": [
+            "Publish the close package manifest and retain the evidence hash."
+          ]
+        },
+        {
+          "packageId": "audit-support:fixture:2026-05",
+          "label": "Audit support package",
+          "status": "ReviewRequired",
+          "isReady": false,
+          "summary": "5 audit evidence categories are missing.",
+          "routeHint": "/workstation/reporting/evidence",
+          "completeCategoryCount": 3,
+          "requiredCategoryCount": 8,
+          "evidenceLinkCount": 1,
+          "evidenceLinks": [
+            {
+              "evidenceId": "devhash-accounting-record-journal",
+              "label": "Journal and ledger evidence",
+              "route": "/reporting/evidence?subjectKind=accounting-record&subjectId=79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+              "source": "development-fixture",
+              "capturedAtUtc": "2026-05-08T15:15:00Z"
+            }
+          ],
+          "requiredActions": [
+            "Complete missing audit evidence categories before releasing the package."
+          ]
+        },
+        {
+          "packageId": "period-lock-reopen:fixture:2026-05",
+          "label": "Period lock and reopen evidence",
+          "status": "Missing",
+          "isReady": false,
+          "summary": "Period 2026-05 has not been locked by a close package; governed reopen evidence will be required if a closed workflow is reopened.",
+          "routeHint": "/workstation/accounting/operations-continuity",
+          "completeCategoryCount": 1,
+          "requiredCategoryCount": 2,
+          "evidenceLinkCount": 0,
+          "evidenceLinks": [],
+          "requiredActions": [
+            "Close the workflow and retain the period-lock package before evidence release."
+          ]
+        }
+      ],
+      "evidenceLinks": [],
+      "blockers": [
+        {
+          "code": "LEDGER_VALIDATION_REQUIRED",
+          "message": "Ledger posting requires a balanced and validated journal draft.",
+          "gate": "LedgerPosting",
+          "severity": "Critical",
+          "evidenceLinks": []
+        }
+      ],
+      "nextActions": [
+        {
+          "code": "RESOLVE_LEDGERPOSTING_BLOCKERS",
+          "label": "Resolve Ledger Posting blockers",
+          "route": "/workstation/accounting",
+          "gate": "LedgerPosting"
+        }
+      ]
+    },
+    "/api/workstation/operations/continuity/approval-policy-matrix": {
+      "policyId": "operations-continuity-close",
+      "version": "2026.05",
+      "generatedAtUtc": "2026-05-28T00:00:00Z",
+      "rows": [
+        {
+          "policyKey": "close-checklist-control-approvals",
+          "workflowArea": "Account close",
+          "action": "Approve close checklist controls",
+          "gate": "Approval",
+          "trigger": "ReadyForClose",
+          "requiredPermission": "AdminMaintenance",
+          "submitterRole": "Accounting",
+          "reviewerRole": "Admin",
+          "requiredDistinctApprovals": 2,
+          "requiresIndependentReviewer": true,
+          "requiresReportPack": true,
+          "requiresChecklistControlApprovals": true,
+          "evidenceRequirement": "Checklist control approvals and report pack evidence",
+          "auditEventType": "close-checklist-control-approved",
+          "route": "/accounting/operations-continuity",
+          "severity": "High"
+        }
+      ]
+    },
+    "/api/workstation/operations/financial-operations-command-center": {
+      "generatedAtUtc": "2026-05-08T15:10:00Z",
+      "fundProfileId": null,
+      "ledgerBookId": null,
+      "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+      "periodId": "2026-05",
+      "status": "Blocked",
+      "isReadyToComplete": false,
+      "summary": "Screenshot fixture: ledger validation and complete close scope are required before publication.",
+      "activeItemCount": 1,
+      "blockedItemCount": 1,
+      "reviewItemCount": 0,
+      "metrics": [],
+      "queueRows": [],
+      "activeWorkflow": {
+        "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+        "periodId": "2026-05",
+        "securityMasterSnapshotId": "9f2f0d07-f8d3-4d6e-a2f1-3116286de3d4",
+        "brokerSource": "alpaca-paper",
+        "status": "LedgerPostingDraft",
+        "version": 4,
+        "createdAtUtc": "2026-05-08T14:00:00Z",
+        "updatedAtUtc": "2026-05-08T15:10:00Z",
+        "brokerIntakeState": "Complete",
+        "securityMasterState": "Complete",
+        "ledgerPostingState": "Drafted",
+        "reconciliationState": "Pending",
+        "approvalState": "Pending",
+        "gates": [
+          {
+            "gateKey": "BrokerIngest",
+            "displayName": "Broker intake",
+            "status": "Passed",
+            "isRequired": true,
+            "description": "Broker activity has been imported and normalized.",
+            "blockers": [],
+            "nextActions": [],
+            "completedAtUtc": "2026-05-08T14:20:00Z",
+            "completedBy": "ops-user"
+          },
+          {
+            "gateKey": "SecurityMaster",
+            "displayName": "Security Master",
+            "status": "Passed",
+            "isRequired": true,
+            "description": "External instruments are mapped to canonical Security Master records.",
+            "blockers": [],
+            "nextActions": [],
+            "completedAtUtc": "2026-05-08T14:40:00Z",
+            "completedBy": "ops-user"
+          },
+          {
+            "gateKey": "LedgerPosting",
+            "displayName": "Ledger posting",
+            "status": "Blocked",
+            "isRequired": true,
+            "description": "Balanced journal preview must be validated before posting.",
+            "blockers": [
+              {
+                "code": "LEDGER_VALIDATION_REQUIRED",
+                "message": "Ledger posting requires a balanced and validated journal draft.",
+                "gate": "LedgerPosting",
+                "severity": "Critical",
+                "evidenceLinks": []
+              }
+            ],
+            "nextActions": [
+              {
+                "code": "RESOLVE_LEDGERPOSTING_BLOCKERS",
+                "label": "Resolve Ledger Posting blockers",
+                "route": "/workstation/accounting",
+                "gate": "LedgerPosting"
+              }
+            ],
+            "completedAtUtc": null,
+            "completedBy": null
+          },
+          {
+            "gateKey": "Reconciliation",
+            "displayName": "Reconciliation",
+            "status": "NotStarted",
+            "isRequired": true,
+            "description": "Expected broker activity must match posted ledger entries.",
+            "blockers": [],
+            "nextActions": [],
+            "completedAtUtc": null,
+            "completedBy": null
+          },
+          {
+            "gateKey": "Approval",
+            "displayName": "Approval",
+            "status": "NotStarted",
+            "isRequired": true,
+            "description": "Operations lead approval closes the workflow.",
+            "blockers": [],
+            "nextActions": [],
+            "completedAtUtc": null,
+            "completedBy": null
+          }
+        ],
+        "timeline": [
+          {
+            "auditId": "cdb9449e-7402-48b7-9acf-8568b7363e16",
+            "occurredAtUtc": "2026-05-08T14:00:00Z",
+            "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "periodId": "2026-05",
+            "eventType": "workflow-started",
+            "fromState": "NotStarted",
+            "toState": "CollectingBrokerData",
+            "gate": "BrokerIngest",
+            "fromGateStatus": "NotStarted",
+            "toGateStatus": "InProgress",
+            "actor": "ops-user",
+            "rationale": "Open monthly close lane.",
+            "correlationId": "dev-continuity",
+            "references": [],
+            "previousHash": null,
+            "currentHash": "devhash-started"
+          },
+          {
+            "auditId": "2fb7a2f4-6301-4958-b3d1-76ca78390ad8",
+            "occurredAtUtc": "2026-05-08T15:10:00Z",
+            "workflowId": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+            "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+            "periodId": "2026-05",
+            "eventType": "ledger-draft-blocked",
+            "fromState": "LedgerPostingDraft",
+            "toState": "Blocked",
+            "gate": "LedgerPosting",
+            "fromGateStatus": "InProgress",
+            "toGateStatus": "Blocked",
+            "actor": "ops-user",
+            "rationale": "Journal validation is still required.",
+            "correlationId": "dev-continuity",
+            "references": [],
+            "previousHash": "devhash-started",
+            "currentHash": "devhash-ledger"
+          }
+        ],
+        "breakCases": [
+          {
+            "breakId": "recon-break-factor-1",
+            "checkId": "mbs-factor-reconciliation",
+            "category": "MBS factor reconciliation",
+            "severity": "Warning",
+            "status": "Open",
+            "owner": null,
+            "dueDate": "2026-05-09T18:00:00Z",
+            "expectedSource": "custodian factor file",
+            "actualSource": "Security Master factor snapshot",
+            "expectedAmount": 0.847125,
+            "actualAmount": 0.8425,
+            "variance": 0.004625,
+            "securityId": "fixture-mbs-001",
+            "symbol": "FNMA 30Y 5.5",
+            "suggestedAction": "Assign controller review, validate the factor source, and retain resolution evidence before close approval.",
+            "evidenceLinks": [
+              {
+                "evidenceId": "fixture-factor-break-evidence",
+                "label": "Fixture factor variance evidence",
+                "route": "/workstation/accounting/reconciliation/recon-break-factor-1",
+                "source": "development-fixture",
+                "capturedAtUtc": "2026-05-08T15:36:00Z"
+              }
+            ],
+            "escalationLevel": "Controller review",
+            "escalationReason": "Factor variance blocks NAV support and close package publication.",
+            "escalatedAtUtc": "2026-05-08T15:45:00Z",
+            "slaState": "DueSoon",
+            "slaDueAtUtc": "2026-05-09T18:00:00Z",
+            "materiality": 0.004625,
+            "rootCauseCode": "FactorSourceMismatch",
+            "approvalState": "Pending",
+            "blockedOutputs": [
+              "NAV support package",
+              "Close package"
+            ]
+          }
+        ],
+        "reconciliationLanes": [
+          {
+            "laneId": "cash-reconciliation",
+            "label": "Cash reconciliation",
+            "status": "Ready",
+            "isReady": true,
+            "breakCount": 0,
+            "summary": "Cash reconciliation is covered by retained bank and custodian cash evidence.",
+            "routeHint": "/workstation/accounting/reconciliation",
+            "evidenceLinks": [
+              {
+                "evidenceId": "fixture-cash-reconciliation-evidence",
+                "label": "Fixture cash reconciliation evidence",
+                "route": "/workstation/accounting/reconciliation/cash",
+                "source": "development-fixture",
+                "capturedAtUtc": "2026-05-08T15:35:00Z"
+              }
+            ],
+            "requiredActions": []
+          },
+          {
+            "laneId": "position-reconciliation",
+            "label": "Position reconciliation",
+            "status": "Ready",
+            "isReady": true,
+            "breakCount": 0,
+            "summary": "Position reconciliation has matched portfolio and custodian positions.",
+            "routeHint": "/workstation/accounting/reconciliation",
+            "evidenceLinks": [],
+            "requiredActions": []
+          },
+          {
+            "laneId": "trade-reconciliation",
+            "label": "Trade reconciliation",
+            "status": "Ready",
+            "isReady": true,
+            "breakCount": 0,
+            "summary": "Trade reconciliation matched fills, orders, and execution activity.",
+            "routeHint": "/workstation/accounting/reconciliation",
+            "evidenceLinks": [],
+            "requiredActions": []
+          },
+          {
+            "laneId": "income-reconciliation",
+            "label": "Income reconciliation",
+            "status": "Ready",
+            "isReady": true,
+            "breakCount": 0,
+            "summary": "Income reconciliation retained expected dividend, interest, and accrual evidence.",
+            "routeHint": "/workstation/accounting/reconciliation",
+            "evidenceLinks": [],
+            "requiredActions": []
+          },
+          {
+            "laneId": "mbs-factor-reconciliation",
+            "label": "MBS factor reconciliation",
+            "status": "ReviewRequired",
+            "isReady": false,
+            "breakCount": 1,
+            "summary": "MBS factor reconciliation has 1 open break requiring controller review.",
+            "routeHint": "/workstation/accounting/reconciliation",
+            "evidenceLinks": [
+              {
+                "evidenceId": "fixture-factor-break-evidence",
+                "label": "Fixture factor variance evidence",
+                "route": "/workstation/accounting/reconciliation/recon-break-factor-1",
+                "source": "development-fixture",
+                "capturedAtUtc": "2026-05-08T15:36:00Z"
+              }
+            ],
+            "requiredActions": [
+              "Resolve or assign MBS factor reconciliation breaks and retain evidence."
+            ]
+          },
+          {
+            "laneId": "bank-reconciliation",
+            "label": "Bank reconciliation",
+            "status": "Ready",
+            "isReady": true,
+            "breakCount": 0,
+            "summary": "Bank reconciliation retained normalized bank transaction evidence.",
+            "routeHint": "/workstation/accounting/reconciliation",
+            "evidenceLinks": [],
+            "requiredActions": []
+          },
+          {
+            "laneId": "gl-reconciliation",
+            "label": "GL reconciliation support",
+            "status": "Ready",
+            "isReady": true,
+            "breakCount": 0,
+            "summary": "GL reconciliation support has expected journal preview evidence.",
+            "routeHint": "/workstation/accounting/ledger",
+            "evidenceLinks": [],
+            "requiredActions": []
+          }
+        ],
+        "ledgerPreview": {
+          "previewId": "ledger-preview-dev",
+          "status": "Drafted",
+          "ledgerBatchId": null,
+          "generatedAtUtc": "2026-05-08T15:00:00Z",
+          "evidenceLinks": []
+        },
+        "approvals": [],
+        "reportPackReadiness": {
+          "isReady": false,
+          "reportPackId": null,
+          "blockingReason": "Close workflow has unresolved ledger blockers.",
+          "evidenceLinks": []
+        },
+        "accountingRecordSummary": {
+          "recordId": "accounting-record-2026-05",
+          "isAuditReady": false,
+          "completeCategoryCount": 3,
+          "requiredCategoryCount": 8,
+          "summary": "Demo accounting record is partially retained; approvals, case history, report pack, exports, and restatement lineage still require review.",
+          "evidenceCategories": [
+            {
+              "key": "source-records",
+              "label": "Retained source data",
+              "isComplete": true,
+              "status": "Complete",
+              "routeHint": "/reporting/evidence?subjectKind=accounting-record&subjectId=79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+              "evidenceLinks": [
+                {
+                  "evidenceId": "devhash-accounting-record-journal",
+                  "label": "Journal and ledger evidence",
+                  "route": "/reporting/evidence?subjectKind=accounting-record&subjectId=79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+                  "source": "development-fixture",
+                  "capturedAtUtc": "2026-05-08T15:15:00Z"
+                }
+              ],
+              "requiredEvidence": [
+                "provider statement",
+                "custodian activity file",
+                "bank or account source record"
+              ]
+            },
+            {
+              "key": "normalized-activity",
+              "label": "Normalized activity",
+              "isComplete": true,
+              "status": "Complete",
+              "routeHint": "/reporting/evidence?subjectKind=accounting-record&subjectId=79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+              "evidenceLinks": [],
+              "requiredEvidence": [
+                "normalized activity projection"
+              ]
+            },
+            {
+              "key": "reconciliation-case-history",
+              "label": "Reconciliation case history",
+              "isComplete": false,
+              "status": "Review required",
+              "routeHint": "/accounting/reconciliation",
+              "evidenceLinks": [],
+              "requiredEvidence": [
+                "case transition history",
+                "operator decision notes"
+              ]
+            },
+            {
+              "key": "ledger-evidence",
+              "label": "Journal and ledger evidence",
+              "isComplete": true,
+              "status": "Complete",
+              "routeHint": "/accounting/ledger",
+              "evidenceLinks": [
+                {
+                  "evidenceId": "devhash-accounting-record-journal",
+                  "label": "Journal and ledger evidence",
+                  "route": "/reporting/evidence?subjectKind=accounting-record&subjectId=79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+                  "source": "development-fixture",
+                  "capturedAtUtc": "2026-05-08T15:15:00Z"
+                }
+              ],
+              "requiredEvidence": [
+                "journal preview",
+                "trial balance impact"
+              ]
+            },
+            {
+              "key": "approvals",
+              "label": "Close approvals",
+              "isComplete": false,
+              "status": "Review required",
+              "routeHint": "/accounting/operations-continuity",
+              "evidenceLinks": [],
+              "requiredEvidence": [
+                "distinct operator approval",
+                "close checklist sign-off"
+              ]
+            },
+            {
+              "key": "report-pack",
+              "label": "Report pack",
+              "isComplete": false,
+              "status": "Review required",
+              "routeHint": "/reporting/evidence",
+              "evidenceLinks": [],
+              "requiredEvidence": [
+                "report-pack manifest",
+                "report-pack provenance",
+                "report-pack validation"
+              ]
+            },
+            {
+              "key": "exports",
+              "label": "Exports and retained evidence",
+              "isComplete": false,
+              "status": "Review required",
+              "routeHint": "/reporting/evidence",
+              "evidenceLinks": [],
+              "requiredEvidence": [
+                "export manifest",
+                "retained evidence hash",
+                "close-package publication"
+              ]
+            },
+            {
+              "key": "restatement-lineage",
+              "label": "Restatement lineage",
+              "isComplete": false,
+              "status": "Review required",
+              "routeHint": "/reporting/evidence",
+              "evidenceLinks": [],
+              "requiredEvidence": [
+                "published baseline",
+                "prior-version pointer when restated",
+                "changed-line evidence"
+              ]
+            }
+          ],
+          "evidenceLinks": [
+            {
+              "evidenceId": "devhash-accounting-record-journal",
+              "label": "Journal and ledger evidence",
+              "route": "/reporting/evidence?subjectKind=accounting-record&subjectId=79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+              "source": "development-fixture",
+              "capturedAtUtc": "2026-05-08T15:15:00Z"
+            }
+          ],
+          "auditPackReadiness": {
+            "isComplete": false,
+            "generatedInSeconds": 0,
+            "slaTargetSeconds": 60,
+            "slaMet": true,
+            "missingEvidenceCategories": [
+              "ReconciliationCases",
+              "Approvals",
+              "ReportPack",
+              "Exports",
+              "RestatementLineage"
+            ],
+            "warnings": [
+              "Demo accounting record is missing required audit-pack evidence."
+            ],
+            "evidenceCategorySummaries": []
+          }
+        },
+        "closeChecklist": [
+          {
+            "taskId": "close-gate-brokeringest",
+            "gate": "BrokerIngest",
+            "label": "Broker intake close gate",
+            "owner": "ops-user",
+            "requiredEvidence": "Normalized broker statement evidence retained for the close period.",
+            "dueDate": "2026-05-10",
+            "requiredApprovalCount": 1,
+            "expiresOn": "2026-05-15",
+            "status": "Done",
+            "blockingReason": null,
+            "evidencePointer": "ev-broker-ingest",
+            "remediationRoute": null,
+            "canAcknowledge": true,
+            "acknowledgedAtUtc": "2026-05-08T14:20:00Z",
+            "acknowledgedBy": "ops-user"
+          }
+        ],
+        "closeReadiness": null,
+        "closePackage": null,
+        "dashboardSummary": {
+          "dashboardId": "operations-dashboard:fixture:2026-05",
+          "stage": "Resolve Exceptions",
+          "status": "Blocked",
+          "isReady": false,
+          "readyMetricCount": 2,
+          "totalMetricCount": 6,
+          "summary": "Financial Operations dashboard is in Resolve Exceptions with 4 metrics requiring review.",
+          "metrics": [
+            {
+              "metricId": "receive-activity",
+              "label": "Receive Activity",
+              "value": "Complete",
+              "status": "Ready",
+              "detail": "Broker activity has been received and normalized for this account-period workflow.",
+              "routeHint": "/workstation/accounting",
+              "evidenceLinks": [],
+              "requiredActions": []
+            },
+            {
+              "metricId": "match-records",
+              "label": "Match Records",
+              "value": "6/7 lanes ready",
+              "status": "ReviewRequired",
+              "detail": "Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.",
+              "routeHint": "/workstation/accounting/reconciliation",
+              "evidenceLinks": [],
+              "requiredActions": [
+                "Complete source-backed reconciliation lanes before approval."
+              ]
+            },
+            {
+              "metricId": "resolve-exceptions",
+              "label": "Resolve Exceptions",
+              "value": "1 open",
+              "status": "Blocked",
+              "detail": "1 reconciliation break requires assignment, escalation, or resolution evidence.",
+              "routeHint": "/workstation/accounting/reconciliation",
+              "evidenceLinks": [],
+              "requiredActions": [
+                "Assign, escalate, or resolve open exceptions and retain resolution evidence."
+              ]
+            },
+            {
+              "metricId": "approve-results",
+              "label": "Approve Results",
+              "value": "Pending",
+              "status": "ReviewRequired",
+              "detail": "Approval history is not complete for this workflow.",
+              "routeHint": "/workstation/accounting/approvals",
+              "evidenceLinks": [],
+              "requiredActions": [
+                "Complete workflow approval and checklist-control approvals."
+              ]
+            },
+            {
+              "metricId": "produce-evidence",
+              "label": "Produce Evidence",
+              "value": "Evidence package pending",
+              "status": "Missing",
+              "detail": "Close workflow has unresolved ledger blockers.",
+              "routeHint": "/workstation/reporting/report-packs",
+              "evidenceLinks": [],
+              "requiredActions": [
+                "Publish and retain the evidence package before period close."
+              ]
+            },
+            {
+              "metricId": "close-support",
+              "label": "Close Support",
+              "value": "Close readiness pending",
+              "status": "Missing",
+              "detail": "Close checklist, period lock, and reopen evidence are governed by the shared workflow.",
+              "routeHint": "/workstation/accounting/operations-continuity",
+              "evidenceLinks": [],
+              "requiredActions": [
+                "Clear close readiness blockers and retain period-lock or reopen evidence."
+              ]
+            }
+          ],
+          "evidenceLinks": [],
+          "requiredActions": [
+            "Assign, escalate, or resolve open exceptions and retain resolution evidence.",
+            "Publish and retain the evidence package before period close."
+          ]
+        },
+        "reviewedAutomation": {
+          "summaryId": "reviewed-automation:fixture:2026-05",
+          "stage": "Report commentary and audit request list draft review",
+          "status": "ReviewRequired",
+          "requiresHumanReview": true,
+          "summary": "Demo automation may draft close commentary and audit request lists, but publication remains behind human approval.",
+          "allowedUseCases": [
+            "Draft report commentary",
+            "Draft audit request lists"
+          ],
+          "prohibitedActions": [
+            "Approve workflow",
+            "Publish close package",
+            "Erase evidence"
+          ],
+          "evidenceLinks": [
+            {
+              "evidenceId": "ev-reviewed-automation",
+              "label": "Reviewed automation draft packet",
+              "route": "/workstation/reporting/report-packs/automation-review",
+              "source": "operations-continuity",
+              "capturedAtUtc": "2026-05-08T15:40:00Z"
+            }
+          ],
+          "requiredActions": [
+            "Review drafted report commentary and audit request lists against retained evidence before submission."
+          ],
+          "artifacts": [
+            {
+              "artifactId": "reviewed-automation:report-commentary-draft",
+              "artifactKind": "Report commentary",
+              "title": "Report commentary draft",
+              "status": "ReviewRequired",
+              "requiresHumanReview": true,
+              "confidencePercent": 84,
+              "sourceSummary": "Draft commentary is generated from retained close, ledger, reconciliation, and report-pack evidence.",
+              "suggestedOperatorAction": "Review commentary against retained evidence before report approval or publication.",
+              "blockedMaterialAction": "Cannot publish reports or release support packages.",
+              "evidenceLinks": [
+                {
+                  "evidenceId": "ev-reviewed-automation",
+                  "label": "Reviewed automation draft packet",
+                  "route": "/workstation/reporting/report-packs/automation-review",
+                  "source": "operations-continuity",
+                  "capturedAtUtc": "2026-05-08T15:40:00Z"
+                }
+              ],
+              "reviewChecklist": [
+                "Review drafted report commentary and audit request lists against retained evidence before submission."
+              ]
+            },
+            {
+              "artifactId": "reviewed-automation:audit-request-list-draft",
+              "artifactKind": "Audit request list",
+              "title": "Audit request list draft",
+              "status": "ReviewRequired",
+              "requiresHumanReview": true,
+              "confidencePercent": 79,
+              "sourceSummary": "Draft audit request lists summarize missing support and unresolved evidence gaps.",
+              "suggestedOperatorAction": "Review each requested support item and assign an owner before audit release.",
+              "blockedMaterialAction": "Cannot erase evidence or satisfy audit requests without retained support.",
+              "evidenceLinks": [],
+              "reviewChecklist": [
+                "Review drafted report commentary and audit request lists against retained evidence before submission."
+              ]
+            },
+            {
+              "artifactId": "reviewed-automation:missing-support-flag",
+              "artifactKind": "Missing support",
+              "title": "Missing support flag",
+              "status": "ReviewRequired",
+              "requiresHumanReview": true,
+              "confidencePercent": 72,
+              "sourceSummary": "Missing support flags are derived from incomplete evidence package categories.",
+              "suggestedOperatorAction": "Attach or waive missing support through governed human review.",
+              "blockedMaterialAction": "Cannot approve its own missing-support disposition.",
+              "evidenceLinks": [],
+              "reviewChecklist": [
+                "Review drafted report commentary and audit request lists against retained evidence before submission."
+              ]
+            }
+          ]
+        },
+        "evidencePackages": [
+          {
+            "packageId": "accounting-record-2026-05",
+            "label": "Accounting record evidence",
+            "status": "ReviewRequired",
+            "isReady": false,
+            "summary": "Demo accounting record is partially retained; approvals, case history, report pack, exports, and restatement lineage still require review.",
+            "routeHint": "/workstation/accounting/operations-continuity",
+            "completeCategoryCount": 3,
+            "requiredCategoryCount": 8,
+            "evidenceLinkCount": 1,
+            "evidenceLinks": [
+              {
+                "evidenceId": "devhash-accounting-record-journal",
+                "label": "Journal and ledger evidence",
+                "route": "/reporting/evidence?subjectKind=accounting-record&subjectId=79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+                "source": "development-fixture",
+                "capturedAtUtc": "2026-05-08T15:15:00Z"
+              }
+            ],
+            "requiredActions": [
+              "Complete all accounting-record evidence categories before publishing the evidence package."
+            ]
+          },
+          {
+            "packageId": "report-pack:fixture:2026-05",
+            "label": "Report pack evidence",
+            "status": "Missing",
+            "isReady": false,
+            "summary": "Close workflow has unresolved ledger blockers.",
+            "routeHint": "/workstation/reporting/report-packs",
+            "completeCategoryCount": 0,
+            "requiredCategoryCount": 1,
+            "evidenceLinkCount": 0,
+            "evidenceLinks": [],
+            "requiredActions": [
+              "Link ready report-pack evidence before close publication."
+            ]
+          },
+          {
+            "packageId": "close-package:fixture:2026-05",
+            "label": "Close package manifest",
+            "status": "Missing",
+            "isReady": false,
+            "summary": "Close package manifest and retained evidence hash have not been published.",
+            "routeHint": "/workstation/accounting/operations-continuity",
+            "completeCategoryCount": 0,
+            "requiredCategoryCount": 1,
+            "evidenceLinkCount": 0,
+            "evidenceLinks": [],
+            "requiredActions": [
+              "Publish the close package manifest and retain the evidence hash."
+            ]
+          },
+          {
+            "packageId": "audit-support:fixture:2026-05",
+            "label": "Audit support package",
+            "status": "ReviewRequired",
+            "isReady": false,
+            "summary": "5 audit evidence categories are missing.",
+            "routeHint": "/workstation/reporting/evidence",
+            "completeCategoryCount": 3,
+            "requiredCategoryCount": 8,
+            "evidenceLinkCount": 1,
+            "evidenceLinks": [
+              {
+                "evidenceId": "devhash-accounting-record-journal",
+                "label": "Journal and ledger evidence",
+                "route": "/reporting/evidence?subjectKind=accounting-record&subjectId=79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+                "source": "development-fixture",
+                "capturedAtUtc": "2026-05-08T15:15:00Z"
+              }
+            ],
+            "requiredActions": [
+              "Complete missing audit evidence categories before releasing the package."
+            ]
+          },
+          {
+            "packageId": "period-lock-reopen:fixture:2026-05",
+            "label": "Period lock and reopen evidence",
+            "status": "Missing",
+            "isReady": false,
+            "summary": "Period 2026-05 has not been locked by a close package; governed reopen evidence will be required if a closed workflow is reopened.",
+            "routeHint": "/workstation/accounting/operations-continuity",
+            "completeCategoryCount": 1,
+            "requiredCategoryCount": 2,
+            "evidenceLinkCount": 0,
+            "evidenceLinks": [],
+            "requiredActions": [
+              "Close the workflow and retain the period-lock package before evidence release."
+            ]
+          }
+        ],
+        "evidenceLinks": [],
+        "blockers": [
+          {
+            "code": "LEDGER_VALIDATION_REQUIRED",
+            "message": "Ledger posting requires a balanced and validated journal draft.",
+            "gate": "LedgerPosting",
+            "severity": "Critical",
+            "evidenceLinks": []
+          }
+        ],
+        "nextActions": [
+          {
+            "code": "RESOLVE_LEDGERPOSTING_BLOCKERS",
+            "label": "Resolve Ledger Posting blockers",
+            "route": "/workstation/accounting",
+            "gate": "LedgerPosting"
+          }
+        ]
+      },
+      "closeReadiness": {
+        "scope": {
+          "fundProfileId": null,
+          "ledgerBookId": null,
+          "fundAccountId": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+          "entityId": null,
+          "periodId": "2026-05"
+        },
+        "evaluatedAtUtc": "2026-05-08T15:10:00Z",
+        "status": "Blocked",
+        "isComplete": false,
+        "isReadyToClose": false,
+        "contributors": [],
+        "blockers": [
+          {
+            "code": "screenshot-close-scope-missing",
+            "contributorId": "close-scope",
+            "type": "Missing",
+            "count": 3,
+            "severity": "Critical",
+            "owner": "Accounting",
+            "message": "Select the fund profile, ledger book, and entity before publishing the close package.",
+            "recordIds": [
+              "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6"
+            ]
+          }
+        ]
+      }
     }
   }
 }

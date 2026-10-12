@@ -818,8 +818,8 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
   }
 
   return (
-    <div className="space-y-5">
-      <ReportingWorkbenchContext taskMode={vm.taskMode} actions={vm.workbenchActions} />
+    <div className={isDailyReportingCockpitLanding ? "space-y-3" : "space-y-5"}>
+      <ReportingWorkbenchContext taskMode={vm.taskMode} actions={vm.workbenchActions} compact={isDailyReportingCockpitLanding} />
       <OperationalTrustSummary
         source={{ value: "Governed Reporting service", tone: "ready" }}
         scope={{ value: vm.taskMode.label, detail: vm.taskMode.description, tone: "ready" }}
@@ -843,7 +843,12 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
           tone: "blocked"
         } : undefined}
         label="Reporting data confidence"
+        disclosure={isDailyReportingCockpitLanding}
       />
+
+      {isDailyReportingCockpitLanding ? (
+        <ReportingHub model={hubModel} />
+      ) : null}
 
       {showStarterKitChooser ? (
         <ReportingStarterKitChooser
@@ -857,14 +862,12 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       ) : null}
 
       {isDailyReportingCockpitLanding ? (
-        <ReportingProductionSurface
-          model={productionSurface.production}
-          period={productionSurface.period}
-        />
-      ) : null}
-
-      {isDailyReportingCockpitLanding ? (
-        <ReportingHub model={hubModel} />
+        <TechnicalDetails label="Period production and report tools">
+          <ReportingProductionSurface
+            model={productionSurface.production}
+            period={productionSurface.period}
+          />
+        </TechnicalDetails>
       ) : null}
 
       {isDailyReportingCockpitLanding ? null : (

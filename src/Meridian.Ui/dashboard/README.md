@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-07
+last_reviewed: 2026-10-11
 ---
 
 # src/Meridian.Ui/dashboard
@@ -109,8 +109,38 @@ Portfolio and Trading positions display the shared mark observation date, age, a
 
 Accounting and Operations Continuity require the shared decision to match all five selected close dimensions and the current workflow revision. Scope changes invalidate prior decisions and in-flight responses. Hard-lock requests forward that explicit scope to server-side close validation; a previously ready response cannot authorize a newly selected subject.
 
+Operations Continuity refreshes the selected workflow detail on every workflow-list refresh and
+close-scope change, including repairs that retain the workflow version but replace report evidence.
+Publication waits for matching summary/detail revisions and the refreshed shared decision. The
+decision's workflow must match the selected report pack and publication evidence identities (ID,
+source, route and capture time), including repairs that retain the workflow version. Failed,
+mismatched or superseded detail reads remain blocked, and late responses cannot restore old controls
+or evidence. Shared services still validate current close-plan and report-evidence versions.
+Focused proof: `operations-continuity-screen.test.tsx` and `operations-continuity-screen.view-model.test.ts`.
+
 Operations Continuity submits checklist controls from the shared workflow's explicit acknowledgment actor and time, including the first submission before any close package exists. Missing controls block submission. Rejected or reopened workflows can submit a newly reviewed cycle without reusing old package approvals. Approval decisions carry retained submission evidence; an assigned reviewer is not counted as having approved until the server records the actual decision. Close publication uses the current submission and decision history together with current prerequisite acknowledgments.
 Focused proof: `operations-continuity-screen.view-model.test.ts` and `operations-continuity-screen.test.tsx`.
+
+## Work-first Portfolio and Reporting
+
+Portfolio opens on selectable holdings before the supporting retained-record explorer and
+readiness handoff. Reporting opens on its selectable daily work queue before period production
+tools. Their compact data-confidence disclosures keep source, scope, freshness, completeness,
+and blockers visible; expanding them reveals explanations and recovery actions. The existing
+native disclosure pattern also retains full Portfolio readiness and Reporting production tools.
+
+Reporting queue selection uses `reportingWork` in the URL, preserving other query parameters
+and the hash. The selected item owns the inspector's evidence and actions. Removed or unknown
+items are explicitly unavailable, and changing financial scope clears the prior selection.
+The shared dense-row keyboard contract supports row selection, detail focus, and return focus.
+
+`src/lib/workstation-features.ts` supplies wired browser destinations to both sidebar navigation
+and local command search. Purpose descriptions and search-only aliases expose intents such as
+cash forecast, statement import, historical prices, and running reports. Local destinations remain
+searchable when remote command or entity search is unavailable; unwired routes stay excluded.
+Accounting onboarding searches open the existing External GL surface, which hosts the bounded
+onboarding workspace and its retained comparison and readiness evidence.
+The masthead places operator controls on a second row at laptop widths so search stays readable.
 
 ## Purpose
 
@@ -1373,9 +1403,13 @@ The pre-module startup CSS in `index.html` belongs to the base layer so it yield
 workstation, and base button cursors and placeholder colors preserve the existing defaults.
 Focus utilities use `outline-hidden` to retain forced-colors outlines; `shadow-xs`,
 `backdrop-blur-sm`, and `shrink-0` retain their previous visual and flex behavior under v4.
-Semantic badges retain their unfilled backgrounds: previously unsupported `/12` utilities would
-otherwise introduce new tints and reduce text contrast. Card-title defaults live in the component
-layer so caller-supplied text-size utilities still win independently of Tailwind utility ordering.
+Semantic badges retain their unfilled backgrounds: Tailwind 3's opacity scale stopped at multiples
+of five, so the `/8` and `/12` color utilities never compiled and the surfaces naming them have
+always been unfilled. Tailwind 4 accepts any percentage, so keeping those utilities would introduce
+new tints and reduce text contrast rather than preserve the current appearance. Every other opacity
+modifier in the dashboard is a multiple of five and compiles identically under both majors.
+Card-title defaults live in the component layer so caller-supplied text-size utilities still win
+independently of Tailwind utility ordering.
 `src/tailwind-build.test.ts` compiles the real stylesheet through the configured PostCSS pipeline
 and checks token-backed components, responsive utilities, typography, opacity, and focus behavior.
 Any future separately processed stylesheet that uses `@apply` must first reference

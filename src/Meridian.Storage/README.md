@@ -6,10 +6,21 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-06
+last_reviewed: 2026-10-07
 ---
 
 # src/Meridian.Storage
+
+New WAL segments use `MDCWAL02|2` with BLAKE3-256 over length-framed, canonically
+PackBits-encoded fields. Existing `MDCWAL01|1` segments retain SHA-256 validation.
+Recovery, commit scans and repair support mixed versions; repair keeps original
+headers and valid digests. Unsupported recognized formats halt recovery and are
+preserved from truncation. Older binaries cannot replay v2 segments, so drain them
+before downgrading. The [checksum format and benchmark boundary](../../docs/engineering/pipeline-benchmark.md)
+define the encoding and the unchanged portable budgets. Focused proof is
+`WriteAheadLogChecksumTests` and `WriteAheadLogChecksumVersionTests`; run
+`dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --filter "FullyQualifiedName~WriteAheadLog" -p:EnableWindowsTargeting=true`
+and `python3 build/scripts/ci/benchmark-pipeline.py --local`.
 
 Tax-lot disposal history now returns the atomic batch's exact `PolicyRevision` and `RecordedAt`,
 and restores each deferral's retained policy ID, replacement window and scope. These reads do not
@@ -404,6 +415,13 @@ lookup paths, and evidence trails those layers rely on.
   validated Failed/Blocked receipt and retain the fallback receipt under `quality/outcomes/`.
 
 ## Important workflows
+
+Portfolio Records creates accounts with `IFundAccountStore.TryCreateAccountAsync`, an atomic
+insert-only operation. A duplicate account ID returns false and retains the existing record;
+account updates and reviewed legacy imports continue to use the separate upsert operation.
+Both paths retain the store's tenant ownership checks.
+Ordinary account lookups and queries reject unresolved tenant scope before opening a database
+connection; the explicitly authorized query across tenants retains its separate admission path.
 
 ### Operational case history
 

@@ -11,6 +11,11 @@ last_reviewed: 2026-10-06
 
 # src/Meridian.Ui.Shared
 
+Trading readiness includes every supplied acceptance gate in aggregate status and evidence
+summaries, including broker execution reconciliation and portfolio recovery. Every non-ready
+acceptance gate contributes a live-operation blocker independently of aggregate status, so new
+gate IDs cannot disappear from the shared browser and desktop readiness contract.
+
 `LedgerDisposalTaxReadService` serves the bounded W10-TAX-001 retained-disposal slice through
 `GET /api/ledger/periods/{periodId}/journal-entries/{journalEntryId}/tax-results`. The existing
 journal-detail browser surface consumes the same shared contract available to other clients. The
@@ -2579,6 +2584,10 @@ including close readiness, balances, sync history, statements, positions, bank l
 reconciliation runs/results, resolve the owning account before returning or mutating data; write
 payloads must match the route account id so callers cannot authorize one account in the URL while
 submitting another account in the request body.
+Statement intake rejects null line collections, null rows, and line/account mismatches before
+calling the configured account service. The Portfolio Records service also validates retained batch
+lineage and custodian as-of dates before writing evidence. These validation failures and malformed
+JSON fields return HTTP 400; account scope authorization still runs first.
 Operations Continuity reconciliation bridge payloads now also populate the shared cash, position,
 trade, income, MBS factor, bank, and GL support lane summaries from provider-ledger reconciliation
 detail, retained evidence, and open break materialization. Browser, WPF, and host callers should

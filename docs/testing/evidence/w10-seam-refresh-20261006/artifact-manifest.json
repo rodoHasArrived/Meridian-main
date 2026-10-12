@@ -1,0 +1,246 @@
+{
+  "schemaVersion": 1,
+  "scope": "Fixed browser, candidate-binding, server, WPF and completed-CI evidence; original ten capture artifacts remain unchanged. README/continuation.json and this manifest are excluded.",
+  "artifacts": [
+    {
+      "path": "browser/build-blocker.json",
+      "bytes": 3899,
+      "sha256": "3652c1417a3c556b79ceed3f4d0bfacaf0a7ce39f5d347353651ab6188ce1e67"
+    },
+    {
+      "path": "browser/capture.mjs",
+      "bytes": 21402,
+      "sha256": "1eedea5fcbe1d56a97982d1dc629ebb117c71428e9f5862c0d77d63c910b97b8"
+    },
+    {
+      "path": "browser/cases-full.json.gz",
+      "bytes": 21991,
+      "sha256": "626bf98325edd7336ed397def1fc6d11a7724bfe9e26f21c5530d075663e3e1e"
+    },
+    {
+      "path": "browser/cases.json",
+      "bytes": 20312,
+      "sha256": "419928e1cc558d2763061f19c513dc6cafd4fa75edd7e767dd8d2a34ea1c7479"
+    },
+    {
+      "path": "browser/clean-build.log.gz",
+      "bytes": 891,
+      "sha256": "094b09fb5927534852e57ec514ffca194eb9dbebaf43d8f19aff5067e2f6f8e2",
+      "uncompressedBytes": 6368,
+      "uncompressedSha256": "10497fb57384e9c065e70be4e67ca41f71a51acb16b9d7382eaff1af19427683"
+    },
+    {
+      "path": "browser/clean-dependencies.json",
+      "bytes": 1055,
+      "sha256": "c47c15b7d26dc7b449198027982b812e113dfde145238adc3ef92032757f50d0"
+    },
+    {
+      "path": "browser/clean-install-tests.log.gz",
+      "bytes": 671,
+      "sha256": "5e17872a7ec748d10edc71e03c6904d4e815e7c8b2fade30f5dad7e42a555e06",
+      "uncompressedBytes": 1514,
+      "uncompressedSha256": "3697bc1e48087a43f53792d7e78c33d90fee95a97f99d8fdc2ce8e5511aad17a"
+    },
+    {
+      "path": "browser/provenance.json",
+      "bytes": 3328,
+      "sha256": "2ccd9da516616f7229ccec34c32baba836eb1228f3c20b001f4c081171420ca9"
+    },
+    {
+      "path": "browser/requests-responses.json.gz",
+      "bytes": 130181,
+      "sha256": "3e055ce242dab93a3500b39f52a557ec090159cc5e505796a0bc80c8a4feb039"
+    },
+    {
+      "path": "browser/screenshots/S4-repaired-v9.png",
+      "bytes": 140740,
+      "sha256": "dcc69f3e8da8faf0c6786524b7fb04f75133f5015fef3d8b71092869bf1ca8ae"
+    },
+    {
+      "path": "browser/screenshots/S5-published-v10.png",
+      "bytes": 108664,
+      "sha256": "1cdb56af20920159036613fe39a94c758679e8ed2bee522b73dfa04a976dde52"
+    },
+    {
+      "path": "browser/vitest.log.gz",
+      "bytes": 285,
+      "sha256": "f2a5f90e77323c3bf95af3ed5a33563350aa948266c7927d12088ebe2a437cc5",
+      "uncompressedBytes": 435,
+      "uncompressedSha256": "f3321b678a699f240fe6de0d6624df6ab8a4d63489090ecd21b754ba0729a37b"
+    },
+    {
+      "path": "candidate-binding.json",
+      "bytes": 4722,
+      "sha256": "615f62f3bc0a585e1ebe5b42a76b858372a2c716c40adbd83dec4814016ca36b"
+    },
+    {
+      "path": "ci/attempt-2/ci-dotnet-test-summary.json.gz",
+      "bytes": 379555,
+      "sha256": "1b09d36e753a9e0a628f879fe7a29a1b1d6acf8b3334e2958e14e9bb5cadc475",
+      "uncompressedBytes": 3887440,
+      "uncompressedSha256": "618fc805051a0eecd213280f12bf5897dc0e94eccffae398473cf7aab61a0e17"
+    },
+    {
+      "path": "ci/attempt-2/core-remainder.log.gz",
+      "bytes": 1888,
+      "sha256": "9921e47a922ac3ac4e8a35ab50339d8d03895623736b22f9c54795f116f31239",
+      "uncompressedBytes": 8913,
+      "uncompressedSha256": "2eda1f28208d16df40fba4a81e20c433f815adc97bfd6f1be5042ad73a11ab1f"
+    },
+    {
+      "path": "ci/attempt-2/full-ci.log.gz",
+      "bytes": 21237,
+      "sha256": "f5cee9b98d18642c5d34402831e8a7ff98a829f85b1764f4352fd17dda8a7051",
+      "uncompressedBytes": 213004,
+      "uncompressedSha256": "dbd5476fbd550e9b2910b9b024fbd646817ea7fb44e5a9b3e8da7f9b00dcca59"
+    },
+    {
+      "path": "ci/attempt-2/process-state-snapshot.json",
+      "bytes": 4696,
+      "sha256": "09144112bf44450f13876fb4de0ee6172f4dc93e28ab882ad247d4b3539a3e2c"
+    },
+    {
+      "path": "ci/attempt-2/steps.tsv.gz",
+      "bytes": 380,
+      "sha256": "1ff378ca1203bb9b67053496d969949203eb1057b6b160311d9eeea71277d96e",
+      "uncompressedBytes": 653,
+      "uncompressedSha256": "29692546ead5305c7e585013018d63a9861a5e6cb85ee826d6735dd2b1836007"
+    },
+    {
+      "path": "ci/attempt-2/summary.md.gz",
+      "bytes": 1052,
+      "sha256": "68b853b43a92d8fa15f9a1a615585b79e4694924b02facc4eecda305a9763b73",
+      "uncompressedBytes": 2625,
+      "uncompressedSha256": "80c665b71583f3e3f97d88aa7da55f311e4d719d642ce013aa7ccfa2405f5aa3"
+    },
+    {
+      "path": "ci/attempt-3/dashboard-test.log.gz",
+      "bytes": 911,
+      "sha256": "1333d58114270d3a9fbf1eb6bf18715b790281f0e6f45d7f382b793cb76ee8bb",
+      "uncompressedBytes": 1993,
+      "uncompressedSha256": "97f405267779d857525615a10ed79d8bea9c0926a5ffc4e349939470df127d37"
+    },
+    {
+      "path": "ci/attempt-3/full-ci.log.gz",
+      "bytes": 7049,
+      "sha256": "77857669999d87ff3424bd156407a16b5ff0a30925a4346ac5bde1e55ce213c9",
+      "uncompressedBytes": 44167,
+      "uncompressedSha256": "3fe0724be6fbf17298bc9cd218d9c01c875c105da1ae0b2b8b5a15b0fb989ac5"
+    },
+    {
+      "path": "ci/child-reaper-context.json",
+      "bytes": 2162,
+      "sha256": "07c63290cedcf1e7686f2c72e0d6f8eed63dc506e49c1066cac39e271af7ca7a"
+    },
+    {
+      "path": "ci/dotnet-summary.json.gz",
+      "bytes": 379534,
+      "sha256": "d3b4a9dbfd86b2f475259be97a07594f78a6b733e978ba077319d0fc81d8a185",
+      "uncompressedBytes": 3887437,
+      "uncompressedSha256": "d7da355befd0741986e84e83a33b4bc83929d0223260a859ab3a3799ccd7ff92"
+    },
+    {
+      "path": "ci/quality-gate/steps.tsv",
+      "bytes": 926,
+      "sha256": "c575aad88cac83ffcff9c878741008545c9f802c8cf4170184a6aa962cff4ccc"
+    },
+    {
+      "path": "ci/quality-gate/summary.md.gz",
+      "bytes": 1109,
+      "sha256": "e16a11c5d498ec8ca51c82b1835f0380af2c48556c3384fae8f53a61b1072cf9",
+      "uncompressedBytes": 2454,
+      "uncompressedSha256": "5eababb6283e7d467ef779e578aea2d2f82f019e74ff584f82c49cc75e6c5c55"
+    },
+    {
+      "path": "ci/reaper-check.log.gz",
+      "bytes": 289,
+      "sha256": "99a4b98acee48680bed880c5e871005cb44c4cd0dd6838574ba5ad0ee6211236",
+      "uncompressedBytes": 440,
+      "uncompressedSha256": "4449a84ea3314d828c978b27421c1a7378d442bba199efaca8df02b1829e6f83"
+    },
+    {
+      "path": "ci/reaper-check.trx.gz",
+      "bytes": 2452,
+      "sha256": "ffae386dcb9a2603d201fc09adab22c587c3c341acd7e9cceb90e180c0fbd3b7",
+      "uncompressedBytes": 11792,
+      "uncompressedSha256": "70e980f3e3d990c4060b6bb275c88c46eae7fabe9dd507419fa66af0555e284f"
+    },
+    {
+      "path": "ci/run-with-child-reaper.py",
+      "bytes": 1361,
+      "sha256": "d73e3078e5e7d04c1d27ac0d28b194aa49f4251153ff46dc786cfe33e75c6421"
+    },
+    {
+      "path": "ci/workflows/attempt-1-summary.md.gz",
+      "bytes": 472,
+      "sha256": "7b6bad595253be907e224584d8519d9f9d40631915855e91757e53841c459907",
+      "uncompressedBytes": 932,
+      "uncompressedSha256": "a572a5471d7203c5a9046b14a67e6be2a6e8ac3d08b2193622d660b475c6a6f4"
+    },
+    {
+      "path": "ci/workflows/attempt-1.log.gz",
+      "bytes": 3579,
+      "sha256": "fbba0ff69fd59055c60599d708dc609feb73432b5006872093c2bf8d9e704a2f",
+      "uncompressedBytes": 38084,
+      "uncompressedSha256": "6368a67889e26267eddd0d4a13a50b39a3be330a4191e37f4d3e7b05b75e8ddc"
+    },
+    {
+      "path": "ci/workflows/final.log.gz",
+      "bytes": 1349,
+      "sha256": "1e5bea4b982c33bb4e368c714e0a75bb8c3a94255e45130861b2b16d7c7606a8",
+      "uncompressedBytes": 5222,
+      "uncompressedSha256": "83fd98128e53e619ae9d1882d0a15e101f7f7eb91bcdccba21289135891a4ea9"
+    },
+    {
+      "path": "ci/workflows/steps.tsv",
+      "bytes": 267,
+      "sha256": "b22dd6e8e0374e574987f1bd279eec764554bcc0629a50dda02ab644c5ed28c7"
+    },
+    {
+      "path": "ci/workflows/summary.md.gz",
+      "bytes": 466,
+      "sha256": "bee19a79d6834069a1a07d3b5bd4941d4c77e1f7c5ac85e9fe0b1a49ad2b584a",
+      "uncompressedBytes": 933,
+      "uncompressedSha256": "050f145ef2f9b5a32f5454fec63d4da48d34650d9fdb8e9507310dffeff92f2f"
+    },
+    {
+      "path": "server/seam-support.trx.gz",
+      "bytes": 185890,
+      "sha256": "48bb1334cfb3ef8f1c857b44310498add916a2fb1f7210fc5f466f3a1c05884d",
+      "uncompressedBytes": 1737869,
+      "uncompressedSha256": "075ae1b9bb06c077ca1f05475001a01ea532651046e45f62584953ef9cc44646"
+    },
+    {
+      "path": "server/summary.json",
+      "bytes": 1418,
+      "sha256": "aa5795cc091c333ff3b39da735d107d919d3cad23dbb275777b95d0ff0f622ac"
+    },
+    {
+      "path": "server/validation-run.json",
+      "bytes": 3060,
+      "sha256": "2314a24b543f79098ba4fc4048e8cac579037f08b0e84d007f443895e3dbaa8f"
+    },
+    {
+      "path": "source-hashes.json",
+      "bytes": 1449,
+      "sha256": "12b07dc3172806d7d3f510852eeeb96de5203c3f1e73f51d92267bdf3dada37b"
+    },
+    {
+      "path": "wpf-static.txt",
+      "bytes": 1455,
+      "sha256": "0324850f5c429ba7e441d1c90b30d2791161d2e519fd24701c688267f5c78c38"
+    },
+    {
+      "path": "wpf/build-retry.log.gz",
+      "bytes": 307,
+      "sha256": "f249578e334834f5b7394f5e9a1873ddcd8b9cb1d54fff45664d62f6ec9cfcdc",
+      "uncompressedBytes": 3666,
+      "uncompressedSha256": "4e17a7745a3de249d76ce7f59acdf90af456f81c2c2d73dc897ca9d35a50e1fe"
+    },
+    {
+      "path": "wpf/compilation.json",
+      "bytes": 1357,
+      "sha256": "660e02f95933ed8ea75806e14245d48ab5b05af16ec719ef59f3aa7361372089"
+    }
+  ]
+}
