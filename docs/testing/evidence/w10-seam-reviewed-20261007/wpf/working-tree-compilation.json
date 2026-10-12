@@ -1,0 +1,183 @@
+{
+  "evidenceKind": "working-tree compilation of staged WPF changes; not a committed application candidate",
+  "headAtStart": "faf90ecfefa52a1515c5f379471cca3ccd8d2866",
+  "startedAtUtc": "2026-10-07T16:52:49.265950+00:00",
+  "command": [
+    "python",
+    "build/python/cli/buildctl.py",
+    "build",
+    "--project",
+    "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj",
+    "--configuration",
+    "Release",
+    "--full-wpf-build",
+    "--property",
+    "IsWindows=true",
+    "--property",
+    "EnableWindowsTargeting=true",
+    "--profile",
+    "session:w10-seam-merge-wpf",
+    "--queue",
+    "--verbosity",
+    "quiet"
+  ],
+  "sourceHashes": [
+    {
+      "path": "src/Meridian.Wpf/README.md",
+      "sha256": "02fb2bd61dc069b17e56448a4ca3564ed90f30cc35efabb58f2d4b52b307b92d"
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/OperationsContinuityViewModel.cs",
+      "sha256": "d8b796b5e7ddef51ebf53e36f9baa81bbbaa39515fda31b33ec8bd1dc2e14a87"
+    },
+    {
+      "path": "src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs",
+      "sha256": "dc97c3db71c178a0ca3a9b1d88e5f4ab3870579e42dcd18b3bb11ee02d0ed559"
+    },
+    {
+      "path": "src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs",
+      "sha256": "8b53582a0f3d0a9a752062d0bfd1d27add2c20e917c9a04b3dce167e87206c1e"
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/ViewModels/OperationsContinuityViewModelTests.cs",
+      "sha256": "620ae10b3d6d582688abb944a3ca69906888f0659ba743d75f816b458d8e884d"
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/ViewModels/OperationsContinuityViewModelTests.SharedBlockers.cs",
+      "sha256": "bbd18a6421d156fcec5a2852c4326672655e7535b65003d798c2cdb7d11b537f"
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/ViewModels/OperationsContinuityViewModelTests.SelectionConsistency.cs",
+      "sha256": "4a1763b17ec3db78850062b1720b6febc4815ec631c0b3476098cee560f4dcc9"
+    }
+  ],
+  "testsExecuted": 0,
+  "renderedWindowsCases": 0,
+  "finishedAtUtc": "2026-10-07T16:53:09.100559+00:00",
+  "headAfterBuild": "faf90ecfefa52a1515c5f379471cca3ccd8d2866",
+  "sourceHashesAfterBuild": [
+    {
+      "path": "src/Meridian.Wpf/README.md",
+      "sha256": "02fb2bd61dc069b17e56448a4ca3564ed90f30cc35efabb58f2d4b52b307b92d"
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/OperationsContinuityViewModel.cs",
+      "sha256": "d8b796b5e7ddef51ebf53e36f9baa81bbbaa39515fda31b33ec8bd1dc2e14a87"
+    },
+    {
+      "path": "src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs",
+      "sha256": "dc97c3db71c178a0ca3a9b1d88e5f4ab3870579e42dcd18b3bb11ee02d0ed559"
+    },
+    {
+      "path": "src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs",
+      "sha256": "8b53582a0f3d0a9a752062d0bfd1d27add2c20e917c9a04b3dce167e87206c1e"
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/ViewModels/OperationsContinuityViewModelTests.cs",
+      "sha256": "620ae10b3d6d582688abb944a3ca69906888f0659ba743d75f816b458d8e884d"
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/ViewModels/OperationsContinuityViewModelTests.SharedBlockers.cs",
+      "sha256": "bbd18a6421d156fcec5a2852c4326672655e7535b65003d798c2cdb7d11b537f"
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/ViewModels/OperationsContinuityViewModelTests.SelectionConsistency.cs",
+      "sha256": "4a1763b17ec3db78850062b1720b6febc4815ec631c0b3476098cee560f4dcc9"
+    }
+  ],
+  "ownedFilesUnchangedDuringBuild": true,
+  "exitCode": 0,
+  "warnings": 0,
+  "errors": 0,
+  "fullWpfSourceAndXamlTargetBuildSucceeded": true,
+  "fullWpfTestAssemblyCompiled": true,
+  "regressionCasesCompiled": 27,
+  "regressionMethods": [
+    {
+      "name": "SharedBlocker_MissingOwnerRemainsExplicitWithoutInventingOwnership",
+      "xunitCasesInSource": 2,
+      "presentInAssemblyMetadata": true
+    },
+    {
+      "name": "SharedBlockers_RetainServerFields_AndRefreshCurrentWorkflowAfterRepair",
+      "xunitCasesInSource": 1,
+      "presentInAssemblyMetadata": true
+    },
+    {
+      "name": "SelectedWorkflow_RejectsAnotherWorkflowEvenWhenItsSharedDecisionMatches",
+      "xunitCasesInSource": 1,
+      "presentInAssemblyMetadata": true
+    },
+    {
+      "name": "SelectedWorkflow_RequiresListDetailAndDecisionVersionsToMatch",
+      "xunitCasesInSource": 2,
+      "presentInAssemblyMetadata": true
+    },
+    {
+      "name": "SelectedWorkflow_DelayedPreviousReadCannotReplaceCurrentBlockers",
+      "xunitCasesInSource": 4,
+      "presentInAssemblyMetadata": true
+    },
+    {
+      "name": "SharedBlockers_RenderAllFieldsAndRepairRefresh_ThenClearAfterRepair",
+      "xunitCasesInSource": 1,
+      "presentInAssemblyMetadata": true
+    },
+    {
+      "name": "SelectedWorkflow_NotInCurrentListCannotLoadDetailOrEstablishReadiness",
+      "xunitCasesInSource": 1,
+      "presentInAssemblyMetadata": true
+    },
+    {
+      "name": "SelectedWorkflow_CancellationLeavesExplicitStatusAndKeepsOtherPanelErrors",
+      "xunitCasesInSource": 1,
+      "presentInAssemblyMetadata": true
+    },
+    {
+      "name": "SelectedWorkflow_RefusesDetailOutsideListedScope_AndFreshListRepairs",
+      "xunitCasesInSource": 3,
+      "presentInAssemblyMetadata": true
+    },
+    {
+      "name": "SharedCloseDecision_RefusesChangedPublicationEvidenceAtSameWorkflowVersion_AndRefreshRepairs",
+      "xunitCasesInSource": 10,
+      "presentInAssemblyMetadata": true
+    },
+    {
+      "name": "SharedCloseDecision_MatchesEvidenceIdentityDespiteLabelOrderDuplicatesAndTimestampOffset",
+      "xunitCasesInSource": 1,
+      "presentInAssemblyMetadata": true
+    }
+  ],
+  "testAssembly": {
+    "originalBuildPath": "/workspace/Meridian-main/artifacts/bin/profile-da52dce920edf7302568883a/Meridian.Wpf.Tests/Release/net10.0-windows10.0.19041.0/Meridian.Wpf.Tests.dll",
+    "sha256": "b5afe5c30d4f01df63a84e76eeb374598419070babc93a4e6aa01e98500e13f3",
+    "bytes": 3192832,
+    "retainedGzipPath": "/workspace/scratch/w10-seam-review-fixes/wpf/Meridian.Wpf.Tests.dll.gz",
+    "retainedGzipSha256": "ee97811e48bf69f7dcccae3e1bda60898723e4f2aa33ee19aae498cdebc8625f"
+  },
+  "compiledPageArtifacts": [
+    {
+      "originalBuildPath": "/workspace/Meridian-main/artifacts/obj/profile-da52dce920edf7302568883a/Meridian.Wpf/Release/net10.0-windows10.0.19041.0/Views/OperationsContinuityPage.baml",
+      "sha256": "d05d424fce95e095ca2dbb006b36db39be4f4af3dc8257cfbfcecc53847f6a9d",
+      "bytes": 9786,
+      "retainedGzipPath": "/workspace/scratch/w10-seam-review-fixes/wpf/OperationsContinuityPage.baml.gz",
+      "retainedGzipSha256": "f446627dee1e634e4b346b03c09dfbf0368aadf0109c1c63bb3ba2039040ad46"
+    }
+  ],
+  "logSha256": "9fd9e8e4b1ac62a7fc966facd1801f9e23310606c09321bc4bf33244364b6d31",
+  "operatorDecision": "pending",
+  "compiledApplicationAssembly": {
+    "originalBuildPath": "/workspace/Meridian-main/artifacts/bin/profile-da52dce920edf7302568883a/Meridian.Wpf/Release/net10.0-windows10.0.19041.0/Meridian.Desktop.dll",
+    "sha256": "c29e36152339ea6705ea07df01b6bb3fceeb6da7e532cdb9c408c42f499322a1",
+    "bytes": 8029696,
+    "retainedGzipPath": "/workspace/scratch/w10-seam-review-fixes/wpf/Meridian.Desktop.dll.gz",
+    "retainedGzipSha256": "5616ee5b7923713bba7cab44b8ea6ca26e424dc4d529dadbef65ae8b021afd8a"
+  },
+  "metadataVerifiedAtUtc": "2026-10-07T16:58:39.829105+00:00",
+  "postCompilationSourceCommitBinding": {
+    "commit": "12565b938fff633cac2060b844487c4cf9454099",
+    "allSevenOwnedFileHashesMatchCompiledWorkingTree": true
+  },
+  "metadataVerification": "Quiet incremental output omits the literal Build succeeded banner. Verified build exit 0, zero compiler errors, full Windows target artifact paths, actual PE test assembly containing all 11 new/expanded test methods (27 source-declared xUnit cases), compiled page BAML and unchanged seven owned file hashes. Build timestamps and HEAD remain the original faf90ec working-tree compilation. No Windows runtime execution."
+}

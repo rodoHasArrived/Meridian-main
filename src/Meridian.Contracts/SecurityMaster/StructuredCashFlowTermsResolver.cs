@@ -365,8 +365,10 @@ public static class StructuredCashFlowTermsResolver
             .OrderBy(static entry => entry.AsOfDate)
             .ToArray();
 
-    private static IEnumerable<JsonElement> EnumerateTermSources(SecurityDetailDto security)
+    /// <summary>Enumerates governed profile fields, outer asset terms, and common terms in authority order.</summary>
+    public static IEnumerable<JsonElement> EnumerateTermSources(SecurityDetailDto security)
     {
+        ArgumentNullException.ThrowIfNull(security);
         // Governed profile fields outrank outer duplicates: profileFields values are schema- and
         // profile-validated on write, while extra outer keys on an envelope are ungoverned
         // pass-through. Probing the outer object first would let an unvalidated outer `maturity`

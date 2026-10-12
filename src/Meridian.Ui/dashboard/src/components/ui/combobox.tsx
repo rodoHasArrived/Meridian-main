@@ -149,7 +149,7 @@ export function Combobox({
             setOpen(true);
           }}
           onKeyDown={handleKeyDown}
-          className="min-w-0 flex-1 bg-transparent px-2.5 font-mono text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none"
+          className="min-w-0 flex-1 bg-transparent px-2.5 font-mono text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-hidden"
         />
         <span aria-hidden="true" className="px-2.5 text-xs text-muted-foreground">
           ▾

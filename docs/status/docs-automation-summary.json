@@ -4,6 +4,7 @@
   "selected_scripts": [
     "scan-todos",
     "validate-docs-structure",
+    "check-docfx-navigation",
     "validate-agent-definitions",
     "validate-adapter-readiness",
     "check-adapter-readiness-matrix",
@@ -47,6 +48,19 @@
       "command": [
         "python3",
         "build/scripts/docs/validate-docs-structure.py",
+        "--summary"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": null,
+      "error": null
+    },
+    {
+      "name": "check-docfx-navigation",
+      "command": [
+        "python3",
+        "build/scripts/docs/check-docfx-navigation.py",
         "--summary"
       ],
       "return_code": 0,

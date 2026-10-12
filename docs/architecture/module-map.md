@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-06-09
+**Reviewed:** 2026-10-07
 
 This map gives maintainers a quick layer-oriented view of Meridian.
 
@@ -16,6 +16,11 @@ below.
 
 ```mermaid
 flowchart LR
+  Setup["Consumer setup"] --> Launcher["Installed Meridian launcher"]
+  Launcher -->|request and verified outcome| Supervisor["Lifecycle supervisor"]
+  Supervisor -->|owns process and readiness| Host
+  Supervisor --> Database["Dedicated PostgreSQL"]
+  Supervisor -->|opens after verified readiness| Web
   Host["Meridian host and CLI"] --> Application["Application workflows"]
   Application --> Domain["Domain events and models"]
   Application --> Storage["Storage and WAL"]
@@ -37,6 +42,7 @@ flowchart LR
 | Layer | Projects | Rule |
 | --- | --- | --- |
 | Host | `src/Meridian` | Compose services, expose CLI/API modes, and host workstation endpoints |
+| Installed runtime | `src/Meridian.Launcher`, `src/Meridian.LifecycleSupervisor`, `src/Meridian.Setup` | Setup installs the payload; the launcher verifies the request-bound startup outcome; the supervisor owns host/database processes, readiness, and browser opening |
 | Application | `src/Meridian.Application` | Coordinate workflows; keep UI and provider specifics out |
 | Domain/Core/Contracts | `src/Meridian.Domain`, `src/Meridian.Core`, `src/Meridian.Contracts` | Keep business and contract types UI-independent, including workstation, private-capital, reporting, and identity payloads consumed by multiple surfaces |
 | Providers/Infrastructure | `src/Meridian.Infrastructure*`, `src/Meridian.ProviderSdk` | Isolate external API integration behind provider contracts |
@@ -51,6 +57,8 @@ flowchart LR
 
 ## Boundary Checks
 
+- The installed launcher accepts only `start` and `open`. Maintenance commands go directly
+  to `Meridian.LifecycleSupervisor.exe`; keep process ownership and readiness checks in the supervisor.
 - Domain, core, storage, providers, execution, strategy, and backtesting projects
   must not depend on UI projects.
 - Browser workstation logic should prefer view-model/read-model seams instead of

@@ -5,7 +5,7 @@
 This is an explicit module association, not a claim that a DTO is identical to a table.
 
 Mapped physical schemas: `identity_access`.
-Catalogued objects: 52.
+Catalogued objects: 53.
 
 ```mermaid
 classDiagram
@@ -227,6 +227,8 @@ classDiagram
         +bool RevokedAll
         +int RevokedSessionCount
         +string? Username
+    }
+    class Meridian_Identity_AuthenticationConfiguration["AuthenticationConfiguration"] {
     }
     class Meridian_Identity_AuthenticationMode["AuthenticationMode"] {
     }

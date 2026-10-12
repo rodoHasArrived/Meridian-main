@@ -550,9 +550,11 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
         script = CONSUMER_SETUP_SCRIPT_PATH.read_text(encoding="utf-8")
         self.assertIn("PostgreSqlPayloadRoot", script)
         self.assertIn("MDC_POSTGRES_PAYLOAD_ROOT", script)
-        self.assertIn("bin\\postgres.exe", script)
-        self.assertIn("bin\\pg_ctl.exe", script)
-        self.assertIn("bin\\initdb.exe", script)
+        self.assertIn('Join-Path $PSScriptRoot "postgresql-payload.ps1"', script)
+        self.assertIn("Assert-PostgreSqlPayload", script)
+        payload_validation = CONSUMER_SETUP_SCRIPT_PATH.with_name("postgresql-payload.ps1").read_text(encoding="utf-8")
+        for required_tool in ("postgres.exe", "pg_ctl.exe", "initdb.exe", "psql.exe", "pg_dump.exe", "pg_restore.exe"):
+            self.assertIn(required_tool, payload_validation)
         self.assertIn("Meridian.LifecycleSupervisor.csproj", script)
         self.assertIn('Join-Path $runtimeRoot "database"', script)
 

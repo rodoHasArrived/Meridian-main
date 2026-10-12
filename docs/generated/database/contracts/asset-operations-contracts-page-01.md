@@ -176,6 +176,7 @@ classDiagram
     }
     class Meridian_Contracts_AssetOperations_AssetLotMutationInstructionDto["AssetLotMutationInstructionDto"] {
         +AssetAcquisitionLotDto? Acquisition
+        +Meridian_Contracts_Accounting_Lots_OpenLotAmortizationInstructionDto? Amortization
         +string? AssetAccountId
         +LedgerAdjustmentApprovalMetadataDto? CorrectionApproval
         +Guid? CorrectsJournalEntryId

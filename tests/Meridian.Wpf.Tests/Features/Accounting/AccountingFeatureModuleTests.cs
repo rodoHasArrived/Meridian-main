@@ -3,6 +3,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.DataIntegration.AccountingSystem.Fixtures;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
+using Meridian.Documents;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.Ledger;
@@ -12,6 +13,7 @@ using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Services.Services.Accounting;
+using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Wpf.Features.Accounting;
@@ -21,12 +23,55 @@ using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.ViewModels.Accounting;
 using Meridian.Wpf.Views;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace Meridian.Wpf.Tests.Features.Accounting;
 
 public sealed class AccountingFeatureModuleTests
 {
+    [Fact]
+    public async Task Register_HostConfiguredEvidenceArtifactLimit_IsEnforcedByDesktopStore()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?>
+            {
+                ["EvidenceVault:StorageQuota:MaxArtifactBytes"] = "1"
+            }).Build());
+        new AccountingFeatureModule().Register(services);
+        using var provider = services.BuildServiceProvider();
+        var store = provider.GetRequiredService<IEvidenceArtifactStore>();
+        var intake = () => store.WriteIntakeArtifactAsync(new EvidenceVaultIntakeRequestDto(
+            "report-pack", "desktop-quota", "api", "evidence.txt", Convert.ToBase64String([1, 2]))
+        {
+            TenantId = "desktop-tenant",
+            Scope = "desktop-company"
+        });
+
+        // Artifact admission rejects before creating staging or using the desktop's data root.
+        (await intake.Should().ThrowAsync<EvidenceStorageQuotaExceededException>())
+            .Which.Reason.Should().Be("artifact-bytes");
+    }
+
+    [Fact]
+    public void Register_WithoutHostConfiguration_ResolvesEvidenceStorageWithDefaultLimits()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        new AccountingFeatureModule().Register(services);
+        using var provider = services.BuildServiceProvider();
+
+        provider.GetService<IConfiguration>().Should().BeNull();
+        provider.GetRequiredService<IOptions<EvidenceStorageQuotaOptions>>().Value
+            .Should().BeEquivalentTo(new EvidenceStorageQuotaOptions());
+        var store = provider.GetRequiredService<IEvidenceArtifactStore>();
+        store.Should().BeOfType<FileEvidenceArtifactStore>();
+        provider.GetRequiredService<IEvidenceArtifactStore>().Should().BeSameAs(store);
+    }
+
     [Fact]
     public void DescribePages_ReturnsExpectedPageTagsWithoutDuplicates()
     {

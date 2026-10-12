@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Workstation;
+using Meridian.Application.Composition;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
@@ -17,25 +18,25 @@ public sealed record BrokerageConnectionOptions(
     string RedirectUri,
     string Scope)
 {
-    public static BrokerageConnectionOptions RobinhoodFromEnvironment() => new(
+    public static BrokerageConnectionOptions RobinhoodFromEnvironment()
+        => RobinhoodFromConfiguration(new CompositionConfiguration());
+
+    public static BrokerageConnectionOptions RobinhoodFromConfiguration(CompositionConfiguration configuration) => new(
         ProviderId: "robinhood",
         DisplayName: "Robinhood read-only",
-        AuthorizationEndpoint: ReadEnv("ROBINHOOD_BROKERAGE_AUTHORIZATION_ENDPOINT"),
-        TokenEndpoint: ReadEnv("ROBINHOOD_BROKERAGE_TOKEN_ENDPOINT"),
-        RevokeEndpoint: ReadEnv("ROBINHOOD_BROKERAGE_REVOKE_ENDPOINT"),
-        ClientId: ReadEnv("ROBINHOOD_BROKERAGE_CLIENT_ID"),
-        ClientSecret: ReadEnv("ROBINHOOD_BROKERAGE_CLIENT_SECRET"),
-        RedirectUri: ReadEnv("ROBINHOOD_BROKERAGE_REDIRECT_URI"),
-        Scope: ReadEnv("ROBINHOOD_BROKERAGE_SCOPE", "read_accounts read_holdings read_transactions"));
-
-    private static string ReadEnv(string name, string fallback = "")
-        => Environment.GetEnvironmentVariable(name) ?? fallback;
+        AuthorizationEndpoint: configuration["ROBINHOOD_BROKERAGE_AUTHORIZATION_ENDPOINT"] ?? "",
+        TokenEndpoint: configuration["ROBINHOOD_BROKERAGE_TOKEN_ENDPOINT"] ?? "",
+        RevokeEndpoint: configuration["ROBINHOOD_BROKERAGE_REVOKE_ENDPOINT"] ?? "",
+        ClientId: configuration["ROBINHOOD_BROKERAGE_CLIENT_ID"] ?? "",
+        ClientSecret: configuration["ROBINHOOD_BROKERAGE_CLIENT_SECRET"] ?? "",
+        RedirectUri: configuration["ROBINHOOD_BROKERAGE_REDIRECT_URI"] ?? "",
+        Scope: configuration["ROBINHOOD_BROKERAGE_SCOPE"] ?? "read_accounts read_holdings read_transactions");
 }
 
 /// <summary>
 /// Manages the read-only brokerage OAuth handoff used by workstation portfolio sync.
-/// Tokens are stored through the existing environment-backed credential pattern and
-/// are never returned in endpoint payloads.
+/// Explicit host configurations own OAuth state and tokens; production hosts without one retain
+/// the existing environment-backed credential pattern. Tokens are never returned in endpoint payloads.
 /// </summary>
 public sealed class BrokerageConnectionService
 {
@@ -46,17 +47,20 @@ public sealed class BrokerageConnectionService
     private const string PendingStateEnv = "ROBINHOOD_BROKERAGE_OAUTH_STATE";
 
     private readonly BrokerageConnectionOptions _options;
+    private readonly CompositionConfiguration _configuration;
     private readonly IHttpClientFactory? _httpClientFactory;
     private readonly ILogger<BrokerageConnectionService> _logger;
 
     public BrokerageConnectionService(
         BrokerageConnectionOptions options,
         ILogger<BrokerageConnectionService> logger,
-        IHttpClientFactory? httpClientFactory = null)
+        IHttpClientFactory? httpClientFactory = null,
+        CompositionConfiguration? configuration = null)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _httpClientFactory = httpClientFactory;
+        _configuration = configuration ?? new CompositionConfiguration();
     }
 
     public Task<BrokerageConnectionStatusDto> GetStatusAsync(CancellationToken ct = default)
@@ -98,7 +102,7 @@ public sealed class BrokerageConnectionService
             return BuildStatus(null, "Robinhood authorization callback did not include a code.");
         }
 
-        var expectedState = Environment.GetEnvironmentVariable(PendingStateEnv);
+        var expectedState = _configuration[PendingStateEnv];
         if (string.IsNullOrWhiteSpace(expectedState) || !string.Equals(expectedState, state, StringComparison.Ordinal))
         {
             return BuildStatus(null, "Robinhood authorization state did not match the pending request.");
@@ -150,7 +154,7 @@ public sealed class BrokerageConnectionService
     public async Task<BrokerageConnectionStatusDto> RevokeAsync(CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        var token = Environment.GetEnvironmentVariable(AccessTokenEnv);
+        var token = _configuration[AccessTokenEnv];
         if (!string.IsNullOrWhiteSpace(token) && !string.IsNullOrWhiteSpace(_options.RevokeEndpoint))
         {
             try
@@ -191,8 +195,8 @@ public sealed class BrokerageConnectionService
     {
         var connectedAt = ParseDate(ConnectedAtEnv);
         var expiresAt = ParseDate(TokenExpiresAtEnv);
-        var hasToken = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(AccessTokenEnv));
-        var hasPendingState = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(PendingStateEnv));
+        var hasToken = !string.IsNullOrWhiteSpace(_configuration[AccessTokenEnv]);
+        var hasPendingState = !string.IsNullOrWhiteSpace(_configuration[PendingStateEnv]);
         var warnings = new List<string>();
         var state = BrokerageConnectionStateDto.Disconnected;
 
@@ -277,19 +281,21 @@ public sealed class BrokerageConnectionService
         return $"{uri}{separator}{query}";
     }
 
-    private static DateTimeOffset? ParseDate(string name)
-        => DateTimeOffset.TryParse(Environment.GetEnvironmentVariable(name), out var parsed) ? parsed : null;
+    private DateTimeOffset? ParseDate(string name)
+        => DateTimeOffset.TryParse(_configuration[name], out var parsed) ? parsed : null;
 
-    private static void SetCredential(string name, string value)
+    private void SetCredential(string name, string value)
     {
-        Environment.SetEnvironmentVariable(name, value);
-        Environment.SetEnvironmentVariable(name, value, EnvironmentVariableTarget.User);
+        _configuration[name] = value;
+        if (_configuration.UsesEnvironment)
+            Environment.SetEnvironmentVariable(name, value, EnvironmentVariableTarget.User);
     }
 
-    private static void ClearCredential(string name)
+    private void ClearCredential(string name)
     {
-        Environment.SetEnvironmentVariable(name, null);
-        Environment.SetEnvironmentVariable(name, null, EnvironmentVariableTarget.User);
+        _configuration[name] = null;
+        if (_configuration.UsesEnvironment)
+            Environment.SetEnvironmentVariable(name, null, EnvironmentVariableTarget.User);
     }
 
     private sealed record OAuthTokenResponse(

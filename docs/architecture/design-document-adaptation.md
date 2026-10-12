@@ -27,7 +27,7 @@ Meridian adapts the design document through these enforceable surfaces:
 | Compatibility groupings | `Research`, `Data Operations`, and `Governance` remain aliases or internal groupings, not new root workspaces. |
 | Recommended modules | The twelve design modules exist physically under `src/` and expose bounded-context descriptors. |
 | Bounded contexts | MVP and later contexts map to physical design modules as current source, roadmap, and user direction support them. |
-| MVP screen inventory | The design-doc screen inventory maps to current browser evidence paths and retained WPF compatibility evidence. |
+| MVP screen inventory | The design-doc screen inventory maps to browser and active WPF workstation evidence paths. |
 | Module facets | Each design module declares the required `Domain model`, `Application services`, `Contracts / APIs`, `Infrastructure`, `UI components`, and `Tests` facets. |
 | Shared UI direction | Browser and WPF are two active co-equal shared-first operator surface lanes over `Ui.Shared` and `Ui.Services`; WPF's current focus is web-UI parity (`W8-WPF-PARITY-001`). |
 | No mobile lane | Mobile applications and mobile-first workflows remain out of scope. |
@@ -65,8 +65,9 @@ current repository that means:
    without breaking browser, WPF, host, and test consumers.
 3. Modules may read another module through published APIs, views, or events.
 4. Modules must not directly write another module's owned records.
-5. Expansion contexts stay explicitly deferred unless they strengthen the W1-W5 operational record
-   workflow.
+5. Evaluate expansion against the current design charter, roadmap evidence, source, and explicit
+   user direction. Preserve operational-record invariants without treating the W1-W5 baseline as
+   a development ceiling.
 
 ## Validation Contract
 

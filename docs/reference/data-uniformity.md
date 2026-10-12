@@ -11,7 +11,7 @@ This note expands on the data-quality goals for the collector so downstream user
 | Canonical envelope fields | ✅ Done | `MarketEvent` (`CanonicalSymbol`, `CanonicalVenue`, `CanonicalizationVersion`) |
 | Symbol mapping in ingestion | ✅ Done | `CanonicalSymbolRegistry` + `CanonicalizingPublisher` |
 | Condition code normalization | ✅ Done | `ConditionCodeMapper` + `CanonicalTradeCondition` enum |
-| Venue normalization (ISO MIC) | ✅ Done | `VenueMicMapper` with `config/venue-mapping.json` |
+| Venue normalization (ISO MIC) | ✅ Done | `VenueMicMapper` with `config/venue-mapping.json` or an explicit mapping path |
 | Clock skew estimation | ✅ Done | `Meridian.DataIntegration.Monitoring.ClockSkewEstimator` (EWMA per provider) |
 | Schema validation | ✅ Done | `EventSchemaValidator` plus `Meridian.DataIntegration.Monitoring.SchemaValidationService` |
 | Event canonicalization pipeline | ✅ Done | `EventCanonicalizer` (symbol + venue + condition enrichment) |
@@ -43,10 +43,20 @@ This note expands on the data-quality goals for the collector so downstream user
 * **Symbol mapping registry** ✅ — `CanonicalSymbolRegistry` resolves provider symbols → canonical identifiers (ISIN/FIGI/alias). The [Deterministic Canonicalization](../architecture/deterministic-canonicalization.md) design describes how this populates `CanonicalSymbol` on the `MarketEvent` envelope while preserving the raw `Symbol`. Use `MarketEvent.EffectiveSymbol` in storage paths, dedup keys, and metrics labels to get `CanonicalSymbol` when available and fall back to `Symbol` otherwise.
 * **Clock domains** ✅ — `ExchangeTimestamp`, `ReceivedAtUtc`, and `ReceivedAtMonotonic` fields on `MarketEvent` are populated. `Meridian.DataIntegration.Monitoring.ClockSkewEstimator` tracks per-provider drift using EWMA, exposing `ClockSkewSnapshot` records (EWMA skew, sample count, min/max). `MarketEvent.EstimatedLatencyMs` provides a best-effort wall-clock latency figure when both timestamps are present. A `ClockQuality` enum to qualify timestamp trustworthiness remains a future enhancement.
 * **Condition code normalization** ✅ — `ConditionCodeMapper` maps provider-specific codes to `CanonicalTradeCondition` using `config/condition-codes.json`. The enum covers regular trading, halt and circuit-breaker levels (Level 1/2/3), LULD pauses, regulatory and IPO halts, and trading-resumed. See [condition code mapping](../architecture/deterministic-canonicalization.md#c-condition-code-mapping).
-* **Venue normalization** ✅ — `VenueMicMapper` normalizes venue identifiers to ISO 10383 MIC codes using `config/venue-mapping.json`. See [venue normalization](../architecture/deterministic-canonicalization.md#d-venue-normalization).
+* **Venue normalization** ✅ — `VenueMicMapper` normalizes venue identifiers to ISO 10383 MIC codes.
+  `Canonicalization.VenueMappingPath` selects an explicit JSON file; the default file is
+  [`config/venue-mapping.json`](../../config/venue-mapping.json). The pipeline resolves that default
+  under `AppContext.BaseDirectory`, while the standalone canonicalization registration uses a
+  relative `config/` path. A missing file logs a warning and yields empty mappings, so verify the
+  deployed path instead of assuming built-in venue coverage. See
+  [venue normalization](../architecture/deterministic-canonicalization.md#d-venue-normalization).
 
 ## Precision, units, and currencies
-* **Decimals for prices:** Store prices as `decimal` in code and stringified decimals in JSON to avoid floating-point drift during parquet/duckdb conversion.
+* **Decimals for prices:** Prices use .NET `decimal`; the storage serializer writes JSON numbers,
+  not quoted decimal strings. Parse those numbers into decimal-capable downstream types to preserve
+  precision. [`MarketDataJsonContext`](../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs)
+  and [`JsonlStorageSink`](../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs) own the JSONL contract;
+  do not introduce string conversion merely to match an ingestion example.
 * **Unit documentation:** Standardize on quote-currency prices and size in whole units (not lots); document exceptions per venue in metadata and integrity tags.
 * **Currency context:** Currency is tracked at the symbol level via `CanonicalSymbolRegistry` (each `CanonicalSymbolDefinition` carries a `Currency` field). Events themselves do not carry a `quoteCurrency` field; downstream consumers should resolve currency from the symbol registry using `EffectiveSymbol`.
 

@@ -200,6 +200,205 @@ public sealed class CanonicalOpenLotConsumerTests
         pooled.Selections.Should().ContainSingle().Which.TaxLotRecordId.Should().Be(first.TaxLotRecordId);
     }
 
+    [Theory]
+    [InlineData(LedgerTaxLotReliefMethod.Fifo, false)]
+    [InlineData(LedgerTaxLotReliefMethod.Fifo, true)]
+    [InlineData(LedgerTaxLotReliefMethod.Lifo, false)]
+    [InlineData(LedgerTaxLotReliefMethod.Lifo, true)]
+    [InlineData(LedgerTaxLotReliefMethod.Hifo, false)]
+    [InlineData(LedgerTaxLotReliefMethod.Hifo, true)]
+    [InlineData(LedgerTaxLotReliefMethod.SpecificId, false)]
+    [InlineData(LedgerTaxLotReliefMethod.SpecificId, true)]
+    [InlineData(LedgerTaxLotReliefMethod.AverageCost, false)]
+    [InlineData(LedgerTaxLotReliefMethod.AverageCost, true)]
+    public void Reporting_AdjustedCurrentBasisPreservesAcquisitionFacts(
+        LedgerTaxLotReliefMethod method, bool fullyDisposed)
+    {
+        var lot = DurableLot(1) with
+        {
+            BasisAdjustment = new(Guid.NewGuid(), OpenLotBasisAdjustmentReasons.AverageCostRedistribution,
+                10m, 1_400m, 1_750m)
+        };
+        var canonical = lot.ToOpenLot();
+        var quantity = fullyDisposed ? 10m : 2.5m;
+        var relievedBasis = fullyDisposed ? canonical.OpenFunctionalCostBasis
+            : canonical.OpenFunctionalCostBasis * quantity / canonical.OpenQuantity;
+        var journal = DisposalJournal(lot, relievedBasis);
+        var history = History(lot, journal, canonical) with
+        {
+            ReliefMethod = method,
+            Lots = [new(lot.LotId, lot.AcquiredDate, lot.AcquiredDate, quantity, lot.UnitCost, relievedBasis)],
+            PoolLots = method == LedgerTaxLotReliefMethod.AverageCost ? [canonical] : null
+        };
+
+        var projection = CanonicalDisposalHistoryProjector.Project(history, journal, lot.LedgerBookId, "USD");
+
+        projection.CostBasis.Should().Be(relievedBasis);
+        var selection = projection.Selections.Should().ContainSingle().Which;
+        selection.UnitCost.Should().Be(175m);
+        selection.CostBasis.Should().Be(relievedBasis);
+        selection.Proceeds.Should().Be(relievedBasis + 50m);
+        projection.RecognizedGainOrLoss.Should().Be(50m);
+        projection.IsBalanced.Should().BeTrue();
+        projection.CanonicalOpenLots.Should().ContainSingle().Which.Acquisition.Should().BeSameAs(lot.Acquisition);
+        projection.CanonicalOpenLots[0].Acquisition.FunctionalCostBasis.Should().Be(1_200m);
+        history.Lots[0].UnitCost.Should().Be(120m, "the mutation preserves its acquisition unit cost");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Reporting_FractionalCentCurrentBasisReproducesExactJournal(bool fullyDisposed)
+    {
+        var adjustedBasis = 10m / 3m;
+        var lot = DurableLot(1) with
+        {
+            OpenQuantity = 3m,
+            BasisAdjustment = new(Guid.NewGuid(), OpenLotBasisAdjustmentReasons.AverageCostRedistribution,
+                3m, 3m, adjustedBasis)
+        };
+        var canonical = lot.ToOpenLot();
+        var quantity = fullyDisposed ? 3m : 1m;
+        var basis = fullyDisposed ? adjustedBasis : adjustedBasis * quantity / 3m;
+        var journal = DisposalJournal(lot, basis);
+        var history = History(lot, journal, canonical) with
+        {
+            Lots = [new(lot.LotId, lot.AcquiredDate, lot.AcquiredDate, quantity, lot.UnitCost, basis)]
+        };
+
+        var projection = CanonicalDisposalHistoryProjector.Project(history, journal, lot.LedgerBookId, "USD");
+
+        projection.CostBasis.Should().Be(basis);
+        projection.Selections.Sum(static selection => selection.CostBasis).Should().Be(basis);
+        projection.Selections.Sum(static selection => selection.Proceeds).Should().Be(basis + 50m);
+        projection.Selections.Sum(static selection => selection.RealizedGainOrLoss).Should().Be(50m);
+        projection.Selections[0].UnitCost.Should().Be(basis / quantity);
+        projection.Lines.Should().Equal(journal.Lines.Select(static line => (line.Account, line.Debit, line.Credit)));
+        projection.CanonicalOpenLots[0].Acquisition.FunctionalCostBasis.Should().Be(1_200m);
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(1)]
+    public void Reporting_RepeatingAverageCostSlicesPreserveExactBasisAndPooledResultSign(int recognized)
+    {
+        var first = DurableLot(1) with
+        {
+            OpenQuantity = 1m,
+            BasisAdjustment = new(Guid.NewGuid(), OpenLotBasisAdjustmentReasons.AverageCostRedistribution, 1m, 1m, 1m)
+        };
+        var second = DurableLot(2) with
+        {
+            OpenQuantity = 2m,
+            BasisAdjustment = new(Guid.NewGuid(), OpenLotBasisAdjustmentReasons.AverageCostRedistribution, 2m, 1m, 1m)
+        };
+        var pool = new[] { first.ToOpenLot(), second.ToOpenLot() };
+        var relief = new OpenLotReliefService().Select(pool, 3m, OpenLotReliefMethod.AverageCost);
+        var journal = DisposalJournal(first, 2m, recognized);
+        var history = History(first, journal, pool[0]) with
+        {
+            ReliefMethod = LedgerTaxLotReliefMethod.AverageCost,
+            Lots = relief.Selections.Select((slice, index) => new LedgerTaxLotDisposalHistoryLot(
+                pool[index].LotId, pool[index].AcquiredDate, pool[index].AcquiredDate,
+                slice.Quantity, first.UnitCost, slice.FunctionalCostBasis)).ToArray(),
+            CanonicalLots = pool,
+            PoolLots = pool
+        };
+
+        var projection = CanonicalDisposalHistoryProjector.Project(history, journal, first.LedgerBookId, "USD");
+
+        projection.Selections.Select(static selection => selection.CostBasis)
+            .Should().Equal(relief.Selections.Select(static slice => slice.FunctionalCostBasis));
+        projection.CostBasis.Should().Be(2m);
+        projection.Selections.Sum(static selection => selection.Proceeds).Should().Be(2m + recognized);
+        projection.Selections.Sum(static selection => selection.RealizedGainOrLoss).Should().Be(recognized);
+        projection.Selections.Should().OnlyContain(selection => recognized > 0
+            ? selection.RealizedGainOrLoss >= 0m : selection.RealizedGainOrLoss <= 0m);
+        projection.RecognizedGainOrLoss.Should().Be(recognized);
+        projection.IsBalanced.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Reporting_AverageCostCanonicalSnapshotMustMatchRetainedPool()
+    {
+        var lot = DurableLot(1);
+        var canonical = lot.ToOpenLot();
+        var journal = DisposalJournal(lot);
+        var history = History(lot, journal, canonical) with
+        {
+            ReliefMethod = LedgerTaxLotReliefMethod.AverageCost,
+            PoolLots = [canonical],
+            CanonicalLots = [canonical with { OpenFunctionalCostBasis = 1_300m }]
+        };
+
+        var act = () => CanonicalDisposalHistoryProjector.Project(history, journal, lot.LedgerBookId, "USD");
+
+        act.Should().Throw<LedgerValidationException>().WithMessage("*canonical lot basis*pool snapshot*");
+        // Separate deserialization creates distinct acquisition/evidence objects with the same
+        // retained primitive facts. That copy remains compatible with the authoritative pool.
+        var repaired = history with
+        {
+            CanonicalLots = [canonical with
+            {
+                Acquisition = canonical.Acquisition with { Evidence = canonical.Acquisition.Evidence.ToArray() }
+            }]
+        };
+        CanonicalDisposalHistoryProjector.Project(repaired, journal, lot.LedgerBookId, "USD")
+            .CostBasis.Should().Be(300m);
+    }
+
+    [Fact]
+    public void Reporting_AcquisitionPricedReliefAfterRedistributionIsRejectedEvenWhenJournalMatches()
+    {
+        var lot = DurableLot(1) with
+        {
+            BasisAdjustment = new(Guid.NewGuid(), OpenLotBasisAdjustmentReasons.AverageCostRedistribution,
+                10m, 1_400m, 1_750m)
+        };
+        // Both retained history and journal claim the old acquisition-priced 300, while the
+        // current canonical basis authorizes 437.5. Journal agreement cannot certify that drift.
+        var journal = DisposalJournal(lot);
+        var history = History(lot, journal, lot.ToOpenLot());
+
+        var act = () => CanonicalDisposalHistoryProjector.Project(history, journal, lot.LedgerBookId, "USD");
+
+        act.Should().Throw<LedgerValidationException>().WithMessage("*basis*canonical lot evidence*");
+    }
+
+    [Fact]
+    public void Reporting_AdjustedFaceBasisReportsCostPerDeclaredFaceQuantity()
+    {
+        var lot = DurableLot(1) with
+        {
+            OriginalFace = 1_000m,
+            BookedFactor = 0.9m,
+            ParBasis = 100m,
+            BasisAdjustment = new(Guid.NewGuid(), OpenLotBasisAdjustmentReasons.AverageCostRedistribution,
+                10m, 1_400m, 1_750m)
+        };
+        lot = lot with
+        {
+            Acquisition = lot.Acquisition! with
+            {
+                QuantityBasis = LotQuantityBasis.Face,
+                FaceValueTerms = new(100m, 0.9m, BondAmortizationMethod.ConstantYield, 0.05m)
+            }
+        };
+        var journal = DisposalJournal(lot, 437.5m);
+        var history = History(lot, journal, lot.ToOpenLot()) with
+        {
+            Lots = [new(lot.LotId, lot.AcquiredDate, lot.AcquiredDate, 2.5m, lot.UnitCost, 437.5m)]
+        };
+
+        var projection = CanonicalDisposalHistoryProjector.Project(history, journal, lot.LedgerBookId, "USD");
+
+        var selection = projection.Selections.Should().ContainSingle().Which;
+        selection.QuantityRelieved.Should().Be(250m);
+        selection.CostBasis.Should().Be(437.5m);
+        selection.UnitCost.Should().Be(1.75m);
+        projection.CanonicalOpenLots[0].Acquisition.Should().BeSameAs(lot.Acquisition);
+    }
+
     internal static LedgerTaxLotRecord DurableLot(int day, decimal price = 100m, decimal fx = 1.2m)
     {
         var lot = OpenLotConvergenceTests.Lot(day, 10m, price, fx);
@@ -214,14 +413,15 @@ public sealed class CanonicalOpenLotConsumerTests
         => new(lot.TaxLotRecordId, lot.LotId, lot.Version, lot.OpenQuantity, quantity, 0, "selection-proof",
             lot.UnitCost, lot.UnitCost * quantity);
 
-    internal static JournalEntry DisposalJournal(LedgerTaxLotRecord lot)
+    internal static JournalEntry DisposalJournal(LedgerTaxLotRecord lot, decimal basis = 300m, decimal recognized = 50m)
     {
         var id = Guid.NewGuid();
         var time = new DateTimeOffset(2026, 7, 10, 12, 0, 0, TimeSpan.Zero);
         var dimensions = new LedgerLineDimensionSet(InstrumentId: lot.SecurityId) { PositionId = lot.BookPositionId };
         return new JournalEntry(id, time, "Canonical disposal", [
-            new LedgerEntry(Guid.NewGuid(), id, time, LedgerAccounts.Cash, 350m, 0m, "Canonical disposal", dimensions),
-            new LedgerEntry(Guid.NewGuid(), id, time, lot.Account, 0m, 300m, "Canonical disposal", dimensions),
-            new LedgerEntry(Guid.NewGuid(), id, time, LedgerAccounts.RealizedGain, 0m, 50m, "Canonical disposal", dimensions)]);
+            new LedgerEntry(Guid.NewGuid(), id, time, LedgerAccounts.Cash, basis + recognized, 0m, "Canonical disposal", dimensions),
+            new LedgerEntry(Guid.NewGuid(), id, time, lot.Account, 0m, basis, "Canonical disposal", dimensions),
+            new LedgerEntry(Guid.NewGuid(), id, time, recognized < 0m ? LedgerAccounts.RealizedLoss : LedgerAccounts.RealizedGain,
+                recognized < 0m ? -recognized : 0m, recognized > 0m ? recognized : 0m, "Canonical disposal", dimensions)]);
     }
 }

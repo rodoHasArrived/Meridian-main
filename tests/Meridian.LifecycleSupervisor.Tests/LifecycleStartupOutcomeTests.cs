@@ -257,6 +257,101 @@ public sealed class LifecycleStartupOutcomeTests : IDisposable
     }
 
     [Fact]
+    public void LauncherMonitor_CapturesOnlyTheRequestedLaunch()
+    {
+        var configuration = CreateConfiguration();
+        var expectedRequest = LifecycleStartupOutcome.CreateRequest(
+            configuration, Guid.NewGuid().ToString("N"), browserRequested: true);
+        var unrelatedRequest = LifecycleStartupOutcome.CreateRequest(
+            configuration, Guid.NewGuid().ToString("N"), browserRequested: true);
+        var expected = PersistReady(configuration, expectedRequest, "Expected launch.");
+        PersistReady(configuration, unrelatedRequest, "Unrelated launch.");
+
+        var baseline = StartupOutcomeReceiptMonitor.Capture(
+            configuration.StartupOutcomeReceiptRoot, expectedRequest.RequestId);
+
+        baseline.Keys.Should().ContainSingle().Which.Should().Be(expected.ReceiptPath);
+    }
+
+    [Theory]
+    [InlineData("Postconditions")]
+    [InlineData("Evidence")]
+    [InlineData("Artifacts")]
+    [InlineData("Issues")]
+    [InlineData("Recovery")]
+    public void LauncherMonitor_SkipsMalformedReceiptAndAcceptsValidRetry(string collection)
+    {
+        var configuration = CreateConfiguration();
+        var requestId = Guid.NewGuid().ToString("N");
+        var request = LifecycleStartupOutcome.CreateRequest(configuration, requestId, browserRequested: true);
+        var baseline = StartupOutcomeReceiptMonitor.Capture(configuration.StartupOutcomeReceiptRoot, requestId);
+        var launchedAtUtc = DateTimeOffset.UtcNow;
+        var malformedReceipt = PersistReady(configuration, request, "Malformed receipt.", launchedAtUtc);
+        var json = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(malformedReceipt.ReceiptPath))!;
+        var property = json.AsObject().Select(item => item.Key)
+            .Single(key => string.Equals(key, collection, StringComparison.OrdinalIgnoreCase));
+        json[property] = new System.Text.Json.Nodes.JsonArray((System.Text.Json.Nodes.JsonNode?)null);
+        File.WriteAllText(malformedReceipt.ReceiptPath, json.ToJsonString());
+
+        StartupOutcomeReceiptMonitor.TryReadChanged(
+                configuration.StartupOutcomeReceiptRoot, baseline, LifecycleStartupOutcome.OperationKind,
+                requestId, launchedAtUtc, out _, out _)
+            .Should().BeFalse();
+        StartupOutcomeReceiptMonitor.Capture(configuration.StartupOutcomeReceiptRoot, requestId)
+            .Should().BeEmpty();
+
+        var retry = request with { AttemptNumber = request.AttemptNumber + 1 };
+        var validReceipt = PersistReady(configuration, retry, "Valid retry.", launchedAtUtc);
+        StartupOutcomeReceiptMonitor.TryReadChanged(
+                configuration.StartupOutcomeReceiptRoot, baseline, LifecycleStartupOutcome.OperationKind,
+                requestId, launchedAtUtc, out var outcome, out var path)
+            .Should().BeTrue();
+        outcome!.AttemptNumber.Should().Be(retry.AttemptNumber);
+        path.Should().Be(validReceipt.ReceiptPath);
+    }
+
+    [Fact]
+    public void LauncherMonitor_RejectsReceiptWithMismatchedAttemptFileName()
+    {
+        var configuration = CreateConfiguration();
+        var requestId = Guid.NewGuid().ToString("N");
+        var request = LifecycleStartupOutcome.CreateRequest(configuration, requestId, browserRequested: true);
+        var baseline = StartupOutcomeReceiptMonitor.Capture(configuration.StartupOutcomeReceiptRoot, requestId);
+        var launchedAtUtc = DateTimeOffset.UtcNow;
+        var receipt = PersistReady(configuration, request, "Wrong attempt filename.", launchedAtUtc);
+        File.Move(receipt.ReceiptPath, receipt.ReceiptPath.Replace("attempt-0001", "attempt-0002"));
+
+        StartupOutcomeReceiptMonitor.TryReadChanged(
+                configuration.StartupOutcomeReceiptRoot, baseline, LifecycleStartupOutcome.OperationKind,
+                requestId, launchedAtUtc, out _, out _)
+            .Should().BeFalse();
+    }
+
+    [Fact]
+    public void LauncherMonitor_UsesLatestValidAttemptWhenRetryHasCompleted()
+    {
+        var configuration = CreateConfiguration();
+        var requestId = Guid.NewGuid().ToString("N");
+        var request = LifecycleStartupOutcome.CreateRequest(configuration, requestId, browserRequested: true);
+        var baseline = StartupOutcomeReceiptMonitor.Capture(configuration.StartupOutcomeReceiptRoot, requestId);
+        var launchedAtUtc = DateTimeOffset.UtcNow;
+        LifecycleStartupOutcome.Persist(
+            configuration, request, Guid.NewGuid().ToString("N"), launchedAtUtc,
+            OperationTerminalState.Failed, prerequisitesSatisfied: true, readinessSatisfied: false,
+            terminalMessage: "First attempt failed.", browserRequested: true);
+        var retry = request with { AttemptNumber = request.AttemptNumber + 1 };
+        var latest = PersistReady(configuration, retry, "Retry succeeded.", launchedAtUtc);
+
+        StartupOutcomeReceiptMonitor.TryReadChanged(
+                configuration.StartupOutcomeReceiptRoot, baseline, LifecycleStartupOutcome.OperationKind,
+                requestId, launchedAtUtc, out var outcome, out var path)
+            .Should().BeTrue();
+        outcome!.State.Should().Be(OperationTerminalState.Succeeded);
+        outcome.AttemptNumber.Should().Be(retry.AttemptNumber);
+        path.Should().Be(latest.ReceiptPath);
+    }
+
+    [Fact]
     public void LauncherFailureReceipt_IsValidatedAndNonOverwriting()
     {
         var receiptRoot = Path.Combine(_root, "launcher-receipts");
@@ -293,6 +388,26 @@ public sealed class LifecycleStartupOutcomeTests : IDisposable
         second.AttemptNumber.Should().Be(2);
         VerifiedOperationOutcomeValidator.Validate(first).Should().BeEmpty();
         VerifiedOperationOutcomeValidator.Validate(second).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void LauncherFailureReceipt_PreservesCorruptedPriorEvidence()
+    {
+        var receiptRoot = Path.Combine(_root, "launcher-receipts");
+        var requestId = Guid.NewGuid().ToString("N");
+        Directory.CreateDirectory(receiptRoot);
+        var priorPath = Path.Combine(receiptRoot,
+            $"launcher-terminal-{requestId}-attempt-0001.verified-outcome.json");
+        File.WriteAllText(priorPath, "corrupted prior evidence");
+
+        var path = StartupOutcomeReceiptMonitor.PersistLauncherFailure(
+            receiptRoot, requestId, DateTimeOffset.UtcNow.AddSeconds(-1), OperationTerminalState.Failed,
+            "The supervisor process exited before producing a receipt.",
+            Path.Combine(_root, "Meridian.LifecycleSupervisor.exe"),
+            Path.Combine(_root, "logs", "lifecycle-supervisor.log"), processStarted: true);
+
+        ReadOutcome(path).AttemptNumber.Should().Be(2);
+        File.ReadAllText(priorPath).Should().Be("corrupted prior evidence");
     }
 
     [Fact]

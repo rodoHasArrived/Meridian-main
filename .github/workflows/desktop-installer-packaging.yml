@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       prior_release_tag:
-        description: Optional N-1 release tag used by installed lifecycle certification.
+        description: Optional published N-1 production release tag for MSIX and consumer EXE certification.
         required: false
         type: string
       rehearsal_version:
@@ -325,7 +325,7 @@ jobs:
   build-consumer-setup:
     name: package-consumer-setup
     needs: [eligibility, ci, secrets, codeql, production, smoke, release-preflight]
-    runs-on: windows-latest
+    runs-on: windows-2025
     timeout-minutes: 120
     environment:
       name: desktop-release-signing
@@ -373,35 +373,11 @@ jobs:
           [IO.File]::WriteAllBytes($certPath, [Convert]::FromBase64String($env:MDC_SIGNING_CERT_PFX_BASE64))
           "cert_path=$certPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      # Meridian-Setup.exe embeds a PostgreSQL server per bundled runtime. The hosted image ships
-      # one under C:\Program Files\PostgreSQL (x64 only) — the same source publish-smoke uses.
-      # PostgreSQL publishes no Windows ARM64 server build, so the one-click consumer setup is
-      # x64-only until an ARM64 payload is supplied out of band. The ARM64 *desktop MSIX* is
-      # unaffected and is still built and certified: it does not embed a database.
+      # The reviewed declaration fixes the runtime, exact version, and source. No fallback.
       - name: Materialize the PostgreSQL payload
-        id: pgpayload
         shell: pwsh
         run: |
-          # Runner PostgreSQL directories are major-only names like '17', which [version] refuses
-          # to parse; sort on the leading integer instead.
-          $postgres = Get-ChildItem 'C:\Program Files\PostgreSQL' -Directory -ErrorAction Stop |
-            Where-Object { $_.Name -match '^\d+' } |
-            Sort-Object { [int]($_.Name -replace '^(\d+).*$', '$1') } -Descending | Select-Object -First 1
-          if ($null -eq $postgres) { throw 'The hosted Windows runner has no PostgreSQL runtime to bundle.' }
-
-          $payload = 'artifacts/postgresql-payload/win-x64'
-          New-Item -ItemType Directory -Path $payload -Force | Out-Null
-          Copy-Item -Path (Join-Path $postgres.FullName '*') -Destination $payload -Recurse -Force
-
-          $bundled = @('win-x64')
-          $armPayload = 'artifacts/postgresql-payload/win-arm64/bin/postgres.exe'
-          if (Test-Path -LiteralPath $armPayload) { $bundled += 'win-arm64' }
-
-          $excluded = @('win-x64', 'win-arm64') | Where-Object { $_ -notin $bundled }
-          if ($excluded.Count -gt 0) {
-            Write-Host "::warning::Consumer setup excludes $($excluded -join ', '): no PostgreSQL server payload is available for that runtime on this runner."
-          }
-          "runtimes=$($bundled -join ',')" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          & ./build/scripts/install/resolve-postgresql-payload.ps1
 
       - name: Build the consumer package
         shell: pwsh
@@ -410,7 +386,7 @@ jobs:
         run: |
           pwsh ./build/scripts/install/build-consumer-setup.ps1 `
             -PostgreSqlPayloadRoot artifacts/postgresql-payload `
-            -Runtimes ('${{ steps.pgpayload.outputs.runtimes }}'.Split(',')) `
+            -Runtimes @('win-x64') `
             -SigningCertificate '${{ steps.signing.outputs.cert_path }}' `
             -SigningCertificatePassword $env:MDC_SIGNING_CERT_PASSWORD
 
@@ -432,6 +408,7 @@ jobs:
         run: |
           python build/scripts/ci/generate-release-evidence-manifest.py `
             --project consumer-setup `
+            --postgresql-payload-receipt artifacts/consumer-setup/consumer-setup-win-x64-postgresql-payload.json `
             --runtime win-x64 `
             --artifact-root artifacts/consumer-setup `
             --output artifacts/consumer-setup/consumer-setup-win-x64-release-evidence.json `
@@ -443,7 +420,9 @@ jobs:
       - name: Generate consumer checksums
         shell: pwsh
         run: |
-          Get-ChildItem artifacts/consumer-setup -File | Where-Object { $_.Name -eq 'Meridian-Setup.exe' -or $_.Name -like 'consumer-setup-win-x64-*.json' } |
+          # The payload receipt is embedded in release evidence. Hash only published assets;
+          # intermediate JSON receipts are not separate release-promotion subjects.
+          Get-ChildItem artifacts/consumer-setup -File | Where-Object { $_.Name -in @('Meridian-Setup.exe', 'consumer-setup-win-x64-sbom.spdx.json', 'consumer-setup-win-x64-release-evidence.json') } |
             Sort-Object Name |
             ForEach-Object { "{0}  {1}" -f (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant(), $_.Name } |
             Set-Content -LiteralPath artifacts/consumer-setup/consumer-setup-win-x64-SHA256SUMS -Encoding ascii
@@ -587,9 +566,78 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
+  # PRD-014: the consumer EXE needs its own installed evidence. MSIX receipts and
+  # publish-smoke cannot certify its bootstrapper or its bundled database.
+  # Governance: this release graph change requires human review before activation.
+  certify-installed-consumer:
+    name: clean consumer EXE lifecycle (win-x64)
+    needs: [eligibility, build-consumer-setup]
+    runs-on: windows-latest
+    timeout-minutes: 90
+    environment:
+      name: desktop-release-signing
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the coordinator commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Download the exact signed consumer EXE
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          name: meridian-consumer-setup-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/current-consumer
+
+      - name: Resolve the consumer N-1 package or explicit first-release exception
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CONFIGURED_PRIOR_TAG: ${{ inputs.prior_release_tag }}
+          CURRENT_RELEASE_TAG: v${{ needs.eligibility.outputs.version }}
+        run: |
+          $resolverArgs = @(
+            '--repository', $env:GITHUB_REPOSITORY,
+            '--current-tag', $env:CURRENT_RELEASE_TAG,
+            '--current-commit', $env:GITHUB_SHA,
+            '--output-dir', 'artifacts/prior-consumer',
+            '--evidence', 'artifacts/consumer-certification/consumer-predecessor.json'
+          )
+          if (-not [string]::IsNullOrWhiteSpace($env:CONFIGURED_PRIOR_TAG)) {
+            $resolverArgs += @('--prior-release-tag', $env:CONFIGURED_PRIOR_TAG)
+          }
+          python build/scripts/ci/resolve-consumer-predecessor.py @resolverArgs
+          if ($LASTEXITCODE -ne 0) { throw 'Consumer predecessor resolution failed.' }
+
+      - name: Certify the installed consumer EXE and bundled database
+        shell: pwsh
+        run: |
+          & ./build/scripts/install/certify-consumer-install-lifecycle.ps1 `
+            -CurrentPackage artifacts/current-consumer/Meridian-Setup.exe `
+            -PredecessorEvidencePath artifacts/consumer-certification/consumer-predecessor.json `
+            -ReceiptPath artifacts/consumer-certification/consumer-setup-win-x64-lifecycle.json `
+            -TimeoutSeconds 600
+
+      - name: Retain consumer lifecycle receipt and diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: consumer-install-certification-win-x64-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/consumer-certification/
+          if-no-files-found: error
+          retention-days: 90
+
   release:
     name: verify-and-publish-release-evidence
-    needs: [eligibility, ci, secrets, codeql, production, smoke, release-preflight, build-msix, build-consumer-setup, certify-installed-desktop]
+    needs: [eligibility, ci, secrets, codeql, production, smoke, release-preflight, build-msix, build-consumer-setup, certify-installed-desktop, certify-installed-consumer]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -618,6 +666,11 @@ jobs:
           pattern: desktop-install-certification-*-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/certification
           merge-multiple: true
+      - name: Download consumer EXE lifecycle evidence
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          name: consumer-install-certification-win-x64-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/certification
       - name: Download installed startup evidence
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:

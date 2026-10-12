@@ -17,7 +17,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// Tests failover configuration, rules CRUD, health status, and force failover.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class FailoverEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private readonly EndpointTestFixture _fixture;

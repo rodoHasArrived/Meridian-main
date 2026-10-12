@@ -168,6 +168,22 @@ class IsolatedBuildArtifactRetentionTests(unittest.TestCase):
             self.assertEqual(freed_bytes, 0)
             self.assertTrue(old_bin.exists())
 
+    def test_persistent_profiles_are_excluded_from_all_retention_budgets(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            for kind in ("bin", "obj"):
+                self._create_artifact(root, f"artifacts/{kind}/profile-persistent", age_days=45, size_bytes=2 * 1024 * 1024)
+                self._create_artifact(root, f"artifacts/{kind}/old-run", age_days=30)
+                self._create_artifact(root, f"artifacts/{kind}/new-run", age_days=1)
+            deleted, _ = self.buildctl._prune_isolated_build_artifacts(
+                root, max_age_days=14, retain_latest=1, max_root_size_mb=1,
+                now=datetime(2026, 4, 28, tzinfo=timezone.utc),
+            )
+            self.assertEqual(deleted, 2)
+            for kind in ("bin", "obj"):
+                self.assertTrue((root / f"artifacts/{kind}/profile-persistent").exists())
+                self.assertTrue((root / f"artifacts/{kind}/new-run").exists())
+
     def test_skips_artifact_root_symlink_target(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             repo_root = Path(temp_dir) / "repo"

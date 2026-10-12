@@ -246,14 +246,17 @@ Design consequence: series are modeled as a **lightweight series registry keyed 
 
 ### 2.7 Migration convention
 
-`src/Meridian.Storage/Ledger/Migrations/` uses `V_ledger_###__snake_name.sql`. Latest on disk is
-`V_ledger_028__wash_sale_activation.sql`. Scripts are **idempotent and replayed on every startup
-(no version table)**: they use the `__SCHEMA__` placeholder, `create table if not exists`,
-`add column if not exists`, `create index if not exists`, and `is null`-guarded backfills
-(see `V_ledger_020__fund_scope_tenant_columns.sql`, `V_ledger_003__ledger_books.sql`). New scripts
-here use this blueprint's reserved range **033–035**
-([register](../README.md#ledger-migration-ordinals)); confirm the next
-free ordinal at implementation time.
+`src/Meridian.Storage/Ledger/Migrations/` uses `V_ledger_###__snake_name.sql`.
+`LedgerMigrationRunner` records filenames and checksums in `ledger_journal_schema_migrations`.
+Keep new scripts idempotent and replay-safe: use the `__SCHEMA__` placeholder,
+`create table if not exists`, `add column if not exists`, `create index if not exists`, and
+`is null`-guarded backfills (see `V_ledger_020__fund_scope_tenant_columns.sql` and
+`V_ledger_003__ledger_books.sql`). This blueprint's pending range is **042–044** in the
+[machine-readable reservation register](../../../../database/migration-reservations.json);
+the [generated table](../README.md#ledger-migration-ordinals) reports current files and claims.
+Release the relevant pending claim before scaffolding it with `new-migration --migration-set ledger
+--name <name> --ordinal <number>`. Update planning reservations when sequencing changes;
+preserve applied SQL filenames and ordinals.
 
 ---
 
@@ -980,12 +983,13 @@ Method A is the lighter, recommended default.
 ## 10. Persistence & migrations
 
 Follow the `V_ledger_###__name.sql` convention (§2.7): `__SCHEMA__` placeholder, idempotent,
-replay-safe, `is null`-guarded backfills. The highest ordinal on disk is
-`V_ledger_028__wash_sale_activation.sql`; this blueprint's reserved range is **033–035**
-([register](../README.md#ledger-migration-ordinals)). Verify at
-implementation time and update the register if another lane lands first.
+replay-safe, `is null`-guarded backfills. This blueprint's pending range is **042–044** in the
+[machine-readable reservation register](../../../../database/migration-reservations.json).
+Check the [generated file and reservation table](../README.md#ledger-migration-ordinals) at
+implementation time. Release each pending claim before scaffolding the corresponding migration;
+move only planning reservations when sequencing changes.
 
-### 10.1 `V_ledger_033__equalization_policy.sql`
+### 10.1 `V_ledger_042__equalization_policy.sql`
 
 ```sql
 -- Equalization policy per fund structure node (method + Method-A styling forks). Inert until the
@@ -1007,7 +1011,7 @@ create index if not exists ix_fund_equalization_policy_fund
     on __SCHEMA__.fund_equalization_policy (lower(trim(fund_profile_id)));
 ```
 
-### 10.2 `V_ledger_034__equalization_subscription_lots.sql`
+### 10.2 `V_ledger_043__equalization_subscription_lots.sql`
 
 ```sql
 -- Method A: dated subscription tranches and their per-crystallization equalization adjustments.
@@ -1053,7 +1057,7 @@ create table if not exists __SCHEMA__.equalization_adjustments (
 );
 ```
 
-### 10.3 `V_ledger_035__fund_series.sql`
+### 10.3 `V_ledger_044__fund_series.sql`
 
 ```sql
 -- Method B: series registry, holdings, and consolidation history.
@@ -1084,7 +1088,7 @@ create table if not exists __SCHEMA__.fund_series (
 -- Partial on BOTH is_lead and a live status. Without the status predicate a lead series that
 -- fully redeems keeps the constraint slot (close sets status, not is_lead), so the next
 -- subscription cannot establish a new lead without a uniqueness violation.
--- A Method B HWM scope must name a real series in the SAME book. Added here, in V035, because
+-- A Method B HWM scope must name a real series in the SAME book. Added here, in V044, because
 -- incentive_fee_state (V030) predates fund_series and cannot declare it at its own creation.
 -- Nullable by design: series_id IS NULL remains the Method A fund-level scope.
 alter table __SCHEMA__.incentive_fee_state
@@ -1296,7 +1300,7 @@ projectors.
   through a faked `IAccountingJournalDraftService` and returns `AllBalanced == true`;
   `IdempotencyKey` stable across re-runs (no duplicate drafts).
 - **`EqualizationPersistenceTests`** — round-trip `IFundSeriesStore`; migration replay is idempotent
-  (apply `V_ledger_033..035` twice, assert no error / no dup rows).
+  (apply `V_ledger_042..044` twice, assert no error / no dup rows).
 - **`EqualizationSubledgerProjectionTests`** — Method A adjustments appear in
   `PrivateCapitalCapitalAccountSubledgerBuilder.Build(...)` on the existing
   `CapitalAccountId|InvestorId|Currency` key without schema change.
@@ -1332,8 +1336,8 @@ Run targeted: `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTarge
    `PartnershipInvestorAccountingProjector.Project` and `RoundCurrency`. Pure/static/deterministic.
 5. **Unit tests first-class** — author §13.1/§13.2 golden vectors against the projectors *before*
    wiring persistence (they need no DB).
-6. **Persistence** — add `V_ledger_033__equalization_policy.sql`,
-   `V_ledger_034__equalization_subscription_lots.sql`, `V_ledger_035__fund_series.sql` (idempotent,
+6. **Persistence** — add `V_ledger_042__equalization_policy.sql`,
+   `V_ledger_043__equalization_subscription_lots.sql`, `V_ledger_044__fund_series.sql` (idempotent,
    `__SCHEMA__`); implement `IFundSeriesStore` + a Postgres adapter in `Meridian.Storage.Ledger`.
    **In the same step**, implement the three transactional ports from incentive-fee §6.1 —
    `CreateSeriesWithStateAsync` (registry row + seeded `incentive_fee_state` row in one

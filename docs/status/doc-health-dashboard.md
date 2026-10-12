@@ -11,7 +11,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 ## Overall Health Score
 
 ```text
-  [########################------] 81/100
+  [#########################-----] 82/100
   Rating: Good
 ```
 
@@ -19,14 +19,14 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 681 |
-| Total lines | 150,279 |
-| Average file size (lines) | 220.7 |
+| Total documentation files | 731 |
+| Total lines | 158,437 |
+| Average file size (lines) | 216.7 |
 | Orphaned files | 248 |
-| Files without headings | 148 |
+| Files without headings | 157 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 284 |
-| **Health score** | **81/100** |
+| TODO/FIXME markers | 301 |
+| **Health score** | **82/100** |
 
 ### Score Breakdown
 
@@ -59,7 +59,7 @@ These files lack a Markdown heading, making them harder to navigate:
 - `Meridian Design System/components/accounting/TaxLotTable.prompt.md`
 - `Meridian Design System/components/accounting/TrialBalance.prompt.md`
 - `Meridian Design System/components/charts/BarChart.prompt.md`
-- ... and 133 more
+- ... and 142 more
 
 ### Orphaned Documentation
 
@@ -93,7 +93,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 81 | 681 | 248 | 0 |
+| 1970-01-01 | 82 | 731 | 248 | 0 |
 
 ---
 

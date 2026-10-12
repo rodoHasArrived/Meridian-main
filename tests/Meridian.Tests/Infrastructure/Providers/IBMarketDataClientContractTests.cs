@@ -102,7 +102,8 @@ public sealed class IBMarketDataClientDiagnosticsTests
 
 /// <summary>
 /// Runs against the maintained IB API smoke stub when EnableIbApiSmoke=true. The
-/// default build has no real callback surface, so the test exits before invoking the stub.
+/// enabled slice requires the runtime callback surface so a simulation build cannot pass
+/// as reconnect evidence. The default build has no callback surface and exits early.
 /// </summary>
 public sealed class IBMarketDataClientRuntimeReconnectTests
 {
@@ -110,8 +111,13 @@ public sealed class IBMarketDataClientRuntimeReconnectTests
     public async Task RuntimeConnectionLoss_ReplaysEveryLiveSubscriptionInsideReconnectTransaction()
     {
         var connectionClosed = typeof(EnhancedIBConnectionManager).GetMethod("connectionClosed");
+#if IBAPI_SMOKE
+        connectionClosed.Should().NotBeNull(
+            "EnableIbApiSmoke=true must exercise the IB API runtime callback surface");
+#else
         if (connectionClosed is null)
             return;
+#endif
 
         var publisher = new TestMarketEventPublisher();
         var router = new IBCallbackRouter(
@@ -145,7 +151,7 @@ public sealed class IBMarketDataClientRuntimeReconnectTests
             manager.SubscribeMarketDepth(new Meridian.Contracts.Configuration.SymbolConfig("MSFT"));
             requestCount.Should().Be(2);
 
-            connectionClosed.Invoke(manager, null);
+            connectionClosed!.Invoke(manager, null);
             await restored.Task.WaitAsync(TimeSpan.FromSeconds(8));
 
             requestCount.Should().Be(4,

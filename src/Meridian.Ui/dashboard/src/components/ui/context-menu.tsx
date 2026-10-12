@@ -103,7 +103,7 @@ export function ContextMenu({ className, items, label = "Context menu", onClose,
             disabled={item.disabled}
             className={cn(
               "flex w-full items-center gap-2 px-3 py-2 text-left transition-colors [outline-offset:-2px]",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+              "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
               item.danger ? "text-danger hover:bg-danger/10" : "hover:bg-[var(--ws-row-hover)]",
               item.disabled && "cursor-not-allowed opacity-50"
             )}

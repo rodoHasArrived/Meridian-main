@@ -1,0 +1,32 @@
+{
+  "fail_level": "high",
+  "evaluated_on": "2026-10-05",
+  "metadata": {
+    "info": 0,
+    "low": 1,
+    "moderate": 0,
+    "high": 5,
+    "critical": 0,
+    "total": 6
+  },
+  "unaccepted": [
+    {
+      "ghsa": "GHSA-vfj7-8cjw-p6xm",
+      "package": "braces",
+      "severity": "high",
+      "title": "braces vulnerable to stack-exhaustion denial of service through deeply nested patterns",
+      "url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+      "flagged_through": [
+        "braces",
+        "chokidar",
+        "fast-glob",
+        "micromatch",
+        "tailwindcss"
+      ],
+      "failure": "no acceptance entry"
+    }
+  ],
+  "accepted_in_use": [],
+  "stale_acceptances": [],
+  "passed": false
+}

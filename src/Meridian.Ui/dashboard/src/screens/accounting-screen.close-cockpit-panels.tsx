@@ -67,7 +67,7 @@ export function AccountingWorkflowLaunchPanel({ view }: { view: AccountingWorkfl
                 aria-label={step.ariaLabel}
                 aria-current={step.isActive ? "page" : undefined}
                 className={cn(
-                  "group rounded-md border px-3 py-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                  "group rounded-md border px-3 py-3 transition focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
                   accountingToolingBorderClass(step.tone),
                   step.isActive && "border-primary/60 bg-primary/10"
                 )}
@@ -193,7 +193,7 @@ export function CloseCommandCenterPanel({
               );
 
               return metric.href ? (
-                <Link key={metric.id} to={metric.href} className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40" aria-label={`Open ${metric.label} detail`}>
+                <Link key={metric.id} to={metric.href} className="block focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40" aria-label={`Open ${metric.label} detail`}>
                   {body}
                 </Link>
               ) : (
@@ -791,7 +791,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                           aria-label={task.selectAriaLabel}
                           aria-pressed={task.selected}
                           className={cn(
-                            "w-full rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                            "w-full rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
                             task.selected ? "border-primary/50 bg-primary/10" : "border-border/70 bg-background/45"
                           )}
                           onClick={() => view.selectCloseSignOffTask(task.taskId)}
@@ -843,7 +843,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                             aria-label={role.selectAriaLabel}
                             aria-pressed={role.selected}
                             className={cn(
-                              "w-full rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                              "w-full rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
                               role.selected ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/10"
                             )}
                             onClick={() => view.selectCloseSignOffRole(role.role)}
@@ -872,7 +872,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                           aria-label={decision.selectAriaLabel}
                           aria-pressed={decision.selected}
                           className={cn(
-                            "w-full rounded-md border px-3 py-2 text-left font-semibold transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                            "w-full rounded-md border px-3 py-2 text-left font-semibold transition hover:border-primary/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
                             decision.selected ? "border-primary/50 bg-primary/10 text-foreground" : "border-border/70 bg-secondary/10 text-muted-foreground"
                           )}
                           onClick={() => view.selectCloseSignOffDecision(decision.decision)}
@@ -953,7 +953,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                           aria-label={task.selectAriaLabel}
                           aria-pressed={task.selected}
                           className={cn(
-                            "w-full rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                            "w-full rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
                             task.selected ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/10"
                           )}
                           onClick={() => view.selectCloseSetupTask(task.taskId)}
@@ -1034,7 +1034,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                             aria-label={role.selectAriaLabel}
                             aria-pressed={role.selected}
                             className={cn(
-                              "w-full rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                              "w-full rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
                               role.selected ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/10"
                             )}
                             onClick={() => view.selectCloseSetupSignOffRole(role.role)}
@@ -1063,7 +1063,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                 <label className="space-y-1 text-sm">
                   <span className="text-xs font-semibold uppercase text-muted-foreground">Sign-off matrix</span>
                   <textarea
-                    className="min-h-[88px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    className="min-h-[88px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
                     value={view.closeSetupDraft.taskSignOffRequirements}
                     onChange={(event) => view.updateCloseSetupDraft({ taskSignOffRequirements: event.target.value })}
                   />
@@ -1079,7 +1079,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                             aria-label={dependency.toggleAriaLabel}
                             aria-pressed={dependency.checked}
                             className={cn(
-                              "w-full rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                              "w-full rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
                               dependency.checked ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/10"
                             )}
                             onClick={() => view.toggleCloseSetupDependency(dependency.taskId)}
@@ -1256,7 +1256,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                       key={item.packageId}
                       type="button"
                       className={cn(
-                        "w-full rounded-md border bg-background/45 px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                        "w-full rounded-md border bg-background/45 px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
                         item.selected ? "border-primary/50" : "border-border/70"
                       )}
                       aria-pressed={item.selected}

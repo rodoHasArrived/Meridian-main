@@ -1,0 +1,542 @@
+[
+  {
+    "id": "S0-first-viewport",
+    "expected": "Page identity, meaningful app content and first viewport without framework overlay",
+    "automationDecision": "pass",
+    "operatorDecision": "pending",
+    "operatorIdentity": null,
+    "atUtc": "2026-10-07T15:32:21.135Z",
+    "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+    "title": "Accounting Workstation - Meridian",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "workflowVersion": 8,
+    "projectionWorkflowVersion": 8,
+    "projectionContributorRecords": [
+      {
+        "contributorId": "close-plan",
+        "recordIds": [
+          "response-simulation-close-plan-v8"
+        ]
+      },
+      {
+        "contributorId": "report-pack",
+        "recordIds": [
+          "response-simulation-report-evidence-v8"
+        ]
+      }
+    ],
+    "closeButtonCount": 1,
+    "closeButtonDisabled": false,
+    "frameworkOverlay": 0,
+    "capturedScreenshotName": "S0-first-viewport.png",
+    "screenshotRetained": false
+  },
+  {
+    "id": "S1-initial-v8",
+    "expected": "Matching workflow v8 + plan-v8 + evidence-v8 allow command",
+    "automationDecision": "pass",
+    "operatorDecision": "pending",
+    "operatorIdentity": null,
+    "atUtc": "2026-10-07T15:32:21.457Z",
+    "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+    "title": "Accounting Workstation - Meridian",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "workflowVersion": 8,
+    "projectionWorkflowVersion": 8,
+    "projectionContributorRecords": [
+      {
+        "contributorId": "close-plan",
+        "recordIds": [
+          "response-simulation-close-plan-v8"
+        ]
+      },
+      {
+        "contributorId": "report-pack",
+        "recordIds": [
+          "response-simulation-report-evidence-v8"
+        ]
+      }
+    ],
+    "closeButtonCount": 1,
+    "closeButtonDisabled": false,
+    "frameworkOverlay": 0,
+    "capturedScreenshotName": "S1-initial-v8.png",
+    "screenshotRetained": false
+  },
+  {
+    "id": "S2-refusal-v8",
+    "expected": "409 refusal remains visible without a package",
+    "automationDecision": "pass",
+    "operatorDecision": "pending",
+    "operatorIdentity": null,
+    "atUtc": "2026-10-07T15:32:22.002Z",
+    "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+    "title": "Accounting Workstation - Meridian",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "workflowVersion": 8,
+    "projectionWorkflowVersion": 8,
+    "projectionContributorRecords": [
+      {
+        "contributorId": "close-plan",
+        "recordIds": [
+          "response-simulation-close-plan-v8"
+        ]
+      },
+      {
+        "contributorId": "report-pack",
+        "recordIds": [
+          "response-simulation-report-evidence-v8"
+        ]
+      }
+    ],
+    "closeButtonCount": 1,
+    "closeButtonDisabled": false,
+    "frameworkOverlay": 0,
+    "capturedScreenshotName": "S2-refusal-v8.png",
+    "screenshotRetained": false
+  },
+  {
+    "id": "S3-refresh-pending",
+    "expected": "Old v8 detail cannot supply enabled publication while v9 detail loads",
+    "automationDecision": "pass",
+    "operatorDecision": "pending",
+    "operatorIdentity": null,
+    "atUtc": "2026-10-07T15:32:22.757Z",
+    "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+    "title": "Accounting Workstation - Meridian",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "workflowVersion": 9,
+    "projectionWorkflowVersion": 9,
+    "projectionContributorRecords": [
+      {
+        "contributorId": "close-plan",
+        "recordIds": [
+          "response-simulation-close-plan-v9"
+        ]
+      },
+      {
+        "contributorId": "report-pack",
+        "recordIds": [
+          "response-simulation-report-evidence-v9"
+        ]
+      }
+    ],
+    "closeButtonCount": 0,
+    "closeButtonDisabled": null,
+    "frameworkOverlay": 0,
+    "capturedScreenshotName": "S3-refresh-pending.png",
+    "screenshotRetained": false
+  },
+  {
+    "id": "S4-repaired-v9",
+    "expected": "Selected detail/report pack v9 matches current shared workflow and contributor records",
+    "automationDecision": "pass",
+    "operatorDecision": "pending",
+    "operatorIdentity": null,
+    "atUtc": "2026-10-07T15:32:24.053Z",
+    "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+    "title": "Accounting Workstation - Meridian",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "workflowVersion": 9,
+    "projectionWorkflowVersion": 9,
+    "projectionContributorRecords": [
+      {
+        "contributorId": "close-plan",
+        "recordIds": [
+          "response-simulation-close-plan-v9"
+        ]
+      },
+      {
+        "contributorId": "report-pack",
+        "recordIds": [
+          "response-simulation-report-evidence-v9"
+        ]
+      }
+    ],
+    "closeButtonCount": 1,
+    "closeButtonDisabled": false,
+    "frameworkOverlay": 0,
+    "capturedScreenshotName": "S4-repaired-v9.png",
+    "screenshotRetained": true,
+    "screenshot": "screenshots/S4-repaired-v9.png"
+  },
+  {
+    "id": "S5-published-v10",
+    "expected": "Enter submits repaired v9 command and refreshed selected detail retains simulated package v10",
+    "automationDecision": "pass",
+    "operatorDecision": "pending",
+    "operatorIdentity": null,
+    "atUtc": "2026-10-07T15:32:26.187Z",
+    "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+    "title": "Accounting Workstation - Meridian",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "workflowVersion": 10,
+    "projectionWorkflowVersion": 10,
+    "projectionContributorRecords": [
+      {
+        "contributorId": "close-plan",
+        "recordIds": [
+          "response-simulation-close-plan-v9"
+        ]
+      },
+      {
+        "contributorId": "report-pack",
+        "recordIds": [
+          "response-simulation-report-evidence-v9"
+        ]
+      }
+    ],
+    "closeButtonCount": 1,
+    "closeButtonDisabled": true,
+    "frameworkOverlay": 0,
+    "capturedScreenshotName": "S5-published-v10.png",
+    "screenshotRetained": true,
+    "screenshot": "screenshots/S5-published-v10.png"
+  },
+  {
+    "id": "S6-version-mismatch",
+    "expected": "Older returned selected detail cannot enable command for newer summary/projection",
+    "automationDecision": "pass",
+    "operatorDecision": "pending",
+    "operatorIdentity": null,
+    "atUtc": "2026-10-07T15:32:27.723Z",
+    "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+    "title": "Accounting Workstation - Meridian",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "workflowVersion": 12,
+    "projectionWorkflowVersion": 12,
+    "projectionContributorRecords": [
+      {
+        "contributorId": "close-plan",
+        "recordIds": [
+          "response-simulation-close-plan-v12"
+        ]
+      },
+      {
+        "contributorId": "report-pack",
+        "recordIds": [
+          "response-simulation-report-evidence-v12"
+        ]
+      }
+    ],
+    "closeButtonCount": 0,
+    "closeButtonDisabled": null,
+    "frameworkOverlay": 0,
+    "capturedScreenshotName": "S6-version-mismatch.png",
+    "screenshotRetained": false
+  },
+  {
+    "id": "S7-version-match-recovered",
+    "expected": "Matching current v12 details restore publication",
+    "automationDecision": "pass",
+    "operatorDecision": "pending",
+    "operatorIdentity": null,
+    "atUtc": "2026-10-07T15:32:28.331Z",
+    "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+    "title": "Accounting Workstation - Meridian",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "workflowVersion": 12,
+    "projectionWorkflowVersion": 12,
+    "projectionContributorRecords": [
+      {
+        "contributorId": "close-plan",
+        "recordIds": [
+          "response-simulation-close-plan-v12"
+        ]
+      },
+      {
+        "contributorId": "report-pack",
+        "recordIds": [
+          "response-simulation-report-evidence-v12"
+        ]
+      }
+    ],
+    "closeButtonCount": 1,
+    "closeButtonDisabled": false,
+    "frameworkOverlay": 0,
+    "capturedScreenshotName": "S7-version-match-recovered.png",
+    "screenshotRetained": false
+  },
+  {
+    "id": "S8-late-detail-wrong-scope",
+    "expected": "Delayed old-scope detail stays unavailable after entity changes",
+    "automationDecision": "pass",
+    "operatorDecision": "pending",
+    "operatorIdentity": null,
+    "atUtc": "2026-10-07T15:32:30.738Z",
+    "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=response-simulation-foreign-entity&periodId=2026-05",
+    "title": "Accounting Workstation - Meridian",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "workflowVersion": 13,
+    "projectionWorkflowVersion": 13,
+    "projectionContributorRecords": [
+      {
+        "contributorId": "close-plan",
+        "recordIds": [
+          "response-simulation-close-plan-v13"
+        ]
+      },
+      {
+        "contributorId": "report-pack",
+        "recordIds": [
+          "response-simulation-report-evidence-v13"
+        ]
+      }
+    ],
+    "closeButtonCount": 1,
+    "closeButtonDisabled": true,
+    "frameworkOverlay": 0,
+    "capturedScreenshotName": "S8-late-detail-wrong-scope.png",
+    "screenshotRetained": false
+  },
+  {
+    "id": "S9-scope-repaired",
+    "expected": "Original complete scope recovers with current v14 detail",
+    "automationDecision": "pass",
+    "operatorDecision": "pending",
+    "operatorIdentity": null,
+    "atUtc": "2026-10-07T15:32:32.429Z",
+    "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+    "title": "Accounting Workstation - Meridian",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "workflowVersion": 14,
+    "projectionWorkflowVersion": 14,
+    "projectionContributorRecords": [
+      {
+        "contributorId": "close-plan",
+        "recordIds": [
+          "response-simulation-close-plan-v14"
+        ]
+      },
+      {
+        "contributorId": "report-pack",
+        "recordIds": [
+          "response-simulation-report-evidence-v14"
+        ]
+      }
+    ],
+    "closeButtonCount": 1,
+    "closeButtonDisabled": false,
+    "frameworkOverlay": 0,
+    "capturedScreenshotName": "S9-scope-repaired.png",
+    "screenshotRetained": false
+  },
+  {
+    "id": "S10-detail-failure",
+    "expected": "Selected detail failure blocks publication",
+    "automationDecision": "pass",
+    "operatorDecision": "pending",
+    "operatorIdentity": null,
+    "atUtc": "2026-10-07T15:32:33.413Z",
+    "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+    "title": "Accounting Workstation - Meridian",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "workflowVersion": 14,
+    "projectionWorkflowVersion": 14,
+    "projectionContributorRecords": [
+      {
+        "contributorId": "close-plan",
+        "recordIds": [
+          "response-simulation-close-plan-v14"
+        ]
+      },
+      {
+        "contributorId": "report-pack",
+        "recordIds": [
+          "response-simulation-report-evidence-v14"
+        ]
+      }
+    ],
+    "closeButtonCount": 0,
+    "closeButtonDisabled": null,
+    "frameworkOverlay": 0,
+    "capturedScreenshotName": "S10-detail-failure.png",
+    "screenshotRetained": false
+  },
+  {
+    "id": "S11-1366x768-current",
+    "expected": "Controls/details remain usable at second desktop size",
+    "automationDecision": "pass",
+    "operatorDecision": "pending",
+    "operatorIdentity": null,
+    "atUtc": "2026-10-07T15:32:34.085Z",
+    "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+    "title": "Accounting Workstation - Meridian",
+    "viewport": {
+      "width": 1366,
+      "height": 768
+    },
+    "workflowVersion": 14,
+    "projectionWorkflowVersion": 14,
+    "projectionContributorRecords": [
+      {
+        "contributorId": "close-plan",
+        "recordIds": [
+          "response-simulation-close-plan-v14"
+        ]
+      },
+      {
+        "contributorId": "report-pack",
+        "recordIds": [
+          "response-simulation-report-evidence-v14"
+        ]
+      }
+    ],
+    "closeButtonCount": 1,
+    "closeButtonDisabled": false,
+    "frameworkOverlay": 0,
+    "capturedScreenshotName": "S11-1366x768-current.png",
+    "screenshotRetained": false
+  },
+  {
+    "id": "S12-keyboard-basics",
+    "automationDecision": "pass",
+    "operatorDecision": "pending",
+    "observed": {
+      "refreshActivatedByEnter": true,
+      "publishActivatedByEnter": true,
+      "focusAfterTab": {
+        "tag": "TR",
+        "label": "Open 2026-05 operations continuity workflow, Ready For Close, 5 of 5 gates passed"
+      }
+    }
+  },
+  {
+    "id": "S13-same-workflow-version-repaired",
+    "expected": "Unchanged workflow version 14 refresh replaces plan/report/evidence records with v15",
+    "automationDecision": "pass",
+    "operatorDecision": "pending",
+    "operatorIdentity": null,
+    "atUtc": "2026-10-07T15:32:34.911Z",
+    "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+    "title": "Accounting Workstation - Meridian",
+    "viewport": {
+      "width": 1366,
+      "height": 768
+    },
+    "workflowVersion": 14,
+    "projectionWorkflowVersion": 14,
+    "projectionContributorRecords": [
+      {
+        "contributorId": "close-plan",
+        "recordIds": [
+          "response-simulation-close-plan-v15"
+        ]
+      },
+      {
+        "contributorId": "report-pack",
+        "recordIds": [
+          "response-simulation-report-evidence-v15"
+        ]
+      }
+    ],
+    "closeButtonCount": 1,
+    "closeButtonDisabled": false,
+    "frameworkOverlay": 0,
+    "capturedScreenshotName": "S13-same-workflow-version-repaired.png",
+    "screenshotRetained": false
+  },
+  {
+    "id": "S14-same-version-current-command",
+    "expected": "Second simulated publication submits workflow v14 with refreshed report/evidence v15",
+    "automationDecision": "pass",
+    "operatorDecision": "pending",
+    "operatorIdentity": null,
+    "atUtc": "2026-10-07T15:32:35.390Z",
+    "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+    "title": "Accounting Workstation - Meridian",
+    "viewport": {
+      "width": 1366,
+      "height": 768
+    },
+    "workflowVersion": 15,
+    "projectionWorkflowVersion": 15,
+    "projectionContributorRecords": [
+      {
+        "contributorId": "close-plan",
+        "recordIds": [
+          "response-simulation-close-plan-v15"
+        ]
+      },
+      {
+        "contributorId": "report-pack",
+        "recordIds": [
+          "response-simulation-report-evidence-v15"
+        ]
+      }
+    ],
+    "closeButtonCount": 1,
+    "closeButtonDisabled": true,
+    "frameworkOverlay": 0,
+    "capturedScreenshotName": "S14-same-version-current-command.png",
+    "screenshotRetained": false
+  },
+  {
+    "id": "S15-late-detail-after-newer-refresh",
+    "expected": "Late v16 detail cannot overwrite completed v17 refresh for same workflow/scope",
+    "automationDecision": "pass",
+    "operatorDecision": "pending",
+    "operatorIdentity": null,
+    "atUtc": "2026-10-07T15:32:38.204Z",
+    "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&entityId=entity-alpha&periodId=2026-05",
+    "title": "Accounting Workstation - Meridian",
+    "viewport": {
+      "width": 1366,
+      "height": 768
+    },
+    "workflowVersion": 17,
+    "projectionWorkflowVersion": 17,
+    "projectionContributorRecords": [
+      {
+        "contributorId": "close-plan",
+        "recordIds": [
+          "response-simulation-close-plan-v17"
+        ]
+      },
+      {
+        "contributorId": "report-pack",
+        "recordIds": [
+          "response-simulation-report-evidence-v17"
+        ]
+      }
+    ],
+    "closeButtonCount": 1,
+    "closeButtonDisabled": false,
+    "frameworkOverlay": 0,
+    "capturedScreenshotName": "S15-late-detail-after-newer-refresh.png",
+    "screenshotRetained": false
+  }
+]

@@ -571,7 +571,20 @@ public sealed record FundReportPackProvenanceDto(
     IReadOnlyList<FundReportPackLineagePointerDto> LineagePointers,
     string SourceSnapshotHash,
     int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion,
-    string? DataProvenanceToken = null);
+    string? DataProvenanceToken = null)
+{
+    /// <summary>Explicit retained amount identities. Legacy label-only manifests cannot prove an amount.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<RetainedLedgerAmountDto>? LedgerAmounts { get; init; }
+}
+
+public sealed record RetainedLedgerAmountDto(
+    Guid AmountId,
+    LedgerAmountScopeDto Scope,
+    string AccountName,
+    string? Symbol,
+    decimal Amount,
+    string SourceSnapshotHash);
 
 public sealed record FundReportPackLineagePointerDto(
     string ScopeType,
@@ -584,7 +597,15 @@ public sealed record FundReportPackLineagePointerDto(
     IReadOnlyList<string>? RelatedEvidenceIds = null,
     int? EvidenceCount = null,
     decimal? Amount = null,
-    DateTimeOffset? CapturedAt = null);
+    DateTimeOffset? CapturedAt = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? AmountId { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LedgerAmountScopeDto? AmountScope { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SourceSnapshotHash { get; init; }
+}
 
 public sealed record LedgerAmountProvenanceEvidenceDto(
     string EvidenceType,
@@ -696,7 +717,11 @@ public sealed record LedgerAmountProvenanceDetailDto(
     LedgerAmountApprovalStateDto Approval,
     LedgerAmountReportUsageDto ReportUsage,
     IReadOnlyList<string> Warnings,
-    IReadOnlyList<LedgerAmountStrategyRunLinkDto>? StrategyRuns = null);
+    IReadOnlyList<LedgerAmountStrategyRunLinkDto>? StrategyRuns = null)
+{
+    public LedgerAmountScopeDto? Scope { get; init; }
+    public EvidenceStatusDto ProofStatus { get; init; } = EvidenceStatusDto.ReviewRequired;
+}
 
 /// <summary>
 /// Structured readiness issue captured when a governed report pack is generated.

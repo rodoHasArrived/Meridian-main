@@ -864,6 +864,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         disposed.PolicyRevision.Should().Be("tax-policy-v1");
         disposed.MutatedLots[0].Version.Should().Be(2);
         disposed.MutatedLots[0].OpenQuantity.Should().Be(60m);
+        disposed.MutatedLots[0].BasisAdjustment.Should().BeNull(
+            "ordinary acquisition-basis relief must retain the untreated first-amortization path");
         disposed.Mutations[0].QuantityBefore.Should().Be(100m);
         disposed.Mutations[0].QuantityDelta.Should().Be(-40m);
         disposed.Mutations[0].QuantityAfter.Should().Be(60m);

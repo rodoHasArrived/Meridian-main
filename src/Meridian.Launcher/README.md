@@ -6,7 +6,7 @@ module_id: SRC-LAUNCHER
 path: src/Meridian.Launcher
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-19
+last_reviewed: 2026-10-07
 ---
 
 # src/Meridian.Launcher
@@ -25,15 +25,30 @@ database and host process lifecycle, readiness, browser opening, and operational
 ## Key folders and files
 
 - `Program.cs` - supervisor process invocation, terminal mapping, and user-visible recovery dialog.
+- `LauncherCommandPolicy.cs` - consumer command validation before supervisor invocation.
 - `StartupOutcomeReceiptMonitor.cs` - baseline fingerprinting and bound startup-receipt validation.
 - `Meridian.Launcher.csproj` - Windows executable and publish configuration.
 
+The consumer setup publishes this project as `<install-root>\Meridian.exe`; the application host
+is a separate executable at `<install-root>\host\Meridian.exe`. Both remain separate publish
+directories even though they share an executable name. `Meridian.sln` includes the launcher and
+the lifecycle supervisor test project references it for regression coverage.
+
 ## Important workflows
 
+No arguments defaults to `start`. Only one `start` or `open` argument is accepted
+(case insensitive); unsupported commands and extra arguments return exit code `2` before invoking
+the supervisor. Use `Meridian.LifecycleSupervisor.exe` directly for `run`, `status`, `preflight`,
+`restart`, and `stop`. The supervisor opens the browser after verified readiness for accepted
+consumer commands.
+
 The launcher fingerprints existing startup receipts, passes its request ID through the helper
-process and named-pipe command, and accepts only a new immutable terminal outcome whose operation ID
-and correlation match that request. Each retry receives a new attempt file; a concurrent request in
-the same supervisor session cannot satisfy the launcher gate.
+process and named-pipe command, and accepts only a new immutable terminal outcome whose operation ID,
+correlation, and filename attempt number match that request. Polling examines only that request's
+receipt files. Malformed JSON, invalid evidence, stale outcomes, and another request's receipts fail
+closed. Each retry receives a new attempt file; a concurrent request in the same supervisor session
+cannot satisfy the launcher gate. Forwarded `open` requests retain their own start timestamp, so
+reopening an already-running session still produces fresh request-bound evidence.
 
 A supervisor exit without verified startup evidence fails closed even when its process exit code is
 zero. `Succeeded` and `CompletedWithWarnings` return exit code `0`, `Failed` returns `1`, and
@@ -42,6 +57,18 @@ the launcher does not wait for the host session. Failure dialogs identify receip
 and carry repair, preflight, and retry guidance. Missing executables, process-start exceptions,
 process exit without the request receipt, and launcher observation timeout retain a separate
 validated launcher outcome instead of ending as message-only failures.
+
+Launcher failure attempts also reserve prior filenames and refuse replacement, preserving
+corrupted evidence for recovery. If several valid startup attempts are visible, the launcher
+uses the highest eligible attempt number.
+
+The shared `LifecycleStartupTiming` contract budgets dedicated database startup as
+`startupTimeoutSeconds + 2 * databaseTimeoutSeconds + 5` seconds, covering first-run `initdb`,
+`pg_ctl start` and its tool allowance, and host readiness. The launcher adds 30 seconds for the
+terminal receipt. With the default 60-second stage timeouts, the observation budget is 215 seconds.
+External database mode uses only the startup timeout and 30-second receipt allowance (90 seconds
+by default). Forwarded supervisor requests use the same stage budget so they remain pending while
+startup evidence is being produced.
 
 ## Diagrams
 

@@ -48,6 +48,121 @@ public sealed class ProviderIntegrationSetupServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveDraftAsync_EditCreatesNewVersionAndPreservesOriginalManifest()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var service = new ProviderIntegrationSetupService(store);
+        var request = CreateRequest();
+        var originalResult = await service.SaveDraftAsync(request);
+        var original = (await store.GetManifestAsync(request.Manifest.ManifestId))!;
+        var edit = request with
+        {
+            Manifest = original with { FieldMappings = [Mapping("providerAccountId"), Mapping("quantity")] },
+            ExpectedManifestReference = originalResult.ManifestReference,
+            ChangeReason = "Added quantity mapping."
+        };
+
+        var result = await service.SaveDraftAsync(edit);
+
+        var current = (await store.GetManifestAsync(original.ManifestId))!;
+        current.ManifestVersion.Should().Be(original.ManifestVersion + 1);
+        current.FieldMappings.Should().Contain(mapping => mapping.TargetField == "quantity");
+        current.ChangeReason.Should().Be("Added quantity mapping.");
+        result.ManifestReference.Should().Be(ProviderIntegrationManifestIdentity.Create(current));
+        result.ManifestReference!.ContentDigest.Should().NotBe(originalResult.ManifestReference!.ContentDigest);
+        (await store.GetManifestVersionAsync(original.ManifestId, original.ManifestVersion)).Should()
+            .BeEquivalentTo(original);
+        (await store.GetManifestVersionAsync(current.ManifestId, current.ManifestVersion)).Should()
+            .BeEquivalentTo(current);
+    }
+
+    [Fact]
+    public async Task SaveDraftAsync_AfterInterruptedPromotionPreservesOrphanAndSelectsNextAvailableVersion()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var service = new ProviderIntegrationSetupService(store);
+        var request = CreateRequest();
+        var originalResult = await service.SaveDraftAsync(request);
+        var original = (await store.GetManifestAsync(request.Manifest.ManifestId))!;
+        var orphan = original with
+        {
+            ManifestVersion = 2,
+            DisplayName = "Unpromoted candidate left by interrupted save"
+        };
+        await store.SaveManifestVersionAsync(orphan);
+        var restartedStore = new FileProviderIntegrationManifestStore(testRoot);
+        var restartedService = new ProviderIntegrationSetupService(restartedStore);
+
+        var result = await restartedService.SaveDraftAsync(request with
+        {
+            Manifest = original with { FieldMappings = [Mapping("providerAccountId"), Mapping("quantity")] },
+            ExpectedManifestReference = originalResult.ManifestReference,
+            ChangeReason = "Reviewed mapping after restart."
+        });
+
+        var current = (await restartedStore.GetManifestAsync(original.ManifestId))!;
+        current.ManifestVersion.Should().Be(3);
+        current.FieldMappings.Should().Contain(mapping => mapping.TargetField == "quantity");
+        result.ManifestReference.Should().Be(ProviderIntegrationManifestIdentity.Create(current));
+        (await restartedStore.GetManifestVersionAsync(original.ManifestId, 1)).Should().BeEquivalentTo(original);
+        (await restartedStore.GetManifestVersionAsync(original.ManifestId, 2)).Should().BeEquivalentTo(orphan);
+    }
+
+    [Fact]
+    public async Task SaveDraftAsync_RejectsStaleManifestVersionWithoutChangingCurrentOrConnection()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var service = new ProviderIntegrationSetupService(store);
+        var request = CreateRequest();
+        var originalResult = await service.SaveDraftAsync(request);
+        await service.SaveDraftAsync(request with
+        {
+            Manifest = request.Manifest with { DisplayName = "Updated provider name" },
+            ExpectedManifestReference = originalResult.ManifestReference
+        });
+        var current = (await store.GetManifestAsync(request.Manifest.ManifestId))!;
+        var currentConnection = await store.GetConnectionAsync(request.Connection.ConnectionId);
+        var staleEdit = request with
+        {
+            Manifest = request.Manifest with { DisplayName = "Stale provider name" },
+            Connection = request.Connection with { ConnectionName = "Stale connection name" }
+        };
+
+        var act = () => service.SaveDraftAsync(staleEdit);
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*manifest changed*");
+        (await store.GetManifestAsync(current.ManifestId)).Should().BeEquivalentTo(current);
+        (await store.GetManifestVersionAsync(current.ManifestId, current.ManifestVersion + 1)).Should().BeNull();
+        (await store.GetConnectionAsync(request.Connection.ConnectionId)).Should().BeEquivalentTo(currentConnection);
+    }
+
+    [Fact]
+    public async Task SaveDraftAsync_RejectsStaleExpectedReferenceEvenWhenSubmittedVersionIsCurrent()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var service = new ProviderIntegrationSetupService(store);
+        var request = CreateRequest();
+        var originalResult = await service.SaveDraftAsync(request);
+        await service.SaveDraftAsync(request with
+        {
+            Manifest = request.Manifest with { DisplayName = "Updated provider name" },
+            ExpectedManifestReference = originalResult.ManifestReference
+        });
+        var current = (await store.GetManifestAsync(request.Manifest.ManifestId))!;
+        var staleEdit = request with
+        {
+            Manifest = current with { DisplayName = "Conflicting provider name" },
+            ExpectedManifestReference = originalResult.ManifestReference
+        };
+
+        var act = () => service.SaveDraftAsync(staleEdit);
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*manifest changed*");
+        (await store.GetManifestAsync(current.ManifestId)).Should().BeEquivalentTo(current);
+        (await store.GetManifestVersionAsync(current.ManifestId, current.ManifestVersion + 1)).Should().BeNull();
+    }
+
+    [Fact]
     public async Task SaveDraftAsync_RejectsConnectionManifestMismatch()
     {
         var service = new ProviderIntegrationSetupService(new FileProviderIntegrationManifestStore(testRoot));
@@ -190,7 +305,7 @@ public sealed class ProviderIntegrationSetupServiceTests : IDisposable
         var logger = new RecordingLogger<ProviderIntegrationSetupService>();
         var service = new ProviderIntegrationSetupService(store, logger);
         var request = CreateRequest();
-        store.SaveManifestAsync(Arg.Any<ProviderIntegrationManifestDto>(), Arg.Any<CancellationToken>())
+        store.SaveManifestVersionAsync(Arg.Any<ProviderIntegrationManifestDto>(), Arg.Any<CancellationToken>())
             .Returns(_ => Task.FromException(new InvalidOperationException("storage unavailable")));
 
         var act = () => service.SaveDraftAsync("tenant-alpha", request);

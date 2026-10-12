@@ -42,7 +42,7 @@ public sealed class IbFlexStatementServiceTests : IDisposable
     {
         _tempDir = Path.Combine(Path.GetTempPath(), $"meridian-test-{Guid.NewGuid():N}");
         Directory.CreateDirectory(_tempDir);
-        _store = new JsonCanonicalStatementStore(_tempDir);
+        _store = new JsonCanonicalStatementStore(_tempDir, new AtomicFileWriterAdapter());
         _service = new IbFlexBrokerStatementService(_store);
     }
 

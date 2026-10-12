@@ -955,7 +955,8 @@ public sealed class StrategyRunStore : IStrategyRepository
                 StrategyRunLifecycleEventType.PauseFailed or
                 StrategyRunLifecycleEventType.StopFailed or
                 StrategyRunLifecycleEventType.StopRequested) &&
-            current.EndedAt is not null)
+            current.EndedAt is not null &&
+            !IsRetainedTerminalCleanupStep(previous, current))
         {
             return $"non-terminal lifecycle event '{current.LastLifecycleEvent}' retains a run end timestamp";
         }
@@ -969,6 +970,15 @@ public sealed class StrategyRunStore : IStrategyRepository
         if (previous is null)
         {
             return null;
+        }
+
+        var continuesTerminalCleanup = previous.EndedAt is not null &&
+            current.LastLifecycleEvent != StrategyRunLifecycleEventType.RecoveryAttempted &&
+            (current.LastLifecycleEvent is StrategyRunLifecycleEventType.StopRequested or StrategyRunLifecycleEventType.StopFailed ||
+             previous.LastLifecycleEvent is StrategyRunLifecycleEventType.StopRequested or StrategyRunLifecycleEventType.StopFailed);
+        if (continuesTerminalCleanup && !HasSameAttemptIdentity(previous, current))
+        {
+            return "cleanup attempt identity changed after the terminal lifecycle event";
         }
 
         var outputMetadataChanged = !CanonicalDictionaryEquals(
@@ -1069,6 +1079,38 @@ public sealed class StrategyRunStore : IStrategyRepository
 
         return null;
     }
+
+    private static bool IsRetainedTerminalCleanupStep(
+        StrategyRunEntry? previous,
+        StrategyRunEntry current)
+    {
+        // Cleanup records follow a failed/cancelled attempt without reopening that run or
+        // changing its retained end timestamp. Recovery starts a separate attempt afterwards.
+        if (previous is null ||
+            previous.EndedAt is null ||
+            current.EndedAt != previous.EndedAt ||
+            current.TerminalStatus != previous.TerminalStatus ||
+            !HasSameAttemptIdentity(previous, current))
+        {
+            return false;
+        }
+
+        return current.LastLifecycleEvent switch
+        {
+            StrategyRunLifecycleEventType.StopRequested => previous.LastLifecycleEvent is
+                StrategyRunLifecycleEventType.StartFailed or
+                StrategyRunLifecycleEventType.Cancelled or
+                StrategyRunLifecycleEventType.StopFailed,
+            StrategyRunLifecycleEventType.StopFailed =>
+                previous.LastLifecycleEvent == StrategyRunLifecycleEventType.StopRequested,
+            _ => false
+        };
+    }
+
+    private static bool HasSameAttemptIdentity(StrategyRunEntry previous, StrategyRunEntry current) =>
+        previous.AttemptNumber == current.AttemptNumber &&
+        string.Equals(previous.AttemptId, current.AttemptId, StringComparison.Ordinal) &&
+        string.Equals(previous.RecoveryParentRunId, current.RecoveryParentRunId, StringComparison.Ordinal);
 
     private static bool IsWalkForwardEvidenceOnlyCompletedRunUpdate(
         StrategyRunEntry previous,
@@ -1262,10 +1304,13 @@ public sealed class StrategyRunStore : IStrategyRepository
                 StrategyRunLifecycleEventType.StopRequested,
             StrategyRunLifecycleEventType.StartFailed => current is
                 StrategyRunLifecycleEventType.Started or
+                StrategyRunLifecycleEventType.StopRequested or
+                StrategyRunLifecycleEventType.RecoveryAttempted,
+            StrategyRunLifecycleEventType.Cancelled => current is
+                StrategyRunLifecycleEventType.StopRequested or
                 StrategyRunLifecycleEventType.RecoveryAttempted,
             StrategyRunLifecycleEventType.Completed or
-            StrategyRunLifecycleEventType.Failed or
-            StrategyRunLifecycleEventType.Cancelled =>
+            StrategyRunLifecycleEventType.Failed =>
                 current == StrategyRunLifecycleEventType.RecoveryAttempted,
             StrategyRunLifecycleEventType.RecoveryAttempted => false,
 

@@ -182,8 +182,7 @@ internal static class AssetAccountingEventProjectionRules
                 "Posted lifecycle attestation and durable journal impact must be appended together.");
         }
 
-        var requiresTaxLotBatch = projection.EventKind is
-            AssetAccountingEventKindDto.Acquisition or AssetAccountingEventKindDto.Disposal;
+        var requiresTaxLotBatch = RequiredTaxLotMutationKind(projection).HasValue;
         if (hasPostedStage && requiresTaxLotBatch != projection.TaxLotMutationBatchId.HasValue)
         {
             throw new InvalidOperationException(requiresTaxLotBatch
@@ -369,8 +368,8 @@ internal static class AssetAccountingEventProjectionRules
                 "Posted asset accounting impact did not resolve to one exact immutable journal in the asserted book and period.");
         }
 
-        var requiresTaxLotBatch = projection.EventKind is
-            AssetAccountingEventKindDto.Acquisition or AssetAccountingEventKindDto.Disposal;
+        var requiredMutationKind = RequiredTaxLotMutationKind(projection);
+        var requiresTaxLotBatch = requiredMutationKind.HasValue;
         if (!requiresTaxLotBatch)
         {
             if (projection.TaxLotMutationBatchId.HasValue)
@@ -402,9 +401,7 @@ internal static class AssetAccountingEventProjectionRules
                 ex);
         }
 
-        var expectedMutationKind = projection.EventKind == AssetAccountingEventKindDto.Acquisition
-            ? AtomicTaxLotMutationKind.Acquisition
-            : AtomicTaxLotMutationKind.Disposal;
+        var expectedMutationKind = requiredMutationKind!.Value;
         if (batch is null ||
             batch.MutationBatchId != mutationBatchId ||
             batch.MutationKind != expectedMutationKind ||
@@ -441,6 +438,17 @@ internal static class AssetAccountingEventProjectionRules
                 "Posted tax-lot mutation batch evidence does not exactly match the retained lifecycle evidence.");
         }
     }
+
+    private static AtomicTaxLotMutationKind? RequiredTaxLotMutationKind(AssetAccountingEventSpineDto projection)
+        => projection.EventKind switch
+        {
+            AssetAccountingEventKindDto.Acquisition => AtomicTaxLotMutationKind.Acquisition,
+            AssetAccountingEventKindDto.Disposal => AtomicTaxLotMutationKind.Disposal,
+            AssetAccountingEventKindDto.DepreciationAmortization
+                when projection.DraftedLotMutation?.Intent == AssetLotMutationIntentDto.Amortize
+                => AtomicTaxLotMutationKind.Amortization,
+            _ => null
+        };
 
     private static bool MatchesDurableImpact(
         AssetAccountingEventSpineDto projection,

@@ -118,7 +118,7 @@ internal static class Program
         try
         {
             var commandTimeout = command == "open"
-                ? TimeSpan.FromSeconds(configuration.Manifest.StartupTimeoutSeconds + 20)
+                ? LifecycleStartupTiming.GetStartupBudget(configuration.Manifest) + TimeSpan.FromSeconds(20)
                 : TimeSpan.FromSeconds(10);
             var response = await LifecycleSupervisorClient.SendAsync(
                 configuration.PipeName,

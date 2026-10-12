@@ -279,7 +279,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
           aria-label={run.selectAriaLabel}
           checked={run.selectedForComparison}
           onChange={() => vm.toggleRun(run.id)}
-          className="h-4 w-4 rounded border-border bg-background text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="h-4 w-4 rounded border-border bg-background text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
         />
       )
     },
@@ -679,7 +679,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
                       disabled={vm.promotionApprovalForm.acknowledgementDisabled}
                       title={vm.promotionApprovalForm.acknowledgementDisabledReason ?? undefined}
                       aria-describedby={vm.promotionApprovalForm.acknowledgementDescribedBy}
-                      className="mt-0.5 h-4 w-4 rounded border-border bg-background text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                      className="mt-0.5 h-4 w-4 rounded border-border bg-background text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                     />
                     <span className="grid gap-1">
                       <span>{vm.promotionApprovalForm.acknowledgementLabel}</span>

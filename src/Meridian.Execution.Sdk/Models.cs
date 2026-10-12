@@ -283,6 +283,9 @@ public sealed record OrderState
     /// <summary>Accounting scope the order was submitted under, when fund-scoped.</summary>
     public Guid? FundAccountId { get; init; }
 
+    /// <summary>Strategy run that authorized this retained order, when supplied.</summary>
+    public string? RunId { get; init; }
+
     /// <summary>
     /// Broker-native routed notional when the order is sized in dollars rather than
     /// quantity (see <see cref="BrokerNotionalMetadata"/>). Exposure reserves for working

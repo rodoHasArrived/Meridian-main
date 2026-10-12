@@ -1002,6 +1002,7 @@ export interface SecurityOpenLotRowViewModel extends SecurityMasterOpenLot {
   rowId: string;
   tradeDateLabel: string;
   settleDateLabel: string;
+  directionLabel: "Long" | "Short";
   quantityLabel: string;
   faceLabel: string;
   factorAdjustedLabel: string;
@@ -6318,6 +6319,7 @@ export function buildSecurityOpenLotRows(
   return rows.map((lot) => {
     const isSelected = lot.lotId === effectiveSelectedRowId;
     const scopeLabel = formatOpenLotScope(lot);
+    const directionLabel = lot.isShort ? "Short" : "Long";
     const quantityLabel = formatQuantity(lot.currentQuantity);
     const faceLabel = lot.currentFace !== null ? formatQuantity(lot.currentFace) : "—";
     const factorAdjustedLabel = lot.factorAdjustedQuantity !== null
@@ -6334,6 +6336,7 @@ export function buildSecurityOpenLotRows(
       rowId: lot.lotId,
       tradeDateLabel: formatSecurityDate(lot.tradeDate),
       settleDateLabel: formatSecurityDate(lot.settleDate),
+      directionLabel,
       quantityLabel,
       faceLabel,
       factorAdjustedLabel,
@@ -6343,7 +6346,7 @@ export function buildSecurityOpenLotRows(
       scopeLabel,
       statusLabel: lot.lotStatus || "Unknown",
       statusTone,
-      ariaLabel: `Open lot ${lot.lotId} for ${lot.symbol}, ${scopeLabel}, quantity ${quantityLabel}, cost ${costBasisLabel}, status ${lot.lotStatus}`,
+      ariaLabel: `${directionLabel} open lot ${lot.lotId} for ${lot.symbol}, ${scopeLabel}, quantity ${quantityLabel}, cost ${costBasisLabel}, status ${lot.lotStatus}`,
       selectAriaLabel: `Inspect open lot ${lot.lotId} for ${lot.symbol}`,
       detailPanelId,
       isExpanded: isSelected
@@ -6426,7 +6429,7 @@ function buildSecurityOpenLotDetailViewState(
     eyebrow: "Open lot detail",
     title: row.lotId,
     subtitle: `${row.symbol} · ${row.scopeLabel}`,
-    description: `${row.lotStatus} lot using ${quantityModel}; current quantity ${row.quantityLabel}.`,
+    description: `${row.directionLabel} ${row.lotStatus.toLowerCase()} lot using ${quantityModel}; current quantity ${row.quantityLabel}.`,
     ariaLabel: `Open lot detail for ${row.lotId} on ${row.symbol}`,
     statusLabel: row.statusLabel,
     statusTone: row.statusTone,
@@ -6437,6 +6440,7 @@ function buildSecurityOpenLotDetailViewState(
       { label: "Vehicle", value: row.vehicleScopeDisplayName ?? row.vehicleScopeId ?? "—" },
       { label: "Trade date", value: row.tradeDateLabel },
       { label: "Settle date", value: row.settleDateLabel, tone: row.settleDate ? "default" : "warning" },
+      { label: "Direction", value: row.directionLabel },
       { label: "Original quantity", value: formatQuantity(row.originalQuantity) },
       { label: "Current quantity", value: row.quantityLabel },
       { label: "Current face", value: row.faceLabel },

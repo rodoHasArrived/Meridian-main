@@ -64,8 +64,7 @@ class RoadmapValidatorCompatibilityTests(unittest.TestCase):
             roadmap_path = Path(temp_dir) / "legacy-roadmap.yml"
             roadmap_path.write_text(VALID_LEGACY_CONTRACT, encoding="utf-8")
 
-            with mock.patch.object(validator, "_try_import_yaml", return_value=None):
-                result = validator.run_roadmap_validation(roadmap_path)
+            result = validator.run_roadmap_validation(roadmap_path)
 
         self.assertEqual(0, result)
 
@@ -100,7 +99,7 @@ class RoadmapValidatorCompatibilityTests(unittest.TestCase):
             stderr = io.StringIO()
 
             with (
-                mock.patch.object(validator, "_try_import_yaml", return_value=FailingYamlModule),
+                mock.patch.dict(sys.modules, {"yaml": FailingYamlModule}),
                 contextlib.redirect_stderr(stderr),
             ):
                 result = validator.run_roadmap_validation(roadmap_path)

@@ -4,6 +4,9 @@ This page is the Codex-specific AI workflow index for Meridian. Shared, provider
 still lives in [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md); this page
 tracks repo-local Codex skill behavior, validation, and documentation ownership.
 
+For `buildctl test` build and explicit `--no-build` output-reuse behavior, see the
+[engineering validation guide](../../engineering/README.md#buildtestrun).
+
 For documentation work, start from the rebuilt canonical docs model:
 [`../../README.md`](../../README.md), [`../../start/README.md`](../../start/README.md),
 [`../../product/README.md`](../../product/README.md),

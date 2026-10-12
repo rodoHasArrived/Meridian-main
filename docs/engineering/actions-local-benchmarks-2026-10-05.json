@@ -1,0 +1,1148 @@
+{
+  "schemaVersion": 1,
+  "collectedAt": "2026-10-05T22:45:43.842930+00:00",
+  "scope": "Five .NET pairs (2 vs 4 test processes) and five browser pairs (8 vs 16 files per batch), executed sequentially on one local managed cloud executor. This is not GitHub-hosted rollout evidence.",
+  "environment": {
+    "executionEnvironment": "local",
+    "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+    "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+    "cpuCount": 5,
+    "pythonVersion": "3.12.14",
+    "nodeVersion": "v24.19.0",
+    "dotnetSdkVersion": "10.0.100",
+    "githubActionsEquivalent": false,
+    "scope": "Full default benchmark rosters; no test selection override; local measurements do not establish hosted improvements.",
+    "cpu.max": "400000 100000",
+    "memory.max": "17179869184",
+    "DOTNET_ROOT": "/tmp/meridian-dotnet/sdk",
+    "setupAttempt": 3,
+    "childSubreaper": "tini 0.19.0 -s",
+    "priorUnsuccessfulSetups": [
+      "../unsuccessful-setup-attempt.json",
+      "../corrected-environment/unsuccessful-container-init-attempt.json"
+    ],
+    "setupValidation": {
+      "filter": "FullyQualifiedName~Meridian.Tests.Mcp.ToolProcessRunnerTests",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "browserDependencyRestore": {
+    "receipt": {
+      "command": [
+        "npm",
+        "--prefix",
+        "src/Meridian.Ui/dashboard",
+        "ci"
+      ],
+      "orchestratorPid": 54604,
+      "completedPairBeforeInstall": 2,
+      "measuredChildPaused": false,
+      "pausedOrchestratorAt": "2026-10-05T21:24:19.300902+00:00",
+      "startedAt": "2026-10-05T21:28:28.464137+00:00",
+      "exitCode": 0,
+      "completedAt": "2026-10-05T21:28:34.572652+00:00",
+      "resumedOrchestratorAt": "2026-10-05T21:28:34.572702+00:00"
+    },
+    "evidenceFiles": [
+      {
+        "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/npm-ci-receipt.json",
+        "sha256": "ad31350b9ac225a73cb2460aa7b9b5b18c1071bd45857ca1f0116c87f4baa0e9"
+      },
+      {
+        "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/npm-ci.log",
+        "sha256": "7bbf13438a1f6f918e68eda041830787039a7792bc51e0390e2d3c13981583e0"
+      }
+    ]
+  },
+  "measurement": "testSeconds excludes .NET build/restore; commandSeconds includes the variant command. Neither measures aggregate hosted runner minutes. Failed, incomplete and identity-mismatched samples do not establish paired improvement.",
+  "defaults": {
+    "hostedDotnetProcesses": 2,
+    "localDotnetProcesses": 1,
+    "browserBatchFiles": 8,
+    "browserWorkers": 2,
+    "changed": false
+  },
+  "subjects": {
+    "dotnet": {
+      "pairs": [
+        {
+          "pairId": "dotnet-local-00bc4828026145bf951dbc638a86bfc6-1",
+          "subject": "dotnet",
+          "executionOrder": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+            "runnerLabel": "local-Linux-x86_64",
+            "executionEnvironment": "local",
+            "worktreeDirty": true,
+            "runId": "local-00bc4828026145bf951dbc638a86bfc6",
+            "runAttempt": 1,
+            "setting": 2,
+            "conclusion": "success",
+            "exitCode": 0,
+            "passed": 18444,
+            "failed": 0,
+            "skipped": 5,
+            "other": 0,
+            "testIdentityDigest": "9b09f2f83f956ccc13f27946661b551efb644550e8bc1ea35fb6f1d5835fa5f4",
+            "testSeconds": 423.408969178,
+            "commandSeconds": 430.572230665,
+            "resourceFailure": false,
+            "startedAt": "2026-10-05T21:02:50.781754+00:00",
+            "completedAt": "2026-10-05T21:10:01.354002+00:00",
+            "launchError": null,
+            "evidenceError": null,
+            "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-1/baseline-qf0njcby",
+            "evidenceFiles": [
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-1/baseline-qf0njcby/summary.json",
+                "sha256": "063566da74d9b70eae487445c9b667955462cc736fc027bc9223ef17b522501c"
+              },
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-1/baseline-qf0njcby/command.log",
+                "sha256": "18be5c42bdb61a93c68d5f14e4820005c71320d0041b244d94b547998466b0b2"
+              }
+            ]
+          },
+          "candidate": {
+            "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+            "runnerLabel": "local-Linux-x86_64",
+            "executionEnvironment": "local",
+            "worktreeDirty": true,
+            "runId": "local-00bc4828026145bf951dbc638a86bfc6",
+            "runAttempt": 1,
+            "setting": 4,
+            "conclusion": "success",
+            "exitCode": 0,
+            "passed": 18444,
+            "failed": 0,
+            "skipped": 5,
+            "other": 0,
+            "testIdentityDigest": "2a10da885845f2721ec48b418da7238a2c3de3df1f3e83ab867c9cfb82da7599",
+            "testSeconds": 323.30359749600007,
+            "commandSeconds": 328.609966385,
+            "resourceFailure": false,
+            "startedAt": "2026-10-05T21:10:01.363778+00:00",
+            "completedAt": "2026-10-05T21:15:29.973761+00:00",
+            "launchError": null,
+            "evidenceError": null,
+            "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-1/candidate-z3rbelcu",
+            "evidenceFiles": [
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-1/candidate-z3rbelcu/summary.json",
+                "sha256": "01e421c56668889a06f64a8ea1247a181d337eb9ccd7ce692dedc4322652732c"
+              },
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-1/candidate-z3rbelcu/command.log",
+                "sha256": "610d49f4f0257babb1093646fb997c221f1a44dc0b52c73a208533b2e040f866"
+              }
+            ]
+          },
+          "rawPair": {
+            "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-1/pair.json",
+            "sha256": "421258fa632f5c2c8b9b30a1da7f7aac946d62ce1b7ceba00c83066806adc8c7"
+          },
+          "identitiesMatch": false,
+          "countsMatch": true,
+          "identityDifferences": [
+            {
+              "shard": "core-ui-other",
+              "baselineOnlyIdentities": 3,
+              "candidateOnlyIdentities": 3,
+              "baselineOnlyIdentityNames": [
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"journal-entry\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_9(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = eda6de8b-9423-43c5-b550-c311bf0cfd5d, SubjectKind = journal-entry, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })",
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"report-pack\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_2(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = d413b9f8-09ff-4423-a452-0c24086b20f5, SubjectKind = report-pack, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })",
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"report-pack-delivery\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_3(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = 26a60088-0b1f-497e-bf64-bcb27be7c8b0, SubjectKind = report-pack-delivery, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })"
+              ],
+              "candidateOnlyIdentityNames": [
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"journal-entry\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_9(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = 43fda72c-a989-4fe3-8331-138ade2e04bc, SubjectKind = journal-entry, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })",
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"report-pack\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_2(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = 32135112-b2c9-4cb5-9b01-9fce4f42d3e0, SubjectKind = report-pack, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })",
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"report-pack-delivery\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_3(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = 819b097d-b197-48da-96d7-4797c6c9f356, SubjectKind = report-pack-delivery, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })"
+              ],
+              "methods": [
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning"
+              ],
+              "baselineShardIdentityDigest": "064f2b744ff1cb278be3a86fad02884a9d3564bb0a6f41696785a8d6d63ac444",
+              "candidateShardIdentityDigest": "bd8233474952a218c757f6f548758a6803c072baec056b8d03c5291980810fb9"
+            }
+          ]
+        },
+        {
+          "pairId": "dotnet-local-9b6ba755081246d8922df17b1a598eeb-2",
+          "subject": "dotnet",
+          "executionOrder": [
+            "candidate",
+            "baseline"
+          ],
+          "baseline": {
+            "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+            "runnerLabel": "local-Linux-x86_64",
+            "executionEnvironment": "local",
+            "worktreeDirty": true,
+            "runId": "local-9b6ba755081246d8922df17b1a598eeb",
+            "runAttempt": 1,
+            "setting": 2,
+            "conclusion": "success",
+            "exitCode": 0,
+            "passed": 18444,
+            "failed": 0,
+            "skipped": 5,
+            "other": 0,
+            "testIdentityDigest": "c5263bac71212af9ea32ca9a922e259a23682c49a7a4caf15c91aaee92df8263",
+            "testSeconds": 446.6187186809998,
+            "commandSeconds": 451.25692886399975,
+            "resourceFailure": false,
+            "startedAt": "2026-10-05T21:20:56.730909+00:00",
+            "completedAt": "2026-10-05T21:28:27.987853+00:00",
+            "launchError": null,
+            "evidenceError": null,
+            "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-2/baseline-5evut6bn",
+            "evidenceFiles": [
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-2/baseline-5evut6bn/summary.json",
+                "sha256": "1d2bbad2a8bf1c13c67c0d42cd32e7b80c2b141571d6ed4095a8d54fdc196440"
+              },
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-2/baseline-5evut6bn/command.log",
+                "sha256": "460269ac1e784ebbdff78ac5e852be1887016498a2f97a1d9f06e241ce0c1142"
+              }
+            ]
+          },
+          "candidate": {
+            "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+            "runnerLabel": "local-Linux-x86_64",
+            "executionEnvironment": "local",
+            "worktreeDirty": true,
+            "runId": "local-9b6ba755081246d8922df17b1a598eeb",
+            "runAttempt": 1,
+            "setting": 4,
+            "conclusion": "success",
+            "exitCode": 0,
+            "passed": 18444,
+            "failed": 0,
+            "skipped": 5,
+            "other": 0,
+            "testIdentityDigest": "b57aaa582d4ec27bd00a8467949157e4ece743da2b9dd69a66562f6072c3a94f",
+            "testSeconds": 320.6226818949999,
+            "commandSeconds": 326.6664620679999,
+            "resourceFailure": false,
+            "startedAt": "2026-10-05T21:15:30.054655+00:00",
+            "completedAt": "2026-10-05T21:20:56.721137+00:00",
+            "launchError": null,
+            "evidenceError": null,
+            "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-2/candidate-6o75o23t",
+            "evidenceFiles": [
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-2/candidate-6o75o23t/summary.json",
+                "sha256": "c84acce70a2a470410557a46821537e73c1b184252b8eed26a2249d2a02ebfd2"
+              },
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-2/candidate-6o75o23t/command.log",
+                "sha256": "67e0d734e87daf9e3352cafb0674997cf82b52668b7af089907e12a09877a210"
+              }
+            ]
+          },
+          "rawPair": {
+            "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-2/pair.json",
+            "sha256": "214e38649a55cfc1b50904646d4d295178cb3a7d5a2201d9bd16a70d9f46896a"
+          },
+          "identitiesMatch": false,
+          "countsMatch": true,
+          "identityDifferences": [
+            {
+              "shard": "core-ui-other",
+              "baselineOnlyIdentities": 3,
+              "candidateOnlyIdentities": 3,
+              "baselineOnlyIdentityNames": [
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"journal-entry\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_9(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = 1c13f7c9-657d-4497-ac71-00de90974e19, SubjectKind = journal-entry, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })",
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"report-pack\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_2(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = 6b57904c-cf68-4c8e-ab0a-b874579f8b51, SubjectKind = report-pack, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })",
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"report-pack-delivery\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_3(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = a795933e-4f04-448d-bf07-866db443ad4c, SubjectKind = report-pack-delivery, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })"
+              ],
+              "candidateOnlyIdentityNames": [
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"journal-entry\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_9(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = b373daaf-398a-43fc-ae88-ec5a5ade4eb3, SubjectKind = journal-entry, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })",
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"report-pack\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_2(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = 24517cce-5e17-46a0-adf3-5da08f68bdf1, SubjectKind = report-pack, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })",
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"report-pack-delivery\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_3(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = aff5f666-99bf-4246-b868-e19a0a96c00e, SubjectKind = report-pack-delivery, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })"
+              ],
+              "methods": [
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning"
+              ],
+              "baselineShardIdentityDigest": "c3c2b4f1606a2954725fd678e422284ceaaed16eecbfdbb06951dab02eadef32",
+              "candidateShardIdentityDigest": "8959dbeebb28b2c50892287c5a36dd415544b33a6e028aacee950bf6e07173cf"
+            }
+          ]
+        },
+        {
+          "pairId": "dotnet-local-457283e49b7944e284af0ec99bac39cb-3",
+          "subject": "dotnet",
+          "executionOrder": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+            "runnerLabel": "local-Linux-x86_64",
+            "executionEnvironment": "local",
+            "worktreeDirty": true,
+            "runId": "local-457283e49b7944e284af0ec99bac39cb",
+            "runAttempt": 1,
+            "setting": 2,
+            "conclusion": "success",
+            "exitCode": 0,
+            "passed": 18444,
+            "failed": 0,
+            "skipped": 5,
+            "other": 0,
+            "testIdentityDigest": "96a2491d1562bbf43a57f9a1ed48e81d056bbd12fd67b6d619f463b5d4fbe350",
+            "testSeconds": 449.84865034899985,
+            "commandSeconds": 454.4937344680002,
+            "resourceFailure": false,
+            "startedAt": "2026-10-05T21:28:34.637440+00:00",
+            "completedAt": "2026-10-05T21:36:09.131269+00:00",
+            "launchError": null,
+            "evidenceError": null,
+            "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-3/baseline-cv73u334",
+            "evidenceFiles": [
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-3/baseline-cv73u334/summary.json",
+                "sha256": "f7776881ffcd0049ceb0de375c2d26182fe2ed2c923a44ac5fea981cc1ebca64"
+              },
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-3/baseline-cv73u334/command.log",
+                "sha256": "f22aa714ccdfdea0f98e35bcad1dafd05035a0ca37176f0674609b18c78afc8d"
+              }
+            ]
+          },
+          "candidate": {
+            "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+            "runnerLabel": "local-Linux-x86_64",
+            "executionEnvironment": "local",
+            "worktreeDirty": true,
+            "runId": "local-457283e49b7944e284af0ec99bac39cb",
+            "runAttempt": 1,
+            "setting": 4,
+            "conclusion": "success",
+            "exitCode": 0,
+            "passed": 18444,
+            "failed": 0,
+            "skipped": 5,
+            "other": 0,
+            "testIdentityDigest": "e3da34fa90d8140038004072af9b6959b18283011782bc8df516d7b56dd82ffc",
+            "testSeconds": 351.60549051299995,
+            "commandSeconds": 357.53228375000026,
+            "resourceFailure": false,
+            "startedAt": "2026-10-05T21:36:09.153135+00:00",
+            "completedAt": "2026-10-05T21:42:06.685461+00:00",
+            "launchError": null,
+            "evidenceError": null,
+            "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-3/candidate-umhs6tek",
+            "evidenceFiles": [
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-3/candidate-umhs6tek/summary.json",
+                "sha256": "6720a3bf1ae1c5a29050bd52d113267e5621d732d9dbafe149ab75aa10f60a74"
+              },
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-3/candidate-umhs6tek/command.log",
+                "sha256": "a72ebb4d9110ff2f09ea774989ec60e8a3bfa775e70e9b208b03e93e8fcbf640"
+              }
+            ]
+          },
+          "rawPair": {
+            "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-3/pair.json",
+            "sha256": "c91a395b7663e95f900ea80d37ec1566f0ad60f0c39e11ac689eb53f16d65a42"
+          },
+          "identitiesMatch": false,
+          "countsMatch": true,
+          "identityDifferences": [
+            {
+              "shard": "core-ui-other",
+              "baselineOnlyIdentities": 3,
+              "candidateOnlyIdentities": 3,
+              "baselineOnlyIdentityNames": [
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"journal-entry\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_9(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = 022433b3-6a6a-48c3-9625-18455602f8ea, SubjectKind = journal-entry, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })",
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"report-pack\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_2(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = 291eeb3b-1dbe-4b98-a2c7-6510c1851fcf, SubjectKind = report-pack, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })",
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"report-pack-delivery\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_3(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = 92ad5145-6942-439f-8fd8-98cd0e98ac4a, SubjectKind = report-pack-delivery, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })"
+              ],
+              "candidateOnlyIdentityNames": [
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"journal-entry\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_9(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = 3d0fcabe-1d32-4bdc-8200-ce53c87a414c, SubjectKind = journal-entry, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })",
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"report-pack\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_2(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = acb7cdde-7a24-4392-9b10-b25dde8a24bf, SubjectKind = report-pack, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })",
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"report-pack-delivery\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_3(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = e4df66ee-4058-4367-a209-dfa3c6b7a75c, SubjectKind = report-pack-delivery, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })"
+              ],
+              "methods": [
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning"
+              ],
+              "baselineShardIdentityDigest": "ffb7e90d99acfbb2cf2bf721c6d067ce8980213f8ab6a91cb0e83d34ad7d1439",
+              "candidateShardIdentityDigest": "b1241d4057be89d99d2a1cbbd011b4715f964c12b4aa856af8568c215924d5a6"
+            }
+          ]
+        },
+        {
+          "pairId": "dotnet-local-180b811e4a9f4fbb848fcd8ca5897bb5-4",
+          "subject": "dotnet",
+          "executionOrder": [
+            "candidate",
+            "baseline"
+          ],
+          "baseline": {
+            "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+            "runnerLabel": "local-Linux-x86_64",
+            "executionEnvironment": "local",
+            "worktreeDirty": true,
+            "runId": "local-180b811e4a9f4fbb848fcd8ca5897bb5",
+            "runAttempt": 1,
+            "setting": 2,
+            "conclusion": "success",
+            "exitCode": 0,
+            "passed": 18444,
+            "failed": 0,
+            "skipped": 5,
+            "other": 0,
+            "testIdentityDigest": "aa8b57ea658b65502c504f62532086f21485e6e9514f67f5ed9d3af584c48ee1",
+            "testSeconds": 462.90643894299956,
+            "commandSeconds": 467.6210770619996,
+            "resourceFailure": false,
+            "startedAt": "2026-10-05T21:48:07.442663+00:00",
+            "completedAt": "2026-10-05T21:55:55.063772+00:00",
+            "launchError": null,
+            "evidenceError": null,
+            "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-4/baseline-ph9lgxmn",
+            "evidenceFiles": [
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-4/baseline-ph9lgxmn/summary.json",
+                "sha256": "26557204678c617ffb696a51d646b2effa6a5342964b88ea692b36a6dfd81eb8"
+              },
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-4/baseline-ph9lgxmn/command.log",
+                "sha256": "ba949dcda15d383c2fd9699f9205df9bc09042e684e36a46374716e4fea4f88e"
+              }
+            ]
+          },
+          "candidate": {
+            "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+            "runnerLabel": "local-Linux-x86_64",
+            "executionEnvironment": "local",
+            "worktreeDirty": true,
+            "runId": "local-180b811e4a9f4fbb848fcd8ca5897bb5",
+            "runAttempt": 1,
+            "setting": 4,
+            "conclusion": "success",
+            "exitCode": 0,
+            "passed": 18444,
+            "failed": 0,
+            "skipped": 5,
+            "other": 0,
+            "testIdentityDigest": "5b3e3adb8d2c881b0070c12ecbc4cece8398ac23123bc5eded418fc943cb2e5f",
+            "testSeconds": 355.47575215300003,
+            "commandSeconds": 360.6488544640001,
+            "resourceFailure": false,
+            "startedAt": "2026-10-05T21:42:06.783276+00:00",
+            "completedAt": "2026-10-05T21:48:07.432150+00:00",
+            "launchError": null,
+            "evidenceError": null,
+            "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-4/candidate-sqkr47cq",
+            "evidenceFiles": [
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-4/candidate-sqkr47cq/summary.json",
+                "sha256": "281df1aa7ec406754006763966988e31851ea42fe201cb0940a510248dba876b"
+              },
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-4/candidate-sqkr47cq/command.log",
+                "sha256": "5e0bfd54cd001ad9d80a3a67bf42f297b739d4125211fa015d3d91045b645569"
+              }
+            ]
+          },
+          "rawPair": {
+            "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-4/pair.json",
+            "sha256": "03901b3bd3196d9e3bc4358fda97c61e8eacd577fe666e1a17fb90c5d86b4bca"
+          },
+          "identitiesMatch": false,
+          "countsMatch": true,
+          "identityDifferences": [
+            {
+              "shard": "core-ui-other",
+              "baselineOnlyIdentities": 3,
+              "candidateOnlyIdentities": 3,
+              "baselineOnlyIdentityNames": [
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"journal-entry\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_9(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = 23aca6ac-163a-44e3-adfb-b50d6fb2f5e8, SubjectKind = journal-entry, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })",
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"report-pack\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_2(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = f1be4b6b-9d9b-4b41-a873-92898a288c42, SubjectKind = report-pack, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })",
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"report-pack-delivery\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_3(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = 642c089c-b6ce-45ab-9dc3-183714788071, SubjectKind = report-pack-delivery, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })"
+              ],
+              "candidateOnlyIdentityNames": [
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"journal-entry\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_9(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = eb85fc94-4b4e-4602-8755-ab8886fee41f, SubjectKind = journal-entry, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })",
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"report-pack\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_2(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = ccc53b65-9c27-481c-b040-268ecb2b9632, SubjectKind = report-pack, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })",
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"report-pack-delivery\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_3(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = 0bc5cd05-8353-424b-97ad-08363fc181e8, SubjectKind = report-pack-delivery, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })"
+              ],
+              "methods": [
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning"
+              ],
+              "baselineShardIdentityDigest": "1d57f3b212bd8ff1f3c7b673f1b40a6cfc888ab789948a44a566570302cd5c25",
+              "candidateShardIdentityDigest": "882f81d3a525af52f68c2b32b9627db76927c16596af9b21da6f5661e31d5add"
+            }
+          ]
+        },
+        {
+          "pairId": "dotnet-local-b282e7008de5499eb54219dad81c9e1e-5",
+          "subject": "dotnet",
+          "executionOrder": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+            "runnerLabel": "local-Linux-x86_64",
+            "executionEnvironment": "local",
+            "worktreeDirty": true,
+            "runId": "local-b282e7008de5499eb54219dad81c9e1e",
+            "runAttempt": 1,
+            "setting": 2,
+            "conclusion": "success",
+            "exitCode": 0,
+            "passed": 18444,
+            "failed": 0,
+            "skipped": 5,
+            "other": 0,
+            "testIdentityDigest": "7661ccccf7cd740f991211c0b77c73bcae739ad80ce3a452d480dd5c8a25e167",
+            "testSeconds": 470.2030471400003,
+            "commandSeconds": 475.3222517640006,
+            "resourceFailure": false,
+            "startedAt": "2026-10-05T21:55:55.155117+00:00",
+            "completedAt": "2026-10-05T22:03:50.477415+00:00",
+            "launchError": null,
+            "evidenceError": null,
+            "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-5/baseline-y3n2w9_g",
+            "evidenceFiles": [
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-5/baseline-y3n2w9_g/summary.json",
+                "sha256": "6fe238d94069d598b44fb243064e7de0212f7537c0c97ce266131b93374990da"
+              },
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-5/baseline-y3n2w9_g/command.log",
+                "sha256": "de6655c59591b52a684229d18e5799127dd1aa421d76395ea7ad61b12e693483"
+              }
+            ]
+          },
+          "candidate": {
+            "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+            "runnerLabel": "local-Linux-x86_64",
+            "executionEnvironment": "local",
+            "worktreeDirty": true,
+            "runId": "local-b282e7008de5499eb54219dad81c9e1e",
+            "runAttempt": 1,
+            "setting": 4,
+            "conclusion": "success",
+            "exitCode": 0,
+            "passed": 18444,
+            "failed": 0,
+            "skipped": 5,
+            "other": 0,
+            "testIdentityDigest": "beb04cb7a0045802d76618e83372393e885e0cdb5c64aefb3b4f54254755ac09",
+            "testSeconds": 360.05832740299957,
+            "commandSeconds": 365.2379835089996,
+            "resourceFailure": false,
+            "startedAt": "2026-10-05T22:03:50.490970+00:00",
+            "completedAt": "2026-10-05T22:09:55.728976+00:00",
+            "launchError": null,
+            "evidenceError": null,
+            "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-5/candidate-y8uunn2g",
+            "evidenceFiles": [
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-5/candidate-y8uunn2g/summary.json",
+                "sha256": "2750f3d5171dfd415b732f623cc2069873ec0f3a38976acdc0817643f27c2690"
+              },
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-5/candidate-y8uunn2g/command.log",
+                "sha256": "ba4bd7b122fa5ccb04edb9fa38bbb9dfd2129cace23717605b2129b17c45fab1"
+              }
+            ]
+          },
+          "rawPair": {
+            "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/dotnet-5/pair.json",
+            "sha256": "bd8c5a5e30cd7fce87fb948888ffe9f7cd9a75abf58cd173aa6141d329c26aa7"
+          },
+          "identitiesMatch": false,
+          "countsMatch": true,
+          "identityDifferences": [
+            {
+              "shard": "core-ui-other",
+              "baselineOnlyIdentities": 3,
+              "candidateOnlyIdentities": 3,
+              "baselineOnlyIdentityNames": [
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"journal-entry\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_9(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = 7ec79fbd-9b78-4d2f-b376-69526474be52, SubjectKind = journal-entry, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })",
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"report-pack\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_2(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = 2b2cae80-99ba-4272-a0db-a25f2be7c194, SubjectKind = report-pack, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })",
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"report-pack-delivery\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_3(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = da5afd5d-26db-4df0-aaf8-69f9497d3d68, SubjectKind = report-pack-delivery, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })"
+              ],
+              "candidateOnlyIdentityNames": [
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"journal-entry\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_9(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = afd5927d-12d4-473b-8702-bfe95428b7c1, SubjectKind = journal-entry, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })",
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"report-pack\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_2(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = 8ddfb9ff-acdf-4a64-a1ef-7a57b6baeb70, SubjectKind = report-pack, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })",
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests|Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning(contributorId: \"report-pack-delivery\", factory: Func`2 { Method = Meridian.Ui.Shared.Evidence.IEvidenceContributor <get_ContributorsWithLazyDependencies>b__2_3(System.IServiceProvider), Target = <>c { } }, subject: EvidenceSubjectDto { SubjectId = 3a90256e-5055-4a69-aff3-209466950444, SubjectKind = report-pack-delivery, Label = l, Workspace = w, Route = , PageTag = p, LedgerBookId =  })"
+              ],
+              "methods": [
+                "Meridian.Tests.Ui.Evidence.SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning"
+              ],
+              "baselineShardIdentityDigest": "4c81f4ae3acfafff29cf59bf9fa6277408ca629fce819c55c9255de4fdb0ed44",
+              "candidateShardIdentityDigest": "e6b8b53626a4acd918e8021461490de53ce974705154bad96949ccfaeeb11749"
+            }
+          ]
+        }
+      ],
+      "decision": {
+        "schemaVersion": 1,
+        "eligibleForAdoption": false,
+        "medianPairedImprovement": null,
+        "reasons": [
+          "A valid median paired improvement is unavailable.",
+          "Local benchmark evidence cannot promote hosted defaults.",
+          "Paired testIdentityDigest evidence is absent or differs."
+        ]
+      },
+      "successfulVariants": 10,
+      "unsuccessfulVariants": 0
+    },
+    "browser": {
+      "pairs": [
+        {
+          "pairId": "browser-local-9a4d3654d312427abb155bc6ba879316-1",
+          "subject": "browser",
+          "executionOrder": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+            "runnerLabel": "local-Linux-x86_64",
+            "executionEnvironment": "local",
+            "worktreeDirty": true,
+            "runId": "local-9a4d3654d312427abb155bc6ba879316",
+            "runAttempt": 1,
+            "setting": 8,
+            "conclusion": "success",
+            "exitCode": 0,
+            "passed": 3389,
+            "failed": 0,
+            "skipped": 0,
+            "other": 0,
+            "testIdentityDigest": "30e8ffc3009e94be22c1693e8055dddbe7ca3822de6963c49f583c390fbdd130",
+            "testSeconds": 223.08059987200002,
+            "commandSeconds": 223.24720900800003,
+            "resourceFailure": false,
+            "startedAt": "2026-10-05T22:09:55.805615+00:00",
+            "completedAt": "2026-10-05T22:13:39.052845+00:00",
+            "launchError": null,
+            "evidenceError": null,
+            "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-1/baseline-4xo43tgo",
+            "evidenceFiles": [
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-1/baseline-4xo43tgo/summary.json",
+                "sha256": "c2034ad93b529cf1a3cb9d84ee7a10fa75f066a4b2b03579ba9848c5aeb2e71b"
+              },
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-1/baseline-4xo43tgo/command.log",
+                "sha256": "0077e690dda2034ca5f3a92e03dd02c1f379f1dcd8f62190159dd2b6a49fe390"
+              }
+            ]
+          },
+          "candidate": {
+            "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+            "runnerLabel": "local-Linux-x86_64",
+            "executionEnvironment": "local",
+            "worktreeDirty": true,
+            "runId": "local-9a4d3654d312427abb155bc6ba879316",
+            "runAttempt": 1,
+            "setting": 16,
+            "conclusion": "success",
+            "exitCode": 0,
+            "passed": 3389,
+            "failed": 0,
+            "skipped": 0,
+            "other": 0,
+            "testIdentityDigest": "30e8ffc3009e94be22c1693e8055dddbe7ca3822de6963c49f583c390fbdd130",
+            "testSeconds": 204.62411153699998,
+            "commandSeconds": 204.77868184099952,
+            "resourceFailure": false,
+            "startedAt": "2026-10-05T22:13:39.056196+00:00",
+            "completedAt": "2026-10-05T22:17:03.834893+00:00",
+            "launchError": null,
+            "evidenceError": null,
+            "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-1/candidate-p0drl5aw",
+            "evidenceFiles": [
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-1/candidate-p0drl5aw/summary.json",
+                "sha256": "a01c722692ddd72dc3a367af0b9065a221f10bb7c8026443a2af55317a6fa594"
+              },
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-1/candidate-p0drl5aw/command.log",
+                "sha256": "2259535a8e586ffca454763ecb30306b9ca0960872542b42f88ced0e121457ab"
+              }
+            ]
+          },
+          "rawPair": {
+            "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-1/pair.json",
+            "sha256": "4fd2c1673da7683d3b01479df2868a31a57633ba00da6439ae30fa1ce970ed25"
+          },
+          "identitiesMatch": true,
+          "countsMatch": true
+        },
+        {
+          "pairId": "browser-local-2715f46bf4574498be2dc496343511fb-2",
+          "subject": "browser",
+          "executionOrder": [
+            "candidate",
+            "baseline"
+          ],
+          "baseline": {
+            "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+            "runnerLabel": "local-Linux-x86_64",
+            "executionEnvironment": "local",
+            "worktreeDirty": true,
+            "runId": "local-2715f46bf4574498be2dc496343511fb",
+            "runAttempt": 1,
+            "setting": 8,
+            "conclusion": "success",
+            "exitCode": 0,
+            "passed": 3389,
+            "failed": 0,
+            "skipped": 0,
+            "other": 0,
+            "testIdentityDigest": "30e8ffc3009e94be22c1693e8055dddbe7ca3822de6963c49f583c390fbdd130",
+            "testSeconds": 231.841203808,
+            "commandSeconds": 231.97970407499997,
+            "resourceFailure": false,
+            "startedAt": "2026-10-05T22:20:26.321822+00:00",
+            "completedAt": "2026-10-05T22:24:18.301538+00:00",
+            "launchError": null,
+            "evidenceError": null,
+            "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-2/baseline-h224akf3",
+            "evidenceFiles": [
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-2/baseline-h224akf3/summary.json",
+                "sha256": "5e73a139f92e94cf9fa90a1029219f1456ecbad1e4f1a32667423e8c3e7b63e7"
+              },
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-2/baseline-h224akf3/command.log",
+                "sha256": "79d4b3eafe9f9523e7bc09cdcd89792b15ed886f549a58e092489cfd474ce160"
+              }
+            ]
+          },
+          "candidate": {
+            "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+            "runnerLabel": "local-Linux-x86_64",
+            "executionEnvironment": "local",
+            "worktreeDirty": true,
+            "runId": "local-2715f46bf4574498be2dc496343511fb",
+            "runAttempt": 1,
+            "setting": 16,
+            "conclusion": "success",
+            "exitCode": 0,
+            "passed": 3389,
+            "failed": 0,
+            "skipped": 0,
+            "other": 0,
+            "testIdentityDigest": "30e8ffc3009e94be22c1693e8055dddbe7ca3822de6963c49f583c390fbdd130",
+            "testSeconds": 202.26055050800002,
+            "commandSeconds": 202.4135334370003,
+            "resourceFailure": false,
+            "startedAt": "2026-10-05T22:17:03.905063+00:00",
+            "completedAt": "2026-10-05T22:20:26.318615+00:00",
+            "launchError": null,
+            "evidenceError": null,
+            "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-2/candidate-lkro_kkf",
+            "evidenceFiles": [
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-2/candidate-lkro_kkf/summary.json",
+                "sha256": "9b176aecd67b772fafd40ddd6cb1021c4d346ab3d30ac6a8b1424162c57f6ccd"
+              },
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-2/candidate-lkro_kkf/command.log",
+                "sha256": "75ddb358a69e6b2422d8ff3f2aef20417581524ea64c929b878d917d61e85e56"
+              }
+            ]
+          },
+          "rawPair": {
+            "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-2/pair.json",
+            "sha256": "e2fafe4ada9a15df1a98744c3b80e55f0dd2b52a2ba9b6d060bf7ca57e7c2e45"
+          },
+          "identitiesMatch": true,
+          "countsMatch": true
+        },
+        {
+          "pairId": "browser-local-349135b09a80432db559d3a52212de6a-3",
+          "subject": "browser",
+          "executionOrder": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+            "runnerLabel": "local-Linux-x86_64",
+            "executionEnvironment": "local",
+            "worktreeDirty": true,
+            "runId": "local-349135b09a80432db559d3a52212de6a",
+            "runAttempt": 1,
+            "setting": 8,
+            "conclusion": "success",
+            "exitCode": 0,
+            "passed": 3389,
+            "failed": 0,
+            "skipped": 0,
+            "other": 0,
+            "testIdentityDigest": "30e8ffc3009e94be22c1693e8055dddbe7ca3822de6963c49f583c390fbdd130",
+            "testSeconds": 222.31175535699998,
+            "commandSeconds": 222.44807035899976,
+            "resourceFailure": false,
+            "startedAt": "2026-10-05T22:24:18.373113+00:00",
+            "completedAt": "2026-10-05T22:28:00.821213+00:00",
+            "launchError": null,
+            "evidenceError": null,
+            "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-3/baseline-mjkxtoh9",
+            "evidenceFiles": [
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-3/baseline-mjkxtoh9/summary.json",
+                "sha256": "313912a6cc6e8fea991455eb3393399bd0b29734c981a30e0c502bebdb440f8f"
+              },
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-3/baseline-mjkxtoh9/command.log",
+                "sha256": "4aa15e1dce3fd0336b58b39c0127ccb8a84480fb4fee6ebaf69a1102c12ed2b1"
+              }
+            ]
+          },
+          "candidate": {
+            "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+            "runnerLabel": "local-Linux-x86_64",
+            "executionEnvironment": "local",
+            "worktreeDirty": true,
+            "runId": "local-349135b09a80432db559d3a52212de6a",
+            "runAttempt": 1,
+            "setting": 16,
+            "conclusion": "success",
+            "exitCode": 0,
+            "passed": 3389,
+            "failed": 0,
+            "skipped": 0,
+            "other": 0,
+            "testIdentityDigest": "30e8ffc3009e94be22c1693e8055dddbe7ca3822de6963c49f583c390fbdd130",
+            "testSeconds": 198.723563856,
+            "commandSeconds": 198.8694632200004,
+            "resourceFailure": false,
+            "startedAt": "2026-10-05T22:28:00.824825+00:00",
+            "completedAt": "2026-10-05T22:31:19.694302+00:00",
+            "launchError": null,
+            "evidenceError": null,
+            "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-3/candidate-cw3goc_0",
+            "evidenceFiles": [
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-3/candidate-cw3goc_0/summary.json",
+                "sha256": "ff6681c278b84ad50a8ae4b271cd10920c120bdc3272d99bdbdc3f5dc42a804d"
+              },
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-3/candidate-cw3goc_0/command.log",
+                "sha256": "773a26c9bb964e941462100e3801733ff0787d949330d8820ac8ecc3ad9a7cca"
+              }
+            ]
+          },
+          "rawPair": {
+            "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-3/pair.json",
+            "sha256": "4c2e608d858506e8b53cd4e14899456ce9819fab12599de6689fe19e2034512f"
+          },
+          "identitiesMatch": true,
+          "countsMatch": true
+        },
+        {
+          "pairId": "browser-local-52c793098d2644189cf974867f8b19e0-4",
+          "subject": "browser",
+          "executionOrder": [
+            "candidate",
+            "baseline"
+          ],
+          "baseline": {
+            "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+            "runnerLabel": "local-Linux-x86_64",
+            "executionEnvironment": "local",
+            "worktreeDirty": true,
+            "runId": "local-52c793098d2644189cf974867f8b19e0",
+            "runAttempt": 1,
+            "setting": 8,
+            "conclusion": "success",
+            "exitCode": 0,
+            "passed": 3389,
+            "failed": 0,
+            "skipped": 0,
+            "other": 0,
+            "testIdentityDigest": "30e8ffc3009e94be22c1693e8055dddbe7ca3822de6963c49f583c390fbdd130",
+            "testSeconds": 222.121345787,
+            "commandSeconds": 222.25693177499943,
+            "resourceFailure": false,
+            "startedAt": "2026-10-05T22:34:35.589980+00:00",
+            "completedAt": "2026-10-05T22:38:17.846927+00:00",
+            "launchError": null,
+            "evidenceError": null,
+            "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-4/baseline-b_gvpqpt",
+            "evidenceFiles": [
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-4/baseline-b_gvpqpt/summary.json",
+                "sha256": "a218c2b508a6b3f384f80c10f7718e00a3f47565439123929fba76a053257bda"
+              },
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-4/baseline-b_gvpqpt/command.log",
+                "sha256": "6561abdeafc5a5130fc968578621e81ee8b4013f17c420ac906e78a4f2d88203"
+              }
+            ]
+          },
+          "candidate": {
+            "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+            "runnerLabel": "local-Linux-x86_64",
+            "executionEnvironment": "local",
+            "worktreeDirty": true,
+            "runId": "local-52c793098d2644189cf974867f8b19e0",
+            "runAttempt": 1,
+            "setting": 16,
+            "conclusion": "success",
+            "exitCode": 0,
+            "passed": 3389,
+            "failed": 0,
+            "skipped": 0,
+            "other": 0,
+            "testIdentityDigest": "30e8ffc3009e94be22c1693e8055dddbe7ca3822de6963c49f583c390fbdd130",
+            "testSeconds": 195.693448642,
+            "commandSeconds": 195.82945372700033,
+            "resourceFailure": false,
+            "startedAt": "2026-10-05T22:31:19.757051+00:00",
+            "completedAt": "2026-10-05T22:34:35.586524+00:00",
+            "launchError": null,
+            "evidenceError": null,
+            "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-4/candidate-3k1hguta",
+            "evidenceFiles": [
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-4/candidate-3k1hguta/summary.json",
+                "sha256": "fc9eef8c6fdef4ff0c45cfd9bce81436e924b97d8ce42198be832baf8123131b"
+              },
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-4/candidate-3k1hguta/command.log",
+                "sha256": "51e7f3e27eb52ff1a1d8e086745349373914ce999a61d8cb49ed6a912b203f1a"
+              }
+            ]
+          },
+          "rawPair": {
+            "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-4/pair.json",
+            "sha256": "be5be7f2d776c178134e9c05a813f39490fb9c3b2e72008c9af9bdbc0af9d44a"
+          },
+          "identitiesMatch": true,
+          "countsMatch": true
+        },
+        {
+          "pairId": "browser-local-e1f96bfac2894957b68b4068a8272085-5",
+          "subject": "browser",
+          "executionOrder": [
+            "baseline",
+            "candidate"
+          ],
+          "baseline": {
+            "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+            "runnerLabel": "local-Linux-x86_64",
+            "executionEnvironment": "local",
+            "worktreeDirty": true,
+            "runId": "local-e1f96bfac2894957b68b4068a8272085",
+            "runAttempt": 1,
+            "setting": 8,
+            "conclusion": "success",
+            "exitCode": 0,
+            "passed": 3389,
+            "failed": 0,
+            "skipped": 0,
+            "other": 0,
+            "testIdentityDigest": "30e8ffc3009e94be22c1693e8055dddbe7ca3822de6963c49f583c390fbdd130",
+            "testSeconds": 228.451070412,
+            "commandSeconds": 228.61112534099993,
+            "resourceFailure": false,
+            "startedAt": "2026-10-05T22:38:17.924567+00:00",
+            "completedAt": "2026-10-05T22:42:06.535718+00:00",
+            "launchError": null,
+            "evidenceError": null,
+            "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-5/baseline-cweylk28",
+            "evidenceFiles": [
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-5/baseline-cweylk28/summary.json",
+                "sha256": "4bcd120ad0862ad099c206baf24108bc83e44c02dedcd59049fc0bfc118b0220"
+              },
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-5/baseline-cweylk28/command.log",
+                "sha256": "7bf1885c627afcf0abe072de823d74b75355001d9437e296c8c76889f8f7fc2d"
+              }
+            ]
+          },
+          "candidate": {
+            "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+            "runnerLabel": "local-Linux-x86_64",
+            "executionEnvironment": "local",
+            "worktreeDirty": true,
+            "runId": "local-e1f96bfac2894957b68b4068a8272085",
+            "runAttempt": 1,
+            "setting": 16,
+            "conclusion": "success",
+            "exitCode": 0,
+            "passed": 3389,
+            "failed": 0,
+            "skipped": 0,
+            "other": 0,
+            "testIdentityDigest": "30e8ffc3009e94be22c1693e8055dddbe7ca3822de6963c49f583c390fbdd130",
+            "testSeconds": 204.01085356400003,
+            "commandSeconds": 204.18914360899998,
+            "resourceFailure": false,
+            "startedAt": "2026-10-05T22:42:06.544157+00:00",
+            "completedAt": "2026-10-05T22:45:30.733323+00:00",
+            "launchError": null,
+            "evidenceError": null,
+            "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-5/candidate-6u31e6pp",
+            "evidenceFiles": [
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-5/candidate-6u31e6pp/summary.json",
+                "sha256": "875eb2f328f809ca6addc3502a1e85a7ddddd73e36fec2587c2cc9d25f2dc74e"
+              },
+              {
+                "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-5/candidate-6u31e6pp/command.log",
+                "sha256": "87277875bcf9d002caa8308d6612c2ea55612ac5ab278be0510c297135a03402"
+              }
+            ]
+          },
+          "rawPair": {
+            "path": "artifacts/benchmark/local-2026-10-05/reaped-environment/browser-5/pair.json",
+            "sha256": "79efb348af01e3ff84ec91efc6a8c3910cc2e13aeafb1bea12eacae92682eb16"
+          },
+          "identitiesMatch": true,
+          "countsMatch": true
+        }
+      ],
+      "decision": {
+        "schemaVersion": 1,
+        "eligibleForAdoption": false,
+        "medianPairedImprovement": 0.1069822820436922,
+        "reasons": [
+          "Local benchmark evidence cannot promote hosted defaults.",
+          "Median paired test-time reduction is below 15%."
+        ]
+      },
+      "successfulVariants": 10,
+      "unsuccessfulVariants": 0
+    }
+  },
+  "unsuccessfulSetupAttempts": [
+    {
+      "attempt": 1,
+      "receipt": {
+        "status": "cancelled",
+        "reason": "Local setup omitted DOTNET_ROOT for SDK installed outside default system path. QuantScript apphost explicitly reported .NET location not found. Remaining benchmark variants were not run in this setup attempt. Full five pairs restarted after setting DOTNET_ROOT.",
+        "cancelledAt": "2026-10-05T20:51:29.119873+00:00",
+        "completedPairs": 0,
+        "testSeconds": null,
+        "failedPartialBaseline": "dotnet-1/baseline-oafede43",
+        "retainedEvidence": true
+      },
+      "receiptReference": {
+        "path": "artifacts/benchmark/local-2026-10-05/unsuccessful-setup-attempt.json",
+        "sha256": "962c0e0e103de9ef52dfc08ebbffa817b2d4a8754ee3e3fb22125f390432cdb7"
+      },
+      "status": "cancelled",
+      "includedInComparablePairs": false,
+      "partialBaselineEvidence": {
+        "coverageComplete": false,
+        "completedTrxFiles": 1,
+        "observedPartialCounts": {
+          "Passed": 3003,
+          "Failed": 1
+        },
+        "observedFailedTests": [
+          "Meridian.Tests.Strategies.StrategyDesignServiceTests.Scenario_MultiSymbolRebalance_DesignerTemplateValidatesAndRunsGeneratedQuantScript"
+        ],
+        "note": "Only fresh completed TRX files available before cancellation; no count or timing is inferred for unfinished shards.",
+        "evidenceFiles": [
+          {
+            "path": "artifacts/benchmark/local-2026-10-05/dotnet-1/baseline-oafede43/core-execution-strategy/core-execution-strategy_net10.0_20261005205111.trx",
+            "sha256": "e9517f8c77823b46f699b4c8b20b4b0966da90b0994c20091dba011c95785ae3"
+          }
+        ]
+      },
+      "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/dotnet-1"
+    },
+    {
+      "attempt": 2,
+      "receipt": {
+        "status": "cancelled",
+        "reason": "Container PID1 is tail and does not reap orphaned descendants. Four ToolProcessRunnerTests baseline failures match zombie descendants. Retaining failed baseline and cancelling current candidate; restart after verified tini child subreaper setup.",
+        "cancelledAt": "2026-10-05T21:01:47.598293+00:00",
+        "partialVariant": "candidate",
+        "pairProcessElapsedSecondsLowerBound": 570,
+        "observedZombiePids": [
+          35396,
+          39224
+        ],
+        "retainedEvidence": true,
+        "candidateCommandSecondsLowerBound": 102.56711602210999,
+        "lowerBoundDefinition": "Seconds since last flushed candidate command log output before cancellation; excludes any unobserved earlier runtime and is not test-only timing."
+      },
+      "receiptReference": {
+        "path": "artifacts/benchmark/local-2026-10-05/corrected-environment/unsuccessful-container-init-attempt.json",
+        "sha256": "42262690176128899c27f4eff21832618a4f2a813784e1bbb7b55d3e479ee966"
+      },
+      "status": "baseline-failed-candidate-cancelled",
+      "includedInComparablePairs": false,
+      "completedBaseline": {
+        "commitSha": "e5783987f743bea998aaa59c53c44490a7c1f3ce",
+        "runnerLabel": "local-Linux-x86_64",
+        "executionEnvironment": "local",
+        "worktreeDirty": true,
+        "runId": "local-ec8ff6726e534a809010ad16603eb336",
+        "runAttempt": 1,
+        "setting": 2,
+        "conclusion": "failure",
+        "exitCode": 1,
+        "passed": 18440,
+        "failed": 4,
+        "skipped": 5,
+        "other": 0,
+        "testIdentityDigest": "6de50c8232a247d79cc3a48fe3692f917882123694a4a1fb495f22ebeda089af",
+        "testSeconds": 453.2966683530001,
+        "commandSeconds": 461.71149734000005,
+        "resourceFailure": true,
+        "startedAt": "2026-10-05T20:52:17.338996+00:00",
+        "completedAt": "2026-10-05T20:59:59.050512+00:00",
+        "launchError": null,
+        "evidenceError": null,
+        "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/corrected-environment/dotnet-1/baseline-0pojyqlt",
+        "evidenceFiles": [
+          {
+            "path": "artifacts/benchmark/local-2026-10-05/corrected-environment/dotnet-1/baseline-0pojyqlt/summary.json",
+            "sha256": "767f31cc87e66f29246324a43d1b8cfce1c83623436929af37e4975ba6c49685"
+          },
+          {
+            "path": "artifacts/benchmark/local-2026-10-05/corrected-environment/dotnet-1/baseline-0pojyqlt/command.log",
+            "sha256": "d06e2b754e9dd6d2220d74c219db1b73f17fca8b63f22f8b520da6b28772ac55"
+          }
+        ]
+      },
+      "partialCandidateEvidence": {
+        "coverageComplete": false,
+        "completedTrxFiles": 0,
+        "observedPartialCounts": {},
+        "observedFailedTests": [],
+        "note": "Only fresh completed TRX files available before cancellation; no count or timing is inferred for unfinished shards.",
+        "evidenceFiles": []
+      },
+      "failedTests": [
+        "Meridian.Tests.Mcp.ToolProcessRunnerTests.RunAsync_DeadlineExpiry_KillsDescendantAndReportsTimeout",
+        "Meridian.Tests.Mcp.ToolProcessRunnerTests.RunAsync_ParentExit_KillsDetachedDescendantBeforeReturning",
+        "Meridian.Tests.Mcp.ToolProcessRunnerTests.RunAsync_CallerCancellation_KillsDescendantBeforeItCanMutate",
+        "Meridian.Tests.Mcp.ToolProcessRunnerTests.RunAsync_ConcurrentStandardOutputAndError_AreFullyDrained"
+      ],
+      "evidenceDirectory": "artifacts/benchmark/local-2026-10-05/corrected-environment/dotnet-1"
+    }
+  ],
+  "identityEvidenceNote": "The existing full .NET discovery digest includes theory display names. Three SecurityMasterAndVaultEvidenceContributorTests.ContributeAsync_BackingServiceNotRegistered_DegradesToSingleWarning cases generate random SubjectId GUIDs. Raw digests remain unchanged and mismatched pairs fail the established comparability rule; no normalization or coverage relaxation was applied.",
+  "identityEvidenceSource": "tests/Meridian.Tests/Ui/Evidence/SecurityMasterAndVaultEvidenceContributorTests.cs",
+  "rawEvidenceManifest": {
+    "path": "artifacts/benchmark/local-2026-10-05/raw-evidence-manifest.json",
+    "sha256": "4d9a29cb4c35a40ab70cecf917e5ff3a6278b38c3760822a60883b3675953acb"
+  },
+  "hostedTargetAssessment": "No 25% execution-time or 30% runner-minute savings claim can be derived from these local benchmark samples. Hosted rollout targets are evaluated separately using comparable Actions data."
+}

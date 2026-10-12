@@ -18,7 +18,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// reachability and input validation without requiring real credentials.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class AuthEndpointTests : EndpointIntegrationTestBase
 {
     private static readonly JsonSerializerOptions JsonOpts =
@@ -165,10 +164,10 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
     [Fact]
     public async Task LoginJson_WithValidCredentials_UsesSecureCookiesWhenLocalTransportIsUnproven()
     {
-        var originalUsername = Environment.GetEnvironmentVariable("MDC_USERNAME");
-        var originalPasswordHash = Environment.GetEnvironmentVariable("MDC_PASSWORD_HASH");
-        Environment.SetEnvironmentVariable("MDC_USERNAME", "test-admin");
-        Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", TestPasswordHash);
+        var originalUsername = Fixture.Configuration["MDC_USERNAME"];
+        var originalPasswordHash = Fixture.Configuration["MDC_PASSWORD_HASH"];
+        Fixture.Configuration["MDC_USERNAME"] = "test-admin";
+        Fixture.Configuration["MDC_PASSWORD_HASH"] = TestPasswordHash;
 
         try
         {
@@ -195,8 +194,8 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERNAME", originalUsername);
-            Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", originalPasswordHash);
+            Fixture.Configuration["MDC_USERNAME"] = originalUsername;
+            Fixture.Configuration["MDC_PASSWORD_HASH"] = originalPasswordHash;
         }
     }
 
@@ -300,8 +299,8 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
     [Fact]
     public async Task ProtectedEndpoint_WhenAuthModeRequiredAndCredentialsMissing_ReturnsServiceUnavailable()
     {
-        var originalAuthMode = Environment.GetEnvironmentVariable("MDC_AUTH_MODE");
-        Environment.SetEnvironmentVariable("MDC_AUTH_MODE", "required");
+        var originalAuthMode = Fixture.Configuration["MDC_AUTH_MODE"];
+        Fixture.Configuration["MDC_AUTH_MODE"] = "required";
         try
         {
             var response = await GetAsync("/api/status");
@@ -312,15 +311,15 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_AUTH_MODE", originalAuthMode);
+            Fixture.Configuration["MDC_AUTH_MODE"] = originalAuthMode;
         }
     }
 
     [Fact]
     public async Task LoginJson_WhenAuthModeRequiredAndCredentialsMissing_ReturnsServiceUnavailable()
     {
-        var originalAuthMode = Environment.GetEnvironmentVariable("MDC_AUTH_MODE");
-        Environment.SetEnvironmentVariable("MDC_AUTH_MODE", "required");
+        var originalAuthMode = Fixture.Configuration["MDC_AUTH_MODE"];
+        Fixture.Configuration["MDC_AUTH_MODE"] = "required";
         try
         {
             var payload = new { Username = "admin", Password = "secret" };
@@ -334,15 +333,15 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_AUTH_MODE", originalAuthMode);
+            Fixture.Configuration["MDC_AUTH_MODE"] = originalAuthMode;
         }
     }
 
     [Fact]
     public async Task ApiKeyMiddleware_DoesNotAcceptQueryStringApiKey()
     {
-        var originalApiKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "integration-test-key");
+        var originalApiKey = Fixture.Configuration["MDC_API_KEY"];
+        Fixture.Configuration["MDC_API_KEY"] = "integration-test-key";
         try
         {
             var response = await GetAsync("/api/status?api_key=integration-test-key");
@@ -353,15 +352,15 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalApiKey);
+            Fixture.Configuration["MDC_API_KEY"] = originalApiKey;
         }
     }
 
     [Fact]
     public async Task ApiKeyMiddleware_AcceptsHeaderApiKey()
     {
-        var originalApiKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "integration-test-key");
+        var originalApiKey = Fixture.Configuration["MDC_API_KEY"];
+        Fixture.Configuration["MDC_API_KEY"] = "integration-test-key";
         try
         {
             // Open read for the same reason: this asserts the key is accepted, and the default key role
@@ -375,15 +374,15 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalApiKey);
+            Fixture.Configuration["MDC_API_KEY"] = originalApiKey;
         }
     }
 
     [Fact]
     public async Task ApiKeyMiddleware_MissingHeader_ReturnsUnauthorized()
     {
-        var originalApiKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "integration-test-key");
+        var originalApiKey = Fixture.Configuration["MDC_API_KEY"];
+        Fixture.Configuration["MDC_API_KEY"] = "integration-test-key";
         try
         {
             var response = await GetAsync("/api/status");
@@ -394,15 +393,15 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalApiKey);
+            Fixture.Configuration["MDC_API_KEY"] = originalApiKey;
         }
     }
 
     [Fact]
     public async Task ApiKeyMiddleware_WrongKey_ReturnsUnauthorized()
     {
-        var originalApiKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "integration-test-key");
+        var originalApiKey = Fixture.Configuration["MDC_API_KEY"];
+        Fixture.Configuration["MDC_API_KEY"] = "integration-test-key";
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, "/api/status");
@@ -414,7 +413,7 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalApiKey);
+            Fixture.Configuration["MDC_API_KEY"] = originalApiKey;
         }
     }
 
@@ -426,11 +425,14 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         string path,
         bool expectedCandidate)
     {
-        var originalApiKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "integration-test-key");
+        var originalApiKey = Fixture.Configuration["MDC_API_KEY"];
+        Fixture.Configuration["MDC_API_KEY"] = "integration-test-key";
         try
         {
-            var context = new DefaultHttpContext();
+            var context = new DefaultHttpContext
+            {
+                RequestServices = Fixture.Services
+            };
             context.Request.Path = path;
             context.Request.Headers["X-Api-Key"] = "attacker-controlled-value";
 
@@ -438,7 +440,7 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalApiKey);
+            Fixture.Configuration["MDC_API_KEY"] = originalApiKey;
         }
     }
 
@@ -465,8 +467,8 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         // A session-authenticated request (emulated via the fixture's X-Test-Auth marker,
         // which sets the same context items LoginSessionMiddleware sets) must pass the
         // API-key gate even when MDC_API_KEY is configured.
-        var originalApiKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
-        Environment.SetEnvironmentVariable("MDC_API_KEY", "integration-test-key");
+        var originalApiKey = Fixture.Configuration["MDC_API_KEY"];
+        Fixture.Configuration["MDC_API_KEY"] = "integration-test-key";
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, "/api/status");
@@ -478,7 +480,7 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", originalApiKey);
+            Fixture.Configuration["MDC_API_KEY"] = originalApiKey;
         }
     }
 }

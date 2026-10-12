@@ -74,7 +74,7 @@ describe("CommandPalette", () => {
     renderWithRouter(<CommandPalette open onOpenChange={onOpenChange} />, { initialEntries: ["/settings/providers/alpaca/setup"] });
 
     const closeButton = screen.getByRole("button", { name: "Close command palette" });
-    const lastCommand = screen.getByLabelText("Alpaca guided setup, current route");
+    const lastCommand = screen.getAllByRole("link").at(-1)!;
 
     lastCommand.focus();
     fireEvent.keyDown(window, { key: "Tab" });
@@ -119,10 +119,11 @@ describe("CommandPalette", () => {
     const commandCount = getRenderedCommandCount();
 
     expect(screen.queryByRole("region", { name: "Recommended commands" })).not.toBeInTheDocument();
-    expect(screen.getByText(`2 of ${commandCount} commands match`)).toBeInTheDocument();
+    expect(screen.getByText(`7 of ${commandCount} commands match`)).toBeInTheDocument();
     expect(screen.getByLabelText("Workspaces: 1 workspace")).toBeInTheDocument();
-    expect(screen.getByLabelText("Quick routes: 1 quick route")).toBeInTheDocument();
+    expect(screen.getByLabelText("Quick routes: 6 quick routes")).toBeInTheDocument();
     expect(screen.getByLabelText("Open Settings workspace")).toBeInTheDocument();
+    expect(screen.getByLabelText("Open Provider Connections route")).toHaveAttribute("href", "/settings/providers");
     expect(screen.getByLabelText("Open Alpaca guided setup route")).toHaveAttribute(
       "href",
       "/settings/providers/alpaca/setup"

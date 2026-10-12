@@ -2,6 +2,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import { formatDate, formatDateOnly } from "@/screens/operations-continuity-screen.date-format";
 import {
+  collectCloseWorkflowEvidenceLinks,
+  collectCloseWorkflowChecklistControlApprovals,
+  collectSubmitApprovalChecklistControlApprovals,
+  collectApprovalDecisionChecklistControlApprovals,
+  compareWorkflowSummaries,
+  isChecklistTaskReady,
+  isChecklistTaskBlocked,
+  isPendingWorkflowApprovalState,
+  workflowMatchesPublicationSnapshot,
+  workflowMatchesSummary
+} from "@/screens/operations-continuity-screen.workflow-selection";
+import {
   getOperationsCloseCalendar,
   getFinancialOperationsCommandCenter,
   getPrivateCapitalCloseCockpit,
@@ -13,6 +25,17 @@ import {
 import { describeApiError, isAbortError } from "@/lib/api-errors";
 import { humanizeStatus } from "@/components/operations/status";
 import { normalizeLocalWorkstationRoute, workstationRouteWithQuery } from "@/lib/workspace";
+import {
+  buildCloseCalendarQuery,
+  buildCloseCockpitQuery,
+  buildRequestedWorkflowUnavailableError,
+  buildWorkflowFilters,
+  normalizeWorkflowSelection,
+  selectWorkflowId,
+  selectWorkflowSummary,
+  type OperationsContinuityScreenSelection,
+  type OperationsContinuityWorkflowFilters
+} from "@/screens/operations-continuity-screen.selection";
 import {
   buildReviewedAutomationViewModel,
   evidenceStatusLabel,
@@ -47,6 +70,7 @@ import type {
   PrivateCapitalCloseCockpitWorkflow,
   PrivateCapitalNavSupportPackage
 } from "@/types";
+export type { OperationsContinuityScreenSelection, OperationsContinuityWorkflowFilters } from "@/screens/operations-continuity-screen.selection";
 
 export type OperationsContinuityTone = "ready" | "review" | "blocked" | "neutral";
 export type OperationsContinuityRowClassName = "bg-success/5" | "bg-warning/5" | "bg-danger/5" | undefined;
@@ -657,7 +681,7 @@ export interface OperationsContinuityScreenViewModel {
 export interface OperationsContinuityScreenServices {
   getCommandCenter?: (query?: PrivateCapitalCloseCockpitQuery, options?: ApiRequestOptions) => Promise<FinancialOperationsCommandCenter>;
   listWorkflows: (
-    filters?: { fundAccountId?: string; periodId?: string; status?: string },
+    filters?: OperationsContinuityWorkflowFilters,
     options?: ApiRequestOptions
   ) => Promise<OperationsContinuityWorkflowSummary[]>;
   getWorkflow: (workflowId: string, options?: ApiRequestOptions) => Promise<OperationsContinuityWorkflow>;
@@ -687,6 +711,7 @@ export interface BuildOperationsContinuityScreenViewModelOptions {
   closeCockpitError?: string | null;
   error: string | null;
   detailError: string | null;
+  selectionBlocked?: boolean;
   refresh: () => Promise<void>;
   selectWorkflow: (workflowId: string) => void;
 }
@@ -703,8 +728,10 @@ const emptyCloseScope: PrivateCapitalCloseCockpitQuery = {};
 
 export function useOperationsContinuityScreenViewModel(
   services: OperationsContinuityScreenServices = defaultServices,
-  closeScope: PrivateCapitalCloseCockpitQuery = emptyCloseScope
+  closeScope: PrivateCapitalCloseCockpitQuery = emptyCloseScope,
+  selection: OperationsContinuityScreenSelection = {}
 ): OperationsContinuityScreenViewModel {
+  const { initialWorkflowId, fundAccountId, ledgerBookId, periodId, status } = normalizeWorkflowSelection(selection);
   const [workflows, setWorkflows] = useState<OperationsContinuityWorkflowSummary[]>([]);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
   const [detail, setDetail] = useState<OperationsContinuityWorkflow | null>(null);
@@ -718,6 +745,7 @@ export function useOperationsContinuityScreenViewModel(
   const [closeCockpitLoading, setCloseCockpitLoading] = useState(false);
   const [closeCockpitError, setCloseCockpitError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectionError, setSelectionError] = useState<string | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
   const mountedRef = useRef(true);
   const listRevisionRef = useRef(0);
@@ -762,25 +790,38 @@ export function useOperationsContinuityScreenViewModel(
     const controller = new AbortController();
     listAbortRef.current = controller;
     setLoading(true);
+    setDetail(null);
     setCommandCenter(null);
     setError(null);
+    setSelectionError(null);
     setDetailError(null);
+    if (initialWorkflowId) {
+      setSelectedWorkflowId(null);
+    }
 
     try {
-      const rows = await services.listWorkflows({}, { signal: controller.signal });
+      const filters = buildWorkflowFilters({ fundAccountId, ledgerBookId, periodId, status });
+      const rows = await services.listWorkflows(filters, { signal: controller.signal });
       if (!mountedRef.current || listRevisionRef.current !== revision) {
         return;
       }
 
       const sorted = [...rows].sort(compareWorkflowSummaries);
       setWorkflows(sorted);
-      setSelectedWorkflowId((current) => {
-        if (current && sorted.some((workflow) => workflow.workflowId === current)) {
-          return current;
+      if (initialWorkflowId) {
+        if (sorted.some((workflow) => workflow.workflowId === initialWorkflowId)) {
+          setSelectedWorkflowId(initialWorkflowId);
+        } else {
+          setSelectionError(buildRequestedWorkflowUnavailableError(initialWorkflowId, filters));
+          setSelectedWorkflowId(null);
+          setDetail(null);
+          setCloseCalendar(null);
+          setCloseCockpit(null);
         }
+        return;
+      }
 
-        return sorted[0]?.workflowId ?? null;
-      });
+      setSelectedWorkflowId((current) => selectWorkflowId(sorted, current));
       if (sorted.length === 0) {
         setDetail(null);
       }
@@ -800,30 +841,40 @@ export function useOperationsContinuityScreenViewModel(
         listAbortRef.current = null;
       }
     }
-  }, [services]);
+  }, [fundAccountId, initialWorkflowId, ledgerBookId, periodId, services, status]);
 
   useEffect(() => {
     void refresh();
   }, [refresh]);
 
-  useEffect(() => {
-    if (!selectedWorkflowId) {
-      setDetail(null);
-      setDetailError(null);
-      return;
-    }
+  const closeCockpitScope = useMemo(() =>
+    selectWorkflowSummary(workflows, selectedWorkflowId, !!selectionError),
+  [selectedWorkflowId, selectionError, workflows]);
 
+  useEffect(() => {
     const revision = detailRevisionRef.current + 1;
     detailRevisionRef.current = revision;
     detailAbortRef.current?.abort();
+    setDetail(null);
+    setDetailError(null);
+
+    if (loading || !closeCockpitScope) {
+      setDetailLoading(false);
+      return;
+    }
+
     const controller = new AbortController();
     detailAbortRef.current = controller;
     setDetailLoading(true);
-    setDetailError(null);
 
-    services.getWorkflow(selectedWorkflowId, { signal: controller.signal })
+    services.getWorkflow(closeCockpitScope.workflowId, { signal: controller.signal, allowDevelopmentFallback: false })
       .then((workflow) => {
         if (!mountedRef.current || detailRevisionRef.current !== revision) {
+          return;
+        }
+
+        if (!workflowMatchesSummary(workflow, closeCockpitScope)) {
+          setDetailError("Workflow detail no longer matches the selected workflow revision. Refresh workflows before continuing.");
           return;
         }
 
@@ -844,14 +895,17 @@ export function useOperationsContinuityScreenViewModel(
           detailAbortRef.current = null;
         }
       });
-  }, [selectedWorkflowId, services]);
-
-  const closeCockpitScope = useMemo(() => {
-    return workflows.find((workflow) => workflow.workflowId === selectedWorkflowId) ?? workflows[0] ?? null;
-  }, [selectedWorkflowId, workflows]);
+    return () => {
+      controller.abort();
+      if (detailRevisionRef.current === revision) {
+        detailRevisionRef.current += 1;
+      }
+    };
+  }, [workflows, closeCockpitScope, loading, selectionError, services, closeScope.fundProfileId, closeScope.ledgerBookId,
+    closeScope.fundAccountId, closeScope.entityId, closeScope.periodId]);
 
   useEffect(() => {
-    if (loading) {
+    if (loading || selectionError) {
       return;
     }
 
@@ -889,10 +943,10 @@ export function useOperationsContinuityScreenViewModel(
           closeCalendarAbortRef.current = null;
         }
       });
-  }, [closeCockpitScope, loading, services]);
+  }, [workflows, closeCockpitScope, loading, selectionError, services]);
 
   useEffect(() => {
-    if (loading) {
+    if (loading || selectionError) {
       return;
     }
 
@@ -935,7 +989,7 @@ export function useOperationsContinuityScreenViewModel(
           closeCockpitAbortRef.current = null;
         }
       });
-  }, [closeCockpitScope, closeScope, loading, services]);
+  }, [workflows, closeCockpitScope, closeScope, loading, selectionError, services]);
 
   const selectWorkflow = useCallback((workflowId: string) => {
     setSelectedWorkflowId(workflowId);
@@ -955,11 +1009,12 @@ export function useOperationsContinuityScreenViewModel(
     closeCockpit,
     closeCockpitLoading,
     closeCockpitError,
-    error,
+    error: error ?? selectionError,
     detailError,
+    selectionBlocked: selectionError !== null,
     refresh,
     selectWorkflow
-  }), [commandCenter, closeScope, closeCalendar, closeCalendarError, closeCalendarLoading, closeCockpit, closeCockpitError, closeCockpitLoading, detail, detailError, detailLoading, error, loading, refresh, selectWorkflow, selectedWorkflowId, workflows]);
+  }), [commandCenter, closeScope, closeCalendar, closeCalendarError, closeCalendarLoading, closeCockpit, closeCockpitError, closeCockpitLoading, detail, detailError, detailLoading, error, loading, refresh, selectWorkflow, selectedWorkflowId, selectionError, workflows]);
 }
 
 export function buildOperationsContinuityScreenViewModel({
@@ -978,11 +1033,12 @@ export function buildOperationsContinuityScreenViewModel({
   closeCockpitError = null,
   error,
   detailError,
+  selectionBlocked = false,
   refresh,
   selectWorkflow
 }: BuildOperationsContinuityScreenViewModelOptions): OperationsContinuityScreenViewModel {
-  const selectedSummary = workflows.find((workflow) => workflow.workflowId === selectedWorkflowId) ?? workflows[0] ?? null;
-  const effectiveDetail = detail?.workflowId === selectedSummary?.workflowId ? detail : null;
+  const selectedSummary = selectWorkflowSummary(workflows, selectedWorkflowId, selectionBlocked);
+  const effectiveDetail = detail && selectedSummary && workflowMatchesSummary(detail, selectedSummary) ? detail : null;
   const gateSource = effectiveDetail?.gates ?? selectedSummary?.gates ?? [];
   const nextAction = buildNextActionViewModel({
     workflow: effectiveDetail ?? selectedSummary,
@@ -1005,14 +1061,16 @@ export function buildOperationsContinuityScreenViewModel({
   const scopeMatches = (["fundProfileId", "ledgerBookId", "fundAccountId", "entityId", "periodId"] as const)
     .every((key) => typeof expectedCloseScope[key] === "string" && expectedCloseScope[key]!.trim().length > 0
       && decisionScope?.[key] === expectedCloseScope[key]);
+  const publicationSnapshotMatches = workflowMatchesPublicationSnapshot(effectiveDetail, commandCenter?.activeWorkflow);
   const sharedCloseReady = commandCenter?.closeReadiness?.isComplete === true
     && scopeMatches
     && commandCenter.closeReadiness.isReadyToClose
-    && commandCenter.activeWorkflow?.workflowId === effectiveDetail?.workflowId
-    && commandCenter.activeWorkflow?.version === effectiveDetail?.version
+    && publicationSnapshotMatches
     && !loading && !detailLoading && !closeCockpitLoading && !detailError && !closeCockpitError;
   const sharedCloseBlocker = commandCenter?.closeReadiness?.blockers[0]?.message
-    ?? "Select the complete close scope and refresh shared close readiness before publishing a close package.";
+    ?? (scopeMatches && effectiveDetail && commandCenter?.activeWorkflow && !publicationSnapshotMatches
+      ? "Close evidence no longer matches this workflow. Refresh workflows before publishing a close package."
+      : "Select the complete close scope and refresh shared close readiness before publishing a close package.");
   commandSpine.rows = commandSpine.rows.map((row) => row.id !== "produce-evidence" || sharedCloseReady ? row : ({
     ...row, canCloseWorkflow: false, closeWorkflowDisabledReason: sharedCloseBlocker,
     guardLabel: sharedCloseBlocker
@@ -1378,10 +1436,6 @@ function buildRejectWorkflowDecisionDisabledReason(
   }
 
   return null;
-}
-
-function isPendingWorkflowApprovalState(status: OperationsContinuityWorkflow["approvalState"]): boolean {
-  return status === "Submitted" || status === "ReviewerAssigned";
 }
 
 function buildNextActionViewModel({
@@ -1850,19 +1904,6 @@ function collectSubmitApprovalEvidenceLinks(workflow: OperationsContinuityWorkfl
   return distinctOperationsEvidenceLinks(links);
 }
 
-function collectCloseWorkflowEvidenceLinks(workflow: OperationsContinuityWorkflow | null): OperationsEvidenceLink[] {
-  if (!workflow) {
-    return [];
-  }
-
-  return distinctOperationsEvidenceLinks([
-    ...workflow.reportPackReadiness.evidenceLinks,
-    ...workflow.evidenceLinks,
-    ...(workflow.evidencePackages ?? []).flatMap((packageSummary) => packageSummary.evidenceLinks),
-    ...workflow.approvals.flatMap((approval) => approval.evidenceLinks)
-  ]);
-}
-
 function collectApprovalDecisionEvidenceLinks(
   workflow: OperationsContinuityWorkflow,
   approval: OperationsContinuityWorkflow["approvals"][number]
@@ -1889,92 +1930,6 @@ function collectRejectDecisionEvidenceLinks(
 function distinctOperationsEvidenceLinks(links: OperationsEvidenceLink[]): OperationsEvidenceLink[] {
   return links.filter((link, index, source) =>
     source.findIndex((candidate) => candidate.evidenceId === link.evidenceId) === index
-  );
-}
-
-function collectSubmitApprovalChecklistControlApprovals(
-  workflow: OperationsContinuityWorkflow | null
-): OperationsChecklistControlApproval[] {
-  if (!workflow) {
-    return [];
-  }
-
-  const approvals: OperationsChecklistControlApproval[] = [];
-  workflow.closeChecklist
-    .filter((task) => task.gate !== "Approval"
-      && isChecklistTaskReady(task)
-      && !isChecklistTaskBlocked(task)
-      && Boolean(task.evidencePointer?.trim()))
-    .forEach((task) => {
-      appendChecklistControlApproval(approvals, task.taskId, task.acknowledgedBy, task.acknowledgedAtUtc);
-    });
-
-  return distinctChecklistControlApprovals(approvals);
-}
-
-function collectCloseWorkflowChecklistControlApprovals(
-  workflow: OperationsContinuityWorkflow | null
-): OperationsChecklistControlApproval[] {
-  const approvals = collectSubmitApprovalChecklistControlApprovals(workflow);
-  if (!workflow || workflow.approvalState !== "Approved") {
-    return approvals;
-  }
-
-  const approvalTaskId = workflow.closeChecklist.find((task) => task.gate === "Approval")?.taskId ?? "close-gate-approval";
-  const decision = workflow.approvals.at(-1);
-  if (decision?.status === "Approved") {
-    // Legacy records retain submission and decision as separate history entries.
-    const submission = decision.submittedAtUtc
-      ? decision
-      : workflow.approvals.at(-2);
-    if (submission && (submission === decision || isPendingWorkflowApprovalState(submission.status))) {
-      appendChecklistControlApproval(approvals, approvalTaskId, submission.operator, submission.submittedAtUtc);
-    }
-    appendChecklistControlApproval(approvals, approvalTaskId, decision.reviewer, decision.decidedAtUtc);
-  }
-
-  return distinctChecklistControlApprovals(approvals);
-}
-
-function collectApprovalDecisionChecklistControlApprovals(
-  workflow: OperationsContinuityWorkflow,
-  approval: OperationsContinuityWorkflow["approvals"][number]
-): OperationsChecklistControlApproval[] {
-  const approvals = collectSubmitApprovalChecklistControlApprovals(workflow);
-  const approvalTaskId = workflow.closeChecklist.find((task) => task.gate === "Approval")?.taskId ?? "close-gate-approval";
-  appendChecklistControlApproval(approvals, approvalTaskId, approval.operator, approval.submittedAtUtc);
-
-  return distinctChecklistControlApprovals(approvals);
-}
-
-function appendChecklistControlApproval(
-  approvals: OperationsChecklistControlApproval[],
-  taskId: string | null | undefined,
-  approvedBy: string | null | undefined,
-  approvedAtUtc: string | null | undefined
-): void {
-  const cleanTaskId = taskId?.trim();
-  const cleanApprover = approvedBy?.trim();
-  const cleanTimestamp = approvedAtUtc?.trim();
-  if (!cleanTaskId || !cleanApprover || !cleanTimestamp) {
-    return;
-  }
-
-  approvals.push({
-    taskId: cleanTaskId,
-    approvedBy: cleanApprover,
-    approvedAtUtc: cleanTimestamp
-  });
-}
-
-function distinctChecklistControlApprovals(
-  approvals: OperationsChecklistControlApproval[]
-): OperationsChecklistControlApproval[] {
-  return approvals.filter((approval, index, source) =>
-    source.findIndex((candidate) =>
-      candidate.taskId.toLowerCase() === approval.taskId.toLowerCase()
-        && candidate.approvedBy.toLowerCase() === approval.approvedBy.toLowerCase()
-    ) === index
   );
 }
 
@@ -3130,20 +3085,6 @@ function collectReopenWorkflowEvidenceLinks(workflow: OperationsContinuityWorkfl
   ]);
 }
 
-function buildCloseCockpitQuery(workflow: OperationsContinuityWorkflowSummary): PrivateCapitalCloseCockpitQuery {
-  return {
-    fundAccountId: workflow.fundAccountId,
-    periodId: workflow.periodId
-  };
-}
-
-function buildCloseCalendarQuery(workflow: OperationsContinuityWorkflowSummary): { fundAccountId: string; periodId: string } {
-  return {
-    fundAccountId: workflow.fundAccountId,
-    periodId: workflow.periodId
-  };
-}
-
 const FINANCIAL_OPERATIONS_PROOF_LANE_LABELS: Record<string, string> = {
   "partner-capital-tie-outs": "partner tie-outs",
   "expense-fee-allocation": "expense/fee allocation",
@@ -3829,22 +3770,6 @@ function buildChecklistSummary(tasks: OperationsCloseChecklistTask[]): Operation
   };
 }
 
-function isChecklistTaskReady(task: OperationsCloseChecklistTask): boolean {
-  const normalized = task.status?.trim().toLowerCase() ?? "";
-  return normalized === "done" ||
-    normalized === "complete" ||
-    normalized === "completed" ||
-    normalized === "acknowledged" ||
-    Boolean(task.acknowledgedAtUtc);
-}
-
-function isChecklistTaskBlocked(task: OperationsCloseChecklistTask): boolean {
-  const normalized = task.status?.trim().toLowerCase() ?? "";
-  return normalized === "blocked" ||
-    normalized === "expired" ||
-    Boolean(task.blockingReason?.trim());
-}
-
 function collectGateBlockers(gates: OperationsGate[]): OperationsWorkflowBlocker[] {
   return gates.flatMap((gate) => gate.blockers ?? []);
 }
@@ -3961,10 +3886,6 @@ function gateStatusPriority(status: OperationsGateStatus): number {
     default:
       return 0;
   }
-}
-
-function compareWorkflowSummaries(left: OperationsContinuityWorkflowSummary, right: OperationsContinuityWorkflowSummary): number {
-  return right.updatedAtUtc.localeCompare(left.updatedAtUtc);
 }
 
 function buildStatusAnnouncement({

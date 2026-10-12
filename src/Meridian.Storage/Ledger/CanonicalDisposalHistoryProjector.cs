@@ -3,7 +3,7 @@ using Meridian.Ledger;
 
 namespace Meridian.Storage.Ledger;
 
-/// <summary>Certifies disposal economics against retained canonical acquisition facts before reporting.</summary>
+/// <summary>Certifies disposal economics against retained current basis while preserving acquisition evidence.</summary>
 public static class CanonicalDisposalHistoryProjector
 {
     public static LedgerTaxLotReliefProjection Project(LedgerTaxLotDisposalHistoryRecord disposal,
@@ -14,6 +14,9 @@ public static class CanonicalDisposalHistoryProjector
             throw new LedgerValidationException("Retained disposal belongs to a different journal.");
         if (canonical is null || canonical.Count != disposal.Lots.Count || canonical.Count == 0)
             throw new LedgerValidationException("Disposal history lacks canonical acquisition evidence. Resolve the open-lot backfill exception for this durable lot with reviewed acquisition evidence.");
+        if (!Enum.IsDefined(disposal.ReliefMethod))
+            throw new LedgerValidationException("Retained disposal has an unsupported relief method.");
+        var recipients = CertifyDeferralRecipients(disposal, canonical);
         var averageCost = disposal.ReliefMethod == LedgerTaxLotReliefMethod.AverageCost;
         if (averageCost)
             CertifyAverageCostRelief(disposal, canonical);
@@ -31,17 +34,18 @@ public static class CanonicalDisposalHistoryProjector
                 lot.Acquisition.FunctionalCurrency != functionalCurrency || lot.LotId != retained.LotId ||
                 lot.AcquiredDate != retained.AcquiredDate || retained.HoldingPeriodStart > retained.AcquiredDate ||
                 quantity <= 0m || quantity > lot.OpenQuantity ||
-                (!averageCost && (lot.OpenFunctionalCostBasis * quantity / lot.OpenQuantity != retained.CostBasis ||
-                    retained.UnitCost * retained.Quantity != retained.CostBasis)) ||
-                entry.Lines.Any(line => line.Dimensions?.InstrumentId != lot.SecurityId ||
-                    line.Dimensions?.PositionId != lot.BookPositionId))
+                (!averageCost && (quantity == lot.OpenQuantity ? lot.OpenFunctionalCostBasis
+                    : lot.OpenFunctionalCostBasis * quantity / lot.OpenQuantity) != retained.CostBasis) ||
+                entry.Lines.Any(line => !IsRetainedRecipientDebit(line, recipients) &&
+                    (line.Dimensions?.InstrumentId != lot.SecurityId ||
+                        line.Dimensions?.PositionId != lot.BookPositionId)))
                 throw new LedgerValidationException("Retained disposal quantity, basis, or security/book-position scope differs from canonical lot evidence.");
             history.Add(retained with
             {
                 Quantity = quantity,
-                // Average cost relieves the pooled basis, so each slice reports the unit cost its
-                // certified pooled basis implies rather than the lot's own acquisition cost.
-                UnitCost = averageCost ? retained.CostBasis / quantity : retained.UnitCost / scale,
+                // The retained mutation unit cost remains an acquisition fact. Reporting prices
+                // every slice from its certified current basis, including governed restatements.
+                UnitCost = retained.CostBasis / quantity,
                 HoldingPeriodStart = retained.HoldingPeriodStart < lot.Acquisition.HoldingPeriodStartDate
                     ? retained.HoldingPeriodStart : lot.Acquisition.HoldingPeriodStartDate
             });
@@ -54,20 +58,210 @@ public static class CanonicalDisposalHistoryProjector
             .Sum(static line => line.Credit - line.Debit)
             - entry.Lines.Where(line => line.Account.Name == LedgerAccounts.RealizedLoss.Name)
                 .Sum(static line => line.Debit - line.Credit);
-        var projection = LedgerTaxLotReliefHistoryProjector.Project(new LedgerTaxLotDisposalHistory(
-            disposal.MutationBatchId, disposal.JournalEntryId, disposal.Account,
-            entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(entry.Timestamp.UtcDateTime),
-            disposal.ReliefMethod, history, recognized, disposal.WashSaleBasisIncreases,
-            disposal.MatchedReplacementQuantity, disposal.ProceedsAllocationVersion,
-            // Durable prices are quoted per ledger lot unit; canonical face reporting uses
-            // actual face quantity, just as the unit-cost conversion above does.
-            disposal.SalePrice / (canonical[0].Acquisition.QuantityBasis == LotQuantityBasis.Face
-                ? LedgerTaxLotFaceValueTerms.LedgerLotParBasis : 1m)))
-            ?? throw new LedgerValidationException("Retained canonical disposal cannot produce a complete report projection.");
+        var projection = ProjectCertifiedEconomics(disposal, entry, canonical, history, recognized, functionalCurrency);
         if (projection.CostBasis != disposal.Lots.Sum(static lot => lot.CostBasis) ||
             projection.RecognizedGainOrLoss != recognized)
             throw new LedgerValidationException("Canonical disposal report does not reconcile to retained journal economics.");
         return projection with { CanonicalOpenLots = canonical };
+    }
+
+    // The generic relief projector reprices quantity times unit cost and rounds basis to cents.
+    // Canonical basis can contain fractional cents or a full-lot decimal residual; re-relieving
+    // a derived unit cost would discard that certified amount. Only proceeds attribution rounds.
+    private static LedgerTaxLotReliefProjection ProjectCertifiedEconomics(
+        LedgerTaxLotDisposalHistoryRecord disposal, JournalEntry entry,
+        IReadOnlyList<OpenLotDto> canonical, IReadOnlyList<LedgerTaxLotDisposalHistoryLot> history,
+        decimal recognized, string functionalCurrency)
+    {
+        var quantity = history.Sum(static lot => lot.Quantity);
+        var basis = history.Sum(static lot => lot.CostBasis);
+        var disallowed = disposal.WashSaleBasisIncreases.Sum(static increase => increase.Amount);
+        var proceeds = basis + recognized - disallowed;
+        if (proceeds < 0m)
+            throw new LedgerValidationException("Retained canonical disposal cannot produce nonnegative proceeds.");
+        if (disposal.WashSaleBasisIncreases.Count > 0 || entry.Lines.Any(static line =>
+                line.Account.Name == LedgerAccounts.Cash.Name || line.Account.Name.StartsWith("Cash (", StringComparison.Ordinal)))
+            CertifyDeferredDisposalJournal(disposal, entry, functionalCurrency, proceeds, disallowed);
+        if (disposal.ProceedsAllocationVersion is not null and not LedgerTaxLotReliefProjector.CurrentProceedsAllocationVersion ||
+            disposal.ProceedsAllocationVersion is null && disposal.SalePrice is not null)
+            throw new LedgerValidationException("Retained canonical disposal has an unsupported proceeds allocation version or quote.");
+        var scale = canonical[0].Acquisition.QuantityBasis == LotQuantityBasis.Face
+            ? LedgerTaxLotFaceValueTerms.LedgerLotParBasis : 1m;
+        var salePrice = disposal.SalePrice / scale ?? (disposal.ProceedsAllocationVersion is null
+            ? decimal.Round(proceeds / quantity, 10, MidpointRounding.AwayFromZero) : proceeds / quantity);
+        if (disposal.SalePrice is not null &&
+            Meridian.Contracts.Ledger.LedgerCurrencyRounding.RoundCurrency(quantity * salePrice) != proceeds)
+            throw new LedgerValidationException("Retained canonical disposal quote differs from journal proceeds.");
+        var saleDate = entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(entry.Timestamp.UtcDateTime);
+        var lots = history.Select((lot, index) => new LedgerTaxLot(lot.LotId, lot.AcquiredDate,
+            lot.Quantity, lot.UnitCost, canonical[index].SecurityId,
+            lot.HoldingPeriodStart < lot.AcquiredDate ? lot.HoldingPeriodStart : null)).ToArray();
+        var input = new LedgerTaxLotReliefInput(disposal.Account, saleDate, quantity, salePrice,
+            disposal.ReliefMethod, lots, financialAccountId: disposal.Account.FinancialAccountId,
+            specificLotIds: disposal.ReliefMethod == LedgerTaxLotReliefMethod.SpecificId
+                ? history.Select(static lot => lot.LotId).ToArray() : null);
+        var selections = new List<LedgerTaxLotReliefSelection>(history.Count);
+        var remainingProceeds = proceeds;
+        var economicResult = recognized - disallowed;
+        var remainingEconomicResult = economicResult;
+        var remainingResult = Math.Abs(economicResult);
+        var remainingBasis = basis;
+        // Apply the retained allocator to certified basis directly: repricing unit costs would
+        // lose adjusted-basis fractional cents. Versioned discrete relief keeps main's sign bounds.
+        var signPreserving = disposal.ReliefMethod != LedgerTaxLotReliefMethod.AverageCost &&
+            disposal.ProceedsAllocationVersion == LedgerTaxLotReliefProjector.CurrentProceedsAllocationVersion;
+        var minimums = history.Select(lot => salePrice >= lot.UnitCost ? lot.CostBasis : 0m).ToArray();
+        var maximums = history.Select(lot => salePrice <= lot.UnitCost ? lot.CostBasis : proceeds).ToArray();
+        var remainingMinimum = minimums.Sum();
+        var remainingMaximum = maximums.Sum();
+        if (signPreserving && (proceeds < remainingMinimum || proceeds > remainingMaximum))
+            throw new LedgerValidationException("Retained canonical proceeds cannot preserve each parcel's economic result sign.");
+        for (var index = 0; index < history.Count; index++)
+        {
+            var retained = history[index];
+            decimal parcelProceeds;
+            decimal parcelResult;
+            if (disposal.ReliefMethod == LedgerTaxLotReliefMethod.AverageCost)
+            {
+                // Allocate the pooled result with one sign so basis residuals cannot manufacture
+                // loss parcels inside a gain-producing pool (or proceeds below zero).
+                remainingBasis -= retained.CostBasis;
+                var result = index == history.Count - 1 ? remainingResult
+                    : Math.Min(remainingResult, Meridian.Contracts.Ledger.LedgerCurrencyRounding.RoundCurrency(
+                        Math.Abs(economicResult) * (retained.Quantity / quantity)));
+                if (economicResult < 0m)
+                    result = Math.Clamp(result, Math.Max(0m, remainingResult - remainingBasis),
+                        Math.Min(remainingResult, retained.CostBasis));
+                remainingResult -= result;
+                parcelResult = economicResult < 0m ? -result : result;
+                parcelProceeds = retained.CostBasis + parcelResult;
+            }
+            else if (signPreserving)
+            {
+                remainingMinimum -= minimums[index];
+                remainingMaximum -= maximums[index];
+                var lower = Math.Max(minimums[index], remainingProceeds - remainingMaximum);
+                var upper = Math.Min(maximums[index], remainingProceeds - remainingMinimum);
+                parcelProceeds = Math.Clamp(Meridian.Contracts.Ledger.LedgerCurrencyRounding.RoundCurrency(
+                    retained.Quantity * salePrice), lower, upper);
+                parcelResult = parcelProceeds - retained.CostBasis;
+            }
+            else
+            {
+                parcelProceeds = index == history.Count - 1 ? remainingProceeds
+                    : Math.Min(remainingProceeds, Meridian.Contracts.Ledger.LedgerCurrencyRounding.RoundCurrency(
+                        retained.Quantity * salePrice));
+                parcelResult = parcelProceeds - retained.CostBasis;
+            }
+            if (index == history.Count - 1)
+            {
+                parcelProceeds = remainingProceeds;
+                parcelResult = remainingEconomicResult;
+            }
+            remainingProceeds -= parcelProceeds;
+            remainingEconomicResult -= parcelResult;
+            selections.Add(new(lots[index], retained.Quantity, retained.CostBasis, retained.UnitCost,
+                parcelProceeds, parcelResult,
+                TaxCharacterRule.Classify(retained.HoldingPeriodStart, saleDate),
+                TaxCharacterRule.HoldingPeriodDays(retained.HoldingPeriodStart, saleDate),
+                retained.HoldingPeriodStart < retained.AcquiredDate));
+        }
+        var economicLoss = selections.Where(static selection => selection.RealizedGainOrLoss < 0m)
+            .Sum(static selection => -selection.RealizedGainOrLoss);
+        return new(input, selections, proceeds, basis, economicResult,
+            entry.Lines.Select(static line => (line.Account, line.Debit, line.Credit)).ToArray())
+        {
+            EffectiveLots = lots,
+            WashSale = disposal.WashSaleBasisIncreases.Count == 0 ? null
+                : new WashSaleOutcome(disallowed, Math.Max(0m, economicLoss - disallowed),
+                    disposal.MatchedReplacementQuantity, disposal.WashSaleBasisIncreases)
+        };
+    }
+
+    private static bool IsDisposalCash(LedgerEntry line, LedgerAccount assetAccount, string functionalCurrency)
+    {
+        var financialAccountId = assetAccount.FinancialAccountId;
+        var cashAccount = string.IsNullOrWhiteSpace(financialAccountId)
+            ? LedgerAccounts.Cash : LedgerAccounts.CashAccount(financialAccountId);
+        var currencyCashAccount = LedgerAccounts.CashInCurrency(functionalCurrency, financialAccountId);
+        return line.Account == cashAccount || line.Account == currencyCashAccount;
+    }
+
+    private static IReadOnlyList<LedgerTaxLotDisposalRecipientEvidence> CertifyDeferralRecipients(
+        LedgerTaxLotDisposalHistoryRecord disposal, IReadOnlyList<OpenLotDto> canonical)
+    {
+        var recipients = disposal.DeferralRecipients ?? [];
+        if (recipients.Count != disposal.WashSaleBasisIncreases.Count)
+            throw new LedgerValidationException("Retained wash-sale deferrals lack exact replacement recipient evidence.");
+        var seen = new HashSet<Guid>();
+        for (var index = 0; index < recipients.Count; index++)
+        {
+            var recipient = recipients[index];
+            var increase = disposal.WashSaleBasisIncreases[index];
+            if (recipient.ReplacementTaxLotRecordId == Guid.Empty || !seen.Add(recipient.ReplacementTaxLotRecordId) ||
+                canonical.Any(lot => lot.TaxLotRecordId == recipient.ReplacementTaxLotRecordId) ||
+                string.IsNullOrWhiteSpace(recipient.ReplacementLotId) ||
+                !string.Equals(recipient.ReplacementLotId, increase.ReplacementLotId, StringComparison.OrdinalIgnoreCase) ||
+                recipient.Account is null || recipient.Account.AccountType != LedgerAccountType.Asset ||
+                recipient.SecurityId == Guid.Empty || recipient.SecurityId != canonical[0].SecurityId ||
+                recipient.BookPositionId == Guid.Empty || recipient.DeferredLoss <= 0m ||
+                recipient.DeferredLoss != increase.Amount ||
+                (increase.ReplacementAccount is not null && increase.ReplacementAccount != recipient.Account))
+                throw new LedgerValidationException("Retained wash-sale deferral recipient identity or amount differs from its retained basis increase.");
+        }
+        return recipients;
+    }
+
+    private static bool IsRetainedRecipientDebit(LedgerEntry line,
+        IReadOnlyList<LedgerTaxLotDisposalRecipientEvidence> recipients)
+        => line.Credit == 0m && line.Debit > 0m && recipients.Any(recipient =>
+            line.Account == recipient.Account && line.Dimensions?.InstrumentId == recipient.SecurityId &&
+            line.Dimensions?.PositionId == recipient.BookPositionId);
+
+    private static void CertifyDeferredDisposalJournal(LedgerTaxLotDisposalHistoryRecord disposal, JournalEntry entry,
+        string functionalCurrency, decimal proceeds, decimal disallowed)
+    {
+        var assetAccount = disposal.Account;
+        var financialAccountId = assetAccount.FinancialAccountId;
+        var gainAccount = string.IsNullOrWhiteSpace(financialAccountId)
+            ? LedgerAccounts.RealizedGain : LedgerAccounts.RealizedGainFor(financialAccountId);
+        var lossAccount = string.IsNullOrWhiteSpace(financialAccountId)
+            ? LedgerAccounts.RealizedLoss : LedgerAccounts.RealizedLossFor(financialAccountId);
+        bool IsCash(LedgerEntry line) => IsDisposalCash(line, assetAccount, functionalCurrency);
+        bool IsReplacementBasis(LedgerEntry line) => !IsCash(line) && line.Account != assetAccount &&
+            line.Account.AccountType == LedgerAccountType.Asset && line.Credit == 0m && line.Debit > 0m;
+
+        // Deferrals are retained separately from the atomic journal. Missing rows must not turn
+        // a deferred loss into an apparent nonnegative result. Bind the amount to the posting shape
+        // as an explicit disposal quote: exact scoped cash, source basis, result, and replacement
+        // basis debits. Ambiguous fee or additional-disposal shapes need separate retained evidence.
+        if (entry.Lines.Any(line =>
+                (line.Account.Name == LedgerAccounts.RealizedGain.Name &&
+                    (line.Account != gainAccount || line.Debit != 0m)) ||
+                (line.Account.Name == LedgerAccounts.RealizedLoss.Name &&
+                    (line.Account != lossAccount || line.Credit != 0m)) ||
+                (IsCash(line) && line.Credit != 0m) ||
+                (!IsCash(line) && line.Account != assetAccount && line.Account != gainAccount &&
+                    line.Account != lossAccount && !IsReplacementBasis(line))))
+            throw new LedgerValidationException("Retained wash-sale economics require supported cash, asset-basis, and realized-result journal lines.");
+
+        if (entry.Lines.Where(IsCash).Sum(static line => line.Debit) != proceeds ||
+            entry.Lines.Where(IsReplacementBasis).Sum(static line => line.Debit) != disallowed)
+            throw new LedgerValidationException("Retained wash-sale deferrals do not reconcile to journal cash proceeds and replacement basis.");
+
+        // A balanced debit to an unrelated asset is not evidence that the retained recipient
+        // received the deferred basis. Certify each exact account and security/position amount;
+        // multiple recipients sharing that posting scope can legitimately share a journal line.
+        var expected = (disposal.DeferralRecipients ?? [])
+            .GroupBy(static recipient => (recipient.Account, recipient.SecurityId, recipient.BookPositionId))
+            .ToDictionary(static group => group.Key, static group => group.Sum(recipient => recipient.DeferredLoss));
+        var actual = entry.Lines.Where(IsReplacementBasis)
+            .GroupBy(static line => (line.Account, SecurityId: line.Dimensions?.InstrumentId ?? Guid.Empty,
+                BookPositionId: line.Dimensions?.PositionId ?? Guid.Empty))
+            .ToDictionary(static group => group.Key, static group => group.Sum(line => line.Debit));
+        if (expected.Count != actual.Count || expected.Any(recipient =>
+                !actual.TryGetValue(recipient.Key, out var amount) || amount != recipient.Value))
+            throw new LedgerValidationException("Retained wash-sale deferrals do not reconcile to the exact replacement recipient journal basis.");
     }
 
     /// <summary>
@@ -80,6 +274,8 @@ public static class CanonicalDisposalHistoryProjector
         if (pool is null || pool.Count < canonical.Count ||
             canonical.Any(lot => !pool.Any(member => member.TaxLotRecordId == lot.TaxLotRecordId)))
             throw new LedgerValidationException("Average-cost disposal history lacks its retained pre-relief pool; canonical reporting is blocked.");
+        if (canonical.Any(lot => !pool.Any(member => SameReliefSnapshot(lot, member))))
+            throw new LedgerValidationException("Average-cost canonical lot basis, version, scope, or acquisition facts differ from its retained pre-relief pool snapshot.");
         var scale = canonical[0].Acquisition.QuantityBasis == LotQuantityBasis.Face
             ? LedgerTaxLotFaceValueTerms.LedgerLotParBasis : 1m;
         OpenLotReliefResultDto relief;
@@ -99,4 +295,24 @@ public static class CanonicalDisposalHistoryProjector
                 slice.FunctionalCostBasis != disposal.Lots[index].CostBasis).Any())
             throw new LedgerValidationException("Retained average-cost slices differ from the pooled relief over the retained pool.");
     }
+
+    // The two snapshots can be deserialized independently. Compare authoritative primitives,
+    // without treating the evidence-list object's identity as an acquisition fact.
+    private static bool SameReliefSnapshot(OpenLotDto lot, OpenLotDto member)
+        => lot.TaxLotRecordId == member.TaxLotRecordId &&
+           lot.SecurityId == member.SecurityId && lot.BookPositionId == member.BookPositionId &&
+           lot.LedgerBookId == member.LedgerBookId && lot.LotId == member.LotId &&
+           lot.AcquiredDate == member.AcquiredDate && lot.OriginalQuantity == member.OriginalQuantity &&
+           lot.OpenQuantity == member.OpenQuantity && lot.Version == member.Version &&
+           lot.OpenTransactionCostBasis == member.OpenTransactionCostBasis &&
+           lot.OpenFunctionalCostBasis == member.OpenFunctionalCostBasis &&
+           lot.Acquisition is { } acquisition && member.Acquisition is { } poolAcquisition &&
+           acquisition.QuantityBasis == poolAcquisition.QuantityBasis &&
+           acquisition.AcquisitionCurrency == poolAcquisition.AcquisitionCurrency &&
+           acquisition.FunctionalCurrency == poolAcquisition.FunctionalCurrency &&
+           acquisition.AcquisitionFxRateToFunctional == poolAcquisition.AcquisitionFxRateToFunctional &&
+           acquisition.TransactionCostBasis == poolAcquisition.TransactionCostBasis &&
+           acquisition.FunctionalCostBasis == poolAcquisition.FunctionalCostBasis &&
+           acquisition.HoldingPeriodStartDate == poolAcquisition.HoldingPeriodStartDate &&
+           acquisition.FaceValueTerms == poolAcquisition.FaceValueTerms;
 }

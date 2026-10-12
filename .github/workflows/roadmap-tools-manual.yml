@@ -59,6 +59,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install documentation parser dependencies
+        run: python3 -m pip install --requirement build/scripts/docs/requirements.txt
+
       - name: Validate fixture enums
         if: ${{ inputs.script == 'validate' || inputs.script == 'all' }}
         run: python3 tools/roadmap/validate_roadmap.py

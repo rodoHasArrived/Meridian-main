@@ -19,6 +19,13 @@ vi.mock("@/hooks/use-report-run-stream", () => ({
   useReportRunStream: vi.fn(() => ({ status: null, healthy: false }))
 }));
 
+// Candidate discovery is covered by the comparison suite; keep this workspace suite's
+// fetch assertions scoped to the governed actions and exports under test.
+vi.mock("@/lib/reporting-income-comparison-api", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/reporting-income-comparison-api")>(),
+  getIncomeComparisonCandidates: vi.fn(async () => [])
+}));
+
 function recentRun(overrides: Partial<ReportingRunStatusProjection>): ReportingRunStatusProjection {
   return {
     runId: "investor-monthly-statement-20260501",

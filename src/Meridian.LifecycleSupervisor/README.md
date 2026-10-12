@@ -6,7 +6,7 @@ module_id: SRC-LIFECYCLE-SUPERVISOR
 path: src/Meridian.LifecycleSupervisor
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-19
+last_reviewed: 2026-10-07
 ---
 
 # src/Meridian.LifecycleSupervisor
@@ -56,10 +56,18 @@ one-time setup token. Evidence uses honest URI references to the supervisor log,
 `<data-root>\_logs` host directory, PostgreSQL log, exact readiness endpoint, and repair/retry
 instructions; it does not label a metadata digest as a content hash.
 
+Attempt allocation reserves both readiness and terminal filenames even when prior JSON is
+incomplete or corrupted. Startup receipt writes refuse to replace an existing file; a collision
+fails closed while preserving the retained evidence.
+
 When a second launcher forwards `open` to an existing supervisor, the pipe response remains pending
 on that request's completion gate until its validated terminal receipt is retained. A not-yet-ready
 supervisor therefore cannot return an early success, another concurrent request cannot complete its
 gate, and a browser warning returns the receipt state and path before the helper process exits.
+Forwarded requests retain their own start timestamps so a later launch cannot inherit an older
+session's startup time. The shared `LifecycleStartupTiming` contract budgets dedicated database
+initialization, database start, and host readiness together; forwarded commands remain pending
+for that complete stage budget plus their receipt-response allowance.
 Malformed or unreadable lifecycle configuration is caught at the process boundary, logged, and
 retained as a request-bound `Blocked` outcome.
 

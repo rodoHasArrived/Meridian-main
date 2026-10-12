@@ -103,27 +103,36 @@ ReadyForApproval -> Approved -> Scheduled -> Posted -> Reconciled -> Reported ->
 
 ## Accounting Integration Boundary
 
-The current foundation does not have an authoritative service that can enumerate every affected
-tenant and company, resolve the corresponding fund, account, portfolio, custody, ledger-book,
-period, basis, currency, and jurisdiction assignments, and apply one source decision to all scoped
-cases atomically. A decision against the global source proposal would otherwise let the first
-tenant accept or reject the observation for every other tenant.
+Source decisions require `ICorporateActionScopeFanOutGate`, backed by the authoritative affected-scope
+service. The gate resolves the security's holders at the event's record date, or ex-date when no
+record date exists, and permits a decision only when the complete affected set is exactly one
+accounting scope owned by the authenticated tenant and company. Unknown or incomplete authority,
+no affected scope, another tenant/company's scope, and multiple affected scopes are explicit
+refusals. Atomic application across multiple scopes remains unsupported.
 
-The public HTTP workflow is therefore explicitly read-only at the source-decision boundary.
+When that authority is absent from composition, the public HTTP source-decision boundary remains
+read-only: `CanAccept` and `CanReject` are false, and accept/reject commands return
+`corporate_action_persistence_unavailable`. When the authority is composed, those actions also
+depend on proposal state and caller permissions. Read-side availability is advisory; the command
+must still resolve the affected scope. Acceptance first replays an existing committed receipt,
+then resolves scope for a new command; rejection checks scope before calling the decision service.
+
 Proposal inbox, list, detail, retained source evidence, and existing scoped case views remain
-available. Their server-owned action availability sets both `CanAccept` and `CanReject` to false,
-sets `CanCompareEvidence` to false because the compact inbox does not yet carry the retained
-per-source candidates needed for an operable comparison, and returns a stable authoritative-fan-out
-blocker. Canonical accept and reject commands return the typed
-`corporate_action_persistence_unavailable` response without calling the decision service. The
-retired unscoped inbox-apply route remains a `410 Gone` tombstone. This hard boundary is not an
-operator-configurable feature toggle and must remain closed until trusted fan-out authority exists.
+available. `CanCompareEvidence` stays false because the compact inbox does not yet carry retained
+per-source candidates for comparison. The retired unscoped inbox-apply route remains a `410 Gone`
+tombstone. Composition of the authority is a service boundary, not an operator-configurable toggle.
 
-The endpoints still reject caller-supplied narrow scope on acceptance: assignments are read from
-the record, never asserted. Post-acceptance, narrowly scoped cases are readable, and every
+The endpoints reject caller-supplied narrow scope on acceptance: assignments are resolved by
+the authority, never supplied by the caller. Post-acceptance, narrowly scoped cases are readable, and every
 mutation on one requires a full-scope assertion that exactly matches the stored, server-resolved
 scope — the assertion proves the caller acts on the record it read; it cannot resolve or widen an
 assignment.
+
+Implementation references: [scope gate](../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs),
+[HTTP boundary](../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs),
+[acceptance and replay](../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs),
+[scope-gate tests](../../tests/Meridian.Tests/Tenancy/CorporateActionScopeFanOutGateTests.cs), and
+[endpoint tests](../../tests/Meridian.Tests/Ui/CorporateActionOperationsEndpointTests.cs).
 
 Production composition registers the deterministic corporate-action accounting projector and the
 Asset Accounting Event Spine mapper as singleton services. Registration makes the pure preparation

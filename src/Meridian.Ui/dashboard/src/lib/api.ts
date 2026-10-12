@@ -767,7 +767,7 @@ export async function getJson<T>(path: string, options: ApiRequestOptions = {}):
 const developmentFallbackStatuses = new Set([404, 500, 502, 503, 504]);
 
 async function getDevelopmentFallback<T>(path: string, status: number): Promise<T | undefined> {
-  if (!import.meta.env.DEV || !developmentFallbackStatuses.has(status)) {
+  if (!import.meta.env.DEV || import.meta.env.VITE_MERIDIAN_DEV_MODE || !developmentFallbackStatuses.has(status)) {
     return undefined;
   }
 
@@ -821,6 +821,15 @@ async function postFormData<T>(path: string, formData: FormData, options: ApiReq
 
 export function apiGetJson<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   return getJson<T>(path, options);
+}
+
+/** Retain authoritative artifact bytes without JSON number conversion or fixture fallback. */
+export async function apiGetBlob(path: string, options: ApiRequestOptions = {}): Promise<Blob> {
+  const response = await fetch(path, { signal: options.signal, headers: { Accept: "application/json" } });
+  if (!response.ok) {
+    throw await buildApiError(path, response);
+  }
+  return response.blob();
 }
 
 export function apiPostJson<T>(path: string, body?: unknown, options: ApiRequestOptions = {}): Promise<T> {
@@ -980,7 +989,7 @@ async function readResponseErrorBody(response: Response): Promise<string> {
 }
 
 async function getDevelopmentSearchFallback(query: string, take: number, activeOnly: boolean) {
-  if (!import.meta.env.DEV) {
+  if (!import.meta.env.DEV || import.meta.env.VITE_MERIDIAN_DEV_MODE) {
     return undefined;
   }
 
@@ -1119,6 +1128,10 @@ export function getTradingWorkspace(options: ApiRequestOptions & { fundAccountId
 export function getTradingReadiness(options: ApiRequestOptions & { fundAccountId?: string } = {}) {
   const { fundAccountId, ...requestOptions } = options;
   return getJson<TradingOperatorReadiness>(workstationTradingReadinessEndpoint(fundAccountId), requestOptions);
+}
+
+export function synchronizeTradingBrokerage(fundAccountId: string, options: ApiRequestOptions = {}) {
+  return postJson<TradingOperatorReadiness>(WORKSTATION_API_ENDPOINTS.tradingBrokerageRecovery, { fundAccountId }, options);
 }
 
 export function getOperatorInbox(fundAccountId?: string, options: ApiRequestOptions = {}) {
@@ -2936,7 +2949,7 @@ export async function searchSecurities(query: string, take = 25, activeOnly = tr
   const path = workstationSecurityMasterSearchEndpoint({ query, take, activeOnly });
   const results = await getJson<SecurityMasterEntry[]>(path, options);
 
-  if (import.meta.env.DEV && results.length === 0) {
+  if (import.meta.env.DEV && options.allowDevelopmentFallback !== false && results.length === 0) {
     const fixtureResults = await getDevelopmentSearchFallback(query, take, activeOnly);
     if (fixtureResults && fixtureResults.length > 0) {
       return fixtureResults;

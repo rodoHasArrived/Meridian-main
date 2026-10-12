@@ -66,6 +66,18 @@ verified legacy hashes only for an explicit one-time upgrade and rejects later s
 parameterless store remains an explicit in-memory compatibility seam for
 isolated tests; browser and WPF production composition and the desktop fallback use the same
 data-root-backed durable history store.
+
+`LiveStrategyBase` applies the shared F# lifecycle policy and serializes complete asynchronous
+operations. Queued commands are evaluated after the prior operation finishes. Warmup must complete
+before running, paused starts resume without replacing the retained execution context, and cleanup
+must complete before stopped state is exposed. Hook failure or cancellation preserves a fault
+reason and requires successful cleanup before restart. `Stopping` is appended to `StrategyStatus`
+so existing persisted enum values stay stable. The manager verifies `Running`, `Paused`, or
+`Stopped` after the corresponding adapter method returns; a mismatch retains a failed lifecycle
+receipt instead of success. Paused resume requires retained run evidence and the same run type;
+changing between paper and live requires stopping first. Cleanup after a failed or cancelled
+attempt retains its original identity and end timestamp; restart creates a new run with recovery
+parent lineage. See `src/Meridian.FSharp.Trading/README.md` for transition semantics.
 `StrategyRunEntry` retains the W6 Backtest Studio evidence loop: operator acceptance criteria,
 retained evidence links, accounting-record references, approval references, paper-validation
 lineage, and governed-report references are stored with the run so downstream review surfaces do

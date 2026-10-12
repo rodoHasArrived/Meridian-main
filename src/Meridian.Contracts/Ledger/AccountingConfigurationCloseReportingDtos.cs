@@ -202,7 +202,8 @@ public sealed record CloseTaskConfigurationDto(
     string? RequiredEvidence = null,
     IReadOnlyList<string>? DependsOnTaskIds = null,
     IReadOnlyList<CloseTaskDependencyConfigurationDto>? DependencyConfigurations = null,
-    IReadOnlyList<CloseTaskSignOffRequirementConfigurationDto>? SignOffRequirementConfigurations = null)
+    IReadOnlyList<CloseTaskSignOffRequirementConfigurationDto>? SignOffRequirementConfigurations = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool HasExplicitDependencies = false)
 {
     public IReadOnlyList<string> DependsOnTaskIds { get; init; } =
         DependsOnTaskIds ?? [];
@@ -220,7 +221,8 @@ public sealed record ClosePeriodPlanConfigurationDto(
     IReadOnlyList<CloseTaskConfigurationDto>? TaskConfigurations = null,
     string? ConfiguredBy = null,
     DateTimeOffset? ConfiguredAtUtc = null,
-    IReadOnlyList<string>? EvidenceLinks = null)
+    IReadOnlyList<string>? EvidenceLinks = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ClosePlanPreparationLineageDto? Preparation = null)
 {
     public IReadOnlyList<CloseTaskConfigurationDto> TaskConfigurations { get; init; } =
         TaskConfigurations ?? [];
@@ -239,6 +241,10 @@ public sealed record UpsertClosePeriodPlanConfigurationRequestDto(
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
     DateTimeOffset? ExpectedConfiguredAtUtc = null)
 {
+    // Retained only by the shared preparation service; public JSON cannot assert lineage or period dates.
+    [JsonIgnore]
+    public ClosePlanPreparationLineageDto? Preparation { get; init; }
+
     public IReadOnlyList<CloseTaskConfigurationDto> TaskConfigurations { get; init; } =
         TaskConfigurations ?? [];
 

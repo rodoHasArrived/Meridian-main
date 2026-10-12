@@ -40,6 +40,9 @@ public sealed class LedgerReportingAuthoritativeSourceTests
 
         first.DatasetRows.Should().ContainSingle();
         first.DatasetRows.Should().OnlyContain(row => row["journalEntryId"] == included.Entry.JournalEntryId.ToString("D"));
+        first.DatasetRows[0]["currency"].Should().Be("USD");
+        first.DatasetRows[0].Should().NotContainKey("transactionCurrency");
+        first.DatasetRows[0].Should().NotContainKey("accountId");
         first.Checkpoint.JournalEntryCount.Should().Be(1);
         first.Checkpoint.HighestGlobalSequence.Should().Be(11);
         first.Checkpoint.CheckpointId.Should().Be(second.Checkpoint.CheckpointId);
@@ -58,6 +61,58 @@ public sealed class LedgerReportingAuthoritativeSourceTests
         fixture.LastStructureQuery!.ActiveOnly.Should().BeTrue();
         fixture.LastStructureQuery.AsOf.Should().Be(CutoffUtc);
         fixture.LastStructureQuery.NodeId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CaptureAsync_RetainsExactAccrualAccountCurrencyAndJournalEvidenceInCheckpoint()
+    {
+        var fixture = CreateFixture();
+        var accrual = IncomeAccrualRecord(fixture);
+        fixture.JournalStore.Records.Add(accrual);
+
+        var capture = await fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access);
+        var incomeLine = accrual.Entry.Lines.Single(line => line.Account.AccountType == LedgerAccountType.Revenue);
+        var row = capture.DatasetRows.Single(value => value["entryId"] == incomeLine.EntryId.ToString("D"));
+
+        row["journalEntryId"].Should().Be(accrual.Entry.JournalEntryId.ToString("D"));
+        row["sourceEventId"].Should().Be(accrual.SourceEventId!.Value.ToString("D"));
+        row["sourceJournalEntryId"].Should().Be(accrual.SourceJournalEntryId!.Value.ToString("D"));
+        row["account"].Should().Be(LedgerAccounts.CouponIncome.Name);
+        row["accountType"].Should().Be("Revenue");
+        row["financialAccountId"].Should().Be("brokerage-a");
+        row["accountId"].Should().Be("retained-account-a");
+        row["currency"].Should().Be("USD", "functional amounts must not be labelled with the transaction currency");
+        row["credit"].Should().Be("125");
+        row["netAmount"].Should().Be("-125");
+        row["transactionCurrency"].Should().Be("EUR");
+        row["transactionDebit"].Should().Be("0");
+        row["transactionCredit"].Should().Be("100");
+        row["fxRateToFunctional"].Should().Be("1.25");
+        row["activityType"].Should().Be("CouponAccrual");
+        row["accountingPolicyId"].Should().Be("coupon-policy");
+        row["accountingPolicyVersion"].Should().Be("2");
+        row["recordedAtUtc"].Should().Be(accrual.CreatedAt.ToString("O"));
+        row["timestampUtc"].Should().Be(accrual.Entry.Timestamp.ToString("O"));
+
+        fixture.JournalStore.Records[0] = accrual with { CreatedAt = accrual.CreatedAt.AddMinutes(1) };
+        var recaptured = await fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access);
+
+        recaptured.Checkpoint.CheckpointHash.Should().NotBe(capture.Checkpoint.CheckpointHash,
+            "the checkpoint must bind retained journal recording metadata as well as its amount");
+        row["recordedAtUtc"].Should().Be(accrual.CreatedAt.ToString("O"),
+            "a captured explanation must retain the original source facts after the source changes");
+    }
+
+    [Fact]
+    public async Task CaptureAsync_RejectsFunctionalCurrencyThatDisagreesWithCertifiedBook()
+    {
+        var fixture = CreateFixture();
+        fixture.JournalStore.Records.Add(IncomeAccrualRecord(fixture, functionalCurrency: "GBP"));
+
+        var capture = () => fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access).AsTask();
+
+        await capture.Should().ThrowAsync<ReportingAuthoritativeSourceUnavailableException>()
+            .WithMessage("*functional currency 'GBP'*certified book currency 'USD'*");
     }
 
     [Fact]
@@ -475,6 +530,38 @@ public sealed class LedgerReportingAuthoritativeSourceTests
             new FixedTimeProvider(now));
         fixture.StructureQuery = () => lastQuery;
         return fixture;
+    }
+
+    private static LedgerJournalEntryRecord IncomeAccrualRecord(Fixture fixture, string functionalCurrency = "USD")
+    {
+        var record = Record(fixture, new DateTimeOffset(2026, 7, 10, 12, 0, 0, TimeSpan.Zero), 11);
+        var lines = record.Entry.Lines.Select(line => new LedgerEntry(
+            line.EntryId,
+            line.JournalEntryId,
+            line.Timestamp,
+            line.Debit > 0m
+                ? LedgerAccounts.AccruedInterestReceivable("BOND", "brokerage-a")
+                : LedgerAccounts.CouponIncomeFor("brokerage-a"),
+            line.Debit,
+            line.Credit,
+            line.Description,
+            line.Dimensions! with { AccountId = "retained-account-a" },
+            new LedgerEntryCurrency(
+                "EUR",
+                functionalCurrency,
+                line.Debit > 0m ? 100m : 0m,
+                line.Credit > 0m ? 100m : 0m,
+                1.25m))).ToArray();
+        return record with
+        {
+            Entry = new JournalEntry(record.Entry.JournalEntryId, record.Entry.Timestamp,
+                record.Entry.Description, lines, new JournalEntryMetadata(ActivityType: "CouponAccrual")),
+            CreatedAt = new DateTimeOffset(2026, 7, 15, 15, 0, 0, TimeSpan.Zero),
+            AccountingPolicyId = "coupon-policy",
+            AccountingPolicyVersion = "2",
+            SourceEventId = Guid.NewGuid(),
+            SourceJournalEntryId = Guid.NewGuid()
+        };
     }
 
     private static LedgerJournalEntryRecord Record(

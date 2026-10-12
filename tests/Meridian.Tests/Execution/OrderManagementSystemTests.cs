@@ -557,11 +557,20 @@ public sealed class OrderManagementSystemTests : IDisposable
 
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Contain("not connected");
+        result.OrderState!.Status.Should().Be(OrderStatus.PendingNew,
+            "an exception after invoking the gateway does not prove the broker rejected the order");
+        oms.GetOpenOrders().Should().ContainSingle(order =>
+            order.OrderId == result.OrderId && order.Quantity - order.FilledQuantity == 1m);
+        await gateway.Received(1).SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
         await gateway.DidNotReceive().ConnectAsync(Arg.Any<CancellationToken>());
 
         var auditEntries = await auditTrail.GetRecentAsync(10);
         auditEntries.Should().Contain(entry =>
-            entry.Action == "OrderRejected" &&
+            entry.Action == "OrderSubmissionUncertain" &&
+            entry.Outcome == "RecoveryRequired" &&
+            entry.Reason == OrderManagementSystem.AmbiguousSubmissionReason &&
+            entry.OrderId == result.OrderId &&
+            entry.RunId == "run-disconnected" &&
             entry.BrokerName == "robinhood" &&
             entry.Symbol == "AAPL");
     }

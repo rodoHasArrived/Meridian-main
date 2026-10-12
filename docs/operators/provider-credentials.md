@@ -28,12 +28,28 @@ Lookup surfaces (what credentials exist, names, and binding paths) are maintaine
 
 ## Credential Surfaces
 
-Meridian reads credentials from configuration, with environment variables taking precedence over
-`appsettings*.json`.
+Catalog-managed providers use Meridian's encrypted credential store. A stored/scoped record owns
+its complete credential set; missing fields are not silently filled from another account's
+environment or configuration. Environment fallback is a Development/Test or explicitly enabled
+migration path and is disabled by default for packaged/customer builds. See
+[environment controls](../reference/environment-variables.md).
+
+## Prerequisites and execution context
+
+- Use the Windows workstation's Settings/provider-connection surface while signed in as an operator
+  with `ManageCredentials` and the intended company/tenant. Select the existing connection before
+  changing secrets; provider-wide and connection-scoped credentials are different records.
+  The effective-configuration check below additionally needs `ViewConfig` or `ModifyConfig`.
+- Complete [preflight](preflight-checklist.md) for persistence, startup, and authentication. Source
+  commands use PowerShell 7 from the repository root; installed hosts use their lifecycle supervisor.
+- Obtain replacement credentials and account/environment identity from the provider through the
+  approved secret-management process. Keep the old credential available only as provider policy
+  permits until verification establishes which account the replacement reaches.
 
 ### Common credential patterns
 
-- Use provider-specific variables for live data and broker integrations.
+- Use the provider vault for installed deployments; use the documented provider-specific variables
+  only when the development or migration fallback is intended.
 - Avoid storing secrets in repository files, logs, or user shell history.
 - For IBKR simulation builds, no credentials are required: a build without the `IBAPI` vendor
   SDK routes `IBMarketDataClient` to its bundled simulator. Verify with local replay paths.
@@ -62,26 +78,28 @@ Compatibility routes for legacy clients remain supported under `/api/credentials
 
 ## Quick credential validation checklist
 
-1. Start Meridian with your intended mode:
+1. Start or inspect the host using [preflight startup](preflight-checklist.md#mandatory-command-set).
+   Keep the source host in terminal 1. In terminal 2, complete
+   [operator sign-in](preflight-checklist.md#authenticated-evidence-collection) to create the session.
+2. Inspect masked effective configuration and the current tenant's provider connection rows:
 
 ```powershell
-dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080
+Invoke-RestMethod "$meridianBaseUrl/api/config/effective" -WebSession $operatorSession
+Invoke-RestMethod "$meridianBaseUrl/api/providers/connections" -WebSession $operatorSession
 ```
 
-2. Confirm effective config source:
-
-```powershell
-curl http://localhost:8080/api/config/effective
-```
-
-3. Confirm provider factory credential path includes expected source (`env:...`) rather than default/empty values.
+3. In Settings, save or rotate the selected connection's credentials, then use its verification
+   action. Confirm the expected account and environment. These mutations use the session and CSRF
+   protections; an API key alone does not supply the required company/tenant scope.
 
 4. If startup logs show credential warnings, stop and correct the configuration before enabling paper/live workflow.
 
-5. Run provider validation for impacted lanes before promotion:
+5. For source/test evidence before promotion, run the Wave 1 provider packet automation from the
+   repository root. It builds and runs the registered test slices; it does not replace a credentialed
+   account verification or create human operator sign-off:
 
 ```powershell
-./scripts/dev/run-wave1-provider-validation.ps1
+pwsh ./scripts/dev/run-wave1-provider-validation.ps1
 ```
 
 6. Require DK1 operator sign-off artifacts before paper/live rollout:
@@ -91,10 +109,23 @@ curl http://localhost:8080/api/config/effective
 
 ## Credential incident workflow
 
-- **Expired / rejected credentials**: rotate keys in the secure store, update environment, and re-run `run-wave1-provider-validation.ps1`.
+- **Expired / rejected credentials**: rotate the selected vault record, verify the connection, and
+  rerun the impacted provider tests. Update environment values only for an intended fallback path.
 - **Wrong account / entitlement**: validate account binding through provider integration tests and status surfaces; isolate by provider and disable non-essential routing during triage.
-- **Configuration precedence issues**: check environment variable naming (`MDC_...` vs legacy keys) and startup effective-config sources.
-- **Persistent startup mis-read**: clear stale local settings, restart process, and re-check effective config endpoint.
+- **Configuration precedence issues**: identify the selected connection and credential source first;
+  a stored record is not repaired by setting a different environment alias.
+- **Persistent startup mis-read**: retain the sanitized connection status, repair the selected
+  credential/configuration source, restart if environment settings changed, and verify again.
+- **`401/403`**: reauthenticate or correct the operator's permission/company assignment using
+  [preflight recovery](preflight-checklist.md#failure-and-recovery).
+
+## Expected result
+
+The selected connection reports a successful verification for the intended provider account and
+environment, and required readiness blockers clear. The effective-config endpoint reports masked
+configuration, but its `env:...` annotations alone do not establish which vault record a scoped
+provider used. Retain connection identity, verification time/outcome, and the sanitized readiness
+response; a passing test packet alone does not prove live credentials are usable.
 
 ## Evidence required for operator handoff
 

@@ -50,7 +50,7 @@ public sealed partial class AccountingCloseManagementService
         OperationsContinuityWorkflowDto workflow,
         CloseTaskConfigurationDto? configuration)
     {
-        if (configuration is not null && configuration.DependencyConfigurations.Count > 0)
+        if (configuration is not null && (configuration.HasExplicitDependencies || configuration.DependencyConfigurations.Count > 0))
         {
             return configuration.DependencyConfigurations
                 .Select(dependency => new CloseDependencyDto(

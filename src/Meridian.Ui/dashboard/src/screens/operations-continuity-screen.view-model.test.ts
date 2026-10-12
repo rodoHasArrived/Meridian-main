@@ -1,4 +1,4 @@
-import { cleanup, renderHook, waitFor } from "@testing-library/react";
+import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { sharedCloseDecision } from "./operations-continuity-screen.close-test-fixtures";
 import {
@@ -2992,5 +2992,88 @@ describe("Operations Continuity view model", () => {
       { fundAccountId, periodId: "2026-05" },
       expect.objectContaining({ signal: expect.any(AbortSignal) })
     );
+  });
+
+  it("discards an old detail response after refresh and keeps the current workflow revision", async () => {
+    let completeOldDetail!: (workflow: OperationsContinuityWorkflow) => void;
+    const oldDetail = new Promise<OperationsContinuityWorkflow>((resolve) => { completeOldDetail = resolve; });
+    const repairedDetail = { ...detail, version: 5, timeline: [] };
+    const services = {
+      listWorkflows: vi.fn().mockResolvedValueOnce([summary]).mockResolvedValue([repairedDetail]),
+      getWorkflow: vi.fn().mockReturnValueOnce(oldDetail).mockResolvedValue(repairedDetail),
+      getCloseCalendar: vi.fn().mockResolvedValue(closeCalendar),
+      getCloseCockpit: vi.fn().mockResolvedValue(closeCockpit)
+    };
+    const { result } = renderHook(() => useOperationsContinuityScreenViewModel(services));
+    await waitFor(() => expect(services.getWorkflow).toHaveBeenCalledTimes(1));
+    const oldSignal = services.getWorkflow.mock.calls[0]?.[1].signal;
+    await act(async () => { await result.current.refresh(); });
+    await waitFor(() => {
+      expect(services.getWorkflow).toHaveBeenCalledTimes(2);
+      expect(result.current.detailErrorText).toBeNull();
+      expect(result.current.checklist[0]?.expectedWorkflowVersion).toBe(5);
+    });
+    expect(oldSignal.aborted).toBe(true);
+    await act(async () => { completeOldDetail(detail); });
+    expect(result.current.checklist[0]?.expectedWorkflowVersion).toBe(5);
+    expect(result.current.timeline).toEqual([]);
+  });
+
+  it("clears stale detail on refresh failure and recovers on the next refresh", async () => {
+    const services = {
+      listWorkflows: vi.fn().mockResolvedValue([summary]),
+      getWorkflow: vi.fn().mockResolvedValueOnce(detail).mockRejectedValueOnce(new Error("Detail unavailable")).mockResolvedValue(detail),
+      getCloseCalendar: vi.fn().mockResolvedValue(closeCalendar),
+      getCloseCockpit: vi.fn().mockResolvedValue(closeCockpit)
+    };
+    const { result } = renderHook(() => useOperationsContinuityScreenViewModel(services));
+    await waitFor(() => expect(result.current.timeline).toHaveLength(1));
+    await act(async () => { await result.current.refresh(); });
+    await waitFor(() => expect(result.current.detailErrorText).toBe("Detail unavailable"));
+    expect(result.current.timeline).toEqual([]);
+    expect(result.current.commandSpine.rows.some((row) => row.canCloseWorkflow)).toBe(false);
+    await act(async () => { await result.current.refresh(); });
+    await waitFor(() => expect(result.current.timeline).toHaveLength(1));
+    expect(result.current.detailErrorText).toBeNull();
+  });
+
+  it.each(["version", "fundAccountId", "periodId", "ledgerBookId"] as const)("rejects a selected detail response with mismatched %s", async (field) => {
+    const services = {
+      listWorkflows: vi.fn().mockResolvedValue([summary]),
+      getWorkflow: vi.fn().mockResolvedValue({ ...detail, [field]: field === "version" ? 5 : "other-scope" }),
+      getCloseCalendar: vi.fn().mockResolvedValue(closeCalendar),
+      getCloseCockpit: vi.fn().mockResolvedValue(closeCockpit)
+    };
+    const { result } = renderHook(() => useOperationsContinuityScreenViewModel(services));
+    await waitFor(() => expect(result.current.detailErrorText).toContain("no longer matches"));
+    expect(result.current.timeline).toEqual([]);
+    expect(result.current.commandSpine.rows.some((row) => row.canCloseWorkflow)).toBe(false);
+  });
+
+  it("refetches detail on scope changes and ignores responses from an abandoned scope", async () => {
+    let completeOldDetail!: (workflow: OperationsContinuityWorkflow) => void;
+    const oldDetail = new Promise<OperationsContinuityWorkflow>((resolve) => { completeOldDetail = resolve; });
+    const scope = sharedCloseDecision(detail).closeReadiness.scope;
+    const services = {
+      listWorkflows: vi.fn().mockResolvedValue([summary]),
+      getWorkflow: vi.fn().mockReturnValueOnce(oldDetail).mockResolvedValue({ ...detail, timeline: [] }),
+      getCloseCalendar: vi.fn().mockResolvedValue(closeCalendar),
+      getCloseCockpit: vi.fn().mockResolvedValue(closeCockpit),
+      getCommandCenter: vi.fn().mockResolvedValue(sharedCloseDecision(detail))
+    };
+    const { result, rerender } = renderHook(({ closeScope }) => useOperationsContinuityScreenViewModel(services, closeScope), {
+      initialProps: { closeScope: scope }
+    });
+    await waitFor(() => expect(services.getWorkflow).toHaveBeenCalledTimes(1));
+    const oldSignal = services.getWorkflow.mock.calls[0]?.[1].signal;
+    rerender({ closeScope: { ...scope, entityId: "other-entity" } });
+    await waitFor(() => expect(services.getWorkflow).toHaveBeenCalledTimes(2));
+    expect(oldSignal.aborted).toBe(true);
+    await act(async () => { completeOldDetail(detail); });
+    expect(result.current.timeline).toEqual([]);
+    expect(result.current.closeCockpit.statusLabel).toBe("Blocked");
+    rerender({ closeScope: scope });
+    await waitFor(() => expect(services.getWorkflow).toHaveBeenCalledTimes(3));
+    expect(result.current.timeline).toEqual([]);
   });
 });

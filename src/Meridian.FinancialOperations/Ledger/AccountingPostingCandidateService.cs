@@ -318,7 +318,9 @@ public sealed class AccountingPostingCandidateService :
                 BookPositionId = request.BookPositionId,
                 EconomicEvent = request.EconomicEvent,
                 ProjectionLineage = request.ProjectionLineage,
-                RulePackReference = request.RulePackReference
+                RulePackReference = request.RulePackReference,
+                LotAmortization = request.AssetLotMutation is { Intent: AssetLotMutationIntentDto.Amortize }
+                    ? request.AssetLotMutation.Amortization : null
             }
             : null;
         var write = draft.Write is null
