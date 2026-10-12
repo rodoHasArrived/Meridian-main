@@ -175,9 +175,10 @@ public sealed class AssetAmortizationPostgresRoundTripTests
         var bookContext = new AccountingBookContextDto(bookId, fund, ownerId, FundStructureNodeKindDto.Fund,
             "Canonical amortization GAAP book", "USD", AccountingBasisKindDto.Gaap, policy, "v1", period.PeriodId, dimensions);
         var roleId = Guid.NewGuid();
-        var position = await assets.UpsertAsync(new InstrumentRoleDto(roleId, securityId, fund, "Fund", InstrumentRoleKinds.Holder,
-                InstrumentAccountingSides.Debit, InstrumentEconomicSides.Asset, acquired, OriginEvent: economicEvent,
-                EvidenceLinks: economicEvent.EvidenceLinks),
+        var role = new InstrumentRoleDto(roleId, securityId, fund, "Fund", InstrumentRoleKinds.Holder,
+            InstrumentAccountingSides.Debit, InstrumentEconomicSides.Asset, acquired, OriginEvent: economicEvent,
+            EvidenceLinks: economicEvent.EvidenceLinks);
+        var position = await assets.UpsertAsync(role,
             new BookPositionDto(positionId, securityId, roleId, bookContext, BookPositionSides.Long, "Active", acquired,
                 OriginEvent: economicEvent, ProjectionLineage: lineage, EvidenceLinks: economicEvent.EvidenceLinks)
             { RetainedEvidence = evidence }, null, 0,
@@ -325,11 +326,6 @@ public sealed class AssetAmortizationPostgresRoundTripTests
             EffectiveDate = DateOnly.FromDateTime(revisedSecurity.EffectiveFrom.UtcDateTime),
             ContentHashSha256 = OpenLotAmortization.SecurityHash(revisedSecurity)
         };
-        var reversalPreview = await new CanonicalLotAmortizationService(restartedJournal, securities, restartedAssets)
-            .PreviewReversalAsync(bookId, batch.MutationBatchId, reviewedReference, ct);
-        reversalPreview.Projection.FunctionalMovement.Should().Be(-movement);
-        reversalPreview.Projection.FunctionalCostBasis.Should().Be(lot.ToOpenLot().OpenFunctionalCostBasis);
-
         // Independent reversal rules keep the same financial accounts and invert each reviewed line.
         await configuration.UpsertPostingRuleAsync(new UpsertPostingRuleRequest(fund,
             new PostingRuleDto(rule + "-reversal", "Retained amortization reversal", eventType, "generated", "v1",
@@ -366,7 +362,25 @@ public sealed class AssetAmortizationPostgresRoundTripTests
             OpenLotAmortization.ModelVersion, "test-fixture-v1", "reversal", date, DateTimeOffset.UtcNow,
             reverseSource.SourceSystem, reverseSource.SourceReference, reverseEvent)
         { BookPositionId = positionId, RetainedEvidence = reverseEvidence };
-        var reverseScope = scope with { ExpectedSecurityVersion = revisedSecurity.Version };
+        // Retain the new event and its exact evidence before asking the spine to project it.
+        // The original acquisition event remains on the same position and role.
+        var reversePosition = await assets.UpsertAsync(role, position with
+        {
+            Version = position.Version + 1,
+            ProjectionLineage = reverseLineage,
+            RetainedEvidence = reverseEvidence,
+            EvidenceLinks = reverseEvent.EvidenceLinks
+        }, null, position.Version, new AssetOperationsWriteApprovalDto(approver,
+            "document://position-approval/amortization-reversal", "Retain the reviewed reversal event.", DateTimeOffset.UtcNow), ct);
+        var reversalPreview = await new CanonicalLotAmortizationService(restartedJournal, securities, restartedAssets)
+            .PreviewReversalAsync(bookId, batch.MutationBatchId, reviewedReference, ct);
+        reversalPreview.Projection.FunctionalMovement.Should().Be(-movement);
+        reversalPreview.Projection.FunctionalCostBasis.Should().Be(lot.ToOpenLot().OpenFunctionalCostBasis);
+        var reverseScope = scope with
+        {
+            ExpectedSecurityVersion = revisedSecurity.Version,
+            ExpectedBookPositionVersion = reversePosition.Version
+        };
         var correction = new AssetAccountingCorrectionReferenceDto(eventId, 1, batch.Journal.Entry.JournalEntryId,
             bookId, period.PeriodId, AccountingBasisKindDto.Gaap, batch.MutationBatchId);
         var reverseEffect = effect with
@@ -386,7 +400,8 @@ public sealed class AssetAmortizationPostgresRoundTripTests
             CorrectionApproval: correctionApproval);
         await spine.BuildPostingCandidateAsync(new AssetAccountingPostingCandidateRequestDto(AssetAccountingEventKindDto.DepreciationAmortization,
             reverseScope, reverseEvent, reverseLineage, amount, "USD", preparer, DateTimeOffset.UtcNow,
-            "Reverse exact retained amortization", 2, period.Version, RetainedEvidence: reverseEvidence, LotMutation: reverseMutation), ct);
+            "Reverse exact retained amortization", 2, period.Version, RetainedEvidence: reverseEvidence,
+            LotMutation: reverseMutation, CorrectionApproval: correctionApproval), ct);
         var reverseDraft = (await assets.GetLatestAsync(reverseId, 1, ct))!.Projection;
         var reverseApprovalId = Guid.NewGuid().ToString("D");
         var reverseApprovedAt = DateTimeOffset.UtcNow;

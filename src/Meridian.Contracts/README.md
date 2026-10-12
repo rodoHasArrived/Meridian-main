@@ -50,6 +50,9 @@ currency while the original before/after snapshots determine the inverse. A know
 or changed effective window does not recalculate or prevent that inverse. Unknown status, missing
 identity, changed currency and stale evidence still refuse. Ordinary amortization and rebooks
 require Active reference terms and evidence effective on the calculation date.
+Later reference observations retain their actual evidence dates through correction projection,
+drafting and posting. Only the exact reversal's reviewed Security Master evidence receives that
+exception; acquisition, event and approval evidence keep their existing date requirements.
 Constant yield counts contractual calendar coupons for monthly, quarterly, semiannual and annual
 schedules, including month ends and leap dates. Day-count fractions interpolate within the current
 coupon period; they do not determine the number of coupons. Odd schedules and schedules exceeding

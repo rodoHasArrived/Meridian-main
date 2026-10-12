@@ -63,6 +63,9 @@ Inactive or its effective window changes. Drafting permits that reference state 
 retained reversal, with the corrected amortization bound to the same security and position. The
 current reference version and currency, immutable original batch, unchanged lot and independent
 approval remain required. New amortization and rebooks retain the Active/effective reference gate.
+The authoritative position must retain the correction event and its exact evidence before
+projection. Fresh reference evidence preserves its observation date, including after the original
+accrual date, while event and approval evidence remain bound to that accrual date.
 
 New amortization postings require the current calculation version before approval is retained.
 Historical unversioned instructions remain readable for exact receipt replay; unposted legacy
