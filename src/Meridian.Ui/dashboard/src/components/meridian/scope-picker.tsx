@@ -126,7 +126,7 @@ export function ScopePicker({ open, onOpenChange, scope, fundAccounts, onApply, 
                   <li key={`${record.symbol}-${record.provider ?? ""}`}>
                     <button
                       type="button"
-                      className="flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-sm hover:bg-secondary/60 focus-visible:outline-none focus-visible:bg-secondary/60"
+                      className="flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-sm hover:bg-secondary/60 focus-visible:outline-hidden focus-visible:bg-secondary/60"
                       onClick={() => {
                         setSymbol(record.symbol);
                         setSymbolSuggestions([]);

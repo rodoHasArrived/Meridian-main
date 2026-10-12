@@ -120,7 +120,7 @@ export function OperationalTrustSummary({
     >
       {disclosure ? (
         <details className="group">
-          <summary className="flex cursor-pointer list-none items-start gap-3 px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 [&::-webkit-details-marker]:hidden">
+          <summary className="flex cursor-pointer list-none items-start gap-3 px-3 py-2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 [&::-webkit-details-marker]:hidden">
             <span className="sr-only">{label}. </span>
             <span className="grid min-w-0 flex-1 grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-x-3 gap-y-2">
               {facts.map(({ id, label: factLabel, fact }) => (

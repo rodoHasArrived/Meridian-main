@@ -237,7 +237,7 @@ export function WatchlistRowActionsTrigger({
       onClick={onOpen}
       className={cn(
         "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[2px] text-muted-foreground transition-colors",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 hover:text-foreground",
+        "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 hover:text-foreground",
         className
       )}
     >

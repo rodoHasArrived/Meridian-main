@@ -192,7 +192,7 @@ function SourceSection({ viewModel }: { viewModel: StatementImportPanelViewModel
                     className={cn(
                       "inline-flex items-center gap-1.5 rounded-[2px] border border-primary/40 bg-primary/10 px-2.5 py-1",
                       "font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-primary transition-colors",
-                      "hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                      "hover:bg-primary/20 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                     )}
                     aria-label={`Apply suggested profile ${suggestion.displayName}, score ${Math.round(suggestion.score * 100)} percent`}
                     onClick={() => viewModel.applyProfileSuggestion(suggestion.profileId)}

@@ -761,7 +761,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
             <FormRow label="Ledger dimensions (JSON)" labelFor="report-ledger-dimensions" className="md:col-span-2">
               <textarea
                 id="report-ledger-dimensions"
-                className="min-h-36 w-full rounded-sm border border-input bg-background px-3 py-2 font-mono text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="min-h-36 w-full rounded-sm border border-input bg-background px-3 py-2 font-mono text-sm text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                 value={standardDraft.dimensionsJson}
                 onChange={(event) => onStandardDraftChange("dimensionsJson", event.target.value)}
                 aria-describedby="report-ledger-dimensions-help"
@@ -774,7 +774,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
             <FormRow label="Template parameters (JSON)" labelFor="report-template-parameters" className="md:col-span-2">
               <textarea
                 id="report-template-parameters"
-                className="min-h-24 w-full rounded-sm border border-input bg-background px-3 py-2 font-mono text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="min-h-24 w-full rounded-sm border border-input bg-background px-3 py-2 font-mono text-sm text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                 value={standardDraft.templateParametersJson}
                 onChange={(event) => onStandardDraftChange("templateParametersJson", event.target.value)}
                 aria-describedby="report-template-parameters-help"

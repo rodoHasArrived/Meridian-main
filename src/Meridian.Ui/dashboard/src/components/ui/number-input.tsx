@@ -76,7 +76,7 @@ export function NumberInput({
           aria-label="Decrement"
           disabled={disabled || (min !== undefined && current <= min)}
           onClick={() => commit(current - step)}
-          className="flex h-full w-8 items-center justify-center border-r border-border text-base font-semibold text-foreground transition-colors hover:bg-[var(--ws-row-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50 [outline-offset:-2px]"
+          className="flex h-full w-8 items-center justify-center border-r border-border text-base font-semibold text-foreground transition-colors hover:bg-[var(--ws-row-hover)] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50 [outline-offset:-2px]"
         >
           −
         </button>
@@ -92,14 +92,14 @@ export function NumberInput({
           disabled={disabled}
           placeholder={placeholder}
           onChange={(event) => commit(Number.parseFloat(event.target.value) || 0)}
-          className="min-w-0 flex-1 bg-transparent px-2 text-center font-mono text-sm text-foreground focus:outline-none"
+          className="min-w-0 flex-1 bg-transparent px-2 text-center font-mono text-sm text-foreground focus:outline-hidden"
         />
         <button
           type="button"
           aria-label="Increment"
           disabled={disabled || (max !== undefined && current >= max)}
           onClick={() => commit(current + step)}
-          className="flex h-full w-8 items-center justify-center border-l border-border text-base font-semibold text-foreground transition-colors hover:bg-[var(--ws-row-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50 [outline-offset:-2px]"
+          className="flex h-full w-8 items-center justify-center border-l border-border text-base font-semibold text-foreground transition-colors hover:bg-[var(--ws-row-hover)] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50 [outline-offset:-2px]"
         >
           +
         </button>
