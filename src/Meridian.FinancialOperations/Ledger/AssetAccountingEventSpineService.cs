@@ -216,7 +216,9 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             }
         }
 
-        await ResolveAuthoritativeSecurityAsync(projectedSpine, request.ProjectionLineage.GeneratedAtUtc, ct, request.CorporateAction)
+        await ResolveAuthoritativeSecurityAsync(projectedSpine, request.ProjectionLineage.GeneratedAtUtc, ct, request.CorporateAction,
+                allowRetainedAmortizationCorrection: projectedSpine.EventKind == AssetAccountingEventKindDto.DepreciationAmortization
+                    && projectedSpine.Correction?.TaxLotMutationBatchId is { } correctionBatchId && correctionBatchId != Guid.Empty)
             .ConfigureAwait(false);
 
         var position = await _positionStore
@@ -385,7 +387,9 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             "A retained successor projection requires the exact canonical lot instruction; it cannot be omitted or replaced.");
         await ResolveCorrectionAuthorityAsync(source, ct).ConfigureAwait(false);
 
-        await ResolveAuthoritativeSecurityAsync(source, request.AccountingTimestamp, ct, request.LotMutation?.CorporateAction)
+        await ResolveAuthoritativeSecurityAsync(source, request.AccountingTimestamp, ct, request.LotMutation?.CorporateAction,
+                allowRetainedAmortizationCorrection: source.EventKind == AssetAccountingEventKindDto.DepreciationAmortization
+                    && source.Correction is not null && request.LotMutation?.Amortization?.Reversal is not null)
             .ConfigureAwait(false);
 
         var position = await _positionStore
@@ -838,7 +842,8 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
         AssetAccountingEventSpineDto source,
         DateTimeOffset accountingAsOfUtc,
         CancellationToken ct,
-        OpenLotSuccessorInstructionDto? corporateAction = null)
+        OpenLotSuccessorInstructionDto? corporateAction = null,
+        bool allowRetainedAmortizationCorrection = false)
     {
         var security = await _securityMasterQueryService
             .GetRecordedByIdAsOfAsync(source.Scope.SecurityId, accountingAsOfUtc, ct)
@@ -850,7 +855,10 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             "Resolved Security Master identity does not match the asset accounting event.");
         RequireAssertion(security.Version == source.Scope.ExpectedSecurityVersion,
             "Resolved Security Master version is stale relative to the asset accounting event.");
-        RequireAssertion(security.Status == SecurityStatusDto.Active,
+        // A correction may project current identity before its inverse is drafted. Only a
+        // receipt-bound amortization reversal may use this exception at the drafting boundary.
+        RequireAssertion(security.Status == SecurityStatusDto.Active
+                         || (allowRetainedAmortizationCorrection && security.Status == SecurityStatusDto.Inactive),
             "Resolved Security Master record is not Active.");
         if (corporateAction is not null)
         {
@@ -869,8 +877,8 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
         RequireAssertion(string.Equals(security.Currency,
                 corporateAction?.ExpectedLot.Acquisition.AcquisitionCurrency ?? source.Currency, StringComparison.OrdinalIgnoreCase),
             "Foreign-currency asset accounting is not supported by this bounded spine unless Security Master, event, and ledger functional currency are identical; explicit FX rate/evidence is required before posting.");
-        RequireAssertion(security.EffectiveFrom <= accountingAsOfUtc &&
-                         (security.EffectiveTo is null || accountingAsOfUtc <= security.EffectiveTo.Value),
+        RequireAssertion(allowRetainedAmortizationCorrection || (security.EffectiveFrom <= accountingAsOfUtc &&
+                         (security.EffectiveTo is null || accountingAsOfUtc <= security.EffectiveTo.Value)),
             "Resolved Security Master record is not effective at the accounting timestamp.");
     }
 
@@ -902,6 +910,13 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             "Correction reference does not exactly match the retained corrected journal, book, period, and accounting basis.");
         RequireAssertion(correctedProjection.TaxLotMutationBatchId == correction.TaxLotMutationBatchId,
             "Correction reference tax-lot mutation batch does not match the retained corrected outcome.");
+        if (source.EventKind == AssetAccountingEventKindDto.DepreciationAmortization
+            && correction.TaxLotMutationBatchId is not null)
+            RequireAssertion(correctedProjection.EventKind == AssetAccountingEventKindDto.DepreciationAmortization
+                && correctedProjection.Scope.SecurityId == source.Scope.SecurityId
+                && correctedProjection.Scope.BookPositionId == source.Scope.BookPositionId
+                && correctedProjection.DraftedLotMutation?.Intent == AssetLotMutationIntentDto.Amortize,
+                "Canonical amortization correction must bind the same security and position's retained amortization posting.");
     }
 
     private async Task<AssetLotMutationInstructionDto?> ResolveAuthoritativeLotMutationAsync(

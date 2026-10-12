@@ -44,6 +44,12 @@ account-scoped strategy runs. Existing execution-reconciliation DTOs remain the 
 Recovery requests carry only the local account ID; provider and external identity are server-resolved.
 
 Canonical amortization adds an optional `Amortization` input to lot instructions and basis adjustments, omitted when absent to preserve retained fingerprints. `OpenLotAmortization` binds reviewed canonical lot and versioned Security Master evidence, delegates shared straight-line/constant-yield kernels, and retains annual decimal yield and acquisition FX. Unsupported structures and missing terms fail closed. Optional reversal inputs retain the original batch, journal and pre-posting lot snapshot; absent reversal fields preserve earlier wire fingerprints. Contract validation binds complete approved correction lineage and rejects disposal prices before drafting.
+
+For a retained amortization reversal, current hash-bound reference evidence proves identity and
+currency while the original before/after snapshots determine the inverse. A known Inactive status
+or changed effective window does not recalculate or prevent that inverse. Unknown status, missing
+identity, changed currency and stale evidence still refuse. Ordinary amortization and rebooks
+require Active reference terms and evidence effective on the calculation date.
 Constant yield counts contractual calendar coupons for monthly, quarterly, semiannual and annual
 schedules, including month ends and leap dates. Day-count fractions interpolate within the current
 coupon period; they do not determine the number of coupons. Odd schedules and schedules exceeding

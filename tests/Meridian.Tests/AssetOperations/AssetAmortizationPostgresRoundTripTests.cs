@@ -47,8 +47,21 @@ public sealed class AssetAmortizationPostgresRoundTripTests
     public Task CanonicalAmortization_UnversionedRetainedInstruction_RequiresFreshPreviewWithoutMutation()
         => AssertGovernedAmortizationAsync(premium: true, constantYield: true, convention: "Actual/365", legacy: true);
 
+    [LedgerDatabaseFact]
+    public Task CanonicalAmortization_ReversalUsesRetainedEconomicsAfterSecurityBecomesInactive()
+        => AssertGovernedAmortizationAsync(premium: true, reversalReferenceChange: "inactive");
+
+    [LedgerDatabaseFact]
+    public Task CanonicalAmortization_ReversalUsesRetainedEconomicsAfterLaterEffectiveSecurityRevision()
+        => AssertGovernedAmortizationAsync(premium: false, reversalReferenceChange: "later-effective");
+
+    [LedgerDatabaseFact]
+    public Task CanonicalAmortization_ReversalUsesRetainedEconomicsAfterSecurityEffectiveWindowEnds()
+        => AssertGovernedAmortizationAsync(premium: true, reversalReferenceChange: "ended");
+
     private static async Task AssertGovernedAmortizationAsync(
-        bool premium, bool constantYield = false, string convention = "30/360", bool legacy = false)
+        bool premium, bool constantYield = false, string convention = "30/360", bool legacy = false,
+        string? reversalReferenceChange = null)
     {
         const string fund = "amortization-pipeline-fund";
         const string tenant = "amortization-pipeline-tenant";
@@ -291,6 +304,120 @@ public sealed class AssetAmortizationPostgresRoundTripTests
         (await restartedAssets.GetLatestAsync(eventId, 1, ct))!.Projection.SpineVersion.Should().Be(5);
         (await restartedJournal.GetByPeriodAsync(period.PeriodId, ct)).Should().ContainSingle();
         (await restartedJournal.GetTaxLotsByIdsAsync(bookId, [lotId], ct)).Single().Version.Should().Be(lot.Version + 1);
+        if (reversalReferenceChange is null)
+            return;
+
+        var revisedSecurity = security with
+        {
+            Version = security.Version + 1,
+            Status = reversalReferenceChange == "inactive" ? SecurityStatusDto.Inactive : SecurityStatusDto.Active,
+            EffectiveFrom = reversalReferenceChange == "later-effective"
+                ? new DateTimeOffset(date.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero) : security.EffectiveFrom,
+            EffectiveTo = reversalReferenceChange == "ended"
+                ? new DateTimeOffset(date.AddDays(-1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero) : null
+        };
+        await securities.UpsertProjectionAsync(revisedSecurity, ct);
+        revisedSecurity = (await securities.GetProjectionAsync(securityId, ct))!;
+        var reviewedReference = securityEvidence with
+        {
+            EvidenceId = "reversal-current-reference",
+            EvidenceVersion = revisedSecurity.Version,
+            EffectiveDate = DateOnly.FromDateTime(revisedSecurity.EffectiveFrom.UtcDateTime),
+            ContentHashSha256 = OpenLotAmortization.SecurityHash(revisedSecurity)
+        };
+        var reversalPreview = await new CanonicalLotAmortizationService(restartedJournal, securities, restartedAssets)
+            .PreviewReversalAsync(bookId, batch.MutationBatchId, reviewedReference, ct);
+        reversalPreview.Projection.FunctionalMovement.Should().Be(-movement);
+        reversalPreview.Projection.FunctionalCostBasis.Should().Be(lot.ToOpenLot().OpenFunctionalCostBasis);
+
+        // Independent reversal rules keep the same financial accounts and invert each reviewed line.
+        await configuration.UpsertPostingRuleAsync(new UpsertPostingRuleRequest(fund,
+            new PostingRuleDto(rule + "-reversal", "Retained amortization reversal", eventType, "generated", "v1",
+                EffectiveFrom: acquired, Priority: 101,
+                Formulas: [new AccountingRuleFormulaDto("amount", AccountingRuleFormulaKindDto.SourceAmount, 0m)],
+                GeneratedPostings:
+                [new GeneratedPostingLineDto("investments", assetPath, premium ? AccountingTemplateLineSideDto.Debit : AccountingTemplateLineSideDto.Credit,
+                    "amount", 0m, "USD"),
+                 new GeneratedPostingLineDto("amortization-income", incomePath, premium ? AccountingTemplateLineSideDto.Credit : AccountingTemplateLineSideDto.Debit,
+                    "amount", 0m, "USD")]), approver, CompanyId: company, LedgerBookId: bookId, TenantId: tenant), ct);
+        referenceQuery.GetRecordedByIdAsOfAsync(securityId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .Returns(new SecurityDetailDto(securityId, revisedSecurity.AssetClass, revisedSecurity.Status, revisedSecurity.DisplayName,
+                revisedSecurity.Currency, revisedSecurity.CommonTerms, revisedSecurity.AssetSpecificTerms,
+                revisedSecurity.Identifiers, revisedSecurity.Aliases, revisedSecurity.Version,
+                revisedSecurity.EffectiveFrom, revisedSecurity.EffectiveTo));
+        var reverseId = Guid.NewGuid();
+        var reverseSource = eventEvidence with
+        {
+            EvidenceId = "retained-reversal-source",
+            SubjectId = reverseId.ToString("D"),
+            SourceSystem = "Ledger",
+            SourceReference = batch.MutationBatchId.ToString("D")
+        };
+        RetainedEvidenceIdentityDto[] reverseEvidence = [acquisitionEvidence, reviewedReference, reverseSource];
+        var reverseEvent = new EconomicEventReferenceDto(reverseId, eventType, 1, date, DateTimeOffset.UtcNow,
+            reverseSource.SourceSystem, reverseSource.SourceReference, SourceContentHash: reverseSource.ContentHashSha256)
+        {
+            SecurityId = securityId,
+            BookPositionId = positionId,
+            RetainedEvidence = reverseEvidence,
+            EvidenceLinks = reverseEvidence.Select(item => item.EvidenceUri).ToArray()
+        };
+        var reverseLineage = new ProjectionLineageDto(Guid.NewGuid(), null, "canonical-lot-amortization",
+            OpenLotAmortization.ModelVersion, "test-fixture-v1", "reversal", date, DateTimeOffset.UtcNow,
+            reverseSource.SourceSystem, reverseSource.SourceReference, reverseEvent)
+        { BookPositionId = positionId, RetainedEvidence = reverseEvidence };
+        var reverseScope = scope with { ExpectedSecurityVersion = revisedSecurity.Version };
+        var correction = new AssetAccountingCorrectionReferenceDto(eventId, 1, batch.Journal.Entry.JournalEntryId,
+            bookId, period.PeriodId, AccountingBasisKindDto.Gaap, batch.MutationBatchId);
+        var reverseEffect = effect with
+        {
+            ProjectionRunId = reverseLineage.ProjectionRunId,
+            Lines = effect.Lines.Select(line => line with { Debit = line.Credit, Credit = line.Debit }).ToArray()
+        };
+        await spine.ProjectAsync(new ProjectAssetAccountingEventRequestDto(AssetAccountingEventKindDto.DepreciationAmortization,
+            reverseScope, reverseEvent, reverseLineage, reverseEffect, amount, "USD", period.Version,
+            preparer, DateTimeOffset.UtcNow, reverseEvidence, Correction: correction), ct);
+        var correctionApproval = new LedgerAdjustmentApprovalMetadataDto("review-original-amortization",
+            LedgerAdjustmentApprovalStatusDto.Approved, approver, DateTimeOffset.UtcNow, "retained-period-reversal",
+            EvidenceLink: "document://amortization/reversal-review");
+        var reverseMutation = new AssetLotMutationInstructionDto(AssetLotMutationIntentDto.Amortize,
+            AssetAccountId: assetPath, Amortization: reversalPreview.Instruction,
+            CorrectsMutationBatchId: batch.MutationBatchId, CorrectsJournalEntryId: batch.Journal.Entry.JournalEntryId,
+            CorrectionApproval: correctionApproval);
+        await spine.BuildPostingCandidateAsync(new AssetAccountingPostingCandidateRequestDto(AssetAccountingEventKindDto.DepreciationAmortization,
+            reverseScope, reverseEvent, reverseLineage, amount, "USD", preparer, DateTimeOffset.UtcNow,
+            "Reverse exact retained amortization", 2, period.Version, RetainedEvidence: reverseEvidence, LotMutation: reverseMutation), ct);
+        var reverseDraft = (await assets.GetLatestAsync(reverseId, 1, ct))!.Projection;
+        var reverseApprovalId = Guid.NewGuid().ToString("D");
+        var reverseApprovedAt = DateTimeOffset.UtcNow;
+        var reverseApproval = approvalEvidence with
+        {
+            EvidenceId = "reversal-period-approval",
+            SourceReference = reverseApprovalId,
+            ReviewedAtUtc = reverseApprovedAt,
+            RetainedAtUtc = reverseApprovedAt,
+            SubjectId = AssetAccountingEvidenceSubjects.PostingApprovalSubjectId(reverseId, 1, fund, bookId, period.PeriodId,
+                AccountingBasisKindDto.Gaap, reverseApprovalId, reverseDraft.DraftedCandidateFingerprint!, tenant, company)
+        };
+        var reverseRequest = new PostPostingRuleJournalCandidateRequestDto(reverseDraft.DraftedCandidate!, approver, reverseApprovalId,
+            ApprovalNotes: "Independently approve the exact retained inverse.", TenantId: tenant, CompanyId: company)
+        { ApprovalEvidence = [reverseApproval] };
+        var reversed = await postingService.PostCandidateAsync(reverseRequest, ct);
+        reversed.WasReplay.Should().BeFalse();
+        var restored = (await restartedJournal.GetTaxLotsByIdsAsync(bookId, [lotId], ct)).Single();
+        restored.ToOpenLot().Should().BeEquivalentTo(lot.ToOpenLot() with { Version = lot.Version + 2 });
+        restored.BasisAdjustment.Should().BeNull();
+        var reversedBatch = (await restartedJournal.GetAtomicTaxLotPostingAsync(reversed.TaxLotMutationBatchId!.Value, ct))!;
+        foreach (var line in batch.Journal.Entry.Lines)
+        {
+            var inverse = reversedBatch.Journal.Entry.Lines.Single(candidate => candidate.Account == line.Account);
+            inverse.Debit.Should().Be(line.Credit);
+            inverse.Credit.Should().Be(line.Debit);
+            inverse.Dimensions.Should().BeEquivalentTo(line.Dimensions);
+        }
+        (await new AccountingPostingCandidatePostService(candidateBuilder, restartedJournal, assetAccountingEventStore: restartedAssets)
+            .PostCandidateAsync(reverseRequest, ct)).WasReplay.Should().BeTrue();
+        (await restartedJournal.GetByPeriodAsync(period.PeriodId, ct)).Should().HaveCount(2);
     }
 
     private static ServiceProvider ComposePrimaryHost(

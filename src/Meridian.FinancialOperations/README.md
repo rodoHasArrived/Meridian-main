@@ -58,6 +58,12 @@ Infrastructure-to-Storage reference.
 `CanonicalLotAmortizationService` prepares read-only canonical face-lot projections from authoritative lot/reference records. Optional workstation postures may construct the service with absent stores, but preview requires ledger, Security Master, and book-position authority and refuses missing stores before any read. `AccountingPostingCandidatePostService` carries an `Amortize` instruction through the existing event-spine and independent approval rail to atomic journal/basis posting; the service itself cannot approve or post.
 `CanonicalLotAmortizationService.PreviewReversalAsync` derives an inverse from the immutable original lot mutation and refuses intervening lot changes. Drafting verifies the original snapshot and requires rebooks to reference a retained atomic reversal; independent approval remains mandatory. Reversals after reference changes require newly reviewed current Security Master evidence. Original retained journal lines and the prior lot snapshot determine inverse economics, including for a historical calculation-version receipt. New ordinary postings retain the current calculation-version requirement.
 
+A retained amortization correction may project current reference identity after the security becomes
+Inactive or its effective window changes. Drafting permits that reference state only for an exact
+retained reversal, with the corrected amortization bound to the same security and position. The
+current reference version and currency, immutable original batch, unchanged lot and independent
+approval remain required. New amortization and rebooks retain the Active/effective reference gate.
+
 New amortization postings require the current calculation version before approval is retained.
 Historical unversioned instructions remain readable for exact receipt replay; unposted legacy
 drafts require a fresh preview.
