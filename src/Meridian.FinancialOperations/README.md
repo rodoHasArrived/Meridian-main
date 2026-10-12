@@ -66,6 +66,8 @@ approval remain required. New amortization and rebooks retain the Active/effecti
 The authoritative position must retain the correction event and its exact evidence before
 projection. Fresh reference evidence preserves its observation date, including after the original
 accrual date, while event and approval evidence remain bound to that accrual date.
+Reversal journal lineage records the reviewed current reference status and version; an Inactive
+reference is never relabeled Active to satisfy the ordinary journal gate.
 
 New amortization postings require the current calculation version before approval is retained.
 Historical unversioned instructions remain readable for exact receipt replay; unposted legacy

@@ -211,6 +211,8 @@ public sealed class AssetAmortizationPostgresRoundTripTests
             "Canonical amortization accounting", acquired,
             RulePack: new AccountingPolicyRulePackDto("canonical-amortization-pack", "v1",
                 [new AccountingPolicyRuleDto(rule, AccountingTreatmentKindDto.General, "v1", SourceEventType: eventType,
+                    RequiresEvidence: true, RequiresApproval: true, AllowsAutoPosting: false),
+                 new AccountingPolicyRuleDto(rule + "-reversal", AccountingTreatmentKindDto.General, "v1", SourceEventType: eventType,
                     RequiresEvidence: true, RequiresApproval: true, AllowsAutoPosting: false)])), ct);
         var configurationStore = new PostgresAccountingConfigurationStore(ledgerOptions);
         var configuration = new AccountingConfigurationService(configurationStore, configurationStore, books);
@@ -423,6 +425,18 @@ public sealed class AssetAmortizationPostgresRoundTripTests
         restored.ToOpenLot().Should().BeEquivalentTo(lot.ToOpenLot() with { Version = lot.Version + 2 });
         restored.BasisAdjustment.Should().BeNull();
         var reversedBatch = (await restartedJournal.GetAtomicTaxLotPostingAsync(reversed.TaxLotMutationBatchId!.Value, ct))!;
+        reversedBatch.Journal.Entry.Metadata.Tags!["securityMasterProvenance"].Should()
+            .Contain($"status:{revisedSecurity.Status};version:{revisedSecurity.Version};");
+        reversedBatch.Journal.Entry.Metadata.Tags["securityMasterLineage"].Should()
+            .Contain($"security-status:{revisedSecurity.Status}:");
+        if (revisedSecurity.Status == SecurityStatusDto.Inactive)
+        {
+            var standalone = new LedgerJournalEntryWrite(reversedBatch.Journal.Entry, bookId, period.PeriodId,
+                PostingKind: LedgerPostingKindDto.Adjustment, SourceJournalEntryId: batch.Journal.Entry.JournalEntryId,
+                AdjustmentApproval: correctionApproval, PostingCommand: reverseDraft.DraftedCandidateResult!.PostingCommand);
+            var unprovedJournal = () => LedgerPeriodPostingGuard.Validate(standalone, period);
+            unprovedJournal.Should().Throw<LedgerValidationException>().WithMessage("*active Security Master status*");
+        }
         foreach (var line in batch.Journal.Entry.Lines)
         {
             var inverse = reversedBatch.Journal.Entry.Lines.Single(candidate => candidate.Account == line.Account);
