@@ -16,6 +16,7 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
 
     public PostgresFundAccountService(IFundAccountStore store)
     {
+        ArgumentNullException.ThrowIfNull(store);
         _store = store;
     }
 
@@ -25,10 +26,7 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         CreateAccountRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-
-        var existing = await _store.GetAccountAsync(request.AccountId, ct).ConfigureAwait(false);
-        if (existing is not null)
-            throw new InvalidOperationException($"Account {request.AccountId} already exists.");
+        ct.ThrowIfCancellationRequested();
 
         var dto = new AccountSummaryDto(
             request.AccountId,
@@ -52,7 +50,8 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
             request.CustodianDetails,
             request.BankDetails);
 
-        await _store.UpsertAccountAsync(dto, ct).ConfigureAwait(false);
+        if (!await _store.TryCreateAccountAsync(dto, ct).ConfigureAwait(false))
+            throw new InvalidOperationException($"Account {request.AccountId} already exists.");
         return dto;
     }
 
@@ -72,6 +71,7 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
         var existing = await _store.GetAccountAsync(accountId, ct).ConfigureAwait(false);
         if (existing is null)
             return null;
@@ -87,6 +87,7 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
         var existing = await _store.GetAccountAsync(accountId, ct).ConfigureAwait(false);
         if (existing is null)
             return null;
@@ -99,6 +100,7 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
     public async Task<AccountSummaryDto?> DeactivateAccountAsync(
         Guid accountId, string deactivatedBy, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var existing = await _store.GetAccountAsync(accountId, ct).ConfigureAwait(false);
         if (existing is null)
             return null;
@@ -128,14 +130,14 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         RecordAccountBalanceSnapshotRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        var account = await _store.GetAccountAsync(request.AccountId, ct).ConfigureAwait(false);
-        if (account is not null)
-            EnsureAllowed(account, "record-balance-snapshot", request.IsBackfill);
+        ct.ThrowIfCancellationRequested();
+        var account = await RequireAccountAsync(request.AccountId, ct).ConfigureAwait(false);
+        EnsureAllowed(account, "record-balance-snapshot", request.IsBackfill);
 
         var dto = new AccountBalanceSnapshotDto(
             Guid.NewGuid(),
             request.AccountId,
-            FundId: null,
+            FundId: account.FundId,
             request.AsOfDate,
             request.Currency,
             request.CashBalance,
@@ -169,9 +171,10 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         IngestCustodianStatementRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        var account = await _store.GetAccountAsync(request.AccountId, ct).ConfigureAwait(false);
-        if (account is not null)
-            EnsureAllowed(account, "ingest-custodian-statement", request.IsBackfill, allowSuspended: true);
+        ct.ThrowIfCancellationRequested();
+        FundAccountStatementValidation.Validate(request);
+        var account = await RequireAccountAsync(request.AccountId, ct).ConfigureAwait(false);
+        EnsureAllowed(account, "ingest-custodian-statement", request.IsBackfill, allowSuspended: true);
 
         var batch = new CustodianStatementBatchDto(
             request.BatchId,
@@ -191,9 +194,10 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         IngestBankStatementRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        var account = await _store.GetAccountAsync(request.AccountId, ct).ConfigureAwait(false);
-        if (account is not null)
-            EnsureAllowed(account, "ingest-bank-statement", request.IsBackfill, allowSuspended: true);
+        ct.ThrowIfCancellationRequested();
+        FundAccountStatementValidation.Validate(request);
+        var account = await RequireAccountAsync(request.AccountId, ct).ConfigureAwait(false);
+        EnsureAllowed(account, "ingest-bank-statement", request.IsBackfill, allowSuspended: true);
 
         var batch = new BankStatementBatchDto(
             request.BatchId,
@@ -222,7 +226,9 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         ReconcileAccountRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
 
+        await RequireAccountAsync(request.AccountId, ct).ConfigureAwait(false);
         var snapshots = await _store.GetBalanceHistoryAsync(request.AccountId, request.AsOfDate, request.AsOfDate, ct).ConfigureAwait(false)
             ?? Array.Empty<AccountBalanceSnapshotDto>();
         var positions = await _store.GetCustodianPositionsAsync(request.AccountId, request.AsOfDate, ct).ConfigureAwait(false)
@@ -244,7 +250,9 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
             results.Add(cashCheck);
         }
 
-        await AddContinuityCheckResultsAsync(runId, request.AsOfDate, results, request.AccountId, ct).ConfigureAwait(false);
+        var continuityCheck = AccountReconciliationChecks.BuildCashContinuityCheck(runId, snapshots);
+        if (continuityCheck is not null)
+            results.Add(continuityCheck);
 
         var positionCheck = AccountReconciliationChecks.BuildPositionCountCheck(runId, positions, custodianBatches);
         if (positionCheck is not null)
@@ -335,6 +343,7 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         ct.ThrowIfCancellationRequested();
 
         var capability = RequireText(request.Capability, nameof(request.Capability));
+        await RequireAccountAsync(request.AccountId, ct).ConfigureAwait(false);
         var now = DateTimeOffset.UtcNow;
         var attemptedAt = request.AttemptedAt ?? now;
         var completedAt = request.CompletedAt ?? (request.Status == AccountSyncStatusDto.Pending ? null : now);
@@ -387,12 +396,12 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
 
     public Task<IReadOnlyList<AccountSyncHistoryEntryDto>> GetSyncHistoryAsync(
         Guid accountId, string? capability = null, CancellationToken ct = default)
-        => _store.GetSyncHistoryAsync(accountId, capability, ct);
+        => _store.GetSyncHistoryAsync(accountId, NormalizeOptional(capability), ct);
 
     public async Task<AccountSyncHistoryEntryDto?> GetLatestSyncHistoryAsync(
         Guid accountId, string? capability = null, CancellationToken ct = default)
     {
-        var history = await _store.GetSyncHistoryAsync(accountId, capability, ct).ConfigureAwait(false);
+        var history = await _store.GetSyncHistoryAsync(accountId, NormalizeOptional(capability), ct).ConfigureAwait(false);
         return history.OrderByDescending(e => e.AttemptedAt).ThenByDescending(e => e.CompletedAt).FirstOrDefault();
     }
 
@@ -438,6 +447,7 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         ct.ThrowIfCancellationRequested();
 
         var currency = RequireText(request.Currency, nameof(request.Currency)).ToUpperInvariant();
+        await RequireAccountAsync(request.AccountId, ct).ConfigureAwait(false);
         var correlationId = NormalizeOptional(request.CorrelationId);
         var requirements = (request.Requirements ?? Array.Empty<MarginRequirementDto>())
             .Select(static r => r with
@@ -462,7 +472,14 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
             var match = existing.FirstOrDefault(e =>
                 string.Equals(e.CorrelationId, correlationId, StringComparison.OrdinalIgnoreCase));
             if (match is not null)
+            {
+                if (match.EffectiveAt != request.EffectiveAt && existing.Any(e =>
+                        e.MarginSnapshotId != match.MarginSnapshotId && e.EffectiveAt == request.EffectiveAt))
+                {
+                    throw new InvalidOperationException("A different margin snapshot already exists at the corrected effective time.");
+                }
                 snapshotId = match.MarginSnapshotId;
+            }
         }
 
         var snapshot = new MarginSnapshotDto(
@@ -594,39 +611,9 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
             throw new AccountStatusPolicyException(summary.OperationalStatus, operation, isBackfill);
     }
 
-    private async Task AddContinuityCheckResultsAsync(
-        Guid runId, DateOnly asOfDate, List<AccountReconciliationResultDto> results,
-        Guid accountId, CancellationToken ct)
-    {
-        var allSnapshots = await _store.GetBalanceHistoryAsync(accountId, asOfDate, asOfDate, ct).ConfigureAwait(false);
-
-        var accountSync = allSnapshots
-            .Where(static s => s.Source is not null && s.Source.StartsWith("brokerage-sync:", StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(static s => s.RecordedAt)
-            .FirstOrDefault();
-        var runDerived = allSnapshots
-            .Where(static s => s.Source is null || !s.Source.StartsWith("brokerage-sync:", StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(static s => s.RecordedAt)
-            .FirstOrDefault();
-
-        if (accountSync is null || runDerived is null)
-            return;
-
-        var variance = accountSync.CashBalance - runDerived.CashBalance;
-        results.Add(new AccountReconciliationResultDto(
-            Guid.NewGuid(),
-            runId,
-            CheckLabel: "RunVsAccountSyncCashContinuity",
-            IsMatch: variance == 0m,
-            Category: "Continuity",
-            Status: variance == 0m ? "Matched" : "Break",
-            ExpectedAmount: runDerived.CashBalance,
-            ActualAmount: accountSync.CashBalance,
-            Variance: variance,
-            Reason: variance == 0m
-                ? "Run-derived and account-sync-derived balances agree."
-                : "Run-derived and account-sync-derived balances diverge."));
-    }
+    private async Task<AccountSummaryDto> RequireAccountAsync(Guid accountId, CancellationToken ct)
+        => await _store.GetAccountAsync(accountId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Account {accountId} not found.");
 
     private static AccountReadinessSnapshotDto BuildReadinessSnapshot(
         AccountSummaryDto account,
@@ -637,7 +624,7 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         DateTimeOffset now)
     {
         var providerLinkStatus = latestSync?.ProviderLinkStatus ?? InferProviderLinkStatus(account);
-        var issues = new List<AccountReadinessIssueDto>();
+        var issues = AccountReadinessChecks.BuildStatusIssues(account, latestSync).ToList();
 
         if (providerLinkStatus == AccountProviderLinkStatusDto.NotLinked)
         {
