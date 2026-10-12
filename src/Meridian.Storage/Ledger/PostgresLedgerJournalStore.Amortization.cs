@@ -162,7 +162,8 @@ public sealed partial class PostgresLedgerJournalStore
             if (relief.MutationBatchId == Guid.Empty || !visited.Add(relief.MutationBatchId))
                 throw Unproved();
             AtomicTaxLotJournalResult? receipt;
-            try { receipt = await loadReceipt(relief.MutationBatchId).ConfigureAwait(false); }
+            try
+            { receipt = await loadReceipt(relief.MutationBatchId).ConfigureAwait(false); }
             catch (InvalidOperationException) { throw Unproved(); }
             if (receipt is null || receipt.MutationBatchId != relief.MutationBatchId
                 || receipt.MutationKind != AtomicTaxLotMutationKind.Disposal
@@ -184,15 +185,17 @@ public sealed partial class PostgresLedgerJournalStore
             // A reviewed reversal may restore this exact adjustment at a later version. Compare
             // every retained lot fact and both bases, allowing only that mutation's envelope to differ.
             if (!SameAmortizationLot(cursor, after with
-                { Version = cursor.Version, LastMutationBatchId = cursor.LastMutationBatchId, UpdatedAt = cursor.UpdatedAt }))
+            { Version = cursor.Version, LastMutationBatchId = cursor.LastMutationBatchId, UpdatedAt = cursor.UpdatedAt }))
                 throw Unproved();
             var selection = new LedgerTaxLotDisposalSelection(before.TaxLotRecordId, before.LotId,
                 before.Version, before.OpenQuantity, -mutation.QuantityDelta, mutation.SelectionOrdinal,
                 mutation.SelectionEvidenceId, before.UnitCost, mutation.CostBasis);
             var expected = before with
             {
-                OpenQuantity = after.OpenQuantity, Version = after.Version,
-                LastMutationBatchId = receipt.MutationBatchId, UpdatedAt = after.UpdatedAt,
+                OpenQuantity = after.OpenQuantity,
+                Version = after.Version,
+                LastMutationBatchId = receipt.MutationBatchId,
+                UpdatedAt = after.UpdatedAt,
                 BasisAdjustment = RetainDiscreteReliefRemainder(receipt.MutationBatchId, before, selection)
             };
             if (!SameAmortizationLot(after, expected))
