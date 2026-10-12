@@ -155,6 +155,7 @@ classDiagram
     }
     class Meridian_Contracts_AssetOperations_ProjectAssetAccountingEventRequestDto["ProjectAssetAccountingEventRequestDto"] {
         +string Actor
+        +Meridian_Contracts_Accounting_Lots_OpenLotSuccessorInstructionDto? CorporateAction
         +AssetAccountingCorrectionReferenceDto? Correction
         +string Currency
         +EconomicEventReferenceDto EconomicEvent
@@ -165,7 +166,6 @@ classDiagram
         +DateTimeOffset ProjectedAtUtc
         +ProjectedAccountingEffectDto ProjectedEffect
         +ProjectionLineageDto ProjectionLineage
-        +IReadOnlyList~RetainedEvidenceIdentityDto~ RetainedEvidence
     }
     class Meridian_Contracts_AssetOperations_ProjectedAccountingEffectDto["ProjectedAccountingEffectDto"] {
         +string Currency

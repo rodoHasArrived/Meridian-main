@@ -21,7 +21,7 @@ Total items: **238**
 | `docs/architecture/domains.md` | 120 | `NOTE` | ❌ | > Note: not every enum member is currently emitted by the three core collectors (`TradeDataCollector`, `MarketDepthCollector`, `QuoteCollector`); several are used by adapters, backfill paths, or the `L3OrderBookCollector`. |
 | `src/Meridian.Application/Commands/SecurityMasterCommands.cs` | 35 | `NOTE` | ❌ | // NOTE: _importService is null when the Security Master database is not configured at CLI |
 | `src/Meridian.Backtesting/Metrics/BacktestMetricsEngine.cs` | 314 | `NOTE` | ❌ | /// NOTE: This is an independent computation over fill events for metric attribution purposes. |
-| `src/Meridian.Backtesting/Portfolio/SimulatedPortfolio.cs` | 1444 | `NOTE` | ❌ | /// NOTE: This must stay consistent with <c>BacktestMetricsEngine.ComputeRealisedPnl</c>, |
+| `src/Meridian.Backtesting/Portfolio/SimulatedPortfolio.cs` | 1460 | `NOTE` | ❌ | /// NOTE: This must stay consistent with <c>BacktestMetricsEngine.ComputeRealisedPnl</c>, |
 | `src/Meridian.Core/Monitoring/MigrationDiagnostics.cs` | 17 | `NOTE` | ❌ | /// NOTE: This class lives in the Core project (not Application) so that |
 | `src/Meridian.Core/Serialization/MarketDataJsonContext.cs` | 177 | `NOTE` | ❌ | /// NOTE: Alpaca payloads use both "T" and "t" keys in the same object. |
 | `src/Meridian.Execution/BrokerageServiceRegistration.cs` | 286 | `NOTE` | ❌ | // NOTE: We intentionally use GetRequiredKeyedService here rather than |

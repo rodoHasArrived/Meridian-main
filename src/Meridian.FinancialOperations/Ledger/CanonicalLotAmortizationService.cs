@@ -21,6 +21,49 @@ public sealed class CanonicalLotAmortizationService(
     ISecurityMasterStore? securities,
     IInstrumentPositionProjectionStore? positions)
 {
+    /// <summary>Prepares an inverse from retained posting economics and reviewed reference authority.</summary>
+    public Task<CanonicalLotAmortizationPreview> PreviewReversalAsync(
+        Guid ledgerBookId, Guid mutationBatchId, CancellationToken ct = default)
+        => PreviewReversalAsync(ledgerBookId, mutationBatchId, null, ct);
+
+    public async Task<CanonicalLotAmortizationPreview> PreviewReversalAsync(
+        Guid ledgerBookId, Guid mutationBatchId, RetainedEvidenceIdentityDto? securityEvidence, CancellationToken ct = default)
+    {
+        var lotStore = lots ?? throw new InvalidOperationException("Canonical lot reversal requires an authoritative ledger journal store.");
+        var securityStore = securities ?? throw new InvalidOperationException("Canonical lot reversal requires an authoritative Security Master store.");
+        var positionStore = positions ?? throw new InvalidOperationException("Canonical lot reversal requires an authoritative book-position store.");
+        var original = await lotStore.GetAtomicTaxLotPostingAsync(mutationBatchId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException("The original amortization posting is unavailable.");
+        if (original.MutationKind != AtomicTaxLotMutationKind.Amortization || original.Mutations.Count != 1
+            || original.Mutations[0].LotBefore is null
+            || original.Mutations[0].LotAfter.LedgerBookId != ledgerBookId
+            || original.Mutations[0].LotAfter.BasisAdjustment?.MutationBatchId != mutationBatchId
+            || original.Mutations[0].LotAfter.BasisAdjustment?.Amortization is not { Reversal: null } inputs)
+            throw new InvalidOperationException("Reversal requires one retained original amortization mutation in the requested book.");
+        var mutation = original.Mutations[0];
+        var current = (await lotStore.GetTaxLotsByIdsAsync(ledgerBookId, [mutation.TaxLotRecordId], ct).ConfigureAwait(false)).SingleOrDefault()
+            ?? throw new InvalidOperationException("The amortization lot is unavailable.");
+        if (current.LastMutationBatchId != mutationBatchId
+            || !OpenLotAmortization.SameLot(current.ToOpenLot(), mutation.LotAfter.ToOpenLot()))
+            throw new InvalidOperationException("Amortization reversal requires the latest unchanged lot mutation.");
+        var position = await positionStore.GetBookPositionAsync(current.BookPositionId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException("The authoritative book position is unavailable.");
+        if (position.SecurityId != current.SecurityId || position.BookContext.LedgerBookId != ledgerBookId)
+            throw new InvalidOperationException("Canonical lot and book-position accounting scope differ.");
+        var security = await securityStore.GetProjectionAsync(current.SecurityId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException("Versioned Security Master evidence is unavailable.");
+        var instruction = inputs with
+        {
+            ExpectedLot = current.ToOpenLot(),
+            Security = security,
+            SecurityEvidence = securityEvidence ?? inputs.SecurityEvidence,
+            ExpectedBookPositionVersion = position.Version,
+            CalculationVersion = OpenLotAmortization.ModelVersion,
+            Reversal = new(mutationBatchId, original.Journal.Entry.JournalEntryId, mutation.LotBefore!.ToOpenLot())
+        };
+        return new(instruction, OpenLotAmortization.Project(instruction));
+    }
+
     public async Task<CanonicalLotAmortizationPreview> PreviewAsync(
         Guid ledgerBookId, Guid taxLotRecordId, DateOnly asOfDate,
         RetainedEvidenceIdentityDto securityEvidence, CancellationToken ct = default)
