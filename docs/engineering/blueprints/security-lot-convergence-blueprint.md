@@ -6,7 +6,7 @@
 
 **Owner:** Accounting and Ledger
 
-**Reviewed:** 2026-10-07
+**Reviewed:** 2026-10-12
 
 > **Breaking change**
 >
@@ -550,6 +550,12 @@ ordinary adjustment removal remains forbidden and every basis change requires a 
 Historical receipts retain their calculation and wire shape; newly drafted ordinary amortization
 keeps the current calculation, evidence and currency guards already on main. The PostgreSQL FIFO
 proof above covers partial/closing disposal after amortization and exact Reporting reconstruction.
+The 2026-10-12 continuation also permits later amortization after one or more partial discrete
+disposals. It proves the retained remainder from immutable before/after receipts and preserves
+the earlier amortization period check; an unsupported underlying basis treatment remains blocked.
+Premium continuation through closing relief and Reporting, discount reversal/rebook after partial
+relief, malformed-history refusal and backdated-posting refusal are covered in the same PostgreSQL
+fixture. Current-head test results remain PR evidence, and successor amortization remains open.
 Backtesting and shared Security Master lot projections also use retained cost basis for long,
 explicit short and recovered legacy-short unrealized P&L, while chained simulation transformations
 replace only generated composite summaries and preserve operator prose.

@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-07
+last_reviewed: 2026-10-12
 ---
 
 # src/Meridian.Storage
@@ -70,6 +70,13 @@ instruction, and matching acquisition/reference evidence in both the atomic requ
 journal. Missing or mismatched inputs are refused before mutation. Posting locks the Security Master
 parent and its hashed identifiers/aliases through commit; alias writes touch the parent in the same
 transaction so a posting with an older serializable snapshot refuses concurrent reference drift.
+
+Later amortization follows a partial discrete disposal's immutable before/after receipts back to
+the retained amortization treatment. It checks exact lot identity, acquisition facts, quantity,
+versions and both currency remainders before accepting the later period. A reviewed reversal can
+restore that same disposal remainder at a newer version; same-date rebooks still require approved
+correction lineage. Missing or inconsistent receipts and underlying AverageCost or corporate-action
+treatments fail closed. No persisted contract or migration changes are required.
 
 A reviewed amortization reversal restores the latest original mutation's complete prior basis adjustment and exactly inverts every retained financial journal line in the same transaction. It preserves acquisition facts, increments the lot version, and appends correction evidence. Same-date rebooks require the reversal receipt and approved lineage; intervening mutations, forged snapshots, wrong source journals and changed counteraccounts fail closed. Forward migration `V_ledger_043` permits restoration of a retained null prior adjustment only against the latest exact original amortization snapshot and an approved correction journal in the same scope and effective date; general adjustment removal remains forbidden. Earlier migrations, migration 040 constraints and current calculation/evidence guards remain intact.
 

@@ -139,16 +139,70 @@ public sealed partial class PostgresLedgerJournalStore
                 && last.Journal.Entry.Metadata.EffectiveDate == instruction.AsOfDate)
                 throw new LedgerValidationException("Same-date amortization after reversal requires approved rebook lineage to the reversal receipt.");
         }
-        if (instruction.Reversal is null && before.BasisAdjustment is { } prior
-            && (prior.Reason != OpenLotBasisAdjustmentReasons.Amortization || prior.Amortization is null
-                || prior.Amortization.AsOfDate >= instruction.AsOfDate))
-            throw new LedgerValidationException("Amortization requires a later period and cannot overwrite another basis treatment.");
+        if (instruction.Reversal is null)
+            await ValidateAmortizationBasisHistoryAsync(before, instruction.AsOfDate,
+                async batchId => await LoadAtomicTaxLotResultAsync(connection, transaction, batchId, false, ct).ConfigureAwait(false), ct).ConfigureAwait(false);
         var history = await ReadDatedLotQuantitiesAsync(connection, transaction, command.LedgerBookId,
             [before.TaxLotRecordId], ct).ConfigureAwait(false);
         if (history.Any(mutation => mutation.EffectiveDate > instruction.AsOfDate)
             || HistoricalTaxLotQuantity.Project(before, history, instruction.AsOfDate).OpenQuantity != before.OpenQuantity)
             throw new LedgerValidationException("Amortization cannot post before a retained lot mutation or use unproved partial holdings.");
         return before;
+    }
+
+    internal static async Task ValidateAmortizationBasisHistoryAsync(LedgerTaxLotRecord current, DateOnly asOfDate,
+        Func<Guid, Task<AtomicTaxLotJournalResult?>> loadReceipt, CancellationToken ct = default)
+    {
+        var cursor = current;
+        var visited = new HashSet<Guid>();
+        LedgerValidationException Unproved() => new("Amortization requires complete retained partial-disposal basis evidence.");
+        while (cursor.BasisAdjustment is { Reason: OpenLotBasisAdjustmentReasons.DisposalRelief } relief)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (relief.MutationBatchId == Guid.Empty || !visited.Add(relief.MutationBatchId))
+                throw Unproved();
+            AtomicTaxLotJournalResult? receipt;
+            try { receipt = await loadReceipt(relief.MutationBatchId).ConfigureAwait(false); }
+            catch (InvalidOperationException) { throw Unproved(); }
+            if (receipt is null || receipt.MutationBatchId != relief.MutationBatchId
+                || receipt.MutationKind != AtomicTaxLotMutationKind.Disposal
+                || receipt.ReliefMethod is not ("Fifo" or "Lifo" or "Hifo" or "SpecificId"))
+                throw Unproved();
+            var matching = receipt.Mutations.Where(item => item.TaxLotRecordId == cursor.TaxLotRecordId).ToArray();
+            if (matching.Length != 1 || matching[0].LotBefore is not { } before)
+                throw Unproved();
+            var mutation = matching[0];
+            var after = mutation.LotAfter;
+            if (mutation.MutationBatchId != receipt.MutationBatchId || mutation.MutationKind != AtomicTaxLotMutationKind.Disposal
+                || mutation.JournalEntryId != receipt.Journal.Entry.JournalEntryId
+                || mutation.ExpectedVersion != before.Version || mutation.ResultVersion != before.Version + 1
+                || after.Version != mutation.ResultVersion || after.Version > cursor.Version
+                || mutation.QuantityBefore != before.OpenQuantity || mutation.QuantityAfter != after.OpenQuantity
+                || mutation.QuantityDelta >= 0m || mutation.QuantityBefore + mutation.QuantityDelta != mutation.QuantityAfter
+                || after.OpenQuantity <= 0m || after.LastMutationBatchId != receipt.MutationBatchId)
+                throw Unproved();
+            // A reviewed reversal may restore this exact adjustment at a later version. Compare
+            // every retained lot fact and both bases, allowing only that mutation's envelope to differ.
+            if (!SameAmortizationLot(cursor, after with
+                { Version = cursor.Version, LastMutationBatchId = cursor.LastMutationBatchId, UpdatedAt = cursor.UpdatedAt }))
+                throw Unproved();
+            var selection = new LedgerTaxLotDisposalSelection(before.TaxLotRecordId, before.LotId,
+                before.Version, before.OpenQuantity, -mutation.QuantityDelta, mutation.SelectionOrdinal,
+                mutation.SelectionEvidenceId, before.UnitCost, mutation.CostBasis);
+            var expected = before with
+            {
+                OpenQuantity = after.OpenQuantity, Version = after.Version,
+                LastMutationBatchId = receipt.MutationBatchId, UpdatedAt = after.UpdatedAt,
+                BasisAdjustment = RetainDiscreteReliefRemainder(receipt.MutationBatchId, before, selection)
+            };
+            if (!SameAmortizationLot(after, expected))
+                throw Unproved();
+            cursor = before;
+        }
+        if (cursor.BasisAdjustment is { } prior
+            && (prior.Reason != OpenLotBasisAdjustmentReasons.Amortization || prior.Amortization is null
+                || prior.Amortization.AsOfDate >= asOfDate))
+            throw new LedgerValidationException("Amortization requires a later period and cannot overwrite another basis treatment.");
     }
 
     private async Task<LedgerTaxLotMutationRecord> ApplyAmortizationAsync(

@@ -189,6 +189,118 @@ public sealed partial class AtomicTaxLotJournalStoreTests
 
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
+    public async Task CanonicalAmortization_AfterPartialDisposals_ContinuesAndReportsCurrentBasis()
+    {
+        await using var fixture = await AmortFixture.CreateAsync(premium: true);
+        var first = await fixture.Store.AppendAssetPostingAsync(fixture.Command());
+        var partial = await fixture.CurrentBasisDisposalAsync(20m, new DateOnly(2026, 2, 1), "amort-continue-first");
+        await fixture.Store.AppendAssetPostingAsync(partial.Command);
+        var second = await fixture.CurrentBasisDisposalAsync(10m, new DateOnly(2026, 2, 15), "amort-continue-second");
+        await fixture.Store.AppendAssetPostingAsync(second.Command);
+        var survivor = (await fixture.Restart().ListOpenTaxLotsAsync(fixture.BookId, AmortAccount)).Single();
+        survivor.BasisAdjustment!.Reason.Should().Be(OpenLotBasisAdjustmentReasons.DisposalRelief);
+        survivor.ToOpenLot().OpenTransactionCostBasis.Should().Be(3_150m);
+        survivor.ToOpenLot().OpenFunctionalCostBasis.Should().Be(3_465m);
+
+        var next = fixture.Command(expectedLot: survivor.ToOpenLot(), asOf: new DateOnly(2026, 3, 1));
+        var posted = await fixture.Restart().AppendAssetPostingAsync(next);
+        var amortized = posted.MutatedLots.Single().ToOpenLot();
+        // Fourteen of twenty-four 30/360 months have elapsed: 3,300 - 300 * 14 / 24.
+        amortized.OpenTransactionCostBasis.Should().Be(3_125m);
+        amortized.OpenFunctionalCostBasis.Should().Be(3_437.5m);
+        amortized.OpenQuantity.Should().Be(3_000m);
+        amortized.Acquisition.Should().BeEquivalentTo(first.MutatedLots.Single().Acquisition);
+        (await fixture.Restart().AppendAssetPostingAsync(next)).IsExactReplay.Should().BeTrue();
+
+        var closing = await fixture.CurrentBasisDisposalAsync(30m, new DateOnly(2026, 4, 1), "amort-continue-closing");
+        closing.Relief.TransactionCostBasis.Should().Be(3_125m);
+        closing.Relief.FunctionalCostBasis.Should().Be(3_437.5m);
+        var closed = await fixture.Store.AppendAssetPostingAsync(closing.Command);
+        var history = (await fixture.Store.GetTaxLotDisposalHistoryAsync(fixture.BookId,
+            [closed.Journal.Entry.JournalEntryId])).Single();
+        CanonicalDisposalHistoryProjector.Project(history, closed.Journal.Entry, fixture.BookId, "USD")
+            .CostBasis.Should().Be(3_437.5m);
+        (await fixture.Restart().ListOpenTaxLotsAsync(fixture.BookId, AmortAccount)).Should().BeEmpty();
+        (await fixture.Store.GetByPeriodAsync(fixture.Period.PeriodId)).Should().HaveCount(5);
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task CanonicalAmortization_AfterPartialDisposal_ReversalRestoresReliefAndApprovedRebookContinues()
+    {
+        await using var fixture = await AmortFixture.CreateAsync(premium: false);
+        await fixture.Store.AppendAssetPostingAsync(fixture.Command());
+        var partial = await fixture.CurrentBasisDisposalAsync(20m, new DateOnly(2026, 2, 1), "amort-rebook-partial");
+        var disposed = await fixture.Store.AppendAssetPostingAsync(partial.Command);
+        var survivor = disposed.MutatedLots.Single();
+        var date = new DateOnly(2026, 4, 1);
+        var next = fixture.Command(expectedLot: survivor.ToOpenLot(), asOf: date);
+        var posted = await fixture.Restart().AppendAssetPostingAsync(next);
+        posted.MutatedLots.Single().ToOpenLot().OpenTransactionCostBasis.Should().Be(3_850m);
+        posted.MutatedLots.Single().ToOpenLot().OpenFunctionalCostBasis.Should().Be(4_235m);
+        var reversal = fixture.Reverse(posted);
+        var reversed = await fixture.Restart().AppendAssetPostingAsync(reversal);
+        var restored = reversed.MutatedLots.Single();
+        restored.BasisAdjustment.Should().BeEquivalentTo(survivor.BasisAdjustment);
+        restored.ToOpenLot().OpenTransactionCostBasis.Should().Be(3_800m);
+        restored.ToOpenLot().OpenFunctionalCostBasis.Should().Be(4_180m);
+        await AssertAmortizationRefusedAsync(fixture,
+            fixture.Command(expectedLot: restored.ToOpenLot(), asOf: date), restored, journalCount: 4);
+
+        var rebook = fixture.Command(expectedLot: restored.ToOpenLot(), asOf: date, corrects: reversed);
+        var rebooked = await fixture.Restart().AppendAssetPostingAsync(rebook);
+        rebooked.MutatedLots.Single().ToOpenLot().OpenTransactionCostBasis.Should().Be(3_850m);
+        rebooked.MutatedLots.Single().ToOpenLot().OpenFunctionalCostBasis.Should().Be(4_235m);
+        rebooked.MutatedLots.Single().Acquisition.Should().BeEquivalentTo(survivor.Acquisition);
+        (await fixture.Restart().AppendAssetPostingAsync(reversal)).IsExactReplay.Should().BeTrue();
+        (await fixture.Restart().AppendAssetPostingAsync(rebook)).IsExactReplay.Should().BeTrue();
+        (await fixture.Store.GetByPeriodAsync(fixture.Period.PeriodId)).Should().HaveCount(5);
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task CanonicalAmortization_AfterPartialDisposal_RequiresExactRetainedBasisHistory()
+    {
+        await using var fixture = await AmortFixture.CreateAsync(premium: true);
+        await fixture.Store.AppendAssetPostingAsync(fixture.Command());
+        var partial = await fixture.CurrentBasisDisposalAsync(20m, new DateOnly(2026, 2, 1), "amort-history-partial");
+        var receipt = await fixture.Store.AppendAssetPostingAsync(partial.Command);
+        var current = receipt.MutatedLots.Single();
+        var mutation = receipt.Mutations.Single();
+        var before = mutation.LotBefore!;
+        var date = new DateOnly(2026, 4, 1);
+        foreach (var invalid in new AtomicTaxLotJournalResult?[]
+        {
+            null,
+            receipt with { MutationBatchId = Guid.NewGuid() },
+            receipt with { ReliefMethod = "AverageCost" },
+            receipt with { Mutations = [] },
+            receipt with { Mutations = [mutation, mutation] },
+            receipt with { Mutations = [mutation with { LotBefore = null }] },
+            receipt with { Mutations = [mutation with { ResultVersion = mutation.ResultVersion + 1 }] },
+            receipt with { Mutations = [mutation with { CostBasis = mutation.CostBasis + 1m }] },
+            receipt with { Mutations = [mutation with { LotBefore = before with { LedgerBookId = Guid.NewGuid() } }] },
+            receipt with { Mutations = [mutation with { LotAfter = current with { OpenQuantity = current.OpenQuantity + 1m } }] },
+            receipt with { Mutations = [mutation with { LotBefore = before with
+                { BasisAdjustment = before.BasisAdjustment! with { Reason = OpenLotBasisAdjustmentReasons.AverageCostRedistribution } } }] }
+        })
+        {
+            var validate = () => PostgresLedgerJournalStore.ValidateAmortizationBasisHistoryAsync(current, date,
+                _ => Task.FromResult(invalid));
+            await validate.Should().ThrowAsync<LedgerValidationException>();
+        }
+        var repeatPeriod = () => PostgresLedgerJournalStore.ValidateAmortizationBasisHistoryAsync(current, AmortAsOf,
+            _ => Task.FromResult<AtomicTaxLotJournalResult?>(receipt));
+        await repeatPeriod.Should().ThrowAsync<LedgerValidationException>().WithMessage("*later period*");
+        await AssertAmortizationRefusedAsync(fixture,
+            fixture.Command(expectedLot: current.ToOpenLot(), asOf: new DateOnly(2026, 1, 15)), current, journalCount: 2);
+        (await fixture.Store.GetAtomicTaxLotPostingAsync(receipt.MutationBatchId))!.Mutations.Should().BeEquivalentTo(receipt.Mutations);
+        await fixture.Restart().AppendAssetPostingAsync(fixture.Command(expectedLot: current.ToOpenLot(), asOf: date));
+        (await fixture.Store.GetByPeriodAsync(fixture.Period.PeriodId)).Should().HaveCount(3);
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task CanonicalAmortization_ReferenceChangesAndLockedPeriod_LeaveNoJournalOrMutation()
     {
         await using var fixture = await AmortFixture.CreateAsync(premium: true);
