@@ -1948,6 +1948,7 @@ Meridian-main
 │   ├── product
 │   │   ├── plans
 │   │   │   ├── adversarial-review-2026-08-remediation-plan.md
+│   │   │   ├── certification-unblock-verification-2026-10-12.md
 │   │   │   ├── next-work-determination-2026-09-27.md
 │   │   │   ├── next-work-determination-2026-10-02.md
 │   │   │   ├── next-work-determination-2026-10-04.md
