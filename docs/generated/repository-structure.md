@@ -1948,6 +1948,7 @@ Meridian-main
 │   ├── product
 │   │   ├── plans
 │   │   │   ├── adversarial-review-2026-08-remediation-plan.md
+│   │   │   ├── certification-unblock-verification-2026-10-12.md
 │   │   │   ├── next-work-determination-2026-09-27.md
 │   │   │   ├── next-work-determination-2026-10-02.md
 │   │   │   ├── next-work-determination-2026-10-04.md
@@ -3971,6 +3972,7 @@ Meridian-main
 │   │   │   ├── MeridianDeploymentPosture.cs
 │   │   │   ├── MoneyMarketStartup.cs
 │   │   │   ├── PersistenceConfigurationStatus.cs
+│   │   │   ├── PortfolioRecordsServiceRegistration.cs
 │   │   │   ├── ProductionRegistrationGuardService.cs
 │   │   │   ├── ProductionServiceRegistrationPolicy.cs
 │   │   │   ├── SecurityMasterStartup.cs
@@ -5932,7 +5934,9 @@ Meridian-main
 │   │   │   ├── IAccountManagementService.cs
 │   │   │   └── IAccountQueryService.cs
 │   │   ├── FundAccounts
+│   │   │   ├── AccountReadinessChecks.cs
 │   │   │   ├── AccountReconciliationChecks.cs
+│   │   │   ├── FundAccountStatementValidation.cs
 │   │   │   ├── IFundAccountService.cs
 │   │   │   ├── InMemoryFundAccountService.cs
 │   │   │   └── PostgresFundAccountService.cs
@@ -9917,6 +9921,7 @@ Meridian-main
 │   │   │   │   ├── LocalTenantCapabilityCompositionTests.cs
 │   │   │   │   ├── MaintenanceFeatureRegistrationTests.cs
 │   │   │   │   ├── PipelineFeatureRegistrationTests.cs
+│   │   │   │   ├── PortfolioRecordsCompositionIntegrationTests.cs
 │   │   │   │   ├── ProcessWideHostedServiceRegistrationTests.cs
 │   │   │   │   ├── ProductionProhibitedDurableBindingTests.cs
 │   │   │   │   ├── ProductionRegistrationGuardServiceTests.cs
@@ -10690,7 +10695,8 @@ Meridian-main
 │   │   │       ├── FundAccountServiceContractTests.cs
 │   │   │       ├── FundAccountServiceTests.cs
 │   │   │       ├── InMemoryFundAccountServiceContractTests.cs
-│   │   │       └── PostgresFundAccountServiceContractTests.cs
+│   │   │       ├── PostgresFundAccountServiceContractTests.cs
+│   │   │       └── PostgresFundAccountServiceTests.cs
 │   │   ├── Providers
 │   │   │   ├── ProviderCapabilityDescriptorCatalogTests.cs
 │   │   │   └── ProviderInstrumentCapabilityMatrixServiceTests.cs
@@ -10885,6 +10891,7 @@ Meridian-main
 │   │   │   ├── FundAccounts
 │   │   │   │   ├── FundAccountDatabaseFactAttribute.cs
 │   │   │   │   ├── FundAccountDatabaseFixture.cs
+│   │   │   │   ├── PostgresFundAccountStoreTenantAdmissionTests.cs
 │   │   │   │   └── PostgresFundAccountStoreTests.cs
 │   │   │   ├── FundStructure
 │   │   │   │   └── PostgresFundStructureStoreTests.cs
