@@ -822,6 +822,8 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             nameof(projection.DraftedCandidateResultFingerprint));
         if (!string.IsNullOrWhiteSpace(projection.DraftedLotMutationFingerprint))
             tags["assetAccountingLotMutationFingerprint"] = projection.DraftedLotMutationFingerprint;
+        if (projection.DraftedLotMutation?.CorporateAction is { } successorInstruction)
+            tags[OpenLotSuccessors.JournalFingerprintTag] = OpenLotSuccessors.Fingerprint(successorInstruction);
 
         var generatedLines = projection.DraftedCandidateResult?.GeneratedPostingLines
             ?? throw new InvalidOperationException("The retained Drafted candidate is missing generated posting lines.");
@@ -1097,7 +1099,8 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             : throw new InvalidOperationException("Asset lot mutation requires a canonical asset accounting event type.");
         if ((instruction.Intent == AssetLotMutationIntentDto.Acquire && eventKind != AssetAccountingEventKindDto.Acquisition) ||
             (instruction.Intent == AssetLotMutationIntentDto.Dispose && eventKind != AssetAccountingEventKindDto.Disposal) ||
-            (instruction.Intent == AssetLotMutationIntentDto.Amortize && eventKind != AssetAccountingEventKindDto.DepreciationAmortization))
+            (instruction.Intent == AssetLotMutationIntentDto.Amortize && eventKind != AssetAccountingEventKindDto.DepreciationAmortization) ||
+            (instruction.Intent == AssetLotMutationIntentDto.CorporateAction && eventKind != AssetAccountingEventKindDto.CorporateAction))
         {
             throw new InvalidOperationException(
                 "Asset lot mutation intent must match the canonical acquisition or disposal event kind.");
@@ -1245,10 +1248,28 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                 "Amortization asset posting must equal the reviewed carrying-value movement.");
             mutationKind = AtomicTaxLotMutationKind.Amortization;
         }
+        else if (instruction.Intent == AssetLotMutationIntentDto.CorporateAction)
+        {
+            var inputs = instruction.CorporateAction
+                ?? throw new InvalidOperationException("Corporate-action posting requires retained successor inputs.");
+            OpenLotSuccessors.Validate(inputs);
+            RequireAssetAssertion(inputs.ExpectedLot.SecurityId == authority.Context.SecurityId
+                && inputs.ExpectedLot.BookPositionId == authority.Context.BookPositionId
+                && inputs.ExpectedLot.LedgerBookId == ledgerBook.LedgerBookId
+                && inputs.ExpectedSecurityVersion == authority.Context.SecurityVersion
+                && inputs.Projection.LotMutations!.ExpectedPositionVersion == authority.Context.ExpectedBookPositionVersion
+                && inputs.Projection.EconomicEvent!.EventId == sourceEventId
+                && inputs.Projection.EconomicEvent.EffectiveDate == request.Candidate.EffectiveDate
+                && inputs.Projection.EventAmount == request.Candidate.EventAmount
+                && inputs.ExpectedLot.Acquisition.FunctionalCurrency == ledgerBook.BaseCurrency
+                && PayloadEquals(inputs, approvedWrite.PostingCommand?.LotCorporateAction),
+                "Successor inputs must match the governed event, posting command and exact predecessor authority.");
+            mutationKind = AtomicTaxLotMutationKind.CorporateAction;
+        }
         else
         {
             throw new InvalidOperationException(
-                "Atomic lot posting supports only acquisition and disposal mutations.");
+                "Atomic lot posting requires a supported acquisition, disposal, amortization or corporate-action instruction.");
         }
 
         var command = AtomicTaxLotJournalCommand.Create(
@@ -1268,7 +1289,8 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             instruction.ReliefMethod,
             instruction.PolicyRevision,
             instruction.DisposalSalePrice,
-            instruction.Amortization);
+            instruction.Amortization,
+            instruction.CorporateAction);
         return await atomicStore.AppendAssetPostingAsync(command, ct).ConfigureAwait(false);
     }
 

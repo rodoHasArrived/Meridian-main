@@ -3,6 +3,7 @@ using FluentAssertions;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FixedIncome;
+using Meridian.Contracts.Ledger;
 using Meridian.Tests.Storage;
 
 namespace Meridian.Tests.AssetOperations;
@@ -165,6 +166,169 @@ public sealed class AmortizationLotInstructionContractTests
         // explicitly declared DisposalSelections property follows the generated record properties.
         AssetLotMutationInstructionValidator.Fingerprint(new AssetLotMutationInstructionDto(AssetLotMutationIntentDto.None))
             .Should().Be("a81fa5e2e9962c93185204340b8bff6f70a9caf15a2c528b41868722436cb1d9");
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    public void Reversal_RestoresRetainedPriorBasisWithTheExactInverseMovement(bool premium, bool previouslyAdjusted)
+    {
+        var original = AtomicTaxLotJournalStoreTests.AmortPureInstruction(premium ? 110m : 90m, 10m,
+            BondAmortizationMethod.StraightLine, null);
+        if (previouslyAdjusted)
+        {
+            var basis = premium ? 107m : 93m;
+            original = original with
+            {
+                ExpectedLot = original.ExpectedLot with
+                { OpenTransactionCostBasis = basis, OpenFunctionalCostBasis = basis * 1.1m }
+            };
+        }
+        var forward = OpenLotAmortization.Project(original);
+        var reversal = ReversalInputs(original);
+
+        var inverse = OpenLotAmortization.Project(reversal);
+
+        inverse.TransactionCostBasis.Should().Be(original.ExpectedLot.OpenTransactionCostBasis);
+        inverse.FunctionalCostBasis.Should().Be(original.ExpectedLot.OpenFunctionalCostBasis);
+        inverse.TransactionMovement.Should().Be(-forward.TransactionMovement);
+        inverse.FunctionalMovement.Should().Be(-forward.FunctionalMovement);
+        ValidateInstruction(CorrectionInstruction(reversal)).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("quantity")]
+    [InlineData("acquisition")]
+    [InlineData("position")]
+    [InlineData("version")]
+    [InlineData("batch")]
+    [InlineData("journal")]
+    public void Reversal_RejectsChangedImmutableFactsAndInvalidWitnesses(string defect)
+    {
+        var inputs = ReversalInputs(Inputs());
+        var reversal = inputs.Reversal!;
+        var before = reversal.RestoresLot;
+        reversal = defect switch
+        {
+            "quantity" => reversal with { RestoresLot = before with { OpenQuantity = before.OpenQuantity - 1m } },
+            "acquisition" => reversal with
+            {
+                RestoresLot = before with
+                { Acquisition = before.Acquisition with { HoldingPeriodStartDate = before.AcquiredDate.AddDays(-1) } }
+            },
+            "position" => reversal with { RestoresLot = before with { BookPositionId = Guid.NewGuid() } },
+            "version" => reversal with { RestoresLot = before with { Version = inputs.ExpectedLot.Version } },
+            "batch" => reversal with { MutationBatchId = Guid.Empty },
+            "journal" => reversal with { JournalEntryId = Guid.Empty },
+            _ => throw new ArgumentOutOfRangeException(nameof(defect))
+        };
+
+        var project = () => OpenLotAmortization.Project(inputs with { Reversal = reversal });
+
+        project.Should().Throw<ArgumentException>().WithMessage("*original lot identity, quantity and acquisition facts*");
+    }
+
+    [Theory]
+    [InlineData("missing-all")]
+    [InlineData("missing-batch")]
+    [InlineData("missing-journal")]
+    [InlineData("missing-approval")]
+    [InlineData("wrong-batch")]
+    [InlineData("wrong-journal")]
+    [InlineData("empty-batch")]
+    [InlineData("empty-journal")]
+    [InlineData("unapproved")]
+    [InlineData("no-approver")]
+    [InlineData("no-reason")]
+    [InlineData("non-utc")]
+    public void Reversal_RejectsIncompleteOrDifferentCorrectionLineageBeforeApproval(string defect)
+    {
+        var instruction = CorrectionInstruction(ReversalInputs(Inputs()));
+        var approval = instruction.CorrectionApproval!;
+        instruction = defect switch
+        {
+            "missing-all" => instruction with { CorrectsMutationBatchId = null, CorrectsJournalEntryId = null, CorrectionApproval = null },
+            "missing-batch" => instruction with { CorrectsMutationBatchId = null },
+            "missing-journal" => instruction with { CorrectsJournalEntryId = null },
+            "missing-approval" => instruction with { CorrectionApproval = null },
+            "wrong-batch" => instruction with { CorrectsMutationBatchId = Guid.NewGuid() },
+            "wrong-journal" => instruction with { CorrectsJournalEntryId = Guid.NewGuid() },
+            "empty-batch" => instruction with { CorrectsMutationBatchId = Guid.Empty },
+            "empty-journal" => instruction with { CorrectsJournalEntryId = Guid.Empty },
+            "unapproved" => instruction with { CorrectionApproval = approval with { Status = LedgerAdjustmentApprovalStatusDto.Pending } },
+            "no-approver" => instruction with { CorrectionApproval = approval with { ApprovedBy = "" } },
+            "no-reason" => instruction with { CorrectionApproval = approval with { ReasonCode = "" } },
+            "non-utc" => instruction with { CorrectionApproval = approval with { ApprovedAt = approval.ApprovedAt.ToOffset(TimeSpan.FromHours(1)) } },
+            _ => throw new ArgumentOutOfRangeException(nameof(defect))
+        };
+
+        ValidateInstruction(instruction).Should().NotBeEmpty();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Amortization_RejectsDisposalSalePriceBeforeApproval(bool reversal)
+    {
+        var instruction = reversal ? CorrectionInstruction(ReversalInputs(Inputs())) : Instruction(Inputs());
+
+        ValidateInstruction(instruction with { DisposalSalePrice = 0m }).Should()
+            .Contain(issue => issue.Contains("complete Amortize instruction"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OrdinaryAmortization_NullReversalPreservesThePriorSerializedShape(bool legacy)
+    {
+        var inputs = Inputs() with { CalculationVersion = legacy ? null : OpenLotAmortization.ModelVersion };
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        { DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull };
+        var priorShape = new
+        {
+            inputs.ExpectedLot,
+            inputs.Security,
+            inputs.SecurityEvidence,
+            inputs.ExpectedBookPositionVersion,
+            inputs.AsOfDate,
+            inputs.CalculationVersion
+        };
+
+        JsonSerializer.Serialize(inputs, options).Should().Be(JsonSerializer.Serialize(priorShape, options));
+    }
+
+    private static OpenLotAmortizationInstructionDto ReversalInputs(OpenLotAmortizationInstructionDto original)
+    {
+        var projected = OpenLotAmortization.Project(original);
+        return original with
+        {
+            ExpectedLot = original.ExpectedLot with
+            {
+                Version = original.ExpectedLot.Version + 1,
+                OpenTransactionCostBasis = projected.TransactionCostBasis,
+                OpenFunctionalCostBasis = projected.FunctionalCostBasis
+            },
+            Reversal = new(Guid.NewGuid(), Guid.NewGuid(), original.ExpectedLot)
+        };
+    }
+
+    private static AssetLotMutationInstructionDto CorrectionInstruction(OpenLotAmortizationInstructionDto inputs)
+        => Instruction(inputs) with
+        {
+            CorrectsMutationBatchId = inputs.Reversal!.MutationBatchId,
+            CorrectsJournalEntryId = inputs.Reversal.JournalEntryId,
+            CorrectionApproval = new("amortization-correction", LedgerAdjustmentApprovalStatusDto.Approved,
+                "independent-controller", new DateTimeOffset(2026, 1, 2, 0, 0, 0, TimeSpan.Zero), "correct-amortization")
+        };
+
+    private static IReadOnlyList<string> ValidateInstruction(AssetLotMutationInstructionDto instruction)
+    {
+        var inputs = instruction.Amortization!;
+        return AssetLotMutationInstructionValidator.Validate(AssetAccountingEventKindDto.DepreciationAmortization,
+            instruction, Math.Abs(OpenLotAmortization.Project(inputs).FunctionalMovement), inputs.AsOfDate,
+            inputs.ExpectedLot.Acquisition.Evidence.Append(inputs.SecurityEvidence).ToArray());
     }
 
     private static OpenLotAmortizationInstructionDto Inputs()
