@@ -152,7 +152,7 @@ public static class OpenLotSuccessors
             && mutations.Mutations.Count == targets.Count,
             "The supported exchange, split or merger requires one successor; advance refunding requires exactly two.");
         Require(targets.Select(static target => target.Lot.TaxLotRecordId).Distinct().Count() == targets.Count
-            && targets.Select(static target => target.Lot.LotId).Distinct(StringComparer.Ordinal).Count() == targets.Count
+            && targets.Select(static target => target.Lot.LotId?.Trim()).Distinct(StringComparer.Ordinal).Count() == targets.Count
             && targets.Select(static target => target.Lot.SecurityId).Distinct().Count() == targets.Count
             && targets.Select(static target => target.Lot.BookPositionId).Distinct().Count() == targets.Count,
             "Successors require distinct durable lot identities, lot labels, Security Master and book-position identities.");
@@ -224,7 +224,7 @@ public static class OpenLotSuccessors
                 && mutation.TargetOperation == CorporateActionLotTargetOperationDto.Create
                 && mutation.ExpectedTargetLotVersion is null && mutation.TargetBefore is null
                 && mutation.TargetSecurityId == lot.SecurityId && (split ? lot.SecurityId == source.SecurityId : lot.SecurityId != source.SecurityId)
-                && lot.TaxLotRecordId != source.TaxLotRecordId && lot.LotId != source.LotId
+                && lot.TaxLotRecordId != source.TaxLotRecordId && lot.LotId.Trim() != source.LotId.Trim()
                 && (split || lot.BookPositionId != source.BookPositionId) && lot.LedgerBookId == source.LedgerBookId
                 && lot.Version == 1 && lot.OriginalQuantity == lot.OpenQuantity && lot.OpenQuantity > 0
                 && target.ExpectedBookPositionVersion > 0 && target.ExpectedSecurityVersion > 0

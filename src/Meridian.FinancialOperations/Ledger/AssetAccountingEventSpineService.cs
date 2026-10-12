@@ -861,6 +861,10 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
                 && corporateAction.ExpectedSecurityVersion == security.Version
                 && corporateAction.ExpectedLot.Acquisition.FunctionalCurrency == source.Currency,
                 "Successor currency authority must bind the exact source security and retained canonical event.");
+            RequireAssertion(DateOnly.FromDateTime(security.EffectiveFrom.UtcDateTime) <= source.EconomicEvent.EffectiveDate
+                && (security.EffectiveTo is null
+                    || source.EconomicEvent.EffectiveDate <= DateOnly.FromDateTime(security.EffectiveTo.Value.UtcDateTime)),
+                "Source Security Master record is not effective on the corporate-action date.");
         }
         RequireAssertion(string.Equals(security.Currency,
                 corporateAction?.ExpectedLot.Acquisition.AcquisitionCurrency ?? source.Currency, StringComparison.OrdinalIgnoreCase),
@@ -1144,8 +1148,8 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
         var deferralStore = _journalStore as IWashSaleDeferralStore
             ?? throw new InvalidOperationException(
                 "Successor candidate authority requires retained wash-sale holding-period carry evidence.");
-        // Sale dates can follow the action date: retained carry evidence must not disappear when
-        // the replacement lot receives a new durable identity.
+        // Sale dates can follow the action date. Even an unchanged holding date carries a separate
+        // basis claim that must not disappear when the replacement lot receives a new identity.
         var deferrals = await deferralStore.ListWashSaleDeferralsAsync(source.LedgerBookId,
             DateOnly.MinValue, DateOnly.MaxValue, ct).ConfigureAwait(false);
         var visited = new HashSet<Guid>();
@@ -1157,9 +1161,8 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
                 && visited.Count < 32 && visited.Add(cursor.TaxLotRecordId),
                 "Successor holding-period carry ancestry is missing, cyclic or exceeds the supported depth.");
             RequireAssertion(!deferrals.Any(deferral => deferral.LedgerBookId == source.LedgerBookId
-                    && deferral.ReplacementTaxLotRecordId == cursor.TaxLotRecordId
-                    && deferral.HoldingPeriodCarryDate < source.Acquisition.HoldingPeriodStartDate),
-                "Unsupported inherited wash-sale holding-period carry requires reviewed successor lineage before drafting.");
+                    && deferral.ReplacementTaxLotRecordId == cursor.TaxLotRecordId),
+                "Unsupported inherited wash-sale basis or holding-period carry requires reviewed successor lineage before drafting.");
             var predecessorId = cursor.Acquisition?.CorporateActionLineage?.PredecessorTaxLotRecordId
                 ?? cursor.BasisAdjustment?.CorporateAction?.ExpectedLot.TaxLotRecordId;
             if (predecessorId is null && cursor.OriginatingMutationBatchId is { } birthBatchId)

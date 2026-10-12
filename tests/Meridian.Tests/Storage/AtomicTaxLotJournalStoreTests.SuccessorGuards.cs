@@ -53,15 +53,29 @@ public sealed partial class AtomicTaxLotJournalStoreTests
 
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
-    public async Task CorporateActionSuccessors_SecondNaturalKeyCollision_RollsBackJournalEveryLotEvidenceAndAudit()
+    public async Task CorporateActionSuccessors_RetainedNaturalKeyCollision_RefusesBeforeAnyWrite()
+    {
+        await AssertRetainedSuccessorLabelRefusedAsync(closeExistingLot: false);
+        await AssertRetainedSuccessorLabelRefusedAsync(closeExistingLot: true);
+    }
+
+    private static async Task AssertRetainedSuccessorLabelRefusedAsync(bool closeExistingLot)
     {
         await using var fixture = await AmortFixture.CreateAsync(premium: true);
         var existing = await AcquireSplitAncestryUnitsAsync(fixture);
+        if (closeExistingLot)
+        {
+            var split = await SplitAncestryCommandAsync(fixture, existing, Guid.NewGuid(), AmortAsOf.AddDays(1),
+                ratio: 2m, legacyProjection: false);
+            existing = (await fixture.Store.AppendAssetPostingAsync(split)).MutatedLots
+                .Single(lot => lot.TaxLotRecordId == existing.TaxLotRecordId);
+            existing.OpenQuantity.Should().Be(0m);
+        }
         var valid = await SuccessorCommandAsync(fixture, advanceRefunding: true);
         var instruction = valid.CorporateAction!;
         var ordered = instruction.Successors.OrderBy(target => target.Lot.TaxLotRecordId).ToArray();
-        // Both target labels are distinct. The first insertion succeeds, then the second collides
-        // with a separately acquired lot on the durable book/account/lot-label key.
+        // Both target identities and labels are distinct, but one label is already retained by a
+        // separately acquired lot under the same full account key.
         var collision = ordered[1] with { Lot = ordered[1].Lot with { LotId = existing.LotId } };
         instruction = instruction with
         {
@@ -73,8 +87,16 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var countsBefore = await ReadSplitAncestryCountsAsync(fixture);
         var post = () => fixture.Store.AppendAssetPostingAsync(command);
 
-        await post.Should().ThrowAsync<PostgresException>()
-            .Where(exception => exception.SqlState == PostgresErrorCodes.UniqueViolation);
+        await post.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("Successor lot label is already retained in the ledger account; only new successor lots are supported.");
+        var whitespaceAlias = instruction with
+        {
+            Successors = instruction.Successors.Select(target => target.Lot.TaxLotRecordId == collision.Lot.TaxLotRecordId
+                ? target with { Lot = target.Lot with { LotId = "  " + existing.LotId + "  " } } : target).ToArray()
+        };
+        var postAlias = () => fixture.Store.AppendAssetPostingAsync(BindSuccessorGuardInstruction(valid, whitespaceAlias));
+        await postAlias.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("Successor lot label is already retained in the ledger account; only new successor lots are supported.");
 
         (await ReadSplitAncestryCountsAsync(fixture)).Should().Be(countsBefore);
         (await fixture.Restart().GetAtomicTaxLotPostingAsync(command.MutationBatchId)).Should().BeNull();

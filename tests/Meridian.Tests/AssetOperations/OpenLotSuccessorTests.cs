@@ -56,13 +56,15 @@ public sealed class OpenLotSuccessorTests
         mutations.Sum(item => item.SourceCarryingAmount).Should().Be(source.OpenFunctionalCostBasis);
     }
 
-    [Fact]
-    public void AdvanceRefunding_RejectsDuplicateLotLabelsBeforeMappingOrDrafting()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AdvanceRefunding_RejectsDuplicateLotLabelsBeforeMappingOrDrafting(bool surroundingWhitespace)
     {
         var source = OpenLotSuccessorTestData.Predecessor();
         var first = OpenLotSuccessorTestData.Successor(source, 0.6m);
         var second = OpenLotSuccessorTestData.Successor(source, 0.4m);
-        second = second with { Lot = second.Lot with { LotId = first.Lot.LotId } };
+        second = second with { Lot = second.Lot with { LotId = surroundingWhitespace ? $" {first.Lot.LotId} " : first.Lot.LotId } };
         var instruction = OpenLotSuccessorTestData.Build(source, [first, second], advanceRefunding: true);
 
         var validate = () => OpenLotSuccessors.Validate(instruction);
@@ -71,6 +73,19 @@ public sealed class OpenLotSuccessorTests
         var mapped = new CorporateActionAssetAccountingEventMapper().Map(OpenLotSuccessorTestData.MapRequest(instruction));
         mapped.IsMapped.Should().BeFalse();
         mapped.Blockers.Should().Contain(item => item.Code == "corporate-action.canonical-successors-invalid");
+    }
+
+    [Fact]
+    public void Exchange_RejectsPredecessorLotLabelWithWhitespaceAlias()
+    {
+        var source = OpenLotSuccessorTestData.Predecessor();
+        var successor = OpenLotSuccessorTestData.Successor(source, 1m);
+        successor = successor with { Lot = successor.Lot with { LotId = $" {source.LotId} " } };
+        var instruction = OpenLotSuccessorTestData.Build(source, [successor]);
+
+        var validate = () => OpenLotSuccessors.Validate(instruction);
+
+        validate.Should().Throw<ArgumentException>().WithMessage("*create-only plan*");
     }
 
     [Fact]

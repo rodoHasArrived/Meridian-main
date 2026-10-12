@@ -84,6 +84,9 @@ Bounded corporate-action successor posting uses `V_ledger_042` and that same ser
 boundary. A cashless Reg S/144A exchange closes one predecessor into one new lot; advance refunding
 closes one face lot into exactly two new lots. The transaction locks reviewed Security Master and
 book-position authority, checks the predecessor snapshot/version and empty target identities, and
+locks any retained target labels under the full book/account-name/type/symbol/financial-account key.
+Closed lots still reserve their labels, and the check uses the same trimmed labels as acquisition
+persistence. A collision fails through governed validation before any journal write. The transaction
 commits the reclassification journal, predecessor CAS, every successor and immutable mutation
 snapshot together. Both currency bases reconcile to the retained allocation while acquisition FX,
 holding dates and original acquisition evidence remain intact. Exact retries return the retained
@@ -301,7 +304,7 @@ The populated through-041 migration upgrade/reapply/restart and failure-recovery
 `AtomicTaxLotSuccessorMigrationTests`.
 Ancestry coverage lives in `CorporateActionSuccessorAncestryTests` and
 `AtomicTaxLotJournalStoreTests.SuccessorAncestry`; atomic type/approval/correction, competing-command,
-collision and dimension refusals live in `AtomicTaxLotJournalStoreTests.SuccessorGuards`.
+open/closed lot-label collision and dimension refusals live in `AtomicTaxLotJournalStoreTests.SuccessorGuards`.
 `AtomicTaxLotJournalStoreTests.Amortization` covers migration 043 null-basis reversal/rebook and
 ungoverned adjustment-removal refusal. Current validation results are recorded on the canonical PR.
 

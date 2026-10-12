@@ -220,6 +220,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
         if (instruction.Successors.Any(target => FindCorporateActionLine(command.Journal.Entry.Lines, target.Lot, debit: true).Account
             != before.Account))
             throw new LedgerValidationException("Successor posting cannot transfer lots between ledger accounts.");
+        await LockSuccessorLotLabelsAsync(connection, transaction, command, before.Account, ct).ConfigureAwait(false);
         await CorporateActionSuccessorAncestry.ValidateAsync(before, instruction, async birthBatchId =>
         {
             var batch = await LoadAtomicTaxLotBatchAsync(connection, transaction, birthBatchId, ct).ConfigureAwait(false);
@@ -239,6 +240,29 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
         foreach (var target in instruction.Successors)
             _ = CreateCorporateActionSuccessor(command, target.Lot, before.CreatedAt);
         return before;
+    }
+
+    private async Task LockSuccessorLotLabelsAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
+        AtomicTaxLotJournalCommand command, LedgerAccount account, CancellationToken ct)
+    {
+        // Match the durable unique key, including closed lots and normalized labels. Serializable
+        // predicate reads protect absent keys; retained matches are locked before any journal write.
+        await using var guard = connection.CreateCommand();
+        guard.Transaction = transaction;
+        guard.CommandText = $"""
+            select tax_lot_record_id from {Qualified("tax_lots")}
+            where ledger_book_id = @book and account_name = @account_name and account_type = @account_type
+              and coalesce(symbol, '') = coalesce(@symbol, '')
+              and coalesce(financial_account_id, '') = coalesce(@financial_account_id, '')
+              and lot_id = any(@labels)
+            order by tax_lot_record_id
+            for update;
+            """;
+        guard.Parameters.AddWithValue("book", command.LedgerBookId);
+        AddAccountParameters(guard, account);
+        guard.Parameters.AddWithValue("labels", command.CorporateAction!.Successors.Select(target => target.Lot.LotId.Trim()).ToArray());
+        if (await guard.ExecuteScalarAsync(ct).ConfigureAwait(false) is not null)
+            throw new LedgerValidationException("Successor lot label is already retained in the ledger account; only new successor lots are supported.");
     }
 
     private static LedgerDimensionSetDto CorporateActionPositionDimensions(BookPositionDto position)

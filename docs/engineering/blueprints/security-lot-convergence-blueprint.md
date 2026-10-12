@@ -538,9 +538,12 @@ retries return the committed receipt before new-posting ancestry checks.
 Any separately retained wash-sale deferral on a predecessor or its ancestry blocks a new successor,
 including unchanged or later holding dates: the deferral's positive basis claim cannot yet follow
 the new identity. Concurrent retention shares the posting lock, later new claims refuse, and exact
-historical successor/deferral replays retain their original evidence. Successor lot labels must also
-be distinct before mapping or drafting; database collision rollback remains covered for a separate
-previously acquired lot with the same natural key.
+historical successor/deferral replays retain their original evidence. Draft preparation applies the
+same deferral refusal, and source and successor Security Master records must cover the economic
+event date rather than relying only on the later accounting timestamp. Successor lot labels must
+be distinct after trimming before mapping or drafting. Storage locks labels already retained under
+the full account key, including closed lots, and refuses collisions before any journal write;
+injected failure on the final mutation independently proves whole-transaction rollback.
 Reporting validates the immutable posting receipts, preserves exact batch JSON and hashes on
 journal rows, and includes `corporate-action-lot-evidence.json` under report-pack checksums and signing.
 AverageCost reporting compares acquisition evidence and successor lineage by value against its

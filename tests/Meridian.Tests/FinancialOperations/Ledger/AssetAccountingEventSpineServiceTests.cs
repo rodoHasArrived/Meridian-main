@@ -36,13 +36,28 @@ public sealed class AssetAccountingEventSpineServiceTests
         => await AssertSuccessorWorkflowAsync(effectiveFromDayOffset, effectiveToDayOffset, successorIsEffective);
 
     [Theory]
+    [InlineData(-1, false)]
+    [InlineData(0, false)]
+    [InlineData(1, false)]
+    [InlineData(-1, true)]
+    [InlineData(0, true)]
+    [InlineData(1, true)]
+    public async Task CorporateAction_RequiresSourceSecurityEffectiveOnBackdatedEventBeforeProjectionAndDrafting(
+        int sourceEffectiveFromDayOffset, bool retainProjectionBeforeSourceCheck)
+        => await AssertSuccessorWorkflowAsync(null, null, true,
+            sourceEffectiveFromDayOffset: sourceEffectiveFromDayOffset,
+            retainProjectionBeforeSourceCheck: retainProjectionBeforeSourceCheck);
+
+    [Theory]
     [InlineData("earlier", false)]
-    [InlineData("unchanged", true)]
-    [InlineData("later", true)]
+    [InlineData("unchanged", false)]
+    [InlineData("later", false)]
     [InlineData("other-lot", true)]
     [InlineData("missing-provider", false)]
     [InlineData("future-sale", false)]
     [InlineData("ancestor-earlier", false)]
+    [InlineData("ancestor-unchanged", false)]
+    [InlineData("ancestor-later", false)]
     [InlineData("ancestor-clear", true)]
     [InlineData("legacy-ancestor-earlier", false)]
     [InlineData("legacy-birth-ancestor-earlier", false)]
@@ -55,7 +70,8 @@ public sealed class AssetAccountingEventSpineServiceTests
 
     private static async Task AssertSuccessorWorkflowAsync(
         int? effectiveFromDayOffset, int? effectiveToDayOffset, bool successorIsEffective,
-        string? carryScenario = null, bool carryAllowsDraft = true)
+        string? carryScenario = null, bool carryAllowsDraft = true,
+        int? sourceEffectiveFromDayOffset = null, bool retainProjectionBeforeSourceCheck = false)
     {
         var baseline = BuildFixture(AssetAccountingEventKindDto.CorporateAction);
         var original = OpenLotSuccessorTestData.Predecessor();
@@ -74,7 +90,8 @@ public sealed class AssetAccountingEventSpineServiceTests
                 OpenFunctionalCostBasis = source.Acquisition.FunctionalCostBasis * source.OpenQuantity / source.OriginalQuantity
             };
         var ancestorId = Guid.NewGuid();
-        var hasAncestor = carryScenario is "ancestor-earlier" or "ancestor-clear" or "missing-ancestor" or "cyclic-ancestor";
+        var hasAncestor = carryScenario is "ancestor-earlier" or "ancestor-unchanged" or "ancestor-later"
+            or "ancestor-clear" or "missing-ancestor" or "cyclic-ancestor";
         if (hasAncestor)
             source = source with
             {
@@ -93,8 +110,14 @@ public sealed class AssetAccountingEventSpineServiceTests
         var instruction = OpenLotSuccessorTestData.Build(source, [target],
             expectedPositionVersion: baseline.Position.Version, expectedSecurityVersion: sourceSecurity.Version,
             periodId: baseline.Period.PeriodId, expectedSecurityHash: new string('a', 64),
-            expectedPeriodVersion: baseline.Period.Version);
+            expectedPeriodVersion: baseline.Period.Version,
+            effectiveDate: sourceEffectiveFromDayOffset.HasValue ? OpenLotSuccessorTestData.EffectiveDate.AddDays(-2) : null);
         var effectiveDate = instruction.Projection.EconomicEvent!.EffectiveDate;
+        if (sourceEffectiveFromDayOffset is { } sourceOffset)
+            sourceSecurity = sourceSecurity with
+            {
+                EffectiveFrom = new DateTimeOffset(effectiveDate.AddDays(sourceOffset).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc))
+            };
         targetSecurity = targetSecurity with
         {
             EffectiveFrom = effectiveFromDayOffset is { } fromOffset
@@ -186,7 +209,8 @@ public sealed class AssetAccountingEventSpineServiceTests
             Version = target.ExpectedBookPositionVersion
         });
         var securities = Substitute.For<ISecurityMasterQueryService>();
-        securities.GetRecordedByIdAsOfAsync(source.SecurityId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>()).Returns(sourceSecurity);
+        securities.GetRecordedByIdAsOfAsync(source.SecurityId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .Returns(retainProjectionBeforeSourceCheck ? baseline.Security with { Currency = "EUR" } : sourceSecurity);
         securities.GetRecordedByIdAsOfAsync(target.Lot.SecurityId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>()).Returns(targetSecurity);
         var books = Substitute.For<ILedgerBookService>();
         books.GetBookAsync(fixture.Book.LedgerBookId, Arg.Any<CancellationToken>()).Returns(fixture.Book);
@@ -216,10 +240,11 @@ public sealed class AssetAccountingEventSpineServiceTests
                 : [new WashSaleDeferralRecord(Guid.NewGuid(), source.LedgerBookId, Guid.NewGuid(), source.SecurityId,
                     carryScenario == "future-sale" ? effectiveDate.AddDays(1) : effectiveDate.AddDays(-1), sourceRecord.Account,
                     carryScenario == "other-lot" ? Guid.NewGuid()
-                        : carryScenario is "ancestor-earlier" or "legacy-ancestor-earlier" or "legacy-birth-ancestor-earlier"
+                        : carryScenario is "ancestor-earlier" or "ancestor-unchanged" or "ancestor-later"
+                            or "legacy-ancestor-earlier" or "legacy-birth-ancestor-earlier"
                             ? ancestorId : source.TaxLotRecordId,
                     source.LotId, 1m, 1m, source.Acquisition.HoldingPeriodStartDate.AddDays(carryScenario switch
-                    { "unchanged" => 0, "later" => 1, _ => -1 }),
+                    { "unchanged" or "ancestor-unchanged" => 0, "later" or "ancestor-later" => 1, _ => -1 }),
                     "reviewed-wash-sale-policy", 30, WashSaleReplacementScope.LedgerBook, fixture.Request.ProjectedAtUtc)];
             deferralStore.ListWashSaleDeferralsAsync(source.LedgerBookId, DateOnly.MinValue, DateOnly.MaxValue,
                 Arg.Any<CancellationToken>()).Returns(deferrals);
@@ -260,7 +285,36 @@ public sealed class AssetAccountingEventSpineServiceTests
         var spineService = new AssetAccountingEventSpineService(eventStore, positions, securities, books, policies,
             configuration, authority, ledger);
 
+        if (sourceEffectiveFromDayOffset.HasValue)
+            sourceSecurity.EffectiveFrom.Should().BeOnOrBefore(fixture.Request.ProjectionLineage.GeneratedAtUtc,
+                "the source-date regression must pass the accounting-timestamp check");
+        if (sourceEffectiveFromDayOffset > 0 && !retainProjectionBeforeSourceCheck)
+        {
+            var project = () => spineService.ProjectAsync(fixture.Request);
+            await project.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("Source Security Master record is not effective on the corporate-action date.");
+            retained.Should().BeEmpty("invalid source authority must fail before any lifecycle stage is retained");
+            await authority.DidNotReceiveWithAnyArgs().BuildAuthoritativeCandidateWriteAsync(default!, default!, default);
+            await atomic.DidNotReceiveWithAnyArgs().AppendAssetPostingAsync(default!, default);
+            return;
+        }
         var projected = await spineService.ProjectAsync(fixture.Request);
+        if (retainProjectionBeforeSourceCheck)
+            securities.GetRecordedByIdAsOfAsync(source.SecurityId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+                .Returns(sourceSecurity);
+        if (sourceEffectiveFromDayOffset > 0)
+        {
+            var draft = () => spineService.BuildPostingCandidateAsync(BuildCandidateRequest(fixture) with
+            {
+                LotMutation = mapped.Projection.LotMutation
+            });
+            await draft.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("Source Security Master record is not effective on the corporate-action date.");
+            retained.Should().HaveCount(2, "a retained projection must not bypass current source authority before Drafted");
+            await authority.DidNotReceiveWithAnyArgs().BuildAuthoritativeCandidateWriteAsync(default!, default!, default);
+            await atomic.DidNotReceiveWithAnyArgs().AppendAssetPostingAsync(default!, default);
+            return;
+        }
         var omitSuccessors = () => spineService.BuildPostingCandidateAsync(BuildCandidateRequest(fixture));
         await omitSuccessors.Should().ThrowAsync<InvalidOperationException>();
         retained.Should().HaveCount(2, "omitting the retained successor plan must fail before Drafted is appended");

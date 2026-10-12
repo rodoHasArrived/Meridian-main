@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-06
+last_reviewed: 2026-10-12
 ---
 
 # src/Meridian.FinancialOperations
@@ -827,12 +827,15 @@ idempotent replay result. The event spine records Approved and Posted only from 
 identity and balanced posted amounts returned by that boundary.
 Bounded cashless `RegS144AExchange` and `AdvanceRefunding` candidates use the same governed path
 with a retained `OpenLotSuccessorInstructionDto`. Independent approval covers its predecessor,
-create-only successors, reference versions and exact allocation. Before `Drafted` is retained, each
-successor Security Master record must cover the event's effective date within its inclusive UTC
-effective-date interval. Drafting also requires retained wash-sale deferral reads across all sale
+create-only successors, reference versions and exact allocation. Before projection or drafting, the
+source Security Master record must cover the event's effective date within its inclusive UTC
+effective-date interval, even when a later accounting timestamp falls within that interval.
+Before `Drafted` is retained, each successor record must also cover the event date.
+Drafting also requires retained wash-sale deferral reads across all sale
 dates and follows at most 32 same-book predecessor lots, using immutable acquisition lineage,
-the legacy successor instruction, or the retained immutable birth receipt. A carry date earlier than the holding-period start copied to
-successors is refused until reviewed successor carry lineage is supported; missing, ambiguous or
+the legacy successor instruction, or the retained immutable birth receipt. Any separately retained
+deferral on the predecessor or its ancestry is refused until reviewed successor carry lineage is
+supported: unchanged or later holding dates still retain a separate basis claim. Missing, ambiguous or
 cyclic ancestry also fails closed. Deferrals are not copied or fabricated. Posting rechecks that instruction
 against the drafted event, embeds its fingerprint in the journal and sends the complete mutation
 set to the atomic store. The journal reclassifies the predecessor's current basis to its successors;
