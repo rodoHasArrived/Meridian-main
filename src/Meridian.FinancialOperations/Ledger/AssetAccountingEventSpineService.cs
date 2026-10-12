@@ -538,18 +538,6 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
         var candidateWrite = await _authorityBuilder
             .BuildAuthoritativeCandidateWriteAsync(candidateRequest, authority, ct)
             .ConfigureAwait(false);
-        if (candidateWrite.Write?.PostingCommand is { } pendingCommand &&
-            pendingCommand.ApprovalState != AccountingPostingApprovalStateDto.Pending)
-        {
-            var normalizedCommand = pendingCommand with
-            {
-                ApprovalState = AccountingPostingApprovalStateDto.Pending,
-                ApprovalId = null
-            };
-            candidateWrite = new AccountingPostingCandidateWriteResult(
-                candidateWrite.Candidate with { PostingCommand = normalizedCommand },
-                candidateWrite.Write with { PostingCommand = normalizedCommand });
-        }
         candidateWrite = AssetAccountingCandidateCanonicalizer.Canonicalize(
             candidateWrite,
             book.LedgerBookId,

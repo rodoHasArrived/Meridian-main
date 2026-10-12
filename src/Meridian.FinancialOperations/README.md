@@ -857,7 +857,11 @@ Other action types and multiple-predecessor mutations remain unsupported by
 this bounded successor path.
 For this spine, a same-source journal is a replay only when its deterministic journal identity,
 complete Drafted candidate/result fingerprints, policy/rule pack, approval evidence, amounts,
-lines, currencies, and dimensions all match. Lots retain Security Master and book-position scope;
+lines, currencies, and dimensions all match. Reviewed correction candidates use the same Pending
+approval normalization at drafting and post-time reconstruction. Retained correction review permits
+adjustment preparation; the separate
+posting approval still requires an independent reviewer before any journal or lot mutation.
+Lots retain Security Master and book-position scope;
 disposal retains selected acquisition unit cost as a snapshot assertion, certifies current canonical
 relief basis across the scoped pool, and rechecks the exact asset-relief journal line under the same
 serializable transaction and effective policy revision. A mismatch is a collision and blocks posting.
