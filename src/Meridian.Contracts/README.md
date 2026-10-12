@@ -131,8 +131,9 @@ current carrying basis separately in transaction and functional currency, assign
 residual exactly, and preserves acquisition FX, holding dates, face terms and source evidence.
 Only the refunded successor receives `ScheduleD`; unsupported action or allocation shapes fail
 validation. Optional instruction fields are omitted when absent to preserve earlier payloads.
-Successor lot labels must be distinct after Storage's whitespace trimming and cannot reuse the
-predecessor label. Durable lot, Security Master and book-position identities must also be distinct
+Successor lot labels must already be trimmed before fingerprinting or drafting, remain distinct,
+and cannot reuse the predecessor label. Persistence must retain the exact reviewed label rather
+than changing it after approval. Durable lot, Security Master and book-position identities must also be distinct
 before mapping or drafting. Reg S/144A exchange requires the `Successor` role.
 Every successor must receive positive functional
 carrying basis before journal drafting, including the final residual. Currency-specific allocations
