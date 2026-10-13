@@ -14,8 +14,11 @@ last_reviewed: 2026-10-12
 Security Master migration `036_security_master_workbench_generations.sql` adds the durable
 compare-and-set generation used by `PostgresSecurityMasterMutation`. Overlay values, their audit
 trail, governed drafts and lifecycle transitions share one connection and transaction. Discard-time
-field provenance also enlists; standalone provenance writes retain their prior behavior. Failed
-or cancelled mutations roll back the generation and all enlisted writes. Parallel passport reads
+field provenance also enlists; standalone provenance writes retain their prior behavior. Optional
+discard lineage and decision-convergence steps use savepoints, so a caught SQL failure rolls back
+only that step. Failure to restore the savepoint aborts the command. Failed or cancelled core
+mutations roll back the generation and all enlisted writes. The fence uses the same schema case
+folding as the migration runner. Parallel passport reads
 serialize their commands on that connection. Independent stores and application instances use the
 database fence; in-memory compositions retain their local gate. Deploy with all old writers drained,
 as described in [the rollout contract](../../docs/domain/security.md#governed-edit-concurrency).

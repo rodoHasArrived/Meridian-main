@@ -291,7 +291,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                         // own approval or publish converges.
                         if (restoreOwner.State == SecurityMasterRevisionStateDto.Published)
                         {
-                            try
+                            await ExecuteBestEffortMutationStepAsync(request.SecurityId, async () =>
                             {
                                 var decisionReviewer = request.Actor;
                                 if (restoreOwner.WorkflowId is Guid ownerWorkflowId)
@@ -316,21 +316,17 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                                     decisionReviewer,
                                     rationale: "Published revision's decision restored after a discard re-staged its value.",
                                     CancellationToken.None).ConfigureAwait(false);
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogWarning(
+                            }, ex => _logger.LogWarning(
                                     ex,
                                     "Re-recording the published revision {OwnerRevisionId}'s override decision for {SecurityId} failed after discarding revision {RevisionId}; the overlay stays Pending until reconciled.",
-                                    restoreOwner.RevisionId, request.SecurityId, request.RevisionId);
-                            }
+                                    restoreOwner.RevisionId, request.SecurityId, request.RevisionId)).ConfigureAwait(false);
                         }
 
                         // Lineage follows the restored value best-effort: the operator attribution row
                         // re-points to the owning revision (or is removed when the owner staged a clear).
                         if (_fieldProvenance is not null)
                         {
-                            try
+                            await ExecuteBestEffortMutationStepAsync(request.SecurityId, async () =>
                             {
                                 if (restoreOwner.FieldValue is null)
                                 {
@@ -356,14 +352,10 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                                             RecordedAt: restored.UpdatedAt),
                                         CancellationToken.None).ConfigureAwait(false);
                                 }
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogWarning(
+                            }, ex => _logger.LogWarning(
                                     ex,
                                     "Re-pointing operator field-edit lineage for {SecurityId} field {FieldPath} to revision {OwnerRevisionId} failed after discarding revision {RevisionId}.",
-                                    request.SecurityId, SanitizeForLog(revision.FieldPath), restoreOwner.RevisionId, request.RevisionId);
-                            }
+                                    request.SecurityId, SanitizeForLog(revision.FieldPath), restoreOwner.RevisionId, request.RevisionId)).ConfigureAwait(false);
                         }
                     }
                     else
@@ -411,7 +403,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                             && priorApprovalStatus is SecurityOverrideApprovalStatusDto.Approved or SecurityOverrideApprovalStatusDto.Rejected
                             && !string.IsNullOrWhiteSpace(priorReviewer))
                         {
-                            try
+                            await ExecuteBestEffortMutationStepAsync(request.SecurityId, async () =>
                             {
                                 await _overrides.RecordApprovalDecisionAsync(
                                     request.SecurityId,
@@ -420,14 +412,10 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                                         priorReviewer!,
                                         "Prior decision restored after a discard withdrew a stale override key."),
                                     CancellationToken.None).ConfigureAwait(false);
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogWarning(
+                            }, ex => _logger.LogWarning(
                                     ex,
                                     "Restoring the prior override decision for {SecurityId} failed after discarding revision {RevisionId}; the surviving overlay stays Pending until reconciled.",
-                                    request.SecurityId, request.RevisionId);
-                            }
+                                    request.SecurityId, request.RevisionId)).ConfigureAwait(false);
                         }
 
                         if (supersededDraftSiblings.Length > 0)
@@ -443,7 +431,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                         // discard removed.
                         if (_fieldProvenance is not null)
                         {
-                            try
+                            await ExecuteBestEffortMutationStepAsync(request.SecurityId, async () =>
                             {
                                 await _fieldProvenance.RemoveAsync(
                                     request.SecurityId,
@@ -451,14 +439,10 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                                     SecurityFieldProvenanceOrigins.OperatorFieldEdit,
                                     clearedAt: withdrawn.UpdatedAt,
                                     ct: CancellationToken.None).ConfigureAwait(false);
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogWarning(
+                            }, ex => _logger.LogWarning(
                                     ex,
                                     "Removing operator field-edit lineage for {SecurityId} field {FieldPath} failed after discarding revision {RevisionId}.",
-                                    request.SecurityId, SanitizeForLog(revision.FieldPath), request.RevisionId);
-                            }
+                                    request.SecurityId, SanitizeForLog(revision.FieldPath), request.RevisionId)).ConfigureAwait(false);
                         }
                     }
                 }
@@ -501,9 +485,8 @@ public sealed partial class SecurityMasterWorkbenchCommandService
     /// is logged; any live (Draft/Submitted/Approved) revision, or the absence of published
     /// evidence, leaves the decision to the normal approval/publish seams.
     /// </summary>
-    private async Task TryConvergePublishedOverlayDecisionAsync(DiscardSecurityMasterRevisionRequest request)
-    {
-        try
+    private Task TryConvergePublishedOverlayDecisionAsync(DiscardSecurityMasterRevisionRequest request)
+        => ExecuteBestEffortMutationStepAsync(request.SecurityId, async () =>
         {
             var overlay = await _overrides.GetAsync(request.SecurityId, CancellationToken.None).ConfigureAwait(false);
             if (overlay is not { Values.Count: > 0 }
@@ -578,13 +561,8 @@ public sealed partial class SecurityMasterWorkbenchCommandService
             _logger.LogInformation(
                 "Discarding revision {RevisionId} for {SecurityId} removed the last staged revision; the published overlay decision was re-converged from revision {PublishedRevisionId}.",
                 request.RevisionId, request.SecurityId, latestPublished.RevisionId);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(
+        }, ex => _logger.LogWarning(
                 ex,
                 "Re-converging the published overlay decision for {SecurityId} failed after discarding revision {RevisionId}; the overlay stays Pending until reconciled.",
-                request.SecurityId, request.RevisionId);
-        }
-    }
+                request.SecurityId, request.RevisionId));
 }

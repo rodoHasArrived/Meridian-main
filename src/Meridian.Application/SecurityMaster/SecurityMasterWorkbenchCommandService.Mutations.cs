@@ -45,4 +45,23 @@ public sealed partial class SecurityMasterWorkbenchCommandService
             await operation().ConfigureAwait(false);
             return true;
         }, ct);
+
+    private async Task ExecuteBestEffortMutationStepAsync(Guid securityId, Func<Task> operation, Action<Exception> reportFailure)
+    {
+        if (_overrides is ISecurityMasterMutationParticipant overlay)
+        {
+            await PostgresSecurityMasterMutation.ExecuteBestEffortAsync(
+                overlay.MutationOptions, securityId, operation, reportFailure, CancellationToken.None).ConfigureAwait(false);
+            return;
+        }
+
+        try
+        {
+            await operation().ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            reportFailure(exception);
+        }
+    }
 }

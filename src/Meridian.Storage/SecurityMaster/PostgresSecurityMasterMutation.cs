@@ -32,7 +32,9 @@ public static class PostgresSecurityMasterMutation
         await using var connection = new NpgsqlConnection(options.ConnectionString);
         await connection.OpenAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct).ConfigureAwait(false);
-        var table = $"\"{options.Schema.Replace("\"", "\"\"")}\".security_workbench_generations";
+        // Security Master migrations and existing stores use unquoted identifiers. Match their
+        // PostgreSQL case folding even when configuration supplies a mixed-case schema name.
+        var table = $"\"{options.Schema.ToLowerInvariant().Replace("\"", "\"\"")}\".security_workbench_generations";
 
         // Read before taking the write lock. A competing committed command invalidates this
         // generation; do not silently retry a command whose validation/review assumptions changed.
@@ -66,6 +68,39 @@ public static class PostgresSecurityMasterMutation
             Current.Value = null;
             session.ConnectionGate.Dispose();
         }
+    }
+
+    /// <summary>Recover an optional step without aborting its enclosing governed mutation.</summary>
+    public static async Task ExecuteBestEffortAsync(SecurityMasterOptions options, Guid securityId,
+        Func<Task> operation, Action<Exception> reportFailure, CancellationToken ct = default)
+    {
+        var session = Current.Value ?? throw new InvalidOperationException("A Security Master mutation transaction is required.");
+        EnsureScope(session, options, securityId);
+        var savepoint = "optional_" + Guid.NewGuid().ToString("N");
+        await using (var lease = await OpenConnectionAsync(options, ct).ConfigureAwait(false))
+            await session.Transaction.SaveAsync(savepoint, ct).ConfigureAwait(false);
+
+        Exception? failure = null;
+        try
+        {
+            // Participants acquire their own connection leases; holding the gate here would
+            // deadlock the optional operation. Its awaited reads/writes remain in this session.
+            await operation().ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            await using var lease = await OpenConnectionAsync(options, CancellationToken.None).ConfigureAwait(false);
+            await session.Transaction.RollbackAsync(savepoint, CancellationToken.None).ConfigureAwait(false);
+            failure = exception;
+        }
+
+        await using (var lease = await OpenConnectionAsync(options, CancellationToken.None).ConfigureAwait(false))
+            await session.Transaction.ReleaseAsync(savepoint, CancellationToken.None).ConfigureAwait(false);
+
+        // Savepoint creation, rollback and release failures propagate: the core mutation must
+        // not report success when its transaction could not be restored to a committable state.
+        if (failure is not null)
+            reportFailure(failure);
     }
 
     public static async Task<ConnectionLease> OpenConnectionAsync(SecurityMasterOptions options, CancellationToken ct)

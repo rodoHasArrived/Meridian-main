@@ -66,7 +66,11 @@ workbench also participate. The stores must share one configured database and sc
 and in-memory participants are rejected. PostgreSQL instances do not rely on the process-local gate.
 A failed draft insert or cancellation rolls back values, review audit, draft and generation together.
 Standalone edit provenance remains best-effort after commit; provenance written during discard joins
-the transaction. Parallel read-model composition serializes commands on the enlisted connection.
+the transaction. Optional discard provenance and decision convergence run behind savepoints: a caught
+SQL error rolls back only the optional step, leaving the core rejection and overlay change committable.
+Savepoint-management failures propagate and roll back the command. The generation fence uses the
+same unquoted-schema case folding as the migration runner. Parallel read-model composition serializes
+commands on the enlisted connection.
 
 This does not make approval workflow persistence or downstream publish handlers part of a distributed
 transaction. Their existing reconciliation and idempotent retry contracts still apply. It does not

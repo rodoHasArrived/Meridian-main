@@ -13,7 +13,7 @@ using Npgsql;
 namespace Meridian.Tests.SecurityMaster;
 
 [Trait("Category", "Integration")]
-public sealed class SecurityMasterGovernedConcurrencyPostgresTests(SecurityMasterDatabaseFixture fixture)
+public sealed partial class SecurityMasterGovernedConcurrencyPostgresTests(SecurityMasterDatabaseFixture fixture)
     : IClassFixture<SecurityMasterDatabaseFixture>
 {
     [SecurityMasterDatabaseFact]
@@ -181,8 +181,10 @@ public sealed class SecurityMasterGovernedConcurrencyPostgresTests(SecurityMaste
     }
 
     private SecurityMasterWorkbenchCommandService Service(Guid id, Func<Task>? beforeValidation = null,
-        ISecurityMasterRevisionStore? revisions = null)
+        ISecurityMasterRevisionStore? revisions = null, ISecurityFieldProvenanceStore? fieldProvenance = null,
+        IOperationsContinuityWorkflowService? approvalWorkflow = null, SecurityMasterOptions? options = null)
     {
+        options ??= fixture.Options;
         var query = new Mock<ISecurityMasterWorkbenchQueryService>();
         query.Setup(q => q.GetInstrumentPassportAsync(id, It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .Returns(async () =>
@@ -212,12 +214,13 @@ public sealed class SecurityMasterGovernedConcurrencyPostgresTests(SecurityMaste
              new("endDate", "End date", SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, null, false, false)],
             [], ["Active"], [], [new("startDate", "endDate", "PF_DATE_ORDER", "startDate must be on or before endDate.")],
             new DateOnly(2026, 1, 1), null, "governance", DateTimeOffset.UtcNow, "test");
-        return new SecurityMasterWorkbenchCommandService(new PostgresSecurityMasterEventStore(fixture.Options),
-            new PostgresOperatorOverridesStore(fixture.Options), Mock.Of<ISecurityMasterConflictAuthorityPolicy>(),
-            Mock.Of<ISecurityMasterConflictService>(), query.Object, Mock.Of<IOperationsContinuityWorkflowService>(),
-            revisions ?? new PostgresSecurityMasterRevisionStore(fixture.Options), Mock.Of<IPeriodAwareRestatementResolver>(),
+        return new SecurityMasterWorkbenchCommandService(new PostgresSecurityMasterEventStore(options),
+            new PostgresOperatorOverridesStore(options), Mock.Of<ISecurityMasterConflictAuthorityPolicy>(),
+            Mock.Of<ISecurityMasterConflictService>(), query.Object, approvalWorkflow ?? Mock.Of<IOperationsContinuityWorkflowService>(),
+            revisions ?? new PostgresSecurityMasterRevisionStore(options), Mock.Of<IPeriodAwareRestatementResolver>(),
             Mock.Of<IAffectedLedgerBookResolver>(), [], NullLogger<SecurityMasterWorkbenchCommandService>.Instance,
-            projectionStore: projection.Object, assetProfileCatalog: new StaticSecurityAssetProfileCatalog([profile]));
+            fieldProvenance: fieldProvenance, projectionStore: projection.Object,
+            assetProfileCatalog: new StaticSecurityAssetProfileCatalog([profile]));
     }
 
     private static UpdateSecurityFieldRequest Edit(Guid id, string path, string value)
