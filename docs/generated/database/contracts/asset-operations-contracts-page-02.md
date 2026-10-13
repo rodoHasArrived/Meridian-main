@@ -2,11 +2,13 @@
 
 # `asset-operations-contracts` data objects - page 2 of 2
 
-Objects 81-112 of 112. References crossing pages remain available in the dependency manifest.
+Objects 81-113 of 113. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% asset-operations-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_AssetOperations_IAssetOperationsCommandService["IAssetOperationsCommandService"] {
+    }
     class Meridian_Contracts_AssetOperations_IAssetOperationsQueryService["IAssetOperationsQueryService"] {
     }
     class Meridian_Contracts_AssetOperations_IPortfolioCapitalScheduleProvider["IPortfolioCapitalScheduleProvider"] {

@@ -103,6 +103,13 @@ classDiagram
         +Guid TaxLotRecordId
         +decimal UnitCost
     }
+    class Meridian_Contracts_AssetOperations_AssetAcquisitionTermsCompletionDto["AssetAcquisitionTermsCompletionDto"] {
+        +BondAmortizationMethod? AmortizationMethod
+        +string DraftedCandidateFingerprint
+        +decimal? EffectiveYield
+        +RetainedEvidenceIdentityDto Evidence
+        +Guid TaxLotRecordId
+    }
     class Meridian_Contracts_AssetOperations_AssetActualActivityDto["AssetActualActivityDto"] {
         +Guid ActivityId
         +string ActivityType
@@ -589,8 +596,6 @@ classDiagram
         +IReadOnlyList~RetainedEvidenceIdentityDto~ RetainedEvidence
         +Guid? SecurityId
         +string? SourceContentHash
-    }
-    class Meridian_Contracts_AssetOperations_IAssetOperationsCommandService["IAssetOperationsCommandService"] {
     }
     Meridian_Contracts_AssetOperations_AppendAssetAccountingLifecycleStageRequestDto --> Meridian_Contracts_AssetOperations_AssetAccountingLifecycleStageDto
     Meridian_Contracts_AssetOperations_AssetAccountingEventSpineAppendResultDto --> Meridian_Contracts_AssetOperations_AssetAccountingEventSpineDto

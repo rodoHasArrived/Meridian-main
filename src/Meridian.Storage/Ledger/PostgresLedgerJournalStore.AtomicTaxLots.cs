@@ -95,6 +95,11 @@ public sealed partial class PostgresLedgerJournalStore
             return replay;
         }
 
+        // Historical receipts may predate canonical acquisition facts. Exact replay above must
+        // retain that shape, but a new lot cannot create another legacy-backfill exception.
+        if (command.MutationKind == AtomicTaxLotMutationKind.Acquisition && command.AcquisitionLot!.Acquisition is null)
+            throw new LedgerValidationException("New atomic acquisitions require complete canonical acquisition facts.");
+
         // Unversioned instructions preserve historical receipt fingerprints and calculations,
         // but only an existing exact receipt may use them. New writes require a fresh preview.
         if (command.MutationKind == AtomicTaxLotMutationKind.Amortization

@@ -136,6 +136,9 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         var existing = await FindExistingPostingAsync(journalStore, ledgerBookId, sourceEventId, ct).ConfigureAwait(false);
         var hasAtomicLotMutation = isAssetAccountingEvent &&
                                    assetAuthority?.Drafted.Projection.DraftedLotMutation is { Intent: not AssetLotMutationIntentDto.None };
+        var completedAcquisition = SpineAcquisitionLotCompletion.Resolve(request);
+        if (existing is null && hasAtomicLotMutation && completedAcquisition is { } newAcquisition)
+            SpineAcquisitionLotFacts.RequireCompleteNewAcquisition(newAcquisition);
         if (existing is null && hasAtomicLotMutation
             && assetAuthority?.Drafted.Projection.DraftedLotMutation is { Intent: AssetLotMutationIntentDto.Amortize } amortization
             && amortization.Amortization?.CalculationVersion != OpenLotAmortization.ModelVersion)
@@ -245,7 +248,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         EnsureWriteLedgerBookScope(write, ledgerBookId);
 
         var recordedAtUtc = DateTimeOffset.UtcNow;
-        if (isAssetAccountingEvent && request.ApprovalEvidence.Any(evidence =>
+        if (isAssetAccountingEvent && SpineAcquisitionLotCompletion.PostingApprovalEvidence(request).Any(evidence =>
                 evidence.ReviewedAtUtc > recordedAtUtc || evidence.RetainedAtUtc > recordedAtUtc))
         {
             throw new InvalidOperationException(
@@ -268,7 +271,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             Evidence = MergeEvidence(
                 command.Evidence,
                 request.EvidenceLinks,
-                request.ApprovalEvidence,
+                SpineAcquisitionLotCompletion.PostingApprovalEvidence(request),
                 approvalId,
                 actor,
                 request.ApprovalNotes,
@@ -738,6 +741,9 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         RequireAssetAssertion(
             request.ApprovalEvidence.All(evidence => evidence.RetainedAtUtc >= evidence.ReviewedAtUtc),
             "Approval evidence cannot be retained before review.");
+        if (request.AcquisitionTermsCompletion?.Evidence is { } completionReview)
+            RequireAssetAssertion(completionReview.ReviewedAtUtc >= draftedAtUtc,
+                "Acquisition terms completion review cannot precede the retained Drafted attestation.");
     }
 
     private static void ValidatePostedProjectionOutcome(
@@ -1108,7 +1114,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
 
         var mutationBatchId = CreateMutationBatchId(ledgerBook.LedgerBookId, sourceEventId, instruction.Intent);
         var retainedEvidence = request.Candidate.RetainedEvidence
-            .Concat(request.ApprovalEvidence)
+            .Concat(SpineAcquisitionLotCompletion.PostingApprovalEvidence(request))
             .ToArray();
         if (retainedEvidence.Length == 0 ||
             retainedEvidence.Any(static item => !RetainedEvidenceIdentityValidator.IsComplete(item)))
@@ -1122,7 +1128,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         AtomicTaxLotMutationKind mutationKind;
         if (instruction.Intent == AssetLotMutationIntentDto.Acquire)
         {
-            var acquisition = instruction.Acquisition
+            var acquisition = SpineAcquisitionLotCompletion.Resolve(request)
                 ?? throw new InvalidOperationException("Acquisition lot details are required.");
             if (acquisition.Quantity <= 0m || acquisition.UnitCost < 0m)
             {
@@ -1179,22 +1185,24 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                     acquisition.ParBasis!.Value));
             }
 
-            // A face lot gains canonical facts only when its instruction states the amortization
-            // inputs; they are never inferred, so an unstated face lot keeps its par terms alone.
-            var faceTerms = acquisition.HasFaceValueTerms && acquisition.AmortizationMethod is { } method
-                ? new FaceValueAcquisitionTermsDto(
-                    acquisition.ParBasis!.Value, acquisition.BookedFactor!.Value, method, acquisition.EffectiveYield)
-                : null;
-            if ((!acquisition.HasFaceValueTerms || faceTerms is not null) &&
-                !await SpineAcquisitionLotFacts.IsRetainedLegacyBatchAsync(_journalStore, mutationBatchId, ct).ConfigureAwait(false))
+            // Only an exact retained legacy batch may keep its historical fact-free shape.
+            // Every new acquisition states canonical facts without inventing an amortization method.
+            if (!await SpineAcquisitionLotFacts.IsRetainedLegacyBatchAsync(_journalStore, mutationBatchId, ct).ConfigureAwait(false))
             {
+                SpineAcquisitionLotFacts.RequireCompleteNewAcquisition(acquisition);
+                var faceTerms = acquisition.HasFaceValueTerms
+                    ? new FaceValueAcquisitionTermsDto(acquisition.ParBasis!.Value, acquisition.BookedFactor!.Value,
+                        acquisition.AmortizationMethod!.Value, acquisition.EffectiveYield)
+                    : null;
                 acquisitionLot = acquisitionLot with
                 {
                     Acquisition = SpineAcquisitionLotFacts.Build(
                         acquisitionLot,
                         faceTerms,
-                        request.Candidate.RetainedEvidence,
-                        request.ApprovalEvidence)
+                        request.AcquisitionTermsCompletion is { } completion
+                            ? [.. request.Candidate.RetainedEvidence, completion.Evidence]
+                            : request.Candidate.RetainedEvidence,
+                        SpineAcquisitionLotCompletion.PostingApprovalEvidence(request))
                 };
             }
 
@@ -1480,7 +1488,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             postedAtUtc,
             actor,
             request.Candidate.RetainedEvidence
-                .Concat(request.ApprovalEvidence)
+                .Concat(SpineAcquisitionLotCompletion.PostingApprovalEvidence(request))
                 .ToArray(),
             request.Candidate.SourceEventId?.ToString("D"));
 
