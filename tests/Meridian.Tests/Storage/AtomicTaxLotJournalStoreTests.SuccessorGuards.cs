@@ -96,7 +96,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         };
         var postAlias = () => fixture.Store.AppendAssetPostingAsync(BindSuccessorGuardInstruction(valid, whitespaceAlias));
         await postAlias.Should().ThrowAsync<LedgerValidationException>()
-            .WithMessage("Successor lot label is already retained in the ledger account; only new successor lots are supported.");
+            .WithMessage("*create-only plan*");
 
         (await ReadSplitAncestryCountsAsync(fixture)).Should().Be(countsBefore);
         (await fixture.Restart().GetAtomicTaxLotPostingAsync(command.MutationBatchId)).Should().BeNull();

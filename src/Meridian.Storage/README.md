@@ -97,9 +97,16 @@ snapshot together. Both currency bases reconcile to the retained allocation whil
 holding dates and original acquisition evidence remain intact. Exact retries return the retained
 batch before checking later live state. Exact durable journal/batch evidence also permits recovery
 of a missing Posted projection after later position revisions; unposted position CAS stays strict.
+Recovery compares historical origins through `WithRetainedLineage`, preserving an omitted optional
+source-action identity instead of synthesizing a new field into the retained receipt.
 `ILedgerOpenLotSuccessorHistory` exposes those immutable
 batches to Reporting; unsupported actions, cash components, cross-account transfers, combined
-instructions and unrepresentable durable precision fail closed. Successor lines must retain the
+instructions and unrepresentable durable quantity or open-basis precision fail closed. Unit
+successors retain exact acquisition and open basis independently of their derived unit quote,
+which is rounded to twelve decimals with midpoint-to-even rounding for storage. Projection accepts
+that quote only when it matches retained basis divided by original quantity and the lot retains
+corporate-action origin, atomic birth and governed basis adjustment. Ordinary acquisitions and
+face-successor precision checks remain exact. Successor lines must retain the
 predecessor's complete ledger-account identity, including name and symbol when the financial-account
 ID is absent; a mapped asset account cannot silently transfer the lot.
 Atomic commands require the canonical `AssetAccounting.CorporateAction` type, approved state,
@@ -298,7 +305,12 @@ reproduces certified posted basis without rounding it through acquisition unit c
 `AtomicTaxLotJournalStoreTests.CurrentBasis`; see the [lot convergence blueprint](../../docs/engineering/blueprints/security-lot-convergence-blueprint.md).
 
 Corporate-action posting uses the single retained successor instruction and migration 042 for
-cashless exchanges, whole-unit forward/reverse splits, stock mergers and two-successor refundings.
+cashless exchanges, whole-unit forward/reverse splits, stock mergers, non-taxable unit spin-offs
+and two-successor refundings. Spin-offs retain one parent in the same security/position and its
+unchanged quantity, with separately identified children under the existing reviewed allocation.
+Parent closeout, all successor openings, journal and audit share the transaction; stale child
+references or a later insertion failure roll back the entire allocation. Exact replay remains
+available after restart and period locking. No new migration or mutable acquisition facts are used.
 The serializable transaction locks every source/target reference, position and lot; it checks
 accounting policy, financial-account and canonical dimension scope before any journal or lot write.
 Same-security/same-position splits bind distinct lot labels on debit/credit legs. New successors

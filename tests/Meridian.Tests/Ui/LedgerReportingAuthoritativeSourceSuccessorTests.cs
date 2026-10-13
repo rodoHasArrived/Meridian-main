@@ -147,13 +147,18 @@ public sealed partial class LedgerReportingAuthoritativeSourceTests
         repaired.DatasetRows.Should().OnlyContain(row => row.ContainsKey("openLotSuccessorEvidenceHash"));
     }
 
-    private static AtomicTaxLotJournalResult SuccessorBatch(Fixture fixture, bool advanceRefunding, bool functionalOnly = false)
+    private static AtomicTaxLotJournalResult SuccessorBatch(Fixture fixture, bool advanceRefunding, bool functionalOnly = false, bool spinOff = false)
     {
         var predecessor = OpenLotSuccessorTestData.Predecessor() with { LedgerBookId = fixture.Book.LedgerBookId };
-        var targets = advanceRefunding
+        if (spinOff)
+            predecessor = predecessor with { Acquisition = predecessor.Acquisition with { QuantityBasis = LotQuantityBasis.Units, FaceValueTerms = null } };
+        var targets = spinOff ? OpenLotSpinOffTestData.Targets(predecessor, children: 2).ToArray() : advanceRefunding
             ? new[] { OpenLotSuccessorTestData.Successor(predecessor, 0.6m), OpenLotSuccessorTestData.Successor(predecessor, 0.4m) }
             : [OpenLotSuccessorTestData.Successor(predecessor, 1m)];
-        var instruction = OpenLotSuccessorTestData.Build(predecessor, targets, advanceRefunding, periodId: fixture.Period.PeriodId);
+        var instruction = OpenLotSuccessorTestData.Build(predecessor, targets, advanceRefunding, periodId: fixture.Period.PeriodId,
+            allocationPercents: spinOff ? OpenLotSpinOffTestData.Allocations(2) : null,
+            actionType: spinOff ? CorporateActionAccountingTypeDto.SpinOff : null,
+            policyInputs: spinOff ? new(CarryHoldingPeriod: true, SpinOffTaxTreatment: CorporateActionSpinOffTaxTreatmentDto.NonTaxableBasisAllocation) : null);
         var batchId = Guid.NewGuid();
         var journalId = Guid.NewGuid();
         var at = new DateTimeOffset(2026, 8, 25, 12, 0, 0, TimeSpan.Zero);
@@ -225,7 +230,9 @@ public sealed partial class LedgerReportingAuthoritativeSourceTests
         return new LedgerTaxLotRecord(lot.TaxLotRecordId, lot.LedgerBookId,
             new LedgerAccount(instruction is null ? "Assets:Predecessor" : "Assets:Successor", LedgerAccountType.Asset),
             lot.LotId, lot.AcquiredDate, quantity, lot.OpenQuantity / scale,
-            lot.Acquisition.FunctionalCostBasis / quantity, lot.Acquisition.FunctionalCurrency, at, at,
+            instruction is not null && lot.Acquisition.QuantityBasis == LotQuantityBasis.Units
+                ? decimal.Round(lot.Acquisition.FunctionalCostBasis / quantity, 12, MidpointRounding.ToEven)
+                : lot.Acquisition.FunctionalCostBasis / quantity, lot.Acquisition.FunctionalCurrency, at, at,
             SourceJournalEntryId: journalId, Version: lot.Version, OriginatingMutationBatchId: instruction is null ? null : batchId,
             LastMutationBatchId: batchId, SecurityId: lot.SecurityId, BookPositionId: lot.BookPositionId,
             OriginalFace: lot.Acquisition.QuantityBasis == LotQuantityBasis.Face ? lot.OriginalQuantity : null,

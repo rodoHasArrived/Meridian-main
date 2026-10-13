@@ -7,6 +7,7 @@ using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
 using Meridian.Tests.AssetOperations;
 using Npgsql;
+using NSubstitute;
 
 namespace Meridian.Tests.Storage;
 
@@ -15,9 +16,20 @@ public sealed partial class AtomicTaxLotJournalStoreTests
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
     public async Task CorporateActionSuccessors_PostedPublicationRecoversAfterPositionAdvances_OnlyWithExactCommittedBatch()
+        => await AssertSuccessorPublicationRecoveryAsync(legacy: false);
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task CorporateActionSuccessors_LegacyPostedPublicationRecoversWithoutRewritingRetainedLineage()
+        => await AssertSuccessorPublicationRecoveryAsync(legacy: true);
+
+    private static async Task AssertSuccessorPublicationRecoveryAsync(bool legacy)
     {
         await using var fixture = await AmortFixture.CreateAsync(premium: true);
         var command = await SuccessorCommandAsync(fixture, advanceRefunding: true);
+        if (legacy)
+            command = BindSuccessorGuardInstruction(command, command.CorporateAction! with
+            { Projection = command.CorporateAction.Projection with { SourceCorporateActionId = null } });
         var mapped = new CorporateActionAssetAccountingEventMapper().Map(OpenLotSuccessorTestData.MapRequest(command.CorporateAction!));
         mapped.IsMapped.Should().BeTrue();
         var request = mapped.Projection!.Event;
@@ -31,10 +43,13 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         await new AssetOperationsMigrationRunner(options).EnsureMigratedAsync();
         try
         {
+            // A read-only authority fixture retains the old wire shape; current writers must not
+            // be taught to emit legacy receipts or rewrite an immutable committed batch.
+            var authority = legacy ? Substitute.For<ILedgerJournalStore>() : fixture.Restart();
             var publishers = new IAssetAccountingEventProjectionStore[]
             {
-                new InMemoryAssetOperationsProjectionStore(fixture.Restart()),
-                new PostgresAssetOperationsProjectionStore(options, fixture.Restart())
+                new InMemoryAssetOperationsProjectionStore(authority),
+                new PostgresAssetOperationsProjectionStore(options, authority)
             };
             var source = await fixture.Positions.GetSecurityAsync(fixture.Security.SecurityId);
             var position = source.BookPositions.Single();
@@ -47,6 +62,21 @@ public sealed partial class AtomicTaxLotJournalStoreTests
 
             // The commit succeeds, but publication is interrupted before its first Posted append.
             var committed = await fixture.Store.AppendAssetPostingAsync(command);
+            if (legacy)
+            {
+                var mutations = committed.Mutations.Select(item => item.LotBefore is not null ? item : item with
+                {
+                    LotAfter = item.LotAfter with
+                    {
+                        Acquisition = item.LotAfter.Acquisition! with
+                        { CorporateActionLineage = item.LotAfter.Acquisition!.CorporateActionLineage! with { SourceCorporateActionId = null } }
+                    }
+                }).ToArray();
+                committed = committed with { Mutations = mutations, MutatedLots = mutations.Select(item => item.LotAfter).ToArray() };
+                authority.QueryAsync(Arg.Any<LedgerJournalEntryQuery>(), Arg.Any<CancellationToken>())
+                    .Returns(Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>([committed.Journal]));
+                authority.GetAtomicTaxLotPostingAsync(committed.MutationBatchId, Arg.Any<CancellationToken>()).Returns(committed);
+            }
             var impact = PublicationImpact(committed);
             var posted = versions[^1] with
             {
@@ -68,7 +98,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             }
 
             // New store instances must repair the lifecycle using retained posting authority.
-            var restartedPostgres = new PostgresAssetOperationsProjectionStore(options, fixture.Restart());
+            var restartedPostgres = new PostgresAssetOperationsProjectionStore(options, legacy ? authority : fixture.Restart());
             publishers[1] = restartedPostgres;
             (await fixture.Restart().AppendAssetPostingAsync(command)).IsExactReplay.Should().BeTrue();
             foreach (var publisher in publishers)
@@ -80,6 +110,9 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 replay.Projection.TaxLotMutationBatchId.Should().Be(committed.MutationBatchId);
                 replay.Projection.PostedJournalImpact.Should().BeEquivalentTo(impact);
             }
+            if (legacy)
+                committed.Mutations.Where(item => item.LotBefore is null).Should().OnlyContain(item =>
+                    item.LotAfter.Acquisition!.CorporateActionLineage!.SourceCorporateActionId == null);
             (await fixture.Store.GetByPeriodAsync(fixture.Period.PeriodId)).Should().ContainSingle();
         }
         finally

@@ -13,6 +13,38 @@ namespace Meridian.Tests.Ui;
 
 public sealed partial class LedgerReportingAuthoritativeSourceTests
 {
+    [Fact]
+    public async Task CaptureAsync_NonTaxableSpinOffRetainsParentChildrenAndSignedBasisEvidence()
+    {
+        var fixture = CreateFixture(successors: true, accountingBasis: AccountingBasisKindDto.Gaap);
+        fixture.Parameters = fixture.Parameters with { OutputFormat = ReportingOutputFormatDto.Pdf };
+        var batch = WithSuccessorOrigins(SuccessorBatch(fixture, advanceRefunding: false, spinOff: true));
+        fixture.JournalStore.Records.Add(batch.Journal);
+        fixture.JournalStore.Successors.Add(batch);
+
+        var capture = await fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access,
+            new ReportingAuthoritativeSourceCaptureIntent("capital-account-statement"));
+
+        capture.DatasetRows.Should().HaveCount(4, "lot evidence must not duplicate the journal's monetary rows");
+        capture.DatasetRows.Count(row => row["openLotSuccessorRole"] == "Child").Should().Be(2);
+        capture.DatasetRows.Count(row => row["openLotSuccessorRole"] == "Successor").Should().Be(1);
+        capture.DatasetRows.Should().OnlyContain(row => row["openLotScheduleD"] == "false");
+        var pack = capture.CertifiedLedgerPresentation!.ReportPack;
+        var artifact = pack.Artifacts.Single(item => item.Name == "corporate-action-lot-evidence.json");
+        artifact.ChecksumSha256.Should().Be(Sha256Digest.ComputeUtf8(artifact.Content));
+        using var json = JsonDocument.Parse(artifact.Content);
+        var report = json.RootElement.EnumerateArray().Single();
+        var successors = report.GetProperty("Successors").EnumerateArray().ToArray();
+        successors.Should().HaveCount(3);
+        successors.Sum(lot => lot.GetProperty("OpenTransactionCostBasis").GetDecimal())
+            .Should().Be(batch.CorporateAction!.ExpectedLot.OpenTransactionCostBasis);
+        successors.Sum(lot => lot.GetProperty("OpenFunctionalCostBasis").GetDecimal())
+            .Should().Be(batch.CorporateAction!.ExpectedLot.OpenFunctionalCostBasis);
+        var signedPayload = string.Join("\n", pack.Artifacts.OrderBy(item => item.Name, StringComparer.Ordinal)
+            .Select(item => $"{item.Name}:{item.ChecksumSha256}"));
+        pack.Signature.PayloadChecksumSha256.Should().Be(Sha256Digest.ComputeUtf8(signedPayload));
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
