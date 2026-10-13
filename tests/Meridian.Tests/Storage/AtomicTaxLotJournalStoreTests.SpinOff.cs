@@ -17,10 +17,18 @@ public sealed partial class AtomicTaxLotJournalStoreTests
 {
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
-    public async Task SpinOff_ParentAndMultipleChildrenPostAtomicallyAndReplayAfterPeriodLock()
+    public Task SpinOff_ParentAndMultipleChildrenPostAtomicallyAndReplayAfterPeriodLock()
+        => AssertSpinOffRoundTripAsync(fractionalBasisAfterRelief: false);
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public Task SpinOff_FractionalBasisAfterPartialReliefConservesBothBasesAndReplaysAfterPeriodLock()
+        => AssertSpinOffRoundTripAsync(fractionalBasisAfterRelief: true);
+
+    private static async Task AssertSpinOffRoundTripAsync(bool fractionalBasisAfterRelief)
     {
         await using var fixture = await AmortFixture.CreateAsync(premium: true);
-        var command = await SpinOffCommandAsync(fixture);
+        var command = await SpinOffCommandAsync(fixture, fractionalBasisAfterRelief);
         var journalsBefore = (await fixture.Store.GetByPeriodAsync(fixture.Period.PeriodId)).Count;
 
         var posted = await fixture.Store.AppendAssetPostingAsync(command);
@@ -28,6 +36,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         posted.IsExactReplay.Should().BeFalse();
         posted.Mutations.Should().HaveCount(4);
         var source = command.CorporateAction!.ExpectedLot;
+        posted.CorporateAction!.Projection.EventAmount.Should().Be(source.OpenFunctionalCostBasis);
         posted.Mutations.Single(item => item.LotBefore is not null).LotAfter.OpenQuantity.Should().Be(0m);
         var targets = posted.Mutations.Where(item => item.LotBefore is null).Select(item => item.LotAfter.ToOpenLot()).ToArray();
         targets.Sum(lot => lot.OpenTransactionCostBasis).Should().Be(source.OpenTransactionCostBasis);
@@ -42,9 +51,16 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             lot.Acquisition.HoldingPeriodStartDate.Should().Be(source.Acquisition.HoldingPeriodStartDate);
             lot.Acquisition.CorporateActionLineage!.ReportingTags.Should().BeEmpty();
         }
+        posted.Journal.Entry.Lines.Sum(line => line.Debit).Should().Be(source.OpenFunctionalCostBasis);
+        posted.Journal.Entry.Lines.Sum(line => line.Credit).Should().Be(source.OpenFunctionalCostBasis);
+        posted.Journal.Entry.Lines.Sum(line => line.Currency!.TransactionDebit).Should().Be(source.OpenTransactionCostBasis);
+        posted.Journal.Entry.Lines.Sum(line => line.Currency!.TransactionCredit).Should().Be(source.OpenTransactionCostBasis);
         CanonicalOpenLotSuccessorEvidence.Validate(posted, posted.Journal, fixture.BookId, "USD");
         var reloaded = (await fixture.Restart().GetAtomicTaxLotPostingAsync(command.MutationBatchId))!;
         reloaded.Mutations.Should().BeEquivalentTo(posted.Mutations);
+        reloaded.CorporateAction.Should().BeEquivalentTo(command.CorporateAction);
+        (await fixture.Restart().GetTaxLotsByIdsAsync(fixture.BookId,
+            posted.MutatedLots.Select(lot => lot.TaxLotRecordId).ToArray())).Should().BeEquivalentTo(posted.MutatedLots);
         var child = reloaded.MutatedLots.Single(lot => lot.OriginalQuantity == 17.5m);
         child.UnitCost.Should().Be(decimal.Round(child.Acquisition!.FunctionalCostBasis / 17.5m, 12, MidpointRounding.ToEven));
         (child.OriginalQuantity * child.UnitCost).Should().NotBe(child.Acquisition!.FunctionalCostBasis);
@@ -52,18 +68,32 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             .Single(target => target.Lot.TaxLotRecordId == child.TaxLotRecordId).Lot.OpenFunctionalCostBasis);
         await AssertDurableSuccessorImpactAsync(fixture, reloaded);
         await fixture.LockPeriodAsync();
+        var countsBeforeReplay = await ReadSplitAncestryCountsAsync(fixture);
+        var auditBeforeReplay = (await fixture.Store.VerifyLedgerEventAuditAsync()).ChainedEvents;
         var replay = await fixture.Restart().AppendAssetPostingAsync(command);
         replay.IsExactReplay.Should().BeTrue();
         replay.Mutations.Should().BeEquivalentTo(posted.Mutations);
+        replay.CorporateAction.Should().BeEquivalentTo(command.CorporateAction);
+        replay.CanonicalFingerprint.Should().Be(command.CanonicalFingerprint);
         (await fixture.Restart().GetByPeriodAsync(fixture.Period.PeriodId)).Should().HaveCount(journalsBefore + 1);
+        (await ReadSplitAncestryCountsAsync(fixture)).Should().Be(countsBeforeReplay);
+        (await fixture.Store.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(auditBeforeReplay);
     }
 
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
-    public async Task SpinOff_LastSuccessorFailureRollsBackTheParentChildrenJournalAndAudit()
+    public Task SpinOff_LastSuccessorFailureRollsBackTheParentChildrenJournalAndAudit()
+        => AssertSpinOffRollbackAsync(fractionalBasisAfterRelief: false);
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public Task SpinOff_FractionalBasisAfterPartialReliefRollsBackEveryWriteThenRetriesAndReplays()
+        => AssertSpinOffRollbackAsync(fractionalBasisAfterRelief: true);
+
+    private static async Task AssertSpinOffRollbackAsync(bool fractionalBasisAfterRelief)
     {
         await using var fixture = await AmortFixture.CreateAsync(premium: true);
-        var command = await SpinOffCommandAsync(fixture);
+        var command = await SpinOffCommandAsync(fixture, fractionalBasisAfterRelief);
         var before = await ReadSplitAncestryCountsAsync(fixture);
         var auditBefore = (await fixture.Store.VerifyLedgerEventAuditAsync()).ChainedEvents;
         await using var connection = new NpgsqlConnection(fixture.Options.ConnectionString);
@@ -86,11 +116,24 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var source = command.CorporateAction.ExpectedLot;
         (await fixture.Restart().GetTaxLotsByIdsAsync(fixture.BookId, [source.TaxLotRecordId]))
             .Single().ToOpenLot().Should().BeEquivalentTo(source);
+        (await fixture.Restart().GetTaxLotsByIdsAsync(fixture.BookId,
+            command.CorporateAction.Successors.Select(target => target.Lot.TaxLotRecordId).ToArray())).Should().BeEmpty();
         (await fixture.Store.GetAtomicTaxLotPostingAsync(command.MutationBatchId)).Should().BeNull();
         injection.CommandText = $"drop trigger reject_test_spin_off on \"{fixture.Options.SchemaName}\".tax_lot_mutations";
         await injection.ExecuteNonQueryAsync();
-        (await fixture.Restart().AppendAssetPostingAsync(command)).IsExactReplay.Should().BeFalse();
-        (await fixture.Restart().AppendAssetPostingAsync(command)).IsExactReplay.Should().BeTrue();
+        var posted = await fixture.Restart().AppendAssetPostingAsync(command);
+        posted.IsExactReplay.Should().BeFalse();
+        var successors = posted.Mutations.Where(mutation => mutation.LotBefore is null)
+            .Select(mutation => mutation.LotAfter.ToOpenLot()).ToArray();
+        successors.Sum(lot => lot.OpenTransactionCostBasis).Should().Be(source.OpenTransactionCostBasis);
+        successors.Sum(lot => lot.OpenFunctionalCostBasis).Should().Be(source.OpenFunctionalCostBasis);
+        var countsBeforeReplay = await ReadSplitAncestryCountsAsync(fixture);
+        var auditBeforeReplay = (await fixture.Store.VerifyLedgerEventAuditAsync()).ChainedEvents;
+        var replay = await fixture.Restart().AppendAssetPostingAsync(command);
+        replay.IsExactReplay.Should().BeTrue();
+        replay.Mutations.Should().BeEquivalentTo(posted.Mutations);
+        (await ReadSplitAncestryCountsAsync(fixture)).Should().Be(countsBeforeReplay);
+        (await fixture.Store.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(auditBeforeReplay);
     }
 
     [LedgerDatabaseFact]
@@ -111,9 +154,70 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         (await fixture.Store.GetAtomicTaxLotPostingAsync(command.MutationBatchId)).Should().BeNull();
     }
 
-    private static async Task<AtomicTaxLotJournalCommand> SpinOffCommandAsync(AmortFixture fixture)
+    private static async Task<LedgerTaxLotRecord> RelieveSpinOffPredecessorAsync(AmortFixture fixture,
+        LedgerTaxLotRecord retained)
     {
+        const decimal quantity = 0.1233m;
+        var source = retained.ToOpenLot();
+        var relief = new OpenLotReliefService().Select([source], quantity, OpenLotReliefMethod.Fifo);
+        var journalId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var key = "spin-off-partial-relief:" + Guid.NewGuid().ToString("N");
+        var at = new DateTimeOffset(AmortAsOf.ToDateTime(new TimeOnly(12, 0)), TimeSpan.Zero);
+        var dimensions = new LedgerLineDimensionSet(InstrumentId: source.SecurityId) { PositionId = source.BookPositionId };
+        const string description = "Reviewed partial relief before non-taxable spin-off";
+        var entry = new JournalEntry(journalId, at, description,
+            [
+                new LedgerEntry(Guid.NewGuid(), journalId, at, new("Cash", LedgerAccountType.Asset),
+                    relief.FunctionalCostBasis, 0m, description, dimensions,
+                    new LedgerEntryCurrency("EUR", "USD", relief.TransactionCostBasis, 0m, 1.1m)),
+                new LedgerEntry(Guid.NewGuid(), journalId, at, retained.Account, 0m,
+                    relief.FunctionalCostBasis, description, dimensions,
+                    new LedgerEntryCurrency("EUR", "USD", 0m, relief.TransactionCostBasis, 1.1m))
+            ], new(SecurityId: source.SecurityId, EffectiveDate: AmortAsOf, IdempotencyKey: key,
+                Tags: SecurityMasterLineageTags(source.SecurityId)));
+        var posting = new AccountingPostingCommandDto(Guid.NewGuid(), fixture.BookId, fixture.Period.PeriodId,
+            AmortAsOf, at, key, AccountingPostingIntentDto.Originating, sourceEventId, ExpectedVersion: fixture.Period.Version,
+            ApprovalState: AccountingPostingApprovalStateDto.Approved, ApprovalId: "independent-controller-review",
+            OperatorRationale: "Independent review of partial relief at exact canonical basis.", LedgerBookId: fixture.BookId)
+        { Actor = "independent-controller" };
+        var journal = new LedgerJournalEntryWrite(entry, fixture.BookId, fixture.Period.PeriodId,
+            AccountingPolicyId: "amort-policy", AccountingPolicyVersion: "1", SourceEventId: sourceEventId,
+            LedgerBookId: fixture.BookId, PostingCommand: posting);
+        var evidence = source.Acquisition.Evidence.Single();
+        var command = AtomicTaxLotJournalCommand.Create(Guid.NewGuid(), fixture.BookId, journal, sourceEventId, key,
+            fixture.Period.Version, AtomicTaxLotMutationKind.Disposal, [evidence],
+            disposalSelections: [new(retained.TaxLotRecordId, retained.LotId, retained.Version, retained.OpenQuantity,
+                quantity, 0, evidence.EvidenceId, retained.UnitCost, relief.FunctionalCostBasis)],
+            reliefMethod: "Fifo", policyRevision: "amort-fifo-v1");
+
+        var posted = await fixture.Store.AppendAssetPostingAsync(command);
+        posted.IsExactReplay.Should().BeFalse();
+        var reloaded = (await fixture.Restart().GetTaxLotsByIdsAsync(fixture.BookId, [source.TaxLotRecordId])).Single();
+        reloaded.Should().BeEquivalentTo(posted.MutatedLots.Single());
+        var remaining = reloaded.ToOpenLot();
+        remaining.OpenQuantity.Should().Be(59.8767m);
+        remaining.OpenTransactionCostBasis.Should().Be(598.767m);
+        remaining.OpenFunctionalCostBasis.Should().Be(658.6437m);
+        remaining.OpenFunctionalCostBasis.Should().NotBe(decimal.Round(remaining.OpenFunctionalCostBasis, 2));
+        (remaining.OpenTransactionCostBasis + relief.TransactionCostBasis).Should().Be(source.OpenTransactionCostBasis);
+        (remaining.OpenFunctionalCostBasis + relief.FunctionalCostBasis).Should().Be(source.OpenFunctionalCostBasis);
+        return reloaded;
+    }
+
+    private static async Task<AtomicTaxLotJournalCommand> SpinOffCommandAsync(AmortFixture fixture,
+        bool fractionalBasisAfterRelief = false)
+    {
+        if (fractionalBasisAfterRelief)
+        {
+            // Close the fixture's face-valued seed before exercising unit-only FIFO relief.
+            var closing = await fixture.CurrentBasisDisposalAsync(fixture.Lot.OpenQuantity, AmortAsOf,
+                "spin-off-close-fixture-face-lot");
+            await fixture.Store.AppendAssetPostingAsync(closing.Command);
+        }
         var retained = await AcquireSplitAncestryUnitsAsync(fixture, AmortAsOf.AddDays(-10));
+        if (fractionalBasisAfterRelief)
+            retained = await RelieveSpinOffPredecessorAsync(fixture, retained);
         var predecessor = retained.ToOpenLot();
         var snapshot = await fixture.Positions.GetSecurityAsync(predecessor.SecurityId);
         var position = snapshot.BookPositions.Single(item => item.PositionId == predecessor.BookPositionId);

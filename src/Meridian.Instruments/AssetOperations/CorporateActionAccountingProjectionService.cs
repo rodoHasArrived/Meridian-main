@@ -195,7 +195,7 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
             decision,
             request.CanonicalLotTransferJournal
                 && (request.ActionType is CorporateActionAccountingTypeDto.StockSplit or CorporateActionAccountingTypeDto.ReverseStockSplit
-                    or CorporateActionAccountingTypeDto.MergerStock)
+                    or CorporateActionAccountingTypeDto.MergerStock or CorporateActionAccountingTypeDto.SpinOff)
                 ? computation.EventAmount : Round(computation.EventAmount, currency),
             economicEvent,
             lineage,

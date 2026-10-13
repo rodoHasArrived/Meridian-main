@@ -46,6 +46,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAmortizationContinuation"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAmortizationContinuationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto"
     },
     {
@@ -22841,6 +22853,24 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto",
       "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAmortizationContinuationDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAmortizationContinuationDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAmortizationContinuationDto"
     },
     {
       "kind": "contract-reference",
@@ -48859,7 +48889,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "9d1e45b04c380e4158720496bd773ea28f97150729bbb8a3dfde447d2e7bd881",
+  "fingerprint": "abfc20a8d0ffb6265e5d7987d36c6f74e4e408868a94617504d40dbd90396d39",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -48953,6 +48983,18 @@
       "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAmortization",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Accounting.Lots.OpenLotAmortization"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAmortizationContinuation",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotAmortizationContinuation"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAmortizationContinuationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotAmortizationContinuationDto"
     },
     {
       "classification": "dto",
@@ -71462,11 +71504,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3233,
-    "contract_set_memberships": 3801,
-    "edges": 8118,
+    "contract_references": 3236,
+    "contract_set_memberships": 3803,
+    "edges": 8123,
     "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3915
+    "nodes": 3917
   }
 }
