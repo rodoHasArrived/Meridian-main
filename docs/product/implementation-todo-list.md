@@ -77,7 +77,7 @@ Merged lot work includes retained acquisition-draft completion in
 spin-offs in [PR #3147](https://github.com/rodoHasArrived/Meridian-main/pull/3147), and exact
 fractional basis after partial disposal in #3148. The Security Master transaction/savepoint work
 in [PR #3130](https://github.com/rodoHasArrived/Meridian-main/pull/3130) is also on this baseline.
-The unchanged-exchange amortization continuation in [draft PR #3149](https://github.com/rodoHasArrived/Meridian-main/pull/3149)
+The unchanged-exchange amortization continuation in [PR #3149](https://github.com/rodoHasArrived/Meridian-main/pull/3149)
 is not part of this tested baseline and is not credited as merged delivery here.
 These runs do not supply live operator acceptance, close the remaining W10 lot criteria, or replace
 signed installer and supported-release evidence on the final frozen release commit.

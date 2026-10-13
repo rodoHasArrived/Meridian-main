@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-12
+last_reviewed: 2026-10-13
 ---
 
 # src/Meridian.FinancialOperations
@@ -72,6 +72,13 @@ reference is never relabeled Active to satisfy the ordinary journal gate.
 New amortization postings require the current calculation version before approval is retained.
 Historical unversioned instructions remain readable for exact receipt replay; unposted legacy
 drafts require a fresh preview.
+
+For an unchanged one-for-one Reg S/144A face exchange, preview resolves the successor's immutable
+birth receipt and the predecessor amortization it retained. That evidence becomes an optional,
+versioned continuation in the reviewed instruction. Existing acquisition dates, original schedule,
+yield and FX drive the calculation; the exchange does not restart amortization. Missing receipts,
+changed terms/references, successor chains and other action types cannot supply this continuation.
+The existing independent approval and atomic posting workflow remains the only posting authority.
 
 The amortization event-spine path retains its existing requirement that the Security Master currency
 equal the event's functional currency. The atomic lot boundary preserves acquisition currency and

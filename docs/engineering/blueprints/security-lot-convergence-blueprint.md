@@ -291,6 +291,32 @@ storage; every current consumer has parity evidence; the legacy exception queue 
 and the advance-refunding scenario reconciles from source evidence through report output.
 
 
+## Bounded exchange schedule continuation (2026-10-13)
+
+The next successor-amortization increment retains one ordinary v2 amortization and the immutable
+one-for-one Reg S/144A exchange that followed it. A separately versioned optional `Continuation`
+on `OpenLotAmortizationInstructionDto` carries those reviewed inputs. The successor retains its
+inherited acquisition facts, but calculation uses the predecessor's original quantity and basis so
+a prior partial disposal or currency rounding cannot reset the original schedule or effective yield.
+Current open quantity scales that schedule at the existing twelve-decimal boundary.
+
+| Posting control | Required evidence |
+| --- | --- |
+| Scope and dates | Same book/account, exact successor identity and acquisition facts; amortization follows its birth and predecessor accrual dates |
+| Schedule authority | One-for-one face exchange; immediate ordinary v2 amortization receipt; unchanged predecessor/target economic terms and retained target reference |
+| Review and approval | Complete continuation is retained in the existing candidate instruction and independent approval subject |
+| Atomicity and concurrency | Existing period/reference/position/lot locks and lot CAS; both immutable receipts are reloaded and compared inside the journal transaction |
+| Balance and precision | Original schedule and acquisition FX, cumulative twelve-decimal targets, exact journal movements in both currencies |
+| Retry and correction | Existing exact-receipt replay, immutable before/after evidence and approved reversal/rebook controls |
+
+Missing receipts, changed reference terms, inherited successor chains, other action types, and
+predecessors with a later unrelated basis treatment remain explicit blockers. This increment does
+not authorize a new yield or advance-refunding maturity schedule. Contract tests must prove original
+schedule parity, partial-quantity behavior, altered-input refusals and old JSON compatibility;
+PostgreSQL evidence must cover preview/post/reload, late rollback, stale/forged authority, period-lock
+replay and reversal/rebook. W10-LOT-002 remains in progress until its full acceptance gate is met.
+
+
 ## Implementation receipt - 2026-09-04
 
 Contract and persistence foundation in progress: shared decimal `OpenLotDto` and acquisition facts, canonical relief selection, Execution/Backtesting parity adapters, an additive nullable `acquisition_terms` column, immutable acquisition guards, and ledger-to-canonical face/unit projection. Missing identity, FX, or subject-bound acquisition evidence is refused. Legacy null fields remain absent in fingerprints; populated evidence participates in atomic replay identity.
