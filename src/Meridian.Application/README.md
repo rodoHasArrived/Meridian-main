@@ -11,6 +11,15 @@ last_reviewed: 2026-10-07
 
 # src/Meridian.Application
 
+Security Master governed edits now validate and stage the overlay and draft in one PostgreSQL
+transaction guarded by a durable per-security generation. Competing instances receive a conflict
+and must reload before retrying; they cannot combine independently valid edits against a stale
+overlay. Approval scans, generic-patch guards, submission, discard and final publish transitions
+use the same mutation boundary. Overlay and revision stores must use the same database and schema.
+Optional discard provenance and approval convergence use recoverable savepoints; a SQL error in
+those steps cannot silently undo the revision rejection and overlay withdrawal.
+See [the concurrency and rollout contract](../../docs/domain/security.md#governed-edit-concurrency).
+
 PostgreSQL ledger composition resolves consolidation posting authority through a deferred factory.
 The workstation supplies the authoritative ownership and policy provider, avoiding a dependency
 cycle with the ledger reader; missing providers block consolidation posting.

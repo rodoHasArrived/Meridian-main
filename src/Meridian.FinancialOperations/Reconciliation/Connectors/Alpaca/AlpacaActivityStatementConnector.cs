@@ -215,6 +215,13 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
             return Task.FromResult(EmptyResult(document.MappingProfileId, issues));
         }
 
+        if (snapshot.Portfolio?.CompletenessIssues is { Count: > 0 })
+        {
+            issues.Add(StatementParseIssue.Error(
+                "INCOMPLETE_PORTFOLIO", "The Alpaca portfolio reports incomplete financial evidence; refresh it before importing."));
+            return Task.FromResult(EmptyResult(document.MappingProfileId, issues));
+        }
+
         return ParseSnapshotAsync(document, snapshot, issues, ct);
     }
 
@@ -308,6 +315,21 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
             foreach (var activity in richActivities)
             {
                 rowNumber++;
+                if (activity.Subtype == BrokerageActivitySubtype.TradeFill
+                    && (!activity.Quantity.HasValue || !activity.Price.HasValue))
+                {
+                    issues.Add(StatementParseIssue.Error("ALPACA_INVALID_AMOUNT",
+                        "Trade fills require explicit quantity and price evidence."));
+                    return EmptyResult(profileId, issues);
+                }
+                if (activity.Metadata?.TryGetValue("commission", out var commissionText) == true
+                    && !decimal.TryParse(commissionText?.Trim(), NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint,
+                        CultureInfo.InvariantCulture, out _))
+                {
+                    issues.Add(StatementParseIssue.Error("ALPACA_INVALID_AMOUNT",
+                        "Supplied commission requires an invariant decimal without grouping separators."));
+                    return EmptyResult(profileId, issues);
+                }
                 if (!TryRetain(MapRichActivity(account, activity, accountCurrency)))
                 {
                     return EmptyResult(profileId, issues);
@@ -513,7 +535,8 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
 
         decimal? commission = null;
         if (activity.Metadata?.TryGetValue("commission", out var commissionText) == true &&
-            decimal.TryParse(commissionText, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsedCommission))
+            decimal.TryParse(commissionText?.Trim(), NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint,
+                CultureInfo.InvariantCulture, out var parsedCommission))
         {
             commission = parsedCommission;
         }

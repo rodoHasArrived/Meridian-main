@@ -507,14 +507,20 @@ public sealed class StatementImportService(
 
     private static StatementParseResult RequireCurrencyEvidence(StatementParseResult parse)
     {
-        foreach (var record in parse.Records)
+        // Supplemental evidence is persisted alongside canonical rows. Its denomination
+        // must meet the same gate even when a separate, valid row makes the upload non-empty.
+        var currencies = parse.Records.Select(static record => record.Currency)
+            .Concat((parse.AccountSnapshots ?? []).Select(static account => account.Currency))
+            .Concat((parse.TaxLots ?? []).Select(static lot => lot.Currency))
+            .Concat((parse.BorrowPositions ?? []).Select(static borrow => borrow.Currency));
+        foreach (var currency in currencies)
         {
-            if (!CurrencyCodeCatalog.TryNormalizeRecognized(record.Currency, out _))
+            if (!CurrencyCodeCatalog.TryNormalizeRecognized(currency, out _))
             {
                 return parse with
                 {
                     Issues = [.. parse.Issues, StatementParseIssue.Error(
-                        "ROW_INVALID_CURRENCY", "Rows require explicit recognized currency evidence before import.", field: "Currency")]
+                        "ROW_INVALID_CURRENCY", "Rows and supplemental account, lot, and borrow evidence require explicit recognized currency before import.", field: "Currency")]
                 };
             }
         }
