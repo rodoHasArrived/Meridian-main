@@ -183,9 +183,10 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var dimensions = new LedgerLineDimensionSet(InstrumentId: lot.SecurityId) { PositionId = lot.BookPositionId };
         var tags = new Dictionary<string, string>(SecurityMasterLineageTags(lot.SecurityId))
         { [OpenLotCapitalReturn.JournalFingerprintTag] = OpenLotCapitalReturn.Fingerprint(instruction) };
-        var entry = new JournalEntry(journalId, at, "Approved return of capital",
-            [new LedgerEntry(Guid.NewGuid(), journalId, at, AmortAccount, 0m, 55m, "Carrying reduction", dimensions, new("USD", "USD", 0m, 55m, 1m)),
-             new LedgerEntry(Guid.NewGuid(), journalId, at, LedgerAccounts.Cash, 55m, 0m, "Cash return", dimensions, new("USD", "USD", 55m, 0m, 1m))],
+        const string description = "Approved return of capital";
+        var entry = new JournalEntry(journalId, at, description,
+            [new LedgerEntry(Guid.NewGuid(), journalId, at, AmortAccount, 0m, 55m, description, dimensions, new("USD", "USD", 0m, 55m, 1m)),
+             new LedgerEntry(Guid.NewGuid(), journalId, at, LedgerAccounts.Cash, 55m, 0m, description, dimensions, new("USD", "USD", 55m, 0m, 1m))],
             new(SecurityId: lot.SecurityId, EffectiveDate: date, IdempotencyKey: key, Tags: tags));
         var posting = new AccountingPostingCommandDto(Guid.NewGuid(), fixture.BookId, fixture.Period.PeriodId,
             date, at, key, AccountingPostingIntentDto.Adjustment, eventRef.EventId, ExpectedVersion: fixture.Period.Version,
