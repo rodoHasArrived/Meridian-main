@@ -11,6 +11,12 @@ last_reviewed: 2026-10-11
 
 # src/Meridian.Ui/dashboard
 
+The generated `api-routes.ts` catalog includes exact account-owned ledger-book oversight routes
+for cash continuity, reviewed close prices and cash forecasts. Regenerate it from shared
+`UiApiRoutes` and rebuild the tracked workstation bundle when those routes change; server-owned
+scope and evidence verification are described in
+[bounded account oversight](../../../docs/operators/account-oversight.md).
+
 Governed Journal Entry Detail exposes retained disposal tax results from the shared period and
 journal read model. Operators can inspect mixed parcel character, carried holding-period starts,
 economic and recognized gain/loss, deferred loss, and the exact retained policy revision. Settled,
