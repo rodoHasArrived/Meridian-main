@@ -162,6 +162,12 @@ function Invoke-MeridianBuildArtifactRetention {
 
         $candidateEntries = New-Object System.Collections.Generic.List[object]
         foreach ($directory in $artifactDirectories) {
+            # buildctl reserves this namespace for persistent worktree/session profiles.
+            # Profiles are explicitly reset by their owner, never aged or sized out.
+            if ($directory.Name.StartsWith('profile-', [System.StringComparison]::OrdinalIgnoreCase)) {
+                continue
+            }
+
             $candidatePath = [System.IO.Path]::GetFullPath($directory.FullName)
             if (Test-MeridianPathHasReparsePointAncestor -Path $candidatePath -StopAt $resolvedRoot) {
                 Write-Warning "Skipping build artifact retention candidate because it crosses a reparse point: $candidatePath"

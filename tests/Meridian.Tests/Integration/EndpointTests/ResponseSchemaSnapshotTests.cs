@@ -20,7 +20,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// downstream consumers break.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class ResponseSchemaSnapshotTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private readonly EndpointTestFixture _fixture;

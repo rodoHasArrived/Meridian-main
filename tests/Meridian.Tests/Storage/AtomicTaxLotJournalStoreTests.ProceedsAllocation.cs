@@ -98,13 +98,15 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             await database.JournalStore.SaveWashSaleDeferralsAsync([new(Guid.NewGuid(), command.LedgerBookId,
                 command.MutationBatchId, TestSecurityId, new(2026, 5, 12), lots[0].Account,
                 replacement.TaxLotRecordId, replacement.LotId, 20m, 1m, lots[0].AcquiredDate,
-                "wash-sale-policy", 30, WashSaleReplacementScope.LedgerBook, timestamp)]);
+                "wash-sale-policy", 17, WashSaleReplacementScope.LedgerBook, timestamp)]);
 
             var reopened = new PostgresLedgerJournalStore(database.Options);
             var history = (await reopened.GetTaxLotDisposalHistoryAsync(command.LedgerBookId,
                 [command.Journal.Entry.JournalEntryId])).Single();
             history.ProceedsAllocationVersion.Should().Be(LedgerTaxLotReliefProjector.CurrentProceedsAllocationVersion);
             history.SalePrice.Should().Be(explicitPrice ? 80m : null);
+            history.PolicyRevision.Should().Be("tax-policy-v1");
+            history.RecordedAt.Should().Be(posted.Mutations[0].RecordedAt);
             var rebuilt = CanonicalDisposalHistoryProjector.Project(history, posted.Journal.Entry,
                 command.LedgerBookId, "USD");
             rebuilt.Proceeds.Should().Be(80m);
@@ -115,6 +117,11 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             var increase = rebuilt.WashSale!.BasisIncreases.Should().ContainSingle().Which;
             increase.ReplacementLotId.Should().Be(replacement.LotId);
             increase.Amount.Should().Be(20m);
+            increase.AppliedPolicy.Should().Be(new WashSalePolicy(true, 17, WashSaleReplacementScope.LedgerBook)
+            {
+                PolicyId = "wash-sale-policy"
+            });
+            increase.AppliedPolicy!.EffectiveDate.Should().BeNull("the deferral did not retain an activation date");
         }
     }
 
@@ -214,9 +221,98 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             .Should().Equal(0m, 0m, 0m, 0m, 0.01m);
     }
 
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task DisposalAllocation_ResultScopeAndSideAreRequiredForInferredAndExplicitPrices()
+    {
+        foreach (var explicitPrice in new[] { false, true })
+            foreach (var gain in new[] { false, true })
+                foreach (var defect in new[] { "sibling", "unscoped", "side", "type", "symbol", "symbol-without-lineage" })
+                {
+                    await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+                    var (command, lots, _) = await PrepareProceedsDisposalAsync(database, precisePrice: false,
+                        financialAccountId: "broker-1");
+                    var entry = command.Journal.Entry;
+                    var resultAccount = gain ? LedgerAccounts.RealizedGainFor("broker-1")
+                        : LedgerAccounts.RealizedLossFor("broker-1");
+                    var wrongSide = defect == "side";
+                    var debitResult = gain == wrongSide;
+                    var cash = debitResult ? 0.05m : 0.07m;
+                    resultAccount = defect switch
+                    {
+                        "sibling" => resultAccount with { FinancialAccountId = "broker-2" },
+                        "unscoped" => resultAccount with { FinancialAccountId = null },
+                        "type" => resultAccount with { AccountType = LedgerAccountType.Asset },
+                        "symbol" or "symbol-without-lineage" => resultAccount with { Symbol = "OTHER" },
+                        _ => resultAccount
+                    };
+                    var metadata = entry.Metadata;
+                    if (defect == "symbol")
+                    {
+                        // Valid lineage lets this case reach exact result-account validation.
+                        // The separate missing-lineage case retains the earlier posting guard proof.
+                        var tags = SecurityMasterLineageTags(TestSecurityId);
+                        tags["securityMasterLineage"] =
+                            $"OTHER:{TestSecurityId:N}:ledger-map:OTHER:sm-approval:lot-controller:security-status:active:{tags["securityMasterProvenance"]}";
+                        metadata = metadata with { Tags = tags };
+                    }
+                    LedgerEntry Line(LedgerAccount account, decimal debit, decimal credit) => new(
+                        Guid.NewGuid(), entry.JournalEntryId, entry.Timestamp, account, debit, credit,
+                        entry.Description, entry.Lines[0].Dimensions,
+                        new LedgerEntryCurrency("USD", "USD", debit, credit, 1m));
+                    command = (command with
+                    {
+                        DisposalSalePrice = explicitPrice ? cash / 5m : null,
+                        Journal = command.Journal with
+                        {
+                            Entry = new JournalEntry(entry.JournalEntryId, entry.Timestamp, entry.Description,
+                            [
+                                Line(LedgerAccounts.CashAccount("broker-1"), cash, 0m),
+                                Line(lots[0].Account, 0m, 0.06m),
+                                Line(resultAccount, debitResult ? 0.01m : 0m, debitResult ? 0m : 0.01m)
+                            ], metadata)
+                        }
+                    }).WithComputedFingerprint();
+                    var auditBefore = (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents;
+                    var post = () => database.JournalStore.AppendAssetPostingAsync(command);
+                    await post.Should().ThrowAsync<LedgerValidationException>()
+                        .WithMessage(defect == "symbol-without-lineage"
+                            ? "*declares instrument symbol 'OTHER' without matching Security Master lineage*"
+                            : "*disposing account's exact*");
+                    (await database.JournalStore.GetAtomicTaxLotPostingAsync(command.MutationBatchId)).Should().BeNull();
+                    (await database.JournalStore.GetByPeriodAsync(command.Journal.PeriodId)).Should().BeEmpty();
+                    (await database.JournalStore.GetTaxLotsByIdsAsync(command.LedgerBookId,
+                        lots.Select(static lot => lot.TaxLotRecordId).ToArray())).Should().BeEquivalentTo(lots);
+                    (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(auditBefore);
+                }
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task DisposalAllocation_ScopedProjectorResultsRetainProceedsAndExactReplay()
+    {
+        foreach (var explicitPrice in new[] { false, true })
+        {
+            await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+            var (command, _, expected) = await PrepareProceedsDisposalAsync(database, explicitPrice,
+                financialAccountId: "broker-1");
+            var posted = await database.JournalStore.AppendAssetPostingAsync(command);
+            var replay = await database.JournalStore.AppendAssetPostingAsync(command);
+            replay.IsExactReplay.Should().BeTrue();
+            replay.CanonicalFingerprint.Should().Be(command.CanonicalFingerprint);
+            var history = (await database.JournalStore.GetTaxLotDisposalHistoryAsync(command.LedgerBookId,
+                [command.Journal.Entry.JournalEntryId])).Single();
+            var rebuilt = CanonicalDisposalHistoryProjector.Project(history, posted.Journal.Entry,
+                command.LedgerBookId, "USD");
+            rebuilt.Proceeds.Should().Be(expected.Proceeds);
+            rebuilt.Selections.Select(static selection => selection.Proceeds)
+                .Should().Equal(expected.Selections.Select(static selection => selection.Proceeds));
+        }
+    }
+
     private static async Task<(AtomicTaxLotJournalCommand Command, LedgerTaxLotRecord[] Lots,
         LedgerTaxLotReliefProjection Projection)> PrepareProceedsDisposalAsync(
-        LedgerPostgresTestDatabase database, bool precisePrice, bool washSale = false)
+        LedgerPostgresTestDatabase database, bool precisePrice, bool washSale = false, string? financialAccountId = null)
     {
         var bookId = Guid.NewGuid();
         var at = DateTimeOffset.Parse("2026-05-01T00:00:00Z");
@@ -224,7 +320,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             FundStructureNodeKindDto.Fund, "Proceeds allocation", "USD", at, at));
         var period = await database.JournalStore.SavePeriodAsync(new(Guid.NewGuid(), bookId, 2026, 5,
             "2026-05", new(2026, 5, 1), new(2026, 5, 31), "Open", at, null, 0), 0);
-        var account = new LedgerAccount("Investment lots", LedgerAccountType.Asset);
+        var account = new LedgerAccount("Investment lots", LedgerAccountType.Asset, FinancialAccountId: financialAccountId);
         await database.JournalStore.SaveTaxLotPolicyAsync(new(Guid.NewGuid(), bookId, account,
             LedgerTaxLotReliefMethod.Fifo, "tax-policy-v1", new(2026, 5, 1), at, at));
         var lots = new List<LedgerTaxLotRecord>();

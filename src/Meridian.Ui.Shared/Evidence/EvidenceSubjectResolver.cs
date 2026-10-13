@@ -26,6 +26,7 @@ public sealed class EvidenceSubjectResolver
     public const string ReportPackDeliveryKind = "report-pack-delivery";
     public const string EvidenceVaultKind = "evidence-vault";
     public const string JournalEntryKind = "journal-entry";
+    public const string LedgerAmountKind = "ledger-amount";
 
     private static readonly HashSet<string> SupportedKinds = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -43,7 +44,8 @@ public sealed class EvidenceSubjectResolver
         PaymentIntentKind,
         ReportPackDeliveryKind,
         EvidenceVaultKind,
-        JournalEntryKind
+        JournalEntryKind,
+        LedgerAmountKind
     };
 
     private readonly IServiceProvider _services;

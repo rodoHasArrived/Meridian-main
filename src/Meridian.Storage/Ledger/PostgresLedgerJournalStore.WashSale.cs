@@ -183,6 +183,8 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        // Match successor posting's first lock, before reading the recipient or its mutations.
+        await LockSuccessorCarryBoundaryAsync(connection, transaction, forSuccessorPosting: false, ct).ConfigureAwait(false);
         foreach (var deferral in deferrals)
         {
             ValidateWashSaleDeferral(deferral);
@@ -191,6 +193,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
                 deferral.ReplacementTaxLotRecordId, deferral.LedgerBookId, false, ct).ConfigureAwait(false);
             await EnsureBookReferenceAuthorityAsync(connection, transaction, "atomic_tax_lot_posting_batches", "mutation_batch_id",
                 deferral.DisposalMutationBatchId, deferral.LedgerBookId, false, ct).ConfigureAwait(false);
+            await RejectCarryAfterSuccessorPostingAsync(connection, transaction, deferral, ct).ConfigureAwait(false);
             await InsertWashSaleDeferralAsync(connection, transaction, deferral, ct).ConfigureAwait(false);
         }
 

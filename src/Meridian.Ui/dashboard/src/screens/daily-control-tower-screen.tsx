@@ -86,7 +86,7 @@ export function DailyControlTowerScreen({
       render: (row) => (
         <Link
           to={row.item.route}
-          className="inline-flex items-center gap-1 font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="inline-flex items-center gap-1 font-medium text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
           aria-label={row.item.ariaLabel}
         >
           <span>{row.item.actionLabel}</span>

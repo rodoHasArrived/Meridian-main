@@ -11,6 +11,25 @@ namespace Meridian.Tests.Ui;
 
 public sealed class ProviderConnectionDiagnosticsProjectionTests
 {
+    [Theory]
+    [InlineData("ibkr", "interactive-brokers")]
+    [InlineData("interactive-brokers", " IBKR ")]
+    [InlineData("IB", "interactive_brokers")]
+    [InlineData("alpaca", "alpaca-api")]
+    public void BuildByProviderId_ResolvesAliasesInMetadataAndLookups(string registeredId, string lookupId)
+    {
+        using var registry = new ProviderRegistry();
+        registry.Register(new ContractFallbackStreamingProvider(registeredId));
+
+        var diagnosticsByProviderId = ProviderConnectionDiagnosticsProjection.BuildByProviderId(registry);
+        var diagnostics = ProviderConnectionDiagnosticsProjection.Find(diagnosticsByProviderId, lookupId);
+
+        diagnostics.Should().NotBeNull();
+        diagnostics.Should().BeSameAs(diagnosticsByProviderId[ProviderIdentity.NormalizeId(registeredId)]);
+        diagnostics!.IsConnected.Should().BeFalse("an alias must not change the observed connection state");
+        ProviderConnectionDiagnosticsProjection.Find(diagnosticsByProviderId, "ib-sim").Should().BeNull();
+    }
+
     [Fact]
     public void BuildByProviderId_IndexesSafeWebSocketDiagnosticsByProviderIdentity()
     {
@@ -122,10 +141,10 @@ public sealed class ProviderConnectionDiagnosticsProjectionTests
         public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot() => _diagnostics;
     }
 
-    private sealed class ContractFallbackStreamingProvider : IMarketDataClient
+    private sealed class ContractFallbackStreamingProvider(string providerId = "fallback-stream") : IMarketDataClient
     {
         public bool IsEnabled => true;
-        public string ProviderId => "fallback-stream";
+        public string ProviderId => providerId;
         public string ProviderDisplayName => "Fallback Streaming";
         public string ProviderDescription => "Streaming contract fallback diagnostics test double.";
         public int ProviderPriority => 100;

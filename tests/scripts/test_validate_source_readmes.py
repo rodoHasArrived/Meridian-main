@@ -87,6 +87,28 @@ class ValidateSourceReadmesTests(unittest.TestCase):
             self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
             self.assertIn("README path must be relative to repository root", result.stdout + result.stderr)
 
+    def test_declared_existing_missing_readme_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            modules = temp_root / "modules.yml"
+            coverage = temp_root / "coverage.yml"
+            modules.write_text("modules: []\n", encoding="utf-8")
+            coverage.write_text(
+                "readme_coverage:\n"
+                "  modules:\n"
+                "    - id: missing.module\n"
+                "      exists: true\n"
+                "      readme_path: missing/README.md\n",
+                encoding="utf-8",
+            )
+            result = subprocess.run(
+                ["python3", str(self.script), "--modules", str(modules),
+                 "--coverage", str(coverage), "--repo-root", str(temp_root)],
+                check=False, capture_output=True, text=True,
+            )
+            self.assertEqual(1, result.returncode, result.stdout + result.stderr)
+            self.assertIn("README path does not exist: missing/README.md", result.stdout + result.stderr)
+
     def test_symlink_readme_path_escaping_repo_root_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)

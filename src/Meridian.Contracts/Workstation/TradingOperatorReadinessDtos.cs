@@ -381,6 +381,8 @@ public sealed record TradingOperatorReadinessDto(
     public PortfolioLedgerWorkflowStatusSnapshotDto? PortfolioLedgerWorkflowStatus { get; init; }
 
     public TradingExecutionReconciliationReadinessDto? ExecutionReconciliation { get; init; }
+
+    public TradingBrokerageRecoveryDto? BrokerageRecovery { get; init; }
 }
 
 public sealed record StrategyRunReviewPacketDto(

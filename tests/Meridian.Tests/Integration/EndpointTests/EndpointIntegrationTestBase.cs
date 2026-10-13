@@ -10,7 +10,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// Uses EndpointTestFixture for in-process testing without real network calls.
 /// Implements improvement B2/#7 from the structural improvements analysis.
 /// </summary>
-[Collection("Endpoint")]
 public abstract class EndpointIntegrationTestBase : IClassFixture<EndpointTestFixture>
 {
     protected readonly HttpClient Client;

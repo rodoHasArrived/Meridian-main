@@ -98,7 +98,7 @@ public sealed class BankStatementCurrencyEvidenceTests : IDisposable
 
     private (StatementImportService Service, IStatementRunWorkflowService Workflow) CreateService(IStatementConnector connector)
     {
-        var store = new JsonCanonicalStatementStore(_root);
+        var store = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
         var workflow = StatementRunWorkflowService.CreateEphemeralForTesting(store,
             new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()), new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter()),
             new CsvBrokerStatementService(store), new StatementReconciliationContextAdapter(new StatementReconciliationService()));

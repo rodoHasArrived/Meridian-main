@@ -6,10 +6,67 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-13
 ---
 
 # src/Meridian.Storage
+
+Security Master migration `036_security_master_workbench_generations.sql` adds the durable
+compare-and-set generation used by `PostgresSecurityMasterMutation`. Overlay values, their audit
+trail, governed drafts and lifecycle transitions share one connection and transaction. Discard-time
+field provenance also enlists; standalone provenance writes retain their prior behavior. Optional
+discard lineage and decision-convergence steps use savepoints, so a caught SQL failure rolls back
+only that step. Failure to restore the savepoint aborts the command. Failed or cancelled core
+mutations roll back the generation and all enlisted writes. The fence uses the same schema case
+folding as the migration runner. Parallel passport reads
+serialize their commands on that connection. Independent stores and application instances use the
+database fence; in-memory compositions retain their local gate. Deploy with all old writers drained,
+as described in [the rollout contract](../../docs/domain/security.md#governed-edit-concurrency).
+
+New WAL segments use `MDCWAL02|2` with BLAKE3-256 over length-framed, canonically
+PackBits-encoded fields. Existing `MDCWAL01|1` segments retain SHA-256 validation.
+Recovery, commit scans and repair support mixed versions; repair keeps original
+headers and valid digests. Unsupported recognized formats halt recovery and are
+preserved from truncation. Older binaries cannot replay v2 segments, so drain them
+before downgrading. The [checksum format and benchmark boundary](../../docs/engineering/pipeline-benchmark.md)
+define the encoding and the unchanged portable budgets. Focused proof is
+`WriteAheadLogChecksumTests` and `WriteAheadLogChecksumVersionTests`; run
+`dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --filter "FullyQualifiedName~WriteAheadLog" -p:EnableWindowsTargeting=true`
+and `python3 build/scripts/ci/benchmark-pipeline.py --local`.
+
+Tax-lot disposal history now returns the atomic batch's exact `PolicyRevision` and `RecordedAt`,
+and restores each deferral's retained policy ID, replacement window and scope. These reads do not
+consult mutable standing policy rows. A recording timestamp is not evaluation coverage; activation
+dates and parcel deferral allocations absent from durable history remain unavailable. No schema or
+posting behavior changes are introduced by this W10-TAX-001 inspection slice. Retained deferral rows
+must agree on their repeated aggregate matched quantity and match the disposed security, journal sale
+date and full disposing account before history can certify finality. Replacement recipients must match
+their durable lot, security, book, window and account scope; aggregate matches cannot exceed their
+distinct original quantities. Shared recipients require cumulative source claims within capacity;
+shared multi-recipient claims without per-recipient quantity allocations remain missing evidence.
+Carried dates must copy an unambiguous source holding date through certified policy and recipient
+links to retained acquisition evidence. Cycles and traversals beyond 32 links or 1,024 batches fail
+closed. Deferral amounts reconcile to the exact recipient account, security and position on the
+posted basis debits, as well as the retained cash movement, including journals whose deferral rows
+are missing. Exact journal queries retain the existing book,
+period and tenant filters while hydrating every journal leg.
+
+Consolidation append validates explicit approval, reviewed lines, currency, correction ancestry and
+source evidence. Its owned transaction excludes ledger-book changes and retains an authoritative
+ownership/policy validation lease through journal commit. Ownership locks use the configured fund
+structure database and schema and exclude new competing claims as well as updates. Missing authority
+providers and caller-owned transactions refuse consolidation posting. Under the existing global
+ledger audit lock it also rechecks both source books and the elimination book as of the reviewed
+date, including earlier periods and backdated journals. Changed authority or sources require renewed review. See
+[consolidation scope](../../docs/domain/intercompany-consolidation.md).
+
+Atomic file-write diagnostics retain operation outcomes, byte counts, OS error numbers and exception
+types. Paths, file contents, checksum values and exception messages are omitted because they can
+contain financial account identities or other private data.
+
+Reporting governance supports bounded run-ID batches within one tenant transaction. Bulk state and
+audit reads preserve the same checksum, row binding, audit-chain, and restatement verification as
+individual reads, avoiding a separate transaction for every retained comparison candidate.
 
 `Archival/AtomicFileWriterAdapter.cs`, `EtlStagingStore` in `Etl/EtlStores.cs`, and `Backfill/JsonlBackfillBarWriter.cs`
 implement lower-level persistence ports consumed by Infrastructure. Application/host composition
@@ -19,6 +76,96 @@ owns their construction; atomic durability, staging and JSONL naming policies re
 into wash-sale projection evidence together with the configured window, scope and activation date.
 This adds no persisted policy field or schema migration.
 
+New atomic acquisitions require complete canonical acquisition facts before a journal, lot, batch
+or mutation is retained. Existing exact receipts are resolved first, so a committed historical
+acquisition without those facts still replays after restart or a later period-version change.
+Changed fingerprints remain collisions. Legacy enrichment uses reviewed backfill, never replay;
+this admission change introduces no schema migration or synthetic acquisition defaults.
+
+Partial W10-LOT-002 amortization uses migration `V_ledger_040` and the existing atomic posting transaction. Period, Security Master, book-position and lot locks bind the reviewed state through commit. A CAS open-basis adjustment and zero-quantity append-only mutation preserve acquisition facts, tie exactly to the journal carrying movement, and replay without another journal or mutation. PostgreSQL reference stores must share the ledger database.
+Amortization requires the canonical depreciation/amortization source type, the exact reviewed
+instruction, and matching acquisition/reference evidence in both the atomic request and governed
+journal. Missing or mismatched inputs are refused before mutation. Posting locks the Security Master
+parent and its hashed identifiers/aliases through commit; alias writes touch the parent in the same
+transaction so a posting with an older serializable snapshot refuses concurrent reference drift.
+
+Later amortization follows a partial discrete disposal's immutable before/after receipts back to
+the retained amortization treatment. It checks exact lot identity, acquisition facts, quantity,
+versions and both currency remainders before accepting the later period. A reviewed reversal can
+restore that same disposal remainder at a newer version; same-date rebooks still require approved
+correction lineage. Missing or inconsistent receipts and underlying AverageCost treatments fail closed.
+For the separately reviewed one-for-one Reg S/144A continuation, Storage resolves both the immutable
+exchange and its immediately preceding ordinary amortization receipt inside the posting transaction.
+The complete birth identity, predecessor snapshot and retained instruction must match before a
+corporate-action basis adjustment can continue the original schedule. Other corporate-action
+treatments remain unsupported. No schema migration is required; the optional continuation travels
+inside the existing retained instruction and fingerprint, without rewriting historical receipts.
+
+A reviewed amortization reversal restores the latest original mutation's complete prior basis adjustment and exactly inverts every retained financial journal line in the same transaction. It preserves acquisition facts, increments the lot version, and appends correction evidence. Same-date rebooks require the reversal receipt and approved lineage; intervening mutations, forged snapshots, wrong source journals and changed counteraccounts fail closed. Forward migration `V_ledger_043` permits restoration of a retained null prior adjustment only against the latest exact original amortization snapshot and an approved correction journal in the same scope and effective date; general adjustment removal remains forbidden. Earlier migrations, migration 040 constraints and current calculation/evidence guards remain intact.
+
+An Inactive current reference may support that retained inverse only after the atomic store has
+locked its hash/version and verified the original receipt, unchanged lot and inverse lines. The
+private append path preserves Inactive journal lineage; standalone journals and new accruals keep
+the Active requirement, and request metadata cannot opt into the atomic exception.
+
+Bounded corporate-action successor posting uses `V_ledger_042` and that same serializable atomic
+boundary. A cashless Reg S/144A exchange closes one predecessor into one new lot; advance refunding
+closes one face lot into exactly two new lots. The transaction locks reviewed Security Master and
+book-position authority, checks the predecessor snapshot/version and empty target identities, and
+locks any retained target labels under the full book/account-name/type/symbol/financial-account key.
+Closed lots still reserve their labels, and the check uses the same trimmed labels as acquisition
+persistence. A collision fails through governed validation before any journal write. The transaction
+commits the reclassification journal, predecessor CAS, every successor and immutable mutation
+snapshot together. Both currency bases reconcile to the retained allocation while acquisition FX,
+holding dates and original acquisition evidence remain intact. Exact retries return the retained
+batch before checking later live state. Exact durable journal/batch evidence also permits recovery
+of a missing Posted projection after later position revisions; unposted position CAS stays strict.
+Recovery compares historical origins through `WithRetainedLineage`, preserving an omitted optional
+source-action identity instead of synthesizing a new field into the retained receipt.
+`ILedgerOpenLotSuccessorHistory` exposes those immutable
+batches to Reporting; unsupported actions, cash components, cross-account transfers, combined
+instructions and unrepresentable durable quantity or open-basis precision fail closed. Unit
+successors retain exact acquisition and open basis independently of their derived unit quote,
+which is rounded to twelve decimals with midpoint-to-even rounding for storage. Projection accepts
+that quote only when it matches retained basis divided by original quantity and the lot retains
+corporate-action origin, atomic birth and governed basis adjustment. Ordinary acquisitions and
+face-successor precision checks remain exact. Successor lines must retain the
+predecessor's complete ledger-account identity, including name and symbol when the financial-account
+ID is absent; a mapped asset account cannot silently transfer the lot.
+Atomic commands require the canonical `AssetAccounting.CorporateAction` type, approved state,
+retained approval identity, named actor and complete typed context. Corrected batch/source-journal
+metadata, reversal/rebook intents and closing-entry posting kinds refuse before any journal or lot write.
+Both public journal-only append paths reject successor instructions. The private atomic lot append
+path also refuses consolidation evidence, whose standalone transaction must hold its own authority lease.
+Migration 042 leaves earlier batches unchanged. Historical quantity reads open successors on the
+corporate-action effective date while preserving their inherited acquisition date. Journal-only
+append cannot bypass the atomic successor boundary. Disposal eligibility excludes successors
+before their retained corporate-action opening date.
+Before a new successor commit, Storage walks immutable birth receipts through every predecessor.
+It refuses any wash-sale deferral retained separately for that predecessor or its ancestry,
+regardless of the sale or holding-period date, until inherited deferral lineage is supported.
+Even an unchanged holding date carries a separate positive basis claim that successors cannot drop.
+The successor transaction locks deferral retention before its first snapshot read; deferral writers
+take the matching lock and refuse a new claim after the recipient has become a predecessor.
+An exact committed successor replay still returns its original receipt before revalidating deferral
+authority. No deferral or replacement claim is copied.
+An identical historical deferral may also replay after successor posting; every retained field must
+match before that exception applies, so a reused disposal/recipient key cannot introduce changed carry evidence.
+The retained source-event evidence binds each stable source action, including historical projections
+and acquisition origins that omit its explicit source ID, or receipts without acquisition lineage.
+Ordinary legacy relief receipts can prove the path back to a pristine retained acquisition; valid
+AverageCost disposal batches include both disposal and survivor basis-redistribution rows.
+An intervening action or later relief cannot hide a repeated ancestor
+action; missing, contradictory, cyclic or foreign-book ancestry refuses the new posting. Exact retries
+still return the already committed receipt before new-posting ancestry checks.
+
+Current-basis disposal uses `V_ledger_041`, following amortization migration 040 in its original order.
+Migration 042 owns successor posting; migration 043 adds only the approved null-basis restoration guard.
+AverageCost reporting certifies each canonical acquisition against its retained pre-relief pool,
+including the ordered evidence identities by value. Separately deserialized lists and evidence
+records with equal facts are accepted; changed source, hash, review, retention, subject, or sequence
+contents block canonical reporting. `CanonicalOpenLotConsumerTests` covers this certification boundary.
+
 The durable replacement resolver excludes relieved lot IDs only within the disposing account's
 complete identity. LedgerBook scope retains same-ID acquisitions in sibling accounts. Prior-deferral
 basis adjustments use that same full account identity (name, type, symbol and financial account ID),
@@ -27,6 +174,10 @@ so a sibling account's same-ID lot cannot change the disposing lot's basis or ho
 Ledger migration `039` adds nullable disposal allocation-version and sale-price evidence to immutable
 atomic batches without backfilling existing rows. New disposal inserts retain the current convention
 after the exact-replay check, leaving legacy retries and absent-price command fingerprints unchanged.
+New disposal validation requires exact disposing-account realized gain credits and realized loss debits
+for both aggregate inferred proceeds and explicit quotes; sibling, incorrectly typed/symbol-scoped,
+and incorrectly sided result lines are rejected transactionally. Retained exact retries bypass this
+new-insert validation without rewriting immutable history or fingerprints.
 An explicit original quote must reproduce supported, account-scoped cash journal proceeds; fees and
 other unsupported expense shapes cannot supply that assertion. Aggregate-only governed commands
 retain the current version with a null price, deriving their canonical price at reporting from the
@@ -167,6 +318,36 @@ Wash-sale deferrals require their referenced replacement lot and disposal batch 
 that book. Global posting-identity collision checks reject foreign authority before returning
 any retained journal contents.
 
+## Current-basis lot relief
+
+All supported durable relief methods certify current canonical basis under the locked effective
+policy while keeping acquisition unit cost and acquisition evidence immutable. Partial discrete
+relief of an adjusted lot stores exact remaining transaction and functional basis on its existing mutation; Reporting
+reproduces certified posted basis without rounding it through acquisition unit cost. Migration
+`V_ledger_041` follows PR #3048's reserved amortization ordinal 040. PostgreSQL coverage lives in
+`AtomicTaxLotJournalStoreTests.CurrentBasis`; see the [lot convergence blueprint](../../docs/engineering/blueprints/security-lot-convergence-blueprint.md).
+
+Corporate-action posting uses the single retained successor instruction and migration 042 for
+cashless exchanges, whole-unit forward/reverse splits, stock mergers, non-taxable unit spin-offs
+and two-successor refundings. Spin-offs retain one parent in the same security/position and its
+unchanged quantity, with separately identified children under the existing reviewed allocation.
+Parent closeout, all successor openings, journal and audit share the transaction; stale child
+references or a later insertion failure roll back the entire allocation. Exact replay remains
+available after restart and period locking. No new migration or mutable acquisition facts are used.
+The serializable transaction locks every source/target reference, position and lot; it checks
+accounting policy, financial-account and canonical dimension scope before any journal or lot write.
+Same-security/same-position splits bind distinct lot labels on debit/credit legs. New successors
+retain immutable acquisition origin, while old absent-lineage receipts replay their retained shape.
+Only retained projections without the later stable source-ID field receive historical origin
+compatibility. Explicit-source receipts require complete origin for ancestry and Reporting.
+The populated through-041 migration upgrade/reapply/restart and failure-recovery audit remains in
+`AtomicTaxLotSuccessorMigrationTests`.
+Ancestry coverage lives in `CorporateActionSuccessorAncestryTests` and
+`AtomicTaxLotJournalStoreTests.SuccessorAncestry`; atomic type/approval/correction, competing-command,
+open/closed lot-label collision and dimension refusals live in `AtomicTaxLotJournalStoreTests.SuccessorGuards`.
+`AtomicTaxLotJournalStoreTests.Amortization` covers migration 043 null-basis reversal/rebook and
+ungoverned adjustment-removal refusal. Current validation results are recorded on the canonical PR.
+
 ## Purpose
 
 `Coordination/SharedStorageCoordinationStore.ExecuteUnderLeaseAsync` checks the retained owner,
@@ -285,6 +466,13 @@ lookup paths, and evidence trails those layers rely on.
   validated Failed/Blocked receipt and retain the fallback receipt under `quality/outcomes/`.
 
 ## Important workflows
+
+Portfolio Records creates accounts with `IFundAccountStore.TryCreateAccountAsync`, an atomic
+insert-only operation. A duplicate account ID returns false and retains the existing record;
+account updates and reviewed legacy imports continue to use the separate upsert operation.
+Both paths retain the store's tenant ownership checks.
+Ordinary account lookups and queries reject unresolved tenant scope before opening a database
+connection; the explicitly authorized query across tenants retains its separate admission path.
 
 ### Operational case history
 
@@ -585,6 +773,14 @@ quarantined records, staging records, and sync-run summaries under the resolved 
 source payloads without reacquiring provider data. Workstation-hosted flows can request a
 tenant-scoped store partition so provider manifests, connections, dry-run evidence, and activation
 state remain isolated by the authenticated tenant session.
+Manifest revisions are immutable by id and version; identical saves are idempotent and changed
+content under an existing version is rejected. A cross-process compare-and-set promotion updates
+the durable current pointer only after revision content has been written. Restart follows that
+pointer, preserving unpromoted candidates without treating the highest stored version as current.
+Payloads and sync runs retain exact manifest version/digest bindings. Legacy migration preserves
+only the revision actually available and does not manufacture overwritten versions or backfill
+unprovable historical provenance. This store owns integration configuration persistence; provider
+alias and capability-factory composition remain in their existing ProviderSdk/Infrastructure owners.
 
 Accounting configuration persistence keeps rich posting-rule payloads and saved Accounting Rules
 Studio regression cases as durable workspace-owned records. PostgreSQL stores saved rule test cases

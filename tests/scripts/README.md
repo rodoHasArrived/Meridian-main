@@ -5,6 +5,10 @@ the scripts under `build/` and `tools/`, the GitHub Actions workflows under `.gi
 and the generated-artifact shapes those produce (e.g. screenshot diff reports, DK1 pilot/parity
 packets, roadmap source-doc rendering, contract-review packets).
 
+`test_git_hooks.py` exercises tracked hook installation in ordinary checkouts and linked
+worktrees, plus staged-only formatting with partial staging. It uses temporary Git repositories
+and a formatter stub, so it runs without the .NET SDK.
+
 These are intentionally **separate from the .NET xUnit projects** (`tests/Meridian.Tests`,
 `tests/Meridian.FSharp.Tests`, etc.): they exercise Python tooling and YAML workflows, not compiled
 Meridian assemblies, so they run without the .NET toolchain.
@@ -33,14 +37,27 @@ or general build-script suites above.
 
 ## Running
 
+PowerShell 7 (`pwsh`) must be on `PATH` for the consumer certification process tests.
+Those tests exercise native process deadlines and inherited output handles without installing
+Meridian; the Windows release workflow owns installed consumer lifecycle evidence.
+
 ```bash
 # a single suite
 python3 -m unittest tests/scripts/test_screenshot_diff_report.py
+
+# recovery receipt production and objective validation (requires PowerShell 7)
+python3 -m unittest tests/scripts/test_production_recovery.py tests/scripts/test_recovery_evidence.py
 
 # every suite in this directory
 python3 -m unittest discover -s tests/scripts -p 'test_*.py'
 ```
 
-CI runs targeted suites from `.github/workflows/ci.yml` and
-`.github/workflows/golden-path-validation.yml`; keep any new CI-gating suite wired into the relevant
-workflow.
+The `verify-workflows` lane of `scripts/ci.sh` discovers these suites through
+`build/scripts/ci/run-script-tests.py`; its quarantine register makes exclusions explicit.
+By default, the runner uses at most two fresh module processes, starts the slower recovery suites first,
+and reports each module's result and duration. Modules retain their full tests and fixtures;
+process isolation keeps mocks, environment changes, and fixture summary files separate.
+Use `--workers 1` for sequential execution with the same discovery and quarantine rules.
+The recovery suites execute the PowerShell producer and validator. PostgreSQL tool stubs exercise
+receipt behavior with real encryption and file restoration; database integration and operator
+acceptance still require separate operational evidence.

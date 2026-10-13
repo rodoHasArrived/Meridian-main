@@ -1,5 +1,6 @@
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Storage.Ledger;
 
 namespace Meridian.FinancialOperations.Ledger;
@@ -10,6 +11,29 @@ namespace Meridian.FinancialOperations.Ledger;
 /// </summary>
 internal static class SpineAcquisitionLotFacts
 {
+    internal static void RequireCompleteNewAcquisition(AssetAcquisitionLotDto acquisition)
+    {
+        var suppliedFaceTerms = (acquisition.OriginalFace.HasValue ? 1 : 0)
+            + (acquisition.BookedFactor.HasValue ? 1 : 0) + (acquisition.ParBasis.HasValue ? 1 : 0);
+        if (suppliedFaceTerms is > 0 and < 3)
+            throw new ArgumentException("New acquisition face amount, booked factor and par basis must be supplied together.");
+        if (acquisition.HasFaceValueTerms
+            && (acquisition.OriginalFace <= 0m || acquisition.BookedFactor is <= 0m or > 1m || acquisition.ParBasis <= 0m))
+            throw new ArgumentException("New acquisition face amount and par basis must be positive, and booked factor must be in (0, 1].");
+        if (acquisition.HasFaceValueTerms
+            && acquisition.Quantity * LedgerTaxLotFaceValueTerms.LedgerLotParBasis != acquisition.OriginalFace)
+            throw new ArgumentException("New acquisition face amount must equal its ledger quantity expressed per 100 of par.");
+        if (acquisition.HasFaceValueTerms && acquisition.AmortizationMethod is null)
+        {
+            throw new ArgumentException(
+                "New face acquisitions require an explicit amortization method (including NoAmortization when selected); " +
+                "missing acquisition facts cannot be deferred to legacy backfill.");
+        }
+        if (acquisition.AmortizationMethod == BondAmortizationMethod.ConstantYield
+            && acquisition.EffectiveYield is null or <= -1m)
+            throw new ArgumentException("New constant-yield acquisitions require an effective yield greater than -1.");
+    }
+
     // A lot acquired through the spine states its canonical acquisition facts on the lot of record
     // so production disposal can relieve it without a backfill exception. Every fact is known
     // rather than defaulted: the spine refuses foreign-currency events and the store requires the lot

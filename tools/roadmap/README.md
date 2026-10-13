@@ -21,6 +21,9 @@ This folder contains scripts that help keep roadmap work scoped, valid, and repr
 Run from repository root:
 
 ```bash
+# Install the standard parser used by validation and normalization
+python3 -m pip install --requirement build/scripts/docs/requirements.txt
+
 # Validate fixture expectations (default mode)
 python3 tools/roadmap/validate_roadmap.py
 
@@ -35,6 +38,11 @@ python3 tools/roadmap/enforce_phase_scope.py --phase PR1 --base-ref origin/main 
 ```
 
 ## When to use these scripts
+
+YAML validation and normalization use the shared strict PyYAML loader. Missing dependencies or
+malformed YAML fail with the source path and available line/column information. Normalization
+preserves YAML values, quoted colon/hash text, and standard folded or block scalars; it does not
+attempt to repair malformed input.
 
 - You changed roadmap governance docs or workflow policy.
 - You edited `docs/roadmap/data/roadmap-items.yml`.

@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "060640dbe2d8be0e1c9a86863b1ffb1820c3a55cf5166b8f3f85c84c3fa8841a",
+  "database_fingerprint": "8dd3191c09e092e34b647737cdfce5030ba92b24091e2b569a8135b1c6fa2564",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -1430,6 +1430,30 @@
       "target_schema": "ledger"
     },
     {
+      "fingerprint": "426eb25b2457b9dc851197c866f349bab5c04e38d886231cc197f55bb386e2cb",
+      "kind": "normal",
+      "source": "ledger.ck_atomic_tax_lot_successor_instruction on ledger.atomic_tax_lot_posting_batches",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.atomic_tax_lot_posting_batches.corporate_action_instruction",
+      "target_kind": "table column",
+      "target_name": "atomic_tax_lot_posting_batches",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "0e04410a5cf3a0b3d271d534d33265682743ef4f14d80b75fb5f9ed77715b815",
+      "kind": "normal",
+      "source": "ledger.ck_atomic_tax_lot_successor_instruction on ledger.atomic_tax_lot_posting_batches",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.atomic_tax_lot_posting_batches.mutation_kind",
+      "target_kind": "table column",
+      "target_name": "atomic_tax_lot_posting_batches",
+      "target_schema": "ledger"
+    },
+    {
       "fingerprint": "bfe0cfce33497aa0bb6ace90ee4a43f86e1da199fa6c06dd742d8e782d6c0109",
       "kind": "normal",
       "source": "ledger.ck_journal_entries_adjustment_approval_metadata on ledger.journal_entries",
@@ -1706,6 +1730,30 @@
       "target_schema": "ledger"
     },
     {
+      "fingerprint": "a171ea0ba99e17188a210394c2ed9727f476821087e19bae3b8e2c4c01b6f0f8",
+      "kind": "normal",
+      "source": "ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lot_mutations.lot_snapshot_before",
+      "target_kind": "table column",
+      "target_name": "tax_lot_mutations",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "b09535555a594918b1a435651590fd676d918713f10bf33547fcc3f463452a33",
+      "kind": "normal",
+      "source": "ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lot_mutations.mutation_kind",
+      "target_kind": "table column",
+      "target_name": "tax_lot_mutations",
+      "target_schema": "ledger"
+    },
+    {
       "fingerprint": "055f956947d967e04870a6d661eff4dde99d362adafd571c51f3e82ca824a91e",
       "kind": "normal",
       "source": "ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
@@ -1790,6 +1838,18 @@
       "target_schema": "ledger"
     },
     {
+      "fingerprint": "be079dc100d85d76f701c5c756bd6bc3d346c3b0b83322a13f820e9021ea001e",
+      "kind": "normal",
+      "source": "ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lot_mutations.lot_snapshot_before",
+      "target_kind": "table column",
+      "target_name": "tax_lot_mutations",
+      "target_schema": "ledger"
+    },
+    {
       "fingerprint": "6b33b209aac30c5da53ad21b43bf92f35a0ffeca02f35b15b48974d77d14e319",
       "kind": "normal",
       "source": "ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations",
@@ -1797,6 +1857,18 @@
       "source_name": null,
       "source_schema": "ledger",
       "target": "ledger.tax_lot_mutations.mutation_kind",
+      "target_kind": "table column",
+      "target_name": "tax_lot_mutations",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "ba63656e4e612dc733258ba47be4e242ef1662f42e825af0e4fc49c82688ee18",
+      "kind": "normal",
+      "source": "ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lot_mutations.policy_revision",
       "target_kind": "table column",
       "target_name": "tax_lot_mutations",
       "target_schema": "ledger"
@@ -8402,6 +8474,18 @@
       "target_schema": "security_master"
     },
     {
+      "fingerprint": "f41032f584fd05c16f13f86740a1f2f4e86319b3558fc7f31fdefe6d7de0e0a8",
+      "kind": "normal",
+      "source": "security_master.security_workbench_generations_generation_check on security_master.security_workbench_generations",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_workbench_generations.generation",
+      "target_kind": "table column",
+      "target_name": "security_workbench_generations",
+      "target_schema": "security_master"
+    },
+    {
       "fingerprint": "ed9ce49163ccd872e05b134dbe94bfc97bdb2d55376f9a6dfed4abf06f1417e2",
       "kind": "normal",
       "source": "security_master.servicer_position_report_line_loan_id_fkey on security_master.servicer_position_report_line",
@@ -11267,6 +11351,10 @@
     {
       "fingerprint": "f9bddf227f791cea56c0bc2a7057f3e1b927cfb2be3bc6a4e085226567e4d24e",
       "object": "column:ledger.atomic_tax_lot_posting_batches.canonical_fingerprint"
+    },
+    {
+      "fingerprint": "84cabb4a7123a147382d3dbefe738ad7bd58a5213831c7fc537dfa562aa352a8",
+      "object": "column:ledger.atomic_tax_lot_posting_batches.corporate_action_instruction"
     },
     {
       "fingerprint": "b2ee40e34710b2a4649b053e8de5b1b7ed2aaa1f2de2ad7a2ee129b39e691813",
@@ -16609,6 +16697,14 @@
       "object": "column:security_master.security_snapshots.version"
     },
     {
+      "fingerprint": "47c1638beb791eb7f89802abc78ee4e8b9f0d850e32ebb28474f966bf8fa609c",
+      "object": "column:security_master.security_workbench_generations.generation"
+    },
+    {
+      "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+      "object": "column:security_master.security_workbench_generations.security_id"
+    },
+    {
       "fingerprint": "326124a5d03edc75d0e0f69844c92abdbea9b01826195b7d3ef9fe30d1a057ec",
       "object": "column:security_master.servicer_position_report_line.commitment_available"
     },
@@ -17785,7 +17881,7 @@
       "object": "constraint:ledger.atomic_tax_lot_posting_batches.ck_atomic_tax_lot_batch_idempotency"
     },
     {
-      "fingerprint": "e01403862d4fcac464ef5bdd66904b642212b28239e941e69d0630dd31403cf7",
+      "fingerprint": "71fe18270e8e8c328f32232181414753ab5e659fc413ed313bb493254cf16e09",
       "object": "constraint:ledger.atomic_tax_lot_posting_batches.ck_atomic_tax_lot_batch_kind"
     },
     {
@@ -17795,6 +17891,10 @@
     {
       "fingerprint": "5a0a700fda725d025c5cd8a8957d16447826ad16db4dc9a572afaa550f460bbd",
       "object": "constraint:ledger.atomic_tax_lot_posting_batches.ck_atomic_tax_lot_batch_proceeds_allocation"
+    },
+    {
+      "fingerprint": "db241a50aad01d1a866ff720a868b4195ad86f8a002805665e0533ae0d6aa06e",
+      "object": "constraint:ledger.atomic_tax_lot_posting_batches.ck_atomic_tax_lot_successor_instruction"
     },
     {
       "fingerprint": "d3a787a67d2f505c499aaf6eae81ef838757a15ca55765a29ddca2562c113e1c",
@@ -18077,7 +18177,7 @@
       "object": "constraint:ledger.tax_lot_mutations.ck_tax_lot_mutations_asset_scope"
     },
     {
-      "fingerprint": "5736edc6e2c22433b5e066560078e37f0191ee66626bdfe866ee7a71861c9df8",
+      "fingerprint": "26e3f6e0e34a10ebf4b64832901f85236ea7df7a4b0348e304c77caad0218d09",
       "object": "constraint:ledger.tax_lot_mutations.ck_tax_lot_mutations_cost"
     },
     {
@@ -18085,7 +18185,7 @@
       "object": "constraint:ledger.tax_lot_mutations.ck_tax_lot_mutations_evidence"
     },
     {
-      "fingerprint": "d874019d7e368ea0495f2d293a73c84d2965215b2a206f9f5dd71d27d68e99a9",
+      "fingerprint": "42f305ee69ceef3be62be0d0e4bb0c03cdbaaac9b470e854defd36339ac9d7c5",
       "object": "constraint:ledger.tax_lot_mutations.ck_tax_lot_mutations_kind"
     },
     {
@@ -18093,7 +18193,7 @@
       "object": "constraint:ledger.tax_lot_mutations.ck_tax_lot_mutations_ordinal"
     },
     {
-      "fingerprint": "5516a4b9c2b397f7a483267feeab0d68d54a014e6e8cff2ab72fe9ba0eb25ae5",
+      "fingerprint": "86a762a704b0c6932a6325503e69332fce02fe4ed761493c90ee7026fc4730dd",
       "object": "constraint:ledger.tax_lot_mutations.ck_tax_lot_mutations_quantities"
     },
     {
@@ -19705,6 +19805,14 @@
       "object": "constraint:security_master.security_snapshots.security_snapshots_pkey"
     },
     {
+      "fingerprint": "3f492310c9b66129b924991f9b1b1fa6e3101302a3e4e9d6548ae7c8ce7fa7e9",
+      "object": "constraint:security_master.security_workbench_generations.security_workbench_generations_generation_check"
+    },
+    {
+      "fingerprint": "360477a7eafccc1ce1e589fa292d8b44cf25f87bd1d68ed89b7aa41cad77b717",
+      "object": "constraint:security_master.security_workbench_generations.security_workbench_generations_pkey"
+    },
+    {
       "fingerprint": "78286a51d194893cdbf44d1212f5953b2a69d8847f849b3039819ffb28c55f55",
       "object": "constraint:security_master.servicer_position_report_line.servicer_position_report_line_loan_id_fkey"
     },
@@ -20277,6 +20385,14 @@
       "object": "dependency:ledger.ck_atomic_tax_lot_batch_proceeds_allocation on ledger.atomic_tax_lot_posting_batches->ledger.atomic_tax_lot_posting_batches.proceeds_allocation_version:normal"
     },
     {
+      "fingerprint": "426eb25b2457b9dc851197c866f349bab5c04e38d886231cc197f55bb386e2cb",
+      "object": "dependency:ledger.ck_atomic_tax_lot_successor_instruction on ledger.atomic_tax_lot_posting_batches->ledger.atomic_tax_lot_posting_batches.corporate_action_instruction:normal"
+    },
+    {
+      "fingerprint": "0e04410a5cf3a0b3d271d534d33265682743ef4f14d80b75fb5f9ed77715b815",
+      "object": "dependency:ledger.ck_atomic_tax_lot_successor_instruction on ledger.atomic_tax_lot_posting_batches->ledger.atomic_tax_lot_posting_batches.mutation_kind:normal"
+    },
+    {
       "fingerprint": "bfe0cfce33497aa0bb6ace90ee4a43f86e1da199fa6c06dd742d8e782d6c0109",
       "object": "dependency:ledger.ck_journal_entries_adjustment_approval_metadata on ledger.journal_entries->ledger.journal_entries.adjustment_approval_metadata:normal"
     },
@@ -20369,6 +20485,14 @@
       "object": "dependency:ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations->ledger.tax_lot_mutations.cost_basis:normal"
     },
     {
+      "fingerprint": "a171ea0ba99e17188a210394c2ed9727f476821087e19bae3b8e2c4c01b6f0f8",
+      "object": "dependency:ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations->ledger.tax_lot_mutations.lot_snapshot_before:normal"
+    },
+    {
+      "fingerprint": "b09535555a594918b1a435651590fd676d918713f10bf33547fcc3f463452a33",
+      "object": "dependency:ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations->ledger.tax_lot_mutations.mutation_kind:normal"
+    },
+    {
       "fingerprint": "055f956947d967e04870a6d661eff4dde99d362adafd571c51f3e82ca824a91e",
       "object": "dependency:ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations->ledger.tax_lot_mutations.quantity_delta:normal"
     },
@@ -20397,8 +20521,16 @@
       "object": "dependency:ledger.ck_tax_lot_mutations_ordinal on ledger.tax_lot_mutations->ledger.tax_lot_mutations.selection_ordinal:normal"
     },
     {
+      "fingerprint": "be079dc100d85d76f701c5c756bd6bc3d346c3b0b83322a13f820e9021ea001e",
+      "object": "dependency:ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations->ledger.tax_lot_mutations.lot_snapshot_before:normal"
+    },
+    {
       "fingerprint": "6b33b209aac30c5da53ad21b43bf92f35a0ffeca02f35b15b48974d77d14e319",
       "object": "dependency:ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations->ledger.tax_lot_mutations.mutation_kind:normal"
+    },
+    {
+      "fingerprint": "ba63656e4e612dc733258ba47be4e242ef1662f42e825af0e4fc49c82688ee18",
+      "object": "dependency:ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations->ledger.tax_lot_mutations.policy_revision:normal"
     },
     {
       "fingerprint": "479e04a3026b5341850a6b4466b0d97e7e31662a9e1692aa518eb89d43d88ec3",
@@ -22601,6 +22733,10 @@
       "object": "dependency:security_master.security_raw_prices_unit_check on security_master.security_raw_prices->security_master.security_raw_prices.price_unit:normal"
     },
     {
+      "fingerprint": "f41032f584fd05c16f13f86740a1f2f4e86319b3558fc7f31fdefe6d7de0e0a8",
+      "object": "dependency:security_master.security_workbench_generations_generation_check on security_master.security_workbench_generations->security_master.security_workbench_generations.generation:normal"
+    },
+    {
       "fingerprint": "ed9ce49163ccd872e05b134dbe94bfc97bdb2d55376f9a6dfed4abf06f1417e2",
       "object": "dependency:security_master.servicer_position_report_line_loan_id_fkey on security_master.servicer_position_report_line->security_master.loan_contract.loan_id:normal"
     },
@@ -22725,7 +22861,7 @@
       "object": "function:ledger.protect_open_lot_backfill_evidence()"
     },
     {
-      "fingerprint": "c4523051bac3df92045313f43268aac6a2b1c84aac841eb77c2e22298425c27f",
+      "fingerprint": "0c31cfc790892d30882475d2f10b6c534c11769b529f4df096f0fa34d76ab54e",
       "object": "function:ledger.protect_open_lot_basis_adjustment()"
     },
     {
@@ -24621,6 +24757,10 @@
       "object": "index:security_master.security_snapshots_pkey"
     },
     {
+      "fingerprint": "5b68250b31963ad0d6eb5d66a654c80a35bdde8607e7da000ea4e9441aa08ea9",
+      "object": "index:security_master.security_workbench_generations_pkey"
+    },
+    {
       "fingerprint": "4e44a1754c60db7b30bd2b8315369b6f068175f254b682dcbe76a3cc2e03c58b",
       "object": "index:security_master.servicer_position_report_line_pkey"
     },
@@ -25509,6 +25649,10 @@
       "object": "rls:security_master.security_snapshots"
     },
     {
+      "fingerprint": "ee6012959c128eed73ef65253f785bd0d046b840f733e600036ce8c98fd79d75",
+      "object": "rls:security_master.security_workbench_generations"
+    },
+    {
       "fingerprint": "9a2780a1a8c42ebd8ec4aaa768eabaa1de4408a17b5e94166e9619d09ed3d068",
       "object": "rls:security_master.servicer_position_report_line"
     },
@@ -25581,7 +25725,7 @@
       "object": "schema:identity_access"
     },
     {
-      "fingerprint": "e4f14184792c2ece91ea9c67fae0d6ba3e49994a4fa643a0200f3bde29cd0252",
+      "fingerprint": "035d6a662f8595325982f50f135c5417c8023190aa59120bbe0865993610aec2",
       "object": "schema:ledger"
     },
     {
@@ -25597,7 +25741,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "f32458671471af5b6a0636d4d61fceccb38abd95ba03086883bae93492bbae63",
+      "fingerprint": "7d0c3ea281f5d738cc76169b0670cbb45f46e8eab057e6f6ae22b6d7479f2b72",
       "object": "schema:security_master"
     },
     {
@@ -25853,7 +25997,7 @@
       "object": "table:ledger.accounting_policies"
     },
     {
-      "fingerprint": "2a42d2354edcefc57a55ed67fe7b35a8adf38b22d4f06b1e1d667b19a660b9db",
+      "fingerprint": "de18e7e6ef1ace72db2f5d62ef81171f4d1054876ce17f890ebb3fda6c4d03fb",
       "object": "table:ledger.atomic_tax_lot_posting_batches"
     },
     {
@@ -25929,7 +26073,7 @@
       "object": "table:ledger.period_close_events"
     },
     {
-      "fingerprint": "1eabe0adcd2d082ce656175e5f041461e7a96e32bead696992a1b9c9e0b15089",
+      "fingerprint": "a0e60511eff027b27e830d83d868e6d3e703a68149ca98e00c18a89aa905aafe",
       "object": "table:ledger.tax_lot_mutations"
     },
     {
@@ -26327,6 +26471,10 @@
     {
       "fingerprint": "9749de5e679292bf1c42c0735726c964b6eadb972d7ed47114e068a06be902b4",
       "object": "table:security_master.security_snapshots"
+    },
+    {
+      "fingerprint": "78b653c8acbc2e462a737aab9b5689f1c7c8a9ef7ac1d3a230027a423cbde0ac",
+      "object": "table:security_master.security_workbench_generations"
     },
     {
       "fingerprint": "03383b0fac3eceb503b14fbd9ec8f0d81f08c502fc0e6e37dec412315653f168",
@@ -61376,6 +61524,30 @@
           "target_schema": "ledger"
         },
         {
+          "fingerprint": "426eb25b2457b9dc851197c866f349bab5c04e38d886231cc197f55bb386e2cb",
+          "kind": "normal",
+          "source": "ledger.ck_atomic_tax_lot_successor_instruction on ledger.atomic_tax_lot_posting_batches",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.atomic_tax_lot_posting_batches.corporate_action_instruction",
+          "target_kind": "table column",
+          "target_name": "atomic_tax_lot_posting_batches",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "0e04410a5cf3a0b3d271d534d33265682743ef4f14d80b75fb5f9ed77715b815",
+          "kind": "normal",
+          "source": "ledger.ck_atomic_tax_lot_successor_instruction on ledger.atomic_tax_lot_posting_batches",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.atomic_tax_lot_posting_batches.mutation_kind",
+          "target_kind": "table column",
+          "target_name": "atomic_tax_lot_posting_batches",
+          "target_schema": "ledger"
+        },
+        {
           "fingerprint": "bfe0cfce33497aa0bb6ace90ee4a43f86e1da199fa6c06dd742d8e782d6c0109",
           "kind": "normal",
           "source": "ledger.ck_journal_entries_adjustment_approval_metadata on ledger.journal_entries",
@@ -61652,6 +61824,30 @@
           "target_schema": "ledger"
         },
         {
+          "fingerprint": "a171ea0ba99e17188a210394c2ed9727f476821087e19bae3b8e2c4c01b6f0f8",
+          "kind": "normal",
+          "source": "ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.tax_lot_mutations.lot_snapshot_before",
+          "target_kind": "table column",
+          "target_name": "tax_lot_mutations",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "b09535555a594918b1a435651590fd676d918713f10bf33547fcc3f463452a33",
+          "kind": "normal",
+          "source": "ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.tax_lot_mutations.mutation_kind",
+          "target_kind": "table column",
+          "target_name": "tax_lot_mutations",
+          "target_schema": "ledger"
+        },
+        {
           "fingerprint": "055f956947d967e04870a6d661eff4dde99d362adafd571c51f3e82ca824a91e",
           "kind": "normal",
           "source": "ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
@@ -61736,6 +61932,18 @@
           "target_schema": "ledger"
         },
         {
+          "fingerprint": "be079dc100d85d76f701c5c756bd6bc3d346c3b0b83322a13f820e9021ea001e",
+          "kind": "normal",
+          "source": "ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.tax_lot_mutations.lot_snapshot_before",
+          "target_kind": "table column",
+          "target_name": "tax_lot_mutations",
+          "target_schema": "ledger"
+        },
+        {
           "fingerprint": "6b33b209aac30c5da53ad21b43bf92f35a0ffeca02f35b15b48974d77d14e319",
           "kind": "normal",
           "source": "ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations",
@@ -61743,6 +61951,18 @@
           "source_name": null,
           "source_schema": "ledger",
           "target": "ledger.tax_lot_mutations.mutation_kind",
+          "target_kind": "table column",
+          "target_name": "tax_lot_mutations",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "ba63656e4e612dc733258ba47be4e242ef1662f42e825af0e4fc49c82688ee18",
+          "kind": "normal",
+          "source": "ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.tax_lot_mutations.policy_revision",
           "target_kind": "table column",
           "target_name": "tax_lot_mutations",
           "target_schema": "ledger"
@@ -63108,7 +63328,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "e4f14184792c2ece91ea9c67fae0d6ba3e49994a4fa643a0200f3bde29cd0252",
+      "fingerprint": "035d6a662f8595325982f50f135c5417c8023190aa59120bbe0865993610aec2",
       "foreign_tables": [],
       "functions": [
         {
@@ -63406,8 +63626,8 @@
             }
           ],
           "comment": null,
-          "definition_hash": "f183c348c613fca1daf4387bb415ce89cbaa27ab050ac2fb15c061b5a393d529",
-          "fingerprint": "c4523051bac3df92045313f43268aac6a2b1c84aac841eb77c2e22298425c27f",
+          "definition_hash": "b02431f73aa517e4c033d12034d94fef13b23cf5d054c828130bfbfd31abef94",
+          "fingerprint": "0c31cfc790892d30882475d2f10b6c534c11769b529f4df096f0fa34d76ab54e",
           "kind": "function",
           "language": "plpgsql",
           "name": "protect_open_lot_basis_adjustment",
@@ -67424,6 +67644,22 @@
               "security_labels": [],
               "type_name": "numeric",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "84cabb4a7123a147382d3dbefe738ad7bd58a5213831c7fc537dfa562aa352a8",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "corporate_action_instruction",
+              "nullable": true,
+              "ordinal_position": 19,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -67515,9 +67751,9 @@
               ],
               "comment": null,
               "deferrable": false,
-              "definition": "CHECK (mutation_kind = ANY (ARRAY['Acquisition'::text, 'Disposal'::text]))",
+              "definition": "CHECK (mutation_kind = ANY (ARRAY['Acquisition'::text, 'Disposal'::text, 'Amortization'::text, 'CorporateAction'::text]))",
               "delete_action": null,
-              "fingerprint": "e01403862d4fcac464ef5bdd66904b642212b28239e941e69d0630dd31403cf7",
+              "fingerprint": "71fe18270e8e8c328f32232181414753ab5e659fc413ed313bb493254cf16e09",
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_atomic_tax_lot_batch_kind",
@@ -67563,6 +67799,27 @@
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_atomic_tax_lot_batch_proceeds_allocation",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "mutation_kind",
+                "corporate_action_instruction"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (mutation_kind = 'CorporateAction'::text AND corporate_action_instruction IS NOT NULL AND jsonb_typeof(corporate_action_instruction) = 'object'::text OR mutation_kind <> 'CorporateAction'::text AND corporate_action_instruction IS NULL)",
+              "delete_action": null,
+              "fingerprint": "db241a50aad01d1a866ff720a868b4195ad86f8a002805665e0533ae0d6aa06e",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_atomic_tax_lot_successor_instruction",
               "no_inherit": false,
               "referenced_columns": [],
               "referenced_schema": null,
@@ -67682,7 +67939,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "2a42d2354edcefc57a55ed67fe7b35a8adf38b22d4f06b1e1d667b19a660b9db",
+          "fingerprint": "de18e7e6ef1ace72db2f5d62ef81171f4d1054876ce17f890ebb3fda6c4d03fb",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -75917,13 +76174,15 @@
                 "unit_cost",
                 "cost_basis",
                 "quantity_delta",
-                "relief_method"
+                "relief_method",
+                "mutation_kind",
+                "lot_snapshot_before"
               ],
               "comment": null,
               "deferrable": false,
-              "definition": "CHECK (unit_cost >= 0::numeric AND cost_basis >= 0::numeric AND (cost_basis = (abs(quantity_delta) * unit_cost) OR lower(COALESCE(relief_method, ''::text)) = 'averagecost'::text))",
+              "definition": "CHECK (unit_cost >= 0::numeric AND cost_basis >= 0::numeric AND (cost_basis = (abs(quantity_delta) * unit_cost) OR lower(COALESCE(relief_method, ''::text)) = 'averagecost'::text OR (mutation_kind = ANY (ARRAY['Amortization'::text, 'CorporateAction'::text])) AND cost_basis > 0::numeric OR mutation_kind = 'Disposal'::text AND (lower(COALESCE(relief_method, ''::text)) = ANY (ARRAY['fifo'::text, 'lifo'::text, 'hifo'::text, 'specificid'::text])) AND COALESCE(jsonb_typeof(lot_snapshot_before -> 'acquisition'::text) = 'object'::text, false) AND COALESCE(jsonb_typeof(lot_snapshot_before -> 'basisAdjustment'::text) = 'object'::text, false)))",
               "delete_action": null,
-              "fingerprint": "5736edc6e2c22433b5e066560078e37f0191ee66626bdfe866ee7a71861c9df8",
+              "fingerprint": "26e3f6e0e34a10ebf4b64832901f85236ea7df7a4b0348e304c77caad0218d09",
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_tax_lot_mutations_cost",
@@ -75962,9 +76221,9 @@
               ],
               "comment": null,
               "deferrable": false,
-              "definition": "CHECK (mutation_kind = ANY (ARRAY['Acquisition'::text, 'Disposal'::text, 'BasisRedistribution'::text]))",
+              "definition": "CHECK (mutation_kind = ANY (ARRAY['Acquisition'::text, 'Disposal'::text, 'BasisRedistribution'::text, 'Amortization'::text, 'CorporateAction'::text]))",
               "delete_action": null,
-              "fingerprint": "d874019d7e368ea0495f2d293a73c84d2965215b2a206f9f5dd71d27d68e99a9",
+              "fingerprint": "42f305ee69ceef3be62be0d0e4bb0c03cdbaaac9b470e854defd36339ac9d7c5",
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_tax_lot_mutations_kind",
@@ -76002,13 +76261,15 @@
                 "quantity_after",
                 "quantity_delta",
                 "mutation_kind",
-                "relief_method"
+                "relief_method",
+                "policy_revision",
+                "lot_snapshot_before"
               ],
               "comment": null,
               "deferrable": false,
-              "definition": "CHECK (quantity_before >= 0::numeric AND quantity_after >= 0::numeric AND quantity_after = (quantity_before + quantity_delta) AND (mutation_kind = 'Acquisition'::text AND quantity_before = 0::numeric AND quantity_delta > 0::numeric OR mutation_kind = 'Disposal'::text AND quantity_delta < 0::numeric OR mutation_kind = 'BasisRedistribution'::text AND quantity_delta = 0::numeric AND quantity_before > 0::numeric AND lower(COALESCE(relief_method, ''::text)) = 'averagecost'::text))",
+              "definition": "CHECK (quantity_before >= 0::numeric AND quantity_after >= 0::numeric AND quantity_after = (quantity_before + quantity_delta) AND (mutation_kind = 'Acquisition'::text AND quantity_before = 0::numeric AND quantity_delta > 0::numeric OR mutation_kind = 'Disposal'::text AND quantity_delta < 0::numeric OR mutation_kind = 'BasisRedistribution'::text AND quantity_delta = 0::numeric AND quantity_before > 0::numeric AND lower(COALESCE(relief_method, ''::text)) = 'averagecost'::text OR mutation_kind = 'Amortization'::text AND quantity_delta = 0::numeric AND quantity_before > 0::numeric AND relief_method IS NULL AND policy_revision IS NULL OR mutation_kind = 'CorporateAction'::text AND relief_method IS NULL AND policy_revision IS NULL AND (quantity_before > 0::numeric AND quantity_after = 0::numeric AND lot_snapshot_before IS NOT NULL OR quantity_before = 0::numeric AND quantity_after > 0::numeric AND lot_snapshot_before IS NULL)))",
               "delete_action": null,
-              "fingerprint": "5516a4b9c2b397f7a483267feeab0d68d54a014e6e8cff2ab72fe9ba0eb25ae5",
+              "fingerprint": "86a762a704b0c6932a6325503e69332fce02fe4ed761493c90ee7026fc4730dd",
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_tax_lot_mutations_quantities",
@@ -76173,7 +76434,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "1eabe0adcd2d082ce656175e5f041461e7a96e32bead696992a1b9c9e0b15089",
+          "fingerprint": "a0e60511eff027b27e830d83d868e6d3e703a68149ca98e00c18a89aa905aafe",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -82602,6 +82863,22 @@
               "security_labels": [],
               "type_name": "numeric",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "84cabb4a7123a147382d3dbefe738ad7bd58a5213831c7fc537dfa562aa352a8",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "corporate_action_instruction",
+              "nullable": true,
+              "ordinal_position": 19,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -82693,9 +82970,9 @@
               ],
               "comment": null,
               "deferrable": false,
-              "definition": "CHECK (mutation_kind = ANY (ARRAY['Acquisition'::text, 'Disposal'::text]))",
+              "definition": "CHECK (mutation_kind = ANY (ARRAY['Acquisition'::text, 'Disposal'::text, 'Amortization'::text, 'CorporateAction'::text]))",
               "delete_action": null,
-              "fingerprint": "e01403862d4fcac464ef5bdd66904b642212b28239e941e69d0630dd31403cf7",
+              "fingerprint": "71fe18270e8e8c328f32232181414753ab5e659fc413ed313bb493254cf16e09",
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_atomic_tax_lot_batch_kind",
@@ -82741,6 +83018,27 @@
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_atomic_tax_lot_batch_proceeds_allocation",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "mutation_kind",
+                "corporate_action_instruction"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (mutation_kind = 'CorporateAction'::text AND corporate_action_instruction IS NOT NULL AND jsonb_typeof(corporate_action_instruction) = 'object'::text OR mutation_kind <> 'CorporateAction'::text AND corporate_action_instruction IS NULL)",
+              "delete_action": null,
+              "fingerprint": "db241a50aad01d1a866ff720a868b4195ad86f8a002805665e0533ae0d6aa06e",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_atomic_tax_lot_successor_instruction",
               "no_inherit": false,
               "referenced_columns": [],
               "referenced_schema": null,
@@ -82860,7 +83158,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "2a42d2354edcefc57a55ed67fe7b35a8adf38b22d4f06b1e1d667b19a660b9db",
+          "fingerprint": "de18e7e6ef1ace72db2f5d62ef81171f4d1054876ce17f890ebb3fda6c4d03fb",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -90844,13 +91142,15 @@
                 "unit_cost",
                 "cost_basis",
                 "quantity_delta",
-                "relief_method"
+                "relief_method",
+                "mutation_kind",
+                "lot_snapshot_before"
               ],
               "comment": null,
               "deferrable": false,
-              "definition": "CHECK (unit_cost >= 0::numeric AND cost_basis >= 0::numeric AND (cost_basis = (abs(quantity_delta) * unit_cost) OR lower(COALESCE(relief_method, ''::text)) = 'averagecost'::text))",
+              "definition": "CHECK (unit_cost >= 0::numeric AND cost_basis >= 0::numeric AND (cost_basis = (abs(quantity_delta) * unit_cost) OR lower(COALESCE(relief_method, ''::text)) = 'averagecost'::text OR (mutation_kind = ANY (ARRAY['Amortization'::text, 'CorporateAction'::text])) AND cost_basis > 0::numeric OR mutation_kind = 'Disposal'::text AND (lower(COALESCE(relief_method, ''::text)) = ANY (ARRAY['fifo'::text, 'lifo'::text, 'hifo'::text, 'specificid'::text])) AND COALESCE(jsonb_typeof(lot_snapshot_before -> 'acquisition'::text) = 'object'::text, false) AND COALESCE(jsonb_typeof(lot_snapshot_before -> 'basisAdjustment'::text) = 'object'::text, false)))",
               "delete_action": null,
-              "fingerprint": "5736edc6e2c22433b5e066560078e37f0191ee66626bdfe866ee7a71861c9df8",
+              "fingerprint": "26e3f6e0e34a10ebf4b64832901f85236ea7df7a4b0348e304c77caad0218d09",
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_tax_lot_mutations_cost",
@@ -90889,9 +91189,9 @@
               ],
               "comment": null,
               "deferrable": false,
-              "definition": "CHECK (mutation_kind = ANY (ARRAY['Acquisition'::text, 'Disposal'::text, 'BasisRedistribution'::text]))",
+              "definition": "CHECK (mutation_kind = ANY (ARRAY['Acquisition'::text, 'Disposal'::text, 'BasisRedistribution'::text, 'Amortization'::text, 'CorporateAction'::text]))",
               "delete_action": null,
-              "fingerprint": "d874019d7e368ea0495f2d293a73c84d2965215b2a206f9f5dd71d27d68e99a9",
+              "fingerprint": "42f305ee69ceef3be62be0d0e4bb0c03cdbaaac9b470e854defd36339ac9d7c5",
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_tax_lot_mutations_kind",
@@ -90929,13 +91229,15 @@
                 "quantity_after",
                 "quantity_delta",
                 "mutation_kind",
-                "relief_method"
+                "relief_method",
+                "policy_revision",
+                "lot_snapshot_before"
               ],
               "comment": null,
               "deferrable": false,
-              "definition": "CHECK (quantity_before >= 0::numeric AND quantity_after >= 0::numeric AND quantity_after = (quantity_before + quantity_delta) AND (mutation_kind = 'Acquisition'::text AND quantity_before = 0::numeric AND quantity_delta > 0::numeric OR mutation_kind = 'Disposal'::text AND quantity_delta < 0::numeric OR mutation_kind = 'BasisRedistribution'::text AND quantity_delta = 0::numeric AND quantity_before > 0::numeric AND lower(COALESCE(relief_method, ''::text)) = 'averagecost'::text))",
+              "definition": "CHECK (quantity_before >= 0::numeric AND quantity_after >= 0::numeric AND quantity_after = (quantity_before + quantity_delta) AND (mutation_kind = 'Acquisition'::text AND quantity_before = 0::numeric AND quantity_delta > 0::numeric OR mutation_kind = 'Disposal'::text AND quantity_delta < 0::numeric OR mutation_kind = 'BasisRedistribution'::text AND quantity_delta = 0::numeric AND quantity_before > 0::numeric AND lower(COALESCE(relief_method, ''::text)) = 'averagecost'::text OR mutation_kind = 'Amortization'::text AND quantity_delta = 0::numeric AND quantity_before > 0::numeric AND relief_method IS NULL AND policy_revision IS NULL OR mutation_kind = 'CorporateAction'::text AND relief_method IS NULL AND policy_revision IS NULL AND (quantity_before > 0::numeric AND quantity_after = 0::numeric AND lot_snapshot_before IS NOT NULL OR quantity_before = 0::numeric AND quantity_after > 0::numeric AND lot_snapshot_before IS NULL)))",
               "delete_action": null,
-              "fingerprint": "5516a4b9c2b397f7a483267feeab0d68d54a014e6e8cff2ab72fe9ba0eb25ae5",
+              "fingerprint": "86a762a704b0c6932a6325503e69332fce02fe4ed761493c90ee7026fc4730dd",
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_tax_lot_mutations_quantities",
@@ -91100,7 +91402,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "1eabe0adcd2d082ce656175e5f041461e7a96e32bead696992a1b9c9e0b15089",
+          "fingerprint": "a0e60511eff027b27e830d83d868e6d3e703a68149ca98e00c18a89aa905aafe",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -122232,6 +122534,18 @@
           "target_schema": "security_master"
         },
         {
+          "fingerprint": "f41032f584fd05c16f13f86740a1f2f4e86319b3558fc7f31fdefe6d7de0e0a8",
+          "kind": "normal",
+          "source": "security_master.security_workbench_generations_generation_check on security_master.security_workbench_generations",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_workbench_generations.generation",
+          "target_kind": "table column",
+          "target_name": "security_workbench_generations",
+          "target_schema": "security_master"
+        },
+        {
           "fingerprint": "ed9ce49163ccd872e05b134dbe94bfc97bdb2d55376f9a6dfed4abf06f1417e2",
           "kind": "normal",
           "source": "security_master.servicer_position_report_line_loan_id_fkey on security_master.servicer_position_report_line",
@@ -122476,7 +122790,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "f32458671471af5b6a0636d4d61fceccb38abd95ba03086883bae93492bbae63",
+      "fingerprint": "7d0c3ea281f5d738cc76169b0670cbb45f46e8eab057e6f6ae22b6d7479f2b72",
       "foreign_tables": [],
       "functions": [
         {
@@ -149376,6 +149690,172 @@
               "comment": null,
               "data_type": "uuid",
               "default": null,
+              "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "47c1638beb791eb7f89802abc78ee4e8b9f0d850e32ebb28474f966bf8fa609c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "generation",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "generation"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (generation >= 0)",
+              "delete_action": null,
+              "fingerprint": "3f492310c9b66129b924991f9b1b1fa6e3101302a3e4e9d6548ae7c8ce7fa7e9",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_workbench_generations_generation_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "security_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (security_id)",
+              "delete_action": null,
+              "fingerprint": "360477a7eafccc1ce1e589fa292d8b44cf25f87bd1d68ed89b7aa41cad77b717",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_workbench_generations_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "78b653c8acbc2e462a737aab9b5689f1c7c8a9ef7ac1d3a230027a423cbde0ac",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX security_workbench_generations_pkey ON security_master.security_workbench_generations USING btree (security_id)",
+              "expression": null,
+              "fingerprint": "5b68250b31963ad0d6eb5d66a654c80a35bdde8607e7da000ea4e9441aa08ea9",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "security_workbench_generations_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "security_workbench_generations",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
               "fingerprint": "de1cf8b0e3d7dc6e682de492825a9e80c506e77cc81f8a62a930771451ccdbf0",
               "generated": null,
               "generated_expression": null,
@@ -154585,6 +155065,14 @@
           "forced": false,
           "policies": [],
           "relation": "security_snapshots",
+          "schema": "security_master"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "ee6012959c128eed73ef65253f785bd0d046b840f733e600036ce8c98fd79d75",
+          "forced": false,
+          "policies": [],
+          "relation": "security_workbench_generations",
           "schema": "security_master"
         },
         {
@@ -181425,6 +181913,172 @@
           "is_partition": false,
           "kind": "table",
           "name": "security_snapshots",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "47c1638beb791eb7f89802abc78ee4e8b9f0d850e32ebb28474f966bf8fa609c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "generation",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "generation"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (generation >= 0)",
+              "delete_action": null,
+              "fingerprint": "3f492310c9b66129b924991f9b1b1fa6e3101302a3e4e9d6548ae7c8ce7fa7e9",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_workbench_generations_generation_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "security_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (security_id)",
+              "delete_action": null,
+              "fingerprint": "360477a7eafccc1ce1e589fa292d8b44cf25f87bd1d68ed89b7aa41cad77b717",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_workbench_generations_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "78b653c8acbc2e462a737aab9b5689f1c7c8a9ef7ac1d3a230027a423cbde0ac",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX security_workbench_generations_pkey ON security_master.security_workbench_generations USING btree (security_id)",
+              "expression": null,
+              "fingerprint": "5b68250b31963ad0d6eb5d66a654c80a35bdde8607e7da000ea4e9441aa08ea9",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "security_workbench_generations_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "security_workbench_generations",
           "options": [],
           "owner": "meridian",
           "persistence": "permanent",

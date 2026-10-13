@@ -427,6 +427,8 @@ public interface IReportingGovernanceRepository
 
 public interface IReportingGovernanceTransaction
 {
+    public const int MaximumRunReadBatchSize = 200;
+
     ValueTask<IReadOnlyList<ReportingGovernancePersistenceStatus>> ListPersistenceStatusAsync(
         ReportingAuthorityScope authority,
         CancellationToken cancellationToken = default) =>
@@ -443,6 +445,26 @@ public interface IReportingGovernanceTransaction
         string tenantId,
         string runId,
         CancellationToken cancellationToken = default);
+
+    /// <summary>Reads a bounded set of exact tenant-bound identities with the same integrity guarantees as a single-run read.</summary>
+    async ValueTask<IReadOnlyList<GovernedReportingRun>> GetRunsAsync(
+        string tenantId,
+        IReadOnlyCollection<string> runIds,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentNullException.ThrowIfNull(runIds);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(runIds.Count, MaximumRunReadBatchSize);
+        var runs = new List<GovernedReportingRun>(runIds.Count);
+        foreach (var runId in runIds.Distinct(StringComparer.Ordinal))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var run = await GetRunAsync(tenantId, runId, cancellationToken).ConfigureAwait(false);
+            if (run is not null)
+                runs.Add(run);
+        }
+        return runs;
+    }
 
     ValueTask<IReadOnlyList<GovernedReportingRun>> ListRunsBySeriesAsync(
         string tenantId,

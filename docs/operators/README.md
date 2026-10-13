@@ -2,7 +2,7 @@
 title: Operator Documentation
 status: active
 owner: core-team
-reviewed: 2026-07-20
+reviewed: 2026-10-05
 audience: operators
 ---
 
@@ -13,7 +13,9 @@ This is the canonical operator procedure lane for Meridian setup, provider workf
 ## What Is Canonical Here
 
 - **Canonical**: this page + active operator procedure files below.
-- **Source-Material**: legacy `docs/operations/*`, archived `docs/providers/*`, and one-off operator snapshots until they are canonicalized or archived.
+- **Transitional**: retained `docs/operations/*` compatibility paths; their index records active consumers.
+- **Historical/source material**: pinned archived provider/operation documents and dated snapshots;
+  follow their replacement links and verify historical claims against current source.
 - **Generated**: route to `docs/generated/` and generated registry outputs.
 - **Archive**: superseded high-traffic paths moved with replacement links under `archive/docs/`.
 
@@ -36,12 +38,13 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 | --- | --- | --- |
 | First local setup | [Start](../start/README.md) | fastest contributor/operator orientation |
 | Product operating scope | [Meridian Design Document](../product/meridian-design-document.md) | stakeholder design context for operator posture |
-| Daily operator controls | [Operators](./README.md) | this page |
+| Daily operator controls | [Operator Preflight](preflight-checklist.md) | startup, authenticated checks, expected results, and failure recovery |
 | Adapter implementation readiness | [Generated Adapter Readiness Matrix](../source/generated/adapter-readiness-matrix.md) | credentials, SDK dependencies, capability claims, risks, degradation behavior, evidence, and next actions; source readiness does not confer operator certification |
 | Xero and NetSuite GL evidence | [External GL Providers](./external-gl-providers.md) | credential setup, import boundaries, and controlled export certification |
 | Startup, restart, and shutdown control | [Lifecycle Control Plane](../reference/lifecycle-control-plane.md) | states, supervisor commands, database ownership, and receipts |
 | Failed, blocked, or warning operation | [Verified Outcome Recovery](./verified-outcome-recovery.md) | terminal receipt triage, evidence verification, safe retry, and escalation |
 | Historical journal legs missing their currency | [Ledger Currency Backfill](./ledger-currency-backfill.md) | why legs are currency-blind, what the repair may assert, and the survey/affirm workflow |
+| Retained data blocks tenant enforcement | [Fund Structure Tenant Backfill](fund-structure-tenant-backfill.md) | inventory, attribution, quarantine, and strict-startup checks |
 | Statement intake through reconciliation report | [Statement Reconciliation Report Operations](./statement-reconciliation-report-operations.md) | exact accounting scope, Operations Continuity and canonical-queue handoff, JSON/CSV verification, and recovery |
 | Governed reporting, schedules, and delivery | [Governed Reporting Operations](./governed-reporting-operations.md) | reporting preflight, hard-close evidence, recovery, and secure relay operation |
 | Deployment and packaging | [Deployment and Packaging](./deployment-packaging.md) | canonical packaging/checksum/sign-off posture |
@@ -52,30 +55,23 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 
 ## Active Operator Procedure Files
 
-- [Browser Workstation Installer](./browser-workstation-installer.md)
-- [Lifecycle Control Plane Reference](../reference/lifecycle-control-plane.md)
-- [Deployment and Packaging](./deployment-packaging.md)
-- [Distributed Tracing](./distributed-tracing.md)
-- [Failover and Recovery](./failover-and-recovery.md)
-- [Fund Operations Persistence Cutover](./fund-ops-persistence-cutover.md)
-- [Governed Reporting Operations](./governed-reporting-operations.md)
-- [Ledger Currency Backfill](./ledger-currency-backfill.md)
-- [Operator Preflight Checklist](./preflight-checklist.md)
-- [Operator Runbook](./operator-runbook.md)
-- [Service Level Objectives](./service-level-objectives.md)
-- [Provider Backfill Operations](./provider-backfill-operations.md)
-- [Provider Credentials and Access](./provider-credentials.md)
-- [Plaid Provider Operations](./plaid-provider-operations.md)
-- [Provider Onboarding: Alpaca](./provider-onboarding-alpaca.md)
-- [Provider Onboarding: Interactive Brokers](./provider-onboarding-interactive-brokers.md)
-- [Reconciliation Operations](./reconciliation-operations.md)
-- [Security Master Normalized Identifier Uniqueness Migration](./security-master-normalized-identifier-migration.md)
-- [Statement Reconciliation Report Operations](./statement-reconciliation-report-operations.md)
-- [Verified Outcome Recovery](./verified-outcome-recovery.md)
+| Task family | Procedures and references |
+| --- | --- |
+| Install, start, and package | [Browser installer](browser-workstation-installer.md), [preflight](preflight-checklist.md), [deployment/packaging](deployment-packaging.md), [lifecycle reference](../reference/lifecycle-control-plane.md) |
+| Configure providers | [Credentials](provider-credentials.md), [Alpaca](provider-onboarding-alpaca.md), [Interactive Brokers](provider-onboarding-interactive-brokers.md), [Plaid](plaid-provider-operations.md), [Xero/NetSuite GL](external-gl-providers.md) |
+| Reconcile and report | [Reconciliation triage](reconciliation-operations.md), [statement-to-report](statement-reconciliation-report-operations.md), [governed reporting](governed-reporting-operations.md) |
+| Diagnose, repair, and recover | [Alert runbook](operator-runbook.md), [verified outcomes](verified-outcome-recovery.md), [backfill](provider-backfill-operations.md), [backup/recovery](failover-and-recovery.md), [distributed tracing](distributed-tracing.md), [SLO reference](service-level-objectives.md) |
+| Controlled data maintenance | [Persistence cutover](fund-ops-persistence-cutover.md), [tenant attribution](fund-structure-tenant-backfill.md), [ledger currency backfill](ledger-currency-backfill.md), [Security Master identifier migration](security-master-normalized-identifier-migration.md) |
+
+An active procedure is maintained guidance, not evidence that its workflow or release is certified.
+Use the document's stated prerequisites and retained acceptance artifacts; an index/navigation
+update does not revalidate every historical provider or deployment claim.
 
 ## High-Traffic Legacy Path Migration Status
 
-The table below tracks active legacy/high-traffic routes and their replacements in this canonical lane.
+The table below records legacy/high-traffic routes and their replacement owner. A route to this
+index identifies an owning lane, not a claim that every historical detail was migrated or remains
+supported. Historical links pinned to a Git commit remain evidence for that commit only.
 
 | Legacy path | Canonical replacement | Status | Notes |
 | --- | --- | --- | --- |
@@ -141,34 +137,21 @@ Use this simple status model for operator-facing claims:
 
 ## Canonical Operator Procedures
 
-### Workstation launch and packaging
-
-- [Browser Workstation Installer](./browser-workstation-installer.md)
-- [Deployment and Packaging](./deployment-packaging.md)
-
-### Provider operations
-
-- [Provider Credential Operations](./provider-credentials.md)
-- [Plaid Provider Operations](./plaid-provider-operations.md)
-- [Provider Onboarding: Alpaca](./provider-onboarding-alpaca.md)
-- [Provider Onboarding: Interactive Brokers](./provider-onboarding-interactive-brokers.md)
-- [Provider Backfill Operations](./provider-backfill-operations.md)
-
-### Reconciliation and reliability
-
-- [Reconciliation Operations](./reconciliation-operations.md)
-- [Statement Reconciliation Report Operations](./statement-reconciliation-report-operations.md)
-- [Governed Reporting Operations](./governed-reporting-operations.md)
-- [Operator Preflight Checklist](./preflight-checklist.md)
-- [Failover and Recovery](./failover-and-recovery.md)
-- [Fund Operations Persistence Cutover](./fund-ops-persistence-cutover.md)
+Use the [task-family directory](#active-operator-procedure-files) to choose the procedure. Reference
+pages define contracts; runbooks describe actions, expected results, recovery, and evidence.
 
 ### Command entry points
 
-- `dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080`
-- `dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080`
-- `pwsh ./scripts/dev/run-desktop.ps1 -Fixture`
-- `npm --prefix src/Meridian.Ui/dashboard run dev`
+- [Operator Preflight Checklist](preflight-checklist.md) for persistence prerequisites, host launch,
+  authenticated checks, expected results, and failure handling.
+- [Start](../start/README.md) for first-run browser and desktop setup.
+- [UI Fixture Mode Guide](../development/ui-fixture-mode-guide.md) for isolated desktop development.
+
+### Writing a procedure
+
+Use the [Operator Runbook Template](runbook-template.md). State the supported platform and shell,
+working directory, prerequisites, complete commands, expected results, failure recovery, and evidence
+handoff. Keep option definitions in Reference and link them instead of duplicating their defaults.
 
 ## Operator Rules
 
@@ -196,5 +179,7 @@ Use this simple status model for operator-facing claims:
 
 ## Legacy-to-Archive Rules
 
-- After a legacy path is replaced and linked here, keep full historical content in `archive/docs/operations/` with explicit replacement reason and date.
-- Keep legacy stubs only where a high-traffic inbound path would otherwise break; remove stubs once canonical replacement has external links.
+- Preserve useful superseded content under `archive/docs/` or its existing commit-pinned archive
+  link, with a replacement reason and date. Any newly created archive bucket needs an index.
+- Keep compatibility stubs while active consumers or inbound links require them; remove a stub
+  only after those consumers and links move to the canonical replacement.

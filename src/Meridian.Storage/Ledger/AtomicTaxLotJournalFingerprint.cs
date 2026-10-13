@@ -47,7 +47,9 @@ public static class AtomicTaxLotJournalFingerprint
             command.CorrectsMutationBatchId,
             TextPrimitives.NormalizeOptional(command.ReliefMethod),
             TextPrimitives.NormalizeOptional(command.PolicyRevision),
-            command.DisposalSalePrice);
+            command.DisposalSalePrice,
+            command.Amortization,
+            command.CorporateAction);
 
         var element = JsonSerializer.SerializeToElement(payload, SerializerOptions);
         using var stream = new MemoryStream();
@@ -164,5 +166,9 @@ public static class AtomicTaxLotJournalFingerprint
         string? ReliefMethod,
         string? PolicyRevision,
         [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        decimal? DisposalSalePrice);
+        decimal? DisposalSalePrice,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? Amortization,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? CorporateAction);
 }

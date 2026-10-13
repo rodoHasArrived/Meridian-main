@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Meridian.Contracts.Lifecycle;
 using Serilog;
 
@@ -61,6 +62,7 @@ public sealed class ApplicationLifecycleCoordinator : IApplicationLifecycleCoord
     private readonly CancellationTokenSource _stopWorkCts;
     private readonly CancellationTokenSource _terminationCts = new();
     private readonly CancellationTokenRegistration _externalShutdownRegistration;
+    private readonly PosixSignalRegistration? _terminationSignalRegistration;
     private readonly string _sessionId = Guid.NewGuid().ToString("N");
     private RuntimeLifecycleState _state = RuntimeLifecycleState.Created;
     private RuntimeReadinessStatus _readiness = RuntimeReadinessStatus.Starting;
@@ -95,6 +97,10 @@ public sealed class ApplicationLifecycleCoordinator : IApplicationLifecycleCoord
 
         Console.CancelKeyPress += OnConsoleCancelKeyPress;
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+        if (!OperatingSystem.IsWindows())
+        {
+            _terminationSignalRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, OnPosixTermination);
+        }
     }
 
     public DateTimeOffset StartedAtUtc { get; }
@@ -359,6 +365,7 @@ public sealed class ApplicationLifecycleCoordinator : IApplicationLifecycleCoord
         _disposed = true;
         Console.CancelKeyPress -= OnConsoleCancelKeyPress;
         AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
+        _terminationSignalRegistration?.Dispose();
         _externalShutdownRegistration.Dispose();
         _stopWorkCts.Dispose();
         _terminationCts.Dispose();
@@ -484,6 +491,14 @@ public sealed class ApplicationLifecycleCoordinator : IApplicationLifecycleCoord
         RequestShutdownFromSignal(
             LifecycleShutdownReason.ConsoleCancel,
             "Ctrl+C or console close requested shutdown");
+    }
+
+    private void OnPosixTermination(PosixSignalContext context)
+    {
+        context.Cancel = true;
+        RequestShutdownFromSignal(
+            LifecycleShutdownReason.ExternalCancellation,
+            "SIGTERM requested shutdown");
     }
 
     private void OnProcessExit(object? sender, EventArgs e)

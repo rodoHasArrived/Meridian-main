@@ -1,0 +1,54 @@
+.NET SDK:
+ Version:           10.0.100
+ Commit:            b0f34d51fc
+ Workload version:  10.0.100-manifests.4c0ca8ba
+ MSBuild version:   18.0.2+b0f34d51f
+
+Runtime Environment:
+ OS Name:     ubuntu
+ OS Version:  24.04
+ OS Platform: Linux
+ RID:         linux-x64
+ Base Path:   /home/runner/work/_temp/pipeline-dotnet/sdk/10.0.100/
+
+.NET workloads installed:
+There are no installed workloads to display.
+Configured to use workload sets when installing new manifests.
+No workload sets are installed. Run "dotnet workload restore" to install a workload set.
+
+Host:
+  Version:      10.0.12
+  Architecture: x64
+  Commit:       95017c711e
+
+.NET SDKs installed:
+  10.0.100 [/home/runner/work/_temp/pipeline-dotnet/sdk]
+
+.NET runtimes installed:
+  Microsoft.AspNetCore.App 10.0.0 [/home/runner/work/_temp/pipeline-dotnet/shared/Microsoft.AspNetCore.App]
+  Microsoft.NETCore.App 10.0.0 [/home/runner/work/_temp/pipeline-dotnet/shared/Microsoft.NETCore.App]
+  Microsoft.NETCore.App 10.0.12 [/home/runner/work/_temp/pipeline-dotnet/shared/Microsoft.NETCore.App]
+
+Other architectures found:
+  None
+
+Environment variables:
+  DOTNET_CLI_TELEMETRY_OPTOUT              [1]
+  DOTNET_MULTILEVEL_LOOKUP                 [0]
+  DOTNET_NOLOGO                            [true]
+  DOTNET_ROLL_FORWARD                      [Disable]
+  DOTNET_ROLL_FORWARD_TO_PRERELEASE        [0]
+  DOTNET_ROOT                              [/home/runner/work/_temp/pipeline-dotnet]
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE        [1]
+  DOTNET_TieredCompilation                 [1]
+  DOTNET_TieredPGO                         [1]
+  DOTNET_gcServer                          [0]
+
+global.json file:
+  /home/runner/work/Meridian-main/Meridian-main/global.json
+
+Learn more:
+  https://aka.ms/dotnet/info
+
+Download .NET:
+  https://aka.ms/dotnet/download

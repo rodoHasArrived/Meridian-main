@@ -47,14 +47,17 @@ Use this map as a starting point before diving into generated type/member pages.
 - `EventPipeline` - Bounded channel for event routing.
 - `EventPipelinePolicy` - Shared bounded-channel policy configuration.
 - `ConfigurationService` - Wizard, auto-config, validation, and reload lifecycle.
-- `JsonlStorageSink` - Append-only JSONL persistence.
-- `ParquetStorageSink` - Columnar Parquet persistence (experimental).
-- `TieredStorageManager` - Hot/warm/cold storage tiering.
 - `StatusHttpServer` - Status + Prometheus metrics endpoint.
 - `BackfillService` - Historical backfill orchestration.
 
 ### Storage and archival layer
 
+- `JsonlStorageSink` - JSONL persistence under the configured storage policy.
+- `ParquetStorageSink` - Optional columnar sink; select it through `Storage.Sinks` (for example,
+  `["jsonl", "parquet"]`) or the compatibility `Storage.EnableParquetSink` setting. The config list
+  maps to runtime `StorageOptions.ActiveSinks`; see
+  [`StorageConfigExtensions`](../../src/Meridian.Storage/Config/StorageConfigExtensions.cs).
+- `TieredStorageManager` - Hot/warm/cold storage tiering.
 - `WriteAheadLog` - Crash-safe persistence with transaction semantics.
 - `ArchivalStorageService` - WAL-backed archival writes with checksums.
 - `CompressionProfileManager` - Compression profile selection (LZ4/ZSTD/Gzip).
@@ -99,6 +102,10 @@ Use this map as a starting point before diving into generated type/member pages.
 - `CredentialValidator` - API credential and configuration validation.
 
 ### Lean integration
+
+These optional types are excluded from the host's default build. See
+[Lean Integration](../integrations/lean-integration.md) for `EnableLeanIntegration=true`, data-path
+compatibility, and the separate Lean-host verification requirements.
 
 - `MeridianTradeData` - Lean `BaseData` implementation for trades.
 - `MeridianQuoteData` - Lean `BaseData` implementation for quotes.

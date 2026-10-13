@@ -23,10 +23,32 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
         ILogger<CorporateActionAdjustmentService> logger,
         IFactorPaydownProjectionService? factorPaydownProjector = null)
     {
+        ArgumentNullException.ThrowIfNull(queryService);
+        ArgumentNullException.ThrowIfNull(resolver);
+        ArgumentNullException.ThrowIfNull(logger);
+
         _queryService = queryService;
         _resolver = resolver;
         _logger = logger;
         _factorPaydownProjector = factorPaydownProjector ?? new FactorPaydownProjectionService();
+    }
+
+    public async Task<CorporateActionAdjustmentPlan> PrepareAsync(
+        IReadOnlyList<HistoricalBar> bars,
+        string ticker,
+        DateTimeOffset effectiveThroughUtc,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(bars);
+        ArgumentException.ThrowIfNullOrWhiteSpace(ticker);
+        ct.ThrowIfCancellationRequested();
+
+        var normalizedTicker = ticker.Trim().ToUpperInvariant();
+        var effectiveThrough = effectiveThroughUtc.ToUniversalTime();
+        var sortedActions = await GetSortedCorporateActionsAsync(normalizedTicker, effectiveThrough, ct)
+            .ConfigureAwait(false);
+        ct.ThrowIfCancellationRequested();
+        return PreparePlan(bars, normalizedTicker, effectiveThrough, sortedActions, ct);
     }
 
     public async Task<IReadOnlyList<HistoricalBar>> AdjustAsync(
@@ -34,18 +56,16 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
         string ticker,
         CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(bars);
         if (bars.Count == 0)
             return bars;
 
-        var sortedActions = await GetSortedCorporateActionsAsync(ticker, ct).ConfigureAwait(false);
-        if (sortedActions is null || sortedActions.Count == 0)
-            return bars;
-
-        var dividendFactors = BuildDividendFactors(bars, sortedActions);
+        var plan = await PrepareAsync(bars, ticker, DateTimeOffset.UtcNow, ct).ConfigureAwait(false);
         var adjustedBars = new List<HistoricalBar>(bars.Count);
         foreach (var bar in bars)
         {
-            adjustedBars.Add(ApplyAdjustments(bar, sortedActions, dividendFactors));
+            ct.ThrowIfCancellationRequested();
+            adjustedBars.Add(plan.Apply(bar));
         }
 
         return adjustedBars;
@@ -56,10 +76,9 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
         string ticker,
         CancellationToken ct = default)
     {
-        var sortedActions = await GetSortedCorporateActionsAsync(ticker, ct).ConfigureAwait(false);
-        return sortedActions is null || sortedActions.Count == 0
-            ? bar
-            : ApplyAdjustments(bar, sortedActions, BuildDividendFactors([bar], sortedActions));
+        ArgumentNullException.ThrowIfNull(bar);
+        var plan = await PrepareAsync([bar], ticker, DateTimeOffset.UtcNow, ct).ConfigureAwait(false);
+        return plan.Apply(bar);
     }
 
     public async IAsyncEnumerable<HistoricalBar> AdjustAsync(
@@ -67,14 +86,17 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
         string ticker,
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
     {
-        var sortedActions = await GetSortedCorporateActionsAsync(ticker, ct).ConfigureAwait(false);
-        if (sortedActions is null || sortedActions.Count == 0)
+        ArgumentNullException.ThrowIfNull(bars);
+        ArgumentException.ThrowIfNullOrWhiteSpace(ticker);
+
+        var normalizedTicker = ticker.Trim().ToUpperInvariant();
+        var effectiveThrough = DateTimeOffset.UtcNow;
+        var sortedActions = await GetSortedCorporateActionsAsync(normalizedTicker, effectiveThrough, ct)
+            .ConfigureAwait(false);
+        if (sortedActions.Count == 0)
         {
             await foreach (var bar in bars.WithCancellation(ct).ConfigureAwait(false))
-            {
                 yield return bar;
-            }
-
             yield break;
         }
 
@@ -84,99 +106,94 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
             buffered.Add(bar);
         }
 
-        var dividendFactors = BuildDividendFactors(buffered, sortedActions);
+        var plan = PreparePlan(buffered, normalizedTicker, effectiveThrough, sortedActions, ct);
         foreach (var bar in buffered)
         {
-            yield return ApplyAdjustments(bar, sortedActions, dividendFactors);
+            ct.ThrowIfCancellationRequested();
+            yield return plan.Apply(bar);
         }
     }
 
-    private async Task<List<CorporateActionDto>?> GetSortedCorporateActionsAsync(string ticker, CancellationToken ct)
+    private async Task<IReadOnlyList<CorporateActionDto>> GetSortedCorporateActionsAsync(
+        string ticker,
+        DateTimeOffset effectiveThroughUtc,
+        CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(ticker))
-            return null;
+            return [];
 
-        return await LoadSortedCorporateActionsAsync(ticker.Trim(), ct).ConfigureAwait(false);
-    }
-
-    private async Task<List<CorporateActionDto>?> LoadSortedCorporateActionsAsync(string ticker, CancellationToken ct)
-    {
         var securityId = await _resolver.ResolveAsync(
             new ResolveSecurityRequest(
                 IdentifierKind: SecurityIdentifierKind.Ticker,
                 IdentifierValue: ticker,
                 Provider: null,
-                AsOfUtc: null),
+                AsOfUtc: effectiveThroughUtc),
             ct).ConfigureAwait(false);
 
         if (securityId is null)
         {
-            _logger.LogWarning("Security not found in master for ticker {Ticker}", ticker);
-            return null;
+            _logger.LogWarning(
+                "Security not found in master for ticker {Ticker} at effective-through {EffectiveThroughUtc}",
+                ticker,
+                effectiveThroughUtc);
+            return [];
         }
 
         var actions = await _queryService.GetCorporateActionsAsync(securityId.Value, ct)
             .ConfigureAwait(false);
 
-        // Fold supersede chains and drop cancellations so adjustment math sees each
-        // action's latest terms exactly once.
+        // Freeze one query result, then accept only authoritative (confirmed/legacy) terms that
+        // are economically effective by the requested cutoff. The query contract does not expose
+        // storage transaction time, so this deliberately makes no claim about which revisions
+        // existed historically at that cutoff. An announcement alone is never execution authority.
+        var effectiveThrough = DateOnly.FromDateTime(effectiveThroughUtc.UtcDateTime);
         return CorporateActionEffectiveStateProjector
-            .ProjectEffectiveActions(actions, DateTimeOffset.UtcNow)
+            .Project(actions, effectiveThroughUtc)
+            .Where(static state =>
+                !state.IsCancelled &&
+                state.Effective.LifecycleState is null or CorporateActionLifecycleStates.Confirmed)
+            .Select(static state => state.Effective)
+            .Where(action => action.ExDate <= effectiveThrough)
             .OrderBy(static a => a.ExDate)
-            .ToList();
+            .ThenBy(static a => a.CorpActId)
+            .ToArray();
     }
 
-    private static HistoricalBar ApplyAdjustments(
-        HistoricalBar bar,
+    private static CorporateActionAdjustmentPlan PreparePlan(
+        IReadOnlyList<HistoricalBar> bars,
+        string normalizedTicker,
+        DateTimeOffset effectiveThroughUtc,
         IReadOnlyList<CorporateActionDto> sortedActions,
-        IReadOnlyDictionary<DateOnly, decimal> dividendFactorsByExDate)
+        CancellationToken ct)
     {
-        var barDate = bar.SessionDate;
-        // Accumulate the split divisor and divide once at the end: dividing the running
-        // factor per split (1/2, then /3, ...) leaves a repeating-decimal residue that
-        // makes exact chains like 600 / 6 come out as 100.000...02.
-        var splitDivisor = 1m;
-        var dividendFactor = 1m;
-
-        foreach (var action in sortedActions)
+        var dividendFactors = BuildDividendFactors(bars, sortedActions, ct);
+        var steps = new List<(DateOnly ExDate, decimal SplitDivisor, decimal DividendFactor)>();
+        foreach (var group in sortedActions.GroupBy(static action => action.ExDate))
         {
-            if (action.ExDate <= barDate)
-                continue;
-
-            if (!CorporateActionTypeDescriptorCatalog.TryNormalize(action.EventType, out var descriptor))
-                continue;
-
-            if (descriptor.AdjustmentBehavior == CorporateActionAdjustmentBehavior.PriceScaling &&
-                action.SplitRatio is > 0m)
-            {
-                splitDivisor *= action.SplitRatio.Value;
-            }
-            else if (descriptor.AdjustmentBehavior == CorporateActionAdjustmentBehavior.CashDistribution &&
-                     dividendFactorsByExDate.TryGetValue(action.ExDate, out var exDateFactor))
-            {
-                dividendFactor *= exDateFactor;
-            }
+            ct.ThrowIfCancellationRequested();
+            var splitDivisor = group
+                .Where(static action =>
+                    CorporateActionTypeDescriptorCatalog.TryNormalize(action.EventType, out var descriptor) &&
+                    descriptor.AdjustmentBehavior == CorporateActionAdjustmentBehavior.PriceScaling &&
+                    action.SplitRatio is > 0m)
+                .Aggregate(1m, static (product, action) => product * action.SplitRatio!.Value);
+            var dividendFactor = dividendFactors.GetValueOrDefault(group.Key, 1m);
+            if (splitDivisor != 1m || dividendFactor != 1m)
+                steps.Add((group.Key, splitDivisor, dividendFactor));
         }
 
-        return new HistoricalBar(
-            Symbol: bar.Symbol,
-            SessionDate: bar.SessionDate,
-            Open: bar.Open * dividendFactor / splitDivisor,
-            High: bar.High * dividendFactor / splitDivisor,
-            Low: bar.Low * dividendFactor / splitDivisor,
-            Close: bar.Close * dividendFactor / splitDivisor,
-            Volume: (long)Math.Round(bar.Volume * splitDivisor, MidpointRounding.AwayFromZero),
-            Source: bar.Source,
-            SequenceNumber: bar.SequenceNumber,
-            // Only a bar an actual factor rewrote is claimed as adjusted; a bar the factor
-            // computation skipped (CA_DEF_001: missing prior close) keeps its input regime, so
-            // the flag can never assert an adjustment that silently did not happen.
-            IsAdjusted: dividendFactor != 1m || splitDivisor != 1m ? true : bar.IsAdjusted);
+        return new CorporateActionAdjustmentPlan(
+            normalizedTicker,
+            effectiveThroughUtc,
+            HashPlanContent(normalizedTicker, effectiveThroughUtc, bars, sortedActions, ct),
+            bars.Count,
+            steps);
     }
 
     private static IReadOnlyDictionary<DateOnly, decimal> BuildDividendFactors(
         IReadOnlyList<HistoricalBar> bars,
-        IReadOnlyList<CorporateActionDto> sortedActions)
+        IReadOnlyList<CorporateActionDto> sortedActions,
+        CancellationToken ct)
     {
         if (bars.Count == 0)
             return new Dictionary<DateOnly, decimal>();
@@ -186,17 +203,26 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
             .ToArray();
         var factors = new Dictionary<DateOnly, decimal>();
 
-        foreach (var dividendGroup in sortedActions
-                     .Where(static action =>
-                         CorporateActionTypeDescriptorCatalog.TryNormalize(action.EventType, out var descriptor) &&
-                         descriptor.AdjustmentBehavior == CorporateActionAdjustmentBehavior.CashDistribution &&
-                         action.DividendPerShare is > 0m)
-                     .GroupBy(static action => action.ExDate))
+        var dividendGroups = sortedActions
+            .Where(static action =>
+                CorporateActionTypeDescriptorCatalog.TryNormalize(action.EventType, out var descriptor) &&
+                descriptor.AdjustmentBehavior == CorporateActionAdjustmentBehavior.CashDistribution &&
+                action.DividendPerShare is > 0m)
+            .GroupBy(static action => action.ExDate)
+            .OrderBy(static group => group.Key);
+        var barIndex = 0;
+        decimal? previousClose = null;
+
+        foreach (var dividendGroup in dividendGroups)
         {
-            var previousClose = barsByDate
-                .Where(bar => bar.SessionDate < dividendGroup.Key)
-                .Select(static bar => (decimal?)bar.Close)
-                .LastOrDefault();
+            ct.ThrowIfCancellationRequested();
+            while (barIndex < barsByDate.Length && barsByDate[barIndex].SessionDate < dividendGroup.Key)
+            {
+                if ((barIndex & 1023) == 0)
+                    ct.ThrowIfCancellationRequested();
+                previousClose = barsByDate[barIndex].Close;
+                barIndex++;
+            }
             var dividendAmount = dividendGroup.Sum(static action => action.DividendPerShare!.Value);
 
             if (previousClose is not > 0m)
@@ -208,6 +234,38 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
         }
 
         return factors;
+    }
+
+    private static string HashPlanContent(
+        string ticker,
+        DateTimeOffset effectiveThroughUtc,
+        IReadOnlyList<HistoricalBar> bars,
+        IReadOnlyList<CorporateActionDto> actions,
+        CancellationToken ct)
+    {
+        var invariant = System.Globalization.CultureInfo.InvariantCulture;
+        using var hash = CorporateActionContentHasher.Create();
+        CorporateActionContentHasher.AppendValue(hash, ticker);
+        CorporateActionContentHasher.AppendValue(hash, effectiveThroughUtc.ToUniversalTime().Ticks.ToString(invariant));
+        CorporateActionContentHasher.AppendValue(hash, bars.Count.ToString(invariant));
+        CorporateActionContentHasher.AppendValue(hash, actions.Count.ToString(invariant));
+
+        foreach (var bar in bars)
+        {
+            ct.ThrowIfCancellationRequested();
+            CorporateActionContentHasher.AppendBar(hash, bar);
+        }
+
+        foreach (var action in actions)
+        {
+            ct.ThrowIfCancellationRequested();
+            CorporateActionContentHasher.AppendValue(hash, action.CorpActId.ToString("N"));
+            CorporateActionContentHasher.AppendValue(hash, action.SupersedesCorpActId?.ToString("N"));
+            CorporateActionContentHasher.AppendValue(hash, action.LifecycleState);
+            CorporateActionContentHasher.AppendValue(hash, CorporateActionEconomicFingerprint.Compute(action));
+        }
+
+        return CorporateActionContentHasher.Complete(hash);
     }
 
     /// <inheritdoc />

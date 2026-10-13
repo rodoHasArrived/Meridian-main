@@ -318,7 +318,7 @@ The six capability columns mean implementations of the shared streaming, histori
 
 **Credentials:** Authenticated TWS or IB Gateway session, configured host/port/client ID, account access and relevant market-data subscriptions; Flex reconciliation has separate credentials and identity.
 
-**Optional SDK:** Official IBApi DLL/project for real TWS/Gateway connectivity with EnableIbApiVendor=true; EnableIbApiSmoke=true is compile-only verification, not the vendor runtime.
+**Optional SDK:** Official IBApi DLL/project for real TWS/Gateway connectivity with EnableIbApiVendor=true; EnableIbApiSmoke=true provides local-stub compile and reconnect verification, not the vendor runtime.
 
 **Risks and external dependencies:**
 

@@ -76,6 +76,11 @@ dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --filter Fu
 
 ### API and contract notes
 
+`AuthenticationConfiguration` allows a host to own authentication settings through an explicit
+`IConfiguration` instance. Missing instance settings remain absent instead of inheriting process
+credentials. Sessions, bootstrap accounts, API keys, and anonymous principals use this same source;
+hosts without the wrapper preserve live environment reads and credential rotation.
+
 `AuthenticationModeResolver` is the shared strict parser used by host startup and sessions.
 Invalid modes refuse construction, including Development/Test and configured-account hosts.
 Durable sessions reload authoritative state under an exclusive cross-process file lease for

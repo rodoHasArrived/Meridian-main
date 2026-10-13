@@ -125,7 +125,9 @@ public sealed class ProviderIntegrationReconciliationHandoffServiceTests : IDisp
 
     private static async Task SeedStagingAsync(IProviderIntegrationManifestStore store)
     {
-        await store.SaveManifestAsync(CreateManifest());
+        var manifest = CreateManifest();
+        var manifestReference = ProviderIntegrationManifestIdentity.Create(manifest);
+        await store.SaveManifestAsync(manifest);
         await store.SaveConnectionAsync(CreateConnection());
         await store.SaveSyncRunAsync(new ProviderIntegrationSyncRunDto(
             "sync-run-handoff-1",
@@ -141,7 +143,11 @@ public sealed class ProviderIntegrationReconciliationHandoffServiceTests : IDisp
             RecordsAccepted: 2,
             RecordsQuarantined: 0,
             RawPayloadId: "payload-1",
-            Issues: []));
+            Issues: [])
+        {
+            ManifestReference = manifestReference,
+            OriginalManifestReference = manifestReference
+        });
         await store.SaveStagingRecordAsync(new IntegrationStagingRecordDto(
             "staging-ready",
             "sync-run-handoff-1",

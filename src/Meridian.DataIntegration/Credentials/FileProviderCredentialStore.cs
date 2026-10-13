@@ -45,11 +45,18 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
     private readonly string _vaultBackupPath;
     private readonly string _keyPath;
     private readonly string _auditPath;
+    private readonly Func<string, string?>? _configurationValue;
 
-    public FileProviderCredentialStore(string dataRoot)
+    /// <param name="dataRoot">Root of this store's encrypted vault and audit files.</param>
+    /// <param name="configurationValue">
+    /// Optional host-owned credential settings. When supplied, missing values remain missing;
+    /// process and user environment variables are consulted only when this accessor is omitted.
+    /// </param>
+    public FileProviderCredentialStore(string dataRoot, Func<string, string?>? configurationValue = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
 
+        _configurationValue = configurationValue;
         _directoryPath = Path.Combine(Path.GetFullPath(dataRoot), ".mdc");
         VaultPath = Path.Combine(_directoryPath, VaultFileName);
         _vaultBackupPath = Path.Combine(_directoryPath, VaultBackupFileName);
@@ -815,7 +822,7 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
         return string.Concat(new string('*', Math.Min(12, trimmed.Length - 4)), trimmed.AsSpan(trimmed.Length - 4));
     }
 
-    private static ProviderCredentialVaultRecord? ReadEnvironmentFallback(ProviderCredentialCatalogEntry descriptor)
+    private ProviderCredentialVaultRecord? ReadEnvironmentFallback(ProviderCredentialCatalogEntry descriptor)
     {
         if (!descriptor.RequiresCredentials || !ShouldAllowEnvironmentFallback())
         {
@@ -857,22 +864,25 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
         };
     }
 
-    private static bool ShouldAllowEnvironmentFallback()
+    private bool ShouldAllowEnvironmentFallback()
     {
-        if (IsTruthy(Environment.GetEnvironmentVariable(EnvironmentFallbackOverride)))
+        if (IsTruthy(ReadFallbackPolicyValue(EnvironmentFallbackOverride)))
         {
             return true;
         }
 
-        if (IsTruthy(Environment.GetEnvironmentVariable(PackagedBuildEnvVar)) ||
-            IsTruthy(Environment.GetEnvironmentVariable(CustomerBuildEnvVar)))
+        if (IsTruthy(ReadFallbackPolicyValue(PackagedBuildEnvVar)) ||
+            IsTruthy(ReadFallbackPolicyValue(CustomerBuildEnvVar)))
         {
             return false;
         }
 
-        return IsDevelopmentLike(Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")) ||
-               IsDevelopmentLike(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
+        return IsDevelopmentLike(ReadFallbackPolicyValue("DOTNET_ENVIRONMENT")) ||
+               IsDevelopmentLike(ReadFallbackPolicyValue("ASPNETCORE_ENVIRONMENT"));
     }
+
+    private string? ReadFallbackPolicyValue(string name)
+        => _configurationValue is null ? Environment.GetEnvironmentVariable(name) : _configurationValue(name);
 
     private static bool IsDevelopmentLike(string? environment)
         => environment is not null &&
@@ -885,11 +895,11 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
             value.Equals("1", StringComparison.OrdinalIgnoreCase) ||
             value.Equals("yes", StringComparison.OrdinalIgnoreCase));
 
-    private static string? ReadFirstEnvironmentValue(IReadOnlyList<string> names)
+    private string? ReadFirstEnvironmentValue(IReadOnlyList<string> names)
     {
         foreach (var name in names)
         {
-            var value = ReadEnvironmentValue(name);
+            var value = _configurationValue is null ? ReadEnvironmentValue(name) : _configurationValue(name);
             if (!string.IsNullOrWhiteSpace(value))
             {
                 return value.Trim();

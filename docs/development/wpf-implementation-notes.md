@@ -2,6 +2,9 @@
 
 **Version**: 1.8.x | **Last updated**: 2026-07-27 | **Status**: Active product lane — co-equal with the browser workstation; current focus is web-UI parity (`W8-WPF-PARITY-001`)
 
+**Maintenance check (2026-10-05):** build/platform instructions and test routing were corrected
+against the project files. The architecture inventory below retains its original review date.
+
 ## Overview
 
 Meridian's WPF desktop application (`src/Meridian.Wpf/`) is an active, co-equal operator UI lane alongside the browser workstation. It exposes Meridian capability through a workspace-based shell with a command palette, seven canonical workspaces (Trading, Portfolio, Accounting, Reporting, Strategy, Data, Settings), and compatibility aliases for legacy Research, Data Operations, and Governance routes.
@@ -12,7 +15,7 @@ The desktop lane's immediate priority is closing web-UI parity gaps for screens 
 
 ### Stack
 
-- **.NET 10.0 + WPF** — Windows-only, `.csproj` targets `net10.0-windows`
+- **.NET 10.0 + WPF** — Windows application target `net10.0-windows10.0.19041.0`; non-Windows builds compile a `net10.0` stub
 - **MVVM** — `BindableBase` (from `Meridian.Ui.Services.Services`) + `INotifyPropertyChanged`
 - **DI** — `Microsoft.Extensions.Hosting`; singleton services resolved via `IServiceProvider`
 - **Shared services** — `Meridian.Ui.Services` and `Meridian.Ui.Shared` for cross-surface logic
@@ -523,14 +526,19 @@ Replay and collection-session review stay on their owning Data and Accounting pa
 
 ## Build
 
-```bash
-# Standalone WPF build (Windows or cross-platform with Windows targeting)
-dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableWindowsTargeting=true -c Release
+From the repository root on Windows with PowerShell 7 and the SDK in `global.json`:
 
-# WPF + shared UI services tests
-dotnet test tests/Meridian.Wpf.Tests /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
-dotnet test tests/Meridian.Ui.Tests /p:EnableWindowsTargeting=true
+```powershell
+# Restore, build the full desktop, and run the focused desktop workflow tests
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -Restore
+
+# Shared UI services have a separate cross-platform test project
+python build/python/cli/buildctl.py test --project tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj --queue
 ```
+
+Use the [desktop testing guide](desktop-testing-guide.md) for prerequisites, full-suite filters,
+expected artifacts, and failure recovery. `EnableWindowsTargeting=true` does not make the desktop
+runnable on Linux/macOS or enable WPF source in the project's non-Windows stub.
 
 ### Common errors
 
@@ -544,10 +552,10 @@ dotnet test tests/Meridian.Ui.Tests /p:EnableWindowsTargeting=true
 
 ## Testing
 
-| Test project | Count | Covers |
-| --- | --- | --- |
-| `Meridian.Wpf.Tests` | 106 | WPF-specific services and shell projections: Navigation, Config, Connection, InfoBar, Keyboard, RunMat, Data shell projection, operator inbox action, etc. |
-| `Meridian.Ui.Tests` | 171 | Shared services: ApiClient, Backfill, Charting, Watchlist, DataQuality, StrategyRun drill-ins |
+| Test project | Covers |
+| --- | --- |
+| `Meridian.Wpf.Tests` | Windows WPF services and shell projections: navigation, configuration, connection, InfoBar, keyboard, RunMat, Data shell projection, operator inbox actions |
+| `Meridian.Ui.Tests` | Shared services: ApiClient, backfill, charting, watchlist, data quality, strategy-run drill-ins |
 
 Run with:
 

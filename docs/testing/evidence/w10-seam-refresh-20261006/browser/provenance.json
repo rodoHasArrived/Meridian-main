@@ -1,0 +1,84 @@
+{
+  "sourceHead": "9c96c3f72dd60111b62b8368d29e553ec58fd7a0",
+  "sourceHashes": [
+    {
+      "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.ts",
+      "sha256": "90e7f68d6a8c5c1093ac4716e65e3872d38245a170c6b15b5886489482998abb"
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.tsx",
+      "sha256": "f778d5e63c5bcf8025297e39a9b862eec13a0942ea29d81ed019082f8747991b"
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.close-test-fixtures.ts",
+      "sha256": "2f0211b58ec7e472abc2c1b3acfdc32889a84357ec23ad9c44f1d697c5a6f376"
+    }
+  ],
+  "workingTree": true,
+  "sessionStartUtc": "2026-10-06T21:27:05.765Z",
+  "sessionEndUtc": "2026-10-06T21:27:24.809Z",
+  "browserVersion": "151.0.7922.173",
+  "playwrightVersion": "1.63.0",
+  "url": "http://127.0.0.1:4173/workstation",
+  "browserPlugin": "not available; installed Playwright fallback",
+  "tier": "Rendered response simulation; all governed API scenarios intercepted by Playwright",
+  "client": "browser",
+  "actualAccountingPopulation": "not provisioned",
+  "operatorIdentity": null,
+  "operatorDecision": "pending",
+  "implementationOrder": "LOT → MARK → SEAM",
+  "exerciseOrder": "SEAM only; MARK not exercised and live acceptance ordering remains SEAM → MARK",
+  "consoleMessages": [
+    {
+      "phase": "rendered-response-simulation",
+      "type": "http-error",
+      "status": 409,
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/close"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "http-error",
+      "status": 503,
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    }
+  ],
+  "relevantConsole": [
+    {
+      "phase": "rendered-response-simulation",
+      "type": "http-error",
+      "status": 409,
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/close"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "http-error",
+      "status": 503,
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    }
+  ],
+  "limitations": [
+    "No backend persistence, real authorization, PostgreSQL or installed WPF is exercised",
+    "No human operator verdict is fabricated",
+    "Plan/evidence revisions are simulated contributor record identities; no separate version fields exist on this projection DTO"
+  ]
+}

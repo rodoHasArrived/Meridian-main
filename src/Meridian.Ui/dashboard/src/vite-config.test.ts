@@ -1,16 +1,19 @@
 // @vitest-environment node
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import config, {
   createMeridianApiFallbackBypass,
   createMeridianApiProxy,
+  createMeridianDevSessionPlugin,
   defaultMeridianApiBaseUrl,
   meridianDevFixtureHeader,
+  meridianDevSessionHeader,
   meridianScreenshotCaptureEnv,
   resolveMeridianApiBaseUrl,
+  resolveMeridianDevMode,
   resolveViteHmrConfig
 } from "../vite.config";
-import type { ProxyOptions, UserConfig } from "vite";
+import type { ProxyOptions, UserConfig, ViteDevServer } from "vite";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import {
   AUTH_API_ENDPOINTS,
@@ -84,6 +87,8 @@ describe("Vite Meridian API proxy", () => {
 
   it("disables Vite HMR for screenshot-capture runs only", () => {
     expect(resolveViteHmrConfig({})).toBeUndefined();
+    expect(resolveViteHmrConfig({ MERIDIAN_DEV_MODE: "fixture-only" })).toBeUndefined();
+    expect(resolveViteHmrConfig({ MERIDIAN_DEV_MODE: "backend-connected" })).toBeUndefined();
     expect(resolveViteHmrConfig({ [meridianScreenshotCaptureEnv]: "true" })).toBe(false);
     expect(resolveViteHmrConfig({ [meridianScreenshotCaptureEnv]: "1" })).toBe(false);
   });
@@ -806,6 +811,111 @@ describe("Vite Meridian API proxy", () => {
 
     expect(result).toBeUndefined();
     expect(response.writableEnded).toBe(false);
+  });
+});
+
+describe("explicit Meridian development modes", () => {
+  it("marks the Vite readiness page with only this launcher's session identity", async () => {
+    const plugin = createMeridianDevSessionPlugin({ MERIDIAN_DEV_SESSION: "launch-session-42" });
+    const use = vi.fn();
+    const configure = plugin.configureServer;
+    if (typeof configure !== "function") throw new Error("Expected a configureServer hook");
+    await configure.call({} as never, { middlewares: { use } } as unknown as ViteDevServer);
+    const response = new FakeResponse();
+    const next = vi.fn();
+
+    use.mock.calls[0][0]({ url: "/workstation/" }, response, next);
+
+    expect(response.headers.get(meridianDevSessionHeader)).toBe("launch-session-42");
+    expect(next).toHaveBeenCalledOnce();
+    expect(response.writableEnded).toBe(false);
+  });
+
+  it("does not register session middleware for ordinary Vite runs", async () => {
+    const plugin = createMeridianDevSessionPlugin({});
+    const use = vi.fn();
+    const configure = plugin.configureServer;
+    if (typeof configure !== "function") throw new Error("Expected a configureServer hook");
+    await configure.call({} as never, { middlewares: { use } } as unknown as ViteDevServer);
+    expect(use).not.toHaveBeenCalled();
+  });
+
+  it("preserves automatic fallback only when no mode is selected", () => {
+    expect(resolveMeridianDevMode({})).toBeUndefined();
+    expect(resolveMeridianDevMode({ MERIDIAN_DEV_MODE: "fixture-only" })).toBe("fixture-only");
+    expect(resolveMeridianDevMode({ VITE_MERIDIAN_DEV_MODE: "backend-connected" })).toBe("backend-connected");
+    expect(resolveMeridianDevMode({
+      MERIDIAN_DEV_MODE: "backend-connected", VITE_MERIDIAN_DEV_MODE: "backend-connected"
+    })).toBe("backend-connected");
+  });
+
+  it("rejects unknown modes and conflicting server/client selections", () => {
+    expect(() => resolveMeridianDevMode({ MERIDIAN_DEV_MODE: "fixtures" })).toThrow("Invalid Meridian development mode");
+    expect(() => resolveMeridianDevMode({ VITE_MERIDIAN_DEV_MODE: "live" })).toThrow("Invalid Meridian development mode");
+    expect(() => resolveMeridianDevMode({
+      MERIDIAN_DEV_MODE: "fixture-only", VITE_MERIDIAN_DEV_MODE: "backend-connected"
+    })).toThrow("must select the same development mode");
+  });
+
+  it.each([
+    ["GET", WORKSTATION_API_ENDPOINTS.session],
+    ["GET", WORKSTATION_API_ENDPOINTS.firstRunStatus],
+    ["GET", "/api/demo/mode"],
+    ["HEAD", WORKSTATION_API_ENDPOINTS.session],
+    ["POST", QUANT_API_ENDPOINTS.parameters]
+  ])("serves supported %s fixtures without probing even an available backend", async (method, url) => {
+    const isAvailable = vi.fn(async () => true);
+    const bypass = createMeridianApiFallbackBypass("http://localhost:8080", { isAvailable }, "fixture-only");
+    const response = new FakeResponse();
+
+    await bypass({ method, url } as IncomingMessage, response as unknown as ServerResponse, {} as ProxyOptions);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers.get(meridianDevFixtureHeader)).toBe("true");
+    expect(response.writableEnded).toBe(true);
+    if (method === "HEAD") expect(response.body).toBe("");
+    else expect(JSON.parse(response.body)).toBeDefined();
+    expect(isAvailable).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["GET", "/api/unsupported"],
+    ["POST", "/api/unsupported"],
+    ["POST", WORKSTATION_API_ENDPOINTS.workflowPresets],
+    ["POST", WORKSTATION_API_ENDPOINTS.firstRunComplete],
+    ["POST", WORKSTATION_API_ENDPOINTS.firstRunOutcomeComplete],
+    ["PUT", WORKSTATION_API_ENDPOINTS.session],
+    ["DELETE", WORKSTATION_API_ENDPOINTS.session],
+    ["PATCH", WORKSTATION_API_ENDPOINTS.session],
+    ["OPTIONS", WORKSTATION_API_ENDPOINTS.session]
+  ])("rejects unsupported fixture-only %s %s without forwarding it", async (method, url) => {
+    const isAvailable = vi.fn(async () => true);
+    const bypass = createMeridianApiFallbackBypass("http://localhost:8080", { isAvailable }, "fixture-only");
+    const response = new FakeResponse();
+
+    const result = await bypass({ method, url } as IncomingMessage, response as unknown as ServerResponse, {} as ProxyOptions);
+
+    expect(result).toBe(url);
+    expect(response.statusCode).toBe(501);
+    expect(response.headers.get("content-type")).toContain("application/json");
+    expect(JSON.parse(response.body)).toMatchObject({
+      title: "Development fixture unavailable", mode: "fixture-only"
+    });
+    expect(response.writableEnded).toBe(true);
+    expect(isAvailable).not.toHaveBeenCalled();
+  });
+
+  it("proxies connected requests without substituting fixtures during an outage", async () => {
+    const isAvailable = vi.fn(async () => false);
+    const bypass = createMeridianApiFallbackBypass("http://localhost:8080", { isAvailable }, "backend-connected");
+    const response = new FakeResponse();
+
+    const result = await bypass({ method: "GET", url: WORKSTATION_API_ENDPOINTS.session } as IncomingMessage,
+      response as unknown as ServerResponse, {} as ProxyOptions);
+
+    expect(result).toBeUndefined();
+    expect(response.writableEnded).toBe(false);
+    expect(isAvailable).not.toHaveBeenCalled();
   });
 });
 

@@ -8,6 +8,10 @@ Use this page for the first 10 minutes of a Codex task in Meridian. It compresse
 workflow into a task routing checklist, proof matrix, and dirty-worktree protocol. Shared policy
 still lives in `../assistant-workflow-contract.md`.
 
+For browser development, use the [cross-platform launcher](../../engineering/web-development.md):
+root `npm run dev` coordinates a seeded backend, watch restarts, and Vite; `npm run dev:fixtures`
+selects explicit offline fixtures. The guide includes readiness and shutdown acceptance checks.
+
 ## Startup Checklist
 
 1. Run `git status --short` and separate existing user-owned changes from the task. For PR-bound
@@ -129,6 +133,13 @@ Local .NET proof lane default: use `python build/python/cli/buildctl.py test` in
 `dotnet test` when another agent, shell, WPF validation, or desktop launch may be active. The
 runner writes `.ai/validation-runs/<run-id>.json`, serializes through `.ai/locks/validation.lock`,
 and uses `MeridianBuildIsolationKey` output roots by default.
+For repeated development checks, add `--profile worktree` or `--profile session:<name>` to `build`
+or `test`; reuse requires compatible SDK, project/framework definitions, configuration, runtime,
+and build properties. Test reports remain unique per invocation. Keep fresh isolated validation
+for handoff by omitting the profile on `test` or explicitly using `--fresh`. Build and test always
+take the validation lock, including when `test --allow-concurrent` skips external-process detection.
+See [persistent build profiles](../../development/build-observability.md#persistent-build-profiles)
+for profile lifetime and reset instructions.
 For post-timeout cleanup, inspect `validation-status`, run `dotnet build-server shutdown`, and stop
 only repo-owned abandoned build/test/compiler PIDs before retrying or dispatching hosted proof.
 

@@ -72,7 +72,9 @@ public sealed class ProviderIntegrationPromotionReadinessServiceTests : IDisposa
 
     private static async Task SeedStagingAsync(IProviderIntegrationManifestStore store)
     {
-        await store.SaveManifestAsync(CreateManifest()).ConfigureAwait(false);
+        var manifest = CreateManifest();
+        var manifestReference = ProviderIntegrationManifestIdentity.Create(manifest);
+        await store.SaveManifestAsync(manifest).ConfigureAwait(false);
         await store.SaveConnectionAsync(CreateConnection()).ConfigureAwait(false);
         await store.SaveSyncRunAsync(new ProviderIntegrationSyncRunDto(
             "sync-run-promotion-1",
@@ -88,7 +90,11 @@ public sealed class ProviderIntegrationPromotionReadinessServiceTests : IDisposa
             RecordsAccepted: 3,
             RecordsQuarantined: 0,
             RawPayloadId: "payload-1",
-            Issues: [])).ConfigureAwait(false);
+            Issues: [])
+        {
+            ManifestReference = manifestReference,
+            OriginalManifestReference = manifestReference
+        }).ConfigureAwait(false);
         await store.SaveStagingRecordAsync(new IntegrationStagingRecordDto(
             "staging-ready",
             "sync-run-promotion-1",

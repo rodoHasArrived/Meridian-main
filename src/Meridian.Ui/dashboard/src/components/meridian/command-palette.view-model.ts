@@ -4,10 +4,11 @@ import {
   normalizeWorkspacePath,
   UNWIRED_WORKSTATION_ROUTES,
   WORKSPACES,
-  WORKSTATION_ROUTE_CATALOG,
   workflowTargetPath,
   workspacePath
 } from "@/lib/workspace";
+import { WORKSPACE_NAVIGATION_FEATURES, WORKSTATION_SEARCH_FEATURES } from "@/lib/workstation-features";
+import { appendAccountingNavigationContextToRoute } from "@/lib/accounting-navigation";
 import { decodeViewStateEnvelope, VIEW_STATE_QUERY_KEY } from "@/lib/view-state-envelope";
 import {
   appendOperatingScopeToRoute,
@@ -54,6 +55,8 @@ export interface CommandPaletteItem {
   commandLabel: string;
   ariaLabel: string;
   presetId: string | null;
+  /** Search-only aliases; never displayed as the command purpose. */
+  keywords?: readonly string[];
   /** Set for runnable action items; the component resolves the handler by item id. */
   action?: { actionId: string; confirm: boolean } | null;
   active: boolean;
@@ -113,12 +116,6 @@ export interface CommandPaletteEntityItem {
   statusLabel?: string | null;
 }
 
-interface CommandPaletteRouteDefinition {
-  id: string;
-  label: string;
-  description: string;
-  route: string;
-}
 
 export interface CommandPaletteViewModel {
   title: string;
@@ -184,134 +181,6 @@ const COMMAND_PALETTE_EMPTY_STATE_TITLE_ID = "command-palette-empty-state-title"
 const COMMAND_PALETTE_EMPTY_STATE_DETAIL_ID = "command-palette-empty-state-detail";
 const COMMAND_PALETTE_CLEAR_SEARCH_ID = "command-palette-clear-search";
 
-const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
-  {
-    id: "trading-readiness",
-    label: "Readiness console",
-    description: "Review paper cockpit blockers, operator work items, and promotion evidence.",
-    route: WORKSTATION_ROUTE_CATALOG.tradingReadiness
-  },
-  {
-    id: "portfolio-brokerage-sync",
-    label: "Brokerage sync",
-    description: "Review household brokerage account sync posture and recovery actions.",
-    route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync
-  },
-  {
-    id: "portfolio-family-office",
-    label: "Family office",
-    description: "Review family net worth, entity ownership, asset-class exposure, commitments, breaks, and stale valuations.",
-    route: WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice
-  },
-  {
-    id: "accounting-reconciliation",
-    label: "Reconciliation breaks",
-    description: "Work position breaks, sign-off detail, and reconciliation recovery.",
-    route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
-  },
-  {
-    id: "accounting-external-gl-reconciliation",
-    label: "External GL reconciliation",
-    description: "Compare Meridian balances with the connected accounting system and prepare governed posting or export work.",
-    route: WORKSTATION_ROUTE_CATALOG.accountingExternalGlReconciliation
-  },
-  {
-    id: "accounting-security-master",
-    label: "Security Master",
-    description: "Review reference-data coverage, identifier conflicts, and trusted instruments.",
-    route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster
-  },
-  {
-    id: "reporting-operations-record",
-    label: "Operations record",
-    description: "Demo the W1-W5 path from source data through accounting record evidence to report-pack publication.",
-    route: WORKSTATION_ROUTE_CATALOG.reportingOperationsRecord
-  },
-  {
-    id: "reporting-report-packs",
-    label: "Report packs",
-    description: "Open approval-ready report packet review and governed outputs.",
-    route: WORKSTATION_ROUTE_CATALOG.reportingReportPacks
-  },
-  {
-    id: "reporting-evidence",
-    label: "Evidence workbench",
-    description: "Inspect packet completeness, stale evidence, and lineage.",
-    route: WORKSTATION_ROUTE_CATALOG.reportingEvidence
-  },
-  {
-    id: "reporting-exports",
-    label: "Exports",
-    description: "Run on-demand reports and review generated export run posture.",
-    route: WORKSTATION_ROUTE_CATALOG.reportingExports
-  },
-  {
-    id: "strategy-quant-lab",
-    label: "Quant Lab",
-    description: "Run scripts with parameter hints, templates, plots, and metrics.",
-    route: WORKSTATION_ROUTE_CATALOG.strategyQuantLab
-  },
-  {
-    id: "strategy-formula-workbench",
-    label: "Formula Workbench",
-    description: "Author cell-based strategy formulas from the Quant Lab formulas tab.",
-    route: `${WORKSTATION_ROUTE_CATALOG.strategyQuantLab}?view=formulas`
-  },
-  {
-    id: "strategy-covered-call",
-    label: "Covered call backtest",
-    description: "Configure covered-call chain preview, run backtests, and review payoff evidence.",
-    route: WORKSTATION_ROUTE_CATALOG.strategyCoveredCall
-  },
-  {
-    id: "strategy-run-ledger",
-    label: "Run Ledger Explorer",
-    description: "Inspect a strategy run's simulated ledger, trial balance, and journal evidence.",
-    route: WORKSTATION_ROUTE_CATALOG.strategyRunLedger
-  },
-  {
-    id: "data-import",
-    label: "Import data",
-    description: "Load a file, preview its records, and validate the import before committing it to a governed data workflow.",
-    route: WORKSTATION_ROUTE_CATALOG.dataImport
-  },
-  {
-    id: "data-providers",
-    label: "Providers",
-    description: "Review provider catalog, onboarding posture, connection health, and routing evidence.",
-    route: WORKSTATION_ROUTE_CATALOG.dataProviders
-  },
-  {
-    id: "data-watchlist",
-    label: "Watchlist",
-    description: "Add symbols and starter packs from the Market Data desk watchlist view.",
-    route: `${WORKSTATION_ROUTE_CATALOG.dataQuotes}?view=watchlist`
-  },
-  {
-    id: "data-quotes",
-    label: "Live quotes",
-    description: "Inspect quotes, trades, depth, charts, and staged tickets.",
-    route: WORKSTATION_ROUTE_CATALOG.dataQuotes
-  },
-  {
-    id: "data-alerts",
-    label: "Price alerts",
-    description: "Create local quote-threshold alerts from the Market Data desk alerts view.",
-    route: `${WORKSTATION_ROUTE_CATALOG.dataQuotes}?view=alerts`
-  },
-  {
-    id: "data-backfills",
-    label: "Backfill queues",
-    description: "Preview, trigger, and review historical data backfill jobs.",
-    route: WORKSTATION_ROUTE_CATALOG.dataOperations
-  },
-  {
-    id: "settings-provider-setup",
-    label: "Alpaca guided setup",
-    description: "Configure and verify paper credentials before reviewing advanced runtime evidence.",
-    route: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderGuidedSetup
-  }
-];
 
 export interface CommandPaletteKeyboardState {
   key: string;
@@ -340,7 +209,7 @@ export function buildCommandPaletteViewModel(
   const focusItems = buildFocusItems(workflowData.operatorFocusItems ?? [], pathname, operatingScope);
   const actionItems = buildActionItems(workflowData.actionItems ?? []);
   const entityItems = buildEntityItems(workflowData.entityItems ?? [], pathname);
-  const workspaceItems = buildWorkspaceItems(visibleWorkspaces, activeKey, operatingScope);
+  const workspaceItems = buildWorkspaceItems(visibleWorkspaces, activeKey, operatingScope, activeRouteParts.search);
   const routeItems = buildRouteItems(pathname, operatingScope);
   const presetItems = buildPresetItems(workflowData.workflowPresets?.presets ?? [], pathname, operatingScope);
   const workflowItems = buildWorkflowItems(workflowData.workflowLibrary?.workflows ?? [], pathname, operatingScope);
@@ -362,7 +231,7 @@ export function buildCommandPaletteViewModel(
   );
 
   const activeWorkspace = workspaceItems.find((item) => item.active);
-  const activeRoute = routeItems.find((item) => item.active);
+  const activeRoute = routeItems.filter((item) => item.active).sort(compareActiveRouteSpecificity)[0];
   const activeWorkspaceLabel = activeWorkspace ? `Current: ${activeWorkspace.label}` : "No active workspace";
   const recommendedItems = buildRecommendedCommandItems(items, activeRoute?.id ?? null, activeWorkspace?.id ?? null);
 
@@ -597,17 +466,21 @@ export function resolveCommandPaletteKeyCommand({
 function buildWorkspaceItems(
   workspaces: WorkspaceSummary[],
   activeKey: WorkspaceKey,
-  operatingScope: AppShellOperatingScopeState
+  operatingScope: AppShellOperatingScopeState,
+  navigationSearch: string
 ): CommandPaletteItem[] {
   return workspaces.map<CommandPaletteItem>((workspace) => {
     const active = workspace.key === activeKey;
-    const route = appendOperatingScopeToRoute(workspacePath(workspace.key), operatingScope);
+    const route = materializeCommandRoute(workspacePath(workspace.key), operatingScope, navigationSearch);
+    const rootFeature = WORKSPACE_NAVIGATION_FEATURES[workspace.key]
+      .find((entry) => entry.route === workspacePath(workspace.key));
 
     return {
       id: workspace.key,
       kind: "workspace",
       label: workspace.label,
       description: workspace.description,
+      keywords: rootFeature ? [rootFeature.label, ...rootFeature.keywords] : [],
       route,
       routeLabel: route,
       statusLabel: active ? "Current" : workspace.maturity,
@@ -728,27 +601,30 @@ function formatFocusTone(tone: CommandPaletteFocusAction["tone"]) {
 }
 
 function buildRouteItems(pathname: string, operatingScope: AppShellOperatingScopeState): CommandPaletteItem[] {
-  return LOCAL_ROUTE_COMMANDS.filter(
+  const navigationSearch = splitActiveRoute(pathname).search;
+  return WORKSTATION_SEARCH_FEATURES.filter(
     (routeCommand) => !UNWIRED_WORKSTATION_ROUTES.has(routeCommand.route)
   ).map<CommandPaletteItem>((routeCommand) => {
-    const route = materializeCommandRoute(routeCommand.route, operatingScope);
+    const route = materializeCommandRoute(routeCommand.route, operatingScope, navigationSearch);
     const carriedScopeSummary = summarizeOperatingScopeForRoute(routeCommand.route, operatingScope);
     const description = carriedScopeSummary && route !== routeCommand.route
       ? `${routeCommand.description} ${carriedScopeSummary}.`
       : routeCommand.description;
     const active = isActiveRoute(pathname, route);
+    const label = routeCommand.paletteLabel ?? routeCommand.label;
     return {
       id: `route:${routeCommand.id}`,
       kind: "route",
-      label: routeCommand.label,
+      label,
       description,
+      keywords: [routeCommand.label, ...routeCommand.keywords],
       route,
       routeLabel: route,
       statusLabel: active ? "Current" : "Route",
       statusTone: active ? "current" : "neutral",
       statusVisible: active,
-      commandLabel: active ? `Stay on ${routeCommand.label}` : `Open ${routeCommand.label}`,
-      ariaLabel: active ? `${routeCommand.label}, current route` : `Open ${routeCommand.label} route`,
+      commandLabel: active ? `Stay on ${label}` : `Open ${label}`,
+      ariaLabel: active ? `${label}, current route` : `Open ${label} route`,
       presetId: null,
       active
     };
@@ -956,7 +832,8 @@ function filterCommandItems(items: CommandPaletteItem[], query: string) {
       item.route,
       item.routeLabel,
       item.statusLabel,
-      item.ariaLabel
+      item.ariaLabel,
+      ...(item.keywords ?? [])
     ].join(" ").toLowerCase();
 
     return terms.every((term) => haystack.includes(term));
@@ -969,6 +846,14 @@ function isExactActivePath(pathname: string, route: string) {
   return current.pathname === candidate.pathname
     && routeSearchMatches(current, candidate)
     && routeHashMatches(current, candidate);
+}
+
+function compareActiveRouteSpecificity(left: CommandPaletteItem, right: CommandPaletteItem): number {
+  const leftRoute = splitActiveRoute(left.route);
+  const rightRoute = splitActiveRoute(right.route);
+  return rightRoute.pathname.length - leftRoute.pathname.length
+    || new URLSearchParams(rightRoute.search).size - new URLSearchParams(leftRoute.search).size
+    || Number(Boolean(rightRoute.hash)) - Number(Boolean(leftRoute.hash));
 }
 
 function isActiveRoute(pathname: string, route: string) {
@@ -998,8 +883,16 @@ function splitActiveRoute(route: string) {
   };
 }
 
-function materializeCommandRoute(route: string, operatingScope: AppShellOperatingScopeState) {
-  return appendOperatingScopeToRoute(route, operatingScope);
+function materializeCommandRoute(
+  route: string,
+  operatingScope: AppShellOperatingScopeState,
+  navigationSearch = ""
+) {
+  const scopedRoute = appendOperatingScopeToRoute(route, operatingScope);
+  const pathname = splitActiveRoute(scopedRoute).pathname;
+  return pathname === "/accounting" || pathname.startsWith("/accounting/")
+    ? appendAccountingNavigationContextToRoute(scopedRoute, navigationSearch)
+    : scopedRoute;
 }
 
 function routeSearchMatches(

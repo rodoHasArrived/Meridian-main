@@ -37,7 +37,8 @@ source evidence
 -> audit evidence
 ```
 
-MDIF should reject or defer generated work that does not strengthen that chain unless the roadmap registry explicitly moves the capability into scope.
+Use the current design charter, roadmap registry, source evidence, and explicit user direction to
+evaluate expansion. Prior baselines describe accepted evidence; they are not development ceilings.
 
 ## Layer Model
 
@@ -47,10 +48,10 @@ MDIF should reject or defer generated work that does not strengthen that chain u
 | Domain Dictionary | `docs/domain/` | Shared business vocabulary, relationships, examples, and expansion notes. |
 | Decision Records | `docs/adr/` and architecture indexes | Historical and current rationale for irreversible architecture choices. |
 | AI Context Packs | `docs/ai/context/` | Task-specific compact context that agents can load instead of long prompts. |
-| Feature Specifications | `features/<FeatureName>/` | Implementation-ready feature packs with requirements, workflows, UI, impacts, and acceptance tests. |
-| Code Generation Templates | `templates/` | Reusable patterns for entities, services, pages, APIs, repositories, and tests. |
-| AI Prompt Library | `docs/ai/prompts/` | Stable prompts that compose architecture, domain, and template context. |
-| AI Review Framework | `docs/ai/reviews/` or task evidence | Architecture, security, performance, audit, and accounting review packets before merge. |
+| Feature Specifications | [Plans and Blueprints Register](../engineering/blueprints/README.md) | Current homes for requirements, workflows, UI impacts, and acceptance plans. A root `features/<FeatureName>/` convention is a proposed MDIF layer, not an existing repository requirement. |
+| Code Generation Templates | [Examples](../examples/README.md) and owning source guides | Reuse current templates and verified patterns. A root `templates/` generation library is a proposed MDIF layer, not an existing implementation. |
+| AI Prompt Library | [Prompt index](../ai/prompts/README.md), `.github/prompts/`, and `docs/prompts/` | The AI prompt directory is an index; actual Copilot prompts and provider-agnostic guidance live in their maintained homes. |
+| AI Review Framework | Task or pull-request evidence and the owning documentation lane | Architecture, security, performance, audit, and accounting review packets before merge. There is no current `docs/ai/reviews/` directory. |
 | Knowledge Exporter | `build/scripts/ai/meridian_context_exporter.py` | Generates machine-readable and Markdown context snapshots for assistants. |
 
 ## Artifact Ownership
@@ -98,7 +99,9 @@ Generated code, tests, UI, and docs should pass these filters before implementat
 - Does it preserve the active operator navigation model: `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`?
 - Does it use shared contracts, endpoint read models, and services before creating separate browser or WPF logic?
 - Does it keep AI inside reviewed assistance, extraction, explanation, draft preparation, or discrepancy detection rather than autonomous posting, approval, payment release, or report publication?
-- Does it defer mobile apps, full live trading, full payment execution, broad client portals, no-code workflow builders, and unrelated forecasting or enterprise-risk surfaces unless roadmap evidence explicitly reopens them?
+- Does it keep mobile development out of scope and evaluate other expansion through the current
+  charter, roadmap, source evidence, and explicit user direction while preserving the operational
+  proof chain?
 
 ## Drift Prevention Rules
 

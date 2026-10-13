@@ -6,10 +6,69 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-13
 ---
 
 # src/Meridian.Contracts
+
+`AssetAcquisitionTermsCompletionDto` is an optional supplement on
+`PostPostingRuleJournalCandidateRequestDto`. It supplies only the missing amortization method and
+yield of an immutable legacy face-acquisition draft. A supplied supplement must explicitly select
+a method; omission is rejected. Its typed review subject is produced by
+`ApprovalSubjectId()` from the exact draft fingerprint, lot ID and selected terms. Omission keeps
+the old request wire shape; historical spine snapshots and approval subjects are unchanged.
+Completion does not grant posting authority without the original draft, independent approval,
+current period/position checks and atomic journal/lot commit.
+
+`Ledger/LedgerDisposalTaxDtos.cs` defines shared, server-derived disposal and parcel tax results for
+the journal tax-results read route. It separates economic/recognized gain and deferred loss, exposes
+effective holding starts and exact retained policy revisions, and distinguishes settled, provisional,
+and missing-evidence states. Nullable amounts represent unavailable evidence rather than zero;
+`EvaluatedAt` is read time and `ReEvaluationRequired` does not claim tax finalization occurred.
+Tax-result amounts and parcel quantities use invariant decimal strings on the wire, preserving
+large values and fractional precision; absent evidence remains `null`.
+
+`Ledger/ConsolidationDtos.cs` defines the two-entity same-currency request, retained source/version
+evidence and shared gross/proposed/posted/consolidated read model. Manual journal drafts retain
+server-owned consolidation evidence, digest and required-evidence marker across the existing review
+lifecycle. Proposed balances and unmatched amounts are distinct from posted accounting truth.
+
+`Workstation/OnboardingDtos.cs` defines bounded onboarding scope, owner criteria, exact source
+snapshots, consecutive comparisons, difference assignments, independent review decisions and frozen
+readiness packets. Account populations use financial account GUIDs; financial comparisons use
+decimal amounts, explicit currencies and nullable missing values. Scope is immutable, mutations
+carry expected versions, and approvals refer to a particular data revision. These contracts convey
+read-only support evidence and never grant accounting or external posting authority.
+
+`Ledger/AccountingClosePreparationDtos.cs` describes immutable close template versions, explicit
+calendar deadline rules, owner mappings, authoritative target previews, and retained creation history.
+Create requests identify a retained preview and idempotency key rather than asserting dates or book
+policy. `ClosePeriodPlanConfigurationDto.Preparation` preserves server-owned template lineage and
+authoritative period bounds; public configuration JSON cannot supply that lineage. Explicit empty
+task dependencies remain empty through `CloseTaskConfigurationDto.HasExplicitDependencies`.
+
+`TradingBrokerageRecoveryDtos` extends shared Trading readiness with nullable broker balances,
+currency, observation/attempt/success timestamps, completeness and blocking reasons, plus affected
+account-scoped strategy runs. Existing execution-reconciliation DTOs remain the discrepancy source.
+Recovery requests carry only the local account ID; provider and external identity are server-resolved.
+
+Canonical amortization adds an optional `Amortization` input to lot instructions and basis adjustments, omitted when absent to preserve retained fingerprints. `OpenLotAmortization` binds reviewed canonical lot and versioned Security Master evidence, delegates shared straight-line/constant-yield kernels, and retains annual decimal yield and acquisition FX. Unsupported structures and missing terms fail closed. Optional reversal inputs retain the original batch, journal and pre-posting lot snapshot; absent reversal fields preserve earlier wire fingerprints. Contract validation binds complete approved correction lineage and rejects disposal prices before drafting.
+
+For a retained amortization reversal, current hash-bound reference evidence proves identity and
+currency while the original before/after snapshots determine the inverse. A known Inactive status
+or changed effective window does not recalculate or prevent that inverse. Unknown status, missing
+identity, changed currency and stale evidence still refuse. Ordinary amortization and rebooks
+require Active reference terms and evidence effective on the calculation date.
+Later reference observations retain their actual evidence dates through correction projection,
+drafting and posting. Only the exact reversal's reviewed Security Master evidence receives that
+exception; acquisition, event and approval evidence keep their existing date requirements.
+Constant yield counts contractual calendar coupons for monthly, quarterly, semiannual and annual
+schedules, including month ends and leap dates. Day-count fractions interpolate within the current
+coupon period; they do not determine the number of coupons. Odd schedules and schedules exceeding
+1200 periods are refused, and retained yield must reconcile to the acquisition price even at maturity.
+New instructions identify calculation model v2. Retained JSON without a calculation version keeps
+the original v1 calculation and serialized shape for receipt replay; unposted legacy instructions
+require a fresh preview. Unknown calculation versions are refused.
 
 `Etl/IEtlStagingStore.cs` lets source adapters retain imported streams through an injected
 persistence port without referencing the Storage implementation.
@@ -57,11 +116,59 @@ timestamp, and quality declarations. Historical dividend/split evidence does not
 on-demand corporate-action factory. `ProviderCatalogCompositionTests` validates these fields and
 metadata through the actual public application registration path.
 
+`Api/IProviderCatalog.cs` exposes host-owned provider metadata to endpoint, routing, and backfill
+services. `RuntimeProviderCatalog` retains its owning registry callbacks; the built-in fallback
+reads only fixed metadata and never consults another host's legacy process-wide callback binding.
+
 Operations Continuity journal candidates carry a typed `Provenance` origin mark into the posting
 command. Omitted marks remain `Real`; seeded or simulated evidence must be explicitly marked,
 and the governed ledger boundary rejects mismatches.
 
+The unified `OpenLotSuccessors` contract also admits one whole-unit same-security forward/reverse
+split successor and one stock-merger unit successor. Those one-target transfers carry original and
+current bases exactly; exchange/refunding retain their independent currency allocations and final
+residuals. New successor acquisition facts retain immutable `CorporateActionLineage`, including
+projected event and stable source-action identities, action date, predecessor identity/version,
+allocation, role and reporting tags, even after relief. Immutable predecessor receipts certify the
+full ancestor chain, so re-reviewing the same source action under another case/version cannot apply
+it again after an intervening action. Historical absent source-ID or lineage fields retain their
+wire shape; source-event evidence resolves stable identity for ancestry certification without
+rewriting retained instructions or fingerprints.
+Historical origin compatibility requires the retained projection to omit its stable source-ID
+field. An explicit source identity requires complete successor origin; new writes stay strict.
+The reviewed instruction remains unchanged for replay. An optional amortization `Continuation`
+binds the immutable birth exchange and immediately preceding ordinary v2 amortization receipt.
+It admits a one-for-one face-lot Reg S/144A exchange only when the retained successor reference
+still matches and both securities' economic terms are identical. The original acquisition schedule,
+annual yield and FX remain authoritative; this does not establish a new yield or maturity schedule.
+The separately versioned continuation is omitted from historical JSON when absent. Other successor
+types, chains, changed references and predecessors without that retained amortization remain blocked.
+
 ## Shared close and lot convergence
+
+`OpenLotSuccessorInstructionDto` retains the reviewed corporate-action projection, exact
+predecessor snapshot, and create-only successor snapshots with Security Master hashes/versions and
+book-position versions. `OpenLotSuccessors` supports a cashless Reg S/144A exchange into one lot
+and advance refunding into refunded/unrefunded face lots. It allocates original acquisition and
+current carrying basis separately in transaction and functional currency, assigns the final
+residual exactly, and preserves acquisition FX, holding dates, face terms and source evidence.
+The same atomic contract accepts the registered non-taxable spin-off allocation: a unit parent
+closes into a new lot in its original security/position with unchanged open quantity, plus one or
+more separately identified child lots. Every target carries an approved positive allocation,
+original/current transaction and functional basis, acquisition FX and holding period. Independent
+currency residuals go to the final target. Dividend/purchase recipes, linked cash cases and new
+holding periods cannot use this carried-basis path; taxable spin-offs remain outside it.
+Only the refunded successor receives `ScheduleD`; unsupported action or allocation shapes fail
+validation. Optional instruction fields are omitted when absent to preserve earlier payloads.
+Successor lot labels must already be trimmed before fingerprinting or drafting, remain distinct,
+and cannot reuse the predecessor label. Persistence must retain the exact reviewed label rather
+than changing it after approval. Sibling lots, securities and book positions must be distinct; the retained
+spin-off parent and same-security split may reuse the predecessor's security/position, with a new
+durable lot identity and label. Reg S/144A exchange requires the `Successor` role.
+Every successor must receive positive functional
+carrying basis before journal drafting, including the final residual. Currency-specific allocations
+share `Ledger/CurrencyMinorUnits` with the corporate-action projector, including four decimals for
+CLF and UYW; original acquisition and current carrying bases retain independent currency rounding.
 
 `AssetLotMutationInstructionDto.DisposalSalePrice` optionally retains the original disposal quote
 through governed drafting and posting. It is omitted from JSON when absent so existing retained
@@ -115,12 +222,18 @@ accepts older numeric status payloads; persisted queue records already use text 
   Comparison is case-insensitive, because hex casing is a presentation detail and not a security
   property, and it reports a malformed digest distinctly from a genuine mismatch so callers can stop
   surfacing a data-hygiene problem as an integrity failure.
+  Its span-destination `ComputeBytes` overload writes the same 32 SHA-256 bytes while reusing a
+  private provider per thread. Each successful call resets the provider; hashing failures discard
+  it. This synchronous path allocates no managed memory after the thread's first call.
 - `Lifecycle/` - shared runtime state, readiness-check, shutdown-operation, shutdown-receipt,
   supervisor-manifest, exact-process-identity, database-identity, and session-receipt contracts.
+  `LifecycleStartupTiming` defines the startup stage budget shared by the launcher and supervisor.
 - `Operations/` - the program-wide verified terminal-outcome contract and append-only operational
   case-history port. Terminal operations use only `Succeeded`, `CompletedWithWarnings`, `Failed`,
   or `Blocked`, with evaluated postconditions, retained evidence and artifacts, issues, and
   actionable recovery guidance. Durable stores assign case-event sequence and hash-chain values.
+  Null object entries in terminal receipt collections are validation errors, so malformed retained
+  JSON cannot crash consumers or satisfy the launcher's verified startup gate.
   `OperationsOriginGuard` owns the "reviewed automation may not perform this action; a human
   operator is required" control — the predicate and the canonical refusal message live there, so the
   rule evolves in one place instead of across every module that enforces it. Only the throwing gates
@@ -134,6 +247,9 @@ accepts older numeric status payloads; persisted queue records already use text 
 - `Workstation/` - workstation and operator workflow DTOs, including the persisted statement
   reconciliation report status, stage, current retained JSON/CSV artifact generation, immutable
   superseded-generation manifest and receipt history, evidence-link, and recovery payloads.
+  Security Master open-lot DTOs carry additive init-only `IsShort` direction without changing their
+  positional constructor/deconstruction shape, so browser and desktop consumers do not infer lot
+  direction from an always-positive lot quantity.
 - `AssetOperations/` - shared Security Master-keyed asset operations DTOs, readiness payloads,
   terms/obligations timeline payloads, instrument-role and book-position semantics, economic-state
   and event references, projection lineage, and query/command service contracts.
@@ -371,8 +487,9 @@ scope does not satisfy canonical asset posting or production-readiness gates.
 Drafted authority retains the full candidate intent/result and canonical fingerprints, including
 all dimensions, rule-pack and policy identity, period/version assertions, evidence, and any lot
 instruction. Typed correction lineage identifies the exact earlier event version and posted journal
-(plus mutation batch for lot-backed events). Acquisition and disposal lot instructions retain exact
-asset account and cost authority; other event kinds cannot carry lot mutations.
+(plus mutation batch for lot-backed events). Acquisition, disposal, canonical amortization, and
+bounded corporate-action successor instructions retain their exact lot and accounting authority;
+other event kinds cannot carry lot mutations.
 The workspace can also carry a `LedgerBookSetupCandidateDto` when a selected ledger book is missing
 but the server can derive a safe setup target from registered ledger-book scope. Clients should use
 that candidate for ledger-book setup actions instead of guessing fund-structure node context.
@@ -573,6 +690,14 @@ requests/results, sync-run history payloads, run-due sync requests/results, prom
 reconciliation handoff request/result/history records, activation state, mapping confidence,
 validation issues, endpoint definitions, and sync schedules as shared contracts before browser or
 WPF surfaces render setup, monitoring, reconciliation handoff, or scheduled execution state.
+Manifest persistence distinguishes immutable revisions from the compare-and-set current pointer.
+Retained payloads and sync runs carry exact manifest id, version, and digest provenance. Replay
+contracts distinguish the original mapping from intentional remediation with a selected newer
+mapping and preserve both source and execution provenance. Missing historical provenance remains
+unknown rather than being inferred from the current manifest.
+`ProviderIntegrationManifestReferenceDto` supplies the shared identity; `ManifestReference` and
+`OriginalManifestReference` distinguish the applied and original mappings. Replay defaults to
+`Original`; `Remediation` requires an explicit target version and digest.
 Handoff result payloads include duplicate-record counts so clients can show idempotent retry
 failures from retained history rather than issuing another downstream reconciliation input.
 `IProviderIntegrationTenantManifestStoreFactory`
@@ -1115,23 +1240,18 @@ from accrual-basis adjustment impact and retains the accrual adjustment lines us
 `LedgerTrialBalanceReportDto` wraps closed-period trial-balance detail rows with locked-period
 status, aggregate totals, accounting-policy lineage, and a SHA256 report signature so browser, WPF,
 export, and audit clients can verify the same period report payload.
-`LedgerAmountProvenanceDetailDto` is the shared click-through contract for a retained report-pack
-ledger amount: it carries the ledger amount, provider/source evidence pointers, Security Master
-link, reconciliation run and case state, compact related-case owner/status/sign-off routing,
-approval state, and report usage so browser and WPF clients do not reconstruct audit lineage from
-report-pack internals. The Security Master link can now retain a durable `SecurityId`; the shared
-service also carries the retained Security Master display label, source system, and evidence id from
-the report lineage pointer, then uses retained security evidence ids to attach open Security Master
-exception cases to the same report-line drilldown. Provider-event evidence can be direct report lineage or synthesized from
-related provider-ledger casework that retains provider sync cursors and routes. Provider-event
-evidence also carries optional provider event id/type, provider evidence source, required feed, and
-Security Master id metadata when the source case came from provider-ledger corporate-action or
-factor evidence. Provider-ledger corporate-action/factor casework also enriches the evidence row with ledger-effect kind,
-principal/income amount, and journal-preview line count so report-line provenance can show valuation
-or journal support without reconstructing provider-ledger detail payloads. Related reconciliation
-case rows also retain materiality and aging context: severity, variance, tolerance band, reviewer and
-resolver fields, sign-off count, latest sign-off actor/time/note, SLA policy/due-state, age band,
-and business-age hours.
+`LedgerAmountProofDto` is the shared browser/WPF contract for one posted debit or credit amount.
+The subject uses immutable journal and line identifiers and a debit/credit side; `LedgerAmountScopeDto`
+retains tenant, company, fund, ledger book, and accounting period. The subject-addressed evidence API
+returns verified retained evidence, status, and warnings in `EvidencePacketDto.LedgerAmount`.
+A journal record alone does not establish source support. Missing or stale support requires review;
+ambiguous identity, changed content, or foreign scope blocks proof.
+
+The compatibility `LedgerAmountProvenanceDetailDto` report-pack reader now requires an explicit
+`RetainedLedgerAmountDto` plus scoped lineage pointers and their retained source snapshot hash.
+Account names, symbols, prose, report-level runs/artifacts, and guessed provider metadata cannot
+establish an amount association. Older label-only manifests are unavailable for amount proof;
+current report generation still needs a separate migration to emit these typed bindings.
 
 Statement reconciliation payloads live under `Workstation/StatementReconciliationDtos.cs` and keep
 source-file evidence, mapping/tolerance profile versions, normalized positions, cash, transactions,

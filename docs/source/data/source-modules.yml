@@ -41,7 +41,7 @@ modules:
       - dotnet test tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj --configuration Release --disable-build-servers /m:1
     diagrams: []
     todos: []
-    last_reviewed: 2026-07-17
+    last_reviewed: 2026-10-07
 
   - id: SRC-LAUNCHER
     path: src/Meridian.Launcher
@@ -49,7 +49,7 @@ modules:
     layer: Host
     status: active
     owner_lane: Runtime Host
-    purpose: Thin installed-workstation entrypoint that launches the lifecycle supervisor, verifies the bound startup outcome, and opens the workstation only after exact readiness succeeds.
+    purpose: Thin installed-workstation entrypoint for start and open commands that launches the lifecycle supervisor and verifies the bound startup outcome; the supervisor owns readiness and browser opening.
     readme: src/Meridian.Launcher/README.md
     roadmap_items: []
     stage_gates: []
@@ -57,7 +57,7 @@ modules:
       - dotnet test tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj --configuration Release --disable-build-servers /m:1
     diagrams: []
     todos: []
-    last_reviewed: 2026-07-19
+    last_reviewed: 2026-10-07
 
   - id: SRC-APP
     path: src/Meridian.Application
@@ -84,7 +84,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-09-28
+    last_reviewed: 2026-10-02
 
   - id: SRC-CONTRACTS
     path: src/Meridian.Contracts
@@ -141,7 +141,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-09-28
+    last_reviewed: 2026-10-02
 
   - id: SRC-CORE
     path: src/Meridian.Core
@@ -276,7 +276,7 @@ modules:
       - DIA-ASSURANCE-LOOP
       - DIA-STORAGE-TOPOLOGY
     todos: []
-    last_reviewed: 2026-10-01
+    last_reviewed: 2026-10-02
 
   - id: SRC-EXECUTION
     path: src/Meridian.Execution
@@ -721,6 +721,7 @@ modules:
     purpose: Physical bounded-context module project for instrument terms, contracts, obligations, classifications, option-chain query/failover, asset operations projections, money-market liquidity and sweep projections, and ledger-projection ownership conformance.
     readme: src/Meridian.Instruments/README.md
     roadmap_items:
+      - W10-LOT-002
       - W4-RECON-001
       - W5-MASSET-001
       - W9-ASSET-010
@@ -755,11 +756,12 @@ modules:
       - AccountingRecords
     validation:
       - dotnet build src/Meridian.PortfolioRecords/Meridian.PortfolioRecords.csproj /p:EnableWindowsTargeting=true
-      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~FundAccountServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PortfolioRecords|FullyQualifiedName~FundAccountEndpointAuthorizationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PostgresFundAccountStore" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-05
+    last_reviewed: 2026-10-07
 
   - id: SRC-DESIGN-FINANCIAL-OPERATIONS
     path: src/Meridian.FinancialOperations
@@ -804,7 +806,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-09-28
+    last_reviewed: 2026-10-02
 
   - id: SRC-DESIGN-WORKFLOW
     path: src/Meridian.Workflow
@@ -879,7 +881,7 @@ modules:
     layer: Design Module
     status: active
     owner_lane: Accounting and Ledger
-    purpose: Physical bounded-context module project for retained document attachments, document evidence, manifests, and document-management ownership conformance.
+    purpose: Bounded-context owner for retained document evidence, manifests, report rendering, and Evidence Vault storage-quota policy and durable reservations; broader document-runtime ownership remains shared with the vault adapter.
     readme: src/Meridian.Documents/README.md
     roadmap_items:
       - W4-RPT-001
@@ -889,10 +891,11 @@ modules:
       - AccountingRecords
     validation:
       - dotnet build src/Meridian.Documents/Meridian.Documents.csproj /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EvidenceStorageQuotaCoordinatorTests|FullyQualifiedName~FileEvidenceArtifactStoreQuotaTests" /p:EnableWindowsTargeting=true
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-04
+    last_reviewed: 2026-10-05
 
   - id: SRC-IBAPI-SMOKESTUB
     path: src/Meridian.IbApi.SmokeStub
@@ -972,6 +975,7 @@ modules:
     purpose: Shared UI read models and endpoint adapters, including authoritative reporting capture, exact reconciliation readiness, certified artifact production/retention, governed lifecycle/restatement coordination, tenant-safe action projections, release-gated scheduling, recipient-bound secure distribution, provider receipts, and credential-free legacy reporting compatibility; also owns Security Master workbench projections, ledger/accounting configuration services, private-capital drill-through, identity/auth adapters, and acceptance filters consumed by browser and desktop surfaces.
     readme: src/Meridian.Ui.Shared/README.md
     roadmap_items:
+      - W10-LOT-002
       - W9-GOV-008
       - W2-TRD-001
       - W4-RECON-001
@@ -1007,7 +1011,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-09-28
+    last_reviewed: 2026-10-02
 
   - id: SRC-UI-DASHBOARD
     path: src/Meridian.Ui/dashboard

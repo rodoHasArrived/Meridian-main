@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Lightweight pre-commit guard.
-if command -v dotnet >/dev/null 2>&1; then
-  dotnet format Meridian.sln --verify-no-changes --verbosity minimal || {
-    echo "Formatting check failed. Run: make format" >&2
-    exit 1
-  }
-fi
+# Compatibility for callers or hooks previously copied into .git/hooks.
+repo_root="$(git rev-parse --show-toplevel)"
+exec "$repo_root/.githooks/pre-commit" "$@"

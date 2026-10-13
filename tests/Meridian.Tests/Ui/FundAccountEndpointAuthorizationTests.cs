@@ -271,6 +271,173 @@ public sealed class FundAccountEndpointAuthorizationTests
         reconcile.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
+    [Theory]
+    [InlineData("null-lines")]
+    [InlineData("null-line")]
+    [InlineData("line-account")]
+    [InlineData("line-batch")]
+    [InlineData("line-date")]
+    public async Task CustodianStatementRoute_ShouldRejectInvalidLinesWithoutRetainingEvidence(string invalidInput)
+    {
+        var accountId = Guid.NewGuid();
+        var fundId = Guid.NewGuid();
+        var asOfDate = new DateOnly(2026, 6, 16);
+        var request = BuildCustodianStatement(accountId, asOfDate);
+        var line = request.Lines[0];
+        request = request with
+        {
+            Lines = invalidInput switch
+            {
+                "null-lines" => null!,
+                "null-line" => [line, null!],
+                "line-account" => [line, line with { LineId = Guid.NewGuid(), AccountId = Guid.NewGuid() }],
+                "line-batch" => [line, line with { LineId = Guid.NewGuid(), BatchId = Guid.NewGuid() }],
+                "line-date" => [line, line with { LineId = Guid.NewGuid(), AsOfDate = asOfDate.AddDays(1) }],
+                _ => throw new ArgumentOutOfRangeException(nameof(invalidInput))
+            }
+        };
+        await using var app = await CreateAppAsync(
+            [BuildAccount(accountId, fundId, "CUSTODIAN-INTAKE")],
+            [(AccessScopeKindDto.Account, accountId)]);
+
+        var response = await app.GetTestClient().PostAsJsonAsync(
+            $"/api/fund-accounts/{accountId:D}/custodian-statements", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var query = app.Services.GetRequiredService<IAccountQueryService>();
+        (await query.GetCustodianPositionsAsync(accountId, asOfDate)).Should().BeEmpty();
+        (await query.GetCustodianPositionsAsync(accountId, asOfDate.AddDays(1))).Should().BeEmpty();
+        var management = app.Services.GetRequiredService<IAccountManagementService>();
+        var reconciliation = await management.ReconcileAccountAsync(new ReconcileAccountRequest(
+            accountId, asOfDate, "endpoint-auth-test"));
+        reconciliation.TotalChecks.Should().Be(0, "rejected intake must not retain a statement batch header");
+    }
+
+    [Theory]
+    [InlineData("null-lines")]
+    [InlineData("null-line")]
+    [InlineData("line-account")]
+    [InlineData("line-batch")]
+    public async Task BankStatementRoute_ShouldRejectInvalidLinesWithoutRetainingEvidence(string invalidInput)
+    {
+        var accountId = Guid.NewGuid();
+        var fundId = Guid.NewGuid();
+        var request = BuildBankStatement(accountId, new DateOnly(2026, 6, 16));
+        var line = request.Lines[0];
+        request = request with
+        {
+            Lines = invalidInput switch
+            {
+                "null-lines" => null!,
+                "null-line" => [line, null!],
+                "line-account" => [line, line with { LineId = Guid.NewGuid(), AccountId = Guid.NewGuid() }],
+                "line-batch" => [line, line with { LineId = Guid.NewGuid(), BatchId = Guid.NewGuid() }],
+                _ => throw new ArgumentOutOfRangeException(nameof(invalidInput))
+            }
+        };
+        await using var app = await CreateAppAsync(
+            [BuildAccount(accountId, fundId, "BANK-INTAKE")],
+            [(AccessScopeKindDto.Account, accountId)]);
+
+        var response = await app.GetTestClient().PostAsJsonAsync(
+            $"/api/fund-accounts/{accountId:D}/bank-statements", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var query = app.Services.GetRequiredService<IAccountQueryService>();
+        (await query.GetBankStatementLinesAsync(accountId)).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("custodian-statements")]
+    [InlineData("bank-statements")]
+    public async Task StatementRoutes_ShouldRejectInvalidJsonFieldsWithoutRetainingEvidence(string statementRoute)
+    {
+        var accountId = Guid.NewGuid();
+        var fundId = Guid.NewGuid();
+        await using var app = await CreateAppAsync(
+            [BuildAccount(accountId, fundId, "INVALID-STATEMENT")],
+            [(AccessScopeKindDto.Account, accountId)]);
+
+        var response = await app.GetTestClient().PostAsJsonAsync(
+            $"/api/fund-accounts/{accountId:D}/{statementRoute}",
+            new { accountId, batchId = "not-a-guid", lines = Array.Empty<object>() });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var query = app.Services.GetRequiredService<IAccountQueryService>();
+        (await query.GetCustodianPositionsAsync(accountId, new DateOnly(2026, 6, 16))).Should().BeEmpty();
+        (await query.GetBankStatementLinesAsync(accountId)).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("custodian-statements")]
+    [InlineData("bank-statements")]
+    public async Task StatementRoutes_ShouldAuthorizeAccountBeforeValidatingLines(string statementRoute)
+    {
+        var accountId = Guid.NewGuid();
+        var fundId = Guid.NewGuid();
+        await using var app = await CreateAppAsync(
+            [BuildAccount(accountId, fundId, "DENIED-STATEMENT")],
+            []);
+        object request = statementRoute == "custodian-statements"
+            ? BuildCustodianStatement(accountId, new DateOnly(2026, 6, 16)) with { Lines = null! }
+            : BuildBankStatement(accountId, new DateOnly(2026, 6, 16)) with { Lines = null! };
+
+        var response = await app.GetTestClient().PostAsJsonAsync(
+            $"/api/fund-accounts/{accountId:D}/{statementRoute}", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var query = app.Services.GetRequiredService<IAccountQueryService>();
+        (await query.GetCustodianPositionsAsync(accountId, new DateOnly(2026, 6, 16))).Should().BeEmpty();
+        (await query.GetBankStatementLinesAsync(accountId)).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task StatementRoutes_ShouldRetainAuthorizedMatchingLines()
+    {
+        var accountId = Guid.NewGuid();
+        var fundId = Guid.NewGuid();
+        var asOfDate = new DateOnly(2026, 6, 16);
+        await using var app = await CreateAppAsync(
+            [BuildAccount(accountId, fundId, "VALID-STATEMENT")],
+            [(AccessScopeKindDto.Account, accountId)]);
+        var custodianRequest = BuildCustodianStatement(accountId, asOfDate);
+        var bankRequest = BuildBankStatement(accountId, asOfDate);
+        var client = app.GetTestClient();
+
+        var custodianResponse = await client.PostAsJsonAsync(
+            $"/api/fund-accounts/{accountId:D}/custodian-statements", custodianRequest);
+        var bankResponse = await client.PostAsJsonAsync(
+            $"/api/fund-accounts/{accountId:D}/bank-statements", bankRequest);
+
+        custodianResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        bankResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var query = app.Services.GetRequiredService<IAccountQueryService>();
+        (await query.GetCustodianPositionsAsync(accountId, asOfDate)).Should().Equal(custodianRequest.Lines);
+        (await query.GetBankStatementLinesAsync(accountId)).Should().Equal(bankRequest.Lines);
+    }
+
+    private static IngestCustodianStatementRequest BuildCustodianStatement(Guid accountId, DateOnly asOfDate)
+    {
+        var batchId = Guid.NewGuid();
+        return new IngestCustodianStatementRequest(
+            batchId, accountId, asOfDate, "Custodian", "csv", null,
+            [new CustodianPositionLineDto(
+                Guid.NewGuid(), batchId, accountId, asOfDate, "AAPL", "Ticker", 10m, 1_000m,
+                "USD", "Apple Inc.", "Equity", IsShort: false)],
+            "endpoint-auth-test");
+    }
+
+    private static IngestBankStatementRequest BuildBankStatement(Guid accountId, DateOnly statementDate)
+    {
+        var batchId = Guid.NewGuid();
+        return new IngestBankStatementRequest(
+            batchId, accountId, statementDate, "Bank", null,
+            [new BankStatementLineDto(
+                Guid.NewGuid(), batchId, accountId, statementDate, statementDate, 100m, "USD", "Deposit",
+                "Capital contribution", "BANK-001", 100m)],
+            "endpoint-auth-test");
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         IReadOnlyList<CreateAccountRequest> accounts,
         IReadOnlyCollection<(AccessScopeKindDto Kind, Guid Id)> allowedScopes,

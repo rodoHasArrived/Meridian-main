@@ -1,0 +1,34 @@
+{
+  "sourceBaseCommit": "9c96c3f72dd60111b62b8368d29e553ec58fd7a0",
+  "workingTree": true,
+  "sourceFiles": [
+    {
+      "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.ts",
+      "sha256": "90e7f68d6a8c5c1093ac4716e65e3872d38245a170c6b15b5886489482998abb",
+      "captureRecorded": true,
+      "matchesRetainedProvenance": true
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.tsx",
+      "sha256": "f778d5e63c5bcf8025297e39a9b862eec13a0942ea29d81ed019082f8747991b",
+      "captureRecorded": true,
+      "matchesRetainedProvenance": true
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.close-test-fixtures.ts",
+      "sha256": "2f0211b58ec7e472abc2c1b3acfdc32889a84357ec23ad9c44f1d697c5a6f376",
+      "captureRecorded": true,
+      "matchesRetainedProvenance": true
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.workflow-selection.ts",
+      "sha256": "299fe05eab16bb6ac27354be35fee9963e0e2cac6d9ad6c8934dc0fa43b1626d",
+      "captureRecorded": false,
+      "bindingNote": "Supplemental hash recorded after capture; extracted helper consumed by the captured view-model. Final candidate binding remains pending."
+    }
+  ],
+  "captureScript": {
+    "path": "browser/capture.mjs",
+    "sha256": "1eedea5fcbe1d56a97982d1dc629ebb117c71428e9f5862c0d77d63c910b97b8"
+  }
+}

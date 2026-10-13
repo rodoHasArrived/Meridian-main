@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "investigated_at_utc": "2026-10-05T18:08:06.336788+00:00",
+  "repository": "rodoHasArrived/Meridian-main",
+  "baseline_commit": "e3bf60bae577c132d8444a827ca4dc3181cc48a1",
+  "status": "proposal-only; not accepted; dependency certification failed",
+  "decision_maker_requested": "@rodoHasArrived",
+  "approval": null,
+  "baseline_hosted": {
+    "run_id": 37351972283,
+    "run_number": 147,
+    "attempt": 1,
+    "job_id": 111904784527,
+    "artifact_id": 11362468562,
+    "artifact_name": "production-dependency-evidence-147-1",
+    "sha256": "478075a50b84e225b37581089a9e2f28aad6d9ad95b29b811b3297e179a02d11",
+    "downloaded_zip_digest_verified": true,
+    "expires_at": "2027-01-03T17:54:46Z"
+  },
+  "commands": [
+    {
+      "cwd": "src/Meridian.Ui/dashboard",
+      "command": "npm ci",
+      "exit_code": 0
+    },
+    {
+      "cwd": "src/Meridian.Ui/dashboard",
+      "command": "npm audit --json",
+      "exit_code": 1
+    },
+    {
+      "cwd": "src/Meridian.Ui/dashboard",
+      "command": "npm ls braces micromatch chokidar readdirp anymatch fast-glob tailwindcss --all --json",
+      "exit_code": 0
+    },
+    {
+      "cwd": "src/Meridian.Ui/dashboard",
+      "command": "npm audit --omit=dev --json",
+      "exit_code": 0
+    },
+    {
+      "cwd": ".",
+      "command": "python3 build/scripts/ci/validate-npm-audit.py --audit-json <npm-audit.json> --accepted build/config/security/npm-audit-accepted-advisories.json --fail-level high --output <npm-audit-gate.json>",
+      "exit_code": 1
+    }
+  ],
+  "interpretation": "Hosted results certify only the baseline commit. Fresh local snapshots describe the same dependency inputs. A resulting proposal commit requires a separate receipt naming that commit; no successful certification is inferred.",
+  "files": {
+    "braces-advisory-source.json": "c90a73c931e09444ae9ad68d9020885685e09d58102c33dea21555c97e72929e",
+    "braces-bounded-reachability.json": "fc59f0b67de6a57215e100403e5f07e0769c444d0f38de937f9069407426784f",
+    "dependency-source-evidence.json": "37756cea42a4396a73132dbefa13f74dc1a4710bae32449cf9d3992e764136ab",
+    "hosted-npm-audit-gate.json": "aa671ecceac22cbcbe8d4ccd0da6e83a0602bd7370420bfcffefa785b1ee7d0b",
+    "hosted-npm-audit.json": "7d064a03f1e2368f5ce043d075570e9ea8e670ac9b55424c1e093e3c1dbcd71e",
+    "hosted-nuget-vulnerabilities.txt": "400ff536ba9d8d6acab157751b7cff02f4bf3e2268325bfdd9aebd038019202b",
+    "npm-audit-gate.json": "aa671ecceac22cbcbe8d4ccd0da6e83a0602bd7370420bfcffefa785b1ee7d0b",
+    "npm-audit-production.json": "900bbaac9b0793f0baa08615c8d2508d1d9623b192cd0201536e5501611cc0fd",
+    "npm-audit.json": "b3133ef1722e50fa3ba9d608d665f891885144bd693bfbb76abaa87e9e4cf6a1",
+    "npm-graph.json": "2b23859706aed798c4406896da476d639ac16f34923df5e873990aebe330cc24",
+    "upstream-registry-metadata.json": "0156152a334a4fee0ec98a70bc90ec74b7a51e18aa40a55169038bd98cf20e43"
+  }
+}

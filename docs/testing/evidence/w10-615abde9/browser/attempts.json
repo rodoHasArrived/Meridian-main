@@ -1,0 +1,17 @@
+{
+  "candidate": "615abde90001ab33bd6e58e545edc7fce635e254",
+  "retainedAttemptNotes": [
+    {
+      "id": "harness-route-wait-timeout",
+      "reportedAtUtc": "2026-10-02T22:23:52Z",
+      "exactAttemptStartUtc": null,
+      "outcome": "incomplete capture; superseded by final retained run",
+      "completedThrough": "S3-foreign-scope",
+      "step": "Navigate back to the original scope with a deliberately delayed shared request before starting S8",
+      "toolOutputExcerpt": "locator.waitFor: Timeout 30000ms exceeded. waiting for getByRole('region', { name: 'Operations continuity control strip' }) to be visible; capture.mjs navigate() -> S8 setup",
+      "classification": "harness/loading timing failure; not attributed as a candidate defect",
+      "correction": "Load and review the current screen first, then click Refresh workflows to delay the old shared request, change scope, and complete the delayed response. Added explicit meaningful-route and enabled-action waits for viewport captures.",
+      "limits": "The failed intermediate JSON/log was overwritten by subsequent capture before this note was created. The exact observed error is retained here; no complete earlier browser evidence or timing is claimed."
+    }
+  ]
+}

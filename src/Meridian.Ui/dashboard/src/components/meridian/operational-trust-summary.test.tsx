@@ -1,8 +1,36 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { axe } from "jest-axe";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 
 describe("OperationalTrustSummary", () => {
+  it("keeps scope and warnings visible while supporting facts can be expanded", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <OperationalTrustSummary
+        disclosure
+        source={{ value: "Retained portfolio", detail: "Immutable source receipt", tone: "ready" }}
+        scope={{ value: "Book A", tone: "ready" }}
+        freshness={{ value: "Stale snapshot", tone: "review" }}
+        completeness={{ value: "2 positions", tone: "ready" }}
+        blocker={{ value: "Missing mark evidence", tone: "blocked", action: <a href="/data/providers">Review marks</a> }}
+      />
+    );
+    const details = container.querySelector("details")!;
+    const summary = container.querySelector("summary")!;
+    expect(details).not.toHaveAttribute("open");
+    for (const fact of ["Book A", "Stale snapshot", "Missing mark evidence", "Blocked", "Needs review"]) {
+      expect(summary).toHaveTextContent(fact);
+    }
+    expect(summary).not.toHaveTextContent("Immutable source receipt");
+    expect((await axe(container)).violations).toEqual([]);
+    await user.click(summary);
+    expect(details).toHaveAttribute("open");
+    expect(screen.getByRole("link", { name: "Review marks" })).toHaveAttribute("href", "/data/providers");
+    expect((await axe(container)).violations).toEqual([]);
+  });
+
   it("renders source, scope, freshness, completeness, blocker, and recovery action with text status", () => {
     render(
       <OperationalTrustSummary

@@ -1,0 +1,233 @@
+{
+  "schemaVersion": 1,
+  "populationId": "w10-representative-population-v1",
+  "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+  "state": "planned_not_provisioned",
+  "selectionMethod": "Stratified admission-branch and repair coverage; no production representativeness claim",
+  "evaluationAtUtc": "2026-10-02T21:00:00Z",
+  "valuationDate": "2026-10-02",
+  "policy": {
+    "version": "mark-freshness-v1",
+    "maximumAgeDays": 3,
+    "minimumConfidence": "Medium",
+    "requireObservedDate": true,
+    "requireCompleteCoverage": true,
+    "installedPolicyCapture": null
+  },
+  "scope": {
+    "tenant": "ACCEPTANCE-TENANT",
+    "company": "ACCEPTANCE-COMPANY",
+    "fundProfile": "ACCEPTANCE-FUND",
+    "ledgerBook": "ACCEPTANCE-USD-BOOK",
+    "entity": "ACCEPTANCE-ENTITY",
+    "period": "2026-10",
+    "bookCurrency": "USD",
+    "retainedIdentityMap": null,
+    "provisioningReceipt": null
+  },
+  "accounts": [
+    {
+      "key": "ACCOUNT-A",
+      "scheduleKey": "SCHEDULE-A",
+      "retainedAccountId": null,
+      "retainedScheduleId": null,
+      "workflowId": null,
+      "workflowVersion": null,
+      "closePlanId": null,
+      "closePlanVersion": null,
+      "reportPackageId": null,
+      "reportRevision": null
+    },
+    {
+      "key": "ACCOUNT-B",
+      "scheduleKey": "SCHEDULE-B",
+      "retainedAccountId": null,
+      "retainedScheduleId": null,
+      "workflowId": null,
+      "workflowVersion": null,
+      "closePlanId": null,
+      "closePlanVersion": null,
+      "reportPackageId": null,
+      "reportRevision": null
+    }
+  ],
+  "positions": [
+    {
+      "key": "A-FRESH",
+      "account": "ACCOUNT-A",
+      "schedule": "SCHEDULE-A",
+      "security": "SECURITY-SHARED",
+      "instrumentClass": "equity",
+      "observedOn": "2026-10-02",
+      "confidence": "High",
+      "hasPositiveQuote": true,
+      "expectedStatus": "Current",
+      "retainedPositionId": null,
+      "retainedSecurityId": null,
+      "snapshotOwner": null,
+      "sourceObservationId": null,
+      "inputHash": null
+    },
+    {
+      "key": "A-BOUNDARY",
+      "account": "ACCOUNT-A",
+      "schedule": "SCHEDULE-A",
+      "security": "SECURITY-A-BOUNDARY",
+      "instrumentClass": "ETF",
+      "observedOn": "2026-09-29",
+      "confidence": "Medium",
+      "hasPositiveQuote": true,
+      "expectedStatus": "Current",
+      "retainedPositionId": null,
+      "retainedSecurityId": null,
+      "snapshotOwner": null,
+      "sourceObservationId": null,
+      "inputHash": null
+    },
+    {
+      "key": "A-STALE",
+      "account": "ACCOUNT-A",
+      "schedule": "SCHEDULE-A",
+      "security": "SECURITY-A-STALE",
+      "instrumentClass": "fixed-rate bullet bond",
+      "observedOn": "2026-09-28",
+      "confidence": "High",
+      "hasPositiveQuote": true,
+      "expectedStatus": "ReviewRequired",
+      "retainedPositionId": null,
+      "retainedSecurityId": null,
+      "snapshotOwner": null,
+      "sourceObservationId": null,
+      "inputHash": null
+    },
+    {
+      "key": "A-MISSING-DATE",
+      "account": "ACCOUNT-A",
+      "schedule": "SCHEDULE-A",
+      "security": "SECURITY-A-MISSING-DATE",
+      "instrumentClass": "fixed-rate bullet bond",
+      "observedOn": null,
+      "confidence": "High",
+      "hasPositiveQuote": true,
+      "expectedStatus": "ReviewRequired",
+      "retainedPositionId": null,
+      "retainedSecurityId": null,
+      "snapshotOwner": null,
+      "sourceObservationId": null,
+      "inputHash": null
+    },
+    {
+      "key": "B-FUTURE",
+      "account": "ACCOUNT-B",
+      "schedule": "SCHEDULE-B",
+      "security": "SECURITY-B-FUTURE",
+      "instrumentClass": "equity",
+      "observedOn": "2026-10-03",
+      "confidence": "High",
+      "hasPositiveQuote": true,
+      "expectedStatus": "ReviewRequired",
+      "retainedPositionId": null,
+      "retainedSecurityId": null,
+      "snapshotOwner": null,
+      "sourceObservationId": null,
+      "inputHash": null
+    },
+    {
+      "key": "B-LOW-CONFIDENCE",
+      "account": "ACCOUNT-B",
+      "schedule": "SCHEDULE-B",
+      "security": "SECURITY-B-LOW-CONFIDENCE",
+      "instrumentClass": "ETF",
+      "observedOn": "2026-10-02",
+      "confidence": "Low",
+      "hasPositiveQuote": true,
+      "expectedStatus": "ReviewRequired",
+      "retainedPositionId": null,
+      "retainedSecurityId": null,
+      "snapshotOwner": null,
+      "sourceObservationId": null,
+      "inputHash": null
+    },
+    {
+      "key": "B-MISSING-MARK",
+      "account": "ACCOUNT-B",
+      "schedule": "SCHEDULE-B",
+      "security": "SECURITY-B-MISSING-MARK",
+      "instrumentClass": "fixed-rate bullet bond",
+      "observedOn": null,
+      "confidence": null,
+      "hasPositiveQuote": false,
+      "expectedStatus": "ReviewRequired",
+      "retainedPositionId": null,
+      "retainedSecurityId": null,
+      "snapshotOwner": null,
+      "sourceObservationId": null,
+      "inputHash": null
+    },
+    {
+      "key": "B-FRESH",
+      "account": "ACCOUNT-B",
+      "schedule": "SCHEDULE-B",
+      "security": "SECURITY-SHARED",
+      "instrumentClass": "equity",
+      "observedOn": "2026-10-02",
+      "confidence": "High",
+      "hasPositiveQuote": true,
+      "expectedStatus": "Current",
+      "retainedPositionId": null,
+      "retainedSecurityId": null,
+      "snapshotOwner": null,
+      "sourceObservationId": null,
+      "inputHash": null
+    }
+  ],
+  "denominators": {
+    "accounts": 2,
+    "schedules": 2,
+    "distinctAccountSecurityPositions": 8,
+    "distinctSecurities": 7,
+    "valuationBatches": 2,
+    "scheduleOverlapPositions": 0,
+    "provisionedPositionCount": null
+  },
+  "plannedInitialPreview": {
+    "assessedPositionCount": 8,
+    "blockedPositionCount": 5,
+    "affectedValuationCount": 2,
+    "observedResult": null
+  },
+  "plannedRepairPreview": {
+    "assessedPositionCount": 8,
+    "blockedPositionCount": 0,
+    "affectedValuationCount": 0,
+    "observedResult": null
+  },
+  "foreignScope": {
+    "state": "planned_not_provisioned",
+    "tenant": "FOREIGN-TENANT",
+    "company": "FOREIGN-COMPANY",
+    "book": "FOREIGN-BOOK",
+    "account": "FOREIGN-ACCOUNT",
+    "entity": "FOREIGN-ENTITY",
+    "retainedIdentityMap": null,
+    "inOwnedDenominator": false
+  },
+  "exclusions": [
+    "production holdings",
+    "foreign-scope controls",
+    "unsupported instruments",
+    "schedules outside ACCOUNT-A/ACCOUNT-B",
+    "unprovisioned identities"
+  ],
+  "reset": {
+    "procedure": "Provision through maintained owners, snapshot only dedicated non-production roots/database before each case, preserve case evidence, restore isolated baseline; append replacement support through owning service for repairs.",
+    "baselineSnapshotId": null,
+    "baselineHash": null
+  },
+  "operator": {
+    "identity": null,
+    "sessionStartedAtUtc": null,
+    "sessionEndedAtUtc": null,
+    "decision": "pending"
+  }
+}

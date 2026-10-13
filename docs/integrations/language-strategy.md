@@ -2,13 +2,27 @@
 
 **Document Version:** 1.6.1
 **Last Updated:** 2026-01-30
-**Status:** Partially Implemented (F# Complete, C++ Pending)
+**Status:** archived
+**Scope:** historical language proposal and implementation notes
+
+This is the 2026-01-30 strategy snapshot. Its C++ phases, native project tree, time estimates, and
+performance multipliers are proposals, not the current delivery plan or measured release results.
+Preserve the dated implementation notes below when using them as design history.
+
+For current work, use the [Engineering index](../engineering/README.md),
+[F# source README](../../src/Meridian.FSharp/README.md),
+[browser workstation source README](../../src/Meridian.Ui/README.md), and
+[roadmap registry](../roadmap/README.md). The shipped source includes C# services, F# rule kernels,
+a React/TypeScript browser workstation, and the WPF desktop lane. The proposed
+`Meridian.Native` and `Meridian.Native.Interop` projects below are not present in the source tree.
 
 ---
 
 ## Executive Summary
 
-This document outlines the recommended language strategy for Meridian, proposing a polyglot architecture that leverages the strengths of C#, C++, and F# for different components of the system. The goal is to maximize performance in latency-critical paths while maintaining developer productivity and type safety where it matters most.
+This document records a proposed polyglot architecture using C#, C++, and F# for different
+components. It explains the original performance and type-safety rationale; an entry marked
+"Pending" here does not create a current implementation requirement.
 
 ### Strategy Overview
 

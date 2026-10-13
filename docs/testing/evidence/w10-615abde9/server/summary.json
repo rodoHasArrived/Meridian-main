@@ -1,0 +1,41 @@
+{
+  "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+  "environment": "Debian13; SDK10.0.100; no configured PostgreSQL acceptance host; bounded unit/endpoint fixtures",
+  "command": "dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --filter \"FullyQualifiedName~ValuationFreshnessAcceptanceTests|FullyQualifiedName~FinancialOperationsCommandCenterReadService|FullyQualifiedName~CloseReadinessSubjectSourceTests|FullyQualifiedName~WorkstationEndpointsTests|FullyQualifiedName~DailyValuationPositionServiceTests\" --logger \"trx;LogFileName=acceptance-support.trx\" --results-directory artifacts/w10-acceptance/615abde9/server /p:EnableWindowsTargeting=true -m:2",
+  "exitCode": 0,
+  "times": {
+    "creation": "2026-10-02T22:16:06.1114274+00:00",
+    "queuing": "2026-10-02T22:16:06.1114275+00:00",
+    "start": "2026-10-02T22:16:00.5047563+00:00",
+    "finish": "2026-10-02T22:23:06.4821836+00:00"
+  },
+  "counters": {
+    "total": "570",
+    "executed": "570",
+    "passed": "570",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "testDefinitionsByClass": {
+    "Meridian.Tests.Application.Accounting.ValuationFreshnessAcceptanceTests": 15,
+    "Meridian.Tests.Ui.WorkstationEndpointsTests": 457,
+    "Meridian.Tests.Ui.CloseReadinessSubjectSourceTests": 12,
+    "Meridian.Tests.Ui.DailyValuationPositionServiceTests": 13,
+    "Meridian.Tests.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadServiceTests": 58,
+    "Meridian.Tests.Ui.StrategyDesignerWorkstationEndpointsTests": 15
+  },
+  "liveAcceptance": "pending",
+  "operatorDecision": "pending",
+  "actualOperator": null
+}

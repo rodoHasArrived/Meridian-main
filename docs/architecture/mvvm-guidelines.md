@@ -1,12 +1,13 @@
 # MVVM Guidelines
 
 Meridian keeps workflow state in view models and shared read models so the browser
-workstation and retained WPF compatibility surfaces can render the same business
+workstation and active WPF desktop surfaces can render the same business
 posture without forking behavior.
 
 ## Current UI Direction
 
-- New operator UI work belongs in `src/Meridian.Ui/dashboard/`.
+- Browser operator UI work belongs in `src/Meridian.Ui/dashboard/`; WPF operator UI work belongs
+  in `src/Meridian.Wpf/`. Both are active product lanes.
 - Shared workstation endpoint and read-model support belongs in
   `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`.
 - `src/Meridian.Wpf/` is an active co-equal operator UI lane whose current focus is web-UI parity (`W8-WPF-PARITY-001`); use this guidance for all WPF work, including new parity surfaces as well as compatibility, validation, and maintenance.
@@ -48,15 +49,19 @@ shared across surfaces.
   interop that cannot live elsewhere.
 - Preserve existing view-model tests when changing shell routing, workspace
   selection, command availability, or page binding coverage.
-- Do not copy browser-only behavior into WPF as a separate product lane. Use
-  shared contracts and read models when desktop compatibility work is required.
+- Surface the same product behavior through shared contracts and read models; keep WPF-specific
+  presentation in its own views and view models.
 
 ## Validation
 
-Use the narrowest test that covers the surface:
+Use the narrowest test that covers the surface. Browser tests run from the repository root;
+full WPF validation requires Windows and the development runner:
 
 ```powershell
 npm --prefix src/Meridian.Ui/dashboard run test
-dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj /p:EnableWindowsTargeting=true --logger "console;verbosity=normal"
-dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~MainShellViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -Restore
 ```
+
+Use [Engineering validation](../engineering/README.md#buildtestrun) for targeted shared-UI and
+view-model test commands. A non-Windows WPF project build can select the stub target and does not
+validate the XAML application.

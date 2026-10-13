@@ -1,734 +1,220 @@
 # Documentation Contribution Guide
 
-**Version:** 1.1
-**Last Updated:** 2026-03-15
-**Status:** Active, Continuously Updated
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-10-05
+**Audience:** documentation contributors
 
-This guide is legacy source material for documentation standards. The current placement contract is [Documentation Ownership Contract](../documentation-ownership.md), and the canonical documentation front door is [docs/README.md](../README.md).
-
----
-
-## Table of Contents
-
-- [Documentation Principles](#documentation-principles)
-- [Documentation Structure](#documentation-structure)
-- [Where Should This Doc Go?](#where-should-this-doc-go)
-- [Lifecycle Tags](#lifecycle-tags)
-- [Writing Standards](#writing-standards)
-- [File Naming Conventions](#file-naming-conventions)
-- [Cross-References and Links](#cross-references-and-links)
-- [Code Examples](#code-examples)
-- [Diagrams and Visuals](#diagrams-and-visuals)
-- [Updating Documentation](#updating-documentation)
-- [Review Process](#review-process)
-
----
+Use this supporting guide to write, review, and retire Meridian documentation. The
+[Documentation Ownership Contract](../documentation-ownership.md) owns placement and authority;
+[Engineering](../engineering/README.md) is the contributor entrypoint.
 
 ## Documentation Principles
 
-### 1. Audience-First Organization
-
-Documentation should be organized by **who** will use it, not by internal structure:
-
-- **Users** need to get started quickly and accomplish tasks
-- **Developers** need to understand architecture and extend the system
-- **Operators** need to deploy, monitor, and maintain the system
-
-See [docs/README.md](../README.md) for the master index organized by audience.
-
-### 2. Consistency Over Perfection
-
-Better to have consistent, maintainable documentation than perfect but divergent documentation. Follow existing patterns in similar documents.
-
-### 3. Keep It Updated
-
-Documentation debt is real. When making code changes:
-- Update related documentation in the same PR
-- Mark deprecated information clearly
-- Archive outdated documents rather than deleting them
-- Use `archive/docs/` for historical records consolidated from the active docs tree. Legacy
-  `docs/archive/` links remain historical references until they are intentionally migrated.
-
-### 4. Make It Findable
-
-- Link from the master index ([docs/README.md](../README.md))
-- Use clear, descriptive titles
-- Include cross-references to related documents
-- Tag with appropriate keywords
-
----
+- Start with the reader's task and the result they should obtain.
+- Give each durable fact one owner. Link to configuration references, registries, and current
+  plans instead of copying their changing status into other pages.
+- Check procedures against current source and commands. Distinguish source inspection from an
+  executed example, operator acceptance, and production certification.
+- Preserve useful historical evidence with its original date, commit, and replacement link.
 
 ## Documentation Structure
 
-The rebuilt canonical documentation model is:
+The [folder inventory](../documentation-inventory.md) lists every supported lane. In particular:
 
-| Current owner | Use for |
-| --- | --- |
-| `docs/start/` | First-run setup, local launch, project introduction, and fastest contributor path. |
-| `docs/product/` | Stakeholder product narrative, capability posture, roadmap interpretation, and investment-operations model. |
-| `docs/engineering/` | Architecture routing, module boundaries, build/test/run, validation lanes, source ownership, WPF/browser rules. |
-| `docs/operators/` | Provider setup, workstation usage, runbooks, deployment, troubleshooting, and support evidence. |
-| `docs/reference/` | APIs, environment variables, CLI flags, schemas, provider matrices, glossary, and stable lookup tables. |
-| `docs/ai/` | Agent instructions, repo navigation, Codex/Claude/Copilot workflow contracts. |
-| `docs/roadmap/` | Structured roadmap registry and generated roadmap views. |
-| `docs/source/` | Source-module registry and generated source documentation. |
-| `docs/generated/` | Generated outputs and generator policy. |
-| `archive/docs/` | Superseded plans, stale audits, old snapshots, duplicate guides, historical experiments, and one-off brainstorms. |
-
-The older taxonomy below is retained only to help migrate existing source material. Do not use it as the target structure for new documentation.
-
-### Directory Organization
-
-The rebuilt documentation model starts from canonical audience lanes and keeps
-legacy/source-material folders only while their content is still being migrated:
-
-```
-docs/
-│
-├── start/                     # First-run orientation and local setup
-├── product/                   # Stakeholder product narrative and capability posture
-├── engineering/               # Developer and coding-agent workflow
-├── operators/                 # Provider setup, runbooks, deployment, troubleshooting
-├── reference/                 # API, env/config, schema, provider matrices, glossary
-├── domain/                    # Business dictionary and durable domain language
-├── roadmap/                   # Registry-owned roadmap data and generated views
-├── source/                    # Source-module registry and generated source docs
-├── ai/                        # AI assistant instructions and generated navigation
-├── generated/                 # Auto-generated documentation (do not edit)
-├── architecture/              # Retained source material linked from engineering
-├── development/               # Legacy developer source material
-├── operations/                # Legacy operator source material
-├── plans/                     # Controlled plan migration index
-├── status/                    # Controlled status/reporting migration index
-├── security/                  # Security docs routed by audience
-├── diagrams/                  # Maintained diagram and visual assets
-├── docfx/                     # DocFX API docs config and filters
-└── README.md                  # Master documentation index (START HERE)
-```
-
-Legacy root archive material may still live under `archive/docs/`; migrate it
-only with a focused link and index update.
+- **Engineering** owns contributor entrypoints, the shortest current build/test/run path,
+  validation routing, and links to deeper guides.
+- **Development** holds detailed supporting implementation and tooling guides, linked from
+  Engineering or its Development index. It is an active supporting lane.
+- **Architecture** owns current system design and rationale; it is not a legacy bucket.
+- **Operators** owns executable operating procedures. Reference owns their configuration and API
+  lookup tables.
+- **Product** explains direction. Roadmap registries own delivery state; the readiness tracker
+  owns release follow-up. Dated reviews and plans must name the evidence snapshot they describe.
 
 ### Document Categories
 
-| Category | Purpose | Examples |
-|----------|---------|----------|
-| **Guides** | Step-by-step instructions | Start, Provider Onboarding |
-| **References** | Lookup information | API Reference, Data Dictionary |
-| **Explanations** | Conceptual understanding | Architecture Overview, Design Decisions |
-| **How-To** | Task-focused procedures | Adding a Provider, Running Backfill |
-
----
+| Kind | Reader's question | Content |
+| --- | --- | --- |
+| Tutorial | How do I get a first successful result? | One supported path with prerequisites and expected output. |
+| Procedure | How do I complete this task? | Ordered actions, checks, failure handling, and recovery. |
+| Reference | What does this option or contract mean? | Exact names, types, defaults, constraints, and examples. |
+| Explanation | Why does the system work this way? | Concepts, boundaries, tradeoffs, and links to decisions. |
 
 ## Where Should This Doc Go?
 
-Use [Documentation Ownership Contract](../documentation-ownership.md) when deciding where a new document belongs. The decision tree below is historical migration source material only.
-
-```
-Is it a step-by-step guide for end users or operators?
-├── Yes → Is it about a data provider?
-│   ├── Yes → docs/operators/ for setup, docs/reference/ for capability lookup
-│   └── No, it's about deploying, maintaining, or troubleshooting → docs/operators/
-│              Or it's about getting started → docs/start/
-└── No →
-    Is it an architecture narrative, design rationale, or ADR?
-    ├── Architecture overview or layer rules → docs/architecture/
-    ├── Numbered decision record → docs/adr/
-    └── No →
-        Is it a developer guide (build, test, CI, extend)?
-        ├── Yes → docs/development/
-        └── No →
-            Is it a lookup reference (API, data dict, env vars)?
-            ├── Yes → docs/reference/
-            └── No →
-                Is it an integration guide (Lean, F#)?
-                ├── Yes → docs/integrations/
-                └── No →
-                    Is it about project status, roadmap, or active tracking?
-                    ├── Yes → docs/roadmap/ for registry truth, docs/product/ for interpretation, generated/status output for reports
-                    └── No →
-                        Is it an evaluation, brainstorm, or improvement proposal?
-                        ├── Yes → archive/docs/assessments/
-                        └── No →
-                            Is it a targeted code-quality or hygiene audit?
-                            ├── Yes → archive/docs/assessments/
-                            └── No →
-                                Is it superseded or historical? → archive/docs/
-```
+Use the ownership contract before creating a file. Check whether an existing document already
+owns the topic; extend it when that keeps the reader's task coherent.
 
 ### Quick Lookup
 
-| If the doc is about… | Put it in… |
-|----------------------|------------|
-| Getting started for users | `docs/start/` |
-| Provider setup / credentials | `docs/operators/` with stable lookup tables in `docs/reference/` |
-| Deployment, operations, runbooks | `docs/operators/` |
-| System design, why architecture decisions were made | `docs/engineering/` routing to retained architecture source material |
-| A numbered architectural decision | `adr/` |
-| Developer how-to, build tooling, CI, testing | `docs/engineering/` |
-| API endpoints, data fields, env variables | `docs/reference/` |
-| Integration with Lean, F# domain models | `docs/engineering/` or `docs/reference/` depending on whether it is workflow or lookup material |
-| Project roadmap, changelog, TODO, feature inventory | `docs/roadmap/` registry or generated/status output; stakeholder interpretation in `docs/product/` |
-| Technology evaluation, brainstorm, improvement proposal | `archive/docs/assessments/` after extracting current facts |
-| Code quality audit, cleanup analysis | `archive/docs/assessments/` after extracting current facts |
-| Security vulnerabilities, known issues | `docs/operators/`, `docs/engineering/`, or `docs/reference/` based on audience |
-| AI assistant guides and known errors | `docs/ai/` |
-| Auto-generated output (do not edit) | `docs/generated/`, `docs/roadmap/generated/`, `docs/source/generated/`, or `docs/ai/generated/` |
-| Outdated / superseded content | `archive/docs/` |
-| Diagrams (DOT/Graphviz) | `docs/diagrams/` when still linked from a canonical lane |
-| UML diagrams (PlantUML) | `docs/diagrams/uml/` when still linked from a canonical lane |
+| If the document covers… | Home |
+| --- | --- |
+| First-run setup | `docs/start/` |
+| Contributor orientation and build/test/run routing | `docs/engineering/` |
+| Detailed implementation, extension, testing, or tooling techniques | `docs/development/`, linked from Engineering |
+| System architecture and domain concepts | `docs/architecture/` or `docs/domain/` |
+| Architectural decision | `docs/adr/` |
+| Provider setup, deployment, operating procedures, recovery | `docs/operators/` |
+| API, configuration, schema, capability lookup | `docs/reference/` |
+| Product framing and dated product analysis | `docs/product/`, with analysis linked from its review or plans index |
+| Implementation blueprint or delivery plan | The home named by the [Plans and Blueprints Register](../engineering/blueprints/README.md) |
+| Roadmap status | `docs/roadmap/data/`; regenerate the views |
+| Source-module facts | `docs/source/data/` and the registered source README |
+| Assistant workflows | `docs/ai/` |
+| Generated report | The generator's registered output path; edit its inputs or generator |
+| Superseded or historical record | `archive/docs/<bucket>/`, with an index and replacement or retention reason |
 
----
+Do not add durable guidance to the transitional `docs/operations/` or `docs/plans/` paths.
+Do not move existing paths until their links, tests, and tooling consumers have been checked.
 
 ## Lifecycle Tags
 
-Every document should include lifecycle metadata to help identify stale content and ownership.
-
 ### Required Fields
 
-Add these fields in the front matter section at the top of new documents:
+Put actual metadata immediately below the title (or in YAML front matter), before body sections:
 
 ```markdown
-**Status:** active | draft | deprecated | archived
-**Owner:** core-team | <team-alias>
-**Reviewed:** YYYY-MM-DD
+# Document title
+
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-10-05
+
+State the task, audience, and expected result here.
 ```
+
+Replace the example owner and date with the accountable team and the date the content was
+verified. Template values inside code blocks do not count as document metadata. Keep the date in
+`YYYY-MM-DD` format; put review scope or qualifications in a separate paragraph.
 
 ### Status Values
 
-| Status | Meaning |
-|--------|---------|
-| `active` | Current and maintained |
-| `draft` | Work in progress, may be incomplete |
-| `deprecated` | Superseded — follow links to replacement |
-| `archived` | Historical record, no longer maintained |
+| Status | Meaning | Required context |
+| --- | --- | --- |
+| `active` | Current maintained guidance | Owner and review date. |
+| `draft` | Proposed or incomplete guidance | Unresolved decisions and what has not been verified. |
+| `deprecated` | Superseded guidance retained for compatibility | Prominent replacement link and retirement condition. |
+| `archived` | Historical record | Original evidence date/commit and archive or replacement reason. |
+
+Lifecycle status is distinct from placement (`canonical`, `supporting`, `source-material`) and
+roadmap implementation status. Existing headers that use a placement label should clarify their
+lifecycle when reviewed; a document being active does not mean its proposed feature is delivered.
 
 ### Review Cadence Guidelines
 
-| Folder | Suggested Review Cadence |
-|--------|-------------------------|
-| `start/`, `operators/`, `reference/` provider pages | Every release or when behavior changes |
-| `architecture/`, `adr/` | Quarterly or when architectural decisions are revised |
-| `development/` | As tooling and conventions evolve |
-| `reference/` | When APIs or configuration options change |
-| `roadmap/`, generated status outputs | Weekly for roadmap data or when automation inputs change |
-| Archived assessments and historical audits | When superseded by new analysis |
+Review setup and operator commands when their behavior changes and before a release. Review API
+references with the related source change. Review architecture when a decision or boundary changes.
+Keep dated evidence historical; add a correction or newer record instead of silently refreshing
+its original claims.
 
 ### Stale Detection
 
-Documents older than **180 days** without a `Reviewed` update are considered candidates for review. Run the documentation automation scripts locally when stale metadata needs a refresh.
-
----
+The structure validator flags old or invalid review dates and missing metadata. Review flagged
+hand-authored documents against their owners; update generated reports through their generators.
+A recently edited file is not necessarily a recently verified document.
 
 ## Writing Standards
 
-### Markdown Format
-
-All documentation uses **GitHub Flavored Markdown** (GFM).
-
-#### Front Matter (Recommended)
-
-```markdown
-# Document Title
-
-**Version:** 1.0
-**Last Updated:** 2026-03-15
-**Status:** active | draft | deprecated | archived
-**Owner:** core-team | <team-alias>
-**Reviewed:** YYYY-MM-DD
-**Audience:** Users | Developers | Operators
-
-Brief summary of what this document covers.
-```
-
-See [Lifecycle Tags](#lifecycle-tags) for the full standard and valid values.
-
-#### Headings
-
-- Use ATX-style headings (`#`, `##`, `###`)
-- Maximum heading depth: 4 levels (`####`)
-- One H1 (`#`) per document
-- Maintain logical hierarchy (don't skip levels)
-
-```markdown
-# Title (H1)
-## Major Section (H2)
-### Subsection (H3)
-#### Detail (H4)
-```
-
-#### Lists
-
-- Use `-` for unordered lists (not `*` or `+`)
-- Use `1.` for ordered lists (auto-numbering)
-- Indent nested lists by 2 spaces
-
-```markdown
-- Top level item
-  - Nested item
-    - Deeply nested item
-
-1. First step
-2. Second step
-3. Third step
-```
-
-#### Code Blocks
-
-Always specify language for syntax highlighting:
-
-````markdown
-```bash
-dotnet build
-```
-
-```csharp
-public class Example
-{
-    // Code here
-}
-```
-````
-
-#### Tables
-
-Use pipe tables with consistent column width:
-
-```markdown
-| Column 1 | Column 2 | Column 3 |
-|----------|----------|----------|
-| Value A  | Value B  | Value C  |
-| Value D  | Value E  | Value F  |
-```
-
-#### Emphasis
-
-- **Bold** for emphasis (`**bold**`)
-- *Italic* for terminology (`*italic*`)
-- `Code` for inline code, paths, commands (`` `code` ``)
-
-### Writing Style
-
-#### Clarity and Conciseness
-
-- Write in clear, simple language
-- Use short sentences (15-20 words ideal)
-- Use active voice ("The system validates" not "Validation is performed")
-- Avoid jargon unless necessary (define terms on first use)
-
-#### Consistency
-
-- **Commands**: Show full commands, not partial syntax
-- **Paths**: Use absolute paths in code examples
-- **Placeholders**: Use `<placeholder>` or `{variable}` notation
-- **Terminology**: Use consistent terms (e.g., "provider" not "data source" in some places)
-
-#### Examples
-
-Good ✅:
-```markdown
-To add a new provider, implement the `IMarketDataClient` interface:
-
-```csharp
-public class MyProvider : IMarketDataClient
-{
-    // Implementation
-}
-```
-```
-
-Bad ❌:
-```markdown
-Add provider by implementing interface.
-```
-
----
+- Lead with the purpose and result, then give prerequisites and steps.
+- Define domain terms and acronyms on first use, or link to their reference.
+- Use one title and descriptive section headings in logical order.
+- State whether a claim is current behavior, a proposal, or dated evidence.
+- Use tables for comparisons and numbered steps for procedures.
+- Keep landing pages short: task routes, authoritative sources, and links to detailed history.
+- Name the operating system, shell, working directory, required permissions, and configuration
+  before commands. Use repository-relative paths for portable examples.
 
 ## File Naming Conventions
 
-### General Rules
-
-- Use **kebab-case** (lowercase with hyphens): `provider-implementation.md`
-- Use descriptive names that indicate content: `interactive-brokers-setup.md`
-- Avoid dates in filenames (use front matter instead)
-- Group related files with common prefixes
-
-### Examples
-
-```
-✅ Good:
-- getting-started.md
-- provider-implementation.md
-- alpaca-setup.md
-- repository-organization-guide.md
-
-❌ Bad:
-- GettingStarted.md
-- provider_impl.md
-- alpaca.md
-- 2026-02-12-guide.md
-```
-
-### Special Cases
-
-- **ADRs**: Use format `NNN-short-title.md` (e.g., `001-provider-abstraction.md`)
-- **Archived**: Preserve original names and add a note in `archive/docs/README.md` (the 2026-09-11 archive cleanup removed it; recreate it with the first new archive batch)
-- **Generated**: Prefix with `generated-` or use `generated/` directory
-
----
+Use descriptive kebab-case names. Keep `README.md` for folder entrypoints and `NNN-title.md` for
+ADRs. Dated reviews and prioritization records may include the evidence date in their names;
+continuously maintained procedures should use stable names. Preserve generator-owned filenames.
 
 ## Cross-References and Links
 
-### Internal Links
+Use descriptive Markdown links with paths relative to the current document. Link to the owning
+reference instead of copying option tables or status summaries. Avoid version numbers and
+"latest" dates in link labels unless that page owns the version selection.
 
-Use **relative paths** from the current document:
-
-```markdown
-See [Architecture Overview](../architecture/overview.md) for details.
-
-Jump to [Configuration](#configuration) section below.
-```
-
-### External Links
-
-Include descriptive text, not bare URLs:
-
-```markdown
-✅ Good: See the [.NET documentation](https://docs.microsoft.com/dotnet)
-❌ Bad: See https://docs.microsoft.com/dotnet
-```
-
-### Link Validation
-
-- Check links work before committing
-- Use the `markdown-link-check` workflow (runs automatically)
-- Fix broken links found by CI
-
-### Common Link Patterns
-
-```markdown
-# Reference code
-See `src/Meridian.Core/Config/AppConfig.cs` for implementation.
-
-# Reference other docs
-See [ROADMAP Phase 6](../roadmap/README.md).
-
-# Reference external resources
-Based on [ADR-001](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/adr/001-provider-abstraction.md).
-```
-
----
+After a move, update inbound links, section anchors, the nearest index, and the published-site
+navigation. Keep a redirect when a compatibility path still has active consumers. Inline-code
+paths are useful identifiers but do not give readers a clickable route.
 
 ## Code Examples
 
-### Inline Code
+Provide complete commands, supported flags, and expected results. Commands run from the repository
+root unless explicitly stated otherwise. For example:
 
-Use backticks for:
-- Commands: `dotnet build`
-- File paths: `src/Meridian/Program.cs`
-- Code identifiers: `IMarketDataClient`
-- Environment variables: `$ALPACA_API_KEY`
-
-### Code Blocks
-
-#### Full Examples
-
-Provide complete, runnable examples:
-
-````markdown
 ```bash
-# Build the project
-dotnet build -c Release
-
-# Run tests
-dotnet test
+dotnet run --project src/Meridian/Meridian.csproj -- --help
 ```
 
-```csharp
-// Complete example with context
-public class ExampleService
-{
-    private readonly ILogger _logger;
-
-    public ExampleService(ILogger logger)
-    {
-        _logger = logger;
-    }
-
-    public void DoWork()
-    {
-        _logger.LogInformation("Working...");
-    }
-}
-```
-````
-
-#### Snippets with Context
-
-When showing partial code, indicate what's omitted:
-
-````markdown
-```csharp
-public class ConfigService
-{
-    // ... other members ...
-
-    public async Task SaveAsync(AppConfig config, CancellationToken ct = default)
-    {
-        // Implementation
-    }
-}
-```
-````
-
-#### Command Examples
-
-Show actual commands with expected output:
-
-````markdown
-```bash
-$ dotnet run --project src/Meridian -- --help
-
-Meridian v1.6.1
-
-Usage:
-  Meridian [options]
-
-Options:
-  --help                 Show help information
-  --version              Show version information
-```
-````
-
----
+This prints the current CLI help; link to it instead of copying a versioned help transcript.
+Mark partial snippets as partial. Keep placeholders obvious and never put real credentials into
+examples. Separate blocking server commands from client checks into named terminals.
 
 ## Diagrams and Visuals
 
-### When to Use Diagrams
-
-Use diagrams for:
-- **System architecture** (C4 diagrams in `docs/diagrams/`)
-- **Flow charts** (process flows, decision trees)
-- **Sequence diagrams** (interactions between components)
-- **UML diagrams** (class structures, state machines)
-
-### Diagram Formats
-
-| Format | Use Case | Tools |
-|--------|----------|-------|
-| **DOT/Graphviz** | System architecture, data flow | `dot` command |
-| **PlantUML** | UML diagrams | `plantuml` command |
-| **Mermaid** | Simple diagrams in markdown | GitHub renders inline |
-| **PNG/SVG** | Exported from above | `dot -Tpng`, `dot -Tsvg` |
-
-### Diagram Files
-
-All visual assets live under `docs/diagrams/`:
-
-- Graphviz DOT sources: `docs/diagrams/*.dot`
-- Graphviz rendered PNGs/SVGs: `docs/diagrams/*.png`, `docs/diagrams/*.svg`
-- PlantUML sources: `docs/diagrams/uml/*.puml`
-- PlantUML rendered PNGs: `docs/diagrams/uml/*.png`
-
-Both source and rendered files should be committed.
-
-### Example Mermaid Diagram
-
-````markdown
-```mermaid
-graph TD
-    A[User] -->|Request| B[API]
-    B -->|Query| C[Database]
-    C -->|Result| B
-    B -->|Response| A
-```
-````
-
----
+Use a diagram when it explains relationships or a workflow more clearly than prose. Give it a
+caption or text explanation. Follow the [diagram index](../diagrams/README.md) for asset ownership,
+keep sources with rendered assets, and regenerate owned outputs instead of editing them by hand.
 
 ## Updating Documentation
 
-### When to Update
-
-Update documentation when:
-- Adding new features
-- Changing existing behavior
-- Fixing bugs that affect documented behavior
-- Restructuring code
-- Deprecating features
-
-### Update Checklist
-
-- [ ] Update affected documentation files
-- [ ] Update cross-references
-- [ ] Update code examples if needed
-- [ ] Update diagrams if architecture changed
-- [ ] Update the [CHANGELOG](../status/CHANGELOG.md)
-- [ ] Check master index ([docs/README.md](../README.md)) has correct links
-- [ ] Run documentation command checks: `make docs-lint` and `python build/scripts/docs/validate-docs-structure.py --summary`
+1. Verify the affected behavior, registry, or command.
+2. Update the owning document and its review metadata.
+3. Update task links, references, and generated inputs affected by the change.
+4. Run the checks below and inspect the diff, including any regenerated files.
+5. Describe the changed behavior and validation limits in the pull request.
 
 ### Deprecating Documentation
 
-When documentation becomes outdated:
-
-1. **Add deprecation notice** at the top:
-   ```markdown
-   > **DEPRECATED:** This document has been superseded by [New Document](../product/README.md).
-   > Archived on 2026-02-12.
-   ```
-
-2. **Move to `archive/docs/`** when no longer relevant
-3. **Add an entry to [archive/docs/README.md](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/README.md)** explaining why archived
-
----
+Mark superseded guidance `deprecated` and link its replacement at the top. Once active consumers
+have moved, preserve historical content in an indexed archive bucket. Record why it was archived
+and which source now owns current guidance. Keep original evidence timestamps and commit references.
 
 ## Review Process
 
-### Before Committing
+Run these from the repository root after document edits or moves:
 
-- [ ] Spell check (use IDE spell checker)
-- [ ] Proofread for clarity
-- [ ] Test all code examples
-- [ ] Verify all links work
-- [ ] Ensure consistent formatting
-- [ ] Add/update table of contents if needed
+```bash
+python build/scripts/docs/validate-docs-structure.py --summary
+python build/scripts/docs/repair-links.py --summary
+python build/scripts/docs/check-docfx-navigation.py --summary
+git diff --check
+```
 
-### PR Requirements
+The link checker is read-only unless repair is explicitly requested. The DocFX check verifies
+published navigation against configured inputs; see [DocFX validation](../docfx/README.md) for
+checking built output. Neither check executes an application's setup or provider commands.
 
-Documentation changes should:
-- Be included in the same PR as code changes they document
-- Be reviewed for accuracy by someone familiar with the feature
-- Pass automated checks (markdown linting, link checking)
-
-### Automated Checks
-
-The following checks run in CI:
-
-- **Markdown Linting** (`.markdownlint.json` config)
-- **Link Checking** (`.github/markdown-link-check-config.json`)
-- **Spell Checking** (`.github/spellcheck-config.yml`)
-
-Fix any failures before merging.
-
----
+Use the relevant generator/registry checks when their inputs change. Follow
+[Engineering validation](../engineering/README.md#buildtestrun) for the required repository gate;
+focused documentation checks do not replace it. In the PR, distinguish passed checks, warnings,
+blocked checks, and examples verified only by source inspection.
 
 ## Document Templates
 
 ### Guide Template
 
-```markdown
-# [Feature Name] Guide
-
-**Version:** 1.0
-**Last Updated:** YYYY-MM-DD
-**Audience:** Users | Developers | Operators
-
-Brief introduction explaining what this guide covers.
-
----
-
-## Prerequisites
-
-- Required software/knowledge
-- Links to setup guides
-
----
-
-## Step-by-Step Instructions
-
-### Step 1: First Action
-
-Description and commands.
-
-### Step 2: Next Action
-
-Description and commands.
-
----
-
-## Common Issues
-
-### Issue 1
-
-Symptom and solution.
-
-### Issue 2
-
-Symptom and solution.
-
----
-
-## Next Steps
-
-- Link to related guides
-- Link to reference documentation
-```
+Use the [Operator Runbook Template](../operators/runbook-template.md) for operating procedures.
+For a contributor guide, use the same task/prerequisites/steps/results/recovery structure with
+contributor-specific commands and validation.
 
 ### Reference Template
 
-```markdown
-# [Component Name] Reference
-
-**Version:** 1.0
-**Last Updated:** YYYY-MM-DD
-**Audience:** Developers
-
-Brief description of the component.
-
----
-
-## Overview
-
-High-level description.
-
----
-
-## API
-
-### Method 1
-
-```csharp
-public void Method1(string param)
-```
-
-**Parameters:**
-- `param` - Description
-
-**Returns:** Description
-
-**Example:**
-```csharp
-// Example usage
-```
-
----
-
-## See Also
-
-- [Related Reference](../reference/api-reference.md)
-- [Guide](../development/provider-implementation.md)
-```
-
----
+Start with lifecycle metadata, audience, and scope. Follow with exact contract or option names,
+types, defaults, constraints, precedence, a small example, and links to procedures that use the
+reference. Generate inventories from source where an existing generator owns them.
 
 ## Questions and Feedback
 
-If you have questions about documentation standards or suggestions for improvement:
-
-1. Open a [GitHub Discussion](https://github.com/rodoHasArrived/Meridian/discussions)
-2. Tag it with `documentation`
-3. Reference this guide
-
----
+Include the owning document, intended reader, and concrete unclear step in a documentation issue
+or pull request. Route placement questions to the owner of the Documentation Ownership Contract.
 
 ## Additional Resources
 
+- [Documentation Ownership Contract](../documentation-ownership.md)
+- [Documentation Automation](documentation-automation.md)
 - [GitHub Flavored Markdown Spec](https://github.github.com/gfm/)
-- [Markdown Guide](https://www.markdownguide.org/)
-- [Graphviz Documentation](https://graphviz.org/documentation/)
-- [PlantUML Guide](https://plantuml.com/)
-
----
-
-*This guide is maintained as part of [Phase 8A documentation organization](../roadmap/generated/ROADMAP_SUMMARY.md).*
-
