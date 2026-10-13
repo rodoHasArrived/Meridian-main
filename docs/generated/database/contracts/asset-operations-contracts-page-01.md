@@ -2,7 +2,7 @@
 
 # `asset-operations-contracts` data objects - page 1 of 2
 
-Objects 1-80 of 112. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 113. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -109,6 +109,13 @@ classDiagram
         +decimal Quantity
         +Guid TaxLotRecordId
         +decimal UnitCost
+    }
+    class Meridian_Contracts_AssetOperations_AssetAcquisitionTermsCompletionDto["AssetAcquisitionTermsCompletionDto"] {
+        +BondAmortizationMethod AmortizationMethod
+        +string DraftedCandidateFingerprint
+        +decimal? EffectiveYield
+        +RetainedEvidenceIdentityDto Evidence
+        +Guid TaxLotRecordId
     }
     class Meridian_Contracts_AssetOperations_AssetActualActivityDto["AssetActualActivityDto"] {
         +Guid ActivityId
@@ -596,8 +603,6 @@ classDiagram
         +IReadOnlyList~RetainedEvidenceIdentityDto~ RetainedEvidence
         +Guid? SecurityId
         +string? SourceContentHash
-    }
-    class Meridian_Contracts_AssetOperations_IAssetOperationsCommandService["IAssetOperationsCommandService"] {
     }
     Meridian_Contracts_AssetOperations_AppendAssetAccountingLifecycleStageRequestDto --> Meridian_Contracts_AssetOperations_AssetAccountingLifecycleStageDto
     Meridian_Contracts_AssetOperations_AssetAccountingEventSpineAppendResultDto --> Meridian_Contracts_AssetOperations_AssetAccountingEventSpineDto
