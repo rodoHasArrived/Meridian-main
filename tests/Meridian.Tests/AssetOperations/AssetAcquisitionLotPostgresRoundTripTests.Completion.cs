@@ -49,7 +49,7 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
         yield return (request with
         {
             AcquisitionTermsCompletion = completion with
-            { Evidence = completion.Evidence with { ReviewedAtUtc = request.Candidate.AccountingTimestamp } }
+            { Evidence = completion.Evidence with { ReviewedAtUtc = request.Candidate.AccountingTimestamp.AddTicks(-1) } }
         }, "*completion review cannot precede the retained Drafted attestation*");
     }
 
@@ -77,11 +77,7 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
                     DraftedCandidate = candidate,
                     DraftedCandidateFingerprint = AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(candidate),
                     DraftedLotMutation = instruction,
-                    DraftedLotMutationFingerprint = AssetLotMutationInstructionValidator.Fingerprint(instruction),
-                    // A retained attestation can be later than the candidate's accounting timestamp.
-                    // Seed that historical shape before append, without rewriting stored history.
-                    Stages = projection.Stages.Select(stage => stage.Stage == AssetAccountingLifecycleStageDto.Drafted
-                        ? stage with { AttestedAtUtc = candidate.AccountingTimestamp.AddTicks(1) } : stage).ToArray()
+                    DraftedLotMutationFingerprint = AssetLotMutationInstructionValidator.Fingerprint(instruction)
                 };
             }
             return inner.AppendAsync(projection, expectedSpineVersion, expectedBookPositionVersion, ct);

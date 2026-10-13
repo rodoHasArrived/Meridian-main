@@ -249,7 +249,7 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
             (await assets.GetLatestAsync(eventId, 1, ct))!.Projection.SpineVersion
                 .Should().Be(retainedApproval ? 4 : 3);
             drafted.Stages.Single(stage => stage.Stage == AssetAccountingLifecycleStageDto.Drafted).AttestedAtUtc
-                .Should().BeAfter(candidate.AccountingTimestamp);
+                .Should().Be(candidate.AccountingTimestamp);
             foreach (var (invalidRequest, error) in InvalidReviewedCompletions(postRequest))
             {
                 var refused = () => posting.PostCandidateAsync(invalidRequest, ct);
