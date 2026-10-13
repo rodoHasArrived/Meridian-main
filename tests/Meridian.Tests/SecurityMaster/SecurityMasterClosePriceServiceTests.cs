@@ -118,6 +118,68 @@ public sealed class SecurityMasterClosePriceServiceTests
         await service.Invoking(s => s.CreateClosePriceSetAsync(Request() with { EvaluatedAsOf = Close.AddDays(1) })).Should().ThrowAsync<ArgumentException>();
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FutureEvaluationOrKnowledgeCutoffIsRejectedBeforeSourceEvaluation(bool futureKnowledge)
+    {
+        var (service, store) = BuildService();
+        var future = DateTimeOffset.UtcNow.AddDays(1);
+        var request = futureKnowledge
+            ? Request() with { KnowledgeAsOf = future }
+            : Request() with { EvaluatedAsOf = future, ValuationDate = DateOnly.FromDateTime(future.UtcDateTime) };
+        await service.Invoking(s => s.CreateClosePriceSetAsync(request)).Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*cutoffs cannot be later than the snapshot capture time*");
+        await store.DidNotReceive().GetRawPricesAsync(Arg.Any<Guid>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>());
+        await store.DidNotReceive().RetainPriceSelectionAsync(Arg.Any<SecurityPriceGoldenCopyDto>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
+        await store.DidNotReceive().RetainClosePriceSnapshotAsync(Arg.Any<SecurityClosePriceSnapshotDto>(), Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NullSecurityCollectionOrEntryIsRejectedWithoutRetention(bool nullEntry)
+    {
+        var (service, store) = BuildService();
+        var request = Request() with { Securities = nullEntry ? new SecurityClosePriceInputDto[] { null! } : null! };
+        await service.Invoking(s => s.CreateClosePriceSetAsync(request)).Should().ThrowAsync<ArgumentException>();
+        await store.DidNotReceive().RetainPriceSelectionAsync(Arg.Any<SecurityPriceGoldenCopyDto>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
+        await store.DidNotReceive().RetainClosePriceSnapshotAsync(Arg.Any<SecurityClosePriceSnapshotDto>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DefaultKnowledgeCutoffAndCreatedAtUseTheSameCaptureInstant()
+    {
+        var (service, _) = BuildService();
+        var before = DateTimeOffset.UtcNow;
+        var draft = await service.CreateClosePriceSetAsync(Request());
+        draft.Snapshot.CreatedAt.Should().BeOnOrAfter(before).And.BeOnOrBefore(DateTimeOffset.UtcNow);
+        draft.Snapshot.KnowledgeAsOf.Should().Be(draft.Snapshot.CreatedAt);
+        draft.Snapshot.Lines.Single().Selection!.KnowledgeAsOf.Should().Be(draft.Snapshot.CreatedAt);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DurableValidationRefusesCutoffsBeyondRetainedCaptureEvenWhenSelectionAgrees(bool futureKnowledge)
+    {
+        var (service, _) = BuildService();
+        var draft = await service.CreateClosePriceSetAsync(Request());
+        var future = draft.Snapshot.CreatedAt.AddDays(1);
+        var evaluatedAsOf = futureKnowledge ? draft.Snapshot.EvaluatedAsOf : future;
+        var knowledgeAsOf = futureKnowledge ? future : draft.Snapshot.KnowledgeAsOf;
+        var line = draft.Snapshot.Lines.Single();
+        var forged = draft.Snapshot with
+        {
+            EvaluatedAsOf = evaluatedAsOf,
+            KnowledgeAsOf = knowledgeAsOf,
+            ValuationDate = DateOnly.FromDateTime(evaluatedAsOf.UtcDateTime),
+            Lines = [line with { Selection = line.Selection! with { EvaluatedAsOf = evaluatedAsOf, KnowledgeAsOf = knowledgeAsOf } }]
+        };
+        Action retain = () => SecurityClosePriceEvidence.Validate(forged);
+        retain.Should().Throw<ArgumentException>();
+    }
+
     private static CreateSecurityClosePriceSetRequest Request(SecurityClosePriceOverrideDto? manual = null)
         => new("account-a", "book-a", DateOnly.FromDateTime(Close.UtcDateTime), Close, [new(SecurityId, manual)], 2m, "maker");
     private static ApproveSecurityClosePriceSetRequest Approve(SecurityClosePriceSetDto set, string reviewer = "checker")

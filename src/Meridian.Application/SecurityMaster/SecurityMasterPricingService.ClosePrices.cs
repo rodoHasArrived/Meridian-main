@@ -7,6 +7,13 @@ public sealed partial class SecurityMasterPricingService
     public async Task<SecurityClosePriceSetDto> CreateClosePriceSetAsync(
         CreateSecurityClosePriceSetRequest request, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
+        var capturedAt = DateTimeOffset.UtcNow;
+        var knownAt = request.KnowledgeAsOf ?? capturedAt;
+        if (request.Securities is null || request.Securities.Any(s => s is null))
+            throw new ArgumentException("Close-price securities require a collection with no null entries.", nameof(request));
+        if (request.EvaluatedAsOf > capturedAt || knownAt > capturedAt)
+            throw new ArgumentException("Close-price evaluation and knowledge cutoffs cannot be later than the snapshot capture time.");
         if (string.IsNullOrWhiteSpace(request.AccountId) || string.IsNullOrWhiteSpace(request.BookId)
             || string.IsNullOrWhiteSpace(request.CreatedBy) || request.ValuationDate == default
             || request.EvaluatedAsOf == default || DateOnly.FromDateTime(request.EvaluatedAsOf.UtcDateTime) != request.ValuationDate
@@ -26,7 +33,6 @@ public sealed partial class SecurityMasterPricingService
                 throw new InvalidOperationException("A close-price correction must retain the predecessor's security coverage.");
         }
 
-        var knownAt = request.KnowledgeAsOf ?? DateTimeOffset.UtcNow;
         var lines = new List<SecurityClosePriceLineDto>();
         foreach (var input in request.Securities.OrderBy(s => s.SecurityId))
         {
@@ -46,7 +52,7 @@ public sealed partial class SecurityMasterPricingService
         var snapshot = new SecurityClosePriceSnapshotDto(Guid.NewGuid(), account, book, request.ValuationDate,
             (prior?.Version ?? 0) + 1, request.CorrectsSnapshotId, request.CorrectionRationale?.Trim(),
             request.EvaluatedAsOf, knownAt, request.MaxSourceDispersionPercent, request.CreatedBy.Trim(),
-            DateTimeOffset.UtcNow, lines, SecurityClosePriceEvidence.Assess(lines, request.MaxSourceDispersionPercent));
+            capturedAt, lines, SecurityClosePriceEvidence.Assess(lines, request.MaxSourceDispersionPercent));
         SecurityClosePriceEvidence.Validate(snapshot);
         await _store.RetainClosePriceSnapshotAsync(snapshot, ct).ConfigureAwait(false);
         return new(snapshot, null);

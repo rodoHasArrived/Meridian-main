@@ -395,6 +395,68 @@ public sealed class AccountCashForecastTests : IDisposable
         await stale.Should().ThrowAsync<InvalidOperationException>();
     }
 
+    [Theory]
+    [InlineData("flow-id")]
+    [InlineData("status")]
+    public async Task Store_RetainedVersionCannotBeReboundToAnotherFlowIdentityOrStatus(string change)
+    {
+        var store = new FileAccountCashForecastStore(_dataRoot);
+        await store.InitializeAsync();
+        var service = new AccountCashForecastService(store);
+        var original = Flow("coupon", "statement-v1", AccountCashFlowStatus.Actual, 25m);
+        var first = await service.CaptureAsync(Request([original], 125m));
+        var rebound = change == "flow-id"
+            ? original with { FlowId = "different-coupon" }
+            : Flow(original.FlowId, original.VersionId, AccountCashFlowStatus.Expected, original.Amount);
+        var capture = () => service.CaptureAsync(Request([rebound], 125m) with
+        {
+            RunId = "rebound-run",
+            PreviousSnapshotId = first.SnapshotId,
+            CorrectionRationale = "Attempt to rebind an existing source revision."
+        });
+        await capture.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("A retained source revision identity cannot be reused with changed flow content.");
+        var history = await service.GetHistoryAsync(Scope);
+        history.Should().ContainSingle();
+        history[0].Inputs.Flows.Single().Should().Be(original);
+    }
+
+    [Fact]
+    public async Task Store_OmittingAFlowDoesNotReleaseItsRetainedVersionIdentityAfterRestart()
+    {
+        var store = new FileAccountCashForecastStore(_dataRoot);
+        await store.InitializeAsync();
+        var service = new AccountCashForecastService(store);
+        var original = Flow("coupon", "statement-v1", AccountCashFlowStatus.Actual, 25m);
+        var first = await service.CaptureAsync(Request([original], 125m));
+        var omitted = await service.CaptureAsync(Request([], 100m) with
+        {
+            RunId = "omitted-run",
+            PreviousSnapshotId = first.SnapshotId,
+            CorrectionRationale = "The next selected run omits the flow."
+        });
+        var restarted = new AccountCashForecastService(new FileAccountCashForecastStore(_dataRoot));
+        var changed = () => restarted.CaptureAsync(Request([original with { Amount = 26m }], 126m) with
+        {
+            RunId = "changed-reintroduction",
+            PreviousSnapshotId = omitted.SnapshotId,
+            CorrectionRationale = "Attempt to reintroduce changed content under the earlier source revision."
+        });
+        await changed.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("A retained source revision identity cannot be reused with changed flow content.");
+        (await restarted.GetHistoryAsync(Scope)).Should().HaveCount(2);
+
+        // Selection can return to the exact immutable revision after an intervening omitted run.
+        var repeated = await restarted.CaptureAsync(Request([original], 125m) with
+        {
+            RunId = "unchanged-reintroduction",
+            PreviousSnapshotId = omitted.SnapshotId,
+            CorrectionRationale = "Reintroduce the unchanged retained source revision."
+        });
+        repeated.Inputs.Flows.Single().Should().Be(original);
+        (await restarted.GetHistoryAsync(Scope)).Should().HaveCount(3);
+    }
+
     private static AccountCashForecastRequestDto Request(IReadOnlyList<AccountCashFlowDto> flows, decimal closing) =>
         new("run-1", Scope, Start, End,
             new(Scope.AccountId, Scope.BookId, Start, 100m, "USD", true, Provenance("opening", AccountCashEvidenceRole.Observation, Start)),

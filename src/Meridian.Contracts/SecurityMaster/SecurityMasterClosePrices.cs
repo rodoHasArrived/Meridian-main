@@ -85,6 +85,7 @@ public static class SecurityClosePriceEvidence
             || snapshot.Version < 1 || snapshot.EvaluatedAsOf == default || snapshot.KnowledgeAsOf == default
             || DateOnly.FromDateTime(snapshot.EvaluatedAsOf.UtcDateTime) != snapshot.ValuationDate
             || snapshot.CreatedAt == default || string.IsNullOrWhiteSpace(snapshot.CreatedBy)
+            || snapshot.EvaluatedAsOf > snapshot.CreatedAt || snapshot.KnowledgeAsOf > snapshot.CreatedAt
             || snapshot.CreatedBy != snapshot.CreatedBy.Trim() || snapshot.MaxSourceDispersionPercent < 0
             || (snapshot.Version == 1) != (snapshot.CorrectsSnapshotId is null)
             || snapshot.CorrectsSnapshotId == Guid.Empty || snapshot.CorrectsSnapshotId == snapshot.SnapshotId

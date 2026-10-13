@@ -39,6 +39,8 @@ public sealed class AccountCashForecastEvidenceAdapter(IEvidenceArtifactStore st
         ArgumentNullException.ThrowIfNull(request.Scope);
         ArgumentNullException.ThrowIfNull(request.Flows);
         ArgumentNullException.ThrowIfNull(request.FxConversions);
+        if (request.Flows.Any(static flow => flow is null) || request.FxConversions.Any(static fx => fx is null))
+            throw new ArgumentException("Forecast flow and FX collections cannot contain null entries.", nameof(request));
         if (request.OpeningCash is { } opening)
             await BalanceAsync(opening).ConfigureAwait(false);
         if (request.ClosingCash is { } closing)

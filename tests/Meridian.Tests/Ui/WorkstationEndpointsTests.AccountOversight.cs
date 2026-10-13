@@ -295,6 +295,34 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Theory]
+    [InlineData("flow")]
+    [InlineData("fx")]
+    public async Task AccountOversight_NullForecastEntriesRejectBeforeEvidenceOrForecastCalls(string collection)
+    {
+        var bookId = Guid.NewGuid();
+        var accountId = Guid.NewGuid();
+        var forecasts = new Mock<IAccountCashForecastService>(MockBehavior.Strict);
+        var evidence = new Mock<IEvidenceArtifactStore>(MockBehavior.Strict);
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(OversightBooks(bookId, OversightBook(bookId, accountId)).Object);
+            services.AddSingleton(forecasts.Object);
+            services.AddSingleton(evidence.Object);
+        }, currentUserPermissions: UserPermission.ManageLedgerReports, mapLedgerApi: true);
+        var request = OversightForecastRequest(bookId, accountId);
+        request = collection == "flow" ? request with { Flows = [null!] }
+            : request with { FxConversions = [null!] };
+
+        using var response = await app.GetTestClient().PostAsJsonAsync(
+            OversightBaseRoute(bookId, accountId) + "/cash-forecasts", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+        (await response.Content.ReadAsStringAsync()).Should().Contain("cannot contain null entries");
+        forecasts.VerifyNoOtherCalls();
+        evidence.VerifyNoOtherCalls();
+    }
+
+    [Theory]
     [InlineData("account")]
     [InlineData("book")]
     [InlineData("date")]

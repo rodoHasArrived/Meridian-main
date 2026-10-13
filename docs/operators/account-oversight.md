@@ -43,6 +43,14 @@ Use the shared request contracts in `AccountCashReconciliationModels`, `Security
 and `AccountCashForecastDtos`. Authenticated identity supplies reviewer/assignment actor and
 tenant/company authority. Price preparation/review additionally requires Security Master write
 permission. Read and write access otherwise follows existing ledger permissions.
+Price reads also require Security Master view or write permission.
+
+HTTP forecast bodies use `0` (Expected) or `1` (Actual) for `flows[].status`, and
+`0` (Observation), `1` (Projection) or `2` (DeclaredFx) for `provenance.role`.
+Reconciliation source types use `0` (Prime), `1` (Custodian), `2` (Administrator)
+or `3` (InternalLedger). Price quote units use `"CurrencyPerUnit"` or `"PercentOfPar"`.
+Date-only fields use `YYYY-MM-DD`. Observation and recording timestamps cannot exceed
+the server's current UTC time. The reviewed source JSON format below uses enum names.
 
 ## Cash-balance continuity
 
@@ -57,6 +65,8 @@ row ID, business date and tolerance version do not create a different case. The 
 original first-seen time and owner. Equal or tolerated balances mark `SourceCleared`; missing
 balances cannot clear an existing case. Recurrence reopens the same case while earlier resolution
 observations remain in history. Source clearing does not dispose of governed close casework.
+Aging is measured through the retained last observation or resolution time; it does not
+advance without a new observation.
 
 ## Price snapshots
 
@@ -66,6 +76,7 @@ mixed-unit and excessive-dispersion inputs remain visible blockers. Overrides re
 evidence and rationale; they cannot conceal unsupported source inputs. An independent reviewer
 approves the frozen set. Later quotes leave it unchanged. A correction names the predecessor
 snapshot, retains the same security population and appends a version with correction rationale.
+Both the price evaluation and knowledge cutoffs must have elapsed when the set is created.
 
 ## Forecast source format and review
 
@@ -97,12 +108,25 @@ must confirm the exact `sourceContentHashSha256`; provenance must match the reta
 review identity/time, original source, version and account subject. The API verifies retained bytes
 and compares every economic field before capture.
 
+In provenance, `evidenceId` is the retained document ID (`doc:ev-...`), and `evidenceUri`
+is its canonical `evidence://evidence-vault/ev-...` URI. Subject type is `account` and
+subject ID is the exact account GUID. Copy the accepted review's reviewer and UTC timestamp
+into both `reviewedBy`/`reviewedAtUtc` and `retainedBy`/`retainedAtUtc`; retention here
+identifies the durable review commit. Record the review through the document-review API so
+its `DocumentReviewRecorded` audit event exists. Confirm the exact field name
+`sourceContentHashSha256` with the complete source-byte digest. Source JSON is limited
+to one MiB. An unsupported or mismatched source returns HTTP 409 with
+`CASH_FORECAST_SOURCE_AUTHORITY_REQUIRED`.
+
 Opening means start-of-day settled cash; closing means end-of-day settled cash over the inclusive
 period. Receipt date changes cash; economic and settlement dates explain the obligation. Actual
 cash replaces its corresponding expectation in the forecast and is counted once. A dated declared
 FX rate is required for each selected foreign cash observation or flow. Missing account scope,
 source authority, FX, unsettled expectations or unexplained closing variance blocks certification.
 Linked revisions retain prior predictions, including factor restatements.
+Each flow `versionId` identifies one immutable source revision throughout the retained
+account/book/period history, including snapshots that temporarily omit the flow. Changed
+economics, status or identity require a new version and the applicable supersession link.
 
 ## Recovery and evidence
 

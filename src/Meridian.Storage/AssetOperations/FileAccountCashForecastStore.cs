@@ -53,6 +53,7 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
                 throw new InvalidOperationException("The account forecast run identity is already retained with different source content.");
             return Copy(existing);
         }
+        ValidateVersionBindings(copy, history);
         ValidatePredecessor(copy, history);
         await WriteAsync([.. history, copy], ct).ConfigureAwait(false);
         return Copy(copy);
@@ -89,6 +90,7 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
                 ValidateSnapshot(snapshot);
                 if (seen.Any(row => row.SnapshotId == snapshot.SnapshotId || (row.Inputs.Scope == snapshot.Inputs.Scope && row.Inputs.RunId == snapshot.Inputs.RunId)))
                     throw new InvalidDataException("The retained account forecast contains duplicate snapshot or run identities.");
+                ValidateVersionBindings(snapshot, seen);
                 ValidatePredecessor(snapshot, seen);
                 seen.Add(snapshot);
             }
@@ -137,6 +139,21 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
         if (string.IsNullOrWhiteSpace(snapshot.Inputs.RunId) || snapshot.Inputs.RecordedAtUtc == default || snapshot.Inputs.RecordedAtUtc.Offset != TimeSpan.Zero
             || !Sha256Digest.IsCanonical(snapshot.SnapshotId) || snapshot.SnapshotId != snapshot.EvidenceHash || !Sha256Digest.FixedEquals(snapshot.EvidenceHash, expected))
             throw new InvalidDataException("Retained forecast identity, source fingerprint or UTC recording time is invalid.");
+    }
+
+    private static void ValidateVersionBindings(AccountCashForecastSnapshotDto snapshot, IReadOnlyList<AccountCashForecastSnapshotDto> history)
+    {
+        var retained = history.Where(row => row.Inputs.Scope == snapshot.Inputs.Scope
+            && row.Inputs.PeriodStart == snapshot.Inputs.PeriodStart && row.Inputs.PeriodEnd == snapshot.Inputs.PeriodEnd)
+            .SelectMany(static row => row.Inputs.Flows)
+            .ToLookup(static flow => flow.VersionId, StringComparer.Ordinal);
+        foreach (var flow in snapshot.Inputs.Flows)
+        {
+            // Version identity belongs to the full retained period, even when the latest run omitted
+            // the flow or a caller attempts to rebind its status or stable flow identity.
+            if (retained[flow.VersionId].Any(prior => prior != flow))
+                throw new InvalidOperationException("A retained source revision identity cannot be reused with changed flow content.");
+        }
     }
 
     private static void ValidatePredecessor(AccountCashForecastSnapshotDto snapshot, IReadOnlyList<AccountCashForecastSnapshotDto> history)
