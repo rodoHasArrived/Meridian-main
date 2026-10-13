@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Data;
 using System.Data.Common;
 using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
@@ -7,7 +6,7 @@ using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
 
-public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
+public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore, ISecurityMasterMutationParticipant
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -21,6 +20,8 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
 
     private readonly SecurityMasterOptions _options;
 
+    public SecurityMasterOptions MutationOptions => _options;
+
     public PostgresOperatorOverridesStore(SecurityMasterOptions options)
     {
         _options = options;
@@ -28,7 +29,8 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
 
     public async Task<OperatorOverridesDto?> GetAsync(Guid securityId, CancellationToken ct = default)
     {
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
+        var connection = lease.Connection;
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""
@@ -47,7 +49,13 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
         return ReadOverrides(reader, securityId);
     }
 
-    public async Task<OperatorOverridesDto> PatchAsync(
+    public Task<OperatorOverridesDto> PatchAsync(
+        Guid securityId, OperatorOverridesPatchRequest request, string updatedBy,
+        CancellationToken ct = default, long? expectedCanonicalVersion = null)
+        => PostgresSecurityMasterMutation.ExecuteAsync(_options, securityId,
+            () => PatchCoreAsync(securityId, request, updatedBy, ct, expectedCanonicalVersion), ct);
+
+    private async Task<OperatorOverridesDto> PatchCoreAsync(
         Guid securityId,
         OperatorOverridesPatchRequest request,
         string updatedBy,
@@ -59,10 +67,9 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
             throw new ArgumentException("updatedBy must be provided.", nameof(updatedBy));
         }
 
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        await using var transaction = await connection
-            .BeginTransactionAsync(IsolationLevel.Serializable, ct)
-            .ConfigureAwait(false);
+        await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
+        var connection = lease.Connection;
+        var transaction = PostgresSecurityMasterMutation.RequireTransaction(_options, securityId);
 
         if (expectedCanonicalVersion is { } expectedVersion)
         {
@@ -153,8 +160,6 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
 
-        await transaction.CommitAsync(ct).ConfigureAwait(false);
-
         return new OperatorOverridesDto(securityId, next, updatedBy, updatedAt)
         {
             ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending,
@@ -163,7 +168,12 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
         };
     }
 
-    public async Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
+    public Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
+        Guid securityId, OperatorOverrideDecision decision, CancellationToken ct = default)
+        => PostgresSecurityMasterMutation.ExecuteAsync(_options, securityId,
+            () => RecordApprovalDecisionCoreAsync(securityId, decision, ct), ct);
+
+    private async Task<OperatorOverridesDto> RecordApprovalDecisionCoreAsync(
         Guid securityId,
         OperatorOverrideDecision decision,
         CancellationToken ct = default)
@@ -184,10 +194,9 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
 
         var reviewer = decision.Reviewer.Trim();
 
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        await using var transaction = await connection
-            .BeginTransactionAsync(IsolationLevel.Serializable, ct)
-            .ConfigureAwait(false);
+        await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
+        var connection = lease.Connection;
+        var transaction = PostgresSecurityMasterMutation.RequireTransaction(_options, securityId);
 
         var existing = await LoadRowForUpdateAsync(connection, transaction, securityId, ct).ConfigureAwait(false);
         if (existing is null)
@@ -242,8 +251,6 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
             command.Parameters.AddWithValue("audit_trail", SerializeAuditTrail(auditTrail));
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
-
-        await transaction.CommitAsync(ct).ConfigureAwait(false);
 
         return existing with
         {
@@ -406,18 +413,6 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
             : SecurityOverrideApprovalStatusDto.NotRequested;
 
     private static string ToDbStatus(SecurityOverrideApprovalStatusDto status) => status.ToString();
-
-    private async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken ct)
-    {
-        if (string.IsNullOrWhiteSpace(_options.ConnectionString))
-        {
-            throw new InvalidOperationException("SecurityMasterOptions.ConnectionString is not configured.");
-        }
-
-        var connection = new NpgsqlConnection(_options.ConnectionString);
-        await connection.OpenAsync(ct).ConfigureAwait(false);
-        return connection;
-    }
 
     private string Qualified(string table) => $"{_options.Schema}.{table}";
 }

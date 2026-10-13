@@ -43,10 +43,8 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
     private static string SanitizeForLog(string? value) =>
         string.IsNullOrEmpty(value) ? string.Empty : LogUnsafeControlChars.Replace(value, " ").Trim();
 
-    // Per-security gates serializing the field-edit validate→patch window (see
-    // UpdateSecurityFieldAsync). STATIC so the guarantee holds process-wide regardless of the
-    // service's DI lifetime; entries are one SemaphoreSlim per edited security and are never
-    // removed — the population is bounded by securities actually edited in-process.
+    // Fallback serialization for in-memory stores; PostgreSQL uses a durable generation fence
+    // and a shared overlay/revision transaction inside these bounded command regions.
     private static readonly KeyedGatePool<Guid> FieldEditGates = new();
 
     private readonly ISecurityMasterEventStore _eventStore;
@@ -129,17 +127,10 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             throw new SecurityMasterConcurrencyException(request.SecurityId, request.ExpectedVersion, currentVersion);
         }
 
-        // The validate→patch→draft window runs under a PER-SECURITY gate: validation reads the
-        // effective overlay, the patch writes it, and the draft revision anchors it as separate
-        // store calls, so two concurrent edits to the same security could otherwise both validate
-        // against the same pre-edit overlay and serialize individually valid values that combine
-        // into an overlay violating a cross-field invariant (a start and end date, par and
-        // principal schedule). The approval path acquires the SAME gate around its staged-revision
-        // check and override decision, so a decision can never land between an edit's patch and
-        // its draft creation and silently co-approve the unreviewed value. Serializing in-process
-        // closes those races for this single write route; a store-level overlay-revision
-        // compare-and-set remains the durable answer for multi-node deployments.
-        var fieldEditGate = await FieldEditGates.AcquireAsync(request.SecurityId, ct).ConfigureAwait(false);
+        // Validation, overlay mutation and draft creation commit as one database mutation.
+        // The local gate remains useful for in-memory compositions; durable stores additionally
+        // reject a competing generation and roll back the overlay if draft creation fails.
+        var fieldEditGate = await AcquireFieldEditGateAsync(request.SecurityId, ct).ConfigureAwait(false);
         string fieldPath;
         OperatorOverridesDto stagedOverride;
         SecurityMasterRevisionRecord revision;
@@ -148,155 +139,168 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         var isClear = string.IsNullOrWhiteSpace(request.NewValue);
         try
         {
-            // Edits addressing the assetSpecificTerms namespace are anchored to the declared
-            // per-asset-class schema: the key must be a declared term field and the value must coerce
-            // to its declared type. Paths outside that namespace remain the free annotation surface.
-            // The returned path is the schema-canonical spelling — persisting the caller's raw alias or
-            // casing variant would fork the same term into separate override keys, revisions, and
-            // provenance rows, so every write below uses the canonical path.
-            fieldPath = await EnsureFieldEditIsSchemaValidAsync(request, ct).ConfigureAwait(false);
-
-            // Stage the operator value as an override read-model annotation. The override store applies
-            // the patch under a serializable, row-locked transaction; it does not advance the economic
-            // version, so the returned NewVersion is the unchanged canonical version. A blank value is
-            // a CLEAR: it removes the overlay key rather than persisting an empty-string override that
-            // would bypass type validation and read as an asserted value downstream.
-            // Capture the field's PRIOR staged value for compensation: if the draft revision
-            // cannot be created after the patch commits, the overlay is reverted so no ungoverned
-            // Pending value outlives the failed edit.
-            var priorOverlay = await _overrides.GetAsync(request.SecurityId, ct).ConfigureAwait(false);
-            if (priorOverlay is not null)
+            (fieldPath, stagedOverride, revision) = await ExecuteMutationAsync(request.SecurityId, async () =>
             {
-                foreach (var (priorPath, priorValue) in priorOverlay.Values)
+                OperatorOverridesDto changedOverlay;
+                SecurityMasterRevisionRecord draftRevision;
+                // Edits addressing the assetSpecificTerms namespace are anchored to the declared
+                // per-asset-class schema: the key must be a declared term field and the value must coerce
+                // to its declared type. Paths outside that namespace remain the free annotation surface.
+                // The returned path is the schema-canonical spelling — persisting the caller's raw alias or
+                // casing variant would fork the same term into separate override keys, revisions, and
+                // provenance rows, so every write below uses the canonical path.
+                var validatedPath = await EnsureFieldEditIsSchemaValidAsync(request, ct).ConfigureAwait(false);
+
+                // Stage the operator value as an override read-model annotation. The override store applies
+                // the patch under the shared, generation-fenced transaction; it does not advance the economic
+                // version, so the returned NewVersion is the unchanged canonical version. A blank value is
+                // a CLEAR: it removes the overlay key rather than persisting an empty-string override that
+                // would bypass type validation and read as an asserted value downstream.
+                // Capture the field's PRIOR staged value for compensation: if the draft revision
+                // cannot be created after the patch commits, the overlay is reverted so no ungoverned
+                // Pending value outlives the failed edit.
+                var priorOverlay = await _overrides.GetAsync(request.SecurityId, ct).ConfigureAwait(false);
+                if (priorOverlay is not null)
                 {
-                    if (string.Equals(priorPath, fieldPath, StringComparison.OrdinalIgnoreCase))
+                    foreach (var (priorPath, priorValue) in priorOverlay.Values)
                     {
-                        priorOverrideValue = priorValue;
-                        hadPriorOverride = true;
-                        break;
+                        if (string.Equals(priorPath, validatedPath, StringComparison.OrdinalIgnoreCase))
+                        {
+                            priorOverrideValue = priorValue;
+                            hadPriorOverride = true;
+                            break;
+                        }
                     }
                 }
-            }
 
-            // The prior APPROVAL state is part of what compensation must restore: PatchAsync
-            // resets any nonempty overlay to Pending, so reverting the values alone would leave a
-            // previously Approved overlay Pending with no new revision to approve it — blocking
-            // governed runs behind SM_OVERRIDE_APPROVAL_REQUIRED for values a reviewer already
-            // decided.
-            var priorApprovalStatus = priorOverlay?.ApprovalStatus ?? SecurityOverrideApprovalStatusDto.NotRequested;
-            var priorReviewer = priorOverlay?.ReviewedBy;
-            var priorHadValues = priorOverlay is { Values.Count: > 0 };
+                // The prior APPROVAL state is part of what compensation must restore: PatchAsync
+                // resets any nonempty overlay to Pending, so reverting the values alone would leave a
+                // previously Approved overlay Pending with no new revision to approve it — blocking
+                // governed runs behind SM_OVERRIDE_APPROVAL_REQUIRED for values a reviewer already
+                // decided.
+                var priorApprovalStatus = priorOverlay?.ApprovalStatus ?? SecurityOverrideApprovalStatusDto.NotRequested;
+                var priorReviewer = priorOverlay?.ReviewedBy;
+                var priorHadValues = priorOverlay is { Values.Count: > 0 };
 
-            var patch = new OperatorOverridesPatchRequest(
-                SetValues: isClear
-                    ? null
-                    : new Dictionary<string, string>(StringComparer.Ordinal)
-                    {
-                        [fieldPath] = request.NewValue!,
-                    },
-                RemoveKeys: isClear ? [fieldPath] : null)
-            {
-                ReasonCode = request.Justification,
-            };
-            try
-            {
-                stagedOverride = await _overrides
-                    .PatchAsync(
-                        request.SecurityId,
-                        patch,
-                        request.Actor,
-                        ct,
-                        expectedCanonicalVersion: currentVersion)
-                    .ConfigureAwait(false);
-            }
-            catch (OperatorOverrideCanonicalVersionConflictException ex)
-            {
-                throw new SecurityMasterConcurrencyException(
-                    request.SecurityId,
-                    request.ExpectedVersion,
-                    ex.CurrentVersion);
-            }
-
-            // Open a durable Draft revision carrying the field-edit metadata so the governed lifecycle
-            // (submit → approve → publish) is anchored to a real, server-issued revision id, and publish
-            // can later emit the correct effective-date and changed-field set for downstream impact
-            // analysis rather than defaulting to publish time.
-            // Persist the edit's optional fund-profile scope on the draft so publish can resolve a SCOPED
-            // downstream impact (and therefore real affected ledger books + restatement candidates). Without
-            // it, publish falls back to an unscoped impact whose empty affected-book set short-circuits the
-            // period-aware restatement path to "no restatement".
-            // The draft is created while the gate is STILL HELD: the approval path checks for staged
-            // revisions under the same gate, so releasing between the patch and the draft would open a
-            // window where an in-flight approval sees the freshly Pending value with no staged revision
-            // and co-approves it unreviewed.
-            try
-            {
-                // The draft durably records the exact overlay VALUE it governs (null models a
-                // CLEAR): without it, discarding a later same-path revision could never restore
-                // this revision's value — an approved predecessor would deadlock unpublishable.
-                revision = await _revisions.CreateDraftAsync(
-                    request.SecurityId, request.Actor, fieldPath, request.EffectiveFrom, request.Justification,
-                    request.FundProfileId,
-                    new SecurityMasterRevisionFieldValue(isClear ? null : request.NewValue),
-                    ct)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // COMPENSATE the committed patch: without a draft revision there is no approval
-                // workflow that can ever govern the staged value, so leaving it would block governed
-                // runs behind SM_OVERRIDE_APPROVAL_REQUIRED until an operator happens to restage it.
-                // The overlay is reverted to the field's prior state (previous override restored, or
-                // the key removed when none existed) and the edit reports failure for a clean retry.
-                // Cancellation is a post-patch failure like any other — the patch is already durable
-                // — so the revert runs on CancellationToken.None: the canceled request token that
-                // aborted the draft creation must not also abort the compensation.
+                var patch = new OperatorOverridesPatchRequest(
+                    SetValues: isClear
+                        ? null
+                        : new Dictionary<string, string>(StringComparer.Ordinal)
+                        {
+                            [validatedPath] = request.NewValue!,
+                        },
+                    RemoveKeys: isClear ? [validatedPath] : null)
+                {
+                    ReasonCode = request.Justification,
+                };
                 try
                 {
-                    var compensation = new OperatorOverridesPatchRequest(
-                        SetValues: hadPriorOverride
-                            ? new Dictionary<string, string>(StringComparer.Ordinal) { [fieldPath] = priorOverrideValue! }
-                            : null,
-                        RemoveKeys: hadPriorOverride ? null : [fieldPath])
-                    {
-                        ReasonCode = "field-edit draft creation failed; compensating overlay revert",
-                    };
-                    await _overrides.PatchAsync(request.SecurityId, compensation, request.Actor, CancellationToken.None).ConfigureAwait(false);
-
-                    // The compensating patch reset the surviving values to Pending; when the prior
-                    // overlay carried a recorded decision, re-record it so already-reviewed values do
-                    // not fall back behind SM_OVERRIDE_APPROVAL_REQUIRED with no revision to approve
-                    // them. The restored decision is audit-trailed with an explicit comment.
-                    if (priorHadValues
-                        && priorApprovalStatus is SecurityOverrideApprovalStatusDto.Approved or SecurityOverrideApprovalStatusDto.Rejected
-                        && !string.IsNullOrWhiteSpace(priorReviewer))
-                    {
-                        await _overrides.RecordApprovalDecisionAsync(
+                    changedOverlay = await _overrides
+                        .PatchAsync(
                             request.SecurityId,
-                            new OperatorOverrideDecision(
-                                priorApprovalStatus,
-                                priorReviewer!,
-                                "Prior decision restored after a failed field-edit draft creation reverted the overlay."),
-                            CancellationToken.None).ConfigureAwait(false);
+                            patch,
+                            request.Actor,
+                            ct,
+                            expectedCanonicalVersion: currentVersion)
+                        .ConfigureAwait(false);
+                }
+                catch (OperatorOverrideCanonicalVersionConflictException ex)
+                {
+                    throw new SecurityMasterConcurrencyException(
+                        request.SecurityId,
+                        request.ExpectedVersion,
+                        ex.CurrentVersion);
+                }
+
+                // Open a durable Draft revision carrying the field-edit metadata so the governed lifecycle
+                // (submit → approve → publish) is anchored to a real, server-issued revision id, and publish
+                // can later emit the correct effective-date and changed-field set for downstream impact
+                // analysis rather than defaulting to publish time.
+                // Persist the edit's optional fund-profile scope on the draft so publish can resolve a SCOPED
+                // downstream impact (and therefore real affected ledger books + restatement candidates). Without
+                // it, publish falls back to an unscoped impact whose empty affected-book set short-circuits the
+                // period-aware restatement path to "no restatement".
+                // The draft is created while the gate is STILL HELD: the approval path checks for staged
+                // revisions under the same gate, so releasing between the patch and the draft would open a
+                // window where an in-flight approval sees the freshly Pending value with no staged revision
+                // and co-approves it unreviewed.
+                try
+                {
+                    // The draft durably records the exact overlay VALUE it governs (null models a
+                    // CLEAR): without it, discarding a later same-path revision could never restore
+                    // this revision's value — an approved predecessor would deadlock unpublishable.
+                    draftRevision = await _revisions.CreateDraftAsync(
+                        request.SecurityId, request.Actor, validatedPath, request.EffectiveFrom, request.Justification,
+                        request.FundProfileId,
+                        new SecurityMasterRevisionFieldValue(isClear ? null : request.NewValue),
+                        ct)
+                        .ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    if (_overrides is ISecurityMasterMutationParticipant)
+                    {
+                        // The outer transaction rolls back the overlay, draft and generation.
+                        // Never issue a compensating write after a PostgreSQL statement failure.
+                        throw;
                     }
-                }
-                catch (Exception revertEx)
-                {
-                    _logger.LogError(
-                        revertEx,
-                        "Compensating overlay revert failed for {SecurityId} field {FieldPath}: a Pending override remains without a governing draft revision until the edit is retried or the value cleared.",
-                        request.SecurityId, SanitizeForLog(fieldPath));
-                }
 
-                if (ex is OperationCanceledException)
-                {
-                    throw;
-                }
+                    // COMPENSATE the committed patch: without a draft revision there is no approval
+                    // workflow that can ever govern the staged value, so leaving it would block governed
+                    // runs behind SM_OVERRIDE_APPROVAL_REQUIRED until an operator happens to restage it.
+                    // The overlay is reverted to the field's prior state (previous override restored, or
+                    // the key removed when none existed) and the edit reports failure for a clean retry.
+                    // Cancellation is a post-patch failure like any other — the patch is already durable
+                    // — so the revert runs on CancellationToken.None: the canceled request token that
+                    // aborted the draft creation must not also abort the compensation.
+                    try
+                    {
+                        var compensation = new OperatorOverridesPatchRequest(
+                            SetValues: hadPriorOverride
+                                ? new Dictionary<string, string>(StringComparer.Ordinal) { [validatedPath] = priorOverrideValue! }
+                                : null,
+                            RemoveKeys: hadPriorOverride ? null : [validatedPath])
+                        {
+                            ReasonCode = "field-edit draft creation failed; compensating overlay revert",
+                        };
+                        await _overrides.PatchAsync(request.SecurityId, compensation, request.Actor, CancellationToken.None).ConfigureAwait(false);
 
-                throw new InvalidOperationException(
-                    $"The draft revision for the field edit on security '{request.SecurityId:D}' could not be created; " +
-                    "the staged override was reverted. Retry the edit once the revision store is reachable.", ex);
-            }
+                        // The compensating patch reset the surviving values to Pending; when the prior
+                        // overlay carried a recorded decision, re-record it so already-reviewed values do
+                        // not fall back behind SM_OVERRIDE_APPROVAL_REQUIRED with no revision to approve
+                        // them. The restored decision is audit-trailed with an explicit comment.
+                        if (priorHadValues
+                            && priorApprovalStatus is SecurityOverrideApprovalStatusDto.Approved or SecurityOverrideApprovalStatusDto.Rejected
+                            && !string.IsNullOrWhiteSpace(priorReviewer))
+                        {
+                            await _overrides.RecordApprovalDecisionAsync(
+                                request.SecurityId,
+                                new OperatorOverrideDecision(
+                                    priorApprovalStatus,
+                                    priorReviewer!,
+                                    "Prior decision restored after a failed field-edit draft creation reverted the overlay."),
+                                CancellationToken.None).ConfigureAwait(false);
+                        }
+                    }
+                    catch (Exception revertEx)
+                    {
+                        _logger.LogError(
+                            revertEx,
+                            "Compensating overlay revert failed for {SecurityId} field {FieldPath}: a Pending override remains without a governing draft revision until the edit is retried or the value cleared.",
+                            request.SecurityId, SanitizeForLog(validatedPath));
+                    }
+
+                    if (ex is OperationCanceledException)
+                    {
+                        throw;
+                    }
+
+                    throw new InvalidOperationException(
+                        $"The draft revision for the field edit on security '{request.SecurityId:D}' could not be created; " +
+                        "the staged override was reverted. Retry the edit once the revision store is reachable.", ex);
+                }
+                return (validatedPath, changedOverlay, draftRevision);
+            }, ct).ConfigureAwait(false);
         }
         finally
         {
@@ -491,10 +495,11 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         // overlay while this method awaits the external workflow submission: the submission then
         // commits a Submitted workflow before the Draft→Submitted CAS fails, leaving an unbound,
         // still-approvable workflow the discard never retired (it observed a plain Draft).
-        var fieldEditGate = await FieldEditGates.AcquireAsync(request.SecurityId, ct).ConfigureAwait(false);
+        var fieldEditGate = await AcquireFieldEditGateAsync(request.SecurityId, ct).ConfigureAwait(false);
         try
         {
-            return await SubmitForApprovalUnderGateAsync(request, ct).ConfigureAwait(false);
+            return await ExecuteMutationAsync(request.SecurityId,
+                () => SubmitForApprovalUnderGateAsync(request, ct), ct).ConfigureAwait(false);
         }
         finally
         {
@@ -836,35 +841,38 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         // transition — the revision would be marked Published while SM_OVERRIDE_APPROVAL_REQUIRED
         // still blocks its economics, unretryably, since the Approved precondition rejects any
         // republish.
-        var fieldEditGate = await FieldEditGates.AcquireAsync(request.SecurityId, ct).ConfigureAwait(false);
+        var fieldEditGate = await AcquireFieldEditGateAsync(request.SecurityId, ct).ConfigureAwait(false);
         try
         {
-            var decisionOutcome = await RecordOverrideApprovalDecisionUnderGateAsync(
-                request.SecurityId,
-                request.RevisionId,
-                decisionReviewer,
-                rationale: null,
-                ct).ConfigureAwait(false);
-            if (decisionOutcome == OverrideDecisionOutcome.Deferred)
+            await ExecuteMutationAsync(request.SecurityId, async () =>
             {
-                // A DEFERRED decision is a retryable publish failure, not a pass-through: other
-                // revisions for this security are still staged, so the overlay must stay Pending —
-                // publishing now would mark the revision Published while SM_OVERRIDE_APPROVAL_REQUIRED
-                // still blocks its economics. The revision stays Approved; handlers are idempotent, so
-                // the retry (after the other staged revisions are decided) re-runs the full fan-out.
-                throw new InvalidOperationException(
-                    $"Revision '{request.RevisionId:D}' for security '{request.SecurityId:D}' cannot be published while " +
-                    "other revisions for the security are still staged (or overlay keys lack a governing revision): the " +
-                    "security-level override decision would co-approve unreviewed values. Approve or discard the other " +
-                    "staged revisions — or withdraw ungoverned overlay keys — and retry; the revision remains Approved.");
-            }
+                var decisionOutcome = await RecordOverrideApprovalDecisionUnderGateAsync(
+                    request.SecurityId,
+                    request.RevisionId,
+                    decisionReviewer,
+                    rationale: null,
+                    ct).ConfigureAwait(false);
+                if (decisionOutcome == OverrideDecisionOutcome.Deferred)
+                {
+                    // A DEFERRED decision is a retryable publish failure, not a pass-through: other
+                    // revisions for this security are still staged, so the overlay must stay Pending —
+                    // publishing now would mark the revision Published while SM_OVERRIDE_APPROVAL_REQUIRED
+                    // still blocks its economics. The revision stays Approved; handlers are idempotent, so
+                    // the retry (after the other staged revisions are decided) re-runs the full fan-out.
+                    throw new InvalidOperationException(
+                        $"Revision '{request.RevisionId:D}' for security '{request.SecurityId:D}' cannot be published while " +
+                        "other revisions for the security are still staged (or overlay keys lack a governing revision): the " +
+                        "security-level override decision would co-approve unreviewed values. Approve or discard the other " +
+                        "staged revisions — or withdraw ungoverned overlay keys — and retry; the revision remains Approved.");
+                }
 
-            await _revisions.TransitionAsync(
-                request.RevisionId,
-                SecurityMasterRevisionStateDto.Approved,
-                SecurityMasterRevisionStateDto.Published,
-                request.Actor,
-                ct: ct).ConfigureAwait(false);
+                await _revisions.TransitionAsync(
+                    request.RevisionId,
+                    SecurityMasterRevisionStateDto.Approved,
+                    SecurityMasterRevisionStateDto.Published,
+                    request.Actor,
+                    ct: ct).ConfigureAwait(false);
+            }, ct).ConfigureAwait(false);
         }
         finally
         {
