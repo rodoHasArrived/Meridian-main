@@ -498,7 +498,8 @@ public static class AssetAccountingEventSpineValidator
                     spine.EventKind, spine.EffectiveDate, spine.Scope.SecurityId, spine.Scope.ExpectedSecurityVersion,
                     evidence, spine.DraftedLotMutation?.Amortization,
                     requireInstruction: spine.Stages.Any(static stage => stage.Stage == AssetAccountingLifecycleStageDto.Drafted),
-                    corporateAction: spine.CorporateAction ?? spine.DraftedLotMutation?.CorporateAction))
+                    corporateAction: spine.CorporateAction ?? spine.DraftedLotMutation?.CorporateAction,
+                    allowRetainedAmortizationCorrection: spine.Correction?.TaxLotMutationBatchId is { } batchId && batchId != Guid.Empty))
                     issues.Add("Retained evidence effective date must match the asset accounting event.");
             }
 

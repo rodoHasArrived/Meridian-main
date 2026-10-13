@@ -58,6 +58,17 @@ Infrastructure-to-Storage reference.
 `CanonicalLotAmortizationService` prepares read-only canonical face-lot projections from authoritative lot/reference records. Optional workstation postures may construct the service with absent stores, but preview requires ledger, Security Master, and book-position authority and refuses missing stores before any read. `AccountingPostingCandidatePostService` carries an `Amortize` instruction through the existing event-spine and independent approval rail to atomic journal/basis posting; the service itself cannot approve or post.
 `CanonicalLotAmortizationService.PreviewReversalAsync` derives an inverse from the immutable original lot mutation and refuses intervening lot changes. Drafting verifies the original snapshot and requires rebooks to reference a retained atomic reversal; independent approval remains mandatory. Reversals after reference changes require newly reviewed current Security Master evidence. Original retained journal lines and the prior lot snapshot determine inverse economics, including for a historical calculation-version receipt. New ordinary postings retain the current calculation-version requirement.
 
+A retained amortization correction may project current reference identity after the security becomes
+Inactive or its effective window changes. Drafting permits that reference state only for an exact
+retained reversal, with the corrected amortization bound to the same security and position. The
+current reference version and currency, immutable original batch, unchanged lot and independent
+approval remain required. New amortization and rebooks retain the Active/effective reference gate.
+The authoritative position must retain the correction event and its exact evidence before
+projection. Fresh reference evidence preserves its observation date, including after the original
+accrual date, while event and approval evidence remain bound to that accrual date.
+Reversal journal lineage records the reviewed current reference status and version; an Inactive
+reference is never relabeled Active to satisfy the ordinary journal gate.
+
 New amortization postings require the current calculation version before approval is retained.
 Historical unversioned instructions remain readable for exact receipt replay; unposted legacy
 drafts require a fresh preview.
@@ -849,7 +860,11 @@ Other action types and multiple-predecessor mutations remain unsupported by
 this bounded successor path.
 For this spine, a same-source journal is a replay only when its deterministic journal identity,
 complete Drafted candidate/result fingerprints, policy/rule pack, approval evidence, amounts,
-lines, currencies, and dimensions all match. Lots retain Security Master and book-position scope;
+lines, currencies, and dimensions all match. Reviewed correction candidates use the same Pending
+approval normalization at drafting and post-time reconstruction. Retained correction review permits
+adjustment preparation; the separate
+posting approval still requires an independent reviewer before any journal or lot mutation.
+Lots retain Security Master and book-position scope;
 disposal retains selected acquisition unit cost as a snapshot assertion, certifies current canonical
 relief basis across the scoped pool, and rechecks the exact asset-relief journal line under the same
 serializable transaction and effective policy revision. A mismatch is a collision and blocks posting.

@@ -5,6 +5,7 @@ using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Ledger;
 using Meridian.Storage.AssetOperations;
@@ -42,14 +43,24 @@ public sealed class AmortizationReversalPreviewTests
         await fixture.Securities.Received(1).GetProjectionAsync(fixture.Before.SecurityId, Arg.Any<CancellationToken>());
     }
 
-    [Fact]
-    public async Task PreviewReversal_ChangedSecurityRequiresFreshEvidenceAndDoesNotRecalculateTheInverse()
+    [Theory]
+    [InlineData("terms")]
+    [InlineData("later-effective")]
+    [InlineData("inactive")]
+    [InlineData("ended")]
+    public async Task PreviewReversal_ChangedSecurityRequiresFreshEvidenceAndDoesNotRecalculateTheInverse(string change)
     {
         var fixture = new Fixture(premium: true);
         var replacement = fixture.Inputs.Security with
         {
             Version = fixture.Inputs.Security.Version + 1,
-            CommonTerms = JsonSerializer.SerializeToElement(new { maturityDate = "2040-01-01", couponRate = 30m })
+            CommonTerms = JsonSerializer.SerializeToElement(new { maturityDate = "2040-01-01", couponRate = 30m }),
+            Status = change == "inactive" ? SecurityStatusDto.Inactive : SecurityStatusDto.Active,
+            EffectiveFrom = change == "later-effective"
+                ? new DateTimeOffset(fixture.Inputs.AsOfDate.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)
+                : fixture.Inputs.Security.EffectiveFrom,
+            EffectiveTo = change == "ended"
+                ? new DateTimeOffset(fixture.Inputs.AsOfDate.AddDays(-1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero) : null
         };
         fixture.Securities.GetProjectionAsync(fixture.Before.SecurityId, Arg.Any<CancellationToken>()).Returns(replacement);
         var stalePreview = () => fixture.Service.PreviewReversalAsync(fixture.Before.LedgerBookId, fixture.BatchId);
@@ -58,6 +69,7 @@ public sealed class AmortizationReversalPreviewTests
         {
             EvidenceId = "reviewed-replacement-security",
             EvidenceVersion = replacement.Version,
+            EffectiveDate = DateOnly.FromDateTime(replacement.EffectiveFrom.UtcDateTime),
             ContentHashSha256 = OpenLotAmortization.SecurityHash(replacement)
         };
 
@@ -68,6 +80,34 @@ public sealed class AmortizationReversalPreviewTests
         preview.Instruction.Reversal!.RestoresLot.Should().BeEquivalentTo(fixture.Before.ToOpenLot());
         preview.Projection.TransactionMovement.Should().Be(-fixture.Forward.TransactionMovement);
         preview.Projection.FunctionalMovement.Should().Be(-fixture.Forward.FunctionalMovement);
+        if (change != "terms")
+        {
+            var ordinary = () => OpenLotAmortization.Project(preview.Instruction with
+            { ExpectedLot = fixture.Before.ToOpenLot(), Reversal = null });
+            ordinary.Should().Throw<ArgumentException>().WithMessage("*status or effective scope*");
+        }
+    }
+
+    [Theory]
+    [InlineData("identity")]
+    [InlineData("currency")]
+    [InlineData("unknown-status")]
+    public async Task PreviewReversal_RejectsUnprovedCurrentReferenceIdentity(string change)
+    {
+        var fixture = new Fixture(premium: true);
+        var replacement = fixture.Inputs.Security with
+        {
+            SecurityId = change == "identity" ? Guid.NewGuid() : fixture.Before.SecurityId,
+            Currency = change == "currency" ? "GBP" : fixture.Inputs.Security.Currency,
+            Status = change == "unknown-status" ? SecurityStatusDto.Unknown : SecurityStatusDto.Active
+        };
+        fixture.Securities.GetProjectionAsync(fixture.Before.SecurityId, Arg.Any<CancellationToken>()).Returns(replacement);
+        var evidence = fixture.Inputs.SecurityEvidence with
+        { ContentHashSha256 = OpenLotAmortization.SecurityHash(replacement), SubjectId = replacement.SecurityId.ToString("D") };
+
+        var preview = () => fixture.Service.PreviewReversalAsync(fixture.Before.LedgerBookId, fixture.BatchId, evidence);
+
+        await preview.Should().ThrowAsync<ArgumentException>().WithMessage("*identity, currency, status or effective scope*");
     }
 
     [Theory]

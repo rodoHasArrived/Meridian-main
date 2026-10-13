@@ -3961,7 +3961,7 @@
       ]
     }
   ],
-  "fingerprint": "b69748765cfff5950c0f81c4a983e8ab05bcf861592d451c27d907923ea1d8de",
+  "fingerprint": "97afe37e8a81b51d2fe268be103420df8a71b787efc1b356626f3febdd93f8ff",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4335,7 +4335,7 @@
         "all-contracts",
         "asset-operations-contracts"
       ],
-      "fingerprint": "0106ac0171da25fe2882da0597452e0786c89054d0afebc48ee01f41aef112ba",
+      "fingerprint": "4d81cdf06755a06aeec7a58ee91c495b41283229b1d897681d66437d9f01762e",
       "mapped_schemas": [
         "asset_operations"
       ],
@@ -53805,7 +53805,7 @@
         "asset-operations-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "67df3878487b41414ced29bd56ed22a2772fd7bc8af0ddc793949e4bc64f7445",
+      "fingerprint": "bd798fcb2d773cecd1073344111faf36bd02f59be15f90a679dec6f1bcc77dda",
       "full_name": "Meridian.Contracts.AssetOperations.AssetLotMutationInstructionValidator",
       "id": "Meridian.Contracts.AssetOperations.AssetLotMutationInstructionValidator",
       "kind": "class",
@@ -53819,12 +53819,12 @@
       "qualified_name": "Meridian.Contracts.AssetOperations.AssetLotMutationInstructionValidator",
       "references": [],
       "source": {
-        "line": 891,
+        "line": 892,
         "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
       },
       "sources": [
         {
-          "line": 891,
+          "line": 892,
           "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs"
         }
       ],
@@ -66071,7 +66071,7 @@
         "asset-operations-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "8edac3244613fba3774d326b7eaffc2d4c978cf849fc987abae8f7ac2dbab73c",
+      "fingerprint": "8aeca4199738826adb67038b08bc6c14e3ccfcfd0d58823cb942ce8e3aaf7ef8",
       "full_name": "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator",
       "id": "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator",
       "kind": "class",
@@ -66085,12 +66085,12 @@
       "qualified_name": "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator",
       "references": [],
       "source": {
-        "line": 181,
+        "line": 187,
         "path": "src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs"
       },
       "sources": [
         {
-          "line": 181,
+          "line": 187,
           "path": "src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs"
         }
       ],

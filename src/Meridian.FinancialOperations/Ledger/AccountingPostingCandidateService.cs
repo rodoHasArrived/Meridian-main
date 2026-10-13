@@ -357,7 +357,9 @@ public sealed class AccountingPostingCandidateService :
             : draft.Write with
             {
                 Entry = WithSecurityMasterLineage(draft.Write.Entry, authority,
-                    request.AssetLotMutation?.CorporateAction?.ExpectedLot.Acquisition.AcquisitionCurrency ?? request.Currency),
+                    request.AssetLotMutation?.CorporateAction?.ExpectedLot.Acquisition.AcquisitionCurrency ?? request.Currency,
+                    request.AssetLotMutation?.Amortization is { Reversal: not null } reversal
+                        ? reversal.Security.Status : SecurityStatusDto.Active),
                 PostingCommand = postingCommand
             };
 
@@ -842,13 +844,14 @@ public sealed class AccountingPostingCandidateService :
     // as instrument-bearing and requires approved, active Security Master provenance and a ledger
     // mapping for that security. The lineage is stamped only under spine authority, after the spine
     // has server-resolved the event-recorded Security Master record at the exact expected version and
-    // asserted it Active, effective, and in the event currency - the same rule the manual journal
-    // path applies - so a generic caller can never assert it. Post-time re-derivation reproduces the
-    // same tags from the retained spine scope.
+    // asserted the reference authority. Ordinary events require Active/effective terms; a
+    // retained amortization inverse preserves the reviewed current status. Post-time
+    // re-derivation reproduces the same tags from the retained spine and instruction.
     private static JournalEntry WithSecurityMasterLineage(
         JournalEntry entry,
         AssetAccountingCandidateAuthorityContext? authority,
-        string currency)
+        string currency,
+        SecurityStatusDto status)
     {
         if (authority is null || authority.SecurityId == Guid.Empty || authority.SecurityVersion <= 0)
         {
@@ -857,9 +860,10 @@ public sealed class AccountingPostingCandidateService :
 
         var securityIdToken = authority.SecurityId.ToString("N");
         var provenance =
-            $"security-master:{securityIdToken};server-resolved:true;approved:true;status:{SecurityStatusDto.Active};version:{authority.SecurityVersion};currency:{currency.Trim().ToUpperInvariant()}";
+            $"security-master:{securityIdToken};server-resolved:true;approved:true;status:{status};version:{authority.SecurityVersion};currency:{currency.Trim().ToUpperInvariant()}";
+        var referenceApproval = status == SecurityStatusDto.Active ? "security-master-active" : "security-master-reviewed";
         var lineage =
-            $"asset-spine:{securityIdToken}:ledger-map:asset-spine:{authority.RulePackId}:{authority.RulePackVersion}:{securityIdToken}:sm-approval:security-master-active:{securityIdToken}:security-status:{SecurityStatusDto.Active}:{provenance}";
+            $"asset-spine:{securityIdToken}:ledger-map:asset-spine:{authority.RulePackId}:{authority.RulePackVersion}:{securityIdToken}:sm-approval:{referenceApproval}:{securityIdToken}:security-status:{status}:{provenance}";
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         if (entry.Metadata.Tags is { } existing)
         {
