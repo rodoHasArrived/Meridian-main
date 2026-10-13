@@ -36,6 +36,12 @@ This layer should keep simulation behavior isolated from live execution while pr
 
 ## Important workflows
 
+Long sales and short covers use Ledger's `LotBasisRelief` allocator over the shared decimal
+consumption walk. Composite lots supply their exact retained component basis; full closure never
+reconstructs that basis from a rounded entry quote. FIFO/LIFO/HIFO ordering and the simulation's
+SpecificId-to-FIFO fallback are preserved. This calculation convergence does not manufacture
+canonical SecurityIds or acquisition FX, authorize short posting, or replace retained Ledger lots.
+
 Principal-paydown position adjustments consume Instruments `FactorPaydownProjectionService`, reduce
 total basis by the projected monetary principal, and then recompute per-unit basis. The historical
 adjuster therefore uses the same held-face/factor economics as the governed production proof while
