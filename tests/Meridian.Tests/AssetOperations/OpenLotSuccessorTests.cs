@@ -88,6 +88,25 @@ public sealed class OpenLotSuccessorTests
         validate.Should().Throw<ArgumentException>().WithMessage("*create-only plan*");
     }
 
+    [Theory]
+    [InlineData(" leading")]
+    [InlineData("trailing ")]
+    [InlineData("\ttrimmed\r\n")]
+    public void Exchange_RejectsNoncanonicalNewLotLabelsBeforeDrafting(string label)
+    {
+        var source = OpenLotSuccessorTestData.Predecessor();
+        var successor = OpenLotSuccessorTestData.Successor(source, 1m);
+        successor = successor with { Lot = successor.Lot with { LotId = label } };
+        var instruction = OpenLotSuccessorTestData.Build(source, [successor]);
+
+        var validate = () => OpenLotSuccessors.Validate(instruction);
+
+        validate.Should().Throw<ArgumentException>().WithMessage("*create-only plan*");
+        var mapped = new CorporateActionAssetAccountingEventMapper().Map(OpenLotSuccessorTestData.MapRequest(instruction));
+        mapped.IsMapped.Should().BeFalse();
+        mapped.Blockers.Should().Contain(item => item.Code == "corporate-action.canonical-successors-invalid");
+    }
+
     [Fact]
     public void AdvanceRefunding_AssignsFinalCurrencyResidualsWithoutRecomputingAtSpotFx()
     {

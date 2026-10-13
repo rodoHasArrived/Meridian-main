@@ -97,6 +97,8 @@ snapshot together. Both currency bases reconcile to the retained allocation whil
 holding dates and original acquisition evidence remain intact. Exact retries return the retained
 batch before checking later live state. Exact durable journal/batch evidence also permits recovery
 of a missing Posted projection after later position revisions; unposted position CAS stays strict.
+Recovery compares historical origins through `WithRetainedLineage`, preserving an omitted optional
+source-action identity instead of synthesizing a new field into the retained receipt.
 `ILedgerOpenLotSuccessorHistory` exposes those immutable
 batches to Reporting; unsupported actions, cash components, cross-account transfers, combined
 instructions and unrepresentable durable precision fail closed. Successor lines must retain the
