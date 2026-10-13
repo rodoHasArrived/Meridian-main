@@ -72,7 +72,7 @@ export function SettingsTaskChooser() {
               </div>
               <Link
                 to={task.href}
-                className="mt-4 inline-flex min-h-9 items-center gap-2 rounded-md border border-border/70 px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                className="mt-4 inline-flex min-h-9 items-center gap-2 rounded-md border border-border/70 px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-secondary/45 focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                 aria-label={`${task.actionLabel}: ${task.description}`}
               >
                 {task.actionLabel}

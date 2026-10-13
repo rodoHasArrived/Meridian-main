@@ -164,7 +164,8 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             ProjectedEffect: null,
             PostedJournalImpact: null,
             TaxLotMutationBatchId: null,
-            Correction: request.Correction);
+            Correction: request.Correction,
+            CorporateAction: request.CorporateAction);
         var projectedSpine = expectedSpine with
         {
             SpineVersion = 2,
@@ -215,7 +216,9 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             }
         }
 
-        await ResolveAuthoritativeSecurityAsync(projectedSpine, request.ProjectionLineage.GeneratedAtUtc, ct)
+        await ResolveAuthoritativeSecurityAsync(projectedSpine, request.ProjectionLineage.GeneratedAtUtc, ct, request.CorporateAction,
+                allowRetainedAmortizationCorrection: projectedSpine.EventKind == AssetAccountingEventKindDto.DepreciationAmortization
+                    && projectedSpine.Correction?.TaxLotMutationBatchId is { } correctionBatchId && correctionBatchId != Guid.Empty)
             .ConfigureAwait(false);
 
         var position = await _positionStore
@@ -380,9 +383,13 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
         var source = sourceRecord.Projection;
         ValidateSourceRecord(sourceRecord);
         ValidateRequestAssertions(request, source);
+        RequireAssertion(PayloadEquals(source.CorporateAction, request.LotMutation?.CorporateAction),
+            "A retained successor projection requires the exact canonical lot instruction; it cannot be omitted or replaced.");
         await ResolveCorrectionAuthorityAsync(source, ct).ConfigureAwait(false);
 
-        await ResolveAuthoritativeSecurityAsync(source, request.AccountingTimestamp, ct)
+        await ResolveAuthoritativeSecurityAsync(source, request.AccountingTimestamp, ct, request.LotMutation?.CorporateAction,
+                allowRetainedAmortizationCorrection: source.EventKind == AssetAccountingEventKindDto.DepreciationAmortization
+                    && source.Correction is not null && request.LotMutation?.Amortization?.Reversal is not null)
             .ConfigureAwait(false);
 
         var position = await _positionStore
@@ -398,6 +405,9 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             ?? throw new InvalidOperationException(
                 $"Authoritative ledger book '{source.Scope.LedgerBookId:D}' was not found.");
         ValidateBook(source, position, book);
+        if (request.LotMutation?.CorporateAction is { } reviewedSuccessors)
+            RequireAssertion(reviewedSuccessors.Projection.AccountingScope!.ExpectedPeriodVersion == request.ExpectedPeriodVersion,
+                "Successor projection accounting-period version must match the requested candidate.");
         var authoritativeLotMutation = await ResolveAuthoritativeLotMutationAsync(
                 request.LotMutation,
                 source,
@@ -528,18 +538,6 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
         var candidateWrite = await _authorityBuilder
             .BuildAuthoritativeCandidateWriteAsync(candidateRequest, authority, ct)
             .ConfigureAwait(false);
-        if (candidateWrite.Write?.PostingCommand is { } pendingCommand &&
-            pendingCommand.ApprovalState != AccountingPostingApprovalStateDto.Pending)
-        {
-            var normalizedCommand = pendingCommand with
-            {
-                ApprovalState = AccountingPostingApprovalStateDto.Pending,
-                ApprovalId = null
-            };
-            candidateWrite = new AccountingPostingCandidateWriteResult(
-                candidateWrite.Candidate with { PostingCommand = normalizedCommand },
-                candidateWrite.Write with { PostingCommand = normalizedCommand });
-        }
         candidateWrite = AssetAccountingCandidateCanonicalizer.Canonicalize(
             candidateWrite,
             book.LedgerBookId,
@@ -831,7 +829,9 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
     private async Task ResolveAuthoritativeSecurityAsync(
         AssetAccountingEventSpineDto source,
         DateTimeOffset accountingAsOfUtc,
-        CancellationToken ct)
+        CancellationToken ct,
+        OpenLotSuccessorInstructionDto? corporateAction = null,
+        bool allowRetainedAmortizationCorrection = false)
     {
         var security = await _securityMasterQueryService
             .GetRecordedByIdAsOfAsync(source.Scope.SecurityId, accountingAsOfUtc, ct)
@@ -843,12 +843,30 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             "Resolved Security Master identity does not match the asset accounting event.");
         RequireAssertion(security.Version == source.Scope.ExpectedSecurityVersion,
             "Resolved Security Master version is stale relative to the asset accounting event.");
-        RequireAssertion(security.Status == SecurityStatusDto.Active,
+        // A correction may project current identity before its inverse is drafted. Only a
+        // receipt-bound amortization reversal may use this exception at the drafting boundary.
+        RequireAssertion(security.Status == SecurityStatusDto.Active
+                         || (allowRetainedAmortizationCorrection && security.Status == SecurityStatusDto.Inactive),
             "Resolved Security Master record is not Active.");
-        RequireAssertion(string.Equals(security.Currency, source.Currency, StringComparison.OrdinalIgnoreCase),
+        if (corporateAction is not null)
+        {
+            OpenLotSuccessors.Validate(corporateAction);
+            RequireAssertion(source.EventKind == AssetAccountingEventKindDto.CorporateAction
+                && PayloadEquals(corporateAction.Projection.EconomicEvent, source.EconomicEvent)
+                && corporateAction.ExpectedLot.SecurityId == security.SecurityId
+                && corporateAction.ExpectedSecurityVersion == security.Version
+                && corporateAction.ExpectedLot.Acquisition.FunctionalCurrency == source.Currency,
+                "Successor currency authority must bind the exact source security and retained canonical event.");
+            RequireAssertion(DateOnly.FromDateTime(security.EffectiveFrom.UtcDateTime) <= source.EconomicEvent.EffectiveDate
+                && (security.EffectiveTo is null
+                    || source.EconomicEvent.EffectiveDate <= DateOnly.FromDateTime(security.EffectiveTo.Value.UtcDateTime)),
+                "Source Security Master record is not effective on the corporate-action date.");
+        }
+        RequireAssertion(string.Equals(security.Currency,
+                corporateAction?.ExpectedLot.Acquisition.AcquisitionCurrency ?? source.Currency, StringComparison.OrdinalIgnoreCase),
             "Foreign-currency asset accounting is not supported by this bounded spine unless Security Master, event, and ledger functional currency are identical; explicit FX rate/evidence is required before posting.");
-        RequireAssertion(security.EffectiveFrom <= accountingAsOfUtc &&
-                         (security.EffectiveTo is null || accountingAsOfUtc <= security.EffectiveTo.Value),
+        RequireAssertion(allowRetainedAmortizationCorrection || (security.EffectiveFrom <= accountingAsOfUtc &&
+                         (security.EffectiveTo is null || accountingAsOfUtc <= security.EffectiveTo.Value)),
             "Resolved Security Master record is not effective at the accounting timestamp.");
     }
 
@@ -880,6 +898,13 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             "Correction reference does not exactly match the retained corrected journal, book, period, and accounting basis.");
         RequireAssertion(correctedProjection.TaxLotMutationBatchId == correction.TaxLotMutationBatchId,
             "Correction reference tax-lot mutation batch does not match the retained corrected outcome.");
+        if (source.EventKind == AssetAccountingEventKindDto.DepreciationAmortization
+            && correction.TaxLotMutationBatchId is not null)
+            RequireAssertion(correctedProjection.EventKind == AssetAccountingEventKindDto.DepreciationAmortization
+                && correctedProjection.Scope.SecurityId == source.Scope.SecurityId
+                && correctedProjection.Scope.BookPositionId == source.Scope.BookPositionId
+                && correctedProjection.DraftedLotMutation?.Intent == AssetLotMutationIntentDto.Amortize,
+                "Canonical amortization correction must bind the same security and position's retained amortization posting.");
     }
 
     private async Task<AssetLotMutationInstructionDto?> ResolveAuthoritativeLotMutationAsync(
@@ -922,11 +947,97 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             RequireAssertion(retained.Account.AccountType == LedgerAccountType.Asset
                 && PayloadEquals(retained.ToOpenLot(), amortization.ExpectedLot),
                 "The reviewed amortization lot version, quantity or carrying basis changed; rebuild the projection.");
+            if (requested.CorrectsMutationBatchId is { } correctedId)
+            {
+                var corrected = await _journalStore.GetAtomicTaxLotPostingAsync(correctedId, ct).ConfigureAwait(false)
+                    ?? throw new InvalidOperationException("The corrected amortization receipt is unavailable.");
+                RequireAssertion(corrected.MutationKind == AtomicTaxLotMutationKind.Amortization
+                    && corrected.Mutations.Count == 1 && corrected.Mutations[0].LotBefore is not null
+                    && corrected.Journal.Entry.JournalEntryId == requested.CorrectsJournalEntryId
+                    && corrected.Journal.Entry.Metadata.EffectiveDate == amortization.AsOfDate
+                    && retained.LastMutationBatchId == correctedId
+                    && PayloadEquals(retained, corrected.Mutations[0].LotAfter),
+                    "Amortization correction requires the latest unchanged lot and exact original journal/date.");
+                var mutation = corrected.Mutations[0];
+                if (amortization.Reversal is { } reversal)
+                {
+                    var originalInputs = mutation.LotAfter.BasisAdjustment?.Amortization;
+                    RequireAssertion(mutation.LotAfter.BasisAdjustment?.MutationBatchId == correctedId
+                        && originalInputs is { Reversal: null }
+                        && OpenLotAmortization.SameLot(reversal.RestoresLot, mutation.LotBefore!.ToOpenLot()),
+                        "Amortization reversal must restore the exact retained original basis.");
+                }
+                else
+                    RequireAssertion(corrected.CorrectsMutationBatchId is not null
+                        && mutation.LotAfter.BasisAdjustment?.MutationBatchId != correctedId
+                        && mutation.LotBefore!.BasisAdjustment?.MutationBatchId == corrected.CorrectsMutationBatchId,
+                        "Amortization rebook requires an atomic reversal receipt; reverse the original posting first.");
+            }
+            else if (retained.LastMutationBatchId is { } lastId && retained.BasisAdjustment?.MutationBatchId != lastId)
+            {
+                var last = await _journalStore.GetAtomicTaxLotPostingAsync(lastId, ct).ConfigureAwait(false);
+                RequireAssertion(last is not { MutationKind: AtomicTaxLotMutationKind.Amortization, CorrectsMutationBatchId: not null }
+                    || last.Journal.Entry.Metadata.EffectiveDate != amortization.AsOfDate,
+                    "Same-date amortization after reversal requires approved rebook lineage to the reversal receipt.");
+            }
             var assetLines = source.ProjectedEffect!.Lines.Where(line => line.AccountId == requested.AssetAccountId).ToArray();
             RequireAssertion(assetLines.Length == 1
                 && assetLines[0].Debit == Math.Max(projection.FunctionalMovement, 0m)
                 && assetLines[0].Credit == Math.Max(-projection.FunctionalMovement, 0m),
                 "Amortization projected accounting must contain the exact reviewed asset carrying-value movement.");
+            return requested;
+        }
+
+        if (source.EventKind == AssetAccountingEventKindDto.CorporateAction && requested is not null)
+        {
+            var successor = requested.CorporateAction
+                ?? throw new InvalidOperationException("Corporate-action lot posting requires reviewed canonical successors.");
+            OpenLotSuccessors.Validate(successor);
+            RequireAssertion(successor.ExpectedLot.SecurityId == source.Scope.SecurityId
+                && successor.ExpectedLot.BookPositionId == position.PositionId
+                && successor.ExpectedLot.LedgerBookId == book.LedgerBookId
+                && successor.ExpectedSecurityVersion == source.Scope.ExpectedSecurityVersion
+                && successor.Projection.LotMutations!.ExpectedPositionVersion == position.Version
+                && successor.Projection.AccountingScope!.PeriodId == source.Scope.PeriodId
+                && successor.Projection.Treatment.AccountingBasis == source.Scope.AccountingBasis
+                && PayloadEquals(successor.Projection.EconomicEvent, source.EconomicEvent)
+                && PayloadEquals(successor.Projection.ProjectionLineage, source.ProjectionLineage)
+                && successor.Projection.EventAmount == source.EventAmount,
+                "Successor inputs must match the exact governed source event, projection, book, position and period.");
+            var retained = (await _journalStore.GetTaxLotsByIdsAsync(book.LedgerBookId,
+                [successor.ExpectedLot.TaxLotRecordId], ct).ConfigureAwait(false)).SingleOrDefault()
+                ?? throw new InvalidOperationException("The reviewed predecessor lot is missing from its authoritative book.");
+            RequireAssertion(retained.Account.AccountType == LedgerAccountType.Asset
+                && PayloadEquals(retained.ToOpenLot(), successor.ExpectedLot),
+                "The reviewed predecessor version, quantity or basis changed; rebuild the successor projection.");
+            await ValidateSuccessorHoldingPeriodCarryAsync(retained, successor.ExpectedLot, ct).ConfigureAwait(false);
+            foreach (var target in successor.Successors)
+            {
+                var targetPosition = await _positionStore.GetBookPositionAsync(target.Lot.BookPositionId, ct).ConfigureAwait(false)
+                    ?? throw new InvalidOperationException("The reviewed successor book position is missing.");
+                RequireAssertion(targetPosition.Version == target.ExpectedBookPositionVersion
+                    && targetPosition.SecurityId == target.Lot.SecurityId
+                    && targetPosition.Status == "Active"
+                    && targetPosition.PositionSide is BookPositionSides.Long or BookPositionSides.Asset
+                    && targetPosition.EffectiveFrom <= source.EffectiveDate
+                    && (targetPosition.EffectiveTo is null || targetPosition.EffectiveTo >= source.EffectiveDate),
+                    "Successor book-position identity, version or accounting scope is stale.");
+                ValidateBook(source, targetPosition, book);
+                var targetSecurity = await _securityMasterQueryService.GetRecordedByIdAsOfAsync(target.Lot.SecurityId,
+                    source.ProjectionLineage.GeneratedAtUtc, ct).ConfigureAwait(false)
+                    ?? throw new InvalidOperationException("The reviewed successor Security Master identity is missing.");
+                RequireAssertion(targetSecurity.Version == target.ExpectedSecurityVersion
+                    && targetSecurity.Status == SecurityStatusDto.Active
+                    && targetSecurity.Currency == target.Lot.Acquisition.AcquisitionCurrency,
+                    "Successor Security Master identity, version, terms or currency is stale.");
+                RequireAssertion(DateOnly.FromDateTime(targetSecurity.EffectiveFrom.UtcDateTime) <= source.EffectiveDate
+                    && (targetSecurity.EffectiveTo is null
+                        || source.EffectiveDate <= DateOnly.FromDateTime(targetSecurity.EffectiveTo.Value.UtcDateTime)),
+                    "Successor Security Master record is not effective on the corporate-action date.");
+                var existingTargets = await _journalStore.GetTaxLotsByIdsAsync(book.LedgerBookId,
+                    [target.Lot.TaxLotRecordId], ct).ConfigureAwait(false);
+                RequireAssertion(existingTargets.Count == 0, "Successor lots must be newly created durable identities.");
+            }
             return requested;
         }
 
@@ -1032,6 +1143,69 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
                          position.PositionId == source.Scope.BookPositionId,
             "Disposal lot authority does not match the resolved Security Master position.");
         return instruction with { DisposalSelections = canonicalSelections };
+    }
+
+    private async Task ValidateSuccessorHoldingPeriodCarryAsync(
+        LedgerTaxLotRecord retained, OpenLotDto source, CancellationToken ct)
+    {
+        var deferralStore = _journalStore as IWashSaleDeferralStore
+            ?? throw new InvalidOperationException(
+                "Successor candidate authority requires retained wash-sale holding-period carry evidence.");
+        // Sale dates can follow the action date. Even an unchanged holding date carries a separate
+        // basis claim that must not disappear when the replacement lot receives a new identity.
+        var deferrals = await deferralStore.ListWashSaleDeferralsAsync(source.LedgerBookId,
+            DateOnly.MinValue, DateOnly.MaxValue, ct).ConfigureAwait(false);
+        var visited = new HashSet<Guid>();
+        var cursor = retained;
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            RequireAssertion(cursor.LedgerBookId == source.LedgerBookId && cursor.TaxLotRecordId != Guid.Empty
+                && visited.Count < 32 && visited.Add(cursor.TaxLotRecordId),
+                "Successor holding-period carry ancestry is missing, cyclic or exceeds the supported depth.");
+            RequireAssertion(!deferrals.Any(deferral => deferral.LedgerBookId == source.LedgerBookId
+                    && deferral.ReplacementTaxLotRecordId == cursor.TaxLotRecordId),
+                "Unsupported inherited wash-sale basis or holding-period carry requires reviewed successor lineage before drafting.");
+            var predecessorId = cursor.Acquisition?.CorporateActionLineage?.PredecessorTaxLotRecordId
+                ?? cursor.BasisAdjustment?.CorporateAction?.ExpectedLot.TaxLotRecordId;
+            if (predecessorId is null && cursor.OriginatingMutationBatchId is { } birthBatchId)
+            {
+                var birth = await _journalStore.GetAtomicTaxLotPostingAsync(birthBatchId, ct).ConfigureAwait(false);
+                const string unprovedBirth = "Successor holding-period carry ancestry requires a complete immutable birth receipt.";
+                RequireAssertion(birthBatchId != Guid.Empty && birth is not null
+                    && birth.MutationBatchId == birthBatchId && birth.Journal.AggregateId == source.LedgerBookId
+                    && birth.CorrectsMutationBatchId is null
+                    && birth.Mutations.All(mutation => mutation.MutationBatchId == birthBatchId
+                        && mutation.MutationKind == birth.MutationKind
+                        && mutation.LotAfter.LedgerBookId == source.LedgerBookId
+                        && (mutation.LotBefore is null || mutation.LotBefore.LedgerBookId == source.LedgerBookId)), unprovedBirth);
+                var openings = birth!.Mutations.Where(mutation => mutation.TaxLotRecordId == cursor.TaxLotRecordId
+                    && mutation.LotBefore is null).ToArray();
+                RequireAssertion(openings.Length == 1 && openings[0].LotAfter.TaxLotRecordId == cursor.TaxLotRecordId
+                    && openings[0].LotAfter.OriginatingMutationBatchId == birthBatchId
+                    && PayloadEquals(openings[0].LotAfter.Acquisition, cursor.Acquisition), unprovedBirth);
+                if (birth.MutationKind == AtomicTaxLotMutationKind.Acquisition)
+                {
+                    RequireAssertion(birth.CorporateAction is null && birth.Mutations.Count == 1, unprovedBirth);
+                    return;
+                }
+                RequireAssertion(birth.MutationKind == AtomicTaxLotMutationKind.CorporateAction
+                    && birth.CorporateAction is not null
+                    && birth.CorporateAction.ExpectedLot.LedgerBookId == source.LedgerBookId, unprovedBirth);
+                predecessorId = birth.CorporateAction!.ExpectedLot.TaxLotRecordId;
+                var predecessorsAtBirth = birth.Mutations.Where(mutation => mutation.TaxLotRecordId == predecessorId
+                    && mutation.LotBefore is not null).ToArray();
+                RequireAssertion(predecessorsAtBirth.Length == 1
+                    && PayloadEquals(predecessorsAtBirth[0].LotBefore!.ToOpenLot(), birth.CorporateAction.ExpectedLot), unprovedBirth);
+            }
+            if (predecessorId is null)
+                return;
+            var predecessors = await _journalStore.GetTaxLotsByIdsAsync(source.LedgerBookId,
+                [predecessorId.Value], ct).ConfigureAwait(false);
+            RequireAssertion(predecessors.Count == 1 && predecessors[0].TaxLotRecordId == predecessorId.Value,
+                "Successor holding-period carry ancestry requires the exact retained predecessor in the same book.");
+            cursor = predecessors[0];
+        }
     }
 
     private static void ValidatePosition(AssetAccountingEventSpineDto source, BookPositionDto position)

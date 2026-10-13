@@ -169,6 +169,9 @@ public sealed class PortfolioCorporateActionSnapshotTests
             AssetEventType.Split,
             PositionFactor: 2m,
             ReferencePrice: 150m));
+        portfolio.GetOpenLots("XYZ").Should().HaveCount(2)
+            .And.OnlyContain(static lot => lot.Notes == null,
+                "single-source successors must not retain the prior composite summary");
         portfolio.ApplyAssetEvent(new AssetEvent(
             OpenedAt.AddDays(2),
             "XYZ",
@@ -186,6 +189,51 @@ public sealed class PortfolioCorporateActionSnapshotTests
             .Equal(0.5m, 0.5m);
         finalLot.BasisComponents.Select(static component => component.AllocatedBasis).Should()
             .Equal(100m, 200m);
+        finalLot.Notes.Should().Be(
+            $"Corporate-action composite from lots {originalLots[0].LotId:N}, {originalLots[1].LotId:N}",
+            "the current composite lineage must appear exactly once after chained actions");
+    }
+
+    [Fact]
+    public void ChainedSplits_PreserveOperatorNotesAndReplaceLegacyCompositeSummaries()
+    {
+        var portfolio = new SimulatedPortfolio(
+            10_000m,
+            new FixedCommissionModel(0m),
+            annualMarginRate: 0.05,
+            annualShortRebateRate: 0.02);
+        portfolio.ProcessFill(new FillEvent(
+            Guid.NewGuid(), Guid.NewGuid(), "XYZ", 1L, 100m, 0m, OpenedAt.AddDays(-2)));
+        portfolio.ProcessFill(new FillEvent(
+            Guid.NewGuid(), Guid.NewGuid(), "XYZ", 1L, 200m, 0m, OpenedAt.AddDays(-1)));
+        var originalLots = portfolio.GetOpenLots("XYZ").ToArray();
+        const string operatorNotes = "Retained operator rationale; Corporate-action composite from lots reviewed manually; keep punctuation.";
+        var legacyNotes = $"{operatorNotes}; Corporate-action composite from lots {Guid.NewGuid():N}, {Guid.NewGuid():N}; " +
+            $"Corporate-action composite from lots {Guid.NewGuid():N}, {Guid.NewGuid():N}";
+        SetRetainedLotNotes(portfolio, "XYZ", legacyNotes);
+
+        portfolio.ApplyAssetEvent(new AssetEvent(
+            OpenedAt, "XYZ", AssetEventType.Split, PositionFactor: 0.5m, ReferencePrice: 300m));
+
+        var expectedCompositeNotes = $"{operatorNotes}; Corporate-action composite from lots " +
+            $"{originalLots[0].LotId:N}, {originalLots[1].LotId:N}";
+        portfolio.GetOpenLots("XYZ").Should().ContainSingle().Which.Notes.Should().Be(expectedCompositeNotes);
+
+        portfolio.ApplyAssetEvent(new AssetEvent(
+            OpenedAt.AddDays(1), "XYZ", AssetEventType.Split, PositionFactor: 2m, ReferencePrice: 150m));
+
+        portfolio.GetOpenLots("XYZ").Should().HaveCount(2)
+            .And.OnlyContain(lot => lot.Notes == operatorNotes,
+                "only machine-generated clauses may be removed from a single-source successor");
+
+        portfolio.ApplyAssetEvent(new AssetEvent(
+            OpenedAt.AddDays(2), "XYZ", AssetEventType.Split, PositionFactor: 0.5m, ReferencePrice: 300m));
+
+        var snapshot = portfolio.TakeSnapshot(OpenedAt.AddDays(2), new DateOnly(2024, 1, 4));
+        snapshot.Positions["XYZ"].OpenLots.Should().ContainSingle()
+            .Which.Notes.Should().Be(expectedCompositeNotes);
+        snapshot.Accounts[BacktestDefaults.DefaultBrokerageAccountId].OpenLots.Should().ContainSingle()
+            .Which.Notes.Should().Be(expectedCompositeNotes);
     }
 
     [Fact]
@@ -498,5 +546,17 @@ public sealed class PortfolioCorporateActionSnapshotTests
             .Which.IsShort.Should().BeFalse();
         portfolio.GetOpenLots("NEW").Should().ContainSingle()
             .Which.IsShort.Should().BeTrue();
+    }
+
+    private static void SetRetainedLotNotes(SimulatedPortfolio portfolio, string symbol, string notes)
+    {
+        // Seed retained legacy metadata for the public transformation path; fills cannot supply notes.
+        var accounts = (System.Collections.IDictionary)typeof(SimulatedPortfolio)
+            .GetField("_accounts", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .GetValue(portfolio)!;
+        var account = accounts[BacktestDefaults.DefaultBrokerageAccountId]!;
+        var lots = (Dictionary<string, LinkedList<OpenLot>>)account.GetType()
+            .GetProperty("Lots")!.GetValue(account)!;
+        lots[symbol].First!.Value = lots[symbol].First!.Value with { Notes = notes };
     }
 }

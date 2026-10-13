@@ -253,6 +253,15 @@ checklist reflects finished work rather than page visits.
 
 ## Shared close and lot convergence
 
+`LedgerReportingAuthoritativeSource` reconciles corporate-action successor journals against the
+immutable batches returned by `ILedgerOpenLotSuccessorHistory`. It verifies predecessor closeout,
+every new lot, both allocated currency bases, acquisition FX, holding dates and the refunded-only
+`ScheduleD` tag against the approved instruction. Exact batch JSON, its SHA-256 hash and the
+instruction fingerprint become evidence columns on existing journal rows in the retained Reporting
+dataset/checkpoint. This adds no monetary rows and does not use later live lot balances to restate
+past reports. Missing history, contradictory snapshots or mismatched owner/book/period scope block
+authoritative reporting.
+
 Manual-journal commands retain a durable intent before changing drafts or appending a journal.
 The receipt includes the original actor, before/after drafts, exact posting write, deterministic
 audit identifiers, and the command result. A retry repairs the audit before returning success.
@@ -376,6 +385,12 @@ startup refusal checks the effective authentication account source, including co
 environment accounts and development demo fallback, so a multi-company login source cannot
 silently run against an unpartitioned graph. This startup check does not certify account changes
 after startup or activate strict reads automatically.
+
+Canonical Reporting verifies unified successor receipts against the complete journal and retained
+reviewed instruction. It preserves exact evidence JSON and fingerprints on certified journal rows
+and adds verified predecessor/successor snapshots to `corporate-action-lot-evidence.json` in the
+signed ledger report pack. Whole-unit split legs sharing a security and position remain separate
+through their reviewed lot labels; only refunded successors receive Schedule D treatment.
 
 ## Purpose
 
@@ -2196,6 +2211,9 @@ provider-to-Security-Master trust without rebuilding mapping logic locally. The 
 composes the Security Master operations workbench with identity confidence, provider evidence,
 terms, readiness, and handoff panels, keeping valuation-ready, ledger-ready, reconciliation-ready,
 close-ready, and report-ready posture server-owned for browser and WPF clients.
+Scoped run-snapshot open lots use retained component cost basis for unrealized P&L in both
+directions, including legacy short lots whose direction is recovered from the account position.
+Their displayed entry price does not replace the retained basis when the two differ.
 Security Master trust and conflict summaries use downstream Data, Accounting, and Reporting
 workflow labels so browser and WPF clients do not surface retained Governance-era wording for
 operator-facing review.
@@ -2570,6 +2588,10 @@ including close readiness, balances, sync history, statements, positions, bank l
 reconciliation runs/results, resolve the owning account before returning or mutating data; write
 payloads must match the route account id so callers cannot authorize one account in the URL while
 submitting another account in the request body.
+Statement intake rejects null line collections, null rows, and line/account mismatches before
+calling the configured account service. The Portfolio Records service also validates retained batch
+lineage and custodian as-of dates before writing evidence. These validation failures and malformed
+JSON fields return HTTP 400; account scope authorization still runs first.
 Operations Continuity reconciliation bridge payloads now also populate the shared cash, position,
 trade, income, MBS factor, bank, and GL support lane summaries from provider-ledger reconciliation
 detail, retained evidence, and open break materialization. Browser, WPF, and host callers should
@@ -2663,6 +2685,7 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-UI-SHARED -->
 | Roadmap item | Title |
 | --- | --- |
+| `W10-LOT-002` | Security-identified open-lot convergence |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |

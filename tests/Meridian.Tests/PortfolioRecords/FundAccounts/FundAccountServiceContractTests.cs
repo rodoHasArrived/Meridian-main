@@ -858,7 +858,6 @@ public abstract class FundAccountServiceContractTests
         var service = CreateService();
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         var account = await service.CreateAccountAsync(MakeRequest(AccountTypeDto.Margin), cts.Token);
-        // EffectiveAt must stay constant: the Postgres upsert key is (account_id, effective_at).
         var effectiveAt = DateTimeOffset.UtcNow;
         var correlationId = $"corr-{Guid.NewGuid():N}";
 
@@ -879,6 +878,64 @@ public abstract class FundAccountServiceContractTests
             "the same correlation must update the snapshot, not append a duplicate");
         var snapshots = await service.GetMarginSnapshotsAsync(account.AccountId, cts.Token);
         snapshots.Should().ContainSingle().Which.ExcessLiquidity.Should().Be(12500m);
+    }
+
+    protected async Task RecordMarginSnapshotAsync_SameCorrelationCorrectedEffectiveTime_PreservesIdentity_Core()
+    {
+        var service = CreateService();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var account = await service.CreateAccountAsync(MakeRequest(AccountTypeDto.Margin), cts.Token);
+        var request = MakeMarginRequest(account.AccountId) with
+        {
+            EffectiveAt = new DateTimeOffset(2026, 10, 7, 12, 0, 0, TimeSpan.Zero),
+            CorrelationId = "corrected-margin",
+            ExcessLiquidity = 10_000m
+        };
+        var first = await service.RecordMarginSnapshotAsync(request, cts.Token);
+
+        var corrected = await service.RecordMarginSnapshotAsync(request with
+        {
+            EffectiveAt = request.EffectiveAt.AddHours(1),
+            ExcessLiquidity = 12_500m
+        }, cts.Token);
+
+        corrected.MarginSnapshotId.Should().Be(first.MarginSnapshotId);
+        var snapshots = await service.GetMarginSnapshotsAsync(account.AccountId, cts.Token);
+        snapshots.Should().ContainSingle();
+        snapshots[0].EffectiveAt.Should().Be(corrected.EffectiveAt);
+        snapshots[0].ExcessLiquidity.Should().Be(12_500m);
+    }
+
+    protected async Task RecordMarginSnapshotAsync_CorrectedEffectiveTimeAlreadyOccupied_RejectsWithoutReplacing_Core()
+    {
+        var service = CreateService();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var account = await service.CreateAccountAsync(MakeRequest(AccountTypeDto.Margin), cts.Token);
+        var request = MakeMarginRequest(account.AccountId) with
+        {
+            EffectiveAt = new DateTimeOffset(2026, 10, 7, 12, 0, 0, TimeSpan.Zero),
+            CorrelationId = "first-margin",
+            ExcessLiquidity = 10_000m
+        };
+        var first = await service.RecordMarginSnapshotAsync(request, cts.Token);
+        var second = await service.RecordMarginSnapshotAsync(request with
+        {
+            EffectiveAt = request.EffectiveAt.AddHours(1),
+            CorrelationId = "second-margin",
+            ExcessLiquidity = 15_000m
+        }, cts.Token);
+
+        var act = () => service.RecordMarginSnapshotAsync(request with
+        {
+            EffectiveAt = second.EffectiveAt,
+            ExcessLiquidity = 12_500m
+        }, cts.Token);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        var snapshots = await service.GetMarginSnapshotsAsync(account.AccountId, cts.Token);
+        snapshots.Should().HaveCount(2);
+        snapshots.Single(s => s.MarginSnapshotId == first.MarginSnapshotId).ExcessLiquidity.Should().Be(10_000m);
+        snapshots.Single(s => s.MarginSnapshotId == second.MarginSnapshotId).ExcessLiquidity.Should().Be(15_000m);
     }
 
     protected async Task GetLatestMarginSnapshotAsync_MultipleEffectiveTimes_ReturnsLatest_Core()
@@ -934,6 +991,204 @@ public abstract class FundAccountServiceContractTests
         var act = () => service.RecordMarginSnapshotAsync(MakeMarginRequest(account.AccountId), cancelled.Token);
 
         await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    protected async Task RecordBalanceSnapshotAsync_PreservesAccountFundOwnership_Core()
+    {
+        var service = CreateService();
+        var fundId = Guid.NewGuid();
+        var account = await service.CreateAccountAsync(MakeBankRequest(fundId));
+
+        var recorded = await service.RecordBalanceSnapshotAsync(MakeSnapshotRequest(account.AccountId, Today(), 123m));
+
+        recorded.FundId.Should().Be(fundId);
+        (await service.GetLatestBalanceSnapshotAsync(account.AccountId))!.FundId.Should().Be(fundId);
+    }
+
+    protected async Task ClosedAccount_ExplicitBackfillRecordsHistoricalEvidence_Core()
+    {
+        var service = CreateService();
+        var account = await service.CreateAccountAsync(MakeCustodyRequest() with
+        {
+            OperationalStatus = AccountOperationalStatusDto.Closed
+        });
+        var asOf = Today().AddDays(-30);
+
+        await service.RecordBalanceSnapshotAsync(MakeSnapshotRequest(account.AccountId, asOf, 100m) with { IsBackfill = true });
+        await service.IngestCustodianStatementAsync(
+            MakeCustodianStatementRequest(account.AccountId, asOf, 1) with { IsBackfill = true });
+        var batchId = Guid.NewGuid();
+        await service.IngestBankStatementAsync(new IngestBankStatementRequest(
+            batchId, account.AccountId, asOf, "Historical bank", null,
+            [MakeBankLine(batchId, account.AccountId, asOf, 10m)], "tests", IsBackfill: true));
+
+        (await service.GetBalanceHistoryAsync(account.AccountId)).Should().ContainSingle();
+        (await service.GetCustodianPositionsAsync(account.AccountId, asOf)).Should().ContainSingle();
+        (await service.GetBankStatementLinesAsync(account.AccountId)).Should().ContainSingle();
+        (await service.GetAccountAsync(account.AccountId))!.OperationalStatus.Should().Be(AccountOperationalStatusDto.Closed);
+    }
+
+    protected async Task IngestCustodianStatementAsync_InvalidLineLineageRejectsEntireBatch_Core()
+    {
+        var service = CreateService();
+        var account = await service.CreateAccountAsync(MakeCustodyRequest());
+        var request = MakeCustodianStatementRequest(account.AccountId, Today(), 2);
+        var valid = request.Lines[0];
+        var lastLine = request.Lines[1];
+        var invalidLines = new[]
+        {
+            lastLine with { AccountId = Guid.NewGuid() },
+            lastLine with { BatchId = Guid.NewGuid() },
+            lastLine with { AsOfDate = Today().AddDays(-1) },
+            null!
+        };
+
+        foreach (var invalid in invalidLines)
+        {
+            var act = () => service.IngestCustodianStatementAsync(request with { Lines = [valid, invalid] });
+            await act.Should().ThrowAsync<ArgumentException>();
+        }
+
+        var missingLines = () => service.IngestCustodianStatementAsync(request with { Lines = null! });
+        await missingLines.Should().ThrowAsync<ArgumentNullException>();
+        (await service.GetCustodianPositionsAsync(account.AccountId, Today())).Should().BeEmpty();
+        var run = await service.ReconcileAccountAsync(new ReconcileAccountRequest(account.AccountId, Today(), "tests"));
+        run.TotalChecks.Should().Be(0, "rejected lines must not leave a custodian batch header behind");
+    }
+
+    protected async Task IngestBankStatementAsync_InvalidLineLineageRejectsEntireBatch_Core()
+    {
+        var service = CreateService();
+        var account = await service.CreateAccountAsync(MakeBankRequest());
+        var batchId = Guid.NewGuid();
+        var valid = MakeBankLine(batchId, account.AccountId, Today(), 10m);
+        var lastLine = MakeBankLine(batchId, account.AccountId, Today(), 20m);
+        var request = new IngestBankStatementRequest(batchId, account.AccountId, Today(), "Bank", null, [], "tests");
+        var invalidLines = new[]
+        {
+            lastLine with { AccountId = Guid.NewGuid() },
+            lastLine with { BatchId = Guid.NewGuid() },
+            null!
+        };
+
+        foreach (var invalid in invalidLines)
+        {
+            var act = () => service.IngestBankStatementAsync(request with { Lines = [valid, invalid] });
+            await act.Should().ThrowAsync<ArgumentException>();
+        }
+
+        var missingLines = () => service.IngestBankStatementAsync(request with { Lines = null! });
+        await missingLines.Should().ThrowAsync<ArgumentNullException>();
+        (await service.GetBankStatementLinesAsync(account.AccountId)).Should().BeEmpty();
+    }
+
+    protected async Task ReconcileAccountAsync_ForeignCurrencySyncCannotVerifyOrBreakCashContinuity_Core()
+    {
+        foreach (var syncedCash in new[] { 100m, 125m })
+        {
+            var service = CreateService();
+            var account = await service.CreateAccountAsync(MakeCustodyRequest());
+            await service.RecordBalanceSnapshotAsync(MakeSnapshotRequest(account.AccountId, Today(), syncedCash) with
+            {
+                Currency = "EUR",
+                Source = "brokerage-sync:test"
+            });
+            await service.RecordBalanceSnapshotAsync(MakeSnapshotRequest(account.AccountId, Today(), 100m));
+
+            var run = await service.ReconcileAccountAsync(new ReconcileAccountRequest(account.AccountId, Today(), "tests"));
+            var continuity = (await service.GetReconciliationResultsAsync(run.ReconciliationRunId))
+                .Single(result => result.Category == "Continuity");
+
+            run.Status.Should().Be("Unverified");
+            run.TotalBreaks.Should().Be(0);
+            continuity.Status.Should().Be("Unverified");
+            continuity.IsMatch.Should().BeFalse();
+            continuity.ExpectedAmount.Should().Be(100m);
+            continuity.ActualAmount.Should().BeNull();
+            continuity.Variance.Should().BeNull();
+            continuity.Reason.Should().Contain("USD");
+        }
+    }
+
+    protected async Task ReconcileAccountAsync_UsesLatestSyncInInternalSnapshotCurrency_Core()
+    {
+        var service = CreateService();
+        var account = await service.CreateAccountAsync(MakeCustodyRequest());
+        await service.RecordBalanceSnapshotAsync(MakeSnapshotRequest(account.AccountId, Today(), 100m) with
+        {
+            Source = "brokerage-sync:test"
+        });
+        await service.RecordBalanceSnapshotAsync(MakeSnapshotRequest(account.AccountId, Today(), 500m) with
+        {
+            Currency = "EUR",
+            Source = "brokerage-sync:test"
+        });
+        await service.RecordBalanceSnapshotAsync(MakeSnapshotRequest(account.AccountId, Today(), 100m));
+
+        var run = await service.ReconcileAccountAsync(new ReconcileAccountRequest(account.AccountId, Today(), "tests"));
+        var continuity = (await service.GetReconciliationResultsAsync(run.ReconciliationRunId))
+            .Single(result => result.Category == "Continuity");
+
+        continuity.Status.Should().Be("Matched");
+        continuity.ActualAmount.Should().Be(100m);
+        continuity.Variance.Should().Be(0m);
+        run.TotalBreaks.Should().Be(0);
+    }
+
+    protected async Task GetReadinessAsync_UnavailableAccountCannotBeReady_Core()
+    {
+        foreach (var status in new[] { AccountOperationalStatusDto.Active, AccountOperationalStatusDto.Suspended, AccountOperationalStatusDto.Closed })
+        {
+            var service = CreateService();
+            var account = await service.CreateAccountAsync(MakeCustodyRequest(institution: "Provider", ledgerReference: "Ledger") with
+            {
+                OperationalStatus = status
+            });
+            await service.RecordSyncHistoryAsync(new RecordAccountSyncHistoryRequest(
+                account.AccountId, "balances", AccountSyncStatusDto.Succeeded, AccountProviderLinkStatusDto.Verified));
+            if (status == AccountOperationalStatusDto.Active)
+            {
+                await service.DeactivateAccountAsync(account.AccountId, "tests");
+            }
+
+            var readiness = await service.GetReadinessAsync(account.AccountId);
+
+            readiness!.IsReady.Should().BeFalse();
+            readiness.Issues.Should().Contain(issue => issue.Code == "account.operational_status.unavailable"
+                && issue.Severity == AccountReadinessSeverityDto.Critical);
+        }
+    }
+
+    protected async Task GetReadinessAsync_IncompleteSyncCannotBeReady_Core()
+    {
+        foreach (var status in new[] { AccountSyncStatusDto.Pending, AccountSyncStatusDto.Cancelled, AccountSyncStatusDto.Degraded })
+        {
+            var service = CreateService();
+            var account = await service.CreateAccountAsync(MakeCustodyRequest(institution: "Provider", ledgerReference: "Ledger"));
+            await service.RecordSyncHistoryAsync(new RecordAccountSyncHistoryRequest(
+                account.AccountId, "balances", status, AccountProviderLinkStatusDto.Verified));
+
+            var readiness = await service.GetReadinessAsync(account.AccountId);
+
+            readiness!.IsReady.Should().BeFalse();
+            readiness.Issues.Should().Contain(issue => issue.Code == $"account.sync.{status.ToString().ToLowerInvariant()}");
+        }
+    }
+
+    protected async Task GetReadinessAsync_UnavailableProviderSyncCannotBeReady_Core()
+    {
+        foreach (var status in new[] { AccountProviderLinkStatusDto.Degraded, AccountProviderLinkStatusDto.SyncPending, AccountProviderLinkStatusDto.SyncFailed })
+        {
+            var service = CreateService();
+            var account = await service.CreateAccountAsync(MakeCustodyRequest(institution: "Provider", ledgerReference: "Ledger"));
+            await service.RecordSyncHistoryAsync(new RecordAccountSyncHistoryRequest(
+                account.AccountId, "balances", AccountSyncStatusDto.Succeeded, status));
+
+            var readiness = await service.GetReadinessAsync(account.AccountId);
+
+            readiness!.IsReady.Should().BeFalse();
+            readiness.Issues.Should().Contain(issue => issue.Code == "account.provider_link.sync_unavailable");
+        }
     }
 
     // ── Request factories ─────────────────────────────────────────────────────

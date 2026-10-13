@@ -243,15 +243,18 @@ public sealed class SecurityMasterGovernedConcurrencyPostgresTests(SecurityMaste
         command.CommandText = $$"""
             insert into {{fixture.Options.Schema}}.securities
                 (security_id, asset_class, status, display_name, currency, primary_identifier_kind,
-                 primary_identifier_value, common_terms, asset_specific_terms, provenance, version, effective_from)
+                 primary_identifier_value, normalized_primary_identifier_value, common_terms,
+                 asset_specific_terms, provenance, version, effective_from)
             values (@id, 'CustomAsset', 'Active', 'Concurrency fixture', 'USD', 'InternalCode', @identifier,
-                    '{}', '{}', '{}', 1, now());
+                    @normalized_identifier, '{}', '{}', '{}', 1, now());
             insert into {{fixture.Options.Schema}}.security_events
                 (security_id, stream_version, event_type, event_timestamp, actor, payload)
             values (@id, 1, 'created', now(), 'test', '{}');
             """;
         command.Parameters.AddWithValue("id", id);
         command.Parameters.AddWithValue("identifier", id.ToString("N"));
+        command.Parameters.AddWithValue("normalized_identifier",
+            SecurityIdentifierNormalizer.NormalizeValue(SecurityIdentifierKind.InternalCode, id.ToString("N")));
         await command.ExecuteNonQueryAsync();
         return id;
     }

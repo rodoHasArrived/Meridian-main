@@ -1904,7 +1904,7 @@ items:
     health: green
     priority: critical
     evidence_posture: in_progress
-    current_summary: "Governed legacy backfill now retains hashed acquisition facts, requires independent review plus authoritative security/book-position validation, and resolves durable exceptions only through atomic versioned receipts. Both open and fully disposed legacy rows can be repaired without invented identity, quantity basis or acquisition FX. Production durable disposal and Reporting consume canonical lot evidence and fail closed on unresolved facts. Acquisition writer convergence landed 2026-09-22 - the Asset Accounting Event Spine post service, the only production writer that creates lots, now retains canonical acquisition facts on every unit lot and on every face lot whose instruction states its amortization method, so production disposal relieves spine-acquired lots instead of routing them to the backfill exception queue. The facts are known rather than defaulted (the spine refuses foreign-currency events, so FX is exactly one and both bases equal the asserted event amount), and the lot-bound OpenLotAcquisition evidence restates the retained source records as reviewed and retained with the independent maker-checker approval. Face lots without a stated method keep their par terms alone, and a retry of a batch committed before facts were written replays its retained shape exactly. Atomic AverageCost relief landed 2026-09-23 - durable disposal books the pooled canonical basis and restates every surviving pool lot to it in the same transaction through a governed, append-only basis adjustment (V_ledger_037), so lots of record keep tying to the asset account, and Reporting re-runs pooled relief over the retained pre-relief pool before certifying a disposal. Amortization, corporate-action successors, advance refunding and shadow-operation acceptance remain open. Hosted CI passed at d49fbc8e7, and six PostgreSQL lot cases passed without skips in Production Certification run 33956884001; that historical broader run failed six other tests and its dependency gate. Current Production Certification run 35885778558 passed all four jobs on 13aa7576575e7816c14ec3b9b5b002a3f4494c97 on 2026-09-23, including 1028 database tests with zero failures and zero skips; both originally reported certification failures are closed on that baseline. This does not discharge the remaining lot exit criteria or certify a later commit. Partial canonical amortization implementation added 2026-10-02: supported fixed/zero-coupon face lots use authoritative canonical records, retained acquisition FX and hash-bound versioned Security Master evidence. The existing governed posting path commits balanced journal, CAS open basis, append-only basis-only mutation and evidence together; exact retries reload the existing result. Unsupported structures and stale inputs refuse posting. Focused validation is recorded with this change; hosted CI and live shadow-operation acceptance remain required. Corporate-action successors, advance refunding and the active wash-sale correction are outside this delivery. Partial current-basis disposal continuation implemented 2026-10-02 - supported relief methods certify current canonical basis while retaining original acquisition facts, and partial discrete relief conserves both currency bases through a versioned DisposalRelief remainder in the same atomic journal transaction. Reporting reconstructs exact posted economics; PostgreSQL coverage exercises method transitions, stale selections, rollback, restart and replay. Focused verification at a4c4b5ff0 passed 138 tests with zero failures and skips, including nine new PostgreSQL cases; PostgreSQL 16 schema snapshot and independent verification passed with zero errors. Migration 041 follows the PR 3048 amortization migration 040; this slice does not close the LOT row."
+    current_summary: "Canonical acquisition, retained legacy backfill, AverageCost redistribution, current-basis relief and bounded face-lot amortization share the durable lot and immutable journal boundary. PR #3102 is the single consolidated review surface for successor posting, governed amortization corrections, disposal and consumer evidence through one successor instruction and atomic posting implementation. Migration 042 owns successors with populated upgrade/recovery audit; forward migration 043 narrowly permits approved amortization reversal restoring a retained null prior basis. Supported single-predecessor actions are cashless Reg S/144A exchange, whole-unit forward/reverse split, stock merger and two-successor advance refunding. Original/current transaction and functional bases, acquisition FX, holding dates and immutable source-action lineage survive posting and later disposal; only refunded successors carry Schedule D treatment. Full immutable predecessor ancestry resolves stable source actions from retained version/hash-bound evidence, including historical absent lineage or stable-ID fields; intervening actions or disposal cannot hide repeat application. Missing, contradictory, cyclic or foreign-book receipts block new posting while exact committed retries replay. Reviewed lifecycle evidence, source/target account and policy scope, canonical dimensions, optimistic versions, exact replay and retained Reporting JSON plus signed lot evidence remain bound through commit. Atomic successors require the canonical corporate-action source type, complete approved typed context and named actor; type aliases and corrected-batch/source-journal, reversal/rebook or closing-entry metadata cannot bypass the unsupported correction boundary. Amortization reversal restores the retained prior basis and exact inverse journal atomically; same-date rebook requires approved reversal lineage. Null restoration is bound to the latest original mutation and an approved same-scope/date correcting journal, with exact typed snapshot and inverse-line checks unchanged and general removal/version/new-batch guards retained. PostgreSQL proof covers partial and closing FIFO disposal after amortization. AverageCost certification compares acquisition evidence and successor origin by value, and Backtesting/shared Security Master projections use retained lot cost basis and current composite provenance. Tailwind 4/PostCSS and rebuilt browser assets are carried into the same canonical review surface. New test coverage includes full ancestry and legacy shape, restart, competing commands, collision rollback, source/approval/correction/dimension refusals and null-basis reversal/rebook. Current-run validation is recorded on the canonical PR rather than inferred from superseded heads. Historical Production Certification run 35885778558 passed on 13aa7576575e7816c14ec3b9b5b002a3f4494c97; it does not certify this continuation. This remains partial delivery: broader actions and corporate-action corrections, successor amortization, remaining Execution/Backtesting/Reporting parity and live shadow-operation acceptance are open. W10-LOT-002 remains in_progress pending its full exit criteria and independent Accounting/Ledger and Storage review."
     exit_criteria:
       - Every authoritative open lot requires SecurityId and BookPositionId, uses decimal original/open quantity, and declares Units or Face quantity basis; symbols remain effective-dated display evidence only.
       - Acquisition currency, functional currency, transaction-to-functional acquisition FX, transaction basis, and functional basis are retained and restatable without using a current market FX rate.
@@ -1921,9 +1921,55 @@ items:
       - SRC-LEDGER
       - SRC-STORAGE
       - SRC-DESIGN-FINANCIAL-OPERATIONS
+      - SRC-DESIGN-INSTRUMENTS
+      - SRC-UI-SHARED
     diagrams:
       - DIA-ASSURANCE-LOOP
     evidence:
+      - type: source
+        path: src/Meridian.Contracts/Accounting/Lots/OpenLotSuccessors.cs
+      - type: source
+        path: src/Meridian.Instruments/AssetOperations/CorporateActionAssetAccountingEventMapper.cs
+      - type: source
+        path: src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CorporateAction.cs
+      - type: source
+        path: src/Meridian.Storage/Ledger/CorporateActionSuccessorAncestry.cs
+      - type: source
+        path: src/Meridian.Storage/Ledger/Migrations/V_ledger_042__atomic_lot_successors.sql
+      - type: source
+        path: src/Meridian.Storage/Ledger/Migrations/V_ledger_043__amortization_reversal_basis_restoration.sql
+      - type: source
+        path: src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs
+      - type: test
+        path: tests/Meridian.Tests/AssetOperations/OpenLotSuccessorTests.cs
+      - type: test
+        path: tests/Meridian.Tests/AssetOperations/OpenLotSuccessorTests.CorporateActions.cs
+      - type: test
+        path: tests/Meridian.Tests/AssetOperations/CanonicalLotCorporateActionServiceTests.cs
+      - type: test
+        path: tests/Meridian.Tests/AssetOperations/AmortizationReversalPreviewTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.Amortization.cs
+      - type: test
+        path: tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.SuccessorScope.cs
+      - type: test
+        path: tests/Meridian.Tests/Storage/CorporateActionSuccessorAncestryTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.SuccessorAncestry.cs
+      - type: test
+        path: tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.SuccessorGuards.cs
+      - type: test
+        path: tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.SuccessorPublication.cs
+      - type: test
+        path: tests/Meridian.Tests/Storage/AtomicTaxLotSuccessorMigrationTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Storage/CanonicalOpenLotConsumerTests.CorporateActions.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/LedgerReportingAuthoritativeSourceTests.SuccessorReportPack.cs
+      - type: test
+        path: tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.Successors.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/LedgerReportingAuthoritativeSourceSuccessorTests.cs
       - type: source
         path: src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.DiscreteLotRelief.cs
       - type: test
@@ -1968,7 +2014,7 @@ items:
         path: tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.Amortization.cs
       - type: test
         path: tests/Meridian.Tests/AssetOperations/AmortizationLotInstructionContractTests.cs
-    last_reviewed: 2026-10-02
+    last_reviewed: 2026-10-07
 
   - id: W10-DEBT-001
     title: God-file burn-down against the file-size ratchet
