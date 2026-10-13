@@ -13,6 +13,8 @@ public sealed class AcquisitionTermsCompletionTests
     [InlineData(BondAmortizationMethod.NoAmortization, null)]
     [InlineData(BondAmortizationMethod.StraightLine, null)]
     [InlineData(BondAmortizationMethod.ConstantYield, 0.05)]
+    [InlineData(BondAmortizationMethod.ConstantYield, 0.0)]
+    [InlineData(BondAmortizationMethod.ConstantYield, -0.99)]
     public void ReviewedCompletion_SuppliesOnlyMissingTermsAndPreservesDraft(BondAmortizationMethod method, double? yield)
     {
         var request = BuildRequest(method, yield is null ? null : (decimal)yield.Value);
@@ -47,6 +49,8 @@ public sealed class AcquisitionTermsCompletionTests
     [InlineData("invalid-method")]
     [InlineData("missing-method")]
     [InlineData("missing-yield")]
+    [InlineData("yield-minus-one")]
+    [InlineData("yield-below-minus-one")]
     public void UnboundOrUnsupportedCompletion_IsRefused(string fault)
     {
         var request = BuildRequest();
@@ -87,6 +91,8 @@ public sealed class AcquisitionTermsCompletionTests
             "invalid-method" => Rebind(request, completion with { AmortizationMethod = (BondAmortizationMethod)999 }),
             "missing-method" => Rebind(request, completion with { AmortizationMethod = null }),
             "missing-yield" => Rebind(request, completion with { AmortizationMethod = BondAmortizationMethod.ConstantYield }),
+            "yield-minus-one" => Rebind(request, completion with { AmortizationMethod = BondAmortizationMethod.ConstantYield, EffectiveYield = -1m }),
+            "yield-below-minus-one" => Rebind(request, completion with { AmortizationMethod = BondAmortizationMethod.ConstantYield, EffectiveYield = -1.01m }),
             _ => throw new ArgumentOutOfRangeException(nameof(fault))
         };
 

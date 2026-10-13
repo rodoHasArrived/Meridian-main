@@ -741,6 +741,9 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         RequireAssetAssertion(
             request.ApprovalEvidence.All(evidence => evidence.RetainedAtUtc >= evidence.ReviewedAtUtc),
             "Approval evidence cannot be retained before review.");
+        if (request.AcquisitionTermsCompletion?.Evidence is { } completionReview)
+            RequireAssetAssertion(completionReview.ReviewedAtUtc >= draftedAtUtc,
+                "Acquisition terms completion review cannot precede the retained Drafted attestation.");
     }
 
     private static void ValidatePostedProjectionOutcome(

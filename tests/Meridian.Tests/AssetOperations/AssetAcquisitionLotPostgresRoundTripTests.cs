@@ -248,6 +248,18 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
             (await journal.GetByPeriodAsync(periodId, ct: ct)).Should().BeEmpty();
             (await assets.GetLatestAsync(eventId, 1, ct))!.Projection.SpineVersion
                 .Should().Be(retainedApproval ? 4 : 3);
+            drafted.Stages.Single(stage => stage.Stage == AssetAccountingLifecycleStageDto.Drafted).AttestedAtUtc
+                .Should().BeAfter(candidate.AccountingTimestamp);
+            foreach (var (invalidRequest, error) in InvalidReviewedCompletions(postRequest))
+            {
+                var refused = () => posting.PostCandidateAsync(invalidRequest, ct);
+                await refused.Should().ThrowAsync<InvalidOperationException>().WithMessage(error);
+                (await journal.GetByPeriodAsync(periodId, ct: ct)).Should().BeEmpty();
+                (await journal.ListOpenTaxLotsByAssetScopeAsync(bookId, securityId, positionId, EffectiveDate, ct))
+                    .Should().BeEmpty();
+                (await assets.GetLatestAsync(eventId, 1, ct))!.Projection.SpineVersion
+                    .Should().Be(retainedApproval ? 4 : 3);
+            }
         }
         var originalApproval = retainedApproval ? (await assets.GetAsync(eventId, 1, 4, ct))!.Projection : null;
         var posted = await posting.PostCandidateAsync(postRequest, ct);

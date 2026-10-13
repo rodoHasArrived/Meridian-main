@@ -17,7 +17,7 @@ using NSubstitute;
 
 namespace Meridian.Tests.FinancialOperations.Ledger;
 
-public sealed class AssetAccountingEventSpineServiceTests
+public sealed partial class AssetAccountingEventSpineServiceTests
 {
     private static readonly JsonSerializerOptions CanonicalJsonOptions = new(JsonSerializerDefaults.Web);
 

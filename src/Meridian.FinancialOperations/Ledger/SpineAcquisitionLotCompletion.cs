@@ -47,6 +47,14 @@ internal static class SpineAcquisitionLotCompletion
             candidate.EventAmount, candidate.EffectiveDate, candidate.RetainedEvidence);
         if (issues.Count > 0)
             throw new InvalidOperationException($"Acquisition terms completion is invalid: {string.Join(" ", issues)}");
+        try
+        {
+            SpineAcquisitionLotFacts.RequireCompleteNewAcquisition(completed);
+        }
+        catch (ArgumentException exception)
+        {
+            throw new InvalidOperationException($"Acquisition terms completion is invalid: {exception.Message}", exception);
+        }
         return completed;
     }
 

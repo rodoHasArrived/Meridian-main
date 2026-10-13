@@ -591,8 +591,11 @@ shadow-operation acceptance still require their own implementation and independe
 ### New acquisition admission (2026-10-12)
 
 The production spine now requires an explicit amortization method for new face acquisitions,
-including `NoAmortization` when selected in the reviewed instruction. Missing methods fail before
-a new Drafted transition. Every newly posted spine acquisition retains canonical quantity basis,
+including `NoAmortization` when selected in the reviewed instruction. Face amount, booked factor
+and par basis must be supplied together, be positive, and use a factor no greater than one. Face
+amount must reconcile to the ledger quantity; constant yield must be greater than `-1`.
+Invalid terms and missing methods fail before a new Drafted transition. Every newly posted spine
+acquisition retains canonical quantity basis,
 acquisition currencies and FX, transaction/functional basis, holding date and lot-bound evidence.
 
 A retained incomplete Drafted or Approved face acquisition uses
@@ -603,8 +606,9 @@ method and effective yield when required. Its retained evidence uses the
 `AssetAcquisitionTermsCompletion` subject type and the subject hash returned by
 `AssetAcquisitionTermsCompletionDto.ApprovalSubjectId()`. The hash binds the draft, lot and terms.
 The review must be independent of the draft preparer, match the authenticated posting actor,
-follow the draft, and have been retained before posting. Missing, stale or differently scoped
-evidence blocks the write. Completed terms cannot replace terms already present on the draft.
+occur no earlier than the retained Drafted attestation, and have been retained before posting.
+Missing, stale or differently scoped evidence blocks the write. Completed terms cannot replace
+terms already present on the draft.
 
 The original draft and any already retained Approved attestation remain byte-for-byte unchanged.
 Completion evidence is retained in the journal command, atomic lot receipt and Posted attestation;
