@@ -1,6 +1,7 @@
 using System.Data;
 using System.Text.Json;
 using Meridian.Contracts.Accounting.Lots;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Ledger;
@@ -387,6 +388,7 @@ public sealed partial class PostgresLedgerJournalStore
         if (security is null || security.SecurityId != facts.SecurityId || security.Version != facts.SecurityMasterVersion)
             throw new LedgerValidationException("Retained backfill Security Master identity or version is missing or stale.");
         if (position is null || book is null || position.SecurityId != facts.SecurityId || position.PositionId != facts.BookPositionId
+            || position.PositionSide is not (BookPositionSides.Long or BookPositionSides.Asset)
             || position.BookContext.LedgerBookId != facts.LedgerBookId || position.Version != facts.BookPositionVersion
             || !string.Equals(position.BookContext.FundProfileId?.Trim(), book.FundProfileId?.Trim(), StringComparison.OrdinalIgnoreCase)
             || position.BookContext.FundStructureNodeId != book.FundStructureNodeId

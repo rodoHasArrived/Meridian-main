@@ -97,8 +97,13 @@ public sealed partial class PostgresLedgerJournalStore
 
         // Historical receipts may predate canonical acquisition facts. Exact replay above must
         // retain that shape, but a new lot cannot create another legacy-backfill exception.
+        if (command.Direction != OpenLotDirection.Long)
+            throw new LedgerValidationException("New short-lot postings require direction-aware opening, cover and reporting authority; short posting is not enabled.");
         if (command.MutationKind == AtomicTaxLotMutationKind.Acquisition && command.AcquisitionLot!.Acquisition is null)
             throw new LedgerValidationException("New atomic acquisitions require complete canonical acquisition facts.");
+        if (command.MutationKind == AtomicTaxLotMutationKind.Acquisition
+            && command.AcquisitionLot!.Account.AccountType != LedgerAccountType.Asset)
+            throw new LedgerValidationException("New long-lot acquisitions require an asset carrying account.");
 
         // Unversioned instructions preserve historical receipt fingerprints and calculations,
         // but only an existing exact receipt may use them. New writes require a fresh preview.
@@ -243,6 +248,9 @@ public sealed partial class PostgresLedgerJournalStore
         ArgumentNullException.ThrowIfNull(command.Journal);
         ArgumentNullException.ThrowIfNull(command.Journal.Entry);
         ArgumentNullException.ThrowIfNull(command.RetainedEvidence);
+
+        if (!Enum.IsDefined(command.Direction))
+            throw new LedgerValidationException("Atomic lot direction must be Long or Short.");
 
         if (command.DisposalSalePrice is < 0m ||
             (command.MutationKind != AtomicTaxLotMutationKind.Disposal && command.DisposalSalePrice is not null))
@@ -445,6 +453,8 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException("Atomic acquisition cannot introduce a basis adjustment; use a governed basis mutation.");
 
         ArgumentNullException.ThrowIfNull(lot.Account);
+        if ((lot.Acquisition?.Direction ?? OpenLotDirection.Long) != command.Direction)
+            throw new LedgerValidationException("Atomic acquisition direction must match its immutable acquisition facts.");
         if (lot.TaxLotRecordId == Guid.Empty || lot.LedgerBookId != command.LedgerBookId)
         {
             throw new LedgerValidationException(

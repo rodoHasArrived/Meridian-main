@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
@@ -449,7 +450,9 @@ public sealed record AtomicTaxLotJournalCommand(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? CorporateAction = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn = null)
+    Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    OpenLotDirection Direction = OpenLotDirection.Long)
 {
     public static AtomicTaxLotJournalCommand Create(
         Guid mutationBatchId,
@@ -468,7 +471,8 @@ public sealed record AtomicTaxLotJournalCommand(
         decimal? disposalSalePrice = null,
         Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? amortization = null,
         Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? corporateAction = null,
-        Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? capitalReturn = null)
+        Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? capitalReturn = null,
+        OpenLotDirection direction = OpenLotDirection.Long)
     {
         var command = new AtomicTaxLotJournalCommand(
             mutationBatchId,
@@ -488,7 +492,8 @@ public sealed record AtomicTaxLotJournalCommand(
             disposalSalePrice,
             amortization,
             corporateAction,
-            capitalReturn);
+            capitalReturn,
+            direction);
         return command.WithComputedFingerprint();
     }
 

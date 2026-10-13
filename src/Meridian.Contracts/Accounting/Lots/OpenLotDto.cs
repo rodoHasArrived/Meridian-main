@@ -26,6 +26,11 @@ public sealed record OpenLotAcquisitionDto(
     FaceValueAcquisitionTermsDto? FaceValueTerms,
     IReadOnlyList<RetainedEvidenceIdentityDto> Evidence)
 {
+    // Historical acquisition receipts are long and omit this property. Explicit short direction
+    // participates in their immutable acquisition payload and atomic replay fingerprint.
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public OpenLotDirection Direction { get; init; }
+
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public OpenLotCorporateActionLineageDto? CorporateActionLineage { get; init; }
 }
