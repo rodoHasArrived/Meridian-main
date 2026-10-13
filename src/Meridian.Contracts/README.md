@@ -146,8 +146,9 @@ currency residuals go to the final target. Dividend/purchase recipes, linked cas
 holding periods cannot use this carried-basis path; taxable spin-offs remain outside it.
 Only the refunded successor receives `ScheduleD`; unsupported action or allocation shapes fail
 validation. Optional instruction fields are omitted when absent to preserve earlier payloads.
-Successor lot labels must be distinct after Storage's whitespace trimming and cannot reuse the
-predecessor label. Sibling lots, securities and book positions must be distinct; the retained
+Successor lot labels must already be trimmed before fingerprinting or drafting, remain distinct,
+and cannot reuse the predecessor label. Persistence must retain the exact reviewed label rather
+than changing it after approval. Sibling lots, securities and book positions must be distinct; the retained
 spin-off parent and same-security split may reuse the predecessor's security/position, with a new
 durable lot identity and label. Reg S/144A exchange requires the `Successor` role.
 Every successor must receive positive functional

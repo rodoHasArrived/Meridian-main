@@ -237,7 +237,8 @@ public static class OpenLotSuccessors
                 && mutation.TargetOperation == CorporateActionLotTargetOperationDto.Create
                 && mutation.ExpectedTargetLotVersion is null && mutation.TargetBefore is null
                 && mutation.TargetSecurityId == lot.SecurityId && (split ? lot.SecurityId == source.SecurityId : spinOff || lot.SecurityId != source.SecurityId)
-                && lot.TaxLotRecordId != source.TaxLotRecordId && lot.LotId.Trim() != source.LotId.Trim()
+                && lot.TaxLotRecordId != source.TaxLotRecordId && lot.LotId == lot.LotId.Trim()
+                && lot.LotId != source.LotId.Trim()
                 && (split || (spinOff && lot.SecurityId == source.SecurityId) || lot.BookPositionId != source.BookPositionId)
                 && lot.LedgerBookId == source.LedgerBookId
                 && lot.Version == 1 && lot.OriginalQuantity == lot.OpenQuantity && lot.OpenQuantity > 0
