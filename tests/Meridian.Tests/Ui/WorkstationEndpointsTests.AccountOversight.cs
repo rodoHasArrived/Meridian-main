@@ -167,7 +167,7 @@ public sealed partial class WorkstationEndpointsTests
 
         foreach (var request in requests)
         {
-            using var response = await app.GetTestClient().PostAsJsonAsync(request.Route, request.Body, ServerJsonOptions);
+            using var response = await app.GetTestClient().PostAsJsonAsync(request.Route, request.Body);
             response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         }
 
@@ -287,7 +287,7 @@ public sealed partial class WorkstationEndpointsTests
         var request = OversightForecastRequest(bookId, accountId) with { RecordedAtUtc = DateTimeOffset.UtcNow.AddDays(1) };
 
         using var response = await app.GetTestClient().PostAsJsonAsync(
-            OversightBaseRoute(bookId, accountId) + "/cash-forecasts", request, ServerJsonOptions);
+            OversightBaseRoute(bookId, accountId) + "/cash-forecasts", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         forecasts.VerifyNoOtherCalls();
@@ -320,8 +320,8 @@ public sealed partial class WorkstationEndpointsTests
             create.ValuationDate, snapshotId, "forged-reviewer", "Reviewed");
         var route = OversightBaseRoute(bookId, accountId) + "/close-price-sets/2026-05-31";
 
-        using var createResponse = await app.GetTestClient().PostAsJsonAsync(route, create, ServerJsonOptions);
-        using var approvalResponse = await app.GetTestClient().PostAsJsonAsync($"{route}/{snapshotId:D}/approval", approval, ServerJsonOptions);
+        using var createResponse = await app.GetTestClient().PostAsJsonAsync(route, create);
+        using var approvalResponse = await app.GetTestClient().PostAsJsonAsync($"{route}/{snapshotId:D}/approval", approval);
 
         createResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         approvalResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -343,7 +343,7 @@ public sealed partial class WorkstationEndpointsTests
         var request = new ApproveSecurityClosePriceSetRequest(accountId.ToString("D"), bookId.ToString("D"),
             OversightDate, Guid.NewGuid(), "forged-reviewer", "Reviewed");
 
-        using var response = await app.GetTestClient().PostAsJsonAsync(route, request, ServerJsonOptions);
+        using var response = await app.GetTestClient().PostAsJsonAsync(route, request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         pricing.VerifyNoOtherCalls();
@@ -367,7 +367,7 @@ public sealed partial class WorkstationEndpointsTests
             : scope with { LedgerBookId = Guid.NewGuid() };
 
         using var response = await app.GetTestClient().PostAsJsonAsync(
-            OversightBaseRoute(bookId, accountId) + "/cash-reconciliation/runs", OversightCashRequest(scope), ServerJsonOptions);
+            OversightBaseRoute(bookId, accountId) + "/cash-reconciliation/runs", OversightCashRequest(scope));
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         Directory.Exists(cash.Root).Should().BeFalse();
@@ -395,11 +395,11 @@ public sealed partial class WorkstationEndpointsTests
         var client = app.GetTestClient();
         var route = OversightBaseRoute(bookId, accountId) + "/close-price-sets/2026-05-31";
 
-        using var created = await client.PostAsJsonAsync(route, OversightCreatePriceRequest(bookId, accountId), ServerJsonOptions);
+        using var created = await client.PostAsJsonAsync(route, OversightCreatePriceRequest(bookId, accountId));
         client.DefaultRequestHeaders.Add("X-Meridian-Test-User", "reviewer-session");
         using var approved = await client.PostAsJsonAsync($"{route}/{snapshotId:D}/approval",
             new ApproveSecurityClosePriceSetRequest(accountId.ToString("D"), bookId.ToString("D"), OversightDate,
-                snapshotId, "forged-reviewer", "Independent review"), ServerJsonOptions);
+                snapshotId, "forged-reviewer", "Independent review"));
 
         created.StatusCode.Should().Be(HttpStatusCode.OK);
         approved.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -460,13 +460,14 @@ public sealed partial class WorkstationEndpointsTests
         var request = OversightCashRequest(scope with { TenantId = "forged-tenant", CompanyId = "forged-company" });
         var route = OversightBaseRoute(bookId, accountId) + "/cash-reconciliation";
 
-        using var runResponse = await app.GetTestClient().PostAsJsonAsync(route + "/runs", request, ServerJsonOptions);
+        // Match the host's Web request options, including numeric unannotated source enums.
+        using var runResponse = await app.GetTestClient().PostAsJsonAsync(route + "/runs", request);
         runResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var retainedRun = await runResponse.Content.ReadFromJsonAsync<AccountCashReconciliationRun>(ServerJsonOptions);
         retainedRun!.Input.Scope.Should().Be(scope);
         var retainedCase = (await cash.Service.GetCasesAsync(scope)).Should().ContainSingle().Subject;
         using var assignmentResponse = await app.GetTestClient().PostAsJsonAsync($"{route}/cases/{retainedCase.CaseId}/assignments",
-            new AssignAccountCashCaseRequest(retainedCase.Version, "new-owner", "Investigated source discrepancy"), ServerJsonOptions);
+            new AssignAccountCashCaseRequest(retainedCase.Version, "new-owner", "Investigated source discrepancy"));
 
         assignmentResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var assigned = await assignmentResponse.Content.ReadFromJsonAsync<AccountCashReconciliationCase>(ServerJsonOptions);

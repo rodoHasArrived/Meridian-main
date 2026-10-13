@@ -217,12 +217,12 @@ public sealed partial class WorkstationEndpointsTests
             currentUserCompanyId: request.Scope.CompanyId, mapLedgerApi: true);
         var route = $"/api/ledger/books/{bookId:D}/accounts/{accountId:D}/cash-forecasts";
 
-        using var captured = await app.GetTestClient().PostAsJsonAsync(route, request, ServerJsonOptions);
+        using var captured = await app.GetTestClient().PostAsJsonAsync(route, request);
         captured.StatusCode.Should().Be(HttpStatusCode.OK, await captured.Content.ReadAsStringAsync());
         var snapshot = await captured.Content.ReadFromJsonAsync<AccountCashForecastSnapshotDto>(ServerJsonOptions);
         snapshot!.IsCertified.Should().BeTrue();
         var changed = request with { RunId = "substituted-run", Flows = [request.Flows[0] with { Amount = 1000m }] };
-        using var rejected = await app.GetTestClient().PostAsJsonAsync(route, changed, ServerJsonOptions);
+        using var rejected = await app.GetTestClient().PostAsJsonAsync(route, changed);
         rejected.StatusCode.Should().Be(HttpStatusCode.Conflict);
         (await rejected.Content.ReadAsStringAsync()).Should().Contain("CASH_FORECAST_SOURCE_AUTHORITY_REQUIRED");
         (await service.GetHistoryAsync(request.Scope)).Should().ContainSingle().Which.SnapshotId.Should().Be(snapshot.SnapshotId);
