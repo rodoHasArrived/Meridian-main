@@ -16,8 +16,8 @@
       "id": "SRC-BACKTESTING",
       "path": "src/Meridian.Backtesting",
       "readme": "src/Meridian.Backtesting/README.md",
-      "readme_hash": "bd3e01082fdc80b4c0c6fbbc8b233386da1ed9428eba32b2cc5e4678f0957bfd",
-      "source_hash": "427b5cb7ad9065ed445d8159b5159f8910e49a07a9058f62a14cfbfad0d9619c"
+      "readme_hash": "b9c21e91020cbb588e1fd5f301c100834553fc95b2cca9dcf449025e7a02197e",
+      "source_hash": "c1e3a7b92339c728d94e19d683f99ef14ddb817584f0f38baa0822b4a03ea3a9"
     },
     {
       "id": "SRC-BACKTESTING-SDK",
@@ -205,8 +205,8 @@
       "id": "SRC-LEDGER",
       "path": "src/Meridian.Ledger",
       "readme": "src/Meridian.Ledger/README.md",
-      "readme_hash": "5524c134b77f68aed233909828259b61eaaaef0c50a4a85ef2e5c4a86a799a4c",
-      "source_hash": "5d74dca75203d879394c8be6a70e34ee6430cb8feb8f349b349cd5404fceacea"
+      "readme_hash": "a51034f3536a848ba40d0e828c00386b9a8451d9efe0e4be07a1de102a203bfb",
+      "source_hash": "22b5740374a67a7d29914e74efa4c21aa860e99e13c82fd2eb8e7544275b8c7f"
     },
     {
       "id": "SRC-LIFECYCLE-SUPERVISOR",
