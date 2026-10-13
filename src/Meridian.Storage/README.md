@@ -80,6 +80,11 @@ treatments fail closed. No persisted contract or migration changes are required.
 
 A reviewed amortization reversal restores the latest original mutation's complete prior basis adjustment and exactly inverts every retained financial journal line in the same transaction. It preserves acquisition facts, increments the lot version, and appends correction evidence. Same-date rebooks require the reversal receipt and approved lineage; intervening mutations, forged snapshots, wrong source journals and changed counteraccounts fail closed. Forward migration `V_ledger_043` permits restoration of a retained null prior adjustment only against the latest exact original amortization snapshot and an approved correction journal in the same scope and effective date; general adjustment removal remains forbidden. Earlier migrations, migration 040 constraints and current calculation/evidence guards remain intact.
 
+An Inactive current reference may support that retained inverse only after the atomic store has
+locked its hash/version and verified the original receipt, unchanged lot and inverse lines. The
+private append path preserves Inactive journal lineage; standalone journals and new accruals keep
+the Active requirement, and request metadata cannot opt into the atomic exception.
+
 Bounded corporate-action successor posting uses `V_ledger_042` and that same serializable atomic
 boundary. A cashless Reg S/144A exchange closes one predecessor into one new lot; advance refunding
 closes one face lot into exactly two new lots. The transaction locks reviewed Security Master and

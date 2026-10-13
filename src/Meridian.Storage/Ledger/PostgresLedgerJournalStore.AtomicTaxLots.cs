@@ -143,7 +143,11 @@ public sealed partial class PostgresLedgerJournalStore
         LedgerTaxLotRecord? corporateActionLot = null;
         if (command.MutationKind == AtomicTaxLotMutationKind.CorporateAction)
             corporateActionLot = await LockCorporateActionAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
-        await AppendJournalWithinTransactionAsync(connection, transaction, command.Journal, ct).ConfigureAwait(false);
+        // LockAmortizationAuthorityAsync has already checked the immutable original receipt,
+        // exact inverse lines and current reference hash before this private exception is set.
+        await AppendJournalWithinTransactionAsync(connection, transaction, command.Journal, ct,
+            verifiedAmortizationReversal: amortizationLot is not null && command.Amortization!.Reversal is not null)
+            .ConfigureAwait(false);
 
         var recordedAt = DateTimeOffset.UtcNow;
         await InsertAtomicTaxLotBatchAsync(connection, transaction, command, recordedAt, ct)

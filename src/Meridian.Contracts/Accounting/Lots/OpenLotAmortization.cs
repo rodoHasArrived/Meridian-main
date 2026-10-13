@@ -85,17 +85,22 @@ public static class OpenLotAmortization
         if (lot.Version <= 0 || lot.OpenQuantity <= 0 || acquisition.QuantityBasis != LotQuantityBasis.Face || terms is null
             || terms.BookedFactor != 1m || instruction.ExpectedBookPositionVersion <= 0)
             throw new ArgumentException("Amortization requires a versioned open face lot with unadjusted bullet principal and retained acquisition terms.");
-        if (security.SecurityId != lot.SecurityId || security.Version <= 0 || security.Status != SecurityStatusDto.Active
+        var retainedReversal = instruction.Reversal is not null;
+        if (security.SecurityId != lot.SecurityId || security.Version <= 0
+            || (security.Status != SecurityStatusDto.Active && !(retainedReversal && security.Status == SecurityStatusDto.Inactive))
             || security.Currency != acquisition.AcquisitionCurrency
-            || DateOnly.FromDateTime(security.EffectiveFrom.UtcDateTime) > instruction.AsOfDate
-            || (security.EffectiveTo is { } end && DateOnly.FromDateTime(end.UtcDateTime) < instruction.AsOfDate))
+            || (!retainedReversal && (DateOnly.FromDateTime(security.EffectiveFrom.UtcDateTime) > instruction.AsOfDate
+                || (security.EffectiveTo is { } end && DateOnly.FromDateTime(end.UtcDateTime) < instruction.AsOfDate))))
             throw new ArgumentException("Amortization Security Master identity, currency, status or effective scope is invalid.");
         if (!RetainedEvidenceIdentityValidator.IsComplete(evidence) || evidence.SubjectType != "SecurityMasterProjection"
             || evidence.SubjectId != security.SecurityId.ToString("D") || evidence.EvidenceVersion != security.Version
-            || evidence.EffectiveDate > instruction.AsOfDate || !Sha256Digest.FixedEquals(evidence.ContentHashSha256, SecurityHash(security)))
+            || (!retainedReversal && evidence.EffectiveDate > instruction.AsOfDate)
+            || !Sha256Digest.FixedEquals(evidence.ContentHashSha256, SecurityHash(security)))
             throw new ArgumentException("Amortization requires hash-bound versioned Security Master projection evidence.");
         if (instruction.Reversal is { } reversal)
         {
+            // Current reference evidence proves identity; the immutable before/after receipt
+            // supplies the inverse economics. Current terms do not authorize a new accrual here.
             OpenLotValidation.Validate(reversal.RestoresLot);
             var restored = reversal.RestoresLot;
             if (reversal.MutationBatchId == Guid.Empty || reversal.JournalEntryId == Guid.Empty

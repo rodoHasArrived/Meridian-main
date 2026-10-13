@@ -721,6 +721,38 @@ public sealed class AssetAccountingEventSpineServiceTests
     }
 
     [Fact]
+    public void Canonicalize_ReviewedCorrectionRebuildMatchesRetainedPendingDraft()
+    {
+        var fixture = BuildFixture();
+        var approval = new LedgerAdjustmentApprovalMetadataDto("review-original-entry",
+            LedgerAdjustmentApprovalStatusDto.Approved, "independent-reviewer",
+            fixture.Request.ProjectedAtUtc, "retained-entry-correction");
+        var request = BuildCandidateRequest(fixture);
+        var raw = BuildPreApprovedCandidateWrite(new PostingRuleJournalCandidateRequestDto(
+            fixture.Book.FundProfileId, AssetAccountingEventTypeNames.For(fixture.Request.EventKind),
+            fixture.Request.EventAmount, fixture.Request.Currency, fixture.Request.EconomicEvent.EffectiveDate,
+            request.Actor, fixture.Book.LedgerBookId, fixture.Period.PeriodId, request.AccountingTimestamp,
+            "Reviewed correction", LedgerBookId: fixture.Book.LedgerBookId,
+            SourceEventId: fixture.Request.EconomicEvent.EventId, SourceJournalEntryId: Guid.NewGuid(),
+            PostingKind: LedgerPostingKindDto.Adjustment, AdjustmentApproval: approval));
+        var pending = raw.Write!.PostingCommand! with { ApprovalState = AccountingPostingApprovalStateDto.Pending, ApprovalId = null };
+        var retainedInput = new AccountingPostingCandidateWriteResult(raw.Candidate with { PostingCommand = pending },
+            raw.Write with { PostingCommand = pending });
+        var retained = AssetAccountingCandidateCanonicalizer.Canonicalize(retainedInput,
+            fixture.Book.LedgerBookId, fixture.Request.EconomicEvent.EventId, 1, 3);
+        var rebuilt = AssetAccountingCandidateCanonicalizer.Canonicalize(raw,
+            fixture.Book.LedgerBookId, fixture.Request.EconomicEvent.EventId, 1, 3);
+
+        AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(rebuilt.Candidate).Should()
+            .Be(AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(retained.Candidate));
+        rebuilt.Candidate.PostingCommand!.ApprovalState.Should().Be(AccountingPostingApprovalStateDto.Pending);
+        rebuilt.Candidate.PostingCommand.ApprovalId.Should().BeNull();
+        rebuilt.Write!.PostingCommand.Should().Be(rebuilt.Candidate.PostingCommand);
+        rebuilt.Write.AdjustmentApproval.Should().Be(approval);
+        raw.Write.PostingCommand!.ApprovalState.Should().Be(AccountingPostingApprovalStateDto.Approved);
+    }
+
+    [Fact]
     public async Task BuildPostingCandidateAsync_ResolvesAllAuthoritiesAndDraftsPendingCandidate()
     {
         var fixture = BuildFixture();

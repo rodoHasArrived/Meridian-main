@@ -111,21 +111,23 @@ public sealed partial class PostgresLedgerJournalStore :
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         LedgerJournalEntryWrite entry,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool verifiedAmortizationReversal = false)
     {
         ArgumentNullException.ThrowIfNull(entry);
         ArgumentNullException.ThrowIfNull(entry.Entry);
         if (ConsolidationPostingEvidenceGuard.Validate(entry) is not null)
             throw new LedgerValidationException(
                 "Consolidation requires the standalone append transaction so authoritative ownership and policy remain locked through commit.");
-        return AppendCoreAsync(connection, transaction, entry, ct);
+        return AppendCoreAsync(connection, transaction, entry, ct, verifiedAmortizationReversal);
     }
 
     private async Task AppendCoreAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         LedgerJournalEntryWrite entry,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool verifiedAmortizationReversal = false)
     {
         RequireWriteTenant();
         ArgumentNullException.ThrowIfNull(connection);
@@ -172,7 +174,10 @@ public sealed partial class PostgresLedgerJournalStore :
                 $"Accounting period version {period.Version} does not match expected version {expectedVersion}.");
         }
 
-        LedgerPeriodPostingGuard.Validate(entry, period);
+        if (verifiedAmortizationReversal)
+            LedgerPeriodPostingGuard.ValidateRetainedAmortizationReversal(entry, period);
+        else
+            LedgerPeriodPostingGuard.Validate(entry, period);
         await ValidateJournalBasisAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
         var auditHead = await LockAndVerifyLedgerAuditAsync(connection, transaction, ct).ConfigureAwait(false);
         await ValidateCurrentConsolidationSourcesAsync(connection, transaction, entry, ct).ConfigureAwait(false);
