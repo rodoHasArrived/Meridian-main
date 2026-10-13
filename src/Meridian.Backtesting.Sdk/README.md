@@ -6,14 +6,14 @@ module_id: SRC-BACKTESTING-SDK
 path: src/Meridian.Backtesting.Sdk
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-09-02
+last_reviewed: 2026-10-13
 ---
 
 # src/Meridian.Backtesting.Sdk
 
 ## Shared close and lot convergence
 
-`CanonicalOpenLotAdapter` checks backtest/ledger identity and economics against the shared canonical lot contract. It preserves ticker-rename continuity while rejecting quantity, basis, date, or durable-ID differences; simulation does not become ledger authority.
+`CanonicalOpenLotAdapter` checks backtest/ledger identity and economics against the shared canonical lot contract. It compares the exact retained component basis used by simulation rather than extending a rounded entry quote. It preserves ticker-rename continuity while rejecting quantity, basis, date, or durable-ID differences. Explicit short lots remain blocked until the canonical direction model is approved, matching the Execution adapter; simulation does not become ledger authority.
 
 ## Purpose
 

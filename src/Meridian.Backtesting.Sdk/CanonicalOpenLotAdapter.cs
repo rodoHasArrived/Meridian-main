@@ -9,10 +9,12 @@ public static class CanonicalOpenLotAdapter
     {
         ArgumentNullException.ThrowIfNull(simulated);
         OpenLotValidation.Validate(retained);
+        if (simulated.IsShort)
+            throw new InvalidOperationException("Short-lot canonical cutover requires an explicitly approved direction model.");
         if (simulated.LotId != retained.TaxLotRecordId || simulated.Quantity != retained.OpenQuantity
             || DateOnly.FromDateTime(simulated.OpenedAt.UtcDateTime) != retained.AcquiredDate
             || retained.Acquisition.QuantityBasis != LotQuantityBasis.Units
-            || simulated.Quantity * simulated.EntryPrice != retained.OpenTransactionCostBasis)
+            || simulated.CostBasis() != retained.OpenTransactionCostBasis)
             throw new InvalidOperationException("Backtest lot identity, quantity, date, or basis differs from the retained canonical lot.");
         return retained;
     }
