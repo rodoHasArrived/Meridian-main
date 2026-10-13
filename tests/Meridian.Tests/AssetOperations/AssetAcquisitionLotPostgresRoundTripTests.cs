@@ -26,7 +26,7 @@ namespace Meridian.Tests.AssetOperations;
 /// canonical contract - refuses it and routes it to the legacy backfill queue.
 /// </summary>
 [Trait("Category", "Integration")]
-public sealed class AssetAcquisitionLotPostgresRoundTripTests
+public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
 {
     private const string Tenant = "acquisition-test-tenant";
     private const string Company = "acquisition-test-company";
@@ -61,7 +61,8 @@ public sealed class AssetAcquisitionLotPostgresRoundTripTests
         => AssertSpineAcquisitionAsync(faceLot: true, method: null);
 
     private static async Task AssertSpineAcquisitionAsync(bool faceLot,
-        BondAmortizationMethod? method = BondAmortizationMethod.StraightLine)
+        BondAmortizationMethod? method = BondAmortizationMethod.StraightLine,
+        bool legacyDraft = false, bool retainedApproval = false)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
         var ct = timeout.Token;
@@ -120,7 +121,8 @@ public sealed class AssetAcquisitionLotPostgresRoundTripTests
             new AccountingJournalDraftService(policies, new AccountingBasisProjectionService(policies)),
             books, policies, taxLotStore: journal);
         var spineService = new AssetAccountingEventSpineService(
-            assets, assets, securityQuery, books, policies, configuration, candidateBuilder, journal);
+            legacyDraft ? new LegacyAcquisitionDraftFixtureStore(assets) : assets,
+            assets, securityQuery, books, policies, configuration, candidateBuilder, journal);
 
         var positionId = Guid.NewGuid();
         var eventId = Guid.NewGuid();
@@ -219,6 +221,35 @@ public sealed class AssetAcquisitionLotPostgresRoundTripTests
         {
             ApprovalEvidence = [approvalEvidence]
         };
+        if (legacyDraft)
+        {
+            if (retainedApproval)
+                await assets.AppendAsync(drafted with
+                {
+                    SpineVersion = drafted.SpineVersion + 1,
+                    Stages = [.. drafted.Stages, new(AssetAccountingLifecycleStageDto.Approved, approvedAt,
+                        Approver, [approvalEvidence], approvalId, postRequest.ApprovalNotes)]
+                }, drafted.SpineVersion, position.Version, ct);
+            var incomplete = () => posting.PostCandidateAsync(postRequest, ct);
+            await incomplete.Should().ThrowAsync<ArgumentException>().WithMessage("*explicit amortization method*");
+            (await journal.GetByPeriodAsync(periodId, ct: ct)).Should().BeEmpty();
+            (await journal.ListOpenTaxLotsByAssetScopeAsync(bookId, securityId, positionId, EffectiveDate, ct))
+                .Should().BeEmpty();
+            (await assets.GetLatestAsync(eventId, 1, ct))!.Projection.SpineVersion
+                .Should().Be(retainedApproval ? 4 : 3);
+            postRequest = CompleteLegacyTerms(postRequest, method!.Value);
+            var invalid = postRequest with
+            {
+                AcquisitionTermsCompletion = postRequest.AcquisitionTermsCompletion! with
+                { Evidence = postRequest.AcquisitionTermsCompletion!.Evidence with { SubjectId = new string('a', 64) } }
+            };
+            var unreviewed = () => posting.PostCandidateAsync(invalid, ct);
+            await unreviewed.Should().ThrowAsync<InvalidOperationException>().WithMessage("*independent retained review*");
+            (await journal.GetByPeriodAsync(periodId, ct: ct)).Should().BeEmpty();
+            (await assets.GetLatestAsync(eventId, 1, ct))!.Projection.SpineVersion
+                .Should().Be(retainedApproval ? 4 : 3);
+        }
+        var originalApproval = retainedApproval ? (await assets.GetAsync(eventId, 1, 4, ct))!.Projection : null;
         var posted = await posting.PostCandidateAsync(postRequest, ct);
         posted.WasReplay.Should().BeFalse();
         posted.TaxLotMutationBatchId.Should().NotBeNull();
@@ -245,7 +276,8 @@ public sealed class AssetAcquisitionLotPostgresRoundTripTests
         facts.TransactionCostBasis.Should().Be(Amount);
         facts.FunctionalCostBasis.Should().Be(Amount);
         facts.HoldingPeriodStartDate.Should().Be(EffectiveDate);
-        var lotEvidence = facts.Evidence.Should().ContainSingle().Subject;
+        facts.Evidence.Should().HaveCount(legacyDraft ? 2 : 1);
+        var lotEvidence = facts.Evidence.Single(item => item.EvidenceUri == retainedEvidence.EvidenceUri);
         lotEvidence.SubjectType.Should().Be("OpenLotAcquisition");
         lotEvidence.SubjectId.Should().Be(lotRecordId.ToString("D"));
         lotEvidence.EvidenceUri.Should().Be(retainedEvidence.EvidenceUri);
@@ -270,6 +302,30 @@ public sealed class AssetAcquisitionLotPostgresRoundTripTests
             .PostCandidateAsync(postRequest, ct);
         replay.WasReplay.Should().BeTrue();
         replay.TaxLotMutationBatchId.Should().Be(posted.TaxLotMutationBatchId);
+        if (legacyDraft)
+        {
+            var retainedDraft = (await assets.GetAsync(eventId, 1, 3, ct))!.Projection;
+            JsonElement.DeepEquals(JsonSerializer.SerializeToElement(retainedDraft),
+                JsonSerializer.SerializeToElement(drafted)).Should().BeTrue("completion must not rewrite the original draft");
+            retainedDraft.DraftedLotMutation!.Acquisition!.AmortizationMethod.Should().BeNull();
+            if (originalApproval is not null)
+                JsonElement.DeepEquals(JsonSerializer.SerializeToElement((await assets.GetAsync(eventId, 1, 4, ct))!.Projection),
+                    JsonSerializer.SerializeToElement(originalApproval)).Should().BeTrue("completion must not rewrite the original approval");
+            var latest = (await assets.GetLatestAsync(eventId, 1, ct))!.Projection;
+            latest.EventId.Should().Be(eventId);
+            latest.EventVersion.Should().Be(1);
+            latest.Stages.Single(stage => stage.Stage == AssetAccountingLifecycleStageDto.Posted).Evidence
+                .Should().Contain(postRequest.AcquisitionTermsCompletion!.Evidence);
+            var batch = (await journal.GetAtomicTaxLotPostingAsync(posted.TaxLotMutationBatchId!.Value, ct))!;
+            batch.RetainedEvidence.Should().Contain(postRequest.AcquisitionTermsCompletion.Evidence);
+            batch.Journal.Entry.Metadata.EvidenceReferences.Should()
+                .Contain(item => item.SubjectType == AssetAcquisitionTermsCompletionDto.EvidenceSubjectType
+                    && item.SubjectId == postRequest.AcquisitionTermsCompletion.ApprovalSubjectId());
+            var changed = CompleteLegacyTerms(postRequest, BondAmortizationMethod.StraightLine);
+            var collision = () => posting.PostCandidateAsync(changed, ct);
+            await collision.Should().ThrowAsync<LedgerValidationException>().WithMessage("*identity collision*");
+            (await journal.GetByPeriodAsync(periodId, ct: ct)).Should().ContainSingle();
+        }
     }
 
     private static async Task<SecurityMasterQueryService> CreateSecurityAsync(

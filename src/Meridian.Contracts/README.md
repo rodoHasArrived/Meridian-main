@@ -11,6 +11,14 @@ last_reviewed: 2026-10-12
 
 # src/Meridian.Contracts
 
+`AssetAcquisitionTermsCompletionDto` is an optional supplement on
+`PostPostingRuleJournalCandidateRequestDto`. It supplies only the missing amortization method and
+yield of an immutable legacy face-acquisition draft. Its typed review subject is produced by
+`ApprovalSubjectId()` from the exact draft fingerprint, lot ID and selected terms. Omission keeps
+the old request wire shape; historical spine snapshots and approval subjects are unchanged.
+Completion does not grant posting authority without the original draft, independent approval,
+current period/position checks and atomic journal/lot commit.
+
 `Ledger/LedgerDisposalTaxDtos.cs` defines shared, server-derived disposal and parcel tax results for
 the journal tax-results read route. It separates economic/recognized gain and deferred loss, exposes
 effective holding starts and exact retained policy revisions, and distinguishes settled, provisional,

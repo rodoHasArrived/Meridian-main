@@ -4386,6 +4386,7 @@ Meridian-main
 │   │   │   └── ArchiveHealthModels.cs
 │   │   ├── AssetOperations
 │   │   │   ├── AssetAccountingEventDtos.cs
+│   │   │   ├── AssetAcquisitionTermsCompletionDto.cs
 │   │   │   ├── AssetOperationsDtos.cs
 │   │   │   ├── AssetOperationsReferenceDtos.cs
 │   │   │   ├── CorporateActionAccountingDtos.cs
@@ -5170,6 +5171,7 @@ Meridian-main
 │   │   │   ├── CanonicalLotAmortizationService.cs
 │   │   │   ├── CanonicalLotCorporateActionService.cs
 │   │   │   ├── LedgerJournalConstruction.cs
+│   │   │   ├── SpineAcquisitionLotCompletion.cs
 │   │   │   └── SpineAcquisitionLotFacts.cs
 │   │   ├── MiddleOffice
 │   │   │   ├── MiddleOfficeModels.cs
@@ -10109,11 +10111,13 @@ Meridian-main
 │   │   │   ├── ProjectReferenceGraph.cs
 │   │   │   └── ProjectReferenceGraphTests.cs
 │   │   ├── AssetOperations
+│   │   │   ├── AcquisitionTermsCompletionTests.cs
 │   │   │   ├── AmortizationHistoricalEvidenceTests.cs
 │   │   │   ├── AmortizationLotInstructionContractTests.cs
 │   │   │   ├── AmortizationReversalPreviewTests.cs
 │   │   │   ├── AssetAccountingEventSpineContractTests.cs
 │   │   │   ├── AssetAccountingEvidenceSubjectContractTests.cs
+│   │   │   ├── AssetAcquisitionLotPostgresRoundTripTests.Completion.cs
 │   │   │   ├── AssetAcquisitionLotPostgresRoundTripTests.cs
 │   │   │   ├── AssetAmortizationPostgresRoundTripTests.cs
 │   │   │   ├── AssetObligationProjectionServiceTests.cs

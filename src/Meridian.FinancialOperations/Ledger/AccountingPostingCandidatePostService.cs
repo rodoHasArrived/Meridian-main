@@ -136,8 +136,8 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         var existing = await FindExistingPostingAsync(journalStore, ledgerBookId, sourceEventId, ct).ConfigureAwait(false);
         var hasAtomicLotMutation = isAssetAccountingEvent &&
                                    assetAuthority?.Drafted.Projection.DraftedLotMutation is { Intent: not AssetLotMutationIntentDto.None };
-        if (existing is null && hasAtomicLotMutation &&
-            assetAuthority?.Drafted.Projection.DraftedLotMutation?.Acquisition is { } newAcquisition)
+        var completedAcquisition = SpineAcquisitionLotCompletion.Resolve(request);
+        if (existing is null && hasAtomicLotMutation && completedAcquisition is { } newAcquisition)
             SpineAcquisitionLotFacts.RequireCompleteNewAcquisition(newAcquisition);
         if (existing is null && hasAtomicLotMutation
             && assetAuthority?.Drafted.Projection.DraftedLotMutation is { Intent: AssetLotMutationIntentDto.Amortize } amortization
@@ -248,7 +248,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         EnsureWriteLedgerBookScope(write, ledgerBookId);
 
         var recordedAtUtc = DateTimeOffset.UtcNow;
-        if (isAssetAccountingEvent && request.ApprovalEvidence.Any(evidence =>
+        if (isAssetAccountingEvent && SpineAcquisitionLotCompletion.PostingApprovalEvidence(request).Any(evidence =>
                 evidence.ReviewedAtUtc > recordedAtUtc || evidence.RetainedAtUtc > recordedAtUtc))
         {
             throw new InvalidOperationException(
@@ -271,7 +271,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             Evidence = MergeEvidence(
                 command.Evidence,
                 request.EvidenceLinks,
-                request.ApprovalEvidence,
+                SpineAcquisitionLotCompletion.PostingApprovalEvidence(request),
                 approvalId,
                 actor,
                 request.ApprovalNotes,
@@ -1111,7 +1111,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
 
         var mutationBatchId = CreateMutationBatchId(ledgerBook.LedgerBookId, sourceEventId, instruction.Intent);
         var retainedEvidence = request.Candidate.RetainedEvidence
-            .Concat(request.ApprovalEvidence)
+            .Concat(SpineAcquisitionLotCompletion.PostingApprovalEvidence(request))
             .ToArray();
         if (retainedEvidence.Length == 0 ||
             retainedEvidence.Any(static item => !RetainedEvidenceIdentityValidator.IsComplete(item)))
@@ -1125,7 +1125,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         AtomicTaxLotMutationKind mutationKind;
         if (instruction.Intent == AssetLotMutationIntentDto.Acquire)
         {
-            var acquisition = instruction.Acquisition
+            var acquisition = SpineAcquisitionLotCompletion.Resolve(request)
                 ?? throw new InvalidOperationException("Acquisition lot details are required.");
             if (acquisition.Quantity <= 0m || acquisition.UnitCost < 0m)
             {
@@ -1196,8 +1196,10 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                     Acquisition = SpineAcquisitionLotFacts.Build(
                         acquisitionLot,
                         faceTerms,
-                        request.Candidate.RetainedEvidence,
-                        request.ApprovalEvidence)
+                        request.AcquisitionTermsCompletion is { } completion
+                            ? [.. request.Candidate.RetainedEvidence, completion.Evidence]
+                            : request.Candidate.RetainedEvidence,
+                        SpineAcquisitionLotCompletion.PostingApprovalEvidence(request))
                 };
             }
 
@@ -1483,7 +1485,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             postedAtUtc,
             actor,
             request.Candidate.RetainedEvidence
-                .Concat(request.ApprovalEvidence)
+                .Concat(SpineAcquisitionLotCompletion.PostingApprovalEvidence(request))
                 .ToArray(),
             request.Candidate.SourceEventId?.ToString("D"));
 
