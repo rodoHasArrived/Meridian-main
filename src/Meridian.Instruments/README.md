@@ -139,6 +139,10 @@ functional carrying basis as their event amount, including sub-minor-unit basis 
 or partial relief. Ordinary projections retain currency rounding; successor allocations conserve
 the exact total through the final allocation residual. The successor handoff refuses non-`Successor`
 Reg S/144A roles and zero functional carrying allocations before governed drafting.
+Return-of-capital mapping requires the exact `OpenLotCapitalReturnInstructionDto` and its
+reviewed in-place lot plan. Missing, changed or mixed successor/capital-return inputs refuse
+mapping. Its fingerprint binds the event handoff to both independent carrying-basis reductions;
+the mapper retains the approved cash/return-of-capital recipe without approving or writing it.
 The factor-paydown model computes `held face x (prior factor - current factor)`. Equal factors emit
 no posting candidate; factor increases, missing evidence, stale versions, invalid face/factors, and
 unrepresentable currency results fail closed. Its event identity excludes run timestamps so replay

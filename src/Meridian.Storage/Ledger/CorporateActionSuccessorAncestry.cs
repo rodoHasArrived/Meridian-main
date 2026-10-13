@@ -7,12 +7,22 @@ namespace Meridian.Storage.Ledger;
 /// <summary>Certifies source-action history from immutable birth receipts, independently of later basis treatments.</summary>
 internal static class CorporateActionSuccessorAncestry
 {
-    public static async Task ValidateAsync(LedgerTaxLotRecord source, OpenLotSuccessorInstructionDto instruction,
+    public static Task ValidateAsync(LedgerTaxLotRecord source, OpenLotSuccessorInstructionDto instruction,
         Func<Guid, Task<AtomicTaxLotJournalResult?>> loadReceipt, CancellationToken ct = default,
         Func<LedgerTaxLotRecord, Task>? validateHoldingPeriod = null)
+        => ValidateSourceActionAsync(source, OpenLotSuccessors.GetSourceCorporateActionId(instruction.Projection),
+            instruction.Projection.EconomicEvent!.EventId, loadReceipt, ct, validateHoldingPeriod);
+
+    public static Task ValidateCapitalReturnAsync(LedgerTaxLotRecord source, OpenLotCapitalReturnInstructionDto instruction,
+        Func<Guid, Task<AtomicTaxLotJournalResult?>> loadReceipt, Func<LedgerTaxLotRecord, Task> validatePriorReturns,
+        CancellationToken ct = default)
+        => ValidateSourceActionAsync(source, OpenLotSuccessors.GetSourceCorporateActionId(instruction.Projection),
+            instruction.Projection.EconomicEvent!.EventId, loadReceipt, ct, validatePriorReturns);
+
+    private static async Task ValidateSourceActionAsync(LedgerTaxLotRecord source, Guid sourceActionId, Guid eventId,
+        Func<Guid, Task<AtomicTaxLotJournalResult?>> loadReceipt, CancellationToken ct,
+        Func<LedgerTaxLotRecord, Task>? validateAncestor)
     {
-        var sourceActionId = OpenLotSuccessors.GetSourceCorporateActionId(instruction.Projection);
-        var eventId = instruction.Projection.EconomicEvent!.EventId;
         var bookId = source.LedgerBookId;
         var cursor = source;
         var visited = new HashSet<Guid>();
@@ -24,8 +34,8 @@ internal static class CorporateActionSuccessorAncestry
             ct.ThrowIfCancellationRequested();
             if (cursor.LedgerBookId != bookId)
                 throw Unproved();
-            if (validateHoldingPeriod is not null)
-                await validateHoldingPeriod(cursor).ConfigureAwait(false);
+            if (validateAncestor is not null)
+                await validateAncestor(cursor).ConfigureAwait(false);
             var birthBatchId = cursor.OriginatingMutationBatchId;
             if (birthBatchId is null)
             {
@@ -41,12 +51,23 @@ internal static class CorporateActionSuccessorAncestry
                 }
                 var legacyReceipt = await LoadAsync(cursor.LastMutationBatchId.Value).ConfigureAwait(false);
                 if (legacyReceipt.MutationKind is not (AtomicTaxLotMutationKind.Disposal
-                    or AtomicTaxLotMutationKind.BasisRedistribution or AtomicTaxLotMutationKind.Amortization))
+                    or AtomicTaxLotMutationKind.BasisRedistribution or AtomicTaxLotMutationKind.Amortization
+                    or AtomicTaxLotMutationKind.CapitalReturn))
                     throw Unproved();
                 var changed = legacyReceipt.Mutations.Where(item => item.TaxLotRecordId == cursor.TaxLotRecordId).ToArray();
                 if (changed.Length != 1 || changed[0].LotBefore is not { } prior || prior.Version >= cursor.Version
                     || !SameSnapshot(cursor, changed[0].LotAfter))
                     throw Unproved();
+                if (legacyReceipt.MutationKind == AtomicTaxLotMutationKind.CapitalReturn)
+                {
+                    if (legacyReceipt.CapitalReturn is not { } capitalReturn
+                        || legacyReceipt.CorrectsMutationBatchId is not null || !SameAcquisition(cursor, prior)
+                        || !OpenLotAmortization.SameLot(prior.ToOpenLot(), capitalReturn.ExpectedLot)
+                        || !OpenLotAmortization.SameLot(cursor.ToOpenLot(), OpenLotCapitalReturn.Project(capitalReturn)))
+                        throw Unproved();
+                    if (OpenLotSuccessors.GetSourceCorporateActionId(capitalReturn.Projection) == sourceActionId)
+                        throw new LedgerValidationException("A successor cannot repeat a source corporate action retained anywhere in its immutable predecessor ancestry.");
+                }
                 cursor = prior;
                 continue;
             }

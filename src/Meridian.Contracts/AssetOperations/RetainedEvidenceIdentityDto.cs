@@ -44,7 +44,8 @@ public static class AssetAccountingEvidenceSubjects
         Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? instruction,
         bool requireInstruction,
         Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? corporateAction = null,
-        bool allowRetainedAmortizationCorrection = false)
+        bool allowRetainedAmortizationCorrection = false,
+        Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? capitalReturn = null)
     {
         if (evidence.EffectiveDate == eventDate)
             return true;
@@ -53,6 +54,8 @@ public static class AssetAccountingEvidenceSubjects
             if (evidence.SubjectType is not ("OpenLotAcquisition" or "SecurityMasterProjection")
                 || !Guid.TryParseExact(evidence.SubjectId, "D", out var subjectId) || subjectId == Guid.Empty)
                 return false;
+            if (capitalReturn is not null)
+                return corporateAction is null && capitalReturn.ExpectedLot.Acquisition.Evidence.Contains(evidence);
             return corporateAction is null ? !requireInstruction
                 : corporateAction.ExpectedLot.Acquisition.Evidence.Contains(evidence)
                     || corporateAction.Successors.Any(target => target.Lot.Acquisition.Evidence.Contains(evidence));

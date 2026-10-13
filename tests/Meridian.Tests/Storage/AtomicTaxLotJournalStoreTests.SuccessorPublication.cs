@@ -221,7 +221,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             request.EconomicEvent.EventVersion, 1, request.EconomicEvent.EffectiveDate, request.EventAmount, request.Currency,
             request.Scope, request.EconomicEvent, request.ProjectionLineage, request.RetainedEvidence,
             [new(AssetAccountingLifecycleStageDto.Expected, at, "projector", [evidence], "expected-successor")],
-            CorporateAction: command.CorporateAction);
+            CorporateAction: command.CorporateAction, CapitalReturn: command.CapitalReturn);
         var projected = expected with
         {
             SpineVersion = 2,

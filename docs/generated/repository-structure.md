@@ -4353,6 +4353,7 @@ Meridian-main
 │   │   │       ├── OpenLotAmortization.cs
 │   │   │       ├── OpenLotAmortizationContinuation.cs
 │   │   │       ├── OpenLotBackfillDtos.cs
+│   │   │       ├── OpenLotCapitalReturn.cs
 │   │   │       ├── OpenLotDto.cs
 │   │   │       ├── OpenLotSuccessors.cs
 │   │   │       └── OpenLotValidation.cs
@@ -5166,11 +5167,13 @@ Meridian-main
 │   │   │   ├── AccountingBasisProjectionSetService.cs
 │   │   │   ├── AccountingJournalDraftService.cs
 │   │   │   ├── AccountingPolicyService.cs
+│   │   │   ├── AccountingPostingCandidatePostService.CapitalReturn.cs
 │   │   │   ├── AccountingPostingCandidatePostService.cs
 │   │   │   ├── AccountingPostingCandidateService.cs
 │   │   │   ├── AssetAccountingCandidateCanonicalizer.cs
 │   │   │   ├── AssetAccountingEventSpineService.cs
 │   │   │   ├── CanonicalLotAmortizationService.cs
+│   │   │   ├── CanonicalLotCorporateActionService.CapitalReturn.cs
 │   │   │   ├── CanonicalLotCorporateActionService.cs
 │   │   │   ├── LedgerJournalConstruction.cs
 │   │   │   ├── SpineAcquisitionLotCompletion.cs
@@ -6302,7 +6305,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_040__canonical_lot_amortization.sql
 │   │   │   │   ├── V_ledger_041__current_basis_disposal.sql
 │   │   │   │   ├── V_ledger_042__atomic_lot_successors.sql
-│   │   │   │   └── V_ledger_043__amortization_reversal_basis_restoration.sql
+│   │   │   │   ├── V_ledger_043__amortization_reversal_basis_restoration.sql
+│   │   │   │   └── V_ledger_050__atomic_lot_capital_return.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -6333,6 +6337,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.AtomicTaxLots.cs
 │   │   │   ├── PostgresLedgerJournalStore.Audit.cs
 │   │   │   ├── PostgresLedgerJournalStore.AverageCostRelief.cs
+│   │   │   ├── PostgresLedgerJournalStore.CapitalReturn.cs
 │   │   │   ├── PostgresLedgerJournalStore.Consolidation.cs
 │   │   │   ├── PostgresLedgerJournalStore.CorporateAction.cs
 │   │   │   ├── PostgresLedgerJournalStore.cs
@@ -10129,6 +10134,7 @@ Meridian-main
 │   │   │   ├── AssetOperationsMigrationRunnerTests.cs
 │   │   │   ├── AssetOperationsReadServiceTests.cs
 │   │   │   ├── AssetOperationsReferenceProjectionServiceTests.cs
+│   │   │   ├── CanonicalLotCorporateActionServiceTests.CapitalReturn.cs
 │   │   │   ├── CanonicalLotCorporateActionServiceTests.cs
 │   │   │   ├── ClearwaterCorporateActionRuleProfileV1Tests.cs
 │   │   │   ├── CorporateActionAccountingProjectionServiceTests.cs
@@ -10140,6 +10146,7 @@ Meridian-main
 │   │   │   ├── OpenLotAmortizationCalendarTests.cs
 │   │   │   ├── OpenLotAmortizationContinuationTests.cs
 │   │   │   ├── OpenLotAmortizationPrecisionTests.cs
+│   │   │   ├── OpenLotCapitalReturnTests.cs
 │   │   │   ├── OpenLotSpinOffTests.cs
 │   │   │   ├── OpenLotSuccessorTests.CorporateActions.cs
 │   │   │   ├── OpenLotSuccessorTests.cs
@@ -10390,6 +10397,7 @@ Meridian-main
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.RetainedEvidenceMerge.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.Successors.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.AcquisitionAdmission.cs
+│   │   │   │   ├── AssetAccountingEventSpineServiceTests.CapitalReturn.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.cs
 │   │   │   │   └── AssetAccountingLifecycleSeparationTests.cs
 │   │   │   ├── OperationsContinuity
@@ -10963,6 +10971,8 @@ Meridian-main
 │   │   │   ├── AtomicTaxLotJournalStoreTests.AcquisitionAdmission.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.Amortization.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.AverageCost.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.CapitalReturn.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.CapitalReturnPublication.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.CarryDateLineage.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.CurrentBasis.cs
@@ -10981,6 +10991,7 @@ Meridian-main
 │   │   │   ├── AtomicTaxLotJournalStoreTests.SuccessorScope.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.TaxEconomics.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.TaxResultHistory.cs
+│   │   │   ├── AtomicTaxLotSuccessorMigrationTests.CapitalReturn.cs
 │   │   │   ├── AtomicTaxLotSuccessorMigrationTests.cs
 │   │   │   ├── AuditChainProcessTests.cs
 │   │   │   ├── AuditChainServiceTests.cs
@@ -10994,6 +11005,7 @@ Meridian-main
 │   │   │   ├── ConsolidationPostingGuardTests.cs
 │   │   │   ├── ConsolidationPostingLineageTests.cs
 │   │   │   ├── ConsolidationSourcesPostgresTests.cs
+│   │   │   ├── CorporateActionSuccessorAncestryTests.CapitalReturn.cs
 │   │   │   ├── CorporateActionSuccessorAncestryTests.cs
 │   │   │   ├── CorporateActionSuccessorAncestryTests.Fixtures.cs
 │   │   │   ├── DataLineageServiceTests.cs

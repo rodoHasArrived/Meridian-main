@@ -298,6 +298,20 @@ public static class AccountingPostingCommandValidator
                 throw new LedgerValidationException("Canonical successor inputs must match the governed posting scope and date.");
         }
 
+        if (command.LotCapitalReturn is { } capitalReturn)
+        {
+            try
+            { _ = Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturn.Project(capitalReturn); }
+            catch (ArgumentException exception) { throw new LedgerValidationException(exception.Message); }
+            if (eventKind != AssetAccountingEventKindDto.CorporateAction
+                || command.LotAmortization is not null || command.LotCorporateAction is not null
+                || capitalReturn.Projection.EconomicEvent?.EffectiveDate != command.EffectiveDate
+                || capitalReturn.ExpectedLot.SecurityId != command.EconomicEvent.SecurityId
+                || capitalReturn.ExpectedLot.BookPositionId != command.BookPositionId
+                || capitalReturn.ExpectedLot.LedgerBookId != command.LedgerBookId)
+                throw new LedgerValidationException("Canonical capital-return inputs must match the governed posting scope and date.");
+        }
+
         if (command.Evidence.Any(item => item.EffectiveDate != command.EffectiveDate
             && (item.Kind != AccountingPostingEvidenceKindDto.Source || !AssetAccountingEvidenceSubjects.MatchesEventEvidenceDate(
             eventKind, command.EffectiveDate, command.EconomicEvent.SecurityId ?? Guid.Empty,
@@ -306,7 +320,8 @@ public static class AccountingPostingCommandValidator
                 item.SourceReference!, item.ReviewStatus!, item.Reviewer!, item.ReviewedAtUtc!.Value,
                 item.EffectiveDate!.Value, item.EvidenceVersion!.Value, item.RetainedAtUtc, item.RetainedBy,
                 item.SubjectType!, item.SubjectId!),
-            command.LotAmortization, requireInstruction: true, corporateAction: command.LotCorporateAction))))
+            command.LotAmortization, requireInstruction: true, corporateAction: command.LotCorporateAction,
+            capitalReturn: command.LotCapitalReturn))))
         {
             throw new LedgerValidationException(
                 "Asset accounting posting evidence effective date must match the economic event effective date.");

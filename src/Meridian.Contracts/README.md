@@ -170,6 +170,14 @@ carrying basis before journal drafting, including the final residual. Currency-s
 share `Ledger/CurrencyMinorUnits` with the corporate-action projector, including four decimals for
 CLF and UYW; original acquisition and current carrying bases retain independent currency rounding.
 
+`OpenLotCapitalReturnInstructionDto` retains the reviewed return-of-capital projection, exact
+canonical lot and source reference version/hash. It binds the approved carrying reduction to
+functional basis and the independently reviewed `BasisAmount` to acquisition-currency basis;
+neither value is a tax-basis determination or a new FX translation. The transition preserves
+quantity, acquisition facts and holding date and refuses reductions beyond either remaining basis.
+Optional capital-return fields on the event spine, posting command and basis adjustment are
+omitted from historical JSON when absent.
+
 `AssetLotMutationInstructionDto.DisposalSalePrice` optionally retains the original disposal quote
 through governed drafting and posting. It is omitted from JSON when absent so existing retained
 event payloads keep their shape. Aggregate-only instructions do not claim an original quote.
