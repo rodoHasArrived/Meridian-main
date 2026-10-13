@@ -742,6 +742,8 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             request.RetainedEvidence);
         if (lotIssues.Count > 0)
             throw new ArgumentException(string.Join(" ", lotIssues), nameof(request.LotMutation));
+        if (request.LotMutation?.Acquisition is { } acquisition)
+            SpineAcquisitionLotFacts.RequireCompleteNewAcquisition(acquisition);
     }
 
     private static void ValidateSourceRecord(AssetAccountingEventProjectionRecord sourceRecord)

@@ -1942,6 +1942,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAcquisitionTermsCompletionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetActualActivityDto"
     },
     {
@@ -16720,6 +16726,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAcquisitionTermsCompletionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetActualActivityDto"
     },
     {
@@ -24531,6 +24543,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAcquisitionTermsCompletionDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAcquisitionTermsCompletionDto",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondAmortizationMethod"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.AssetActualActivityDto",
       "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
     },
@@ -31121,6 +31145,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PaymentIntentWorkflowDto",
       "target": "contract:Meridian.Contracts.Ledger.PaymentIntentWorkflowStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PostPostingRuleJournalCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAcquisitionTermsCompletionDto"
     },
     {
       "kind": "contract-reference",
@@ -48817,7 +48847,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "c4371b4b00fcf2e0220191c02151fa8a400fea467416a563ed71bebf110281fc",
+  "fingerprint": "efe6b68a938eb46bd0ef9223f9f0a9033046b76b35a4688d7dc09a523177ed58",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -50807,6 +50837,12 @@
       "id": "contract:Meridian.Contracts.AssetOperations.AssetAcquisitionLotDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.AssetAcquisitionLotDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAcquisitionTermsCompletionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAcquisitionTermsCompletionDto"
     },
     {
       "classification": "dto",
@@ -71398,11 +71434,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3230,
-    "contract_set_memberships": 3799,
-    "edges": 8111,
+    "contract_references": 3233,
+    "contract_set_memberships": 3801,
+    "edges": 8116,
     "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3911
+    "nodes": 3912
   }
 }

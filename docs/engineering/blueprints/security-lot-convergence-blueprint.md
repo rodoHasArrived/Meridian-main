@@ -588,6 +588,51 @@ Validation results belong to the canonical PR and its exact head. `W10-LOT-002` 
 other corporate actions, successor amortization, remaining cross-consumer parity and live
 shadow-operation acceptance still require their own implementation and independent review.
 
+### New acquisition admission (2026-10-12)
+
+The production spine now requires an explicit amortization method for new face acquisitions,
+including `NoAmortization` when selected in the reviewed instruction. Face amount, booked factor
+and par basis must be supplied together, be positive, and use a factor no greater than one. Face
+amount must reconcile to the ledger quantity; constant yield must be greater than `-1`.
+Invalid terms and missing methods fail before a new Drafted transition. Every newly posted spine
+acquisition retains canonical quantity basis,
+acquisition currencies and FX, transaction/functional basis, holding date and lot-bound evidence.
+
+A retained incomplete Drafted or Approved face acquisition uses
+`POST /api/ledger/accounting-configuration/posting-rules/candidates/post`
+with its exact original candidate and approval evidence, plus `AcquisitionTermsCompletion`.
+This additive supplement names the lot ID, original candidate fingerprint, selected amortization
+method and effective yield when required. Its retained evidence uses the
+`AssetAcquisitionTermsCompletion` subject type and the subject hash returned by
+`AssetAcquisitionTermsCompletionDto.ApprovalSubjectId()`. The hash binds the draft, lot and terms.
+The review must be independent of the draft preparer, match the authenticated posting actor,
+occur no earlier than the retained Drafted attestation, and have been retained before posting.
+Missing, stale or differently scoped evidence blocks the write. Completed terms cannot replace
+terms already present on the draft.
+
+The original draft and any already retained Approved attestation remain byte-for-byte unchanged.
+Completion evidence is retained in the journal command, atomic lot receipt and Posted attestation;
+the canonical acquisition facts retain the explicit terms and lot-bound completion evidence.
+Restart retries must carry the same complete payload; changing reviewed terms after commit
+collides with the original atomic fingerprint. No new economic-event identity or version is
+created, and omission cannot create another backfill exception.
+
+The atomic store independently requires canonical acquisition facts for every new acquisition.
+Exact retained batch identity and fingerprint checks precede this admission rule, preserving
+historical unit and face acquisition replay after restart and period-version changes. A changed
+payload still collides. Historical acquisition facts are never invented during replay, and their
+enrichment remains the existing governed backfill workflow. No migration or wire-format default
+is introduced.
+
+`AtomicTaxLotJournalStoreTests.AcquisitionAdmission` covers refusal without durable side effects,
+successful retry with complete facts, and seeded historical receipt replay. Spine tests cover
+explicit amortization/no-amortization choices, rejection before draft persistence, and completion
+of retained Drafted and Approved states with restart replay and unchanged original snapshots.
+`AcquisitionTermsCompletionTests` covers scope, review, chronology, method/yield and wire-shape
+refusals. These are automated coverage references, with
+current results recorded on the PR. This closes the new-acquisition admission gap only; broader
+consumer cutover, compatibility retirement and live shadow-operation acceptance remain open.
+
 ### Non-taxable spin-off successor posting (2026-10-12)
 
 The registered non-taxable spin-off projection now flows through the canonical successor

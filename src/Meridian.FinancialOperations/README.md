@@ -838,6 +838,20 @@ explicit selected lot ids under exact expected-version/open-quantity CAS. Both p
 mutation fingerprint, evidence, relief policy, before/after snapshots, correction lineage, and
 idempotent replay result. The event spine records Approved and Posted only from the durable journal
 identity and balanced posted amounts returned by that boundary.
+New acquisitions always retain canonical quantity basis, acquisition currencies/FX, both bases,
+holding date and lot-bound approval evidence. A face acquisition must explicitly state its
+amortization method, including `NoAmortization` when that is the reviewed choice. Face terms must
+be complete, positive, consistent with ledger quantity, and carry a factor in `(0, 1]`;
+constant-yield selections require an effective yield greater than `-1`. Invalid terms and missing
+methods fail before a new draft. An older incomplete Drafted or Approved candidate can supply
+an independently reviewed `AcquisitionTermsCompletion` on the existing posting request without
+rewriting the draft, its original approval or economic-event identity. The supplement binds the
+retained draft fingerprint, lot ID, explicit method and yield; it cannot change quantity, price,
+scope or other retained facts. The authenticated approving actor must match its independent
+reviewer, and its review cannot precede the retained Drafted attestation. Completion evidence joins
+the immutable journal command, atomic receipt and Posted attestation. Exact committed legacy
+batches replay their retained shape without inventing facts;
+their enrichment remains the governed backfill workflow.
 Bounded cashless `RegS144AExchange` and `AdvanceRefunding` candidates use the same governed path
 with a retained `OpenLotSuccessorInstructionDto`. Independent approval covers its predecessor,
 create-only successors, reference versions and exact allocation. Before projection or drafting, the
