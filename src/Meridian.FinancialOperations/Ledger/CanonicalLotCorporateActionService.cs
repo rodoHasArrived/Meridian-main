@@ -8,7 +8,7 @@ using Meridian.Storage.SecurityMaster;
 namespace Meridian.FinancialOperations.Ledger;
 
 /// <summary>Connects an already mapped corporate-action projection to the shared draft/approval rail. Never approves or posts.</summary>
-public sealed class CanonicalLotCorporateActionService(
+public sealed partial class CanonicalLotCorporateActionService(
     ILedgerJournalStore? lots,
     ISecurityMasterStore? securities,
     IInstrumentPositionProjectionStore? positions,

@@ -23,7 +23,8 @@ public sealed record CorporateActionAssetAccountingEventMapRequest(
     IReadOnlyList<RetainedEvidenceIdentityDto>? RetainedEvidence = null,
     string? Notes = null,
     AssetAccountingCorrectionReferenceDto? Correction = null,
-    OpenLotSuccessorInstructionDto? SuccessorInstruction = null)
+    OpenLotSuccessorInstructionDto? SuccessorInstruction = null,
+    OpenLotCapitalReturnInstructionDto? CapitalReturnInstruction = null)
 {
     public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } =
         RetainedEvidence ?? [];
@@ -173,6 +174,25 @@ public sealed class CorporateActionAssetAccountingEventMapper : ICorporateAction
         var supportedSuccessorAction = projection.Treatment.ActionType is CorporateActionAccountingTypeDto.RegS144AExchange
             or CorporateActionAccountingTypeDto.AdvanceRefunding || projection.CanonicalLotTransferJournal;
         AssetLotMutationInstructionDto? lotInstruction = null;
+        var capitalReturn = request.CapitalReturnInstruction;
+        if (capitalReturn is not null || projection.Treatment.ActionType == CorporateActionAccountingTypeDto.ReturnOfCapital)
+        {
+            if (capitalReturn is null)
+                blockers.Add(new CorporateActionProjectionBlockerDto("corporate-action.canonical-capital-return-required",
+                    "Return-of-capital posting requires the reviewed canonical lot and both basis reductions."));
+            else
+            {
+                lotInstruction = new AssetLotMutationInstructionDto(AssetLotMutationIntentDto.CapitalReturn, CapitalReturn: capitalReturn);
+                foreach (var issue in AssetLotMutationInstructionValidator.Validate(AssetAccountingEventKindDto.CorporateAction,
+                    lotInstruction, projection.EventAmount, economicEvent.EffectiveDate, request.RetainedEvidence))
+                    blockers.Add(new CorporateActionProjectionBlockerDto("corporate-action.canonical-capital-return-invalid", issue));
+                if (JsonSerializer.Serialize(capitalReturn.Projection) != JsonSerializer.Serialize(projection)
+                    || capitalReturn.ExpectedSecurityVersion != request.Scope.ExpectedSecurityVersion
+                    || successorInstruction is not null || request.Correction is not null)
+                    blockers.Add(new CorporateActionProjectionBlockerDto("corporate-action.canonical-capital-return-projection-mismatch",
+                        "Capital return must bind this exact projection and reference without successor or correction inputs."));
+            }
+        }
         if (successorInstruction is not null || supportedSuccessorAction)
         {
             if (successorInstruction is null)
@@ -213,7 +233,7 @@ public sealed class CorporateActionAssetAccountingEventMapper : ICorporateAction
             request.RetainedEvidence,
             request.Notes,
             request.Correction,
-            successorInstruction);
+            successorInstruction, capitalReturn);
 
         var postingIdempotencyKey = BuildPostingIdempotencyKey(
             projection,
@@ -221,7 +241,7 @@ public sealed class CorporateActionAssetAccountingEventMapper : ICorporateAction
             mappedEffect,
             request.ExpectedPeriodVersion,
             request.RetainedEvidence,
-            successorInstruction);
+            successorInstruction, capitalReturn);
 
         return new CorporateActionAssetAccountingEventMapResult(
             new CorporateActionAssetAccountingEventProjectionDto(
@@ -377,7 +397,8 @@ public sealed class CorporateActionAssetAccountingEventMapper : ICorporateAction
         CorporateActionMappedAccountingEffectDto mappedEffect,
         long expectedPeriodVersion,
         IReadOnlyList<RetainedEvidenceIdentityDto> evidence,
-        OpenLotSuccessorInstructionDto? successorInstruction)
+        OpenLotSuccessorInstructionDto? successorInstruction,
+        OpenLotCapitalReturnInstructionDto? capitalReturn)
     {
         var builder = new StringBuilder(1024);
         AppendToken(builder, "corporate-action-posting/v1");
@@ -412,6 +433,8 @@ public sealed class CorporateActionAssetAccountingEventMapper : ICorporateAction
         }
         if (successorInstruction is not null)
             AppendToken(builder, OpenLotSuccessors.Fingerprint(successorInstruction));
+        if (capitalReturn is not null)
+            AppendToken(builder, OpenLotCapitalReturn.Fingerprint(capitalReturn));
 
         return $"corporate-action-posting/v1:{Sha256Digest.ComputeUtf8(builder.ToString())}";
     }

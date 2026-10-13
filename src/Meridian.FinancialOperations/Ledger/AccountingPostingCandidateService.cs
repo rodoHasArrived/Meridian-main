@@ -230,6 +230,19 @@ public sealed class AccountingPostingCandidateService :
                 || predecessorLot.LotId != successorInstruction.ExpectedLot.LotId)
                 throw new InvalidOperationException("The predecessor account does not belong to the reviewed durable lot identity.");
         }
+        if (request.AssetLotMutation?.CapitalReturn is { } capitalReturn)
+        {
+            Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturn.Project(capitalReturn);
+            if (_taxLotStore is null)
+                throw new InvalidOperationException("Capital-return candidates require the authoritative lot store.");
+            predecessorLot = (await _taxLotStore.GetTaxLotsByIdsAsync(capitalReturn.ExpectedLot.LedgerBookId,
+                [capitalReturn.ExpectedLot.TaxLotRecordId], ct).ConfigureAwait(false)).SingleOrDefault()
+                ?? throw new InvalidOperationException("The capital-return lot is missing from the authoritative book.");
+            if (predecessorLot.SecurityId != capitalReturn.ExpectedLot.SecurityId
+                || predecessorLot.BookPositionId != capitalReturn.ExpectedLot.BookPositionId
+                || predecessorLot.LotId != capitalReturn.ExpectedLot.LotId)
+                throw new InvalidOperationException("The carrying account does not belong to the reviewed capital-return lot.");
+        }
         var lines = new List<AccountingJournalDraftLineRequest>(dryRun.GeneratedPostingLines.Count);
 
         for (var index = 0; index < dryRun.GeneratedPostingLines.Count; index++)
@@ -349,7 +362,9 @@ public sealed class AccountingPostingCandidateService :
                 LotAmortization = request.AssetLotMutation is { Intent: AssetLotMutationIntentDto.Amortize }
                     ? request.AssetLotMutation.Amortization : null,
                 LotCorporateAction = request.AssetLotMutation is { Intent: AssetLotMutationIntentDto.CorporateAction }
-                    ? request.AssetLotMutation.CorporateAction : null
+                    ? request.AssetLotMutation.CorporateAction : null,
+                LotCapitalReturn = request.AssetLotMutation is { Intent: AssetLotMutationIntentDto.CapitalReturn }
+                    ? request.AssetLotMutation.CapitalReturn : null
             }
             : null;
         var write = draft.Write is null
@@ -357,7 +372,8 @@ public sealed class AccountingPostingCandidateService :
             : draft.Write with
             {
                 Entry = WithSecurityMasterLineage(draft.Write.Entry, authority,
-                    request.AssetLotMutation?.CorporateAction?.ExpectedLot.Acquisition.AcquisitionCurrency ?? request.Currency,
+                    request.AssetLotMutation?.CorporateAction?.ExpectedLot.Acquisition.AcquisitionCurrency
+                        ?? request.AssetLotMutation?.CapitalReturn?.ExpectedLot.Acquisition.AcquisitionCurrency ?? request.Currency,
                     request.AssetLotMutation?.Amortization is { Reversal: not null } reversal
                         ? reversal.Security.Status : SecurityStatusDto.Active),
                 PostingCommand = postingCommand

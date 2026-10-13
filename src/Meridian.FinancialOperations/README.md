@@ -210,6 +210,14 @@ and versioned source/successor reference authority; the candidate/storage bounda
 account identity checks. Drafting
 retains the mapped instruction and requires independent approval before posting.
 
+The same service now prepares reviewed in-place return-of-capital reductions. Preview rereads
+the exact canonical lot and reference/position authority; drafting retains the complete reduction
+instruction through the existing event spine and requires independent posting approval. The
+candidate retains the durable carrying-account identity. Posting dispatches a `CapitalReturn`
+batch to the atomic journal/lot store; ordinary journal append cannot consume that instruction.
+Corrections and distributions beyond remaining carrying basis remain blocked pending separate
+reviewed policy and implementation.
+
 ## Purpose
 
 OFX duplicate account or currency tags cannot overwrite conflicting evidence. A row account may

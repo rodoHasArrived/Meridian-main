@@ -45,7 +45,9 @@ public sealed record OpenLotBasisAdjustmentDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     OpenLotAmortizationInstructionDto? Amortization = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    OpenLotSuccessorInstructionDto? CorporateAction = null);
+    OpenLotSuccessorInstructionDto? CorporateAction = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    OpenLotCapitalReturnInstructionDto? CapitalReturn = null);
 
 public static class OpenLotBasisAdjustmentReasons
 {
@@ -53,6 +55,7 @@ public static class OpenLotBasisAdjustmentReasons
     public const string AverageCostRedistribution = "AverageCostRedistribution";
     public const string Amortization = "Amortization";
     public const string CorporateActionSuccessor = "CorporateActionSuccessor";
+    public const string CapitalReturn = "CapitalReturn";
 
     /// <summary>Discrete relief retains the exact unrelieved current basis on its surviving lot.</summary>
     public const string DisposalRelief = "DisposalRelief";

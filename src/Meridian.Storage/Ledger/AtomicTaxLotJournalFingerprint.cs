@@ -49,7 +49,8 @@ public static class AtomicTaxLotJournalFingerprint
             TextPrimitives.NormalizeOptional(command.PolicyRevision),
             command.DisposalSalePrice,
             command.Amortization,
-            command.CorporateAction);
+            command.CorporateAction,
+            command.CapitalReturn);
 
         var element = JsonSerializer.SerializeToElement(payload, SerializerOptions);
         using var stream = new MemoryStream();
@@ -170,5 +171,7 @@ public static class AtomicTaxLotJournalFingerprint
         [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? Amortization,
         [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? CorporateAction);
+        Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? CorporateAction,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn);
 }

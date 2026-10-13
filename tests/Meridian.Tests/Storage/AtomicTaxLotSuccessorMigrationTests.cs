@@ -12,7 +12,7 @@ namespace Meridian.Tests.Storage;
 /// retain the migration receipts. Fixtures exercise database-valid history, not posting approval.
 /// </summary>
 [Trait("Category", "Integration")]
-public sealed class AtomicTaxLotSuccessorMigrationTests
+public sealed partial class AtomicTaxLotSuccessorMigrationTests
 {
     private const string SuccessorMigration = "V_ledger_042__atomic_lot_successors.sql";
     private const string MigrationLedger = "ledger_journal_schema_migrations";
@@ -113,11 +113,16 @@ public sealed class AtomicTaxLotSuccessorMigrationTests
         private readonly string _scripts;
         public string Schema { get; }
         public string SuccessorSql { get; }
+        private readonly string _migrationFile;
+        private readonly string _instructionColumn;
 
-        private MigrationFixture(PostgresTestServer server, string scripts, string schema, string successorSql)
-            => (_server, _scripts, Schema, SuccessorSql) = (server, scripts, schema, successorSql);
+        private MigrationFixture(PostgresTestServer server, string scripts, string schema, string successorSql, string migrationFile)
+        {
+            (_server, _scripts, Schema, SuccessorSql, _migrationFile) = (server, scripts, schema, successorSql, migrationFile);
+            _instructionColumn = migrationFile == SuccessorMigration ? "corporate_action_instruction" : "capital_return_instruction";
+        }
 
-        public static async Task<MigrationFixture> CreateAsync(CancellationToken ct)
+        public static async Task<MigrationFixture> CreateAsync(CancellationToken ct, string migrationFile = SuccessorMigration)
         {
             var server = await PostgresTestServer.CreateAsync("MERIDIAN_LEDGER_CONNECTION_STRING", ct: ct);
             var scripts = Path.Combine(Path.GetTempPath(), $"meridian-successor-migrations-{Guid.NewGuid():N}");
@@ -128,11 +133,11 @@ public sealed class AtomicTaxLotSuccessorMigrationTests
                 foreach (var file in Directory.GetFiles(source, "*.sql"))
                 {
                     // This is the actual predecessor schema; later migrations must not leak into setup.
-                    if (StringComparer.OrdinalIgnoreCase.Compare(Path.GetFileName(file), SuccessorMigration) < 0)
+                    if (StringComparer.OrdinalIgnoreCase.Compare(Path.GetFileName(file), migrationFile) < 0)
                         File.Copy(file, Path.Combine(scripts, Path.GetFileName(file)));
                 }
-                var sql = await File.ReadAllTextAsync(Path.Combine(source, SuccessorMigration), ct);
-                var fixture = new MigrationFixture(server, scripts, server.CreateSchemaName("successor_upgrade"), sql);
+                var sql = await File.ReadAllTextAsync(Path.Combine(source, migrationFile), ct);
+                var fixture = new MigrationFixture(server, scripts, server.CreateSchemaName("lot_upgrade"), sql, migrationFile);
                 await fixture.Runner().EnsureMigratedAsync(ct);
                 return fixture;
             }
@@ -160,15 +165,15 @@ public sealed class AtomicTaxLotSuccessorMigrationTests
         });
 
         public Task WriteSuccessorAsync(string sql, CancellationToken ct)
-            => File.WriteAllTextAsync(Path.Combine(_scripts, SuccessorMigration), sql, ct);
+            => File.WriteAllTextAsync(Path.Combine(_scripts, _migrationFile), sql, ct);
 
         public Task<string> ChecksumAsync(CancellationToken ct)
-            => ScalarAsync($"select checksum from {Schema}.{MigrationLedger} where filename = '{SuccessorMigration}'", ct);
+            => ScalarAsync($"select checksum from {Schema}.{MigrationLedger} where filename = '{_migrationFile}'", ct);
 
         public Task<string> ReceiptsAsync(bool excludeSuccessor, CancellationToken ct)
             => ScalarAsync($"select coalesce(jsonb_agg(to_jsonb(r) order by filename), '[]'::jsonb)::text " +
                 $"from {Schema}.{MigrationLedger} r" +
-                (excludeSuccessor ? $" where filename <> '{SuccessorMigration}'" : ""), ct);
+                (excludeSuccessor ? $" where filename <> '{_migrationFile}'" : ""), ct);
 
         public Task<string> ConstraintsAsync(CancellationToken ct)
             => ScalarAsync($"""
@@ -179,6 +184,7 @@ public sealed class AtomicTaxLotSuccessorMigrationTests
                 join pg_namespace n on n.oid = t.relnamespace
                 where n.nspname = '{Schema}' and c.conname in (
                     'ck_atomic_tax_lot_batch_kind', 'ck_atomic_tax_lot_successor_instruction',
+                    'ck_atomic_tax_lot_capital_return_instruction',
                     'ck_tax_lot_mutations_kind', 'ck_tax_lot_mutations_quantities', 'ck_tax_lot_mutations_cost')
                 """, ct);
 
@@ -187,7 +193,7 @@ public sealed class AtomicTaxLotSuccessorMigrationTests
             var rows = new List<string>();
             foreach (var table in new[] { "ledger_books", "accounting_periods", "journal_entries", "journal_legs",
                          "journal_entry_integrity_seals", "tax_lots", "atomic_tax_lot_posting_batches", "tax_lot_mutations" })
-                rows.Add(await ScalarAsync($"select coalesce(jsonb_agg(to_jsonb(r) - 'corporate_action_instruction' " +
+                rows.Add(await ScalarAsync($"select coalesce(jsonb_agg(to_jsonb(r) - '{_instructionColumn}' " +
                     $"order by to_jsonb(r)::text), '[]'::jsonb)::text from {Schema}.{table} r", ct));
             return string.Join("\n", rows);
         }
@@ -200,11 +206,15 @@ public sealed class AtomicTaxLotSuccessorMigrationTests
             return Convert.ToString(await command.ExecuteScalarAsync(ct), System.Globalization.CultureInfo.InvariantCulture)!;
         }
 
-        public async Task SeedAsync(bool corporateAction, CancellationToken ct)
+        public async Task SeedAsync(bool corporateAction, CancellationToken ct, bool capitalReturn = false)
         {
             // Values deliberately cover each pre-042 predicate branch, including legal NULL fields,
             // zero acquisition cost and each adjusted-current-basis discrete relief method.
-            var cases = corporateAction
+            var cases = capitalReturn
+                ? """
+                  ('capital-return', 'CapitalReturn', 'CapitalReturn', 10, 0, 5, 7, null, null, '{}'::jsonb, null::integer, null::numeric)
+                  """
+                : corporateAction
                 ? """
                   ('close', 'CorporateAction', 'CorporateAction', 10, -10, 5, 55, null, null, '{}'::jsonb, null::integer, null::numeric),
                   ('open', 'CorporateAction', 'CorporateAction', 0, 10, 5, 55, null, null, null::jsonb, null::integer, null::numeric)
@@ -222,8 +232,8 @@ public sealed class AtomicTaxLotSuccessorMigrationTests
                   ('specific-current', 'Disposal', 'Disposal', 10, -2, 5, 7, 'SpecificId', 'policy-v1', '{"acquisition":{},"basisAdjustment":{}}'::jsonb, null::integer, null::numeric),
                   ('zero-current', 'Disposal', 'Disposal', 10, -2, 5, 0, 'fIfO', null, '{"acquisition":{},"basisAdjustment":{}}'::jsonb, null::integer, null::numeric)
                   """;
-            var instructionColumn = corporateAction ? ", corporate_action_instruction" : "";
-            var instructionValue = corporateAction ? ", '{\"fixture\":\"successor-reapply\"}'::jsonb" : "";
+            var instructionColumn = capitalReturn ? ", capital_return_instruction" : corporateAction ? ", corporate_action_instruction" : "";
+            var instructionValue = corporateAction || capitalReturn ? ", '{\"fixture\":\"successor-reapply\"}'::jsonb" : "";
             var sql = $$"""
                 do $seed$
                 declare

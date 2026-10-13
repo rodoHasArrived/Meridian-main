@@ -272,7 +272,7 @@ concurrent relief, replay, correction, and cancellation.
 | Question | Owner | Blocking decision |
 | --- | --- | --- |
 | Which retained source establishes acquisition FX for legacy rows? | Accounting | Backfill and non-null FX cutover |
-| Are short lots represented by signed quantity or a separate direction? | Ledger/Execution | Final contract validation |
+| Short lots use a separate `Long`/`Short` direction with non-negative quantities (decision 2026-10-13). | Ledger/Execution | Direction-aware posting, relief and consumer certification before enabling shorts |
 | Which rule pack owns successor-basis allocation by action type? | Accounting policy | Corporate-action posting |
 
 | Risk | Mitigation |
@@ -282,6 +282,16 @@ concurrent relief, replay, correction, and cancellation.
 | Corporate actions double-adjust basis | Idempotency by action, lot, effective date, and version |
 | Face and unit price conventions mix | Required quantity basis and conditional face-value terms |
 | Historical symbols re-key lots | Mandatory `SecurityId`; symbol is display evidence only |
+
+### Short-lot direction decision (2026-10-13)
+
+The user delegated this decision on 2026-10-13. Canonical lots will use an explicit long/short
+direction and non-negative original/open quantities, consistent with Backtesting's separate
+position direction. Ledger effects and realized P&L will apply the direction explicitly; a
+negative quantity will not implicitly establish a short position. Existing canonical records
+retain their long behavior. Migration compatibility, borrow/cover journal rules, relief and
+all consumer parity tests must pass before short-lot writes become available. This decision
+resolves representation only; it does not certify or enable short accounting.
 
 ## Acceptance Gate
 
@@ -689,3 +699,33 @@ rounded quote projection/relief and refusal of changed quotes or missing lineage
 results belong to the PR's exact head.
 `W10-LOT-002` remains in progress for its remaining action types, successor amortization, complete
 consumer parity, compatibility retirement and live shadow-operation acceptance.
+
+## Reviewed in-place capital returns (2026-10-13)
+
+This increment binds the existing approved return-of-capital projection to canonical lot storage.
+It preserves the quantity, acquisition facts, acquisition FX and holding-period date while reducing
+the current functional and acquisition-currency carrying bases by their separately reviewed
+amounts. `CarryingValue` retains functional carrying basis and `BasisAmount` retains
+acquisition-currency carrying basis in this canonical plan. The instruction does not calculate
+tax basis or derive an exchange rate. Reductions above either remaining basis, mixed successor
+instructions and unsupported correction recipes refuse preparation.
+
+The mapper and `CanonicalLotCorporateActionService` carry one exact instruction through
+Projected and Drafted. Independent approval binds the candidate fingerprint before the existing
+posting service dispatches `CapitalReturn` to the serializable journal/lot transaction. Storage
+locks the period, Security Master, position and lot authority; it validates dated holdings,
+carrying-account identity and stable source-action history through predecessor birth receipts.
+A stale version or previously applied source return cannot append a new journal or change basis.
+An exact committed retry returns the retained receipt. A missing Posted projection may recover
+only from that verified receipt, including its exact before/after mutation and source evidence.
+
+Forward migration 050 follows delivered migrations through 043 and preserves reservations
+044–049. It adds a nullable instruction column and admits the zero-quantity basis reduction.
+Existing acquisition, relief, amortization and successor records remain valid. Migration tests
+exercise a populated upgrade, explicit reapply and restart, and a failure after constraint drops
+that must restore old constraints, rows and migration receipts before retry. PostgreSQL execution
+and independent Accounting/Ledger and Storage review remain required before release.
+
+This is an additional bounded posting path. W10-LOT-002 remains in progress: broader corporate-
+action corrections, later amortization policy after capital returns, short-lot posting and consumer parity,
+production-consumer cutover and live shadow acceptance retain their existing gates.
