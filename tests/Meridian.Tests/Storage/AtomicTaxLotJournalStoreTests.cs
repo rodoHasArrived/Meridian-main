@@ -339,9 +339,10 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         // posted and turn an idempotent replay into an idempotency collision. The three face terms
         // are omitted when absent, so a lot that never recorded them must hash to exactly the digest
         // it had before the columns existed.
-        var command = BuildAcquisitionCommand();
+        var command = BuildAcquisitionCommand(canonicalFacts: false);
         var lot = command.AcquisitionLot!;
 
+        lot.Acquisition.Should().BeNull();
         lot.OriginalFace.Should().BeNull();
         lot.HasFaceValueTerms.Should().BeFalse();
 
@@ -648,8 +649,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             periodId,
             expectedPeriodVersion: period.Version);
         var acquisitionAssetLine = acquisition.Journal.Entry.Lines[0];
-        // This production disposal scenario now supplies the acquisition facts required by the
-        // canonical cutover. Legacy fingerprints remain covered by the unmodified fixture helper.
+        // Retain explicit acquisition evidence for this production disposal scenario. Historical
+        // fact-free receipts are covered separately by the legacy replay fixture.
         var acquiredLot = acquisition.AcquisitionLot!;
         var canonicalEvidence = BuildEvidence("canonical-acquisition", 'e') with
         {
@@ -980,7 +981,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         Guid? ledgerBookId = null,
         Guid? periodId = null,
         long expectedPeriodVersion = 0,
-        string idempotencyKey = "atomic-acquisition:lot-1")
+        string idempotencyKey = "atomic-acquisition:lot-1",
+        bool canonicalFacts = true)
     {
         var bookId = ledgerBookId ?? Guid.NewGuid();
         var retainedPeriodId = periodId ?? Guid.NewGuid();
@@ -1014,6 +1016,20 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             LastMutationBatchId: mutationBatchId,
             SecurityId: TestSecurityId,
             BookPositionId: TestBookPositionId);
+        if (canonicalFacts)
+        {
+            var acquisitionEvidence = evidence with
+            {
+                SubjectType = "OpenLotAcquisition",
+                SubjectId = lot.TaxLotRecordId.ToString("D"),
+                EffectiveDate = lot.AcquiredDate
+            };
+            lot = lot with
+            {
+                Acquisition = new(Meridian.Contracts.Accounting.Lots.LotQuantityBasis.Units,
+                    "USD", "USD", 1m, 10_000m, 10_000m, lot.AcquiredDate, null, [acquisitionEvidence])
+            };
+        }
 
         return AtomicTaxLotJournalCommand.Create(
             mutationBatchId,

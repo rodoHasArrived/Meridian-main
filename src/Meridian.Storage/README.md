@@ -76,6 +76,12 @@ owns their construction; atomic durability, staging and JSONL naming policies re
 into wash-sale projection evidence together with the configured window, scope and activation date.
 This adds no persisted policy field or schema migration.
 
+New atomic acquisitions require complete canonical acquisition facts before a journal, lot, batch
+or mutation is retained. Existing exact receipts are resolved first, so a committed historical
+acquisition without those facts still replays after restart or a later period-version change.
+Changed fingerprints remain collisions. Legacy enrichment uses reviewed backfill, never replay;
+this admission change introduces no schema migration or synthetic acquisition defaults.
+
 Partial W10-LOT-002 amortization uses migration `V_ledger_040` and the existing atomic posting transaction. Period, Security Master, book-position and lot locks bind the reviewed state through commit. A CAS open-basis adjustment and zero-quantity append-only mutation preserve acquisition facts, tie exactly to the journal carrying movement, and replay without another journal or mutation. PostgreSQL reference stores must share the ledger database.
 Amortization requires the canonical depreciation/amortization source type, the exact reviewed
 instruction, and matching acquisition/reference evidence in both the atomic request and governed

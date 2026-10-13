@@ -973,6 +973,10 @@ public sealed record PostPostingRuleJournalCandidateRequestDto(
     /// Verified retained approval evidence. Navigation links cannot substitute for this envelope.
     /// </summary>
     public IReadOnlyList<RetainedEvidenceIdentityDto> ApprovalEvidence { get; init; } = [];
+
+    /// <summary>Reviewed completion of missing terms on an immutable legacy acquisition draft.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AssetAcquisitionTermsCompletionDto? AcquisitionTermsCompletion { get; init; }
 }
 
 public sealed record PostedPostingRuleJournalCandidateResultDto(

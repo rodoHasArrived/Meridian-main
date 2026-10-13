@@ -328,6 +328,7 @@ classDiagram
     class Meridian_Contracts_Ledger_PaymentIntentWorkflowStatusDto["PaymentIntentWorkflowStatusDto"] {
     }
     class Meridian_Contracts_Ledger_PostPostingRuleJournalCandidateRequestDto["PostPostingRuleJournalCandidateRequestDto"] {
+        +AssetAcquisitionTermsCompletionDto? AcquisitionTermsCompletion
         +OperationsActionOriginDto ActionOrigin
         +string Actor
         +IReadOnlyList~RetainedEvidenceIdentityDto~ ApprovalEvidence
