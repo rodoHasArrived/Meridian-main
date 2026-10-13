@@ -44,7 +44,19 @@ public sealed class OpenLotSpinOffTests
     public void SpinOff_OnlyCanonicalTransferPreservesSubMinorUnitEventAmount(string currency, int decimals)
     {
         var source = PartiallyRelievedPredecessor();
-        source = source with { Acquisition = source.Acquisition with { FunctionalCurrency = currency } };
+        // Keep both allocation currencies identical so this rounding test does not introduce
+        // an unrelated cross-currency acquisition-FX residual (especially for zero-decimal JPY).
+        source = source with
+        {
+            OpenTransactionCostBasis = source.OpenFunctionalCostBasis,
+            Acquisition = source.Acquisition with
+            {
+                AcquisitionCurrency = currency,
+                FunctionalCurrency = currency,
+                AcquisitionFxRateToFunctional = 1m,
+                TransactionCostBasis = source.Acquisition.FunctionalCostBasis
+            }
+        };
         var canonical = Build(source: source);
         var ordinary = Build(source: source, canonicalLotTransferJournal: false);
 
