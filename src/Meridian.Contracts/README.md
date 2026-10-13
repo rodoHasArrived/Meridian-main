@@ -138,12 +138,19 @@ book-position versions. `OpenLotSuccessors` supports a cashless Reg S/144A excha
 and advance refunding into refunded/unrefunded face lots. It allocates original acquisition and
 current carrying basis separately in transaction and functional currency, assigns the final
 residual exactly, and preserves acquisition FX, holding dates, face terms and source evidence.
+The same atomic contract accepts the registered non-taxable spin-off allocation: a unit parent
+closes into a new lot in its original security/position with unchanged open quantity, plus one or
+more separately identified child lots. Every target carries an approved positive allocation,
+original/current transaction and functional basis, acquisition FX and holding period. Independent
+currency residuals go to the final target. Dividend/purchase recipes, linked cash cases and new
+holding periods cannot use this carried-basis path; taxable spin-offs remain outside it.
 Only the refunded successor receives `ScheduleD`; unsupported action or allocation shapes fail
 validation. Optional instruction fields are omitted when absent to preserve earlier payloads.
 Successor lot labels must already be trimmed before fingerprinting or drafting, remain distinct,
 and cannot reuse the predecessor label. Persistence must retain the exact reviewed label rather
-than changing it after approval. Durable lot, Security Master and book-position identities must also be distinct
-before mapping or drafting. Reg S/144A exchange requires the `Successor` role.
+than changing it after approval. Sibling lots, securities and book positions must be distinct; the retained
+spin-off parent and same-security split may reuse the predecessor's security/position, with a new
+durable lot identity and label. Reg S/144A exchange requires the `Successor` role.
 Every successor must receive positive functional
 carrying basis before journal drafting, including the final residual. Currency-specific allocations
 share `Ledger/CurrencyMinorUnits` with the corporate-action projector, including four decimals for

@@ -40,7 +40,7 @@ public sealed record OpenLotCorporateActionLineageDto(
     public Guid? SourceCorporateActionId { get; init; }
 }
 
-/// <summary>Bounded cashless exchange, whole-unit split, stock merger and advance-refunding conservation rules.</summary>
+/// <summary>Cashless exchange, split, merger, non-taxable spin-off and advance-refunding conservation rules.</summary>
 public static class OpenLotSuccessors
 {
     public const string JournalFingerprintTag = "openLotSuccessorInstructionFingerprint";
@@ -48,7 +48,7 @@ public static class OpenLotSuccessors
     public static bool IsSupported(CorporateActionAccountingTypeDto action)
         => action is CorporateActionAccountingTypeDto.RegS144AExchange or CorporateActionAccountingTypeDto.AdvanceRefunding
             or CorporateActionAccountingTypeDto.StockSplit or CorporateActionAccountingTypeDto.ReverseStockSplit
-            or CorporateActionAccountingTypeDto.MergerStock;
+            or CorporateActionAccountingTypeDto.MergerStock or CorporateActionAccountingTypeDto.SpinOff;
 
     public static OpenLotCorporateActionLineageDto ExpectedLineage(OpenLotSuccessorInstructionDto instruction, OpenLotDto target)
     {
@@ -121,7 +121,9 @@ public static class OpenLotSuccessors
         var refunding = action == CorporateActionAccountingTypeDto.AdvanceRefunding;
         var split = action is CorporateActionAccountingTypeDto.StockSplit or CorporateActionAccountingTypeDto.ReverseStockSplit;
         var merger = action == CorporateActionAccountingTypeDto.MergerStock;
-        Require(IsSupported(action), "Only cashless exchange, whole-unit splits, stock merger and advance-refunding successor posting is supported.");
+        var spinOff = action == CorporateActionAccountingTypeDto.SpinOff;
+        var allocated = refunding || spinOff;
+        Require(IsSupported(action), "Only cashless exchange, whole-unit splits, stock merger, non-taxable spin-off and advance-refunding successor posting is supported.");
         Require(projection.CanPreparePostingCandidate && projection.EconomicEvent is not null
             && projection.ProjectionLineage is not null && projection.AccountingScope is not null
             && projection.CaseId != Guid.Empty && projection.CaseVersion > 0
@@ -148,9 +150,9 @@ public static class OpenLotSuccessors
                 && sourceCorporateActionId != origin.SourceCorporateActionId,
                 "A successor cannot undergo a corporate action before its immutable origin or repeat the same action.");
         var targets = instruction.Successors;
-        Require(targets.Count == (refunding ? 2 : 1)
+        Require((spinOff ? targets.Count >= 2 : targets.Count == (refunding ? 2 : 1))
             && mutations.Mutations.Count == targets.Count,
-            "The supported exchange, split or merger requires one successor; advance refunding requires exactly two.");
+            "Exchange, split or merger requires one successor; advance refunding requires two; spin-off requires a retained parent and children.");
         Require(targets.Select(static target => target.Lot.TaxLotRecordId).Distinct().Count() == targets.Count
             && targets.Select(static target => target.Lot.LotId?.Trim()).Distinct(StringComparer.Ordinal).Count() == targets.Count
             && targets.Select(static target => target.Lot.SecurityId).Distinct().Count() == targets.Count
@@ -187,6 +189,17 @@ public static class OpenLotSuccessors
         if (merger)
             Require(source.Acquisition.QuantityBasis == LotQuantityBasis.Units,
                 "A supported stock merger requires a unit predecessor and one carried-basis successor.");
+        if (spinOff)
+            Require(source.Acquisition.QuantityBasis == LotQuantityBasis.Units
+                && targets.Count(target => target.Lot.SecurityId == source.SecurityId
+                    && target.Lot.BookPositionId == source.BookPositionId
+                    && target.Lot.OpenQuantity == source.OpenQuantity) == 1
+                && projection.Recipe.Count(operation => operation.Kind == CorporateActionEconomicOperationKindDto.ExchangeIn
+                    && operation.SecurityId == source.SecurityId && operation.SuccessorRole == CorporateActionSuccessorRoleDto.Successor
+                    && operation.Quantity == source.OpenQuantity) == 1
+                && projection.Recipe.Where(operation => operation.Kind == CorporateActionEconomicOperationKindDto.ExchangeIn
+                    && operation.SecurityId != source.SecurityId).All(operation => operation.SuccessorRole == CorporateActionSuccessorRoleDto.Child),
+                "A non-taxable spin-off must retain the unit parent's security, position and quantity with separately identified children and carried basis.");
 
         var sourceBefore = new CorporateActionLotStateSnapshotDto(source.OpenQuantity,
             source.OpenFunctionalCostBasis, source.OpenTransactionCostBasis);
@@ -204,7 +217,7 @@ public static class OpenLotSuccessors
             OpenLotValidation.Validate(lot);
             var acquisition = lot.Acquisition;
             var weight = mutation.AllocationPercent ?? 1m;
-            Require(weight > 0m && weight <= 1m && (refunding || weight == 1m),
+            Require(weight > 0m && weight <= 1m && (allocated || weight == 1m),
                 "Successor basis allocations must be positive and complete.");
             var last = index == mutations.Mutations.Count - 1;
             var transaction = last ? source.OpenTransactionCostBasis - assignedTransaction
@@ -217,16 +230,17 @@ public static class OpenLotSuccessors
                 : Allocate(originalTransaction, weight, sourceAcquisition.AcquisitionCurrency);
             var originalFx = last ? originalFunctional - assignedOriginalFunctional
                 : Allocate(originalFunctional, weight, sourceAcquisition.FunctionalCurrency);
-            Require(mutation.Kind == (refunding ? CorporateActionLotMutationKindDto.Allocate : CorporateActionLotMutationKindDto.CarryOver)
+            Require(mutation.Kind == (allocated ? CorporateActionLotMutationKindDto.Allocate : CorporateActionLotMutationKindDto.CarryOver)
                 && mutation.SourceLotId == source.TaxLotRecordId && mutation.ExpectedSourceLotVersion == source.Version
                 && mutation.SecurityId == source.SecurityId && mutation.SourceBefore == sourceBefore
                 && (mutation.SourceAfter is null || mutation.SourceAfter == zero)
                 && mutation.TargetOperation == CorporateActionLotTargetOperationDto.Create
                 && mutation.ExpectedTargetLotVersion is null && mutation.TargetBefore is null
-                && mutation.TargetSecurityId == lot.SecurityId && (split ? lot.SecurityId == source.SecurityId : lot.SecurityId != source.SecurityId)
+                && mutation.TargetSecurityId == lot.SecurityId && (split ? lot.SecurityId == source.SecurityId : spinOff || lot.SecurityId != source.SecurityId)
                 && lot.TaxLotRecordId != source.TaxLotRecordId && lot.LotId == lot.LotId.Trim()
                 && lot.LotId != source.LotId.Trim()
-                && (split || lot.BookPositionId != source.BookPositionId) && lot.LedgerBookId == source.LedgerBookId
+                && (split || (spinOff && lot.SecurityId == source.SecurityId) || lot.BookPositionId != source.BookPositionId)
+                && lot.LedgerBookId == source.LedgerBookId
                 && lot.Version == 1 && lot.OriginalQuantity == lot.OpenQuantity && lot.OpenQuantity > 0
                 && target.ExpectedBookPositionVersion > 0 && target.ExpectedSecurityVersion > 0
                 && Sha256Digest.IsCanonical(target.ExpectedSecurityHash)
@@ -250,14 +264,20 @@ public static class OpenLotSuccessors
             var operation = projection.Recipe.SingleOrDefault(operation => operation.Kind == CorporateActionEconomicOperationKindDto.ExchangeIn
                 && operation.SecurityId == lot.SecurityId);
             Require(operation is not null && operation.Quantity == lot.OpenQuantity
-                && (refunding || operation.SuccessorRole == CorporateActionSuccessorRoleDto.Successor
-                    || (merger && operation.SuccessorRole == CorporateActionSuccessorRoleDto.Acquirer)),
+                && (refunding || (spinOff
+                    ? operation.SuccessorRole == (lot.SecurityId == source.SecurityId
+                        ? CorporateActionSuccessorRoleDto.Successor : CorporateActionSuccessorRoleDto.Child)
+                    : operation.SuccessorRole == CorporateActionSuccessorRoleDto.Successor
+                        || (merger && operation.SuccessorRole == CorporateActionSuccessorRoleDto.Acquirer))),
                 "Successor quantity, identity and role must match the retained exchange recipe.");
             if (split || merger)
                 Require(mutation.LinkedCaseId is null && (split
                     ? operation!.SuccessorRole == CorporateActionSuccessorRoleDto.Successor
                     : operation!.SuccessorRole is CorporateActionSuccessorRoleDto.Successor or CorporateActionSuccessorRoleDto.Acquirer),
                     "Split/merger successor roles must match the cashless reviewed treatment without a linked cash or correction case.");
+            if (spinOff)
+                Require(mutation.LinkedCaseId is null,
+                    "A non-taxable spin-off cannot carry a linked cash, dividend or correction case.");
             if (acquisition.CorporateActionLineage is { } targetOrigin)
                 Require(JsonElement.DeepEquals(JsonSerializer.SerializeToElement(targetOrigin),
                     JsonSerializer.SerializeToElement(ExpectedLineage(instruction, lot))),

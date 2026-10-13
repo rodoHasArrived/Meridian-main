@@ -22,7 +22,7 @@
     },
     {
       "path": "docs/roadmap/data/roadmap-items.yml",
-      "sha256": "61e8455a3df317506b3841689c94392ae9dee02b32a5ab7ffb24cad69e597603"
+      "sha256": "cbf200bc441e12cb2807a1297da3cf1354a28a4a2edca526734b37091ffddfa4"
     },
     {
       "path": "docs/roadmap/data/stage-gates.yml",
@@ -36,7 +36,7 @@
     },
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "sha256": "9501873ad7a6b8e0e765787b7c1a5f8353a045b013112c8ad8d12fb1b0207097"
+      "sha256": "693a2f4b622501b680040f796f007a727c2141c55f1435a2f7f2564088fe8601"
     },
     {
       "path": "docs/status/ROADMAP_SUMMARY.md",
