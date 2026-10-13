@@ -474,7 +474,7 @@ internal static class AssetAccountingEventProjectionRules
             || batch.Mutations.Count != instruction.Successors.Count + 1
             || batch.Mutations.Select(mutation => mutation.TaxLotRecordId).Distinct().Count() != batch.Mutations.Count)
             return false;
-        OpenLotSuccessors.Validate(instruction);
+        OpenLotSuccessors.ValidateRetained(instruction);
         var source = instruction.ExpectedLot;
         var expectedTargets = instruction.Successors.ToDictionary(target => target.Lot.TaxLotRecordId);
         foreach (var mutation in batch.Mutations)
@@ -507,9 +507,16 @@ internal static class AssetAccountingEventProjectionRules
                     || mutation.QuantityBefore != 0m || mutation.CostBasis != target.Lot.OpenFunctionalCostBasis
                     || mutation.LotAfter.OriginatingMutationBatchId != batch.MutationBatchId
                     || mutation.LotAfter.SourceJournalEntryId != batch.Journal.Entry.JournalEntryId
+                    || (instruction.Projection.SourceCorporateActionId is not null
+                        && mutation.LotAfter.Acquisition?.CorporateActionLineage is null)
                     || mutation.LotAfter.BasisAdjustment is not { Reason: OpenLotBasisAdjustmentReasons.CorporateActionSuccessor } adjustment
                     || adjustment.MutationBatchId != batch.MutationBatchId || !PayloadEquals(adjustment.CorporateAction, instruction)
-                    || !PayloadEquals(mutation.LotAfter.ToOpenLot(), OpenLotSuccessors.WithLineage(instruction, target.Lot)))
+                    || !PayloadEquals(mutation.LotAfter.ToOpenLot(),
+                        mutation.LotAfter.Acquisition?.CorporateActionLineage is { } retainedOrigin
+                            ? OpenLotSuccessors.WithRetainedLineage(instruction, target.Lot, retainedOrigin)
+                            : instruction.Projection.Treatment.ActionType is CorporateActionAccountingTypeDto.StockSplit
+                                or CorporateActionAccountingTypeDto.ReverseStockSplit or CorporateActionAccountingTypeDto.MergerStock
+                            ? OpenLotSuccessors.WithLineage(instruction, target.Lot) : target.Lot))
                     return false;
             }
         }

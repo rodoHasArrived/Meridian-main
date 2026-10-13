@@ -285,8 +285,10 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
         var face = target.Acquisition.QuantityBasis == LotQuantityBasis.Face;
         var quantity = target.OriginalQuantity / (face ? LedgerTaxLotFaceValueTerms.LedgerLotParBasis : 1m);
         var unitCost = target.Acquisition.FunctionalCostBasis / quantity;
+        if (!face)
+            unitCost = decimal.Round(unitCost, 12, MidpointRounding.ToEven);
         if (decimal.Round(quantity, 12) != quantity || decimal.Round(unitCost, 12) != unitCost
-            || quantity * unitCost != target.Acquisition.FunctionalCostBasis
+            || (face && quantity * unitCost != target.Acquisition.FunctionalCostBasis)
             || decimal.Round(target.OpenTransactionCostBasis, 12) != target.OpenTransactionCostBasis
             || decimal.Round(target.OpenFunctionalCostBasis, 12) != target.OpenFunctionalCostBasis)
             throw new LedgerValidationException("Successor quantity and basis must be exactly representable at durable twelve-decimal precision.");
@@ -298,7 +300,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
             quantity, quantity, unitCost, target.Acquisition.FunctionalCurrency, recordedAt, recordedAt, command.Journal.Entry.JournalEntryId,
             target.Acquisition.Evidence.First(evidence => evidence.SubjectType == "OpenLotAcquisition"
                 && evidence.SubjectId == target.TaxLotRecordId.ToString("D")).EvidenceId,
-            Version: target.Version, SecurityId: target.SecurityId, BookPositionId: target.BookPositionId,
+            Version: target.Version, OriginatingMutationBatchId: command.MutationBatchId,
+            SecurityId: target.SecurityId, BookPositionId: target.BookPositionId,
             OriginalFace: face ? target.OriginalQuantity : null, BookedFactor: target.Acquisition.FaceValueTerms?.BookedFactor,
             ParBasis: target.Acquisition.FaceValueTerms?.ParBasis, Acquisition: target.Acquisition, BasisAdjustment: adjustment);
         if (!JsonElement.DeepEquals(JsonSerializer.SerializeToElement(result.ToOpenLot()), JsonSerializer.SerializeToElement(target)))

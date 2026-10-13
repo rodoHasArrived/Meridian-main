@@ -195,7 +195,9 @@ Private-capital close evidence is selected by fund event, period, and ledger ent
 `PrivateCapitalCloseCockpitServiceTests.EvidenceScope.cs` builds real cumulative subledgers for mixed May/June and mixed-entity scenarios, checks refusal with missing selected-scope support, and restores readiness by repairing that support while preserving cumulative balances and history. A separate scenario rejects a foreign-period statement even when it carries the selected event ID. These focused scenarios form part of W10-SEAM-001, whose acceptance remains in progress pending the required hosted integration evidence.
 
 `CanonicalLotCorporateActionService` connects the unified reviewed successor instruction to the
-existing Projected/Drafted rail for exchanges, whole-unit splits, stock mergers and refundings.
+existing Projected/Drafted rail for exchanges, whole-unit splits, stock mergers, non-taxable
+spin-offs and refundings. Spin-off preparation binds the reviewed carried-basis parent/child
+projection; taxable recognition recipes cannot use that successor instruction.
 Preview binds the source chart path to its mapped predecessor credit and rereads exact predecessor
 and versioned source/successor reference authority; the candidate/storage boundary retains durable
 account identity checks. Drafting
