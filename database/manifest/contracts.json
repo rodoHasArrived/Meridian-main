@@ -3963,7 +3963,7 @@
       ]
     }
   ],
-  "fingerprint": "f8ffa25fe976d2120aa461d7ff7e456d7d4c6dc050bca22df838a12d6da6d7cd",
+  "fingerprint": "e7fb828a6da87fc6583253e6e41a2a6d60f11b888c5c41cf81d5049589a80fce",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4337,7 +4337,7 @@
         "all-contracts",
         "asset-operations-contracts"
       ],
-      "fingerprint": "bfbd3ce1f5e1eb12abcd21c78134bc18fcee0015789373f5eb7d0fe2f774573a",
+      "fingerprint": "8aa3c41bf0a2719f296401ecd91565bc60136d4d94bc7e846f68621ec710c091",
       "mapped_schemas": [
         "asset_operations"
       ],
@@ -52577,7 +52577,7 @@
         "asset-operations-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "335ec25938804d1f10887674a690588fd0a847239c5cc0b0131fcf72aa487f3b",
+      "fingerprint": "b427ed30bfd6cc2e4275735aa389ab6282bd18d901ff2cef77c0a6b46f63ba3d",
       "full_name": "Meridian.Contracts.AssetOperations.AssetAcquisitionTermsCompletionDto",
       "id": "Meridian.Contracts.AssetOperations.AssetAcquisitionTermsCompletionDto",
       "kind": "record",
@@ -52593,11 +52593,11 @@
           "json_name": null,
           "key_type": null,
           "name": "AmortizationMethod",
-          "nullable": false,
+          "nullable": true,
           "origin": "positional_parameter",
-          "raw_type": "BondAmortizationMethod",
-          "source_line": 12,
-          "type": "BondAmortizationMethod"
+          "raw_type": "BondAmortizationMethod?",
+          "source_line": 13,
+          "type": "BondAmortizationMethod?"
         },
         {
           "collection": false,
@@ -52624,7 +52624,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 13,
+          "source_line": 14,
           "type": "decimal?"
         },
         {
@@ -52638,7 +52638,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "RetainedEvidenceIdentityDto",
-          "source_line": 14,
+          "source_line": 15,
           "type": "RetainedEvidenceIdentityDto"
         },
         {

@@ -12,6 +12,8 @@ internal static class SpineAcquisitionLotCompletion
         var acquisition = candidate.AssetLotMutation?.Acquisition;
         if (request.AcquisitionTermsCompletion is not { } completion)
             return acquisition;
+        if (completion.AmortizationMethod is null)
+            throw new InvalidOperationException("Acquisition terms completion requires an explicit amortization method.");
 
         if (candidate.SourceEventType != AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.Acquisition)
             || candidate.AssetLotMutation is not { Intent: AssetLotMutationIntentDto.Acquire }

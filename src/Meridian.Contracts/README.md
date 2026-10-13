@@ -13,7 +13,8 @@ last_reviewed: 2026-10-12
 
 `AssetAcquisitionTermsCompletionDto` is an optional supplement on
 `PostPostingRuleJournalCandidateRequestDto`. It supplies only the missing amortization method and
-yield of an immutable legacy face-acquisition draft. Its typed review subject is produced by
+yield of an immutable legacy face-acquisition draft. A supplied supplement must explicitly select
+a method; omission is rejected. Its typed review subject is produced by
 `ApprovalSubjectId()` from the exact draft fingerprint, lot ID and selected terms. Omission keeps
 the old request wire shape; historical spine snapshots and approval subjects are unchanged.
 Completion does not grant posting authority without the original draft, independent approval,

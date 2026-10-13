@@ -9,7 +9,8 @@ namespace Meridian.Contracts.AssetOperations;
 public sealed record AssetAcquisitionTermsCompletionDto(
     Guid TaxLotRecordId,
     string DraftedCandidateFingerprint,
-    BondAmortizationMethod AmortizationMethod,
+    // Preserve absence for validation instead of deserializing it as ConstantYield (enum zero).
+    BondAmortizationMethod? AmortizationMethod,
     decimal? EffectiveYield,
     RetainedEvidenceIdentityDto Evidence)
 {

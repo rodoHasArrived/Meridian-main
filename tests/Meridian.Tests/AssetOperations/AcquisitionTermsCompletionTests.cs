@@ -45,6 +45,7 @@ public sealed class AcquisitionTermsCompletionTests
     [InlineData("wrong-event")]
     [InlineData("missing-evidence")]
     [InlineData("invalid-method")]
+    [InlineData("missing-method")]
     [InlineData("missing-yield")]
     public void UnboundOrUnsupportedCompletion_IsRefused(string fault)
     {
@@ -84,12 +85,26 @@ public sealed class AcquisitionTermsCompletionTests
             "wrong-event" => request with { Candidate = request.Candidate with { SourceEventType = "AssetAccounting.Disposal" } },
             "missing-evidence" => request with { AcquisitionTermsCompletion = completion with { Evidence = null! } },
             "invalid-method" => Rebind(request, completion with { AmortizationMethod = (BondAmortizationMethod)999 }),
+            "missing-method" => Rebind(request, completion with { AmortizationMethod = null }),
             "missing-yield" => Rebind(request, completion with { AmortizationMethod = BondAmortizationMethod.ConstantYield }),
             _ => throw new ArgumentOutOfRangeException(nameof(fault))
         };
 
         var act = () => SpineAcquisitionLotCompletion.Resolve(request);
         act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void OmittedMethodInCompletionJson_CannotDefaultToConstantYield()
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        var json = JsonSerializer.SerializeToNode(BuildRequest(BondAmortizationMethod.ConstantYield, .05m), options)!;
+        json["acquisitionTermsCompletion"]!.AsObject().Remove("amortizationMethod");
+        var restored = json.Deserialize<PostPostingRuleJournalCandidateRequestDto>(options)!;
+
+        restored.AcquisitionTermsCompletion!.AmortizationMethod.Should().BeNull();
+        var act = () => SpineAcquisitionLotCompletion.Resolve(restored);
+        act.Should().Throw<InvalidOperationException>().WithMessage("*explicit amortization method*");
     }
 
     [Fact]
