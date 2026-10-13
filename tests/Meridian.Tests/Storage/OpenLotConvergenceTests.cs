@@ -64,6 +64,21 @@ public sealed class OpenLotConvergenceTests
     }
 
     [Fact]
+    public void AverageCost_DecimalBoundaryCannotCreateANegativeFinalSlice()
+    {
+        const decimal basis = 0.0000000000000000000000000004m;
+        var lots = Enumerable.Range(1, 6)
+            .Select(day => Lot(day, 1m, day == 1 ? basis : 0m, 1m).ToOpenLot()).ToArray();
+
+        var result = new OpenLotReliefService().Select(lots, 6m, OpenLotReliefMethod.AverageCost);
+
+        result.Selections.Should().HaveCount(6).And.OnlyContain(static slice =>
+            slice.TransactionCostBasis >= 0m && slice.FunctionalCostBasis >= 0m);
+        result.TransactionCostBasis.Should().Be(basis);
+        result.FunctionalCostBasis.Should().Be(basis);
+    }
+
+    [Fact]
     public void LegacyRows_DoNotAcquireInventedIdentityOrFx()
     {
         var legacy = Lot(1) with { Acquisition = null, SecurityId = Guid.Empty, BookPositionId = Guid.Empty };
