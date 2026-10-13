@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "5c66836c9033b704f075799c138f46ed62e80a409fcd16cb4b08a9c2a47f39c2",
+  "database_fingerprint": "8dd3191c09e092e34b647737cdfce5030ba92b24091e2b569a8135b1c6fa2564",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -8474,6 +8474,18 @@
       "target_schema": "security_master"
     },
     {
+      "fingerprint": "f41032f584fd05c16f13f86740a1f2f4e86319b3558fc7f31fdefe6d7de0e0a8",
+      "kind": "normal",
+      "source": "security_master.security_workbench_generations_generation_check on security_master.security_workbench_generations",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_workbench_generations.generation",
+      "target_kind": "table column",
+      "target_name": "security_workbench_generations",
+      "target_schema": "security_master"
+    },
+    {
       "fingerprint": "ed9ce49163ccd872e05b134dbe94bfc97bdb2d55376f9a6dfed4abf06f1417e2",
       "kind": "normal",
       "source": "security_master.servicer_position_report_line_loan_id_fkey on security_master.servicer_position_report_line",
@@ -16685,6 +16697,14 @@
       "object": "column:security_master.security_snapshots.version"
     },
     {
+      "fingerprint": "47c1638beb791eb7f89802abc78ee4e8b9f0d850e32ebb28474f966bf8fa609c",
+      "object": "column:security_master.security_workbench_generations.generation"
+    },
+    {
+      "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+      "object": "column:security_master.security_workbench_generations.security_id"
+    },
+    {
       "fingerprint": "326124a5d03edc75d0e0f69844c92abdbea9b01826195b7d3ef9fe30d1a057ec",
       "object": "column:security_master.servicer_position_report_line.commitment_available"
     },
@@ -19785,6 +19805,14 @@
       "object": "constraint:security_master.security_snapshots.security_snapshots_pkey"
     },
     {
+      "fingerprint": "3f492310c9b66129b924991f9b1b1fa6e3101302a3e4e9d6548ae7c8ce7fa7e9",
+      "object": "constraint:security_master.security_workbench_generations.security_workbench_generations_generation_check"
+    },
+    {
+      "fingerprint": "360477a7eafccc1ce1e589fa292d8b44cf25f87bd1d68ed89b7aa41cad77b717",
+      "object": "constraint:security_master.security_workbench_generations.security_workbench_generations_pkey"
+    },
+    {
       "fingerprint": "78286a51d194893cdbf44d1212f5953b2a69d8847f849b3039819ffb28c55f55",
       "object": "constraint:security_master.servicer_position_report_line.servicer_position_report_line_loan_id_fkey"
     },
@@ -22705,6 +22733,10 @@
       "object": "dependency:security_master.security_raw_prices_unit_check on security_master.security_raw_prices->security_master.security_raw_prices.price_unit:normal"
     },
     {
+      "fingerprint": "f41032f584fd05c16f13f86740a1f2f4e86319b3558fc7f31fdefe6d7de0e0a8",
+      "object": "dependency:security_master.security_workbench_generations_generation_check on security_master.security_workbench_generations->security_master.security_workbench_generations.generation:normal"
+    },
+    {
       "fingerprint": "ed9ce49163ccd872e05b134dbe94bfc97bdb2d55376f9a6dfed4abf06f1417e2",
       "object": "dependency:security_master.servicer_position_report_line_loan_id_fkey on security_master.servicer_position_report_line->security_master.loan_contract.loan_id:normal"
     },
@@ -24725,6 +24757,10 @@
       "object": "index:security_master.security_snapshots_pkey"
     },
     {
+      "fingerprint": "5b68250b31963ad0d6eb5d66a654c80a35bdde8607e7da000ea4e9441aa08ea9",
+      "object": "index:security_master.security_workbench_generations_pkey"
+    },
+    {
       "fingerprint": "4e44a1754c60db7b30bd2b8315369b6f068175f254b682dcbe76a3cc2e03c58b",
       "object": "index:security_master.servicer_position_report_line_pkey"
     },
@@ -25613,6 +25649,10 @@
       "object": "rls:security_master.security_snapshots"
     },
     {
+      "fingerprint": "ee6012959c128eed73ef65253f785bd0d046b840f733e600036ce8c98fd79d75",
+      "object": "rls:security_master.security_workbench_generations"
+    },
+    {
       "fingerprint": "9a2780a1a8c42ebd8ec4aaa768eabaa1de4408a17b5e94166e9619d09ed3d068",
       "object": "rls:security_master.servicer_position_report_line"
     },
@@ -25701,7 +25741,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "f32458671471af5b6a0636d4d61fceccb38abd95ba03086883bae93492bbae63",
+      "fingerprint": "7d0c3ea281f5d738cc76169b0670cbb45f46e8eab057e6f6ae22b6d7479f2b72",
       "object": "schema:security_master"
     },
     {
@@ -26431,6 +26471,10 @@
     {
       "fingerprint": "9749de5e679292bf1c42c0735726c964b6eadb972d7ed47114e068a06be902b4",
       "object": "table:security_master.security_snapshots"
+    },
+    {
+      "fingerprint": "78b653c8acbc2e462a737aab9b5689f1c7c8a9ef7ac1d3a230027a423cbde0ac",
+      "object": "table:security_master.security_workbench_generations"
     },
     {
       "fingerprint": "03383b0fac3eceb503b14fbd9ec8f0d81f08c502fc0e6e37dec412315653f168",
@@ -122490,6 +122534,18 @@
           "target_schema": "security_master"
         },
         {
+          "fingerprint": "f41032f584fd05c16f13f86740a1f2f4e86319b3558fc7f31fdefe6d7de0e0a8",
+          "kind": "normal",
+          "source": "security_master.security_workbench_generations_generation_check on security_master.security_workbench_generations",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_workbench_generations.generation",
+          "target_kind": "table column",
+          "target_name": "security_workbench_generations",
+          "target_schema": "security_master"
+        },
+        {
           "fingerprint": "ed9ce49163ccd872e05b134dbe94bfc97bdb2d55376f9a6dfed4abf06f1417e2",
           "kind": "normal",
           "source": "security_master.servicer_position_report_line_loan_id_fkey on security_master.servicer_position_report_line",
@@ -122734,7 +122790,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "f32458671471af5b6a0636d4d61fceccb38abd95ba03086883bae93492bbae63",
+      "fingerprint": "7d0c3ea281f5d738cc76169b0670cbb45f46e8eab057e6f6ae22b6d7479f2b72",
       "foreign_tables": [],
       "functions": [
         {
@@ -149634,6 +149690,172 @@
               "comment": null,
               "data_type": "uuid",
               "default": null,
+              "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "47c1638beb791eb7f89802abc78ee4e8b9f0d850e32ebb28474f966bf8fa609c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "generation",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "generation"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (generation >= 0)",
+              "delete_action": null,
+              "fingerprint": "3f492310c9b66129b924991f9b1b1fa6e3101302a3e4e9d6548ae7c8ce7fa7e9",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_workbench_generations_generation_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "security_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (security_id)",
+              "delete_action": null,
+              "fingerprint": "360477a7eafccc1ce1e589fa292d8b44cf25f87bd1d68ed89b7aa41cad77b717",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_workbench_generations_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "78b653c8acbc2e462a737aab9b5689f1c7c8a9ef7ac1d3a230027a423cbde0ac",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX security_workbench_generations_pkey ON security_master.security_workbench_generations USING btree (security_id)",
+              "expression": null,
+              "fingerprint": "5b68250b31963ad0d6eb5d66a654c80a35bdde8607e7da000ea4e9441aa08ea9",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "security_workbench_generations_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "security_workbench_generations",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
               "fingerprint": "de1cf8b0e3d7dc6e682de492825a9e80c506e77cc81f8a62a930771451ccdbf0",
               "generated": null,
               "generated_expression": null,
@@ -154843,6 +155065,14 @@
           "forced": false,
           "policies": [],
           "relation": "security_snapshots",
+          "schema": "security_master"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "ee6012959c128eed73ef65253f785bd0d046b840f733e600036ce8c98fd79d75",
+          "forced": false,
+          "policies": [],
+          "relation": "security_workbench_generations",
           "schema": "security_master"
         },
         {
@@ -181683,6 +181913,172 @@
           "is_partition": false,
           "kind": "table",
           "name": "security_snapshots",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "47c1638beb791eb7f89802abc78ee4e8b9f0d850e32ebb28474f966bf8fa609c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "generation",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "generation"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (generation >= 0)",
+              "delete_action": null,
+              "fingerprint": "3f492310c9b66129b924991f9b1b1fa6e3101302a3e4e9d6548ae7c8ce7fa7e9",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_workbench_generations_generation_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "security_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (security_id)",
+              "delete_action": null,
+              "fingerprint": "360477a7eafccc1ce1e589fa292d8b44cf25f87bd1d68ed89b7aa41cad77b717",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_workbench_generations_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "78b653c8acbc2e462a737aab9b5689f1c7c8a9ef7ac1d3a230027a423cbde0ac",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX security_workbench_generations_pkey ON security_master.security_workbench_generations USING btree (security_id)",
+              "expression": null,
+              "fingerprint": "5b68250b31963ad0d6eb5d66a654c80a35bdde8607e7da000ea4e9441aa08ea9",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "security_workbench_generations_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "security_workbench_generations",
           "options": [],
           "owner": "meridian",
           "persistence": "permanent",

@@ -2,7 +2,7 @@
 
 # `security_master` schema
 
-- Relations: 90
+- Relations: 91
 - Functions/procedures: 3
 - Triggers: 5
 - Row-level security policies: 0
@@ -985,6 +985,10 @@ erDiagram
         timestamp_with_time_zone snapshot_timestamp
         jsonb payload
     }
+    security_master_security_workbench_generations {
+        uuid security_id PK
+        bigint generation
+    }
     security_master_servicer_position_report_line {
         uuid servicer_report_line_id PK
         uuid servicer_report_batch_id FK
@@ -1333,6 +1337,7 @@ erDiagram
 | `security_pricing_hierarchy_history` | table | 6 | `security_id`, `account_id`, `as_of` | 1 | 1 | Dated account-specific pricing hierarchy evidence, retaining source priorities, effective timestamp, author, and recording timestamp for historical price selection. |
 | `security_raw_prices` | table | 7 | `security_id`, `source_id`, `price_as_of` | 1 | 2 | - |
 | `security_snapshots` | table | 4 | `security_id` | 0 | 1 | - |
+| `security_workbench_generations` | table | 2 | `security_id` | 0 | 1 | - |
 | `servicer_position_report_line` | table | 14 | `servicer_report_line_id` | 2 | 2 | - |
 | `servicer_report_batch` | table | 12 | `servicer_report_batch_id` | 0 | 1 | - |
 | `servicer_statement_apply_audit` | table | 13 | `servicer_statement_apply_id` | 1 | 2 | - |

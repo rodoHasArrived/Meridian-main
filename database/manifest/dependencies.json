@@ -47307,6 +47307,12 @@
       "target": "database:security_master.security_raw_prices.price_unit"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_workbench_generations_generation_check on security_master.security_workbench_generations",
+      "target": "database:security_master.security_workbench_generations.generation"
+    },
+    {
       "constraint": "servicer_position_report_line_loan_id_fkey",
       "kind": "foreign-key",
       "label": "loan_id",
@@ -48723,6 +48729,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.security_workbench_generations"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.servicer_position_report_line"
     },
     {
@@ -48817,7 +48829,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "c4371b4b00fcf2e0220191c02151fa8a400fea467416a563ed71bebf110281fc",
+  "fingerprint": "6138568a918b90bd4b4bb554dee59c63635a42bfbec7a9145a79fec48458551e",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -71139,6 +71151,22 @@
       "schema": "security_master"
     },
     {
+      "id": "database:security_master.security_workbench_generations",
+      "kind": "database-table",
+      "label": "security_master.security_workbench_generations",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_workbench_generations.generation",
+      "kind": "database-object",
+      "label": "security_master.security_workbench_generations.generation"
+    },
+    {
+      "id": "database:security_master.security_workbench_generations_generation_check on security_master.security_workbench_generations",
+      "kind": "database-object",
+      "label": "security_master.security_workbench_generations_generation_check on security_master.security_workbench_generations"
+    },
+    {
       "id": "database:security_master.servicer_position_report_line",
       "kind": "database-table",
       "label": "security_master.servicer_position_report_line",
@@ -71400,9 +71428,9 @@
   "summary": {
     "contract_references": 3230,
     "contract_set_memberships": 3799,
-    "edges": 8111,
+    "edges": 8113,
     "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3911
+    "nodes": 3914
   }
 }

@@ -1,6 +1,6 @@
 {
   "total_files": 731,
-  "total_lines": 158958,
+  "total_lines": 158963,
   "orphaned_count": 248,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -2748,7 +2748,7 @@
     },
     {
       "path": "docs/generated/database/modules/security_master.md",
-      "line_count": 1348,
+      "line_count": 1353,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
