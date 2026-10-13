@@ -86,6 +86,12 @@ public sealed class CanonicalLotAmortizationService(
         if (position.SecurityId != retained.SecurityId || position.BookContext.LedgerBookId != ledgerBookId)
             throw new InvalidOperationException("Canonical lot and book-position accounting scope differ.");
         var instruction = new OpenLotAmortizationInstructionDto(retained.ToOpenLot(), security, securityEvidence, position.Version, asOfDate);
+        if (retained.Acquisition?.CorporateActionLineage is not null)
+            instruction = instruction with
+            {
+                Continuation = await SuccessorAmortizationEvidence.ResolveAsync(retained,
+                    async batchId => await lotStore.GetAtomicTaxLotPostingAsync(batchId, ct).ConfigureAwait(false), ct).ConfigureAwait(false)
+            };
         return new(instruction, OpenLotAmortization.Project(instruction));
     }
 }

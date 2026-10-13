@@ -20,6 +20,10 @@ public sealed record OpenLotAmortizationInstructionDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     OpenLotAmortizationReversalDto? Reversal = null)
 {
+    /// <summary>Retained authority for continuing an unchanged schedule after a one-for-one exchange.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public OpenLotAmortizationContinuationDto? Continuation { get; init; }
+
     // Historical JSON has no version and retains the exact v1 calculation and fingerprint.
     // New callers using the original constructor shape always select the current model.
     public OpenLotAmortizationInstructionDto(OpenLotDto ExpectedLot, SecurityProjectionRecord Security,
@@ -79,8 +83,7 @@ public static class OpenLotAmortization
         ArgumentNullException.ThrowIfNull(security);
         ArgumentNullException.ThrowIfNull(evidence);
         var acquisition = lot.Acquisition;
-        if (acquisition.CorporateActionLineage is not null)
-            throw new ArgumentException("Corporate-action successors require a separately reviewed amortization/yield continuation; inherited acquisition facts do not authorize a new schedule.");
+        var scheduleLot = OpenLotAmortizationContinuation.Validate(instruction);
         var terms = acquisition.FaceValueTerms;
         if (lot.Version <= 0 || lot.OpenQuantity <= 0 || acquisition.QuantityBasis != LotQuantityBasis.Face || terms is null
             || terms.BookedFactor != 1m || instruction.ExpectedBookPositionVersion <= 0)
@@ -130,8 +133,8 @@ public static class OpenLotAmortization
             || reference.InflationIndex is not null || reference.InflationIndexRatio is not null
             || reference.InflationBaseIndexValue is not null || (reference.CurrentFactor is { } factor && factor != 1m))
             throw new ArgumentException("Amortization requires complete supported day-count and fixed-rate bullet terms; structured successors require a separate workflow.");
-        var faceLot = new FaceValueLot(lot.LotId, lot.SecurityId, lot.AcquiredDate, lot.OriginalQuantity,
-            acquisition.TransactionCostBasis * terms.ParBasis / lot.OriginalQuantity, terms.BookedFactor, terms.ParBasis);
+        var faceLot = new FaceValueLot(lot.LotId, lot.SecurityId, scheduleLot.AcquiredDate, scheduleLot.OriginalQuantity,
+            scheduleLot.Acquisition.TransactionCostBasis * terms.ParBasis / scheduleLot.OriginalQuantity, terms.BookedFactor, terms.ParBasis);
         decimal fullBasis;
         if (terms.AmortizationMethod == BondAmortizationMethod.StraightLine)
         {
@@ -165,7 +168,7 @@ public static class OpenLotAmortization
         }
         // PostgreSQL journal and lot amounts share a 12-place decimal boundary. Round cumulative
         // targets once, then subtract retained basis: repeated periods do not accumulate rounded deltas.
-        var transaction = decimal.Round(fullBasis * lot.OpenQuantity / lot.OriginalQuantity, 12, MidpointRounding.ToEven);
+        var transaction = decimal.Round(fullBasis * lot.OpenQuantity / scheduleLot.OriginalQuantity, 12, MidpointRounding.ToEven);
         var functional = decimal.Round(transaction * acquisition.AcquisitionFxRateToFunctional, 12, MidpointRounding.ToEven);
         if (transaction < 0m || functional < 0m)
             throw new ArgumentException("Amortized carrying basis cannot be negative.");

@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-10-12
+last_reviewed: 2026-10-13
 ---
 
 # src/Meridian.Contracts
@@ -136,8 +136,13 @@ wire shape; source-event evidence resolves stable identity for ancestry certific
 rewriting retained instructions or fingerprints.
 Historical origin compatibility requires the retained projection to omit its stable source-ID
 field. An explicit source identity requires complete successor origin; new writes stay strict.
-The reviewed instruction remains unchanged for replay. Successor yield/schedule continuation
-requires a separately reviewed workflow.
+The reviewed instruction remains unchanged for replay. An optional amortization `Continuation`
+binds the immutable birth exchange and immediately preceding ordinary v2 amortization receipt.
+It admits a one-for-one face-lot Reg S/144A exchange only when the retained successor reference
+still matches and both securities' economic terms are identical. The original acquisition schedule,
+annual yield and FX remain authoritative; this does not establish a new yield or maturity schedule.
+The separately versioned continuation is omitted from historical JSON when absent. Other successor
+types, chains, changed references and predecessors without that retained amortization remain blocked.
 
 ## Shared close and lot convergence
 
