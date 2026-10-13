@@ -126,6 +126,13 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException("Amortization requires an asset carrying account.");
         if (!OpenLotAmortization.SameLot(before.ToOpenLot(), instruction.ExpectedLot))
             throw new LedgerValidationException("Amortization lot version or carrying basis changed; rebuild and review the projection.");
+        if (instruction.Continuation is not null)
+        {
+            var continuation = await SuccessorAmortizationEvidence.ResolveAsync(before,
+                async batchId => await LoadAtomicTaxLotResultAsync(connection, transaction, batchId, false, ct).ConfigureAwait(false), ct).ConfigureAwait(false);
+            if (!OpenLotAmortization.SameInstruction(instruction, instruction with { Continuation = continuation }))
+                throw new LedgerValidationException("Successor amortization must bind the exact immutable exchange and predecessor amortization receipts.");
+        }
         if (command.CorrectsMutationBatchId is { } correctedId)
         {
             var corrected = await LoadAtomicTaxLotResultAsync(connection, transaction, correctedId, false, ct).ConfigureAwait(false)
@@ -141,7 +148,8 @@ public sealed partial class PostgresLedgerJournalStore
         }
         if (instruction.Reversal is null)
             await ValidateAmortizationBasisHistoryAsync(before, instruction.AsOfDate,
-                async batchId => await LoadAtomicTaxLotResultAsync(connection, transaction, batchId, false, ct).ConfigureAwait(false), ct).ConfigureAwait(false);
+                async batchId => await LoadAtomicTaxLotResultAsync(connection, transaction, batchId, false, ct).ConfigureAwait(false),
+                ct, instruction.Continuation).ConfigureAwait(false);
         var history = await ReadDatedLotQuantitiesAsync(connection, transaction, command.LedgerBookId,
             [before.TaxLotRecordId], ct).ConfigureAwait(false);
         if (history.Any(mutation => mutation.EffectiveDate > instruction.AsOfDate)
@@ -151,7 +159,8 @@ public sealed partial class PostgresLedgerJournalStore
     }
 
     internal static async Task ValidateAmortizationBasisHistoryAsync(LedgerTaxLotRecord current, DateOnly asOfDate,
-        Func<Guid, Task<AtomicTaxLotJournalResult?>> loadReceipt, CancellationToken ct = default)
+        Func<Guid, Task<AtomicTaxLotJournalResult?>> loadReceipt, CancellationToken ct = default,
+        OpenLotAmortizationContinuationDto? continuation = null)
     {
         var cursor = current;
         var visited = new HashSet<Guid>();
@@ -202,6 +211,12 @@ public sealed partial class PostgresLedgerJournalStore
                 throw Unproved();
             cursor = before;
         }
+        // The caller has already resolved and compared the complete immutable birth receipt.
+        if (continuation is not null && cursor.BasisAdjustment is { Reason: OpenLotBasisAdjustmentReasons.CorporateActionSuccessor } origin
+            && origin.MutationBatchId == continuation.SuccessorMutationBatchId)
+            return;
+        if (continuation is not null && cursor.BasisAdjustment is null)
+            throw new LedgerValidationException("Successor amortization cannot continue a missing carrying-basis treatment.");
         if (cursor.BasisAdjustment is { } prior
             && (prior.Reason != OpenLotBasisAdjustmentReasons.Amortization || prior.Amortization is null
                 || prior.Amortization.AsOfDate >= asOfDate))
