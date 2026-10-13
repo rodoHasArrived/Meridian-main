@@ -11,6 +11,16 @@ last_reviewed: 2026-10-06
 
 # src/Meridian.Instruments
 
+`AccountCashForecastEngine` and `AccountCashForecastService` retain bounded account/book cash
+forecasts over the shared `PortfolioCashLadderEngine`. Opening settled cash, expected and observed
+flows, economic/settlement/receipt dates, terms/projection provenance and exact dated FX remain
+inspectable. Observed flows replace corresponding predictions in the ladder; only validated
+observed cash reconciles to closing cash. Missing scope, source evidence, FX or unexplained closing
+variance blocks certification. Corrections retain linked earlier snapshots and factor predictions.
+Certification describes cash evidence reconciliation and grants no payment authority. See
+[account oversight evidence](../../docs/domain/account-oversight-evidence.md) and
+`AccountCashForecastTests` for the bounded contract.
+
 Direct-lending Asset Operations publication derives terms, status, and ledger row identities
 from retained loan/security facts so retries preserve those visible IDs. Ledger projection dates
 come from the retained projection as-of date, or the contract effective date when no run exists.

@@ -11,6 +11,18 @@ last_reviewed: 2026-10-13
 
 # src/Meridian.FinancialOperations
 
+`AccountCashReconciliationService` adds a bounded two-source cash-balance continuity aggregate.
+Exact tenant/company/account/book, source identities and currency determine a stable case;
+amounts, row IDs and tolerance versions remain observation evidence. Corrected sources change
+or clear the same case after restart, retaining ownership, UTC calendar-day aging and prior
+resolutions. Each run freezes original source rows, normalized balances, complete executed
+tolerances and canonical matching evidence for deterministic replay. Missing/partial populations,
+duplicate balances, unrelated accounts and changed source identities fail closed. Explicitly
+provision `FileAccountCashReconciliationStore.InitializeAsync` before use; loss of retained state
+cannot silently restart history. Source clearing confers no governed close approval.
+See [account oversight evidence](../../docs/domain/account-oversight-evidence.md) and
+`AccountCashReconciliationContinuityTests` for the first `W10-RECON-001` acceptance slice.
+
 `Consolidation/ConsolidationService` resolves two directly wholly owned entities from authoritative
 effective-dated ownership, compares reciprocal receivables/payables using posting entity and
 counterparty, and produces evidence-bound drafts through the typed `ConsolidationElimination`

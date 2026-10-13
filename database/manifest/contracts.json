@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "b276f9ef6c8c9326a58c21ae831947ef442cc9800f48751bc60e6e289fbb1e85",
+      "fingerprint": "a688de2b8caa0a1f8b71b697e5dce0f4a43e38a9fefd4153cd1b6951fe5d20be",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -324,6 +324,17 @@
         "Meridian.Contracts.Archive.VerificationJobStatus",
         "Meridian.Contracts.Archive.VerificationJobType",
         "Meridian.Contracts.Archive.VerificationScheduleConfig",
+        "Meridian.Contracts.AssetOperations.AccountCashEvidenceRole",
+        "Meridian.Contracts.AssetOperations.AccountCashFlowDto",
+        "Meridian.Contracts.AssetOperations.AccountCashFlowStatus",
+        "Meridian.Contracts.AssetOperations.AccountCashForecastIssueDto",
+        "Meridian.Contracts.AssetOperations.AccountCashForecastJsonContext",
+        "Meridian.Contracts.AssetOperations.AccountCashForecastRequestDto",
+        "Meridian.Contracts.AssetOperations.AccountCashForecastScopeDto",
+        "Meridian.Contracts.AssetOperations.AccountCashForecastSnapshotDto",
+        "Meridian.Contracts.AssetOperations.AccountCashFxConversionDto",
+        "Meridian.Contracts.AssetOperations.AccountCashProvenanceDto",
+        "Meridian.Contracts.AssetOperations.AccountSettledCashObservationDto",
         "Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto",
         "Meridian.Contracts.AssetOperations.AssetAccountingCorrectionReferenceDto",
         "Meridian.Contracts.AssetOperations.AssetAccountingEventKindDto",
@@ -404,6 +415,8 @@
         "Meridian.Contracts.AssetOperations.DirectLoanPrincipalPaymentDto",
         "Meridian.Contracts.AssetOperations.DirectLoanReferenceDto",
         "Meridian.Contracts.AssetOperations.EconomicEventReferenceDto",
+        "Meridian.Contracts.AssetOperations.IAccountCashForecastService",
+        "Meridian.Contracts.AssetOperations.IAccountCashForecastStore",
         "Meridian.Contracts.AssetOperations.IAssetOperationsCommandService",
         "Meridian.Contracts.AssetOperations.IAssetOperationsQueryService",
         "Meridian.Contracts.AssetOperations.InstrumentAccountingSides",
@@ -1493,6 +1506,7 @@
         "Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest",
         "Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest",
         "Meridian.Contracts.SecurityMaster.ApproveCorporateActionCaseAccountingRequestDto",
+        "Meridian.Contracts.SecurityMaster.ApproveSecurityClosePriceSetRequest",
         "Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet",
         "Meridian.Contracts.SecurityMaster.AssetPackAccountingRules",
         "Meridian.Contracts.SecurityMaster.AssetPackAdmissionPolicy",
@@ -1585,6 +1599,7 @@
         "Meridian.Contracts.SecurityMaster.CorporateActionTypeDescriptorCatalog",
         "Meridian.Contracts.SecurityMaster.CorporateActionValidationException",
         "Meridian.Contracts.SecurityMaster.CorporateActionVersionConflictException",
+        "Meridian.Contracts.SecurityMaster.CreateSecurityClosePriceSetRequest",
         "Meridian.Contracts.SecurityMaster.CreateSecurityRequest",
         "Meridian.Contracts.SecurityMaster.DataQualityRuleCategory",
         "Meridian.Contracts.SecurityMaster.DataQualityRuleSeverity",
@@ -1678,6 +1693,14 @@
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema",
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermVocabularyEscape",
         "Meridian.Contracts.SecurityMaster.SecurityCashFlowSourceDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceApprovalDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceBlockerDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceEvidence",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceInputDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceSetDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto",
         "Meridian.Contracts.SecurityMaster.SecurityComparisonPriceDto",
         "Meridian.Contracts.SecurityMaster.SecurityDetailDto",
         "Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord",
@@ -1690,6 +1713,7 @@
         "Meridian.Contracts.SecurityMaster.SecurityIdentifierDto",
         "Meridian.Contracts.SecurityMaster.SecurityIdentifierKind",
         "Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer",
+        "Meridian.Contracts.SecurityMaster.SecurityMasterClosePricesJsonContext",
         "Meridian.Contracts.SecurityMaster.SecurityMasterConflict",
         "Meridian.Contracts.SecurityMaster.SecurityMasterConflictKinds",
         "Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAppendRequestDto",
@@ -2796,12 +2820,23 @@
       "directories": [
         "src/Meridian.Contracts/AssetOperations"
       ],
-      "fingerprint": "5ea02f9099514ef60735caf4231cd07770239889e85c99c9bc048f82a4e1e5c9",
+      "fingerprint": "8fe281f5ae154019ee03f5d1c86a4787f87b78e814b3ee342c8a60c74f44072e",
       "id": "asset-operations-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.AssetOperations"
       ],
       "object_ids": [
+        "Meridian.Contracts.AssetOperations.AccountCashEvidenceRole",
+        "Meridian.Contracts.AssetOperations.AccountCashFlowDto",
+        "Meridian.Contracts.AssetOperations.AccountCashFlowStatus",
+        "Meridian.Contracts.AssetOperations.AccountCashForecastIssueDto",
+        "Meridian.Contracts.AssetOperations.AccountCashForecastJsonContext",
+        "Meridian.Contracts.AssetOperations.AccountCashForecastRequestDto",
+        "Meridian.Contracts.AssetOperations.AccountCashForecastScopeDto",
+        "Meridian.Contracts.AssetOperations.AccountCashForecastSnapshotDto",
+        "Meridian.Contracts.AssetOperations.AccountCashFxConversionDto",
+        "Meridian.Contracts.AssetOperations.AccountCashProvenanceDto",
+        "Meridian.Contracts.AssetOperations.AccountSettledCashObservationDto",
         "Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto",
         "Meridian.Contracts.AssetOperations.AssetAccountingCorrectionReferenceDto",
         "Meridian.Contracts.AssetOperations.AssetAccountingEventKindDto",
@@ -2882,6 +2917,8 @@
         "Meridian.Contracts.AssetOperations.DirectLoanPrincipalPaymentDto",
         "Meridian.Contracts.AssetOperations.DirectLoanReferenceDto",
         "Meridian.Contracts.AssetOperations.EconomicEventReferenceDto",
+        "Meridian.Contracts.AssetOperations.IAccountCashForecastService",
+        "Meridian.Contracts.AssetOperations.IAccountCashForecastStore",
         "Meridian.Contracts.AssetOperations.IAssetOperationsCommandService",
         "Meridian.Contracts.AssetOperations.IAssetOperationsQueryService",
         "Meridian.Contracts.AssetOperations.InstrumentAccountingSides",
@@ -3695,7 +3732,7 @@
       "directories": [
         "src/Meridian.Contracts/SecurityMaster"
       ],
-      "fingerprint": "0075a106a2584160e85b1ece0929b592dd7d17ad736cc4d552df1f4e9fed217e",
+      "fingerprint": "3276bfec12726037b2c32a3f22094552a3862bc44380f29d8e8279bba21b283c",
       "id": "security-master-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.SecurityMaster"
@@ -3707,6 +3744,7 @@
         "Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest",
         "Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest",
         "Meridian.Contracts.SecurityMaster.ApproveCorporateActionCaseAccountingRequestDto",
+        "Meridian.Contracts.SecurityMaster.ApproveSecurityClosePriceSetRequest",
         "Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet",
         "Meridian.Contracts.SecurityMaster.AssetPackAccountingRules",
         "Meridian.Contracts.SecurityMaster.AssetPackAdmissionPolicy",
@@ -3799,6 +3837,7 @@
         "Meridian.Contracts.SecurityMaster.CorporateActionTypeDescriptorCatalog",
         "Meridian.Contracts.SecurityMaster.CorporateActionValidationException",
         "Meridian.Contracts.SecurityMaster.CorporateActionVersionConflictException",
+        "Meridian.Contracts.SecurityMaster.CreateSecurityClosePriceSetRequest",
         "Meridian.Contracts.SecurityMaster.CreateSecurityRequest",
         "Meridian.Contracts.SecurityMaster.DataQualityRuleCategory",
         "Meridian.Contracts.SecurityMaster.DataQualityRuleSeverity",
@@ -3892,6 +3931,14 @@
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema",
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermVocabularyEscape",
         "Meridian.Contracts.SecurityMaster.SecurityCashFlowSourceDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceApprovalDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceBlockerDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceEvidence",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceInputDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceSetDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto",
         "Meridian.Contracts.SecurityMaster.SecurityComparisonPriceDto",
         "Meridian.Contracts.SecurityMaster.SecurityDetailDto",
         "Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord",
@@ -3904,6 +3951,7 @@
         "Meridian.Contracts.SecurityMaster.SecurityIdentifierDto",
         "Meridian.Contracts.SecurityMaster.SecurityIdentifierKind",
         "Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer",
+        "Meridian.Contracts.SecurityMaster.SecurityMasterClosePricesJsonContext",
         "Meridian.Contracts.SecurityMaster.SecurityMasterConflict",
         "Meridian.Contracts.SecurityMaster.SecurityMasterConflictKinds",
         "Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAppendRequestDto",
@@ -3967,7 +4015,7 @@
       ]
     }
   ],
-  "fingerprint": "ac4d88898b5c29bd3527053d3968a784fd4d98e82895f4bd15bea4233431b3aa",
+  "fingerprint": "d8420694d454b745a02c9e2bcbdd6bd52ffad5a17786da5e5a4f077e5ea95ebd",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4345,12 +4393,23 @@
         "all-contracts",
         "asset-operations-contracts"
       ],
-      "fingerprint": "d18785822c2ac89c861c3ad6a0404c013b27b87a97cbabe4b161d1f5b193e772",
+      "fingerprint": "1125443f0da7088dac099ef9b7ca581363f945c31926a2748712ca0523090e33",
       "mapped_schemas": [
         "asset_operations"
       ],
       "namespace": "Meridian.Contracts.AssetOperations",
       "object_ids": [
+        "Meridian.Contracts.AssetOperations.AccountCashEvidenceRole",
+        "Meridian.Contracts.AssetOperations.AccountCashFlowDto",
+        "Meridian.Contracts.AssetOperations.AccountCashFlowStatus",
+        "Meridian.Contracts.AssetOperations.AccountCashForecastIssueDto",
+        "Meridian.Contracts.AssetOperations.AccountCashForecastJsonContext",
+        "Meridian.Contracts.AssetOperations.AccountCashForecastRequestDto",
+        "Meridian.Contracts.AssetOperations.AccountCashForecastScopeDto",
+        "Meridian.Contracts.AssetOperations.AccountCashForecastSnapshotDto",
+        "Meridian.Contracts.AssetOperations.AccountCashFxConversionDto",
+        "Meridian.Contracts.AssetOperations.AccountCashProvenanceDto",
+        "Meridian.Contracts.AssetOperations.AccountSettledCashObservationDto",
         "Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto",
         "Meridian.Contracts.AssetOperations.AssetAccountingCorrectionReferenceDto",
         "Meridian.Contracts.AssetOperations.AssetAccountingEventKindDto",
@@ -4431,6 +4490,8 @@
         "Meridian.Contracts.AssetOperations.DirectLoanPrincipalPaymentDto",
         "Meridian.Contracts.AssetOperations.DirectLoanReferenceDto",
         "Meridian.Contracts.AssetOperations.EconomicEventReferenceDto",
+        "Meridian.Contracts.AssetOperations.IAccountCashForecastService",
+        "Meridian.Contracts.AssetOperations.IAccountCashForecastStore",
         "Meridian.Contracts.AssetOperations.IAssetOperationsCommandService",
         "Meridian.Contracts.AssetOperations.IAssetOperationsQueryService",
         "Meridian.Contracts.AssetOperations.InstrumentAccountingSides",
@@ -5940,7 +6001,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "ce8548f7091df46fd62fa5562fad15981ec23d2a5ceff6cbc680347b5f4a1410",
+      "fingerprint": "263914dd9d64fc54ad29d2fdaca44375cf9e01a7852d61238b8b2a471fe7a12b",
       "mapped_schemas": [
         "security_master"
       ],
@@ -5952,6 +6013,7 @@
         "Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest",
         "Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest",
         "Meridian.Contracts.SecurityMaster.ApproveCorporateActionCaseAccountingRequestDto",
+        "Meridian.Contracts.SecurityMaster.ApproveSecurityClosePriceSetRequest",
         "Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet",
         "Meridian.Contracts.SecurityMaster.AssetPackAccountingRules",
         "Meridian.Contracts.SecurityMaster.AssetPackAdmissionPolicy",
@@ -6044,6 +6106,7 @@
         "Meridian.Contracts.SecurityMaster.CorporateActionTypeDescriptorCatalog",
         "Meridian.Contracts.SecurityMaster.CorporateActionValidationException",
         "Meridian.Contracts.SecurityMaster.CorporateActionVersionConflictException",
+        "Meridian.Contracts.SecurityMaster.CreateSecurityClosePriceSetRequest",
         "Meridian.Contracts.SecurityMaster.CreateSecurityRequest",
         "Meridian.Contracts.SecurityMaster.DataQualityRuleCategory",
         "Meridian.Contracts.SecurityMaster.DataQualityRuleSeverity",
@@ -6137,6 +6200,14 @@
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema",
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermVocabularyEscape",
         "Meridian.Contracts.SecurityMaster.SecurityCashFlowSourceDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceApprovalDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceBlockerDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceEvidence",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceInputDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceSetDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto",
         "Meridian.Contracts.SecurityMaster.SecurityComparisonPriceDto",
         "Meridian.Contracts.SecurityMaster.SecurityDetailDto",
         "Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord",
@@ -6149,6 +6220,7 @@
         "Meridian.Contracts.SecurityMaster.SecurityIdentifierDto",
         "Meridian.Contracts.SecurityMaster.SecurityIdentifierKind",
         "Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer",
+        "Meridian.Contracts.SecurityMaster.SecurityMasterClosePricesJsonContext",
         "Meridian.Contracts.SecurityMaster.SecurityMasterConflict",
         "Meridian.Contracts.SecurityMaster.SecurityMasterConflictKinds",
         "Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAppendRequestDto",
@@ -50866,6 +50938,1448 @@
     },
     {
       "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "asset-operations-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "asset-operations-contracts"
+      ],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "DeclaredFx",
+          "source_line": 8,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Observation",
+          "source_line": 8,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Projection",
+          "source_line": 8,
+          "value": null
+        }
+      ],
+      "fingerprint": "fc5b3431c8441329094155641e63b7d981ba8e14dce5e5a95bfca7032222582e",
+      "full_name": "Meridian.Contracts.AssetOperations.AccountCashEvidenceRole",
+      "id": "Meridian.Contracts.AssetOperations.AccountCashEvidenceRole",
+      "kind": "enum",
+      "mapped_schemas": [
+        "asset_operations"
+      ],
+      "members": [],
+      "name": "AccountCashEvidenceRole",
+      "namespace": "Meridian.Contracts.AssetOperations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.AssetOperations.AccountCashEvidenceRole",
+      "references": [],
+      "source": {
+        "line": 8,
+        "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 8,
+          "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "asset-operations-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "asset-operations-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "b5d4041397407f5b5aef07e7d3e888b97eaa2bca1844f4f44167781160575f50",
+      "full_name": "Meridian.Contracts.AssetOperations.AccountCashFlowDto",
+      "id": "Meridian.Contracts.AssetOperations.AccountCashFlowDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "asset_operations"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 30,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Amount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 34,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BookId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 31,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CashReceiptDate",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 38,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Currency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 35,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EconomicDate",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 36,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FlowId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 28,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FlowType",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 33,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProjectionEngineVersion",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 42,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProjectionRunId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "Guid?",
+          "source_line": 41,
+          "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Provenance",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "AccountCashProvenanceDto",
+          "source_line": 39,
+          "type": "AccountCashProvenanceDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "Guid?",
+          "source_line": 40,
+          "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SettlementDate",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 37,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Status",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "AccountCashFlowStatus",
+          "source_line": 32,
+          "type": "AccountCashFlowStatus"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SupersedesVersionId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 45,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TermsHash",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 44,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TermsVersionId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "Guid?",
+          "source_line": 43,
+          "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "VersionId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 29,
+          "type": "string"
+        }
+      ],
+      "name": "AccountCashFlowDto",
+      "namespace": "Meridian.Contracts.AssetOperations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.AssetOperations.AccountCashFlowDto",
+      "references": [
+        "Meridian.Contracts.AssetOperations.AccountCashFlowStatus",
+        "Meridian.Contracts.AssetOperations.AccountCashProvenanceDto"
+      ],
+      "source": {
+        "line": 27,
+        "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 27,
+          "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "asset-operations-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "asset-operations-contracts"
+      ],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "Actual",
+          "source_line": 7,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Expected",
+          "source_line": 7,
+          "value": null
+        }
+      ],
+      "fingerprint": "977378aad785e802ca1162df32b42d59572479b2d8fe9e987f616fb7b51a76f1",
+      "full_name": "Meridian.Contracts.AssetOperations.AccountCashFlowStatus",
+      "id": "Meridian.Contracts.AssetOperations.AccountCashFlowStatus",
+      "kind": "enum",
+      "mapped_schemas": [
+        "asset_operations"
+      ],
+      "members": [],
+      "name": "AccountCashFlowStatus",
+      "namespace": "Meridian.Contracts.AssetOperations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.AssetOperations.AccountCashFlowStatus",
+      "references": [],
+      "source": {
+        "line": 7,
+        "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 7,
+          "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "asset-operations-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "asset-operations-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "1859ec3529697321552fe49984c0e895483b86dd0d785542c4dbf6cfea429cde",
+      "full_name": "Meridian.Contracts.AssetOperations.AccountCashForecastIssueDto",
+      "id": "Meridian.Contracts.AssetOperations.AccountCashForecastIssueDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "asset_operations"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Code",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 71,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "InputId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 71,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Message",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 71,
+          "type": "string"
+        }
+      ],
+      "name": "AccountCashForecastIssueDto",
+      "namespace": "Meridian.Contracts.AssetOperations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.AssetOperations.AccountCashForecastIssueDto",
+      "references": [],
+      "source": {
+        "line": 71,
+        "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 71,
+          "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "JsonSerializerContext"
+      ],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "asset-operations-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "asset-operations-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "ae96aa4b09ae9def53d6154ec1bec9b3931640333ffe50e0eaf78f50e4b8b8d1",
+      "full_name": "Meridian.Contracts.AssetOperations.AccountCashForecastJsonContext",
+      "id": "Meridian.Contracts.AssetOperations.AccountCashForecastJsonContext",
+      "kind": "class",
+      "mapped_schemas": [
+        "asset_operations"
+      ],
+      "members": [],
+      "name": "AccountCashForecastJsonContext",
+      "namespace": "Meridian.Contracts.AssetOperations",
+      "partial": true,
+      "qualified_name": "Meridian.Contracts.AssetOperations.AccountCashForecastJsonContext",
+      "references": [],
+      "source": {
+        "line": 10,
+        "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastJsonContext.cs"
+      },
+      "sources": [
+        {
+          "line": 10,
+          "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastJsonContext.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "asset-operations-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "asset-operations-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "426c979477e471f9f68953ff45fb1d1bc40a4b4d0726ebf3119c6e9cd6978c95",
+      "full_name": "Meridian.Contracts.AssetOperations.AccountCashForecastRequestDto",
+      "id": "Meridian.Contracts.AssetOperations.AccountCashForecastRequestDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "asset_operations"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "1",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BucketDays",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 69,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ClosingCash",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "AccountSettledCashObservationDto?",
+          "source_line": 62,
+          "type": "AccountSettledCashObservationDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CorrectionRationale",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 67,
+          "type": "string?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "AccountCashFlowDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Flows",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<AccountCashFlowDto>",
+          "source_line": 63,
+          "type": "IReadOnlyList<AccountCashFlowDto>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "AccountCashFxConversionDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FxConversions",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<AccountCashFxConversionDto>",
+          "source_line": 64,
+          "type": "IReadOnlyList<AccountCashFxConversionDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "0m",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MinimumCashThreshold",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 68,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OpeningCash",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "AccountSettledCashObservationDto?",
+          "source_line": 61,
+          "type": "AccountSettledCashObservationDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PeriodEnd",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 60,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PeriodStart",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 59,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PreviousSnapshotId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 66,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RecordedAtUtc",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 65,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RunId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 57,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Scope",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "AccountCashForecastScopeDto",
+          "source_line": 58,
+          "type": "AccountCashForecastScopeDto"
+        }
+      ],
+      "name": "AccountCashForecastRequestDto",
+      "namespace": "Meridian.Contracts.AssetOperations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.AssetOperations.AccountCashForecastRequestDto",
+      "references": [
+        "Meridian.Contracts.AssetOperations.AccountCashFlowDto",
+        "Meridian.Contracts.AssetOperations.AccountCashForecastScopeDto",
+        "Meridian.Contracts.AssetOperations.AccountCashFxConversionDto",
+        "Meridian.Contracts.AssetOperations.AccountSettledCashObservationDto"
+      ],
+      "source": {
+        "line": 56,
+        "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 56,
+          "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "asset-operations-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "asset-operations-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "0bb866ea1ea6de456afb423279f05fa0a62f3b347d02efba8d71698ed4a72bc9",
+      "full_name": "Meridian.Contracts.AssetOperations.AccountCashForecastScopeDto",
+      "id": "Meridian.Contracts.AssetOperations.AccountCashForecastScopeDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "asset_operations"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 5,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BaseCurrency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 5,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BookId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 5,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CompanyId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 5,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TenantId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 5,
+          "type": "string"
+        }
+      ],
+      "name": "AccountCashForecastScopeDto",
+      "namespace": "Meridian.Contracts.AssetOperations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.AssetOperations.AccountCashForecastScopeDto",
+      "references": [],
+      "source": {
+        "line": 4,
+        "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 4,
+          "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "asset-operations-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "asset-operations-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "6fff274ad920b2dd87bc4b8a0461caba4606e8feb39641537605538a50a1c0ce",
+      "full_name": "Meridian.Contracts.AssetOperations.AccountCashForecastSnapshotDto",
+      "id": "Meridian.Contracts.AssetOperations.AccountCashForecastSnapshotDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "asset_operations"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ActualNetBaseFlow",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 80,
+          "type": "decimal?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "AccountCashForecastIssueDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Blockers",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<AccountCashForecastIssueDto>",
+          "source_line": 86,
+          "type": "IReadOnlyList<AccountCashForecastIssueDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ClosingVariance",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 83,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EngineVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 77,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvidenceHash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 76,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ForecastLadder",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "PortfolioCashLadderDto",
+          "source_line": 85,
+          "type": "PortfolioCashLadderDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Inputs",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "AccountCashForecastRequestDto",
+          "source_line": 78,
+          "type": "AccountCashForecastRequestDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsCertified",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 84,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ObservedClosingBaseCash",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 82,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OpeningBaseCash",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 79,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReconciledClosingBaseCash",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 81,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SnapshotId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 75,
+          "type": "string"
+        }
+      ],
+      "name": "AccountCashForecastSnapshotDto",
+      "namespace": "Meridian.Contracts.AssetOperations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.AssetOperations.AccountCashForecastSnapshotDto",
+      "references": [
+        "Meridian.Contracts.AssetOperations.AccountCashForecastIssueDto",
+        "Meridian.Contracts.AssetOperations.AccountCashForecastRequestDto",
+        "Meridian.Contracts.AssetOperations.PortfolioCashLadderDto"
+      ],
+      "source": {
+        "line": 74,
+        "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 74,
+          "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "asset-operations-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "asset-operations-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "b8d64dc9381c054e61f75afd7e1f421c8851585f204c9fe1520350d8f1ced06b",
+      "full_name": "Meridian.Contracts.AssetOperations.AccountCashFxConversionDto",
+      "id": "Meridian.Contracts.AssetOperations.AccountCashFxConversionDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "asset_operations"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BaseCurrency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 52,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BaseUnitsPerCurrencyUnit",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 52,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ConversionDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 52,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Currency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 52,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Provenance",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "AccountCashProvenanceDto",
+          "source_line": 53,
+          "type": "AccountCashProvenanceDto"
+        }
+      ],
+      "name": "AccountCashFxConversionDto",
+      "namespace": "Meridian.Contracts.AssetOperations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.AssetOperations.AccountCashFxConversionDto",
+      "references": [
+        "Meridian.Contracts.AssetOperations.AccountCashProvenanceDto"
+      ],
+      "source": {
+        "line": 51,
+        "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 51,
+          "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "asset-operations-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "asset-operations-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "f3df13de99dde51a5983babf5e46944f6c9bc841110093c86c9ba49a831fd843",
+      "full_name": "Meridian.Contracts.AssetOperations.AccountCashProvenanceDto",
+      "id": "Meridian.Contracts.AssetOperations.AccountCashProvenanceDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "asset_operations"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Evidence",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "RetainedEvidenceIdentityDto",
+          "source_line": 16,
+          "type": "RetainedEvidenceIdentityDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Role",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "AccountCashEvidenceRole",
+          "source_line": 15,
+          "type": "AccountCashEvidenceRole"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceContentHash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 14,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceDomain",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 12,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceEntityId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 13,
+          "type": "string"
+        }
+      ],
+      "name": "AccountCashProvenanceDto",
+      "namespace": "Meridian.Contracts.AssetOperations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.AssetOperations.AccountCashProvenanceDto",
+      "references": [
+        "Meridian.Contracts.AssetOperations.AccountCashEvidenceRole",
+        "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+      ],
+      "source": {
+        "line": 11,
+        "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 11,
+          "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "asset-operations-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "asset-operations-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "5f989be7726780e469cd24b3b9d119f291c94addec824e27a47cdb53659ae9a6",
+      "full_name": "Meridian.Contracts.AssetOperations.AccountSettledCashObservationDto",
+      "id": "Meridian.Contracts.AssetOperations.AccountSettledCashObservationDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "asset_operations"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 20,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Amount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 20,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AsOfDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 20,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BookId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 20,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Currency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 20,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsSettled",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 21,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Provenance",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "AccountCashProvenanceDto",
+          "source_line": 21,
+          "type": "AccountCashProvenanceDto"
+        }
+      ],
+      "name": "AccountSettledCashObservationDto",
+      "namespace": "Meridian.Contracts.AssetOperations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.AssetOperations.AccountSettledCashObservationDto",
+      "references": [
+        "Meridian.Contracts.AssetOperations.AccountCashProvenanceDto"
+      ],
+      "source": {
+        "line": 19,
+        "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 19,
+          "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
       "classification": "dto",
       "containing_type": null,
       "contract_sets": [
@@ -62620,6 +64134,82 @@
         {
           "line": 112,
           "path": "src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "asset-operations-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "asset-operations-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "a0e0a88f37002bc7b85c80044f372c322e096b8bb0f3daeb1dc5b21d2b9e0cfe",
+      "full_name": "Meridian.Contracts.AssetOperations.IAccountCashForecastService",
+      "id": "Meridian.Contracts.AssetOperations.IAccountCashForecastService",
+      "kind": "interface",
+      "mapped_schemas": [
+        "asset_operations"
+      ],
+      "members": [],
+      "name": "IAccountCashForecastService",
+      "namespace": "Meridian.Contracts.AssetOperations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.AssetOperations.IAccountCashForecastService",
+      "references": [],
+      "source": {
+        "line": 94,
+        "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 94,
+          "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "asset-operations-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "asset-operations-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "c3f897c1d4c448eab201f930024be06ddbf5118a649ed1fcbc8d5bc2dfeff016",
+      "full_name": "Meridian.Contracts.AssetOperations.IAccountCashForecastStore",
+      "id": "Meridian.Contracts.AssetOperations.IAccountCashForecastStore",
+      "kind": "interface",
+      "mapped_schemas": [
+        "asset_operations"
+      ],
+      "members": [],
+      "name": "IAccountCashForecastStore",
+      "namespace": "Meridian.Contracts.AssetOperations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.AssetOperations.IAccountCashForecastStore",
+      "references": [],
+      "source": {
+        "line": 88,
+        "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 88,
+          "path": "src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs"
         }
       ],
       "type_parameters": []
@@ -213548,6 +215138,129 @@
     },
     {
       "base_types": [],
+      "classification": "request",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "1a19419ae609aac0aa2e2ec6fc362bd254ac320467d878b4be4625ef0c2d039d",
+      "full_name": "Meridian.Contracts.SecurityMaster.ApproveSecurityClosePriceSetRequest",
+      "id": "Meridian.Contracts.SecurityMaster.ApproveSecurityClosePriceSetRequest",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 18,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BookId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 18,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Rationale",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 18,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Reviewer",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 18,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SnapshotId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 18,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ValuationDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 18,
+          "type": "DateOnly"
+        }
+      ],
+      "name": "ApproveSecurityClosePriceSetRequest",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.ApproveSecurityClosePriceSetRequest",
+      "references": [],
+      "source": {
+        "line": 17,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+      },
+      "sources": [
+        {
+          "line": 17,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
       "classification": "class",
       "containing_type": null,
       "contract_sets": [
@@ -223119,6 +224832,190 @@
         {
           "line": 820,
           "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "request",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "d17b31b0507ae9b11915f63b25742de90dd82f8920d739d5d3d03b28ecd26a1f",
+      "full_name": "Meridian.Contracts.SecurityMaster.CreateSecurityClosePriceSetRequest",
+      "id": "Meridian.Contracts.SecurityMaster.CreateSecurityClosePriceSetRequest",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 12,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BookId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 12,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CorrectionRationale",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 14,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CorrectsSnapshotId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "Guid?",
+          "source_line": 14,
+          "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CreatedBy",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 14,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvaluatedAsOf",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 12,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "KnowledgeAsOf",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 15,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MaxSourceDispersionPercent",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 13,
+          "type": "decimal"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "SecurityClosePriceInputDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Securities",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<SecurityClosePriceInputDto>",
+          "source_line": 13,
+          "type": "IReadOnlyList<SecurityClosePriceInputDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ValuationDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 12,
+          "type": "DateOnly"
+        }
+      ],
+      "name": "CreateSecurityClosePriceSetRequest",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.CreateSecurityClosePriceSetRequest",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceInputDto"
+      ],
+      "source": {
+        "line": 11,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+      },
+      "sources": [
+        {
+          "line": 11,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
         }
       ],
       "type_parameters": []
@@ -234456,6 +236353,837 @@
         "security-master-contracts"
       ],
       "enum_members": [],
+      "fingerprint": "aec4f4133731cc209304183c04872982a6df4d5dc7da952c4d852ec38d4f2bfd",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceApprovalDto",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityClosePriceApprovalDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ApprovedAt",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 35,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Rationale",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 35,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Reviewer",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 35,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SnapshotId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 35,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SnapshotSha256",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 35,
+          "type": "string"
+        }
+      ],
+      "name": "SecurityClosePriceApprovalDto",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceApprovalDto",
+      "references": [],
+      "source": {
+        "line": 34,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+      },
+      "sources": [
+        {
+          "line": 34,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "706fc5098f9023573637268516fc2e7dd98b6dadeb8566b83d49e2f3ddf6fadc",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceBlockerDto",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityClosePriceBlockerDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Code",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 23,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Reason",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 23,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 23,
+          "type": "Guid"
+        }
+      ],
+      "name": "SecurityClosePriceBlockerDto",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceBlockerDto",
+      "references": [],
+      "source": {
+        "line": 23,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+      },
+      "sources": [
+        {
+          "line": 23,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "e8244d17b19d11680eed5216688da9574a0a34b334490a5f8eb05d1d25117f83",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceEvidence",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityClosePriceEvidence",
+      "kind": "class",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "SecurityClosePriceEvidence",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceEvidence",
+      "references": [],
+      "source": {
+        "line": 39,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+      },
+      "sources": [
+        {
+          "line": 39,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "168f2a21af80a6c69f934ae40325b9cd9b80c21d7e33e8891935c8c98a6c7d0c",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceInputDto",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityClosePriceInputDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Override",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "SecurityClosePriceOverrideDto?",
+          "source_line": 8,
+          "type": "SecurityClosePriceOverrideDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 8,
+          "type": "Guid"
+        }
+      ],
+      "name": "SecurityClosePriceInputDto",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceInputDto",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto"
+      ],
+      "source": {
+        "line": 8,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+      },
+      "sources": [
+        {
+          "line": 8,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "951103a0fc33a06fab96c18a274e4716ff910bb1150ddf68b0a3e8295181ffcb",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ClosePrice",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 22,
+          "type": "decimal?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "SecurityRawPriceDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Observations",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<SecurityRawPriceDto>",
+          "source_line": 21,
+          "type": "IReadOnlyList<SecurityRawPriceDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Override",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "SecurityClosePriceOverrideDto?",
+          "source_line": 22,
+          "type": "SecurityClosePriceOverrideDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 21,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Selection",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "SecurityPriceGoldenCopyDto?",
+          "source_line": 21,
+          "type": "SecurityPriceGoldenCopyDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Unit",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "SecurityPriceUnit",
+          "source_line": 22,
+          "type": "SecurityPriceUnit"
+        }
+      ],
+      "name": "SecurityClosePriceLineDto",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto",
+        "Meridian.Contracts.SecurityMaster.SecurityPriceGoldenCopyDto",
+        "Meridian.Contracts.SecurityMaster.SecurityPriceUnit",
+        "Meridian.Contracts.SecurityMaster.SecurityRawPriceDto"
+      ],
+      "source": {
+        "line": 20,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+      },
+      "sources": [
+        {
+          "line": 20,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "ea4e6f1b28864d6abc70efaf0e6f660a70fc4e487e6da97a2ba12235d26e6846",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvidenceReference",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 7,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Price",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 7,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Rationale",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 7,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Unit",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "SecurityPriceUnit",
+          "source_line": 7,
+          "type": "SecurityPriceUnit"
+        }
+      ],
+      "name": "SecurityClosePriceOverrideDto",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.SecurityPriceUnit"
+      ],
+      "source": {
+        "line": 7,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+      },
+      "sources": [
+        {
+          "line": 7,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "52d1826c3f665f8adc626849f8c163c4815f647c082f93dd5c5ab87b4bdb553c",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceSetDto",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityClosePriceSetDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Approval",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "SecurityClosePriceApprovalDto?",
+          "source_line": 36,
+          "type": "SecurityClosePriceApprovalDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Snapshot",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "SecurityClosePriceSnapshotDto",
+          "source_line": 36,
+          "type": "SecurityClosePriceSnapshotDto"
+        }
+      ],
+      "name": "SecurityClosePriceSetDto",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceSetDto",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceApprovalDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto"
+      ],
+      "source": {
+        "line": 36,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+      },
+      "sources": [
+        {
+          "line": 36,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "0c329d66b0319eb3156c664a588e92521c4058964155024ffed6fe4a412a2b07",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 27,
+          "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "SecurityClosePriceBlockerDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Blockers",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<SecurityClosePriceBlockerDto>",
+          "source_line": 31,
+          "type": "IReadOnlyList<SecurityClosePriceBlockerDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BookId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 27,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CorrectionRationale",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 28,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CorrectsSnapshotId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "Guid?",
+          "source_line": 28,
+          "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CreatedAt",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 30,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CreatedBy",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 29,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvaluatedAsOf",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 28,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "KnowledgeAsOf",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 29,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "SecurityClosePriceLineDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Lines",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<SecurityClosePriceLineDto>",
+          "source_line": 30,
+          "type": "IReadOnlyList<SecurityClosePriceLineDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MaxSourceDispersionPercent",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 29,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SnapshotId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 27,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ValuationDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 27,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Version",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 27,
+          "type": "int"
+        }
+      ],
+      "name": "SecurityClosePriceSnapshotDto",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceBlockerDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto"
+      ],
+      "source": {
+        "line": 26,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+      },
+      "sources": [
+        {
+          "line": 26,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
       "fingerprint": "0ea5543df8884a3dfc8378715429f9619356661e608ed06dd085c792b3bdd6ca",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityComparisonPriceDto",
       "id": "Meridian.Contracts.SecurityMaster.SecurityComparisonPriceDto",
@@ -236010,6 +238738,46 @@
         {
           "line": 11,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "JsonSerializerContext"
+      ],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "f1d1a720d976fbbb0da637585af51771762c14da98a6a3fbfdc915d336b2b361",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityMasterClosePricesJsonContext",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityMasterClosePricesJsonContext",
+      "kind": "class",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "SecurityMasterClosePricesJsonContext",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": true,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityMasterClosePricesJsonContext",
+      "references": [],
+      "source": {
+        "line": 9,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePricesJsonContext.cs"
+      },
+      "sources": [
+        {
+          "line": 9,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePricesJsonContext.cs"
         }
       ],
       "type_parameters": []

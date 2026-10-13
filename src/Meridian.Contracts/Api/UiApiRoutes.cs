@@ -821,6 +821,16 @@ public static class UiApiRoutes
     public const string LedgerBooks = "/api/ledger/books";
     public const string LedgerBookRolloutAssessment = "/api/ledger/books/rollout-assessment";
     public const string LedgerBookById = "/api/ledger/books/{ledgerBookId:guid}";
+    public const string LedgerAccountCashReconciliationRuns = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-reconciliation/runs";
+    public const string LedgerAccountCashReconciliationReplay = LedgerAccountCashReconciliationRuns + "/{runId}/replay";
+    public const string LedgerAccountCashReconciliationCases = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-reconciliation/cases";
+    public const string LedgerAccountCashReconciliationAssignment = LedgerAccountCashReconciliationCases + "/{caseId}/assignments";
+    public const string LedgerAccountClosePriceSets = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/close-price-sets/{valuationDate}";
+    public const string LedgerAccountClosePriceSet = LedgerAccountClosePriceSets + "/{snapshotId:guid}";
+    public const string LedgerAccountClosePriceSetApproval = LedgerAccountClosePriceSet + "/approval";
+    public const string LedgerAccountCashForecasts = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-forecasts";
+    public const string LedgerAccountCashForecast = LedgerAccountCashForecasts + "/{snapshotId}";
+    public const string LedgerAccountOversightProvision = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/oversight/provision";
     public const string LedgerAggregateJournalEntries = "/api/ledger/aggregates/{aggregateId:guid}/journal-entries";
     public const string LedgerPeriods = "/api/ledger/periods";
     public const string LedgerPeriodClose = "/api/ledger/periods/{periodId:guid}/close";

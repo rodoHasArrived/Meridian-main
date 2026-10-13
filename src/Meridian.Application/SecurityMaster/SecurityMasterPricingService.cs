@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 namespace Meridian.Application.SecurityMaster;
 
 /// <summary>Selects retained source prices using the hierarchy in force at the requested date.</summary>
-public sealed class SecurityMasterPricingService : ISecurityMasterPricingService
+public sealed partial class SecurityMasterPricingService : ISecurityMasterPricingService
 {
     private readonly ISecurityMasterPricingStore _store;
     private readonly ISecurityMasterQueryService _queryService;

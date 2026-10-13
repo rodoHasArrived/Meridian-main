@@ -11,6 +11,15 @@ last_reviewed: 2026-10-07
 
 # src/Meridian.Application
 
+`SecurityMasterPricingService.ClosePrices` builds independently reviewed immutable close-price
+sets through the existing hierarchy and retained selection receipts. Exact account/book/UTC
+valuation date, quote units, source observations, override support and blocker assessments are
+frozen before review. Approval binds an independent reviewer and rationale to that snapshot;
+later quotes cannot change it. Corrections append linked versions with unchanged security coverage.
+Missing Security Master composition fails closed. Proof is in `SecurityMasterClosePriceServiceTests`
+and `PostgresSecurityMasterClosePriceTests`; this extends `W10-MARK-001` without claiming its
+live operator acceptance or adding dealer RFQ.
+
 Security Master governed edits now validate and stage the overlay and draft in one PostgreSQL
 transaction guarded by a durable per-security generation. Competing instances receive a conflict
 and must reload before retrying; they cannot combine independently valid edits against a stale

@@ -11,6 +11,15 @@ last_reviewed: 2026-10-13
 
 # src/Meridian.Contracts
 
+`SecurityMasterClosePrices` describes immutable account/book/UTC valuation-date close-price
+sets, retained selection observations and quote units, supported overrides, visible blockers,
+linked correction versions and independent reviewer approvals bound to a snapshot digest.
+`AccountCashForecastDtos` retains account/book-scoped settled balances, expected/observed flow
+versions, separate economic/settlement/receipt dates and declared dated FX direction. Forecast
+certification conveys cash evidence reconciliation and never payment authority. These shared
+contracts use dedicated source-generated JSON contexts. See
+[account oversight evidence](../../docs/domain/account-oversight-evidence.md).
+
 `AssetAcquisitionTermsCompletionDto` is an optional supplement on
 `PostPostingRuleJournalCandidateRequestDto`. It supplies only the missing amortization method and
 yield of an immutable legacy face-acquisition draft. A supplied supplement must explicitly select
