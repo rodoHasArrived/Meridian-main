@@ -836,6 +836,12 @@ explicit selected lot ids under exact expected-version/open-quantity CAS. Both p
 mutation fingerprint, evidence, relief policy, before/after snapshots, correction lineage, and
 idempotent replay result. The event spine records Approved and Posted only from the durable journal
 identity and balanced posted amounts returned by that boundary.
+New acquisitions always retain canonical quantity basis, acquisition currencies/FX, both bases,
+holding date and lot-bound approval evidence. A face acquisition must explicitly state its
+amortization method, including `NoAmortization` when that is the reviewed choice. Missing methods
+fail before a new draft or approval transition; an older incomplete unposted candidate requires
+complete reviewed inputs before posting. Exact committed legacy batches replay their retained
+shape without inventing facts; their enrichment remains the governed backfill workflow.
 Bounded cashless `RegS144AExchange` and `AdvanceRefunding` candidates use the same governed path
 with a retained `OpenLotSuccessorInstructionDto`. Independent approval covers its predecessor,
 create-only successors, reference versions and exact allocation. Before projection or drafting, the

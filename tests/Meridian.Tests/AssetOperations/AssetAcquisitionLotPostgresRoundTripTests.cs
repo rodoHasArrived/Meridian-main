@@ -46,13 +46,22 @@ public sealed class AssetAcquisitionLotPostgresRoundTripTests
 
     [LedgerDatabaseFact]
     public Task SpineUnitAcquisition_ApprovePost_RetainsCanonicalAcquisitionFactsTheDisposalGuardAccepts()
-        => AssertSpineAcquisitionRetainsCanonicalFactsAsync(faceLot: false);
+        => AssertSpineAcquisitionAsync(faceLot: false);
 
     [LedgerDatabaseFact]
     public Task SpineFaceAcquisition_WithStatedAmortization_RetainsCanonicalFaceFacts()
-        => AssertSpineAcquisitionRetainsCanonicalFactsAsync(faceLot: true);
+        => AssertSpineAcquisitionAsync(faceLot: true);
 
-    private static async Task AssertSpineAcquisitionRetainsCanonicalFactsAsync(bool faceLot)
+    [LedgerDatabaseFact]
+    public Task SpineFaceAcquisition_ExplicitNoAmortization_RetainsCanonicalFaceFacts()
+        => AssertSpineAcquisitionAsync(faceLot: true, method: BondAmortizationMethod.NoAmortization);
+
+    [LedgerDatabaseFact]
+    public Task SpineFaceAcquisition_MissingMethod_RefusesDraftWithoutJournalOrLot()
+        => AssertSpineAcquisitionAsync(faceLot: true, method: null);
+
+    private static async Task AssertSpineAcquisitionAsync(bool faceLot,
+        BondAmortizationMethod? method = BondAmortizationMethod.StraightLine)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
         var ct = timeout.Token;
@@ -162,7 +171,7 @@ public sealed class AssetAcquisitionLotPostgresRoundTripTests
             Amount, "USD", period.Version, Preparer, DateTimeOffset.UtcNow, [retainedEvidence]), ct);
 
         var lotRecordId = Guid.NewGuid();
-        await spineService.BuildPostingCandidateAsync(new AssetAccountingPostingCandidateRequestDto(
+        var draftRequest = new AssetAccountingPostingCandidateRequestDto(
             AssetAccountingEventKindDto.Acquisition, scope, economicEvent, lineage, Amount, "USD",
             Preparer, DateTimeOffset.UtcNow, "100 shares at USD 25", 2, period.Version,
             RetainedEvidence: [retainedEvidence],
@@ -172,9 +181,23 @@ public sealed class AssetAcquisitionLotPostgresRoundTripTests
                     // 2,500 face at 100 per 100 of par: quantity is the face per 100 of par.
                     ? new AssetAcquisitionLotDto(lotRecordId, "lot-acquired", EffectiveDate, Quantity, UnitCost,
                         InvestmentAccount, OriginalFace: Quantity * 100m, BookedFactor: 1m, ParBasis: 100m,
-                        AmortizationMethod: BondAmortizationMethod.StraightLine)
+                        AmortizationMethod: method)
                     : new AssetAcquisitionLotDto(lotRecordId, "lot-acquired", EffectiveDate, Quantity, UnitCost,
-                        InvestmentAccount))), ct);
+                        InvestmentAccount)));
+        if (faceLot && method is null)
+        {
+            var draft = () => spineService.BuildPostingCandidateAsync(draftRequest, ct);
+            await draft.Should().ThrowAsync<ArgumentException>().WithMessage("*explicit amortization method*");
+            var unchanged = (await assets.GetLatestAsync(eventId, 1, ct))!.Projection;
+            unchanged.SpineVersion.Should().Be(2);
+            unchanged.Stages[^1].Stage.Should().Be(AssetAccountingLifecycleStageDto.Projected);
+            unchanged.DraftedCandidate.Should().BeNull();
+            (await journal.GetByPeriodAsync(periodId, ct: ct)).Should().BeEmpty();
+            (await journal.ListOpenTaxLotsByAssetScopeAsync(bookId, securityId, positionId, EffectiveDate, ct))
+                .Should().BeEmpty();
+            return;
+        }
+        await spineService.BuildPostingCandidateAsync(draftRequest, ct);
         var drafted = (await assets.GetLatestAsync(eventId, 1, ct))!.Projection;
         drafted.Stages[^1].Stage.Should().Be(AssetAccountingLifecycleStageDto.Drafted);
         var candidate = drafted.DraftedCandidate!;
@@ -210,7 +233,7 @@ public sealed class AssetAcquisitionLotPostgresRoundTripTests
         if (faceLot)
         {
             facts.FaceValueTerms.Should().BeEquivalentTo(
-                new FaceValueAcquisitionTermsDto(100m, 1m, BondAmortizationMethod.StraightLine, null));
+                new FaceValueAcquisitionTermsDto(100m, 1m, method!.Value, null));
         }
         else
         {

@@ -10,6 +10,16 @@ namespace Meridian.FinancialOperations.Ledger;
 /// </summary>
 internal static class SpineAcquisitionLotFacts
 {
+    internal static void RequireCompleteNewAcquisition(AssetAcquisitionLotDto acquisition)
+    {
+        if (acquisition.HasFaceValueTerms && acquisition.AmortizationMethod is null)
+        {
+            throw new ArgumentException(
+                "New face acquisitions require an explicit amortization method (including NoAmortization when selected); " +
+                "missing acquisition facts cannot be deferred to legacy backfill.");
+        }
+    }
+
     // A lot acquired through the spine states its canonical acquisition facts on the lot of record
     // so production disposal can relieve it without a backfill exception. Every fact is known
     // rather than defaulted: the spine refuses foreign-currency events and the store requires the lot

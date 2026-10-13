@@ -587,3 +587,26 @@ The consolidated branch carries the Tailwind 4/PostCSS migration and rebuilt wor
 Validation results belong to the canonical PR and its exact head. `W10-LOT-002` stays `in_progress`:
 other corporate actions, successor amortization, remaining cross-consumer parity and live
 shadow-operation acceptance still require their own implementation and independent review.
+
+### New acquisition admission (2026-10-12)
+
+The production spine now requires an explicit amortization method for new face acquisitions,
+including `NoAmortization` when selected in the reviewed instruction. Missing methods fail before
+a new Drafted or Approved transition. Every newly posted spine acquisition retains canonical
+quantity basis, acquisition currencies and FX, transaction/functional basis, holding date and
+lot-bound evidence. An incomplete unposted historical candidate must supply complete reviewed
+inputs before posting; omission no longer creates another backfill exception.
+
+The atomic store independently requires canonical acquisition facts for every new acquisition.
+Exact retained batch identity and fingerprint checks precede this admission rule, preserving
+historical unit and face acquisition replay after restart and period-version changes. A changed
+payload still collides. Historical acquisition facts are never invented during replay, and their
+enrichment remains the existing governed backfill workflow. No migration or wire-format default
+is introduced.
+
+`AtomicTaxLotJournalStoreTests.AcquisitionAdmission` covers refusal without durable side effects,
+successful retry with complete facts, and seeded historical receipt replay. Spine tests cover
+explicit amortization/no-amortization choices and rejection before draft persistence; contract
+tests retain the old omitted-field wire shape. These are automated coverage references, with
+current results recorded on the PR. This closes the new-acquisition admission gap only; broader
+consumer cutover, compatibility retirement and live shadow-operation acceptance remain open.

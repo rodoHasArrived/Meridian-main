@@ -703,6 +703,27 @@ public sealed class AssetAccountingEventSpineServiceTests
     }
 
     [Fact]
+    public async Task BuildPostingCandidateAsync_FaceAcquisitionWithoutMethod_FailsBeforeStoreRead()
+    {
+        var fixture = BuildFixture(AssetAccountingEventKindDto.Acquisition);
+        var eventStore = Substitute.For<IAssetAccountingEventProjectionStore>();
+        var service = BuildService(eventStore: eventStore);
+        var request = BuildCandidateRequest(fixture) with
+        {
+            LotMutation = new AssetLotMutationInstructionDto(AssetLotMutationIntentDto.Acquire,
+                new AssetAcquisitionLotDto(Guid.NewGuid(), "incomplete-face-acquisition",
+                    fixture.Request.EconomicEvent.EffectiveDate, 1m, fixture.Request.EventAmount,
+                    "assets/investments", OriginalFace: 100m, BookedFactor: 1m, ParBasis: 100m))
+        };
+
+        var act = () => service.BuildPostingCandidateAsync(request);
+
+        await act.Should().ThrowAsync<ArgumentException>().WithMessage("*explicit amortization method*");
+        await eventStore.DidNotReceiveWithAnyArgs().GetAsync(default, default, default, default);
+        await eventStore.DidNotReceiveWithAnyArgs().AppendAsync(default!, default, default, default);
+    }
+
+    [Fact]
     public async Task BuildPostingCandidateAsync_MismatchedAmountAgainstRetainedSnapshot_FailsClosed()
     {
         var fixture = BuildFixture();

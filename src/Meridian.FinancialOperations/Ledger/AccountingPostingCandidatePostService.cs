@@ -136,6 +136,9 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         var existing = await FindExistingPostingAsync(journalStore, ledgerBookId, sourceEventId, ct).ConfigureAwait(false);
         var hasAtomicLotMutation = isAssetAccountingEvent &&
                                    assetAuthority?.Drafted.Projection.DraftedLotMutation is { Intent: not AssetLotMutationIntentDto.None };
+        if (existing is null && hasAtomicLotMutation &&
+            assetAuthority?.Drafted.Projection.DraftedLotMutation?.Acquisition is { } newAcquisition)
+            SpineAcquisitionLotFacts.RequireCompleteNewAcquisition(newAcquisition);
         if (existing is null && hasAtomicLotMutation
             && assetAuthority?.Drafted.Projection.DraftedLotMutation is { Intent: AssetLotMutationIntentDto.Amortize } amortization
             && amortization.Amortization?.CalculationVersion != OpenLotAmortization.ModelVersion)
@@ -1179,15 +1182,15 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                     acquisition.ParBasis!.Value));
             }
 
-            // A face lot gains canonical facts only when its instruction states the amortization
-            // inputs; they are never inferred, so an unstated face lot keeps its par terms alone.
-            var faceTerms = acquisition.HasFaceValueTerms && acquisition.AmortizationMethod is { } method
-                ? new FaceValueAcquisitionTermsDto(
-                    acquisition.ParBasis!.Value, acquisition.BookedFactor!.Value, method, acquisition.EffectiveYield)
-                : null;
-            if ((!acquisition.HasFaceValueTerms || faceTerms is not null) &&
-                !await SpineAcquisitionLotFacts.IsRetainedLegacyBatchAsync(_journalStore, mutationBatchId, ct).ConfigureAwait(false))
+            // Only an exact retained legacy batch may keep its historical fact-free shape.
+            // Every new acquisition states canonical facts without inventing an amortization method.
+            if (!await SpineAcquisitionLotFacts.IsRetainedLegacyBatchAsync(_journalStore, mutationBatchId, ct).ConfigureAwait(false))
             {
+                SpineAcquisitionLotFacts.RequireCompleteNewAcquisition(acquisition);
+                var faceTerms = acquisition.HasFaceValueTerms
+                    ? new FaceValueAcquisitionTermsDto(acquisition.ParBasis!.Value, acquisition.BookedFactor!.Value,
+                        acquisition.AmortizationMethod!.Value, acquisition.EffectiveYield)
+                    : null;
                 acquisitionLot = acquisitionLot with
                 {
                     Acquisition = SpineAcquisitionLotFacts.Build(
