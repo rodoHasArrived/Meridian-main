@@ -267,6 +267,26 @@ concurrent relief, replay, correction, and cancellation.
 7. **Contract retirement:** remove symbol/long `TaxLot` and calculation ownership from
    `FaceValueLot` only after compatibility telemetry is zero for one release.
 
+### Shared basis-allocation increment (2026-10-13)
+
+`LotBasisRelief` now supplies exact proportional and pooled carrying-basis allocation to
+`OpenLotReliefService` and the actual Backtesting long-close/short-cover paths. Canonical relief
+invokes it independently for retained transaction and functional bases, including the final pooled
+division residual. The simulation supplies exact lot/component basis and keeps its existing
+selection order, short-cover economics and SpecificId fallback. No runtime canonical identity or
+FX is synthesized from simulation fills.
+
+Fill-level parity tests exercise FIFO, LIFO, HIFO and fully specified SpecificId plans against
+canonical long-lot relief with independently retained acquisition FX. Separate short-cover cases
+check positive lot quantities, direction and proceeds conservation. Exact closing and fractional
+pooled-basis tests cover the shared allocator. Valid pool plans preserve their existing decimal
+evaluation order and exact parcel values. Only a plan that would produce a negative slice is
+reallocated with bounds on the remaining basis. These are calculation and consumer-path evidence;
+different tie-breaking, functional-FX HIFO ordering and SpecificId fallback policies still require
+explicit shadow comparison.
+Execution cutover, canonical short posting, retained-history compatibility and live shadow
+acceptance remain open. This increment does not satisfy the full W10-LOT-002 exit gate.
+
 ## 9. Open Questions and Risks
 
 | Question | Owner | Blocking decision |
