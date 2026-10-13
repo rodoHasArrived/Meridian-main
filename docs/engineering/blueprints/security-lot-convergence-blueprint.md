@@ -610,3 +610,34 @@ explicit amortization/no-amortization choices and rejection before draft persist
 tests retain the old omitted-field wire shape. These are automated coverage references, with
 current results recorded on the PR. This closes the new-acquisition admission gap only; broader
 consumer cutover, compatibility retirement and live shadow-operation acceptance remain open.
+
+### Non-taxable spin-off successor posting (2026-10-12)
+
+The registered non-taxable spin-off projection now flows through the canonical successor
+contract and existing atomic journal/lot boundary. One unit predecessor closes into a retained
+parent successor in the same security and book position with unchanged quantity, plus one or
+more child successors. The approved positive allocations conserve original acquisition and
+current carrying bases separately in both currencies, assign each currency residual to the last
+target, and preserve acquisition FX, dates and holding periods. Each target retains its immutable
+source-action and predecessor lineage; no target receives refunding-only Schedule D treatment.
+Fractional child quantities keep their exact approved basis even when basis divided by quantity
+is a repeating decimal. The durable unit quote uses twelve-decimal midpoint-to-even rounding;
+canonical projection and relief use retained basis, and validate the quote against that basis
+only for an atomic unit successor with origin and governed adjustment. Ordinary acquisition and
+face-successor precision checks remain exact. No existing row or receipt is rewritten.
+
+Canonical preparation requires the complete reviewed instruction and current parent/child
+reference versions. Dividend/purchase recognition recipes, linked cash cases and a reset holding
+period cannot pass as a carried-basis spin-off. Taxable spin-offs still require their separate
+recognition workflow. No new schema or acquisition default is introduced.
+
+`OpenLotSpinOffTests` covers multiple children, current versus original basis, parent continuity,
+scope/role/cash/holding-period refusals and canonical mapping. PostgreSQL coverage in
+`AtomicTaxLotJournalStoreTests.SpinOff` exercises the real mapper/preparation/store path, complete
+rollback after a later successor fails, stale child refusal and exact replay after restart and
+period lock. Reporting coverage verifies retained parent/child roles and the signed lot-evidence
+artifact without adding monetary rows. `CanonicalOpenLotConsumerTests.SuccessorPrecision` covers
+rounded quote projection/relief and refusal of changed quotes or missing lineage. Validation
+results belong to the PR's exact head.
+`W10-LOT-002` remains in progress for its remaining action types, successor amortization, complete
+consumer parity, compatibility retirement and live shadow-operation acceptance.

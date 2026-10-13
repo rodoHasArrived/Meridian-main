@@ -49,6 +49,9 @@ public static class OpenLotValidation
                 || (origin.ActionType == CorporateActionAccountingTypeDto.MergerStock
                     && (acquisition.QuantityBasis != LotQuantityBasis.Units || origin.BasisAllocationPercent != 100m
                         || origin.Role is not (CorporateActionSuccessorRoleDto.Successor or CorporateActionSuccessorRoleDto.Acquirer)))
+                || (origin.ActionType == CorporateActionAccountingTypeDto.SpinOff
+                    && (acquisition.QuantityBasis != LotQuantityBasis.Units || origin.BasisAllocationPercent >= 100m
+                        || origin.Role is not (CorporateActionSuccessorRoleDto.Successor or CorporateActionSuccessorRoleDto.Child)))
                 || (refunding && (acquisition.QuantityBasis != LotQuantityBasis.Face
                     || origin.Role is not (CorporateActionSuccessorRoleDto.Refunded or CorporateActionSuccessorRoleDto.Unrefunded))))
                 throw new ArgumentException("Successor acquisition origin must retain the supported quantity basis, predecessor identity, action date, allocation and reporting treatment.");
