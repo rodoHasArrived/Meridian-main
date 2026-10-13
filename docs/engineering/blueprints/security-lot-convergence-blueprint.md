@@ -559,6 +559,13 @@ ordinary adjustment removal remains forbidden and every basis change requires a 
 Historical receipts retain their calculation and wire shape; newly drafted ordinary amortization
 keeps the current calculation, evidence and currency guards already on main. The PostgreSQL FIFO
 proof above covers partial/closing disposal after amortization and exact Reporting reconstruction.
+Retained reversals use freshly reviewed current Security Master identity while the original lot
+snapshots and financial lines supply their economics. Inactive status or a changed effective window
+does not invalidate the inverse; unknown status, stale evidence and currency/identity changes refuse.
+Correction projection binds the original amortization's security and position, and only the retained
+inverse can pass drafting with that reference state. New accruals and rebooks still require Active,
+effective reference terms. Governed PostgreSQL cases cover preview, projection, independent approval,
+posting, restored basis and exact replay after inactive, later-effective and expired revisions.
 The 2026-10-12 continuation also permits later amortization after one or more partial discrete
 disposals. It proves the retained remainder from immutable before/after receipts and preserves
 the earlier amortization period check; an unsupported underlying basis treatment remains blocked.

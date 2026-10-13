@@ -199,6 +199,61 @@ public sealed class AmortizationLotInstructionContractTests
     }
 
     [Theory]
+    [InlineData("ordinary-projection", false)]
+    [InlineData("correction-projection", true)]
+    [InlineData("ordinary-draft", false)]
+    [InlineData("rebook-draft", false)]
+    [InlineData("reversal-draft", true)]
+    [InlineData("missing-reversal-draft", false)]
+    public void LaterReferenceObservation_RequiresRetainedCorrectionThenExactReversal(string stage, bool accepted)
+    {
+        var original = Inputs();
+        var evidence = original.SecurityEvidence with { EffectiveDate = original.AsOfDate.AddDays(1) };
+        var reviewed = original with { SecurityEvidence = evidence };
+        var reversal = ReversalInputs(original) with { SecurityEvidence = evidence };
+        var instruction = stage switch
+        {
+            "ordinary-draft" or "rebook-draft" => reviewed,
+            "reversal-draft" => reversal,
+            _ => null
+        };
+
+        AssetAccountingEvidenceSubjects.MatchesEventEvidenceDate(AssetAccountingEventKindDto.DepreciationAmortization,
+            original.AsOfDate, original.Security.SecurityId, original.Security.Version, evidence, instruction,
+            requireInstruction: stage.EndsWith("draft", StringComparison.Ordinal),
+            allowRetainedAmortizationCorrection: stage is not ("ordinary-projection" or "ordinary-draft"))
+            .Should().Be(accepted);
+    }
+
+    [Theory]
+    [InlineData("event")]
+    [InlineData("approval")]
+    [InlineData("acquisition")]
+    [InlineData("wrong-security")]
+    [InlineData("wrong-version")]
+    [InlineData("unreviewed-reference")]
+    public void ReversalDateException_DoesNotAdmitOtherFutureEvidence(string defect)
+    {
+        var original = Inputs();
+        var evidence = original.SecurityEvidence with { EffectiveDate = original.AsOfDate.AddDays(1) };
+        var reversal = ReversalInputs(original) with { SecurityEvidence = evidence };
+        var supplied = defect switch
+        {
+            "event" => evidence with { SubjectType = AssetAccountingEvidenceSubjects.Event },
+            "approval" => evidence with { SubjectType = AssetAccountingEvidenceSubjects.PostingApproval },
+            "acquisition" => original.ExpectedLot.Acquisition.Evidence[0] with { EffectiveDate = evidence.EffectiveDate },
+            "wrong-security" => evidence with { SubjectId = Guid.NewGuid().ToString("D") },
+            "wrong-version" => evidence with { EvidenceVersion = evidence.EvidenceVersion + 1 },
+            "unreviewed-reference" => evidence with { EvidenceId = "not-the-reviewed-instruction" },
+            _ => throw new ArgumentOutOfRangeException(nameof(defect))
+        };
+
+        AssetAccountingEvidenceSubjects.MatchesEventEvidenceDate(AssetAccountingEventKindDto.DepreciationAmortization,
+            original.AsOfDate, original.Security.SecurityId, original.Security.Version, supplied, reversal,
+            requireInstruction: true, allowRetainedAmortizationCorrection: true).Should().BeFalse();
+    }
+
+    [Theory]
     [InlineData("quantity")]
     [InlineData("acquisition")]
     [InlineData("position")]
