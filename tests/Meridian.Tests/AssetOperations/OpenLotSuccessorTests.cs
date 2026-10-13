@@ -446,9 +446,13 @@ internal static class OpenLotSuccessorTestData
             item.Lot.SecurityId,
             advanceRefunding
                 ? index == 0 ? CorporateActionSuccessorRoleDto.Refunded : CorporateActionSuccessorRoleDto.Unrefunded
-                : exchangeRole,
+                : actionType == CorporateActionAccountingTypeDto.SpinOff
+                    ? item.Lot.SecurityId == predecessor.SecurityId ? CorporateActionSuccessorRoleDto.Successor : CorporateActionSuccessorRoleDto.Child
+                    : exchangeRole,
             item.Lot.OpenQuantity,
-            advanceRefunding ? allocationPercents?[index] ?? item.Lot.OpenQuantity / totalTargetQuantity : null)).ToArray();
+            advanceRefunding ? allocationPercents?[index] ?? item.Lot.OpenQuantity / totalTargetQuantity
+                : actionType == CorporateActionAccountingTypeDto.SpinOff
+                    ? allocationPercents?[index] ?? item.Lot.OpenFunctionalCostBasis / predecessor.OpenFunctionalCostBasis : null)).ToArray();
         var request = new CorporateActionAccountingProjectionRequest(
             sourceId, sourceEventVersion,
             actionType ?? (advanceRefunding ? CorporateActionAccountingTypeDto.AdvanceRefunding : CorporateActionAccountingTypeDto.RegS144AExchange),
@@ -473,7 +477,8 @@ internal static class OpenLotSuccessorTestData
             LotSnapshotId: lotSnapshotId, LotSnapshotVersion: predecessor.Version, PolicyDecisionId: policyId)
         {
             CanonicalLotTransferJournal = canonicalLotTransferJournal
-                ?? (actionType is CorporateActionAccountingTypeDto.StockSplit or CorporateActionAccountingTypeDto.ReverseStockSplit)
+                ?? (actionType is CorporateActionAccountingTypeDto.StockSplit or CorporateActionAccountingTypeDto.ReverseStockSplit
+                    or CorporateActionAccountingTypeDto.SpinOff)
         };
         var service = new CorporateActionAccountingProjectionService();
         var intent = service.Project(request);
