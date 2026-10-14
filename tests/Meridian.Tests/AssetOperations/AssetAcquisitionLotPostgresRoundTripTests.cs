@@ -89,9 +89,12 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
         await new SecurityMasterMigrationRunner(securityOptions).EnsureMigratedAsync(ct);
         await new AssetOperationsMigrationRunner(assetOptions).EnsureMigratedAsync(ct);
 
-        var journal = new PostgresLedgerJournalStore(ledgerOptions);
+        var securities = new PostgresSecurityMasterStore(securityOptions);
+        PostgresAssetOperationsProjectionStore? assets = null;
+        var journal = new PostgresLedgerJournalStore(ledgerOptions,
+            backfillSecurityMaster: () => securities, backfillPositions: () => assets);
         var books = new PostgresLedgerBookService(journal);
-        var assets = new PostgresAssetOperationsProjectionStore(assetOptions, journal);
+        assets = new PostgresAssetOperationsProjectionStore(assetOptions, journal);
         var securityId = Guid.NewGuid();
         var securityQuery = await CreateSecurityAsync(securityOptions, securityId, ct);
         var bookId = Guid.NewGuid();
@@ -307,10 +310,13 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
         relief.FunctionalCostBasis.Should().Be(40m * UnitCost);
 
         // A retry replays the retained batch exactly rather than colliding on the fact-bearing fingerprint.
+        var replaySecurities = new PostgresSecurityMasterStore(securityOptions);
+        PostgresAssetOperationsProjectionStore? replayAssets = null;
+        var replayJournal = new PostgresLedgerJournalStore(ledgerOptions,
+            backfillSecurityMaster: () => replaySecurities, backfillPositions: () => replayAssets);
+        replayAssets = new PostgresAssetOperationsProjectionStore(assetOptions, replayJournal);
         var replay = await new AccountingPostingCandidatePostService(
-                candidateBuilder, new PostgresLedgerJournalStore(ledgerOptions),
-                assetAccountingEventStore: new PostgresAssetOperationsProjectionStore(
-                    assetOptions, new PostgresLedgerJournalStore(ledgerOptions)))
+                candidateBuilder, replayJournal, assetAccountingEventStore: replayAssets)
             .PostCandidateAsync(postRequest, ct);
         replay.WasReplay.Should().BeTrue();
         replay.TaxLotMutationBatchId.Should().Be(posted.TaxLotMutationBatchId);

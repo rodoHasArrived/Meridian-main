@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-13
+last_reviewed: 2026-10-14
 ---
 
 # src/Meridian.FinancialOperations
@@ -28,6 +28,16 @@ See [account oversight evidence](../../docs/domain/account-oversight-evidence.md
 `AccountCashReconciliationContinuityTests` for the first `W10-RECON-001` acceptance slice.
 Tolerance profile IDs and versions also bind immutable complete rules across the scoped history.
 Owner assignment timestamps cannot precede the latest case observation or assignment.
+
+`AccountingPostingCandidatePostService` passes the retained approved Security Master and position
+versions into new atomic acquisitions/disposals. Storage revalidates and holds that authority in
+the posting transaction. A replay may omit the new reference-version field only when the complete
+historical command fingerprint equals the immutable retained receipt; new receipts cannot
+downgrade their version assertions. This additive internal handoff adds no workstation request
+field or schema migration. Drain older writers when deploying the stricter new-write admission.
+Separate journal/atomic compositions may lack optional receipt reads. In that case the service
+keeps the approved version assertions and delegates replay/collision validation to the atomic
+writer; only a readable exact receipt can authorize the historical omitted-version shape.
 
 The bounded lot acquisition/disposal spine resolves a Long or Asset book position before retaining
 a projection or drafting a candidate. A Short, Liability or unknown side cannot acquire the long

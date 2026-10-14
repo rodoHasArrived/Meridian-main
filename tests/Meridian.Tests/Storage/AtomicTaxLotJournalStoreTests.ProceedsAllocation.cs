@@ -100,7 +100,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 replacement.TaxLotRecordId, replacement.LotId, 20m, 1m, lots[0].AcquiredDate,
                 "wash-sale-policy", 17, WashSaleReplacementScope.LedgerBook, timestamp)]);
 
-            var reopened = new PostgresLedgerJournalStore(database.Options);
+            var reopened = database.RestartJournalStore();
             var history = (await reopened.GetTaxLotDisposalHistoryAsync(command.LedgerBookId,
                 [command.Journal.Entry.JournalEntryId])).Single();
             history.ProceedsAllocationVersion.Should().Be(LedgerTaxLotReliefProjector.CurrentProceedsAllocationVersion);
@@ -132,7 +132,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         var (command, _, expected) = await PrepareProceedsDisposalAsync(database, precisePrice: true);
         var posted = await database.JournalStore.AppendAssetPostingAsync(command);
-        var reopened = new PostgresLedgerJournalStore(database.Options);
+        var reopened = database.RestartJournalStore();
         var history = (await reopened.GetTaxLotDisposalHistoryAsync(command.LedgerBookId,
             [command.Journal.Entry.JournalEntryId])).Single();
 
@@ -202,7 +202,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var fingerprint = command.CanonicalFingerprint;
         await RetainLegacyProceedsDisposalAsync(database, command, lots);
 
-        var reopened = new PostgresLedgerJournalStore(database.Options);
+        var reopened = database.RestartJournalStore();
         var before = (await reopened.GetAtomicTaxLotPostingAsync(command.MutationBatchId))!;
         var replay = await reopened.AppendAssetPostingAsync(command);
         replay.IsExactReplay.Should().BeTrue();
@@ -318,6 +318,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var at = DateTimeOffset.Parse("2026-05-01T00:00:00Z");
         await database.JournalStore.SaveLedgerBookAsync(new(bookId, "proceeds-allocation", Guid.NewGuid(),
             FundStructureNodeKindDto.Fund, "Proceeds allocation", "USD", at, at));
+        var authority = await database.SeedLotReferenceAuthorityAsync(bookId, TestSecurityId, TestBookPositionId);
         var period = await database.JournalStore.SavePeriodAsync(new(Guid.NewGuid(), bookId, 2026, 5,
             "2026-05", new(2026, 5, 1), new(2026, 5, 31), "Open", at, null, 0), 0);
         var account = new LedgerAccount("Investment lots", LedgerAccountType.Asset, FinancialAccountId: financialAccountId);
@@ -363,7 +364,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             disposalSelections: lots.Select((lot, index) => new LedgerTaxLotDisposalSelection(lot.TaxLotRecordId,
                 lot.LotId, lot.Version, lot.OpenQuantity, lot.OpenQuantity, index, evidence.EvidenceId,
                 lot.UnitCost, lot.OpenQuantity * lot.UnitCost)).ToArray(),
-            reliefMethod: "Fifo", policyRevision: "tax-policy-v1", disposalSalePrice: precisePrice ? price : null);
+            reliefMethod: "Fifo", policyRevision: "tax-policy-v1", disposalSalePrice: precisePrice ? price : null,
+            referenceVersions: authority.Versions);
         return (command, lots.ToArray(), projection);
     }
 

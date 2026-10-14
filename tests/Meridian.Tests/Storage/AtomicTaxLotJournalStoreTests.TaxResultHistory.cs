@@ -117,13 +117,13 @@ public sealed partial class AtomicTaxLotJournalStoreTests
     [Trait("Category", "Integration")]
     public async Task DisposalHistory_CertifiesEveryDeferralSecuritySaleDateAndDisposingAccount()
     {
-        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         foreach (var scenario in new[]
                  {
                      "security", "sale-date", "account-name", "account-type", "symbol", "financial-account",
                      "nullable-account", "case-alias"
                  })
         {
+            await using var database = await LedgerPostgresTestDatabase.CreateAsync();
             var (command, lots, _) = await PrepareProceedsDisposalAsync(database, precisePrice: false, washSale: true,
                 financialAccountId: scenario == "nullable-account" ? null : "broker-1");
             var replacementAccount = lots[0].Account with { FinancialAccountId = "broker-2" };

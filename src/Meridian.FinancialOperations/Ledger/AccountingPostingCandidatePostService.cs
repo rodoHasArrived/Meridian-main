@@ -310,6 +310,7 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
                     ledgerBook,
                     sourceEventId,
                     assetAuthority ?? throw new InvalidOperationException("Asset lot posting authority is required."),
+                    existing is not null,
                     ct)
                 .ConfigureAwait(false);
             var journalImpact = BuildJournalImpact(atomicResult.Journal, ledgerBook.BaseCurrency);
@@ -1091,6 +1092,7 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         LedgerBookRecord ledgerBook,
         Guid sourceEventId,
         AssetPostingAuthoritySnapshot authority,
+        bool hasExistingJournal,
         CancellationToken ct)
     {
         var atomicStore = _atomicTaxLotStore
@@ -1307,6 +1309,7 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
             instruction.Amortization,
             instruction.CorporateAction,
             instruction.CapitalReturn);
+        command = await BindRetainedReferenceVersionsAsync(command, authority.Context, hasExistingJournal, ct).ConfigureAwait(false);
         return await atomicStore.AppendAssetPostingAsync(command, ct).ConfigureAwait(false);
     }
 

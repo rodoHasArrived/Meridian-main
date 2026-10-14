@@ -143,6 +143,7 @@ public sealed partial class PostgresLedgerJournalStore
         }
 
         await ValidateCorrectionBatchAsync(connection, transaction, command, ct).ConfigureAwait(false);
+        await LockAcquisitionDisposalAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
         AverageCostReliefPlan? averageCostPlan = null;
         if (command.MutationKind == AtomicTaxLotMutationKind.Disposal)
         {
