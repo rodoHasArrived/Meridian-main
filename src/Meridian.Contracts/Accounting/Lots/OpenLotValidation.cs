@@ -16,11 +16,11 @@ public static class OpenLotValidation
             throw new ArgumentException("Open-lot quantity, basis, or version is invalid.");
         var acquisition = lot.Acquisition;
         ArgumentNullException.ThrowIfNull(acquisition);
-        if (!Enum.IsDefined(acquisition.QuantityBasis) || !Currency(acquisition.AcquisitionCurrency)
+        if (!Enum.IsDefined(acquisition.Direction) || !Enum.IsDefined(acquisition.QuantityBasis) || !Currency(acquisition.AcquisitionCurrency)
             || !Currency(acquisition.FunctionalCurrency) || acquisition.AcquisitionFxRateToFunctional <= 0
             || acquisition.TransactionCostBasis < 0 || acquisition.FunctionalCostBasis < 0
             || acquisition.HoldingPeriodStartDate > lot.AcquiredDate)
-            throw new ArgumentException("Open lots require explicit valid acquisition currency, FX, basis, and holding-period facts.");
+            throw new ArgumentException("Open lots require valid direction and explicit acquisition currency, FX, basis, and holding-period facts.");
         if (acquisition.AcquisitionCurrency == acquisition.FunctionalCurrency
             && (acquisition.AcquisitionFxRateToFunctional != 1m || acquisition.TransactionCostBasis != acquisition.FunctionalCostBasis))
             throw new ArgumentException("Same-currency acquisition FX must equal one and retained transaction and functional bases must agree exactly.");
@@ -32,6 +32,30 @@ public static class OpenLotValidation
         if (!acquisition.Evidence.Any(e => e.SubjectType == "OpenLotAcquisition"
             && e.SubjectId == lot.TaxLotRecordId.ToString("D") && e.EffectiveDate == lot.AcquiredDate))
             throw new ArgumentException("Acquisition evidence must bind this exact durable lot and acquisition date.");
+        if (acquisition.CorporateActionLineage is { } origin)
+        {
+            var split = origin.ActionType is CorporateActionAccountingTypeDto.StockSplit or CorporateActionAccountingTypeDto.ReverseStockSplit;
+            var refunding = origin.ActionType == CorporateActionAccountingTypeDto.AdvanceRefunding;
+            var requiredTags = refunding && origin.Role == CorporateActionSuccessorRoleDto.Refunded ? new[] { "ScheduleD" } : [];
+            if (origin.CorporateActionId == Guid.Empty || origin.SourceCorporateActionId == Guid.Empty
+                || origin.PredecessorTaxLotRecordId == Guid.Empty
+                || origin.PredecessorTaxLotRecordId == lot.TaxLotRecordId || origin.PredecessorVersion <= 0
+                || origin.EffectiveDate < lot.AcquiredDate || !OpenLotSuccessors.IsSupported(origin.ActionType)
+                || origin.BasisAllocationPercent <= 0m || origin.BasisAllocationPercent > 100m
+                || !Enum.IsDefined(origin.Role) || origin.ReportingTags is null
+                || !origin.ReportingTags.SequenceEqual(requiredTags, StringComparer.Ordinal)
+                || (split && (acquisition.QuantityBasis != LotQuantityBasis.Units || origin.Role != CorporateActionSuccessorRoleDto.Successor
+                    || origin.BasisAllocationPercent != 100m))
+                || (origin.ActionType == CorporateActionAccountingTypeDto.MergerStock
+                    && (acquisition.QuantityBasis != LotQuantityBasis.Units || origin.BasisAllocationPercent != 100m
+                        || origin.Role is not (CorporateActionSuccessorRoleDto.Successor or CorporateActionSuccessorRoleDto.Acquirer)))
+                || (origin.ActionType == CorporateActionAccountingTypeDto.SpinOff
+                    && (acquisition.QuantityBasis != LotQuantityBasis.Units || origin.BasisAllocationPercent >= 100m
+                        || origin.Role is not (CorporateActionSuccessorRoleDto.Successor or CorporateActionSuccessorRoleDto.Child)))
+                || (refunding && (acquisition.QuantityBasis != LotQuantityBasis.Face
+                    || origin.Role is not (CorporateActionSuccessorRoleDto.Refunded or CorporateActionSuccessorRoleDto.Unrefunded))))
+                throw new ArgumentException("Successor acquisition origin must retain the supported quantity basis, predecessor identity, action date, allocation and reporting treatment.");
+        }
         var face = acquisition.FaceValueTerms;
         if ((acquisition.QuantityBasis == LotQuantityBasis.Face) != (face is not null))
             throw new ArgumentException("Face lots require face acquisition terms; unit lots must not carry them.");

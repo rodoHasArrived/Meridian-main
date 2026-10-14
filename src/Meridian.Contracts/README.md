@@ -6,10 +6,26 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-10-07
+last_reviewed: 2026-10-13
 ---
 
 # src/Meridian.Contracts
+
+Canonical acquisition facts and lot instructions retain an explicit `OpenLotDirection` while
+quantities remain non-negative. Historical `Long` is the omitted zero value, preserving existing
+JSON and receipt fingerprints; `Short` is serialized explicitly. The contract can describe a short
+lot for calculation and shadow comparison, but current posting instructions, amortization,
+capital returns and successor transformations refuse short accounting until their direction-aware
+authority is implemented and reviewed.
+
+`AssetAcquisitionTermsCompletionDto` is an optional supplement on
+`PostPostingRuleJournalCandidateRequestDto`. It supplies only the missing amortization method and
+yield of an immutable legacy face-acquisition draft. A supplied supplement must explicitly select
+a method; omission is rejected. Its typed review subject is produced by
+`ApprovalSubjectId()` from the exact draft fingerprint, lot ID and selected terms. Omission keeps
+the old request wire shape; historical spine snapshots and approval subjects are unchanged.
+Completion does not grant posting authority without the original draft, independent approval,
+current period/position checks and atomic journal/lot commit.
 
 `Ledger/LedgerDisposalTaxDtos.cs` defines shared, server-derived disposal and parcel tax results for
 the journal tax-results read route. It separates economic/recognized gain and deferred loss, exposes
@@ -43,7 +59,16 @@ currency, observation/attempt/success timestamps, completeness and blocking reas
 account-scoped strategy runs. Existing execution-reconciliation DTOs remain the discrepancy source.
 Recovery requests carry only the local account ID; provider and external identity are server-resolved.
 
-Canonical amortization adds an optional `Amortization` input to lot instructions and basis adjustments, omitted when absent to preserve retained fingerprints. `OpenLotAmortization` binds reviewed canonical lot and versioned Security Master evidence, delegates shared straight-line/constant-yield kernels, and retains annual decimal yield and acquisition FX. Unsupported structures and missing terms fail closed.
+Canonical amortization adds an optional `Amortization` input to lot instructions and basis adjustments, omitted when absent to preserve retained fingerprints. `OpenLotAmortization` binds reviewed canonical lot and versioned Security Master evidence, delegates shared straight-line/constant-yield kernels, and retains annual decimal yield and acquisition FX. Unsupported structures and missing terms fail closed. Optional reversal inputs retain the original batch, journal and pre-posting lot snapshot; absent reversal fields preserve earlier wire fingerprints. Contract validation binds complete approved correction lineage and rejects disposal prices before drafting.
+
+For a retained amortization reversal, current hash-bound reference evidence proves identity and
+currency while the original before/after snapshots determine the inverse. A known Inactive status
+or changed effective window does not recalculate or prevent that inverse. Unknown status, missing
+identity, changed currency and stale evidence still refuse. Ordinary amortization and rebooks
+require Active reference terms and evidence effective on the calculation date.
+Later reference observations retain their actual evidence dates through correction projection,
+drafting and posting. Only the exact reversal's reviewed Security Master evidence receives that
+exception; acquisition, event and approval evidence keep their existing date requirements.
 Constant yield counts contractual calendar coupons for monthly, quarterly, semiannual and annual
 schedules, including month ends and leap dates. Day-count fractions interpolate within the current
 coupon period; they do not determine the number of coupons. Odd schedules and schedules exceeding
@@ -106,7 +131,59 @@ Operations Continuity journal candidates carry a typed `Provenance` origin mark 
 command. Omitted marks remain `Real`; seeded or simulated evidence must be explicitly marked,
 and the governed ledger boundary rejects mismatches.
 
+The unified `OpenLotSuccessors` contract also admits one whole-unit same-security forward/reverse
+split successor and one stock-merger unit successor. Those one-target transfers carry original and
+current bases exactly; exchange/refunding retain their independent currency allocations and final
+residuals. New successor acquisition facts retain immutable `CorporateActionLineage`, including
+projected event and stable source-action identities, action date, predecessor identity/version,
+allocation, role and reporting tags, even after relief. Immutable predecessor receipts certify the
+full ancestor chain, so re-reviewing the same source action under another case/version cannot apply
+it again after an intervening action. Historical absent source-ID or lineage fields retain their
+wire shape; source-event evidence resolves stable identity for ancestry certification without
+rewriting retained instructions or fingerprints.
+Historical origin compatibility requires the retained projection to omit its stable source-ID
+field. An explicit source identity requires complete successor origin; new writes stay strict.
+The reviewed instruction remains unchanged for replay. An optional amortization `Continuation`
+binds the immutable birth exchange and immediately preceding ordinary v2 amortization receipt.
+It admits a one-for-one face-lot Reg S/144A exchange only when the retained successor reference
+still matches and both securities' economic terms are identical. The original acquisition schedule,
+annual yield and FX remain authoritative; this does not establish a new yield or maturity schedule.
+The separately versioned continuation is omitted from historical JSON when absent. Other successor
+types, chains, changed references and predecessors without that retained amortization remain blocked.
+
 ## Shared close and lot convergence
+
+`OpenLotSuccessorInstructionDto` retains the reviewed corporate-action projection, exact
+predecessor snapshot, and create-only successor snapshots with Security Master hashes/versions and
+book-position versions. `OpenLotSuccessors` supports a cashless Reg S/144A exchange into one lot
+and advance refunding into refunded/unrefunded face lots. It allocates original acquisition and
+current carrying basis separately in transaction and functional currency, assigns the final
+residual exactly, and preserves acquisition FX, holding dates, face terms and source evidence.
+The same atomic contract accepts the registered non-taxable spin-off allocation: a unit parent
+closes into a new lot in its original security/position with unchanged open quantity, plus one or
+more separately identified child lots. Every target carries an approved positive allocation,
+original/current transaction and functional basis, acquisition FX and holding period. Independent
+currency residuals go to the final target. Dividend/purchase recipes, linked cash cases and new
+holding periods cannot use this carried-basis path; taxable spin-offs remain outside it.
+Only the refunded successor receives `ScheduleD`; unsupported action or allocation shapes fail
+validation. Optional instruction fields are omitted when absent to preserve earlier payloads.
+Successor lot labels must already be trimmed before fingerprinting or drafting, remain distinct,
+and cannot reuse the predecessor label. Persistence must retain the exact reviewed label rather
+than changing it after approval. Sibling lots, securities and book positions must be distinct; the retained
+spin-off parent and same-security split may reuse the predecessor's security/position, with a new
+durable lot identity and label. Reg S/144A exchange requires the `Successor` role.
+Every successor must receive positive functional
+carrying basis before journal drafting, including the final residual. Currency-specific allocations
+share `Ledger/CurrencyMinorUnits` with the corporate-action projector, including four decimals for
+CLF and UYW; original acquisition and current carrying bases retain independent currency rounding.
+
+`OpenLotCapitalReturnInstructionDto` retains the reviewed return-of-capital projection, exact
+canonical lot and source reference version/hash. It binds the approved carrying reduction to
+functional basis and the independently reviewed `BasisAmount` to acquisition-currency basis;
+neither value is a tax-basis determination or a new FX translation. The transition preserves
+quantity, acquisition facts and holding date and refuses reductions beyond either remaining basis.
+Optional capital-return fields on the event spine, posting command and basis adjustment are
+omitted from historical JSON when absent.
 
 `AssetLotMutationInstructionDto.DisposalSalePrice` optionally retains the original disposal quote
 through governed drafting and posting. It is omitted from JSON when absent so existing retained
@@ -160,6 +237,9 @@ accepts older numeric status payloads; persisted queue records already use text 
   Comparison is case-insensitive, because hex casing is a presentation detail and not a security
   property, and it reports a malformed digest distinctly from a genuine mismatch so callers can stop
   surfacing a data-hygiene problem as an integrity failure.
+  Its span-destination `ComputeBytes` overload writes the same 32 SHA-256 bytes while reusing a
+  private provider per thread. Each successful call resets the provider; hashing failures discard
+  it. This synchronous path allocates no managed memory after the thread's first call.
 - `Lifecycle/` - shared runtime state, readiness-check, shutdown-operation, shutdown-receipt,
   supervisor-manifest, exact-process-identity, database-identity, and session-receipt contracts.
   `LifecycleStartupTiming` defines the startup stage budget shared by the launcher and supervisor.
@@ -422,8 +502,9 @@ scope does not satisfy canonical asset posting or production-readiness gates.
 Drafted authority retains the full candidate intent/result and canonical fingerprints, including
 all dimensions, rule-pack and policy identity, period/version assertions, evidence, and any lot
 instruction. Typed correction lineage identifies the exact earlier event version and posted journal
-(plus mutation batch for lot-backed events). Acquisition and disposal lot instructions retain exact
-asset account and cost authority; other event kinds cannot carry lot mutations.
+(plus mutation batch for lot-backed events). Acquisition, disposal, canonical amortization, and
+bounded corporate-action successor instructions retain their exact lot and accounting authority;
+other event kinds cannot carry lot mutations.
 The workspace can also carry a `LedgerBookSetupCandidateDto` when a selected ledger book is missing
 but the server can derive a safe setup target from registered ledger-book scope. Clients should use
 that candidate for ledger-book setup actions instead of guessing fund-structure node context.

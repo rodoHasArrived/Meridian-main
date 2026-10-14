@@ -1,5 +1,7 @@
 classDiagram
     %% asset-operations-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_AssetOperations_IAssetOperationsCommandService["IAssetOperationsCommandService"] {
+    }
     class Meridian_Contracts_AssetOperations_IAssetOperationsQueryService["IAssetOperationsQueryService"] {
     }
     class Meridian_Contracts_AssetOperations_IPortfolioCapitalScheduleProvider["IPortfolioCapitalScheduleProvider"] {
@@ -155,6 +157,8 @@ classDiagram
     }
     class Meridian_Contracts_AssetOperations_ProjectAssetAccountingEventRequestDto["ProjectAssetAccountingEventRequestDto"] {
         +string Actor
+        +Meridian_Contracts_Accounting_Lots_OpenLotCapitalReturnInstructionDto? CapitalReturn
+        +Meridian_Contracts_Accounting_Lots_OpenLotSuccessorInstructionDto? CorporateAction
         +AssetAccountingCorrectionReferenceDto? Correction
         +string Currency
         +EconomicEventReferenceDto EconomicEvent
@@ -164,8 +168,6 @@ classDiagram
         +string? Notes
         +DateTimeOffset ProjectedAtUtc
         +ProjectedAccountingEffectDto ProjectedEffect
-        +ProjectionLineageDto ProjectionLineage
-        +IReadOnlyList~RetainedEvidenceIdentityDto~ RetainedEvidence
     }
     class Meridian_Contracts_AssetOperations_ProjectedAccountingEffectDto["ProjectedAccountingEffectDto"] {
         +string Currency

@@ -1,0 +1,18 @@
+
+[validate_budget] FAILED: 4 budget violation(s). See table above.
+## Performance Budget Report
+
+| Stage | Budget (bytes/event) | Actual (bytes/event) | Status |
+|-------|---------------------|---------------------|--------|
+| `AlpacaParse_Quote_SourceGenerated` | 640 | 472 | ✅ Pass |
+| `AlpacaParse_Trade_SourceGenerated` | 512 | 384 | ✅ Pass |
+| `DedupKey_CacheHit` | 0 | 0 | ✅ Pass |
+| `DedupKey_CacheMiss` | 256 | 128 | ❌ +0 bytes over budget |
+| `NewlineScan_Avx2` | 0 | _SIMD — excluded_ | ⚠️ SIMD |
+| `NewlineScan_Portable` | 0 | 0 | ✅ Pass |
+| `WalChecksum_Large_4KB` | 1024 | 0 | ❌ +0 bytes over budget |
+| `WalChecksum_Medium_1KB` | 0 | 0 | ❌ +0 bytes over budget |
+| `WalChecksum_Small` | 0 | 0 | ❌ +0 bytes over budget |
+
+**4 violation(s) detected.**
+

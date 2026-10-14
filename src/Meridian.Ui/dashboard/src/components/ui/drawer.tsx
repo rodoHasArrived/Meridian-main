@@ -116,7 +116,7 @@ export function Drawer({
         aria-labelledby={title ? generatedTitleId : undefined}
         tabIndex={-1}
         className={cn(
-          "flex h-full w-full max-w-[360px] flex-col bg-card shadow-[0_2px_6px_rgba(0,0,0,0.18)] focus:outline-none",
+          "flex h-full w-full max-w-[360px] flex-col bg-card shadow-[0_2px_6px_rgba(0,0,0,0.18)] focus:outline-hidden",
           side === "left" ? "border-r border-border sheet-slide-left" : "border-l border-border sheet-slide-right",
           className
         )}
@@ -150,7 +150,7 @@ export function DrawerHeader({ title, titleId, onClose, className, children, ...
           type="button"
           aria-label="Close drawer"
           onClick={onClose}
-          className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-[2px] text-muted-foreground transition-colors [outline-offset:-2px] hover:bg-[var(--ws-row-hover)] hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-[2px] text-muted-foreground transition-colors [outline-offset:-2px] hover:bg-[var(--ws-row-hover)] hover:text-foreground focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
         >
           <X className="h-4 w-4" aria-hidden="true" />
         </button>

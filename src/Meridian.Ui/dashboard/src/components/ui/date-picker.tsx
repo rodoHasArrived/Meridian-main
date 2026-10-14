@@ -34,7 +34,7 @@ export function monthGrid(month: Date): Date[] {
 }
 
 const dayButtonClass =
-  "flex h-8 w-8 items-center justify-center rounded-[2px] border border-transparent font-mono text-xs text-foreground transition-colors hover:bg-[var(--ws-row-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 [outline-offset:-2px]";
+  "flex h-8 w-8 items-center justify-center rounded-[2px] border border-transparent font-mono text-xs text-foreground transition-colors hover:bg-[var(--ws-row-hover)] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 [outline-offset:-2px]";
 
 /**
  * Single-date input with a flat calendar popover. Concrete: hairline field, menu shadow on the
@@ -80,7 +80,7 @@ export function DatePicker({ value, onChange, label, placeholder = "Select dateâ
         onClick={() => !disabled && setOpen((current) => !current)}
         className={cn(
           "h-9 w-full cursor-pointer rounded-[2px] border border-border bg-[var(--ws-surface-raised)] px-2.5 font-mono text-sm text-foreground",
-          "hover:border-[var(--ws-border-hover)] focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+          "hover:border-[var(--ws-border-hover)] focus-visible:border-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
           disabled && "cursor-not-allowed opacity-55"
         )}
       />

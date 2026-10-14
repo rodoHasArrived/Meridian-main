@@ -316,6 +316,15 @@
       "sha256": "668e3f5bb4b21549c36b6f608a639aa6df572a301d9e9c2f6d4a5fa44fe3c0eb"
     },
     {
+      "filename": "036_security_master_workbench_generations.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 36,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/036_security_master_workbench_generations.sql",
+      "schema": "security_master",
+      "sha256": "7557305b13360bfd1c7a0ca28be1c8ce43ccd4e67dae4f540713348b466cc398"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -838,6 +847,33 @@
       "sha256": "fa5bb6af9f5ac1b4d66c59a7e345b12bea59d7990381c2d9c496e30ec5ac0672"
     },
     {
+      "filename": "V_ledger_042__atomic_lot_successors.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_042__atomic_lot_successors.sql",
+      "schema": "ledger",
+      "sha256": "73ad39e7136866946efcfb88b19c13734c88e8ee4f235e510f47d3e82f47b357"
+    },
+    {
+      "filename": "V_ledger_043__amortization_reversal_basis_restoration.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_043__amortization_reversal_basis_restoration.sql",
+      "schema": "ledger",
+      "sha256": "4f5a50c25dfe6fa1e323936f86d05fe2d990fd98f74881c28f384fa441394869"
+    },
+    {
+      "filename": "V_ledger_050__atomic_lot_capital_return.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_050__atomic_lot_capital_return.sql",
+      "schema": "ledger",
+      "sha256": "3272428a8a2b030ec3a72fd8bffdfe720f26f61d431a4edcbd9d62601503edb6"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1082,7 +1118,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "75563c4e9ab6f5feb3ec17f350b01b36f6b4b3a6e80117bd08f51dd19c889109",
+  "fingerprint": "e0aa8be07e5f0ba45fdb3818c6da669bc17117f9b4d650f35605c93e39392191",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1320,9 +1356,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 120,
+    "files": 124,
     "migration_sets": 10,
-    "waivers": 13,
+    "waivers": 15,
     "warnings": 0
   },
   "waivers": [
@@ -1387,6 +1423,20 @@
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_041__current_basis_disposal.sql",
       "reason": "Requires human schema/storage review. The cost check is dropped and immediately recreated transactionally as a superset: canonical discrete disposals retain current basis in their pre-relief acquisition and governed-adjustment snapshot, while acquisition-cost, AverageCost and PR #3048 amortization cases remain admitted. No columns or data are removed. Follows PR #3048's ordinal 040 amortization migration.",
       "review_after": "2027-04-02",
+      "rule_id": "migration-drop-table-member"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_042__atomic_lot_successors.sql",
+      "reason": "Requires human schema/storage review. Replaces only named check constraints transactionally with supersets admitting governed CorporateAction predecessor closeout and successor opening. Existing acquisition, disposal, redistribution and amortization rules remain valid; no table, column, row or acquisition fact is removed. The new nullable instruction is required only for new successor batches, preserving historical replay. AtomicTaxLotSuccessorMigrationTests exercises a populated through-041 upgrade, preserves legacy row values and migration receipts, reapplies 042 after successor rows exist, and recreates the migration runner on restart. Its injected DDL failure verifies restoration of the prior constraints, absence of the new column and unchanged receipts before retry. This rollback evidence covers an unsuccessful upgrade transaction; it does not authorize a downgrade that removes retained successor instructions.",
+      "review_after": "2027-04-06",
+      "rule_id": "migration-drop-table-member"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_050__atomic_lot_capital_return.sql",
+      "reason": "Requires independent human schema/storage review. Transactionally replaces four existing named CHECK constraints with supersets admitting a basis-only CapitalReturn and replaces the new instruction constraint on explicit reapply. No table, column, row, acquisition fact or historical instruction is removed. The nullable capital_return_instruction is required only for new CapitalReturn batches. Populated through-043 upgrade, retained history, explicit reapply/restart and injected post-drop DDL failure tests are included; hosted PostgreSQL execution is required before release. This permits failed-upgrade rollback, not a downgrade that discards retained capital-return instructions.",
+      "review_after": "2027-04-13",
       "rule_id": "migration-drop-table-member"
     },
     {

@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "archivedAt": "2026-10-09T15:31:50.562526+00:00",
+  "sourceDirectory": "artifacts/wal-checksum-profile/canonical-final-provider",
+  "canonicalRun": {
+    "status": "failed",
+    "command": [
+      "bash",
+      "scripts/ci.sh"
+    ],
+    "sourceCommit": "bba13ca9c156a42b5ca7f0f9c196d9199a70ef75",
+    "startedAt": "2026-10-07T20:01:55.193215+00:00",
+    "completedAt": "2026-10-07T20:40:25.283279+00:00",
+    "seconds": 2310.090064,
+    "worktreeDirtyAtLaunch": false,
+    "exitCode": 1,
+    "reason": "Accepted portable evidence was added while the canonical command ran; generated repository-structure and documentation-health files differed from committed output. Runtime source remained unchanged.",
+    "failedStep": "Verify whole-repo generated documentation is committed",
+    "generatedDocumentationDiffPaths": [
+      "docs/generated/repository-structure.md",
+      "docs/status/doc-health-dashboard.json",
+      "docs/status/doc-health-dashboard.md"
+    ],
+    "receipt": "ci/provider-documentation-drift/receipt.json",
+    "launch": "ci/provider-documentation-drift/launch.json",
+    "commandLog": "ci/provider-documentation-drift/command.log.gz",
+    "archiveManifest": "ci/provider-documentation-drift/archive-manifest.json",
+    "sourceFreezeReceipt": "ci/provider-documentation-drift/source-freeze-receipt.json",
+    "dotnet": {
+      "shards": 19,
+      "passed": 19646,
+      "failed": 0,
+      "registeredSkipped": 5,
+      "other": 0,
+      "testSeconds": 1390.0866555320008
+    },
+    "browser": {
+      "batches": 42,
+      "testFiles": 335,
+      "passed": 3651,
+      "failed": 0,
+      "skipped": 0,
+      "other": 0,
+      "testSeconds": 377.044675995
+    },
+    "fullWorkflowAndScriptSuitesReached": false,
+    "processReceipt": {
+      "addedZombiePids": [
+        116915,
+        117623
+      ],
+      "remainingAdoptedProcesses": [],
+      "wrapperLog": "ci/provider-documentation-drift/wrapper.log"
+    }
+  },
+  "files": [
+    {
+      "path": "ci/provider-documentation-drift/command.log.gz",
+      "bytes": 45966,
+      "sha256": "6b2acb7f9916c988e4378ed2475d9eac334f942991bde213167d3db495d23130",
+      "encoding": "gzip",
+      "originalBytes": 500281,
+      "originalSha256": "42c91d8e3013c9b37295238b19ef8a3afb3c82f1df78c92ecdecb595327f4701",
+      "originalSource": "artifacts/wal-checksum-profile/canonical-final-provider/command.log"
+    },
+    {
+      "path": "ci/provider-documentation-drift/receipt.json",
+      "bytes": 22749,
+      "sha256": "a1deb56f7839b3eb3bd030e11425467ff4ee74c506bf4e55b2256c50d46f4fbe",
+      "encoding": "verbatim",
+      "originalBytes": 22749,
+      "originalSha256": "a1deb56f7839b3eb3bd030e11425467ff4ee74c506bf4e55b2256c50d46f4fbe",
+      "originalSource": "artifacts/wal-checksum-profile/canonical-final-provider/receipt.json"
+    },
+    {
+      "path": "ci/provider-documentation-drift/launch.json",
+      "bytes": 956,
+      "sha256": "346cc6b4dbcbdb40204570f42e75afea46f0c87c0989a6f13b7401a58eaa7c9a",
+      "encoding": "verbatim",
+      "originalBytes": 956,
+      "originalSha256": "346cc6b4dbcbdb40204570f42e75afea46f0c87c0989a6f13b7401a58eaa7c9a",
+      "originalSource": "artifacts/wal-checksum-profile/canonical-final-provider/launch.json"
+    },
+    {
+      "path": "ci/provider-documentation-drift/wrapper.log",
+      "bytes": 72,
+      "sha256": "9a8bf5317c4d53ae7a75f4de456ecdee61b79313ce0f83446371a99a36618334",
+      "encoding": "verbatim",
+      "originalBytes": 72,
+      "originalSha256": "9a8bf5317c4d53ae7a75f4de456ecdee61b79313ce0f83446371a99a36618334",
+      "originalSource": "artifacts/wal-checksum-profile/canonical-final-provider/wrapper.log"
+    },
+    {
+      "path": "ci/provider-documentation-drift/dotnet-test-summary.json.gz",
+      "bytes": 391886,
+      "sha256": "1ae74bf4451849eedc006edf8f1e16409d981ef902ca67da1a2de893e3bd4d74",
+      "encoding": "gzip",
+      "originalBytes": 4045677,
+      "originalSha256": "a1d9d135b6233cb5b18022e061923e8ff12c0f168713f2d343356c7337ed668b",
+      "originalSource": "artifacts/test-results/dotnet/ci-dotnet-test-summary.json"
+    },
+    {
+      "path": "ci/provider-documentation-drift/dotnet-test-summary.md",
+      "bytes": 20821,
+      "sha256": "6b70957282af0de44a317b2af5536821b91ff09f039f4b31c0d829954fa2a7b4",
+      "encoding": "verbatim",
+      "originalBytes": 20821,
+      "originalSha256": "6b70957282af0de44a317b2af5536821b91ff09f039f4b31c0d829954fa2a7b4",
+      "originalSource": "artifacts/test-results/dotnet/ci-dotnet-test-summary.md"
+    },
+    {
+      "path": "ci/provider-documentation-drift/browser-test-summary.json.gz",
+      "bytes": 92470,
+      "sha256": "901bd0d0b2e70d724ebdd3b1eb80a8c0ccd79686383a89500469850e44c3880f",
+      "encoding": "gzip",
+      "originalBytes": 572129,
+      "originalSha256": "a76b413cdf4607d2bd707d608b692d4c55f0e6b3e6e257199dc82da145d43f1d",
+      "originalSource": "artifacts/test-results/browser/summary.json"
+    },
+    {
+      "path": "ci/provider-documentation-drift/browser-test-summary.md",
+      "bytes": 1153,
+      "sha256": "a431205ef931bf86aec2f366fc8f1f5f6db5430e30aa75d5fc49f0d9ddd925e2",
+      "encoding": "verbatim",
+      "originalBytes": 1153,
+      "originalSha256": "a431205ef931bf86aec2f366fc8f1f5f6db5430e30aa75d5fc49f0d9ddd925e2",
+      "originalSource": "artifacts/test-results/browser/summary.md"
+    },
+    {
+      "path": "ci/provider-documentation-drift/quality-gate-steps.tsv",
+      "bytes": 1726,
+      "sha256": "3f81ad81e24894b9db59e04cba5e12d23e73e18157f410d46b2720110ec83674",
+      "encoding": "verbatim",
+      "originalBytes": 1726,
+      "originalSha256": "3f81ad81e24894b9db59e04cba5e12d23e73e18157f410d46b2720110ec83674",
+      "originalSource": "artifacts/ci-summary/quality-gate/steps.tsv"
+    },
+    {
+      "path": "ci/provider-documentation-drift/quality-gate-summary.md",
+      "bytes": 4117,
+      "sha256": "d5b7048b25a5439b887ff18ddcd8e07bfac576fd2ceaa3e4481807221030710c",
+      "encoding": "verbatim",
+      "originalBytes": 4117,
+      "originalSha256": "d5b7048b25a5439b887ff18ddcd8e07bfac576fd2ceaa3e4481807221030710c",
+      "originalSource": "artifacts/ci-summary/quality-gate/summary.md"
+    },
+    {
+      "path": "ci/provider-documentation-drift/ai-handoff-docs-automation-summary.json",
+      "bytes": 2953,
+      "sha256": "396cdf409c71af505cab0484c082737f26fa4d4fce9b38bfb64b26bfc1651011",
+      "encoding": "verbatim",
+      "originalBytes": 2953,
+      "originalSha256": "396cdf409c71af505cab0484c082737f26fa4d4fce9b38bfb64b26bfc1651011",
+      "originalSource": "artifacts/ci-summary/quality-gate/ai-handoff-docs-automation-summary.json"
+    },
+    {
+      "path": "ci/provider-documentation-drift/ai-handoff-docs-automation-summary.md",
+      "bytes": 619,
+      "sha256": "5c60a59d0476f4c02b34ba6cbd7024b79bc0a0f6868b450bad6b5541c9c92a5f",
+      "encoding": "verbatim",
+      "originalBytes": 619,
+      "originalSha256": "5c60a59d0476f4c02b34ba6cbd7024b79bc0a0f6868b450bad6b5541c9c92a5f",
+      "originalSource": "artifacts/ci-summary/quality-gate/ai-handoff-docs-automation-summary.md"
+    },
+    {
+      "path": "ci/provider-documentation-drift/source-freeze-receipt.json",
+      "bytes": 6149,
+      "sha256": "294819fdd1dd9b12813976babe9e7521423af3ec99415e0b7d2a61cd01070e4c",
+      "encoding": "verbatim",
+      "originalBytes": 6149,
+      "originalSha256": "294819fdd1dd9b12813976babe9e7521423af3ec99415e0b7d2a61cd01070e4c",
+      "source": "generated checkpoint comparison during evidence packaging"
+    }
+  ],
+  "bytePreservation": "Copied originals retain exact bytes; gzip entries retain original and compressed sizes/SHA-256 digests. This manifest excludes itself from its nested inventory."
+}

@@ -1,0 +1,90 @@
+{
+  "command": "test",
+  "configuration": "Release",
+  "exitCode": 0,
+  "filter": "FullyQualifiedName~FinancialOperationsCommandCenterReadService|FullyQualifiedName~CloseReadinessSubjectSourceTests|FullyQualifiedName~ClosePublicationWorkerAuthorityTests|FullyQualifiedName~WorkstationEndpointsTests",
+  "finishedAt": "2026-10-06T21:47:32Z",
+  "isolationKey": "profile-5bde98fc0953b157f0b41ec4",
+  "lane": "dotnet",
+  "profile": "session:w10-seam",
+  "project": "tests/Meridian.Tests/Meridian.Tests.csproj",
+  "resultsDirectory": "/workspace/Meridian-main/.ai/test-results/test-meridian-tests-20261006213917-e2bb71cf5c7d4e44bd1e0cb3a393a07a",
+  "runId": "test-meridian-tests-20261006213917-e2bb71cf5c7d4e44bd1e0cb3a393a07a",
+  "startedAt": "2026-10-06T21:39:17Z",
+  "status": "passed",
+  "steps": [
+    {
+      "command": [
+        "dotnet",
+        "restore",
+        "tests/Meridian.Tests/Meridian.Tests.csproj",
+        "--verbosity",
+        "minimal",
+        "/p:Configuration=Release",
+        "/p:EnableWindowsTargeting=true",
+        "-maxcpucount:1",
+        "/nr:false",
+        "/p:MeridianBuildIsolationKey=profile-5bde98fc0953b157f0b41ec4",
+        "/p:enablewindowstargeting=true",
+        "/p:BuildInParallel=false",
+        "/p:UseSharedCompilation=false"
+      ],
+      "durationSeconds": 4.67,
+      "exitCode": 0,
+      "name": "restore"
+    },
+    {
+      "command": [
+        "dotnet",
+        "build",
+        "tests/Meridian.Tests/Meridian.Tests.csproj",
+        "-c",
+        "Release",
+        "--verbosity",
+        "minimal",
+        "-nologo",
+        "--no-restore",
+        "/p:EnableWindowsTargeting=true",
+        "-maxcpucount:1",
+        "/nr:false",
+        "/p:MeridianBuildIsolationKey=profile-5bde98fc0953b157f0b41ec4",
+        "/p:enablewindowstargeting=true",
+        "/p:BuildInParallel=false",
+        "/p:UseSharedCompilation=false"
+      ],
+      "durationSeconds": 107.36,
+      "exitCode": 0,
+      "name": "build"
+    },
+    {
+      "command": [
+        "dotnet",
+        "test",
+        "tests/Meridian.Tests/Meridian.Tests.csproj",
+        "-c",
+        "Release",
+        "--verbosity",
+        "minimal",
+        "-nologo",
+        "--no-build",
+        "--no-restore",
+        "--results-directory",
+        "/workspace/Meridian-main/.ai/test-results/test-meridian-tests-20261006213917-e2bb71cf5c7d4e44bd1e0cb3a393a07a",
+        "--filter",
+        "FullyQualifiedName~FinancialOperationsCommandCenterReadService|FullyQualifiedName~CloseReadinessSubjectSourceTests|FullyQualifiedName~ClosePublicationWorkerAuthorityTests|FullyQualifiedName~WorkstationEndpointsTests",
+        "--logger",
+        "trx;LogFileName=seam-support.trx",
+        "/p:EnableWindowsTargeting=true",
+        "-maxcpucount:1",
+        "/nr:false",
+        "/p:MeridianBuildIsolationKey=profile-5bde98fc0953b157f0b41ec4",
+        "/p:enablewindowstargeting=true",
+        "/p:BuildInParallel=false",
+        "/p:UseSharedCompilation=false"
+      ],
+      "durationSeconds": 382.99,
+      "exitCode": 0,
+      "name": "test"
+    }
+  ]
+}

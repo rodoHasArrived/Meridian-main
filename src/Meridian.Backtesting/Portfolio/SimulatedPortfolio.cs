@@ -929,9 +929,7 @@ internal sealed class SimulatedPortfolio
             EntryPrice = allocatedBasis / quantity,
             OpenedAt = openedAt,
             OpenFillId = openFillId,
-            Notes = components.Length > 1
-                ? BuildCompositeLotNotes(template.Notes, components)
-                : template.Notes,
+            Notes = BuildTransformedLotNotes(template.Notes, components),
             BasisComponents = components
         };
     }
@@ -966,20 +964,38 @@ internal sealed class SimulatedPortfolio
         return new Guid(hash.AsSpan(0, 16));
     }
 
-    private static string BuildCompositeLotNotes(
+    private static string? BuildTransformedLotNotes(
         string? existingNotes,
         IReadOnlyList<OpenLotBasisComponent> components)
     {
-        var provenance = "Corporate-action composite from lots " +
+        const string provenancePrefix = "Corporate-action composite from lots ";
+        // Notes are a summary of the current components, not an append-only lineage store.
+        // Remove only clauses in the exact generated format; retain operator text verbatim.
+        // This also repairs repeated clauses retained by older chained transformations.
+        var retainedClauses = existingNotes?.Split("; ", StringSplitOptions.None)
+            .Where(clause => !IsGeneratedProvenance(clause))
+            .ToArray();
+        var retainedNotes = retainedClauses is { Length: > 0 }
+            ? string.Join("; ", retainedClauses)
+            : null;
+        if (components.Count < 2)
+            return retainedNotes;
+
+        var provenance = provenancePrefix +
             string.Join(
                 ", ",
                 components
                     .Select(static component => component.SourceLotId)
                     .Distinct()
                     .Select(static id => id.ToString("N")));
-        return string.IsNullOrWhiteSpace(existingNotes)
+        return string.IsNullOrWhiteSpace(retainedNotes)
             ? provenance
-            : $"{existingNotes}; {provenance}";
+            : $"{retainedNotes}; {provenance}";
+
+        static bool IsGeneratedProvenance(string clause) =>
+            clause.StartsWith(provenancePrefix, StringComparison.Ordinal) &&
+            clause[provenancePrefix.Length..].Split(", ", StringSplitOptions.None)
+                .All(static value => value.Length == 32 && Guid.TryParseExact(value, "N", out _));
     }
 
     private static decimal ComputeLotBasis(LinkedList<OpenLot>? lots) =>
@@ -1462,18 +1478,18 @@ internal sealed class SimulatedPortfolio
         // Build an ordered sequence of lot nodes according to the selection method.
         var ordered = OrderLots(lots, account.Rules.LotSelection, targetLotId);
         var consumption = LotConsumption.Consume(ordered, closeQty, static node => node.Value.Quantity);
+        var relief = LotBasisRelief.Allocate(consumption.Slices,
+            static node => node.Value.Quantity, static node => node.Value.CostBasis());
 
         var realised = 0m;
 
-        foreach (var slice in consumption.Slices)
+        foreach (var slice in relief)
         {
             var node = slice.Lot;
             var lot = node.Value;
             var quantity = (long)slice.Quantity;
             var lotBasis = lot.CostBasis();
-            var basisRemoved = slice.ClosesLot
-                ? lotBasis
-                : lotBasis * quantity / lot.Quantity;
+            var basisRemoved = slice.CostBasis;
             var closedEntryPrice = basisRemoved / quantity;
 
             realised += (quantity * sellPrice) - basisRemoved;
@@ -1511,19 +1527,19 @@ internal sealed class SimulatedPortfolio
 
         var ordered = OrderLots(lots, account.Rules.LotSelection, targetLotId);
         var consumption = LotConsumption.Consume(ordered, coverQty, static node => node.Value.Quantity);
+        var relief = LotBasisRelief.Allocate(consumption.Slices,
+            static node => node.Value.Quantity, static node => node.Value.CostBasis());
 
         var realised = 0m;
         var shortSaleProceeds = 0m;
 
-        foreach (var slice in consumption.Slices)
+        foreach (var slice in relief)
         {
             var node = slice.Lot;
             var lot = node.Value;
             var lotClose = (long)slice.Quantity;
             var lotBasis = lot.CostBasis();
-            var lotProceeds = slice.ClosesLot
-                ? lotBasis
-                : lotBasis * lotClose / lot.Quantity;
+            var lotProceeds = slice.CostBasis;
             var closedEntryPrice = lotProceeds / lotClose;
             realised += lotProceeds - lotClose * coverPrice;
             shortSaleProceeds += lotProceeds;

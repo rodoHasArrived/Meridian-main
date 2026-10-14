@@ -3,11 +3,11 @@ using System.Buffers.Text;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Core.Logging;
 using Meridian.Contracts.Domain.Enums;
+using Meridian.Contracts.Integrity;
 using Meridian.Domain.Events;
 using Serilog;
 
@@ -95,14 +95,15 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
 
     private static void WarmHashPath()
     {
+        // Each constructor thread primes its own provider before the once-per-process warmup.
+        Span<byte> hash = stackalloc byte[32];
+        Sha256Digest.ComputeBytes(ReadOnlySpan<byte>.Empty, hash);
+
         if (Interlocked.Exchange(ref _hashPathWarmed, 1) != 0)
         {
             return;
         }
 
-        Span<byte> payload = stackalloc byte[1];
-        Span<byte> hash = stackalloc byte[32];
-        SHA256.TryHashData(payload, hash, out _);
         _ = Convert.ToHexStringLower(hash[..16]);
         _ = CreateTradeKey(
             "warm:AAPL:Trade:",
@@ -523,7 +524,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         try
         {
             var written = WriteTradeIdentity(trade, buffer);
-            SHA256.TryHashData(buffer[..written], destination, out _);
+            Sha256Digest.ComputeBytes(buffer[..written], destination);
         }
         finally
         {
@@ -546,7 +547,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         const int maxBytes = 160;
         Span<byte> buffer = stackalloc byte[maxBytes];
         var written = WriteQuoteIdentity(quote, buffer);
-        SHA256.TryHashData(buffer[..written], destination, out _);
+        Sha256Digest.ComputeBytes(buffer[..written], destination);
     }
 
     private static string CreatePrefix(string? source, string? symbol, MarketEventType type)
@@ -684,31 +685,11 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             static (destination, state) =>
             {
                 state.Prefix.AsSpan().CopyTo(destination);
-                var hashDestination = destination[state.Prefix.Length..];
-                WriteHexByte(hashDestination, 0, state.B0);
-                WriteHexByte(hashDestination, 2, state.B1);
-                WriteHexByte(hashDestination, 4, state.B2);
-                WriteHexByte(hashDestination, 6, state.B3);
-                WriteHexByte(hashDestination, 8, state.B4);
-                WriteHexByte(hashDestination, 10, state.B5);
-                WriteHexByte(hashDestination, 12, state.B6);
-                WriteHexByte(hashDestination, 14, state.B7);
-                WriteHexByte(hashDestination, 16, state.B8);
-                WriteHexByte(hashDestination, 18, state.B9);
-                WriteHexByte(hashDestination, 20, state.B10);
-                WriteHexByte(hashDestination, 22, state.B11);
-                WriteHexByte(hashDestination, 24, state.B12);
-                WriteHexByte(hashDestination, 26, state.B13);
-                WriteHexByte(hashDestination, 28, state.B14);
-                WriteHexByte(hashDestination, 30, state.B15);
+                if (!Convert.TryToHexStringLower(state.TruncatedHash, destination[state.Prefix.Length..], out _))
+                {
+                    throw new InvalidOperationException("Failed to format deduplication hash.");
+                }
             });
-    }
-
-    private static void WriteHexByte(Span<char> destination, int offset, byte value)
-    {
-        const string hexDigits = "0123456789abcdef";
-        destination[offset] = hexDigits[value >> 4];
-        destination[offset + 1] = hexDigits[value & 0x0F];
     }
 
     // -----------------------------------------------------------------------
@@ -766,46 +747,16 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         return ComputeEventKey(evt);
     }
 
-    private readonly struct HashedKeyState
+    private readonly ref struct HashedKeyState
     {
         public HashedKeyState(string prefix, ReadOnlySpan<byte> truncatedHash)
         {
             Prefix = prefix;
-            B0 = truncatedHash[0];
-            B1 = truncatedHash[1];
-            B2 = truncatedHash[2];
-            B3 = truncatedHash[3];
-            B4 = truncatedHash[4];
-            B5 = truncatedHash[5];
-            B6 = truncatedHash[6];
-            B7 = truncatedHash[7];
-            B8 = truncatedHash[8];
-            B9 = truncatedHash[9];
-            B10 = truncatedHash[10];
-            B11 = truncatedHash[11];
-            B12 = truncatedHash[12];
-            B13 = truncatedHash[13];
-            B14 = truncatedHash[14];
-            B15 = truncatedHash[15];
+            TruncatedHash = truncatedHash;
         }
 
         public string Prefix { get; }
-        public byte B0 { get; }
-        public byte B1 { get; }
-        public byte B2 { get; }
-        public byte B3 { get; }
-        public byte B4 { get; }
-        public byte B5 { get; }
-        public byte B6 { get; }
-        public byte B7 { get; }
-        public byte B8 { get; }
-        public byte B9 { get; }
-        public byte B10 { get; }
-        public byte B11 { get; }
-        public byte B12 { get; }
-        public byte B13 { get; }
-        public byte B14 { get; }
-        public byte B15 { get; }
+        public ReadOnlySpan<byte> TruncatedHash { get; }
     }
 
     private sealed class CachedKeyBox

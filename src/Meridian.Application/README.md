@@ -6,10 +6,24 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-14
 ---
 
 # src/Meridian.Application
+
+`ILivePositionCorporateActionAdjuster` exposes an additive overload for retained total carrying
+basis. Native paper-execution adjustments use it to avoid rebuilding basis from rounded unit
+quotes. Legacy implementers retain their original overload; a null `AdjustedTotalCostBasis`
+explicitly identifies that compatibility result and remains absent from serialized output.
+
+Security Master governed edits now validate and stage the overlay and draft in one PostgreSQL
+transaction guarded by a durable per-security generation. Competing instances receive a conflict
+and must reload before retrying; they cannot combine independently valid edits against a stale
+overlay. Approval scans, generic-patch guards, submission, discard and final publish transitions
+use the same mutation boundary. Overlay and revision stores must use the same database and schema.
+Optional discard provenance and approval convergence use recoverable savepoints; a SQL error in
+those steps cannot silently undo the revision rejection and overlay withdrawal.
+See [the concurrency and rollout contract](../../docs/domain/security.md#governed-edit-concurrency).
 
 PostgreSQL ledger composition resolves consolidation posting authority through a deferred factory.
 The workstation supplies the authoritative ownership and policy provider, avoiding a dependency
@@ -21,6 +35,9 @@ missing values, without writing environment defaults; omitted configuration pres
 resolution. Unified database URLs are resolved locally for explicit configurations.
 
 Ledger composition registers the read-only `CanonicalLotAmortizationService` alongside existing governed candidate services. Its registration preserves workstation startup when amortization stores are absent; preview requires the authoritative ledger, Security Master, and book-position stores and rejects missing authority before any read. Amortization posting remains on the shared Asset Accounting Event Spine approval and atomic ledger path.
+`CanonicalLotCorporateActionService` uses the same deferred authoritative stores to prepare the
+single retained successor instruction and draft it through the event spine. Preview preserves
+the chart path separately from the durable ledger account; posting requires independent approval.
 Primary-host storage composition supplies deferred Security Master and book-position resolvers to
 the PostgreSQL journal store. Deferred resolution preserves the shared singleton authorities while
 avoiding the journal/position constructor cycle; absent durable authority fails closed at posting.
@@ -176,6 +193,13 @@ historical snapshots. Explicit deployment-boundary compatibility keeps reviewed 
 migration access available. Production composition still rejects these nonproduction services.
 The migration-required refusal derives from `MeridianException`, preserving shared domain-error
 classification while the HTTP boundary continues to report the specific migration guidance.
+
+One-shot command dispatch uses the same Portfolio Records registration as runtime hosts. Configured
+fund-account PostgreSQL persistence remains authoritative for command reconciliation reads, and
+local command reads pass through the same migration gate. Account query, management, and fund-account
+ports resolve to one shared service instance.
+Command reconciliation resolves account authority when reading retained populations, keeping help
+and configuration diagnostics available even when account tenant configuration requires repair.
 
 The explicit `--fund-tenant-backfill --action preview|apply` command previews retained ownership
 across the graph, ledger books and periods, close workflows, and configured fund accounts, then
@@ -390,6 +414,11 @@ Core workstation host. Do not introduce a second listener or independent monitor
   Explicit flush waits for completed consumption, which already includes rejected events.
   Rejected batches cannot be counted twice to acknowledge a later valid event before its
   storage append finishes; gated regression cases cover that ordering across separate batches.
+  Trade and quote dedup keys retain their existing SHA-256 identity and 128-bit lowercase
+  digest suffix. Hashing uses the canonical `Sha256Digest` span overload with a reusable provider
+  per thread, primed on each constructor thread. Key construction uses the runtime span-based hex
+  encoder inside a single `string.Create` allocation; culture and Unicode/pooled-buffer regressions
+  compare the complete key with the original identity format.
 - Event pipeline queueing consumes `Meridian.Platform.Tracing.EventTraceContext` for trace
   propagation, platform-owned OpenTelemetry helpers for market-data activity/counter telemetry,
   the Platform `DefaultEventMetrics` implementation, and the Platform `TracedEventMetrics`

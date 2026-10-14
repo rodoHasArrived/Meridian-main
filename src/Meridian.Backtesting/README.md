@@ -6,7 +6,7 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-09-02
+last_reviewed: 2026-10-14
 ---
 
 # src/Meridian.Backtesting
@@ -36,10 +36,22 @@ This layer should keep simulation behavior isolated from live execution while pr
 
 ## Important workflows
 
+Long sales and short covers use Ledger's `LotBasisRelief` allocator over the shared decimal
+consumption walk. Composite lots supply their exact retained component basis; full closure never
+reconstructs that basis from a rounded entry quote. FIFO/LIFO/HIFO ordering and the simulation's
+SpecificId-to-FIFO fallback are preserved. This calculation convergence does not manufacture
+canonical SecurityIds or acquisition FX, authorize short posting, or replace retained Ledger lots.
+
 Principal-paydown position adjustments consume Instruments `FactorPaydownProjectionService`, reduce
 total basis by the projected monetary principal, and then recompute per-unit basis. The historical
 adjuster therefore uses the same held-face/factor economics as the governed production proof while
 remaining a rebuildable simulation rather than an accounting write path.
+
+The live-position adjuster's additive retained-basis overload accepts the paper lot book's exact
+total and returns `AdjustedTotalCostBasis`. Splits retain that total; sequential principal paydowns
+subtract projected principal before a display unit quote is derived. The old overload and custom
+implementers remain compatible, with the absent exact-total field omitted from JSON. Existing
+compatibility merger economics are unchanged; this API is not a governed corporate-action journal.
 
 Corporate-action-adjusted engine runs capture the exact symbol/date-filtered JSONL event window,
 prepare one immutable adjustment plan from its complete bar history and one Security Master query
@@ -51,7 +63,9 @@ Portfolio asset events fan out to every brokerage account holding the source sym
 transformations apportion successor shares through exact FIFO entitlements. Fractional entitlements
 carry their own basis across lot boundaries, and a combined whole share receives a deterministic
 composite lot/fill identity plus immutable component basis provenance. Chained actions scale the
-original components instead of collapsing them into the intermediate synthetic lot. Cash-in-lieu
+original components instead of collapsing them into the intermediate synthetic lot. Successor notes
+retain operator text and replace generated composite summaries with only the current component
+lineage; a single-component successor no longer claims the prior composite's contributors. Cash-in-lieu
 disposals relieve the remaining fractional securities basis or short payable and recognize the
 resulting account-scoped gain or loss in both the ledger and asset-event cash-flow evidence, including
 when no successor position remains. Canonical symbol attribution is still fill-derived: it neither
