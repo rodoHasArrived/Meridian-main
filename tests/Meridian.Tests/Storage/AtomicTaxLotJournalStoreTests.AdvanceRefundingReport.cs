@@ -45,6 +45,13 @@ public sealed partial class AtomicTaxLotJournalStoreTests
 
         var restarted = fixture.Restart();
         var period = (await restarted.GetPeriodAsync(fixture.Period.PeriodId))!;
+        var retainedJournals = await restarted.GetByPeriodAsync(period.PeriodId);
+        retainedJournals.Should().HaveCount(amortizeFirst ? 2 : 1);
+        retainedJournals.SelectMany(record => record.Entry.Lines).Should().OnlyContain(line =>
+            line.Dimensions != null && line.Dimensions.FundId == "amort-fund"
+            && line.Dimensions.BookId == fixture.BookId.ToString("D")
+            && line.Dimensions.OrganizationId == organizationId.ToString("D"),
+            "the original committed lines must retain the complete certified reporting scope");
         var capturedAt = period.ClosedAt!.Value.AddSeconds(1);
         var source = await CreateAdvanceRefundingReportSourceAsync(restarted, fixture.BookId, organizationId, capturedAt);
         var parameters = new ReportingRunParametersDto(

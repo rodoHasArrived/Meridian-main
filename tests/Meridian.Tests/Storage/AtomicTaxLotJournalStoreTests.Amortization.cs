@@ -990,7 +990,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 "Amortization book", "USD", AccountingBasis, "amort-policy", "1")
             {
                 Dimensions = OrganizationId is { } organizationId
-                    ? new LedgerDimensionSetDto(OrganizationId: organizationId.ToString("D")) : null
+                    ? new LedgerDimensionSetDto(FundId: "amort-fund", OrganizationId: organizationId.ToString("D"),
+                        BookId: BookId.ToString("D")) : null
             };
             BookContext = book with { PeriodId = Period.PeriodId };
             await Positions.UpsertAsync(role, new BookPositionDto(PositionId, Security.SecurityId, roleId, book,
@@ -1141,8 +1142,13 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 SourceEventId: sourceId, LedgerBookId: BookId, PostingCommand: posting);
         }
 
-        public LedgerLineDimensionSet Dimensions(Guid securityId, Guid positionId) =>
-            new(InstrumentId: securityId, OrganizationId: OrganizationId?.ToString("D")) { PositionId = positionId };
+        public LedgerLineDimensionSet Dimensions(Guid securityId, Guid positionId)
+        {
+            var dimensions = new LedgerLineDimensionSet(InstrumentId: securityId) { PositionId = positionId };
+            return OrganizationId is { } organizationId
+                ? dimensions with { FundId = "amort-fund", OrganizationId = organizationId.ToString("D"), BookId = BookId.ToString("D") }
+                : dimensions;
+        }
 
         public ValueTask DisposeAsync() => _server.DisposeAsync();
     }
