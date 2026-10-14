@@ -4016,7 +4016,7 @@
       ]
     }
   ],
-  "fingerprint": "f152e070b23a4ccb4c31eff298f872f762cce18078928ff70dad61e343753b22",
+  "fingerprint": "accfe7101198b51b7fa47c81298f4950a38f458a97a9f5f06e582941ef79d021",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6003,7 +6003,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "6476561f9ea2202cf8da2cfd8f5b15dc695cf12c40fa5379d33df7c1edd239a2",
+      "fingerprint": "c6c674be0fede1b76376e1639a34aeab5a1e341ac4e797ec6d9fb6e463875800",
       "mapped_schemas": [
         "security_master"
       ],
@@ -215227,7 +215227,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "1a19419ae609aac0aa2e2ec6fc362bd254ac320467d878b4be4625ef0c2d039d",
+      "fingerprint": "d0c59b220e7fe2857cc6b740f80a4c24153823170c6532e1e5b1e65539d8db13",
       "full_name": "Meridian.Contracts.SecurityMaster.ApproveSecurityClosePriceSetRequest",
       "id": "Meridian.Contracts.SecurityMaster.ApproveSecurityClosePriceSetRequest",
       "kind": "record",
@@ -215246,7 +215246,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 18,
+          "source_line": 20,
           "type": "string"
         },
         {
@@ -215260,7 +215260,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 18,
+          "source_line": 20,
           "type": "string"
         },
         {
@@ -215274,7 +215274,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 18,
+          "source_line": 20,
           "type": "string"
         },
         {
@@ -215288,7 +215288,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 18,
+          "source_line": 20,
           "type": "string"
         },
         {
@@ -215302,7 +215302,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 18,
+          "source_line": 20,
           "type": "Guid"
         },
         {
@@ -215316,7 +215316,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 18,
+          "source_line": 20,
           "type": "DateOnly"
         }
       ],
@@ -215326,12 +215326,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.ApproveSecurityClosePriceSetRequest",
       "references": [],
       "source": {
-        "line": 17,
+        "line": 19,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
       },
       "sources": [
         {
-          "line": 17,
+          "line": 19,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
         }
       ],
@@ -224927,7 +224927,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "d17b31b0507ae9b11915f63b25742de90dd82f8920d739d5d3d03b28ecd26a1f",
+      "fingerprint": "71235d67ce5ac9be69cbc77eae9264b0f8f02b260daa9f5eebc306d7795ef8e0",
       "full_name": "Meridian.Contracts.SecurityMaster.CreateSecurityClosePriceSetRequest",
       "id": "Meridian.Contracts.SecurityMaster.CreateSecurityClosePriceSetRequest",
       "kind": "record",
@@ -224946,7 +224946,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 12,
+          "source_line": 14,
           "type": "string"
         },
         {
@@ -224960,7 +224960,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 12,
+          "source_line": 14,
           "type": "string"
         },
         {
@@ -224975,7 +224975,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 14,
+          "source_line": 16,
           "type": "string?"
         },
         {
@@ -224990,7 +224990,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 14,
+          "source_line": 16,
           "type": "Guid?"
         },
         {
@@ -225004,7 +225004,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 14,
+          "source_line": 16,
           "type": "string"
         },
         {
@@ -225018,7 +225018,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 12,
+          "source_line": 14,
           "type": "DateTimeOffset"
         },
         {
@@ -225033,7 +225033,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 15,
+          "source_line": 17,
           "type": "DateTimeOffset?"
         },
         {
@@ -225047,8 +225047,23 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 13,
+          "source_line": 15,
           "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RequestId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "Guid?",
+          "source_line": 17,
+          "type": "Guid?"
         },
         {
           "collection": true,
@@ -225061,7 +225076,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<SecurityClosePriceInputDto>",
-          "source_line": 13,
+          "source_line": 15,
           "type": "IReadOnlyList<SecurityClosePriceInputDto>"
         },
         {
@@ -225075,7 +225090,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 12,
+          "source_line": 14,
           "type": "DateOnly"
         }
       ],
@@ -225087,12 +225102,12 @@
         "Meridian.Contracts.SecurityMaster.SecurityClosePriceInputDto"
       ],
       "source": {
-        "line": 11,
+        "line": 13,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
       },
       "sources": [
         {
-          "line": 11,
+          "line": 13,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
         }
       ],
@@ -236431,7 +236446,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "aec4f4133731cc209304183c04872982a6df4d5dc7da952c4d852ec38d4f2bfd",
+      "fingerprint": "a3ee0ea6202b030e3eb7602d1ef2e3aa58f1e41a62e1e7d6f6651df922cc2c53",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceApprovalDto",
       "id": "Meridian.Contracts.SecurityMaster.SecurityClosePriceApprovalDto",
       "kind": "record",
@@ -236450,7 +236465,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 35,
+          "source_line": 39,
           "type": "DateTimeOffset"
         },
         {
@@ -236464,7 +236479,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 35,
+          "source_line": 39,
           "type": "string"
         },
         {
@@ -236478,7 +236493,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 35,
+          "source_line": 39,
           "type": "string"
         },
         {
@@ -236492,7 +236507,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 35,
+          "source_line": 39,
           "type": "Guid"
         },
         {
@@ -236506,7 +236521,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 35,
+          "source_line": 39,
           "type": "string"
         }
       ],
@@ -236516,12 +236531,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceApprovalDto",
       "references": [],
       "source": {
-        "line": 34,
+        "line": 38,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
       },
       "sources": [
         {
-          "line": 34,
+          "line": 38,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
         }
       ],
@@ -236540,7 +236555,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "706fc5098f9023573637268516fc2e7dd98b6dadeb8566b83d49e2f3ddf6fadc",
+      "fingerprint": "d069cd1338c524d0e4aa08d6e45cc09bbae1893a23ea296c8f23829d56558935",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceBlockerDto",
       "id": "Meridian.Contracts.SecurityMaster.SecurityClosePriceBlockerDto",
       "kind": "record",
@@ -236559,7 +236574,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 23,
+          "source_line": 25,
           "type": "string"
         },
         {
@@ -236573,7 +236588,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 23,
+          "source_line": 25,
           "type": "string"
         },
         {
@@ -236587,7 +236602,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 23,
+          "source_line": 25,
           "type": "Guid"
         }
       ],
@@ -236597,12 +236612,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceBlockerDto",
       "references": [],
       "source": {
-        "line": 23,
+        "line": 25,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
       },
       "sources": [
         {
-          "line": 23,
+          "line": 25,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
         }
       ],
@@ -236621,7 +236636,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "e8244d17b19d11680eed5216688da9574a0a34b334490a5f8eb05d1d25117f83",
+      "fingerprint": "38754aaf57d9951ccaacf864c44081f3302fcddbd883a9627a8ecde81d31e181",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceEvidence",
       "id": "Meridian.Contracts.SecurityMaster.SecurityClosePriceEvidence",
       "kind": "class",
@@ -236635,12 +236650,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceEvidence",
       "references": [],
       "source": {
-        "line": 39,
+        "line": 43,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
       },
       "sources": [
         {
-          "line": 39,
+          "line": 43,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
         }
       ],
@@ -236659,7 +236674,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "168f2a21af80a6c69f934ae40325b9cd9b80c21d7e33e8891935c8c98a6c7d0c",
+      "fingerprint": "52a8cba0d6fe5b09bbe6316d5a6824c491d55a86bb046c3a9b0d8719b8c96c52",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceInputDto",
       "id": "Meridian.Contracts.SecurityMaster.SecurityClosePriceInputDto",
       "kind": "record",
@@ -236679,7 +236694,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "SecurityClosePriceOverrideDto?",
-          "source_line": 8,
+          "source_line": 9,
           "type": "SecurityClosePriceOverrideDto?"
         },
         {
@@ -236693,7 +236708,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 8,
+          "source_line": 9,
           "type": "Guid"
         }
       ],
@@ -236703,6 +236718,231 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceInputDto",
       "references": [
         "Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto"
+      ],
+      "source": {
+        "line": 9,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+      },
+      "sources": [
+        {
+          "line": 9,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "ccf8554ae9d91a3da63f9112f9f340040002c39fd918475ce95d99bb7caaf7f1",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ClosePrice",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 24,
+          "type": "decimal?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "SecurityRawPriceDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Observations",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<SecurityRawPriceDto>",
+          "source_line": 23,
+          "type": "IReadOnlyList<SecurityRawPriceDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Override",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "SecurityClosePriceOverrideDto?",
+          "source_line": 24,
+          "type": "SecurityClosePriceOverrideDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 23,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Selection",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "SecurityPriceGoldenCopyDto?",
+          "source_line": 23,
+          "type": "SecurityPriceGoldenCopyDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Unit",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "SecurityPriceUnit",
+          "source_line": 24,
+          "type": "SecurityPriceUnit"
+        }
+      ],
+      "name": "SecurityClosePriceLineDto",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto",
+        "Meridian.Contracts.SecurityMaster.SecurityPriceGoldenCopyDto",
+        "Meridian.Contracts.SecurityMaster.SecurityPriceUnit",
+        "Meridian.Contracts.SecurityMaster.SecurityRawPriceDto"
+      ],
+      "source": {
+        "line": 22,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+      },
+      "sources": [
+        {
+          "line": 22,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "c90725ab786629c8afc6468879e3c5d3910c48bb4b775e992c1bd1bf5f5e372b",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvidenceReference",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 8,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Price",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 8,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Rationale",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 8,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Unit",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "SecurityPriceUnit",
+          "source_line": 8,
+          "type": "SecurityPriceUnit"
+        }
+      ],
+      "name": "SecurityClosePriceOverrideDto",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.SecurityPriceUnit"
       ],
       "source": {
         "line": 8,
@@ -236729,232 +236969,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "951103a0fc33a06fab96c18a274e4716ff910bb1150ddf68b0a3e8295181ffcb",
-      "full_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto",
-      "id": "Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto",
-      "kind": "record",
-      "mapped_schemas": [
-        "security_master"
-      ],
-      "members": [
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ClosePrice",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "decimal?",
-          "source_line": 22,
-          "type": "decimal?"
-        },
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "element_type": "SecurityRawPriceDto",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Observations",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "IReadOnlyList<SecurityRawPriceDto>",
-          "source_line": 21,
-          "type": "IReadOnlyList<SecurityRawPriceDto>"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Override",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "SecurityClosePriceOverrideDto?",
-          "source_line": 22,
-          "type": "SecurityClosePriceOverrideDto?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SecurityId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "Guid",
-          "source_line": 21,
-          "type": "Guid"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Selection",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "SecurityPriceGoldenCopyDto?",
-          "source_line": 21,
-          "type": "SecurityPriceGoldenCopyDto?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Unit",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "SecurityPriceUnit",
-          "source_line": 22,
-          "type": "SecurityPriceUnit"
-        }
-      ],
-      "name": "SecurityClosePriceLineDto",
-      "namespace": "Meridian.Contracts.SecurityMaster",
-      "partial": false,
-      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto",
-      "references": [
-        "Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto",
-        "Meridian.Contracts.SecurityMaster.SecurityPriceGoldenCopyDto",
-        "Meridian.Contracts.SecurityMaster.SecurityPriceUnit",
-        "Meridian.Contracts.SecurityMaster.SecurityRawPriceDto"
-      ],
-      "source": {
-        "line": 20,
-        "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
-      },
-      "sources": [
-        {
-          "line": 20,
-          "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
-        }
-      ],
-      "type_parameters": []
-    },
-    {
-      "base_types": [],
-      "classification": "dto",
-      "containing_type": null,
-      "contract_sets": [
-        "all-contracts",
-        "security-master-contracts"
-      ],
-      "diagram": true,
-      "diagram_contract_sets": [
-        "security-master-contracts"
-      ],
-      "enum_members": [],
-      "fingerprint": "ea4e6f1b28864d6abc70efaf0e6f660a70fc4e487e6da97a2ba12235d26e6846",
-      "full_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto",
-      "id": "Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto",
-      "kind": "record",
-      "mapped_schemas": [
-        "security_master"
-      ],
-      "members": [
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "EvidenceReference",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 7,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Price",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "decimal",
-          "source_line": 7,
-          "type": "decimal"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Rationale",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 7,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Unit",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "SecurityPriceUnit",
-          "source_line": 7,
-          "type": "SecurityPriceUnit"
-        }
-      ],
-      "name": "SecurityClosePriceOverrideDto",
-      "namespace": "Meridian.Contracts.SecurityMaster",
-      "partial": false,
-      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto",
-      "references": [
-        "Meridian.Contracts.SecurityMaster.SecurityPriceUnit"
-      ],
-      "source": {
-        "line": 7,
-        "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
-      },
-      "sources": [
-        {
-          "line": 7,
-          "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
-        }
-      ],
-      "type_parameters": []
-    },
-    {
-      "base_types": [],
-      "classification": "dto",
-      "containing_type": null,
-      "contract_sets": [
-        "all-contracts",
-        "security-master-contracts"
-      ],
-      "diagram": true,
-      "diagram_contract_sets": [
-        "security-master-contracts"
-      ],
-      "enum_members": [],
-      "fingerprint": "52d1826c3f665f8adc626849f8c163c4815f647c082f93dd5c5ab87b4bdb553c",
+      "fingerprint": "4f5328eca52bee9efa3c65474fe003630a0ebf53c270f12617c93bf05b40e085",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceSetDto",
       "id": "Meridian.Contracts.SecurityMaster.SecurityClosePriceSetDto",
       "kind": "record",
@@ -236973,7 +236988,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "SecurityClosePriceApprovalDto?",
-          "source_line": 36,
+          "source_line": 40,
           "type": "SecurityClosePriceApprovalDto?"
         },
         {
@@ -236987,7 +237002,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "SecurityClosePriceSnapshotDto",
-          "source_line": 36,
+          "source_line": 40,
           "type": "SecurityClosePriceSnapshotDto"
         }
       ],
@@ -237000,12 +237015,12 @@
         "Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto"
       ],
       "source": {
-        "line": 36,
+        "line": 40,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
       },
       "sources": [
         {
-          "line": 36,
+          "line": 40,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
         }
       ],
@@ -237024,7 +237039,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "0c329d66b0319eb3156c664a588e92521c4058964155024ffed6fe4a412a2b07",
+      "fingerprint": "ff1615c33c00159652f6c3f6d5da189ccd29544f7169f2b80a9007307b6826a0",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto",
       "id": "Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto",
       "kind": "record",
@@ -237043,7 +237058,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 27,
+          "source_line": 29,
           "type": "string"
         },
         {
@@ -237057,7 +237072,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<SecurityClosePriceBlockerDto>",
-          "source_line": 31,
+          "source_line": 33,
           "type": "IReadOnlyList<SecurityClosePriceBlockerDto>"
         },
         {
@@ -237071,7 +237086,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 27,
+          "source_line": 29,
           "type": "string"
         },
         {
@@ -237085,7 +237100,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 28,
+          "source_line": 30,
           "type": "string?"
         },
         {
@@ -237099,7 +237114,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 28,
+          "source_line": 30,
           "type": "Guid?"
         },
         {
@@ -237113,7 +237128,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 30,
+          "source_line": 32,
           "type": "DateTimeOffset"
         },
         {
@@ -237127,8 +237142,23 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 29,
+          "source_line": 31,
           "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "CreationCommandDigest",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 34,
+          "type": "string?"
         },
         {
           "collection": false,
@@ -237141,7 +237171,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 28,
+          "source_line": 30,
           "type": "DateTimeOffset"
         },
         {
@@ -237155,7 +237185,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 29,
+          "source_line": 31,
           "type": "DateTimeOffset"
         },
         {
@@ -237169,7 +237199,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<SecurityClosePriceLineDto>",
-          "source_line": 30,
+          "source_line": 32,
           "type": "IReadOnlyList<SecurityClosePriceLineDto>"
         },
         {
@@ -237183,8 +237213,23 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 29,
+          "source_line": 31,
           "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "RequestedKnowledgeAsOf",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 35,
+          "type": "DateTimeOffset?"
         },
         {
           "collection": false,
@@ -237197,7 +237242,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 27,
+          "source_line": 29,
           "type": "Guid"
         },
         {
@@ -237211,7 +237256,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 27,
+          "source_line": 29,
           "type": "DateOnly"
         },
         {
@@ -237225,7 +237270,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 27,
+          "source_line": 29,
           "type": "int"
         }
       ],
@@ -237238,12 +237283,12 @@
         "Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto"
       ],
       "source": {
-        "line": 26,
+        "line": 28,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
       },
       "sources": [
         {
-          "line": 26,
+          "line": 28,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs"
         }
       ],
@@ -238835,7 +238880,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "2d7ee49ef3a5e6eb0072341c9bdd8cab5734133a2e4b3f33ee6032b53f3aff0f",
+      "fingerprint": "5fb1e9aa69ddb857c86c9aecdedef9c3e82b648cbf344eb11012e37dde03d98a",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityMasterClosePricesJsonContext",
       "id": "Meridian.Contracts.SecurityMaster.SecurityMasterClosePricesJsonContext",
       "kind": "class",
@@ -238849,12 +238894,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityMasterClosePricesJsonContext",
       "references": [],
       "source": {
-        "line": 10,
+        "line": 11,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePricesJsonContext.cs"
       },
       "sources": [
         {
-          "line": 10,
+          "line": 11,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePricesJsonContext.cs"
         }
       ],

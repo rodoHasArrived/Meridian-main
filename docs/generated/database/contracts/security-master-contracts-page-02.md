@@ -107,6 +107,7 @@ classDiagram
         +DateTimeOffset EvaluatedAsOf
         +DateTimeOffset? KnowledgeAsOf
         +decimal MaxSourceDispersionPercent
+        +Guid? RequestId
         +IReadOnlyList~SecurityClosePriceInputDto~ Securities
         +DateOnly ValuationDate
     }

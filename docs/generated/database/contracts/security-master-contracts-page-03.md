@@ -261,11 +261,11 @@ classDiagram
         +Guid? CorrectsSnapshotId
         +DateTimeOffset CreatedAt
         +string CreatedBy
+        +string? CreationCommandDigest
         +DateTimeOffset EvaluatedAsOf
         +DateTimeOffset KnowledgeAsOf
         +IReadOnlyList~SecurityClosePriceLineDto~ Lines
         +decimal MaxSourceDispersionPercent
-        +Guid SnapshotId
     }
     class Meridian_Contracts_SecurityMaster_SecurityComparisonPriceDto["SecurityComparisonPriceDto"] {
         +decimal? PctDiffFromGoldenCopy

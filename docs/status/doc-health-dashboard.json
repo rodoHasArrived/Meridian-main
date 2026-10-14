@@ -1,6 +1,6 @@
 {
   "total_files": 733,
-  "total_lines": 160121,
+  "total_lines": 160122,
   "orphaned_count": 248,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -2644,7 +2644,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-02.md",
-      "line_count": 538,
+      "line_count": 539,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
