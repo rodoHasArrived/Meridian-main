@@ -19,6 +19,19 @@ versions, separate economic/settlement/receipt dates and declared dated FX direc
 certification conveys cash evidence reconciliation and never payment authority. These shared
 contracts use dedicated source-generated JSON contexts. See
 [account oversight evidence](../../docs/domain/account-oversight-evidence.md).
+Close-price evidence validation retains a dispersion blocker when its derived percentage exceeds
+the decimal range, so immutable retention and approval checks agree on unsupported calculations.
+An optional close-price creation `RequestId` binds the snapshot identity to a normalized command.
+`CreationCommandDigest` and `RequestedKnowledgeAsOf` let durable validation reproduce that command,
+including whether its knowledge cutoff was explicit or chosen at capture. Absent metadata is
+omitted from canonical JSON, preserving legacy snapshot and approval digests.
+
+Canonical acquisition facts and lot instructions retain an explicit `OpenLotDirection` while
+quantities remain non-negative. Historical `Long` is the omitted zero value, preserving existing
+JSON and receipt fingerprints; `Short` is serialized explicitly. The contract can describe a short
+lot for calculation and shadow comparison, but current posting instructions, amortization,
+capital returns and successor transformations refuse short accounting until their direction-aware
+authority is implemented and reviewed.
 
 `AssetAcquisitionTermsCompletionDto` is an optional supplement on
 `PostPostingRuleJournalCandidateRequestDto`. It supplies only the missing amortization method and

@@ -387,12 +387,14 @@ access to this route family.
 
 | Path | Method | Description |
 |---|---|---|
+| `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/oversight/context` | GET | Returns the verified account/book/base currency, session actor and current cash, price-review and provisioning capabilities for the browser workbench. |
 | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/oversight/provision` | POST | Requires `AdminMaintenance`; explicitly provisions the durable cash-continuity and forecast stores without resetting missing or corrupt initialized history. |
 | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-reconciliation/runs` | POST | Accepts `AccountCashReconciliationRequest`; retains a complete two-source native-currency balance comparison, original rows and executed tolerance version, returning `AccountCashReconciliationRun`. |
 | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-reconciliation/cases` | GET | Returns exact-account `AccountCashReconciliationCase` history, owner, version, source resolution and aging as of the retained observation or resolution. |
 | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-reconciliation/cases/{caseId}/assignments` | POST | Accepts `AssignAccountCashCaseRequest` with `expectedVersion`, `owner` and `reason`; appends a session-actor assignment and returns the updated case. Stale versions conflict. |
 | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-reconciliation/runs/{runId}/replay` | GET | Reproduces the retained run's source and tolerance evidence without consulting current sources or changing case state. |
-| `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/close-price-sets/{valuationDate}` | POST | Accepts `CreateSecurityClosePriceSetRequest`; returns an immutable `SecurityClosePriceSetDto` containing retained hierarchy selections, observations, units, supported overrides and visible blockers. |
+| `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/close-price-sets/{valuationDate}` | POST | Accepts `CreateSecurityClosePriceSetRequest`; returns an immutable `SecurityClosePriceSetDto` containing retained hierarchy selections, observations, units, supported overrides and visible blockers. Optional `requestId` binds an immutable normalized creation command to the snapshot identity; an identical retry recovers that retained set before reading later prices, while conflicting reuse fails. |
+| `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/close-price-sets/{valuationDate}` | GET | Returns all retained exact-account/book/date versions in ascending order, including immutable approvals, after stored evidence validation. |
 | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/close-price-sets/{valuationDate}/{snapshotId:guid}` | GET | Returns the exact account/book/date snapshot and its retained approval, or `404` when no such snapshot exists. |
 | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/close-price-sets/{valuationDate}/{snapshotId:guid}/approval` | POST | Accepts `ApproveSecurityClosePriceSetRequest`; independently approves the immutable snapshot digest with reviewer rationale. Unresolved blockers, same-maker review and superseded drafts conflict. |
 | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-forecasts` | POST | Accepts `AccountCashForecastRequestDto`; verifies each selected balance, flow and dated FX input against independently reviewed typed Evidence Vault source bytes before retaining an `AccountCashForecastSnapshotDto`. |
@@ -412,6 +414,11 @@ and forecast-recording timestamps cannot exceed server capture time. Reconciliat
 HTTP `status` values are `0` Expected and `1` Actual; `provenance.role` values are `0` Observation,
 `1` Projection and `2` DeclaredFx. The separately retained typed source JSON uses enum names;
 price units use `CurrencyPerUnit` or `PercentOfPar`.
+Amounts, prices, tolerances, FX rates and derived financial values in oversight HTTP responses
+use exact plain decimal strings. Integer versions remain JSON numbers. Decimal-text request
+values are supported; this transport representation does not change retained domain digests.
+Identical concurrent approval retries return the same retained decision and approval timestamp;
+different reviewers or rationales cannot replace that immutable decision.
 
 Incorrect account authority returns `403`; invalid inputs, including null forecast collection
 entries or future recording times, return `422`. Conflicting retained inputs and stale versions

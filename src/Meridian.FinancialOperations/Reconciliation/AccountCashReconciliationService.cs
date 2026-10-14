@@ -38,6 +38,12 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
                     && !Sha256Digest.FixedEquals(SourceHash(prior), sourceHash)))
                     throw new InvalidOperationException("A retained source version cannot be rebound to changed observations or provenance.");
             }
+            var toleranceHash = ToleranceHash(input.Tolerance);
+            if (document.Runs.Where(item => item.Input.Scope == input.Scope)
+                .Select(item => item.Input.Tolerance)
+                .Any(prior => prior.ProfileId == input.Tolerance.ProfileId && prior.Version == input.Tolerance.Version
+                    && !Sha256Digest.FixedEquals(ToleranceHash(prior), toleranceHash)))
+                throw new InvalidOperationException("A retained tolerance version cannot be rebound to changed rules; use a new version.");
             var relevantCases = document.Cases.Where(item => Owns(input, item)).ToArray();
             var latest = document.Runs.Where(item => item.Input.Scope == input.Scope
                 && item.Input.Left.SourceId == input.Left.SourceId && item.Input.Right.SourceId == input.Right.SourceId)
@@ -107,6 +113,8 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
                 ?? throw new KeyNotFoundException("The requested case was not retained in this exact account scope.");
             if (item.Version != expectedVersion)
                 throw new InvalidOperationException("The case changed; reload before assigning an owner.");
+            if (assignedAtUtc < item.LastObservedAtUtc || item.Assignments.Any(prior => assignedAtUtc < prior.AssignedAtUtc))
+                throw new InvalidOperationException("An assignment cannot precede the latest case observation or owner assignment.");
             var updated = item with
             {
                 Owner = owner.Trim(),
@@ -214,6 +222,8 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
         => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(input, AccountCashReconciliationJsonContext.Default.AccountCashReconciliationRequest));
     private static string SourceHash(AccountCashBalanceSource source)
         => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(source, AccountCashReconciliationJsonContext.Default.AccountCashBalanceSource));
+    private static string ToleranceHash(StatementToleranceProfile tolerance)
+        => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(tolerance, AccountCashReconciliationJsonContext.Default.StatementToleranceProfile));
     private static string ResultHash(AccountCashComparison[] result)
         => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(result, AccountCashReconciliationJsonContext.Default.AccountCashComparisonArray));
 }

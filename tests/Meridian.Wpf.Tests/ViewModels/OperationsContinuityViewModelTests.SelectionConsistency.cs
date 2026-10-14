@@ -12,7 +12,8 @@ public sealed partial class OperationsContinuityViewModelTests
         var detail = CreatePublicationDetail(scope);
         var client = new FakeOperationsClient
         {
-            Workflows = [], DetailLoader = _ => throw new InvalidOperationException("Unlisted detail must not be requested."),
+            Workflows = [],
+            DetailLoader = _ => throw new InvalidOperationException("Unlisted detail must not be requested."),
             CommandCenter = CreateCommandCenter(scope, detail, [])
         };
         using var vm = new OperationsContinuityViewModel(client) { Parameter = scope };
@@ -32,7 +33,9 @@ public sealed partial class OperationsContinuityViewModelTests
         var detail = CreatePublicationDetail(scope);
         var client = new FakeOperationsClient
         {
-            Workflows = [CreateSummary(scope.LedgerBookId)], Detail = detail, CommandCenter = CreateCommandCenter(scope, detail, [])
+            Workflows = [CreateSummary(scope.LedgerBookId)],
+            Detail = detail,
+            CommandCenter = CreateCommandCenter(scope, detail, [])
         };
         using var vm = new OperationsContinuityViewModel(client) { Parameter = scope };
         await vm.RefreshAsync();
@@ -72,7 +75,9 @@ public sealed partial class OperationsContinuityViewModelTests
         scope = scope with { FundAccountId = detail.FundAccountId, PeriodId = detail.PeriodId, LedgerBookId = detail.LedgerBookId };
         var client = new FakeOperationsClient
         {
-            Workflows = [summary], Detail = detail, CommandCenter = CreateCommandCenter(scope, detail, [])
+            Workflows = [summary],
+            Detail = detail,
+            CommandCenter = CreateCommandCenter(scope, detail, [])
         };
         using var vm = new OperationsContinuityViewModel(client) { Parameter = scope };
 
@@ -122,7 +127,8 @@ public sealed partial class OperationsContinuityViewModelTests
         };
         var client = new FakeOperationsClient
         {
-            Workflows = [CreateSummary(scope.LedgerBookId)], Detail = detail,
+            Workflows = [CreateSummary(scope.LedgerBookId)],
+            Detail = detail,
             CommandCenter = CreateCommandCenter(scope, active, [])
         };
         using var vm = new OperationsContinuityViewModel(client) { Parameter = scope };
@@ -161,7 +167,9 @@ public sealed partial class OperationsContinuityViewModelTests
         };
         var client = new FakeOperationsClient
         {
-            Workflows = [CreateSummary(scope.LedgerBookId)], Detail = detail, CommandCenter = CreateCommandCenter(scope, active, [])
+            Workflows = [CreateSummary(scope.LedgerBookId)],
+            Detail = detail,
+            CommandCenter = CreateCommandCenter(scope, active, [])
         };
         using var vm = new OperationsContinuityViewModel(client) { Parameter = scope };
 

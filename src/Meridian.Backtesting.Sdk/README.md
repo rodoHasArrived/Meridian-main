@@ -11,9 +11,16 @@ last_reviewed: 2026-10-13
 
 # src/Meridian.Backtesting.Sdk
 
+`CanonicalOpenLotAdapter` admits only long simulation and canonical lots. It refuses an explicitly
+short canonical acquisition even if its positive quantity and basis match a long simulation lot.
+Existing simulation short-cover calculation remains available; this guard does not certify
+canonical short posting or production consumer cutover.
+
 ## Shared close and lot convergence
 
-`CanonicalOpenLotAdapter` checks backtest/ledger identity and economics against the shared canonical lot contract. It compares the exact retained component basis used by simulation rather than extending a rounded entry quote. It preserves ticker-rename continuity while rejecting quantity, basis, date, or durable-ID differences. Explicit short lots remain blocked until the canonical direction model is approved, matching the Execution adapter; simulation does not become ledger authority.
+`CanonicalOpenLotAdapter` checks backtest/ledger identity and economics against the shared canonical lot contract. It compares exact component basis after validating a governed unit successor's immediate predecessor, component quantities, acquisition dates and internally consistent source fills. Components must represent one source pool, with positive quantities and nonnegative basis that reconcile exactly to the retained current open quantity and carrying basis. Ordinary lots cannot use components to override their entry quote. It preserves ticker-rename continuity while rejecting quantity, basis, date, or durable-ID differences. Explicit short lots remain blocked until the canonical direction model is approved, matching the Execution adapter; simulation does not become ledger authority.
+
+The retained canonical contract identifies one immediate predecessor and carries no source-fill or component allocation manifest. Fill checks establish internal consistency only, and canonical parity certifies the homogeneous pool's totals rather than an individual component allocation recipe. This preserves exact decimal residuals after partial relief. Multi-source components and flattened ancestor lineage remain valid simulation representations, but this adapter refuses their canonical binding until separately governed mapping evidence is available. Fractional simulation allocation and `OpenLot.CostBasis()` are unchanged; canonical admission requires the evidence above.
 
 ## Purpose
 

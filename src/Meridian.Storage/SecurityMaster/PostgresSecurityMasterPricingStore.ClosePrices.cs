@@ -100,6 +100,32 @@ public sealed partial class PostgresSecurityMasterPricingStore
         return await ReadCloseSetAsync(connection, null, accountId, bookId, valuationDate, snapshotId, ct).ConfigureAwait(false);
     }
 
+    public async Task<IReadOnlyList<SecurityClosePriceSetDto>> GetClosePriceSetsAsync(
+        string accountId, string bookId, DateOnly valuationDate, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(accountId) || string.IsNullOrWhiteSpace(bookId) || valuationDate == default)
+            throw new ArgumentException("An exact account/book/date scope is required.");
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        // The existing unique (account_id, book_id, valuation_date, version) index covers
+        // this exact scope and ordering; approval lookup uses its snapshot primary key.
+        command.CommandText = $"""
+            select s.payload, s.payload_sha256, s.version, s.corrects_snapshot_id, a.payload, a.payload_sha256, s.snapshot_id
+            from {Qualified("security_close_price_snapshots")} s
+            left join {Qualified("security_close_price_approvals")} a on a.snapshot_id = s.snapshot_id
+            where s.account_id = @account and s.book_id = @book and s.valuation_date = @date
+            order by s.version;
+            """;
+        command.Parameters.AddWithValue("account", accountId);
+        command.Parameters.AddWithValue("book", bookId);
+        command.Parameters.AddWithValue("date", valuationDate);
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        var result = new List<SecurityClosePriceSetDto>();
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            result.Add(ReadCloseSet(reader, accountId, bookId, valuationDate, reader.GetGuid(6)));
+        return result;
+    }
+
     private async Task<SecurityClosePriceSetDto?> ReadCloseSetAsync(NpgsqlConnection connection, NpgsqlTransaction? transaction,
         string accountId, string bookId, DateOnly valuationDate, Guid snapshotId, CancellationToken ct)
     {
@@ -115,6 +141,12 @@ public sealed partial class PostgresSecurityMasterPricingStore
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
             return null;
+        return ReadCloseSet(reader, accountId, bookId, valuationDate, snapshotId);
+    }
+
+    private static SecurityClosePriceSetDto ReadCloseSet(NpgsqlDataReader reader,
+        string accountId, string bookId, DateOnly valuationDate, Guid snapshotId)
+    {
         var payload = reader.GetString(0);
         if (!Sha256Digest.FixedEquals(Sha256Digest.ComputeUtf8(payload), reader.GetString(1)))
             throw new InvalidOperationException("The retained close-price snapshot failed its integrity check.");

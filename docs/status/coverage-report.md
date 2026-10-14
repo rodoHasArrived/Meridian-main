@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**1448 / 9452** items documented (**15.3%**) &mdash; Grade: **F**
+**1450 / 9454** items documented (**15.3%**) &mdash; Grade: **F**
 
 ```text
 [===-----------------] 15.3%
@@ -15,7 +15,7 @@
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 1359 | 8964 | 15.2% | F |
+| Public Classes / Interfaces | 1361 | 8966 | 15.2% | F |
 | API Endpoints | 88 | 334 | 26.3% | F |
 | Configuration Options | 1 | 143 | 0.7% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |

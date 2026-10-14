@@ -117,6 +117,9 @@ public static class OpenLotSuccessors
         }
         var source = instruction.ExpectedLot;
         OpenLotValidation.Validate(source);
+        Require(source.Acquisition.Direction == OpenLotDirection.Long
+            && instruction.Successors.All(target => target.Lot.Acquisition is { Direction: OpenLotDirection.Long }),
+            "Canonical successor posting currently supports Long lots only; a corporate action cannot change lot direction.");
         var action = projection.Treatment.ActionType;
         var refunding = action == CorporateActionAccountingTypeDto.AdvanceRefunding;
         var split = action is CorporateActionAccountingTypeDto.StockSplit or CorporateActionAccountingTypeDto.ReverseStockSplit;

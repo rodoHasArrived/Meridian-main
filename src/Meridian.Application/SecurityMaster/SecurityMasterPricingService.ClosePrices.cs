@@ -1,3 +1,4 @@
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Application.SecurityMaster;
@@ -17,12 +18,23 @@ public sealed partial class SecurityMasterPricingService
         if (string.IsNullOrWhiteSpace(request.AccountId) || string.IsNullOrWhiteSpace(request.BookId)
             || string.IsNullOrWhiteSpace(request.CreatedBy) || request.ValuationDate == default
             || request.EvaluatedAsOf == default || DateOnly.FromDateTime(request.EvaluatedAsOf.UtcDateTime) != request.ValuationDate
-            || request.MaxSourceDispersionPercent < 0 || request.Securities.Count == 0
+            || request.MaxSourceDispersionPercent < 0 || request.Securities.Count == 0 || request.RequestId == Guid.Empty
             || request.Securities.Any(s => s.SecurityId == Guid.Empty)
             || request.Securities.Select(s => s.SecurityId).Distinct().Count() != request.Securities.Count)
             throw new ArgumentException("Close prices require an explicit account, book, date, cutoff, preparer, dispersion limit and distinct securities.");
         var account = request.AccountId.Trim();
         var book = request.BookId.Trim();
+        var commandDigest = request.RequestId is null ? null : SecurityClosePriceEvidence.CreationCommandDigest(request);
+        if (request.RequestId is { } requestId)
+        {
+            var existing = await _store.GetClosePriceSetAsync(account, book, request.ValuationDate, requestId, ct).ConfigureAwait(false);
+            if (existing is not null)
+            {
+                if (!Sha256Digest.FixedEquals(existing.Snapshot.CreationCommandDigest, commandDigest))
+                    throw new InvalidOperationException("A close-price request identity cannot be reused for a different creation command.");
+                return existing;
+            }
+        }
         SecurityClosePriceSnapshotDto? prior = null;
         if (request.CorrectsSnapshotId is { } priorId)
         {
@@ -49,12 +61,25 @@ public sealed partial class SecurityMasterPricingService
                 selection is null ? null : input.Override?.Price ?? selection.GoldenCopyPrice,
                 selection is null ? SecurityPriceUnit.Unspecified : input.Override?.Unit ?? selection.Unit));
         }
-        var snapshot = new SecurityClosePriceSnapshotDto(Guid.NewGuid(), account, book, request.ValuationDate,
+        var snapshot = new SecurityClosePriceSnapshotDto(request.RequestId ?? Guid.NewGuid(), account, book, request.ValuationDate,
             (prior?.Version ?? 0) + 1, request.CorrectsSnapshotId, request.CorrectionRationale?.Trim(),
             request.EvaluatedAsOf, knownAt, request.MaxSourceDispersionPercent, request.CreatedBy.Trim(),
-            capturedAt, lines, SecurityClosePriceEvidence.Assess(lines, request.MaxSourceDispersionPercent));
+            capturedAt, lines, SecurityClosePriceEvidence.Assess(lines, request.MaxSourceDispersionPercent),
+            commandDigest, request.RequestId is null ? null : request.KnowledgeAsOf?.ToUniversalTime());
         SecurityClosePriceEvidence.Validate(snapshot);
-        await _store.RetainClosePriceSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+        try
+        {
+            await _store.RetainClosePriceSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+        }
+        catch (InvalidOperationException) when (request.RequestId is not null)
+        {
+            // A competing copy of this same command may already have frozen its observations.
+            // Recover that exact retained capture; never recompute or adopt another command.
+            var committed = await _store.GetClosePriceSetAsync(account, book, request.ValuationDate, snapshot.SnapshotId, ct).ConfigureAwait(false);
+            if (committed is null || !Sha256Digest.FixedEquals(committed.Snapshot.CreationCommandDigest, commandDigest))
+                throw;
+            return committed;
+        }
         return new(snapshot, null);
     }
 
@@ -74,8 +99,23 @@ public sealed partial class SecurityMasterPricingService
         var approval = new SecurityClosePriceApprovalDto(request.SnapshotId, SecurityClosePriceEvidence.Digest(retained.Snapshot),
             request.Reviewer.Trim(), request.Rationale.Trim(), DateTimeOffset.UtcNow);
         SecurityClosePriceEvidence.ValidateApproval(retained.Snapshot, approval);
-        await _store.RetainClosePriceApprovalAsync(retained.Snapshot.AccountId, retained.Snapshot.BookId,
-            retained.Snapshot.ValuationDate, approval, ct).ConfigureAwait(false);
+        try
+        {
+            await _store.RetainClosePriceApprovalAsync(retained.Snapshot.AccountId, retained.Snapshot.BookId,
+                retained.Snapshot.ValuationDate, approval, ct).ConfigureAwait(false);
+        }
+        catch (InvalidOperationException)
+        {
+            // Another identical review can commit after our initial read. Its retained timestamp
+            // is authoritative; accept only that same decision over the exact snapshot digest.
+            var committed = await GetClosePriceSetAsync(retained.Snapshot.AccountId, retained.Snapshot.BookId,
+                retained.Snapshot.ValuationDate, approval.SnapshotId, ct).ConfigureAwait(false);
+            if (committed?.Approval is not { } canonical || canonical.SnapshotId != approval.SnapshotId
+                || !Sha256Digest.FixedEquals(canonical.SnapshotSha256, approval.SnapshotSha256)
+                || canonical.Reviewer != approval.Reviewer || canonical.Rationale != approval.Rationale)
+                throw;
+            return committed;
+        }
         return new(retained.Snapshot, approval);
     }
 
@@ -85,5 +125,13 @@ public sealed partial class SecurityMasterPricingService
         if (string.IsNullOrWhiteSpace(accountId) || string.IsNullOrWhiteSpace(bookId) || valuationDate == default || snapshotId == Guid.Empty)
             throw new ArgumentException("An exact account/book/date scope and snapshot identity are required.");
         return _store.GetClosePriceSetAsync(accountId.Trim(), bookId.Trim(), valuationDate, snapshotId, ct);
+    }
+
+    public Task<IReadOnlyList<SecurityClosePriceSetDto>> GetClosePriceSetsAsync(
+        string accountId, string bookId, DateOnly valuationDate, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(accountId) || string.IsNullOrWhiteSpace(bookId) || valuationDate == default)
+            throw new ArgumentException("An exact account/book/date scope is required.");
+        return _store.GetClosePriceSetsAsync(accountId.Trim(), bookId.Trim(), valuationDate, ct);
     }
 }

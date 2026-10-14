@@ -20,6 +20,12 @@ original bytes, hashes, review provenance, version and every economic field befo
 unsupported inputs fail closed. File histories require explicit administrative provisioning.
 See [bounded account oversight](../../docs/operators/account-oversight.md) for route and source
 format contracts. These seams do not grant accounting-close or payment authority.
+The browser receives exact decimal text through this HTTP transport without changing retained
+domain digests. Scoped access context supplies current session capabilities; close-price history
+loads all exact account/book/date versions after durable evidence validation.
+Close-price capture accepts an optional stable request identity. Identical retries recover the
+retained snapshot before price evaluation; changing its immutable command conflicts. The HTTP
+actor remains session-derived on both initial capture and recovery.
 
 Security Master override PATCH and decision endpoints return HTTP 409 when another instance
 advances the durable workbench generation. The governed workbench endpoints use their existing
@@ -1559,6 +1565,10 @@ accounting-record launch lists.
 
 Evidence Vault packet exports stream retained local artifacts through a bounded 64 KiB read
 window into private staging while the canonical SHA-256 primitive hashes the same bytes. The
+copy boundary buffers smaller digest reads so a source that fills the window does not incur extra
+staging writes and durable quota checkpoints at the hash implementation's read size. Each actual
+staging write still reserves capacity, flushes its bytes, and reconciles the reservation before
+the next source read; partial reads retain the same accounting and cancellation behavior. The
 100 MiB per-artifact limit applies to bytes actually read, including growth after the initial
 file-size check. Source hash mismatches, read failures, and cancellation abort the package.
 Artifacts, manifest, and index are staged before publication; no-overwrite moves publish the

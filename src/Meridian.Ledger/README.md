@@ -11,6 +11,11 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Ledger
 
+`OpenLotReliefService` treats explicit long/short direction as part of the pool scope. It never
+nets the two directions, and it allocates positive quantity and both retained currency bases for
+a homogeneous pool. This calculation does not authorize short journals or infer short-sale tax
+character; those posting and reporting paths remain gated separately.
+
 `RecurringJournalSchedule` remains a pure calendar and template projection. Durable claims live in
 Financial Operations, while `RecurringJournalEvidence` retains the exact schedule/template
 versions, full definitions, accounting scope, period version and source references on each generated

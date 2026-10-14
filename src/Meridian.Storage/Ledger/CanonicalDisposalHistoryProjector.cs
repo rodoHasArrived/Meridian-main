@@ -14,6 +14,8 @@ public static class CanonicalDisposalHistoryProjector
             throw new LedgerValidationException("Retained disposal belongs to a different journal.");
         if (canonical is null || canonical.Count != disposal.Lots.Count || canonical.Count == 0)
             throw new LedgerValidationException("Disposal history lacks canonical acquisition evidence. Resolve the open-lot backfill exception for this durable lot with reviewed acquisition evidence.");
+        if (canonical.Any(lot => lot.Acquisition is not { Direction: OpenLotDirection.Long }))
+            throw new LedgerValidationException("Short-cover reporting requires retained cover economics and tax-character evidence; opening-lot age cannot establish short-sale tax character.");
         if (!Enum.IsDefined(disposal.ReliefMethod))
             throw new LedgerValidationException("Retained disposal has an unsupported relief method.");
         var recipients = CertifyDeferralRecipients(disposal, canonical);

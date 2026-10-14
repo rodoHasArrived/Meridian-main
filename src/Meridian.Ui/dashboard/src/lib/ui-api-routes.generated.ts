@@ -698,6 +698,7 @@ export const UI_API_ROUTES = {
   LedgerAccountCashForecasts: "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-forecasts",
   LedgerAccountCashForecast: "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-forecasts/{snapshotId}",
   LedgerAccountOversightProvision: "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/oversight/provision",
+  LedgerAccountOversightContext: "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/oversight/context",
   LedgerAggregateJournalEntries: "/api/ledger/aggregates/{aggregateId:guid}/journal-entries",
   LedgerPeriods: "/api/ledger/periods",
   LedgerPeriodClose: "/api/ledger/periods/{periodId:guid}/close",

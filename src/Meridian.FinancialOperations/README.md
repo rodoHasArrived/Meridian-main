@@ -26,6 +26,13 @@ provision `FileAccountCashReconciliationStore.InitializeAsync` before use; loss 
 cannot silently restart history. Source clearing confers no governed close approval.
 See [account oversight evidence](../../docs/domain/account-oversight-evidence.md) and
 `AccountCashReconciliationContinuityTests` for the first `W10-RECON-001` acceptance slice.
+Tolerance profile IDs and versions also bind immutable complete rules across the scoped history.
+Owner assignment timestamps cannot precede the latest case observation or assignment.
+
+The bounded lot acquisition/disposal spine resolves a Long or Asset book position before retaining
+a projection or drafting a candidate. A Short, Liability or unknown side cannot acquire the long
+writer's accounting semantics merely by supplying positive quantity. Explicit short lot
+instructions remain refused pending direction-aware opening, cover and reporting authority.
 
 `Consolidation/ConsolidationService` resolves two directly wholly owned entities from authoritative
 effective-dated ownership, compares reciprocal receivables/payables using posting entity and

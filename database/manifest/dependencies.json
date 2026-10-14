@@ -130,6 +130,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDirection"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDto"
     },
     {
@@ -23152,6 +23158,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDirection"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto",
       "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
     },
     {
@@ -25019,6 +25031,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto",
       "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDirection"
     },
     {
       "kind": "contract-reference",
@@ -49497,7 +49515,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "34a6d0b341a25c5aa2a463eef774cccbaa21aa88b4d8ae88b5c8988315340df6",
+  "fingerprint": "3542904a533accec86253c397f408f9c5524e94bf0219b77cb87d7bf441a2028",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -49675,6 +49693,12 @@
       "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotCorporateActionLineageDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Accounting.Lots.OpenLotCorporateActionLineageDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDirection",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotDirection"
     },
     {
       "classification": "dto",
@@ -72365,11 +72389,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3267,
-    "contract_set_memberships": 3853,
-    "edges": 8224,
+    "contract_references": 3269,
+    "contract_set_memberships": 3854,
+    "edges": 8227,
     "foreign_keys": 136,
     "logical_references": 6,
-    "nodes": 3962
+    "nodes": 3963
   }
 }

@@ -50,6 +50,9 @@ public sealed class NullSecurityMasterPricingService : ISecurityMasterPricingSer
 
     public Task<SecurityClosePriceSetDto?> GetClosePriceSetAsync(string accountId, string bookId, DateOnly valuationDate, Guid snapshotId, CancellationToken ct = default)
         => Task.FromResult<SecurityClosePriceSetDto?>(null);
+
+    public Task<IReadOnlyList<SecurityClosePriceSetDto>> GetClosePriceSetsAsync(string accountId, string bookId, DateOnly valuationDate, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<SecurityClosePriceSetDto>>(Array.Empty<SecurityClosePriceSetDto>());
 }
 
 public sealed class NullSecurityMasterCashFlowService : ISecurityMasterCashFlowService

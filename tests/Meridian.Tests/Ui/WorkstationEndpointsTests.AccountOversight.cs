@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FundStructure;
@@ -23,6 +25,128 @@ public sealed partial class WorkstationEndpointsTests
     private static readonly DateTimeOffset OversightObservedAt = new(2026, 5, 31, 18, 0, 0, TimeSpan.Zero);
     private static readonly DateOnly OversightDate = new(2026, 5, 31);
     private const UserPermission OversightWritePermissions = UserPermission.ManageLedgerReports | UserPermission.ModifySecurityMaster;
+    private static readonly JsonSerializerOptions OversightResponseJsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        NumberHandling = JsonNumberHandling.AllowReadingFromString,
+        Converters = { new JsonStringEnumConverter() }
+    };
+
+    [Theory]
+    [InlineData(UserPermission.ViewLedgerReports, false, false, false, false)]
+    [InlineData(UserPermission.ViewLedgerReports | UserPermission.ViewSecurityMaster, false, true, false, false)]
+    [InlineData(OversightWritePermissions, true, true, true, false)]
+    [InlineData(UserPermission.AdminMaintenance | UserPermission.ModifySecurityMaster, true, true, true, true)]
+    public async Task AccountOversight_ContextUsesSessionPermissionsAndRetainedAccountBook(
+        UserPermission permissions, bool canWrite, bool canReadPrices, bool canManagePrices, bool canProvision)
+    {
+        var bookId = Guid.NewGuid();
+        var accountId = Guid.NewGuid();
+        var book = OversightBook(bookId, accountId);
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(OversightBooks(bookId, book).Object);
+            services.AddSingleton(OversightOwnership(new("oversight-fund", "tenant-alpha", "company-alpha")).Object);
+        }, currentUserPermissions: permissions, currentUserTenantId: "tenant-alpha", currentUserCompanyId: "company-alpha",
+            currentUserName: "reviewer-session", mapLedgerApi: true);
+
+        using var response = await app.GetTestClient().GetAsync(OversightBaseRoute(bookId, accountId)
+            + "/oversight/context?actor=forged&canWrite=true&canProvision=true");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var context = await response.Content.ReadFromJsonAsync<AccountOversightContextDto>();
+        context.Should().Be(new AccountOversightContextDto(accountId.ToString("D"), bookId.ToString("D"),
+            book.BaseCurrency, book.DisplayName, "reviewer-session", canWrite, canReadPrices, canManagePrices, canProvision));
+    }
+
+    [Fact]
+    public async Task AccountOversight_ClosePriceHistoryUsesExactRouteScopeAndRequiresPriceReadPermission()
+    {
+        var bookId = Guid.NewGuid();
+        var accountId = Guid.NewGuid();
+        var pricing = new Mock<ISecurityMasterPricingService>(MockBehavior.Strict);
+        var retained = new SecurityClosePriceSetDto(new SecurityClosePriceSnapshotDto(Guid.NewGuid(),
+            accountId.ToString("D"), bookId.ToString("D"), OversightDate, 1, null, null,
+            OversightObservedAt, OversightObservedAt, 2m, "preparer", OversightObservedAt, [], []), null);
+        pricing.Setup(service => service.GetClosePriceSetsAsync(accountId.ToString("D"), bookId.ToString("D"),
+            OversightDate, It.IsAny<CancellationToken>())).ReturnsAsync([retained]);
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(OversightBooks(bookId, OversightBook(bookId, accountId)).Object);
+            services.AddSingleton(pricing.Object);
+        }, currentUserPermissions: UserPermission.ViewLedgerReports | UserPermission.ViewSecurityMaster, mapLedgerApi: true);
+        var client = app.GetTestClient();
+        var route = OversightBaseRoute(bookId, accountId) + "/close-price-sets/2026-05-31";
+
+        using var response = await client.GetAsync(route + "?accountId=foreign&bookId=foreign");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var results = await response.Content.ReadFromJsonAsync<SecurityClosePriceSetDto[]>();
+        results.Should().ContainSingle().Which.Snapshot.SnapshotId.Should().Be(retained.Snapshot.SnapshotId);
+        var deniedBooks = new Mock<ILedgerBookService>(MockBehavior.Strict);
+        await using var readOnlyApp = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(deniedBooks.Object);
+            services.AddSingleton(pricing.Object);
+        }, currentUserPermissions: UserPermission.ViewLedgerReports, mapLedgerApi: true);
+        using var denied = await readOnlyApp.GetTestClient().GetAsync(route);
+        denied.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        deniedBooks.VerifyNoOtherCalls();
+        pricing.Verify(service => service.GetClosePriceSetsAsync(accountId.ToString("D"), bookId.ToString("D"),
+            OversightDate, It.IsAny<CancellationToken>()), Times.Once);
+        pricing.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task AccountOversight_DecimalTextInputAndResponsePreserveEveryDigitWithoutChangingDomainEvidence()
+    {
+        const string exact = "999999999999999999.123456789";
+        const decimal amount = 999999999999999999.123456789m;
+        var bookId = Guid.NewGuid();
+        var accountId = Guid.NewGuid();
+        var securityId = Guid.NewGuid();
+        var manual = new SecurityClosePriceOverrideDto(amount, SecurityPriceUnit.CurrencyPerUnit, "Exact source quote", "dealer/row-1");
+        var retained = new SecurityClosePriceSetDto(new SecurityClosePriceSnapshotDto(Guid.NewGuid(),
+            accountId.ToString("D"), bookId.ToString("D"), OversightDate, 1, null, null,
+            OversightObservedAt, OversightObservedAt, amount, "preparer-session", OversightObservedAt,
+            [new(securityId, null, [new("dealer", amount, OversightObservedAt, SecurityPriceUnit.CurrencyPerUnit)],
+                manual, amount, SecurityPriceUnit.CurrencyPerUnit)], []), null);
+        var digest = SecurityClosePriceEvidence.Digest(retained.Snapshot);
+        var pricing = new Mock<ISecurityMasterPricingService>(MockBehavior.Strict);
+        pricing.Setup(service => service.CreateClosePriceSetAsync(It.IsAny<CreateSecurityClosePriceSetRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(retained);
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(OversightBooks(bookId, OversightBook(bookId, accountId)).Object);
+            services.AddSingleton(pricing.Object);
+        }, currentUserPermissions: OversightWritePermissions, currentUserName: "preparer-session", mapLedgerApi: true);
+
+        using var response = await app.GetTestClient().PostAsJsonAsync(
+            OversightBaseRoute(bookId, accountId) + "/close-price-sets/2026-05-31", new
+            {
+                accountId = accountId.ToString("D"),
+                bookId = bookId.ToString("D"),
+                valuationDate = "2026-05-31",
+                evaluatedAsOf = OversightObservedAt,
+                maxSourceDispersionPercent = exact,
+                createdBy = "forged",
+                securities = new[] { new { securityId, @override = new { price = exact, unit = "CurrencyPerUnit",
+                    rationale = "Exact source quote", evidenceReference = "dealer/row-1" } } }
+            });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var snapshot = json.RootElement.GetProperty("snapshot");
+        snapshot.GetProperty("version").GetInt32().Should().Be(1);
+        snapshot.GetProperty("maxSourceDispersionPercent").GetString().Should().Be(exact);
+        var line = snapshot.GetProperty("lines")[0];
+        line.GetProperty("closePrice").GetString().Should().Be(exact);
+        line.GetProperty("observations")[0].GetProperty("price").GetString().Should().Be(exact);
+        line.GetProperty("override").GetProperty("price").GetString().Should().Be(exact);
+        pricing.Verify(service => service.CreateClosePriceSetAsync(It.Is<CreateSecurityClosePriceSetRequest>(request =>
+            request.MaxSourceDispersionPercent == amount && request.Securities[0].Override!.Price == amount
+            && request.CreatedBy == "preparer-session"), It.IsAny<CancellationToken>()), Times.Once);
+        SecurityClosePriceEvidence.Digest(retained.Snapshot).Should().Be(digest);
+    }
 
     [Theory]
     [InlineData("missing-book")]
@@ -106,7 +230,7 @@ public sealed partial class WorkstationEndpointsTests
             response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         }
 
-        ownership.Verify(service => service.ResolveAsync("oversight-fund", It.IsAny<CancellationToken>()), Times.Exactly(3));
+        ownership.Verify(service => service.ResolveAsync("oversight-fund", It.IsAny<CancellationToken>()), Times.Exactly(5));
         ownership.VerifyNoOtherCalls();
         pricing.VerifyNoOtherCalls();
         forecasts.VerifyNoOtherCalls();
@@ -491,14 +615,14 @@ public sealed partial class WorkstationEndpointsTests
         // Match the host's Web request options, including numeric unannotated source enums.
         using var runResponse = await app.GetTestClient().PostAsJsonAsync(route + "/runs", request);
         runResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var retainedRun = await runResponse.Content.ReadFromJsonAsync<AccountCashReconciliationRun>(ServerJsonOptions);
+        var retainedRun = await runResponse.Content.ReadFromJsonAsync<AccountCashReconciliationRun>(OversightResponseJsonOptions);
         retainedRun!.Input.Scope.Should().Be(scope);
         var retainedCase = (await cash.Service.GetCasesAsync(scope)).Should().ContainSingle().Subject;
         using var assignmentResponse = await app.GetTestClient().PostAsJsonAsync($"{route}/cases/{retainedCase.CaseId}/assignments",
             new AssignAccountCashCaseRequest(retainedCase.Version, "new-owner", "Investigated source discrepancy"));
 
         assignmentResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var assigned = await assignmentResponse.Content.ReadFromJsonAsync<AccountCashReconciliationCase>(ServerJsonOptions);
+        var assigned = await assignmentResponse.Content.ReadFromJsonAsync<AccountCashReconciliationCase>(OversightResponseJsonOptions);
         assigned!.Scope.Should().Be(scope);
         assigned.Owner.Should().Be("new-owner");
         assigned.Assignments.Should().ContainSingle().Which.Actor.Should().Be("authenticated-assigner");
@@ -526,6 +650,8 @@ public sealed partial class WorkstationEndpointsTests
 
     private static string[] OversightReadRoutes(Guid bookId, Guid accountId)
         => [OversightBaseRoute(bookId, accountId) + "/cash-reconciliation/cases",
+            OversightBaseRoute(bookId, accountId) + "/oversight/context",
+            OversightBaseRoute(bookId, accountId) + "/close-price-sets/2026-05-31",
             OversightBaseRoute(bookId, accountId) + $"/close-price-sets/2026-05-31/{Guid.NewGuid():D}",
             OversightBaseRoute(bookId, accountId) + "/cash-forecasts"];
 

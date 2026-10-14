@@ -831,6 +831,7 @@ public static class UiApiRoutes
     public const string LedgerAccountCashForecasts = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-forecasts";
     public const string LedgerAccountCashForecast = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-forecasts/{snapshotId}";
     public const string LedgerAccountOversightProvision = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/oversight/provision";
+    public const string LedgerAccountOversightContext = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/oversight/context";
     public const string LedgerAggregateJournalEntries = "/api/ledger/aggregates/{aggregateId:guid}/journal-entries";
     public const string LedgerPeriods = "/api/ledger/periods";
     public const string LedgerPeriodClose = "/api/ledger/periods/{periodId:guid}/close";

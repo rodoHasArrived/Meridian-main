@@ -116,6 +116,189 @@ public sealed class PostgresSecurityMasterClosePriceTests(SecurityMasterDatabase
         await Service(store, id).Invoking(s => s.ApproveClosePriceSetAsync(Approve(first))).Should().ThrowAsync<InvalidOperationException>();
     }
 
+    [SecurityMasterDatabaseFact]
+    public async Task ConcurrentIdenticalReviewsReturnTheSameDurableApprovalAndRefuseChangedDecisions()
+    {
+        var id = await SeedSecurityAsync();
+        var account = $"account-{Guid.NewGuid():N}";
+        var store = new PostgresSecurityMasterPricingStore(fixture.Options);
+        await SeedPricingAsync(store, id, account, Close.AddHours(-2));
+        var draft = await Service(store, id).CreateClosePriceSetAsync(Request(id, account));
+        var request = Approve(draft);
+        var bothInitialReads = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var readCount = 0;
+        var forwardingStore = Substitute.For<ISecurityMasterPricingStore>();
+        forwardingStore.GetClosePriceSetAsync(account, "book-a", draft.Snapshot.ValuationDate,
+            draft.Snapshot.SnapshotId, Arg.Any<CancellationToken>()).Returns(async call =>
+            {
+                var cancellation = call.ArgAt<CancellationToken>(4);
+                var retained = await store.GetClosePriceSetAsync(account, "book-a", draft.Snapshot.ValuationDate,
+                    draft.Snapshot.SnapshotId, cancellation);
+                var read = Interlocked.Increment(ref readCount);
+                if (read <= 2)
+                {
+                    retained!.Approval.Should().BeNull();
+                    if (read == 2)
+                        bothInitialReads.TrySetResult();
+                    await bothInitialReads.Task.WaitAsync(TimeSpan.FromSeconds(20), cancellation);
+                }
+                return retained;
+            });
+        forwardingStore.RetainClosePriceApprovalAsync(account, "book-a", draft.Snapshot.ValuationDate,
+            Arg.Any<SecurityClosePriceApprovalDto>(), Arg.Any<CancellationToken>()).Returns(call =>
+                store.RetainClosePriceApprovalAsync(account, "book-a", draft.Snapshot.ValuationDate,
+                    call.ArgAt<SecurityClosePriceApprovalDto>(3), call.ArgAt<CancellationToken>(4)));
+
+        var results = await Task.WhenAll(
+            Service(forwardingStore, id).ApproveClosePriceSetAsync(request),
+            Service(forwardingStore, id).ApproveClosePriceSetAsync(request));
+        var durable = await new PostgresSecurityMasterPricingStore(fixture.Options).GetClosePriceSetAsync(
+            account, "book-a", draft.Snapshot.ValuationDate, draft.Snapshot.SnapshotId);
+        durable!.Approval.Should().NotBeNull();
+        results.Should().OnlyContain(result => result.Approval == durable.Approval);
+        await forwardingStore.Received(2).RetainClosePriceApprovalAsync(account, "book-a", draft.Snapshot.ValuationDate,
+            Arg.Any<SecurityClosePriceApprovalDto>(), Arg.Any<CancellationToken>());
+        await Service(store, id).Invoking(s => s.ApproveClosePriceSetAsync(request with { Reviewer = "another-checker" }))
+            .Should().ThrowAsync<InvalidOperationException>();
+        await Service(store, id).Invoking(s => s.ApproveClosePriceSetAsync(request with { Rationale = "Changed review decision" }))
+            .Should().ThrowAsync<InvalidOperationException>();
+        (await Service(store, id).GetClosePriceSetAsync(account, "book-a", draft.Snapshot.ValuationDate,
+            draft.Snapshot.SnapshotId)).Should().BeEquivalentTo(durable);
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task PriceHistoryAfterRestartRetainsOrderedVersionsAndReviewsInExactAccountBookDateScope()
+    {
+        var id = await SeedSecurityAsync();
+        var account = $"account-{Guid.NewGuid():N}";
+        var store = new PostgresSecurityMasterPricingStore(fixture.Options);
+        var service = Service(store, id);
+        await SeedPricingAsync(store, id, account, Close.AddHours(-2));
+        var original = await service.CreateClosePriceSetAsync(Request(id, account));
+        var approved = await service.ApproveClosePriceSetAsync(Approve(original));
+        await store.RecordRawPriceAsync(new(id, "source", 101m, Close.AddHours(-1), "corrector", SecurityPriceUnit.PercentOfPar));
+        var corrected = await service.CreateClosePriceSetAsync(Request(id, account) with
+        { CorrectsSnapshotId = original.Snapshot.SnapshotId, CorrectionRationale = "Corrected source observation" });
+        var otherAccount = await service.CreateClosePriceSetAsync(Request(id, $"other-{account}"));
+        var otherBook = await service.CreateClosePriceSetAsync(Request(id, account) with { BookId = "book-b" });
+        var otherDate = await service.CreateClosePriceSetAsync(Request(id, account) with
+        { ValuationDate = original.Snapshot.ValuationDate.AddDays(1), EvaluatedAsOf = Close.AddDays(1) });
+
+        var restarted = Service(new PostgresSecurityMasterPricingStore(fixture.Options), id);
+        var history = await restarted.GetClosePriceSetsAsync(account, "book-a", original.Snapshot.ValuationDate);
+        history.Select(set => set.Snapshot.Version).Should().Equal(1, 2);
+        history[0].Should().BeEquivalentTo(approved);
+        history[1].Should().BeEquivalentTo(corrected);
+        history[0].Snapshot.Lines.Single().ClosePrice.Should().Be(100m);
+        history[1].Snapshot.Lines.Single().ClosePrice.Should().Be(101m);
+        history[1].Approval.Should().BeNull();
+        history[1].Snapshot.CorrectsSnapshotId.Should().Be(history[0].Snapshot.SnapshotId);
+
+        (await restarted.GetClosePriceSetsAsync(otherAccount.Snapshot.AccountId, "book-a", original.Snapshot.ValuationDate))
+            .Select(set => set.Snapshot.SnapshotId).Should().Equal(otherAccount.Snapshot.SnapshotId);
+        (await restarted.GetClosePriceSetsAsync(account, "book-b", original.Snapshot.ValuationDate))
+            .Select(set => set.Snapshot.SnapshotId).Should().Equal(otherBook.Snapshot.SnapshotId);
+        (await restarted.GetClosePriceSetsAsync(account, "book-a", otherDate.Snapshot.ValuationDate))
+            .Select(set => set.Snapshot.SnapshotId).Should().Equal(otherDate.Snapshot.SnapshotId);
+        (await restarted.GetClosePriceSetsAsync(account.ToUpperInvariant(), "book-a", original.Snapshot.ValuationDate)).Should().BeEmpty();
+
+        var correctedApproval = await restarted.ApproveClosePriceSetAsync(Approve(corrected));
+        var reloaded = await Service(new PostgresSecurityMasterPricingStore(fixture.Options), id)
+            .GetClosePriceSetsAsync(account, "book-a", original.Snapshot.ValuationDate);
+        reloaded[0].Should().BeEquivalentTo(approved);
+        reloaded[1].Should().BeEquivalentTo(correctedApproval);
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task IdentifiedCaptureRecoversAfterLostResponseRestartAndLaterQuotesWithoutChangingReviewedEvidence()
+    {
+        var id = await SeedSecurityAsync();
+        var account = $"account-{Guid.NewGuid():N}";
+        var store = new PostgresSecurityMasterPricingStore(fixture.Options);
+        var service = Service(store, id);
+        await SeedPricingAsync(store, id, account, Close.AddHours(-2));
+        var request = Request(id, account) with { RequestId = Guid.NewGuid() };
+        var captured = await service.CreateClosePriceSetAsync(request); // The client loses this response.
+        await store.RecordRawPriceAsync(new(id, "source", 101m, Close.AddHours(-1), "corrector", SecurityPriceUnit.PercentOfPar));
+
+        var restarted = Service(new PostgresSecurityMasterPricingStore(fixture.Options), id);
+        var recovered = await restarted.CreateClosePriceSetAsync(request);
+        recovered.Should().BeEquivalentTo(captured);
+        recovered.Snapshot.SnapshotId.Should().Be(request.RequestId!.Value);
+        recovered.Snapshot.Lines.Single().ClosePrice.Should().Be(100m);
+        recovered.Snapshot.CreationCommandDigest.Should().Be(SecurityClosePriceEvidence.CreationCommandDigest(request));
+        var approved = await restarted.ApproveClosePriceSetAsync(Approve(recovered));
+        (await Service(new PostgresSecurityMasterPricingStore(fixture.Options), id).CreateClosePriceSetAsync(request))
+            .Should().BeEquivalentTo(approved);
+        await restarted.Invoking(s => s.CreateClosePriceSetAsync(request with { MaxSourceDispersionPercent = 3m }))
+            .Should().ThrowAsync<InvalidOperationException>();
+        await restarted.Invoking(s => s.CreateClosePriceSetAsync(request with { AccountId = $"other-{account}" }))
+            .Should().ThrowAsync<InvalidOperationException>();
+        await restarted.Invoking(s => s.CreateClosePriceSetAsync(request with { BookId = "book-b" }))
+            .Should().ThrowAsync<InvalidOperationException>();
+        await restarted.Invoking(s => s.CreateClosePriceSetAsync(request with
+        { ValuationDate = captured.Snapshot.ValuationDate.AddDays(1), EvaluatedAsOf = Close.AddDays(1) }))
+            .Should().ThrowAsync<InvalidOperationException>();
+        (await restarted.GetClosePriceSetsAsync(account, "book-a", captured.Snapshot.ValuationDate)).Should().ContainSingle()
+            .Which.Should().BeEquivalentTo(approved);
+        (await restarted.GetClosePriceSetsAsync($"other-{account}", "book-a", captured.Snapshot.ValuationDate)).Should().BeEmpty();
+        (await restarted.GetClosePriceSetsAsync(account, "book-b", captured.Snapshot.ValuationDate)).Should().BeEmpty();
+        (await restarted.GetClosePriceSetsAsync(account, "book-a", captured.Snapshot.ValuationDate.AddDays(1))).Should().BeEmpty();
+
+        var correction = request with
+        { RequestId = Guid.NewGuid(), CorrectsSnapshotId = captured.Snapshot.SnapshotId, CorrectionRationale = "Corrected vendor observation" };
+        var corrected = await restarted.CreateClosePriceSetAsync(correction);
+        corrected.Snapshot.Version.Should().Be(2);
+        corrected.Snapshot.Lines.Single().ClosePrice.Should().Be(101m);
+        (await Service(new PostgresSecurityMasterPricingStore(fixture.Options), id).CreateClosePriceSetAsync(correction))
+            .Should().BeEquivalentTo(corrected);
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task ConcurrentIdentifiedCapturesReturnOneCanonicalSnapshot()
+    {
+        var id = await SeedSecurityAsync();
+        var account = $"account-{Guid.NewGuid():N}";
+        var store = new PostgresSecurityMasterPricingStore(fixture.Options);
+        await SeedPricingAsync(store, id, account, Close.AddHours(-2));
+        var request = Request(id, account) with { RequestId = Guid.NewGuid() };
+        var bothInitialReads = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var readCount = 0;
+        var forwardingStore = Substitute.For<ISecurityMasterPricingStore>();
+        forwardingStore.GetClosePriceSetAsync(account, "book-a", request.ValuationDate,
+            request.RequestId!.Value, Arg.Any<CancellationToken>()).Returns(async call =>
+            {
+                var cancellation = call.ArgAt<CancellationToken>(4);
+                var retained = await store.GetClosePriceSetAsync(account, "book-a", request.ValuationDate, request.RequestId.Value, cancellation);
+                var read = Interlocked.Increment(ref readCount);
+                if (read <= 2)
+                {
+                    retained.Should().BeNull();
+                    if (read == 2)
+                        bothInitialReads.TrySetResult();
+                    await bothInitialReads.Task.WaitAsync(TimeSpan.FromSeconds(20), cancellation);
+                }
+                return retained;
+            });
+        forwardingStore.GetHierarchyAsOfAsync(id, account, Close, Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>())
+            .Returns(call => store.GetHierarchyAsOfAsync(id, account, Close, call.ArgAt<CancellationToken>(3), call.ArgAt<DateTimeOffset?>(4)));
+        forwardingStore.GetRawPricesAsync(id, Close, Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>())
+            .Returns(call => store.GetRawPricesAsync(id, Close, call.ArgAt<CancellationToken>(2), call.ArgAt<DateTimeOffset?>(3)));
+        forwardingStore.RetainPriceSelectionAsync(Arg.Any<SecurityPriceGoldenCopyDto>(), account, Arg.Any<CancellationToken>())
+            .Returns(call => store.RetainPriceSelectionAsync(call.ArgAt<SecurityPriceGoldenCopyDto>(0), account, call.ArgAt<CancellationToken>(2)));
+        forwardingStore.RetainClosePriceSnapshotAsync(Arg.Any<SecurityClosePriceSnapshotDto>(), Arg.Any<CancellationToken>())
+            .Returns(call => store.RetainClosePriceSnapshotAsync(call.ArgAt<SecurityClosePriceSnapshotDto>(0), call.ArgAt<CancellationToken>(1)));
+
+        var results = await Task.WhenAll(
+            Service(forwardingStore, id).CreateClosePriceSetAsync(request),
+            Service(forwardingStore, id).CreateClosePriceSetAsync(request));
+        results[0].Should().BeEquivalentTo(results[1]);
+        var history = await Service(new PostgresSecurityMasterPricingStore(fixture.Options), id)
+            .GetClosePriceSetsAsync(account, "book-a", request.ValuationDate);
+        history.Should().ContainSingle().Which.Should().BeEquivalentTo(results[0]);
+        await forwardingStore.Received(2).RetainClosePriceSnapshotAsync(Arg.Any<SecurityClosePriceSnapshotDto>(), Arg.Any<CancellationToken>());
+    }
+
     private async Task AssertImmutableAsync(Guid id)
     {
         await using var connection = new NpgsqlConnection(fixture.Options.ConnectionString);

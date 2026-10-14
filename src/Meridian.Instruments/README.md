@@ -17,6 +17,10 @@ flows, economic/settlement/receipt dates, terms/projection provenance and exact 
 inspectable. Observed flows replace corresponding predictions in the ladder; only validated
 observed cash reconciles to closing cash. Missing scope, source evidence, FX or unexplained closing
 variance blocks certification. Corrections retain linked earlier snapshots and factor predictions.
+Opening and closing cash require independently identifiable retained observations, including
+single-day periods with equal balances. Linked expected and actual flows must agree on security
+identity, including whether an identity is absent. Existing receipts remain immutable; formerly
+certified inputs violating these guards fail replay closed and require source review.
 Certification describes cash evidence reconciliation and grants no payment authority. See
 [account oversight evidence](../../docs/domain/account-oversight-evidence.md) and
 `AccountCashForecastTests` for the bounded contract.

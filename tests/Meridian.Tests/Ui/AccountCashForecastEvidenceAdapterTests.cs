@@ -49,6 +49,31 @@ public sealed class AccountCashForecastEvidenceAdapterTests : IDisposable
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EqualSingleDayBalancesRequireDistinctReviewedSourceObservations(bool reuseObservation)
+    {
+        var openingProvenance = await RetainAsync(BalanceSource("opening", 100m));
+        var closingProvenance = reuseObservation ? openingProvenance : await RetainAsync(BalanceSource("closing", 100m));
+        var request = Request(
+            new(_scope.AccountId, _scope.BookId, _date, 100m, "USD", true, openingProvenance),
+            new(_scope.AccountId, _scope.BookId, _date, 100m, "USD", true, closingProvenance), [], []);
+        await Adapter().VerifyAsync(request);
+        var store = new FileAccountCashForecastStore(_root);
+        await store.InitializeAsync();
+        var snapshot = await new AccountCashForecastService(store).CaptureAsync(request);
+
+        snapshot.ClosingVariance.Should().Be(0m);
+        snapshot.IsCertified.Should().Be(!reuseObservation);
+        snapshot.Blockers.Should().HaveCount(reuseObservation ? 1 : 0);
+        if (reuseObservation)
+            snapshot.Blockers.Single().Code.Should().Be("cash-forecast.balance-evidence-reused");
+        var retained = await new AccountCashForecastService(new FileAccountCashForecastStore(_root))
+            .GetAsync(_scope, snapshot.SnapshotId);
+        retained.Should().BeEquivalentTo(snapshot);
+    }
+
+    [Theory]
     [InlineData("amount")]
     [InlineData("settlement-date")]
     [InlineData("account")]
@@ -219,7 +244,7 @@ public sealed partial class WorkstationEndpointsTests
 
         using var captured = await app.GetTestClient().PostAsJsonAsync(route, request);
         captured.StatusCode.Should().Be(HttpStatusCode.OK, await captured.Content.ReadAsStringAsync());
-        var snapshot = await captured.Content.ReadFromJsonAsync<AccountCashForecastSnapshotDto>(ServerJsonOptions);
+        var snapshot = await captured.Content.ReadFromJsonAsync<AccountCashForecastSnapshotDto>(OversightResponseJsonOptions);
         snapshot!.IsCertified.Should().BeTrue();
         var changed = request with { RunId = "substituted-run", Flows = [request.Flows[0] with { Amount = 1000m }] };
         using var rejected = await app.GetTestClient().PostAsJsonAsync(route, changed);

@@ -92,6 +92,25 @@ Basis-aware postings are still policy-engine evidence, not certified GAAP, tax, 
 reporting. Operator-facing reports should describe balances as "basis per configured policy" until
 reviewed by a qualified accountant.
 
+## Canonical Lot Direction
+
+`OpenLotDirection` separates position direction (`Long` or `Short`) from non-negative
+lot quantities and carrying basis. `OpenLotAcquisitionDto.Direction` defaults to `Long`;
+the default is omitted from JSON so historical long-lot payloads and atomic-command
+fingerprints retain their existing shape. A non-default direction participates in the
+immutable command fingerprint. Relief calculations require a single direction per pool.
+
+This contract does not enable short accounting. New canonical postings and direct lot
+saves currently admit only `Long`; acquisitions also require an asset ledger account.
+The event spine and legacy-lot backfill reject short or liability positions before they
+can be interpreted as long acquisitions or disposals. Exact committed long-lot replay
+continues to resolve before new-posting admission checks.
+
+Short lots are refused by the current long-lot disposal, amortization, capital-return,
+successor and realized-tax paths. Opening journals, cover economics, position authority,
+tax evidence and certified Execution/Backtesting consumer parity remain prerequisites
+for enabling short posting.
+
 ## Ledger Book Service
 
 `ILedgerBookService` is the application-facing contract for the multi-ledger workflow. The

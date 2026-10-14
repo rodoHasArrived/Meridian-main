@@ -101,6 +101,111 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
         Assert.Single(await service.GetCasesAsync(_scope)).History.Should().HaveCount(2);
     }
 
+    [Theory]
+    [InlineData("cash-threshold")]
+    [InlineData("cash-basis-points")]
+    [InlineData("cash-settlement-window")]
+    [InlineData("cash-rule-order")]
+    [InlineData("position-rules")]
+    [InlineData("transaction-rules")]
+    public async Task Retained_tolerance_version_rejects_changed_rules_without_mutating_history(string scenario)
+    {
+        var service = await ServiceAsync();
+        var request = Request("first", 0, 1000m, 990m);
+        request = request with
+        {
+            Tolerance = request.Tolerance with
+            {
+                CashRules = [request.Tolerance.CashRules[0], new("second-rule", 0.02m, null, TimeSpan.FromHours(2))]
+            }
+        };
+        var original = await service.RunAsync(request);
+        var before = Assert.Single(await service.GetCasesAsync(_scope));
+        var statePath = Path.Combine(_root, "reconciliation", "account-cash-continuity", "state.json");
+        var bytes = await File.ReadAllBytesAsync(statePath);
+        var tolerance = request.Tolerance;
+        var rule = tolerance.CashRules[0];
+        var changed = scenario switch
+        {
+            "cash-threshold" => tolerance with { CashRules = [rule with { AbsoluteCashTolerance = 20m }, tolerance.CashRules[1]] },
+            "cash-basis-points" => tolerance with { CashRules = [rule with { BasisPointCashTolerance = 200m }, tolerance.CashRules[1]] },
+            "cash-settlement-window" => tolerance with { CashRules = [rule with { SettlementDateTolerance = TimeSpan.FromDays(1) }, tolerance.CashRules[1]] },
+            "cash-rule-order" => tolerance with { CashRules = tolerance.CashRules.Reverse().ToArray() },
+            "position-rules" => tolerance with { PositionRules = [new("changed-position", 1m, 1m, 1m)] },
+            _ => tolerance with { TransactionRules = [new("changed-transaction", 1m, TimeSpan.FromDays(2), 1m)] }
+        };
+        var invalid = request with { RunId = "rebound-policy", ObservedAtUtc = _start.AddHours(1), Tolerance = changed };
+
+        service = await ServiceAsync();
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => service.RunAsync(invalid));
+        error.Message.Should().Contain("retained tolerance version");
+        (await File.ReadAllBytesAsync(statePath)).Should().Equal(bytes);
+        Assert.Single(await (await ServiceAsync()).GetCasesAsync(_scope)).Should().BeEquivalentTo(before);
+        (await service.ReplayAsync(_scope, "first")).Should().BeEquivalentTo(original, options => options.WithStrictOrdering());
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.ReplayAsync(_scope, "rebound-policy"));
+    }
+
+    [Fact]
+    public async Task Unchanged_tolerance_reuse_and_explicit_new_version_preserve_case_and_replay()
+    {
+        var service = await ServiceAsync();
+        var request = Request("first", 0, 1000m, 990m);
+        var original = await service.RunAsync(request);
+        var originalCase = Assert.Single(await service.GetCasesAsync(_scope));
+        await (await ServiceAsync()).RunAsync(request with { RunId = "unchanged-policy", ObservedAtUtc = _start.AddHours(1) });
+        var revised = request with { RunId = "new-policy-version", ObservedAtUtc = _start.AddHours(2), Tolerance = Profile(2, 20m) };
+
+        var result = await service.RunAsync(revised);
+
+        Assert.Single(result.Comparisons).ObservationState.Should().Be("SourceCleared");
+        var retained = Assert.Single(await (await ServiceAsync()).GetCasesAsync(_scope));
+        retained.CaseId.Should().Be(originalCase.CaseId);
+        retained.History.Select(item => item.RunId).Should().Equal("first", "unchanged-policy", "new-policy-version");
+        (await service.ReplayAsync(_scope, "first")).Should().BeEquivalentTo(original, options => options.WithStrictOrdering());
+        (await service.RunAsync(revised)).Should().BeEquivalentTo(result, options => options.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task Tolerance_binding_survives_intervening_version_and_different_source_pair()
+    {
+        var service = await ServiceAsync();
+        var request = Request("first", 0, 1000m, 990m);
+        await service.RunAsync(request);
+        await service.RunAsync(request with { RunId = "version-two", ObservedAtUtc = _start.AddHours(1), Tolerance = Profile(2, 0.005m) });
+        var before = await service.GetCasesAsync(_scope);
+        var statePath = Path.Combine(_root, "reconciliation", "account-cash-continuity", "state.json");
+        var bytes = await File.ReadAllBytesAsync(statePath);
+        var rebound = request with
+        {
+            RunId = "reintroduced-policy",
+            ObservedAtUtc = _start.AddHours(2),
+            Left = Source("other-ledger", ReconciliationSourceType.InternalLedger, _scope, _start, ("USD", 1000m)),
+            Tolerance = Profile(1, 20m)
+        };
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () => await (await ServiceAsync()).RunAsync(rebound));
+
+        error.Message.Should().Contain("retained tolerance version");
+        (await File.ReadAllBytesAsync(statePath)).Should().Equal(bytes);
+        (await service.GetCasesAsync(_scope)).Should().BeEquivalentTo(before, options => options.WithStrictOrdering());
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.ReplayAsync(_scope, "reintroduced-policy"));
+    }
+
+    [Fact]
+    public async Task Tolerance_version_bindings_are_isolated_by_exact_account_scope()
+    {
+        var service = await ServiceAsync();
+        await service.RunAsync(Request("account-a", 0, 1000m, 990m));
+        var original = Assert.Single(await service.GetCasesAsync(_scope));
+        var foreign = _scope with { AccountId = "account-b" };
+
+        var result = await (await ServiceAsync()).RunAsync(Request("account-b", 0, 1000m, 990m, foreign) with { Tolerance = Profile(1, 20m) });
+
+        Assert.Single(result.Comparisons).ObservationState.Should().Be("SourceCleared");
+        (await service.GetCasesAsync(foreign)).Should().BeEmpty();
+        Assert.Single(await service.GetCasesAsync(_scope)).Should().BeEquivalentTo(original);
+    }
+
     [Fact]
     public async Task Foreign_account_rows_are_rejected_and_account_histories_never_match_or_clear_each_other()
     {
@@ -444,6 +549,56 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
         await Assert.ThrowsAsync<InvalidOperationException>(() => other.AssignAsync(_scope, original.CaseId, original.Version,
             "stale-owner", "other-supervisor", "Stale assignment", _start.AddMinutes(1)));
         Assert.Single(await other.GetCasesAsync(_scope)).Should().BeEquivalentTo(assigned);
+    }
+
+    [Theory]
+    [InlineData("before-first-observation")]
+    [InlineData("before-latest-observation")]
+    [InlineData("before-latest-assignment")]
+    public async Task Backdated_assignment_cannot_change_owner_or_retained_history(string scenario)
+    {
+        var service = await ServiceAsync();
+        await service.RunAsync(Request("first", 0, 1000m, 990m));
+        await service.RunAsync(Request("latest", 1, 1000m, 990m));
+        var before = Assert.Single(await service.GetCasesAsync(_scope));
+        if (scenario == "before-latest-assignment")
+            before = await service.AssignAsync(_scope, before.CaseId, before.Version,
+                "cash-ops", "supervisor", "Current assignment", _start.AddDays(1).AddHours(1));
+        var invalidAt = scenario switch
+        {
+            "before-first-observation" => _start.AddMinutes(-1),
+            "before-latest-observation" => _start.AddDays(1).AddMinutes(-1),
+            _ => _start.AddDays(1).AddMinutes(30)
+        };
+        var statePath = Path.Combine(_root, "reconciliation", "account-cash-continuity", "state.json");
+        var bytes = await File.ReadAllBytesAsync(statePath);
+        service = await ServiceAsync();
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => service.AssignAsync(_scope, before.CaseId, before.Version,
+            "backdated-owner", "other-supervisor", "Backdated assignment", invalidAt));
+
+        error.Message.Should().Contain("cannot precede");
+        (await File.ReadAllBytesAsync(statePath)).Should().Equal(bytes);
+        Assert.Single(await (await ServiceAsync()).GetCasesAsync(_scope)).Should().BeEquivalentTo(before);
+    }
+
+    [Fact]
+    public async Task Assignment_may_equal_latest_observation_and_previous_assignment_instant()
+    {
+        var service = await ServiceAsync();
+        await service.RunAsync(Request("first", 0, 1000m, 990m));
+        await service.RunAsync(Request("latest", 1, 1000m, 990m));
+        var original = Assert.Single(await service.GetCasesAsync(_scope));
+        var assigned = await service.AssignAsync(_scope, original.CaseId, original.Version,
+            "cash-ops", "supervisor", "First assignment", _start.AddDays(1));
+
+        var reassigned = await (await ServiceAsync()).AssignAsync(_scope, assigned.CaseId, assigned.Version,
+            "cash-supervision", "other-supervisor", "Same-instant handoff", _start.AddDays(1).ToOffset(TimeSpan.FromHours(2)));
+
+        reassigned.Owner.Should().Be("cash-supervision");
+        reassigned.Version.Should().Be(original.Version + 2);
+        reassigned.Assignments.Should().HaveCount(2).And.OnlyContain(item => item.AssignedAtUtc == _start.AddDays(1));
+        Assert.Single(await service.GetCasesAsync(_scope)).Should().BeEquivalentTo(reassigned);
     }
 
     [Fact]

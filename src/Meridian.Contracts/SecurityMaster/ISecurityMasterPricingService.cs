@@ -16,4 +16,6 @@ public interface ISecurityMasterPricingService
     Task<SecurityClosePriceSetDto> ApproveClosePriceSetAsync(ApproveSecurityClosePriceSetRequest request, CancellationToken ct = default);
     /// <summary>Returns only the retained version in the exact account/book/date scope.</summary>
     Task<SecurityClosePriceSetDto?> GetClosePriceSetAsync(string accountId, string bookId, DateOnly valuationDate, Guid snapshotId, CancellationToken ct = default);
+    /// <summary>Returns every retained version and approval in exact account/book/date scope, ordered by ascending version.</summary>
+    Task<IReadOnlyList<SecurityClosePriceSetDto>> GetClosePriceSetsAsync(string accountId, string bookId, DateOnly valuationDate, CancellationToken ct = default);
 }

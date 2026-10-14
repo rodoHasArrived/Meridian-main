@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Api;
@@ -19,8 +20,11 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Meridian.Ui.Shared.Endpoints;
 
 public sealed record AssignAccountCashCaseRequest(int ExpectedVersion, string Owner, string Reason);
+public sealed record AccountOversightContextDto(string AccountId, string BookId, string BaseCurrency,
+    string BookName, string Actor, bool CanWrite, bool CanReadPrices, bool CanManagePrices, bool CanProvision);
 
 [JsonSerializable(typeof(AssignAccountCashCaseRequest))]
+[JsonSerializable(typeof(AccountOversightContextDto))]
 internal sealed partial class AccountOversightJsonContext : JsonSerializerContext;
 
 /// <summary>Shared account oversight over exact, already-owned account ledger books.</summary>
@@ -28,6 +32,23 @@ public static partial class LedgerEndpoints
 {
     private static void MapAccountOversightEndpoints(WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        // HTTP amounts remain exact in the browser; retained domain evidence keeps its original serialization.
+        jsonOptions = new JsonSerializerOptions(jsonOptions);
+        jsonOptions.Converters.Insert(0, new AccountOversightDecimalJsonConverter());
+
+        OversightRead(app.MapGet(UiApiRoutes.LedgerAccountOversightContext, async (
+            Guid ledgerBookId, Guid accountId, HttpContext context) =>
+            await ExecuteAccountOversightAsync(context, ledgerBookId, accountId, false, scope =>
+            {
+                var canWrite = HasLedgerMutationPermission(context);
+                var canManagePrices = EndpointAuthorization.HasPermission(context, UserPermission.ModifySecurityMaster);
+                return Task.FromResult<IResult>(Results.Json(new AccountOversightContextDto(scope.AccountId, scope.BookId,
+                    scope.Book.BaseCurrency, scope.Book.DisplayName, scope.Actor, canWrite,
+                    canManagePrices || EndpointAuthorization.HasPermission(context, UserPermission.ViewSecurityMaster),
+                    canWrite && canManagePrices,
+                    canWrite && EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance)), jsonOptions));
+            }).ConfigureAwait(false)).WithName("GetLedgerAccountOversightContext"));
+
         OversightMutation(app.MapPost(UiApiRoutes.LedgerAccountOversightProvision, async (
             Guid ledgerBookId, Guid accountId, HttpContext context) =>
             await ExecuteAccountOversightAsync(context, ledgerBookId, accountId, true, async scope =>
@@ -105,6 +126,18 @@ public static partial class LedgerEndpoints
                     .ConfigureAwait(false), jsonOptions);
             }).ConfigureAwait(false)).WithName("CreateLedgerAccountClosePriceSet")
             .RequirePermission(UserPermission.ModifySecurityMaster));
+
+        OversightRead(app.MapGet(UiApiRoutes.LedgerAccountClosePriceSets, async (
+            Guid ledgerBookId, Guid accountId, DateOnly valuationDate, HttpContext context) =>
+            await ExecuteAccountOversightAsync(context, ledgerBookId, accountId, false, async scope =>
+            {
+                var service = context.RequestServices.GetService<ISecurityMasterPricingService>();
+                if (service is null)
+                    return OversightUnavailable("Close-price snapshots are not configured.");
+                return Results.Json(await service.GetClosePriceSetsAsync(scope.AccountId, scope.BookId,
+                    valuationDate, context.RequestAborted).ConfigureAwait(false), jsonOptions);
+            }).ConfigureAwait(false)).WithName("ListLedgerAccountClosePriceSets")
+            .RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster));
 
         OversightRead(app.MapGet(UiApiRoutes.LedgerAccountClosePriceSet, async (
             Guid ledgerBookId, Guid accountId, DateOnly valuationDate, Guid snapshotId, HttpContext context) =>
@@ -229,5 +262,22 @@ public static partial class LedgerEndpoints
         public string BookId => Book.LedgerBookId.ToString("D");
         public AccountCashReconciliationScope ReconciliationScope => new(TenantId, CompanyId, AccountId, Book.LedgerBookId);
         public AccountCashForecastScopeDto ForecastScope => new(TenantId, CompanyId, AccountId, BookId, Book.BaseCurrency);
+    }
+
+    private sealed class AccountOversightDecimalJsonConverter : JsonConverter<decimal>
+    {
+        public override decimal Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.Number && reader.TryGetDecimal(out var numeric))
+                return numeric;
+            if (reader.TokenType == JsonTokenType.String
+                && decimal.TryParse(reader.GetString(), NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint,
+                    CultureInfo.InvariantCulture, out var text))
+                return text;
+            throw new JsonException("An exact decimal amount is required.");
+        }
+
+        public override void Write(Utf8JsonWriter writer, decimal value, JsonSerializerOptions options)
+            => writer.WriteStringValue(value.ToString("0.############################", CultureInfo.InvariantCulture));
     }
 }

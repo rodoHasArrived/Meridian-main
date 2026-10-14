@@ -169,9 +169,15 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
         if (snapshot.Inputs.PreviousSnapshotId != latest.SnapshotId || string.IsNullOrWhiteSpace(snapshot.Inputs.CorrectionRationale)
             || snapshot.Inputs.RecordedAtUtc < latest.Inputs.RecordedAtUtc)
             throw new InvalidOperationException("A forecast correction must link the latest retained account/book/period snapshot and retain its rationale.");
+        var retainedFlows = history.Where(row => row.Inputs.Scope == snapshot.Inputs.Scope
+            && row.Inputs.PeriodStart == snapshot.Inputs.PeriodStart && row.Inputs.PeriodEnd == snapshot.Inputs.PeriodEnd)
+            .SelectMany(static row => row.Inputs.Flows)
+            .ToLookup(static flow => (flow.FlowId, flow.Status));
         foreach (var revised in snapshot.Inputs.Flows)
         {
-            var prior = latest.Inputs.Flows.FirstOrDefault(flow => flow.FlowId == revised.FlowId && flow.Status == revised.Status);
+            // Omitting a flow from a selected run does not discard its revision lineage.
+            // Expected and observed versions remain separate histories under the stable flow ID.
+            var prior = retainedFlows[(revised.FlowId, revised.Status)].LastOrDefault();
             if (prior is not null && prior.VersionId == revised.VersionId)
             {
                 if (prior != revised)

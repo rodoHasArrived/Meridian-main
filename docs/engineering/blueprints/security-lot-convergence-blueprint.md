@@ -287,6 +287,29 @@ explicit shadow comparison.
 Execution cutover, canonical short posting, retained-history compatibility and live shadow
 acceptance remain open. This increment does not satisfy the full W10-LOT-002 exit gate.
 
+### Paper execution basis continuation (2026-10-14)
+
+The actual `PaperTradingPortfolio` fill path also uses `LotBasisRelief`, retaining remaining total
+basis on its internal lots. Partial long sales and short covers no longer reconstruct relief from
+the entry quote; further fills and unrealized P&L consume the same retained basis. The native live
+corporate-action adjuster accepts that total through an additive interface overload, preserves it
+through splits and subtracts projected principal during paydowns. Rescaling distributes the exact
+remaining basis across lots and rejects a basis-bearing quantity lost below decimal precision.
+Lot version and object identity guard asynchronous adjustments against intervening fills.
+
+`PaperTradingPortfolioBasisParityTests` covers fractional exhaustion of session-ledger assets and
+short payables, partial-close/additional-fill read values, native split/paydown paths and stale
+adjustments. Legacy custom adjusters still expose quantity/quote compatibility behavior and return
+no exact-total evidence. Selection/tie policy, canonical identities and acquisition FX, governed
+short and corporate-action posting, compatibility retirement and live shadow acceptance remain
+separate gates. This continuation does not close W10-LOT-002.
+
+Local regression evidence for [PR #3163](https://github.com/rodoHasArrived/Meridian-main/pull/3163):
+821 execution/shared-basis tests and the complete 417-test Backtesting project passed with zero
+skips, including all 24 new paper-basis cases. The six original fractional-close cases failed
+against the unchanged production implementation with the expected `1e-28` journal residual.
+Full repository validation and hosted checks remain required in addition to this focused proof.
+
 ## 9. Open Questions and Risks
 
 | Question | Owner | Blocking decision |
@@ -312,6 +335,27 @@ negative quantity will not implicitly establish a short position. Existing canon
 retain their long behavior. Migration compatibility, borrow/cover journal rules, relief and
 all consumer parity tests must pass before short-lot writes become available. This decision
 resolves representation only; it does not certify or enable short accounting.
+
+### Direction admission increment (2026-10-13)
+
+Canonical acquisition facts and lot instructions now carry `OpenLotDirection`. `Long` is the
+omitted default, preserving historical JSON and atomic fingerprints, while `Short` is explicit.
+Quantities and carrying bases remain non-negative. Relief calculations reject mixed directions
+and retain independent transaction/functional basis for a homogeneous pool.
+
+This increment does not enable short writes. The existing acquisition/disposal spine requires a
+Long or Asset position, including when drafting from a retained projection. Atomic commands bind
+direction to acquisition facts and refuse new short writes after exact receipt replay; direct
+saves cannot bypass that boundary. Backfill review/application and the current amortization,
+capital-return, successor, consumer-adapter and disposal-reporting paths also refuse short scope.
+The tax read surface reports missing evidence rather than deriving short-sale character from the
+opening-lot holding period.
+
+`OpenLotDirectionTests`, the spine and atomic direction fixtures, the backfill PostgreSQL fixture
+and the disposal tax-economics fixture cover these boundaries. Executed results belong to the PR
+receipt. Short opening/cover journals, transactional position/security authority, delivered-property
+and short-sale tax evidence, Reporting and production-consumer shadow parity remain required before
+short accounting is enabled. Full W10-LOT-002 acceptance remains open.
 
 ## Acceptance Gate
 

@@ -34,6 +34,9 @@ public static class AccountCashForecastEngine
         ValidateObservation(inputs.OpeningCash, inputs.PeriodStart, "opening");
         if (inputs.ClosingCash is not null)
             ValidateObservation(inputs.ClosingCash, inputs.PeriodEnd, "closing");
+        if (inputs.OpeningCash is { } openingBoundary && inputs.ClosingCash is { } closingBoundary
+            && SharesRetainedObservation(openingBoundary.Provenance, closingBoundary.Provenance))
+            Add("cash-forecast.balance-evidence-reused", "Opening and closing cash require independently identifiable retained source observations.", "closing");
 
         foreach (var duplicate in inputs.Flows.GroupBy(static row => (row.FlowId, row.Status)).Where(static group => group.Count() > 1))
             Add("cash-forecast.flow-ambiguous", "Only one expected and one actual revision of a stable flow may be selected per snapshot.", duplicate.Key.FlowId);
@@ -70,7 +73,7 @@ public static class AccountCashForecastEngine
             var expected = group.FirstOrDefault(static row => row.Status == AccountCashFlowStatus.Expected);
             var actual = group.FirstOrDefault(static row => row.Status == AccountCashFlowStatus.Actual);
             if (expected is not null && actual is not null && (expected.FlowType != actual.FlowType
-                || (expected.SecurityId.HasValue && actual.SecurityId.HasValue && expected.SecurityId != actual.SecurityId)))
+                || expected.SecurityId != actual.SecurityId))
                 Add("cash-forecast.flow-link-mismatch", "Linked expected and observed cash must identify the same flow type and retained security.", group.Key);
             if (expected is not null && actual is not null &&
                 Sha256Digest.FixedEquals(expected.Provenance.SourceContentHash, actual.Provenance.SourceContentHash))
@@ -247,6 +250,11 @@ public static class AccountCashForecastEngine
     }
 
     private static bool IsCurrency(string? currency) => currency is { Length: 3 } && currency.All(static ch => ch is >= 'A' and <= 'Z');
+    private static bool SharesRetainedObservation(AccountCashProvenanceDto left, AccountCashProvenanceDto right) =>
+        Sha256Digest.FixedEquals(left.SourceContentHash, right.SourceContentHash)
+        || (left.Evidence.EvidenceVersion == right.Evidence.EvidenceVersion
+            && (string.Equals(left.Evidence.EvidenceId?.Trim(), right.Evidence.EvidenceId?.Trim(), StringComparison.Ordinal)
+                || string.Equals(left.Evidence.EvidenceUri?.Trim(), right.Evidence.EvidenceUri?.Trim(), StringComparison.Ordinal)));
     private static decimal Round(decimal amount, string currency) => decimal.Round(amount, CurrencyMinorUnits(currency), MidpointRounding.AwayFromZero);
     private static int CurrencyMinorUnits(string currency) => currency switch
     {

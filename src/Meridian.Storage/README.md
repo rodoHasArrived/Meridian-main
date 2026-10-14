@@ -22,6 +22,17 @@ triggers and requires independent schema/storage review.
 atomic replacement and a process-independent writer lease. Explicit `InitializeAsync` provisioning
 is required; missing/corrupt initialized history cannot silently restart. Financial Operations
 owns cash-balance case semantics and delegates file replacement to Storage's shared writer.
+Forecast corrections resolve a flow's last retained revision across temporarily omitted runs,
+separately for expected and actual cash, while retaining the latest snapshot predecessor.
+Close-price history uses one exact account/book/date query ordered by version and shares the
+snapshot digest, indexed identity and independent approval validation used by single reads.
+
+Atomic lot commands bind explicit direction to their immutable acquisition facts. Historical
+`Long` remains absent from fingerprints; exact receipt replay still precedes new-write admission.
+New short commands and direct short saves are refused, and new long acquisitions require an asset
+carrying account. Backfill review/application require a Long or Asset book position. Current
+disposal and tax-history projection also refuse short direction, preventing asset-credit or
+opening-age tax rules from silently certifying a short cover.
 
 Security Master migration `036_security_master_workbench_generations.sql` adds the durable
 compare-and-set generation used by `PostgresSecurityMasterMutation`. Overlay values, their audit

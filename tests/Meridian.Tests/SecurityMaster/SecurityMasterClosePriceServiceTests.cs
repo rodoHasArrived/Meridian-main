@@ -72,6 +72,94 @@ public sealed class SecurityMasterClosePriceServiceTests
             .Should().ThrowAsync<InvalidOperationException>();
     }
 
+    [Fact]
+    public async Task IdentifiedCreationRetryReturnsRetainedReviewBeforeReadingOrRetainingPrices()
+    {
+        var (service, store) = BuildService();
+        var request = Request() with { RequestId = Guid.NewGuid() };
+        var draft = await service.CreateClosePriceSetAsync(request);
+        draft.Snapshot.SnapshotId.Should().Be(request.RequestId!.Value);
+        draft.Snapshot.CreationCommandDigest.Should().Be(SecurityClosePriceEvidence.CreationCommandDigest(request));
+        RetainForRead(store, draft);
+        var approved = await service.ApproveClosePriceSetAsync(Approve(draft));
+        RetainForRead(store, approved);
+        store.ClearReceivedCalls();
+
+        var recovered = await service.CreateClosePriceSetAsync(request with
+        { AccountId = " account-a ", BookId = " book-a ", CreatedBy = " maker ", EvaluatedAsOf = Close.ToOffset(TimeSpan.FromHours(5)) });
+
+        recovered.Should().BeSameAs(approved);
+        await store.DidNotReceive().GetHierarchyAsOfAsync(Arg.Any<Guid>(), Arg.Any<string?>(), Arg.Any<DateTimeOffset>(),
+            Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>());
+        await store.DidNotReceive().GetRawPricesAsync(Arg.Any<Guid>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>());
+        await store.DidNotReceive().RetainPriceSelectionAsync(Arg.Any<SecurityPriceGoldenCopyDto>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
+        await store.DidNotReceive().RetainClosePriceSnapshotAsync(Arg.Any<SecurityClosePriceSnapshotDto>(), Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData("tolerance")]
+    [InlineData("preparer")]
+    [InlineData("override")]
+    [InlineData("knowledge")]
+    [InlineData("correction")]
+    public async Task CreationIdentityCannotBeReusedForChangedCommandBeforeAnyPriceEvaluation(string changedField)
+    {
+        var (service, store) = BuildService();
+        var request = Request() with { RequestId = Guid.NewGuid() };
+        var draft = await service.CreateClosePriceSetAsync(request);
+        RetainForRead(store, draft);
+        store.ClearReceivedCalls();
+        var changed = changedField switch
+        {
+            "tolerance" => request with { MaxSourceDispersionPercent = 3m },
+            "preparer" => request with { CreatedBy = "another-maker" },
+            "override" => request with { Securities = [new(SecurityId, new(100.1m, SecurityPriceUnit.PercentOfPar, "Changed", "file/row-1"))] },
+            "knowledge" => request with { KnowledgeAsOf = draft.Snapshot.KnowledgeAsOf },
+            _ => request with { CorrectsSnapshotId = Guid.NewGuid(), CorrectionRationale = "Changed predecessor" }
+        };
+
+        await service.Invoking(s => s.CreateClosePriceSetAsync(changed)).Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*request identity cannot be reused*");
+        await store.DidNotReceive().GetHierarchyAsOfAsync(Arg.Any<Guid>(), Arg.Any<string?>(), Arg.Any<DateTimeOffset>(),
+            Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>());
+        await store.DidNotReceive().GetRawPricesAsync(Arg.Any<Guid>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>());
+        await store.DidNotReceive().RetainPriceSelectionAsync(Arg.Any<SecurityPriceGoldenCopyDto>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
+        await store.DidNotReceive().RetainClosePriceSnapshotAsync(Arg.Any<SecurityClosePriceSnapshotDto>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CreationDigestBindsDurableScopeIdentityToleranceAndDefaultKnowledgeChoice()
+    {
+        var (service, _) = BuildService();
+        var draft = await service.CreateClosePriceSetAsync(Request() with { RequestId = Guid.NewGuid() });
+        foreach (var changed in new[]
+        {
+            draft.Snapshot with { SnapshotId = Guid.NewGuid() },
+            draft.Snapshot with { MaxSourceDispersionPercent = 3m },
+            draft.Snapshot with { RequestedKnowledgeAsOf = draft.Snapshot.KnowledgeAsOf },
+            draft.Snapshot with { CreationCommandDigest = new string('0', 64) }
+        })
+        {
+            Action validate = () => SecurityClosePriceEvidence.Validate(changed);
+            validate.Should().Throw<ArgumentException>().WithMessage("*creation command digest*");
+        }
+    }
+
+    [Fact]
+    public async Task LegacySnapshotCanonicalBytesAndApprovalDigestOmitAbsentCreationMetadata()
+    {
+        var (service, _) = BuildService();
+        var draft = await service.CreateClosePriceSetAsync(Request());
+        var legacyPayload = JsonSerializer.Serialize(draft.Snapshot, SecurityMasterClosePricesJsonContext.Default.SecurityClosePriceSnapshotDto);
+        legacyPayload.Should().NotContain("CreationCommandDigest").And.NotContain("RequestedKnowledgeAsOf");
+        var legacyDigest = Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(legacyPayload);
+        var hydrated = JsonSerializer.Deserialize(legacyPayload, SecurityMasterClosePricesJsonContext.Default.SecurityClosePriceSnapshotDto)!;
+        SecurityClosePriceEvidence.Digest(hydrated).Should().Be(legacyDigest);
+        var approval = new SecurityClosePriceApprovalDto(hydrated.SnapshotId, legacyDigest, "checker", "Retained legacy approval", DateTimeOffset.UtcNow);
+        Action validateApproval = () => SecurityClosePriceEvidence.ValidateApproval(hydrated, approval);
+        validateApproval.Should().NotThrow();
+    }
+
     [Theory]
     [InlineData("zero")]
     [InlineData("negative")]
@@ -84,6 +172,45 @@ public sealed class SecurityMasterClosePriceServiceTests
         draft.Snapshot.Blockers.Select(b => b.Code).Should().Contain("UnsupportedPrice");
         RetainForRead(store, draft);
         await service.Invoking(s => s.ApproveClosePriceSetAsync(Approve(draft))).Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Theory]
+    [InlineData("extreme")]
+    [InlineData("tiny-override")]
+    public async Task UnrepresentableDispersionRetainsExactSourcesAndDurableBlockerInsteadOfFailingSnapshot(string scenario)
+    {
+        var (service, store) = BuildService(scenario);
+        var manual = scenario == "tiny-override"
+            ? new SecurityClosePriceOverrideDto(0.0000000000000000000000000001m,
+                SecurityPriceUnit.PercentOfPar, "Retained manual input", "dealer-file/row-17")
+            : null;
+        var draft = await service.CreateClosePriceSetAsync(Request(manual) with { MaxSourceDispersionPercent = decimal.MaxValue });
+
+        draft.Snapshot.Blockers.Should().ContainSingle(b => b.Code == "SourceDispersion"
+            && b.Reason.Contains("decimal range", StringComparison.Ordinal));
+        var line = draft.Snapshot.Lines.Single();
+        line.Selection.Should().NotBeNull();
+        line.Observations.Should().HaveCount(2);
+        line.Observations.Single(p => p.SourceId == "source").Price.Should().Be(scenario == "extreme" ? 0.0000000001m : 100m);
+        line.Observations.Single(p => p.SourceId == "comparison").Price.Should().Be(scenario == "extreme" ? 999999999999999999m : 100.2m);
+        if (scenario == "extreme")
+            line.Selection!.ComparisonPrices.Single().PctDiffFromGoldenCopy.Should().BeNull();
+        else
+            line.Override.Should().Be(manual);
+        await store.Received(1).RetainPriceSelectionAsync(Arg.Any<SecurityPriceGoldenCopyDto>(), "account-a", Arg.Any<CancellationToken>());
+        await store.Received(1).RetainClosePriceSnapshotAsync(draft.Snapshot, Arg.Any<CancellationToken>());
+
+        var payload = JsonSerializer.Serialize(draft.Snapshot, SecurityMasterClosePricesJsonContext.Default.SecurityClosePriceSnapshotDto);
+        var hydrated = JsonSerializer.Deserialize(payload, SecurityMasterClosePricesJsonContext.Default.SecurityClosePriceSnapshotDto)!;
+        Action validate = () => SecurityClosePriceEvidence.Validate(hydrated);
+        validate.Should().NotThrow();
+        hydrated.Blockers.Should().BeEquivalentTo(draft.Snapshot.Blockers);
+        Action removeBlocker = () => SecurityClosePriceEvidence.Validate(hydrated with { Blockers = [] });
+        removeBlocker.Should().Throw<ArgumentException>();
+        RetainForRead(store, new(hydrated, null));
+        await service.Invoking(s => s.ApproveClosePriceSetAsync(Approve(draft))).Should().ThrowAsync<InvalidOperationException>();
+        await store.DidNotReceive().RetainClosePriceApprovalAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateOnly>(),
+            Arg.Any<SecurityClosePriceApprovalDto>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -115,6 +242,7 @@ public sealed class SecurityMasterClosePriceServiceTests
         var (service, _) = BuildService();
         await service.Invoking(s => s.CreateClosePriceSetAsync(Request() with { AccountId = "" })).Should().ThrowAsync<ArgumentException>();
         await service.Invoking(s => s.CreateClosePriceSetAsync(Request() with { BookId = "" })).Should().ThrowAsync<ArgumentException>();
+        await service.Invoking(s => s.CreateClosePriceSetAsync(Request() with { RequestId = Guid.Empty })).Should().ThrowAsync<ArgumentException>();
         await service.Invoking(s => s.CreateClosePriceSetAsync(Request() with { EvaluatedAsOf = Close.AddDays(1) })).Should().ThrowAsync<ArgumentException>();
     }
 
@@ -158,6 +286,31 @@ public sealed class SecurityMasterClosePriceServiceTests
         draft.Snapshot.Lines.Single().Selection!.KnowledgeAsOf.Should().Be(draft.Snapshot.CreatedAt);
     }
 
+    [Fact]
+    public async Task PriceHistoryRequiresExactAccountBookAndValuationDateBeforeReadingStore()
+    {
+        var (service, store) = BuildService();
+        var date = DateOnly.FromDateTime(Close.UtcDateTime);
+        await service.Invoking(s => s.GetClosePriceSetsAsync("", "book-a", date)).Should().ThrowAsync<ArgumentException>();
+        await service.Invoking(s => s.GetClosePriceSetsAsync("account-a", " ", date)).Should().ThrowAsync<ArgumentException>();
+        await service.Invoking(s => s.GetClosePriceSetsAsync("account-a", "book-a", default)).Should().ThrowAsync<ArgumentException>();
+        await store.DidNotReceive().GetClosePriceSetsAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task PriceHistoryNormalizesOnlySurroundingScopeWhitespaceAndPreservesCancellation()
+    {
+        var (service, store) = BuildService();
+        var draft = await service.CreateClosePriceSetAsync(Request());
+        using var cancellation = new CancellationTokenSource();
+        IReadOnlyList<SecurityClosePriceSetDto> expected = [draft];
+        store.GetClosePriceSetsAsync("account-a", "book-a", draft.Snapshot.ValuationDate, cancellation.Token).Returns(expected);
+
+        (await service.GetClosePriceSetsAsync(" account-a ", " book-a ", draft.Snapshot.ValuationDate, cancellation.Token))
+            .Should().BeSameAs(expected);
+        await store.Received(1).GetClosePriceSetsAsync("account-a", "book-a", draft.Snapshot.ValuationDate, cancellation.Token);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -199,11 +352,24 @@ public sealed class SecurityMasterClosePriceServiceTests
         store.GetHierarchyAsOfAsync(SecurityId, "account-a", Close, Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>())
             .Returns(new SecurityPricingHierarchyDto(SecurityId, "account-a", [new(1, "source", "Source", 1)], Close.AddDays(-10), "operator"));
         var unit = scenario == "unsupported" ? SecurityPriceUnit.Unspecified : SecurityPriceUnit.PercentOfPar;
+        var sourcePrice = scenario switch
+        {
+            "zero" => 0m,
+            "negative" => -100m,
+            "extreme" => 0.0000000001m,
+            _ => 100m
+        };
+        var comparisonPrice = scenario switch
+        {
+            "dispersion" => 110m,
+            "extreme" => 999999999999999999m,
+            _ => 100.2m
+        };
         store.GetRawPricesAsync(SecurityId, Close, Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>()).Returns(new SecurityRawPriceDto[]
         {
-            new("source", scenario == "zero" ? 0m : scenario == "negative" ? -100m : 100m,
+            new("source", sourcePrice,
                 scenario == "stale" ? Close.AddDays(-5) : Close.AddHours(-1), unit),
-            new("comparison", scenario == "dispersion" ? 110m : 100.2m, Close.AddHours(-2),
+            new("comparison", comparisonPrice, Close.AddHours(-2),
                 scenario == "mixed" ? SecurityPriceUnit.CurrencyPerUnit : unit)
         });
         return (new(store, query, NullLogger<SecurityMasterPricingService>.Instance), store);

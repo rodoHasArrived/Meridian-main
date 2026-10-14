@@ -2,7 +2,7 @@
 title: Bounded account oversight
 status: active
 owner: core-team
-reviewed: 2026-10-13
+reviewed: 2026-10-14
 audience: operators
 ---
 
@@ -31,11 +31,13 @@ Close-price snapshots require the existing PostgreSQL Security Master and migrat
 
 | Workflow | Routes under the account prefix | Expected result |
 | --- | --- | --- |
+| Access context | `GET oversight/context` | Verified account/book/base currency, session actor and current read/write/review/provisioning capabilities |
 | Provisioning | `POST oversight/provision` (administrator only) | Explicit durable store initialization without resetting retained history |
 | Cash balance comparison | `POST cash-reconciliation/runs` | Immutable complete two-source comparison and stable cash case history |
 | Case oversight | `GET cash-reconciliation/cases`; `POST cash-reconciliation/cases/{caseId}/assignments` | Retained owner, version, aging and source resolutions; stale assignment versions refuse |
 | Exact replay | `GET cash-reconciliation/runs/{runId}/replay` | Reproduced retained source/tolerance evidence; unrelated account scope refuses |
 | Price preparation | `POST close-price-sets/{valuationDate}` | Immutable retained observations, units, supported overrides and blockers |
+| Price history | `GET close-price-sets/{valuationDate}` | All retained versions and approvals for the exact account/book/date after restart |
 | Price review | `GET close-price-sets/{valuationDate}/{snapshotId}`; `POST .../{snapshotId}/approval` | Independent reviewer and rationale bound to the exact unblocked snapshot |
 | Account forecasting | `POST cash-forecasts`; `GET cash-forecasts`; `GET cash-forecasts/{snapshotId}` | Replayable forecasts, cash reconciliation and linked earlier predictions |
 
@@ -52,6 +54,43 @@ or `3` (InternalLedger). Price quote units use `"CurrencyPerUnit"` or `"PercentO
 Date-only fields use `YYYY-MM-DD`. Observation and recording timestamps cannot exceed
 the server's current UTC time. The reviewed source JSON format below uses enum names.
 
+## Browser workbench
+
+Open **Accounting → Reconciliation → Account oversight**. Explicitly select an account-owned
+ledger book; the workbench does not select an unrelated account by default. Account and book
+identities remain in the URL for reloads. Current server capabilities determine read-only and
+independent-review controls. Administrators can initialize empty history from this workbench.
+
+Use **Cash cases** to inspect stable case identity, source state, owner, aging, resolutions and
+executed tolerance versions. Select an observation to replay its original rows and evidence.
+An owner handoff requires a rationale and the retained case version; after a conflict, refresh
+before retrying. Import a complete comparison handoff, inspect its structured preview, then
+capture it explicitly. A failed capture retains the imported run identity for a safe retry.
+
+Use **Close prices** to prepare an explicit security population at elapsed UTC cutoffs, review
+selected and competing observations, and inspect units, overrides and blockers. Select retained
+history after restart. An independent reviewer supplies a rationale for an unblocked set;
+corrections retain the same security population and link the latest version. After an uncertain
+capture outcome, reload the original valuation date's history, then use **Verify retained price
+capture** or **Retry same price capture** to submit the unchanged command with its retained
+request identity. New captures and approvals stay locked until that command is confirmed.
+After an uncertain approval outcome, reload history and inspect the retained review.
+
+Use **Cash forecast** to import a scoped forecast handoff, inspect its opening/closing cash,
+expected and actual flows, three dates, declared FX, source reviews and factor revisions, then
+capture it explicitly. The downloadable template leaves required amounts and reviewed evidence
+incomplete. Complete them from retained sources rather than inventing settled cash or approval.
+Certification and its blockers come from the server. Prior predictions remain in history.
+
+Comparison and forecast handoffs use the corresponding shared request shapes. Monetary fields
+must be plain decimal **strings** in browser handoffs so importing cannot round them through
+JavaScript numbers. Original source payloads remain unchanged strings. The browser accepts named
+or numeric shared enums and submits numeric request enums. These handoffs are distinct from the
+independently reviewed source documents below. Source bytes and review authority are still
+verified by the server. Changing account scope aborts old requests and requires confirmation
+before discarding unsaved observations. Errors remain unavailable or blocked rather than empty
+or certified, and these workflows confer no posting or payment authority.
+
 ## Cash-balance continuity
 
 Choose one account and the cash-balance break class. Supply exactly two independent source IDs
@@ -66,6 +105,10 @@ Within the exact account/book scope, reuse a source version only with its unchan
 provenance, rows and original payloads. Corrections require a new source version even if an
 intermediate run omitted the old revision or compared that source with a different counterpart.
 Rejected submissions do not append a run or change an existing case.
+Reuse a tolerance profile ID and version only with the same complete rules in this account/book
+scope. Changed thresholds, date windows or rules require a new version. This also applies when
+the next run compares a different source pair. Owner assignment timestamps must be no earlier
+than the latest case observation and prior assignment; equal timestamps are permitted.
 Previously retained runs with shared evidence references or copied original payloads fail replay
 and retry under these controls. Their stored case state and history are not rewritten; investigate
 any prior `SourceCleared` result and submit a new run with independently sourced observations and
@@ -88,6 +131,15 @@ evidence and rationale; they cannot conceal unsupported source inputs. An indepe
 approves the frozen set. Later quotes leave it unchanged. A correction names the predecessor
 snapshot, retains the same security population and appends a version with correction rationale.
 Both the price evaluation and knowledge cutoffs must have elapsed when the set is created.
+If dispersion exceeds the supported decimal range, the set retains its exact source prices and
+an explicit `SourceDispersion` blocker; correct the inputs before requesting approval.
+Identical concurrent approval retries return the same retained review and timestamp. A different
+reviewer or rationale cannot replace an existing approval.
+API callers can supply a nonempty UUID `requestId` and must preserve it with the complete
+unchanged command across retries. Its retained snapshot identity is the same UUID; exact scoped
+retry returns that immutable snapshot and any approval even after later quotes or corrections.
+A changed command needs a new identity. Omitting `requestId` keeps the original new-capture
+behavior and does not provide identified retry recovery.
 
 ## Forecast source format and review
 
@@ -130,7 +182,11 @@ to one MiB. An unsupported or mismatched source returns HTTP 409 with
 `CASH_FORECAST_SOURCE_AUTHORITY_REQUIRED`.
 
 Opening means start-of-day settled cash; closing means end-of-day settled cash over the inclusive
-period. Receipt date changes cash; economic and settlement dates explain the obligation. Actual
+period. Retain separately identifiable observations for both boundaries, even when a single-day
+period has equal opening and closing amounts. Reusing source bytes or the same retained evidence
+identity/version for both boundaries blocks certification. Receipt date changes cash; economic
+and settlement dates explain the obligation. Linked expected and actual flows must retain the
+same security identity; an identity present on only one side blocks certification. Actual
 cash replaces its corresponding expectation in the forecast and is counted once. A dated declared
 FX rate is required for each selected foreign cash observation or flow. Missing account scope,
 source authority, FX, unsettled expectations or unexplained closing variance blocks certification.
@@ -138,6 +194,12 @@ Linked revisions retain prior predictions, including factor restatements.
 Each flow `versionId` identifies one immutable source revision throughout the retained
 account/book/period history, including snapshots that temporarily omit the flow. Changed
 economics, status or identity require a new version and the applicable supersession link.
+Valid older receipts replay unchanged. Previously certified receipts violating the boundary or
+security-link rules fail replay closed. Preserve those receipts, review their source observations
+and append a linked correction with the required independent evidence; never rewrite old history.
+If a run temporarily omitted a flow, `supersedesVersionId` still names its last retained revision
+with the same expected/actual status. `previousSnapshotId` names the latest snapshot for the
+account/book/period. Reintroducing an unchanged revision preserves its original supersession link.
 
 ## Recovery and evidence
 

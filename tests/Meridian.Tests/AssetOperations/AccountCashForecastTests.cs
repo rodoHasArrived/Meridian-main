@@ -34,6 +34,58 @@ public sealed class AccountCashForecastTests : IDisposable
         snapshot.Inputs.Flows.Single(row => row.Status == AccountCashFlowStatus.Actual).Should().Be(actual);
     }
 
+    [Theory]
+    [InlineData("same-observation")]
+    [InlineData("same-source-bytes")]
+    [InlineData("same-evidence-id")]
+    [InlineData("same-evidence-uri")]
+    public void Build_SingleDayOpeningAndClosingCannotReuseRetainedObservation(string reuse)
+    {
+        var request = SingleDayRequest();
+        var opening = request.OpeningCash!.Provenance;
+        var closing = request.ClosingCash!.Provenance;
+        closing = reuse switch
+        {
+            "same-observation" => opening,
+            "same-source-bytes" => closing with
+            {
+                SourceContentHash = opening.SourceContentHash,
+                Evidence = closing.Evidence with { ContentHashSha256 = opening.SourceContentHash }
+            },
+            "same-evidence-id" => closing with
+            {
+                Evidence = closing.Evidence with { EvidenceId = " " + opening.Evidence.EvidenceId + " " }
+            },
+            "same-evidence-uri" => closing with
+            {
+                Evidence = closing.Evidence with { EvidenceUri = " " + opening.Evidence.EvidenceUri + " " }
+            },
+            _ => throw new ArgumentOutOfRangeException(nameof(reuse))
+        };
+        var snapshot = AccountCashForecastEngine.Build(request with
+        {
+            ClosingCash = request.ClosingCash! with { Provenance = closing }
+        });
+
+        snapshot.ClosingVariance.Should().Be(0m);
+        snapshot.IsCertified.Should().BeFalse();
+        snapshot.ForecastLadder.IsDecisionReady.Should().BeFalse();
+        snapshot.Blockers.Should().ContainSingle().Which.Code.Should().Be("cash-forecast.balance-evidence-reused");
+    }
+
+    [Fact]
+    public void Build_SingleDayIndependentBoundaryObservationsCanCertifyEqualBalances()
+    {
+        var snapshot = AccountCashForecastEngine.Build(SingleDayRequest());
+
+        snapshot.IsCertified.Should().BeTrue();
+        snapshot.OpeningBaseCash.Should().Be(100m);
+        snapshot.ObservedClosingBaseCash.Should().Be(100m);
+        snapshot.Inputs.OpeningCash!.Provenance.SourceContentHash
+            .Should().NotBe(snapshot.Inputs.ClosingCash!.Provenance.SourceContentHash);
+        snapshot.Blockers.Should().BeEmpty();
+    }
+
     [Fact]
     public void Build_DoesNotCountUnsettledTradesBeforeActualCashReceipt()
     {
@@ -166,6 +218,39 @@ public sealed class AccountCashForecastTests : IDisposable
         var snapshot = AccountCashForecastEngine.Build(Request([expected, actual], 125m));
         snapshot.IsCertified.Should().BeFalse();
         snapshot.Blockers.Should().Contain(row => row.Code == "cash-forecast.flow-link-mismatch");
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Build_LinkedFlowsCannotOmitSecurityIdentityOnOnlyOneSide(bool expectedHasSecurity)
+    {
+        var securityId = Guid.NewGuid();
+        var expected = Flow("coupon", "prediction", AccountCashFlowStatus.Expected, 25m) with
+        {
+            SecurityId = expectedHasSecurity ? securityId : null
+        };
+        var actual = Flow("coupon", "statement", AccountCashFlowStatus.Actual, 25m) with
+        {
+            SecurityId = expectedHasSecurity ? null : securityId
+        };
+        var snapshot = AccountCashForecastEngine.Build(Request([expected, actual], 125m));
+
+        snapshot.ClosingVariance.Should().Be(0m);
+        snapshot.IsCertified.Should().BeFalse();
+        snapshot.Blockers.Should().ContainSingle().Which.Code.Should().Be("cash-forecast.flow-link-mismatch");
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Build_LinkedFlowsCanCertifyWhenBothSecurityIdentitiesAgree(bool hasSecurity)
+    {
+        Guid? securityId = hasSecurity ? Guid.NewGuid() : null;
+        var expected = Flow("coupon", "prediction", AccountCashFlowStatus.Expected, 25m) with { SecurityId = securityId };
+        var actual = Flow("coupon", "statement", AccountCashFlowStatus.Actual, 25m) with { SecurityId = securityId };
+
+        AccountCashForecastEngine.Build(Request([expected, actual], 125m)).IsCertified.Should().BeTrue();
     }
 
     [Fact]
@@ -365,6 +450,43 @@ public sealed class AccountCashForecastTests : IDisposable
         await reinitialize.Should().ThrowAsync<InvalidDataException>();
     }
 
+    [Theory]
+    [InlineData("reused-boundary")]
+    [InlineData("missing-security")]
+    public async Task Store_LegacyInvalidCertificationFailsReplayWithoutRewritingRetainedEvidence(string defect)
+    {
+        var request = defect == "reused-boundary" ? SingleDayRequest() : Request(
+            [Flow("coupon", "prediction", AccountCashFlowStatus.Expected, 25m) with { SecurityId = Guid.NewGuid() },
+             Flow("coupon", "statement", AccountCashFlowStatus.Actual, 25m)], 125m);
+        if (defect == "reused-boundary")
+            request = request with { ClosingCash = request.OpeningCash };
+        var blocked = AccountCashForecastEngine.Build(request);
+        blocked.IsCertified.Should().BeFalse();
+        // Earlier v1 snapshots could retain a certification with these exact source inputs.
+        // Keep that receipt intact and require current replay to refuse its former conclusion.
+        var legacy = blocked with
+        {
+            IsCertified = true,
+            Blockers = [],
+            ForecastLadder = PortfolioCashLadderEngine.BuildFromRetainedContributions(
+                request.PeriodStart, request.PeriodEnd, request.Scope.BaseCurrency, blocked.OpeningBaseCash!.Value,
+                blocked.ForecastLadder.Contributions, request.MinimumCashThreshold, request.BucketDays, request.RecordedAtUtc, [])
+        };
+        var store = new FileAccountCashForecastStore(_dataRoot);
+        await store.InitializeAsync();
+        await store.AppendAsync(legacy);
+        var statePath = Path.Combine(_dataRoot, "asset-operations", "account-cash-forecasts", "snapshots.json");
+        var retainedBytes = await File.ReadAllBytesAsync(statePath);
+        var restarted = new AccountCashForecastService(new FileAccountCashForecastStore(_dataRoot));
+
+        var replay = () => restarted.GetHistoryAsync(Scope);
+        await replay.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("Retained account cash forecast failed exact scope or deterministic replay validation.");
+        (await File.ReadAllBytesAsync(statePath)).Should().Equal(retainedBytes);
+        (await new FileAccountCashForecastStore(_dataRoot).GetHistoryAsync(Scope))
+            .Should().ContainSingle().Which.IsCertified.Should().BeTrue();
+    }
+
     [Fact]
     public async Task Store_ConcurrentIndependentInstancesRetainBothAccounts()
     {
@@ -457,11 +579,105 @@ public sealed class AccountCashForecastTests : IDisposable
         (await restarted.GetHistoryAsync(Scope)).Should().HaveCount(3);
     }
 
+    [Fact]
+    public async Task Store_OmittedPredictionRetainsSupersessionLineageSeparatelyFromObservedCashAfterRestart()
+    {
+        var store = new FileAccountCashForecastStore(_dataRoot);
+        await store.InitializeAsync();
+        var service = new AccountCashForecastService(store);
+        var original = Flow("coupon", "prediction-v1", AccountCashFlowStatus.Expected, 25m);
+        var actual = Flow("coupon", "statement-v1", AccountCashFlowStatus.Actual, 25m);
+        var first = await service.CaptureAsync(Request([original, actual], 125m));
+        var omitted = await service.CaptureAsync(Request([actual], 125m) with
+        {
+            RunId = "omitted-prediction",
+            PreviousSnapshotId = first.SnapshotId,
+            CorrectionRationale = "Temporarily omit the prediction while retaining observed cash."
+        });
+        var restarted = new AccountCashForecastService(new FileAccountCashForecastStore(_dataRoot));
+        var revised = Flow("coupon", "prediction-v2", AccountCashFlowStatus.Expected, 26m) with
+        {
+            SupersedesVersionId = original.VersionId
+        };
+        var corrected = await restarted.CaptureAsync(Request([revised, actual], 125m) with
+        {
+            RunId = "revised-prediction",
+            PreviousSnapshotId = omitted.SnapshotId,
+            CorrectionRationale = "The revised prediction supersedes its last retained source revision."
+        });
+        corrected.IsCertified.Should().BeTrue();
+        corrected.Inputs.Flows.Should().Contain(revised).And.Contain(actual);
+        var omittedAgain = await restarted.CaptureAsync(Request([actual], 125m) with
+        {
+            RunId = "omitted-revised-prediction",
+            PreviousSnapshotId = corrected.SnapshotId,
+            CorrectionRationale = "Temporarily omit the revised prediction."
+        });
+        var repeated = await restarted.CaptureAsync(Request([revised, actual], 125m) with
+        {
+            RunId = "unchanged-revised-prediction",
+            PreviousSnapshotId = omittedAgain.SnapshotId,
+            CorrectionRationale = "Reintroduce the unchanged revision with its original supersession link."
+        });
+        repeated.Inputs.Flows.Should().Contain(revised);
+        var history = await restarted.GetHistoryAsync(Scope);
+        history.Should().HaveCount(5);
+        history[0].Inputs.Flows.Should().Contain(original);
+        history[2].Inputs.Flows.Should().Contain(revised);
+        history[4].Inputs.Flows.Should().Contain(revised);
+    }
+
+    [Theory]
+    [InlineData(AccountCashFlowStatus.Expected, null)]
+    [InlineData(AccountCashFlowStatus.Expected, "unrelated-revision")]
+    [InlineData(AccountCashFlowStatus.Actual, null)]
+    [InlineData(AccountCashFlowStatus.Actual, "unrelated-revision")]
+    public async Task Store_OmittedFlowRevisionStillRequiresItsLastRetainedSupersessionLink(
+        AccountCashFlowStatus status, string? supersedesVersionId)
+    {
+        var store = new FileAccountCashForecastStore(_dataRoot);
+        await store.InitializeAsync();
+        var service = new AccountCashForecastService(store);
+        var original = Flow("coupon", "source-v1", status, 25m);
+        var first = await service.CaptureAsync(Request([original], 125m));
+        var omitted = await service.CaptureAsync(Request([], 100m) with
+        {
+            RunId = "omitted-flow",
+            PreviousSnapshotId = first.SnapshotId,
+            CorrectionRationale = "Temporarily omit the source flow."
+        });
+        var restarted = new AccountCashForecastService(new FileAccountCashForecastStore(_dataRoot));
+        var revised = Flow("coupon", "source-v2", status, 26m) with { SupersedesVersionId = supersedesVersionId };
+        var capture = () => restarted.CaptureAsync(Request([revised], 126m) with
+        {
+            RunId = "unlinked-revision",
+            PreviousSnapshotId = omitted.SnapshotId,
+            CorrectionRationale = "Attempt to replace an omitted revision without its correct source link."
+        });
+        await capture.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("A changed prediction or observation must link the prior retained source revision.");
+        (await restarted.GetHistoryAsync(Scope)).Should().HaveCount(2);
+    }
+
     private static AccountCashForecastRequestDto Request(IReadOnlyList<AccountCashFlowDto> flows, decimal closing) =>
         new("run-1", Scope, Start, End,
             new(Scope.AccountId, Scope.BookId, Start, 100m, "USD", true, Provenance("opening", AccountCashEvidenceRole.Observation, Start)),
             new(Scope.AccountId, Scope.BookId, End, closing, "USD", true, Provenance("closing", AccountCashEvidenceRole.Observation, End)),
             flows, [], Recorded);
+
+    private static AccountCashForecastRequestDto SingleDayRequest()
+    {
+        var request = Request([], 100m);
+        return request with
+        {
+            PeriodEnd = Start,
+            ClosingCash = request.ClosingCash! with
+            {
+                AsOfDate = Start,
+                Provenance = Provenance("independent-closing", AccountCashEvidenceRole.Observation, Start)
+            }
+        };
+    }
 
     private static AccountCashFlowDto Flow(string id, string version, AccountCashFlowStatus status, decimal amount) =>
         new(id, version, Scope.AccountId, Scope.BookId, status, "Coupon", amount, "USD",

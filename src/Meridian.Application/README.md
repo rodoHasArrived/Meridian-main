@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-10-07
+last_reviewed: 2026-10-14
 ---
 
 # src/Meridian.Application
@@ -19,6 +19,20 @@ later quotes cannot change it. Corrections append linked versions with unchanged
 Missing Security Master composition fails closed. Proof is in `SecurityMasterClosePriceServiceTests`
 and `PostgresSecurityMasterClosePriceTests`; this extends `W10-MARK-001` without claiming its
 live operator acceptance or adding dealer RFQ.
+Unrepresentable comparison percentages preserve exact raw prices; close-price snapshots retain
+an explicit dispersion blocker rather than losing the exception evidence.
+Exact account/book/date history returns retained price versions and approvals after restart.
+Concurrent identical approval retries return the canonical retained decision; conflicting reviews
+remain immutable-write conflicts.
+An explicit creation `RequestId` becomes the immutable snapshot identity. Retrying that same
+normalized command after a lost response or restart returns its retained observations and review
+before reading live prices. Changed commands conflict; concurrent identical captures converge on
+the committed snapshot. Callers without an identity retain the existing new-command behavior.
+
+`ILivePositionCorporateActionAdjuster` exposes an additive overload for retained total carrying
+basis. Native paper-execution adjustments use it to avoid rebuilding basis from rounded unit
+quotes. Legacy implementers retain their original overload; a null `AdjustedTotalCostBasis`
+explicitly identifies that compatibility result and remains absent from serialized output.
 
 Security Master governed edits now validate and stage the overlay and draft in one PostgreSQL
 transaction guarded by a durable per-security generation. Competing instances receive a conflict
