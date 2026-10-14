@@ -6,7 +6,7 @@ module_id: SRC-EXECUTION
 path: src/Meridian.Execution
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-09-25
+last_reviewed: 2026-10-14
 ---
 
 # src/Meridian.Execution
@@ -50,6 +50,15 @@ This layer implements execution behavior and broker-facing runtime services whil
 ## Important workflows
 
 Use this module for paper session execution, broker gateway behavior, order lifecycle, and execution evidence.
+
+Paper session fills retain exact remaining carrying basis on each internal `PositionLot` and use
+Ledger's `LotBasisRelief` for partial long sales and short covers. Average unit cost remains a
+display quote; subsequent fills and unrealized P&L use the retained total. The native corporate-action
+adjuster carries that total through splits and principal paydowns, and lot rescaling assigns the
+exact aggregate remainder. An asynchronous adjustment cannot replace a lot book changed by intervening
+fills, including close/reopen at the same quantity and price. Legacy custom adjusters retain their
+quantity/quote behavior and do not claim exact total-basis evidence. This calculation convergence
+does not supply canonical security/book identity, acquisition FX or production short-posting authority.
 
 Both paper gateways resolve the final fill price through the shared trading-parameter helper.
 Tick-size rounding is best-effort: a rounded price is used only when it remains positive, stays

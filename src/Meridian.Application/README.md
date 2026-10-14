@@ -6,10 +6,15 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-10-07
+last_reviewed: 2026-10-14
 ---
 
 # src/Meridian.Application
+
+`ILivePositionCorporateActionAdjuster` exposes an additive overload for retained total carrying
+basis. Native paper-execution adjustments use it to avoid rebuilding basis from rounded unit
+quotes. Legacy implementers retain their original overload; a null `AdjustedTotalCostBasis`
+explicitly identifies that compatibility result and remains absent from serialized output.
 
 Security Master governed edits now validate and stage the overlay and draft in one PostgreSQL
 transaction guarded by a durable per-security generation. Competing instances receive a conflict
