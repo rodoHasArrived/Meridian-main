@@ -31,6 +31,8 @@ internal sealed class LedgerPostgresTestDatabase : IAsyncDisposable
 
     public PostgresLedgerJournalStore JournalStore { get; }
 
+    public string CreateSchemaName(string prefix) => _server.CreateSchemaName(prefix);
+
     public PostgresAccountingConfigurationStore AccountingConfigurationStore { get; }
 
     public PostgresOperationsContinuityStore OperationsStore { get; }

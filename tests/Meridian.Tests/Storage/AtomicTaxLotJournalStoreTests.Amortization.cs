@@ -897,6 +897,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         private readonly PostgresTestServer _server;
         public LedgerJournalStoreOptions Options { get; }
         public PostgresSecurityMasterStore Securities { get; }
+        public string SecuritySchema { get; private set; } = null!;
         public PostgresAssetOperationsProjectionStore Positions { get; }
         public PostgresLedgerJournalStore Store { get; }
         public SecurityProjectionRecord Security { get; private set; } = null!;
@@ -951,7 +952,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 await new LedgerMigrationRunner(options).EnsureMigratedAsync();
                 await new SecurityMasterMigrationRunner(securityOptions).EnsureMigratedAsync();
                 await new AssetOperationsMigrationRunner(assetOptions).EnsureMigratedAsync();
-                var fixture = new AmortFixture(server, options, new(securityOptions), new(assetOptions));
+                var fixture = new AmortFixture(server, options, new(securityOptions), new(assetOptions))
+                { SecuritySchema = securityOptions.Schema };
                 await fixture.SeedAsync(premium);
                 return fixture;
             }

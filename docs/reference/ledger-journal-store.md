@@ -111,6 +111,15 @@ successor and realized-tax paths. Opening journals, cover economics, position au
 tax evidence and certified Execution/Backtesting consumer parity remain prerequisites
 for enabling short posting.
 
+Legacy-lot backfill accepts reviewed source facts only while the ledger book, Security Master,
+book position and lot remain locked in the same PostgreSQL transaction. Both accepting evidence
+and applying it require PostgreSQL reference stores in the ledger database. A missing provider,
+different database or stale version blocks the new operation without enriching the lot or
+reserving its receipt identity. Previously committed exact receipts replay before current
+reference checks; later reference changes do not rewrite historical acquisition evidence.
+Canonical posting uses the same book-before-reference lock order even when tenant enforcement
+is disabled for compatibility. Exact committed posting replay remains ahead of that new lock.
+
 ## Ledger Book Service
 
 `ILedgerBookService` is the application-facing contract for the multi-ledger workflow. The

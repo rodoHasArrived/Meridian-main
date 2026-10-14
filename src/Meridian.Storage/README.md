@@ -285,6 +285,16 @@ Migration `V_ledger_034__open_lot_acquisition.sql` adds nullable retained acquis
 
 `V_ledger_035__open_lot_backfill.sql` adds immutable source bytes, independent reviews, application receipts, and unresolved lot exceptions. `IOpenLotBackfillStore` surveys a book, retains hashed acquisition facts, checks Security Master and book-position ownership, and applies approved evidence with optimistic versions and idempotency. Only the atomic application receipt can resolve its exception. Existing acquisition facts cannot be replaced through backfill.
 
+Backfill acceptance and application hold the ledger book, Security Master reference rows,
+book position and lot in the owning PostgreSQL transaction. Reference stores must use the
+ledger database, so versions and ownership cannot change between validation and commit.
+Missing, non-transactional or differently located reference authority refuses acceptance
+and application. Exact committed receipts still replay before current reference validation.
+New canonical postings also lock the book before reference rows in compatibility mode,
+after exact replay, so their lock order cannot oppose a backfill holding that book.
+`OpenLotBackfillPostgresTests` covers physical row-lock contention, cancellation, stale
+reference versions, rollback and restart replay using real reference stores.
+
 Durable disposal now uses the canonical decimal relief guard. Missing identity, quantity basis, or acquisition FX blocks relief and authoritative reporting until repaired. Reporting carries canonical lot evidence alongside retained disposal history; current market FX never substitutes for acquisition FX. Durable AverageCost posting remains refused until remaining-lot basis redistribution has its own atomic proof.
 
 ### Reviewed fund tenant backfill
