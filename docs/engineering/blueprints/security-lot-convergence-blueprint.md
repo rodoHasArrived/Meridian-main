@@ -287,6 +287,23 @@ explicit shadow comparison.
 Execution cutover, canonical short posting, retained-history compatibility and live shadow
 acceptance remain open. This increment does not satisfy the full W10-LOT-002 exit gate.
 
+### Paper execution basis continuation (2026-10-14)
+
+The actual `PaperTradingPortfolio` fill path also uses `LotBasisRelief`, retaining remaining total
+basis on its internal lots. Partial long sales and short covers no longer reconstruct relief from
+the entry quote; further fills and unrealized P&L consume the same retained basis. The native live
+corporate-action adjuster accepts that total through an additive interface overload, preserves it
+through splits and subtracts projected principal during paydowns. Rescaling distributes the exact
+remaining basis across lots and rejects a basis-bearing quantity lost below decimal precision.
+Lot version and object identity guard asynchronous adjustments against intervening fills.
+
+`PaperTradingPortfolioBasisParityTests` covers fractional exhaustion of session-ledger assets and
+short payables, partial-close/additional-fill read values, native split/paydown paths and stale
+adjustments. Legacy custom adjusters still expose quantity/quote compatibility behavior and return
+no exact-total evidence. Selection/tie policy, canonical identities and acquisition FX, governed
+short and corporate-action posting, compatibility retirement and live shadow acceptance remain
+separate gates. This continuation does not close W10-LOT-002.
+
 ## 9. Open Questions and Risks
 
 | Question | Owner | Blocking decision |
