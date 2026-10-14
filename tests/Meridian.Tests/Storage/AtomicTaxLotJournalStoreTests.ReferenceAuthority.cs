@@ -146,26 +146,26 @@ public sealed partial class AtomicTaxLotJournalStoreTests
     public async Task ReferenceAuthority_AcquisitionAndDisposalAcceptMixedCaseActivePositions()
     {
         foreach (var disposal in new[] { false, true })
-        foreach (var status in new[] { "active", "ACTIVE", "aCtIvE" })
-        {
-            await using var database = await LedgerPostgresTestDatabase.CreateAsync();
-            var (command, authority) = await PrepareReferencePostingAsync(database, disposal);
-            var position = await authority.Positions.UpsertAsync(authority.Role,
-                authority.Position with { Status = status, Version = authority.Position.Version + 1 },
-                null, authority.Position.Version,
-                new("reviewer", "evidence://lot/status-casing", "Reviewed active position", DateTimeOffset.UtcNow));
-            position.Status.Should().Be(status);
-            command = (command with { ReferenceVersions = new(authority.Security.Version, position.Version) }).WithComputedFingerprint();
+            foreach (var status in new[] { "active", "ACTIVE", "aCtIvE" })
+            {
+                await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+                var (command, authority) = await PrepareReferencePostingAsync(database, disposal);
+                var position = await authority.Positions.UpsertAsync(authority.Role,
+                    authority.Position with { Status = status, Version = authority.Position.Version + 1 },
+                    null, authority.Position.Version,
+                    new("reviewer", "evidence://lot/status-casing", "Reviewed active position", DateTimeOffset.UtcNow));
+                position.Status.Should().Be(status);
+                command = (command with { ReferenceVersions = new(authority.Security.Version, position.Version) }).WithComputedFingerprint();
 
-            var posted = await database.RestartJournalStore().AppendAssetPostingAsync(command);
+                var posted = await database.RestartJournalStore().AppendAssetPostingAsync(command);
 
-            posted.IsExactReplay.Should().BeFalse();
-            posted.Mutations.Should().ContainSingle();
-            var replay = await database.RestartJournalStore().AppendAssetPostingAsync(command);
-            replay.IsExactReplay.Should().BeTrue();
-            replay.Mutations.Select(mutation => mutation.MutationRecordId)
-                .Should().Equal(posted.Mutations.Select(mutation => mutation.MutationRecordId));
-        }
+                posted.IsExactReplay.Should().BeFalse();
+                posted.Mutations.Should().ContainSingle();
+                var replay = await database.RestartJournalStore().AppendAssetPostingAsync(command);
+                replay.IsExactReplay.Should().BeTrue();
+                replay.Mutations.Select(mutation => mutation.MutationRecordId)
+                    .Should().Equal(posted.Mutations.Select(mutation => mutation.MutationRecordId));
+            }
     }
 
     [LedgerDatabaseFact]
