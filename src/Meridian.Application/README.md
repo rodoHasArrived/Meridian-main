@@ -33,6 +33,9 @@ Ledger composition registers the read-only `CanonicalLotAmortizationService` alo
 `CanonicalLotCorporateActionService` uses the same deferred authoritative stores to prepare the
 single retained successor instruction and draft it through the event spine. Preview preserves
 the chart path separately from the durable ledger account; posting requires independent approval.
+The event spine also receives the complete Security Master store. Successor preparation and
+drafting compare reviewed source/target projection hashes; an absent store blocks that path
+without preventing other event-spine services from being composed.
 Primary-host storage composition supplies deferred Security Master and book-position resolvers to
 the PostgreSQL journal store. Deferred resolution preserves the shared singleton authorities while
 avoiding the journal/position constructor cycle; absent durable authority fails closed at posting.

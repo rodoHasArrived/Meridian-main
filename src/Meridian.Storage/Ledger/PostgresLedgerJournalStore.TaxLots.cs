@@ -316,6 +316,82 @@ public sealed partial class PostgresLedgerJournalStore
         return lots;
     }
 
+    public async Task<IReadOnlyList<LedgerTaxLotRecord>> GetTaxLotsByLotIdsAsync(
+        Guid ledgerBookId,
+        LedgerAccount account,
+        IReadOnlyList<string> lotIds,
+        CancellationToken ct = default)
+    {
+        RequireWriteTenant();
+        if (ledgerBookId == Guid.Empty)
+        {
+            throw new ArgumentException("Ledger book id is required.", nameof(ledgerBookId));
+        }
+
+        ArgumentNullException.ThrowIfNull(account);
+        ArgumentNullException.ThrowIfNull(lotIds);
+        var ids = lotIds.Distinct(StringComparer.Ordinal).ToArray();
+        if (ids.Length == 0 || ids.Any(string.IsNullOrWhiteSpace))
+        {
+            throw new ArgumentException(
+                "At least one distinct non-empty lot label is required.",
+                nameof(lotIds));
+        }
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await EnsureBookWriteAuthorityAsync(connection, null, ledgerBookId, ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select tax_lot_record_id,
+                   ledger_book_id,
+                   account_name,
+                   account_type,
+                   symbol,
+                   financial_account_id,
+                   lot_id,
+                   acquired_date,
+                   original_quantity,
+                   open_quantity,
+                   unit_cost,
+                   currency,
+                   source_journal_entry_id,
+                   evidence_ref,
+                   version,
+                   originating_mutation_batch_id,
+                   last_mutation_batch_id,
+                   created_at,
+                   updated_at,
+                   security_id,
+                   book_position_id,
+                   original_face,
+                   booked_factor,
+                   par_basis,
+                   acquisition_terms,
+                   basis_adjustment
+            from {Qualified("tax_lots")}
+            where ledger_book_id = @ledger_book_id
+              and account_name = @account_name
+              and account_type = @account_type
+              and coalesce(symbol, '') = coalesce(@symbol, '')
+              and coalesce(financial_account_id, '') = coalesce(@financial_account_id, '')
+              and lot_id = any(@lot_ids)
+            order by tax_lot_record_id;
+            """;
+        command.Parameters.AddWithValue("ledger_book_id", ledgerBookId);
+        AddAccountParameters(command, account);
+        command.Parameters.AddWithValue("lot_ids", ids);
+
+        var lots = new List<LedgerTaxLotRecord>(ids.Length);
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            lots.Add(ReadTaxLot(reader));
+        }
+
+        return lots;
+    }
+
     private static void ValidateTaxLot(LedgerTaxLotRecord lot)
     {
         ArgumentNullException.ThrowIfNull(lot);
