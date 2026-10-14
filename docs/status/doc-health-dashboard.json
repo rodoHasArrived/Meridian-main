@@ -1,11 +1,11 @@
 {
   "total_files": 731,
-  "total_lines": 159445,
+  "total_lines": 159493,
   "orphaned_count": 248,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 301,
-  "average_lines": 218.1,
+  "average_lines": 218.2,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2260,7 +2260,7 @@
     },
     {
       "path": "docs/engineering/blueprints/security-lot-convergence-blueprint.md",
-      "line_count": 772,
+      "line_count": 795,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2812,7 +2812,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12030,
+      "line_count": 12031,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5732,7 +5732,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 973,
+      "line_count": 978,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5756,7 +5756,7 @@
     },
     {
       "path": "src/Meridian.Backtesting/README.md",
-      "line_count": 190,
+      "line_count": 196,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5820,7 +5820,7 @@
     },
     {
       "path": "src/Meridian.Execution/README.md",
-      "line_count": 315,
+      "line_count": 324,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6020,7 +6020,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2760,
+      "line_count": 2764,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
