@@ -998,7 +998,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 batchId, batchId, Security.SecurityId, PositionId, OriginalFace: 10_000m, BookedFactor: 1m, ParBasis: 100m, Acquisition: acquisition);
             Lot = (await Store.AppendAssetPostingAsync(AtomicTaxLotJournalCommand.Create(batchId, BookId, journal,
                 journal.SourceEventId!.Value, "amort-acquisition", acquisitionPeriod.Version, AtomicTaxLotMutationKind.Acquisition,
-                [source], acquisitionLot: raw))).MutatedLots.Single();
+                [source], acquisitionLot: raw, referenceVersions: new(Security.Version, 1)))).MutatedLots.Single();
             await Store.SaveTaxLotPolicyAsync(new(Guid.NewGuid(), BookId, AmortAccount, LedgerTaxLotReliefMethod.Fifo,
                 "amort-fifo-v1", AmortAcquired, at, at));
             var disposalJournal = Journal(acquisitionPeriod, new DateOnly(2025, 6, 1), "amort-partial-disposal",
@@ -1006,7 +1006,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             Lot = (await Store.AppendAssetPostingAsync(AtomicTaxLotJournalCommand.Create(Guid.NewGuid(), BookId, disposalJournal,
                 disposalJournal.SourceEventId!.Value, "amort-partial-disposal", acquisitionPeriod.Version, AtomicTaxLotMutationKind.Disposal,
                 [source], disposalSelections: [new(Lot.TaxLotRecordId, Lot.LotId, Lot.Version, 100m, 40m, 0,
-                    source.EvidenceId, price * 1.1m, price * 44m)], reliefMethod: "Fifo", policyRevision: "amort-fifo-v1"))).MutatedLots.Single();
+                    source.EvidenceId, price * 1.1m, price * 44m)], reliefMethod: "Fifo", policyRevision: "amort-fifo-v1", referenceVersions: new(Security.Version, 1)))).MutatedLots.Single();
         }
 
         public AtomicTaxLotJournalCommand Command(decimal amountOffset = 0m, OpenLotDto? expectedLot = null,
@@ -1101,7 +1101,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 Period.Version, AtomicTaxLotMutationKind.Disposal, [source],
                 disposalSelections: [new(lot.TaxLotRecordId, lot.LotId, lot.Version, lot.OpenQuantity, quantity, 0,
                     source.EvidenceId, lot.UnitCost, relief.FunctionalCostBasis)],
-                reliefMethod: "Fifo", policyRevision: "amort-fifo-v1"), relief);
+                reliefMethod: "Fifo", policyRevision: "amort-fifo-v1",
+                referenceVersions: new(Security.Version, (await Positions.GetBookPositionAsync(PositionId))!.Version)), relief);
         }
 
         private LedgerJournalEntryWrite Journal(LedgerAccountingPeriod period, DateOnly date, string key,

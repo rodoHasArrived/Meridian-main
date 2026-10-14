@@ -189,7 +189,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             fixture.Period.Version, AtomicTaxLotMutationKind.Disposal, [evidence],
             disposalSelections: [new(retained.TaxLotRecordId, retained.LotId, retained.Version, retained.OpenQuantity,
                 quantity, 0, evidence.EvidenceId, retained.UnitCost, relief.FunctionalCostBasis)],
-            reliefMethod: "Fifo", policyRevision: "amort-fifo-v1");
+            reliefMethod: "Fifo", policyRevision: "amort-fifo-v1",
+            referenceVersions: new(fixture.Security.Version, (await fixture.Positions.GetBookPositionAsync(fixture.PositionId))!.Version));
 
         var posted = await fixture.Store.AppendAssetPostingAsync(command);
         posted.IsExactReplay.Should().BeFalse();
