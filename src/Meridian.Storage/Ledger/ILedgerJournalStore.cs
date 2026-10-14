@@ -433,6 +433,9 @@ public sealed record LedgerTaxLotDisposalSelection(
     decimal ExpectedUnitCost = 0m,
     decimal ExpectedCostBasis = 0m);
 
+/// <summary>Approved reference versions bound to a new acquisition or disposal command.</summary>
+public sealed record AtomicLotReferenceVersions(long SecurityMasterVersion, long BookPositionVersion);
+
 public sealed record AtomicTaxLotJournalCommand(
     Guid MutationBatchId,
     Guid LedgerBookId,
@@ -457,7 +460,9 @@ public sealed record AtomicTaxLotJournalCommand(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    OpenLotDirection Direction = OpenLotDirection.Long)
+    OpenLotDirection Direction = OpenLotDirection.Long,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    AtomicLotReferenceVersions? ReferenceVersions = null)
 {
     public static AtomicTaxLotJournalCommand Create(
         Guid mutationBatchId,
@@ -477,7 +482,8 @@ public sealed record AtomicTaxLotJournalCommand(
         Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? amortization = null,
         Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? corporateAction = null,
         Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? capitalReturn = null,
-        OpenLotDirection direction = OpenLotDirection.Long)
+        OpenLotDirection direction = OpenLotDirection.Long,
+        AtomicLotReferenceVersions? referenceVersions = null)
     {
         var command = new AtomicTaxLotJournalCommand(
             mutationBatchId,
@@ -498,7 +504,8 @@ public sealed record AtomicTaxLotJournalCommand(
             amortization,
             corporateAction,
             capitalReturn,
-            direction);
+            direction,
+            referenceVersions);
         return command.WithComputedFingerprint();
     }
 

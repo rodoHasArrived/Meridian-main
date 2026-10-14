@@ -68,7 +68,9 @@ public sealed partial class AtomicTaxLotJournalStoreTests
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         var seed = await PrepareFactFreeAcquisitionAsync(database, face: false);
-        var command = BuildAcquisitionCommand(seed.LedgerBookId, seed.Journal.PeriodId, seed.ExpectedPeriodVersion);
+        var authority = await database.SeedLotReferenceAuthorityAsync(seed.LedgerBookId, TestSecurityId, TestBookPositionId);
+        var command = (BuildAcquisitionCommand(seed.LedgerBookId, seed.Journal.PeriodId, seed.ExpectedPeriodVersion) with
+        { ReferenceVersions = authority.Versions }).WithComputedFingerprint();
         var lot = command.AcquisitionLot!;
         var liability = lot.Account with { AccountType = LedgerAccountType.Liability };
         var entry = command.Journal.Entry;
@@ -99,7 +101,9 @@ public sealed partial class AtomicTaxLotJournalStoreTests
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         var seed = await PrepareFactFreeAcquisitionAsync(database, face: false);
-        var command = BuildAcquisitionCommand(seed.LedgerBookId, seed.Journal.PeriodId, seed.ExpectedPeriodVersion);
+        var authority = await database.SeedLotReferenceAuthorityAsync(seed.LedgerBookId, TestSecurityId, TestBookPositionId);
+        var command = (BuildAcquisitionCommand(seed.LedgerBookId, seed.Journal.PeriodId, seed.ExpectedPeriodVersion) with
+        { ReferenceVersions = authority.Versions }).WithComputedFingerprint();
         var shortCommand = (command with
         {
             Direction = OpenLotDirection.Short,

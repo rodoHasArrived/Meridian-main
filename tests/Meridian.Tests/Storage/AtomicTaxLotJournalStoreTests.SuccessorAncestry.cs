@@ -125,7 +125,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             date, 60m, 60m, 11m, "USD", at, at, journalId, evidence.EvidenceId, 1, batchId, batchId,
             fixture.Security.SecurityId, fixture.PositionId, Acquisition: acquisition);
         var command = AtomicTaxLotJournalCommand.Create(batchId, fixture.BookId, journal, sourceId, key,
-            fixture.Period.Version, AtomicTaxLotMutationKind.Acquisition, [evidence], acquisitionLot: lot);
+            fixture.Period.Version, AtomicTaxLotMutationKind.Acquisition, [evidence], acquisitionLot: lot,
+            referenceVersions: new(fixture.Security.Version, (await fixture.Positions.GetBookPositionAsync(fixture.PositionId))!.Version));
         return (await fixture.Store.AppendAssetPostingAsync(command)).MutatedLots.Single();
     }
 

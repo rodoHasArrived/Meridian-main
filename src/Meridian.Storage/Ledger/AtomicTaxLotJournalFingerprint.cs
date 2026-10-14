@@ -54,7 +54,8 @@ public static class AtomicTaxLotJournalFingerprint
             command.Amortization,
             command.CorporateAction,
             command.CapitalReturn,
-            command.Direction);
+            command.Direction,
+            command.ReferenceVersions);
 
         var element = JsonSerializer.SerializeToElement(payload, SerializerOptions);
         using var stream = new MemoryStream();
@@ -179,5 +180,7 @@ public static class AtomicTaxLotJournalFingerprint
         [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn,
         [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        OpenLotDirection Direction);
+        OpenLotDirection Direction,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        AtomicLotReferenceVersions? ReferenceVersions);
 }

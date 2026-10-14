@@ -390,7 +390,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             AccountingPolicyVersion: "v1"));
 
         // A pool bought when the factor was already 0.80, quoted per unit of face rather than per
-        // 100 — the case that silently mis-scales when the conventions are not recorded.
+        // 100 â€” the case that silently mis-scales when the conventions are not recorded.
         var source = new FaceValueLot(
             "lot-pool-2026-01",
             TestSecurityId,
@@ -431,7 +431,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         restated.ParBasis.Should().Be(source.ParBasis);
         restated.CostBasis.Should().Be(source.CostBasis);
 
-        // Face restated to a factor of 1 — the basis a paydown multiplies by the factor delta.
+        // Face restated to a factor of 1 â€” the basis a paydown multiplies by the factor delta.
         restated.CurrentFace(1m).Should().Be(1_000_000m);
 
         // The read is bounded by the effective date: a paydown dated before the acquisition must
@@ -632,6 +632,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 ClosedAt: null,
                 Version: 0),
             expectedVersion: 0);
+        var authority = await database.SeedLotReferenceAuthorityAsync(ledgerBookId, TestSecurityId, TestBookPositionId);
         // Authoritative disposal resolves relief from the effective account policy, and the
         // disposals below request FIFO under revision tax-policy-v1.
         await database.JournalStore.SaveTaxLotPolicyAsync(new LedgerAccountTaxLotPolicyRecord(
@@ -660,6 +661,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         };
         acquisition = (acquisition with
         {
+            ReferenceVersions = authority.Versions,
             AcquisitionLot = acquiredLot with
             {
                 Acquisition = new(Meridian.Contracts.Accounting.Lots.LotQuantityBasis.Units, "USD", "USD", 1m,
@@ -799,6 +801,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             amount: 1_000m,
             securityId: Guid.NewGuid(),
             bookPositionId: Guid.NewGuid());
+        await database.SeedLotReferenceAuthorityAsync(ledgerBookId, crossScopeJournal.Entry.Metadata.SecurityId!.Value,
+            crossScopeJournal.Entry.Lines[0].Dimensions!.PositionId!.Value);
         var crossScopeDisposal = AtomicTaxLotJournalCommand.Create(
             Guid.NewGuid(),
             ledgerBookId,
@@ -822,7 +826,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                     ExpectedCostBasis: 1_000m)
             ],
             reliefMethod: "Fifo",
-            policyRevision: "tax-policy-v1");
+            policyRevision: "tax-policy-v1", referenceVersions: authority.Versions);
         var crossScopeAct = () => database.JournalStore.AppendAssetPostingAsync(crossScopeDisposal);
         await crossScopeAct.Should().ThrowAsync<LedgerValidationException>()
             .WithMessage("*failed the disposal scope, cost basis, quantity, or version*");
@@ -858,7 +862,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                     ExpectedCostBasis: 4_000m)
             ],
             reliefMethod: "Fifo",
-            policyRevision: "tax-policy-v1");
+            policyRevision: "tax-policy-v1", referenceVersions: authority.Versions);
         var disposed = await database.JournalStore.AppendAssetPostingAsync(disposal);
 
         disposed.IsExactReplay.Should().BeFalse();
@@ -913,7 +917,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                     ExpectedCostBasis: 1_000m)
             ],
             reliefMethod: "Fifo",
-            policyRevision: "tax-policy-v1");
+            policyRevision: "tax-policy-v1", referenceVersions: authority.Versions);
 
         var staleAct = () => database.JournalStore.AppendAssetPostingAsync(stale);
         await staleAct.Should().ThrowAsync<LedgerValidationException>()
@@ -949,7 +953,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                     ExpectedCostBasis: 500m)
             ],
             reliefMethod: "Fifo",
-            policyRevision: "tax-policy-v1");
+            policyRevision: "tax-policy-v1", referenceVersions: authority.Versions);
         var collisionAct = () => database.JournalStore.AppendAssetPostingAsync(idempotencyCollision);
         await collisionAct.Should().ThrowAsync<LedgerValidationException>()
             .WithMessage("*identity collision*");
