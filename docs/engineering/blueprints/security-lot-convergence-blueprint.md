@@ -313,6 +313,27 @@ retain their long behavior. Migration compatibility, borrow/cover journal rules,
 all consumer parity tests must pass before short-lot writes become available. This decision
 resolves representation only; it does not certify or enable short accounting.
 
+### Direction admission increment (2026-10-13)
+
+Canonical acquisition facts and lot instructions now carry `OpenLotDirection`. `Long` is the
+omitted default, preserving historical JSON and atomic fingerprints, while `Short` is explicit.
+Quantities and carrying bases remain non-negative. Relief calculations reject mixed directions
+and retain independent transaction/functional basis for a homogeneous pool.
+
+This increment does not enable short writes. The existing acquisition/disposal spine requires a
+Long or Asset position, including when drafting from a retained projection. Atomic commands bind
+direction to acquisition facts and refuse new short writes after exact receipt replay; direct
+saves cannot bypass that boundary. Backfill review/application and the current amortization,
+capital-return, successor, consumer-adapter and disposal-reporting paths also refuse short scope.
+The tax read surface reports missing evidence rather than deriving short-sale character from the
+opening-lot holding period.
+
+`OpenLotDirectionTests`, the spine and atomic direction fixtures, the backfill PostgreSQL fixture
+and the disposal tax-economics fixture cover these boundaries. Executed results belong to the PR
+receipt. Short opening/cover journals, transactional position/security authority, delivered-property
+and short-sale tax evidence, Reporting and production-consumer shadow parity remain required before
+short accounting is enabled. Full W10-LOT-002 acceptance remains open.
+
 ## Acceptance Gate
 
 The roadmap item may close only when all production open-lot writes use mandatory `SecurityId`,

@@ -55,7 +55,7 @@ public sealed partial class CanonicalOpenLotConsumerTests
 
         var bind = () => simulated.BindCanonical(retained);
 
-        bind.Should().Throw<InvalidOperationException>().WithMessage("*Short-lot*direction model*");
+        bind.Should().Throw<InvalidOperationException>().WithMessage("*Short-lot*direction-aware posting*certified consumer parity*");
     }
 
     private static OpenLotDto BacktestingRetainedLot(decimal quantity, decimal basis)

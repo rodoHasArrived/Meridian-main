@@ -16,9 +16,10 @@ public sealed class OpenLotReliefService : IOpenLotReliefService
         var first = lots[0];
         if (lots.Any(l => l.SecurityId != first.SecurityId || l.LedgerBookId != first.LedgerBookId
             || l.BookPositionId != first.BookPositionId || l.Acquisition.QuantityBasis != first.Acquisition.QuantityBasis
+            || l.Acquisition.Direction != first.Acquisition.Direction
             || l.Acquisition.AcquisitionCurrency != first.Acquisition.AcquisitionCurrency
             || l.Acquisition.FunctionalCurrency != first.Acquisition.FunctionalCurrency))
-            throw new ArgumentException("Relief cannot pool different security, position, book, quantity-basis, or currency scopes.");
+            throw new ArgumentException("Relief cannot pool different security, position, book, direction, quantity-basis, or currency scopes.");
         if (lots.Select(l => l.TaxLotRecordId).Distinct().Count() != lots.Count)
             throw new ArgumentException("Duplicate durable lot identity.");
         var open = lots.Where(l => l.OpenQuantity > 0).ToArray();

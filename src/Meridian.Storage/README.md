@@ -11,6 +11,13 @@ last_reviewed: 2026-10-13
 
 # src/Meridian.Storage
 
+Atomic lot commands bind explicit direction to their immutable acquisition facts. Historical
+`Long` remains absent from fingerprints; exact receipt replay still precedes new-write admission.
+New short commands and direct short saves are refused, and new long acquisitions require an asset
+carrying account. Backfill review/application require a Long or Asset book position. Current
+disposal and tax-history projection also refuse short direction, preventing asset-credit or
+opening-age tax rules from silently certifying a short cover.
+
 Security Master migration `036_security_master_workbench_generations.sql` adds the durable
 compare-and-set generation used by `PostgresSecurityMasterMutation`. Overlay values, their audit
 trail, governed drafts and lifecycle transitions share one connection and transaction. Discard-time

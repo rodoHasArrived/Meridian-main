@@ -4354,6 +4354,7 @@ Meridian-main
 │   │   │       ├── OpenLotAmortizationContinuation.cs
 │   │   │       ├── OpenLotBackfillDtos.cs
 │   │   │       ├── OpenLotCapitalReturn.cs
+│   │   │       ├── OpenLotDirection.cs
 │   │   │       ├── OpenLotDto.cs
 │   │   │       ├── OpenLotSuccessors.cs
 │   │   │       └── OpenLotValidation.cs
@@ -10401,6 +10402,7 @@ Meridian-main
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.AcquisitionAdmission.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.CapitalReturn.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.cs
+│   │   │   │   ├── AssetAccountingEventSpineServiceTests.Direction.cs
 │   │   │   │   └── AssetAccountingLifecycleSeparationTests.cs
 │   │   │   ├── OperationsContinuity
 │   │   │   │   ├── FinancialOperationsCommandCenterReadService.AcceptanceTests.cs
@@ -10686,6 +10688,7 @@ Meridian-main
 │   │   │   ├── LotBasisReliefTests.cs
 │   │   │   ├── LotConsumptionTests.cs
 │   │   │   ├── NavPerUnitAndEqualizationTests.cs
+│   │   │   ├── OpenLotDirectionTests.cs
 │   │   │   ├── PartnersCapitalAllocationBreakoutTests.cs
 │   │   │   ├── PartnersCapitalBespokeRenderTests.cs
 │   │   │   ├── PartnersCapitalStatementLayoutTests.cs
@@ -10980,6 +10983,7 @@ Meridian-main
 │   │   │   ├── AtomicTaxLotJournalStoreTests.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.CurrentBasis.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.DeferralRecipients.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.Direction.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.HistoricalQuantity.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.HoldingPeriodEvidence.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.ProceedsAllocation.cs
