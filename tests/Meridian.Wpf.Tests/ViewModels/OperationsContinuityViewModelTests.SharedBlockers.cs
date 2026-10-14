@@ -41,7 +41,8 @@ public sealed partial class OperationsContinuityViewModelTests
         };
         var client = new FakeOperationsClient
         {
-            Workflows = [CreateSummary(scope.LedgerBookId)], Detail = detail,
+            Workflows = [CreateSummary(scope.LedgerBookId)],
+            Detail = detail,
             CommandCenter = CreateCommandCenter(scope, detail, blockers)
         };
         using var vm = new OperationsContinuityViewModel(client) { Parameter = scope };
@@ -77,7 +78,8 @@ public sealed partial class OperationsContinuityViewModelTests
         var otherDetail = CreateDetail() with { WorkflowId = Guid.NewGuid(), LedgerBookId = scope.LedgerBookId };
         var client = new FakeOperationsClient
         {
-            Workflows = [CreateSummary(scope.LedgerBookId)], Detail = otherDetail,
+            Workflows = [CreateSummary(scope.LedgerBookId)],
+            Detail = otherDetail,
             CommandCenter = CreateCommandCenter(scope, otherDetail, [])
         };
         using var vm = new OperationsContinuityViewModel(client) { Parameter = scope };
@@ -102,7 +104,8 @@ public sealed partial class OperationsContinuityViewModelTests
         var detail = CreateDetail() with { LedgerBookId = scope.LedgerBookId, Version = detailVersion };
         var client = new FakeOperationsClient
         {
-            Workflows = [CreateSummary(scope.LedgerBookId)], Detail = detail,
+            Workflows = [CreateSummary(scope.LedgerBookId)],
+            Detail = detail,
             CommandCenter = CreateCommandCenter(scope, detail, [])
         };
         using var vm = new OperationsContinuityViewModel(client) { Parameter = scope };
@@ -194,7 +197,8 @@ public sealed partial class OperationsContinuityViewModelTests
             };
             var client = new FakeOperationsClient
             {
-                Workflows = [CreateSummary(scope.LedgerBookId)], Detail = detail,
+                Workflows = [CreateSummary(scope.LedgerBookId)],
+                Detail = detail,
                 CommandCenter = CreateCommandCenter(scope, detail, blockers)
             };
             using var vm = new OperationsContinuityViewModel(client) { Parameter = scope };
