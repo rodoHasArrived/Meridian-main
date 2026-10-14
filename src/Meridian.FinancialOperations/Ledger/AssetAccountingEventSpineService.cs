@@ -1257,6 +1257,9 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
 
     private static void ValidatePosition(AssetAccountingEventSpineDto source, BookPositionDto position)
     {
+        if (source.EventKind is AssetAccountingEventKindDto.Acquisition or AssetAccountingEventKindDto.Disposal)
+            RequireAssertion(position.PositionSide is BookPositionSides.Long or BookPositionSides.Asset,
+                "The current lot acquisition/disposal path requires a Long or Asset position; short and liability positions require separate posting authority.");
         RequireAssertion(position.PositionId == source.Scope.BookPositionId, "Resolved book-position identity does not match the Projected snapshot.");
         RequireAssertion(position.SecurityId == source.Scope.SecurityId, "Resolved book-position security does not match the Projected snapshot.");
         RequireAssertion(position.Version == source.Scope.ExpectedBookPositionVersion, "Resolved book-position version is stale relative to the Projected snapshot.");

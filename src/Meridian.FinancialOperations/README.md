@@ -11,6 +11,11 @@ last_reviewed: 2026-10-13
 
 # src/Meridian.FinancialOperations
 
+The bounded lot acquisition/disposal spine resolves a Long or Asset book position before retaining
+a projection or drafting a candidate. A Short, Liability or unknown side cannot acquire the long
+writer's accounting semantics merely by supplying positive quantity. Explicit short lot
+instructions remain refused pending direction-aware opening, cover and reporting authority.
+
 `Consolidation/ConsolidationService` resolves two directly wholly owned entities from authoritative
 effective-dated ownership, compares reciprocal receivables/payables using posting entity and
 counterparty, and produces evidence-bound drafts through the typed `ConsolidationElimination`

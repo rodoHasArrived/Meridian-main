@@ -342,6 +342,9 @@ public sealed record AssetLotMutationInstructionDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn = null)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public OpenLotDirection Direction { get; init; }
+
     public IReadOnlyList<AssetDisposalLotSelectionDto> DisposalSelections { get; init; } =
         DisposalSelections ?? [];
 }
@@ -930,6 +933,10 @@ public static class AssetLotMutationInstructionValidator
         IReadOnlyList<RetainedEvidenceIdentityDto> retainedEvidence)
     {
         var issues = new List<string>();
+        if (instruction is not null && !Enum.IsDefined(instruction.Direction))
+            issues.Add("Lot direction must be Long or Short; quantity cannot establish direction implicitly.");
+        else if (instruction?.Direction == OpenLotDirection.Short)
+            issues.Add("Short-lot posting requires direction-aware opening, cover and reporting authority; the current accounting path supports Long lots only.");
         if (eventKind == AssetAccountingEventKindDto.Acquisition)
         {
             if (instruction is not { Intent: AssetLotMutationIntentDto.Acquire, Acquisition: { } acquisition } ||

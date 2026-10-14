@@ -78,7 +78,7 @@ public sealed record OperationsContinuityClosePresentation(bool IsReady, string 
             if (decision.SubmittedAtUtc is not null)
                 Add(taskId, decision.Operator, decision.SubmittedAtUtc);
             else if (workflow.Approvals.Count > 1 && workflow.Approvals[^2] is
-                     { Status: OperationsApprovalStateDto.Submitted or OperationsApprovalStateDto.ReviewerAssigned } submission)
+            { Status: OperationsApprovalStateDto.Submitted or OperationsApprovalStateDto.ReviewerAssigned } submission)
                 Add(taskId, submission.Operator, submission.SubmittedAtUtc);
             Add(taskId, decision.Reviewer, decision.DecidedAtUtc);
         }

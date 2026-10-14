@@ -78,6 +78,8 @@ public static class OpenLotAmortization
             throw new ArgumentException("Amortization calculation version is unsupported.");
         var lot = instruction.ExpectedLot;
         OpenLotValidation.Validate(lot);
+        if (lot.Acquisition.Direction != OpenLotDirection.Long)
+            throw new ArgumentException("Canonical amortization currently supports Long lots only; short liability amortization requires a separately reviewed rule.");
         var security = instruction.Security;
         var evidence = instruction.SecurityEvidence;
         ArgumentNullException.ThrowIfNull(security);
