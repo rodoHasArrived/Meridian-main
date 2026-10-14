@@ -89,6 +89,12 @@ acquisition without those facts still replays after restart or a later period-ve
 Changed fingerprints remain collisions. Legacy enrichment uses reviewed backfill, never replay;
 this admission change introduces no schema migration or synthetic acquisition defaults.
 
+Production stores also reject standalone `SaveTaxLotAsync` inserts and updates before opening a
+connection, whether the supplied lot has legacy or complete canonical acquisition facts. The
+existing `RequireGovernedPostingCommand` production setting requires journal-backed lot mutations
+through `IAtomicTaxLotJournalStore`. Explicit compatibility stores retain the historical save
+behavior; reviewed legacy backfill and immutable atomic receipt replay use their existing paths.
+
 Partial W10-LOT-002 amortization uses migration `V_ledger_040` and the existing atomic posting transaction. Period, Security Master, book-position and lot locks bind the reviewed state through commit. A CAS open-basis adjustment and zero-quantity append-only mutation preserve acquisition facts, tie exactly to the journal carrying movement, and replay without another journal or mutation. PostgreSQL reference stores must share the ledger database.
 Amortization requires the canonical depreciation/amortization source type, the exact reviewed
 instruction, and matching acquisition/reference evidence in both the atomic request and governed

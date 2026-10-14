@@ -64,6 +64,11 @@ public interface ILedgerJournalStore
         => Task.FromException<IReadOnlyList<LedgerAccountTaxLotPolicyRecord>>(
             new NotSupportedException("This ledger journal store does not support tax-lot policy persistence."));
 
+    /// <summary>
+    /// Saves a non-atomic compatibility lot. Governed production stores reject this operation;
+    /// use <see cref="IAtomicTaxLotJournalStore"/> for journal-backed lot mutations and the
+    /// reviewed backfill workflow for retained legacy acquisition facts.
+    /// </summary>
     Task<LedgerTaxLotRecord> SaveTaxLotAsync(
         LedgerTaxLotRecord lot,
         CancellationToken ct = default)
