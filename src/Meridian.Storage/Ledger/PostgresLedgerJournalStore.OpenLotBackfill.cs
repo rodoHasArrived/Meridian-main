@@ -5,6 +5,8 @@ using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Ledger;
+using Meridian.Storage.AssetOperations;
+using Meridian.Storage.SecurityMaster;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -169,7 +171,7 @@ public sealed partial class PostgresLedgerJournalStore
         };
         if (request.Accepted)
         {
-            await ValidateBackfillReferenceDataAsync(reviewed.Facts, currency, ct).ConfigureAwait(false);
+            await ValidateBackfillReferenceDataAsync(connection, transaction, reviewed.Facts, currency, ct).ConfigureAwait(false);
             var lot = await LoadBackfillLotAsync(connection, transaction, request.LedgerBookId, evidence.TaxLotRecordId, ct).ConfigureAwait(false);
             _ = OpenLotBackfillRules.Enrich(lot, reviewed);
         }
@@ -218,7 +220,7 @@ public sealed partial class PostgresLedgerJournalStore
             ?? throw new LedgerValidationException("Retained acquisition evidence was not found in this ledger book.");
         if (evidence.Version != request.ExpectedEvidenceVersion || request.ExpectedEvidenceVersion != 2)
             throw new LedgerValidationException("Reviewed acquisition evidence version is stale or has not been reviewed.");
-        await ValidateBackfillReferenceDataAsync(evidence.Facts, currency, ct).ConfigureAwait(false);
+        await ValidateBackfillReferenceDataAsync(connection, transaction, evidence.Facts, currency, ct).ConfigureAwait(false);
         var lot = await LoadBackfillLotAsync(connection, transaction, request.LedgerBookId, request.TaxLotRecordId, ct).ConfigureAwait(false);
         if (request.ExpectedLotVersion <= 0 || lot.Version != request.ExpectedLotVersion)
             throw new LedgerValidationException("Legacy lot version is stale; refresh the exception and review the changed lot.");
@@ -374,17 +376,19 @@ public sealed partial class PostgresLedgerJournalStore
 
     /// <summary>
     /// Reconciles retained instrument and book-position identities, versions, acquisition scope,
-    /// and functional currency against the current Security Master and ledger reference data.
+    /// and functional currency while holding the reference rows through the backfill commit.
     /// </summary>
-    private async Task ValidateBackfillReferenceDataAsync(OpenLotBackfillFactsDto facts, string functionalCurrency, CancellationToken ct)
+    private async Task ValidateBackfillReferenceDataAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
+        OpenLotBackfillFactsDto facts, string functionalCurrency, CancellationToken ct)
     {
-        var securityMaster = _backfillSecurityMaster?.Invoke();
-        var positions = _backfillPositions?.Invoke();
-        if (securityMaster is null || positions is null)
-            throw new LedgerValidationException("Authoritative Security Master and book-position stores are required to review or apply legacy backfill.");
-        var security = await securityMaster.GetProjectionAsync(facts.SecurityId, ct).ConfigureAwait(false);
-        var position = await positions.GetBookPositionAsync(facts.BookPositionId, ct).ConfigureAwait(false);
-        var book = await GetLedgerBookAsync(facts.LedgerBookId, ct).ConfigureAwait(false);
+        if (_backfillSecurityMaster?.Invoke() is not PostgresSecurityMasterStore securityMaster
+            || _backfillPositions?.Invoke() is not PostgresAssetOperationsProjectionStore positions)
+            throw new LedgerValidationException("Authoritative PostgreSQL Security Master and book-position stores are required to review or apply legacy backfill.");
+        // The caller already holds the ledger book. Match the posting lock order: reference
+        // security, book position, then lot; all reads enlist in the owning transaction.
+        var security = await securityMaster.LockForLotPostingAsync(connection, transaction, facts.SecurityId, ct).ConfigureAwait(false);
+        var position = await positions.LockForLotPostingAsync(connection, transaction, facts.BookPositionId, ct).ConfigureAwait(false);
+        var book = await LoadLedgerBookAsync(connection, transaction, facts.LedgerBookId, ct).ConfigureAwait(false);
         if (security is null || security.SecurityId != facts.SecurityId || security.Version != facts.SecurityMasterVersion)
             throw new LedgerValidationException("Retained backfill Security Master identity or version is missing or stale.");
         if (position is null || book is null || position.SecurityId != facts.SecurityId || position.PositionId != facts.BookPositionId
