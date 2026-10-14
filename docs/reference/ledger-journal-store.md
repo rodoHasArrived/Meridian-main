@@ -104,7 +104,9 @@ After resolving exact replay, the serializable posting transaction holds the led
 period, then locks the Security Master and book-position rows before selecting or changing lots.
 Both reference providers must be PostgreSQL stores in the same database as the ledger. A governed
 journal effective date is required for the position check. The versions, Active/effective reference
-state, Long or Asset position and complete ledger-book context must match. The acquisition currency
+state, Long or Asset position and complete ledger-book context must match. Position status uses
+ordinal case-insensitive equality with `Active`, matching candidate validation; inactive and other
+statuses remain refused. The acquisition currency
 must match Security Master; a disposal may retain
 the existing supported transaction/functional currency distinction. These checks and locks
 remain in force until the journal, lot mutations and audit record commit together. Rejected or
@@ -114,6 +116,11 @@ The nullable field is omitted from JSON and the fingerprint when absent. Existin
 therefore keep their exact identity, including after restart or reference changes. The posting
 service can reconstruct that historical shape only when its complete fingerprint matches the
 retained receipt. A new receipt cannot remove or change its versions under the same identity.
+When a separately composed journal store does not support the optional atomic receipt read, the
+service forwards the complete versioned command to the atomic writer. An unavailable receipt never
+authorizes omission of the reference versions: historical replay requires a readable exact receipt,
+and the atomic writer still rejects changed fingerprints or stale authority. Other read failures and
+cancellation propagate normally.
 Other mutation kinds continue to use their existing typed reference instructions and reject an
 extraneous acquisition/disposal version assertion on a new posting.
 

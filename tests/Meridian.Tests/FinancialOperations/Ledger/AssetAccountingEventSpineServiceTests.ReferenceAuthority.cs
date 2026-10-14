@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.FinancialOperations.Ledger;
@@ -18,8 +19,34 @@ public sealed partial class AssetAccountingEventSpineServiceTests
     [InlineData(false, true)]
     [InlineData(true, false)]
     [InlineData(true, true)]
-    public async Task ReferenceAuthority_PostingCarriesApprovedVersionsAndOnlyExactHistoricalReceiptsOmitThem(
+    public Task ReferenceAuthority_PostingCarriesApprovedVersionsAndOnlyExactHistoricalReceiptsOmitThem(
         bool disposal, bool historicalReceipt)
+        => AssertReferenceRetryAsync(disposal, historicalReceipt);
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public Task ReferenceAuthority_SeparateStoreWithoutReceiptReadPreservesVersionsAndRefusesHistoricalDowngrade(
+        bool disposal, bool historicalReceipt)
+        => AssertReferenceRetryAsync(disposal, historicalReceipt, unsupportedReceiptRead: true);
+
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, false, false)]
+    [InlineData(true, true, false)]
+    [InlineData(false, false, true)]
+    [InlineData(false, true, true)]
+    [InlineData(true, false, true)]
+    [InlineData(true, true, true)]
+    public Task ReferenceAuthority_ChangedPayloadCannotReplayOrDowngradeTheRetainedFingerprint(
+        bool disposal, bool historicalReceipt, bool unsupportedReceiptRead)
+        => AssertReferenceRetryAsync(disposal, historicalReceipt, unsupportedReceiptRead, changedPayload: true);
+
+    private static async Task AssertReferenceRetryAsync(
+        bool disposal, bool historicalReceipt, bool unsupportedReceiptRead = false, bool changedPayload = false)
     {
         var fixture = BuildFixture(disposal ? AssetAccountingEventKindDto.Disposal : AssetAccountingEventKindDto.Acquisition);
         var effect = fixture.Request.ProjectedEffect;
@@ -80,7 +107,8 @@ public sealed partial class AssetAccountingEventSpineServiceTests
             observed.Add(command);
             if (committed is not null)
             {
-                command.CanonicalFingerprint.Should().Be(committed.CanonicalFingerprint);
+                if (command.CanonicalFingerprint != committed.CanonicalFingerprint)
+                    throw new LedgerValidationException("Atomic tax-lot posting identity collision: changed canonical fingerprint.");
                 return committed with { IsExactReplay = true };
             }
             var write = AccountingPostingCommandValidator.NormalizeAndValidate(command.Journal,
@@ -134,17 +162,60 @@ public sealed partial class AssetAccountingEventSpineServiceTests
                 candidate.AccountingBasis, "reference-approval", drafted.Spine.DraftedCandidateFingerprint!, candidate.TenantId, candidate.CompanyId)
         };
         var request = new PostPostingRuleJournalCandidateRequestDto(candidate, "approver", "reference-approval") { ApprovalEvidence = [approval] };
+        // This concrete adapter deliberately uses the interface's default unsupported receipt
+        // method, while the separately composed atomic store retains its posting authority.
+        ILedgerJournalStore postingLedger = unsupportedReceiptRead ? new JournalWithoutAtomicReceipts(ledger) : ledger;
         var postService = new AccountingPostingCandidatePostService(Substitute.For<IAccountingPostingCandidateWriteBuilder>(),
-            ledger, atomic, eventStore, authorityBuilder);
+            postingLedger, atomic, eventStore, authorityBuilder);
         (await postService.PostCandidateAsync(request)).WasReplay.Should().BeFalse();
+        var receiptBefore = committed;
         // Reconstruct the public service; replay authority comes from the retained spine and receipt.
         postService = new AccountingPostingCandidatePostService(Substitute.For<IAccountingPostingCandidateWriteBuilder>(),
-            ledger, atomic, eventStore, authorityBuilder);
-        (await postService.PostCandidateAsync(request)).WasReplay.Should().BeTrue();
+            postingLedger, atomic, eventStore, authorityBuilder);
+        // Alter the canonical journal payload without changing the retained approval attestation.
+        var retryRequest = changedPayload ? request with { CorrelationId = Guid.NewGuid().ToString("D") } : request;
+        if (changedPayload || (historicalReceipt && unsupportedReceiptRead))
+        {
+            var retry = () => postService.PostCandidateAsync(retryRequest);
+            await retry.Should().ThrowAsync<LedgerValidationException>().WithMessage("*identity collision*");
+            observed[1].CanonicalFingerprint.Should().NotBe(committed!.CanonicalFingerprint);
+        }
+        else
+        {
+            (await postService.PostCandidateAsync(retryRequest)).WasReplay.Should().BeTrue();
+            observed[1].CanonicalFingerprint.Should().Be(committed!.CanonicalFingerprint);
+        }
         observed.Should().HaveCount(2);
         observed[0].ReferenceVersions.Should().Be(new AtomicLotReferenceVersions(fixture.Security.Version, fixture.Position.Version));
-        observed[1].ReferenceVersions.Should().Be(historicalReceipt ? null : observed[0].ReferenceVersions);
+        observed[1].ReferenceVersions.Should().Be(historicalReceipt && !unsupportedReceiptRead && !changedPayload
+            ? null : observed[0].ReferenceVersions);
+        committed.Should().BeSameAs(receiptBefore);
         retained.Should().HaveCount(5);
+    }
+
+    private sealed class JournalWithoutAtomicReceipts(ILedgerJournalStore inner) : ILedgerJournalStore
+    {
+        public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default) => inner.AppendAsync(entry, ct);
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default)
+            => inner.GetByPeriodAsync(periodId, ct);
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default)
+            => inner.GetByAggregateAsync(aggregateId, ct);
+        public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default) => inner.GetPeriodAsync(periodId, ct);
+        public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(Guid? ledgerBookId = null, string? status = null,
+            string? fundProfileId = null, Guid? fundStructureNodeId = null, CancellationToken ct = default)
+            => inner.ListPeriodsAsync(ledgerBookId, status, fundProfileId, fundStructureNodeId, ct);
+        public Task<LedgerAccountingPeriod> SavePeriodAsync(LedgerAccountingPeriod period, long expectedVersion,
+            PeriodCloseEventRecord? closeEvent = null, CancellationToken ct = default)
+            => inner.SavePeriodAsync(period, expectedVersion, closeEvent, ct);
+        public Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default) => inner.GetLedgerBookAsync(ledgerBookId, ct);
+        public Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(string? fundProfileId = null, Guid? fundStructureNodeId = null,
+            FundStructureNodeKindDto? fundStructureNodeKind = null, CancellationToken ct = default)
+            => inner.ListLedgerBooksAsync(fundProfileId, fundStructureNodeId, fundStructureNodeKind, ct);
+        public Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default) => inner.SaveLedgerBookAsync(book, ct);
+        public Task<IReadOnlyList<LedgerTaxLotRecord>> GetTaxLotsByIdsAsync(Guid ledgerBookId, IReadOnlyList<Guid> taxLotRecordIds,
+            CancellationToken ct = default) => inner.GetTaxLotsByIdsAsync(ledgerBookId, taxLotRecordIds, ct);
+        public Task<IReadOnlyList<LedgerTaxLotRecord>> ListOpenTaxLotsAsync(Guid ledgerBookId, LedgerAccount account,
+            CancellationToken ct = default) => inner.ListOpenTaxLotsAsync(ledgerBookId, account, ct);
     }
 
     private static AccountingPostingCandidateWriteResult BuildReferenceCandidateWrite(

@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-13
+last_reviewed: 2026-10-14
 ---
 
 # src/Meridian.Storage
@@ -17,6 +17,8 @@ rows after the book/period and before selected lots. It checks their reviewed ve
 effective scope, long position, full book context and acquisition currency while retaining those
 locks through commit. Missing or stale authority refuses the new posting. Exact receipt replay
 precedes this guard; omitting the optional fingerprint field preserves historical receipts.
+Position status matches `Active` using ordinal case-insensitive equality, consistent with candidate
+validation. Inactive or other statuses still refuse new acquisition/disposal postings without writes.
 See [the posting contract](../../docs/reference/ledger-journal-store.md#acquisition-and-disposal-reference-authority).
 
 Atomic lot commands bind explicit direction to their immutable acquisition facts. Historical
