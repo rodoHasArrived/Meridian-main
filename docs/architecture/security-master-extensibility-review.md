@@ -1814,7 +1814,7 @@ against, two paragraphs after the correction that withdrew that target.
   that recorded-as-of's promise for aliases then be narrowed explicitly, which has not happened.
 
   > **Update 2026-10-10 — P3b resolved by versioned alias state.** Migration
-  > `036_security_master_alias_revisions.sql` adds the append-only `security_alias_revisions` table
+  > `037_security_master_alias_revisions.sql` adds the append-only `security_alias_revisions` table
   > (backfilled with revision 1 for every existing alias at its `created_at`). `UpsertAliasAsync` keeps
   > an identical replay a no-op, and records a material correction by appending the next revision
   > (attributed to the correcting actor, which also answers the "P1 (alias corrections)" row) before
@@ -5613,3 +5613,30 @@ with the regenerated `docs/status/` reports correctly recognized as generated-ex
 check on this document, not on the subsystem it reviews, and it is recorded here only so the
 paragraph above is not read as claiming more silence than the pass kept — the same correction the
 2026-09-08 pass had to make after the fact (`4481741f`), made here before it was needed.
+
+
+## Integration refresh — 2026-10-14 (PR #3131)
+
+Migration `036_security_master_workbench_generations.sql` from merged #3130 remains immutable.
+Alias correction history is now `037_security_master_alias_revisions.sql`, the next unreserved
+Security Master ordinal on the inspected main. The waiver follows the renamed migration and only
+covers the append-only TRUNCATE guard. It does not approve destructive migration operations.
+`SecurityMasterAliasMigrationTests` covers fresh initialization and a populated through-036
+upgrade, preservation of generation fences and alias creation facts, failed-DDL rollback, retry,
+append-only guards, unchanged historical receipts, and restart without reapplying 037.
+
+The six unresolved review topics remain visible for independent review:
+
+| Topic | Refreshed implementation / remaining decision |
+| --- | --- |
+| Valid-time versus recorded-time alias lookup | Preserve the documented distinction. Valid-time reads use corrected current knowledge; recorded-time reads use append-only history. A recorded-time identifier lookup is still a separate API decision. |
+| Preferred-equity economic replay | Refuse fallback when preferred economics are present but retained flat terms are absent. The old economic family loses the Preferred/ConvertiblePreferred distinction, senior multiple, participation and conversion terms; reconstructing a complete envelope would invent facts. Retained legacy payloads replay unchanged. Historical incomplete events require authoritative terms recovery before rebuild. |
+| Failed local registry reseed | A coalesced background worker retries with bounded backoff until successful or service cancellation. The durable alias write remains successful. |
+| Seeder dependency registration | PostgreSQL composition registers one concrete seeder singleton and aliases `ICanonicalSecurityIdLookup` to it, making local, startup and remote reseeding available to production composition. |
+| Missed creations in lazy mode | Lazy-mode registry seeding reads durable membership without warming the projection cache. Reconnect/bulk resync can therefore recover a creation whose individual notification was missed. |
+| Unattributed legacy identifiers | No automatic destructive cleanup. Old inferred-source aliases cannot reliably be distinguished from manually added aliases. An owner-reviewed inventory and cleanup decision remains required; new seed-owned identifiers retain explicit provenance. |
+
+These corrections do not resolve review threads or establish human acceptance. Independent Storage,
+Security Master and schema reviews remain required. Full preferred-term recovery and unattributed
+legacy-alias cleanup are not claimed as implemented. PostgreSQL and CI results must be tied to the
+published refreshed head, not the historical PR-body measurements.

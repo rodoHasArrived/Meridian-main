@@ -43,6 +43,15 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
             SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, original));
 
+        if (assetClass == "Equity")
+        {
+            // This fixture is ConvertiblePreferred. Its economic document cannot recover the
+            // classification or complete terms, so replay must refuse instead of degrading it.
+            Action replay = () => SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
+            replay.Should().Throw<InvalidOperationException>().WithMessage("*requires retained legacy*");
+            return;
+        }
+
         var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
 
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.WasFlattenedFromEconomicTerms(rebuilt).Should().BeTrue();
@@ -126,6 +135,38 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
 
         rebuilt.GetProperty("isAssetBacked").GetBoolean().Should().Be(isAssetBacked);
+    }
+
+    [Theory]
+    [InlineData("Preferred", "Pari")]
+    [InlineData("Preferred", "Senior")]
+    [InlineData("ConvertiblePreferred", "Subordinated")]
+    public void PreferredReplay_PreservesRetainedTermsAndRefusesAnIncompleteFallback(string classification, string preference)
+    {
+        var payload = System.Text.Json.Nodes.JsonNode.Parse(JsonSerializer.Serialize(
+            SecurityAssetTermsSchemaRoundTripTests.FullPayloads["Equity"]))!;
+        payload["classification"] = classification;
+        payload["preferredTerms"]!["liquidationPreference"]!["kind"] = preference;
+        var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain("Equity",
+            JsonSerializer.SerializeToElement(payload));
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Equity", original));
+
+        SecurityEconomicDefinitionAdapter.ToProjection(economic).AssetSpecificTerms.GetRawText()
+            .Should().Be(original.GetRawText());
+        Action replay = () => SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
+        replay.Should().Throw<InvalidOperationException>().WithMessage("*complete classification*");
+    }
+
+    [Fact]
+    public void CommonEquityReplay_RemainsAvailableWithoutPreferredEconomics()
+    {
+        var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain("Equity",
+            new { shareClass = "A", classification = "Common", votingRightsCat = "FullVoting" });
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Equity", original));
+        var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
+        rebuilt.AssetSpecificTerms.GetProperty("shareClass").GetString().Should().Be("A");
     }
 
     [Fact]

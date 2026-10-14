@@ -3557,97 +3557,97 @@
     {
       "method": "POST",
       "path": "/api/security-master/{securityId:guid}/operator-overrides/decision",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1008",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1012",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}/pricing-hierarchy",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1303",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1311",
       "documented": false
     },
     {
       "method": "PUT",
       "path": "/api/security-master/{securityId:guid}/pricing-hierarchy",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1317",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1325",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/{securityId:guid}/raw-price",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1358",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1366",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}/price-golden-copy",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1399",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1407",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}/price-comparison",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1420",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1428",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}/cashflow-source",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1437",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1445",
       "documented": false
     },
     {
       "method": "PUT",
       "path": "/api/security-master/{securityId:guid}/cashflow-source",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1450",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1458",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}/cashflow-projections",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1478",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1486",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/data-entitlements",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1501",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1509",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/data-entitlements/expiring",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1511",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1519",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/data-entitlements",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1523",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1531",
       "documented": false
     },
     {
       "method": "DELETE",
       "path": "/api/security-master/data-entitlements/{entitlementId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1551",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1559",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/quality-report/run",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1583",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1591",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/quality-report/latest",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1598",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1606",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/exceptions/aging",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1614",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1622",
       "documented": false
     },
     {

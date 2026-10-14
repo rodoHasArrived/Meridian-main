@@ -198,6 +198,21 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             return Convert(economicTerms);
         }
 
+        if (string.Equals(assetClass, "Equity", StringComparison.OrdinalIgnoreCase)
+            && (GetObject(economicTerms, "redemption") is not null
+                || GetObject(economicTerms, "call") is not null
+                || (GetObject(economicTerms, "equityBehavior") is { } equity
+                    && equity.TryGetProperty("distributionType", out var distribution)
+                    && distribution.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined))))
+        {
+            // The old economic family cannot distinguish Preferred from ConvertiblePreferred,
+            // and loses the senior multiple, participation and conversion terms. Inventing an
+            // envelope or silently returning an unclassified equity would corrupt replay.
+            throw new InvalidOperationException(
+                "Preferred-equity economic replay requires retained legacy asset-specific terms; " +
+                "the economic payload cannot reconstruct the complete classification and preferred/convertible terms.");
+        }
+
         using var buffer = new MemoryStream();
         using (var writer = new Utf8JsonWriter(buffer))
         {

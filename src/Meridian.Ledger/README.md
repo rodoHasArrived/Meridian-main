@@ -11,6 +11,11 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Ledger
 
+`OpenLotReliefService` treats explicit long/short direction as part of the pool scope. It never
+nets the two directions, and it allocates positive quantity and both retained currency bases for
+a homogeneous pool. This calculation does not authorize short journals or infer short-sale tax
+character; those posting and reporting paths remain gated separately.
+
 `RecurringJournalSchedule` remains a pure calendar and template projection. Durable claims live in
 Financial Operations, while `RecurringJournalEvidence` retains the exact schedule/template
 versions, full definitions, accounting scope, period version and source references on each generated
@@ -19,9 +24,20 @@ source evidence at workbench validation and lifecycle boundaries. `RecurringTemp
 the generated event without granting submission, approval or posting authority. See
 [Recurring Journal](../../docs/domain/recurring-journal.md) for the retention and recovery contract.
 
+`CanonicalCorporateActionLotReport` packages the immutable predecessor closeout and successor
+acquisition snapshots. `LedgerReportPackBuilder` includes `corporate-action-lot-evidence.json` in
+the artifact manifest and signature when governed reporting supplies verified successor receipts.
+This proof preserves original/current currency bases, acquisition dates/FX and immutable origins.
+
 ## Shared close and lot convergence
 
 `OpenLotReliefService` uses the shared decimal consumption walk for canonical FIFO/LIFO/HIFO/SpecificId/AverageCost selection and retains transaction and functional basis separately. It refuses mixed security, position, book, quantity-basis, and currency scopes. The durable disposal writer and reporting capture consume the canonical evidence contract. Durable AverageCost posting restates the surviving pool atomically; discrete relief subsequently consumes that current basis and retains exact remaining basis. Acquisition facts stay immutable, and Reporting reproduces the certified posted result.
+
+`LotBasisRelief` owns exact proportional basis allocation for canonical relief and Backtesting's
+actual long-close and short-cover paths. Closing slices take the exact remaining basis; pooled
+relief assigns the division residual to the last slice. Canonical callers allocate transaction and
+functional basis independently from retained amounts. Consumer-specific ordering, currency rounding
+and historical journal reconstruction remain at their existing boundaries.
 
 `ValuationFreshnessPolicy` owns mark admission with required observation dates, complete coverage, a minimum confidence floor, and rejection of future or over-age marks. Compatibility settings can tighten this policy; Allow, Flag, or disabled settings cannot authorize stale values. `ValuationMarkEvidenceGuard` checks the retained position/date evidence at governed lifecycle boundaries. Read-only previews expose which positions would block before any valuation draft is created.
 

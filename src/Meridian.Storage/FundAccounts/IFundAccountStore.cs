@@ -9,6 +9,14 @@ namespace Meridian.Storage.FundAccounts;
 public interface IFundAccountStore
 {
     // Account definition
+    /// <summary>
+    /// Atomically inserts a new account, returning false when its identity already exists.
+    /// An existing account must never be updated by this operation.
+    /// </summary>
+    Task<bool> TryCreateAccountAsync(AccountSummaryDto account, CancellationToken ct = default)
+        => Task.FromException<bool>(
+            new NotSupportedException("This fund-account store does not support atomic account creation."));
+
     Task UpsertAccountAsync(AccountSummaryDto account, CancellationToken ct = default);
     Task<AccountSummaryDto?> GetAccountAsync(Guid accountId, CancellationToken ct = default);
     Task<IReadOnlyList<AccountSummaryDto>> QueryAccountsAsync(AccountStructureQuery query, CancellationToken ct = default);

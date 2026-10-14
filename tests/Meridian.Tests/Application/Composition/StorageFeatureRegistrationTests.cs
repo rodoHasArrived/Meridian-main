@@ -118,6 +118,25 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
     }
 
     [Fact]
+    public void Register_ResolvesCanonicalSeederAndLookupAsTheSameSingleton()
+    {
+        ConfigureInMemoryGovernanceFixture();
+        ClearPostgresBackedStorageEnvironment();
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable,
+            "Host=unused;Database=unused;Username=test;Password=test");
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(NSubstitute.Substitute.For<Meridian.Contracts.Catalog.ICanonicalSymbolRegistry>());
+        new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+        using var provider = services.BuildServiceProvider();
+
+        var seed = provider.GetRequiredService<SecurityMasterCanonicalSymbolSeedService>();
+        provider.GetRequiredService<Meridian.DataIntegration.Canonicalization.ICanonicalSecurityIdLookup>()
+            .Should().BeSameAs(seed);
+        provider.GetRequiredService<SecurityMasterProjectionChangeHandler>().Should().NotBeNull();
+    }
+
+    [Fact]
     public void Register_AddsStorageCatalogService_ForEtlAndCatalogConsumers()
     {
         ConfigureInMemoryGovernanceFixture();

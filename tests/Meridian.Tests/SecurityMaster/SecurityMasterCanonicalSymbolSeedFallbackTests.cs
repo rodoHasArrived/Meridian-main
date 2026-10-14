@@ -36,4 +36,26 @@ public sealed class SecurityMasterCanonicalSymbolSeedFallbackTests
             Arg.Any<CancellationToken>());
         seed.TryGetSecurityId("FALLBK").Should().Be(securityId);
     }
+    [Fact]
+    public async Task LazyRegistrySeed_DiscoversDurableMembershipWithoutWarmingCache()
+    {
+        var securityId = Guid.NewGuid();
+        var cache = new SecurityMasterProjectionCache();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var record = SecurityMasterProjectionChangeNotificationTests.CreateProjection(securityId, "Missed creation", 1)
+            with { PrimaryIdentifierValue = "MISSED" };
+        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[] { record });
+        var registry = Substitute.For<ICanonicalSymbolRegistry>();
+        registry.RegisterBatchAsync(Arg.Any<IEnumerable<CanonicalSymbolDefinition>>(), Arg.Any<CancellationToken>()).Returns(1);
+        var seed = new SecurityMasterCanonicalSymbolSeedService(cache, registry,
+            NullLogger<SecurityMasterCanonicalSymbolSeedService>.Instance, store,
+            new SecurityMasterOptions { PreloadProjectionCache = false });
+
+        await seed.SeedAsync();
+
+        seed.TryGetSecurityId("MISSED").Should().Be(securityId);
+        cache.Snapshot().Should().BeEmpty();
+        await store.Received(1).LoadAllAsync(Arg.Any<CancellationToken>());
+    }
+
 }

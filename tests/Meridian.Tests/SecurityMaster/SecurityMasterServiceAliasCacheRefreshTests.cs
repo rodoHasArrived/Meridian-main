@@ -2,6 +2,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Catalog;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
@@ -143,7 +144,40 @@ public sealed class SecurityMasterServiceAliasCacheRefreshTests
         cache.Get(securityId)!.Aliases.Should().ContainSingle().Which.AliasValue.Should().Be("ACME.OQ");
     }
 
-    private static SecurityMasterService CreateService(ISecurityMasterStore store, SecurityMasterProjectionCache cache)
+    [Fact]
+    public async Task FailedRegistryReseed_RetriesWithoutAnotherAliasWrite()
+    {
+        var securityId = Guid.NewGuid();
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.UpsertAliasAsync(Arg.Any<SecurityAliasDto>(), Arg.Any<CancellationToken>())
+            .Returns(call => call.Arg<SecurityAliasDto>());
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>()).Returns(Projection(securityId, "ACME.OQ"));
+        var cache = new SecurityMasterProjectionCache();
+        var registry = Substitute.For<ICanonicalSymbolRegistry>();
+        var attempts = 0;
+        var recovered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        registry.RegisterBatchAsync(Arg.Any<IEnumerable<CanonicalSymbolDefinition>>(), Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                if (Interlocked.Increment(ref attempts) == 1)
+                    throw new IOException("transient registry write failure");
+                recovered.TrySetResult();
+                return Task.FromResult(1);
+            });
+        var seed = new SecurityMasterCanonicalSymbolSeedService(cache, registry,
+            NullLogger<SecurityMasterCanonicalSymbolSeedService>.Instance);
+        using var service = CreateService(store, cache, seed);
+        service.RegistryReseedRetryDelay = TimeSpan.FromMilliseconds(10);
+
+        var result = await service.UpsertAliasAsync(Request(securityId, "ACME.OQ"));
+        result.AliasValue.Should().Be("ACME.OQ");
+        await recovered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        attempts.Should().BeGreaterThanOrEqualTo(2);
+        await store.Received(1).UpsertAliasAsync(Arg.Any<SecurityAliasDto>(), Arg.Any<CancellationToken>());
+    }
+
+    private static SecurityMasterService CreateService(ISecurityMasterStore store, SecurityMasterProjectionCache cache,
+        SecurityMasterCanonicalSymbolSeedService? seed = null)
         => new(
             Substitute.For<ISecurityMasterEventStore>(),
             Substitute.For<ISecurityMasterSnapshotStore>(),
@@ -151,7 +185,7 @@ public sealed class SecurityMasterServiceAliasCacheRefreshTests
             new SecurityMasterAggregateRebuilder(Substitute.For<ISecurityMasterEventStore>(), Substitute.For<ISecurityMasterSnapshotStore>()),
             new SecurityMasterOptions { ConnectionString = "Host=unused", Schema = "security_master" },
             NullLogger<SecurityMasterService>.Instance,
-            projectionCache: cache);
+            projectionCache: cache, seedService: seed);
 
     private static UpsertSecurityAliasRequest Request(Guid securityId, string value)
         => new(Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001"), securityId, "Ticker", value, null,

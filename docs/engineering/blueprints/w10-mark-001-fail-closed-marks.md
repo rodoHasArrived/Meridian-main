@@ -2279,15 +2279,15 @@ disposed of.
 
 The migrations take their ordinals from the
 [machine-readable reservation register](../../../database/migration-reservations.json), rendered
-in the [generated table](README.md#ledger-migration-ordinals). **045–047 are pending for this
-blueprint, in phase order**: 045 the assessment table and 046 the valuation attempt record — both
-**Phase 2** — then 047 the override plus its audit table, **Phase 3**.
+in the [generated table](README.md#ledger-migration-ordinals). **047–049 are pending for this
+blueprint, in phase order**: 047 the assessment table and 048 the valuation attempt record — both
+**Phase 2** — then 049 the override plus its audit table, **Phase 3**.
 
 `LedgerMigrationRunner` applies scripts in filename order and records each filename. Phase 2 is
 allowed to merge before Phase 3, so the assessment and attempt migrations take the lower ordinals.
 This preserves dependency order when the phases ship independently.
 
-`ledger_valuation_attempt_draft` is created by **046 alongside `ledger_valuation_attempt`**: it is
+`ledger_valuation_attempt_draft` is created by **048 alongside `ledger_valuation_attempt`**: it is
 part of the same attempt protocol, lands in the same phase, and depends on the table it references.
 Check current files and reservations at implementation time. Release the relevant pending claim
 before scaffolding with `new-migration --migration-set ledger --name <name> --ordinal <number>`;
@@ -2794,7 +2794,7 @@ enrich a queue that by then exists rather than being what makes one exist.
       tenant guard has nothing to check against, and a valuation could consume another tenant's
       approved override.
 - [ ] Migration: `ledger_valuation_attempt` **and `ledger_valuation_attempt_draft`** in one ordinal
-      (046), with the assessment table at 045 — Phase 2 takes the lower ordinals so a database
+      (048), with the assessment table at 047 — Phase 2 takes the lower ordinals so a database
       upgraded through this PR never applies a lower-numbered migration afterwards, with the attempt-state lifecycle, the `prepared_draft_payload` column, and the
       one-live-attempt-per-valuation unique index — which is the whole concurrency control, since
       there is deliberately no lease-reassignment rule. The association table is what the posting
@@ -2899,7 +2899,7 @@ non-empty uncorrectable backlog, which is what the previous wording permitted by
       matching blocking row before inserting, so an override cannot be minted against a valuation
       that was never blocked; `Unavailable` is refused with a remediation message rather than
       approved.
-- [ ] Migration: `ledger_mark_override` at ordinal **047**, after Phase 2's 045–046 — including the five `quote_*` evidence columns, without
+- [ ] Migration: `ledger_mark_override` at ordinal **049**, after Phase 2's 047–048 — including the five `quote_*` evidence columns, without
       which the fingerprint comparison and the reviewer list have nothing to read — plus
       `ledger_mark_override_audit` with a **nullable** `from_state`, and the nullable-aware partial
       unique index on the scope.

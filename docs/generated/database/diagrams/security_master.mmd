@@ -991,6 +991,10 @@ erDiagram
         timestamp_with_time_zone snapshot_timestamp
         jsonb payload
     }
+    security_master_security_workbench_generations {
+        uuid security_id PK
+        bigint generation
+    }
     security_master_servicer_position_report_line {
         uuid servicer_report_line_id PK
         uuid servicer_report_batch_id FK

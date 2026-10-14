@@ -18,6 +18,27 @@ namespace Meridian.Tests.Ui;
 
 public sealed class SecurityMasterOperatorOverrideDecisionEndpointsTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task OverrideMutation_ReturnsConflict_WhenDurableGenerationChanged(bool patch)
+    {
+        var id = Guid.NewGuid();
+        var store = Substitute.For<IOperatorOverridesStore>();
+        store.PatchAsync(id, Arg.Any<OperatorOverridesPatchRequest>(), Arg.Any<string>(), Arg.Any<CancellationToken>(), Arg.Any<long?>())
+            .Returns(Task.FromException<OperatorOverridesDto>(new SecurityMasterMutationConflictException(id)));
+        store.RecordApprovalDecisionAsync(id, Arg.Any<OperatorOverrideDecision>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<OperatorOverridesDto>(new SecurityMasterMutationConflictException(id)));
+        await using var app = await CreateAppAsync(store);
+        var client = app.GetTestClient();
+        using var response = patch
+            ? await client.PatchAsJsonAsync(
+                UiApiRoutes.SecurityMasterOperatorOverrides.Replace("{securityId:guid}", id.ToString("D")),
+                new { setValues = new { rating = "AA" } })
+            : await client.PostAsJsonAsync(DecisionRoute(id), new { decision = "Approved" });
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
     [Fact]
     public async Task DecisionRoute_RecordsApproval_WhenOverridesExist()
     {

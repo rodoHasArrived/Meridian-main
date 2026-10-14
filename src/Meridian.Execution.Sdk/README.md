@@ -11,6 +11,10 @@ last_reviewed: 2026-07-05
 
 # src/Meridian.Execution.Sdk
 
+`CanonicalTaxLotAdapter` admits only long execution and canonical lots. Positive quantity alone
+cannot make an explicitly short canonical acquisition compatible with the long consumer. Short
+production cutover still requires governed posting and consumer parity evidence.
+
 `BrokeragePortfolioSnapshotDto.IsComplete` defaults to false until a provider establishes complete
 account and holding evidence. `IBrokerageConnectionState` supplies a credential-free connection
 epoch and verified account/environment scope, so cached execution evidence cannot survive a

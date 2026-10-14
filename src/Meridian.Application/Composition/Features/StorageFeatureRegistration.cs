@@ -2,7 +2,6 @@ using Meridian.Storage.Archival;
 using Meridian.Core.IO;
 using Meridian.Application.Backfill;
 using Meridian.Core.Config;
-using Meridian.PortfolioRecords.Accounts;
 using Meridian.FinancialOperations.Banking;
 using Meridian.Instruments.CryptoCurrency;
 using Meridian.Instruments.Deposits;
@@ -322,6 +321,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             // own writes, so another container in the same process still refreshes its cache.
             services.AddSingleton(_ => SecurityMasterNodeIdentity.CreateNew());
             services.AddSingleton<SecurityMasterProjectionCache>();
+            services.AddSingleton<SecurityMasterCanonicalSymbolSeedService>();
+            services.AddSingleton<Meridian.DataIntegration.Canonicalization.ICanonicalSecurityIdLookup>(
+                sp => sp.GetRequiredService<SecurityMasterCanonicalSymbolSeedService>());
             services.AddSingleton<SecurityMasterProjectionService>();
             services.AddSingleton<SecurityMasterRebuildOrchestrator>();
             services.AddSingleton<IUflProjectionRebuilder, UflProjectionRebuilder>();
@@ -545,31 +547,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         }
 
         // Fund accounts and governance structure.
-        if (configuration.IsConfigured(FundAccountsStartup.ConnectionStringVariable))
-        {
-            if (configuration.UsesEnvironment)
-                FundAccountsStartup.EnsureEnvironmentDefaults();
-            var faConnectionString = configuration.GetConnectionString(FundAccountsStartup.ConnectionStringVariable)!;
-            var faSchema = configuration.GetSchema(FundAccountsStartup.SchemaVariable, FundAccountsStartup.DefaultSchema);
-            services.TryAddSingleton(new FundAccountStoreOptions { ConnectionString = faConnectionString, Schema = faSchema });
-            services.TryAddSingleton<IFundAccountStore, PostgresFundAccountStore>();
-            services.TryAddSingleton<PostgresFundAccountService>();
-            services.TryAddSingleton<IFundAccountService>(sp => sp.GetRequiredService<PostgresFundAccountService>());
-            services.TryAddSingleton<IAccountManagementService>(sp => sp.GetRequiredService<PostgresFundAccountService>());
-            services.TryAddSingleton<IAccountQueryService>(sp => sp.GetRequiredService<PostgresFundAccountService>());
-        }
-        else
-        {
-            services.TryAddSingleton<IFundAccountService>(sp =>
-            {
-                var storageOptions = sp.GetRequiredService<StorageOptions>();
-                var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "fund-accounts.json");
-                return new TenantGuardedLocalFundAccountService(new InMemoryFundAccountService(persistencePath),
-                    sp.GetRequiredService<LocalTenantMigrationGate>());
-            });
-            services.TryAddSingleton<IAccountManagementService>(sp => (IAccountManagementService)sp.GetRequiredService<IFundAccountService>());
-            services.TryAddSingleton<IAccountQueryService>(sp => (IAccountQueryService)sp.GetRequiredService<IFundAccountService>());
-        }
+        services.AddPortfolioRecordServices(configuration);
         services.TryAddSingleton<IGovernanceSharedDataAccessService>(sp =>
             new GovernanceSharedDataAccessService(
                 sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),

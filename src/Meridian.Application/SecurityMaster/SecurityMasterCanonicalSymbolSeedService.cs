@@ -29,6 +29,8 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
     private readonly ICanonicalSymbolRegistry _registry;
     private readonly ILogger<SecurityMasterCanonicalSymbolSeedService> _logger;
 
+    private readonly ISecurityMasterStore? _authoritativeStore;
+
     private readonly SemaphoreSlim _seedLock = new(1, 1);
 
     // Thread-safe reverse lookup: canonical ticker (case-insensitive) → SecurityId.
@@ -39,11 +41,14 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
     public SecurityMasterCanonicalSymbolSeedService(
         SecurityMasterProjectionCache cache,
         ICanonicalSymbolRegistry registry,
-        ILogger<SecurityMasterCanonicalSymbolSeedService> logger)
+        ILogger<SecurityMasterCanonicalSymbolSeedService> logger,
+        ISecurityMasterStore? store = null,
+        SecurityMasterOptions? options = null)
     {
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         _registry = registry ?? throw new ArgumentNullException(nameof(registry));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _authoritativeStore = options?.PreloadProjectionCache == false ? store : null;
     }
 
     /// <summary>
@@ -80,7 +85,11 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
     {
         // Capture only after taking the gate: a slow earlier seed must never overwrite a
         // later projection refresh with an older snapshot.
-        var snapshot = _cache.Snapshot();
+        // Lazy cache membership is not authoritative: a creation may have been committed while
+        // LISTEN was disconnected. Seed from durable membership without warming the lazy cache.
+        var snapshot = _authoritativeStore is null
+            ? _cache.Snapshot()
+            : await _authoritativeStore.LoadAllAsync(ct).ConfigureAwait(false);
 
         var definitions = new List<CanonicalSymbolDefinition>(snapshot.Count);
         var reverseMap = new Dictionary<string, Guid>(snapshot.Count, StringComparer.OrdinalIgnoreCase);

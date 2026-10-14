@@ -431,24 +431,51 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         }, CancellationToken.None);
     }
 
+    private int _registryReseedRequested;
+    private int _registryReseedRunning;
+    internal TimeSpan RegistryReseedRetryDelay { get; set; } = TimeSpan.FromSeconds(5);
+
     private void TryReseedRegistryInBackground()
     {
-        if (_seedService is null)
+        if (_seedService is null || _serviceCts.IsCancellationRequested)
+            return;
+
+        Interlocked.Exchange(ref _registryReseedRequested, 1);
+        if (Interlocked.CompareExchange(ref _registryReseedRunning, 1, 0) != 0)
             return;
 
         var ct = _serviceCts.Token;
         _ = Task.Run(async () =>
         {
+            var delay = RegistryReseedRetryDelay;
             try
             {
-                await _seedService.SeedAsync(ct).ConfigureAwait(false);
+                while (!ct.IsCancellationRequested && Interlocked.Exchange(ref _registryReseedRequested, 0) != 0)
+                {
+                    try
+                    {
+                        await _seedService.SeedAsync(ct).ConfigureAwait(false);
+                        delay = RegistryReseedRetryDelay;
+                    }
+                    catch (OperationCanceledException) when (ct.IsCancellationRequested) { break; }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Background canonical symbol registry re-seed failed; retrying.");
+                        Interlocked.Exchange(ref _registryReseedRequested, 1);
+                        await Task.Delay(delay, ct).ConfigureAwait(false);
+                        delay = TimeSpan.FromMilliseconds(Math.Min(delay.TotalMilliseconds * 2, 60_000));
+                    }
+                }
             }
-            catch (OperationCanceledException) { }
-            catch (Exception ex)
+            catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
+            finally
             {
-                _logger.LogWarning(ex, "Background canonical symbol registry re-seed failed.");
+                Interlocked.Exchange(ref _registryReseedRunning, 0);
+                // A request racing with the worker's last exchange still needs a worker.
+                if (!ct.IsCancellationRequested && Volatile.Read(ref _registryReseedRequested) != 0)
+                    TryReseedRegistryInBackground();
             }
-        }, ct);
+        });
     }
 
     private async Task TryRecordConflictsAsync(SecurityProjectionRecord projection, Guid securityId, CancellationToken ct)
