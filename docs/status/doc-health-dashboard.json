@@ -1,11 +1,11 @@
 {
-  "total_files": 732,
-  "total_lines": 159431,
-  "orphaned_count": 249,
+  "total_files": 731,
+  "total_lines": 159397,
+  "orphaned_count": 248,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 301,
-  "average_lines": 217.8,
+  "average_lines": 218.1,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -33,7 +33,6 @@
     ".agents/skills/meridian-simulated-user-panel/references/rubric.md",
     ".agents/skills/meridian-simulated-user-panel/references/sample-prompts.md",
     ".agents/skills/meridian-test-writer/SKILL.md",
-    ".ai/SETUP_STATUS.md",
     "AGENTS.md",
     "Meridian Design System/CONTENT_FUNDAMENTALS.md",
     "Meridian Design System/ICONOGRAPHY.md",
@@ -806,14 +805,6 @@
     {
       "path": ".agents/skills/meridian-test-writer/SKILL.md",
       "line_count": 328,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": ".ai/SETUP_STATUS.md",
-      "line_count": 34,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
