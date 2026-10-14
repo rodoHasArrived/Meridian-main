@@ -111,6 +111,11 @@ public sealed partial class PostgresLedgerJournalStore
             && command.Amortization!.CalculationVersion != OpenLotAmortization.ModelVersion)
             throw new LedgerValidationException("New amortization postings require a fresh preview using the current calculation version.");
 
+        // Tenant-scoped writes already hold the book. Keep compatibility writes in the same
+        // book-before-reference order as backfill, without adding a gate to exact replay above.
+        if (!_tenantScope.IsFailClosed)
+            _ = await LoadLedgerBookAsync(connection, transaction, command.LedgerBookId, ct).ConfigureAwait(false);
+
         var period = await LoadPeriodAsync(
                 connection,
                 transaction,
