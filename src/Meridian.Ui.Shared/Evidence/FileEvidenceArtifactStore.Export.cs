@@ -23,7 +23,10 @@ public sealed partial class FileEvidenceArtifactStore
         // The canonical digest consumes a bounded tee: every byte it hashes is also written to
         // the private staged artifact. Neither the source length nor a pre-copy stat is authority.
         using var copy = new ExportCopyStream(source, destination, artifactId, reservation, artifactByteLimit);
-        var hash = await Sha256Digest.ComputeAsync(copy, ct).ConfigureAwait(false);
+        // Hash implementations can request smaller reads; keep staged writes and durable quota
+        // checkpoints at the bounded copy size instead of inheriting the digest's read granularity.
+        using var bufferedCopy = new BufferedStream(copy, ExportCopyBufferBytes);
+        var hash = await Sha256Digest.ComputeAsync(bufferedCopy, ct).ConfigureAwait(false);
         return new ExportArtifactCopyResult(hash, copy.BytesCopied);
     }
 
