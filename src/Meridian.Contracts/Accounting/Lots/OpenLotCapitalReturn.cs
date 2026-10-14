@@ -27,6 +27,8 @@ public static class OpenLotCapitalReturn
         ArgumentNullException.ThrowIfNull(projection);
         var lot = instruction.ExpectedLot;
         OpenLotValidation.Validate(lot);
+        Require(lot.Acquisition.Direction == OpenLotDirection.Long,
+            "Capital-return basis reduction currently supports Long lots only; short distributions require separate posting authority.");
         Require(projection.CanPreparePostingCandidate && projection.EconomicEvent is not null
             && projection.ProjectionLineage is not null && projection.AccountingScope is not null
             && projection.CaseId != Guid.Empty && projection.CaseVersion > 0

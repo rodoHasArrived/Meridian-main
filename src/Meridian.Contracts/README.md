@@ -11,6 +11,13 @@ last_reviewed: 2026-10-13
 
 # src/Meridian.Contracts
 
+Canonical acquisition facts and lot instructions retain an explicit `OpenLotDirection` while
+quantities remain non-negative. Historical `Long` is the omitted zero value, preserving existing
+JSON and receipt fingerprints; `Short` is serialized explicitly. The contract can describe a short
+lot for calculation and shadow comparison, but current posting instructions, amortization,
+capital returns and successor transformations refuse short accounting until their direction-aware
+authority is implemented and reviewed.
+
 `AssetAcquisitionTermsCompletionDto` is an optional supplement on
 `PostPostingRuleJournalCandidateRequestDto`. It supplies only the missing amortization method and
 yield of an immutable legacy face-acquisition draft. A supplied supplement must explicitly select

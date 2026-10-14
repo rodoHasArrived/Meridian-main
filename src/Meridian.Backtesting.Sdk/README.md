@@ -11,6 +11,11 @@ last_reviewed: 2026-10-13
 
 # src/Meridian.Backtesting.Sdk
 
+`CanonicalOpenLotAdapter` admits only long simulation and canonical lots. It refuses an explicitly
+short canonical acquisition even if its positive quantity and basis match a long simulation lot.
+Existing simulation short-cover calculation remains available; this guard does not certify
+canonical short posting or production consumer cutover.
+
 ## Shared close and lot convergence
 
 `CanonicalOpenLotAdapter` checks backtest/ledger identity and economics against the shared canonical lot contract. It compares exact component basis after validating a governed unit successor's immediate predecessor, component quantities, acquisition dates and internally consistent source fills. Components must represent one source pool, with positive quantities and nonnegative basis that reconcile exactly to the retained current open quantity and carrying basis. Ordinary lots cannot use components to override their entry quote. It preserves ticker-rename continuity while rejecting quantity, basis, date, or durable-ID differences. Explicit short lots remain blocked until the canonical direction model is approved, matching the Execution adapter; simulation does not become ledger authority.
