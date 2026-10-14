@@ -17,6 +17,17 @@ from the first observed break to the latest observation, or source resolution wh
 Missing balances on both sides cannot clear an existing case. Historical replay uses retained
 inputs and tolerance rather than current configuration.
 
+Independence requires distinct retained evidence references and original observations, not just
+different source labels/types or equal cash amounts. Shared references (ignoring surrounding
+whitespace) and copied original row payloads are rejected before retention. For each exact
+tenant/company/account/book scope, a source ID and version bind the complete retained source:
+type, evidence reference, capture time, completeness, normalized rows and original payloads.
+Reusing a version with changed content is rejected against all earlier runs under the same
+cross-process store lease that appends a run. Source corrections need a new version; unchanged
+revisions may be reused. A rejected attempt leaves existing runs, ownership and case history intact.
+These checks identify retained observations; they do not independently authenticate an external
+document supplied by a caller.
+
 An approved close-price set binds one account, book and valuation date to retained selection
 receipts, quotation units, reviewer rationale and overrides. Independent review freezes the set.
 Corrections produce linked versions, while unsupported or stale inputs remain explicit blockers.

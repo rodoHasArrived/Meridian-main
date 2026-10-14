@@ -60,6 +60,17 @@ Each source supplies at most one native-currency balance per currency with its o
 exact account and business date. This slice refuses undeclared FX, duplicate balances, unrelated
 accounts and partial captures. Assign an initial owner and retain the full executed tolerance profile.
 
+The two sources must reference different retained evidence and must not reuse original row
+payloads. Matching balance amounts from independently identified observations remain valid.
+Within the exact account/book scope, reuse a source version only with its unchanged capture,
+provenance, rows and original payloads. Corrections require a new source version even if an
+intermediate run omitted the old revision or compared that source with a different counterpart.
+Rejected submissions do not append a run or change an existing case.
+Previously retained runs with shared evidence references or copied original payloads fail replay
+and retry under these controls. Their stored case state and history are not rewritten; investigate
+any prior `SourceCleared` result and submit a new run with independently sourced observations and
+new source versions where the retained source content changes.
+
 Run again after a source correction with a new run ID and later observation time. The amount,
 row ID, business date and tolerance version do not create a different case. The case retains its
 original first-seen time and owner. Equal or tolerated balances mark `SourceCleared`; missing

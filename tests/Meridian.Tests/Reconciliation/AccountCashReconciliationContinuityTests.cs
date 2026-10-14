@@ -269,6 +269,168 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
         Assert.Single(await (await ServiceAsync()).GetCasesAsync(_scope)).Should().BeEquivalentTo(before);
     }
 
+    [Theory]
+    [InlineData("shared-reference")]
+    [InlineData("padded-reference")]
+    [InlineData("copied-payload")]
+    [InlineData("copied-source")]
+    public async Task Relabeled_or_copied_evidence_cannot_clear_or_mutate_an_existing_case(string scenario)
+    {
+        var service = await ServiceAsync();
+        var original = await service.RunAsync(Request("first", 0, 1000m, 990m));
+        var before = Assert.Single(await service.GetCasesAsync(_scope));
+        var statePath = Path.Combine(_root, "reconciliation", "account-cash-continuity", "state.json");
+        var bytes = await File.ReadAllBytesAsync(statePath);
+        var invalid = Request("copied", 1, 1000m, 1000m);
+        invalid = scenario switch
+        {
+            "shared-reference" => invalid with { Right = invalid.Right with { EvidenceReference = invalid.Left.EvidenceReference } },
+            "padded-reference" => invalid with { Right = invalid.Right with { EvidenceReference = " " + invalid.Left.EvidenceReference + " " } },
+            "copied-payload" => invalid with
+            {
+                Right = invalid.Right with { Rows = [invalid.Right.Rows[0] with { OriginalPayload = " " + invalid.Left.Rows[0].OriginalPayload + " " }] }
+            },
+            _ => invalid with { Right = invalid.Left with { SourceId = invalid.Right.SourceId, SourceType = invalid.Right.SourceType } }
+        };
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.RunAsync(invalid));
+        (await File.ReadAllBytesAsync(statePath)).Should().Equal(bytes);
+        service = await ServiceAsync();
+        Assert.Single(await service.GetCasesAsync(_scope)).Should().BeEquivalentTo(before);
+        (await service.ReplayAsync(_scope, "first")).Should().BeEquivalentTo(original, options => options.WithStrictOrdering());
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.ReplayAsync(_scope, "copied"));
+    }
+
+    [Theory]
+    [InlineData("amount")]
+    [InlineData("payload")]
+    [InlineData("evidence-reference")]
+    [InlineData("row-provenance")]
+    [InlineData("capture-time")]
+    [InlineData("omitted-row")]
+    [InlineData("padded-version")]
+    public async Task Retained_source_version_rejects_changed_content_without_mutating_history(string scenario)
+    {
+        var service = await ServiceAsync();
+        var request = Request("first", 0, 1000m, 990m);
+        var original = await service.RunAsync(request);
+        var before = Assert.Single(await service.GetCasesAsync(_scope));
+        var statePath = Path.Combine(_root, "reconciliation", "account-cash-continuity", "state.json");
+        var bytes = await File.ReadAllBytesAsync(statePath);
+        var source = request.Right;
+        var row = source.Rows[0];
+        var changed = scenario switch
+        {
+            "amount" => source with { Rows = [row with { Row = row.Row with { Amount = 1000m, AmountBase = 1000m } }] },
+            "payload" => source with { Rows = [row with { OriginalPayload = row.OriginalPayload + " " }] },
+            "evidence-reference" => source with { EvidenceReference = "evidence:replacement" },
+            "row-provenance" => source with { Rows = [row with { Row = row.Row with { SourceReference = "rebound-row" } }] },
+            "capture-time" => source with { CapturedAtUtc = source.CapturedAtUtc.AddMinutes(1) },
+            "omitted-row" => source with { Rows = [] },
+            _ => source with { Version = " " + source.Version + " ", EvidenceReference = "evidence:replacement" }
+        };
+        var invalid = request with { RunId = "rebound", ObservedAtUtc = _start.AddHours(1), Right = changed };
+
+        service = await ServiceAsync();
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => service.RunAsync(invalid));
+        error.Message.Should().Contain("retained source version");
+        (await File.ReadAllBytesAsync(statePath)).Should().Equal(bytes);
+        Assert.Single(await service.GetCasesAsync(_scope)).Should().BeEquivalentTo(before);
+        (await service.ReplayAsync(_scope, "first")).Should().BeEquivalentTo(original, options => options.WithStrictOrdering());
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.ReplayAsync(_scope, "rebound"));
+    }
+
+    [Fact]
+    public async Task Source_version_binding_survives_intervening_revision_and_different_comparison_pair()
+    {
+        var service = await ServiceAsync();
+        var first = Request("first", 0, 1000m, 990m);
+        await service.RunAsync(first);
+        var correction = Request("revision-two", 0, 1000m, 995m) with { ObservedAtUtc = _start.AddHours(1) };
+        await service.RunAsync(correction with { Right = correction.Right with { Version = "source-v2" } });
+        var before = await service.GetCasesAsync(_scope);
+        var rebound = Request("reintroduced", 0, 1000m, 1000m) with { ObservedAtUtc = _start.AddHours(2) };
+        rebound = rebound with { Left = rebound.Left with { SourceId = "other-ledger" } };
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () => await (await ServiceAsync()).RunAsync(rebound));
+        error.Message.Should().Contain("retained source version");
+        (await service.GetCasesAsync(_scope)).Should().BeEquivalentTo(before, options => options.WithStrictOrdering());
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.ReplayAsync(_scope, "reintroduced"));
+    }
+
+    [Fact]
+    public async Task Independent_equal_balances_and_unchanged_source_revisions_remain_valid()
+    {
+        var service = await ServiceAsync();
+        var request = Request("first", 0, 1000m, 990m);
+        await service.RunAsync(request);
+        var firstCase = Assert.Single(await service.GetCasesAsync(_scope));
+        var sameSources = request with { RunId = "repeat", ObservedAtUtc = _start.AddHours(1), Left = request.Right, Right = request.Left };
+        await (await ServiceAsync()).RunAsync(sameSources);
+
+        var corrected = Request("corrected", 0, 1000m, 1000m) with { ObservedAtUtc = _start.AddHours(2) };
+        corrected = corrected with { Right = corrected.Right with { Version = "source-v2" } };
+        var run = await service.RunAsync(corrected);
+        Assert.Single(run.Comparisons).ObservationState.Should().Be("SourceCleared");
+        var cleared = Assert.Single(await service.GetCasesAsync(_scope));
+        cleared.CaseId.Should().Be(firstCase.CaseId);
+        cleared.History.Select(item => item.RunId).Should().Equal("first", "repeat", "corrected");
+        (await (await ServiceAsync()).RunAsync(corrected)).Should().BeEquivalentTo(run, options => options.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task Source_version_bindings_are_isolated_by_exact_account_scope()
+    {
+        var service = await ServiceAsync();
+        await service.RunAsync(Request("account-a", 0, 1000m, 990m));
+        var original = Assert.Single(await service.GetCasesAsync(_scope));
+        var foreign = _scope with { AccountId = "account-b" };
+
+        var run = await service.RunAsync(Request("account-b", 0, 2000m, 2000m, foreign));
+
+        Assert.Single(run.Comparisons).ObservationState.Should().Be("SourceCleared");
+        (await service.GetCasesAsync(foreign)).Should().BeEmpty();
+        Assert.Single(await service.GetCasesAsync(_scope)).Should().BeEquivalentTo(original);
+    }
+
+    [Fact]
+    public async Task Independent_instances_cannot_retain_conflicting_content_for_one_source_revision()
+    {
+        var first = await ServiceAsync();
+        var second = await ServiceAsync();
+        var request = Request("first", 0, 1000m, 990m);
+        var conflicting = Request("second", 0, 1000m, 980m);
+        conflicting = conflicting with { Left = conflicting.Left with { SourceId = "other-ledger" } };
+
+        var results = await Task.WhenAll(Record.ExceptionAsync(() => first.RunAsync(request)),
+            Record.ExceptionAsync(() => second.RunAsync(conflicting)));
+
+        results.Should().ContainSingle(result => result == null);
+        results.OfType<InvalidOperationException>().Should().ContainSingle().Which.Message.Should().Contain("retained source version");
+        var service = await ServiceAsync();
+        var retained = Assert.Single(await service.GetCasesAsync(_scope));
+        var runId = results[0] is null ? "first" : "second";
+        retained.History.Should().ContainSingle().Which.RunId.Should().Be(runId);
+        var replay = await service.ReplayAsync(_scope, runId);
+        new[] { replay.Input.Left, replay.Input.Right }.Single(source => source.SourceId == "custodian")
+            .Rows[0].Row.Amount.Should().Be(results[0] is null ? 990m : 980m);
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.ReplayAsync(_scope, results[0] is null ? "second" : "first"));
+    }
+
+    [Fact]
+    public async Task Null_cash_tolerance_rule_is_rejected_before_existing_history_changes()
+    {
+        var service = await ServiceAsync();
+        await service.RunAsync(Request("first", 0, 1000m, 990m));
+        var before = Assert.Single(await service.GetCasesAsync(_scope));
+        var invalid = Request("null-rule", 1, 1000m, 1000m);
+        invalid = invalid with { Tolerance = invalid.Tolerance with { CashRules = [null!] } };
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.RunAsync(invalid));
+        Assert.Single(await (await ServiceAsync()).GetCasesAsync(_scope)).Should().BeEquivalentTo(before);
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.ReplayAsync(_scope, "null-rule"));
+    }
+
     [Fact]
     public async Task Independent_instances_reject_stale_owner_assignment_without_overwriting_new_owner()
     {

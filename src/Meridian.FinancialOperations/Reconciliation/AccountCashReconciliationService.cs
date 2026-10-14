@@ -26,10 +26,17 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
             }
             foreach (var source in new[] { input.Left, input.Right })
             {
-                if (document.Runs.Where(item => item.Input.Scope == input.Scope)
+                var history = document.Runs.Where(item => item.Input.Scope == input.Scope)
                     .SelectMany(item => new[] { item.Input.Left, item.Input.Right })
-                    .Any(prior => prior.SourceId == source.SourceId && prior.SourceType != source.SourceType))
+                    .Where(prior => prior.SourceId == source.SourceId).ToArray();
+                if (history.Any(prior => prior.SourceType != source.SourceType))
                     throw new InvalidOperationException("A retained source identity cannot change source type.");
+                // Check the entire scoped history under the store lease, including revisions absent
+                // from the latest comparison. Reject before evaluating or updating any case.
+                var sourceHash = SourceHash(source);
+                if (history.Any(prior => prior.Version.Trim() == source.Version.Trim()
+                    && !Sha256Digest.FixedEquals(SourceHash(prior), sourceHash)))
+                    throw new InvalidOperationException("A retained source version cannot be rebound to changed observations or provenance.");
             }
             var relevantCases = document.Cases.Where(item => Owns(input, item)).ToArray();
             var latest = document.Runs.Where(item => item.Input.Scope == input.Scope
@@ -140,13 +147,17 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
         if (input.BusinessDate == default || input.ObservedAtUtc == default || DateOnly.FromDateTime(input.ObservedAtUtc.UtcDateTime) < input.BusinessDate
             || input.Tolerance.Version < 1 || input.Tolerance.CashRules is null || input.Tolerance.PositionRules is null || input.Tolerance.TransactionRules is null)
             throw new ArgumentException("Explicit date, time and versioned tolerance contents are required.", nameof(input));
-        if (input.Tolerance.CashRules.Any(rule => string.IsNullOrWhiteSpace(rule.RuleId) || rule.AbsoluteCashTolerance < 0
+        if (input.Tolerance.CashRules.Any(rule => rule is null || string.IsNullOrWhiteSpace(rule.RuleId) || rule.AbsoluteCashTolerance < 0
             || rule.BasisPointCashTolerance < 0 || rule.SettlementDateTolerance < TimeSpan.Zero)
             || input.Tolerance.CashRules.Select(rule => rule.RuleId).Distinct(StringComparer.Ordinal).Count() != input.Tolerance.CashRules.Count)
             throw new ArgumentException("Cash tolerance rules must have unique identities and nonnegative thresholds.", nameof(input));
         var sources = new[] { input.Left, input.Right }.Select(source => NormalizeSource(source, input)).OrderBy(source => source.SourceId, StringComparer.Ordinal).ToArray();
         if (sources[0].SourceId == sources[1].SourceId || sources[0].SourceType == sources[1].SourceType)
             throw new ArgumentException("The first cash-balance slice requires two independent source identities and types.", nameof(input));
+        if (sources[0].EvidenceReference.Trim() == sources[1].EvidenceReference.Trim()
+            || sources[0].Rows.Select(item => item.OriginalPayload.Trim())
+                .Intersect(sources[1].Rows.Select(item => item.OriginalPayload.Trim()), StringComparer.Ordinal).Any())
+            throw new ArgumentException("The two sources require distinct retained evidence references and original observations; copied evidence is not independent.", nameof(input));
         // Freeze caller-owned lists before they cross the durable boundary.
         var normalized = input with { RunId = input.RunId.Trim(), Left = sources[0], Right = sources[1], InitialOwner = input.InitialOwner.Trim(), ObservedAtUtc = input.ObservedAtUtc.ToUniversalTime() };
         return JsonSerializer.Deserialize(JsonSerializer.SerializeToUtf8Bytes(normalized,
@@ -201,6 +212,8 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
             input.Right.SourceId, input.Right.SourceType.ToString(), currency }, AccountCashReconciliationJsonContext.Default.StringArray));
     private static string InputHash(AccountCashReconciliationRequest input)
         => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(input, AccountCashReconciliationJsonContext.Default.AccountCashReconciliationRequest));
+    private static string SourceHash(AccountCashBalanceSource source)
+        => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(source, AccountCashReconciliationJsonContext.Default.AccountCashBalanceSource));
     private static string ResultHash(AccountCashComparison[] result)
         => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(result, AccountCashReconciliationJsonContext.Default.AccountCashComparisonArray));
 }

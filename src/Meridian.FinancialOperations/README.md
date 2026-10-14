@@ -17,7 +17,11 @@ amounts, row IDs and tolerance versions remain observation evidence. Corrected s
 or clear the same case after restart, retaining ownership, UTC calendar-day aging and prior
 resolutions. Each run freezes original source rows, normalized balances, complete executed
 tolerances and canonical matching evidence for deterministic replay. Missing/partial populations,
-duplicate balances, unrelated accounts and changed source identities fail closed. Explicitly
+duplicate balances, unrelated accounts and changed source identities fail closed. Distinct evidence
+references and original row payloads are required for independence. Each scoped source/version
+binds its complete normalized source content across all retained runs; rebinding is rejected under
+the store lease before any case changes. Unchanged revisions can be reused; corrections require
+new versions. Null cash-tolerance entries are rejected before rule evaluation. Explicitly
 provision `FileAccountCashReconciliationStore.InitializeAsync` before use; loss of retained state
 cannot silently restart history. Source clearing confers no governed close approval.
 See [account oversight evidence](../../docs/domain/account-oversight-evidence.md) and
