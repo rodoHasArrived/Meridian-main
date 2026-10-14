@@ -64,6 +64,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                     face ? new(100m, 1m, BondAmortizationMethod.NoAmortization, null) : null, [evidence])
             }
         }).WithComputedFingerprint();
+        var authority = await database.SeedLotReferenceAuthorityAsync(lot.LedgerBookId, lot.SecurityId, lot.BookPositionId);
+        complete = (complete with { ReferenceVersions = authority.Versions }).WithComputedFingerprint();
         var posted = await database.JournalStore.AppendAssetPostingAsync(complete);
         posted.IsExactReplay.Should().BeFalse("refusal must not reserve the posting identity");
         posted.MutatedLots.Should().ContainSingle().Which.ToOpenLot().OpenFunctionalCostBasis.Should().Be(10_000m);
