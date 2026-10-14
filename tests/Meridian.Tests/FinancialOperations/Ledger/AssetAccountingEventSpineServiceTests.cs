@@ -302,7 +302,9 @@ public sealed partial class AssetAccountingEventSpineServiceTests
             };
             labelLots.Add(sourceRecord with
             {
-                TaxLotRecordId = Guid.NewGuid(), LotId = target.Lot.LotId, Account = occupiedAccount,
+                TaxLotRecordId = Guid.NewGuid(),
+                LotId = target.Lot.LotId,
+                Account = occupiedAccount,
                 LedgerBookId = labelScenario == "book" ? Guid.NewGuid() : source.LedgerBookId,
                 OpenQuantity = labelScenario == "closed" ? 0m : source.OpenQuantity
             });
