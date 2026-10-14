@@ -435,8 +435,11 @@ public sealed class MaintenanceSchedulerTests : IDisposable
         {
             var history = new FailRunningHistoryStore(root);
             await using var scheduler = CreateScheduler(history: history, config: AlwaysOpenConfig());
-            var job = CreateJob(MaintenanceType.Backup);
-            await scheduler.ScheduleAsync(job, new ScheduleOptions());
+            // No work can start when admission persistence fails. A zero-duration estimate
+            // keeps this admission test due immediately even in the final minutes of the day.
+            var job = CreateJob(MaintenanceType.Backup) with { EstimatedDuration = TimeSpan.Zero };
+            var scheduled = await scheduler.ScheduleAsync(job, new ScheduleOptions());
+            scheduled.ScheduledStart.Should().BeOnOrBefore(DateTimeOffset.UtcNow);
 
             scheduler.Start();
 
@@ -589,8 +592,8 @@ public sealed class MaintenanceSchedulerTests : IDisposable
             [new MaintenanceWindow(
                 "all-day",
                 TimeSpan.Zero,
-                TimeSpan.FromHours(23.99),
-                [DateTimeOffset.Now.DayOfWeek],
+                TimeSpan.FromDays(1),
+                Enum.GetValues<DayOfWeek>(),
                 [],
                 MaxConcurrentJobs: 4,
                 Limits: new ResourceLimits())],
