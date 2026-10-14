@@ -1549,6 +1549,10 @@ accounting-record launch lists.
 
 Evidence Vault packet exports stream retained local artifacts through a bounded 64 KiB read
 window into private staging while the canonical SHA-256 primitive hashes the same bytes. The
+copy boundary buffers smaller digest reads so a source that fills the window does not incur extra
+staging writes and durable quota checkpoints at the hash implementation's read size. Each actual
+staging write still reserves capacity, flushes its bytes, and reconciles the reservation before
+the next source read; partial reads retain the same accounting and cancellation behavior. The
 100 MiB per-artifact limit applies to bytes actually read, including growth after the initial
 file-size check. Source hash mismatches, read failures, and cancellation abort the package.
 Artifacts, manifest, and index are staged before publication; no-overwrite moves publish the

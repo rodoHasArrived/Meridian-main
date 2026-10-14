@@ -11,6 +11,13 @@ last_reviewed: 2026-10-13
 
 # src/Meridian.Storage
 
+Atomic lot commands bind explicit direction to their immutable acquisition facts. Historical
+`Long` remains absent from fingerprints; exact receipt replay still precedes new-write admission.
+New short commands and direct short saves are refused, and new long acquisitions require an asset
+carrying account. Backfill review/application require a Long or Asset book position. Current
+disposal and tax-history projection also refuse short direction, preventing asset-credit or
+opening-age tax rules from silently certifying a short cover.
+
 Security Master migration `036_security_master_workbench_generations.sql` adds the durable
 compare-and-set generation used by `PostgresSecurityMasterMutation`. Overlay values, their audit
 trail, governed drafts and lifecycle transitions share one connection and transaction. Discard-time
@@ -158,6 +165,17 @@ AverageCost disposal batches include both disposal and survivor basis-redistribu
 An intervening action or later relief cannot hide a repeated ancestor
 action; missing, contradictory, cyclic or foreign-book ancestry refuses the new posting. Exact retries
 still return the already committed receipt before new-posting ancestry checks.
+
+Migration `V_ledger_050` adds a nullable retained return-of-capital instruction and admits a
+zero-quantity `CapitalReturn` mutation. The serializable posting transaction checks approved
+command, period, reference and position versions, exact carrying account, dated holdings and
+current canonical basis before committing the cash journal, basis CAS and immutable receipt.
+Acquisition currency/FX, quantity and holding date remain unchanged. Duplicate source actions
+on the lot or any predecessor refuse a new reduction; exact committed retries retain the original receipt even
+after a period lock. Posted-stage recovery requires the exact retained batch and mutation.
+Historical quantity reads include the zero-quantity transition, and later disposal uses its
+remaining basis. Populated upgrade, migration reapply/restart and injected DDL/transaction
+failure tests cover retention and rollback; authoritative execution belongs to hosted PostgreSQL.
 
 Current-basis disposal uses `V_ledger_041`, following amortization migration 040 in its original order.
 Migration 042 owns successor posting; migration 043 adds only the approved null-basis restoration guard.

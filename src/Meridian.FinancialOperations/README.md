@@ -11,6 +11,11 @@ last_reviewed: 2026-10-13
 
 # src/Meridian.FinancialOperations
 
+The bounded lot acquisition/disposal spine resolves a Long or Asset book position before retaining
+a projection or drafting a candidate. A Short, Liability or unknown side cannot acquire the long
+writer's accounting semantics merely by supplying positive quantity. Explicit short lot
+instructions remain refused pending direction-aware opening, cover and reporting authority.
+
 `Consolidation/ConsolidationService` resolves two directly wholly owned entities from authoritative
 effective-dated ownership, compares reciprocal receivables/payables using posting entity and
 counterparty, and produces evidence-bound drafts through the typed `ConsolidationElimination`
@@ -209,6 +214,14 @@ Preview binds the source chart path to its mapped predecessor credit and rereads
 and versioned source/successor reference authority; the candidate/storage boundary retains durable
 account identity checks. Drafting
 retains the mapped instruction and requires independent approval before posting.
+
+The same service now prepares reviewed in-place return-of-capital reductions. Preview rereads
+the exact canonical lot and reference/position authority; drafting retains the complete reduction
+instruction through the existing event spine and requires independent posting approval. The
+candidate retains the durable carrying-account identity. Posting dispatches a `CapitalReturn`
+batch to the atomic journal/lot store; ordinary journal append cannot consume that instruction.
+Corrections and distributions beyond remaining carrying basis remain blocked pending separate
+reviewed policy and implementation.
 
 ## Purpose
 

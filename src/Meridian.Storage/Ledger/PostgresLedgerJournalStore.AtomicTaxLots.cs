@@ -97,8 +97,13 @@ public sealed partial class PostgresLedgerJournalStore
 
         // Historical receipts may predate canonical acquisition facts. Exact replay above must
         // retain that shape, but a new lot cannot create another legacy-backfill exception.
+        if (command.Direction != OpenLotDirection.Long)
+            throw new LedgerValidationException("New short-lot postings require direction-aware opening, cover and reporting authority; short posting is not enabled.");
         if (command.MutationKind == AtomicTaxLotMutationKind.Acquisition && command.AcquisitionLot!.Acquisition is null)
             throw new LedgerValidationException("New atomic acquisitions require complete canonical acquisition facts.");
+        if (command.MutationKind == AtomicTaxLotMutationKind.Acquisition
+            && command.AcquisitionLot!.Account.AccountType != LedgerAccountType.Asset)
+            throw new LedgerValidationException("New long-lot acquisitions require an asset carrying account.");
 
         // Unversioned instructions preserve historical receipt fingerprints and calculations,
         // but only an existing exact receipt may use them. New writes require a fresh preview.
@@ -148,6 +153,9 @@ public sealed partial class PostgresLedgerJournalStore
         LedgerTaxLotRecord? corporateActionLot = null;
         if (command.MutationKind == AtomicTaxLotMutationKind.CorporateAction)
             corporateActionLot = await LockCorporateActionAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
+        LedgerTaxLotRecord? capitalReturnLot = null;
+        if (command.MutationKind == AtomicTaxLotMutationKind.CapitalReturn)
+            capitalReturnLot = await LockCapitalReturnAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
         // LockAmortizationAuthorityAsync has already checked the immutable original receipt,
         // exact inverse lines and current reference hash before this private exception is set.
         await AppendJournalWithinTransactionAsync(connection, transaction, command.Journal, ct,
@@ -170,6 +178,12 @@ public sealed partial class PostgresLedgerJournalStore
             var mutation = await ApplyAmortizationAsync(connection, transaction, command, amortizationLot!, recordedAt, ct)
                 .ConfigureAwait(false);
             ValidateAtomicJournalLotEconomics(command, [mutation]);
+            await InsertTaxLotMutationAsync(connection, transaction, mutation, ct).ConfigureAwait(false);
+        }
+        else if (command.MutationKind == AtomicTaxLotMutationKind.CapitalReturn)
+        {
+            var mutation = await ApplyCapitalReturnAsync(connection, transaction, command, capitalReturnLot!, recordedAt, ct)
+                .ConfigureAwait(false);
             await InsertTaxLotMutationAsync(connection, transaction, mutation, ct).ConfigureAwait(false);
         }
         else if (command.MutationKind == AtomicTaxLotMutationKind.CorporateAction)
@@ -234,6 +248,9 @@ public sealed partial class PostgresLedgerJournalStore
         ArgumentNullException.ThrowIfNull(command.Journal);
         ArgumentNullException.ThrowIfNull(command.Journal.Entry);
         ArgumentNullException.ThrowIfNull(command.RetainedEvidence);
+
+        if (!Enum.IsDefined(command.Direction))
+            throw new LedgerValidationException("Atomic lot direction must be Long or Short.");
 
         if (command.DisposalSalePrice is < 0m ||
             (command.MutationKind != AtomicTaxLotMutationKind.Disposal && command.DisposalSalePrice is not null))
@@ -362,6 +379,10 @@ public sealed partial class PostgresLedgerJournalStore
             && (normalizedJournal.PostingCommand?.LotCorporateAction is not null
                 || normalizedJournal.Entry.Metadata.Tags?.ContainsKey(OpenLotSuccessors.JournalFingerprintTag) == true))
             throw new LedgerValidationException("Successor journal instructions require a corporate-action mutation batch.");
+        if (command.MutationKind != AtomicTaxLotMutationKind.CapitalReturn
+            && (normalizedJournal.PostingCommand?.LotCapitalReturn is not null
+                || normalizedJournal.Entry.Metadata.Tags?.ContainsKey(OpenLotCapitalReturn.JournalFingerprintTag) == true))
+            throw new LedgerValidationException("Capital-return journals require a capital-return mutation batch.");
         _ = ResolveAtomicAssetScope(normalizedJournal);
         var normalizedCommand = command with
         {
@@ -392,6 +413,10 @@ public sealed partial class PostgresLedgerJournalStore
         {
             ValidateAtomicCorporateAction(normalizedCommand);
         }
+        else if (command.MutationKind == AtomicTaxLotMutationKind.CapitalReturn)
+        {
+            ValidateAtomicCapitalReturn(normalizedCommand);
+        }
         else
         {
             throw new LedgerValidationException(
@@ -402,6 +427,8 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException("Only amortization batches may retain amortization inputs.");
         if (command.MutationKind != AtomicTaxLotMutationKind.CorporateAction && command.CorporateAction is not null)
             throw new LedgerValidationException("Only corporate-action batches may retain successor inputs.");
+        if (command.MutationKind != AtomicTaxLotMutationKind.CapitalReturn && command.CapitalReturn is not null)
+            throw new LedgerValidationException("Only capital-return batches may retain capital-return inputs.");
         return normalizedCommand with
         {
             DisposalSelections = disposalSelections
@@ -426,6 +453,8 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException("Atomic acquisition cannot introduce a basis adjustment; use a governed basis mutation.");
 
         ArgumentNullException.ThrowIfNull(lot.Account);
+        if ((lot.Acquisition?.Direction ?? OpenLotDirection.Long) != command.Direction)
+            throw new LedgerValidationException("Atomic acquisition direction must match its immutable acquisition facts.");
         if (lot.TaxLotRecordId == Guid.Empty || lot.LedgerBookId != command.LedgerBookId)
         {
             throw new LedgerValidationException(
@@ -623,7 +652,8 @@ public sealed partial class PostgresLedgerJournalStore
                    created_at,
                    security_id,
                    book_position_id,
-                   corporate_action_instruction::text
+                   corporate_action_instruction::text,
+                   capital_return_instruction::text
             from {Qualified("atomic_tax_lot_posting_batches")}
             where mutation_batch_id = @mutation_batch_id
                or journal_entry_id = @journal_entry_id
@@ -1007,7 +1037,8 @@ public sealed partial class PostgresLedgerJournalStore
                 book_position_id,
                 proceeds_allocation_version,
                 disposal_sale_price,
-                corporate_action_instruction)
+                corporate_action_instruction,
+                capital_return_instruction)
             values (
                 @mutation_batch_id,
                 @ledger_book_id,
@@ -1027,7 +1058,8 @@ public sealed partial class PostgresLedgerJournalStore
                 @book_position_id,
                 @proceeds_allocation_version,
                 @disposal_sale_price,
-                @corporate_action_instruction);
+                @corporate_action_instruction,
+                @capital_return_instruction);
             """;
         AddAtomicBatchIdentityParameters(insert, command);
         insert.Parameters.AddWithValue("period_id", command.Journal.PeriodId);
@@ -1051,6 +1083,8 @@ public sealed partial class PostgresLedgerJournalStore
             ? (object?)command.DisposalSalePrice ?? DBNull.Value : DBNull.Value;
         insert.Parameters.Add("corporate_action_instruction", NpgsqlDbType.Jsonb).Value = command.CorporateAction is null
             ? DBNull.Value : JsonSerializer.Serialize(command.CorporateAction, JsonOptions);
+        insert.Parameters.Add("capital_return_instruction", NpgsqlDbType.Jsonb).Value = command.CapitalReturn is null
+            ? DBNull.Value : JsonSerializer.Serialize(command.CapitalReturn, JsonOptions);
         await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
@@ -1584,7 +1618,8 @@ public sealed partial class PostgresLedgerJournalStore
             batch.CorrectsMutationBatchId,
             batch.ReliefMethod,
             batch.PolicyRevision,
-            batch.CorporateAction);
+            batch.CorporateAction,
+            batch.CapitalReturn);
     }
 
     private async Task<StoredAtomicTaxLotBatch?> LoadAtomicTaxLotBatchAsync(
@@ -1613,7 +1648,8 @@ public sealed partial class PostgresLedgerJournalStore
                    created_at,
                    security_id,
                    book_position_id,
-                   corporate_action_instruction::text
+                   corporate_action_instruction::text,
+                   capital_return_instruction::text
             from {Qualified("atomic_tax_lot_posting_batches")}
             where mutation_batch_id = @mutation_batch_id;
             """;
@@ -1735,7 +1771,8 @@ public sealed partial class PostgresLedgerJournalStore
             ReadUtcDateTimeOffset(reader, 13),
             reader.GetGuid(14),
             reader.GetGuid(15),
-            reader.IsDBNull(16) ? null : JsonSerializer.Deserialize<OpenLotSuccessorInstructionDto>(reader.GetString(16), JsonOptions));
+            reader.IsDBNull(16) ? null : JsonSerializer.Deserialize<OpenLotSuccessorInstructionDto>(reader.GetString(16), JsonOptions),
+            reader.IsDBNull(17) ? null : JsonSerializer.Deserialize<OpenLotCapitalReturnInstructionDto>(reader.GetString(17), JsonOptions));
 
     private static void AddAtomicBatchIdentityParameters(
         NpgsqlCommand databaseCommand,
@@ -1862,5 +1899,6 @@ public sealed partial class PostgresLedgerJournalStore
         DateTimeOffset CreatedAt,
         Guid SecurityId,
         Guid BookPositionId,
-        OpenLotSuccessorInstructionDto? CorporateAction);
+        OpenLotSuccessorInstructionDto? CorporateAction,
+        OpenLotCapitalReturnInstructionDto? CapitalReturn);
 }

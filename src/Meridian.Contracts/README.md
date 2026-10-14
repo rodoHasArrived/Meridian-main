@@ -11,6 +11,13 @@ last_reviewed: 2026-10-13
 
 # src/Meridian.Contracts
 
+Canonical acquisition facts and lot instructions retain an explicit `OpenLotDirection` while
+quantities remain non-negative. Historical `Long` is the omitted zero value, preserving existing
+JSON and receipt fingerprints; `Short` is serialized explicitly. The contract can describe a short
+lot for calculation and shadow comparison, but current posting instructions, amortization,
+capital returns and successor transformations refuse short accounting until their direction-aware
+authority is implemented and reviewed.
+
 `AssetAcquisitionTermsCompletionDto` is an optional supplement on
 `PostPostingRuleJournalCandidateRequestDto`. It supplies only the missing amortization method and
 yield of an immutable legacy face-acquisition draft. A supplied supplement must explicitly select
@@ -169,6 +176,14 @@ Every successor must receive positive functional
 carrying basis before journal drafting, including the final residual. Currency-specific allocations
 share `Ledger/CurrencyMinorUnits` with the corporate-action projector, including four decimals for
 CLF and UYW; original acquisition and current carrying bases retain independent currency rounding.
+
+`OpenLotCapitalReturnInstructionDto` retains the reviewed return-of-capital projection, exact
+canonical lot and source reference version/hash. It binds the approved carrying reduction to
+functional basis and the independently reviewed `BasisAmount` to acquisition-currency basis;
+neither value is a tax-basis determination or a new FX translation. The transition preserves
+quantity, acquisition facts and holding date and refuses reductions beyond either remaining basis.
+Optional capital-return fields on the event spine, posting command and basis adjustment are
+omitted from historical JSON when absent.
 
 `AssetLotMutationInstructionDto.DisposalSalePrice` optionally retains the original disposal quote
 through governed drafting and posting. It is omitted from JSON when absent so existing retained

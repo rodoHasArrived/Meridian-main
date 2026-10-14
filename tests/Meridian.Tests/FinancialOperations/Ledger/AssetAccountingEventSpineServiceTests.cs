@@ -436,6 +436,7 @@ public sealed partial class AssetAccountingEventSpineServiceTests
             ProjectionLineage = request.ProjectionLineage,
             RulePackReference = request.RulePackReference,
             LotCorporateAction = request.AssetLotMutation!.CorporateAction,
+            LotCapitalReturn = request.AssetLotMutation.CapitalReturn,
             Evidence = request.RetainedEvidence.Select(item => new AccountingPostingEvidenceReferenceDto(
                 item.EvidenceId, item.EvidenceUri, AccountingPostingEvidenceKindDto.Source, item.SourceSystem,
                 item.RetainedAtUtc, item.RetainedBy, item.SubjectId, item.ContentHashSha256,

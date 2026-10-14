@@ -26,6 +26,11 @@ public sealed record OpenLotAcquisitionDto(
     FaceValueAcquisitionTermsDto? FaceValueTerms,
     IReadOnlyList<RetainedEvidenceIdentityDto> Evidence)
 {
+    // Historical acquisition receipts are long and omit this property. Explicit short direction
+    // participates in their immutable acquisition payload and atomic replay fingerprint.
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public OpenLotDirection Direction { get; init; }
+
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public OpenLotCorporateActionLineageDto? CorporateActionLineage { get; init; }
 }
@@ -45,7 +50,9 @@ public sealed record OpenLotBasisAdjustmentDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     OpenLotAmortizationInstructionDto? Amortization = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    OpenLotSuccessorInstructionDto? CorporateAction = null);
+    OpenLotSuccessorInstructionDto? CorporateAction = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    OpenLotCapitalReturnInstructionDto? CapitalReturn = null);
 
 public static class OpenLotBasisAdjustmentReasons
 {
@@ -53,6 +60,7 @@ public static class OpenLotBasisAdjustmentReasons
     public const string AverageCostRedistribution = "AverageCostRedistribution";
     public const string Amortization = "Amortization";
     public const string CorporateActionSuccessor = "CorporateActionSuccessor";
+    public const string CapitalReturn = "CapitalReturn";
 
     /// <summary>Discrete relief retains the exact unrelieved current basis on its surviving lot.</summary>
     public const string DisposalRelief = "DisposalRelief";

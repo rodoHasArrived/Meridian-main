@@ -15,7 +15,7 @@ using NSubstitute;
 
 namespace Meridian.Tests.AssetOperations;
 
-public sealed class CanonicalLotCorporateActionServiceTests
+public sealed partial class CanonicalLotCorporateActionServiceTests
 {
     private const string AssetAccountPath = "Assets:Investment";
 

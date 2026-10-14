@@ -50,6 +50,7 @@ classDiagram
         +bool WasReplay
     }
     class Meridian_Contracts_AssetOperations_AssetAccountingEventSpineDto["AssetAccountingEventSpineDto"] {
+        +Meridian_Contracts_Accounting_Lots_OpenLotCapitalReturnInstructionDto? CapitalReturn
         +Meridian_Contracts_Accounting_Lots_OpenLotSuccessorInstructionDto? CorporateAction
         +AssetAccountingCorrectionReferenceDto? Correction
         +string Currency
@@ -61,7 +62,6 @@ classDiagram
         +string? DraftedLotMutationFingerprint
         +EconomicEventReferenceDto EconomicEvent
         +DateOnly EffectiveDate
-        +decimal EventAmount
     }
     class Meridian_Contracts_AssetOperations_AssetAccountingEventSpineValidator["AssetAccountingEventSpineValidator"] {
     }
@@ -185,15 +185,15 @@ classDiagram
         +AssetAcquisitionLotDto? Acquisition
         +Meridian_Contracts_Accounting_Lots_OpenLotAmortizationInstructionDto? Amortization
         +string? AssetAccountId
+        +Meridian_Contracts_Accounting_Lots_OpenLotCapitalReturnInstructionDto? CapitalReturn
         +Meridian_Contracts_Accounting_Lots_OpenLotSuccessorInstructionDto? CorporateAction
         +LedgerAdjustmentApprovalMetadataDto? CorrectionApproval
         +Guid? CorrectsJournalEntryId
         +Guid? CorrectsMutationBatchId
+        +OpenLotDirection Direction
         +decimal? DisposalSalePrice
         +IReadOnlyList~AssetDisposalLotSelectionDto~ DisposalSelections
         +AssetLotMutationIntentDto Intent
-        +string? PolicyRevision
-        +string? ReliefMethod
     }
     class Meridian_Contracts_AssetOperations_AssetLotMutationInstructionValidator["AssetLotMutationInstructionValidator"] {
     }

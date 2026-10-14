@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
@@ -8,6 +9,27 @@ namespace Meridian.Tests.Storage;
 [Trait("Category", "Unit")]
 public sealed class CanonicalDisposalTaxEconomicsTests
 {
+    [Fact]
+    public void ShortDirection_CannotInheritLongDisposalEconomicsOrOpeningAgeTaxCharacter()
+    {
+        var (lot, history, journal) = CreateDeferredDisposal();
+        var canonical = lot.ToOpenLot();
+        history = history with
+        {
+            CanonicalLots = [canonical with { Acquisition = canonical.Acquisition with { Direction = OpenLotDirection.Short } }]
+        };
+
+        var project = () => CanonicalDisposalHistoryProjector.Project(history, journal, lot.LedgerBookId, "USD");
+        var tax = LedgerDisposalTaxReadService.Project(history, journal, lot.LedgerBookId, "USD", new(2026, 5, 12));
+
+        project.Should().Throw<LedgerValidationException>().WithMessage("*short-sale tax character*");
+        tax.State.Should().Be("MissingEvidence");
+        tax.Character.Should().BeNull();
+        tax.EconomicGainOrLoss.Should().BeNull();
+        tax.RecognizedGainOrLoss.Should().BeNull();
+        tax.Parcels.Should().BeEmpty();
+    }
+
     [Fact]
     public void DeferredDisposal_MultipleExactCashLegsReconcileToOneRetainedResult()
     {

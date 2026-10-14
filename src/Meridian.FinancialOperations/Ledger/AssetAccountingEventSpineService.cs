@@ -165,7 +165,7 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             PostedJournalImpact: null,
             TaxLotMutationBatchId: null,
             Correction: request.Correction,
-            CorporateAction: request.CorporateAction);
+            CorporateAction: request.CorporateAction, CapitalReturn: request.CapitalReturn);
         var projectedSpine = expectedSpine with
         {
             SpineVersion = 2,
@@ -385,6 +385,8 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
         ValidateRequestAssertions(request, source);
         RequireAssertion(PayloadEquals(source.CorporateAction, request.LotMutation?.CorporateAction),
             "A retained successor projection requires the exact canonical lot instruction; it cannot be omitted or replaced.");
+        RequireAssertion(PayloadEquals(source.CapitalReturn, request.LotMutation?.CapitalReturn),
+            "A retained capital-return projection requires the exact canonical lot instruction; it cannot be omitted or replaced.");
         await ResolveCorrectionAuthorityAsync(source, ct).ConfigureAwait(false);
 
         await ResolveAuthoritativeSecurityAsync(source, request.AccountingTimestamp, ct, request.LotMutation?.CorporateAction,
@@ -408,6 +410,9 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
         if (request.LotMutation?.CorporateAction is { } reviewedSuccessors)
             RequireAssertion(reviewedSuccessors.Projection.AccountingScope!.ExpectedPeriodVersion == request.ExpectedPeriodVersion,
                 "Successor projection accounting-period version must match the requested candidate.");
+        if (request.LotMutation?.CapitalReturn is { } reviewedCapitalReturn)
+            RequireAssertion(reviewedCapitalReturn.Projection.AccountingScope!.ExpectedPeriodVersion == request.ExpectedPeriodVersion,
+                "Capital-return projection period version must match the requested candidate.");
         var authoritativeLotMutation = await ResolveAuthoritativeLotMutationAsync(
                 request.LotMutation,
                 source,
@@ -850,6 +855,19 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
         RequireAssertion(security.Status == SecurityStatusDto.Active
                          || (allowRetainedAmortizationCorrection && security.Status == SecurityStatusDto.Inactive),
             "Resolved Security Master record is not Active.");
+        if (source.CapitalReturn is { } capitalReturn)
+        {
+            OpenLotCapitalReturn.Project(capitalReturn);
+            RequireAssertion(corporateAction is null && source.EventKind == AssetAccountingEventKindDto.CorporateAction
+                && PayloadEquals(capitalReturn.Projection.EconomicEvent, source.EconomicEvent)
+                && capitalReturn.ExpectedLot.SecurityId == security.SecurityId
+                && capitalReturn.ExpectedSecurityVersion == security.Version
+                && capitalReturn.ExpectedLot.Acquisition.FunctionalCurrency == source.Currency,
+                "Capital-return currency authority must bind the exact source security and canonical event.");
+            RequireAssertion(DateOnly.FromDateTime(security.EffectiveFrom.UtcDateTime) <= source.EconomicEvent.EffectiveDate
+                && (security.EffectiveTo is null || source.EconomicEvent.EffectiveDate <= DateOnly.FromDateTime(security.EffectiveTo.Value.UtcDateTime)),
+                "Source Security Master record is not effective on the capital-return date.");
+        }
         if (corporateAction is not null)
         {
             OpenLotSuccessors.Validate(corporateAction);
@@ -865,7 +883,8 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
                 "Source Security Master record is not effective on the corporate-action date.");
         }
         RequireAssertion(string.Equals(security.Currency,
-                corporateAction?.ExpectedLot.Acquisition.AcquisitionCurrency ?? source.Currency, StringComparison.OrdinalIgnoreCase),
+                corporateAction?.ExpectedLot.Acquisition.AcquisitionCurrency
+                    ?? source.CapitalReturn?.ExpectedLot.Acquisition.AcquisitionCurrency ?? source.Currency, StringComparison.OrdinalIgnoreCase),
             "Foreign-currency asset accounting is not supported by this bounded spine unless Security Master, event, and ledger functional currency are identical; explicit FX rate/evidence is required before posting.");
         RequireAssertion(allowRetainedAmortizationCorrection || (security.EffectiveFrom <= accountingAsOfUtc &&
                          (security.EffectiveTo is null || accountingAsOfUtc <= security.EffectiveTo.Value)),
@@ -987,6 +1006,32 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
                 && assetLines[0].Debit == Math.Max(projection.FunctionalMovement, 0m)
                 && assetLines[0].Credit == Math.Max(-projection.FunctionalMovement, 0m),
                 "Amortization projected accounting must contain the exact reviewed asset carrying-value movement.");
+            return requested;
+        }
+
+        if (source.EventKind == AssetAccountingEventKindDto.CorporateAction && requested?.CapitalReturn is { } capitalReturn)
+        {
+            OpenLotCapitalReturn.Project(capitalReturn);
+            RequireAssertion(capitalReturn.ExpectedLot.SecurityId == source.Scope.SecurityId
+                && capitalReturn.ExpectedLot.BookPositionId == position.PositionId
+                && capitalReturn.ExpectedLot.LedgerBookId == book.LedgerBookId
+                && capitalReturn.ExpectedSecurityVersion == source.Scope.ExpectedSecurityVersion
+                && capitalReturn.Projection.LotMutations!.ExpectedPositionVersion == position.Version
+                && capitalReturn.Projection.AccountingScope!.PeriodId == source.Scope.PeriodId
+                && capitalReturn.Projection.Treatment.AccountingBasis == source.Scope.AccountingBasis
+                && PayloadEquals(capitalReturn.Projection.EconomicEvent, source.EconomicEvent)
+                && PayloadEquals(capitalReturn.Projection.ProjectionLineage, source.ProjectionLineage)
+                && capitalReturn.Projection.EventAmount == source.EventAmount,
+                "Capital-return inputs must match the exact governed event, projection, book, position and period.");
+            var retained = (await _journalStore.GetTaxLotsByIdsAsync(book.LedgerBookId,
+                [capitalReturn.ExpectedLot.TaxLotRecordId], ct).ConfigureAwait(false)).SingleOrDefault()
+                ?? throw new InvalidOperationException("The reviewed capital-return lot is missing from its authoritative book.");
+            RequireAssertion(retained.Account.AccountType == LedgerAccountType.Asset
+                && PayloadEquals(retained.ToOpenLot(), capitalReturn.ExpectedLot),
+                "The reviewed capital-return lot version, quantity or basis changed; rebuild the projection.");
+            var assetLines = source.ProjectedEffect!.Lines.Where(line => line.AccountId == requested.AssetAccountId).ToArray();
+            RequireAssertion(assetLines.Length == 1 && assetLines[0].Debit == 0m && assetLines[0].Credit == source.EventAmount,
+                "Capital-return projected accounting must contain the exact reviewed carrying-account credit.");
             return requested;
         }
 
@@ -1212,6 +1257,9 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
 
     private static void ValidatePosition(AssetAccountingEventSpineDto source, BookPositionDto position)
     {
+        if (source.EventKind is AssetAccountingEventKindDto.Acquisition or AssetAccountingEventKindDto.Disposal)
+            RequireAssertion(position.PositionSide is BookPositionSides.Long or BookPositionSides.Asset,
+                "The current lot acquisition/disposal path requires a Long or Asset position; short and liability positions require separate posting authority.");
         RequireAssertion(position.PositionId == source.Scope.BookPositionId, "Resolved book-position identity does not match the Projected snapshot.");
         RequireAssertion(position.SecurityId == source.Scope.SecurityId, "Resolved book-position security does not match the Projected snapshot.");
         RequireAssertion(position.Version == source.Scope.ExpectedBookPositionVersion, "Resolved book-position version is stale relative to the Projected snapshot.");
