@@ -304,6 +304,12 @@ no exact-total evidence. Selection/tie policy, canonical identities and acquisit
 short and corporate-action posting, compatibility retirement and live shadow acceptance remain
 separate gates. This continuation does not close W10-LOT-002.
 
+Local regression evidence for [PR #3163](https://github.com/rodoHasArrived/Meridian-main/pull/3163):
+821 execution/shared-basis tests and the complete 417-test Backtesting project passed with zero
+skips, including all 24 new paper-basis cases. The six original fractional-close cases failed
+against the unchanged production implementation with the expected `1e-28` journal residual.
+Full repository validation and hosted checks remain required in addition to this focused proof.
+
 ## 9. Open Questions and Risks
 
 | Question | Owner | Blocking decision |
