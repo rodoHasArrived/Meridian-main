@@ -6,7 +6,7 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-09-02
+last_reviewed: 2026-10-14
 ---
 
 # src/Meridian.Backtesting
@@ -46,6 +46,12 @@ Principal-paydown position adjustments consume Instruments `FactorPaydownProject
 total basis by the projected monetary principal, and then recompute per-unit basis. The historical
 adjuster therefore uses the same held-face/factor economics as the governed production proof while
 remaining a rebuildable simulation rather than an accounting write path.
+
+The live-position adjuster's additive retained-basis overload accepts the paper lot book's exact
+total and returns `AdjustedTotalCostBasis`. Splits retain that total; sequential principal paydowns
+subtract projected principal before a display unit quote is derived. The old overload and custom
+implementers remain compatible, with the absent exact-total field omitted from JSON. Existing
+compatibility merger economics are unchanged; this API is not a governed corporate-action journal.
 
 Corporate-action-adjusted engine runs capture the exact symbol/date-filtered JSONL event window,
 prepare one immutable adjustment plan from its complete bar history and one Security Master query
