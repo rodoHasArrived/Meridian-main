@@ -86,16 +86,8 @@ public static class LedgerFinancialStatementBuilder
 
         foreach (var entry in PeriodEntries(ledger, periodStart, asOf))
         {
-            // A compound journal can contain offsetting cash receipts and payments. Its net cash
-            // movement may be zero while the operating and financing activities remain nonzero.
-            var hasCashActivity = entry.Lines.Any(line => IsCashAccount(line.Account)
-                && MatchesScope(line, financialAccountId, lineDimensions)
-                && (line.Debit != 0m || line.Credit != 0m));
-            if (!hasCashActivity)
-                continue;
-
-            var counterpartLines = entry.Lines
-                .Where(line => !IsCashAccount(line.Account) && MatchesScope(line, financialAccountId, lineDimensions))
+            var counterpartLines = LedgerCashFlowAttribution.CashCounterparts(entry,
+                    line => MatchesScope(line, financialAccountId, lineDimensions))
                 .Select(line => (line.Account, Amount: line.Credit - line.Debit))
                 .Where(static line => line.Amount != 0m);
 
@@ -501,8 +493,7 @@ public static class LedgerFinancialStatementBuilder
     }
 
     private static bool IsCashAccount(LedgerAccount account)
-        => account.AccountType == LedgerAccountType.Asset
-           && account.Name.StartsWith("Cash", StringComparison.OrdinalIgnoreCase);
+        => LedgerCashFlowAttribution.IsCashAccount(account);
 
     private static LedgerCashFlowCategory CategorizeCashFlow(LedgerAccountType counterpartyType)
         => counterpartyType switch
