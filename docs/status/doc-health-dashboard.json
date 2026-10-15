@@ -1,6 +1,6 @@
 {
   "total_files": 731,
-  "total_lines": 159563,
+  "total_lines": 159611,
   "orphaned_count": 248,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -2812,7 +2812,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12037,
+      "line_count": 12042,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5748,7 +5748,7 @@
     },
     {
       "path": "src/Meridian.Backtesting.Sdk/README.md",
-      "line_count": 101,
+      "line_count": 105,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5852,7 +5852,7 @@
     },
     {
       "path": "src/Meridian.FSharp.Trading/README.md",
-      "line_count": 77,
+      "line_count": 85,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6004,7 +6004,7 @@
     },
     {
       "path": "src/Meridian.Strategies/README.md",
-      "line_count": 196,
+      "line_count": 227,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
