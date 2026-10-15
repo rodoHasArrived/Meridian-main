@@ -821,6 +821,17 @@ public static class UiApiRoutes
     public const string LedgerBooks = "/api/ledger/books";
     public const string LedgerBookRolloutAssessment = "/api/ledger/books/rollout-assessment";
     public const string LedgerBookById = "/api/ledger/books/{ledgerBookId:guid}";
+    public const string LedgerAccountCashReconciliationRuns = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-reconciliation/runs";
+    public const string LedgerAccountCashReconciliationReplay = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-reconciliation/runs/{runId}/replay";
+    public const string LedgerAccountCashReconciliationCases = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-reconciliation/cases";
+    public const string LedgerAccountCashReconciliationAssignment = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-reconciliation/cases/{caseId}/assignments";
+    public const string LedgerAccountClosePriceSets = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/close-price-sets/{valuationDate}";
+    public const string LedgerAccountClosePriceSet = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/close-price-sets/{valuationDate}/{snapshotId:guid}";
+    public const string LedgerAccountClosePriceSetApproval = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/close-price-sets/{valuationDate}/{snapshotId:guid}/approval";
+    public const string LedgerAccountCashForecasts = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-forecasts";
+    public const string LedgerAccountCashForecast = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-forecasts/{snapshotId}";
+    public const string LedgerAccountOversightProvision = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/oversight/provision";
+    public const string LedgerAccountOversightContext = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/oversight/context";
     public const string LedgerAggregateJournalEntries = "/api/ledger/aggregates/{aggregateId:guid}/journal-entries";
     public const string LedgerPeriods = "/api/ledger/periods";
     public const string LedgerPeriodClose = "/api/ledger/periods/{periodId:guid}/close";

@@ -60,11 +60,17 @@ public sealed partial class SymbolRegistryService
 
                 if (!incomingBySecurityId.TryGetValue(id, out var supplied))
                 {
-                    if (entry.SecurityMasterOwnsCanonical && !HasIndependentAuthority(entry))
-                        candidate.Symbols.Remove(canonical);
+                    if (entry.SecurityMasterOwnsCanonical)
+                    {
+                        if (!HasIndependentAuthority(entry))
+                            candidate.Symbols.Remove(canonical);
+                        else
+                            entry.SecurityMasterCanonicalWithdrawn = true;
+                    }
                     continue;
                 }
 
+                entry.SecurityMasterCanonicalWithdrawn = false;
                 var currentCanonical = supplied.Canonical.Trim().ToUpperInvariant();
                 if (!entry.Canonical.Equals(currentCanonical, StringComparison.OrdinalIgnoreCase))
                 {

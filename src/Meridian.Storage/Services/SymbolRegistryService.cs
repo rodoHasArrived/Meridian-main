@@ -131,7 +131,7 @@ public sealed partial class SymbolRegistryService :
         var normalizedQuery = query.Trim().ToUpperInvariant();
 
         // 1. Try canonical match
-        if (_symbolCache.TryGetValue(normalizedQuery, out var entry))
+        if (_symbolCache.TryGetValue(normalizedQuery, out var entry) && HasResolvableCanonical(entry))
         {
             return new SymbolLookupResult
             {
@@ -203,7 +203,9 @@ public sealed partial class SymbolRegistryService :
         }
 
         // 5. Not found - suggest similar symbols
-        var suggestions = _symbolCache.Keys
+        var suggestions = _symbolCache
+            .Where(static pair => HasResolvableCanonical(pair.Value))
+            .Select(static pair => pair.Key)
             .Where(s => s.Contains(normalizedQuery) ||
                         normalizedQuery.Contains(s) ||
                         LevenshteinDistance(s, normalizedQuery) <= 2)
@@ -722,6 +724,8 @@ public sealed partial class SymbolRegistryService :
                 MergeEntry(canonicalEntry, incoming, log);
                 // A registration outside reconciliation independently retains this spelling.
                 canonicalEntry.SecurityMasterOwnsCanonical &= incoming.SecurityMasterOwnsCanonical;
+                if (!canonicalEntry.SecurityMasterOwnsCanonical)
+                    canonicalEntry.SecurityMasterCanonicalWithdrawn = false;
                 return canonicalEntry;
             }
 
@@ -960,6 +964,9 @@ public sealed partial class SymbolRegistryService :
 
     private static bool IsGenericResolvableAlias(SymbolAlias alias)
         => alias.IsActive && string.IsNullOrWhiteSpace(alias.Provider);
+
+    private static bool HasResolvableCanonical(SymbolRegistryEntry entry)
+        => !entry.SecurityMasterOwnsCanonical || !entry.SecurityMasterCanonicalWithdrawn;
 
     private static bool AliasIdentityMatches(SymbolAlias left, SymbolAlias right)
         => left.Alias.Equals(right.Alias, StringComparison.OrdinalIgnoreCase)

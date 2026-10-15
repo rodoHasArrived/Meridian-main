@@ -5649,9 +5649,10 @@ independent human schema/Storage approval and operator acceptance remain pending
 merged #3130 evidence and the required target-environment receipts. External approval persistence
 and downstream publication still have separate transaction and reconciliation boundaries.
 
-The current #3131 refresh was `93701d7c`, rather than the earlier `41a30be8` snapshot. It is now
-integrated with main `2083befe`. Generation migration 036 remains byte-for-byte unchanged, and
-alias history remains 037. A backfilled alias revision preserves creation facts but also carries
+The current #3131 refresh was `93701d7c`, rather than the earlier `41a30be8` snapshot. Main advanced
+during acceptance to `5204b8df`, adding close-price migration 037. The branch now incorporates that
+history: generation migration 036 and close-price migration 037 remain byte-for-byte unchanged,
+and alias history moves to the next available ordinal, 038. A backfilled alias revision preserves creation facts but also carries
 `history_available_from`: its current contents cannot establish knowledge from before migration.
 Recorded reads filter that availability boundary before selecting the latest revision. Missing
 pre-migration alias history is unavailable evidence, not proof that no alias existed.
@@ -5660,8 +5661,8 @@ pre-migration alias history is unavailable evidence, not proof that no alias exi
 | --- | --- |
 | Historical identifier lookup | Additive `GetRecordedByIdentifierAsOfAsync` resolves retained event identifiers and alias revisions using an explicit recorded cutoff and a separate effective cutoff. Missing or ambiguous identity returns no match; current projections and legacy primary-identity fallbacks are excluded. Recorded by-ID reads also retain aliases when the current projection is absent. The compatibility APIs keep their existing mixed semantics: recorded terms can carry aliases corrected later. |
 | Equity replay | Economic-only Equity reconstruction refuses because the old family cannot prove common versus preferred or convertible preferred classification. Retained flat payloads replay unchanged. Reconstructing missing preferred economics still requires authoritative retained terms; no partial envelope is invented. |
-| Identifier propagation | Production composition supplies one seeder/ID-lookup singleton. Failed local reseeds retry. Startup seeding works without preloading or notifications, and reads authoritative membership independently of cache completeness. Local create, amend and deactivate install committed cache state and request reseeding before optional post-commit work. |
-| Canonical ownership | Persisted Security Master canonical provenance supports ticker rename and removal of withdrawn entries whose remaining authority is exclusively Security Master. Proven owned IDs absent from the authoritative snapshot are reconciled across restart. Independent aliases, provider overrides and unattributed legacy authority are preserved. Resolver snapshot rebuilds serialize publication. |
+| Identifier propagation | Production composition supplies one seeder/ID-lookup singleton; Minimal composition without a canonical registry omits it. Failed local reseeds retry. Startup seeding works without preloading or notifications, and reads authoritative membership independently of cache completeness. Local create, amend and deactivate install committed cache state and request reseeding before optional post-commit work. The hosted lifecycle reseeds at identifier validity boundaries even without a periodic projection refresh. |
+| Canonical ownership | Persisted Security Master canonical provenance supports ticker rename and removal of withdrawn entries whose remaining authority is exclusively Security Master. A mixed-authority entry retains its internal storage identity and independent identifiers, but `SecurityMasterCanonicalWithdrawn` prevents its former Security Master-only canonical input from resolving. Proven owned IDs absent from the authoritative snapshot are reconciled across restart. Independent aliases, provider overrides and unattributed legacy authority are preserved. Resolver snapshot rebuilds serialize publication. |
 | Legacy identifiers | Normal reconciliation never infers ownership from a matching typed value or inferred alias source. Explicit cleanup uses an exact evidence-bound manifest, registry fingerprint, dry-run counts and atomic persisted receipt; typed-field removal needs separate evidence. A changed registry requires renewed review, and exact retries replay the retained receipt. |
 
 Legacy cleanup is an optional maintenance capability on `ISecurityMasterLegacyIdentifierCleanupWriter`.
@@ -5672,8 +5673,9 @@ to `ApplyLegacyIdentifierCleanupAsync`. Omit typed-field evidence to preserve a 
 identifier. The receipt records the requested cleanup and its evidence references; it does not
 establish independent approval. This rehearsal applies no cleanup to a production registry.
 
-Current seeding evaluates identifier validity at the seed timestamp. Automatic activation/expiry
-solely from clock passage, with no mutation or reseed, remains a follow-up; deployments needing
-that behavior must retain an appropriate refresh policy. Shared schedule validation (#3126) and
+Seeding evaluates validity at its timestamp and records the next enabled alias or standard-identifier
+boundary. The existing hosted lifecycle wakes for that boundary and reseeds without warming a lazy
+cache. A successful write seed can advance its deadline; transient failures retain retry behavior.
+Shared schedule validation (#3126) and
 explicit payload-family discrimination (#3127) remain separately scoped. Review threads and human
 acceptance are not inferred from these code corrections or from automated review.

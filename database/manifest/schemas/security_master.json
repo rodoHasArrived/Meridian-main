@@ -46,6 +46,18 @@
       "object_type": "table"
     },
     {
+      "comment": "Immutable independent review receipt bound to the exact close price snapshot SHA-256.",
+      "fingerprint": "04ebc252aad8c9a1362ba630d083932b86da9ed2d727a062f8c1630d6e63ff12",
+      "object": "security_master.security_close_price_approvals",
+      "object_type": "table"
+    },
+    {
+      "comment": "Immutable exact account/book/date price-set versions retaining selected receipts, quote units, overrides, source rows and blockers.",
+      "fingerprint": "71f0c2b337cc3d542df7e0a7212fee4ade1adecd89146b63403d4d9a215f4fdc",
+      "object": "security_master.security_close_price_snapshots",
+      "object_type": "table"
+    },
+    {
       "comment": "Immutable golden-copy evaluation result, exact hierarchy snapshot, and quote comparisons; scoped receipt replay is the reproducibility authority.",
       "fingerprint": "721fd5347a8becbaad67b9d44e75f2ab5048b9041a9b8ca3c917f7d7c83edd15",
       "object": "security_master.security_price_selection_receipts",
@@ -2497,6 +2509,174 @@
       "target_schema": "security_master"
     },
     {
+      "fingerprint": "e7463e91976e0a9e71923bde3728a4c9982ae97b6c724ab2c7abefb0f6817b4d",
+      "kind": "normal",
+      "source": "security_master.security_close_price_approvals_snapshot_id_fkey on security_master.security_close_price_approvals",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_close_price_snapshots.snapshot_id",
+      "target_kind": "table column",
+      "target_name": "security_close_price_snapshots",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "c475e015f408d4edd72f36e64405238362d7a998463c2e42bead8c417eee1999",
+      "kind": "normal",
+      "source": "security_master.security_close_price_approvals_snapshot_id_fkey on security_master.security_close_price_approvals",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_close_price_snapshots_pkey",
+      "target_kind": "index",
+      "target_name": "security_close_price_snapshots_pkey",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "85be8884f9bff21a8e8452af5c7f539a2d89968e2eaa180699f4d4575f0312d4",
+      "kind": "normal",
+      "source": "security_master.security_close_price_snapshot_corrects_snapshot_id_account_fkey on security_master.security_close_price_snapshots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_close_price_snapshot_snapshot_id_account_id_book_i_key",
+      "target_kind": "index",
+      "target_name": "security_close_price_snapshot_snapshot_id_account_id_book_i_key",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "8538f3b1fb341f3d86003d9eed89f28077845754a28590008aa4322e5a54679e",
+      "kind": "normal",
+      "source": "security_master.security_close_price_snapshot_corrects_snapshot_id_account_fkey on security_master.security_close_price_snapshots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_close_price_snapshots.account_id",
+      "target_kind": "table column",
+      "target_name": "security_close_price_snapshots",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "a6bb4641a99681f133dbc259584edeb0c264784ac4029b71ef43a936497b3bec",
+      "kind": "normal",
+      "source": "security_master.security_close_price_snapshot_corrects_snapshot_id_account_fkey on security_master.security_close_price_snapshots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_close_price_snapshots.book_id",
+      "target_kind": "table column",
+      "target_name": "security_close_price_snapshots",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "bf95f1b407aa4278e5dd7764b5bd607c61a0d718b01407c294d4cb4f5400cb9e",
+      "kind": "normal",
+      "source": "security_master.security_close_price_snapshot_corrects_snapshot_id_account_fkey on security_master.security_close_price_snapshots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_close_price_snapshots.snapshot_id",
+      "target_kind": "table column",
+      "target_name": "security_close_price_snapshots",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "0d2c6522c751d930d704ee3682980d7ce1d16d7434e56d94f57efa6d8944e38c",
+      "kind": "normal",
+      "source": "security_master.security_close_price_snapshot_corrects_snapshot_id_account_fkey on security_master.security_close_price_snapshots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_close_price_snapshots.valuation_date",
+      "target_kind": "table column",
+      "target_name": "security_close_price_snapshots",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "2e17ffc3383dd71d0ca2659764943d82867b9fe3a2663d5129231507fc47357c",
+      "kind": "normal",
+      "source": "security_master.security_close_price_snapshots_account_id_check on security_master.security_close_price_snapshots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_close_price_snapshots.account_id",
+      "target_kind": "table column",
+      "target_name": "security_close_price_snapshots",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "3a3d7c214f5ac359a9b7f554d39508c3b358a2d18146c1cdb8eaec4bbbc1a78b",
+      "kind": "normal",
+      "source": "security_master.security_close_price_snapshots_book_id_check on security_master.security_close_price_snapshots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_close_price_snapshots.book_id",
+      "target_kind": "table column",
+      "target_name": "security_close_price_snapshots",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "c701b09b0597d7ad8d97cc7232979fd565eb9a39beb73adaab40e249669688a2",
+      "kind": "normal",
+      "source": "security_master.security_close_price_snapshots_check on security_master.security_close_price_snapshots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_close_price_snapshots.corrects_snapshot_id",
+      "target_kind": "table column",
+      "target_name": "security_close_price_snapshots",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "b0cbeb98202501eb7d3e87c82b3efb7e811fd654f0b8110f329447629908ccf4",
+      "kind": "normal",
+      "source": "security_master.security_close_price_snapshots_check on security_master.security_close_price_snapshots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_close_price_snapshots.version",
+      "target_kind": "table column",
+      "target_name": "security_close_price_snapshots",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "cdf9915747abdd51b588de007b044b35ecf5d8239ed7f183b6a3478ddeb60d4e",
+      "kind": "normal",
+      "source": "security_master.security_close_price_snapshots_check1 on security_master.security_close_price_snapshots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_close_price_snapshots.account_id",
+      "target_kind": "table column",
+      "target_name": "security_close_price_snapshots",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "888de33923be63347bcd1611ac11bd8b97e284b12ef73196c76c3aaee45eab1e",
+      "kind": "normal",
+      "source": "security_master.security_close_price_snapshots_check1 on security_master.security_close_price_snapshots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_close_price_snapshots.book_id",
+      "target_kind": "table column",
+      "target_name": "security_close_price_snapshots",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "06d6dfc21e9efe3ca4a9b5e873837d25812bc7677d8975d34bb94a997eed0f5d",
+      "kind": "normal",
+      "source": "security_master.security_close_price_snapshots_version_check on security_master.security_close_price_snapshots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_close_price_snapshots.version",
+      "target_kind": "table column",
+      "target_name": "security_close_price_snapshots",
+      "target_schema": "security_master"
+    },
+    {
       "fingerprint": "bef8d46ce9f3f864d3e032293c5c45e6a9e5197dfeef76b12a24cff978b7cb43",
       "kind": "normal",
       "source": "security_master.security_identifiers_security_id_fkey on security_master.security_identifiers",
@@ -2909,9 +3089,71 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "026f1ab10a033b2d537301fffd434b7077bdf0f02aa39958a540cfd5b92c3e25",
+  "fingerprint": "4a51b16935ff9f26c1f15d0a0a5bc7bde1a7294a0f511cb694305865cb6192f9",
   "foreign_tables": [],
   "functions": [
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "c84ba4778ac12df330834532c2fd4d60ad8f7e1be216f864a945daa8613e9ed7",
+      "fingerprint": "4647500092b2060c636bbe17b37b74910374dc399d72653a16e36e43710b1d5c",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "guard_close_price_approval_append",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "security_master",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "guard_close_price_approval_append()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "63948764284342dfe54cf3646b16bcc390434f9b0ab18ac4ba25837d0ab53a07",
+      "fingerprint": "de4703e5e0d23d433e867b384f85fbc83c5d846d1bf97a55f09ae9a2be911fbe",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "guard_close_price_snapshot_append",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "security_master",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "guard_close_price_snapshot_append()",
+      "strict": false,
+      "volatility": "volatile"
+    },
     {
       "acl": [
         {
@@ -26773,6 +27015,844 @@
         {
           "collation": null,
           "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "7256eff2661d6edd1103e9ac7251e3d0d723da7491690afd7689bef95a68ac2d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "snapshot_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "6df8318700d679b6e4bb5b3819dd6ea2e9457f2d76658570b190dcfe604d9b32",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "character(64)",
+          "default": null,
+          "fingerprint": "de2bf62dc9b4246add52803c3fe2701b5e948d16fc4b4c3a82f369339170a11a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload_sha256",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "bpchar",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "52aeedb3658a270a6b3fb65fe0b3ca8129983412cadf38097c84a9b70010097e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Immutable independent review receipt bound to the exact close price snapshot SHA-256.",
+      "constraints": [
+        {
+          "columns": [
+            "snapshot_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (snapshot_id) REFERENCES security_master.security_close_price_snapshots(snapshot_id)",
+          "delete_action": "no_action",
+          "fingerprint": "17e78597a977430ceba1e617e84f282759ebda114a4c232cd9c9b33df9f5e9b6",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "security_close_price_approvals_snapshot_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "snapshot_id"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "security_close_price_snapshots",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "snapshot_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (snapshot_id)",
+          "delete_action": null,
+          "fingerprint": "24d50bdc739d205709e1850ed9c80c72cc837ef444752e4a23083b2cd2db769d",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_close_price_approvals_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "14cedf4f3e6dbb763273d0b8623106e943691e6cea8920eb0d6ace82e27b3d2f",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_close_price_approvals_pkey ON security_master.security_close_price_approvals USING btree (snapshot_id)",
+          "expression": null,
+          "fingerprint": "77f6dd879bb8f1aa75c2946cacb16af3bb69d211443455a4b46a25ab7c86dbce",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "snapshot_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_close_price_approvals_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_close_price_approvals",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_close_price_approvals_append_guard BEFORE INSERT ON security_master.security_close_price_approvals FOR EACH ROW EXECUTE FUNCTION security_master.guard_close_price_approval_append()",
+          "definition_hash": "a75b429db834178f9f94bbf085605dc73be17b4df797d3a5124bf8085ef5227c",
+          "enabled": "origin",
+          "events": [
+            "insert"
+          ],
+          "fingerprint": "e0c5c260fa51c9cf0c9c9f9037ac30f4698c9cd10b8c0dea67233a2d07098704",
+          "function_schema": "security_master",
+          "function_signature": "guard_close_price_approval_append()",
+          "level": "row",
+          "name": "security_close_price_approvals_append_guard",
+          "relation": "security_close_price_approvals",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_close_price_approvals_immutable BEFORE DELETE OR UPDATE ON security_master.security_close_price_approvals FOR EACH ROW EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+          "definition_hash": "1902bb08e8f68d203dbace9059b88f3c34ad44e429af1c36a4c40b6d99876a14",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "2379a9500e3bf1ed7fc8ec9af8482276ec4f1d2b7ae557cd9fb64ff691513d42",
+          "function_schema": "security_master",
+          "function_signature": "reject_price_selection_receipt_mutation()",
+          "level": "row",
+          "name": "security_close_price_approvals_immutable",
+          "relation": "security_close_price_approvals",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_close_price_approvals_no_truncate BEFORE TRUNCATE ON security_master.security_close_price_approvals FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+          "definition_hash": "cc61333e5b8806ae1fb870503d727b6d3ac7d2120dfe6a85ab34626fb757164f",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "f00d909ba5bcf8aa51dcdfade92f55dd2a520c051d42d14831842210a97d71f8",
+          "function_schema": "security_master",
+          "function_signature": "reject_price_selection_receipt_mutation()",
+          "level": "statement",
+          "name": "security_close_price_approvals_no_truncate",
+          "relation": "security_close_price_approvals",
+          "schema": "security_master",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "7256eff2661d6edd1103e9ac7251e3d0d723da7491690afd7689bef95a68ac2d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "snapshot_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "2c32fcc0297c5fd069ae0ff4f3922efcf62a9ee567b6352432374c54f0aab659",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "account_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "c7eb45033f6b751379d1949f30b135994f201f63737fc3fe1018ce35b82c5d04",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "book_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "date",
+          "default": null,
+          "fingerprint": "b32a7e4d7c352504cac22b664a0f09b28879124673ce75b0361652c2c5ddf6cb",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "valuation_date",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "date",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "fa28fefbddc0780e03dde9cd88cfd5759043c8f96bcd62a1b26e6e1d6e6a7ef8",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "version",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "5bb70d55f444f1ddd427eb2970104e4ce79694deecd64fc9244c9a9d75c0913b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "corrects_snapshot_id",
+          "nullable": true,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "d9681001875ea5d9f1aa55a6b991fd8ad54d5f1b67621d0365c9f4aa52240ed4",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "character(64)",
+          "default": null,
+          "fingerprint": "c8d2be767557836fbc82384c88f8e76c3665893d13900ec454e316e880f267d1",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload_sha256",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "bpchar",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "9496d57450ff853f21c10fb06889b372ddd9cee0e9a9627708eefcee38ac94d0",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Immutable exact account/book/date price-set versions retaining selected receipts, quote units, overrides, source rows and blockers.",
+      "constraints": [
+        {
+          "columns": [
+            "account_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (account_id <> ''::text AND account_id = btrim(account_id))",
+          "delete_action": null,
+          "fingerprint": "7fae02d27ce4444e54ad4ba26f989bfd1338bc80c6025a2eb597b9bff40a50b0",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_close_price_snapshots_account_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "book_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (book_id <> ''::text AND book_id = btrim(book_id))",
+          "delete_action": null,
+          "fingerprint": "b3b4f9520645a53d8226ef1307bef8e995d8aa4abd450cd1303016f5fb7a2a45",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_close_price_snapshots_book_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "version",
+            "corrects_snapshot_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (version = 1 AND corrects_snapshot_id IS NULL OR version > 1 AND corrects_snapshot_id IS NOT NULL)",
+          "delete_action": null,
+          "fingerprint": "3839c201984f645865f01507201e60e12e4bedc2bf8fd0dc8d31513a0a9d4765",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_close_price_snapshots_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "account_id",
+            "book_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (octet_length(account_id) <= 256 AND octet_length(book_id) <= 256)",
+          "delete_action": null,
+          "fingerprint": "233cae08bacce25a4e9a1b5228cf2dc15ed6f0c8acf396f607efb593cfc9a498",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_close_price_snapshots_check1",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (version > 0)",
+          "delete_action": null,
+          "fingerprint": "6b8e1b2ff04281ccdfdbf01a886d17323ab94177f20baac29807d09fbb940750",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_close_price_snapshots_version_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "corrects_snapshot_id",
+            "account_id",
+            "book_id",
+            "valuation_date"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (corrects_snapshot_id, account_id, book_id, valuation_date) REFERENCES security_master.security_close_price_snapshots(snapshot_id, account_id, book_id, valuation_date)",
+          "delete_action": "no_action",
+          "fingerprint": "25a4abbadabf91da5b8e15db36ce442a3ba1e6d70da02370531e7c3de5cf30e9",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "security_close_price_snapshot_corrects_snapshot_id_account_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "snapshot_id",
+            "account_id",
+            "book_id",
+            "valuation_date"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "security_close_price_snapshots",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "snapshot_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (snapshot_id)",
+          "delete_action": null,
+          "fingerprint": "ba933778f82cfe5fdb9bfab599197e906f4463c1f60e9f00d2a77bd4e910d652",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_close_price_snapshots_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "account_id",
+            "book_id",
+            "valuation_date",
+            "version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "UNIQUE (account_id, book_id, valuation_date, version)",
+          "delete_action": null,
+          "fingerprint": "a1b0f4ef866402e7dcfce50fc1d70316b264607751b7d58f9172156b0a1e16a9",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_close_price_snapshot_account_id_book_id_valuation__key",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "unique",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "corrects_snapshot_id",
+            "account_id",
+            "book_id",
+            "valuation_date"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "UNIQUE (corrects_snapshot_id, account_id, book_id, valuation_date)",
+          "delete_action": null,
+          "fingerprint": "33b5fa6948dff6898a26dd1c9b5f2a4c12dbe9d44acd10c2c91c0c86d136c1ac",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_close_price_snapshot_corrects_snapshot_id_account__key",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "unique",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "snapshot_id",
+            "account_id",
+            "book_id",
+            "valuation_date"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "UNIQUE (snapshot_id, account_id, book_id, valuation_date)",
+          "delete_action": null,
+          "fingerprint": "6384c8ab32c6413e6a155ca62a9331f1c75287138d3d69ac67902706d90985d1",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_close_price_snapshot_snapshot_id_account_id_book_i_key",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "unique",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "a24aa021e41c76c894b8644a324b824ac5cddcb16fccbda8b87f5eecd81985fe",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_close_price_snapshot_account_id_book_id_valuation__key ON security_master.security_close_price_snapshots USING btree (account_id, book_id, valuation_date, version)",
+          "expression": null,
+          "fingerprint": "38b0dfb8a3832639ad5c29757a17d9b0a96601bfab1742657adc4ed6fe463bd2",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "account_id",
+            "book_id",
+            "valuation_date",
+            "version"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_close_price_snapshot_account_id_book_id_valuation__key",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_close_price_snapshot_corrects_snapshot_id_account__key ON security_master.security_close_price_snapshots USING btree (corrects_snapshot_id, account_id, book_id, valuation_date)",
+          "expression": null,
+          "fingerprint": "0a9655f86d58663278079e8b80b2e48dd9b654081ee0da02279aaae9158beb16",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "corrects_snapshot_id",
+            "account_id",
+            "book_id",
+            "valuation_date"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_close_price_snapshot_corrects_snapshot_id_account__key",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_close_price_snapshot_snapshot_id_account_id_book_i_key ON security_master.security_close_price_snapshots USING btree (snapshot_id, account_id, book_id, valuation_date)",
+          "expression": null,
+          "fingerprint": "58c18cc0b85e664fbaafe30122a98a1b40b3d11b0f71e45eb25190ee646340df",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "snapshot_id",
+            "account_id",
+            "book_id",
+            "valuation_date"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_close_price_snapshot_snapshot_id_account_id_book_i_key",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_close_price_snapshots_pkey ON security_master.security_close_price_snapshots USING btree (snapshot_id)",
+          "expression": null,
+          "fingerprint": "bd7a5bfaf8cedf726916b0b275d1495021a44a174c48ac1940e59ad14c1c3491",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "snapshot_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_close_price_snapshots_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_close_price_snapshots",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_close_price_snapshots_append_guard BEFORE INSERT ON security_master.security_close_price_snapshots FOR EACH ROW EXECUTE FUNCTION security_master.guard_close_price_snapshot_append()",
+          "definition_hash": "2125766fe7a6f909f800050fd1fc729c527668d0e193b99f6d818726fbc169c3",
+          "enabled": "origin",
+          "events": [
+            "insert"
+          ],
+          "fingerprint": "ccdf38c1f76cf998ad72b1938c612941b0c2797537c5defbc9f6eaef03bba6bf",
+          "function_schema": "security_master",
+          "function_signature": "guard_close_price_snapshot_append()",
+          "level": "row",
+          "name": "security_close_price_snapshots_append_guard",
+          "relation": "security_close_price_snapshots",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_close_price_snapshots_immutable BEFORE DELETE OR UPDATE ON security_master.security_close_price_snapshots FOR EACH ROW EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+          "definition_hash": "34c3cbe0bd43fd3f814088bf5469729712057eeacbc002203cc12a2a0ad5ad15",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "4b8d419f30d8e9cff11a8a7dd392799c96eaaee98c3afb8538bdb7ef8377572b",
+          "function_schema": "security_master",
+          "function_signature": "reject_price_selection_receipt_mutation()",
+          "level": "row",
+          "name": "security_close_price_snapshots_immutable",
+          "relation": "security_close_price_snapshots",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_close_price_snapshots_no_truncate BEFORE TRUNCATE ON security_master.security_close_price_snapshots FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+          "definition_hash": "7b0b28f711b9b4fb905f455c03a20bc3ee2b900fb40d72a04a2ac55735dd2ae5",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "de3a416a2e66a4410d79f820fc1714eb817af36d8c3c2e686eb48c29e7e1f371",
+          "function_schema": "security_master",
+          "function_signature": "reject_price_selection_receipt_mutation()",
+          "level": "statement",
+          "name": "security_close_price_snapshots_no_truncate",
+          "relation": "security_close_price_snapshots",
+          "schema": "security_master",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
           "data_type": "bigint",
           "default": "nextval('security_master.security_events_global_sequence_seq'::regclass)",
           "fingerprint": "76cfb7a11ff55670acfcf5d14d2d0e6093045a181d255e54c3d95faf4a8ca6b6",
@@ -35617,6 +36697,22 @@
       "forced": false,
       "policies": [],
       "relation": "security_cashflow_source_assignments",
+      "schema": "security_master"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "f8cc0ccef442f01cc5b40ef46975f49198331e765b6c5c6f55a83c2aa96c0b51",
+      "forced": false,
+      "policies": [],
+      "relation": "security_close_price_approvals",
+      "schema": "security_master"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "72c3d25fa4baa4e5ef01c084d7bdd6f121074f84ee15fa38f1537356f5c2f298",
+      "forced": false,
+      "policies": [],
+      "relation": "security_close_price_snapshots",
       "schema": "security_master"
     },
     {
@@ -59663,6 +60759,844 @@
         {
           "collation": null,
           "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "7256eff2661d6edd1103e9ac7251e3d0d723da7491690afd7689bef95a68ac2d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "snapshot_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "6df8318700d679b6e4bb5b3819dd6ea2e9457f2d76658570b190dcfe604d9b32",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "character(64)",
+          "default": null,
+          "fingerprint": "de2bf62dc9b4246add52803c3fe2701b5e948d16fc4b4c3a82f369339170a11a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload_sha256",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "bpchar",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "52aeedb3658a270a6b3fb65fe0b3ca8129983412cadf38097c84a9b70010097e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Immutable independent review receipt bound to the exact close price snapshot SHA-256.",
+      "constraints": [
+        {
+          "columns": [
+            "snapshot_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (snapshot_id) REFERENCES security_master.security_close_price_snapshots(snapshot_id)",
+          "delete_action": "no_action",
+          "fingerprint": "17e78597a977430ceba1e617e84f282759ebda114a4c232cd9c9b33df9f5e9b6",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "security_close_price_approvals_snapshot_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "snapshot_id"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "security_close_price_snapshots",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "snapshot_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (snapshot_id)",
+          "delete_action": null,
+          "fingerprint": "24d50bdc739d205709e1850ed9c80c72cc837ef444752e4a23083b2cd2db769d",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_close_price_approvals_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "14cedf4f3e6dbb763273d0b8623106e943691e6cea8920eb0d6ace82e27b3d2f",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_close_price_approvals_pkey ON security_master.security_close_price_approvals USING btree (snapshot_id)",
+          "expression": null,
+          "fingerprint": "77f6dd879bb8f1aa75c2946cacb16af3bb69d211443455a4b46a25ab7c86dbce",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "snapshot_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_close_price_approvals_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_close_price_approvals",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_close_price_approvals_append_guard BEFORE INSERT ON security_master.security_close_price_approvals FOR EACH ROW EXECUTE FUNCTION security_master.guard_close_price_approval_append()",
+          "definition_hash": "a75b429db834178f9f94bbf085605dc73be17b4df797d3a5124bf8085ef5227c",
+          "enabled": "origin",
+          "events": [
+            "insert"
+          ],
+          "fingerprint": "e0c5c260fa51c9cf0c9c9f9037ac30f4698c9cd10b8c0dea67233a2d07098704",
+          "function_schema": "security_master",
+          "function_signature": "guard_close_price_approval_append()",
+          "level": "row",
+          "name": "security_close_price_approvals_append_guard",
+          "relation": "security_close_price_approvals",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_close_price_approvals_immutable BEFORE DELETE OR UPDATE ON security_master.security_close_price_approvals FOR EACH ROW EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+          "definition_hash": "1902bb08e8f68d203dbace9059b88f3c34ad44e429af1c36a4c40b6d99876a14",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "2379a9500e3bf1ed7fc8ec9af8482276ec4f1d2b7ae557cd9fb64ff691513d42",
+          "function_schema": "security_master",
+          "function_signature": "reject_price_selection_receipt_mutation()",
+          "level": "row",
+          "name": "security_close_price_approvals_immutable",
+          "relation": "security_close_price_approvals",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_close_price_approvals_no_truncate BEFORE TRUNCATE ON security_master.security_close_price_approvals FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+          "definition_hash": "cc61333e5b8806ae1fb870503d727b6d3ac7d2120dfe6a85ab34626fb757164f",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "f00d909ba5bcf8aa51dcdfade92f55dd2a520c051d42d14831842210a97d71f8",
+          "function_schema": "security_master",
+          "function_signature": "reject_price_selection_receipt_mutation()",
+          "level": "statement",
+          "name": "security_close_price_approvals_no_truncate",
+          "relation": "security_close_price_approvals",
+          "schema": "security_master",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "7256eff2661d6edd1103e9ac7251e3d0d723da7491690afd7689bef95a68ac2d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "snapshot_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "2c32fcc0297c5fd069ae0ff4f3922efcf62a9ee567b6352432374c54f0aab659",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "account_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "c7eb45033f6b751379d1949f30b135994f201f63737fc3fe1018ce35b82c5d04",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "book_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "date",
+          "default": null,
+          "fingerprint": "b32a7e4d7c352504cac22b664a0f09b28879124673ce75b0361652c2c5ddf6cb",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "valuation_date",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "date",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "fa28fefbddc0780e03dde9cd88cfd5759043c8f96bcd62a1b26e6e1d6e6a7ef8",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "version",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "5bb70d55f444f1ddd427eb2970104e4ce79694deecd64fc9244c9a9d75c0913b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "corrects_snapshot_id",
+          "nullable": true,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "d9681001875ea5d9f1aa55a6b991fd8ad54d5f1b67621d0365c9f4aa52240ed4",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "character(64)",
+          "default": null,
+          "fingerprint": "c8d2be767557836fbc82384c88f8e76c3665893d13900ec454e316e880f267d1",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload_sha256",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "bpchar",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "9496d57450ff853f21c10fb06889b372ddd9cee0e9a9627708eefcee38ac94d0",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Immutable exact account/book/date price-set versions retaining selected receipts, quote units, overrides, source rows and blockers.",
+      "constraints": [
+        {
+          "columns": [
+            "account_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (account_id <> ''::text AND account_id = btrim(account_id))",
+          "delete_action": null,
+          "fingerprint": "7fae02d27ce4444e54ad4ba26f989bfd1338bc80c6025a2eb597b9bff40a50b0",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_close_price_snapshots_account_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "book_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (book_id <> ''::text AND book_id = btrim(book_id))",
+          "delete_action": null,
+          "fingerprint": "b3b4f9520645a53d8226ef1307bef8e995d8aa4abd450cd1303016f5fb7a2a45",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_close_price_snapshots_book_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "version",
+            "corrects_snapshot_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (version = 1 AND corrects_snapshot_id IS NULL OR version > 1 AND corrects_snapshot_id IS NOT NULL)",
+          "delete_action": null,
+          "fingerprint": "3839c201984f645865f01507201e60e12e4bedc2bf8fd0dc8d31513a0a9d4765",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_close_price_snapshots_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "account_id",
+            "book_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (octet_length(account_id) <= 256 AND octet_length(book_id) <= 256)",
+          "delete_action": null,
+          "fingerprint": "233cae08bacce25a4e9a1b5228cf2dc15ed6f0c8acf396f607efb593cfc9a498",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_close_price_snapshots_check1",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (version > 0)",
+          "delete_action": null,
+          "fingerprint": "6b8e1b2ff04281ccdfdbf01a886d17323ab94177f20baac29807d09fbb940750",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_close_price_snapshots_version_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "corrects_snapshot_id",
+            "account_id",
+            "book_id",
+            "valuation_date"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (corrects_snapshot_id, account_id, book_id, valuation_date) REFERENCES security_master.security_close_price_snapshots(snapshot_id, account_id, book_id, valuation_date)",
+          "delete_action": "no_action",
+          "fingerprint": "25a4abbadabf91da5b8e15db36ce442a3ba1e6d70da02370531e7c3de5cf30e9",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "security_close_price_snapshot_corrects_snapshot_id_account_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "snapshot_id",
+            "account_id",
+            "book_id",
+            "valuation_date"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "security_close_price_snapshots",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "snapshot_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (snapshot_id)",
+          "delete_action": null,
+          "fingerprint": "ba933778f82cfe5fdb9bfab599197e906f4463c1f60e9f00d2a77bd4e910d652",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_close_price_snapshots_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "account_id",
+            "book_id",
+            "valuation_date",
+            "version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "UNIQUE (account_id, book_id, valuation_date, version)",
+          "delete_action": null,
+          "fingerprint": "a1b0f4ef866402e7dcfce50fc1d70316b264607751b7d58f9172156b0a1e16a9",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_close_price_snapshot_account_id_book_id_valuation__key",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "unique",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "corrects_snapshot_id",
+            "account_id",
+            "book_id",
+            "valuation_date"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "UNIQUE (corrects_snapshot_id, account_id, book_id, valuation_date)",
+          "delete_action": null,
+          "fingerprint": "33b5fa6948dff6898a26dd1c9b5f2a4c12dbe9d44acd10c2c91c0c86d136c1ac",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_close_price_snapshot_corrects_snapshot_id_account__key",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "unique",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "snapshot_id",
+            "account_id",
+            "book_id",
+            "valuation_date"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "UNIQUE (snapshot_id, account_id, book_id, valuation_date)",
+          "delete_action": null,
+          "fingerprint": "6384c8ab32c6413e6a155ca62a9331f1c75287138d3d69ac67902706d90985d1",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_close_price_snapshot_snapshot_id_account_id_book_i_key",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "unique",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "a24aa021e41c76c894b8644a324b824ac5cddcb16fccbda8b87f5eecd81985fe",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_close_price_snapshot_account_id_book_id_valuation__key ON security_master.security_close_price_snapshots USING btree (account_id, book_id, valuation_date, version)",
+          "expression": null,
+          "fingerprint": "38b0dfb8a3832639ad5c29757a17d9b0a96601bfab1742657adc4ed6fe463bd2",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "account_id",
+            "book_id",
+            "valuation_date",
+            "version"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_close_price_snapshot_account_id_book_id_valuation__key",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_close_price_snapshot_corrects_snapshot_id_account__key ON security_master.security_close_price_snapshots USING btree (corrects_snapshot_id, account_id, book_id, valuation_date)",
+          "expression": null,
+          "fingerprint": "0a9655f86d58663278079e8b80b2e48dd9b654081ee0da02279aaae9158beb16",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "corrects_snapshot_id",
+            "account_id",
+            "book_id",
+            "valuation_date"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_close_price_snapshot_corrects_snapshot_id_account__key",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_close_price_snapshot_snapshot_id_account_id_book_i_key ON security_master.security_close_price_snapshots USING btree (snapshot_id, account_id, book_id, valuation_date)",
+          "expression": null,
+          "fingerprint": "58c18cc0b85e664fbaafe30122a98a1b40b3d11b0f71e45eb25190ee646340df",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "snapshot_id",
+            "account_id",
+            "book_id",
+            "valuation_date"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_close_price_snapshot_snapshot_id_account_id_book_i_key",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_close_price_snapshots_pkey ON security_master.security_close_price_snapshots USING btree (snapshot_id)",
+          "expression": null,
+          "fingerprint": "bd7a5bfaf8cedf726916b0b275d1495021a44a174c48ac1940e59ad14c1c3491",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "snapshot_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_close_price_snapshots_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_close_price_snapshots",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_close_price_snapshots_append_guard BEFORE INSERT ON security_master.security_close_price_snapshots FOR EACH ROW EXECUTE FUNCTION security_master.guard_close_price_snapshot_append()",
+          "definition_hash": "2125766fe7a6f909f800050fd1fc729c527668d0e193b99f6d818726fbc169c3",
+          "enabled": "origin",
+          "events": [
+            "insert"
+          ],
+          "fingerprint": "ccdf38c1f76cf998ad72b1938c612941b0c2797537c5defbc9f6eaef03bba6bf",
+          "function_schema": "security_master",
+          "function_signature": "guard_close_price_snapshot_append()",
+          "level": "row",
+          "name": "security_close_price_snapshots_append_guard",
+          "relation": "security_close_price_snapshots",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_close_price_snapshots_immutable BEFORE DELETE OR UPDATE ON security_master.security_close_price_snapshots FOR EACH ROW EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+          "definition_hash": "34c3cbe0bd43fd3f814088bf5469729712057eeacbc002203cc12a2a0ad5ad15",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "4b8d419f30d8e9cff11a8a7dd392799c96eaaee98c3afb8538bdb7ef8377572b",
+          "function_schema": "security_master",
+          "function_signature": "reject_price_selection_receipt_mutation()",
+          "level": "row",
+          "name": "security_close_price_snapshots_immutable",
+          "relation": "security_close_price_snapshots",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_close_price_snapshots_no_truncate BEFORE TRUNCATE ON security_master.security_close_price_snapshots FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+          "definition_hash": "7b0b28f711b9b4fb905f455c03a20bc3ee2b900fb40d72a04a2ac55735dd2ae5",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "de3a416a2e66a4410d79f820fc1714eb817af36d8c3c2e686eb48c29e7e1f371",
+          "function_schema": "security_master",
+          "function_signature": "reject_price_selection_receipt_mutation()",
+          "level": "statement",
+          "name": "security_close_price_snapshots_no_truncate",
+          "relation": "security_close_price_snapshots",
+          "schema": "security_master",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
           "data_type": "bigint",
           "default": "nextval('security_master.security_events_global_sequence_seq'::regclass)",
           "fingerprint": "76cfb7a11ff55670acfcf5d14d2d0e6093045a181d255e54c3d95faf4a8ca6b6",
@@ -67993,6 +69927,110 @@
       "level": "statement",
       "name": "security_alias_revisions_no_truncate",
       "relation": "security_alias_revisions",
+      "schema": "security_master",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER security_close_price_approvals_append_guard BEFORE INSERT ON security_master.security_close_price_approvals FOR EACH ROW EXECUTE FUNCTION security_master.guard_close_price_approval_append()",
+      "definition_hash": "a75b429db834178f9f94bbf085605dc73be17b4df797d3a5124bf8085ef5227c",
+      "enabled": "origin",
+      "events": [
+        "insert"
+      ],
+      "fingerprint": "e0c5c260fa51c9cf0c9c9f9037ac30f4698c9cd10b8c0dea67233a2d07098704",
+      "function_schema": "security_master",
+      "function_signature": "guard_close_price_approval_append()",
+      "level": "row",
+      "name": "security_close_price_approvals_append_guard",
+      "relation": "security_close_price_approvals",
+      "schema": "security_master",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER security_close_price_approvals_immutable BEFORE DELETE OR UPDATE ON security_master.security_close_price_approvals FOR EACH ROW EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+      "definition_hash": "1902bb08e8f68d203dbace9059b88f3c34ad44e429af1c36a4c40b6d99876a14",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "2379a9500e3bf1ed7fc8ec9af8482276ec4f1d2b7ae557cd9fb64ff691513d42",
+      "function_schema": "security_master",
+      "function_signature": "reject_price_selection_receipt_mutation()",
+      "level": "row",
+      "name": "security_close_price_approvals_immutable",
+      "relation": "security_close_price_approvals",
+      "schema": "security_master",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER security_close_price_approvals_no_truncate BEFORE TRUNCATE ON security_master.security_close_price_approvals FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+      "definition_hash": "cc61333e5b8806ae1fb870503d727b6d3ac7d2120dfe6a85ab34626fb757164f",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "f00d909ba5bcf8aa51dcdfade92f55dd2a520c051d42d14831842210a97d71f8",
+      "function_schema": "security_master",
+      "function_signature": "reject_price_selection_receipt_mutation()",
+      "level": "statement",
+      "name": "security_close_price_approvals_no_truncate",
+      "relation": "security_close_price_approvals",
+      "schema": "security_master",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER security_close_price_snapshots_append_guard BEFORE INSERT ON security_master.security_close_price_snapshots FOR EACH ROW EXECUTE FUNCTION security_master.guard_close_price_snapshot_append()",
+      "definition_hash": "2125766fe7a6f909f800050fd1fc729c527668d0e193b99f6d818726fbc169c3",
+      "enabled": "origin",
+      "events": [
+        "insert"
+      ],
+      "fingerprint": "ccdf38c1f76cf998ad72b1938c612941b0c2797537c5defbc9f6eaef03bba6bf",
+      "function_schema": "security_master",
+      "function_signature": "guard_close_price_snapshot_append()",
+      "level": "row",
+      "name": "security_close_price_snapshots_append_guard",
+      "relation": "security_close_price_snapshots",
+      "schema": "security_master",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER security_close_price_snapshots_immutable BEFORE DELETE OR UPDATE ON security_master.security_close_price_snapshots FOR EACH ROW EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+      "definition_hash": "34c3cbe0bd43fd3f814088bf5469729712057eeacbc002203cc12a2a0ad5ad15",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "4b8d419f30d8e9cff11a8a7dd392799c96eaaee98c3afb8538bdb7ef8377572b",
+      "function_schema": "security_master",
+      "function_signature": "reject_price_selection_receipt_mutation()",
+      "level": "row",
+      "name": "security_close_price_snapshots_immutable",
+      "relation": "security_close_price_snapshots",
+      "schema": "security_master",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER security_close_price_snapshots_no_truncate BEFORE TRUNCATE ON security_master.security_close_price_snapshots FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+      "definition_hash": "7b0b28f711b9b4fb905f455c03a20bc3ee2b900fb40d72a04a2ac55735dd2ae5",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "de3a416a2e66a4410d79f820fc1714eb817af36d8c3c2e686eb48c29e7e1f371",
+      "function_schema": "security_master",
+      "function_signature": "reject_price_selection_receipt_mutation()",
+      "level": "statement",
+      "name": "security_close_price_snapshots_no_truncate",
+      "relation": "security_close_price_snapshots",
       "schema": "security_master",
       "timing": "before"
     },

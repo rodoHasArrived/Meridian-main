@@ -1888,6 +1888,72 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashEvidenceRole"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashFlowDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashFlowStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastIssueDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastScopeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastSnapshotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashFxConversionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashProvenanceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountSettledCashObservationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto"
     },
     {
@@ -2363,6 +2429,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.IAccountCashForecastService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.IAccountCashForecastStore"
     },
     {
       "kind": "contract-set-member",
@@ -8938,6 +9016,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ApproveSecurityClosePriceSetRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet"
     },
     {
@@ -9485,6 +9569,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionVersionConflictException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CreateSecurityClosePriceSetRequest"
     },
     {
       "kind": "contract-set-member",
@@ -10048,6 +10138,54 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceApprovalDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceBlockerDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceEvidence"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceInputDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceSetDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityComparisonPriceDto"
     },
     {
@@ -10115,6 +10253,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterClosePricesJsonContext"
     },
     {
       "kind": "contract-set-member",
@@ -16708,6 +16852,72 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashEvidenceRole"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashFlowDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashFlowStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastIssueDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastScopeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastSnapshotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashFxConversionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashProvenanceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountSettledCashObservationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto"
     },
     {
@@ -17183,6 +17393,18 @@
       "label": "",
       "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.IAccountCashForecastService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.IAccountCashForecastStore"
     },
     {
       "kind": "contract-set-member",
@@ -21352,6 +21574,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ApproveSecurityClosePriceSetRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet"
     },
     {
@@ -21899,6 +22127,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionVersionConflictException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CreateSecurityClosePriceSetRequest"
     },
     {
       "kind": "contract-set-member",
@@ -22462,6 +22696,54 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceApprovalDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceBlockerDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceEvidence"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceInputDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceSetDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityComparisonPriceDto"
     },
     {
@@ -22529,6 +22811,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterClosePricesJsonContext"
     },
     {
       "kind": "contract-set-member",
@@ -24461,6 +24749,84 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Archive.ArchiveHealthStatus",
       "target": "contract:Meridian.Contracts.Archive.StorageHealthInfo"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AccountCashFlowDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashFlowStatus"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AccountCashFlowDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashProvenanceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashFlowDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashFxConversionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountSettledCashObservationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastSnapshotDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastIssueDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastSnapshotDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastRequestDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastSnapshotDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.PortfolioCashLadderDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AccountCashFxConversionDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashProvenanceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AccountCashProvenanceDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashEvidenceRole"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AccountCashProvenanceDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AccountSettledCashObservationDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AccountCashProvenanceDto"
     },
     {
       "kind": "contract-reference",
@@ -33195,6 +33561,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CreateSecurityClosePriceSetRequest",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceInputDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.CreateSecurityRequest",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentifierDto"
     },
@@ -33581,6 +33953,66 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowSourceDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowSourceKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceInputDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityPriceGoldenCopyDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityPriceUnit"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRawPriceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityPriceUnit"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceSetDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceApprovalDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceSetDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceBlockerDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto"
     },
     {
       "kind": "contract-reference",
@@ -47422,6 +47854,104 @@
       "target": "database:security_master.securities_pkey"
     },
     {
+      "constraint": "security_close_price_approvals_snapshot_id_fkey",
+      "kind": "foreign-key",
+      "label": "snapshot_id",
+      "source": "database:security_master.security_close_price_approvals",
+      "target": "database:security_master.security_close_price_snapshots"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_close_price_approvals_snapshot_id_fkey on security_master.security_close_price_approvals",
+      "target": "database:security_master.security_close_price_snapshots.snapshot_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_close_price_approvals_snapshot_id_fkey on security_master.security_close_price_approvals",
+      "target": "database:security_master.security_close_price_snapshots_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_close_price_snapshot_corrects_snapshot_id_account_fkey on security_master.security_close_price_snapshots",
+      "target": "database:security_master.security_close_price_snapshot_snapshot_id_account_id_book_i_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_close_price_snapshot_corrects_snapshot_id_account_fkey on security_master.security_close_price_snapshots",
+      "target": "database:security_master.security_close_price_snapshots.account_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_close_price_snapshot_corrects_snapshot_id_account_fkey on security_master.security_close_price_snapshots",
+      "target": "database:security_master.security_close_price_snapshots.book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_close_price_snapshot_corrects_snapshot_id_account_fkey on security_master.security_close_price_snapshots",
+      "target": "database:security_master.security_close_price_snapshots.snapshot_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_close_price_snapshot_corrects_snapshot_id_account_fkey on security_master.security_close_price_snapshots",
+      "target": "database:security_master.security_close_price_snapshots.valuation_date"
+    },
+    {
+      "constraint": "security_close_price_snapshot_corrects_snapshot_id_account_fkey",
+      "kind": "foreign-key",
+      "label": "corrects_snapshot_id, account_id, book_id, valuation_date",
+      "source": "database:security_master.security_close_price_snapshots",
+      "target": "database:security_master.security_close_price_snapshots"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_close_price_snapshots_account_id_check on security_master.security_close_price_snapshots",
+      "target": "database:security_master.security_close_price_snapshots.account_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_close_price_snapshots_book_id_check on security_master.security_close_price_snapshots",
+      "target": "database:security_master.security_close_price_snapshots.book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_close_price_snapshots_check on security_master.security_close_price_snapshots",
+      "target": "database:security_master.security_close_price_snapshots.corrects_snapshot_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_close_price_snapshots_check on security_master.security_close_price_snapshots",
+      "target": "database:security_master.security_close_price_snapshots.version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_close_price_snapshots_check1 on security_master.security_close_price_snapshots",
+      "target": "database:security_master.security_close_price_snapshots.account_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_close_price_snapshots_check1 on security_master.security_close_price_snapshots",
+      "target": "database:security_master.security_close_price_snapshots.book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_close_price_snapshots_version_check on security_master.security_close_price_snapshots",
+      "target": "database:security_master.security_close_price_snapshots.version"
+    },
+    {
       "constraint": "security_identifiers_security_id_fkey",
       "kind": "foreign-key",
       "label": "security_id",
@@ -48886,6 +49416,18 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.security_close_price_approvals"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.security_close_price_snapshots"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.security_events"
     },
     {
@@ -49070,7 +49612,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "730961df0f1d83ed7d0b64ba770a61ac049f6ed5db3551a0f4206b4e09f51156",
+  "fingerprint": "38298719a3826e750cc1c95f68f54e5fbf7e9f12d87b68bdaf4d735f31583fed",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -51008,6 +51550,72 @@
       "label": "Meridian.Contracts.Archive.VerificationScheduleConfig"
     },
     {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.AssetOperations.AccountCashEvidenceRole",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AccountCashEvidenceRole"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AccountCashFlowDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AccountCashFlowDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.AssetOperations.AccountCashFlowStatus",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AccountCashFlowStatus"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastIssueDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AccountCashForecastIssueDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AccountCashForecastJsonContext"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AccountCashForecastRequestDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastScopeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AccountCashForecastScopeDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AccountCashForecastSnapshotDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AccountCashForecastSnapshotDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AccountCashFxConversionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AccountCashFxConversionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AccountCashProvenanceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AccountCashProvenanceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AccountSettledCashObservationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AccountSettledCashObservationDto"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto",
       "kind": "contract-type",
@@ -51486,6 +52094,18 @@
       "id": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.AssetOperations.IAccountCashForecastService",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.IAccountCashForecastService"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.AssetOperations.IAccountCashForecastStore",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.IAccountCashForecastStore"
     },
     {
       "classification": "service_contract",
@@ -58058,6 +58678,12 @@
       "label": "Meridian.Contracts.SecurityMaster.ApproveCorporateActionCaseAccountingRequestDto"
     },
     {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ApproveSecurityClosePriceSetRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ApproveSecurityClosePriceSetRequest"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet",
       "kind": "contract-type",
@@ -58608,6 +59234,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionVersionConflictException",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.CorporateActionVersionConflictException"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CreateSecurityClosePriceSetRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CreateSecurityClosePriceSetRequest"
     },
     {
       "classification": "request",
@@ -59169,6 +59801,54 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceApprovalDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityClosePriceApprovalDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceBlockerDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityClosePriceBlockerDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceEvidence",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityClosePriceEvidence"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceInputDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityClosePriceInputDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceSetDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityClosePriceSetDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityComparisonPriceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityComparisonPriceDto"
@@ -59238,6 +59918,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterClosePricesJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityMasterClosePricesJsonContext"
     },
     {
       "classification": "record",
@@ -71371,6 +72057,93 @@
       "label": "security_master.security_cashflow_source_assignments_security_id_fkey on security_master.security_cashflow_source_assignments"
     },
     {
+      "id": "database:security_master.security_close_price_approvals",
+      "kind": "database-table",
+      "label": "security_master.security_close_price_approvals",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_close_price_approvals_snapshot_id_fkey on security_master.security_close_price_approvals",
+      "kind": "database-object",
+      "label": "security_master.security_close_price_approvals_snapshot_id_fkey on security_master.security_close_price_approvals"
+    },
+    {
+      "id": "database:security_master.security_close_price_snapshot_corrects_snapshot_id_account_fkey on security_master.security_close_price_snapshots",
+      "kind": "database-object",
+      "label": "security_master.security_close_price_snapshot_corrects_snapshot_id_account_fkey on security_master.security_close_price_snapshots"
+    },
+    {
+      "id": "database:security_master.security_close_price_snapshot_snapshot_id_account_id_book_i_key",
+      "kind": "database-object",
+      "label": "security_master.security_close_price_snapshot_snapshot_id_account_id_book_i_key"
+    },
+    {
+      "id": "database:security_master.security_close_price_snapshots",
+      "kind": "database-table",
+      "label": "security_master.security_close_price_snapshots",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_close_price_snapshots.account_id",
+      "kind": "database-object",
+      "label": "security_master.security_close_price_snapshots.account_id"
+    },
+    {
+      "id": "database:security_master.security_close_price_snapshots.book_id",
+      "kind": "database-object",
+      "label": "security_master.security_close_price_snapshots.book_id"
+    },
+    {
+      "id": "database:security_master.security_close_price_snapshots.corrects_snapshot_id",
+      "kind": "database-object",
+      "label": "security_master.security_close_price_snapshots.corrects_snapshot_id"
+    },
+    {
+      "id": "database:security_master.security_close_price_snapshots.snapshot_id",
+      "kind": "database-object",
+      "label": "security_master.security_close_price_snapshots.snapshot_id"
+    },
+    {
+      "id": "database:security_master.security_close_price_snapshots.valuation_date",
+      "kind": "database-object",
+      "label": "security_master.security_close_price_snapshots.valuation_date"
+    },
+    {
+      "id": "database:security_master.security_close_price_snapshots.version",
+      "kind": "database-object",
+      "label": "security_master.security_close_price_snapshots.version"
+    },
+    {
+      "id": "database:security_master.security_close_price_snapshots_account_id_check on security_master.security_close_price_snapshots",
+      "kind": "database-object",
+      "label": "security_master.security_close_price_snapshots_account_id_check on security_master.security_close_price_snapshots"
+    },
+    {
+      "id": "database:security_master.security_close_price_snapshots_book_id_check on security_master.security_close_price_snapshots",
+      "kind": "database-object",
+      "label": "security_master.security_close_price_snapshots_book_id_check on security_master.security_close_price_snapshots"
+    },
+    {
+      "id": "database:security_master.security_close_price_snapshots_check on security_master.security_close_price_snapshots",
+      "kind": "database-object",
+      "label": "security_master.security_close_price_snapshots_check on security_master.security_close_price_snapshots"
+    },
+    {
+      "id": "database:security_master.security_close_price_snapshots_check1 on security_master.security_close_price_snapshots",
+      "kind": "database-object",
+      "label": "security_master.security_close_price_snapshots_check1 on security_master.security_close_price_snapshots"
+    },
+    {
+      "id": "database:security_master.security_close_price_snapshots_pkey",
+      "kind": "database-object",
+      "label": "security_master.security_close_price_snapshots_pkey"
+    },
+    {
+      "id": "database:security_master.security_close_price_snapshots_version_check on security_master.security_close_price_snapshots",
+      "kind": "database-object",
+      "label": "security_master.security_close_price_snapshots_version_check on security_master.security_close_price_snapshots"
+    },
+    {
       "id": "database:security_master.security_events",
       "kind": "database-table",
       "label": "security_master.security_events",
@@ -71770,11 +72543,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3250,
-    "contract_set_memberships": 3812,
-    "edges": 8153,
-    "foreign_keys": 135,
+    "contract_references": 3274,
+    "contract_set_memberships": 3860,
+    "edges": 8243,
+    "foreign_keys": 137,
     "logical_references": 6,
-    "nodes": 3932
+    "nodes": 3973
   }
 }

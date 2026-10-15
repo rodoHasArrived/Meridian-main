@@ -321,9 +321,16 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             // own writes, so another container in the same process still refreshes its cache.
             services.AddSingleton(_ => SecurityMasterNodeIdentity.CreateNew());
             services.AddSingleton<SecurityMasterProjectionCache>();
-            services.AddSingleton<SecurityMasterCanonicalSymbolSeedService>();
-            services.AddSingleton<Meridian.DataIntegration.Canonicalization.ICanonicalSecurityIdLookup>(
-                sp => sp.GetRequiredService<SecurityMasterCanonicalSymbolSeedService>());
+            // Full composition registers symbol management after storage. Minimal utility hosts
+            // omit that feature and must still resolve/start the projection services, whose seeder
+            // is optional. An explicitly supplied registry also enables seeding in a minimal host.
+            if (options.EnableSymbolManagement
+                || services.Any(descriptor => descriptor.ServiceType == typeof(Meridian.Contracts.Catalog.ICanonicalSymbolRegistry)))
+            {
+                services.AddSingleton<SecurityMasterCanonicalSymbolSeedService>();
+                services.AddSingleton<Meridian.DataIntegration.Canonicalization.ICanonicalSecurityIdLookup>(
+                    sp => sp.GetRequiredService<SecurityMasterCanonicalSymbolSeedService>());
+            }
             services.AddSingleton<SecurityMasterProjectionService>();
             services.AddSingleton<SecurityMasterRebuildOrchestrator>();
             services.AddSingleton<IUflProjectionRebuilder, UflProjectionRebuilder>();

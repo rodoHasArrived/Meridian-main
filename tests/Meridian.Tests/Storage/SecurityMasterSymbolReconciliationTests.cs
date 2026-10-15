@@ -172,6 +172,7 @@ public sealed class SecurityMasterSymbolReconciliationTests : IDisposable
 
         await registry.ReconcileSecurityMasterAsync([id], []);
         registry.ResolveToCanonical("CURRENT.PROVIDER").Should().BeNull();
+        registry.ResolveToCanonical("CURRENT").Should().BeNull("the withdrawn Security Master name has no independent authority");
         registry.ResolveToCanonical("OPERATOR.OLD").Should().Be("CURRENT", "independent registry authority survives withdrawal");
     }
 
@@ -220,8 +221,169 @@ public sealed class SecurityMasterSymbolReconciliationTests : IDisposable
         await registry.ReconcileSecurityMasterAsync([id], []);
 
         registry.ResolveToCanonical("OPERATOR.ALT").Should().Be("SMTEST");
-        registry.GetDefinition("SMTEST")!.AliasDefinitions.Should().Contain(alias =>
+        registry.ResolveToCanonical("SMTEST").Should().BeNull();
+        registry.GetDefinition("OPERATOR.ALT")!.AliasDefinitions.Should().Contain(alias =>
             alias.Alias == "OPERATOR.ALT" && alias.Source == SymbolMappingSources.Registry);
+    }
+
+    [Theory]
+    [InlineData("provider")]
+    [InlineData("manual-alias")]
+    [InlineData("typed-identifier")]
+    public async Task Withdrawal_HidesSecurityMasterCanonical_WhileIndependentAuthorityRemains_AfterReload(string authority)
+    {
+        var store = new SymbolRegistryService(_directory);
+        var registry = new CanonicalSymbolRegistry(store);
+        var id = Guid.NewGuid();
+        await registry.ReconcileSecurityMasterAsync([id], [IdentifierDefinition(id, "US0000000001")]);
+        var independentValue = authority == "typed-identifier" ? "BBG000INDEPENDENT" : "INDEPENDENT.VALUE";
+        if (authority == "provider")
+            await registry.SetProviderSymbolAsync("SMTEST", "feed", independentValue, SymbolMappingSources.Operator, true);
+        else if (authority == "manual-alias")
+            await store.AddAliasAsync("SMTEST", new SymbolAlias { Alias = independentValue, Source = "manual" });
+        else
+        {
+            // Model an already retained field another source supplied, independently of
+            // the Security Master identifier aliases used to prove reconciliation ownership.
+            store.GetRegistry().Symbols["SMTEST"].Identifiers.Figi = independentValue;
+            await store.SaveRegistryAsync();
+        }
+        registry.ResolveToCanonical("SMTEST").Should().Be("SMTEST", "the active name is already cached");
+
+        await registry.ReconcileSecurityMasterAsync([id], []);
+
+        AssertWithdrawnCanonicalIsHidden(store, registry, "SMTEST");
+        AssertIndependentAuthorityResolves(store, registry, independentValue, id, "SMTEST");
+        registry.ResolveToCanonical("US0000000001").Should().BeNull();
+        if (authority == "provider")
+        {
+            registry.TryResolveWithProvider(independentValue, "feed").Should().Be("SMTEST");
+            registry.GetProviderSymbol(independentValue, "feed").Should().Be(independentValue);
+        }
+
+        var reloaded = new SymbolRegistryService(_directory);
+        await reloaded.InitializeAsync();
+        var reloadedRegistry = new CanonicalSymbolRegistry(reloaded);
+        AssertWithdrawnCanonicalIsHidden(reloaded, reloadedRegistry, "SMTEST");
+        AssertIndependentAuthorityResolves(reloaded, reloadedRegistry, independentValue, id, "SMTEST");
+        if (authority == "provider")
+            reloadedRegistry.TryResolveWithProvider(independentValue, "feed").Should().Be("SMTEST");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Withdrawal_RetainsDisabledAndExpiredAliasHistory_WithoutMakingCanonicalOrHistoryResolvable(bool expired)
+    {
+        var store = new SymbolRegistryService(_directory);
+        var registry = new CanonicalSymbolRegistry(store);
+        var id = Guid.NewGuid();
+        await registry.ReconcileSecurityMasterAsync([id], [IdentifierDefinition(id, "US0000000001")]);
+        await store.AddAliasAsync("SMTEST", new SymbolAlias
+        {
+            Alias = "HISTORICAL.ALIAS",
+            Source = "manual",
+            IsActive = false,
+            ValidFrom = DateTime.UtcNow.AddYears(-2),
+            ValidTo = expired ? DateTime.UtcNow.AddDays(-1) : null
+        });
+
+        await registry.ReconcileSecurityMasterAsync([id], []);
+
+        AssertWithdrawnCanonicalIsHidden(store, registry, "SMTEST");
+        registry.ResolveToCanonical("HISTORICAL.ALIAS").Should().BeNull();
+        store.LookupSymbol("HISTORICAL.ALIAS").Found.Should().BeFalse();
+        var retained = registry.GetAll().Should().ContainSingle().Which;
+        retained.SecurityId.Should().Be(id);
+        retained.SecurityMasterCanonicalWithdrawn.Should().BeTrue();
+        retained.AliasDefinitions.Should().ContainSingle().Which.IsActive.Should().BeFalse();
+
+        var reloaded = new SymbolRegistryService(_directory);
+        await reloaded.InitializeAsync();
+        var reloadedRegistry = new CanonicalSymbolRegistry(reloaded);
+        AssertWithdrawnCanonicalIsHidden(reloaded, reloadedRegistry, "SMTEST");
+        reloadedRegistry.ResolveToCanonical("HISTORICAL.ALIAS").Should().BeNull();
+        reloadedRegistry.GetAll().Should().ContainSingle().Which.AliasDefinitions.Should().ContainSingle();
+    }
+
+    [Theory]
+    [InlineData("SMTEST")]
+    [InlineData("REACTIVATED")]
+    public async Task ActiveReseed_RestoresCanonicalAuthority_AfterSameOrChangedNameWithdrawal(string activeTicker)
+    {
+        var store = new SymbolRegistryService(_directory);
+        var registry = new CanonicalSymbolRegistry(store);
+        var id = Guid.NewGuid();
+        await registry.ReconcileSecurityMasterAsync([id], [IdentifierDefinition(id, "US0000000001")]);
+        await store.AddAliasAsync("SMTEST", new SymbolAlias { Alias = "INDEPENDENT.ALIAS", Source = "manual" });
+        await registry.ReconcileSecurityMasterAsync([id], []);
+        AssertWithdrawnCanonicalIsHidden(store, registry, "SMTEST");
+
+        await registry.ReconcileSecurityMasterAsync([id],
+            [Definition(id, activeTicker, "REACTIVATED.ALIAS", SymbolMappingSources.SecurityMaster)]);
+
+        registry.ResolveToCanonical(activeTicker).Should().Be(activeTicker);
+        registry.IsKnown(activeTicker).Should().BeTrue();
+        store.LookupSymbol(activeTicker).CanonicalSymbol.Should().Be(activeTicker);
+        registry.ResolveToCanonical("REACTIVATED.ALIAS").Should().Be(activeTicker);
+        registry.ResolveToCanonical("INDEPENDENT.ALIAS").Should().Be(activeTicker);
+        registry.GetDefinition(activeTicker)!.SecurityMasterCanonicalWithdrawn.Should().BeFalse();
+        registry.GetDefinition(activeTicker)!.SecurityMasterOwnsCanonical.Should().BeTrue();
+        if (activeTicker != "SMTEST")
+            registry.ResolveToCanonical("SMTEST").Should().BeNull("a withdrawn Security Master name does not become an independent alias on rename");
+
+        var reloaded = new SymbolRegistryService(_directory);
+        await reloaded.InitializeAsync();
+        var reloadedRegistry = new CanonicalSymbolRegistry(reloaded);
+        reloadedRegistry.ResolveToCanonical(activeTicker).Should().Be(activeTicker);
+        reloadedRegistry.ResolveToCanonical("INDEPENDENT.ALIAS").Should().Be(activeTicker);
+        reloadedRegistry.GetDefinition(activeTicker)!.SecurityMasterCanonicalWithdrawn.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task IndependentExactCanonicalRegistration_RecoversTheNameAfterWithdrawal()
+    {
+        var store = new SymbolRegistryService(_directory);
+        var registry = new CanonicalSymbolRegistry(store);
+        var id = Guid.NewGuid();
+        await registry.ReconcileSecurityMasterAsync([id], [IdentifierDefinition(id, "US0000000001")]);
+        await store.AddAliasAsync("SMTEST", new SymbolAlias { Alias = "INDEPENDENT.ALIAS", Source = "manual" });
+        await registry.ReconcileSecurityMasterAsync([id], []);
+        AssertWithdrawnCanonicalIsHidden(store, registry, "SMTEST");
+
+        await registry.RegisterAsync(new CanonicalSymbolDefinition { Canonical = "SMTEST", SecurityId = id });
+
+        registry.ResolveToCanonical("SMTEST").Should().Be("SMTEST");
+        registry.IsKnown("SMTEST").Should().BeTrue();
+        registry.GetDefinition("SMTEST")!.SecurityMasterOwnsCanonical.Should().BeFalse();
+        registry.GetDefinition("SMTEST")!.SecurityMasterCanonicalWithdrawn.Should().BeFalse();
+        registry.ResolveToCanonical("INDEPENDENT.ALIAS").Should().Be("SMTEST");
+        store.LookupSymbol("SMTEST").Found.Should().BeTrue();
+        var reloaded = new SymbolRegistryService(_directory);
+        await reloaded.InitializeAsync();
+        new CanonicalSymbolRegistry(reloaded).ResolveToCanonical("SMTEST").Should().Be("SMTEST");
+    }
+
+    [Fact]
+    public async Task SameSpellingOperatorAlias_IndependentlyPreservesLookupAfterSecurityMasterWithdrawal()
+    {
+        var store = new SymbolRegistryService(_directory);
+        var registry = new CanonicalSymbolRegistry(store);
+        var id = Guid.NewGuid();
+        await registry.ReconcileSecurityMasterAsync([id], [IdentifierDefinition(id, "US0000000001")]);
+        await store.AddAliasAsync("SMTEST", new SymbolAlias { Alias = "SMTEST", Source = SymbolMappingSources.Operator });
+
+        await registry.ReconcileSecurityMasterAsync([id], []);
+
+        registry.ResolveToCanonical("SMTEST").Should().Be("SMTEST", "the independently owned alias remains authoritative");
+        registry.IsKnown("SMTEST").Should().BeTrue();
+        registry.GetDefinition("SMTEST")!.SecurityId.Should().Be(id);
+        registry.GetDefinition("SMTEST")!.SecurityMasterCanonicalWithdrawn.Should().BeTrue();
+        store.LookupSymbol("SMTEST").Found.Should().BeTrue();
+        store.GetRegistry().Symbols["SMTEST"].Aliases.Should().ContainSingle().Which.Source.Should().Be(SymbolMappingSources.Operator);
+        var reloaded = new SymbolRegistryService(_directory);
+        await reloaded.InitializeAsync();
+        new CanonicalSymbolRegistry(reloaded).ResolveToCanonical("SMTEST").Should().Be("SMTEST");
     }
 
     [Fact]
@@ -304,6 +466,36 @@ public sealed class SecurityMasterSymbolReconciliationTests : IDisposable
 
         registry.GetDefinition("SMTEST")!.Cusip.Should().Be("037833100", "Security Master supplies no CUSIP");
         registry.ResolveToCanonical("037833100").Should().Be("SMTEST");
+    }
+
+    private static void AssertWithdrawnCanonicalIsHidden(
+        SymbolRegistryService store,
+        CanonicalSymbolRegistry registry,
+        string canonical)
+    {
+        registry.ResolveToCanonical(canonical).Should().BeNull();
+        registry.IsKnown(canonical).Should().BeFalse();
+        registry.GetDefinition(canonical).Should().BeNull();
+        registry.GetProviderSymbol(canonical, "feed").Should().BeNull();
+        registry.TryResolveWithProvider(canonical, "feed").Should().BeNull();
+        store.LookupSymbol(canonical).Found.Should().BeFalse();
+        (store.LookupSymbol(canonical[..^1]).Suggestions ?? []).Should().NotContain(canonical);
+        store.GetRegistry().Symbols[canonical].SecurityMasterCanonicalWithdrawn.Should().BeTrue();
+    }
+
+    private static void AssertIndependentAuthorityResolves(
+        SymbolRegistryService store,
+        CanonicalSymbolRegistry registry,
+        string identifier,
+        Guid securityId,
+        string canonical)
+    {
+        registry.ResolveToCanonical(identifier).Should().Be(canonical);
+        registry.IsKnown(identifier).Should().BeTrue();
+        registry.GetDefinition(identifier)!.SecurityId.Should().Be(securityId);
+        registry.GetDefinition(identifier)!.SecurityMasterCanonicalWithdrawn.Should().BeTrue();
+        store.LookupSymbol(identifier).Found.Should().BeTrue();
+        store.LookupSymbol(identifier).CanonicalSymbol.Should().Be(canonical);
     }
 
     // Mirrors the definitions SecurityMasterCanonicalSymbolSeedService builds for identifiers.

@@ -11,6 +11,22 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Storage
 
+`PostgresSecurityMasterPricingStore.ClosePrices` extends retained pricing receipts with immutable
+account/book/date price snapshots and separate independent-review records (Security Master
+migration 037). Source receipts must match exactly; scoped advisory locks fence approvals and
+linked corrections. Database guards refuse replacement, deletion and truncation. The schema
+inventory exception records only the lexical false positive from `BEFORE TRUNCATE` rejection
+triggers and requires independent schema/storage review.
+
+`FileAccountCashForecastStore` retains append-only scoped forecast history with content hashes,
+atomic replacement and a process-independent writer lease. Explicit `InitializeAsync` provisioning
+is required; missing/corrupt initialized history cannot silently restart. Financial Operations
+owns cash-balance case semantics and delegates file replacement to Storage's shared writer.
+Forecast corrections resolve a flow's last retained revision across temporarily omitted runs,
+separately for expected and actual cash, while retaining the latest snapshot predecessor.
+Close-price history uses one exact account/book/date query ordered by version and shares the
+snapshot digest, indexed identity and independent approval validation used by single reads.
+
 New acquisition and disposal commands carry `AtomicLotReferenceVersions` from the approved event
 spine. The ledger transaction locks the co-located PostgreSQL Security Master and book-position
 rows after the book/period and before selected lots. It checks their reviewed versions, active
@@ -40,14 +56,20 @@ serialize their commands on that connection. Independent stores and application 
 database fence; in-memory compositions retain their local gate. Deploy with all old writers drained,
 as described in [the rollout contract](../../docs/domain/security.md#governed-edit-concurrency).
 
-Migration 037 adds append-only alias revisions after the immutable generation migration 036.
+Migration 038 adds append-only alias revisions after immutable generation migration 036 and
+close-price migration 037.
 Its imported alias baseline retains creation facts and records when historical values first became
 available; strict recorded-time reads do not present that baseline before the migration observation.
-Fresh-install and populated through-036 upgrade tests cover rollback, retry and restart receipts.
+Fresh-install and populated through-036 and through-037 upgrade tests cover rollback, retry and
+restart receipts, retaining the previously applied migration checksums and close-price evidence.
 
 Symbol registry reconciliation persists canonical ownership for new Security Master entries, follows
 primary ticker changes, and withdraws names whose remaining authority is exclusively Security Master.
-Independent aliases and provider overrides remain retained. Unknown legacy identifier ownership is
+Independent aliases and provider overrides remain retained. When they retain an entry after its
+Security Master-owned canonical is withdrawn, persisted `SecurityMasterCanonicalWithdrawn` keeps
+that internal storage identity from resolving as a canonical input or appearing in suggestions.
+Active reseeding restores its authority; independent exact-spelling registration owns its own name.
+Unknown legacy identifier ownership is
 never inferred from matching text: `ISecurityMasterLegacyIdentifierCleanupWriter` validates an
 explicit evidence-bound manifest against a registry fingerprint before atomically applying it and
 retaining an idempotent receipt. Resolver rebuilds serialize their read/build/publication step so an
@@ -648,7 +670,7 @@ accepted during `ReplaceAll` materialization is not discarded by the swap.
 Every projection-writing transaction also issues `pg_notify` on a per-schema channel, so other nodes'
 `SecurityMasterProjectionChangeListener` refresh the changed security (version-guarded) once the write
 commits; rolled-back writes announce nothing. Aliases keep an append-only revision history
-(`037_security_master_alias_revisions.sql`, following the immutable 036 workbench-generation fence): corrections append a revision and recorded-as-of reads
+(`038_security_master_alias_revisions.sql`, following immutable migrations 036 and 037): corrections append a revision and recorded-as-of reads
 resolve each alias from the revision current at the cutoff. An alias ID stays bound to its first security even after it is
 retired, so neither alias upserts nor projection replacement can continue its history elsewhere.
 Projection reads stamp their alias list with the security's revision count (`SecurityAliasSnapshot`);

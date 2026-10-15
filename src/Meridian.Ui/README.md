@@ -11,6 +11,13 @@ last_reviewed: 2026-07-27
 
 # src/Meridian.Ui
 
+The generated dashboard route catalog includes the shared account oversight APIs for cash
+case continuity, reviewed price snapshots and cash forecasts. Scope and retained source authority
+remain server-owned in `Meridian.Ui.Shared`; see
+[bounded account oversight](../../docs/operators/account-oversight.md) for supported routes.
+The host-served bundle includes Accounting's account-book workbench for retained cash cases,
+independent close-price review and dated cash forecasts, with source evidence and blocked states.
+
 Accounting's External GL surface includes bounded onboarding backed by shared retained workspace
 services. Rebuild the dashboard to serve source selection, comparison history, review controls and
 canonical frozen packet downloads. The host exposes no onboarding posting or authority transition.

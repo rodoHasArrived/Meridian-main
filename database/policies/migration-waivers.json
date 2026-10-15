@@ -55,7 +55,13 @@
       "review_after": "2027-03-22"
     },
     {
-      "path": "src/Meridian.Storage/SecurityMaster/Migrations/037_security_master_alias_revisions.sql",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/037_security_master_close_price_snapshots.sql",
+      "rule_id": "migration-truncate",
+      "reason": "Requires independent human schema/storage review. The lexical TRUNCATE matches declare BEFORE TRUNCATE rejection triggers that preserve immutable close-price snapshots and approval receipts. No truncation or data removal is executed by this migration. Preserve both guards; PostgreSQL regression coverage attempts update, delete, and truncate and verifies that the retained approved snapshot remains replayable.",
+      "review_after": "2027-04-13"
+    },
+    {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/038_security_master_alias_revisions.sql",
       "rule_id": "migration-truncate",
       "reason": "Requires human schema/storage review. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects deletion of the append-only alias revision history; no data is truncated. PostgreSQL regression coverage attempts update, delete, and truncate and verifies that the revision is retained.",
       "review_after": "2027-04-10"

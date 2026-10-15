@@ -32,6 +32,21 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
     private readonly ISecurityMasterStore? _authoritativeStore;
 
     private readonly SemaphoreSlim _seedLock = new(1, 1);
+    private long _nextValidityTransitionUtcTicks;
+
+    internal TimeProvider Clock { get; init; } = TimeProvider.System;
+
+    /// <summary>The next live identifier-window boundary in the last successfully published seed.</summary>
+    internal DateTimeOffset? NextValidityTransitionUtc
+    {
+        get
+        {
+            var ticks = Interlocked.Read(ref _nextValidityTransitionUtcTicks);
+            return ticks == 0 ? null : new DateTimeOffset(ticks, TimeSpan.Zero);
+        }
+    }
+
+    internal event Action? ValidityScheduleChanged;
 
     // Thread-safe reverse lookup: canonical ticker (case-insensitive) → SecurityId.
     // Replaced atomically by SeedAsync; read concurrently by EventCanonicalizer.
@@ -124,7 +139,15 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
 
         var definitions = new List<CanonicalSymbolDefinition>(snapshot.Count);
         var reverseMap = new Dictionary<string, Guid>(snapshot.Count, StringComparer.OrdinalIgnoreCase);
-        var now = DateTimeOffset.UtcNow;
+        var now = Clock.GetUtcNow();
+        DateTimeOffset? nextValidityTransition = null;
+
+        void TrackBoundary(DateTimeOffset? boundary)
+        {
+            if (boundary is { } candidate && candidate > now
+                && (!nextValidityTransition.HasValue || candidate < nextValidityTransition.Value))
+                nextValidityTransition = candidate;
+        }
 
         foreach (var record in snapshot)
         {
@@ -153,6 +176,12 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
             {
                 if (string.IsNullOrWhiteSpace(alias.AliasValue))
                     continue;
+
+                if (alias.IsEnabled)
+                {
+                    TrackBoundary(alias.ValidFrom);
+                    TrackBoundary(alias.ValidTo);
+                }
 
                 var isCurrent = alias.IsEnabled && alias.ValidFrom <= now &&
                     (alias.ValidTo is null || alias.ValidTo > now);
@@ -192,6 +221,8 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
                 }
 
                 var isCurrent = id.ValidFrom <= now && (id.ValidTo is null || id.ValidTo > now);
+                TrackBoundary(id.ValidFrom);
+                TrackBoundary(id.ValidTo);
                 // Retain the window for audit/history, but only current identifiers may resolve
                 // through the live registry or populate its standard-identifier indexes.
                 aliasDefinitions.Add(new CanonicalSymbolAliasDefinition(
@@ -255,6 +286,12 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
 
         // Atomically replace the reverse lookup so readers immediately see the new map.
         _tickerToSecurityId = reverseMap;
+
+        // The timer describes the same successfully published snapshot as the live registry.
+        // A failed durable seed keeps its previous boundary so the hosted owner retries it.
+        var nextTicks = nextValidityTransition?.UtcTicks ?? 0;
+        if (Interlocked.Exchange(ref _nextValidityTransitionUtcTicks, nextTicks) != nextTicks)
+            ValidityScheduleChanged?.Invoke();
 
         _logger.LogInformation(
             "Seeded canonical symbol registry from Security Master: {Registered}/{Total} active securities registered.",

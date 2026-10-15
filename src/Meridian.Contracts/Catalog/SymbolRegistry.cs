@@ -98,6 +98,14 @@ public sealed class SymbolRegistryEntry
     public bool SecurityMasterOwnsCanonical { get; set; }
 
     /// <summary>
+    /// Security Master withdrew this canonical spelling while independently owned mappings
+    /// retain the definition. The internal canonical key is not itself lookup authority.
+    /// </summary>
+    [JsonPropertyName("securityMasterCanonicalWithdrawn")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool SecurityMasterCanonicalWithdrawn { get; set; }
+
+    /// <summary>
     /// Display name (e.g., "Apple Inc.").
     /// </summary>
     [JsonPropertyName("displayName")]

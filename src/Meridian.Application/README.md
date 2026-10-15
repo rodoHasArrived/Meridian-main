@@ -11,6 +11,24 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Application
 
+`SecurityMasterPricingService.ClosePrices` builds independently reviewed immutable close-price
+sets through the existing hierarchy and retained selection receipts. Exact account/book/UTC
+valuation date, quote units, source observations, override support and blocker assessments are
+frozen before review. Approval binds an independent reviewer and rationale to that snapshot;
+later quotes cannot change it. Corrections append linked versions with unchanged security coverage.
+Missing Security Master composition fails closed. Proof is in `SecurityMasterClosePriceServiceTests`
+and `PostgresSecurityMasterClosePriceTests`; this extends `W10-MARK-001` without claiming its
+live operator acceptance or adding dealer RFQ.
+Unrepresentable comparison percentages preserve exact raw prices; close-price snapshots retain
+an explicit dispersion blocker rather than losing the exception evidence.
+Exact account/book/date history returns retained price versions and approvals after restart.
+Concurrent identical approval retries return the canonical retained decision; conflicting reviews
+remain immutable-write conflicts.
+An explicit creation `RequestId` becomes the immutable snapshot identity. Retrying that same
+normalized command after a lost response or restart returns its retained observations and review
+before reading live prices. Changed commands conflict; concurrent identical captures converge on
+the committed snapshot. Callers without an identity retain the existing new-command behavior.
+
 `ILivePositionCorporateActionAdjuster` exposes an additive overload for retained total carrying
 basis. Native paper-execution adjustments use it to avoid rebuilding basis from rounded unit
 quotes. Legacy implementers retain their original overload; a null `AdjustedTotalCostBasis`
@@ -48,6 +66,10 @@ are disabled, and failed startup or periodic reseeds retry. Create, amend and de
 their committed projection and request reseeding before optional snapshot work; request cancellation
 after the projection commit cannot skip that coherence step. A later snapshot failure can still
 fail the request after commit, so callers must reread durable state before retrying.
+The hosted lifecycle also reseeds at the next identifier validity boundary, including with lazy
+cache loading, notifications disabled and no periodic projection refresh. A successful write seed
+can move that deadline earlier. Minimal composition omits the seeder when symbol management and
+an explicit canonical registry are both absent; full symbol management shares one seeder/lookup.
 Equity replay without retained flat terms refuses economic-only reconstruction: the old economic
 family cannot distinguish common, preferred and convertible preferred shares reliably.
 
@@ -61,13 +83,13 @@ pre-warm disabled the retry rereads the failed securities directly, so a remote 
 cache never held is not lost. A local alias write whose post-commit cache reread fails retries that
 reread in the background with backoff, since the node ignores its own notification. Canonical
 reseeds are serialized and reconcile Security-Master-owned aliases and non-override provider mappings
-for cached security IDs, including the ISIN/CUSIP/FIGI/SEDOL identifiers Security Master supplies;
+for authoritative security IDs, including the ISIN/CUSIP/FIGI/SEDOL identifiers Security Master supplies;
 operator/provider authority outside that ownership remains intact.
 Strict historical identifier reads use `GetRecordedByIdentifierAsOfAsync`: the recorded cutoff
 selects retained event state and alias revisions, and the separate effective cutoff selects identifier
 validity. Missing or ambiguous retained identity returns no match. The compatibility identifier API
 can use later alias corrections and stable-identity fallbacks. Alias baselines imported by migration
-037 are available only from the migration observation onward; earlier alias history is unknown.
+038 are available only from the migration observation onward; earlier alias history is unknown.
 Primary-host storage composition supplies deferred Security Master and book-position resolvers to
 the PostgreSQL journal store. Deferred resolution preserves the shared singleton authorities while
 avoiding the journal/position constructor cycle; absent durable authority fails closed at posting.

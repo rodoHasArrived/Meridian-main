@@ -381,8 +381,11 @@ public sealed class CanonicalSymbolRegistry :
 
         foreach (var (canonical, entry) in registry.Symbols)
         {
-            // Index the canonical name itself
-            resolverCache[canonical] = canonical;
+            // A retained definition may outlive Security Master's spelling authority because
+            // independent aliases or identifiers still address it. Its internal key is not proof
+            // that the withdrawn canonical spelling itself remains a valid input.
+            if (!entry.SecurityMasterOwnsCanonical || !entry.SecurityMasterCanonicalWithdrawn)
+                resolverCache[canonical] = canonical;
 
             // Index all aliases
             foreach (var alias in entry.Aliases.Where(IsGenericResolvableAlias))
@@ -587,6 +590,7 @@ public sealed class CanonicalSymbolRegistry :
             Canonical = entry.Canonical,
             SecurityId = entry.SecurityId,
             SecurityMasterOwnsCanonical = entry.SecurityMasterOwnsCanonical,
+            SecurityMasterCanonicalWithdrawn = entry.SecurityMasterCanonicalWithdrawn,
             DisplayName = entry.DisplayName,
             Aliases = aliases,
             AliasDefinitions = entry.Aliases.Select(alias => new CanonicalSymbolAliasDefinition(

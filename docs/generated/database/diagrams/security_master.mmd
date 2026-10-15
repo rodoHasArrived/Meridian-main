@@ -862,6 +862,23 @@ erDiagram
         text client_confirmed_by
         timestamp_with_time_zone client_confirmed_at
     }
+    security_master_security_close_price_approvals {
+        uuid snapshot_id PK,FK
+        text payload
+        character_64_ payload_sha256
+        timestamp_with_time_zone recorded_at
+    }
+    security_master_security_close_price_snapshots {
+        uuid snapshot_id PK
+        text account_id FK
+        text book_id FK
+        date valuation_date FK
+        integer version
+        uuid corrects_snapshot_id FK
+        text payload
+        character_64_ payload_sha256
+        timestamp_with_time_zone recorded_at
+    }
     security_master_security_events {
         bigint global_sequence PK
         uuid security_id
@@ -1256,6 +1273,8 @@ erDiagram
     security_master_securities ||--o{ security_master_security_pricing_hierarchy : "security_pricing_hierarchy_security_id_fkey"
     security_master_securities ||--o{ security_master_security_pricing_hierarchy_history : "security_pricing_hierarchy_history_security_id_fkey"
     security_master_securities ||--o{ security_master_security_raw_prices : "security_raw_prices_security_id_fkey"
+    security_master_security_close_price_snapshots ||--o{ security_master_security_close_price_approvals : "security_close_price_approvals_snapshot_id_fkey"
+    security_master_security_close_price_snapshots ||--o{ security_master_security_close_price_snapshots : "security_close_price_snapshot_corrects_snapshot_id_account_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_position_report_line : "servicer_position_report_line_servicer_report_batch_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_statement_import_batch : "servicer_statement_import_batch_servicer_report_batch_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_transaction_report_line : "servicer_transaction_report_line_servicer_report_batch_id_fkey"

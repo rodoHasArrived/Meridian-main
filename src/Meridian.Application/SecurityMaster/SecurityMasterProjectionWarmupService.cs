@@ -1,3 +1,4 @@
+using System.Threading.Channels;
 using Meridian.Contracts.SecurityMaster;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -14,6 +15,8 @@ namespace Meridian.Application.SecurityMaster;
 /// <see cref="SecurityMasterProjectionChangeListener"/> (PostgreSQL <c>LISTEN/NOTIFY</c>); the
 /// periodic re-warm is the backstop that bounds staleness if a notification is lost or the
 /// listener is disabled.
+/// Identifier validity boundaries always schedule a reseed, independently of periodic cache warming
+/// and notifications, so clock-only activation and expiry reach the live registry.
 /// </summary>
 public sealed class SecurityMasterProjectionWarmupService : IHostedService, IDisposable
 {
@@ -22,6 +25,8 @@ public sealed class SecurityMasterProjectionWarmupService : IHostedService, IDis
     private readonly ILogger<SecurityMasterProjectionWarmupService> _logger;
     private readonly SecurityMasterCanonicalSymbolSeedService? _seedService;
     private readonly CancellationTokenSource _refreshCts = new();
+    private readonly Channel<bool> _validityScheduleChanged = Channel.CreateBounded<bool>(
+        new BoundedChannelOptions(1) { FullMode = BoundedChannelFullMode.DropWrite, SingleReader = true });
     private Task? _refreshLoop;
 
     public SecurityMasterProjectionWarmupService(
@@ -34,10 +39,15 @@ public sealed class SecurityMasterProjectionWarmupService : IHostedService, IDis
         _options = options;
         _logger = logger;
         _seedService = seedService;
+        if (_seedService is not null)
+            _seedService.ValidityScheduleChanged += OnValidityScheduleChanged;
     }
 
     /// <summary>First delay after startup or periodic refresh failure; doubles up to a minute.</summary>
     internal TimeSpan RefreshRetryDelay { get; init; } = TimeSpan.FromSeconds(5);
+    internal TimeProvider Clock { get; init; } = TimeProvider.System;
+
+    private void OnValidityScheduleChanged() => _validityScheduleChanged.Writer.TryWrite(true);
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -59,7 +69,7 @@ public sealed class SecurityMasterProjectionWarmupService : IHostedService, IDis
             _logger.LogError(ex, "Security Master projection/identifier initialization failed; retrying in the background.");
         }
 
-        if (refreshFailed || _options.ProjectionCacheRefreshMinutes > 0)
+        if (refreshFailed || _options.ProjectionCacheRefreshMinutes > 0 || _seedService is not null)
         {
             var refreshToken = _refreshCts.Token;
             _refreshLoop = Task.Run(() => RunRefreshLoopAsync(refreshFailed, refreshToken), CancellationToken.None);
@@ -89,18 +99,52 @@ public sealed class SecurityMasterProjectionWarmupService : IHostedService, IDis
     private async Task RunRefreshLoopAsync(bool retryPending, CancellationToken ct)
     {
         var retryDelay = RefreshRetryDelay;
+        var lastProjectionRefresh = Clock.GetTimestamp();
+        var retryStarted = lastProjectionRefresh;
         while (!ct.IsCancellationRequested)
         {
             try
             {
-                if (!retryPending && _options.ProjectionCacheRefreshMinutes <= 0)
+                var projectionDelay = _options.ProjectionCacheRefreshMinutes > 0
+                    ? Remaining(TimeSpan.FromMinutes(_options.ProjectionCacheRefreshMinutes), lastProjectionRefresh)
+                    : Timeout.InfiniteTimeSpan;
+                var validityDelay = _seedService?.NextValidityTransitionUtc is { } nextBoundary
+                    ? MaxZero(nextBoundary - Clock.GetUtcNow())
+                    : Timeout.InfiniteTimeSpan;
+                var delay = retryPending
+                    ? Remaining(retryDelay, retryStarted)
+                    : Earlier(projectionDelay, validityDelay);
+                // Timer implementations have finite maximum delays. Recheck long-lived windows
+                // daily without reading durable state until their actual boundary is due.
+                if (delay > TimeSpan.FromDays(1))
+                    delay = TimeSpan.FromDays(1);
+
+                // A write can introduce an earlier boundary while this loop waits. Recompute the
+                // schedule without postponing a pending retry or configured projection refresh.
+                using (var waitCts = CancellationTokenSource.CreateLinkedTokenSource(ct))
                 {
-                    return;
+                    var changed = _validityScheduleChanged.Reader.ReadAsync(waitCts.Token).AsTask();
+                    var timer = Task.Delay(delay, Clock, waitCts.Token);
+                    var completed = await Task.WhenAny(timer, changed).ConfigureAwait(false);
+                    await completed.ConfigureAwait(false);
+                    waitCts.Cancel();
+                    if (completed == changed)
+                        continue;
                 }
 
-                await Task.Delay(retryPending ? retryDelay : TimeSpan.FromMinutes(_options.ProjectionCacheRefreshMinutes), ct)
-                    .ConfigureAwait(false);
-                await RefreshAsync(ct).ConfigureAwait(false);
+                if (retryPending || (_options.ProjectionCacheRefreshMinutes > 0
+                    && Remaining(TimeSpan.FromMinutes(_options.ProjectionCacheRefreshMinutes), lastProjectionRefresh) == TimeSpan.Zero))
+                {
+                    await RefreshAsync(ct).ConfigureAwait(false);
+                    lastProjectionRefresh = Clock.GetTimestamp();
+                }
+                else if (_seedService is { } seedService
+                    && seedService.NextValidityTransitionUtc is { } dueBoundary && dueBoundary <= Clock.GetUtcNow())
+                {
+                    // Time alone changes eligibility: no projection write or notification occurs.
+                    // Reseed the durable membership without forcing lazy caches to warm.
+                    await seedService.SeedAsync(ct).ConfigureAwait(false);
+                }
                 retryPending = false;
                 retryDelay = RefreshRetryDelay;
             }
@@ -111,11 +155,22 @@ public sealed class SecurityMasterProjectionWarmupService : IHostedService, IDis
             catch (Exception ex)
             {
                 retryPending = true;
+                retryStarted = Clock.GetTimestamp();
                 _logger.LogWarning(ex, "Security Master projection/identifier refresh failed; retrying with backoff.");
                 retryDelay = TimeSpan.FromMilliseconds(Math.Min(retryDelay.TotalMilliseconds * 2, 60_000));
             }
         }
+
+        TimeSpan Remaining(TimeSpan interval, long started)
+            => MaxZero(interval - Clock.GetElapsedTime(started));
     }
+
+    private static TimeSpan MaxZero(TimeSpan delay) => delay < TimeSpan.Zero ? TimeSpan.Zero : delay;
+
+    private static TimeSpan Earlier(TimeSpan first, TimeSpan second)
+        => first == Timeout.InfiniteTimeSpan ? second
+            : second == Timeout.InfiniteTimeSpan ? first
+            : first < second ? first : second;
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
@@ -136,6 +191,8 @@ public sealed class SecurityMasterProjectionWarmupService : IHostedService, IDis
 
     public void Dispose()
     {
+        if (_seedService is not null)
+            _seedService.ValidityScheduleChanged -= OnValidityScheduleChanged;
         _refreshCts.Cancel();
         _refreshCts.Dispose();
     }

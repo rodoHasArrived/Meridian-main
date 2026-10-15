@@ -43,7 +43,7 @@ public interface ISecurityMasterQueryService
     /// from the last event recorded by the cutoff, with the aliases recorded and effective then.
     /// Current projections and identity fallbacks are never substituted. Returns <c>null</c> when
     /// there is no retained match or multiple securities claim the identifier at these two times.
-    /// Alias corrections predating migration 037 are unavailable; omitted aliases do not certify
+    /// Alias corrections predating migration 038 are unavailable; omitted aliases do not certify
     /// that no alias existed before that history boundary.
     /// </summary>
     Task<SecurityDetailDto?> GetRecordedByIdentifierAsOfAsync(

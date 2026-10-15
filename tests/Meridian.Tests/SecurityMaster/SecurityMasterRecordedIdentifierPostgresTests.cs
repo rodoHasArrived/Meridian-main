@@ -44,7 +44,7 @@ public sealed class SecurityMasterRecordedIdentifierPostgresTests(SecurityMaster
         var (service, store, id, recordedAt) = await CreateRecordedSecurityAsync();
         var baseline = new SecurityAliasDto(Guid.NewGuid(), id, "Ticker", $"BASE-{id:N}", null,
             SecurityAliasScope.Operations, "pre-migration current value", "original.operator", recordedAt, recordedAt, null, true);
-        // Reproduce migration 037's baseline for an alias corrected before revision history existed.
+        // Reproduce migration 038's baseline for an alias corrected before revision history existed.
         // Its original creation facts are known; the earlier values of its material fields are not.
         await using (var connection = new NpgsqlConnection(fixture.Options.ConnectionString))
         {

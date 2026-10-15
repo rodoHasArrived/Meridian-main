@@ -262,7 +262,7 @@ public sealed partial class PostgresSecurityMasterStore
 
     /// <summary>
     /// Appends the next revision for <paramref name="alias"/>. The first revision is recorded at the
-    /// alias creation time; migration 037 also marks pre-existing aliases with a separate history
+    /// alias creation time; migration 038 also marks pre-existing aliases with a separate history
     /// availability boundary, since their pre-migration corrections are unknown. Later revisions are recorded at the
     /// database transaction time, kept strictly after the previous revision so revision order and
     /// recorded order cannot disagree.
