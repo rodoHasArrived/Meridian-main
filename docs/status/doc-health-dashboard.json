@@ -1,6 +1,6 @@
 {
   "total_files": 731,
-  "total_lines": 159575,
+  "total_lines": 159587,
   "orphaned_count": 248,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -2812,7 +2812,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12035,
+      "line_count": 12037,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3236,7 +3236,7 @@
     },
     {
       "path": "docs/product/implementation-todo-list.md",
-      "line_count": 697,
+      "line_count": 707,
       "has_heading": true,
       "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
