@@ -2419,6 +2419,8 @@ Meridian-main
 │   │   └── wpf-screen-development-tracker.md
 │   ├── testing
 │   │   ├── evidence
+│   │   │   ├── program-state-20261014
+│   │   │   │   └── main-validation.json
 │   │   │   ├── w10-615abde9
 │   │   │   │   ├── browser
 │   │   │   │   │   ├── evidence
