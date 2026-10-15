@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 namespace Meridian.Application.SecurityMaster;
 
 /// <summary>Selects retained source prices using the hierarchy in force at the requested date.</summary>
-public sealed class SecurityMasterPricingService : ISecurityMasterPricingService
+public sealed partial class SecurityMasterPricingService : ISecurityMasterPricingService
 {
     private readonly ISecurityMasterPricingStore _store;
     private readonly ISecurityMasterQueryService _queryService;
@@ -90,7 +90,7 @@ public sealed class SecurityMasterPricingService : ISecurityMasterPricingService
             .OrderBy(p => p.SourceId, StringComparer.Ordinal)
             .Select(p => new SecurityComparisonPriceDto(p.SourceId, p.Price, p.PriceAsOf,
                 p.Unit == selected.Unit && selected.Price != 0m
-                    ? Math.Round((p.Price - selected.Price) / selected.Price * 100m, 4) : null,
+                    ? CalculateComparisonPercentage(p.Price, selected.Price) : null,
                 p.Unit)).ToArray();
         var selection = new SecurityPriceGoldenCopyDto(securityId, selected.Price, SecurityPriceKind.MarketGoldenCopy,
             selected.SourceId, selected.PriceAsOf, stale, daysStale, comparisons, selected.Unit, asOf, hierarchy.AsOf,
@@ -105,6 +105,20 @@ public sealed class SecurityMasterPricingService : ISecurityMasterPricingService
     public Task<SecurityPriceGoldenCopyDto?> GetGoldenCopySelectionAsync(
         Guid securityId, string? accountId, Guid receiptId, CancellationToken ct = default)
         => _store.GetPriceSelectionAsync(securityId, accountId, receiptId, ct);
+
+    private static decimal? CalculateComparisonPercentage(decimal comparisonPrice, decimal selectedPrice)
+    {
+        try
+        {
+            return Math.Round((comparisonPrice - selectedPrice) / selectedPrice * 100m, 4);
+        }
+        catch (OverflowException)
+        {
+            // Preserve both exact observations even when their derived percentage cannot fit.
+            // Close-price assessment retains an explicit dispersion blocker for this evidence.
+            return null;
+        }
+    }
 
     public async Task<IReadOnlyList<SecurityComparisonPriceDto>> GetComparisonPricesAsync(
         Guid securityId, CancellationToken ct = default)

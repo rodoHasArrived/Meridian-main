@@ -1,11 +1,11 @@
 {
-  "total_files": 731,
-  "total_lines": 159563,
+  "total_files": 733,
+  "total_lines": 160240,
   "orphaned_count": 248,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 301,
-  "average_lines": 218.3,
+  "average_lines": 218.6,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2107,6 +2107,14 @@
       "stale": false
     },
     {
+      "path": "docs/domain/account-oversight-evidence.md",
+      "line_count": 62,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/domain/brokerage-account-snapshot.md",
       "line_count": 62,
       "has_heading": true,
@@ -2148,7 +2156,7 @@
     },
     {
       "path": "docs/domain/README.md",
-      "line_count": 28,
+      "line_count": 29,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2476,7 +2484,7 @@
     },
     {
       "path": "docs/generated/database/contracts/asset-operations-contracts-page-01.md",
-      "line_count": 693,
+      "line_count": 696,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2484,7 +2492,7 @@
     },
     {
       "path": "docs/generated/database/contracts/asset-operations-contracts-page-02.md",
-      "line_count": 261,
+      "line_count": 343,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2628,7 +2636,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-01.md",
-      "line_count": 571,
+      "line_count": 577,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2636,7 +2644,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-02.md",
-      "line_count": 543,
+      "line_count": 539,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2644,7 +2652,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-03.md",
-      "line_count": 593,
+      "line_count": 588,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2652,7 +2660,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-04.md",
-      "line_count": 187,
+      "line_count": 269,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2748,7 +2756,7 @@
     },
     {
       "path": "docs/generated/database/modules/security_master.md",
-      "line_count": 1353,
+      "line_count": 1374,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2812,7 +2820,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12037,
+      "line_count": 12073,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2917,6 +2925,14 @@
     {
       "path": "docs/operations/service-level-objectives.md",
       "line_count": 15,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/account-oversight.md",
+      "line_count": 211,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3052,7 +3068,7 @@
     },
     {
       "path": "docs/operators/README.md",
-      "line_count": 185,
+      "line_count": 186,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3452,7 +3468,7 @@
     },
     {
       "path": "docs/reference/api-reference.md",
-      "line_count": 796,
+      "line_count": 856,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5732,7 +5748,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 978,
+      "line_count": 996,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5764,7 +5780,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1719,
+      "line_count": 1734,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5828,7 +5844,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 1019,
+      "line_count": 1037,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5892,7 +5908,7 @@
     },
     {
       "path": "src/Meridian.Instruments/README.md",
-      "line_count": 216,
+      "line_count": 230,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5996,7 +6012,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 1003,
+      "line_count": 1019,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6020,7 +6036,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2764,
+      "line_count": 2780,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6028,7 +6044,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1593,
+      "line_count": 1610,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6052,7 +6068,7 @@
     },
     {
       "path": "src/Meridian.Ui/README.md",
-      "line_count": 116,
+      "line_count": 123,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

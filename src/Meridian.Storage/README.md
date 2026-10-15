@@ -11,6 +11,22 @@ last_reviewed: 2026-10-14
 
 # src/Meridian.Storage
 
+`PostgresSecurityMasterPricingStore.ClosePrices` extends retained pricing receipts with immutable
+account/book/date price snapshots and separate independent-review records (Security Master
+migration 037). Source receipts must match exactly; scoped advisory locks fence approvals and
+linked corrections. Database guards refuse replacement, deletion and truncation. The schema
+inventory exception records only the lexical false positive from `BEFORE TRUNCATE` rejection
+triggers and requires independent schema/storage review.
+
+`FileAccountCashForecastStore` retains append-only scoped forecast history with content hashes,
+atomic replacement and a process-independent writer lease. Explicit `InitializeAsync` provisioning
+is required; missing/corrupt initialized history cannot silently restart. Financial Operations
+owns cash-balance case semantics and delegates file replacement to Storage's shared writer.
+Forecast corrections resolve a flow's last retained revision across temporarily omitted runs,
+separately for expected and actual cash, while retaining the latest snapshot predecessor.
+Close-price history uses one exact account/book/date query ordered by version and shares the
+snapshot digest, indexed identity and independent approval validation used by single reads.
+
 New acquisition and disposal commands carry `AtomicLotReferenceVersions` from the approved event
 spine. The ledger transaction locks the co-located PostgreSQL Security Master and book-position
 rows after the book/period and before selected lots. It checks their reviewed versions, active
