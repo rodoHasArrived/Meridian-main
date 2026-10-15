@@ -10797,6 +10797,7 @@ Meridian-main
 │   │   │   ├── FileStatementToleranceProfileProviderTests.cs
 │   │   │   ├── IbFlexStatementServiceTests.cs
 │   │   │   ├── LedgerJournalInternalTransactionSourceTests.cs
+│   │   │   ├── LedgerJournalInternalTransactionSourceTests.Price.cs
 │   │   │   ├── ReconciliationCaseServiceTests.cs
 │   │   │   ├── ReconciliationContractsTests.cs
 │   │   │   ├── RetainedInternalReconciliationPopulationProviderTests.cs

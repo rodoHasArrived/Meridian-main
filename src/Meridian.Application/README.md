@@ -49,6 +49,13 @@ in the retained book currency. Scope-free legacy callers retain their existing a
 behavior. Focused coverage lives in `LedgerJournalInternalTransactionSourceTests` and
 `RetainedInternalReconciliationPopulationProviderTests`.
 
+The journal source preserves the execution consumer's positive invariant `tradeFill.price` for
+single-currency trades with retained quantity, enabling configured statement price tolerances in
+the production path. Commission journals cannot acquire a trade price from their copied audit
+tags. Missing or invalid tags remain absent; neither net cash nor position cost basis supplies an
+execution/mark price. `LedgerJournalInternalTransactionSourceTests.Price` covers parsing and the
+complete statement workflow against this journal projection.
+
 Derived lending runs commit their Asset Operations publication message in the same PostgreSQL
 transaction as the run and its details. HTTP requests return the committed run without calling
 the publisher. The outbox worker publishes retained state and retries failures; missing publisher
