@@ -131,6 +131,18 @@ public sealed record StrategyRunEntry(
     public IReadOnlyDictionary<string, string> OutputMetadata { get; init; } =
         new Dictionary<string, string>(StringComparer.Ordinal);
 
+    private IReadOnlyList<string> _lifecycleFacts = [];
+
+    /// <summary>
+    /// Ordered F# lifecycle facts established by this retained event. Empty for legacy records
+    /// and events without a policy transition. Replay projects evidence without invoking hooks.
+    /// </summary>
+    public IReadOnlyList<string> LifecycleFacts
+    {
+        get => _lifecycleFacts;
+        init => _lifecycleFacts = value ?? [];
+    }
+
     /// <summary><see cref="OutputMetadata"/> key holding the fill count of a size-bounded run.</summary>
     public const string RetainedFillCountMetadataKey = "fillCount";
 
@@ -346,6 +358,7 @@ public sealed record StrategyRunEntry(
             EndedAt = now,
             Metrics = metrics,
             LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             Reason = "Strategy run completed.",
             ExceptionType = null,
@@ -363,6 +376,7 @@ public sealed record StrategyRunEntry(
             EndedAt = now,
             TerminalStatus = StrategyRunStatus.Failed,
             LastLifecycleEvent = StrategyRunLifecycleEventType.Failed,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             Reason = reason ?? "Strategy run failed.",
             ExceptionType = exception?.GetType().FullName,
@@ -380,6 +394,7 @@ public sealed record StrategyRunEntry(
             EndedAt = now,
             TerminalStatus = StrategyRunStatus.Cancelled,
             LastLifecycleEvent = StrategyRunLifecycleEventType.Cancelled,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             Reason = reason ?? "Strategy run was cancelled.",
             ExceptionType = exception?.GetType().FullName,
@@ -400,6 +415,7 @@ public sealed record StrategyRunEntry(
         return this with
         {
             LastLifecycleEvent = StrategyRunLifecycleEventType.StartRequested,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             ActorId = actorId,
             Reason = reason ?? "Strategy start requested.",
@@ -415,6 +431,7 @@ public sealed record StrategyRunEntry(
         return this with
         {
             LastLifecycleEvent = StrategyRunLifecycleEventType.Started,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             ActorId = actorId,
             Reason = reason ?? "Strategy started externally.",
@@ -451,6 +468,7 @@ public sealed record StrategyRunEntry(
         this with
         {
             LastLifecycleEvent = StrategyRunLifecycleEventType.Suspended,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = DateTimeOffset.UtcNow,
             ActorId = actorId,
             Reason = reason ?? "Host stopped; execution awaits recovery."
@@ -462,6 +480,7 @@ public sealed record StrategyRunEntry(
         return this with
         {
             LastLifecycleEvent = StrategyRunLifecycleEventType.PauseRequested,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             ActorId = actorId,
             Reason = reason ?? "Strategy pause requested.",
@@ -477,6 +496,7 @@ public sealed record StrategyRunEntry(
         return this with
         {
             LastLifecycleEvent = StrategyRunLifecycleEventType.Paused,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             ActorId = actorId,
             Reason = reason ?? "Strategy run paused.",
@@ -492,6 +512,7 @@ public sealed record StrategyRunEntry(
         return this with
         {
             LastLifecycleEvent = StrategyRunLifecycleEventType.PauseFailed,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             ActorId = actorId,
             Reason = "Strategy pause failed.",
@@ -507,6 +528,7 @@ public sealed record StrategyRunEntry(
         return this with
         {
             LastLifecycleEvent = StrategyRunLifecycleEventType.StopRequested,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             ActorId = actorId,
             Reason = reason ?? "Strategy stop requested."
@@ -520,6 +542,7 @@ public sealed record StrategyRunEntry(
         return this with
         {
             LastLifecycleEvent = StrategyRunLifecycleEventType.StopFailed,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             ActorId = actorId,
             Reason = "Strategy stop failed.",
@@ -545,6 +568,7 @@ public sealed record StrategyRunEntry(
         return this with
         {
             LastLifecycleEvent = StrategyRunLifecycleEventType.RecoveryAttempted,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             ActorId = actorId,
             Reason = reason ?? "Strategy recovery attempted.",
@@ -572,6 +596,7 @@ public sealed record StrategyRunEntry(
         return this with
         {
             LastLifecycleEvent = StrategyRunLifecycleEventType.ActivationDeferred,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             ActorId = actorId,
             Reason = reason

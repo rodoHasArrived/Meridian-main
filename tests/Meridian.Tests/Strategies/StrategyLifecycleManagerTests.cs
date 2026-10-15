@@ -216,6 +216,79 @@ public sealed class StrategyLifecycleManagerTests
         statuses.Should().HaveCount(1);
     }
 
+    [Theory]
+    [InlineData(StrategyStatus.Running, RunType.Paper)]
+    [InlineData(StrategyStatus.Paused, RunType.Paper)]
+    [InlineData(StrategyStatus.Running, RunType.Live)]
+    [InlineData(StrategyStatus.Paused, RunType.Live)]
+    public async Task Register_SameActiveInstanceWithAnotherRun_RejectsRebindingAndStopsOriginalRun(
+        StrategyStatus activeStatus, RunType secondMode)
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-registration-run-binding", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dataRoot);
+        try
+        {
+            var history = new FileOperationalCaseHistoryStore(dataRoot);
+            var repository = new StrategyRunStore(history);
+            var first = StrategyRunEntry.StartWithEvidence(
+                "configured-strategy", "Configured strategy", RunType.Paper, "bound-paper-run",
+                engine: "BrokerPaper",
+                parameterSet: new Dictionary<string, string> { ["symbols"] = "AAPL", ["quantity"] = "1" });
+            await repository.RecordRunAsync(first);
+            if (activeStatus == StrategyStatus.Paused)
+            {
+                await repository.RecordLifecycleEventAsync(
+                    first.Paused("operator") with { TerminalStatus = StrategyRunStatus.Paused },
+                    StrategyRunLifecycleEventType.Paused);
+            }
+
+            var retainedFirst = (await repository.GetRunByIdAsync(first.RunId))!;
+            var second = StrategyRunEntry.StartWithEvidence(
+                first.StrategyId, first.StrategyName, secondMode, "newer-configured-run",
+                engine: secondMode == RunType.Live ? "BrokerLive" : "BrokerPaper",
+                parameterSet: new Dictionary<string, string> { ["symbols"] = "MSFT", ["quantity"] = "7" });
+            await repository.RecordRunAsync(second);
+            var retainedSecond = (await repository.GetRunByIdAsync(second.RunId))!;
+            (await repository.GetLatestRunAsync(first.StrategyId))!.RunId.Should().Be(second.RunId);
+            var strategy = new StubLiveStrategy(first.StrategyId, activeStatus);
+            await using var manager = new StrategyLifecycleManager(repository, NullLogger<StrategyLifecycleManager>.Instance);
+            manager.Register(strategy, retainedFirst);
+            manager.Register(strategy);
+            manager.Register(strategy, retainedFirst with { Reason = "Refreshed the same run's control state." });
+
+            var rebind = () => manager.Register(strategy, retainedSecond);
+
+            rebind.Should().Throw<InvalidOperationException>().WithMessage("*rebound*another run*");
+            manager.GetStatuses()[first.StrategyId].Should().Be(activeStatus);
+            var outcome = await manager.StopAsync(first.StrategyId);
+
+            outcome.State.Should().Be(OperationTerminalState.Succeeded);
+            outcome.CorrelationId.Should().Be(first.RunId);
+            VerifiedOperationOutcomeValidator.Validate(outcome).Should().BeEmpty();
+            var replayed = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var stopped = (await replayed.GetRunByIdAsync(first.RunId))!;
+            stopped.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+            stopped.TerminalStatus.Should().Be(StrategyRunStatus.Stopped);
+            stopped.EndedAt.Should().NotBeNull();
+            stopped.ParameterSet.Should().BeEquivalentTo(first.ParameterSet);
+            (await replayed.GetRunByIdAsync(second.RunId)).Should().BeEquivalentTo(retainedSecond);
+            var secondHistory = await history.ReadAsync(new OperationalCaseHistoryQuery
+            {
+                CaseId = $"strategy-run:{second.RunId}"
+            });
+            secondHistory.Should().ContainSingle();
+            strategy.StopCallCount.Should().Be(1);
+            strategy.StartCallCount.Should().Be(0);
+
+            var rebindAfterStop = () => manager.Register(strategy, retainedSecond);
+            rebindAfterStop.Should().NotThrow("a stopped instance can acquire a different run binding");
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
     // ------------------------------------------------------------------ //
     // DisposeAsync                                                          //
     // ------------------------------------------------------------------ //
