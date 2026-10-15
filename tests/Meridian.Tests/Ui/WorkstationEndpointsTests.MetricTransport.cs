@@ -117,9 +117,15 @@ public sealed partial class WorkstationEndpointsTests
             ? "/api/strategies/runs/compare?ids=transport-invalid,transport-valid"
             : "/api/workstation/runs/transport-invalid/equity-curve";
 
-        var request = () => client.GetAsync(route);
+        var response = await client.GetAsync(route);
 
-        await request.Should().ThrowAsync<ArgumentException>();
+        // Minimal hosting's development exception middleware converts the serialization
+        // exception into an HTTP failure instead of propagating it through TestServer.
+        response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+        var error = await response.Content.ReadAsStringAsync();
+        error.Should().Contain("System.ArgumentException")
+            .And.Contain("cannot be written as valid JSON",
+                "an undefined Sharpe value must fail serialization rather than become a successful named-float payload");
     }
 
     private static StrategyRunEntry BuildWinningMetricTransportRun(string runId)
