@@ -145,7 +145,7 @@ jobs:
 
       - name: Upload release preflight test results
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: desktop-release-preflight-test-results-${{ github.run_number }}
           path: artifacts/test-results/desktop-release-preflight/
@@ -239,7 +239,7 @@ jobs:
       # only pointer a failed packaging run leaves is a path inside a discarded runner.
       - name: Upload desktop packaging diagnostics
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: desktop-packaging-diagnostics-${{ matrix.runtime }}-${{ github.run_id }}
           path: diagnostic-logs/
@@ -315,7 +315,7 @@ jobs:
           sbom-path: artifacts/release/${{ matrix.runtime }}/desktop-installer-${{ matrix.runtime }}-sbom.spdx.json
 
       - name: Upload packaged installer artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: meridian-desktop-installer-${{ matrix.runtime }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/release/${{ matrix.runtime }}/
@@ -434,7 +434,7 @@ jobs:
           sbom-path: artifacts/consumer-setup/consumer-setup-win-x64-sbom.spdx.json
 
       - name: Upload consumer setup artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: meridian-consumer-setup-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -559,7 +559,7 @@ jobs:
 
       - name: Upload clean-machine lifecycle evidence
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: desktop-install-certification-${{ matrix.runtime }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/install-certification/${{ matrix.runtime }}/
@@ -628,7 +628,7 @@ jobs:
 
       - name: Retain consumer lifecycle receipt and diagnostics
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: consumer-install-certification-win-x64-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/consumer-certification/
@@ -681,7 +681,7 @@ jobs:
           RELEASE_NEEDS: ${{ toJSON(needs) }}
         run: python build/scripts/ci/verify-release-promotion.py --root artifacts/release --receipts artifacts/certification --smoke artifacts/startup/release-evidence.json --output artifacts/publish-release
       - name: Retain validated release or rehearsal evidence
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: validated-release-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/publish-release/

@@ -48,7 +48,7 @@ jobs:
         run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
       - name: Measure paired test execution
         run: python build/scripts/ci/benchmark-ci.py --subject ${{ matrix.subject }} --pair ${{ matrix.pair }} --output artifacts/benchmark/${{ matrix.subject }}-${{ matrix.pair }}/pair.json
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: benchmark-${{ matrix.subject }}-${{ matrix.pair }}-${{ github.run_attempt }}
@@ -87,7 +87,7 @@ jobs:
               with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
                   summary.write(f'### {subject}\n\n```json\n{json.dumps(result, indent=2)}\n```\n\nA human-reviewed change is required before adoption.\n')
           PY
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: benchmark-decisions-${{ github.run_attempt }}
           path: artifacts/benchmark/*-decision.json

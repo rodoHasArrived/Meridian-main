@@ -176,7 +176,7 @@ jobs:
 
       - name: Upload desktop packaging diagnostics
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: evaluation-packaging-diagnostics-${{ matrix.runtime }}-${{ github.run_id }}
           path: diagnostic-logs/
@@ -225,7 +225,7 @@ jobs:
             Set-Content -LiteralPath (Join-Path $releaseRoot "desktop-evaluation-$env:EVALUATION_RUNTIME-SHA256SUMS") -Encoding ascii
 
       - name: Upload the evaluation artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: meridian-evaluation-${{ matrix.runtime }}-${{ github.run_id }}
           path: artifacts/evaluation/${{ matrix.runtime }}/
@@ -327,7 +327,7 @@ jobs:
           "$hash  Meridian-Setup.exe" | Set-Content -LiteralPath (Join-Path $staging 'Meridian-Setup.exe.sha256') -Encoding ascii
 
       - name: Upload the consumer setup artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: meridian-evaluation-consumer-setup-${{ github.run_id }}
           path: artifacts/evaluation/consumer-setup/
