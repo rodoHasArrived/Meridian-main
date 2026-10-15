@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Net;
 using System.Net.WebSockets;
 using System.Security.Authentication;
 using System.Text;
@@ -29,8 +30,8 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 ///
 /// Notes:
 /// - Alpaca typically limits to 1 active stream connection per user per endpoint.
-/// - Authentication waits for the provider acknowledgment before replaying subscriptions
-///   and publishing connection readiness.
+/// - Authentication and subscription changes wait for provider acknowledgments before
+///   confirming subscription state and publishing connection readiness.
 /// </summary>
 [DataSource("alpaca", "Alpaca Markets", Infrastructure.DataSources.DataSourceType.Realtime, DataSourceCategory.Broker,
     Priority = 10, Description = "WebSocket streaming from Alpaca Markets")]
@@ -55,6 +56,21 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
     private Dictionary<string, HashSet<string>> _sentSubscriptions = new(StringComparer.OrdinalIgnoreCase);
     private volatile bool _subscriptionsInitialized;
     private long _subscriptionVersion;
+    private long _connectionGeneration;
+    private readonly object _controlSync = new();
+    private PendingSubscription? _pendingSubscription;
+
+    internal TimeSpan ControlAcknowledgmentTimeout { get; init; } = TimeSpan.FromSeconds(10);
+
+    private sealed class PendingSubscription(Dictionary<string, HashSet<string>> expected,
+        HashSet<string> requiredChannels, CancellationTokenSource cancellation)
+    {
+        internal Dictionary<string, HashSet<string>> Expected { get; } = expected;
+        internal HashSet<string> RequiredChannels { get; } = requiredChannels;
+        internal CancellationTokenSource Cancellation { get; } = cancellation;
+        internal TaskCompletionSource Completion { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal bool Invalidated { get; set; }
+    }
 
     // Content-based trade deduplication: sliding window keyed on (symbol, price, size, timestamp).
     // Alpaca's WebSocket is known to re-deliver identical trade messages during reconnections and
@@ -80,6 +96,7 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
         Options = opt ?? throw new ArgumentNullException(nameof(opt));
         if (string.IsNullOrWhiteSpace(Options.KeyId) || string.IsNullOrWhiteSpace(Options.SecretKey))
             throw new ArgumentException("Alpaca KeyId/SecretKey required.");
+        ConnectionDiagnosticsChanged += OnConnectionDiagnosticsChanged;
     }
 
 
@@ -159,7 +176,11 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
     /// <inheritdoc/>
     protected override void ConfigureWebSocket(ClientWebSocket webSocket)
     {
-        _subscriptionsInitialized = false;
+        lock (_controlSync)
+        {
+            _subscriptionsInitialized = false;
+            _connectionGeneration++;
+        }
         base.ConfigureWebSocket(webSocket);
     }
 
@@ -167,7 +188,7 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
     protected override async Task AuthenticateAsync(CancellationToken ct)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        timeout.CancelAfter(TimeSpan.FromSeconds(10));
+        timeout.CancelAfter(ControlAcknowledgmentTimeout);
         try
         {
             await SendAsync(BuildAuthenticationMessage(Options), timeout.Token).ConfigureAwait(false);
@@ -175,7 +196,7 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
             {
                 var message = await ReadOneMessageAsync(timeout.Token).ConfigureAwait(false);
                 if (message is null)
-                    throw new AuthenticationException("Alpaca closed the WebSocket before acknowledging authentication.");
+                    throw new WebSocketException("Alpaca closed the WebSocket before acknowledging authentication.");
 
                 using var document = JsonDocument.Parse(message);
                 JsonElement[] elements = document.RootElement.ValueKind == JsonValueKind.Array
@@ -189,7 +210,7 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
                         continue;
 
                     if (type.GetString() == "error")
-                        throw new AuthenticationException("Alpaca rejected WebSocket authentication.");
+                        throw CreateControlError(element);
 
                     if (type.GetString() == "success" &&
                         element.TryGetProperty("msg", out var status) &&
@@ -206,7 +227,7 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
         }
         catch (OperationCanceledException) when (!ct.IsCancellationRequested && timeout.IsCancellationRequested)
         {
-            throw new TimeoutException("Alpaca did not acknowledge WebSocket authentication within 10 seconds.");
+            throw new TimeoutException("Alpaca did not acknowledge WebSocket authentication before the control timeout.");
         }
     }
 
@@ -222,10 +243,12 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
         try
         {
             using var doc = JsonDocument.Parse(message);
+            HandleControlMessages(doc.RootElement);
             if (doc.RootElement.ValueKind == JsonValueKind.Array)
             {
-                foreach (var el in doc.RootElement.EnumerateArray())
-                    HandleMessage(el);
+                foreach (var element in doc.RootElement.EnumerateArray())
+                    if (element.ValueKind == JsonValueKind.Object)
+                        HandleMessage(element);
             }
             else if (doc.RootElement.ValueKind == JsonValueKind.Object)
             {
@@ -234,6 +257,8 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
         }
         catch (JsonException ex)
         {
+            lock (_controlSync)
+                _pendingSubscription?.Completion.TrySetException(ex);
             Log.Warning(ex, "Failed to parse Alpaca WebSocket message. Raw JSON: {RawJson}. " +
                 "This may indicate a protocol change or malformed message.",
                 message.Length > 500 ? message[..500] + "..." : message);
@@ -271,17 +296,17 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
                 if (initialReplay)
                 {
                     if (desired.Count > 0)
-                        await SendAsync(payload, ct).ConfigureAwait(false);
-                    _sentSubscriptions = desired;
+                        await SendSubscriptionControlAsync(payload, desired, readDirectly: true, ct).ConfigureAwait(false);
                     initialReplay = false;
                 }
                 else
                 {
-                    await ApplySubscriptionChangesAsync(desired, ct).ConfigureAwait(false);
+                    await ApplySubscriptionChangesAsync(desired, readDirectly: true, ct).ConfigureAwait(false);
                 }
 
                 lock (_subscriptionSync)
                 {
+                    ct.ThrowIfCancellationRequested();
                     if (version != _subscriptionVersion)
                         continue;
                     _subscriptionsInitialized = true;
@@ -355,12 +380,27 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
     private async Task ReconcileSubscriptionsAsync(CancellationToken ct)
     {
         await _subscriptionGate.WaitAsync(ct).ConfigureAwait(false);
+        var generation = Volatile.Read(ref _connectionGeneration);
         try
         {
-            if (!Connected || !_subscriptionsInitialized)
+            if (!GetConnectionDiagnosticsSnapshot().IsConnected || !_subscriptionsInitialized)
                 return;
 
-            await ApplySubscriptionChangesAsync(GetDesiredSubscriptions(), ct).ConfigureAwait(false);
+            await ApplySubscriptionChangesAsync(GetDesiredSubscriptions(), readDirectly: false, ct).ConfigureAwait(false);
+        }
+        catch (Exception error) when (error is not OperationCanceledException)
+        {
+            Task report;
+            lock (_controlSync)
+            {
+                if (generation != _connectionGeneration || !_subscriptionsInitialized ||
+                    !GetConnectionDiagnosticsSnapshot().IsConnected)
+                    throw new OperationCanceledException("The failed Alpaca control operation belongs to an ended transport.", error);
+                _subscriptionsInitialized = false;
+                report = ReportConnectionFailureAsync(error);
+            }
+            await report.ConfigureAwait(false);
+            throw;
         }
         finally
         {
@@ -368,27 +408,208 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
         }
     }
 
-    private async Task ApplySubscriptionChangesAsync(Dictionary<string, HashSet<string>> desired, CancellationToken ct)
+    private async Task ApplySubscriptionChangesAsync(Dictionary<string, HashSet<string>> desired, bool readDirectly, CancellationToken ct)
     {
         var removed = Difference(_sentSubscriptions, desired);
         if (removed.Count > 0)
         {
-            await SendAsync(BuildSubscriptionChange("unsubscribe", removed), ct).ConfigureAwait(false);
-            foreach (var (kind, symbols) in removed)
-                _sentSubscriptions[kind].ExceptWith(symbols);
+            await SendSubscriptionControlAsync(BuildSubscriptionChange("unsubscribe", removed),
+                Difference(_sentSubscriptions, removed), readDirectly, ct).ConfigureAwait(false);
         }
 
         var added = Difference(desired, _sentSubscriptions);
         if (added.Count > 0)
         {
-            await SendAsync(BuildSubscriptionChange("subscribe", added), ct).ConfigureAwait(false);
-            foreach (var (kind, symbols) in added)
+            await SendSubscriptionControlAsync(BuildSubscriptionChange("subscribe", added), desired,
+                readDirectly, ct).ConfigureAwait(false);
+        }
+    }
+
+    private async Task SendSubscriptionControlAsync(string payload, Dictionary<string, HashSet<string>> expected,
+        bool readDirectly, CancellationToken ct)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        var pending = new PendingSubscription(expected,
+            expected.Keys.Concat(_sentSubscriptions.Keys).ToHashSet(StringComparer.OrdinalIgnoreCase), timeout);
+        timeout.CancelAfter(ControlAcknowledgmentTimeout);
+        lock (_controlSync)
+        {
+            if (!readDirectly && (!_subscriptionsInitialized || !GetConnectionDiagnosticsSnapshot().IsConnected))
+                throw new OperationCanceledException("The Alpaca subscription transport ended before sending its control command.");
+            _pendingSubscription = pending;
+        }
+
+        try
+        {
+            // Install the waiter before sending: a fast server can reply before SendAsync completes.
+            await SendAsync(payload, timeout.Token).ConfigureAwait(false);
+            if (readDirectly)
             {
-                if (!_sentSubscriptions.TryGetValue(kind, out var sent))
-                    _sentSubscriptions[kind] = sent = new(StringComparer.OrdinalIgnoreCase);
-                sent.UnionWith(symbols);
+                // Initial/reconnect replay precedes the receive loop. Live updates must never
+                // read here, since the shared receive loop is the sole reader after readiness.
+                while (!pending.Completion.Task.IsCompleted)
+                {
+                    var message = await ReadOneMessageAsync(timeout.Token).ConfigureAwait(false);
+                    if (message is null)
+                        throw new WebSocketException("Alpaca closed before acknowledging its subscription state.");
+                    await HandleMessageAsync(message).ConfigureAwait(false);
+                }
+            }
+
+            await pending.Completion.Task.WaitAsync(timeout.Token).ConfigureAwait(false);
+            ct.ThrowIfCancellationRequested();
+            lock (_controlSync)
+            {
+                if (pending.Invalidated)
+                    throw new OperationCanceledException("The Alpaca subscription transport ended.");
+                _sentSubscriptions = expected;
             }
         }
+        catch (Exception error)
+        {
+            lock (_controlSync)
+            {
+                // A provider error may have faulted the waiter just before another task
+                // ended this transport. It must not invalidate a replacement connection.
+                if (pending.Invalidated)
+                    throw new OperationCanceledException("The Alpaca subscription transport ended.", error);
+                if (error is OperationCanceledException && !ct.IsCancellationRequested && timeout.IsCancellationRequested)
+                    throw new TimeoutException("Alpaca did not acknowledge its subscription state before the control timeout.", error);
+            }
+            throw;
+        }
+        finally
+        {
+            lock (_controlSync)
+                if (ReferenceEquals(_pendingSubscription, pending))
+                    _pendingSubscription = null;
+        }
+    }
+
+    private void OnConnectionDiagnosticsChanged(WebSocketConnectionDiagnostics snapshot)
+    {
+        if (snapshot.IsConnected)
+        {
+            // A mutation can queue after the final replay snapshot but before readiness.
+            ReconcileSubscriptionsAsync(CancellationToken.None).ObserveException(Log, "Alpaca ready-state subscription reconciliation");
+            return;
+        }
+        _subscriptionsInitialized = false;
+        lock (_controlSync)
+        {
+            if (_pendingSubscription is not { } pending)
+                return;
+            pending.Invalidated = true;
+            pending.Cancellation.Cancel();
+            pending.Completion.TrySetCanceled(new CancellationToken(canceled: true));
+        }
+    }
+
+    private void HandleControlMessages(JsonElement root)
+    {
+        lock (_controlSync)
+        {
+            // An error in the same provider batch takes precedence over an acknowledgment,
+            // regardless of element order. News adapters share this control dispatch too.
+            var error = FindControlError(root);
+            if (error is not null)
+            {
+                if (_pendingSubscription?.Completion.TrySetException(error) != true)
+                    ReportConnectionFailureAsync(error).ObserveException(Log, "Alpaca asynchronous control failure");
+                return;
+            }
+
+            if (_pendingSubscription is not { } pending)
+                return;
+
+            var acknowledged = false;
+            if (root.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var element in root.EnumerateArray())
+                    if (!ValidateSubscriptionAcknowledgment(element, pending, ref acknowledged))
+                        return;
+            }
+            else if (!ValidateSubscriptionAcknowledgment(root, pending, ref acknowledged))
+                return;
+
+            if (acknowledged)
+                pending.Completion.TrySetResult();
+        }
+    }
+
+    private static Exception? FindControlError(JsonElement root)
+    {
+        if (root.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var element in root.EnumerateArray())
+                if (IsMessageType(element, "error"))
+                    return CreateControlError(element);
+            return null;
+        }
+        return IsMessageType(root, "error") ? CreateControlError(root) : null;
+    }
+
+    private static bool ValidateSubscriptionAcknowledgment(JsonElement element, PendingSubscription pending,
+        ref bool acknowledged)
+    {
+        if (!IsMessageType(element, "subscription"))
+            return true;
+        if (!SubscriptionMatches(element, pending.Expected, pending.RequiredChannels))
+        {
+            pending.Completion.TrySetException(new InvalidOperationException(
+                "Alpaca acknowledged a different subscription state than requested."));
+            return false;
+        }
+        acknowledged = true;
+        return true;
+    }
+
+    private static bool IsMessageType(JsonElement element, string expected)
+        => element.ValueKind == JsonValueKind.Object && element.TryGetProperty("T", out var type) &&
+            type.ValueKind == JsonValueKind.String && type.ValueEquals(expected);
+
+    private static bool SubscriptionMatches(JsonElement element, Dictionary<string, HashSet<string>> expected,
+        HashSet<string> requiredChannels)
+    {
+        var actual = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        var present = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var property in element.EnumerateObject())
+        {
+            if (property.Name == "T")
+                continue;
+            if (!present.Add(property.Name))
+                return false;
+            if (property.Value.ValueKind != JsonValueKind.Array)
+                return false;
+            var symbols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var symbol in property.Value.EnumerateArray())
+            {
+                if (symbol.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(symbol.GetString()))
+                    return false;
+                symbols.Add(symbol.GetString()!);
+            }
+            if (symbols.Count > 0 && !actual.TryAdd(property.Name, symbols))
+                return false;
+        }
+        return requiredChannels.IsSubsetOf(present) && actual.Count == expected.Count && expected.All(pair =>
+            actual.TryGetValue(pair.Key, out var symbols) && pair.Value.SetEquals(symbols));
+    }
+
+    private static Exception CreateControlError(JsonElement element)
+    {
+        var code = element.TryGetProperty("code", out var value) && value.ValueKind == JsonValueKind.Number &&
+            value.TryGetInt32(out var parsed) ? parsed : 0;
+        // Use only the numeric code in diagnostics; provider messages can echo request contents.
+        var message = $"Alpaca rejected a WebSocket control operation (code {code}).";
+        return code switch
+        {
+            401 or 402 or 409 => new AuthenticationException(message),
+            404 => new TimeoutException(message),
+            406 => new HttpRequestException(message, null, HttpStatusCode.TooManyRequests),
+            >= 500 => new HttpRequestException(message, null, HttpStatusCode.InternalServerError),
+            400 or 403 or 405 or 410 => new InvalidOperationException(message),
+            _ => new WebSocketException(message)
+        };
     }
 
     private static Dictionary<string, HashSet<string>> Difference(

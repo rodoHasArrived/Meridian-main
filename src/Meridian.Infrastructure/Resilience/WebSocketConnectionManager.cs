@@ -37,6 +37,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
 
     private ClientWebSocket? _webSocket;
     private WebSocketSendSession? _sendSession;
+    private long _transportAttemptId;
     private CancellationTokenSource? _connectionCts;
     private CancellationTokenSource? _receiveLoopCts;
     private Task? _receiveTask;
@@ -226,6 +227,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                 prepareConnection,
                 initializeConnection,
                 token),
+            cleanupRejectedInitialization: () => CleanupConnectionAsync(CancellationToken.None),
             ct).ConfigureAwait(false);
     }
 
@@ -250,6 +252,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                 _connectionCts = CancellationTokenSource.CreateLinkedTokenSource(
                     _supervisor.ConnectionLifetimeToken);
                 _webSocket = new ClientWebSocket();
+                _transportAttemptId = _supervisor.ConnectionAttemptId;
                 Volatile.Write(ref _sendSession, new WebSocketSendSession(_webSocket, _connectionCts.Token));
                 configureSocket?.Invoke(_webSocket);
 
@@ -606,6 +609,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                     initializeConnection,
                     token).ConfigureAwait(false);
             },
+            cleanupRejectedInitialization: () => CleanupConnectionAsync(CancellationToken.None),
             ct).ConfigureAwait(false);
     }
 
@@ -815,9 +819,34 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     private Task OnConnectionLostAsync()
         => RaiseConnectionLostIfActiveAsync();
 
-    private Task RaiseConnectionLostIfActiveAsync(Exception? error = null)
+    internal Task ReportConnectionFailureAsync(Exception error)
     {
-        if (!_supervisor.MarkConnectionLost(error))
+        var socket = _webSocket;
+        if (socket == null)
+            return Task.CompletedTask;
+
+        var attemptId = _transportAttemptId;
+        if (_supervisor.TryRecordInitializationFailure(error, attemptId))
+        {
+            _supervisor.RecordFailure(error);
+            // Interrupt reads/writes without losing the provider's original failure.
+            // The supervisor rejects readiness atomically even if initialization has returned.
+            try
+            {
+                socket.Abort();
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+            return Task.CompletedTask;
+        }
+
+        return RaiseConnectionLostIfActiveAsync(error, attemptId);
+    }
+
+    private Task RaiseConnectionLostIfActiveAsync(Exception? error = null, long? expectedAttemptId = null)
+    {
+        if (!_supervisor.MarkConnectionLost(error, expectedAttemptId))
             return Task.CompletedTask;
 
         var handler = ConnectionLost;

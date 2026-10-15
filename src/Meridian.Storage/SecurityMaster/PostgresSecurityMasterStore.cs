@@ -235,7 +235,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                    or display_name ilike @pattern
                    or primary_identifier_value ilike @pattern)
                  and (@active_only = false or status = 'Active')
-               order by rank desc, display_name
+               order by rank desc, display_name, security_id
                limit @take offset @skip;
                """
             : $"""
@@ -245,7 +245,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                    display_name ilike @pattern
                    or primary_identifier_value ilike @pattern)
                  and (@active_only = false or status = 'Active')
-               order by display_name
+               order by display_name, security_id
                limit @take offset @skip;
                """;
 
@@ -256,10 +256,12 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         command.Parameters.AddWithValue("skip", request.Skip);
 
         var ids = new List<Guid>();
-        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        await using (var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false))
         {
-            ids.Add(reader.GetGuid(0));
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            {
+                ids.Add(reader.GetGuid(0));
+            }
         }
 
         var results = new List<SecuritySummaryDto>(ids.Count);

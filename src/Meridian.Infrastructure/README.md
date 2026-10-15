@@ -49,7 +49,10 @@ This layer owns external integration details while depending on lower contracts 
 ## Important workflows
 
 Streaming readiness requires acknowledged authentication and successful subscription replay on both
-initial connection and recovery. Alpaca reconciles subscriptions against the current transport,
+initial connection and recovery. Alpaca validates the provider's full subscription acknowledgment
+before confirming replay or live subscription changes; rejected or timed-out changes invalidate
+readiness. Transient provider control errors remain retryable instead of becoming credential failures.
+Alpaca reconciles subscriptions against the current transport,
 sends explicit unsubscribe frames after the last local reference is removed, and replays only
 remaining subscriptions. WebSocket application messages, heartbeats, and close frames share a
 per-connection send gate; canceled queued writes cannot move to a replacement connection.
