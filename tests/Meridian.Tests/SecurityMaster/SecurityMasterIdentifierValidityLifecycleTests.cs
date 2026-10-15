@@ -248,7 +248,8 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
         await using var host = new Host();
         await host.Registry.RegisterAsync(new CanonicalSymbolDefinition
         {
-            Canonical = "INDEPENDENT", SecurityId = host.Id,
+            Canonical = "INDEPENDENT",
+            SecurityId = host.Id,
             AliasDefinitions = [new("MANUAL", SymbolMappingSources.Operator)]
         });
         host.Record = host.Record with

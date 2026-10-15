@@ -8,148 +8,148 @@
  viewBox="0.00 0.00 742.00 789.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(28.8 760)">
 <title>WpfScreenSummary</title>
-<polygon fill="#0f172a" stroke="none" points="-28.8,28.8 -28.8,-760 712.78,-760 712.78,28.8 -28.8,28.8"/>
-<text xml:space="preserve" text-anchor="middle" x="341.99" y="-709.2" font-family="Segoe UI" font-size="20.00">Meridian WPF screen summary</text>
-<text xml:space="preserve" text-anchor="middle" x="341.99" y="-685.2" font-family="Segoe UI" font-size="20.00">(auto&#45;generated from ShellPageRegistryBuilder + feature modules)</text>
+<polygon fill="#0f172a" stroke="none" points="-28.8,28.8 -28.8,-760 712.76,-760 712.76,28.8 -28.8,28.8"/>
+<text xml:space="preserve" text-anchor="middle" x="341.98" y="-709.2" font-family="Segoe UI" font-size="20.00">Meridian WPF screen summary</text>
+<text xml:space="preserve" text-anchor="middle" x="341.98" y="-685.2" font-family="Segoe UI" font-size="20.00">(auto&#45;generated from ShellPageRegistryBuilder + feature modules)</text>
 <!-- generated -->
 <g id="node1" class="node">
 <title>generated</title>
-<polygon fill="#1d4ed8" stroke="#60a5fa" points="195.83,-291.8 0,-291.8 0,-233.4 201.83,-233.4 201.83,-285.8 195.83,-291.8"/>
-<polyline fill="none" stroke="#60a5fa" points="195.83,-291.8 195.83,-285.8"/>
-<polyline fill="none" stroke="#60a5fa" points="201.83,-285.8 195.83,-285.8"/>
-<text xml:space="preserve" text-anchor="middle" x="100.92" y="-275.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Source fingerprint: b17fed41ff83</text>
-<text xml:space="preserve" text-anchor="middle" x="100.92" y="-258.4" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Workspaces: 7</text>
-<text xml:space="preserve" text-anchor="middle" x="100.92" y="-241.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Screens: 98</text>
+<polygon fill="#1d4ed8" stroke="#60a5fa" points="195.81,-291.8 0,-291.8 0,-233.4 201.81,-233.4 201.81,-285.8 195.81,-291.8"/>
+<polyline fill="none" stroke="#60a5fa" points="195.81,-291.8 195.81,-285.8"/>
+<polyline fill="none" stroke="#60a5fa" points="201.81,-285.8 195.81,-285.8"/>
+<text xml:space="preserve" text-anchor="middle" x="100.91" y="-275.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Source fingerprint: feca62e2f289</text>
+<text xml:space="preserve" text-anchor="middle" x="100.91" y="-258.4" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Workspaces: 7</text>
+<text xml:space="preserve" text-anchor="middle" x="100.91" y="-241.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Screens: 98</text>
 </g>
 <!-- shell -->
 <g id="node2" class="node">
 <title>shell</title>
-<polygon fill="#0f766e" stroke="#2dd4bf" points="183.63,-449.4 18.2,-449.4 18.2,-445.4 14.2,-445.4 14.2,-441.4 18.2,-441.4 18.2,-415.8 14.2,-415.8 14.2,-411.8 18.2,-411.8 18.2,-407.8 183.63,-407.8 183.63,-449.4"/>
-<polyline fill="none" stroke="#2dd4bf" points="18.2,-445.4 22.2,-445.4 22.2,-441.4 18.2,-441.4"/>
-<polyline fill="none" stroke="#2dd4bf" points="18.2,-415.8 22.2,-415.8 22.2,-411.8 18.2,-411.8"/>
-<text xml:space="preserve" text-anchor="middle" x="100.92" y="-432.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">WPF Shell</text>
-<text xml:space="preserve" text-anchor="middle" x="100.92" y="-416" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">MainWindow + MainPage</text>
+<polygon fill="#0f766e" stroke="#2dd4bf" points="183.62,-449.4 18.19,-449.4 18.19,-445.4 14.19,-445.4 14.19,-441.4 18.19,-441.4 18.19,-415.8 14.19,-415.8 14.19,-411.8 18.19,-411.8 18.19,-407.8 183.62,-407.8 183.62,-449.4"/>
+<polyline fill="none" stroke="#2dd4bf" points="18.19,-445.4 22.19,-445.4 22.19,-441.4 18.19,-441.4"/>
+<polyline fill="none" stroke="#2dd4bf" points="18.19,-415.8 22.19,-415.8 22.19,-411.8 18.19,-411.8"/>
+<text xml:space="preserve" text-anchor="middle" x="100.91" y="-432.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">WPF Shell</text>
+<text xml:space="preserve" text-anchor="middle" x="100.91" y="-416" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">MainWindow + MainPage</text>
 </g>
 <!-- catalog -->
 <g id="node3" class="node">
 <title>catalog</title>
-<polygon fill="#7c3aed" stroke="#c4b5fd" points="196.64,-358.4 5.2,-358.4 5.2,-354.4 1.2,-354.4 1.2,-350.4 5.2,-350.4 5.2,-324.8 1.2,-324.8 1.2,-320.8 5.2,-320.8 5.2,-316.8 196.64,-316.8 196.64,-358.4"/>
-<polyline fill="none" stroke="#c4b5fd" points="5.2,-354.4 9.2,-354.4 9.2,-350.4 5.2,-350.4"/>
-<polyline fill="none" stroke="#c4b5fd" points="5.2,-324.8 9.2,-324.8 9.2,-320.8 5.2,-320.8"/>
-<text xml:space="preserve" text-anchor="middle" x="100.92" y="-341.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">ShellNavigationCatalog</text>
-<text xml:space="preserve" text-anchor="middle" x="100.92" y="-325" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">workspace + screen descriptors</text>
+<polygon fill="#7c3aed" stroke="#c4b5fd" points="196.63,-358.4 5.19,-358.4 5.19,-354.4 1.19,-354.4 1.19,-350.4 5.19,-350.4 5.19,-324.8 1.19,-324.8 1.19,-320.8 5.19,-320.8 5.19,-316.8 196.63,-316.8 196.63,-358.4"/>
+<polyline fill="none" stroke="#c4b5fd" points="5.19,-354.4 9.19,-354.4 9.19,-350.4 5.19,-350.4"/>
+<polyline fill="none" stroke="#c4b5fd" points="5.19,-324.8 9.19,-324.8 9.19,-320.8 5.19,-320.8"/>
+<text xml:space="preserve" text-anchor="middle" x="100.91" y="-341.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">ShellNavigationCatalog</text>
+<text xml:space="preserve" text-anchor="middle" x="100.91" y="-325" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">workspace + screen descriptors</text>
 </g>
 <!-- shell&#45;&gt;catalog -->
 <g id="edge1" class="edge">
 <title>shell&#45;&gt;catalog</title>
-<path fill="none" stroke="#38bdf8" stroke-width="1.3" d="M100.92,-407.61C100.92,-396.03 100.92,-381.43 100.92,-368.56"/>
-<polygon fill="#38bdf8" stroke="#38bdf8" stroke-width="1.3" points="103.72,-368.67 100.92,-360.67 98.12,-368.67 103.72,-368.67"/>
-<text xml:space="preserve" text-anchor="middle" x="89.52" y="-378.9" font-family="Segoe UI" font-size="14.00">loads screen registry</text>
+<path fill="none" stroke="#38bdf8" stroke-width="1.3" d="M100.91,-407.61C100.91,-396.03 100.91,-381.43 100.91,-368.56"/>
+<polygon fill="#38bdf8" stroke="#38bdf8" stroke-width="1.3" points="103.71,-368.67 100.91,-360.67 98.11,-368.67 103.71,-368.67"/>
+<text xml:space="preserve" text-anchor="middle" x="89.51" y="-378.9" font-family="Segoe UI" font-size="14.00">loads screen registry</text>
 </g>
 <!-- workspace_1 -->
 <g id="node4" class="node">
 <title>workspace_1</title>
-<polygon fill="#1d4ed8" stroke="#93c5fd" points="662.98,-675.2 659.98,-679.2 638.98,-679.2 635.98,-675.2 285.83,-675.2 285.83,-600 662.98,-600 662.98,-675.2"/>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-658.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Trading</text>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-641.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">6 screens / 3 sections</text>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-625" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary 5 | Secondary 1 | Overflow 0</text>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-608.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Launchpad: Trading Workspace → TradingWorkspaceShellPage</text>
+<polygon fill="#1d4ed8" stroke="#93c5fd" points="662.96,-675.2 659.96,-679.2 638.96,-679.2 635.96,-675.2 285.81,-675.2 285.81,-600 662.96,-600 662.96,-675.2"/>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-658.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Trading</text>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-641.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">6 screens / 3 sections</text>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-625" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary 5 | Secondary 1 | Overflow 0</text>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-608.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Launchpad: Trading Workspace → TradingWorkspaceShellPage</text>
 </g>
 <!-- catalog&#45;&gt;workspace_1 -->
 <g id="edge2" class="edge">
 <title>catalog&#45;&gt;workspace_1</title>
-<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M154.46,-358.88C171.56,-368 189.33,-380.17 201.83,-395.6 258.37,-465.38 198.79,-526.74 264.83,-587.6 268.86,-591.31 273.1,-594.75 277.54,-597.95"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="275.88,-600.21 284.08,-602.36 279.01,-595.57 275.88,-600.21"/>
+<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M154.44,-358.88C171.54,-368 189.32,-380.17 201.81,-395.6 258.35,-465.38 198.77,-526.74 264.81,-587.6 268.84,-591.31 273.08,-594.75 277.52,-597.95"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="275.86,-600.21 284.06,-602.36 278.99,-595.57 275.86,-600.21"/>
 </g>
 <!-- workspace_2 -->
 <g id="node5" class="node">
 <title>workspace_2</title>
-<polygon fill="#1d4ed8" stroke="#93c5fd" points="668.44,-575.2 665.44,-579.2 644.44,-579.2 641.44,-575.2 280.37,-575.2 280.37,-500 668.44,-500 668.44,-575.2"/>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-558.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Portfolio</text>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-541.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">9 screens / 6 sections</text>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-525" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary 4 | Secondary 4 | Overflow 1</text>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-508.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Launchpad: Portfolio Workspace → PortfolioWorkspaceShellPage</text>
+<polygon fill="#1d4ed8" stroke="#93c5fd" points="668.42,-575.2 665.42,-579.2 644.42,-579.2 641.42,-575.2 280.35,-575.2 280.35,-500 668.42,-500 668.42,-575.2"/>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-558.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Portfolio</text>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-541.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">9 screens / 6 sections</text>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-525" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary 4 | Secondary 4 | Overflow 1</text>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-508.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Launchpad: Portfolio Workspace → PortfolioWorkspaceShellPage</text>
 </g>
 <!-- catalog&#45;&gt;workspace_2 -->
 <g id="edge3" class="edge">
 <title>catalog&#45;&gt;workspace_2</title>
-<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M148.07,-358.84C166.07,-368.47 186.1,-381 201.83,-395.6 238.16,-429.31 224.01,-459.5 264.83,-487.6 268.51,-490.13 272.31,-492.54 276.19,-494.82"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="274.77,-497.24 283.13,-498.67 277.5,-492.34 274.77,-497.24"/>
+<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M148.06,-358.84C166.05,-368.47 186.09,-381 201.81,-395.6 238.14,-429.31 223.99,-459.5 264.81,-487.6 268.49,-490.13 272.29,-492.54 276.17,-494.82"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="274.75,-497.24 283.11,-498.67 277.47,-492.34 274.75,-497.24"/>
 </g>
 <!-- workspace_3 -->
 <g id="node6" class="node">
 <title>workspace_3</title>
-<polygon fill="#1d4ed8" stroke="#93c5fd" points="683.98,-475.2 680.98,-479.2 659.98,-479.2 656.98,-475.2 264.83,-475.2 264.83,-400 683.98,-400 683.98,-475.2"/>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-458.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Accounting</text>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-441.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">16 screens / 3 sections</text>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-425" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary 8 | Secondary 8 | Overflow 0</text>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-408.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Launchpad: Accounting Workspace → AccountingWorkspaceShellPage</text>
+<polygon fill="#1d4ed8" stroke="#93c5fd" points="683.96,-475.2 680.96,-479.2 659.96,-479.2 656.96,-475.2 264.81,-475.2 264.81,-400 683.96,-400 683.96,-475.2"/>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-458.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Accounting</text>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-441.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">16 screens / 3 sections</text>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-425" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary 8 | Secondary 8 | Overflow 0</text>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-408.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Launchpad: Accounting Workspace → AccountingWorkspaceShellPage</text>
 </g>
 <!-- catalog&#45;&gt;workspace_3 -->
 <g id="edge4" class="edge">
 <title>catalog&#45;&gt;workspace_3</title>
-<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M167.83,-358.85C197.37,-368.12 232.73,-378.83 264.83,-387.6 276.57,-390.8 288.71,-394.01 300.95,-397.15"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="299.98,-399.79 308.43,-399.06 301.37,-394.37 299.98,-399.79"/>
+<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M167.82,-358.86C197.36,-368.12 232.71,-378.83 264.81,-387.6 276.55,-390.8 288.69,-394.01 300.93,-397.15"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="299.96,-399.79 308.41,-399.06 301.35,-394.37 299.96,-399.79"/>
 </g>
 <!-- workspace_4 -->
 <g id="node7" class="node">
 <title>workspace_4</title>
-<polygon fill="#1d4ed8" stroke="#93c5fd" points="674.65,-375.2 671.65,-379.2 650.65,-379.2 647.65,-375.2 274.16,-375.2 274.16,-300 674.65,-300 674.65,-375.2"/>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-358.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Reporting</text>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-341.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">10 screens / 4 sections</text>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-325" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary 7 | Secondary 3 | Overflow 0</text>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-308.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Launchpad: Reporting Workspace → ReportingWorkspaceShellPage</text>
+<polygon fill="#1d4ed8" stroke="#93c5fd" points="674.63,-375.2 671.63,-379.2 650.63,-379.2 647.63,-375.2 274.14,-375.2 274.14,-300 674.63,-300 674.63,-375.2"/>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-358.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Reporting</text>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-341.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">10 screens / 4 sections</text>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-325" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary 7 | Secondary 3 | Overflow 0</text>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-308.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Launchpad: Reporting Workspace → ReportingWorkspaceShellPage</text>
 </g>
 <!-- catalog&#45;&gt;workspace_4 -->
 <g id="edge5" class="edge">
 <title>catalog&#45;&gt;workspace_4</title>
-<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M197.1,-337.6C217.98,-337.6 240.88,-337.6 264.28,-337.6"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="264.01,-340.4 272.01,-337.6 264.01,-334.8 264.01,-340.4"/>
+<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M197.09,-337.6C217.97,-337.6 240.87,-337.6 264.27,-337.6"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="264,-340.4 272,-337.6 264,-334.8 264,-340.4"/>
 </g>
 <!-- workspace_5 -->
 <g id="node8" class="node">
 <title>workspace_5</title>
-<polygon fill="#1d4ed8" stroke="#93c5fd" points="665.32,-275.2 662.32,-279.2 641.32,-279.2 638.32,-275.2 283.5,-275.2 283.5,-200 665.32,-200 665.32,-275.2"/>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-258.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Strategy</text>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-241.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">14 screens / 5 sections</text>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-225" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary 6 | Secondary 3 | Overflow 3</text>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-208.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Launchpad: Strategy Workspace → StrategyWorkspaceShellPage</text>
+<polygon fill="#1d4ed8" stroke="#93c5fd" points="665.29,-275.2 662.29,-279.2 641.29,-279.2 638.29,-275.2 283.48,-275.2 283.48,-200 665.29,-200 665.29,-275.2"/>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-258.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Strategy</text>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-241.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">14 screens / 5 sections</text>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-225" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary 6 | Secondary 3 | Overflow 3</text>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-208.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Launchpad: Strategy Workspace → StrategyWorkspaceShellPage</text>
 </g>
 <!-- catalog&#45;&gt;workspace_5 -->
 <g id="edge6" class="edge">
 <title>catalog&#45;&gt;workspace_5</title>
-<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M167.83,-316.35C197.37,-307.08 232.73,-296.37 264.83,-287.6 276.57,-284.4 288.71,-281.19 300.95,-278.05"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="301.37,-280.83 308.43,-276.14 299.98,-275.41 301.37,-280.83"/>
+<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M167.82,-316.34C197.36,-307.08 232.71,-296.37 264.81,-287.6 276.55,-284.4 288.69,-281.19 300.93,-278.05"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="301.35,-280.83 308.41,-276.14 299.96,-275.41 301.35,-280.83"/>
 </g>
 <!-- workspace_6 -->
 <g id="node9" class="node">
 <title>workspace_6</title>
-<polygon fill="#1d4ed8" stroke="#93c5fd" points="645.09,-175.2 642.09,-179.2 621.09,-179.2 618.09,-175.2 303.72,-175.2 303.72,-100 645.09,-100 645.09,-175.2"/>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-158.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Data</text>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-141.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">25 screens / 7 sections</text>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-125" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary 6 | Secondary 9 | Overflow 10</text>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-108.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Launchpad: Data Workspace → DataWorkspaceShellPage</text>
+<polygon fill="#1d4ed8" stroke="#93c5fd" points="645.07,-175.2 642.07,-179.2 621.07,-179.2 618.07,-175.2 303.7,-175.2 303.7,-100 645.07,-100 645.07,-175.2"/>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-158.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Data</text>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-141.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">25 screens / 7 sections</text>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-125" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary 6 | Secondary 9 | Overflow 10</text>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-108.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Launchpad: Data Workspace → DataWorkspaceShellPage</text>
 </g>
 <!-- catalog&#45;&gt;workspace_6 -->
 <g id="edge7" class="edge">
 <title>catalog&#45;&gt;workspace_6</title>
-<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M183.82,-316.53C190.26,-313.13 196.38,-309.18 201.83,-304.6 247.08,-266.65 218.04,-223.63 264.83,-187.6 274,-180.55 284.01,-174.47 294.52,-169.23"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="295.64,-171.8 301.69,-165.87 293.25,-166.73 295.64,-171.8"/>
+<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M183.8,-316.53C190.24,-313.13 196.36,-309.18 201.81,-304.6 247.06,-266.65 218.02,-223.63 264.81,-187.6 273.98,-180.55 283.99,-174.47 294.5,-169.23"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="295.62,-171.8 301.67,-165.87 293.23,-166.73 295.62,-171.8"/>
 </g>
 <!-- workspace_7 -->
 <g id="node10" class="node">
 <title>workspace_7</title>
-<polygon fill="#1d4ed8" stroke="#93c5fd" points="663.78,-75.2 660.78,-79.2 639.78,-79.2 636.78,-75.2 285.04,-75.2 285.04,0 663.78,0 663.78,-75.2"/>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-58.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Settings</text>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-41.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">18 screens / 6 sections</text>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-25" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary 6 | Secondary 6 | Overflow 6</text>
-<text xml:space="preserve" text-anchor="middle" x="474.41" y="-8.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Launchpad: Settings Workspace → SettingsWorkspaceShellPage</text>
+<polygon fill="#1d4ed8" stroke="#93c5fd" points="663.76,-75.2 660.76,-79.2 639.76,-79.2 636.76,-75.2 285.01,-75.2 285.01,0 663.76,0 663.76,-75.2"/>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-58.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Settings</text>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-41.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">18 screens / 6 sections</text>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-25" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary 6 | Secondary 6 | Overflow 6</text>
+<text xml:space="preserve" text-anchor="middle" x="474.39" y="-8.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Launchpad: Settings Workspace → SettingsWorkspaceShellPage</text>
 </g>
 <!-- catalog&#45;&gt;workspace_7 -->
 <g id="edge8" class="edge">
 <title>catalog&#45;&gt;workspace_7</title>
-<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M186.82,-316.57C192.3,-313.16 197.4,-309.2 201.83,-304.6 271.54,-232.31 192.16,-156.91 264.83,-87.6 268.71,-83.91 272.8,-80.47 277.09,-77.27"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="278.4,-79.77 283.37,-72.9 275.2,-75.17 278.4,-79.77"/>
+<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M186.8,-316.57C192.29,-313.16 197.38,-309.2 201.81,-304.6 271.52,-232.3 192.14,-156.91 264.81,-87.6 268.69,-83.91 272.78,-80.47 277.07,-77.27"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="278.38,-79.77 283.35,-72.9 275.18,-75.17 278.38,-79.77"/>
 </g>
 </g>
 </svg>

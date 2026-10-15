@@ -5692,6 +5692,8 @@ claim. A hidden stable carrier retains separately valid aliases, standard identi
 mappings, including their SecurityId enrichment, without reserving an expired or future primary
 spelling. Independent current name authority remains usable. Every primary window is tracked before
 missing-primary handling so future-only startup and gaps still schedule the next transition.
+This withdrawal behavior uses production's source-aware reconciliation writer. Base-only custom
+adapters retain their merge-only limitation and do not receive hidden carrier definitions.
 Rich alias candidates reach one shared registry normalization rule that prefers a supplied active
 representative for each normalized spelling/provider/source identity. Expired, disabled or future
 windows cannot mask a currently valid renewal. That live projection retains the representative's

@@ -79,6 +79,8 @@ identifiers and provider mappings. A hidden internal carrier preserves their Sec
 without reserving an expired or future primary name. Primary boundaries remain scheduled during
 gaps, including future-only startup. Minimal composition omits the seeder when symbol management and
 an explicit canonical registry are both absent; full symbol management shares one seeder/lookup.
+Hosts implementing only the base registry retain merge-only behavior and do not receive hidden
+carrier definitions; withdrawal requires the source-aware reconciliation writer used in production.
 Equity replay without retained flat terms refuses economic-only reconstruction: the old economic
 family cannot distinguish common, preferred and convertible preferred shares reliably.
 

@@ -153,7 +153,13 @@ let evaluatePolicy (input: PromotionPolicyInput) : PromotionDecision =
                 || rule.RuleId = OutOfSampleDrawdownThreshold
                 || rule.RuleId = WalkForwardDegradationThreshold))
     let hasReadinessFailures =
-        rules |> List.exists (fun rule -> not rule.Passed && (rule.RuleId = RunCompleted || rule.RuleId = MetricsPresent))
+        rules
+        |> List.exists (fun rule ->
+            not rule.Passed
+            && (rule.RuleId = RunCompleted
+                || rule.RuleId = MetricsPresent
+                || rule.RuleId = TrustEvidenceFresh
+                || rule.RuleId = TrustEvidenceComplete))
     let hasOverrideFailures = rules |> List.exists (fun rule -> not rule.Passed && rule.IsOverrideRule)
 
     let outcome =
@@ -172,7 +178,7 @@ let evaluatePolicy (input: PromotionPolicyInput) : PromotionDecision =
         | Approved -> "Meets all promotion policy gates."
         | RequiresHumanReview -> "Promotion policy failed one or more quantitative gates and requires human review."
         | RequiresManualOverride _ -> "Promotion policy requires an active manual override before approval."
-        | Blocked -> "Promotion policy blocked due to missing run readiness evidence."
+        | Blocked -> "Promotion policy blocked due to missing run readiness or provider trust evidence."
 
     { Outcome = outcome
       IsEligible = isEligible

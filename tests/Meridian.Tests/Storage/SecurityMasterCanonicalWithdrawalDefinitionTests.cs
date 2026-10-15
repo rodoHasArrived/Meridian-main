@@ -45,8 +45,11 @@ public sealed class SecurityMasterCanonicalWithdrawalDefinitionTests : IDisposab
         var current = Definition(id, Carrier(id), "CURRENT", true);
         var withdrawn = new CanonicalSymbolDefinition
         {
-            Canonical = current.Canonical, SecurityId = id, SecurityMasterCanonicalWithdrawn = true,
-            Isin = current.Isin, ProviderSymbols = current.ProviderSymbols,
+            Canonical = current.Canonical,
+            SecurityId = id,
+            SecurityMasterCanonicalWithdrawn = true,
+            Isin = current.Isin,
+            ProviderSymbols = current.ProviderSymbols,
             AliasDefinitions = current.AliasDefinitions.Concat([new CanonicalSymbolAliasDefinition(
                 "EXPIRED.PRIMARY", SymbolMappingSources.SecurityMaster, ValidFrom: DateTimeOffset.UtcNow.AddDays(-1), IsActive: true)]).ToArray()
         };
@@ -87,8 +90,10 @@ public sealed class SecurityMasterCanonicalWithdrawalDefinitionTests : IDisposab
         var id = Guid.NewGuid();
         var supplied = new CanonicalSymbolDefinition
         {
-            Canonical = "MANUAL", SecurityId = id,
-            SecurityMasterOwnsCanonical = true, SecurityMasterCanonicalWithdrawn = true
+            Canonical = "MANUAL",
+            SecurityId = id,
+            SecurityMasterOwnsCanonical = true,
+            SecurityMasterCanonicalWithdrawn = true
         };
 
         if (batch)
@@ -149,7 +154,9 @@ public sealed class SecurityMasterCanonicalWithdrawalDefinitionTests : IDisposab
     private static CanonicalSymbolDefinition Definition(Guid id, string canonical, string prefix, bool withdrawn)
         => new()
         {
-            Canonical = canonical, SecurityId = id, SecurityMasterCanonicalWithdrawn = withdrawn,
+            Canonical = canonical,
+            SecurityId = id,
+            SecurityMasterCanonicalWithdrawn = withdrawn,
             AliasDefinitions = [new(prefix + ".ALIAS", SymbolMappingSources.SecurityMaster),
                 new(prefix + ".ISIN", SymbolMappingSources.SecurityMasterIdentifier)],
             Isin = prefix + ".ISIN",
