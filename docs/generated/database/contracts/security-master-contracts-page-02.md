@@ -2,11 +2,13 @@
 
 # `security-master-contracts` data objects - page 2 of 4
 
-Objects 81-160 of 260. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 271. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionStates["CorporateActionProcessingOptionStates"] {
+    }
     class Meridian_Contracts_SecurityMaster_CorporateActionProviderEventIdentityDto["CorporateActionProviderEventIdentityDto"] {
         +string? EvidenceHash
         +string? EvidenceReference
@@ -95,6 +97,19 @@ classDiagram
         +long CurrentVersion
         +long ExpectedVersion
         +Guid ResourceId
+    }
+    class Meridian_Contracts_SecurityMaster_CreateSecurityClosePriceSetRequest["CreateSecurityClosePriceSetRequest"] {
+        +string AccountId
+        +string BookId
+        +string? CorrectionRationale
+        +Guid? CorrectsSnapshotId
+        +string CreatedBy
+        +DateTimeOffset EvaluatedAsOf
+        +DateTimeOffset? KnowledgeAsOf
+        +decimal MaxSourceDispersionPercent
+        +Guid? RequestId
+        +IReadOnlyList~SecurityClosePriceInputDto~ Securities
+        +DateOnly ValuationDate
     }
     class Meridian_Contracts_SecurityMaster_CreateSecurityRequest["CreateSecurityRequest"] {
         +string AssetClass
@@ -499,25 +514,6 @@ classDiagram
         +Guid AliasId
     }
     class Meridian_Contracts_SecurityMaster_SecurityAliasScope["SecurityAliasScope"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityAssetClassCatalog["SecurityAssetClassCatalog"] {
-        +IReadOnlyList~string~ AssetClasses
-        +IReadOnlyList~string~ AssetOperationsCapableAssetClasses
-        +IReadOnlyList~string~ IdentifierOnlyImportableAssetClasses
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor["SecurityAssetClassDescriptor"] {
-        +string? AccountingInstrumentClass
-        +IReadOnlyList~string~? Aliases
-        +bool AmortizesTowardPar
-        +string AssetClass
-        +IReadOnlyList~string~? AssetOperationsCapabilities
-        +IReadOnlyList~SecurityIdentifierKind~ PreferredIdentifierKinds
-        +bool RequiresMaturity
-        +bool SupportsBasicCreateWorkflow
-        +bool SupportsCashflowScheduleByDefault
-        +bool SupportsIdentifierOnlyImport
-        +bool SupportsProfileBackedTerms
-        +bool UsesFaceValueLots
     }
     Meridian_Contracts_SecurityMaster_CorporateActionProviderEventIdentityDto --> Meridian_Contracts_SecurityMaster_CorporateActionProviderReleaseStatusDto
     Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalAcceptanceResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalDto

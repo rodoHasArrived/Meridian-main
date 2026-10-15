@@ -11,6 +11,23 @@ last_reviewed: 2026-10-11
 
 # src/Meridian.Ui/dashboard
 
+The generated `api-routes.ts` catalog includes exact account-owned ledger-book oversight routes
+for cash continuity, reviewed close prices and cash forecasts. Regenerate it from shared
+`UiApiRoutes` and rebuild the tracked workstation bundle when those routes change; server-owned
+scope and evidence verification are described in
+[bounded account oversight](../../../docs/operators/account-oversight.md).
+
+Accounting → Reconciliation includes an account-owned book oversight workbench with cash cases,
+exact replay and owner handoffs, independently reviewed close-price versions, and dated cash/FX
+forecasts. Supported handoff files receive a structured preview before capture. Explicit scope,
+server capabilities, immutable history, source evidence and certification blockers stay visible.
+API reads prohibit fixture fallback, financial values remain exact decimal strings, scope changes
+abort old requests, and failed writes retain inputs or require history reload before retry.
+Focused coverage lives in `accounting-screen.account-*.test.tsx` and `account-oversight.api.test.ts`.
+Close-price capture retains its request identity and submitted command after an uncertain response.
+After an authoritative history reload, the operator can explicitly recover or retry that same
+capture; a new command cannot silently replace the unresolved action.
+
 Governed Journal Entry Detail exposes retained disposal tax results from the shared period and
 journal read model. Operators can inspect mixed parcel character, carried holding-period starts,
 economic and recognized gain/loss, deferred loss, and the exact retained policy revision. Settled,
