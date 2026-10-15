@@ -1322,6 +1322,35 @@ public abstract class FundAccountServiceContractTests
         (await service.GetOpenBreaksAsync(account.AccountId)).Should().BeEmpty();
     }
 
+    protected async Task Reconciliation_BatchedReadsKeepExactAccountScopeAndRetainedHistory_Core()
+    {
+        var service = CreateService();
+        var account = await service.CreateAccountAsync(MakeBankRequest());
+        var other = await service.CreateAccountAsync(MakeBankRequest());
+        var date = Today();
+        foreach (var owner in new[] { account, other })
+        {
+            await service.RecordBalanceSnapshotAsync(MakeSnapshotRequest(owner.AccountId, date, 100m));
+            var batch = Guid.NewGuid();
+            await service.IngestBankStatementAsync(new(batch, owner.AccountId, date, "Bank", null,
+                [MakeBankLine(batch, owner.AccountId, date, 90m) with { ClosingBalance = 90m }], "ops"));
+            await service.ReconcileAccountAsync(new(owner.AccountId, date, "ops"));
+        }
+        var original = (await service.GetReconciliationRunsAsync(account.AccountId)).Single();
+        await service.RecordBalanceSnapshotAsync(MakeSnapshotRequest(account.AccountId, date, 90m));
+        await service.ReconcileAccountAsync(new(account.AccountId, date, "ops"));
+
+        var scoped = await service.GetReconciliationResultsForAccountsAsync([account.AccountId]);
+        scoped.Should().HaveCount(2);
+        scoped.Should().Contain(result => !result.IsMatch && result.SupersededByResultId != null);
+        (await service.GetReconciliationResultsForAccountsAsync([account.AccountId], openOnly: true)).Should().BeEmpty();
+        var both = await service.GetReconciliationResultsForAccountsAsync([account.AccountId, other.AccountId], openOnly: true);
+        both.Should().ContainSingle();
+        both.Single().ReconciliationRunId.Should().NotBe(original.ReconciliationRunId);
+        (await service.GetReconciliationResultsForAccountsAsync([])).Should().BeEmpty();
+        (await service.GetReconciliationResultsAsync(original.ReconciliationRunId)).Single().IsMatch.Should().BeFalse();
+    }
+
     protected async Task SyncHistory_SimultaneousCorrelatedRetriesRetainSuccessWithoutRegression_Core()
     {
         var service = CreateService();

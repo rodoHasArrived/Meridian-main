@@ -55,6 +55,13 @@ public interface IFundAccountStore
     // Reconciliation
     Task InsertReconciliationRunAsync(AccountReconciliationRunDto run, IReadOnlyList<AccountReconciliationResultDto> results, CancellationToken ct = default);
     Task<IReadOnlyList<AccountReconciliationRunDto>> GetReconciliationRunsAsync(Guid accountId, CancellationToken ct = default);
+    /// <summary>Reads retained results for the exact account set in one batch; openOnly excludes
+    /// superseded, matched and unverified observations without changing their history.</summary>
+    Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsForAccountsAsync(
+        IReadOnlyCollection<Guid> accountIds, bool openOnly = false, CancellationToken ct = default)
+        => Task.FromException<IReadOnlyList<AccountReconciliationResultDto>>(
+            new NotSupportedException("This account authority does not support batched reconciliation results."));
+
     Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsAsync(Guid reconciliationRunId, CancellationToken ct = default);
 
     // Sync history

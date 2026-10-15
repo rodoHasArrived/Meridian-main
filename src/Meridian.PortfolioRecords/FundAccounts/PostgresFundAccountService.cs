@@ -273,6 +273,10 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         Guid accountId, CancellationToken ct = default)
         => _store.GetReconciliationRunsAsync(accountId, ct);
 
+    public Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsForAccountsAsync(
+        IReadOnlyCollection<Guid> accountIds, bool openOnly = false, CancellationToken ct = default)
+        => _store.GetReconciliationResultsForAccountsAsync(accountIds, openOnly, ct);
+
     public Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsAsync(
         Guid reconciliationRunId, CancellationToken ct = default)
         => _store.GetReconciliationResultsAsync(reconciliationRunId, ct);
@@ -281,10 +285,12 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         Guid accountId, CancellationToken ct = default)
     {
         var runs = await _store.GetReconciliationRunsAsync(accountId, ct).ConfigureAwait(false);
+        var accountResults = await _store.GetReconciliationResultsForAccountsAsync([accountId], openOnly: true, ct).ConfigureAwait(false);
+        var resultsByRun = accountResults.ToLookup(result => result.ReconciliationRunId);
         var breaks = new List<PositionReconciliationBreakDto>();
         foreach (var run in runs)
         {
-            var results = await _store.GetReconciliationResultsAsync(run.ReconciliationRunId, ct).ConfigureAwait(false);
+            var results = resultsByRun[run.ReconciliationRunId];
             breaks.AddRange(results
                 .Where(r => r.IsOpenBreak
                     && (string.Equals(r.Category, "Position", StringComparison.OrdinalIgnoreCase)
@@ -307,10 +313,12 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
     {
         var account = await _store.GetAccountAsync(accountId, ct).ConfigureAwait(false);
         var runs = await _store.GetReconciliationRunsAsync(accountId, ct).ConfigureAwait(false);
+        var accountResults = await _store.GetReconciliationResultsForAccountsAsync([accountId], openOnly: true, ct).ConfigureAwait(false);
+        var resultsByRun = accountResults.ToLookup(result => result.ReconciliationRunId);
         var breaks = new List<CashReconciliationBreakDto>();
         foreach (var run in runs)
         {
-            var results = await _store.GetReconciliationResultsAsync(run.ReconciliationRunId, ct).ConfigureAwait(false);
+            var results = resultsByRun[run.ReconciliationRunId];
             breaks.AddRange(results
                 .Where(r => r.IsOpenBreak && string.Equals(r.Category, "Cash", StringComparison.OrdinalIgnoreCase))
                 .Select(r => new CashReconciliationBreakDto(
@@ -407,15 +415,9 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
 
         var syncHistory = await _store.GetSyncHistoryAsync(accountId, null, ct).ConfigureAwait(false);
         var marginSnapshots = await _store.GetMarginSnapshotsAsync(accountId, ct).ConfigureAwait(false);
-        var reconciliationRuns = await _store.GetReconciliationRunsAsync(accountId, ct).ConfigureAwait(false);
-
-        // Read the same durable active-result state used by every break queue.
-        int openBreakCount = 0;
-        foreach (var run in reconciliationRuns)
-        {
-            var runResults = await _store.GetReconciliationResultsAsync(run.ReconciliationRunId, ct).ConfigureAwait(false);
-            openBreakCount += runResults.Count(static r => r.IsOpenBreak);
-        }
+        var activeResults = await _store.GetReconciliationResultsForAccountsAsync([accountId], openOnly: true, ct)
+            .ConfigureAwait(false);
+        var openBreakCount = activeResults.Count;
 
         var now = DateTimeOffset.UtcNow;
         var latestSync = syncHistory.OrderByDescending(e => e.AttemptedAt).ThenByDescending(e => e.CompletedAt).FirstOrDefault();
@@ -567,13 +569,16 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
             : new AccountStructureQuery();
         var accounts = await _store.QueryAccountsAsync(query, ct).ConfigureAwait(false);
 
+        var activeResults = await _store.GetReconciliationResultsForAccountsAsync(
+            accounts.Select(account => account.AccountId).ToArray(), openOnly: true, ct).ConfigureAwait(false);
+        var resultsByRun = activeResults.ToLookup(result => result.ReconciliationRunId);
         var views = new List<AccountOpenBreakView>();
         foreach (var account in accounts)
         {
             var runs = await _store.GetReconciliationRunsAsync(account.AccountId, ct).ConfigureAwait(false);
             foreach (var run in runs)
             {
-                var results = await _store.GetReconciliationResultsAsync(run.ReconciliationRunId, ct).ConfigureAwait(false);
+                var results = resultsByRun[run.ReconciliationRunId];
                 views.AddRange(results
                     .Where(static r => r.IsOpenBreak)
                     .Select(r => new AccountOpenBreakView(

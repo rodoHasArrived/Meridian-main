@@ -104,6 +104,32 @@ public sealed class FundStructureEndpointAuthorizationTests
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    [Fact]
+    public async Task CashFlowView_ConflictingStatementAuthority_ReturnsEvidenceUnavailableConflict()
+    {
+        var fundId = Guid.NewGuid();
+        await using var app = await CreateAppAsync([(AccessScopeKindDto.Fund, fundId)]);
+        await SeedFundAsync(app.Services.GetRequiredService<IFundStructureService>(), fundId);
+        var accounts = app.Services.GetRequiredService<IFundAccountService>();
+        var date = new DateOnly(2026, 6, 20);
+        var account = await accounts.CreateAccountAsync(new(Guid.NewGuid(), AccountTypeDto.Bank,
+            "BANK-CONFLICT", "Conflicting statement", "USD", new(2026, 6, 16, 0, 0, 0, TimeSpan.Zero), "test", FundId: fundId));
+        foreach (var balance in new[] { 100m, 120m })
+        {
+            var batch = Guid.NewGuid();
+            await accounts.IngestBankStatementAsync(new(batch, account.AccountId, date, "Bank", null,
+                [new(Guid.NewGuid(), batch, account.AccountId, date, date, 10m, "USD", "Interest", "Interest", null, balance)], "test"));
+        }
+
+        var response = await app.GetTestClient().GetAsync(
+            $"/api/fund-structure/cash-flow-view?scopeKind=Fund&fundId={fundId:D}&asOf=2026-06-20T12:00:00Z");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        var problem = await response.Content.ReadFromJsonAsync<Microsoft.AspNetCore.Mvc.ProblemDetails>();
+        problem!.Title.Should().Be("Bank statement evidence unavailable");
+        problem.Detail.Should().Contain("same header date and revision");
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         IReadOnlyCollection<(AccessScopeKindDto Kind, Guid Id)> allowedScopes,
         UserPermission permissions = UserPermission.ManageFundStructure)

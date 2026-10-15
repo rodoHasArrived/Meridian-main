@@ -11,6 +11,16 @@ last_reviewed: 2026-10-07
 
 # src/Meridian.PortfolioRecords
 
+`BankStatementClosingBalanceAuthority` projects complete highest-revision batches before selecting
+balances or aggregating cash flows. Competing batches at the same account/header-date/revision remain
+unavailable, including when their closing balances happen to agree. Currency filtering follows revision
+selection so a replacement cannot leak a superseded currency's amount. Source rows remain retained.
+
+Reconciliation readers can load an exact account set through one batched retained-result query,
+optionally filtering to active breaks. PostgreSQL checks strict tenant ownership for the whole
+requested batch before returning any result. Readiness and workstation queues avoid querying
+every historical run individually; immutable run totals and original result outcomes remain history.
+
 ## Purpose
 
 Physical bounded-context module project for portfolio records, positions, activity, holdings,

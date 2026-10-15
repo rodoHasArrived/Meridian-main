@@ -209,4 +209,7 @@ public sealed class PostgresFundAccountServiceContractTests : FundAccountService
     [FundAccountDatabaseFact]
     public Task SyncHistory_SimultaneousCorrelatedRetriesRetainSuccessWithoutRegression()
         => SyncHistory_SimultaneousCorrelatedRetriesRetainSuccessWithoutRegression_Core();
+    [FundAccountDatabaseFact]
+    public Task Reconciliation_BatchedReadsKeepExactAccountScopeAndRetainedHistory()
+        => Reconciliation_BatchedReadsKeepExactAccountScopeAndRetainedHistory_Core();
 }

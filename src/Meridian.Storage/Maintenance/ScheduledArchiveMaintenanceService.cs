@@ -953,29 +953,33 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
         MaintenanceExecution execution,
         CancellationToken ct)
     {
-        // This would use CompressionProfileManager for actual compression
-        // For now, use repair with recompress strategy
-        var repairOptions = new RepairOptions(
-            Strategy: RepairStrategy.RecompressOptimal,
+        var compressionOptions = new FileCompressionOptions(
             DryRun: options.DryRun,
-            BackupBeforeRepair: options.BackupBeforeRepair,
-            BackupPath: options.BackupPath
+            BackupBeforeCompression: options.BackupBeforeRepair,
+            BackupPath: options.BackupPath,
+            Paths: targetPaths
         );
 
-        var result = await _fileMaintenanceService.RepairAsync(repairOptions, ct);
+        var result = await _fileMaintenanceService.CompressAsync(compressionOptions, ct);
+        execution.LogMessages.AddRange(result.Errors.Take(10).Select(error => $"Error: {error}"));
+        execution.LogMessages.AddRange(result.RecoveryCopies.Select(path => $"Recovery copy: {path}"));
+        if (result.DryRun && result.PlannedActions is not null)
+            execution.LogMessages.AddRange(result.PlannedActions.Select(action => $"[DRY RUN] {action}"));
 
         return new MaintenanceResult
         {
-            Success = result.Errors.Count == 0 && (result.DryRun || result.FilesUnresolved == 0),
-            Summary = $"Compression: processed {result.FilesProcessed} files, recompressed {result.FilesChanged}; {result.FilesUnresolved} unresolved",
+            Success = result.Success,
+            Summary = result.DryRun
+                ? $"Compression dry run: planned {result.PlannedActions?.Count ?? 0} files; no files changed"
+                : $"Compression: compressed {result.FilesCompressed}/{result.FilesProcessed} files; {result.FilesUncompressed} uncompressed",
             TotalFiles = result.FilesProcessed,
             FilesProcessed = result.FilesProcessed,
-            FilesSkipped = result.FilesProcessed - result.FilesChanged,
-            FilesFailed = result.DryRun ? 0 : Math.Max(result.FilesUnresolved, result.Errors.Count),
-            TotalBytesScanned = 0,
-            BytesSaved = 0,
-            IssuesFound = result.FilesProcessed - result.FilesRepaired,
-            IssuesResolved = result.FilesRepaired
+            FilesSkipped = result.DryRun ? result.FilesProcessed : 0,
+            FilesFailed = result.DryRun ? result.Errors.Count : Math.Max(result.FilesUncompressed, result.Errors.Count),
+            TotalBytesScanned = result.BytesBefore,
+            BytesSaved = result.BytesBefore - result.BytesAfter,
+            IssuesFound = result.Errors.Count,
+            IssuesResolved = 0
         };
     }
 

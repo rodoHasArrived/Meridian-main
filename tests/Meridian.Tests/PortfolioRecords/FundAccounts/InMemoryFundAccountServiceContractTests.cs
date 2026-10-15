@@ -195,4 +195,7 @@ public sealed class InMemoryFundAccountServiceContractTests : FundAccountService
     [Fact]
     public Task SyncHistory_SimultaneousCorrelatedRetriesRetainSuccessWithoutRegression()
         => SyncHistory_SimultaneousCorrelatedRetriesRetainSuccessWithoutRegression_Core();
+    [Fact]
+    public Task Reconciliation_BatchedReadsKeepExactAccountScopeAndRetainedHistory()
+        => Reconciliation_BatchedReadsKeepExactAccountScopeAndRetainedHistory_Core();
 }

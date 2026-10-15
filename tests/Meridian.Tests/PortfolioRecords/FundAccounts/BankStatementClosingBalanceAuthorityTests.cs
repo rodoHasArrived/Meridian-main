@@ -7,6 +7,45 @@ namespace Meridian.Tests.PortfolioRecords.FundAccounts;
 public sealed class BankStatementClosingBalanceAuthorityTests
 {
     [Fact]
+    public void StatementDate_ExposesHeaderDateWithLegacyValueDateFallback()
+    {
+        var line = Line(90m);
+        line.StatementDate.Should().Be(line.ValueDate);
+        (line with { StatementAsOfDate = line.ValueDate.AddDays(3) }).StatementDate.Should().Be(line.ValueDate.AddDays(3));
+    }
+
+    [Fact]
+    public void SelectAuthoritativeLines_ReplacesWholeStatementBeforeFilteringCurrencyOrSummingFlows()
+    {
+        var original = Line(90m) with { StatementRevision = 1, LineSequence = 1 };
+        var correction = original with { BatchId = Guid.NewGuid(), Currency = "EUR", StatementRevision = 2, Amount = 20m };
+        var selected = BankStatementClosingBalanceAuthority.SelectAuthoritativeLines([correction, original]);
+
+        selected.Should().Equal(correction);
+        BankStatementClosingBalanceAuthority.SelectClosingBalance([correction, original], "USD").Should().BeNull();
+    }
+
+    [Fact]
+    public void SelectAuthoritativeLines_CompetingBatchesWithEqualClosingBalances_RemainUnavailable()
+    {
+        var line = Line(90m) with { StatementRevision = 1, LineSequence = 1 };
+        var other = line with { BatchId = Guid.NewGuid(), Amount = 20m };
+        BankStatementClosingBalanceAuthority.SelectAuthoritativeLines([line, other]).Should().BeNull();
+        BankStatementClosingBalanceAuthority.SelectClosingBalance([line, other]).Should().BeNull();
+        BankStatementClosingBalanceAuthority.SelectLatestLine([line, other]).Should().BeNull();
+    }
+
+    [Fact]
+    public void SelectLatestLine_UsesRevisionAndSourceOrdinalForBackdatedFinalRow()
+    {
+        var line = Line(90m) with { StatementAsOfDate = new(2026, 10, 7), StatementRevision = 1, LineSequence = 99 };
+        var correction = line with { BatchId = Guid.NewGuid(), StatementRevision = 2, LineSequence = 1 };
+        var final = correction with { LineId = Guid.NewGuid(), LineSequence = 2, ValueDate = line.ValueDate.AddDays(-1), ClosingBalance = 100m };
+        BankStatementClosingBalanceAuthority.SelectLatestLine([final, line, correction]).Should().Be(final);
+        BankStatementClosingBalanceAuthority.LatestStatementDate([final]).Should().Be(new DateOnly(2026, 10, 7));
+    }
+
+    [Fact]
     public async Task SourceAuthority_PersistsAcrossLocalServiceRestart()
     {
         var path = Path.Combine(Path.GetTempPath(), $"meridian-statement-authority-{Guid.NewGuid():N}.json");

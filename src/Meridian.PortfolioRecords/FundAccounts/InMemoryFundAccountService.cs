@@ -622,6 +622,23 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         }
     }
 
+    public Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsForAccountsAsync(
+        IReadOnlyCollection<Guid> accountIds, bool openOnly = false, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(accountIds);
+        ct.ThrowIfCancellationRequested();
+        var requested = accountIds.ToHashSet();
+        lock (_gate)
+        {
+            IReadOnlyList<AccountReconciliationResultDto> results = _accounts.Values
+                .Where(account => requested.Contains(account.Summary.AccountId))
+                .SelectMany(account => account.ReconciliationResults)
+                .Where(result => !openOnly || result.IsOpenBreak)
+                .ToArray();
+            return Task.FromResult(results);
+        }
+    }
+
     public Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsAsync(
         Guid reconciliationRunId, CancellationToken ct = default)
     {

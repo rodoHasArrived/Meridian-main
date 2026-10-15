@@ -14,24 +14,65 @@ public static class BankStatementClosingBalanceAuthority
     /// Within a statement, source line sequence selects the final running balance, including backdated entries.
     /// Conflicting evidence without sufficient authority remains unavailable.
     /// </summary>
-    public static decimal? SelectClosingBalance(IEnumerable<BankStatementLineDto> lines)
+    public static decimal? SelectClosingBalance(IEnumerable<BankStatementLineDto> lines, string? currency = null, DateOnly? throughValueDate = null)
+    {
+        var selected = SelectLatestStatement(lines);
+        return selected is null ? null : SelectWithinStatement(selected
+            .Where(line => currency is null || string.Equals(line.Currency, currency, StringComparison.OrdinalIgnoreCase))
+            .Where(line => throughValueDate is null || line.ValueDate <= throughValueDate));
+    }
+
+    /// <summary>Projects one complete, highest-revision batch per account/header date; competing batches remain unavailable.</summary>
+    public static IReadOnlyList<BankStatementLineDto>? SelectAuthoritativeLines(
+        IEnumerable<BankStatementLineDto> lines, string? currency = null, DateOnly? fromValueDate = null, DateOnly? throughValueDate = null)
+    {
+        var selected = new List<BankStatementLineDto>();
+        foreach (var statement in lines.GroupBy(static line => (line.AccountId, line.StatementDate)))
+        {
+            var revision = statement.Max(static line => line.StatementRevision ?? 0);
+            var candidates = statement.Where(line => (line.StatementRevision ?? 0) == revision).ToArray();
+            if (!candidates.Any(line => (currency is null || string.Equals(line.Currency, currency, StringComparison.OrdinalIgnoreCase))
+                && (fromValueDate is null || line.ValueDate >= fromValueDate)
+                && (throughValueDate is null || line.ValueDate <= throughValueDate)))
+                continue;
+            if (candidates.Select(static line => line.BatchId).Distinct().Count() != 1)
+                return null;
+            selected.AddRange(candidates);
+        }
+        return selected;
+    }
+
+    /// <summary>The latest retained header date, including when competing batches prevent selecting a balance.</summary>
+    public static DateOnly? LatestStatementDate(IEnumerable<BankStatementLineDto> lines) =>
+        lines.Select(static line => (DateOnly?)line.StatementDate).Max();
+
+    /// <summary>The final source row from the authoritative latest statement, or unavailable when its order is ambiguous.</summary>
+    public static BankStatementLineDto? SelectLatestLine(IEnumerable<BankStatementLineDto> lines, string? currency = null)
+    {
+        var statement = SelectLatestStatement(lines);
+        if (statement is null)
+            return null;
+        var candidates = statement.Where(line => currency is null || string.Equals(line.Currency, currency, StringComparison.OrdinalIgnoreCase)).ToArray();
+        if (candidates.Length == 0)
+            return null;
+        if (candidates.All(static line => line.LineSequence.HasValue))
+        {
+            var sequence = candidates.Max(static line => line.LineSequence);
+            candidates = candidates.Where(line => line.LineSequence == sequence).ToArray();
+        }
+        else
+        {
+            var valueDate = candidates.Max(static line => line.ValueDate);
+            candidates = candidates.Where(line => line.ValueDate == valueDate).ToArray();
+        }
+        return candidates.Length == 1 ? candidates[0] : null;
+    }
+
+    private static IReadOnlyList<BankStatementLineDto>? SelectLatestStatement(IEnumerable<BankStatementLineDto> lines)
     {
         var candidates = lines.ToArray();
-        if (candidates.Length == 0)
-        {
-            return null;
-        }
-
-        var statementDate = candidates.Max(static line => line.StatementAsOfDate ?? line.ValueDate);
-        candidates = candidates.Where(line => (line.StatementAsOfDate ?? line.ValueDate) == statementDate).ToArray();
-        var revision = candidates.Max(static line => line.StatementRevision ?? 0);
-        var balances = candidates.Where(line => (line.StatementRevision ?? 0) == revision)
-            .GroupBy(static line => line.BatchId)
-            .Select(static batch => SelectWithinStatement(batch))
-            .Distinct()
-            .ToArray();
-
-        return balances.Length == 1 ? balances[0] : null;
+        var statementDate = LatestStatementDate(candidates);
+        return statementDate is null ? [] : SelectAuthoritativeLines(candidates.Where(line => line.StatementDate == statementDate));
     }
 
     private static decimal? SelectWithinStatement(IEnumerable<BankStatementLineDto> lines)

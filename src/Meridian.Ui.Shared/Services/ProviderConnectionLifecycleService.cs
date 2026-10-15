@@ -254,14 +254,17 @@ public sealed class ProviderConnectionLifecycleService
         if (accountingVerification is not null)
         {
             var result = await accountingVerification.VerifyConnectionAsync(ct).ConfigureAwait(false);
-            if (result.Success && _ownershipScope is not null &&
-                !string.Equals(result.ExternalCompanyId, _ownershipScope.ExternalAccountId, StringComparison.Ordinal))
-                result = result with
-                {
-                    Success = false,
-                    ExternalCompanyId = null,
-                    LastError = "The verified company does not match the selected retained connection."
-                };
+            if (result.Success && _ownershipScope is not null)
+                result = SameExternalAccount(descriptor.ProviderId, result.ExternalCompanyId, _ownershipScope.ExternalAccountId)
+                    // Preserve the retained identity and vault key after proving provider-specific
+                    // equivalence. The vault's exact ownership guard remains authoritative.
+                    ? result with { ExternalCompanyId = _ownershipScope.ExternalAccountId }
+                    : result with
+                    {
+                        Success = false,
+                        ExternalCompanyId = null,
+                        LastError = "The verified company does not match the selected retained connection."
+                    };
             try
             {
                 await _credentialStore.RecordVerificationAsync(new ProviderCredentialVerificationUpdate(
@@ -304,6 +307,19 @@ public sealed class ProviderConnectionLifecycleService
         await _credentialStore.DeleteAsync(descriptor.ProviderId, actor ?? "browser-workstation", ct).ConfigureAwait(false);
         var status = await _credentialStore.GetStatusAsync(descriptor.ProviderId, ct).ConfigureAwait(false);
         return BuildMutationResult(status, BuildDeleteWarnings(status));
+    }
+
+    private static bool SameExternalAccount(string providerId, string? verifiedAccountId, string retainedAccountId)
+    {
+        if (string.IsNullOrWhiteSpace(verifiedAccountId))
+            return false;
+        if (providerId.Equals("xero", StringComparison.OrdinalIgnoreCase))
+            return Guid.TryParse(verifiedAccountId, out var verifiedTenant) && verifiedTenant != Guid.Empty &&
+                   Guid.TryParse(retainedAccountId, out var retainedTenant) && verifiedTenant == retainedTenant;
+        if (providerId.Equals("netsuite", StringComparison.OrdinalIgnoreCase))
+            return string.Equals(verifiedAccountId.Trim().ToLowerInvariant().Replace('_', '-'),
+                retainedAccountId.Trim().ToLowerInvariant().Replace('_', '-'), StringComparison.Ordinal);
+        return string.Equals(verifiedAccountId, retainedAccountId, StringComparison.Ordinal);
     }
 
     private async Task<ProviderCredentialVerificationResultDto> VerifyAlpacaAsync(

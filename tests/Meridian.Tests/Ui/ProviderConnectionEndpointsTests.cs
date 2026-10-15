@@ -728,6 +728,47 @@ public sealed class ProviderConnectionEndpointsTests
         handler.VerifiedAccounts.Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData("xero", "{AABBCCDD-1111-2222-3333-444444444444}", "aabbccdd-1111-2222-3333-444444444444", true)]
+    [InlineData("xero", "aabbccdd111122223333444444444444", "AABBCCDD-1111-2222-3333-444444444444", true)]
+    [InlineData("netsuite", "ACCOUNT_SB1", "account-sb1", true)]
+    [InlineData("netsuite", "account-sb1", "ACCOUNT_SB1", true)]
+    [InlineData("quickbooks", "realm-a", "realm-a", true)]
+    [InlineData("xero", "aabbccdd-1111-2222-3333-444444444444", "aabbccdd-1111-2222-3333-444444444445", false)]
+    [InlineData("netsuite", "123456_SB1", "123456_SB2", false)]
+    [InlineData("quickbooks", "Realm-A", "realm-a", false)]
+    [InlineData("quickbooks", "realm_a", "realm-a", false)]
+    public async Task ScopedAccountingVerification_UsesProviderIdentityEquivalenceAndRetainsExactScope(
+        string providerId, string retainedAccountId, string credentialAccountId, bool expectedSuccess)
+    {
+        var handler = new ScopedAccountingHandler(providerId);
+        using var http = new HttpClient(handler);
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IAccountingSystemProvider>(sp =>
+            RealAccountingProvider(providerId, sp.GetRequiredService<IProviderCredentialStore>(), http)));
+        await RetainConnectionAsync(app, "books-a", "provider-tenant", providerId, retainedAccountId, "sandbox");
+        var vault = (FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        var scope = new ProviderCredentialScope("provider-tenant", "books-a", retainedAccountId, "sandbox");
+        await vault.SaveScopedAsync(new(providerId, AccountingCredentials(providerId, "books-a", credentialAccountId), "sandbox"), scope);
+
+        var response = await app.GetTestClient().PostAsync($"/api/providers/{providerId}/verify?connectionId=books-a", JsonContent(new { }));
+        response.EnsureSuccessStatusCode();
+        var result = await ReadAsync<ProviderCredentialVerificationResultDto>(response);
+
+        result.Success.Should().Be(expectedSuccess);
+        result.ExternalAccountId.Should().Be(expectedSuccess ? retainedAccountId : null);
+        var status = await vault.GetScopedStatusAsync(providerId, scope);
+        status.ExternalAccountId.Should().Be(retainedAccountId, "verification must preserve the retained vault ownership identity");
+        status.VerificationState.Should().Be(expectedSuccess ? ProviderVerificationStateDto.Verified : ProviderVerificationStateDto.Failed);
+        (await vault.ReadScopedAsync(providerId, scope))!.Get("RefreshToken").Should().Be("rotated-books-a");
+        if (expectedSuccess)
+            status.LastSuccessfulAt.Should().NotBeNull();
+        else
+        {
+            status.LastSuccessfulAt.Should().BeNull();
+            result.LastError.Should().Contain("does not match the selected retained connection");
+        }
+    }
+
     private static IAccountingSystemProvider RealAccountingProvider(string providerId, IProviderCredentialStore store, HttpClient http)
         => providerId switch
         {

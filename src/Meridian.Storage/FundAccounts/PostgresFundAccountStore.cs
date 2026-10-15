@@ -996,6 +996,49 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         return results;
     }
 
+    public async Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsForAccountsAsync(
+        IReadOnlyCollection<Guid> accountIds, bool openOnly = false, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(accountIds);
+        ct.ThrowIfCancellationRequested();
+        var ids = accountIds.Distinct().ToArray();
+        var tenant = _tenantScope.IsFailClosed ? RequireWriteTenant() : null;
+        if (ids.Length == 0)
+            return Array.Empty<AccountReconciliationResultDto>();
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        if (_tenantScope.IsFailClosed)
+        {
+            // Validate the whole requested scope once; a mixed-tenant batch cannot return partial data.
+            await using var owner = connection.CreateCommand();
+            owner.CommandText = $"""
+                SELECT count(*) FROM {Qualified("account_definition")}
+                WHERE account_id = ANY(@account_ids) AND lower(trim(tenant_id)) = lower(trim(@tenant))
+                """;
+            owner.Parameters.AddWithValue("account_ids", NpgsqlDbType.Array | NpgsqlDbType.Uuid, ids);
+            owner.Parameters.AddWithValue("tenant", tenant!);
+            if ((long)(await owner.ExecuteScalarAsync(ct).ConfigureAwait(false))! != ids.Length)
+                throw new UnauthorizedAccessException("Every requested account must be owned by the caller's tenant.");
+        }
+        await using var cmd = connection.CreateCommand();
+        cmd.CommandText = $"""
+            SELECT result.result_id, result.reconciliation_run_id, result.check_label,
+                   result.is_match, result.category, result.status, result.expected_amount, result.actual_amount,
+                   result.variance, result.reason, result.superseded_by_result_id, result.resolved_at
+            FROM {Qualified("account_reconciliation_breaks")} result
+            JOIN {Qualified("account_reconciliation_run")} run USING (reconciliation_run_id)
+            WHERE run.account_id = ANY(@account_ids)
+              AND (NOT @open_only OR (result.superseded_by_result_id IS NULL AND NOT result.is_match
+                                     AND lower(result.status) <> 'unverified'))
+            """;
+        cmd.Parameters.AddWithValue("account_ids", NpgsqlDbType.Array | NpgsqlDbType.Uuid, ids);
+        cmd.Parameters.AddWithValue("open_only", openOnly);
+        await using var reader = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        var results = new List<AccountReconciliationResultDto>();
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            results.Add(ReadReconciliationResult(reader));
+        return results;
+    }
+
     public async Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsAsync(
         Guid reconciliationRunId, CancellationToken ct = default)
     {
@@ -1024,7 +1067,13 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         var results = new List<AccountReconciliationResultDto>();
         while (await reader.ReadAsync(ct).ConfigureAwait(false))
         {
-            results.Add(new AccountReconciliationResultDto(
+            results.Add(ReadReconciliationResult(reader));
+        }
+        return results;
+    }
+
+    private static AccountReconciliationResultDto ReadReconciliationResult(NpgsqlDataReader reader)
+        => new AccountReconciliationResultDto(
                 ResultId: reader.GetGuid(reader.GetOrdinal("result_id")),
                 ReconciliationRunId: reader.GetGuid(reader.GetOrdinal("reconciliation_run_id")),
                 CheckLabel: reader.GetString(reader.GetOrdinal("check_label")),
@@ -1036,10 +1085,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                 Variance: reader.IsDBNull(reader.GetOrdinal("variance")) ? null : reader.GetDecimal(reader.GetOrdinal("variance")),
                 Reason: reader.GetString(reader.GetOrdinal("reason")),
                 SupersededByResultId: reader.IsDBNull(reader.GetOrdinal("superseded_by_result_id")) ? null : reader.GetGuid(reader.GetOrdinal("superseded_by_result_id")),
-                ResolvedAt: reader.IsDBNull(reader.GetOrdinal("resolved_at")) ? null : reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("resolved_at"))));
-        }
-        return results;
-    }
+                ResolvedAt: reader.IsDBNull(reader.GetOrdinal("resolved_at")) ? null : reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("resolved_at")));
 
     // ── Sync history ──────────────────────────────────────────────────────────
 

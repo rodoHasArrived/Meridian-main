@@ -52,7 +52,7 @@ public sealed record BankStatementLineDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? StatementRevision = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateOnly? StatementAsOfDate = null)
 {
-    public DateOnly StatementDate => ValueDate;
+    public DateOnly StatementDate => StatementAsOfDate ?? ValueDate;
 
     public decimal? RunningBalance => ClosingBalance;
 }

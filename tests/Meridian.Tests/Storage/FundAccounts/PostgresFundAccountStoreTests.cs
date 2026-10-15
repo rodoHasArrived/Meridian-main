@@ -29,6 +29,28 @@ public sealed class PostgresFundAccountStoreTests : IClassFixture<FundAccountDat
         new(_fixture.Options, tenantAccessor);
 
     [FundAccountDatabaseFact]
+    public async Task Reconciliation_BatchedReadRejectsMixedTenantScopeWithoutReturningPartialHistory()
+    {
+        var alpha = new PostgresFundAccountStore(_fixture.Options, new FixedTenantAccessor("alpha"), TenantScopeEnforcementOptions.FailClosed);
+        var beta = new PostgresFundAccountStore(_fixture.Options, new FixedTenantAccessor("beta"), TenantScopeEnforcementOptions.FailClosed);
+        var account = MakeAccount();
+        var foreign = MakeAccount();
+        await alpha.TryCreateAccountAsync(account);
+        await beta.TryCreateAccountAsync(foreign);
+        var now = DateTimeOffset.UtcNow;
+        var run = new AccountReconciliationRunDto(Guid.NewGuid(), account.AccountId, new(2026, 10, 15), "Breaks", 1, 0, 1, 10m, now, now, "ops");
+        var result = new AccountReconciliationResultDto(Guid.NewGuid(), run.ReconciliationRunId, "CashBalance", false, "Cash", "Break", 100m, 90m, -10m, "difference");
+        await alpha.InsertReconciliationRunAsync(run, [result]);
+
+        (await alpha.GetReconciliationResultsForAccountsAsync([account.AccountId], openOnly: true)).Should().ContainSingle();
+        await FluentActions.Awaiting(() => alpha.GetReconciliationResultsForAccountsAsync([account.AccountId, foreign.AccountId]))
+            .Should().ThrowAsync<UnauthorizedAccessException>();
+        await FluentActions.Awaiting(() => beta.GetReconciliationResultsForAccountsAsync([account.AccountId], openOnly: true))
+            .Should().ThrowAsync<UnauthorizedAccessException>();
+        (await alpha.GetReconciliationResultsAsync(run.ReconciliationRunId)).Should().ContainSingle().Which.ResultId.Should().Be(result.ResultId);
+    }
+
+    [FundAccountDatabaseFact]
     public async Task Reconciliation_PositionCountLabelsShareStableIdentityAndEqualTimeEvidenceStaysOpen()
     {
         var store = CreateStore();

@@ -2,7 +2,6 @@ using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
-using Meridian.Contracts.Integrity;
 using Meridian.Core.Logging;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
@@ -13,7 +12,7 @@ namespace Meridian.Storage.Services;
 /// <summary>
 /// Service for file health monitoring, self-healing, and maintenance operations.
 /// </summary>
-public sealed class FileMaintenanceService : IFileMaintenanceService
+public sealed partial class FileMaintenanceService : IFileMaintenanceService
 {
     private readonly ILogger _log = LoggingSetup.ForContext<FileMaintenanceService>();
     private readonly StorageOptions _options;
@@ -160,50 +159,9 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
             );
         }
 
-        // Complete the entire backup phase before changing any source. A unique operation
-        // directory and source-path digest prevent same-named files or retries from replacing
-        // recovery evidence. Sidecars belong to that evidence too.
-        var repairId = Guid.NewGuid().ToString("N");
-        if (options.BackupBeforeRepair)
-        {
-            foreach (var group in issueGroups)
-            {
-                ct.ThrowIfCancellationRequested();
-                try
-                {
-                    foreach (var source in File.Exists(group.Key + ".sha256")
-                                 ? new[] { group.Key, group.Key + ".sha256" }
-                                 : new[] { group.Key })
-                    {
-                        string backupFile;
-                        if (!string.IsNullOrWhiteSpace(options.BackupPath))
-                        {
-                            var directory = Path.Combine(options.BackupPath, repairId);
-                            Directory.CreateDirectory(directory);
-                            var pathDigest = Sha256Digest.ComputeUtf8(Path.GetFullPath(source));
-                            backupFile = Path.Combine(directory, $"{Path.GetFileName(source)}.{pathDigest}.bak");
-                        }
-                        else
-                        {
-                            backupFile = source + $".pre-repair.{repairId}.bak";
-                        }
-
-                        File.Copy(source, backupFile, overwrite: false);
-                        using (var backupStream = new FileStream(backupFile, FileMode.Open, FileAccess.Write, FileShare.Read))
-                            backupStream.Flush(flushToDisk: true);
-                        await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(backupFile)!, CancellationToken.None);
-                        recoveryCopies.Add(backupFile);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    errors.Add($"Backup failed for {group.Key}; no source files were changed: {ex.Message}");
-                }
-            }
-
-            if (errors.Count > 0)
-                return new RepairResult(issueGroups.Count, 0, errors, false, null) { RecoveryCopies = recoveryCopies };
-        }
+        if (!await CreateRequiredBackupsAsync(issueGroups.Select(group => group.Key),
+                options.BackupBeforeRepair, options.BackupPath, "repair", recoveryCopies, errors, ct))
+            return new RepairResult(issueGroups.Count, 0, errors, false, null) { RecoveryCopies = recoveryCopies };
 
         foreach (var group in issueGroups)
         {
@@ -734,51 +692,6 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
         await AtomicFileWriter.WriteAsync(sidecarPath, $"{checksum}  {Path.GetFileName(filePath)}", ct);
     }
 
-    private async Task<bool> RecompressAsync(string filePath, CancellationToken ct)
-    {
-        // Recompress with optimal settings
-        if (!filePath.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase))
-            return false;
-
-        // Write the compressed copy atomically, then remove the original so exactly one canonical
-        // copy remains. Leaving both files meant every replay double-counted these events.
-        var outputPath = filePath + ".gz";
-        if (File.Exists(outputPath) || File.Exists(outputPath + ".sha256"))
-            throw new IOException($"Refusing to replace existing compression destination or checksum: {outputPath}");
-
-        // Publish with create-only semantics. AtomicFileWriter normally replaces its destination;
-        // staging separately also protects a target created concurrently after the preflight.
-        var stagedPath = outputPath + $".{Guid.NewGuid():N}.recompress.tmp";
-        try
-        {
-            await AtomicFileWriter.WriteStreamAsync(stagedPath, async output =>
-            {
-                await using var input = File.OpenRead(filePath);
-                await using var gzip = new System.IO.Compression.GZipStream(
-                    output, System.IO.Compression.CompressionLevel.Optimal, leaveOpen: true);
-                await input.CopyToAsync(gzip, ct);
-            }, ct);
-            ct.ThrowIfCancellationRequested();
-            File.Move(stagedPath, outputPath, overwrite: false);
-            await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(outputPath)!, CancellationToken.None);
-        }
-        finally
-        {
-            File.Delete(stagedPath);
-        }
-
-        File.Delete(filePath);
-
-        // The plain-file sidecar no longer matches anything on disk; drop it rather than leaving
-        // a dangling checksum that the health check reports as an orphan/mismatch.
-        var staleSidecar = filePath + ".sha256";
-        if (File.Exists(staleSidecar))
-            File.Delete(staleSidecar);
-        await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(filePath)!, CancellationToken.None);
-
-        return true;
-    }
-
     private async Task<string?> MergeFilesAsync(List<FileInfo> files, DefragOptions options, CancellationToken ct)
     {
         if (files.Count == 0)
@@ -819,6 +732,7 @@ public interface IFileMaintenanceService
 {
     Task<HealthReport> RunHealthCheckAsync(HealthCheckOptions options, CancellationToken ct = default);
     Task<RepairResult> RepairAsync(RepairOptions options, CancellationToken ct = default);
+    Task<FileCompressionResult> CompressAsync(FileCompressionOptions options, CancellationToken ct = default);
     Task<DefragResult> DefragmentAsync(DefragOptions options, CancellationToken ct = default);
     Task<OrphanReport> FindOrphansAsync(CancellationToken ct = default);
 }

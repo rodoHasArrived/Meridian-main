@@ -14,7 +14,7 @@ namespace Meridian.Tests.Storage.Maintenance;
 /// deletion flags actually deleting files), and maintenance executions that vanish,
 /// hang, or crash the scheduler without recorded evidence.
 /// </summary>
-public sealed class ScheduledArchiveMaintenanceServiceTests : IDisposable
+public sealed partial class ScheduledArchiveMaintenanceServiceTests : IDisposable
 {
     private readonly string _tempRoot = Path.Combine(
         Path.GetTempPath(), "meridian-tests", $"archive-maintenance-{Guid.NewGuid():N}");
@@ -879,12 +879,13 @@ public sealed class ScheduledArchiveMaintenanceServiceTests : IDisposable
 
     private ScheduledArchiveMaintenanceService CreateSut(
         int? retentionDays = null,
-        ArchiveMaintenanceScheduleManager? manager = null)
+        ArchiveMaintenanceScheduleManager? manager = null,
+        IFileMaintenanceService? fileMaintenance = null)
     {
         var service = new ScheduledArchiveMaintenanceService(
             NullLogger<ScheduledArchiveMaintenanceService>.Instance,
             manager ?? _scheduleManager,
-            _fileMaintenance.Object,
+            fileMaintenance ?? _fileMaintenance.Object,
             _tierMigration.Object,
             new StorageOptions { RootPath = _storageRoot, RetentionDays = retentionDays });
         _services.Add(service);

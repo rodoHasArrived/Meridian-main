@@ -11,6 +11,11 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Wpf
 
+The fund-account projection adapter counts active reconciliation results through the same batched
+service query as the browser, while retaining historical run totals. Its bank snapshot adapter uses
+retained statement revision and source sequence; conflicting evidence stays unavailable. These plain
+.NET adapter contracts are also compiled into the cross-platform shared regression suite.
+
 Accounting Configure shows recurring occurrences beside retained journal drafts through
 `WorkstationRecurringJournalQueueClient`, using the same server contract as the browser.
 The operator selects an exact entity scope; rows show schedule/template versions, the retained

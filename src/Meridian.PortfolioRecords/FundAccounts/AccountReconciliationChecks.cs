@@ -42,8 +42,7 @@ internal static class AccountReconciliationChecks
     {
         var closingBalanceInSnapshotCurrency = snapshot is null
             ? null
-            : LatestClosingBalance(bankLinesForDate.Where(line =>
-                string.Equals(line.Currency, snapshot.Currency, StringComparison.OrdinalIgnoreCase)));
+            : BankStatementClosingBalanceAuthority.SelectClosingBalance(bankLinesForDate, snapshot.Currency);
         var closingBalanceAnyCurrency = LatestClosingBalance(bankLinesForDate);
 
         if (snapshot is null && closingBalanceAnyCurrency is null)

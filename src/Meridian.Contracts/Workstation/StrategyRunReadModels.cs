@@ -751,6 +751,8 @@ public sealed record StrategyRunLineageTimelineEntry(
 /// Normalized cross-mode run comparison DTO that includes the full set of
 /// <c>BacktestMetrics</c> fields plus equity curve data and parentage chain info.
 /// Returned by <c>GET /api/strategies/runs/compare?ids=a,b</c>.
+/// Defined nonfinite outcomes retain the SDK's named JSON values: positive infinity for
+/// loss-free profit factor or downside-free Sortino, and NaN for unavailable XIRR.
 /// </summary>
 public sealed record RunComparisonDto(
     string RunId,
@@ -766,12 +768,12 @@ public sealed record RunComparisonDto(
     decimal? AnnualizedReturn,
     decimal? FinalEquity,
     double? SharpeRatio,
-    double? SortinoRatio,
+    [property: JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)] double? SortinoRatio,
     double? CalmarRatio,
     decimal? MaxDrawdown,
     decimal? MaxDrawdownPercent,
     int MaxDrawdownRecoveryDays,
-    double? ProfitFactor,
+    [property: JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)] double? ProfitFactor,
     double? WinRate,
     int TotalTrades,
     int WinningTrades,
@@ -780,7 +782,7 @@ public sealed record RunComparisonDto(
     decimal TotalCommissions,
     decimal TotalMarginInterest,
     decimal TotalShortRebates,
-    double? Xirr,
+    [property: JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)] double? Xirr,
     EquityCurveSummary? EquityCurve,
     DateTimeOffset LastUpdatedAt,
     StrategyRunPromotionState PromotionState = StrategyRunPromotionState.None,
@@ -875,7 +877,8 @@ public sealed record EquityCurvePoint(
     decimal DrawdownFromPeak,
     decimal DrawdownFromPeakPercent);
 
-/// <summary>Full equity curve with summary drawdown statistics for one run.</summary>
+/// <summary>Full equity curve with summary drawdown statistics for one run.
+/// Downside-free Sortino retains positive infinity as the named JSON string.</summary>
 public sealed record EquityCurveSummary(
     string RunId,
     decimal InitialEquity,
@@ -884,7 +887,7 @@ public sealed record EquityCurveSummary(
     decimal MaxDrawdownPercent,
     int MaxDrawdownRecoveryDays,
     double SharpeRatio,
-    double SortinoRatio,
+    [property: JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)] double SortinoRatio,
     IReadOnlyList<EquityCurvePoint> Points);
 
 /// <summary>A single executed fill from a strategy run.</summary>

@@ -966,10 +966,11 @@ public sealed partial class ProviderLedgerReconciliationService
             return [];
         }
 
-        var closingBalance = BankStatementClosingBalanceAuthority.SelectClosingBalance(bankStatementLines
-            .Where(line => internalSnapshot is null || string.Equals(line.Currency, internalSnapshot.Currency, StringComparison.OrdinalIgnoreCase)));
-        var bankIncomeCashFlow = bankStatementLines
-            .Where(static line => IsIncomeTransaction(line.TransactionType))
+        var selectedLines = BankStatementClosingBalanceAuthority.SelectAuthoritativeLines(bankStatementLines, internalSnapshot?.Currency);
+        var closingBalance = BankStatementClosingBalanceAuthority.SelectClosingBalance(bankStatementLines, internalSnapshot?.Currency);
+        var bankIncomeCashFlow = selectedLines?
+            .Where(line => IsIncomeTransaction(line.TransactionType)
+                && (internalSnapshot is null || string.Equals(line.Currency, internalSnapshot.Currency, StringComparison.OrdinalIgnoreCase)))
             .Sum(static line => line.Amount);
         decimal? providerIncomeCashFlow = providerProjection is null
             ? null

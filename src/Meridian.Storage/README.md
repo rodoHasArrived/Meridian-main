@@ -34,6 +34,15 @@ and changing compression alone cannot resolve damaged source evidence. Scheduled
 an enabled truncation strategy and never substitutes index rebuilding. Focused regressions are `FileMaintenanceServiceTests` and
 `ScheduledArchiveMaintenanceServiceTests`.
 
+Scheduled compression uses `CompressAsync` and its compression-specific result, separately from
+repair completion. It selects healthy plain JSONL files within the requested paths, completes all
+required backups before mutation, and verifies decompressed bytes against the unchanged source
+before publishing a create-only gzip destination and deleting the original. Successful encoding
+changes report compressed files and bytes saved with zero repaired issues. Unhealthy sources,
+failed backups, destination collisions and incomplete transformations remain explicit failures;
+their recovery copies are retained in execution history. `FileMaintenanceService.Compression.cs`
+owns this operation and the backup helper shared with repair.
+
 `PostgresSecurityMasterPricingStore.ClosePrices` extends retained pricing receipts with immutable
 account/book/date price snapshots and separate independent-review records (Security Master
 migration 037). Source receipts must match exactly; scoped advisory locks fence approvals and
