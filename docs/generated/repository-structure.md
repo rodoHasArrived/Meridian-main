@@ -1748,6 +1748,7 @@ Meridian-main
 │   │   ├── filterConfig.yml
 │   │   └── README.md
 │   ├── domain
+│   │   ├── account-oversight-evidence.md
 │   │   ├── brokerage-account-snapshot.md
 │   │   ├── corporate-action-case.md
 │   │   ├── fund-event.md
@@ -1914,6 +1915,7 @@ Meridian-main
 │   │   ├── README.md
 │   │   └── service-level-objectives.md
 │   ├── operators
+│   │   ├── account-oversight.md
 │   │   ├── browser-workstation-installer.md
 │   │   ├── deployment-packaging.md
 │   │   ├── distributed-tracing.md
@@ -4173,6 +4175,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterLedgerBridge.cs
 │   │   │   ├── SecurityMasterMapping.cs
 │   │   │   ├── SecurityMasterOperationalReadinessService.cs
+│   │   │   ├── SecurityMasterPricingService.ClosePrices.cs
 │   │   │   ├── SecurityMasterPricingService.cs
 │   │   │   ├── SecurityMasterProjectionService.cs
 │   │   │   ├── SecurityMasterProjectionWarmupService.cs
@@ -4391,6 +4394,8 @@ Meridian-main
 │   │   ├── Archive
 │   │   │   └── ArchiveHealthModels.cs
 │   │   ├── AssetOperations
+│   │   │   ├── AccountCashForecastDtos.cs
+│   │   │   ├── AccountCashForecastJsonContext.cs
 │   │   │   ├── AssetAccountingEventDtos.cs
 │   │   │   ├── AssetAcquisitionTermsCompletionDto.cs
 │   │   │   ├── AssetOperationsDtos.cs
@@ -4645,6 +4650,8 @@ Meridian-main
 │   │   │   ├── SecurityIdentifierNormalizer.cs
 │   │   │   ├── SecurityIdentifiers.cs
 │   │   │   ├── SecurityMasterCashFlow.cs
+│   │   │   ├── SecurityMasterClosePrices.cs
+│   │   │   ├── SecurityMasterClosePricesJsonContext.cs
 │   │   │   ├── SecurityMasterCorporateActions.cs
 │   │   │   ├── SecurityMasterDataQuality.cs
 │   │   │   ├── SecurityMasterEnumReads.cs
@@ -5261,10 +5268,13 @@ Meridian-main
 │   │   │   │   ├── StatementMappingProfileLoader.cs
 │   │   │   │   ├── StatementRecordMapper.cs
 │   │   │   │   └── StatementValueParser.cs
+│   │   │   ├── AccountCashReconciliationModels.cs
+│   │   │   ├── AccountCashReconciliationService.cs
 │   │   │   ├── BrokerCustodianReconciliationModels.cs
 │   │   │   ├── BrokerReconciliationFeedModels.cs
 │   │   │   ├── BusinessDayAccountingCalendar.cs
 │   │   │   ├── DefaultReconciliationIngestionScheduler.cs
+│   │   │   ├── FileAccountCashReconciliationStore.cs
 │   │   │   ├── FileAccountingCalendar.cs
 │   │   │   ├── FileReconciliationDecisionJournal.cs
 │   │   │   ├── FileReconciliationFxRateProvider.cs
@@ -5637,6 +5647,9 @@ Meridian-main
 │   │   └── README.md
 │   ├── Meridian.Instruments
 │   │   ├── AssetOperations
+│   │   │   ├── AccountCashForecastEngine.cs
+│   │   │   ├── AccountCashForecastProjectionAdapter.cs
+│   │   │   ├── AccountCashForecastService.cs
 │   │   │   ├── AssetObligationProjectionService.cs
 │   │   │   ├── AssetOperationsReadService.cs
 │   │   │   ├── ClearwaterCorporateActionRuleProfileV1.cs
@@ -6154,6 +6167,7 @@ Meridian-main
 │   │   │   │   ├── 003_instrument_position_projection_guards.sql
 │   │   │   │   └── 004_asset_accounting_event_spine.sql
 │   │   │   ├── AssetOperationsMigrationRunner.cs
+│   │   │   ├── FileAccountCashForecastStore.cs
 │   │   │   ├── IAssetAccountingEventProjectionStore.cs
 │   │   │   ├── IAssetOperationsProjectionStore.cs
 │   │   │   ├── IInstrumentPositionProjectionStore.cs
@@ -6478,7 +6492,8 @@ Meridian-main
 │   │   │   │   ├── 033_security_master_asset_operations_projections.sql
 │   │   │   │   ├── 034_security_master_dated_price_history.sql
 │   │   │   │   ├── 035_security_master_price_selection_receipts.sql
-│   │   │   │   └── 036_security_master_workbench_generations.sql
+│   │   │   │   ├── 036_security_master_workbench_generations.sql
+│   │   │   │   └── 037_security_master_close_price_snapshots.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -6525,6 +6540,7 @@ Meridian-main
 │   │   │   ├── PostgresSecurityMasterCashFlowStore.cs
 │   │   │   ├── PostgresSecurityMasterEventStore.cs
 │   │   │   ├── PostgresSecurityMasterMutation.cs
+│   │   │   ├── PostgresSecurityMasterPricingStore.ClosePrices.cs
 │   │   │   ├── PostgresSecurityMasterPricingStore.cs
 │   │   │   ├── PostgresSecurityMasterQualityReportStore.cs
 │   │   │   ├── PostgresSecurityMasterSnapshotStore.cs
@@ -7080,6 +7096,8 @@ Meridian-main
 │   │   │   │   │   │   ├── store.tsx
 │   │   │   │   │   │   └── types.ts
 │   │   │   │   │   ├── api
+│   │   │   │   │   │   ├── account-oversight.api.test.ts
+│   │   │   │   │   │   ├── account-oversight.api.ts
 │   │   │   │   │   │   ├── accounting-onboarding.api.test.ts
 │   │   │   │   │   │   ├── accounting-onboarding.api.ts
 │   │   │   │   │   │   ├── archive-maintenance.api.ts
@@ -7285,6 +7303,14 @@ Meridian-main
 │   │   │   │   │   └── workstation-screen-view-states.ts
 │   │   │   │   ├── screens
 │   │   │   │   │   ├── accounting-calibration-summary.view-model.ts
+│   │   │   │   │   ├── accounting-screen.account-cash-cases.test.tsx
+│   │   │   │   │   ├── accounting-screen.account-cash-cases.tsx
+│   │   │   │   │   ├── accounting-screen.account-cash-forecasts.test.tsx
+│   │   │   │   │   ├── accounting-screen.account-cash-forecasts.tsx
+│   │   │   │   │   ├── accounting-screen.account-close-prices.test.tsx
+│   │   │   │   │   ├── accounting-screen.account-close-prices.tsx
+│   │   │   │   │   ├── accounting-screen.account-oversight.test.tsx
+│   │   │   │   │   ├── accounting-screen.account-oversight.tsx
 │   │   │   │   │   ├── accounting-screen.approvals.ts
 │   │   │   │   │   ├── accounting-screen.basis-bridge.view-model.ts
 │   │   │   │   │   ├── accounting-screen.break-audit-rebuild.test.tsx
@@ -7658,6 +7684,7 @@ Meridian-main
 │   │   │   │   │   ├── setup.ts
 │   │   │   │   │   └── verified-operation-outcome.ts
 │   │   │   │   ├── types
+│   │   │   │   │   ├── account-oversight.ts
 │   │   │   │   │   ├── accounting-onboarding.ts
 │   │   │   │   │   ├── archive-maintenance.types.ts
 │   │   │   │   │   ├── banking-payments.types.ts
@@ -7958,6 +7985,7 @@ Meridian-main
 │   │   │   ├── InitialAccountBootstrapEndpoints.cs
 │   │   │   ├── LeanEndpoints.cs
 │   │   │   ├── LedgerEndpoints.AccountingConfiguration.cs
+│   │   │   ├── LedgerEndpoints.AccountOversight.cs
 │   │   │   ├── LedgerEndpoints.CloseExecution.cs
 │   │   │   ├── LedgerEndpoints.ClosePreparation.cs
 │   │   │   ├── LedgerEndpoints.Consolidation.cs
@@ -8055,6 +8083,7 @@ Meridian-main
 │   │   │   ├── WorkstationRiskEndpoints.cs
 │   │   │   └── WorkstationTenantContext.cs
 │   │   ├── Evidence
+│   │   │   ├── AccountCashForecastEvidenceAdapter.cs
 │   │   │   ├── EvidenceContribution.cs
 │   │   │   ├── EvidenceContributors.cs
 │   │   │   ├── EvidenceDocumentExtraction.cs
@@ -8064,6 +8093,7 @@ Meridian-main
 │   │   │   ├── EvidenceSubjectResolver.cs
 │   │   │   ├── EvidenceTemplateRegistry.cs
 │   │   │   ├── EvidenceWorkflowServiceCollectionExtensions.cs
+│   │   │   ├── FileEvidenceArtifactStore.AccountCashSource.cs
 │   │   │   ├── FileEvidenceArtifactStore.cs
 │   │   │   ├── FileEvidenceArtifactStore.DocumentReview.cs
 │   │   │   ├── FileEvidenceArtifactStore.Export.cs
@@ -10128,6 +10158,7 @@ Meridian-main
 │   │   │   ├── ProjectReferenceGraph.cs
 │   │   │   └── ProjectReferenceGraphTests.cs
 │   │   ├── AssetOperations
+│   │   │   ├── AccountCashForecastTests.cs
 │   │   │   ├── AcquisitionTermsCompletionTests.cs
 │   │   │   ├── AmortizationHistoricalEvidenceTests.cs
 │   │   │   ├── AmortizationLotInstructionContractTests.cs
@@ -10786,6 +10817,7 @@ Meridian-main
 │   │   │   │   ├── statement-clean-reconciles.csv
 │   │   │   │   ├── statement-invalid-blockers.csv
 │   │   │   │   └── statement-unresolved-breaks.csv
+│   │   │   ├── AccountCashReconciliationContinuityTests.cs
 │   │   │   ├── BrokerCustodianMatchingPipelineTests.cs
 │   │   │   ├── FileReconciliationFxRateProviderTests.cs
 │   │   │   ├── FileStatementToleranceProfileProviderTests.cs
@@ -10874,6 +10906,7 @@ Meridian-main
 │   │   │   ├── NullCorporateActionOperationsServiceTests.cs
 │   │   │   ├── NullOperatorOverridesStoreTests.cs
 │   │   │   ├── PostgresOperatorOverridesStoreTests.cs
+│   │   │   ├── PostgresSecurityMasterClosePriceTests.cs
 │   │   │   ├── PostgresSecurityMasterConflictServiceTests.cs
 │   │   │   ├── PostgresSecurityMasterPricingHistoryTests.cs
 │   │   │   ├── PostgresSecurityMasterRevisionStoreTests.cs
@@ -10895,6 +10928,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterAliasRecordedHistoryTests.cs
 │   │   │   ├── SecurityMasterAmortizationLedgerBridgeTests.cs
 │   │   │   ├── SecurityMasterAssetClassSupportTests.cs
+│   │   │   ├── SecurityMasterClosePriceServiceTests.cs
 │   │   │   ├── SecurityMasterConflictServiceTests.cs
 │   │   │   ├── SecurityMasterConvertibleEquityAmendmentTests.cs
 │   │   │   ├── SecurityMasterCorporateActionCommandServiceTests.cs
@@ -11209,6 +11243,7 @@ Meridian-main
 │   │   │   │   ├── StreamBroadcasterTests.cs
 │   │   │   │   ├── StreamConnectionRegistryTests.cs
 │   │   │   │   └── StreamTopicTests.cs
+│   │   │   ├── AccountCashForecastEvidenceAdapterTests.cs
 │   │   │   ├── AccountingAuditAtomicityTests.cs
 │   │   │   ├── AccountingConfigurationServiceTests.Consolidation.cs
 │   │   │   ├── AccountingConfigurationServiceTests.ConsolidationChartRecovery.cs
@@ -11399,6 +11434,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointContractCompatibilityTests.cs
 │   │   │   ├── WorkstationEndpoints.StatementAuthorityTests.cs
 │   │   │   ├── WorkstationEndpointsTests.AccountingConfiguration.cs
+│   │   │   ├── WorkstationEndpointsTests.AccountOversight.cs
 │   │   │   ├── WorkstationEndpointsTests.ClosePreparation.cs
 │   │   │   ├── WorkstationEndpointsTests.CloseReadiness.cs
 │   │   │   ├── WorkstationEndpointsTests.cs

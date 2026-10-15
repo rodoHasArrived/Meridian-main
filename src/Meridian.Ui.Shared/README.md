@@ -11,6 +11,22 @@ last_reviewed: 2026-10-06
 
 # src/Meridian.Ui.Shared
 
+`LedgerEndpoints.AccountOversight` provides shared account-owned ledger-book routes for durable
+cash cases, retained replay/assignment, independently approved close-price sets and cash forecasts.
+Authenticated tenant/company and retained book ownership establish exact scope; client actor and
+tenant assertions cannot establish authority. `AccountCashForecastEvidenceAdapter` supports typed
+balance/flow/FX JSON from independently reviewed account Evidence Vault documents. It verifies
+original bytes, hashes, review provenance, version and every economic field before capture;
+unsupported inputs fail closed. File histories require explicit administrative provisioning.
+See [bounded account oversight](../../docs/operators/account-oversight.md) for route and source
+format contracts. These seams do not grant accounting-close or payment authority.
+The browser receives exact decimal text through this HTTP transport without changing retained
+domain digests. Scoped access context supplies current session capabilities; close-price history
+loads all exact account/book/date versions after durable evidence validation.
+Close-price capture accepts an optional stable request identity. Identical retries recover the
+retained snapshot before price evaluation; changing its immutable command conflicts. The HTTP
+actor remains session-derived on both initial capture and recovery.
+
 Security Master override PATCH and decision endpoints return HTTP 409 when another instance
 advances the durable workbench generation. The governed workbench endpoints use their existing
 conflict response for the same condition. Operators must reload before retrying the edit or review.

@@ -11,6 +11,21 @@ last_reviewed: 2026-10-13
 
 # src/Meridian.Contracts
 
+`SecurityMasterClosePrices` describes immutable account/book/UTC valuation-date close-price
+sets, retained selection observations and quote units, supported overrides, visible blockers,
+linked correction versions and independent reviewer approvals bound to a snapshot digest.
+`AccountCashForecastDtos` retains account/book-scoped settled balances, expected/observed flow
+versions, separate economic/settlement/receipt dates and declared dated FX direction. Forecast
+certification conveys cash evidence reconciliation and never payment authority. These shared
+contracts use dedicated source-generated JSON contexts. See
+[account oversight evidence](../../docs/domain/account-oversight-evidence.md).
+Close-price evidence validation retains a dispersion blocker when its derived percentage exceeds
+the decimal range, so immutable retention and approval checks agree on unsupported calculations.
+An optional close-price creation `RequestId` binds the snapshot identity to a normalized command.
+`CreationCommandDigest` and `RequestedKnowledgeAsOf` let durable validation reproduce that command,
+including whether its knowledge cutoff was explicit or chosen at capture. Absent metadata is
+omitted from canonical JSON, preserving legacy snapshot and approval digests.
+
 Canonical acquisition facts and lot instructions retain an explicit `OpenLotDirection` while
 quantities remain non-negative. Historical `Long` is the omitted zero value, preserving existing
 JSON and receipt fingerprints; `Short` is serialized explicitly. The contract can describe a short
