@@ -2418,6 +2418,8 @@ Meridian-main
 │   │   └── wpf-screen-development-tracker.md
 │   ├── testing
 │   │   ├── evidence
+│   │   │   ├── program-state-20261014
+│   │   │   │   └── main-validation.json
 │   │   │   ├── w10-615abde9
 │   │   │   │   ├── browser
 │   │   │   │   │   ├── evidence
@@ -10996,6 +10998,7 @@ Meridian-main
 │   │   │   ├── AtomicFileWriterTests.cs
 │   │   │   ├── AtomicSnapshotTestWriter.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.AcquisitionAdmission.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.AdvanceRefundingReport.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.Amortization.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.AverageCost.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.BackfillLockOrder.cs
@@ -11011,6 +11014,7 @@ Meridian-main
 │   │   │   ├── AtomicTaxLotJournalStoreTests.ProceedsAllocation.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.ReferenceAuthority.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.ReferenceLocks.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.ReliefPrecision.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.ReplacementClaims.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.SpinOff.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.SuccessorAmortization.cs
