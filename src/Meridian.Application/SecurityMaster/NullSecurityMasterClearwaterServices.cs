@@ -41,6 +41,18 @@ public sealed class NullSecurityMasterPricingService : ISecurityMasterPricingSer
     public Task<IReadOnlyList<SecurityComparisonPriceDto>> GetComparisonPricesAsync(
         Guid securityId, CancellationToken ct = default)
         => Task.FromResult(_empty);
+
+    public Task<SecurityClosePriceSetDto> CreateClosePriceSetAsync(CreateSecurityClosePriceSetRequest request, CancellationToken ct = default)
+        => throw new InvalidOperationException("Security Master is not configured; durable close-price snapshots are unavailable.");
+
+    public Task<SecurityClosePriceSetDto> ApproveClosePriceSetAsync(ApproveSecurityClosePriceSetRequest request, CancellationToken ct = default)
+        => throw new InvalidOperationException("Security Master is not configured; durable close-price approval is unavailable.");
+
+    public Task<SecurityClosePriceSetDto?> GetClosePriceSetAsync(string accountId, string bookId, DateOnly valuationDate, Guid snapshotId, CancellationToken ct = default)
+        => Task.FromResult<SecurityClosePriceSetDto?>(null);
+
+    public Task<IReadOnlyList<SecurityClosePriceSetDto>> GetClosePriceSetsAsync(string accountId, string bookId, DateOnly valuationDate, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<SecurityClosePriceSetDto>>(Array.Empty<SecurityClosePriceSetDto>());
 }
 
 public sealed class NullSecurityMasterCashFlowService : ISecurityMasterCashFlowService

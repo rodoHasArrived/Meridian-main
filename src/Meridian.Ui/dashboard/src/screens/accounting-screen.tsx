@@ -74,6 +74,7 @@ import { BreakAuditRebuildCheck } from "@/screens/accounting-screen.break-audit-
 import { ReconciliationReadinessPanel } from "@/screens/accounting-screen.reconciliation-readiness";
 import { StatementRunDetailTabs } from "@/screens/accounting-screen.statement-run-detail";
 import { AccountingOnboardingPanel } from "@/screens/accounting-screen.onboarding-panel";
+import { AccountOversightPanel } from "@/screens/accounting-screen.account-oversight";
 import {
   ChartAccountPathBuilder,
   ConfigureActivationRail,
@@ -2267,6 +2268,8 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
         workstream={workstream}
         taskMode={taskMode}
       />
+
+      {workstream === "reconciliation" ? <AccountOversightPanel /> : null}
 
       {sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails ? <PrepareNextPeriodPanel initialWorkflowId={closeWorkflow?.workflowId} /> : null}
 

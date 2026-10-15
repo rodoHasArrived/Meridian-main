@@ -2,11 +2,83 @@
 
 # `security-master-contracts` data objects - page 4 of 4
 
-Objects 241-260 of 260. References crossing pages remain available in the dependency manifest.
+Objects 241-271 of 271. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityStatusDto["SecurityStatusDto"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecuritySummaryDto["SecuritySummaryDto"] {
+        +string AssetClass
+        +string Currency
+        +string DisplayName
+        +string PrimaryIdentifier
+        +Guid SecurityId
+        +SecurityStatusDto Status
+        +long Version
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityTermReader["SecurityTermReader"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto["SecurityValidationGateResultDto"] {
+        +bool IsBlocked
+        +bool IsResolved
+        +SecurityValidationReportDto Report
+        +Guid? SecurityId
+        +SecurityValidationSnapshotDto? Snapshot
+        +string? Symbol
+        +SecurityValidationWorkflowDto Workflow
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityValidationIssueDto["SecurityValidationIssueDto"] {
+        +IReadOnlyList~string~ AffectedFields
+        +string Code
+        +IReadOnlyList~SecurityEvidenceLinkDto~ EvidenceLinks
+        +string Message
+        +SecurityValidationSeverityDto Severity
+        +string SuggestedAction
+        +string Title
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityValidationReportDto["SecurityValidationReportDto"] {
+        +int CriticalIssueCount
+        +int ErrorIssueCount
+        +DateTimeOffset EvaluatedAtUtc
+        +bool HasBlockingIssues
+        +IReadOnlyList~SecurityValidationIssueDto~ Issues
+        +string Scope
+        +Guid? SecurityId
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityValidationSeverityDto["SecurityValidationSeverityDto"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto["SecurityValidationSnapshotDto"] {
+        +string? Actor
+        +IReadOnlyList~SecurityEvidenceLinkDto~ EvidenceLinks
+        +string Reason
+        +DateTimeOffset RecordedAtUtc
+        +SecurityValidationReportDto Report
+        +string ReportHashSha256
+        +string Scope
+        +Guid? SecurityId
+        +Guid SnapshotId
+        +SecurityValidationWorkflowDto Workflow
+        +string? WorkflowReference
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotRequestDto["SecurityValidationSnapshotRequestDto"] {
+        +string? Actor
+        +IReadOnlyList~SecurityEvidenceLinkDto~ EvidenceLinks
+        +string Reason
+        +SecurityValidationWorkflowDto Workflow
+        +string? WorkflowReference
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto["SecurityValidationWorkflowDto"] {
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerLine["StructuredCashFlowLedgerLine"] {
+        +string Account
+        +string AccountType
+        +decimal Credit
+        +decimal Debit
+        +string? FinancialAccountId
+        +string? Symbol
+    }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting["StructuredCashFlowLedgerPosting"] {
         +string Description
         +bool IsBalanced
@@ -170,6 +242,16 @@ classDiagram
         +DateTimeOffset ValidFrom
         +DateTimeOffset? ValidTo
     }
+    Meridian_Contracts_SecurityMaster_SecuritySummaryDto --> Meridian_Contracts_SecurityMaster_SecurityStatusDto
+    Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto --> Meridian_Contracts_SecurityMaster_SecurityValidationReportDto
+    Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto --> Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto
+    Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto --> Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto
+    Meridian_Contracts_SecurityMaster_SecurityValidationIssueDto --> Meridian_Contracts_SecurityMaster_SecurityValidationSeverityDto
+    Meridian_Contracts_SecurityMaster_SecurityValidationReportDto --> Meridian_Contracts_SecurityMaster_SecurityValidationIssueDto
+    Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityValidationReportDto
+    Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto
+    Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotRequestDto --> Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerLine
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPostingResult --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule --> Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule
