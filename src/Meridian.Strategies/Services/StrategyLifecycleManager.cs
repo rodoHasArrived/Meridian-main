@@ -80,6 +80,13 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
                 return;
             }
 
+            if (sameInstance && currentRun is not null && existing.CurrentRun?.RunId != currentRun.RunId &&
+                ((existing.CurrentRun is not null && strategy.Status is not (StrategyStatus.Registered or StrategyStatus.Stopped)) ||
+                 (_commandGates.TryGetValue(strategy.StrategyId, out var commandGate) && commandGate.CurrentCount == 0)))
+            {
+                throw new InvalidOperationException("An active strategy cannot be rebound to another run.");
+            }
+
             if (_sessions.TryGetValue(strategy.StrategyId, out var session) && session.Active &&
                 currentRun?.RunId != session.RunId)
             {
