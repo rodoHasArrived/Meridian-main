@@ -50,6 +50,14 @@ security/account identity. Replay by receipt preserves what was actually evaluat
 transaction with an earlier recorded timestamp commits later. Timestamp cutoffs alone are
 eligibility predicates, not durable certification or a commit-consistent snapshot.
 
+`GetRecordedByIdentifierAsOfAsync` applies that same timestamp limitation to retained Security
+Master event state and alias revisions. Its recorded cutoff filters stored timestamps; the separate
+effective cutoff selects identifier validity. Event timestamps and alias transaction timestamps can
+precede lock acquisition and commit. A later commit can therefore change a repeated query with the
+same cutoffs. Imported alias baselines also have a migration availability eligibility boundary;
+earlier alias contents remain unknown. This identifier API retains no evaluation receipt and makes
+no claim about which transactions were visible at a historical cutoff.
+
 ## Governed edit concurrency
 
 PostgreSQL-backed workbench edits use a durable per-security generation, separate from the canonical
@@ -81,6 +89,9 @@ instances, apply migration 036 through the normal migration runner, then start t
 Mixed old/new writers are not covered, because old binaries do not acquire the generation fence.
 The additive table can remain during a binary rollback, but the multi-instance guarantee is then lost.
 No production migration or operator acceptance is implied by this change.
+Use the [governed edit rollout procedure](../operators/security-master-governed-edit-rollout.md)
+to collect the independent review, writer-drain, migration, reconciliation and operator-acceptance
+receipts. Missing production evidence stays pending even after merge and successful CI.
 
 `SecurityMasterGovernedConcurrencyPostgresTests` forces two independent services to overlap at the
 PostgreSQL lock, then verifies incompatible-date rejection, approval exclusion during patch/draft

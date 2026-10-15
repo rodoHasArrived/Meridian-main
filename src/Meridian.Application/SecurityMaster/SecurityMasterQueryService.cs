@@ -37,9 +37,14 @@ public sealed class SecurityMasterQueryService :
         DateTimeOffset asOfUtc,
         CancellationToken ct = default)
     {
-        var current = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
+        // Use retained timestamp-eligible rows even if today's projection is absent. These reads
+        // do not reconstruct commit visibility: an in-flight write may become eligible after commit.
+        var recordedAliases = await _store
+            .GetAliasesRecordedAsOfAsync(securityId, asOfUtc, ct)
+            .ConfigureAwait(false);
+
         var asOfProjection = await _rebuilder
-            .RebuildRecordedAsOfAsync(securityId, asOfUtc, current, ct)
+            .RebuildRecordedAsOfAsync(securityId, asOfUtc, projectionWithAliases: null, ct, recordedAliases)
             .ConfigureAwait(false);
         return asOfProjection is null ? null : SecurityMasterMapping.ToDetail(asOfProjection);
     }
@@ -65,12 +70,113 @@ public sealed class SecurityMasterQueryService :
             return SecurityMasterMapping.ToDetail(projection);
         }
 
-        // An explicit historical lookup must return the terms as recorded at that time —
+        // An explicit cutoff selects terms by the retained event timestamp —
         // resolving the identifier as-of and then returning the current projection would
         // silently hand back today's terms under yesterday's identity.
         var asOfProjection = await _rebuilder.RebuildAsOfAsync(projection.SecurityId, asOf, projection, ct)
             .ConfigureAwait(false);
         return asOfProjection is null ? null : SecurityMasterMapping.ToDetail(asOfProjection);
+    }
+
+    /// <inheritdoc cref="Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetRecordedByIdentifierAsOfAsync" />
+    public async Task<SecurityDetailDto?> GetRecordedByIdentifierAsOfAsync(
+        SecurityIdentifierKind identifierKind,
+        string identifierValue,
+        string? provider,
+        DateTimeOffset recordedAsOfUtc,
+        DateTimeOffset? effectiveAsOfUtc = null,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        var normalizedValue = SecurityIdentifierNormalizer.NormalizeValue(identifierKind, identifierValue);
+        if (normalizedValue.Length == 0)
+        {
+            return null;
+        }
+
+        var normalizedProvider = SecurityIdentifierNormalizer.NormalizeProvider(provider);
+        var effectiveAsOf = effectiveAsOfUtc ?? recordedAsOfUtc;
+
+        // Enumerate retained streams rather than today's projection membership or identifier rows.
+        // Stored event/revision timestamps determine eligibility, not commit time. Pages and alias
+        // reads observe rows when read and do not share a historical visibility snapshot. This
+        // retained-event query pays the replay cost; the compatibility lookup remains indexed.
+        const int pageSize = 1000;
+        var latestEvents = new Dictionary<Guid, SecurityMasterEventEnvelope>();
+        long sequence = 0;
+        while (true)
+        {
+            var page = await _eventStore.LoadSinceSequenceAsync(sequence, pageSize, ct).ConfigureAwait(false);
+            if (page.Count == 0)
+            {
+                break;
+            }
+
+            var nextSequence = sequence;
+            foreach (var @event in page)
+            {
+                if (@event.GlobalSequence is not { } eventSequence || eventSequence <= sequence)
+                {
+                    throw new InvalidOperationException("Recorded identifier lookup requires an advancing global event sequence.");
+                }
+
+                nextSequence = Math.Max(nextSequence, eventSequence);
+                if (@event.EventTimestamp <= recordedAsOfUtc
+                    && (!latestEvents.TryGetValue(@event.SecurityId, out var latest)
+                        || @event.StreamVersion > latest.StreamVersion))
+                {
+                    latestEvents[@event.SecurityId] = @event;
+                }
+            }
+
+            sequence = nextSequence;
+            if (page.Count < pageSize)
+            {
+                break;
+            }
+        }
+
+        SecurityProjectionRecord? match = null;
+        foreach (var @event in latestEvents.Values)
+        {
+            ct.ThrowIfCancellationRequested();
+            var economic = SecurityMasterMapping.FromEconomicPayload(@event.Payload);
+            var recordedAliases = await _store.GetAliasesRecordedAsOfAsync(
+                    @event.SecurityId, recordedAsOfUtc, ct)
+                .ConfigureAwait(false);
+            var aliases = recordedAliases
+                .Where(alias => alias.CreatedAt <= recordedAsOfUtc
+                                && alias.ValidFrom <= effectiveAsOf
+                                && (!alias.ValidTo.HasValue || alias.ValidTo.Value > effectiveAsOf))
+                .ToArray();
+
+            var identifierMatches = economic.Identifiers.Any(identifier =>
+                identifier.Kind == identifierKind
+                && identifier.ValidFrom <= effectiveAsOf
+                && (!identifier.ValidTo.HasValue || identifier.ValidTo.Value > effectiveAsOf)
+                && SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier).Equals(normalizedValue, StringComparison.Ordinal)
+                && ProviderMatches(identifier.Provider, identifier.NormalizedProvider, normalizedProvider));
+            var aliasMatches = aliases.Any(alias =>
+                alias.IsEnabled
+                && string.Equals(alias.AliasKind, identifierKind.ToString(), StringComparison.OrdinalIgnoreCase)
+                && SecurityIdentifierNormalizer.NormalizeValue(identifierKind, alias.AliasValue).Equals(normalizedValue, StringComparison.Ordinal)
+                && ProviderMatches(alias.Provider, normalizedProvider));
+            if (!identifierMatches && !aliasMatches)
+            {
+                continue;
+            }
+
+            if (match is not null)
+            {
+                // Neither a current primary flag nor enumeration order can settle historical
+                // ownership shared by multiple securities.
+                return null;
+            }
+
+            match = SecurityEconomicDefinitionAdapter.ToProjection(economic, aliases);
+        }
+
+        return match is null ? null : SecurityMasterMapping.ToDetail(match);
     }
 
     public async Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default)

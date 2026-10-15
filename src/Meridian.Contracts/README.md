@@ -6,10 +6,30 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-10-13
+last_reviewed: 2026-10-15
 ---
 
 # src/Meridian.Contracts
+
+The class-aware economic replay bridge refuses Equity fallback when the legacy flat payload is
+missing. The old economic family cannot reliably distinguish common, preferred and convertible
+preferred shares or recover their complete terms. Retained flat payloads remain authoritative and replay unchanged;
+historical incomplete events require authoritative terms recovery.
+
+`GetRecordedByIdentifierAsOfAsync` separates the recording cutoff from identifier validity and
+resolves only retained event identifiers and alias revisions. It returns no match for missing or
+ambiguous historical identity and never substitutes current projections. Compatibility lookups can
+use later alias corrections. Backfilled pre-038 aliases have an explicit history-availability
+boundary; omission before that boundary is missing evidence, not proof that the alias never existed.
+These timestamps supply eligibility among rows read now, not historical commit visibility or a
+transaction snapshot. A later commit can change a repeated query with the same cutoffs.
+
+`SecurityMasterCanonicalWithdrawn` records when independently retained registry evidence keeps an
+internal canonical key after Security Master withdraws its input authority. That spelling no longer
+resolves as a canonical input; independent identifiers and provider mappings remain available.
+The Security Master reconciliation writer also uses this state when no unique current primary
+exists, retaining current mappings through a hidden internal carrier. Ordinary registration ignores
+caller-supplied Security Master ownership and withdrawal flags.
 
 `SecurityMasterClosePrices` describes immutable account/book/UTC valuation-date close-price
 sets, retained selection observations and quote units, supported overrides, visible blockers,
@@ -86,8 +106,16 @@ drafting and posting. Only the exact reversal's reviewed Security Master evidenc
 exception; acquisition, event and approval evidence keep their existing date requirements.
 Constant yield counts contractual calendar coupons for monthly, quarterly, semiannual and annual
 schedules, including month ends and leap dates. Day-count fractions interpolate within the current
-coupon period; they do not determine the number of coupons. Odd schedules and schedules exceeding
-1200 periods are refused, and retained yield must reconcile to the acquisition price even at maturity.
+coupon period; they do not determine the number of coupons. Calculation model v2 refuses odd
+schedules and schedules exceeding 1200 periods, and retained yield must reconcile to the acquisition
+price even at maturity. The public `FaceValueLot.ConstantYieldAmortizedBasisAsOf` kernel additionally
+supports an odd (short) first period for mid-period acquisitions: coupons are generated backward from
+maturity, the stub is discounted with its day-count period fraction, the clean acquisition price
+excludes purchased accrued interest (`coupon × (1 − f)`), and a retained yield must reconcile through
+the same odd-period pricing. Its 30E/360 ISDA fractions use contractual maturity for both the stub
+and reference-period endpoints, preserving the final-February termination exception while leaving
+intermediate February coupons under ordinary month-end rules. Odd last periods are not modelled. Posting odd-first schedules requires a
+new governed calculation version.
 New instructions identify calculation model v2. Retained JSON without a calculation version keeps
 the original v1 calculation and serialized shape for receipt replay; unposted legacy instructions
 require a fresh preview. Unknown calculation versions are refused.
@@ -1677,7 +1705,10 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 Canonical symbol registries retain their stable read/write interfaces. Implementations that can
 apply a startup seed batch atomically opt into `ICanonicalSymbolRegistryMigrationWriter`; callers
 must require that additive capability rather than widening the general registry contract or
-falling back to per-definition writes.
+falling back to per-definition writes. Security Master seeding similarly requires the additive
+`ICanonicalSymbolRegistrySecurityMasterWriter` capability. It supplies an explicit security-ID scope
+and the current active definitions, replacing only that source's aliases and non-override provider
+mappings while preserving independent authority.
 
 `WorkstationWorkspaceCatalog` classifies browser workspaces by product maturity only:
 `Preview`, `Setup`, or `Available`. Execution environment (`Demo`, `Paper`, or `Live`) and runtime

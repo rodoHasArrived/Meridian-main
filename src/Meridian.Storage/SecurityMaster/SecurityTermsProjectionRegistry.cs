@@ -4,6 +4,34 @@ using Meridian.Contracts.SecurityMaster;
 namespace Meridian.Storage.SecurityMaster;
 
 /// <summary>
+/// How a projected <see cref="SecurityAssetTermFieldType.String"/> term is normalized before it is
+/// bound. <see cref="TrimBlankAsAbsent"/> is the registry's original behaviour; the other modes
+/// exist so the writers that predate the registry could move onto it without changing a single
+/// persisted value.
+/// </summary>
+internal enum SecurityTermsProjectionTextNormalization
+{
+    /// <summary>
+    /// Trimmed, with a blank value read as absent (NULL), via
+    /// <c>TextPrimitives.NormalizeOptional</c>: a padded vendor value and a clean one land on the
+    /// same indexed column value.
+    /// </summary>
+    TrimBlankAsAbsent = 0,
+
+    /// <summary>Bound exactly as carried: surrounding whitespace and empty strings are kept.</summary>
+    Verbatim,
+
+    /// <summary>Trimmed, but a blank value is bound as the empty string rather than NULL.</summary>
+    Trim,
+
+    /// <summary>
+    /// Trimmed and upper-cased with the invariant culture, with a blank value read as absent. For
+    /// code-shaped terms (currency codes) whose read side matches on the canonical upper-case form.
+    /// </summary>
+    TrimUpperInvariant
+}
+
+/// <summary>
 /// One projected scalar column of an asset class's relational terms projection: the SQL column it
 /// lands in, the asset-specific-terms JSON key it reads, and the value type that key carries.
 /// </summary>
@@ -18,23 +46,52 @@ namespace Meridian.Storage.SecurityMaster;
 /// <param name="Type">The declared JSON value type, used to pick the reader and to check the schema.</param>
 /// <param name="Gates">
 /// Whether the column is NOT NULL and gates the whole projection: a record whose payload does not
-/// carry this term gets no projection row at all (and any stale row is deleted). A gating column
-/// must be declared <c>Required</c> in <see cref="SecurityAssetTermsSchema"/> — gating on a term the
-/// serializer may legitimately omit would drop projections for valid records.
+/// carry this term — or carries it as a blank or whitespace-only string, whatever the column's
+/// <paramref name="Normalization"/> — gets no projection row at all (and any stale row is deleted).
+/// A gating column must be declared <c>Required</c> in <see cref="SecurityAssetTermsSchema"/> —
+/// gating on a term the serializer may legitimately omit would drop projections for valid records.
+/// </param>
+/// <param name="Normalization">
+/// How a string term is normalized before binding. Only meaningful for
+/// <see cref="SecurityAssetTermFieldType.String"/>; validation refuses a non-default value on any
+/// other type.
+/// </param>
+/// <param name="DefaultWhenAbsent">
+/// The value bound instead of NULL when the term is absent, JSON null, or carries the wrong JSON
+/// kind. Only a <see cref="bool"/> on a <see cref="SecurityAssetTermFieldType.Boolean"/> column is
+/// accepted — it models the <c>boolean not null default false</c> flag columns — and a gating
+/// column cannot carry one, because a default would make its gate unreachable.
 /// </param>
 internal sealed record SecurityTermsProjectionColumn(
     string ColumnName,
     string TermKey,
     SecurityAssetTermFieldType Type,
-    bool Gates = false)
+    bool Gates = false,
+    SecurityTermsProjectionTextNormalization Normalization = SecurityTermsProjectionTextNormalization.TrimBlankAsAbsent,
+    object? DefaultWhenAbsent = null)
 {
     /// <summary>A nullable projected column; a missing or malformed term writes NULL.</summary>
-    internal static SecurityTermsProjectionColumn Optional(string columnName, string termKey, SecurityAssetTermFieldType type)
-        => new(columnName, termKey, type);
+    internal static SecurityTermsProjectionColumn Optional(
+        string columnName,
+        string termKey,
+        SecurityAssetTermFieldType type,
+        SecurityTermsProjectionTextNormalization normalization = SecurityTermsProjectionTextNormalization.TrimBlankAsAbsent)
+        => new(columnName, termKey, type, Normalization: normalization);
 
     /// <summary>A NOT NULL projected column whose absence suppresses the whole projection row.</summary>
-    internal static SecurityTermsProjectionColumn Gate(string columnName, string termKey, SecurityAssetTermFieldType type)
-        => new(columnName, termKey, type, Gates: true);
+    internal static SecurityTermsProjectionColumn Gate(
+        string columnName,
+        string termKey,
+        SecurityAssetTermFieldType type,
+        SecurityTermsProjectionTextNormalization normalization = SecurityTermsProjectionTextNormalization.TrimBlankAsAbsent)
+        => new(columnName, termKey, type, Gates: true, Normalization: normalization);
+
+    /// <summary>
+    /// A NOT NULL boolean flag column that binds <paramref name="defaultWhenAbsent"/> when the term
+    /// is absent or malformed, rather than gating the projection on it.
+    /// </summary>
+    internal static SecurityTermsProjectionColumn Flag(string columnName, string termKey, bool defaultWhenAbsent)
+        => new(columnName, termKey, SecurityAssetTermFieldType.Boolean, DefaultWhenAbsent: defaultWhenAbsent);
 }
 
 /// <summary>
@@ -105,11 +162,17 @@ internal sealed record SecurityTermsProjectionChildTable(
 /// <param name="TableName">The parent projection table (unqualified).</param>
 /// <param name="Columns">Class-specific scalar columns, written between the identity spine columns.</param>
 /// <param name="ChildTables">Child tables fanned out from declared array terms; empty for a flat class.</param>
+/// <param name="ProjectsCurrency">
+/// Whether the parent table carries the record's <c>currency</c> in its leading identity spine. A
+/// pair-quoted class (CryptoCurrency) states both of its currencies as terms instead, and its table
+/// has no <c>currency</c> column, so it opts out.
+/// </param>
 internal sealed record SecurityTermsProjectionDescriptor(
     string AssetClass,
     string TableName,
     IReadOnlyList<SecurityTermsProjectionColumn> Columns,
-    IReadOnlyList<SecurityTermsProjectionChildTable> ChildTables);
+    IReadOnlyList<SecurityTermsProjectionChildTable> ChildTables,
+    bool ProjectsCurrency = true);
 
 /// <summary>
 /// The declarative registry of schema-driven relational terms projections.
@@ -129,26 +192,67 @@ internal sealed record SecurityTermsProjectionDescriptor(
 /// terms. A class whose projection needs derived columns (a computed lifecycle state, a swap type
 /// scanned out of legs, a concatenated FX pair code), columns sourced from common terms, or a
 /// legacy nested-shape fallback keeps its hand-written writer — those are genuine economics, not
-/// boilerplate, and folding them in would trade the duplication for a configuration language. The
-/// eleven writers that predate this registry are unchanged; they migrate one at a time, each behind
-/// its own regression guard, rather than in a single behaviour-preserving sweep.
+/// boilerplate, and folding them in would trade the duplication for a configuration language.
+/// </para>
+/// <para>
+/// Of the eleven writers that predate this registry, the four whose columns are pure term reads —
+/// MoneyMarketFund, CertificateOfDeposit, Deposit and CryptoCurrency — now live here. They moved
+/// behind a database-backed parity guard that ran each hand-written writer and its descriptor into
+/// the same table across a record matrix (gate hits and misses, whitespace gates, class changes,
+/// padded and mixed-case values, explicit nulls, wrong JSON kinds) and required identical rows;
+/// <c>RegistryMigratedProjectionGoldenTests</c> keeps those expectations as golden rows. Matching
+/// them byte for byte is what the per-column <see cref="SecurityTermsProjectionTextNormalization"/>,
+/// the boolean <see cref="SecurityTermsProjectionColumn.DefaultWhenAbsent"/> and the descriptor's
+/// <see cref="SecurityTermsProjectionDescriptor.ProjectsCurrency"/> flag express. The rest stay
+/// hand-written: Bond (derived lifecycle state, legacy nested-coupon fallback, common-terms
+/// columns), Option (series and alias tables), Swap (type scanned out of legs), FxSpot
+/// (concatenated pair code), Equity (common-terms columns), Future (derived lifecycle state and
+/// fallback-derived root symbol, multiplier and last trading date), and Commodity, which
+/// projects <c>exchangeCode</c> and <c>deliveryCountry</c> — keys the terms schema does not declare
+/// and the canonical serializer never writes, so a descriptor for it would fail validation, and
+/// declaring them would break the serializer's key-set round-trip guard.
 /// </para>
 /// </summary>
 internal static partial class SecurityTermsProjectionRegistry
 {
-    private static SecurityTermsProjectionColumn Optional(string columnName, string termKey, SecurityAssetTermFieldType type)
-        => SecurityTermsProjectionColumn.Optional(columnName, termKey, type);
+    private static SecurityTermsProjectionColumn Optional(
+        string columnName,
+        string termKey,
+        SecurityAssetTermFieldType type,
+        SecurityTermsProjectionTextNormalization normalization = SecurityTermsProjectionTextNormalization.TrimBlankAsAbsent)
+        => SecurityTermsProjectionColumn.Optional(columnName, termKey, type, normalization);
 
-    private static SecurityTermsProjectionColumn Gate(string columnName, string termKey, SecurityAssetTermFieldType type)
-        => SecurityTermsProjectionColumn.Gate(columnName, termKey, type);
+    private static SecurityTermsProjectionColumn Gate(
+        string columnName,
+        string termKey,
+        SecurityAssetTermFieldType type,
+        SecurityTermsProjectionTextNormalization normalization = SecurityTermsProjectionTextNormalization.TrimBlankAsAbsent)
+        => SecurityTermsProjectionColumn.Gate(columnName, termKey, type, normalization);
+
+    private static SecurityTermsProjectionColumn Flag(string columnName, string termKey, bool defaultWhenAbsent)
+        => SecurityTermsProjectionColumn.Flag(columnName, termKey, defaultWhenAbsent);
+
+    private const SecurityTermsProjectionTextNormalization Verbatim = SecurityTermsProjectionTextNormalization.Verbatim;
 
     /// <summary>
     /// Columns every projection carries from the record itself rather than from its terms, written
     /// before the class-specific columns. Matches the spine the hand-written projections already
-    /// share (<c>security_id, display_name, currency, …, primary_identifier_value, version</c>).
+    /// share (<c>security_id, display_name, currency, …, primary_identifier_value, version</c>). A
+    /// descriptor that opts out of <see cref="SecurityTermsProjectionDescriptor.ProjectsCurrency"/>
+    /// drops <c>currency</c>; use <see cref="LeadingIdentityColumnsFor"/> for a specific descriptor.
     /// </summary>
     internal static readonly IReadOnlyList<string> LeadingIdentityColumns =
         ["security_id", "display_name", "currency"];
+
+    private static readonly IReadOnlyList<string> LeadingIdentityColumnsWithoutCurrency =
+        LeadingIdentityColumns.Where(static column => column != "currency").ToArray();
+
+    /// <summary>The leading identity columns <paramref name="descriptor"/>'s parent table carries.</summary>
+    internal static IReadOnlyList<string> LeadingIdentityColumnsFor(SecurityTermsProjectionDescriptor descriptor)
+    {
+        ArgumentNullException.ThrowIfNull(descriptor);
+        return descriptor.ProjectsCurrency ? LeadingIdentityColumns : LeadingIdentityColumnsWithoutCurrency;
+    }
 
     /// <summary>Identity columns written after the class-specific columns.</summary>
     internal static readonly IReadOnlyList<string> TrailingIdentityColumns =
@@ -164,6 +268,8 @@ internal static partial class SecurityTermsProjectionRegistry
     /// <see cref="SecurityAssetClassCatalog"/>, so their borrower, spread, instalment schedule,
     /// tranche, original face and dated pool factors drive money movement and need to be queryable
     /// as columns rather than reachable only by parsing the blob one security at a time.
+    /// CryptoCurrency, Deposit, MoneyMarketFund and CertificateOfDeposit follow: flat classes whose
+    /// hand-written writers were migrated onto the registry without changing their persisted rows.
     /// </summary>
     internal static readonly IReadOnlyList<SecurityTermsProjectionDescriptor> Descriptors =
     [
@@ -228,7 +334,61 @@ internal static partial class SecurityTermsProjectionRegistry
                         new("as_of_date", "asOfDate", SecurityAssetTermFieldType.Date, Required: true),
                         new("factor", "factor", SecurityAssetTermFieldType.Decimal, Required: true)
                     ])
-            ])
+            ]),
+
+        // The four flat classes below were hand-written writers (migrations 012–015) and moved here
+        // behaviour-preserving. Their non-default normalizations reproduce exactly what those
+        // writers bound: optional strings went in verbatim (whitespace and "" kept), MMF fund family
+        // was trimmed but never nulled, crypto pair codes were trimmed and upper-cased, and the
+        // NOT NULL DEFAULT FALSE flags bound false for an absent or malformed term.
+        new(
+            AssetClass: "CryptoCurrency",
+            TableName: "crypto_projection",
+            Columns:
+            [
+                Gate("base_currency", "baseCurrency", SecurityAssetTermFieldType.String, SecurityTermsProjectionTextNormalization.TrimUpperInvariant),
+                Gate("quote_currency", "quoteCurrency", SecurityAssetTermFieldType.String, SecurityTermsProjectionTextNormalization.TrimUpperInvariant),
+                Optional("network", "network", SecurityAssetTermFieldType.String, Verbatim)
+            ],
+            ChildTables: [],
+            // A crypto pair states both currencies as terms; migration 012 gave it no currency column.
+            ProjectsCurrency: false),
+        new(
+            AssetClass: "Deposit",
+            TableName: "deposit_projection",
+            Columns:
+            [
+                Gate("deposit_type", "depositType", SecurityAssetTermFieldType.String),
+                Gate("institution_name", "institutionName", SecurityAssetTermFieldType.String),
+                Optional("maturity_date", "maturity", SecurityAssetTermFieldType.Date),
+                Optional("interest_rate", "interestRate", SecurityAssetTermFieldType.Decimal),
+                Optional("day_count", "dayCount", SecurityAssetTermFieldType.String, Verbatim),
+                Flag("is_callable", "isCallable", defaultWhenAbsent: false)
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "MoneyMarketFund",
+            TableName: "money_market_fund_projection",
+            Columns:
+            [
+                Optional("fund_family", "fundFamily", SecurityAssetTermFieldType.String, SecurityTermsProjectionTextNormalization.Trim),
+                Flag("sweep_eligible", "sweepEligible", defaultWhenAbsent: false),
+                Optional("weighted_average_maturity_days", "weightedAverageMaturityDays", SecurityAssetTermFieldType.Integer),
+                Flag("liquidity_fee_eligible", "liquidityFeeEligible", defaultWhenAbsent: false)
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "CertificateOfDeposit",
+            TableName: "certificate_of_deposit_projection",
+            Columns:
+            [
+                Gate("issuer_name", "issuerName", SecurityAssetTermFieldType.String),
+                Gate("maturity_date", "maturity", SecurityAssetTermFieldType.Date),
+                Optional("coupon_rate", "couponRate", SecurityAssetTermFieldType.Decimal),
+                Optional("callable_date", "callableDate", SecurityAssetTermFieldType.Date),
+                Optional("day_count", "dayCount", SecurityAssetTermFieldType.String, Verbatim)
+            ],
+            ChildTables: [])
     ];
 
     /// <summary>The asset classes covered by a schema-driven projection.</summary>
@@ -285,6 +445,8 @@ internal static partial class SecurityTermsProjectionRegistry
         IReadOnlyList<SecurityAssetTermField> declaredFields,
         List<string> issues)
     {
+        // The full spine is reserved even when a descriptor opts out of currency: a class column
+        // named "currency" would read as the record's own currency to every consumer of the table.
         var reserved = LeadingIdentityColumns.Concat(TrailingIdentityColumns).ToArray();
         var seenColumns = new HashSet<string>(reserved, StringComparer.OrdinalIgnoreCase);
 
@@ -305,6 +467,29 @@ internal static partial class SecurityTermsProjectionRegistry
             if (!IsProjectableScalar(column.Type))
             {
                 issues.Add($"{target} declares {column.Type}, which has no scalar projection reader.");
+            }
+
+            if (!Enum.IsDefined(column.Normalization))
+            {
+                issues.Add($"{target} declares an unknown text normalization '{column.Normalization}'.");
+            }
+            else if (column.Normalization != SecurityTermsProjectionTextNormalization.TrimBlankAsAbsent
+                && column.Type != SecurityAssetTermFieldType.String)
+            {
+                issues.Add($"{target} declares text normalization {column.Normalization} on a {column.Type} column; normalization applies only to String terms.");
+            }
+
+            if (column.DefaultWhenAbsent is not null)
+            {
+                if (column.Type != SecurityAssetTermFieldType.Boolean || column.DefaultWhenAbsent is not bool)
+                {
+                    issues.Add($"{target} declares a default-when-absent value; only a bool default on a Boolean column is supported.");
+                }
+
+                if (column.Gates)
+                {
+                    issues.Add($"{target} both gates the projection and declares a default-when-absent value, which makes the gate unreachable.");
+                }
             }
 
             // Ordinal, not case-insensitive: the decode side reads the term with

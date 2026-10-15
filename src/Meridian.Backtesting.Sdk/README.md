@@ -52,6 +52,13 @@ Use this module when a backtesting contract must be shared across runtime and st
   engines. Native results are marked with full canonical coverage, while QuantConnect Lean imports
   normalize into the same `BacktestResult` storage model with `SummaryOnly` coverage metadata and
   compatibility warnings for missing fill, cash-flow, attribution, and ledger artifacts.
+- `BacktestMetrics.Xirr` retains `double.NaN` when IRR is unavailable. Its JSON representation is
+  the named string `"NaN"`, which round-trips through durable run history without substituting a
+  measured zero return. `ProfitFactor` preserves positive infinity for gains with no losses, and
+  `SortinoRatio` preserves positive infinity when the native return series has no downside. These
+  valid outcomes round-trip as `"Infinity"`. Named floating-point handling is scoped to these three
+  properties; Sharpe, Calmar, and win rate retain strict numeric serialization. Native formulas do
+  not define infinite values for those other metrics.
 - `OpenLot.IsShort` is an optional init-only direction flag that preserves the existing positional
   constructor and deconstruction shapes. Lot quantities stay positive; directed short lots calculate unrealized P&L as
   `(entryPrice - currentPrice) * quantity` and retain that direction when exposed through position
