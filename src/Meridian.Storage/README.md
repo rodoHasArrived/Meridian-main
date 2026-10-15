@@ -11,6 +11,8 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Storage
 
+Tier migration decodes compressed input with the production JSONL replay decoder before applying an explicitly requested output codec. An unspecified codec preserves source bytes; `None` emits uncompressed bytes with the compression suffix removed. Gzip rollover therefore produces one gzip layer. Deleting a source always requires equal logical-payload checksums through that decoder, including when optional copy verification is disabled; regression coverage also replays migrated events through `JsonlReplayer`.
+
 `PostgresSecurityMasterPricingStore.ClosePrices` extends retained pricing receipts with immutable
 account/book/date price snapshots and separate independent-review records (Security Master
 migration 037). Source receipts must match exactly; scoped advisory locks fence approvals and

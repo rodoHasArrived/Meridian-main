@@ -6,7 +6,6 @@ namespace Meridian.Setup;
 
 internal static class Program
 {
-    private const string SetupMutexName = @"Local\Meridian.Setup.Transaction";
     private static readonly string ProductVersion =
         typeof(Program).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
 
@@ -16,8 +15,6 @@ internal static class Program
         if (args.Contains("--verify-payload", StringComparer.OrdinalIgnoreCase))
             return VerifyPayload(args);
         var installRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Meridian");
-        if (args.Contains("--uninstall", StringComparer.OrdinalIgnoreCase))
-            return Uninstall(installRoot);
         var detached = args.Contains("--detached", StringComparer.OrdinalIgnoreCase);
         try
         {
@@ -27,53 +24,31 @@ internal static class Program
             }
 
             WaitForParentExit(args);
-            using var setupMutex = new Mutex(initiallyOwned: false, SetupMutexName);
-            var ownsMutex = false;
+            using var transaction = SetupTransactionLease.Acquire();
+            if (args.Contains("--uninstall", StringComparer.OrdinalIgnoreCase))
+                return Uninstall(installRoot);
+
+            InstallationTransaction.RecoverInterruptedPromotion(installRoot);
+            InstallationTransaction.CleanupAbandonedStages(installRoot);
+            StopOwnedRuntime(installRoot);
+
+            var staged = StageAppendedPayload(installRoot);
             try
             {
-                try
-                {
-                    ownsMutex = setupMutex.WaitOne(TimeSpan.Zero);
-                }
-                catch (AbandonedMutexException)
-                {
-                    ownsMutex = true;
-                }
-
-                if (!ownsMutex)
-                {
-                    throw new InvalidOperationException("Another Meridian setup transaction is already running.");
-                }
-
-                InstallationTransaction.RecoverInterruptedPromotion(installRoot);
-                InstallationTransaction.CleanupAbandonedStages(installRoot);
-                StopOwnedRuntime(installRoot);
-
-                var staged = StageAppendedPayload(installRoot);
-                try
-                {
-                    InstallationTransaction.Promote(staged, installRoot);
-                }
-                finally
-                {
-                    if (Directory.Exists(staged.Path))
-                    {
-                        Directory.Delete(staged.Path, recursive: true);
-                    }
-                }
-
-                RegisterProduct(installRoot);
-                CreateStartMenuShortcut(installRoot);
-                Process.Start(new ProcessStartInfo(Path.Combine(installRoot, "Meridian.exe")) { UseShellExecute = true });
-                return 0;
+                InstallationTransaction.Promote(staged, installRoot);
             }
             finally
             {
-                if (ownsMutex)
+                if (Directory.Exists(staged.Path))
                 {
-                    setupMutex.ReleaseMutex();
+                    Directory.Delete(staged.Path, recursive: true);
                 }
             }
+
+            RegisterProduct(installRoot);
+            CreateStartMenuShortcut(installRoot);
+            Process.Start(new ProcessStartInfo(Path.Combine(installRoot, "Meridian.exe")) { UseShellExecute = true });
+            return 0;
         }
         catch (Exception ex)
         {
@@ -302,11 +277,12 @@ internal static class Program
             if (File.Exists(shortcut))
                 File.Delete(shortcut);
             Registry.CurrentUser.DeleteSubKeyTree(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\Meridian", false);
-            var rollback = InstallationTransaction.GetRollbackPath(installRoot);
+            var capturedDirectories = InstallationTransaction.CaptureForUninstall(installRoot);
             var cleanup = Path.Combine(Path.GetTempPath(), $"meridian-uninstall-{Guid.NewGuid():N}.cmd");
+            var removals = string.Concat(capturedDirectories.Select(path => $"rmdir /s /q \"{path}\"\r\n"));
             File.WriteAllText(
                 cleanup,
-                $"@echo off\r\nping 127.0.0.1 -n 3 > nul\r\nrmdir /s /q \"{installRoot}\"\r\nrmdir /s /q \"{rollback}\"\r\ndel /q \"%~f0\"\r\n");
+                $"@echo off\r\nping 127.0.0.1 -n 3 > nul\r\n{removals}del /q \"%~f0\"\r\n");
             Process.Start(new ProcessStartInfo("cmd.exe", $"/c \"{cleanup}\"") { CreateNoWindow = true, UseShellExecute = false });
             return 0;
         }

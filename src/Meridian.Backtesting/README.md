@@ -126,6 +126,9 @@ Studio UX remains deferred.
 
 ## API / contract notes
 
+- Drawdown currency and percentage maxima are tracked independently, including the decline from
+  initial capital to the first snapshot. Recovery days and Calmar follow the worst percentage
+  episode, matching live-run metrics and the promotion threshold contract.
 - `BacktestRequest.OrderBookQueueAheadFraction` feeds `OrderBookFillModel` when order-book
   execution is selected. The model infers a bounded queue-ahead quantity from each visible L2
   level, reducing fillable depth without retaining per-order book state across large replay windows.

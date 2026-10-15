@@ -6,7 +6,7 @@ module_id: SRC-BACKTESTING-SDK
 path: src/Meridian.Backtesting.Sdk
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-10-13
+last_reviewed: 2026-10-15
 ---
 
 # src/Meridian.Backtesting.Sdk
@@ -52,10 +52,11 @@ Use this module when a backtesting contract must be shared across runtime and st
   engines. Native results are marked with full canonical coverage, while QuantConnect Lean imports
   normalize into the same `BacktestResult` storage model with `SummaryOnly` coverage metadata and
   compatibility warnings for missing fill, cash-flow, attribution, and ledger artifacts.
-- `BacktestMetrics.Xirr` retains `double.NaN` when IRR is unavailable. Its JSON representation is
-  the named string `"NaN"`, which round-trips through durable run history without substituting a
-  measured zero return. Named floating-point handling is scoped to this property; other metrics
-  retain their existing numeric serialization rules.
+- `BacktestMetrics.Xirr` retains `double.NaN` when IRR is unavailable. SDK JSON emits the named
+  string `"NaN"`, with named floating-point handling scoped to this property. Durable strategy-run
+  snapshots override that representation with JSON `null` and accept the exact legacy `"NaN"`
+  sentinel on read, preserving unavailable IRR without substituting a measured zero return.
+  Other metrics retain their existing numeric serialization rules.
 - `OpenLot.IsShort` is an optional init-only direction flag that preserves the existing positional
   constructor and deconstruction shapes. Lot quantities stay positive; directed short lots calculate unrealized P&L as
   `(entryPrice - currentPrice) * quantity` and retain that direction when exposed through position

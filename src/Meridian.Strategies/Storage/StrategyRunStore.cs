@@ -36,6 +36,7 @@ public sealed class StrategyRunStore : IStrategyRepository
     private readonly Dictionary<StrategyRunRepositoryScopeKey, List<StrategyRunEntry>>
         _scopedVisibleRunsByLastUpdated = [];
     private readonly HashSet<string> _persistedEventIds = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, VerifiedOperationOutcome> _retainedTerminalOutcomes = new(StringComparer.Ordinal);
     private readonly Dictionary<string, RetainedCaseVersion> _retainedVersionsByRunId = new(StringComparer.Ordinal);
     private readonly IOperationalCaseHistoryStore? _historyStore;
     private readonly SemaphoreSlim _persistenceGate = new(1, 1);
@@ -145,6 +146,39 @@ public sealed class StrategyRunStore : IStrategyRepository
         StrategyRunLifecycleEventType eventType,
         CancellationToken ct = default) =>
         RecordRunAsync(entry with { LastLifecycleEvent = eventType }, ct);
+
+    /// <inheritdoc/>
+    public async Task<VerifiedOperationOutcome?> RecordLifecycleEventWithOutcomeAsync(
+        StrategyRunEntry entry,
+        StrategyRunLifecycleEventType eventType,
+        CancellationToken ct = default)
+    {
+        if (_historyStore is null)
+        {
+            await RecordLifecycleEventAsync(entry, eventType, ct).ConfigureAwait(false);
+            return CreateLifecycleOutcome(entry, eventType);
+        }
+
+        // Capture converter-normalized inputs once, including case-insensitive metric sets,
+        // so the receipt lookup identifies exactly what RecordRunAsync snapshots and retains.
+        var captured = SnapshotEntry(entry with { LastLifecycleEvent = eventType });
+        await RecordRunAsync(captured, ct).ConfigureAwait(false);
+        if (!RequiresTerminalOutcome(eventType))
+        {
+            return null;
+        }
+
+        var normalized = NormalizeOperationalMetadata(captured);
+        var snapshotJson = JsonSerializer.Serialize(normalized, StrategyRunPersistenceJson.Options);
+        var eventId = ComputeEventId(normalized, snapshotJson);
+        lock (_lock)
+        {
+            return _retainedTerminalOutcomes.TryGetValue(eventId, out var outcome)
+                ? outcome
+                : throw new InvalidOperationException(
+                    $"Strategy run '{entry.RunId}' has no retained terminal receipt for this snapshot.");
+        }
+    }
 
     internal static VerifiedOperationOutcome? CreateLifecycleOutcome(
         StrategyRunEntry entry,
@@ -436,6 +470,12 @@ public sealed class StrategyRunStore : IStrategyRepository
         var v2InputHash = ComputeV2InputHash(entry);
         var legacyInputHash = ComputeLegacyInputHash(entry);
         var realismBoundInputHash = ComputeRealismBoundInputHash(entry);
+        if (entry.FundAccountId == Guid.Empty || (entry.FundAccountId.HasValue &&
+            !string.Equals(entry.InputHashSha256, canonicalInputHash, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidDataException(
+                $"Strategy run history sequence {record.Sequence} retained an input hash that does not bind its fund account.");
+        }
         if (!string.Equals(
                 entry.InputHashSha256,
                 canonicalInputHash,
@@ -504,11 +544,23 @@ public sealed class StrategyRunStore : IStrategyRepository
             ValidateRetainedPredecessor(record, previousVersion);
             ValidateTerminalOutcomeBinding(record, entry, snapshotJson);
 
+            // Legacy JSON can omit newly introduced empty fields or use the old XIRR marker.
+            // Recognize a retry of that complete typed snapshot without changing retained bytes
+            // or normalizing its input hash: a genuine hash upgrade must still append normally.
+            var typedSnapshotJson = JsonSerializer.Serialize(entry, StrategyRunPersistenceJson.Options);
+            var typedEventId = ComputeEventId(entry, typedSnapshotJson);
             ApplyEntry(entry);
             _retainedVersionsByRunId[entry.RunId] = new RetainedCaseVersion(
                 record.Sequence,
                 record.RecordHashSha256);
             _persistedEventIds.Add(record.HistoryEventId);
+            _persistedEventIds.Add(typedEventId);
+            if (record.TerminalOutcome is { } outcome)
+            {
+                // A legacy retry must return the original receipt, whose operation ID binds
+                // the retained JSON, rather than inventing a receipt for its typed alias.
+                _retainedTerminalOutcomes[typedEventId] = outcome;
+            }
             _lastReplayedSequence = Math.Max(_lastReplayedSequence, record.Sequence);
         }
     }
@@ -782,6 +834,16 @@ public sealed class StrategyRunStore : IStrategyRepository
         var v2InputHash = ComputeV2InputHash(entry);
         var legacyInputHash = ComputeLegacyInputHash(entry);
         var realismBoundInputHash = ComputeRealismBoundInputHash(entry);
+        if (entry.FundAccountId == Guid.Empty)
+        {
+            throw new ArgumentException("Strategy run fund account must not be empty.", nameof(entry));
+        }
+        if (entry.FundAccountId.HasValue &&
+            !string.IsNullOrWhiteSpace(entry.InputHashSha256) &&
+            !string.Equals(entry.InputHashSha256, inputHash, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Strategy run input hash does not bind its fund account.", nameof(entry));
+        }
         var matchesRealismBound =
             string.Equals(entry.InputHashSha256, realismBoundInputHash, StringComparison.OrdinalIgnoreCase);
         if (!string.IsNullOrWhiteSpace(entry.InputHashSha256) &&
@@ -796,9 +858,8 @@ public sealed class StrategyRunStore : IStrategyRepository
                 nameof(entry));
         }
 
-        // A v4 realism-bound hash is strictly more specific than the canonical v3 digest, so it is
-        // retained verbatim. Overwriting it with the v3 recomputation would silently discard the
-        // execution-realism settings the caller asked to bind into run identity.
+        // Unscoped runs may retain their more specific v4 realism-bound digest. Scoped runs
+        // require v5, which binds both execution realism and the authorized account.
         var retainedInputHash = matchesRealismBound ? realismBoundInputHash : inputHash;
 
         return entry with
@@ -1047,6 +1108,7 @@ public sealed class StrategyRunStore : IStrategyRepository
             !string.Equals(previous.LedgerReference, current.LedgerReference, StringComparison.Ordinal) ||
             !string.Equals(previous.AuditReference, current.AuditReference, StringComparison.Ordinal) ||
             !string.Equals(previous.FundProfileId, current.FundProfileId, StringComparison.Ordinal) ||
+            previous.FundAccountId != current.FundAccountId ||
             !EvidenceLoopEquals(previous, current);
         var inputHashChanged = !string.Equals(
             previous.InputHashSha256,
@@ -1184,8 +1246,14 @@ public sealed class StrategyRunStore : IStrategyRepository
         return string.Equals(previousWithoutEvidence, currentWithoutEvidence, StringComparison.Ordinal);
     }
 
-    private static string ComputeCanonicalInputHash(StrategyRunEntry entry) =>
-        StrategyRunEntry.HasNonBlankEvidenceDeclarations(
+    private static string ComputeCanonicalInputHash(StrategyRunEntry entry)
+    {
+        if (entry.FundAccountId.HasValue)
+        {
+            return StrategyRunEntry.ComputeAccountBoundInputHash(entry);
+        }
+
+        return StrategyRunEntry.HasNonBlankEvidenceDeclarations(
             entry.OperatorAcceptanceCriteria,
             entry.RetainedEvidenceReferences,
             entry.AccountingRecordReferences,
@@ -1194,6 +1262,7 @@ public sealed class StrategyRunStore : IStrategyRepository
             entry.GovernedReportReferences)
             ? ComputeEvidenceBoundInputHash(entry)
             : ComputeV2InputHash(entry);
+    }
 
     private static string ComputeEvidenceBoundInputHash(StrategyRunEntry entry) =>
         StrategyRunEntry.ComputeEvidenceBoundInputHash(

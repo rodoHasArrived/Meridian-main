@@ -6,10 +6,15 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-15
 ---
 
 # src/Meridian.Wpf
+
+Offline retention recognizes market JSONL/parquet files only from explicit event-type names and supported storage layouts. Unknown files and the workstation Evidence Vault remain retained and appear as skipped in the dry run, even when aged evidence shares the market-data root. Depth files use their own policy cutoff.
+
+The loan summary lists principal amounts by their recorded currency; mixed, unspecified, and
+unavailable amounts cannot become a dollar-denominated scalar summary.
 
 Accounting Configure shows recurring occurrences beside retained journal drafts through
 `WorkstationRecurringJournalQueueClient`, using the same server contract as the browser.

@@ -19,12 +19,19 @@ public sealed class HistoricalDataQueryService
     private readonly ILogger<HistoricalDataQueryService> _log;
     private readonly string _dataRoot;
     private readonly JsonSerializerOptions _jsonOptions;
+    private readonly Func<string, Stream> _openRead;
 
     public HistoricalDataQueryService(
         string dataRoot,
         ILogger<HistoricalDataQueryService>? log = null)
+        : this(dataRoot, log, File.OpenRead)
+    {
+    }
+
+    internal HistoricalDataQueryService(string dataRoot, ILogger<HistoricalDataQueryService>? log, Func<string, Stream> openRead)
     {
         _dataRoot = dataRoot;
+        _openRead = openRead;
         _log = log ?? NullLogger<HistoricalDataQueryService>.Instance;
         _jsonOptions = new JsonSerializerOptions
         {
@@ -40,6 +47,7 @@ public sealed class HistoricalDataQueryService
         HistoricalDataQuery query,
         CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var result = new HistoricalDataQueryResult
         {
             Symbol = query.Symbol,
@@ -50,6 +58,7 @@ public sealed class HistoricalDataQueryService
 
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         var files = FindDataFiles(query);
+        ct.ThrowIfCancellationRequested();
 
         if (files.Count == 0)
         {
@@ -58,6 +67,7 @@ public sealed class HistoricalDataQueryService
         }
 
         var records = new List<HistoricalDataRecord>();
+        var failures = new List<HistoricalFileFailure>();
         var filesProcessed = 0;
 
         foreach (var file in files)
@@ -76,12 +86,18 @@ public sealed class HistoricalDataQueryService
                     break;
                 }
             }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 _log.LogWarning(ex, "Failed to read file {File}", file);
+                failures.Add(new HistoricalFileFailure(Path.GetRelativePath(_dataRoot, file), ex.Message));
             }
         }
 
+        ct.ThrowIfCancellationRequested();
         stopwatch.Stop();
 
         result.Records = records;
@@ -89,8 +105,12 @@ public sealed class HistoricalDataQueryService
         result.FilesProcessed = filesProcessed;
         result.TotalFiles = files.Count;
         result.QueryTimeMs = stopwatch.ElapsedMilliseconds;
-        result.Success = true;
-        result.Message = $"Found {records.Count} records in {filesProcessed} files";
+        result.Success = failures.Count == 0;
+        result.IsPartial = failures.Count > 0 && records.Count > 0;
+        result.FileFailures = failures;
+        result.Message = failures.Count == 0
+            ? $"Found {records.Count} records in {filesProcessed} files"
+            : $"Historical query incomplete: {failures.Count} of {files.Count} file(s) failed; {records.Count} records recovered.";
 
         return result;
     }
@@ -182,6 +202,7 @@ public sealed class HistoricalDataQueryService
         HistoricalBarsQuery query,
         CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         if (string.IsNullOrWhiteSpace(query.Symbol))
         {
             throw new ArgumentException("Symbol is required", nameof(query));
@@ -203,6 +224,7 @@ public sealed class HistoricalDataQueryService
         var files = FindDataFiles(fileQuery);
         var bars = new SortedDictionary<DateTimeOffset, BarAccumulator>();
         var filesProcessed = 0;
+        var failures = new List<HistoricalFileFailure>();
         var maxBars = query.MaxBars ?? 5000;
         var bucketTicks = TimeSpan.FromMinutes(query.IntervalMinutes).Ticks;
         var fromBoundary = query.From.HasValue
@@ -228,12 +250,18 @@ public sealed class HistoricalDataQueryService
                     ct).ConfigureAwait(false);
                 filesProcessed++;
             }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 _log.LogWarning(ex, "Failed to aggregate bars from file {File}", file);
+                failures.Add(new HistoricalFileFailure(Path.GetRelativePath(_dataRoot, file), ex.Message));
             }
         }
 
+        ct.ThrowIfCancellationRequested();
         stopwatch.Stop();
 
         var takenAccumulators = bars
@@ -253,7 +281,9 @@ public sealed class HistoricalDataQueryService
 
         return new HistoricalBarsResult
         {
-            Success = true,
+            Success = failures.Count == 0,
+            IsPartial = failures.Count > 0 && orderedBars.Count > 0,
+            FileFailures = failures,
             Symbol = query.Symbol,
             IntervalMinutes = query.IntervalMinutes,
             From = query.From,
@@ -264,11 +294,13 @@ public sealed class HistoricalDataQueryService
             TotalFiles = files.Count,
             QueryTimeMs = stopwatch.ElapsedMilliseconds,
             Sources = distinctSources.ToList(),
-            Message = $"Aggregated {orderedBars.Count} bars from {filesProcessed} file(s)"
+            Message = failures.Count == 0
+                ? $"Aggregated {orderedBars.Count} bars from {filesProcessed} file(s)"
+                : $"Historical query incomplete: {failures.Count} of {files.Count} file(s) failed; {orderedBars.Count} bars recovered."
         };
     }
 
-    private static async Task AggregateTradesFromFileAsync(
+    private async Task AggregateTradesFromFileAsync(
         string filePath,
         SortedDictionary<DateTimeOffset, BarAccumulator> bars,
         long bucketTicks,
@@ -280,7 +312,7 @@ public sealed class HistoricalDataQueryService
         Stream? stream = null;
         try
         {
-            stream = File.OpenRead(filePath);
+            stream = _openRead(filePath);
             if (filePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase))
             {
                 stream = new GZipStream(stream, CompressionMode.Decompress);
@@ -676,7 +708,7 @@ public sealed class HistoricalDataQueryService
 
         try
         {
-            stream = File.OpenRead(filePath);
+            stream = _openRead(filePath);
             if (filePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase))
             {
                 stream = new GZipStream(stream, CompressionMode.Decompress);
@@ -905,6 +937,9 @@ public sealed record HistoricalDataQuery(
 public sealed class HistoricalDataQueryResult
 {
     public bool Success { get; set; }
+    /// <summary>Recovered records exist, but one or more source files failed. Success remains false.</summary>
+    public bool IsPartial { get; set; }
+    public List<HistoricalFileFailure> FileFailures { get; set; } = new();
     public string? Message { get; set; }
     public string? Symbol { get; set; }
     public DateOnly? From { get; set; }
@@ -916,6 +951,9 @@ public sealed class HistoricalDataQueryResult
     public long QueryTimeMs { get; set; }
     public List<HistoricalDataRecord> Records { get; set; } = new();
 }
+
+/// <summary>A failed historical source, relative to the configured data root.</summary>
+public sealed record HistoricalFileFailure(string SourceFile, string Error);
 
 /// <summary>
 /// A single record from historical data.
@@ -998,6 +1036,9 @@ public sealed record HistoricalBarPoint(
 public sealed class HistoricalBarsResult
 {
     public bool Success { get; set; }
+    /// <summary>Recovered bars exist, but one or more source files failed. Success remains false.</summary>
+    public bool IsPartial { get; set; }
+    public List<HistoricalFileFailure> FileFailures { get; set; } = new();
     public string? Message { get; set; }
     public string? Symbol { get; set; }
     public int IntervalMinutes { get; set; }

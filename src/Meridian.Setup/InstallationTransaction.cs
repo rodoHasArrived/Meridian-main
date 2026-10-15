@@ -217,6 +217,43 @@ internal static class InstallationTransaction
     internal static string GetRollbackPath(string installRoot)
         => Path.GetFullPath(installRoot) + RollbackSuffix;
 
+    /// <summary>
+    /// Removes the current installation identities from their reusable names while the setup
+    /// transaction is owned. Delayed deletion may target only these unique captured directories.
+    /// A reinstall can then safely reuse the installation and rollback paths.
+    /// </summary>
+    internal static IReadOnlyList<string> CaptureForUninstall(string installRoot)
+    {
+        var resolvedRoot = Path.GetFullPath(installRoot);
+        var parent = Directory.GetParent(resolvedRoot)?.FullName
+            ?? throw new InvalidOperationException("The Meridian installation root must have a parent directory.");
+        var moved = new List<(string Original, string Captured)>();
+        try
+        {
+            foreach (var original in new[] { resolvedRoot, GetRollbackPath(resolvedRoot) })
+            {
+                if (!Directory.Exists(original))
+                    continue;
+
+                var captured = Path.Combine(parent, $".Meridian.uninstall-{Guid.NewGuid():N}");
+                Directory.Move(original, captured);
+                moved.Add((original, captured));
+            }
+
+            return moved.Select(item => item.Captured).ToArray();
+        }
+        catch
+        {
+            foreach (var (original, captured) in moved.AsEnumerable().Reverse())
+            {
+                if (!Directory.Exists(original))
+                    Directory.Move(captured, original);
+            }
+
+            throw;
+        }
+    }
+
     private static PayloadManifestEntry WritePayloadFile(string root, string relativePath, Stream input)
     {
         var target = ResolveContainedPath(root, relativePath);
