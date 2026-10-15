@@ -38,7 +38,10 @@ public sealed class LiveStrategyRunSessionCompletionTests
         result.EngineMetadata!.CoverageWarnings.Should().Contain(warning => warning.Contains("XIRR", StringComparison.Ordinal));
         var history = await fixture.ReadHistoryAsync();
         using var snapshot = JsonDocument.Parse(history.Last().Data["strategyRunSnapshotJson"]);
-        snapshot.RootElement.GetProperty("metrics").GetProperty("metrics").GetProperty("xirr").GetString().Should().Be("NaN");
+        snapshot.RootElement.GetProperty("metrics").GetProperty("metrics").GetProperty("xirr").ValueKind
+            .Should().Be(JsonValueKind.Null, "durable strategy snapshots retain unavailable XIRR as null");
+        JsonSerializer.SerializeToElement(result.Metrics).GetProperty(nameof(BacktestMetrics.Xirr)).GetString()
+            .Should().Be("NaN", "the general SDK JSON contract retains its named unavailable marker");
 
         var invalidMetrics = result.Metrics with { SharpeRatio = double.NaN };
         var serializeOtherNonfiniteMetric = () => JsonSerializer.Serialize(invalidMetrics);

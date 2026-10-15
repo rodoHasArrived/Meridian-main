@@ -114,6 +114,12 @@ export function HistoricalChartCard({ symbol, className }: HistoricalChartCardPr
         />
       </CardHeader>
       <CardContent>
+        {vm.compareFailureMessages.length > 0 ? (
+          <div role="alert" className="mb-3 rounded border border-danger/40 bg-danger/10 p-3 text-sm text-danger">
+            <p className="font-medium">Historical comparison incomplete</p>
+            {vm.compareFailureMessages.map((message) => <p key={message}>{message}</p>)}
+          </div>
+        ) : null}
         {vm.statePanel ? (
           <HistoricalChartStatePanelView panel={vm.statePanel} onRetry={vm.retry} />
         ) : vm.compareActive && vm.compareChart ? (

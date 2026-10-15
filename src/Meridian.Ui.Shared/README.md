@@ -38,6 +38,14 @@ identity; successful results retain the selected connection's exact external-acc
 QuickBooks realms and other provider identities keep ordinal comparison, and vault ownership
 keys and exact ownership checks remain unchanged.
 
+Late-adjustment review requires the authenticated operator's built-in role or named role profile
+to match the review role retained on the adjustment's materiality policy, alongside ledger mutation
+permission and an independent requester/reviewer. Administrative mutation permission does not
+substitute for that review role. Daily valuation carries its entity through ledger carrying-value
+lookup, retained evidence, draft dimensions, intake, and lifecycle validation.
+Previously retained entity-scoped valuation drafts without entity-bound mark evidence require a
+fresh valuation assessment before approval or posting.
+
 `LedgerEndpoints.AccountOversight` provides shared account-owned ledger-book routes for durable
 cash cases, retained replay/assignment, independently approved close-price sets and cash forecasts.
 Authenticated tenant/company and retained book ownership establish exact scope; client actor and

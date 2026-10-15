@@ -843,6 +843,7 @@ internal sealed class LiveStrategyRunSession
         },
         ClientOrderId = clientOrderId,
         StrategyId = _run.StrategyId,
+        FundAccountId = _run.FundAccountId,
         Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["actor"] = ActorId,

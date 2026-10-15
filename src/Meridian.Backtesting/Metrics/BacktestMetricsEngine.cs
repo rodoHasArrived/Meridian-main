@@ -37,7 +37,7 @@ internal static class BacktestMetricsEngine
         var annualisedReturn = (decimal)(Math.Pow(1.0 + (double)totalReturn, 1.0 / years) - 1.0);
         var sharpe = ComputeSharpe(datedDailyReturns, request.RiskFreeRate, request.RiskFreeRateSeries);
         var sortino = ComputeSortino(datedDailyReturns, request.RiskFreeRate, request.RiskFreeRateSeries);
-        var (maxDrawdown, maxDrawdownPct, recoveryDays) = ComputeMaxDrawdown(snapshots);
+        var (maxDrawdown, maxDrawdownPct, recoveryDays) = ComputeMaxDrawdown(snapshots, initial);
         var calmar = maxDrawdown == 0 ? 0.0 : (double)annualisedReturn / (double)maxDrawdownPct;
 
         var (winRate, profitFactor, totalTrades, wins, losses) = ComputeTradeStats(fills, snapshots[^1], allCashFlows, request);
@@ -116,16 +116,17 @@ internal static class BacktestMetricsEngine
     }
 
     private static (decimal maxDrawdown, decimal maxDrawdownPct, int recoveryDays) ComputeMaxDrawdown(
-        IReadOnlyList<PortfolioSnapshot> snapshots)
+        IReadOnlyList<PortfolioSnapshot> snapshots,
+        decimal initialEquity)
     {
-        var peak = snapshots[0].TotalEquity;
+        var peak = initialEquity;
         var maxDd = 0m;
         var maxDdPct = 0m;
-        var troughIdx = 0;
-        var peakAtTrough = snapshots[0].TotalEquity;  // running peak at the time the worst trough was observed
+        var troughIdx = -1;
+        var peakAtTrough = initialEquity;  // peak preceding the worst percentage decline
         var recoveryDays = 0;
 
-        for (var i = 1; i < snapshots.Count; i++)
+        for (var i = 0; i < snapshots.Count; i++)
         {
             var equity = snapshots[i].TotalEquity;
             if (equity > peak)
@@ -135,10 +136,10 @@ internal static class BacktestMetricsEngine
             else
             {
                 var dd = peak - equity;
-                var ddPct = peak == 0 ? 0m : dd / peak;
+                var ddPct = peak > 0m ? dd / peak : 0m;
+                maxDd = Math.Max(maxDd, dd);
                 if (ddPct > maxDdPct)
                 {
-                    maxDd = dd;
                     maxDdPct = ddPct;
                     troughIdx = i;
                     peakAtTrough = peak;  // record the peak that preceded this worst trough
@@ -148,7 +149,7 @@ internal static class BacktestMetricsEngine
 
         // Count calendar days from trough back to the preceding peak level.
         // Compare directly against the recorded peak — no algebraic reconstruction needed.
-        if (troughIdx > 0)
+        if (troughIdx >= 0)
         {
             for (var i = troughIdx + 1; i < snapshots.Count; i++)
             {

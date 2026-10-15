@@ -43,7 +43,8 @@ public sealed class StrategyRunMetricSerializationTests
             using var snapshot = JsonDocument.Parse(records.Last().Data["strategyRunSnapshotJson"]);
             var metrics = snapshot.RootElement.GetProperty("metrics").GetProperty("metrics");
             metrics.GetProperty("profitFactor").GetString().Should().Be("Infinity");
-            metrics.GetProperty("xirr").GetString().Should().Be("NaN");
+            metrics.GetProperty("xirr").ValueKind.Should().Be(JsonValueKind.Null,
+                "durable history retains unavailable XIRR as null while replay restores the SDK NaN sentinel");
             if (noDownside)
                 metrics.GetProperty("sortinoRatio").GetString().Should().Be("Infinity");
         }

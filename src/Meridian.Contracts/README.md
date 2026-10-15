@@ -11,6 +11,13 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Contracts
 
+`LoanPortfolioSummaryDto.CurrencyTotals` carries separately denominated lending and collateral
+balances. `TotalCurrency` identifies a single-currency scalar summary; mixed-currency legacy
+scalar totals are `null`. These amounts do not imply an FX conversion. Loan currency and status
+enums follow the host JSON options; browser wire normalization accepts their numeric values.
+Amounts for `Other` or undefined currency values are unavailable, including within currency groups,
+because those values do not establish a comparable denomination.
+
 The class-aware economic replay bridge refuses Equity fallback when the legacy flat payload is
 missing. The old economic family cannot reliably distinguish common, preferred and convertible
 preferred shares or recover their complete terms. Retained flat payloads remain authoritative and replay unchanged;

@@ -143,6 +143,14 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                         "Live runs require BrokerageConfiguration.LiveExecutionEnabled; the run stays retained until brokerage routing is enabled.",
                         ct).ConfigureAwait(false);
                 }
+
+                if (run.FundAccountId is null || run.FundAccountId == Guid.Empty)
+                {
+                    return await DeferAsync(
+                        run,
+                        "Live runs require a retained fund account for account-scoped broker readiness.",
+                        ct).ConfigureAwait(false);
+                }
             }
 
             if (_activeRuns.ContainsKey(run.RunId))

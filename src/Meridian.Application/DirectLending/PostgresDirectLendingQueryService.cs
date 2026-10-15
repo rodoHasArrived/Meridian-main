@@ -213,14 +213,20 @@ public sealed partial class PostgresDirectLendingQueryService : IDirectLendingQu
         var loanIds = await _operationsStore.GetLoanIdsAsync(ct).ConfigureAwait(false);
 
         var summaries = new List<LoanSummaryDto>(loanIds.Count);
+        var collateral = new List<CollateralDto>();
         foreach (var loanId in loanIds)
         {
-            var contract = await _stateStore.LoadContractProjectionAsync(loanId, ct).ConfigureAwait(false);
-            var servicing = await _stateStore.LoadServicingProjectionAsync(loanId, ct).ConfigureAwait(false);
-            if (contract is null || servicing is null)
+            // The narrow servicing projection omits collateral. Read the retained
+            // aggregate so balances and appraisals come from the same stored version.
+            var aggregate = await LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+            if (aggregate is null)
             {
                 continue;
             }
+
+            var contract = aggregate.Contract;
+            var servicing = aggregate.Servicing;
+            collateral.AddRange(servicing.Collateral ?? []);
 
             summaries.Add(new LoanSummaryDto(
                 loanId,
@@ -240,23 +246,6 @@ public sealed partial class PostgresDirectLendingQueryService : IDirectLendingQu
                 servicing.LastPaymentDate));
         }
 
-        var active = summaries.Count(s => s.Status == LoanStatus.Active);
-        var defaulted = summaries.Count(s => s.Status == LoanStatus.Defaulted);
-        var nonPerforming = summaries.Count(s => s.Status == LoanStatus.NonPerforming);
-        var workout = summaries.Count(s => s.Status == LoanStatus.Workout);
-
-        return new LoanPortfolioSummaryDto(
-            summaries.Count,
-            active,
-            defaulted,
-            nonPerforming,
-            workout,
-            summaries.Sum(s => s.CommitmentAmount),
-            summaries.Sum(s => s.PrincipalOutstanding),
-            summaries.Sum(s => s.InterestAccruedUnpaid),
-            summaries.Sum(s => s.PenaltyAccruedUnpaid),
-            summaries.Sum(s => s.AvailableToDraw),
-            0m,
-            summaries);
+        return LoanPortfolioSummaryBuilder.Build(summaries, collateral);
     }
 }

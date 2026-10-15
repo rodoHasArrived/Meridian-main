@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Storage.Operations;
@@ -23,7 +24,8 @@ public sealed partial class WorkstationEndpointsTests
         var dataRoot = Path.Combine(Path.GetTempPath(), $"meridian-metric-transport-{Guid.NewGuid():N}");
         try
         {
-            var writer = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var history = new FileOperationalCaseHistoryStore(dataRoot);
+            var writer = new StrategyRunStore(history);
             var winning = BuildWinningMetricTransportRun("transport-winning");
             var baseline = BuildWinningMetricTransportRun("transport-baseline");
             baseline = baseline with
@@ -35,6 +37,13 @@ public sealed partial class WorkstationEndpointsTests
             };
             await writer.RecordRunAsync(winning);
             await writer.RecordRunAsync(baseline);
+            var records = await history.ReadAsync(new OperationalCaseHistoryQuery
+            {
+                CaseId = $"strategy-run:{winning.RunId}"
+            });
+            using var retained = JsonDocument.Parse(records.Last().Data["strategyRunSnapshotJson"]);
+            retained.RootElement.GetProperty("metrics").GetProperty("metrics").GetProperty("xirr")
+                .ValueKind.Should().Be(JsonValueKind.Null, "the durable-only converter retains unavailable XIRR as null");
             await using var app = await CreateAppAsync(services =>
             {
                 RegisterRunReadServices(services);

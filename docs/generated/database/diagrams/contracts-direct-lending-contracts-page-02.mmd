@@ -1,5 +1,19 @@
 classDiagram
     %% direct-lending-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_DirectLending_ServicerPositionReportLineDto["ServicerPositionReportLineDto"] {
+        +decimal? CommitmentAvailable
+        +string? DelinquencyStatus
+        +decimal? FeesAccruedUnpaid
+        +decimal? InterestAccruedUnpaid
+        +Guid LoanId
+        +decimal? NextDueAmount
+        +DateOnly? NextDueDate
+        +decimal? PenaltyAccruedUnpaid
+        +decimal? PrincipalOutstanding
+        +string RawPayloadJson
+        +DateOnly ReportAsOfDate
+        +Guid ServicerReportBatchId
+    }
     class Meridian_Contracts_DirectLending_ServicerPositionReportLineImportDto["ServicerPositionReportLineImportDto"] {
         +decimal? CommitmentAvailable
         +string? DelinquencyStatus

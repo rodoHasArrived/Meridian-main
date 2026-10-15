@@ -384,6 +384,9 @@ public sealed class StrategySessionShutdownTests
         completedSecond!.Metrics.Should().NotBeNull();
         completedSecond.ParameterSet!["quantity"].Should().Be("7");
         completedSecond.RunType.Should().Be(secondMode);
+        completedSecond.FundAccountId.Should().Be(second.FundAccountId);
+        completedSecond.InputHashSha256.Should().Be(second.InputHashSha256);
+        completedSecond.InputHashSha256.Should().Be(StrategyRunEntry.ComputeAccountBoundInputHash(completedSecond));
         fixture.Strategies.Should().OnlyContain(strategy => strategy.StopCount == 1);
     }
 
@@ -413,6 +416,7 @@ public sealed class StrategySessionShutdownTests
     {
         private readonly string _dataRoot = Path.Combine(Path.GetTempPath(), "meridian-session-stop-" + Guid.NewGuid().ToString("N"));
         private readonly LiveMarketDataCache _cache = new();
+        private readonly Guid _fundAccountId = Guid.NewGuid();
 
         public SessionFixture(Func<LiveStrategyCreationContext, GatedStrategy>? createStrategy = null)
         {
@@ -451,8 +455,8 @@ public sealed class StrategySessionShutdownTests
         public ConcurrentQueue<GatedStrategy> Strategies { get; } = new();
 
         public StrategyRunEntry CreateRun(long quantity = 1, RunType mode = RunType.Paper) =>
-            StrategyRunEntry.Start(
-                StrategyId, "Coordinated shutdown", mode, Guid.NewGuid().ToString("N"),
+            StrategyRunEntry.StartForFundAccount(
+                StrategyId, "Coordinated shutdown", mode, _fundAccountId, Guid.NewGuid().ToString("N"),
                 engine: mode == RunType.Live ? "BrokerLive" : "BrokerPaper",
                 parameterSet: new Dictionary<string, string>
                 {

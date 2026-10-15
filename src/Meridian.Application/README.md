@@ -129,6 +129,12 @@ the publisher. The outbox worker publishes retained state and retries failures; 
 configuration for a Security Master-backed loan remains a failed delivery. Identified replays
 retain one message per run. Integration tests cover concurrent retries and enqueue-failure rollback.
 
+Loan portfolio summaries group principal, commitments, accruals, available capacity, and retained
+collateral appraisals by their recorded currency in both in-memory and PostgreSQL readers.
+Mixed-currency scalar totals are unavailable; no FX conversion is implied. PostgreSQL collateral
+totals are rebuilt from servicing state, including revaluations and removals after reload.
+Unspecified (`Other`) and undefined currency values leave monetary totals unavailable.
+
 
 Direct-lending outbox deliveries with unsupported topics or missing journal source evidence
 remain failed and retryable; they are never silently acknowledged as processed.
@@ -143,6 +149,8 @@ legacy new-run behavior and must not be treated as safe automatic retries.
 
 
 `DailyMarkToMarketService` uses the shared `ValuationFreshnessPolicy` for both impact previews and draft generation. Missing, future-dated, low-confidence, or over-age marks produce position-specific review reasons and prevent partial valuation batches from becoming approved support. Previewing returns affected position and valuation counts without retaining a draft.
+The valuation request carries the posting entity into the carrying-value read and projection.
+Retained mark evidence and draft identity preserve that entity through governed intake and posting.
 
 ## Credential source ownership
 
