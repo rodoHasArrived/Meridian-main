@@ -320,7 +320,8 @@ public sealed class StrategyLifecycleEndpointsTests
         StrategyRunEntry.StartWithEvidence(
             strategyId, "Resume probe", RunType.Paper, runId,
             parameterSet: new Dictionary<string, string> { ["symbols"] = "SPY", ["instance"] = instance })
-            .Paused("operator") with { TerminalStatus = StrategyRunStatus.Paused };
+            .Paused("operator") with
+        { TerminalStatus = StrategyRunStatus.Paused };
 
     private sealed class ResumeProbeStrategy(string strategyId, bool failStart = false) : LiveStrategyBase
     {
