@@ -212,6 +212,11 @@ public sealed class AutomatedJournalDraftIntakeService
         foreach (var draft in request.Drafts)
         {
             ValuationMarkEvidenceGuard.EnsureValid(draft);
+            if ((ValuationMarkEvidenceGuard.IsValuation(draft.Metadata.IdempotencyKey) ||
+                 draft.Metadata.ActivityType == "fair-value-mark") &&
+                !string.Equals(draft.Metadata.Tags?.GetValueOrDefault("valuation.entityId")?.Trim() ?? "",
+                    request.EntityId?.Trim() ?? "", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Valuation intake entity does not match the retained calculation scope.");
             ct.ThrowIfCancellationRequested();
 
             var idempotencyKey = draft.Event.IdempotencyKey ?? BuildFallbackIdempotencyKey(draft.Event);

@@ -6,10 +6,12 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-15
 ---
 
 # src/Meridian.Infrastructure
+
+Local ETL post-processing requires the checksum, length and file timestamps captured while staging. Replacement deliveries at the same filename fail cleanup without being deleted or archived. Destructive cleanup atomically claims the original directory entry and verifies it again before acting; a conflicting new drop remains in place, and an interrupted claim is restored or retained for explicit recovery.
 
 Robinhood read-only synchronization logs failed HTTP status codes without endpoint URLs or response
 bodies, which can contain account identifiers or provider-returned private details.

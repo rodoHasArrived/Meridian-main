@@ -193,6 +193,8 @@ export function LoanBookScreen({ summary }: { summary?: LoanPortfolioSummary | n
               ))}
             </div>
 
+            {view.currencyNotice ? <p className="text-sm text-muted-foreground">{view.currencyNotice}</p> : null}
+
             <DenseDataTable
               columns={loanColumns}
               rows={view.rows}

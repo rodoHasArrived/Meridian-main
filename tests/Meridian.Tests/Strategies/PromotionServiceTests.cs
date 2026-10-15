@@ -101,6 +101,47 @@ public sealed class PromotionServiceTests
 
     // ---- ApproveAsync ----
 
+    [Theory]
+    [InlineData(RunType.Backtest, StrategyRunLifecycleEventType.Failed, StrategyRunStatus.Failed)]
+    [InlineData(RunType.Paper, StrategyRunLifecycleEventType.Failed, StrategyRunStatus.Failed)]
+    [InlineData(RunType.Paper, StrategyRunLifecycleEventType.Cancelled, StrategyRunStatus.Cancelled)]
+    [InlineData(RunType.Paper, StrategyRunLifecycleEventType.StopFailed, StrategyRunStatus.Stopped)]
+    [InlineData(RunType.Paper, StrategyRunLifecycleEventType.EvidencePersistenceFailed, StrategyRunStatus.Failed)]
+    [InlineData(RunType.Paper, StrategyRunLifecycleEventType.EvidencePersistenceFailed, StrategyRunStatus.Stopped)]
+    public async Task FailedCleanupOrUnconfirmedEvidence_WithRetainedMetrics_CannotBeEvaluatedOrApprovedForPromotion(
+        RunType runType,
+        StrategyRunLifecycleEventType eventType,
+        StrategyRunStatus status)
+    {
+        var service = BuildService(out var store);
+        var run = StrategyRunEntry.Start("cleanup-failure", "Cleanup Failure", runType)
+            .Complete(BuildPassingResult()) with
+        {
+            LastLifecycleEvent = eventType,
+            TerminalStatus = status,
+            ExceptionMessage = "Strategy cleanup or final evidence retention failed."
+        };
+        await store.RecordRunAsync(run);
+        var targetMode = runType == RunType.Backtest ? RunType.Paper : RunType.Live;
+
+        var evaluation = await service.EvaluateAsync(run.RunId);
+        var decision = await service.ApproveAsync(new PromotionApprovalRequest(
+            run.RunId,
+            ApprovedBy: "ops",
+            ApprovalReason: "Review retained run metrics.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(targetMode),
+            EvidenceReferences: CreateEvidenceReferences(targetMode)));
+
+        evaluation.Ready.Should().BeFalse();
+        evaluation.IsEligible.Should().BeFalse();
+        evaluation.Reason.Should().Contain("did not complete successfully");
+        decision.Success.Should().BeFalse();
+        decision.NewRunId.Should().BeNull();
+        decision.Reason.Should().Contain("did not complete successfully");
+        (await service.GetPromotionHistoryAsync()).Should().BeEmpty();
+        (await LoadRunsAsync(store)).Should().ContainSingle().Which.Metrics.Should().NotBeNull();
+    }
+
     [Fact]
     public async Task EvaluateAsync_WhenOnlyEndTimestampImpliesCompletion_RequiresSuccessfulLifecycleOutcome()
     {

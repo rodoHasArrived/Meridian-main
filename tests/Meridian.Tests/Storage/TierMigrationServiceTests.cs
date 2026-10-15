@@ -1,5 +1,11 @@
 using System.IO.Compression;
+using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Domain.Enums;
+using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Serialization;
+using Meridian.Domain.Events;
+using Meridian.Storage.Replay;
 using Meridian.Storage;
 using Meridian.Storage.Services;
 using Xunit;
@@ -64,6 +70,82 @@ public sealed class TierMigrationServiceTests : IDisposable
         {
             // Best-effort cleanup for Windows file handles held briefly after gzip reads.
         }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Scenario_ExistingGzipMigration_ProductionReplayReadsOriginalEventsBeforeSourceIsRemoved(bool verifyChecksum)
+    {
+        var source = Path.Combine(_hot, "session.jsonl.gz");
+        var timestamp = DateTimeOffset.Parse("2026-10-01T14:30:00Z");
+        var trade = new Trade(timestamp, "SPY", 100m, 10, AggressorSide.Buy, 7, "TEST", "XNYS");
+        var original = MarketEvent.Trade(timestamp, "SPY", trade, "TEST", 7);
+        var jsonl = JsonSerializer.Serialize(original, MarketDataJsonContext.HighPerformanceOptions) + Environment.NewLine;
+        await WriteGzipTextAsync(source, jsonl);
+
+        var result = await _sut.MigrateAsync(source, StorageTier.Warm,
+            new MigrationOptions(DeleteSource: true, VerifyChecksum: verifyChecksum, ParallelFiles: 1));
+
+        result.Success.Should().BeTrue(string.Join("; ", result.Errors));
+        File.Exists(source).Should().BeFalse();
+        var target = Path.Combine(_warm, "hot", "session.jsonl.gz");
+        (await ReadGzipTextAsync(target)).Should().Be(jsonl, "one decompression must produce the original JSONL, never another gzip stream");
+        var replayed = new List<MarketEvent>();
+        await foreach (var evt in new JsonlReplayer(target).ReadEventsAsync())
+            replayed.Add(evt);
+        replayed.Should().ContainSingle().Which.Should().BeEquivalentTo(original);
+    }
+
+    [Theory]
+    [InlineData(CompressionCodec.None, "session.jsonl")]
+    [InlineData(null, "session.jsonl.gz")]
+    public async Task Scenario_ExistingGzipMigration_ExplicitNoneDecodesAndUnspecifiedCodecPreserves(CompressionCodec? targetCodec, string targetName)
+    {
+        var source = Path.Combine(_hot, "session.jsonl.gz");
+        const string jsonl = "{\"symbol\":\"SPY\",\"price\":500.12}\n";
+        await WriteGzipTextAsync(source, jsonl);
+        var service = new TierMigrationService(new StorageOptions
+        {
+            RootPath = _root,
+            Tiering = new TieringOptions
+            {
+                Enabled = true,
+                Tiers = [new TierConfig { Name = "Warm", Path = _warm, Format = "jsonl", Compression = targetCodec }]
+            }
+        });
+
+        var result = await service.MigrateAsync(source, StorageTier.Warm,
+            new MigrationOptions(DeleteSource: true, VerifyChecksum: true, ParallelFiles: 1));
+
+        result.Success.Should().BeTrue(string.Join("; ", result.Errors));
+        var target = Path.Combine(_warm, "hot", targetName);
+        var payload = targetCodec == CompressionCodec.None ? await File.ReadAllTextAsync(target) : await ReadGzipTextAsync(target);
+        payload.Should().Be(jsonl);
+        File.Exists(source).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Scenario_CorruptCompressedSource_WithoutOptionalChecksumStillCannotBeDeleted()
+    {
+        var source = Path.Combine(_hot, "corrupt.jsonl.gz");
+        await File.WriteAllBytesAsync(source, [0x1f, 0x8b, 0x08, 0xff, 0xff, 0xff]);
+
+        var result = await _sut.MigrateAsync(source, StorageTier.Warm,
+            new MigrationOptions(DeleteSource: true, VerifyChecksum: false, ParallelFiles: 1));
+
+        result.Success.Should().BeFalse();
+        result.FilesFailed.Should().Be(1);
+        File.Exists(source).Should().BeTrue();
+        Directory.EnumerateFiles(_warm, "*", SearchOption.AllDirectories).Should().BeEmpty();
+    }
+
+    private static async Task WriteGzipTextAsync(string path, string text)
+    {
+        await using var file = File.Create(path);
+        await using var gzip = new GZipStream(file, CompressionMode.Compress);
+        await using var writer = new StreamWriter(gzip);
+        await writer.WriteAsync(text);
     }
 
     [Fact]

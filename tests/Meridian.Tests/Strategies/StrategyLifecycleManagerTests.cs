@@ -216,6 +216,79 @@ public sealed class StrategyLifecycleManagerTests
         statuses.Should().HaveCount(1);
     }
 
+    [Theory]
+    [InlineData(StrategyStatus.Running, RunType.Paper)]
+    [InlineData(StrategyStatus.Paused, RunType.Paper)]
+    [InlineData(StrategyStatus.Running, RunType.Live)]
+    [InlineData(StrategyStatus.Paused, RunType.Live)]
+    public async Task Register_SameActiveInstanceWithAnotherRun_RejectsRebindingAndStopsOriginalRun(
+        StrategyStatus activeStatus, RunType secondMode)
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-registration-run-binding", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dataRoot);
+        try
+        {
+            var history = new FileOperationalCaseHistoryStore(dataRoot);
+            var repository = new StrategyRunStore(history);
+            var first = StrategyRunEntry.StartWithEvidence(
+                "configured-strategy", "Configured strategy", RunType.Paper, "bound-paper-run",
+                engine: "BrokerPaper",
+                parameterSet: new Dictionary<string, string> { ["symbols"] = "AAPL", ["quantity"] = "1" });
+            await repository.RecordRunAsync(first);
+            if (activeStatus == StrategyStatus.Paused)
+            {
+                await repository.RecordLifecycleEventAsync(
+                    first.Paused("operator") with { TerminalStatus = StrategyRunStatus.Paused },
+                    StrategyRunLifecycleEventType.Paused);
+            }
+
+            var retainedFirst = (await repository.GetRunByIdAsync(first.RunId))!;
+            var second = StrategyRunEntry.StartWithEvidence(
+                first.StrategyId, first.StrategyName, secondMode, "newer-configured-run",
+                engine: secondMode == RunType.Live ? "BrokerLive" : "BrokerPaper",
+                parameterSet: new Dictionary<string, string> { ["symbols"] = "MSFT", ["quantity"] = "7" });
+            await repository.RecordRunAsync(second);
+            var retainedSecond = (await repository.GetRunByIdAsync(second.RunId))!;
+            (await repository.GetLatestRunAsync(first.StrategyId))!.RunId.Should().Be(second.RunId);
+            var strategy = new StubLiveStrategy(first.StrategyId, activeStatus);
+            await using var manager = new StrategyLifecycleManager(repository, NullLogger<StrategyLifecycleManager>.Instance);
+            manager.Register(strategy, retainedFirst);
+            manager.Register(strategy);
+            manager.Register(strategy, retainedFirst with { Reason = "Refreshed the same run's control state." });
+
+            var rebind = () => manager.Register(strategy, retainedSecond);
+
+            rebind.Should().Throw<InvalidOperationException>().WithMessage("*rebound*another run*");
+            manager.GetStatuses()[first.StrategyId].Should().Be(activeStatus);
+            var outcome = await manager.StopAsync(first.StrategyId);
+
+            outcome.State.Should().Be(OperationTerminalState.Succeeded);
+            outcome.CorrelationId.Should().Be(first.RunId);
+            VerifiedOperationOutcomeValidator.Validate(outcome).Should().BeEmpty();
+            var replayed = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var stopped = (await replayed.GetRunByIdAsync(first.RunId))!;
+            stopped.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+            stopped.TerminalStatus.Should().Be(StrategyRunStatus.Stopped);
+            stopped.EndedAt.Should().NotBeNull();
+            stopped.ParameterSet.Should().BeEquivalentTo(first.ParameterSet);
+            (await replayed.GetRunByIdAsync(second.RunId)).Should().BeEquivalentTo(retainedSecond);
+            var secondHistory = await history.ReadAsync(new OperationalCaseHistoryQuery
+            {
+                CaseId = $"strategy-run:{second.RunId}"
+            });
+            secondHistory.Should().ContainSingle();
+            strategy.StopCallCount.Should().Be(1);
+            strategy.StartCallCount.Should().Be(0);
+
+            var rebindAfterStop = () => manager.Register(strategy, retainedSecond);
+            rebindAfterStop.Should().NotThrow("a stopped instance can acquire a different run binding");
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
     // ------------------------------------------------------------------ //
     // DisposeAsync                                                          //
     // ------------------------------------------------------------------ //
@@ -413,10 +486,12 @@ public sealed class StrategyLifecycleManagerTests
     }
 
     [Theory]
-    [InlineData(StrategyStatus.Stopped)]
-    [InlineData(StrategyStatus.Registered)]
+    [InlineData(StrategyStatus.Stopped, false)]
+    [InlineData(StrategyStatus.Registered, false)]
+    [InlineData(StrategyStatus.Stopped, true)]
+    [InlineData(StrategyStatus.Registered, true)]
     public async Task StartAsync_AfterRestart_RecoveryRetainsConfiguredInputsAndEvidence(
-        StrategyStatus restoredStatus)
+        StrategyStatus restoredStatus, bool scoped)
     {
         var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-configured-recovery", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(dataRoot);
@@ -424,6 +499,11 @@ public sealed class StrategyLifecycleManagerTests
         {
             var repository = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
             var original = ConfiguredRun(RunType.Paper);
+            if (scoped)
+            {
+                original = original with { FundAccountId = Guid.NewGuid() };
+                original = original with { InputHashSha256 = StrategyRunEntry.ComputeAccountBoundInputHash(original) };
+            }
             await repository.RecordRunAsync(original);
             var completed = original.Complete(null) with
             {
@@ -455,6 +535,7 @@ public sealed class StrategyLifecycleManagerTests
             recovered.LedgerReference.Should().Be(original.LedgerReference);
             recovered.AuditReference.Should().Be(original.AuditReference);
             recovered.FundProfileId.Should().Be(original.FundProfileId);
+            recovered.FundAccountId.Should().Be(original.FundAccountId);
             recovered.FundDisplayName.Should().Be(original.FundDisplayName);
             recovered.DatasetReference.Should().Be(original.DatasetReference);
             recovered.FeedReference.Should().Be(original.FeedReference);
@@ -468,7 +549,9 @@ public sealed class StrategyLifecycleManagerTests
             recovered.PaperValidationReferences.Should().Equal(original.PaperValidationReferences);
             recovered.GovernedReportReferences.Should().Equal(original.GovernedReportReferences);
             recovered.ArtifactReferences.Should().Equal(original.ArtifactReferences);
-            recovered.InputHashSha256.Should().Be(StrategyRunEntry.ComputeRealismBoundInputHash(recovered));
+            recovered.InputHashSha256.Should().Be(scoped
+                ? StrategyRunEntry.ComputeAccountBoundInputHash(recovered)
+                : StrategyRunEntry.ComputeRealismBoundInputHash(recovered));
             recovered.InputHashSha256.Should().Be(original.InputHashSha256);
             recovered.EndedAt.Should().BeNull();
             recovered.TerminalStatus.Should().BeNull();
@@ -554,11 +637,13 @@ public sealed class StrategyLifecycleManagerTests
 
     [Theory]
     [InlineData("approved")]
+    [InlineData("approved-account")]
     [InlineData("override-revoked")]
     [InlineData("breaker-open")]
     [InlineData("routing-disabled")]
     [InlineData("approval-missing")]
     [InlineData("inputs-changed")]
+    [InlineData("account-changed")]
     public async Task StartAsync_LiveRecovery_RevalidatesApprovalAndCurrentControls(string scenario)
     {
         var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-live-recovery", Guid.NewGuid().ToString("N"));
@@ -567,6 +652,11 @@ public sealed class StrategyLifecycleManagerTests
         {
             var repository = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
             var original = ConfiguredRun(RunType.Live);
+            if (scenario is "approved-account" or "account-changed")
+            {
+                original = original with { FundAccountId = Guid.NewGuid() };
+                original = original with { InputHashSha256 = StrategyRunEntry.ComputeAccountBoundInputHash(original) };
+            }
             await repository.RecordRunAsync(original);
             var completed = original.Complete(null) with { TerminalStatus = StrategyRunStatus.Stopped };
             await repository.RecordRunAsync(completed);
@@ -618,7 +708,7 @@ public sealed class StrategyLifecycleManagerTests
             {
                 await controls.SetCircuitBreakerAsync(true, "Live execution halted.", "operator-1");
             }
-            else if (scenario == "inputs-changed")
+            else if (scenario is "inputs-changed" or "account-changed")
             {
                 var childStartedAt = DateTimeOffset.UtcNow;
                 var changed = original with
@@ -627,12 +717,18 @@ public sealed class StrategyLifecycleManagerTests
                     StartedAt = childStartedAt,
                     LifecycleEventAtUtc = childStartedAt,
                     CorrelationId = original.RunId,
-                    DatasetReference = "dataset://different-inputs",
+                    DatasetReference = scenario == "inputs-changed" ? "dataset://different-inputs" : original.DatasetReference,
+                    FundAccountId = scenario == "account-changed" ? Guid.NewGuid() : original.FundAccountId,
                     RecoveryParentRunId = original.RunId,
                     AttemptId = "changed-input-attempt",
                     AttemptNumber = 2
                 };
-                changed = changed with { InputHashSha256 = StrategyRunEntry.ComputeRealismBoundInputHash(changed) };
+                changed = changed with
+                {
+                    InputHashSha256 = changed.FundAccountId.HasValue
+                        ? StrategyRunEntry.ComputeAccountBoundInputHash(changed)
+                        : StrategyRunEntry.ComputeRealismBoundInputHash(changed)
+                };
                 await repository.RecordRunAsync(changed);
                 completed = changed.Complete(null) with { TerminalStatus = StrategyRunStatus.Stopped };
                 await repository.RecordRunAsync(completed);
@@ -649,11 +745,12 @@ public sealed class StrategyLifecycleManagerTests
             manager.Register(strategy);
             (await restartedStore.GetLatestRunAsync(original.StrategyId))!.RunId.Should().Be(completed.RunId);
 
-            if (scenario == "approved")
+            if (scenario is "approved" or "approved-account")
             {
                 var outcome = await manager.StartAsync(original.StrategyId, new StubExecutionContext(), RunType.Live);
                 outcome.State.Should().Be(OperationTerminalState.Succeeded);
                 (await restartedStore.GetLatestRunAsync(original.StrategyId))!.CorrelationId.Should().Be(original.RunId);
+                (await restartedStore.GetLatestRunAsync(original.StrategyId))!.FundAccountId.Should().Be(original.FundAccountId);
                 await manager.StopAsync(original.StrategyId);
                 var second = await manager.StartAsync(original.StrategyId, new StubExecutionContext(), RunType.Live);
                 second.State.Should().Be(OperationTerminalState.Succeeded);
@@ -663,7 +760,7 @@ public sealed class StrategyLifecycleManagerTests
             {
                 var start = () => manager.StartAsync(original.StrategyId, new StubExecutionContext(), RunType.Live);
                 var failure = await start.Should().ThrowAsync<InvalidOperationException>();
-                if (scenario == "inputs-changed")
+                if (scenario is "inputs-changed" or "account-changed")
                 {
                     failure.WithMessage("*inputs differ from the approved execution configuration*");
                 }

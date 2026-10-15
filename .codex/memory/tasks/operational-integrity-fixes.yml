@@ -1,0 +1,15 @@
+version: 1
+task_id: operational-integrity-fixes
+intent: implementation
+selected_skill: none
+work_mode: implementation
+branch: codex/operational-integrity-fixes
+planned_paths:
+- src/**
+- tests/**
+memory_tags:
+- validation
+success_criteria:
+- All fourteen supplied defects have targeted fixes and regression evidence.
+- Run the repository CI gate and report any blockers without claiming success.
+promotion_candidates: []

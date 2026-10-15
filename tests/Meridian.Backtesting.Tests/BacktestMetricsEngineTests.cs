@@ -10,6 +10,36 @@ namespace Meridian.Backtesting.Tests;
 /// </summary>
 public sealed class BacktestMetricsEngineTests
 {
+    [Fact]
+    public void Compute_LargerLaterCurrencyLoss_TracksCurrencyAndPercentageMaximaIndependently()
+    {
+        var startDate = new DateOnly(2020, 1, 2);
+        var snapshots = BuildSnapshots([100m, 50m, 1_000m, 900m], startDate)
+            .Select((snapshot, i) => snapshot with { Date = startDate.AddYears(i) }).ToArray();
+        var request = new BacktestRequest(From: startDate, To: startDate.AddYears(3), InitialCash: 100m);
+
+        var metrics = BacktestMetricsEngine.Compute(snapshots, [], [], request);
+
+        metrics.MaxDrawdown.Should().Be(100m);
+        metrics.MaxDrawdownPercent.Should().Be(0.5m);
+        metrics.MaxDrawdownRecoveryDays.Should().Be(365,
+            "recovery belongs to the worst percentage decline, which recovers in the next annual snapshot");
+        metrics.CalmarRatio.Should().Be((double)metrics.AnnualizedReturn / 0.5d);
+    }
+
+    [Fact]
+    public void Compute_FirstSnapshotBelowInitialEquity_IncludesInitialCapitalInDrawdown()
+    {
+        var startDate = new DateOnly(2024, 1, 2);
+        var snapshots = BuildSnapshots([50m, 100m], startDate);
+        var request = new BacktestRequest(From: startDate, To: startDate.AddDays(1), InitialCash: 100m);
+
+        var metrics = BacktestMetricsEngine.Compute(snapshots, [], [], request);
+
+        metrics.MaxDrawdown.Should().Be(50m);
+        metrics.MaxDrawdownPercent.Should().Be(0.5m);
+        metrics.MaxDrawdownRecoveryDays.Should().Be(1);
+    }
 
     [Fact]
     public void Compute_WithFrictionCashFlows_NetPnlIsEquityDeltaAndGrossAddsFrictionsBack()
