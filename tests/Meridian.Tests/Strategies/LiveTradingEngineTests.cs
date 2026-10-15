@@ -5,6 +5,8 @@ using FluentAssertions;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.Workstation;
+using Meridian.Storage.Operations;
 using Meridian.Execution.Adapters;
 using Meridian.Execution.Events;
 using Meridian.Execution.Live;
@@ -558,6 +560,231 @@ public sealed class LiveTradingEngineTests
     // ---- Promotion integration ----
 
     [Fact]
+    public async Task DurablePromotion_ActivatesShutsDownAndRecoversWithoutDuplicateStart()
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-live-lifecycle", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var hub = new LiveMarketEventHub();
+            var cache = new LiveMarketDataCache();
+            var orders = new RecordingOrderManager(100m);
+            var source = StrategyRunEntry.StartWithEvidence(
+                BuyAndHoldLiveStrategy.CatalogId, "Buy and hold", RunType.Backtest, "durable-promotion-source",
+                engine: "MeridianNative",
+                parameterSet: new Dictionary<string, string> { ["symbols"] = "AAPL", ["quantity"] = "7" },
+                retainedEvidenceReferences: [CanonicalPromotionVaultReference]).Complete(BuildPassingResult());
+            await store.RecordRunAsync(source);
+            string promotedId;
+            await using (var engine = CreateEngine(store, hub, cache, orders))
+            {
+                var service = new PromotionService(store, new BacktestToLivePromoter(),
+                    new InMemoryPromotionRecordStore(), NullLogger<PromotionService>.Instance, runLauncher: engine);
+                var checklist = PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper);
+                var result = await service.ApproveAsync(new PromotionApprovalRequest(source.RunId,
+                    ApprovedBy: "ops", ApprovalReason: "Ready for paper.",
+                    ApprovalChecklist: checklist,
+                    EvidenceReferences: checklist.Select(item => $"{item}:{CanonicalPromotionVaultReference}").ToArray()));
+                result.Success.Should().BeTrue(result.Reason);
+                promotedId = result.NewRunId!;
+                await WaitForLifecycleAsync(store, promotedId, StrategyRunLifecycleEventType.Activated);
+                await PublishTradesUntilAsync(hub, cache, "AAPL", 100m, () => !orders.Requests.IsEmpty);
+                orders.Requests.First().Quantity.Should().Be(7);
+            }
+
+            var restartedStore = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var suspended = (await restartedStore.GetRunByIdAsync(promotedId))!;
+            suspended.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Suspended);
+            suspended.EndedAt.Should().BeNull();
+            suspended.ParentRunId.Should().Be(source.RunId);
+            var restartedHub = new LiveMarketEventHub();
+            var restartedCache = new LiveMarketDataCache();
+            var restartedOrders = new RecordingOrderManager(101m);
+            await using (var engine = CreateEngine(restartedStore, restartedHub, restartedCache, restartedOrders))
+            {
+                (await engine.ResumePendingRunsAsync()).Should().Be(1);
+                await WaitForLifecycleAsync(restartedStore, promotedId, StrategyRunLifecycleEventType.Recovered);
+                await PublishTradesUntilAsync(restartedHub, restartedCache, "AAPL", 101m, () => !restartedOrders.Requests.IsEmpty);
+                (await engine.StopRunAsync(promotedId)).Should().BeTrue();
+            }
+
+            var completed = (await new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot))
+                .GetRunByIdAsync(promotedId))!;
+            completed.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+            completed.TerminalStatus.Should().Be(StrategyRunStatus.Completed);
+            completed.Metrics!.Metrics.Xirr.Should().Be(double.NaN);
+            completed.ParameterSet.Should().BeEquivalentTo(source.ParameterSet);
+            completed.ParentRunId.Should().Be(source.RunId);
+        }
+        finally
+        {
+            if (Directory.Exists(dataRoot))
+                Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task DurablePausedRun_RestoresControlsAndRequiresExplicitResumeWithSameInputsAndLineage(bool resume)
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-paused-lifecycle", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var run = StrategyRunEntry.StartWithEvidence(
+                BuyAndHoldLiveStrategy.CatalogId, "Configured paper", RunType.Paper, "durable-paused-run",
+                parameterSet: new Dictionary<string, string> { ["symbols"] = "MSFT", ["quantity"] = "9" }) with
+            {
+                ParentRunId = "approved-backtest",
+                InputHashSha256 = null
+            };
+            await store.RecordRunAsync(run);
+            var manager = new StrategyLifecycleManager(store, NullLogger<StrategyLifecycleManager>.Instance);
+            var hub = new LiveMarketEventHub();
+            var cache = new LiveMarketDataCache();
+            await using (var engine = CreateEngine(store, hub, cache, new RecordingOrderManager(100m), lifecycleManager: manager))
+            {
+                (await engine.TryLaunchAsync(run)).Launched.Should().BeTrue();
+                await WaitForLifecycleAsync(store, run.RunId, StrategyRunLifecycleEventType.Activated);
+                (await manager.PauseAsync(run.StrategyId)).State.Should()
+                    .Be(Meridian.Contracts.Operations.OperationTerminalState.Succeeded);
+            }
+            manager.GetStatuses().Should().BeEmpty("the drained engine no longer owns a controllable session");
+            await manager.DisposeAsync();
+
+            var restarted = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var paused = (await restarted.GetRunByIdAsync(run.RunId))!;
+            paused.TerminalStatus.Should().Be(StrategyRunStatus.Paused);
+            var controls = new StrategyLifecycleManager(restarted, NullLogger<StrategyLifecycleManager>.Instance);
+            var restoredStrategy = new ResumeProbeStrategy(run.StrategyId);
+            var catalog = new LiveStrategyCatalog().Register(run.StrategyId, _ => restoredStrategy);
+            var orders = new RecordingOrderManager(100m);
+            await using (var engine = CreateEngine(restarted, new LiveMarketEventHub(), new LiveMarketDataCache(), orders,
+                catalog, lifecycleManager: controls))
+            {
+                (await engine.ResumePendingRunsAsync()).Should().Be(0, "restoration must not execute a paused run");
+                engine.PausedRunIds.Should().Contain(run.RunId);
+                controls.GetStatuses()[run.StrategyId].Should().Be(StrategyStatus.Paused);
+                restoredStrategy.StartCount.Should().Be(0);
+                restoredStrategy.InitializeCount.Should().Be(0);
+                orders.Requests.Should().BeEmpty();
+                if (!resume)
+                {
+                    (await engine.StopRunAsync(run.RunId)).Should().BeTrue();
+                    restoredStrategy.StartCount.Should().Be(0);
+                    (await restarted.GetRunByIdAsync(run.RunId))!.LastLifecycleEvent.Should()
+                        .Be(StrategyRunLifecycleEventType.Completed);
+                    return;
+                }
+                (await engine.ResumeRunAsync(run.RunId)).Should().BeTrue();
+                engine.PausedRunIds.Should().NotContain(run.RunId);
+                restoredStrategy.StartCount.Should().Be(1);
+                restoredStrategy.InitializeCount.Should().Be(1);
+                var resumed = (await restarted.GetRunByIdAsync(run.RunId))!;
+                resumed.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Resumed);
+                resumed.TerminalStatus.Should().BeNull();
+                resumed.ParameterSet.Should().BeEquivalentTo(paused.ParameterSet);
+                resumed.ParentRunId.Should().Be(paused.ParentRunId);
+                resumed.InputHashSha256.Should().Be(paused.InputHashSha256);
+                resumed.AttemptId.Should().Be(paused.AttemptId);
+                (await engine.StopRunAsync(run.RunId)).Should().BeTrue();
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(dataRoot))
+                Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task DurablePausedRuns_WithSameStrategyId_ResumeOnlyTheRequestedRun(bool olderFirst)
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-paused-run-identity", Guid.NewGuid().ToString("N"));
+        try
+        {
+            const string strategyId = "shared-configured-strategy";
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var startedAt = DateTimeOffset.UtcNow.AddHours(-1);
+            var older = StrategyRunEntry.StartWithEvidence(
+                strategyId, "Configured strategy", RunType.Paper, "older-paused-run",
+                parameterSet: new Dictionary<string, string> { ["symbols"] = "AAPL" }) with
+            {
+                StartedAt = startedAt,
+                LifecycleEventAtUtc = startedAt
+            };
+            var newer = StrategyRunEntry.StartWithEvidence(
+                strategyId, "Configured strategy", RunType.Paper, "newer-paused-run",
+                parameterSet: new Dictionary<string, string> { ["symbols"] = "MSFT" }) with
+            {
+                StartedAt = startedAt.AddMinutes(1),
+                LifecycleEventAtUtc = startedAt.AddMinutes(1)
+            };
+            foreach (var run in new[] { older, newer })
+            {
+                await store.RecordRunAsync(run);
+                await store.RecordLifecycleEventAsync(
+                    run.Paused("operator") with { TerminalStatus = StrategyRunStatus.Paused },
+                    StrategyRunLifecycleEventType.Paused);
+            }
+
+            var restarted = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var manager = new StrategyLifecycleManager(restarted, NullLogger<StrategyLifecycleManager>.Instance);
+            var olderStrategy = new ResumeProbeStrategy(strategyId);
+            var newerStrategy = new ResumeProbeStrategy(strategyId);
+            var catalog = new LiveStrategyCatalog().Register(strategyId,
+                context => context.Parameters["symbols"] == "AAPL" ? olderStrategy : newerStrategy);
+            await using var engine = CreateEngine(
+                restarted, new LiveMarketEventHub(), new LiveMarketDataCache(), new RecordingOrderManager(100m),
+                catalog, lifecycleManager: manager);
+            (await engine.ResumePendingRunsAsync()).Should().Be(0);
+            engine.PausedRunIds.Should().BeEquivalentTo([older.RunId, newer.RunId]);
+            var first = olderFirst ? older : newer;
+            var second = olderFirst ? newer : older;
+            var firstStrategy = olderFirst ? olderStrategy : newerStrategy;
+            var secondStrategy = olderFirst ? newerStrategy : olderStrategy;
+
+            var firstOutcome = await engine.ResumeRunWithOutcomeAsync(first.RunId);
+
+            firstOutcome!.State.Should().Be(Meridian.Contracts.Operations.OperationTerminalState.Succeeded);
+            firstOutcome.CorrelationId.Should().Be(first.RunId);
+            firstStrategy.StartCount.Should().Be(1);
+            secondStrategy.StartCount.Should().Be(0);
+            engine.PausedRunIds.Should().Equal(second.RunId);
+            (await restarted.GetRunByIdAsync(first.RunId))!.LastLifecycleEvent.Should()
+                .Be(StrategyRunLifecycleEventType.Resumed);
+            (await restarted.GetRunByIdAsync(second.RunId))!.LastLifecycleEvent.Should()
+                .Be(StrategyRunLifecycleEventType.Paused);
+
+            // Strategy-level controls must retain the instance/run pair selected by resume,
+            // even when another run of the same strategy has a later start timestamp.
+            (await manager.PauseAsync(strategyId)).State.Should()
+                .Be(Meridian.Contracts.Operations.OperationTerminalState.Succeeded);
+            (await restarted.GetRunByIdAsync(first.RunId))!.LastLifecycleEvent.Should()
+                .Be(StrategyRunLifecycleEventType.Paused);
+
+            var secondOutcome = await engine.ResumeRunWithOutcomeAsync(second.RunId);
+
+            secondOutcome!.State.Should().Be(Meridian.Contracts.Operations.OperationTerminalState.Succeeded);
+            secondOutcome.CorrelationId.Should().Be(second.RunId);
+            firstStrategy.StartCount.Should().Be(1);
+            secondStrategy.StartCount.Should().Be(1);
+            engine.PausedRunIds.Should().Equal(first.RunId);
+            (await restarted.GetRunByIdAsync(first.RunId))!.TerminalStatus.Should().Be(StrategyRunStatus.Paused);
+            (await restarted.GetRunByIdAsync(second.RunId))!.LastLifecycleEvent.Should()
+                .Be(StrategyRunLifecycleEventType.Resumed);
+        }
+        finally
+        {
+            if (Directory.Exists(dataRoot))
+                Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task PromotionApproval_HandsNewRunToTheRunLauncher()
     {
         var store = new StrategyRunStore();
@@ -645,12 +872,13 @@ public sealed class LiveTradingEngineTests
     }
 
     private static LiveTradingEngine CreateEngine(
-        InMemoryRunRepository repository,
+        IStrategyRepository repository,
         ILiveMarketEventFeed feed,
         LiveMarketDataCache cache,
         ExecutionSdk.IOrderManager orderManager,
         ILiveStrategyCatalog? catalog = null,
-        LiveTradingEngineOptions? options = null)
+        LiveTradingEngineOptions? options = null,
+        StrategyLifecycleManager? lifecycleManager = null)
     {
         // `Meridian.Execution` and `Meridian.Execution.Adapters` both declare `PaperTradingGateway`
         // and this file imports both. Only the Adapters one implements `IOrderGateway`, which is
@@ -669,7 +897,8 @@ public sealed class LiveTradingEngineTests
             new PaperTradingPortfolio(100_000m),
             repository,
             options: options ?? new LiveTradingEngineOptions(),
-            loggerFactory: NullLoggerFactory.Instance);
+            loggerFactory: NullLoggerFactory.Instance,
+            lifecycleManager: lifecycleManager);
     }
 
     private static string BuildRunOrderPrefix(string runId) => $"mlt-{runId}-";
@@ -707,6 +936,29 @@ public sealed class LiveTradingEngineTests
         }
 
         condition().Should().BeTrue("the completed session must be removed from the active-run registry");
+    }
+
+    private static async Task WaitForLifecycleAsync(IStrategyRepository store, string runId, StrategyRunLifecycleEventType expected)
+    {
+        using var timeout = new CancellationTokenSource(WaitBudget);
+        while ((await store.GetRunByIdAsync(runId, timeout.Token))?.LastLifecycleEvent != expected)
+        {
+            await Task.Delay(25, timeout.Token);
+        }
+    }
+
+    private sealed class ResumeProbeStrategy(string strategyId) : LiveStrategyBase
+    {
+        public override string StrategyId => strategyId;
+        public override string Name => "Resume probe";
+        public int StartCount { get; private set; }
+        public int InitializeCount { get; private set; }
+        protected override Task OnStartingAsync(Meridian.Execution.Interfaces.IExecutionContext ctx, CancellationToken ct)
+        {
+            StartCount++;
+            return Task.CompletedTask;
+        }
+        public override void Initialize(IBacktestContext ctx) => InitializeCount++;
     }
 
     private static StrategyRunEntry CreatePaperRun(

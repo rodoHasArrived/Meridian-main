@@ -215,8 +215,7 @@ public sealed class StrategyFeatureModule : IDesktopFeatureModule
         services.AddSingleton<StrategyRunContinuityService>();
         services.AddSingleton(BrokeragePortfolioSyncOptions.Default);
         services.AddSingleton<BrokeragePortfolioSyncService>();
-        services.AddSingleton(Dk1TrustGateReadinessOptions.Default);
-        services.AddSingleton<Dk1TrustGateReadinessService>();
+        services.AddPromotionTrustEvidenceServices();
         services.AddSingleton<TradingOperatorReadinessService>();
         services.AddSingleton<StrategyRunReviewPacketService>();
         services.AddWorkflowLibrary();

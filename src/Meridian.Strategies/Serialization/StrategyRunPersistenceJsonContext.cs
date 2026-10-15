@@ -33,6 +33,9 @@ internal static class StrategyRunPersistenceJson
     private static JsonSerializerOptions CreateOptions()
     {
         var options = new JsonSerializerOptions(StrategyRunPersistenceJsonContext.Default.Options);
+        // Live XIRR is unavailable until its cash-flow history supports a calculation. Preserve
+        // the SDK's NaN sentinel rather than inventing a return or losing the terminal snapshot.
+        options.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
         options.Converters.Add(new CashFlowEntryJsonConverter());
         options.Converters.Add(new ReadOnlyLedgerJsonConverter());
         options.Converters.Add(new ReadOnlyStringSetJsonConverter());

@@ -85,6 +85,14 @@ internal sealed class LiveStrategyRunSession
 
     public string StrategyId => _run.StrategyId;
 
+    internal ILiveStrategy Strategy => _strategy;
+
+    public bool IsPaused => _strategy.Status == StrategyStatus.Paused;
+
+    public RunType RunType => _run.RunType;
+
+    public IExecutionContext ExecutionContext => _context;
+
     internal static string BuildClientOrderIdPrefix(string runId) => $"{ClientOrderIdPrefix}-{runId}-";
 
     /// <summary>Extracts the run id from an engine-originated client order id, if it is one.</summary>
@@ -170,12 +178,17 @@ internal sealed class LiveStrategyRunSession
         var ct = linked.Token;
         try
         {
-            await _strategy.StartAsync(_context, ct).ConfigureAwait(false);
-            _strategy.Initialize(_context);
-            await _repository.RecordLifecycleEventAsync(
-                _run.Started(ActorId, "Run activated on the live trading engine."),
-                StrategyRunLifecycleEventType.Started,
-                ct).ConfigureAwait(false);
+            if (_run.TerminalStatus != Meridian.Contracts.Workstation.StrategyRunStatus.Paused)
+            {
+                await _strategy.StartAsync(_context, ct).ConfigureAwait(false);
+                _strategy.Initialize(_context);
+                var recovering = _run.LastLifecycleEvent is StrategyRunLifecycleEventType.Activated or
+                    StrategyRunLifecycleEventType.Recovered or StrategyRunLifecycleEventType.Resumed or
+                    StrategyRunLifecycleEventType.Suspended;
+                var activated = recovering ? _run.Recovered(ActorId) : _run.Activated(ActorId);
+                await _repository.RecordLifecycleEventAsync(
+                    activated, activated.LastLifecycleEvent, ct).ConfigureAwait(false);
+            }
 
             _logger.LogInformation(
                 "Live session started: run {RunId}, strategy {StrategyId} ({StrategyName}), mode {RunType}, universe [{Universe}]",
@@ -306,6 +319,11 @@ internal sealed class LiveStrategyRunSession
 
     private async Task ProcessMarketEventAsync(LiveMarketEvent evt, CancellationToken ct)
     {
+        if (_strategy.Status != StrategyStatus.Running)
+        {
+            return;
+        }
+
         _metrics.EventsProcessed++;
 
         var eventDate = DateOnly.FromDateTime(evt.Timestamp.UtcDateTime);
@@ -884,7 +902,14 @@ internal sealed class LiveStrategyRunSession
 
             if (!_completeRunOnExit)
             {
-                // Host shutdown: leave the run open so a restarted engine resumes it.
+                // Preserve paused operator intent across host shutdown. Other sessions record
+                // an explicit recovery boundary without ending or replacing the retained run.
+                if (current.TerminalStatus != Meridian.Contracts.Workstation.StrategyRunStatus.Paused)
+                {
+                    await _repository.RecordLifecycleEventAsync(
+                        current.Suspended(ActorId), StrategyRunLifecycleEventType.Suspended,
+                        CancellationToken.None).ConfigureAwait(false);
+                }
                 return;
             }
 
@@ -895,7 +920,11 @@ internal sealed class LiveStrategyRunSession
                 _context.Ledger,
                 DateTimeOffset.UtcNow);
             await _repository.RecordLifecycleEventAsync(
-                current.Complete(metrics) with { ActorId = ActorId },
+                current.Complete(metrics) with
+                {
+                    ActorId = ActorId,
+                    TerminalStatus = Meridian.Contracts.Workstation.StrategyRunStatus.Completed
+                },
                 StrategyRunLifecycleEventType.Completed,
                 CancellationToken.None).ConfigureAwait(false);
         }

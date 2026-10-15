@@ -3,6 +3,8 @@ using System.Text.Json;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Identity.Auth;
+using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Live;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Microsoft.AspNetCore.Builder;
@@ -13,8 +15,8 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 /// <summary>
 /// REST endpoints for querying and controlling the lifecycle of registered live strategies.
-/// Exposes pause, stop, and status operations. Strategy start is handled separately via
-/// the execution cockpit once an execution context is established.
+/// Exposes pause, explicit resume, stop, and status operations. Resume uses the engine's
+/// retained execution context and does not accept replacement execution settings.
 /// </summary>
 public static class StrategyLifecycleEndpoints
 {
@@ -56,6 +58,64 @@ public static class StrategyLifecycleEndpoints
         .Produces(503);
 
         // --- Lifecycle control ---
+
+        group.MapPost("/{strategyId}/resume", async (string strategyId, HttpContext context) =>
+        {
+            var engine = context.RequestServices.GetService<LiveTradingEngine>();
+            var repository = context.RequestServices.GetService<IStrategyRepository>();
+            if (engine is null || repository is null)
+                return ToEndpointFailureResult(
+                    strategyId, "resume", OperationTerminalState.Blocked,
+                    "The live trading engine is not active.", exception: null,
+                    externalStateMayHaveChanged: false, StatusCodes.Status503ServiceUnavailable, jsonOptions);
+
+            try
+            {
+                var run = await repository.GetLatestRunAsync(strategyId, context.RequestAborted).ConfigureAwait(false);
+                if (run is null)
+                    return ToEndpointFailureResult(
+                        strategyId, "resume", OperationTerminalState.Blocked,
+                        "Strategy has no retained run.", exception: null,
+                        externalStateMayHaveChanged: false, StatusCodes.Status404NotFound, jsonOptions);
+
+                var outcome = await engine.ResumeRunWithOutcomeAsync(run.RunId, context.RequestAborted).ConfigureAwait(false);
+                return outcome is null
+                    ? ToEndpointFailureResult(
+                        strategyId, "resume", OperationTerminalState.Blocked,
+                        "The retained run is not paused on this engine or the engine is shutting down.", exception: null,
+                        externalStateMayHaveChanged: false, StatusCodes.Status409Conflict, jsonOptions)
+                    : ToOperationResult(outcome, jsonOptions);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return ToEndpointFailureResult(
+                    strategyId, "resume", OperationTerminalState.Blocked, ex.Message, ex,
+                    externalStateMayHaveChanged: false, StatusCodes.Status409Conflict, jsonOptions);
+            }
+            catch (OperationCanceledException ex)
+            {
+                return ToEndpointFailureResult(
+                    strategyId, "resume", OperationTerminalState.Blocked,
+                    "The resume request was cancelled before a retained terminal receipt was returned.", ex,
+                    externalStateMayHaveChanged: true, StatusCodes.Status423Locked, jsonOptions);
+            }
+            catch (Exception ex)
+            {
+                return ToEndpointFailureResult(
+                    strategyId, "resume", OperationTerminalState.Failed,
+                    "The resume request failed before a retained terminal receipt was returned.", ex,
+                    externalStateMayHaveChanged: true, StatusCodes.Status500InternalServerError, jsonOptions);
+            }
+        })
+        .WithName("ResumeStrategy")
+        .Produces<VerifiedOperationOutcome>(200)
+        .Produces<VerifiedOperationOutcome>(409)
+        .Produces<VerifiedOperationOutcome>(423)
+        .Produces<VerifiedOperationOutcome>(404)
+        .Produces<VerifiedOperationOutcome>(500)
+        .Produces<VerifiedOperationOutcome>(503)
+        .RequirePermission(UserPermission.ManageStrategies)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapPost("/{strategyId}/pause", async (string strategyId, HttpContext context) =>
         {

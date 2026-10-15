@@ -33,7 +33,7 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
     private readonly LiveTradingEngineOptions _options;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<LiveTradingEngine> _logger;
-    private readonly StrategyLifecycleManager? _lifecycleManager;
+    private readonly StrategyLifecycleManager _lifecycleManager;
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly BrokerageConfiguration? _brokerageConfiguration;
     private readonly CancellationTokenSource _engineCts = new();
@@ -76,14 +76,20 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         _options = options ?? new LiveTradingEngineOptions();
         _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         _logger = _loggerFactory.CreateLogger<LiveTradingEngine>();
-        _lifecycleManager = lifecycleManager;
+        _lifecycleManager = lifecycleManager ?? new StrategyLifecycleManager(
+            repository, _loggerFactory.CreateLogger<StrategyLifecycleManager>());
         _auditTrail = auditTrail;
         _brokerageConfiguration = brokerageConfiguration;
         _portfolioRegistry = portfolioRegistry;
     }
 
-    /// <summary>Run ids currently executing on this engine.</summary>
+    /// <summary>Run ids owned by this engine, including restored paused runs.</summary>
     public IReadOnlyCollection<string> ActiveRunIds => _activeRuns.Keys.ToArray();
+
+    /// <summary>Owned runs awaiting explicit operator resume.</summary>
+    public IReadOnlyCollection<string> PausedRunIds => _activeRuns
+        .Where(static pair => pair.Value.Session.IsPaused)
+        .Select(static pair => pair.Key).ToArray();
 
     /// <inheritdoc/>
     public async Task<RunLaunchResult> TryLaunchAsync(StrategyRunEntry run, CancellationToken ct = default)
@@ -111,6 +117,11 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
             if (run.EndedAt.HasValue)
             {
                 return RunLaunchResult.Deferred("Run has already ended.");
+            }
+
+            if (run.TerminalStatus is not (null or Meridian.Contracts.Workstation.StrategyRunStatus.Paused))
+            {
+                return RunLaunchResult.Deferred("Run has a terminal outcome and cannot be activated.");
             }
 
             if (run.RunType == RunType.Live)
@@ -154,6 +165,11 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
 
             var fillQueueCapacity = Math.Max(1, _options.FillReportQueueCapacity);
             var context = new LiveStrategyExecutionContext(_orderGateway, _feedAdapter, _portfolioState, universe);
+            var restorePaused = run.TerminalStatus == Meridian.Contracts.Workstation.StrategyRunStatus.Paused;
+            if (restorePaused)
+            {
+                strategy = new RestoredPausedLiveStrategy(strategy, context);
+            }
             var session = new LiveStrategyRunSession(
                 run,
                 strategy,
@@ -198,7 +214,7 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                     _portfolioRegistry.Register(run.RunId, runPortfolio);
                 }
 
-                TryRegisterWithLifecycleManager(strategy);
+                TryRegisterWithLifecycleManager(strategy, run);
                 activeRun.Execution = Task.Run(
                     async () =>
                     {
@@ -241,13 +257,14 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
             }
 
             _logger.LogInformation(
-                "Live trading engine activated run {RunId} (strategy {StrategyId}, mode {RunType}, universe [{Universe}])",
+                "Live trading engine attached run {RunId} (strategy {StrategyId}, mode {RunType}, universe [{Universe}])",
                 run.RunId, run.StrategyId, run.RunType, string.Join(", ", universe));
             await RecordAuditAsync(
                 run,
-                action: "LiveRunActivated",
-                outcome: "Activated",
-                message: $"Run activated with universe [{string.Join(", ", universe)}].",
+                action: restorePaused ? "LiveRunRestoredPaused" : "LiveRunActivated",
+                outcome: restorePaused ? "Paused" : "Activated",
+                message: restorePaused ? "Paused control state restored; explicit resume is required."
+                    : $"Run activated with universe [{string.Join(", ", universe)}].",
                 ct).ConfigureAwait(false);
 
             return RunLaunchResult.Success();
@@ -273,16 +290,75 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
             return false;
         }
 
-        activeRun.Session.CloseOutboundOrderAdmission();
-        activeRun.CompleteReportAdmission();
-        await activeRun.Delivery.WaitAsync(ct).ConfigureAwait(false);
-        activeRun.Session.RequestStop(completeRun: true);
-        if (activeRun.Execution is { } execution)
+        await activeRun.ControlGate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            await execution.WaitAsync(ct).ConfigureAwait(false);
+            if (!_activeRuns.TryGetValue(runId, out var current) || !ReferenceEquals(current, activeRun))
+            {
+                return false;
+            }
+
+            activeRun.Stopping = true;
+            activeRun.Session.CloseOutboundOrderAdmission();
+            activeRun.CompleteReportAdmission();
+            await activeRun.Delivery.WaitAsync(ct).ConfigureAwait(false);
+            activeRun.Session.RequestStop(completeRun: true);
+            if (activeRun.Execution is { } execution)
+            {
+                await execution.WaitAsync(ct).ConfigureAwait(false);
+            }
+
+            return true;
+        }
+        finally
+        {
+            activeRun.ControlGate.Release();
+        }
+    }
+
+    /// <summary>Explicitly resumes an owned paused run using its retained execution context.</summary>
+    public async Task<bool> ResumeRunAsync(string runId, CancellationToken ct = default)
+    {
+        var outcome = await ResumeRunWithOutcomeAsync(runId, ct).ConfigureAwait(false);
+        return outcome?.State == Meridian.Contracts.Operations.OperationTerminalState.Succeeded;
+    }
+
+    /// <summary>Resumes a paused run and returns its retained lifecycle receipt.</summary>
+    public async Task<Meridian.Contracts.Operations.VerifiedOperationOutcome?> ResumeRunWithOutcomeAsync(
+        string runId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        using var launchLease = TryEnterLaunch();
+        if (launchLease is null)
+        {
+            return null;
+        }
+        if (!_activeRuns.TryGetValue(runId, out var activeRun))
+        {
+            return null;
         }
 
-        return true;
+        await activeRun.Initialized.WaitAsync(ct).ConfigureAwait(false);
+        await activeRun.ControlGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (!_activeRuns.TryGetValue(runId, out var current) || !ReferenceEquals(current, activeRun)
+                || !activeRun.Session.IsPaused || activeRun.Stopping || Volatile.Read(ref _disposed) != 0)
+            {
+                return null;
+            }
+
+            return await _lifecycleManager.ResumeRunAsync(
+                activeRun.Session.Strategy,
+                runId,
+                activeRun.Session.ExecutionContext,
+                activeRun.Session.RunType,
+                ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            activeRun.ControlGate.Release();
+        }
     }
 
     /// <summary>
@@ -303,17 +379,17 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
             ct.ThrowIfCancellationRequested();
             if (run.RunType is not (RunType.Paper or RunType.Live)
                 || run.EndedAt.HasValue
-                || run.TerminalStatus is not null)
+                || run.TerminalStatus is not (null or Meridian.Contracts.Workstation.StrategyRunStatus.Paused))
             {
                 continue;
             }
 
             var result = await TryLaunchAsync(run, ct).ConfigureAwait(false);
-            if (result.Launched)
+            if (result.Launched && run.TerminalStatus != Meridian.Contracts.Workstation.StrategyRunStatus.Paused)
             {
                 resumed++;
             }
-            else
+            else if (!result.Launched)
             {
                 _logger.LogInformation(
                     "Run {RunId} (strategy {StrategyId}) was not resumed: {Reason}",
@@ -459,6 +535,13 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                 shutdownFailures.Add(ex);
                 _logger.LogError(ex, "One or more live sessions faulted during engine shutdown.");
             }
+        }
+
+        // Container disposal will later dispose the manager. Release only these exact drained
+        // instances so it cannot issue a second stop and finalize retained paused/open runs.
+        foreach (var activeRun in activeRuns)
+        {
+            await _lifecycleManager.UnregisterAsync(activeRun.Session.Strategy).ConfigureAwait(false);
         }
 
         _engineCts.Dispose();
@@ -752,16 +835,11 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         }
     }
 
-    private void TryRegisterWithLifecycleManager(ILiveStrategy strategy)
+    private void TryRegisterWithLifecycleManager(ILiveStrategy strategy, StrategyRunEntry run)
     {
-        if (_lifecycleManager is null)
-        {
-            return;
-        }
-
         try
         {
-            _lifecycleManager.Register(strategy);
+            _lifecycleManager.Register(strategy, run);
         }
         catch (Exception ex)
         {
@@ -866,6 +944,10 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         }
 
         public LiveStrategyRunSession Session { get; }
+
+        public bool Stopping { get; set; }
+
+        public SemaphoreSlim ControlGate { get; } = new(1, 1);
 
         public ChannelReader<ExecutionSdk.ExecutionReport> Reports => _reports.Reader;
 
