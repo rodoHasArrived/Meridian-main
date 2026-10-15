@@ -966,12 +966,12 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
 
         return new MaintenanceResult
         {
-            Success = result.Errors.Count == 0,
-            Summary = $"Compression: processed {result.FilesProcessed} files, recompressed {result.FilesRepaired}",
+            Success = result.Errors.Count == 0 && (result.DryRun || result.FilesUnresolved == 0),
+            Summary = $"Compression: processed {result.FilesProcessed} files, recompressed {result.FilesChanged}; {result.FilesUnresolved} unresolved",
             TotalFiles = result.FilesProcessed,
             FilesProcessed = result.FilesProcessed,
-            FilesSkipped = result.FilesProcessed - result.FilesRepaired,
-            FilesFailed = result.Errors.Count,
+            FilesSkipped = result.FilesProcessed - result.FilesChanged,
+            FilesFailed = result.DryRun ? 0 : Math.Max(result.FilesUnresolved, result.Errors.Count),
             TotalBytesScanned = 0,
             BytesSaved = 0,
             IssuesFound = result.FilesProcessed - result.FilesRepaired,
@@ -984,12 +984,15 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
         MaintenanceExecution execution,
         CancellationToken ct)
     {
-        var strategy = options.TruncateCorrupted
-            ? RepairStrategy.TruncateCorrupted
-            : RepairStrategy.RebuildIndex;
+        if (!options.TruncateCorrupted)
+        {
+            const string message = "Repair blocked: no supported repair strategy is enabled. Enable TruncateCorrupted for plain JSONL salvage or use an explicit restore/re-ingest workflow.";
+            execution.LogMessages.Add(message);
+            return new MaintenanceResult { Success = false, Summary = message };
+        }
 
         var repairOptions = new RepairOptions(
-            Strategy: strategy,
+            Strategy: RepairStrategy.TruncateCorrupted,
             DryRun: options.DryRun,
             BackupBeforeRepair: options.BackupBeforeRepair,
             BackupPath: options.BackupPath
@@ -1002,15 +1005,20 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
         {
             execution.LogMessages.AddRange(result.Errors.Take(10).Select(e => $"Error: {e}"));
         }
+        execution.LogMessages.AddRange(result.RecoveryCopies.Select(path => $"Recovery copy: {path}"));
+        if (result.DryRun && result.PlannedActions is not null)
+            execution.LogMessages.AddRange(result.PlannedActions.Select(action => $"[DRY RUN] {action}"));
 
         return new MaintenanceResult
         {
-            Success = result.Errors.Count == 0,
-            Summary = $"Repair: repaired {result.FilesRepaired}/{result.FilesProcessed} files",
+            Success = result.Errors.Count == 0 && (result.DryRun || result.FilesUnresolved == 0),
+            Summary = result.DryRun
+                ? $"Repair dry run: planned {result.FilesProcessed} files; no files changed"
+                : $"Repair: repaired {result.FilesRepaired}/{result.FilesProcessed} files; {result.FilesUnresolved} unresolved",
             TotalFiles = result.FilesProcessed,
             FilesProcessed = result.FilesProcessed,
-            FilesSkipped = 0,
-            FilesFailed = result.Errors.Count,
+            FilesSkipped = result.DryRun ? result.FilesProcessed : 0,
+            FilesFailed = result.DryRun ? 0 : Math.Max(result.FilesUnresolved, result.Errors.Count),
             TotalBytesScanned = 0,
             BytesSaved = 0,
             IssuesFound = result.FilesProcessed,

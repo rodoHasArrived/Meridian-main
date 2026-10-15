@@ -6,6 +6,9 @@ import type {
   QuantNotebookCellViewModel,
   QuantNotebookViewModel
 } from "@/components/meridian/quant-notebook.view-model";
+import serverResponse from "@/test/fixtures/quant-run-response.json";
+import { mapQuantRunResponseToCellResult } from "@/lib/quant-api-mappers";
+import type { QuantRunResponse } from "@/types";
 import { buildDataContextPanel } from "@/components/meridian/quant-notebook.view-model";
 
 function makeCell(overrides: Partial<QuantNotebookCellViewModel> = {}): QuantNotebookCellViewModel {
@@ -83,6 +86,19 @@ function makeVm(overrides: Partial<QuantNotebookViewModel> = {}): QuantNotebookV
 }
 
 describe("QuantNotebook", () => {
+  it("renders charts and trades retained from a successful server response", () => {
+    const result = mapQuantRunResponseToCellResult("cell-1", serverResponse as QuantRunResponse);
+    render(<QuantNotebook vm={makeVm({ cells: [makeCell({ output: result.output })] })} />);
+    expect(screen.getByRole("img", { name: "AAPL Drawdown" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "AAPL Cumulative Return" })).toBeInTheDocument();
+    const trades = screen.getByRole("table", { name: "Script-emitted trades" });
+    expect(trades).toHaveTextContent("AAPL");
+    expect(trades).toHaveTextContent("Sell");
+    expect(trades).toHaveTextContent("90");
+    expect(trades).toHaveTextContent("0.25");
+    expect(trades).toHaveTextContent("2026-01-03T14:30:00.0000000+00:00");
+  });
+
   it("renders clear-output disabled reasons from the view model", () => {
     render(
       <QuantNotebook

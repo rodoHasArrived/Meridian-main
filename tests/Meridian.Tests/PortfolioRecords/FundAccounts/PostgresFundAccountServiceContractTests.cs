@@ -99,6 +99,15 @@ public sealed class PostgresFundAccountServiceContractTests : FundAccountService
     public Task ReconcileAccountAsync_SnapshotAndPositions_ProducesMatchedRun() => ReconcileAccountAsync_SnapshotAndPositions_ProducesMatchedRun_Core();
 
     [FundAccountDatabaseFact]
+    public Task ReconcileAccountAsync_SameDayBalances_UsesSourceSequence() => ReconcileAccountAsync_SameDayBalances_UsesSourceSequence_Core();
+
+    [FundAccountDatabaseFact]
+    public Task ReconcileAccountAsync_CorrectedStatement_UsesRevisionRegardlessOfArrival() => ReconcileAccountAsync_CorrectedStatement_UsesRevisionRegardlessOfArrival_Core();
+
+    [FundAccountDatabaseFact]
+    public Task IngestBankStatementAsync_RetainedBatchCannotReplaceLineIdentity() => IngestBankStatementAsync_RetainedBatchCannotReplaceLineIdentity_Core();
+
+    [FundAccountDatabaseFact]
     public Task ReconcileAccountAsync_CashDivergingFromBankClosingBalance_ProducesCashBreak() => ReconcileAccountAsync_CashDivergingFromBankClosingBalance_ProducesCashBreak_Core();
 
     [FundAccountDatabaseFact]
@@ -193,4 +202,11 @@ public sealed class PostgresFundAccountServiceContractTests : FundAccountService
 
     [FundAccountDatabaseFact]
     public Task RecordMarginSnapshotAsync_CorrectedEffectiveTimeAlreadyOccupied_RejectsWithoutReplacing() => RecordMarginSnapshotAsync_CorrectedEffectiveTimeAlreadyOccupied_RejectsWithoutReplacing_Core();
+    [FundAccountDatabaseFact]
+    public Task Reconciliation_CorrectedEvidenceClearsOnlyMatchingActiveScopeAndRetainsHistory()
+        => Reconciliation_CorrectedEvidenceClearsOnlyMatchingActiveScopeAndRetainsHistory_Core();
+
+    [FundAccountDatabaseFact]
+    public Task SyncHistory_SimultaneousCorrelatedRetriesRetainSuccessWithoutRegression()
+        => SyncHistory_SimultaneousCorrelatedRetriesRetainSuccessWithoutRegression_Core();
 }

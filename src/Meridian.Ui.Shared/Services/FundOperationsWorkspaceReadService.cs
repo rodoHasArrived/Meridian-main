@@ -865,13 +865,12 @@ public sealed partial class FundOperationsWorkspaceReadService
             var latestSnapshot = await _fundAccountService
                 .GetLatestBalanceSnapshotAsync(account.AccountId, ct)
                 .ConfigureAwait(false);
-            var reconciliationRuns = await _fundAccountService
-                .GetReconciliationRunsAsync(account.AccountId, ct)
+            var reconciliationRuns = await _fundAccountService.GetReconciliationRunsAsync(account.AccountId, ct)
                 .ConfigureAwait(false);
-            var openBreaks = reconciliationRuns
-                .Where(run => !string.Equals(run.Status, "Matched", StringComparison.OrdinalIgnoreCase)
-                           && !string.Equals(run.Status, "Resolved", StringComparison.OrdinalIgnoreCase))
-                .Sum(static run => run.TotalBreaks);
+            var openBreaks = 0;
+            foreach (var run in reconciliationRuns)
+                openBreaks += (await _fundAccountService.GetReconciliationResultsAsync(run.ReconciliationRunId, ct)
+                    .ConfigureAwait(false)).Count(static result => result.IsOpenBreak);
 
             var summary = new FundAccountSummary(
                 AccountId: account.AccountId,
@@ -1052,27 +1051,33 @@ public sealed partial class FundOperationsWorkspaceReadService
 
             foreach (var run in accountRuns)
             {
+                var results = await _fundAccountService.GetReconciliationResultsAsync(run.ReconciliationRunId, ct)
+                    .ConfigureAwait(false);
+                var activeBreaks = results.Where(static result => result.IsOpenBreak).ToArray();
+                var activeBreakAmount = activeBreaks.Sum(static result => Math.Abs(result.Variance ?? 0m));
+                var historicalBreaks = results.Where(static result => !result.IsMatch
+                    && !string.Equals(result.Status, "Unverified", StringComparison.OrdinalIgnoreCase)).ToArray();
+                var lifecycleStatus = run.TotalBreaks > 0 && activeBreaks.Length == 0
+                    ? historicalBreaks.Length > 0 && historicalBreaks.All(static result => result.ResolvedAt.HasValue)
+                        ? "Resolved" : "Superseded"
+                    : run.Status;
                 items.Add(new FundReconciliationItem(
                     ReconciliationRunId: run.ReconciliationRunId,
                     AccountId: run.AccountId,
                     AccountDisplayName: account.DisplayName,
                     AsOfDate: run.AsOfDate,
-                    Status: run.Status,
+                    Status: lifecycleStatus,
                     TotalChecks: run.TotalChecks,
                     TotalMatched: run.TotalMatched,
-                    TotalBreaks: run.TotalBreaks,
-                    BreakAmountTotal: run.BreakAmountTotal,
+                    TotalBreaks: activeBreaks.Length,
+                    BreakAmountTotal: activeBreakAmount,
                     RequestedAt: run.RequestedAt,
                     CompletedAt: run.CompletedAt,
                     ScopeLabel: "Account",
                     CoverageLabel: "Account-level reconciliation"));
 
-                if (!string.Equals(run.Status, "Matched", StringComparison.OrdinalIgnoreCase)
-                    && !string.Equals(run.Status, "Resolved", StringComparison.OrdinalIgnoreCase))
-                {
-                    openBreaks += run.TotalBreaks;
-                    breakAmountTotal += run.BreakAmountTotal;
-                }
+                openBreaks += activeBreaks.Length;
+                breakAmountTotal += activeBreakAmount;
             }
         }
 

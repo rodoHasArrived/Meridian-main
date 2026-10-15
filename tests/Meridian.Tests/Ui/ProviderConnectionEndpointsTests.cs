@@ -7,6 +7,8 @@ using FluentAssertions;
 using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
+using Meridian.DataIntegration.AccountingSystem;
+using Meridian.DataIntegration.AccountingSystem.QuickBooks;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
@@ -633,6 +635,167 @@ public sealed class ProviderConnectionEndpointsTests
         (await vault.ReadScopedAsync("quickbooks", new ProviderCredentialScope("provider-tenant", "books", "realm-a", "sandbox")))!.LastVerifiedAt.Should().BeNull();
         var audit = await File.ReadAllTextAsync(Path.Combine(Path.GetDirectoryName(vault.VaultPath)!, "provider-credentials.audit.jsonl"));
         audit.Should().NotContain("test-quickbooks-verifier");
+    }
+
+    [Theory]
+    [InlineData("xero")]
+    [InlineData("netsuite")]
+    [InlineData("quickbooks")]
+    public async Task ScopedAccountingVerification_UsesAndRotatesOnlyTheSelectedRetainedConnection(string providerId)
+    {
+        var accounts = providerId == "xero"
+            ? new[] { "11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222" }
+            : new[] { "account-a", "account-b" };
+        var handler = new ScopedAccountingHandler(providerId);
+        using var http = new HttpClient(handler);
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IAccountingSystemProvider>(sp =>
+            RealAccountingProvider(providerId, sp.GetRequiredService<IProviderCredentialStore>(), http)));
+        var client = app.GetTestClient();
+        var vault = (FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        await vault.SaveAsync(new(providerId, AccountingCredentials(providerId, "global", accounts[0]), "sandbox"));
+        for (var index = 0; index < 2; index++)
+        {
+            var connectionId = index == 0 ? "books-a" : "books-b";
+            await RetainConnectionAsync(app, connectionId, "provider-tenant", providerId, accounts[index], "sandbox");
+            var saved = await client.PutAsync($"/api/providers/{providerId}/credentials?connectionId={connectionId}",
+                JsonContent(new { credentials = AccountingCredentials(providerId, connectionId, accounts[index]), environment = "sandbox" }));
+            saved.EnsureSuccessStatusCode();
+        }
+        var scopeA = new ProviderCredentialScope("provider-tenant", "books-a", accounts[0], "sandbox");
+        var scopeB = new ProviderCredentialScope("provider-tenant", "books-b", accounts[1], "sandbox");
+
+        var resultA = await ReadAsync<ProviderCredentialVerificationResultDto>(await client.PostAsync(
+            $"/api/providers/{providerId}/verify?connectionId=books-a", JsonContent(new { })));
+
+        resultA.Success.Should().BeTrue();
+        resultA.ExternalAccountId.Should().Be(accounts[0]);
+        (await vault.GetScopedStatusAsync(providerId, scopeA)).VerificationState.Should().Be(ProviderVerificationStateDto.Verified);
+        (await vault.GetScopedStatusAsync(providerId, scopeB)).VerificationState.Should().Be(ProviderVerificationStateDto.NotVerified);
+        (await vault.ReadScopedAsync(providerId, scopeA))!.Get("RefreshToken").Should().Be("rotated-books-a");
+        (await vault.ReadScopedAsync(providerId, scopeB))!.Get("RefreshToken").Should().Be("refresh-books-b");
+        (await vault.ReadForProviderAsync(providerId))!.Get("RefreshToken").Should().Be("refresh-global");
+        (await vault.GetStatusAsync(providerId)).VerificationState.Should().Be(ProviderVerificationStateDto.NotVerified);
+
+        // A second retained connection must send its own credentials and account identity as well.
+        var resultB = await ReadAsync<ProviderCredentialVerificationResultDto>(await client.PostAsync(
+            $"/api/providers/{providerId}/verify?connectionId=books-b", JsonContent(new { })));
+        resultB.Success.Should().BeTrue();
+        resultB.ExternalAccountId.Should().Be(accounts[1]);
+        handler.TokenConnections.Should().Equal("books-a", "books-b");
+        handler.VerifiedAccounts.Should().Equal(accounts);
+        (await vault.ReadScopedAsync(providerId, scopeA))!.Get("RefreshToken").Should().Be("rotated-books-a");
+        (await vault.ReadScopedAsync(providerId, scopeB))!.Get("RefreshToken").Should().Be("rotated-books-b");
+        var audit = await File.ReadAllTextAsync(Path.Combine(Path.GetDirectoryName(vault.VaultPath)!, "provider-credentials.audit.jsonl"));
+        audit.Split('\n').Where(line => line.Contains("\"action\":\"verify-success\"", StringComparison.Ordinal)).Should().HaveCount(2)
+            .And.OnlyContain(line => line.Contains("provider-ops", StringComparison.Ordinal));
+
+        // Recovering the backup must keep the selected rotations and the unrelated provider record.
+        await File.WriteAllTextAsync(vault.VaultPath, "");
+        var recovered = new FileProviderCredentialStore(Path.GetDirectoryName(Path.GetDirectoryName(vault.VaultPath))!);
+        (await recovered.ReadScopedAsync(providerId, scopeA))!.Get("RefreshToken").Should().Be("rotated-books-a");
+        (await recovered.ReadScopedAsync(providerId, scopeB))!.Get("RefreshToken").Should().Be("rotated-books-b");
+        (await recovered.ReadForProviderAsync(providerId))!.Get("RefreshToken").Should().Be("refresh-global");
+    }
+
+    [Theory]
+    [InlineData("xero")]
+    [InlineData("netsuite")]
+    [InlineData("quickbooks")]
+    public async Task ScopedAccountingVerification_ConcurrentCredentialReplacementWinsOverTokenRotation(string providerId)
+    {
+        var account = providerId == "xero" ? "11111111-1111-1111-1111-111111111111" : "account-a";
+        var handler = new ScopedAccountingHandler(providerId);
+        using var http = new HttpClient(handler);
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IAccountingSystemProvider>(sp =>
+            RealAccountingProvider(providerId, sp.GetRequiredService<IProviderCredentialStore>(), http)));
+        await RetainConnectionAsync(app, "books-a", "provider-tenant", providerId, account, "sandbox");
+        var vault = (FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        var scope = new ProviderCredentialScope("provider-tenant", "books-a", account, "sandbox");
+        await vault.SaveScopedAsync(new(providerId, AccountingCredentials(providerId, "books-a", account), "sandbox"), scope);
+        handler.BeforeTokenResponse = () => vault.SaveScopedAsync(new(providerId,
+            AccountingCredentials(providerId, "replacement", account), "sandbox"), scope);
+
+        var result = await ReadAsync<ProviderCredentialVerificationResultDto>(await app.GetTestClient().PostAsync(
+            $"/api/providers/{providerId}/verify?connectionId=books-a", JsonContent(new { })));
+
+        result.Success.Should().BeFalse();
+        result.LastError.Should().Contain("changed");
+        var retained = (await vault.ReadScopedAsync(providerId, scope))!;
+        retained.Get("ClientId").Should().Be("client-replacement");
+        retained.Get("RefreshToken").Should().Be("refresh-replacement");
+        retained.LastVerifiedAt.Should().BeNull();
+        (await vault.GetScopedStatusAsync(providerId, scope)).VerificationState.Should().Be(ProviderVerificationStateDto.NotVerified);
+        handler.VerifiedAccounts.Should().BeEmpty();
+    }
+
+    private static IAccountingSystemProvider RealAccountingProvider(string providerId, IProviderCredentialStore store, HttpClient http)
+        => providerId switch
+        {
+            "xero" => new XeroAccountingProvider(store, http),
+            "netsuite" => new NetSuiteAccountingProvider(store, http),
+            _ => new QuickBooksOnlineAccountingProvider(new QuickBooksOnlineProviderCredentialConnectionStore(store), new QuickBooksOnlineHttpClient(http))
+        };
+
+    private static Dictionary<string, string?> AccountingCredentials(string providerId, string connectionId, string account)
+    {
+        var fields = new Dictionary<string, string?>
+        {
+            ["ClientId"] = "client-" + connectionId,
+            ["ClientSecret"] = "secret-" + connectionId,
+            ["RefreshToken"] = "refresh-" + connectionId
+        };
+        fields[providerId == "xero" ? "TenantId" : providerId == "netsuite" ? "AccountId" : "RealmId"] = account;
+        if (providerId == "netsuite")
+        {
+            fields["SubsidiaryId"] = "2";
+            fields["AccountingBookId"] = "1";
+        }
+        return fields;
+    }
+
+    private sealed class ScopedAccountingHandler(string providerId) : HttpMessageHandler
+    {
+        public Func<Task>? BeforeTokenResponse { get; set; }
+        public List<string> TokenConnections { get; } = [];
+        public List<string> VerifiedAccounts { get; } = [];
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            var path = request.RequestUri!.AbsolutePath;
+            if (path.EndsWith("token", StringComparison.Ordinal) || path.EndsWith("bearer", StringComparison.Ordinal))
+            {
+                request.Headers.Authorization!.Scheme.Should().Be("Basic");
+                var credentials = Encoding.UTF8.GetString(Convert.FromBase64String(request.Headers.Authorization.Parameter!)).Split(':');
+                var connectionId = credentials[0]["client-".Length..];
+                credentials[1].Should().Be("secret-" + connectionId);
+                (await request.Content!.ReadAsStringAsync(ct)).Should().Contain("refresh_token=refresh-" + connectionId);
+                TokenConnections.Add(connectionId);
+                if (BeforeTokenResponse is not null)
+                    await BeforeTokenResponse();
+                return JsonResponse(new { access_token = "access-" + connectionId, refresh_token = "rotated-" + connectionId, expires_in = 3600 });
+            }
+            request.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            if (providerId == "xero")
+            {
+                var account = request.Headers.GetValues("xero-tenant-id").Single();
+                VerifiedAccounts.Add(account);
+                return JsonResponse(new { Organisations = new[] { new { OrganisationID = account, BaseCurrency = "USD", FinancialYearEndMonth = 12, FinancialYearEndDay = 31 } } });
+            }
+            if (providerId == "quickbooks")
+            {
+                var account = path.Split('/')[3];
+                VerifiedAccounts.Add(account);
+                return JsonResponse(new { CompanyInfo = new { Id = "1", CompanyName = "Company " + account } });
+            }
+            using var query = JsonDocument.Parse(await request.Content!.ReadAsStringAsync(ct));
+            if (query.RootElement.GetProperty("q").GetString()!.Contains("FROM subsidiary", StringComparison.Ordinal))
+            {
+                VerifiedAccounts.Add(request.RequestUri.Host.Split('.')[0]);
+                return JsonResponse(new { items = new[] { new { id = "2", currency = "USD" } }, offset = 0, count = 1, hasMore = false });
+            }
+            return JsonResponse(new { items = new[] { new { id = "1" } }, offset = 0, count = 1, hasMore = false });
+        }
+        private static HttpResponseMessage JsonResponse(object value)
+            => new(HttpStatusCode.OK) { Content = JsonContent(value) };
     }
 
     [Fact]

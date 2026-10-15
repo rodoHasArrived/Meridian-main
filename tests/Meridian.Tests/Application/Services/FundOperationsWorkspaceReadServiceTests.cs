@@ -27,6 +27,43 @@ namespace Meridian.Tests.Application.Services;
 public sealed class FundOperationsWorkspaceReadServiceTests
 {
     [Fact]
+    public async Task GetWorkspaceAsync_CorrectedAccountEvidenceClearsQueueTotalsWhileRetainingRunHistory()
+    {
+        var fundProfileId = $"fund-{Guid.NewGuid():N}";
+        var accounts = new InMemoryFundAccountService();
+        var securityMaster = new NullSecurityMasterQueryService();
+        var service = new FundOperationsWorkspaceReadService(accounts, new StrategyRunStore(),
+            new PortfolioReadService(), new NavAttributionService(securityMaster), new ReportGenerationService(securityMaster));
+        var account = await accounts.CreateAccountAsync(new(Guid.NewGuid(), AccountTypeDto.Bank,
+            "BANK-RESOLUTION", "Resolution test", "USD", DateTimeOffset.UtcNow, "ops",
+            FundId: TranslateFundProfileId(fundProfileId), LedgerReference: "LEDGER"));
+        var date = new DateOnly(2026, 10, 15);
+        await accounts.RecordBalanceSnapshotAsync(new(account.AccountId, date, "USD", 100m, "internal"));
+        var batch = Guid.NewGuid();
+        await accounts.IngestBankStatementAsync(new(batch, account.AccountId, date, "Bank", null,
+            [new(Guid.NewGuid(), batch, account.AccountId, date, date, 90m, "USD", "credit", "balance", null, 90m)], "ops"));
+        var original = await accounts.ReconcileAccountAsync(new(account.AccountId, date, "ops"));
+        var before = await service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(fundProfileId));
+        before.Accounts.Should().ContainSingle().Which.OpenBreaks.Should().Be(1);
+        before.Reconciliation.OpenBreakCount.Should().Be(1);
+        await accounts.ReconcileAccountAsync(new(account.AccountId, date, "ops"));
+        var repeated = await service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(fundProfileId));
+        repeated.Reconciliation.OpenBreakCount.Should().Be(1);
+        repeated.Reconciliation.RecentRuns.Single(run => run.ReconciliationRunId == original.ReconciliationRunId)
+            .Status.Should().Be("Superseded", "a replacement disagreement is not a resolution");
+
+        await accounts.RecordBalanceSnapshotAsync(new(account.AccountId, date, "USD", 90m, "internal"));
+        await accounts.ReconcileAccountAsync(new(account.AccountId, date, "ops"));
+        var after = await service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(fundProfileId));
+        after.Accounts.Should().ContainSingle().Which.OpenBreaks.Should().Be(0);
+        after.Reconciliation.OpenBreakCount.Should().Be(0);
+        after.Reconciliation.BreakAmountTotal.Should().Be(0m);
+        after.Reconciliation.RecentRuns.Should().Contain(run => run.Status == "Resolved");
+        (await accounts.GetReconciliationRunsAsync(account.AccountId))
+            .Single(run => run.ReconciliationRunId == original.ReconciliationRunId).TotalBreaks.Should().Be(1);
+    }
+
+    [Fact]
     public async Task GetWorkspaceAsync_WithRunsAccountsAndBanking_ReturnsAggregatedWorkspace()
     {
         var fundProfileId = $"fund-{Guid.NewGuid():N}";

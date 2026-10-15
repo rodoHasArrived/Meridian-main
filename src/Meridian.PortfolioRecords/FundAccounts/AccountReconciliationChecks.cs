@@ -82,7 +82,7 @@ internal static class AccountReconciliationChecks
                 ActualAmount: null,
                 Variance: null,
                 Reason: closingBalanceAnyCurrency is null
-                    ? "No independent source was available to verify the recorded cash balance: no bank statement closing balance exists for the as-of date."
+                    ? "No independent source was available to verify the recorded cash balance: no unambiguous authoritative bank statement closing balance exists for the as-of date."
                     : $"No independent source was available to verify the recorded cash balance: bank statement closing balances exist for the as-of date, but none in the snapshot currency ({snapshot.Currency}).");
         }
 
@@ -100,12 +100,7 @@ internal static class AccountReconciliationChecks
     }
 
     private static decimal? LatestClosingBalance(IEnumerable<BankStatementLineDto> lines) =>
-        lines
-            .Where(static line => line.ClosingBalance.HasValue)
-            .OrderBy(static line => line.ValueDate)
-            .ThenBy(static line => line.LineId)
-            .Select(static line => line.ClosingBalance)
-            .LastOrDefault();
+        BankStatementClosingBalanceAuthority.SelectClosingBalance(lines);
 
     /// <summary>
     /// Compares run-derived cash to independently synced cash in the same currency.
@@ -179,7 +174,7 @@ internal static class AccountReconciliationChecks
             return new AccountReconciliationResultDto(
                 Guid.NewGuid(),
                 runId,
-                CheckLabel: $"PositionCount ({positionsForDate.Count} lines)",
+                CheckLabel: "PositionCount",
                 IsMatch: variance == 0,
                 Category: "Positions",
                 Status: variance == 0 ? StatusMatched : StatusBreak,
@@ -194,7 +189,7 @@ internal static class AccountReconciliationChecks
         return new AccountReconciliationResultDto(
             Guid.NewGuid(),
             runId,
-            CheckLabel: $"PositionCount ({positionsForDate.Count} lines)",
+            CheckLabel: "PositionCount",
             IsMatch: false,
             Category: "Positions",
             Status: StatusUnverified,

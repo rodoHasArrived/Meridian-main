@@ -148,14 +148,19 @@ internal sealed class SimulatedPortfolio
 
             var longBuyQty = existingQty >= 0 ? qty : Math.Max(qty + existingQty, 0L);
             if (longBuyQty > 0)
-                lots.AddLast(new OpenLot(Guid.NewGuid(), symbol, longBuyQty, price, fill.FilledAt, fill.FillId, account.Account.AccountId));
+                lots.AddLast(new OpenLot(Guid.NewGuid(), symbol, longBuyQty, price, fill.FilledAt, fill.FillId, account.Account.AccountId)
+                {
+                    EntryCommission = existingQty >= 0 ? commission
+                        : commission - commission * Math.Min(qty, -existingQty) / qty
+                });
 
             account.AvgCost[symbol] = ComputeAvgCost(account, symbol);
         }
         else if (qty < 0 && existingQty > 0)
         {
             var closeQty = Math.Min(-qty, existingQty);
-            realised = RealiseLots(account, symbol, closeQty, price, fill.FilledAt, fill.FillId, fill.TargetLotId);
+            realised = RealiseLots(account, symbol, closeQty, price, fill.FilledAt, fill.FillId, fill.TargetLotId,
+                commission * closeQty / -qty);
             account.RealizedPnl[symbol] = account.RealizedPnl.GetValueOrDefault(symbol) + realised.Value;
             costBasisRemoved = closeQty * price - realised.Value;
         }
@@ -184,14 +189,17 @@ internal sealed class SimulatedPortfolio
                 fill.FillId,
                 account.Account.AccountId)
             {
-                IsShort = true
+                IsShort = true,
+                EntryCommission = existingQty <= 0 ? commission
+                    : commission - commission * Math.Min(-qty, existingQty) / -qty
             });
         }
 
         if (qty > 0 && existingQty < 0)
         {
             var coverQty = Math.Min(qty, -existingQty);
-            (shortRealised, shortOriginalProceeds) = RealiseShortLots(account, symbol, coverQty, price, fill.FilledAt, fill.FillId, fill.TargetLotId);
+            (shortRealised, shortOriginalProceeds) = RealiseShortLots(account, symbol, coverQty, price, fill.FilledAt, fill.FillId, fill.TargetLotId,
+                commission * coverQty / qty);
             account.RealizedPnl[symbol] = account.RealizedPnl.GetValueOrDefault(symbol) + shortRealised.Value;
         }
 
@@ -310,7 +318,8 @@ internal sealed class SimulatedPortfolio
                 AccountId = account.Account.AccountId,
                 FractionalUnits = transformation.FractionalUnits,
                 BasisDisposed = transformation.BasisDisposed,
-                RealizedPnl = transformation.RealizedPnl
+                RealizedPnl = transformation.RealizedPnl,
+                EntryCommissionDisposed = transformation.EntryCommissionDisposed
             });
         }
 
@@ -511,6 +520,12 @@ internal sealed class SimulatedPortfolio
             ? ComputeLotBasis(transformedShortLots)
             : ComputeLotBasis(transformedLongLots);
         var fractionalBasis = Math.Max(0m, sourceBasis - retainedBasis);
+        var sourceEntryCommission = (existingQty < 0
+            ? account.ShortLots.GetValueOrDefault(assetEvent.Symbol)
+            : account.Lots.GetValueOrDefault(assetEvent.Symbol))?.Sum(static lot => lot.EntryCommission) ?? 0m;
+        var retainedEntryCommission = (existingQty < 0 ? transformedShortLots : transformedLongLots)
+            .Sum(static lot => lot.EntryCommission);
+        var disposedEntryCommission = sourceEntryCommission - retainedEntryCommission;
         var fractionalRealized = fractionalUnits == 0m
             ? 0m
             : existingQty < 0
@@ -552,7 +567,8 @@ internal sealed class SimulatedPortfolio
             cashInLieu,
             fractionalUnits,
             fractionalBasis,
-            fractionalRealized);
+            fractionalRealized,
+            disposedEntryCommission);
     }
 
     private decimal ResolveReferencePrice(AccountState account, AssetEvent assetEvent, long existingQty, decimal factor)
@@ -733,7 +749,7 @@ internal sealed class SimulatedPortfolio
                         lot.OpenFillId,
                         lot.OpenedAt,
                         lot.Quantity,
-                        lot.CostBasis())
+                        lot.CostBasis()) { EntryCommission = lot.EntryCommission }
                 ];
 
             if (sourceComponents.Sum(static component => component.SuccessorQuantity) != lot.Quantity)
@@ -746,12 +762,14 @@ internal sealed class SimulatedPortfolio
             {
                 var unallocatedEntitlement = sourceComponent.SuccessorQuantity * absoluteFactor;
                 var unallocatedBasis = sourceComponent.AllocatedBasis;
+                var unallocatedCommission = sourceComponent.EntryCommission;
 
                 if (pendingQuantity > 0m && remainingWholeUnits > 0)
                 {
                     var consumed = Math.Min(1m - pendingQuantity, unallocatedEntitlement);
                     if (consumed > 0m)
                     {
+                        var consumedCommission = AllocateCommission(ref unallocatedCommission, consumed, unallocatedEntitlement);
                         var consumedBasis = TakeAllocatedBasis(
                             ref unallocatedEntitlement,
                             ref unallocatedBasis,
@@ -762,7 +780,8 @@ internal sealed class SimulatedPortfolio
                             pendingComponents,
                             sourceComponent,
                             consumed,
-                            consumedBasis);
+                            consumedBasis,
+                            consumedCommission);
                         AddParentLot(pendingParentLotIds, lot.LotId);
                     }
 
@@ -795,6 +814,7 @@ internal sealed class SimulatedPortfolio
                         ConvertToWholeUnits(unallocatedEntitlement));
                     if (wholeFromComponent > 0)
                     {
+                        var directCommission = AllocateCommission(ref unallocatedCommission, wholeFromComponent, unallocatedEntitlement);
                         var directBasis = TakeAllocatedBasis(
                             ref unallocatedEntitlement,
                             ref unallocatedBasis,
@@ -802,7 +822,8 @@ internal sealed class SimulatedPortfolio
                         var directComponent = sourceComponent with
                         {
                             SuccessorQuantity = wholeFromComponent,
-                            AllocatedBasis = directBasis
+                            AllocatedBasis = directBasis,
+                            EntryCommission = directCommission
                         };
                         result.AddLast(CreateTransformedLot(
                             lot,
@@ -828,7 +849,8 @@ internal sealed class SimulatedPortfolio
                         pendingComponents,
                         sourceComponent,
                         unallocatedEntitlement,
-                        unallocatedBasis);
+                        unallocatedBasis,
+                        unallocatedCommission);
                     AddParentLot(pendingParentLotIds, lot.LotId);
                 }
             }
@@ -860,7 +882,8 @@ internal sealed class SimulatedPortfolio
         List<OpenLotBasisComponent> components,
         OpenLotBasisComponent source,
         decimal successorQuantity,
-        decimal allocatedBasis)
+        decimal allocatedBasis,
+        decimal entryCommission)
     {
         if (components.Count > 0 &&
             components[^1].SourceLotId == source.SourceLotId &&
@@ -871,7 +894,8 @@ internal sealed class SimulatedPortfolio
             components[^1] = previous with
             {
                 SuccessorQuantity = previous.SuccessorQuantity + successorQuantity,
-                AllocatedBasis = previous.AllocatedBasis + allocatedBasis
+                AllocatedBasis = previous.AllocatedBasis + allocatedBasis,
+                EntryCommission = previous.EntryCommission + entryCommission
             };
             return;
         }
@@ -879,7 +903,8 @@ internal sealed class SimulatedPortfolio
         components.Add(source with
         {
             SuccessorQuantity = successorQuantity,
-            AllocatedBasis = allocatedBasis
+            AllocatedBasis = allocatedBasis,
+            EntryCommission = entryCommission
         });
     }
 
@@ -930,7 +955,8 @@ internal sealed class SimulatedPortfolio
             OpenedAt = openedAt,
             OpenFillId = openFillId,
             Notes = BuildTransformedLotNotes(template.Notes, components),
-            BasisComponents = components
+            BasisComponents = components,
+            EntryCommission = components.Sum(static component => component.EntryCommission)
         };
     }
 
@@ -1456,12 +1482,7 @@ internal sealed class SimulatedPortfolio
 
     /// <summary>
     /// Realizes P&amp;L for a long position close using the account's configured lot selection method.
-    /// <para>
-    /// NOTE: This must stay consistent with <c>BacktestMetricsEngine.ComputeRealisedPnl</c>,
-    /// which re-derives realized P&amp;L from the fill stream (honoring the same lot-selection
-    /// method) for attribution. If you change this method, update the metrics counterpart in
-    /// parallel.
-    /// </para>
+    /// Metrics consume the resulting retained closures rather than rebuilding a second lot book.
     /// </summary>
     private static decimal RealiseLots(
         AccountState account,
@@ -1470,7 +1491,8 @@ internal sealed class SimulatedPortfolio
         decimal sellPrice,
         DateTimeOffset closedAt,
         Guid closeFillId,
-        Guid? targetLotId)
+        Guid? targetLotId,
+        decimal exitCommission)
     {
         if (!account.Lots.TryGetValue(symbol, out var lots))
             return 0m;
@@ -1482,6 +1504,7 @@ internal sealed class SimulatedPortfolio
             static node => node.Value.Quantity, static node => node.Value.CostBasis());
 
         var realised = 0m;
+        var remainingCloseQty = closeQty;
 
         foreach (var slice in relief)
         {
@@ -1491,11 +1514,21 @@ internal sealed class SimulatedPortfolio
             var lotBasis = lot.CostBasis();
             var basisRemoved = slice.CostBasis;
             var closedEntryPrice = basisRemoved / quantity;
+            var entryCommission = slice.ClosesLot
+                ? lot.EntryCommission
+                : lot.EntryCommission * quantity / lot.Quantity;
+            var closeCommission = AllocateCommission(ref exitCommission, quantity, remainingCloseQty);
+            remainingCloseQty -= quantity;
 
             realised += (quantity * sellPrice) - basisRemoved;
             account.ClosedLots.Add(new ClosedLot(
                 lot.LotId, symbol, quantity, closedEntryPrice, lot.OpenedAt,
-                lot.OpenFillId, sellPrice, closedAt, closeFillId, account.Account.AccountId));
+                lot.OpenFillId, sellPrice, closedAt, closeFillId, account.Account.AccountId)
+            {
+                CostBasis = basisRemoved,
+                EntryCommission = entryCommission,
+                ExitCommission = closeCommission
+            });
 
             if (slice.ClosesLot)
             {
@@ -1504,7 +1537,8 @@ internal sealed class SimulatedPortfolio
             else
             {
                 // Replace lot with reduced quantity, preserve original LotId.
-                lots.AddBefore(node, ReduceOpenLot(lot, lot.Quantity - quantity, lotBasis - basisRemoved));
+                lots.AddBefore(node, ReduceOpenLot(lot, lot.Quantity - quantity, lotBasis - basisRemoved,
+                    lot.EntryCommission - entryCommission));
                 lots.Remove(node);
             }
         }
@@ -1520,7 +1554,8 @@ internal sealed class SimulatedPortfolio
         decimal coverPrice,
         DateTimeOffset closedAt,
         Guid closeFillId,
-        Guid? targetLotId)
+        Guid? targetLotId,
+        decimal exitCommission)
     {
         if (!account.ShortLots.TryGetValue(symbol, out var lots))
             return (0m, coverQty * coverPrice);
@@ -1532,6 +1567,7 @@ internal sealed class SimulatedPortfolio
 
         var realised = 0m;
         var shortSaleProceeds = 0m;
+        var remainingCloseQty = coverQty;
 
         foreach (var slice in relief)
         {
@@ -1541,12 +1577,22 @@ internal sealed class SimulatedPortfolio
             var lotBasis = lot.CostBasis();
             var lotProceeds = slice.CostBasis;
             var closedEntryPrice = lotProceeds / lotClose;
+            var entryCommission = slice.ClosesLot
+                ? lot.EntryCommission
+                : lot.EntryCommission * lotClose / lot.Quantity;
+            var closeCommission = AllocateCommission(ref exitCommission, lotClose, remainingCloseQty);
+            remainingCloseQty -= lotClose;
             realised += lotProceeds - lotClose * coverPrice;
             shortSaleProceeds += lotProceeds;
 
             account.ClosedLots.Add(new ClosedLot(
                 lot.LotId, symbol, lotClose, closedEntryPrice, lot.OpenedAt,
-                lot.OpenFillId, coverPrice, closedAt, closeFillId, account.Account.AccountId, IsShort: true));
+                lot.OpenFillId, coverPrice, closedAt, closeFillId, account.Account.AccountId, IsShort: true)
+            {
+                CostBasis = lotProceeds,
+                EntryCommission = entryCommission,
+                ExitCommission = closeCommission
+            });
 
             if (slice.ClosesLot)
             {
@@ -1554,7 +1600,8 @@ internal sealed class SimulatedPortfolio
             }
             else
             {
-                lots.AddBefore(node, ReduceOpenLot(lot, lot.Quantity - lotClose, lotBasis - lotProceeds));
+                lots.AddBefore(node, ReduceOpenLot(lot, lot.Quantity - lotClose, lotBasis - lotProceeds,
+                    lot.EntryCommission - entryCommission));
                 lots.Remove(node);
             }
         }
@@ -1562,7 +1609,17 @@ internal sealed class SimulatedPortfolio
         return (realised, shortSaleProceeds);
     }
 
-    private static OpenLot ReduceOpenLot(OpenLot lot, long remainingQuantity, decimal remainingBasis)
+    private static decimal AllocateCommission(ref decimal remainingCommission, decimal quantity, decimal remainingQuantity)
+    {
+        var allocated = quantity == remainingQuantity
+            ? remainingCommission
+            : remainingCommission * quantity / remainingQuantity;
+        remainingCommission -= allocated;
+        return allocated;
+    }
+
+    private static OpenLot ReduceOpenLot(OpenLot lot, long remainingQuantity, decimal remainingBasis,
+        decimal remainingCommission)
     {
         OpenLotBasisComponent[] basisComponents = [];
         if (lot.BasisComponents is { Count: > 0 })
@@ -1574,7 +1631,8 @@ internal sealed class SimulatedPortfolio
                 .Select(component => component with
                 {
                     SuccessorQuantity = component.SuccessorQuantity * quantityRatio,
-                    AllocatedBasis = component.AllocatedBasis * basisRatio
+                    AllocatedBasis = component.AllocatedBasis * basisRatio,
+                    EntryCommission = component.EntryCommission * quantityRatio
                 })
                 .ToArray();
             var last = basisComponents[^1];
@@ -1583,7 +1641,9 @@ internal sealed class SimulatedPortfolio
                 SuccessorQuantity = last.SuccessorQuantity +
                     (remainingQuantity - basisComponents.Sum(static component => component.SuccessorQuantity)),
                 AllocatedBasis = last.AllocatedBasis +
-                    (remainingBasis - basisComponents.Sum(static component => component.AllocatedBasis))
+                    (remainingBasis - basisComponents.Sum(static component => component.AllocatedBasis)),
+                EntryCommission = last.EntryCommission +
+                    (remainingCommission - basisComponents.Sum(static component => component.EntryCommission))
             };
         }
 
@@ -1591,7 +1651,8 @@ internal sealed class SimulatedPortfolio
         {
             Quantity = remainingQuantity,
             EntryPrice = remainingBasis / remainingQuantity,
-            BasisComponents = basisComponents
+            BasisComponents = basisComponents,
+            EntryCommission = remainingCommission
         };
     }
 
@@ -1640,7 +1701,8 @@ internal sealed class SimulatedPortfolio
         decimal CashInLieu,
         decimal FractionalUnits,
         decimal BasisDisposed,
-        decimal RealizedPnl);
+        decimal RealizedPnl,
+        decimal EntryCommissionDisposed);
 
     private sealed class AccountState(FinancialAccount account)
     {

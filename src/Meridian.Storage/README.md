@@ -11,6 +11,29 @@ last_reviewed: 2026-10-14
 
 # src/Meridian.Storage
 
+Fund Accounts migrations `005` and `006` retain reconciliation replacement/resolution links and
+canonical sync-attempt correlation identity. Reconciliation append and supersession share one
+account/date advisory-locked transaction; original outcomes remain available. Scoped sync upserts
+use a partial unique index and return the retained row while refusing outcome regression. Existing
+duplicate attempts stay retained under explicit supersession links. Deploy after draining old
+fund-account writers so every writer uses the new upsert and lifecycle contract.
+
+
+Fund-account migration 007 retains bank-statement header revision and nullable source line sequence.
+Bank statement reads hydrate header authority with every line. Replays cannot change retained
+statement authority or line economics; corrected batches preserve original evidence. Historical
+line order remains unknown where no source sequence was retained.
+
+Archive repair completes all required backups before changing any source; a backup failure
+aborts the mutation phase. Backups retain source sidecars and distinguish source paths and repair
+attempts. Rejected JSONL lines also receive distinct recovery files, exposed by
+`RepairResult.RecoveryCopies` and retained in scheduled repair logs. Files with multiple issues
+are processed once. Unsupported strategies, unchanged blockers, and failed health readback remain
+unresolved instead of counting as repaired; `FilesChanged` separately reports transformations,
+and changing compression alone cannot resolve damaged source evidence. Scheduled repair requires
+an enabled truncation strategy and never substitutes index rebuilding. Focused regressions are `FileMaintenanceServiceTests` and
+`ScheduledArchiveMaintenanceServiceTests`.
+
 `PostgresSecurityMasterPricingStore.ClosePrices` extends retained pricing receipts with immutable
 account/book/date price snapshots and separate independent-review records (Security Master
 migration 037). Source receipts must match exactly; scoped advisory locks fence approvals and

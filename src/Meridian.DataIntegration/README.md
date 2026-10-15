@@ -46,6 +46,11 @@ Conditional token saves compare the complete expected connection while holding t
 vault writer lock and return a new opaque credential generation. Import and lifecycle
 verification results must still match that generation when persisted. A concurrent
 operator replacement is preserved and the stale operation cannot verify it.
+Retained Xero, NetSuite and QuickBooks connections bind verification to a store scoped by
+tenant, connection, external account and environment. Token rotation conditionally replaces
+only that connection and retains its replacement in recovery storage. QuickBooks verification
+reads the selected company identity after token exchange; the lifecycle records the result
+once with the requesting operator and current credential generation.
 
 ## OAuth token ownership
 

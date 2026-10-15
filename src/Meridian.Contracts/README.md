@@ -112,6 +112,11 @@ It is distinct from the requested journal period. Reconciliation rows optionally
 retain gross `PeriodDebit`/`PeriodCredit` for export review, independently of report
 balances. These additive fields are omitted when absent to preserve legacy payloads.
 
+Bank-statement lines retain optional source `LineSequence`, header `StatementRevision`, and
+`StatementAsOfDate`; absent historical metadata stays omitted from JSON. Ingestion requests
+declare a positive statement revision (default 1), and corrected statements use a new batch identity
+and higher revision. These fields preserve financial authority independently of arrival time and UUIDs.
+
 Reconciliation queue items optionally retain `Lineage`: a stable source identity, occurrence identity,
 first/last observation and successful-run clearing evidence. This metadata is omitted when absent
 so legacy integrity-checked snapshots keep their serialized shape. Source clearing is distinct from

@@ -206,9 +206,10 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
             request.BankName,
             request.Lines.Count,
             DateTimeOffset.UtcNow,
-            request.LoadedBy);
+            request.LoadedBy,
+            request.StatementRevision);
 
-        await _store.InsertBankStatementBatchAsync(batch, request.Lines, ct).ConfigureAwait(false);
+        await _store.InsertBankStatementBatchAsync(batch, FundAccountStatementValidation.RetainAuthority(request), ct).ConfigureAwait(false);
         return batch;
     }
 
@@ -227,6 +228,7 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
     {
         ArgumentNullException.ThrowIfNull(request);
         ct.ThrowIfCancellationRequested();
+        var now = DateTimeOffset.UtcNow;
 
         await RequireAccountAsync(request.AccountId, ct).ConfigureAwait(false);
         var snapshots = await _store.GetBalanceHistoryAsync(request.AccountId, request.AsOfDate, request.AsOfDate, ct).ConfigureAwait(false)
@@ -235,14 +237,14 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
             ?? Array.Empty<CustodianPositionLineDto>();
         var custodianBatches = await _store.GetCustodianStatementBatchesAsync(request.AccountId, request.AsOfDate, ct).ConfigureAwait(false)
             ?? Array.Empty<CustodianStatementBatchDto>();
-        var bankLines = await _store.GetBankStatementLinesAsync(request.AccountId, request.AsOfDate, request.AsOfDate, ct).ConfigureAwait(false)
-            ?? Array.Empty<BankStatementLineDto>();
+        var bankLines = BankStatementClosingBalanceAuthority.ForStatementDate(
+            await _store.GetBankStatementLinesAsync(request.AccountId, null, null, ct).ConfigureAwait(false)
+                ?? Array.Empty<BankStatementLineDto>(), request.AsOfDate).ToArray();
 
         var snapshot = snapshots.OrderByDescending(s => s.RecordedAt).FirstOrDefault();
 
         var runId = Guid.NewGuid();
         var results = new List<AccountReconciliationResultDto>();
-        var now = DateTimeOffset.UtcNow;
 
         var cashCheck = AccountReconciliationChecks.BuildCashBalanceCheck(runId, snapshot, bankLines);
         if (cashCheck is not null)
@@ -284,7 +286,7 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         {
             var results = await _store.GetReconciliationResultsAsync(run.ReconciliationRunId, ct).ConfigureAwait(false);
             breaks.AddRange(results
-                .Where(r => AccountReconciliationChecks.IsBreak(r)
+                .Where(r => r.IsOpenBreak
                     && (string.Equals(r.Category, "Position", StringComparison.OrdinalIgnoreCase)
                         || string.Equals(r.Category, "Positions", StringComparison.OrdinalIgnoreCase)))
                 .Select(r => new PositionReconciliationBreakDto(
@@ -310,7 +312,7 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         {
             var results = await _store.GetReconciliationResultsAsync(run.ReconciliationRunId, ct).ConfigureAwait(false);
             breaks.AddRange(results
-                .Where(r => AccountReconciliationChecks.IsBreak(r) && string.Equals(r.Category, "Cash", StringComparison.OrdinalIgnoreCase))
+                .Where(r => r.IsOpenBreak && string.Equals(r.Category, "Cash", StringComparison.OrdinalIgnoreCase))
                 .Select(r => new CashReconciliationBreakDto(
                     r.ResultId,
                     accountId,
@@ -359,19 +361,8 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        // Resolve SyncHistoryId: re-use existing if same (accountId, capability, correlationId)
-        Guid syncHistoryId = Guid.NewGuid();
-        if (!string.IsNullOrWhiteSpace(correlationId))
-        {
-            var existing = await _store.GetSyncHistoryAsync(request.AccountId, capability, ct).ConfigureAwait(false);
-            var match = existing.FirstOrDefault(e =>
-                string.Equals(e.CorrelationId, correlationId, StringComparison.OrdinalIgnoreCase));
-            if (match is not null)
-                syncHistoryId = match.SyncHistoryId;
-        }
-
         var entry = new AccountSyncHistoryEntryDto(
-            syncHistoryId,
+            Guid.NewGuid(),
             request.AccountId,
             capability,
             request.Status,
@@ -390,8 +381,7 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
             Math.Max(0, request.SecurityMissingCount),
             warnings);
 
-        await _store.InsertSyncHistoryAsync(entry, ct).ConfigureAwait(false);
-        return entry;
+        return await _store.UpsertSyncHistoryAsync(entry, ct).ConfigureAwait(false);
     }
 
     public Task<IReadOnlyList<AccountSyncHistoryEntryDto>> GetSyncHistoryAsync(
@@ -419,12 +409,12 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         var marginSnapshots = await _store.GetMarginSnapshotsAsync(accountId, ct).ConfigureAwait(false);
         var reconciliationRuns = await _store.GetReconciliationRunsAsync(accountId, ct).ConfigureAwait(false);
 
-        // Aggregate open break count across all runs
+        // Read the same durable active-result state used by every break queue.
         int openBreakCount = 0;
         foreach (var run in reconciliationRuns)
         {
             var runResults = await _store.GetReconciliationResultsAsync(run.ReconciliationRunId, ct).ConfigureAwait(false);
-            openBreakCount += runResults.Count(AccountReconciliationChecks.IsBreak);
+            openBreakCount += runResults.Count(static r => r.IsOpenBreak);
         }
 
         var now = DateTimeOffset.UtcNow;
@@ -585,7 +575,7 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
             {
                 var results = await _store.GetReconciliationResultsAsync(run.ReconciliationRunId, ct).ConfigureAwait(false);
                 views.AddRange(results
-                    .Where(static r => AccountReconciliationChecks.IsBreak(r))
+                    .Where(static r => r.IsOpenBreak)
                     .Select(r => new AccountOpenBreakView(
                         account.AccountId, r.ReconciliationRunId, r.ResultId,
                         r.CheckLabel, r.Category, r.Variance, r.Reason)));

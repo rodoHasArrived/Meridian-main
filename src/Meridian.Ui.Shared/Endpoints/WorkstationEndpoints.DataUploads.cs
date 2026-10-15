@@ -262,7 +262,8 @@ public static partial class WorkstationEndpoints
                         BuildBankStatementImportNotes(notes, relativePath),
                         parsed.Lines,
                         currentUser,
-                        isBackfill),
+                        isBackfill,
+                        parsed.StatementRevision),
                     context.RequestAborted)
                 .ConfigureAwait(false);
 

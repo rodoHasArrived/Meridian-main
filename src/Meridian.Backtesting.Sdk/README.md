@@ -6,7 +6,7 @@ module_id: SRC-BACKTESTING-SDK
 path: src/Meridian.Backtesting.Sdk
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-10-13
+last_reviewed: 2026-10-15
 ---
 
 # src/Meridian.Backtesting.Sdk
@@ -66,6 +66,12 @@ Use this module when a backtesting contract must be shared across runtime and st
   deconstruction shape.
 - `AssetEventCashFlow.FractionalUnits`, `BasisDisposed`, and `RealizedPnl` retain cash-in-lieu
   disposal evidence even when an all-fraction transformation leaves no successor position.
+- `ClosedLot.CostBasis` retains exact booked relief separately from the rounded entry quote;
+  legacy records without it retain the entry-quote calculation. `EntryCommission` and
+  `ExitCommission` retain disposal fees separately from gross realized P&L. `OpenLot` and its
+  basis components carry unrelieved `EntryCommission`, while
+  `AssetEventCashFlow.EntryCommissionDisposed` retains fees relieved by fractional disposals.
+  These init-only additions preserve constructor and deconstruction compatibility.
 
 ## Diagrams
 

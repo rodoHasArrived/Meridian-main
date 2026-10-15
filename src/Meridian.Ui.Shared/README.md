@@ -11,6 +11,18 @@ last_reviewed: 2026-10-06
 
 # src/Meridian.Ui.Shared
 
+Bank-statement CSV imports accept optional positive `line_sequence` and `statement_revision`
+columns. Missing sequences retain source file order; missing revisions use 1. Each file must have
+unique sequences and one revision, shared by manual uploads and scheduled feeds. Corrected files
+declare a higher revision. Provider shadow cash comparisons use the same statement authority as
+account reconciliation instead of choosing a balance from arrival order.
+
+`ProviderConnectionLifecycleService` verifies retained Xero, NetSuite and QuickBooks
+connections through credential-bound adapters. Each adapter reads and rotates only the
+selected connection's secrets; provider-wide credentials never supply scoped verification.
+Verification must match both the retained external account and current credential generation,
+and the lifecycle retains the authenticated operator identity once for the result.
+
 `LedgerEndpoints.AccountOversight` provides shared account-owned ledger-book routes for durable
 cash cases, retained replay/assignment, independently approved close-price sets and cash forecasts.
 Authenticated tenant/company and retained book ownership establish exact scope; client actor and

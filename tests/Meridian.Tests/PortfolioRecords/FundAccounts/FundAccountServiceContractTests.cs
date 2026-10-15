@@ -488,6 +488,93 @@ public abstract class FundAccountServiceContractTests
 
     // ── Reconciliation ────────────────────────────────────────────────────────
 
+    protected async Task ReconcileAccountAsync_SameDayBalances_UsesSourceSequence_Core()
+    {
+        var service = CreateService();
+        var account = await service.CreateAccountAsync(MakeBankRequest());
+        var asOf = Today();
+        await service.RecordBalanceSnapshotAsync(MakeSnapshotRequest(account.AccountId, asOf, 100m));
+        var batchId = Guid.NewGuid();
+        var first = MakeBankLine(batchId, account.AccountId, asOf, 10m) with
+        {
+            LineId = Guid.Parse("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+            ClosingBalance = 90m,
+            LineSequence = 10
+        };
+        var final = first with
+        {
+            LineId = Guid.NewGuid(),
+            ClosingBalance = 100m,
+            LineSequence = 20
+        };
+        // Deliberately reverse request arrival and UUID order relative to source authority.
+        await service.IngestBankStatementAsync(new(batchId, account.AccountId, asOf, "Bank", null, [final, first], "ops"));
+        var run = await service.ReconcileAccountAsync(new(account.AccountId, asOf, "ops"));
+
+        var cash = (await service.GetReconciliationResultsAsync(run.ReconciliationRunId)).Single(r => r.CheckLabel == "CashBalance");
+        cash.IsMatch.Should().BeTrue();
+        cash.ActualAmount.Should().Be(100m);
+        var retained = await service.GetBankStatementLinesAsync(account.AccountId);
+        retained.Should().HaveCount(2, "identical transaction details at distinct source ordinals remain separate evidence");
+        retained.Should().OnlyContain(line => line.StatementRevision == 1 && line.StatementAsOfDate == asOf);
+        retained.Single(line => line.LineId == final.LineId).LineSequence.Should().Be(20);
+    }
+
+    protected async Task ReconcileAccountAsync_CorrectedStatement_UsesRevisionRegardlessOfArrival_Core()
+    {
+        foreach (var correctionFirst in new[] { false, true })
+        {
+            var service = CreateService();
+            var account = await service.CreateAccountAsync(MakeBankRequest());
+            var asOf = Today();
+            await service.RecordBalanceSnapshotAsync(MakeSnapshotRequest(account.AccountId, asOf, 100m));
+            var oldBatch = Guid.NewGuid();
+            var correctedBatch = Guid.NewGuid();
+            var oldLine = MakeBankLine(oldBatch, account.AccountId, asOf, 10m) with { ClosingBalance = 90m };
+            var correctedLine = oldLine with
+            {
+                LineId = Guid.NewGuid(),
+                BatchId = correctedBatch,
+                ClosingBalance = 100m,
+                TransactionDate = asOf.AddDays(-1),
+                ValueDate = asOf.AddDays(-1)
+            };
+            var original = new IngestBankStatementRequest(oldBatch, account.AccountId, asOf, "Bank", null, [oldLine], "ops", StatementRevision: 1);
+            var correction = new IngestBankStatementRequest(correctedBatch, account.AccountId, asOf, "Bank", null, [correctedLine], "ops", StatementRevision: 2);
+            await service.IngestBankStatementAsync(correctionFirst ? correction : original);
+            await service.IngestBankStatementAsync(correctionFirst ? original : correction);
+            // Replaying the original never replaces either historical or corrected evidence.
+            await service.IngestBankStatementAsync(original);
+            var run = await service.ReconcileAccountAsync(new(account.AccountId, asOf, "ops"));
+
+            var cash = (await service.GetReconciliationResultsAsync(run.ReconciliationRunId)).Single(r => r.CheckLabel == "CashBalance");
+            cash.IsMatch.Should().BeTrue();
+            cash.ActualAmount.Should().Be(100m);
+            var retained = await service.GetBankStatementLinesAsync(account.AccountId);
+            retained.Should().HaveCount(2);
+            retained.Should().Contain(line => line.BatchId == oldBatch && line.ClosingBalance == 90m && line.LineSequence == 1);
+            retained.Should().Contain(line => line.BatchId == correctedBatch && line.StatementRevision == 2);
+        }
+    }
+
+    protected async Task IngestBankStatementAsync_RetainedBatchCannotReplaceLineIdentity_Core()
+    {
+        var service = CreateService();
+        var account = await service.CreateAccountAsync(MakeBankRequest());
+        var asOf = Today();
+        var batchId = Guid.NewGuid();
+        var original = MakeBankLine(batchId, account.AccountId, asOf, 10m) with { ClosingBalance = 90m, LineSequence = 1 };
+        var request = new IngestBankStatementRequest(batchId, account.AccountId, asOf, "Bank", null, [original], "ops");
+        await service.IngestBankStatementAsync(request);
+        var replacement = original with { LineId = Guid.NewGuid(), LineSequence = 2, ClosingBalance = 100m };
+
+        var change = () => service.IngestBankStatementAsync(request with { Lines = [replacement] });
+        await change.Should().ThrowAsync<InvalidOperationException>();
+        var retained = await service.GetBankStatementLinesAsync(account.AccountId);
+        retained.Should().ContainSingle().Which.LineId.Should().Be(original.LineId);
+        BankStatementClosingBalanceAuthority.SelectClosingBalance(retained).Should().Be(90m);
+    }
+
     protected async Task ReconcileAccountAsync_SnapshotAndPositions_ProducesMatchedRun_Core()
     {
         var service = CreateService();
@@ -1189,6 +1276,78 @@ public abstract class FundAccountServiceContractTests
             readiness!.IsReady.Should().BeFalse();
             readiness.Issues.Should().Contain(issue => issue.Code == "account.provider_link.sync_unavailable");
         }
+    }
+
+    protected async Task Reconciliation_CorrectedEvidenceClearsOnlyMatchingActiveScopeAndRetainsHistory_Core()
+    {
+        var service = CreateService();
+        var account = await service.CreateAccountAsync(MakeBankRequest());
+        var date = Today();
+        foreach (var asOf in new[] { date, date.AddDays(-1) })
+        {
+            await service.RecordBalanceSnapshotAsync(MakeSnapshotRequest(account.AccountId, asOf, 50000m));
+            var batch = Guid.NewGuid();
+            await service.IngestBankStatementAsync(new(batch, account.AccountId, asOf, "Bank", null,
+                [MakeBankLine(batch, account.AccountId, asOf, 100m) with { ClosingBalance = 49000m }], "ops"));
+            await service.ReconcileAccountAsync(new(account.AccountId, asOf, "ops"));
+        }
+        var original = (await service.GetReconciliationRunsAsync(account.AccountId)).Single(r => r.AsOfDate == date);
+        await service.ReconcileAccountAsync(new(account.AccountId, date, "ops"));
+        (await service.GetOpenCashBreaksAsync(account.AccountId)).Should().HaveCount(2, "repeated breaks supersede the same check");
+
+        await service.RecordBalanceSnapshotAsync(MakeSnapshotRequest(account.AccountId, date, 50000m) with { Currency = "EUR" });
+        await service.ReconcileAccountAsync(new(account.AccountId, date, "ops"));
+        (await service.GetOpenCashBreaksAsync(account.AccountId)).Should().HaveCount(2, "missing independent evidence cannot clear a break");
+
+        await service.RecordBalanceSnapshotAsync(MakeSnapshotRequest(account.AccountId, date, 49000m));
+        var corrected = await service.ReconcileAccountAsync(new(account.AccountId, date, "ops"));
+        corrected.TotalBreaks.Should().Be(0);
+        (await service.GetOpenCashBreaksAsync(account.AccountId)).Should().ContainSingle().Which.AsOfDate.Should().Be(date.AddDays(-1));
+        (await service.GetReadinessAsync(account.AccountId))!.Issues
+            .Single(issue => issue.Code == "account.reconciliation.breaks_open").Message.Should().StartWith("1 ");
+        var history = await service.GetReconciliationResultsAsync(original.ReconciliationRunId);
+        history.Single(r => r.CheckLabel == "CashBalance").IsMatch.Should().BeFalse();
+        history.Single(r => r.CheckLabel == "CashBalance").SupersededByResultId.Should().NotBeNull();
+        var allRuns = await service.GetReconciliationRunsAsync(account.AccountId);
+        var allResults = new List<AccountReconciliationResultDto>();
+        foreach (var run in allRuns)
+            allResults.AddRange(await service.GetReconciliationResultsAsync(run.ReconciliationRunId));
+        allResults.Should().Contain(r => r.ResolvedAt != null && !r.IsMatch);
+        var queue = await ((Meridian.PortfolioRecords.Accounts.IAccountQueryService)service).ListOpenBreaksAsync(account.AccountId);
+        queue.Should().ContainSingle();
+        await service.RecordBalanceSnapshotAsync(MakeSnapshotRequest(account.AccountId, date.AddDays(-1), 49000m));
+        await service.ReconcileAccountAsync(new(account.AccountId, date.AddDays(-1), "ops"));
+        (await service.GetReadinessAsync(account.AccountId))!.Issues.Should()
+            .NotContain(issue => issue.Code == "account.reconciliation.breaks_open");
+        (await service.GetOpenBreaksAsync(account.AccountId)).Should().BeEmpty();
+    }
+
+    protected async Task SyncHistory_SimultaneousCorrelatedRetriesRetainSuccessWithoutRegression_Core()
+    {
+        var service = CreateService();
+        var account = await service.CreateAccountAsync(MakeBankRequest());
+        var now = DateTimeOffset.UtcNow;
+        var request = new RecordAccountSyncHistoryRequest(account.AccountId, "balances", AccountSyncStatusDto.Pending,
+            AccountProviderLinkStatusDto.Verified, CorrelationId: " Retry-1 ", AttemptedAt: now);
+        await Task.WhenAll(Enumerable.Range(0, 18).Select(i => service.RecordSyncHistoryAsync(request with
+        {
+            Capability = i % 2 == 0 ? "balances" : "BALANCES",
+            CorrelationId = i % 2 == 0 ? "Retry-1" : "retry-1",
+            Status = i % 3 == 0 ? AccountSyncStatusDto.Succeeded : AccountSyncStatusDto.Pending,
+            CompletedAt = i % 3 == 0 ? now : null
+        })));
+        var retained = (await service.GetSyncHistoryAsync(account.AccountId, "balances")).Should().ContainSingle().Subject;
+        retained.Status.Should().Be(AccountSyncStatusDto.Succeeded);
+        (await service.GetSyncHistoryAsync(account.AccountId, " BALANCES ")).Should().ContainSingle()
+            .Which.SyncHistoryId.Should().Be(retained.SyncHistoryId);
+        var late = await service.RecordSyncHistoryAsync(request with { Status = AccountSyncStatusDto.Failed, CompletedAt = now.AddHours(1) });
+        late.SyncHistoryId.Should().Be(retained.SyncHistoryId);
+        late.Status.Should().Be(AccountSyncStatusDto.Succeeded);
+        var pending = await service.RecordSyncHistoryAsync(request with { AttemptedAt = now.AddHours(2) });
+        pending.Status.Should().Be(AccountSyncStatusDto.Succeeded);
+        (await service.GetSyncHistoryAsync(account.AccountId)).Should().ContainSingle();
+        await service.RecordSyncHistoryAsync(request with { Capability = "positions" });
+        (await service.GetSyncHistoryAsync(account.AccountId)).Should().HaveCount(2, "capability is part of the atomic scope");
     }
 
     // ── Request factories ─────────────────────────────────────────────────────

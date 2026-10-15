@@ -208,7 +208,8 @@ public sealed class BankFeedTransportService
                             notes,
                             mapped.Lines,
                             schedule.RequestedBy,
-                            schedule.IsBackfill),
+                            schedule.IsBackfill,
+                            mapped.StatementRevision),
                         ct)
                     .ConfigureAwait(false);
 
@@ -323,6 +324,7 @@ internal static class BankStatementCsvImportMapper
         using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
         var issues = new List<DataUploadValidationIssueDto>();
         var lines = new List<BankStatementLineDto>();
+        int? statementRevision = null;
         var headerLine = reader.ReadLine();
         if (string.IsNullOrWhiteSpace(headerLine))
         {
@@ -418,6 +420,33 @@ internal static class BankStatementCsvImportMapper
             }
 
             var reference = ReadValue(headerIndex, values, "reference");
+            var sequenceValue = ReadValue(headerIndex, values, "line_sequence");
+            var sequence = lineNumber - 1;
+            if (!string.IsNullOrWhiteSpace(sequenceValue)
+                && (!int.TryParse(sequenceValue, NumberStyles.None, CultureInfo.InvariantCulture, out sequence) || sequence <= 0))
+            {
+                issues.Add(new DataUploadValidationIssueDto("Error", "line_sequence", "Line sequence must be a positive integer.", RowNumber: lineNumber));
+                continue;
+            }
+            var revisionValue = ReadValue(headerIndex, values, "statement_revision");
+            var revision = 1;
+            if (!string.IsNullOrWhiteSpace(revisionValue)
+                && (!int.TryParse(revisionValue, NumberStyles.None, CultureInfo.InvariantCulture, out revision) || revision <= 0))
+            {
+                issues.Add(new DataUploadValidationIssueDto("Error", "statement_revision", "Statement revision must be a positive integer.", RowNumber: lineNumber));
+                continue;
+            }
+            if (statementRevision.HasValue && statementRevision != revision)
+            {
+                issues.Add(new DataUploadValidationIssueDto("Error", "statement_revision", "Every row in a statement must declare the same revision.", RowNumber: lineNumber));
+                continue;
+            }
+            if (lines.Any(existing => existing.LineSequence == sequence))
+            {
+                issues.Add(new DataUploadValidationIssueDto("Error", "line_sequence", "Source line sequences must be unique within a statement.", RowNumber: lineNumber));
+                continue;
+            }
+            statementRevision = revision;
             var currency = currencyValue.Trim().ToUpperInvariant();
             lines.Add(new BankStatementLineDto(
                 LineId: BuildGuid(
@@ -431,7 +460,8 @@ internal static class BankStatementCsvImportMapper
                 TransactionType: transactionType.Trim(),
                 Description: description.Trim(),
                 Reference: string.IsNullOrWhiteSpace(reference) ? null : reference.Trim(),
-                ClosingBalance: closingBalance));
+                ClosingBalance: closingBalance,
+                LineSequence: sequence));
         }
 
         if (lines.Count == 0 && issues.Count == 0)
@@ -446,7 +476,8 @@ internal static class BankStatementCsvImportMapper
         return new BankStatementCsvImportMappingResult(
             lines,
             lines.Count == 0 ? null : lines.Max(static bankLine => bankLine.ValueDate),
-            issues);
+            issues,
+            statementRevision ?? 1);
     }
 
     private static IReadOnlyList<string> SplitCsvLine(string line)
@@ -534,4 +565,5 @@ internal static class BankStatementCsvImportMapper
 internal sealed record BankStatementCsvImportMappingResult(
     IReadOnlyList<BankStatementLineDto> Lines,
     DateOnly? StatementDate,
-    IReadOnlyList<DataUploadValidationIssueDto> Issues);
+    IReadOnlyList<DataUploadValidationIssueDto> Issues,
+    int StatementRevision = 1);

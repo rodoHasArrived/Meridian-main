@@ -81,4 +81,7 @@ public sealed record AssetEventCashFlow(
 
     /// <summary>Realized gain (positive) or loss (negative) on the cash-in-lieu disposal.</summary>
     public decimal RealizedPnl { get; init; }
+
+    /// <summary>Acquisition commission allocated to the cash-in-lieu disposal.</summary>
+    public decimal EntryCommissionDisposed { get; init; }
 }

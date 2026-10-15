@@ -10,7 +10,11 @@ public sealed record OpenLotBasisComponent(
     Guid SourceOpenFillId,
     DateTimeOffset OpenedAt,
     decimal SuccessorQuantity,
-    decimal AllocatedBasis);
+    decimal AllocatedBasis)
+{
+    /// <summary>Unrelieved acquisition commission carried by this component.</summary>
+    public decimal EntryCommission { get; init; }
+}
 
 /// <summary>
 /// Represents an open (unrealised) tax lot — a block of shares acquired in a single fill.
@@ -34,6 +38,9 @@ public sealed record OpenLot(
     /// positional constructor so existing constructor and deconstruction shapes remain valid.
     /// </summary>
     public bool IsShort { get; init; }
+
+    /// <summary>Unrelieved acquisition commission, carried separately from securities basis.</summary>
+    public decimal EntryCommission { get; init; }
 
     /// <summary>
     /// Exact source-lot contributions when a corporate action combines fractional entitlements

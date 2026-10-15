@@ -18,6 +18,12 @@ public sealed record SymbolAttribution(
 /// posts them through cash. <see cref="GrossPnl"/> is <see cref="NetPnl"/> with those frictions
 /// added back — the hypothetical friction-free result.
 /// </remarks>
+/// <param name="TotalTrades">Completed account/symbol closing orders plus cash-in-lieu disposals,
+/// including breakeven outcomes. Partial fills of one closing order count once.</param>
+/// <param name="WinRate">Winning completed outcomes divided by all completed outcomes, after
+/// allocating acquisition and closing commissions.</param>
+/// <param name="ProfitFactor">Positive completed-outcome P&amp;L divided by absolute negative
+/// completed-outcome P&amp;L, after allocating acquisition and closing commissions.</param>
 /// <param name="TotalReturn">Fraction of initial capital (0.15 = +15%), not percent units.</param>
 /// <param name="AnnualizedReturn">Fraction of initial capital (0.15 = +15%), not percent units.</param>
 /// <param name="MaxDrawdown">Absolute currency amount of the worst peak-to-trough decline.</param>
