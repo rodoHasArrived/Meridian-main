@@ -76,7 +76,7 @@ public sealed class StrategyLifecycleEndpointsTests
     }
 
     [Fact]
-    public async Task Resume_RestoredPausedRun_ReturnsRetainedReceiptAndKeepsConfiguration()
+    public async Task Resume_RestoredPausedRunWithNewerHistory_ReturnsRetainedReceiptAndKeepsConfiguration()
     {
         var repository = new StrategyRunStore();
         var strategy = new ResumeProbeStrategy("strategy-1");
@@ -95,6 +95,10 @@ public sealed class StrategyLifecycleEndpointsTests
         await engine.ResumePendingRunsAsync();
         engine.PausedRunIds.Should().Contain(paused.RunId);
         strategy.StartCalls.Should().Be(0, "restoration must wait for an explicit resume request");
+        var newer = StrategyRunEntry.Start(
+            strategy.StrategyId, strategy.Name, RunType.Backtest, "newer-research-run").Complete(null);
+        await repository.RecordRunAsync(newer);
+        (await repository.GetLatestRunAsync(strategy.StrategyId))!.RunId.Should().Be(newer.RunId);
         await using var app = await CreateAppAsync(UserPermission.ManageStrategies, services =>
         {
             services.AddSingleton<IStrategyRepository>(repository);
@@ -116,10 +120,92 @@ public sealed class StrategyLifecycleEndpointsTests
         resumed.ParameterSet.Should().BeEquivalentTo(paused.ParameterSet);
         resumed.ParentRunId.Should().Be(paused.ParentRunId);
         resumed.TerminalStatus.Should().BeNull();
+        (await repository.GetRunByIdAsync(newer.RunId))!.Should().BeEquivalentTo(newer);
 
         var duplicate = await app.GetTestClient().PostAsync($"/api/strategies/{strategy.StrategyId}/resume", content: null);
         duplicate.StatusCode.Should().Be(HttpStatusCode.Conflict);
         strategy.StartCalls.Should().Be(1, "a duplicate resume cannot repeat strategy warmup");
+    }
+
+    [Fact]
+    public async Task Resume_MultipleOwnedPausedRuns_RequiresExplicitRunSelection()
+    {
+        var repository = new StrategyRunStore();
+        var first = new ResumeProbeStrategy("strategy-1");
+        var second = new ResumeProbeStrategy("strategy-1");
+        var firstRun = PausedRun(first.StrategyId, "paused-first", "first");
+        var secondRun = PausedRun(second.StrategyId, "paused-second", "second");
+        await repository.RecordRunAsync(firstRun);
+        await repository.RecordRunAsync(secondRun);
+        var catalog = new LiveStrategyCatalog().Register(first.StrategyId,
+            context => context.Parameters["instance"] == "first" ? first : second);
+        await using var engine = CreateEngine(repository, catalog);
+        await engine.ResumePendingRunsAsync();
+        await using var app = await CreateAppAsync(UserPermission.ManageStrategies, services =>
+        {
+            services.AddSingleton<IStrategyRepository>(repository);
+            services.AddSingleton(engine);
+        });
+
+        var ambiguous = await app.GetTestClient().PostAsync("/api/strategies/strategy-1/resume", content: null);
+
+        ambiguous.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        var blocked = await ambiguous.Content.ReadFromJsonAsync<VerifiedOperationOutcome>();
+        blocked!.State.Should().Be(OperationTerminalState.Blocked);
+        blocked.Issues.Should().Contain(issue => issue.Message.Contains("?runId=", StringComparison.Ordinal));
+        first.StartCalls.Should().Be(0);
+        second.StartCalls.Should().Be(0);
+
+        var selected = await app.GetTestClient().PostAsync(
+            $"/api/strategies/strategy-1/resume?runId={firstRun.RunId}", content: null);
+
+        selected.StatusCode.Should().Be(HttpStatusCode.OK);
+        first.StartCalls.Should().Be(1);
+        second.StartCalls.Should().Be(0);
+        (await repository.GetRunByIdAsync(firstRun.RunId))!.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Resumed);
+        (await repository.GetRunByIdAsync(secondRun.RunId))!.TerminalStatus.Should().Be(StrategyRunStatus.Paused);
+        engine.PausedRunIds.Should().Equal(secondRun.RunId);
+    }
+
+    [Theory]
+    [InlineData("foreign-run", HttpStatusCode.NotFound)]
+    [InlineData("missing-run", HttpStatusCode.NotFound)]
+    [InlineData("unowned-run", HttpStatusCode.Conflict)]
+    [InlineData("completed-run", HttpStatusCode.Conflict)]
+    public async Task Resume_ExplicitSelectionRequiresStrategyAndPausedEngineOwnership(
+        string selectedRunId, HttpStatusCode expectedStatus)
+    {
+        var repository = new StrategyRunStore();
+        var strategy = new ResumeProbeStrategy("strategy-1");
+        var foreign = new ResumeProbeStrategy("foreign-strategy");
+        var paused = PausedRun(strategy.StrategyId, "owned-run");
+        var foreignRun = PausedRun(foreign.StrategyId, "foreign-run");
+        await repository.RecordRunAsync(paused);
+        await repository.RecordRunAsync(foreignRun);
+        await repository.RecordRunAsync(PausedRun(strategy.StrategyId, "unowned-run"));
+        await repository.RecordRunAsync(StrategyRunEntry.Start(
+            strategy.StrategyId, strategy.Name, RunType.Paper, "completed-run").Complete(null));
+        await using var engine = CreateEngine(repository, new LiveStrategyCatalog()
+            .Register(strategy.StrategyId, _ => strategy)
+            .Register(foreign.StrategyId, _ => foreign));
+        (await engine.TryLaunchAsync(paused)).Launched.Should().BeTrue();
+        (await engine.TryLaunchAsync(foreignRun)).Launched.Should().BeTrue();
+        await using var app = await CreateAppAsync(UserPermission.ManageStrategies, services =>
+        {
+            services.AddSingleton<IStrategyRepository>(repository);
+            services.AddSingleton(engine);
+        });
+
+        var response = await app.GetTestClient().PostAsync(
+            $"/api/strategies/{strategy.StrategyId}/resume?runId={selectedRunId}", content: null);
+
+        response.StatusCode.Should().Be(expectedStatus);
+        var outcome = await response.Content.ReadFromJsonAsync<VerifiedOperationOutcome>();
+        outcome!.State.Should().Be(OperationTerminalState.Blocked);
+        VerifiedOperationOutcomeValidator.Validate(outcome).Should().BeEmpty();
+        strategy.StartCalls.Should().Be(0);
+        foreign.StartCalls.Should().Be(0);
+        engine.PausedRunIds.Should().BeEquivalentTo([paused.RunId, foreignRun.RunId]);
     }
 
     [Fact]
@@ -217,15 +303,24 @@ public sealed class StrategyLifecycleEndpointsTests
     }
 
     private static LiveTradingEngine CreateEngine(IStrategyRepository repository, ResumeProbeStrategy strategy)
+        => CreateEngine(repository, new LiveStrategyCatalog().Register(strategy.StrategyId, _ => strategy));
+
+    private static LiveTradingEngine CreateEngine(IStrategyRepository repository, ILiveStrategyCatalog catalog)
     {
         var cache = new LiveMarketDataCache();
         return new LiveTradingEngine(
-            new LiveStrategyCatalog().Register(strategy.StrategyId, _ => strategy),
+            catalog,
             new LiveMarketEventHub(), cache, Mock.Of<IOrderGateway>(),
             Mock.Of<ExecutionSdk.IOrderManager>(), new PaperTradingPortfolio(100_000m), repository,
             lifecycleManager: new StrategyLifecycleManager(
                 repository, NullLogger<StrategyLifecycleManager>.Instance));
     }
+
+    private static StrategyRunEntry PausedRun(string strategyId, string runId, string instance = "default") =>
+        StrategyRunEntry.StartWithEvidence(
+            strategyId, "Resume probe", RunType.Paper, runId,
+            parameterSet: new Dictionary<string, string> { ["symbols"] = "SPY", ["instance"] = instance })
+            .Paused("operator") with { TerminalStatus = StrategyRunStatus.Paused };
 
     private sealed class ResumeProbeStrategy(string strategyId, bool failStart = false) : LiveStrategyBase
     {

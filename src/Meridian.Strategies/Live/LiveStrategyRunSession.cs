@@ -47,6 +47,7 @@ internal sealed class LiveStrategyRunSession
 
     private DateOnly? _currentDate;
     private volatile bool _completeRunOnExit = true;
+    private bool _explicitCompletionRequested;
     private Exception? _requestedFailure;
     private int _outboundOrderAdmissionClosed;
 
@@ -156,7 +157,7 @@ internal sealed class LiveStrategyRunSession
 
     /// <summary>
     /// Requests the session to stop. When <paramref name="completeRun"/> is false (host
-    /// shutdown), the run entry is left open so a restarted host can resume it.
+    /// shutdown), the run stays open for recovery unless an explicit completion was requested.
     /// </summary>
     public void RequestStop(bool completeRun)
     {
@@ -164,7 +165,10 @@ internal sealed class LiveStrategyRunSession
         {
             if (_requestedFailure is null)
             {
-                _completeRunOnExit = completeRun;
+                // An admitted operator stop survives a concurrent host shutdown. The default
+                // remains completion for a naturally exhausted feed; a host-only stop suspends.
+                _explicitCompletionRequested |= completeRun;
+                _completeRunOnExit = _explicitCompletionRequested;
             }
         }
 

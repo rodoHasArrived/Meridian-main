@@ -623,6 +623,56 @@ public sealed class LiveTradingEngineTests
         }
     }
 
+    [Fact]
+    public async Task DurableOperatorStop_ConcurrentHostShutdown_RetainsCompletedOutcome()
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-stop-shutdown", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var strategy = new BlockingStopLiveStrategy("operator-stop-strategy");
+            var run = StrategyRunEntry.StartWithEvidence(
+                strategy.StrategyId, strategy.Name, RunType.Paper, "operator-stop-run",
+                parameterSet: new Dictionary<string, string> { ["symbols"] = "MSFT" });
+            await store.RecordRunAsync(run);
+            var engine = CreateEngine(
+                store, new LiveMarketEventHub(), new LiveMarketDataCache(), new RecordingOrderManager(100m),
+                new LiveStrategyCatalog().Register(strategy.StrategyId, _ => strategy));
+            try
+            {
+                (await engine.TryLaunchAsync(run)).Launched.Should().BeTrue();
+                await WaitForLifecycleAsync(store, run.RunId, StrategyRunLifecycleEventType.Activated);
+                var stop = engine.StopRunAsync(run.RunId);
+                await strategy.StopEntered.Task.WaitAsync(WaitBudget);
+
+                // The explicit stop already drained this engine's delivery worker. With no
+                // external report pump or pending launch, Dispose synchronously requests host
+                // suspension before awaiting this blocked strategy cleanup.
+                var shutdown = engine.DisposeAsync().AsTask();
+                shutdown.IsCompleted.Should().BeFalse();
+                strategy.ReleaseStop.TrySetResult();
+
+                await Task.WhenAll(stop, shutdown).WaitAsync(WaitBudget);
+                stop.Result.Should().BeTrue();
+                var restarted = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+                var completed = (await restarted.GetRunByIdAsync(run.RunId))!;
+                completed.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+                completed.TerminalStatus.Should().Be(StrategyRunStatus.Completed);
+                completed.EndedAt.Should().NotBeNull("host shutdown cannot downgrade an explicit stop to a recoverable suspension");
+            }
+            finally
+            {
+                strategy.ReleaseStop.TrySetResult();
+                await engine.DisposeAsync();
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(dataRoot))
+                Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -944,6 +994,20 @@ public sealed class LiveTradingEngineTests
         while ((await store.GetRunByIdAsync(runId, timeout.Token))?.LastLifecycleEvent != expected)
         {
             await Task.Delay(25, timeout.Token);
+        }
+    }
+
+    private sealed class BlockingStopLiveStrategy(string strategyId) : LiveStrategyBase
+    {
+        public override string StrategyId => strategyId;
+        public override string Name => "Blocking stop";
+        public TaskCompletionSource StopEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource ReleaseStop { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        protected override async Task OnStoppedAsync(CancellationToken ct)
+        {
+            StopEntered.TrySetResult();
+            await ReleaseStop.Task.WaitAsync(ct);
         }
     }
 

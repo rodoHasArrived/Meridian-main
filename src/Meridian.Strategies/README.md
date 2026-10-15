@@ -87,7 +87,10 @@ The live engine records `Activated` after promotion, `Suspended` on host shutdow
 when an interrupted session restarts. It never appends a second `Started` to the same run.
 Startup restores paused runs to the control registry without warmup or market callbacks. Explicit
 resume (`POST /api/strategies/{strategyId}/resume`) uses the retained engine context and returns its
-verified lifecycle receipt; restored strategies warm up only when resumed. Durable metric snapshots
+verified lifecycle receipt; restored strategies warm up only when resumed. Resume selects the
+unique paused run owned by the engine, even when newer research history exists. When a strategy
+has multiple owned paused runs, select one explicitly with `?runId=<retained-run-id>`; ambiguous
+requests resume no run. Durable metric snapshots
 round-trip the unavailable XIRR `NaN` sentinel rather than substituting a return value.
 `StrategyRunEntry` retains the W6 Backtest Studio evidence loop: operator acceptance criteria,
 retained evidence links, accounting-record references, approval references, paper-validation

@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
+using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Live;
@@ -71,12 +72,52 @@ public static class StrategyLifecycleEndpoints
 
             try
             {
-                var run = await repository.GetLatestRunAsync(strategyId, context.RequestAborted).ConfigureAwait(false);
-                if (run is null)
-                    return ToEndpointFailureResult(
-                        strategyId, "resume", OperationTerminalState.Blocked,
-                        "Strategy has no retained run.", exception: null,
-                        externalStateMayHaveChanged: false, StatusCodes.Status404NotFound, jsonOptions);
+                StrategyRunEntry? run;
+                var requestedRunId = context.Request.Query["runId"].ToString();
+                var pausedRunIds = engine.PausedRunIds;
+                if (!string.IsNullOrWhiteSpace(requestedRunId))
+                {
+                    run = await repository.GetRunByIdAsync(requestedRunId, context.RequestAborted).ConfigureAwait(false);
+                    if (run is null || !string.Equals(run.StrategyId, strategyId, StringComparison.Ordinal))
+                        return ToEndpointFailureResult(
+                            strategyId, "resume", OperationTerminalState.Blocked,
+                            "The selected run is not retained for this strategy.", exception: null,
+                            externalStateMayHaveChanged: false, StatusCodes.Status404NotFound, jsonOptions);
+
+                    if (!pausedRunIds.Contains(run.RunId, StringComparer.Ordinal))
+                        return ToEndpointFailureResult(
+                            strategyId, "resume", OperationTerminalState.Blocked,
+                            "The selected run is not paused on this engine.", exception: null,
+                            externalStateMayHaveChanged: false, StatusCodes.Status409Conflict, jsonOptions);
+                }
+                else
+                {
+                    run = null;
+                    foreach (var pausedRunId in pausedRunIds)
+                    {
+                        var candidate = await repository.GetRunByIdAsync(pausedRunId, context.RequestAborted).ConfigureAwait(false);
+                        if (candidate is null || !string.Equals(candidate.StrategyId, strategyId, StringComparison.Ordinal) ||
+                            candidate.EndedAt.HasValue || candidate.TerminalStatus != StrategyRunStatus.Paused)
+                            continue;
+
+                        if (run is not null)
+                            return ToEndpointFailureResult(
+                                strategyId, "resume", OperationTerminalState.Blocked,
+                                "This strategy has multiple paused runs on this engine. Select one with ?runId=<retained-run-id>.",
+                                exception: null, externalStateMayHaveChanged: false, StatusCodes.Status409Conflict, jsonOptions);
+                        run = candidate;
+                    }
+
+                    if (run is null)
+                    {
+                        var retained = await repository.GetLatestRunAsync(strategyId, context.RequestAborted).ConfigureAwait(false);
+                        return ToEndpointFailureResult(
+                            strategyId, "resume", OperationTerminalState.Blocked,
+                            retained is null ? "Strategy has no retained run." : "Strategy has no paused run on this engine.",
+                            exception: null, externalStateMayHaveChanged: false,
+                            retained is null ? StatusCodes.Status404NotFound : StatusCodes.Status409Conflict, jsonOptions);
+                    }
+                }
 
                 var outcome = await engine.ResumeRunWithOutcomeAsync(run.RunId, context.RequestAborted).ConfigureAwait(false);
                 return outcome is null
