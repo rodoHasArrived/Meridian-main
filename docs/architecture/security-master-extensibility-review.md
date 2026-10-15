@@ -5680,6 +5680,15 @@ Rich alias candidates reach one shared registry normalization rule that prefers 
 representative for each normalized spelling/provider/source identity. Expired, disabled or future
 windows cannot mask a currently valid renewal. That live projection retains the representative's
 provenance and window; complete recorded history remains in the append-only alias revision store.
+Registry reconciliation applies withdrawals before planning canonical transfers, then detaches and
+assigns permitted moves as one candidate batch. Security Master-owned chains and swaps are order
+independent; independently retained and unscoped names remain protected from adoption.
+
+The public odd-first-period constant-yield path carries contractual maturity into its 30E/360 ISDA
+stub and reference-period fractions. A final February endpoint retains its actual day, while an
+intermediate February coupon keeps the ordinary month-end adjustment. Independent nonleap/leap
+price and carrying-basis fixtures cover that distinction. This corrects the newly added odd-period
+path; retained regular/v1 calculations and governed v2 posting refusal remain unchanged.
 Shared schedule validation (#3126) and
 explicit payload-family discrimination (#3127) remain separately scoped. Review threads and human
 acceptance are not inferred from these code corrections or from automated review.

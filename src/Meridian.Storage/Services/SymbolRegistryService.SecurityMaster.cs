@@ -58,7 +58,7 @@ public sealed partial class SymbolRegistryService
                     }
                 }
 
-                if (!incomingBySecurityId.TryGetValue(id, out var supplied))
+                if (!incomingBySecurityId.ContainsKey(id))
                 {
                     if (entry.SecurityMasterOwnsCanonical)
                     {
@@ -71,31 +71,12 @@ public sealed partial class SymbolRegistryService
                 }
 
                 entry.SecurityMasterCanonicalWithdrawn = false;
-                var currentCanonical = supplied.Canonical.Trim().ToUpperInvariant();
-                if (!entry.Canonical.Equals(currentCanonical, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (candidate.Symbols.ContainsKey(currentCanonical))
-                        throw new InvalidOperationException($"Canonical symbol '{currentCanonical}' is already registered to a different instrument.");
-
-                    // Reconciliation follows durable identity to the new primary ticker. A previous
-                    // independently registered canonical remains an alias with that authority; an old
-                    // Security Master ticker survives only if its current alias history supplies it.
-                    if (!entry.SecurityMasterOwnsCanonical)
-                    {
-                        entry.Aliases.Add(new SymbolAlias
-                        {
-                            Alias = entry.Canonical,
-                            Source = SymbolMappingSources.Registry,
-                            Type = "ticker"
-                        });
-                    }
-                    candidate.Symbols.Remove(canonical);
-                    entry.Canonical = currentCanonical;
-                    entry.SecurityMasterOwnsCanonical = true;
-                    candidate.Symbols[currentCanonical] = entry;
-                }
             }
 
+            // Finish every scoped withdrawal before evaluating destinations. Then reserve and
+            // move the complete active set together, so a released name or a chain/swap of
+            // Security Master-owned names never depends on retained dictionary iteration order.
+            ApplySecurityMasterCanonicalMoves(candidate, incomingBySecurityId, ct);
             var indexes = BuildIndexesAndCaches(candidate);
             foreach (var entry in incoming)
             {
@@ -129,6 +110,89 @@ public sealed partial class SymbolRegistryService
             _registryLock.Release();
         }
     }
+
+    private static void ApplySecurityMasterCanonicalMoves(
+        SymbolRegistry candidate,
+        IReadOnlyDictionary<Guid, SymbolRegistryEntry> incoming,
+        CancellationToken ct)
+    {
+        var requestedNames = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (id, supplied) in incoming)
+        {
+            ct.ThrowIfCancellationRequested();
+            var canonical = supplied.Canonical.Trim().ToUpperInvariant();
+            if (!requestedNames.TryAdd(canonical, id))
+                throw new InvalidOperationException($"Canonical symbol '{canonical}' is requested by multiple instruments.");
+        }
+
+        var moves = new Dictionary<string, (string Canonical, SymbolRegistryEntry Entry)>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (canonical, entry) in candidate.Symbols)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (entry.SecurityId is Guid id && incoming.TryGetValue(id, out var supplied))
+            {
+                var destination = supplied.Canonical.Trim().ToUpperInvariant();
+                if (!canonical.Equals(destination, StringComparison.OrdinalIgnoreCase))
+                    moves.Add(canonical, (destination, entry));
+            }
+        }
+
+        var retainedIds = candidate.Symbols.Values.Where(entry => entry.SecurityId.HasValue)
+            .Select(entry => entry.SecurityId!.Value).ToHashSet();
+        foreach (var (canonical, id) in requestedNames)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!candidate.Symbols.TryGetValue(canonical, out var occupant) || occupant.SecurityId == id)
+                continue;
+
+            // Preserve the existing non-move registration contract: a genuinely new identity
+            // can bind an unidentified same-name entry while retaining that independent name.
+            // A known identity moving into an unrelated unidentified entry remains a conflict.
+            if (occupant.SecurityId is null && !retainedIds.Contains(id))
+                continue;
+
+            if (!moves.ContainsKey(canonical) || HasIndependentCanonicalSpelling(occupant))
+            {
+                throw new InvalidOperationException($"Canonical symbol '{canonical}' is already registered to a different instrument.");
+            }
+        }
+
+        foreach (var canonical in moves.Keys)
+        {
+            ct.ThrowIfCancellationRequested();
+            candidate.Symbols.Remove(canonical);
+        }
+        foreach (var (previousCanonical, move) in moves)
+        {
+            ct.ThrowIfCancellationRequested();
+            // A previous independently registered name remains an alias of its instrument.
+            // Destination validation above prevents another instrument from shadowing it.
+            if (!move.Entry.SecurityMasterOwnsCanonical)
+            {
+                move.Entry.Aliases.Add(new SymbolAlias
+                {
+                    Alias = previousCanonical,
+                    Source = SymbolMappingSources.Registry,
+                    Type = "ticker"
+                });
+            }
+            move.Entry.Canonical = move.Canonical;
+            move.Entry.SecurityMasterOwnsCanonical = true;
+            candidate.Symbols.Add(move.Canonical, move.Entry);
+        }
+    }
+
+    private static bool HasIndependentCanonicalSpelling(SymbolRegistryEntry entry)
+        => !entry.SecurityMasterOwnsCanonical
+           || entry.Aliases.Any(alias => alias.IsActive && string.IsNullOrWhiteSpace(alias.Provider)
+               && !IsSecurityMasterSource(alias.Source)
+               && alias.Alias.Equals(entry.Canonical, StringComparison.OrdinalIgnoreCase))
+           || new[]
+           {
+               entry.Identifiers.Isin, entry.Identifiers.Cusip, entry.Identifiers.Figi, entry.Identifiers.Sedol,
+               entry.Identifiers.CompositeFigi, entry.Identifiers.ShareClassFigi, entry.Identifiers.Cik,
+               entry.Identifiers.Lei, entry.Identifiers.BloombergId, entry.Identifiers.Ric
+           }.Any(value => string.Equals(value, entry.Canonical, StringComparison.OrdinalIgnoreCase));
 
     // Unknown legacy alias ownership is never inferred from spelling or a matching typed field.
     // The opt-in legacy cleanup capability requires a reviewed, exact evidence-bound manifest.

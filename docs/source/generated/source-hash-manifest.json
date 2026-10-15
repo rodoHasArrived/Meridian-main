@@ -30,8 +30,8 @@
       "id": "SRC-CONTRACTS",
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
-      "readme_hash": "fae8a0535fd41dc3181214d6a9cfba9ee393e51822d08e09034a226142d6cfb2",
-      "source_hash": "84a76e7505eb4fde74ac98bd186209b0cb3a465a58e2eedb5205441062469f85"
+      "readme_hash": "75a295778f1c25bf97f49d7e182347c9f115d85a41a59be53ed1c2d7a926f4d0",
+      "source_hash": "5eecbbb861ac9ff694e901df8ab49ec4e0d833a9b019d2795c17bf7096b9a264"
     },
     {
       "id": "SRC-CORE",
@@ -247,8 +247,8 @@
       "id": "SRC-STORAGE",
       "path": "src/Meridian.Storage",
       "readme": "src/Meridian.Storage/README.md",
-      "readme_hash": "b30b9abcc7056cee8ee5a4ea9ab23272fa1a8b10453f0ff51642eda1b097614c",
-      "source_hash": "c2ffb2a89a718da83ff65180235ca0394e9e218f1decb51473a049bc756495a8"
+      "readme_hash": "8e52cbef83a9f4786ce6794720df0ba6926c36799b77efea6f2e7da0d28155ab",
+      "source_hash": "91deb7c8b331ca0d6ad2207a28ae90fda3b5c565a35ba1fb3e57bf1a1cde3751"
     },
     {
       "id": "SRC-STRATEGIES",

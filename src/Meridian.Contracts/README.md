@@ -107,7 +107,9 @@ price even at maturity. The public `FaceValueLot.ConstantYieldAmortizedBasisAsOf
 supports an odd (short) first period for mid-period acquisitions: coupons are generated backward from
 maturity, the stub is discounted with its day-count period fraction, the clean acquisition price
 excludes purchased accrued interest (`coupon × (1 − f)`), and a retained yield must reconcile through
-the same odd-period pricing. Odd last periods are not modelled. Posting odd-first schedules requires a
+the same odd-period pricing. Its 30E/360 ISDA fractions use contractual maturity for both the stub
+and reference-period endpoints, preserving the final-February termination exception while leaving
+intermediate February coupons under ordinary month-end rules. Odd last periods are not modelled. Posting odd-first schedules requires a
 new governed calculation version.
 New instructions identify calculation model v2. Retained JSON without a calculation version keeps
 the original v1 calculation and serialized shape for receipt replay; unposted legacy instructions

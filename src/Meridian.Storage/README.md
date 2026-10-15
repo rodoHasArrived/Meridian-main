@@ -69,11 +69,14 @@ Independent aliases and provider overrides remain retained. When they retain an 
 Security Master-owned canonical is withdrawn, persisted `SecurityMasterCanonicalWithdrawn` keeps
 that internal storage identity from resolving as a canonical input or appearing in suggestions.
 Active reseeding restores its authority; independent exact-spelling registration owns its own name.
+Canonical transfers are planned after all withdrawals and applied together, so Security Master-owned
+chains and swaps do not depend on iteration order. Independent and unscoped name authority remains
+protected; collisions refuse before persistence.
 The live registry selects one deterministic representative for each normalized alias/provider/source
 identity, preferring the supplied active state so expired or disabled windows cannot hide a renewed
 alias. Complete temporal history remains in Security Master's append-only alias revisions.
-Unknown legacy identifier ownership is
-never inferred from matching text: `ISecurityMasterLegacyIdentifierCleanupWriter` validates an
+Unknown legacy identifier ownership is never inferred from matching text:
+`ISecurityMasterLegacyIdentifierCleanupWriter` validates an
 explicit evidence-bound manifest against a registry fingerprint before atomically applying it and
 retaining an idempotent receipt. Resolver rebuilds serialize their read/build/publication step so an
 older rebuild cannot restore a superseded alias after a newer reconciliation.

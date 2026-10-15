@@ -11144,6 +11144,7 @@ Meridian-main
 │   │   │   ├── QuotaEnforcementServiceTests.cs
 │   │   │   ├── RecurringJournalPeriodAuthorityPostgresTests.cs
 │   │   │   ├── ReportingOperationalStoreTests.cs
+│   │   │   ├── SecurityMasterCanonicalMovePlanTests.cs
 │   │   │   ├── SecurityMasterLegacyIdentifierCleanupTests.cs
 │   │   │   ├── SecurityMasterSymbolReconciliationTests.cs
 │   │   │   ├── SourceRegistryPersistenceTests.cs

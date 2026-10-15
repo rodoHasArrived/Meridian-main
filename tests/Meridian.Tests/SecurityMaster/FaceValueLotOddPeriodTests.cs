@@ -72,6 +72,61 @@ public sealed class FaceValueLotOddPeriodTests
         afterFirstCoupon.Should().BeApproximately(99.043265152229239325m, 0.000000001m);
     }
 
+    [Theory]
+    [InlineData(2027, 28, "99.748978967443104302453789293", "99.834554319451136926617270216")]
+    [InlineData(2028, 29, "99.747607021499878806432276340", "99.832683306387560107634879821")]
+    public void ThirtyE360Isda_FinalFebruaryStub_ReconcilesYieldAndUsesTerminationDays(
+        int maturityYear, int maturityDay, string cleanPriceText, string decemberBasisText)
+    {
+        // One remaining 5% semiannual coupon at 6% yield: clean = 102.5 / 1.03^f − 2.5(1−f).
+        // The termination exception makes f = 88/178 in a nonleap year, 89/179 in a leap year;
+        // treating February as an ordinary coupon incorrectly uses 90/180 for either schedule.
+        // Independently evaluated decimal fixtures also check Dec 31: 30 of the 88/89 stub days.
+        var cleanPrice = decimal.Parse(cleanPriceText, System.Globalization.CultureInfo.InvariantCulture);
+        var expectedDecemberBasis = decimal.Parse(decemberBasisText, System.Globalization.CultureInfo.InvariantCulture);
+        var acquired = new DateOnly(maturityYear - 1, 11, 30);
+        var maturity = new DateOnly(maturityYear, 2, maturityDay);
+        var lot = new FaceValueLot("odd-isda-final-february", SecurityId, acquired, 100m, cleanPrice);
+
+        lot.ConstantYieldAmortizedBasisAsOf(DayCountConvention.ThirtyE360Isda, maturity,
+                new DateOnly(maturityYear - 1, 12, 31), 5m, 2, 0.06m)
+            .Should().BeApproximately(expectedDecemberBasis, 0.000000001m);
+        lot.ConstantYieldAmortizedBasisAsOf(DayCountConvention.ThirtyE360Isda, maturity,
+                new DateOnly(maturityYear - 1, 12, 31), 5m)
+            .Should().BeApproximately(expectedDecemberBasis, 0.000000001m, "the implied-yield solver must use the same termination-aware pricing");
+        lot.ConstantYieldAmortizedBasisAsOf(DayCountConvention.ThirtyE360Isda, maturity, maturity, 5m, 2, 0.06m)
+            .Should().Be(100m, "a correctly retained yield must reconcile even at maturity");
+    }
+
+    [Fact]
+    public void ThirtyE360Isda_IntermediateFebruaryCoupon_RemainsAnOrdinaryThirtyDayEndpoint()
+    {
+        // Same Nov 30→Feb 28 stub, but Feb 28 is not maturity (the bond ends Aug 31).
+        // Its fraction remains 90/180. At 6% annual yield the two remaining 2.5 coupons price as:
+        // clean = 1.03^0.5 × [2.5/1.03 + 102.5/1.03^2] − 1.25.
+        var lot = new FaceValueLot("odd-isda-intermediate-february", SecurityId, new DateOnly(2026, 11, 30),
+            100m, 99.267935828265148521844024083m);
+
+        lot.ConstantYieldAmortizedBasisAsOf(DayCountConvention.ThirtyE360Isda, new DateOnly(2027, 8, 31),
+                new DateOnly(2027, 2, 28), 5m, 2, 0.06m)
+            .Should().BeApproximately(99.514563106796116504854368932m, 0.000000001m);
+    }
+
+    [Fact]
+    public void ThirtyE360Isda_LaterFinalFebruaryPeriod_UsesTerminationDenominatorForPartialBasis()
+    {
+        // An odd first period leads into a final Aug 31 2028→Feb 28 2029 period of 178 days.
+        // Nov 30 is an ordinary endpoint, so the partial share is 90/178, not 90/180 or 88/178.
+        // The initial short period ends on intermediate Feb 29 2028 and still uses f = 90/180.
+        var lot = new FaceValueLot("odd-isda-later-final", SecurityId, new DateOnly(2027, 11, 30),
+            100m, 98.803552154891459600976848653m);
+        var maturity = new DateOnly(2029, 2, 28);
+
+        lot.ConstantYieldAmortizedBasisAsOf(DayCountConvention.ThirtyE360Isda, maturity,
+                new DateOnly(2028, 11, 30), 5m, 2, 0.06m)
+            .Should().BeApproximately(99.760008726955383440602159921m, 0.000000001m);
+    }
+
     [Fact]
     public void HandCheckedStub_InterpolatesLinearlyByDayCountInsideTheStub()
     {
