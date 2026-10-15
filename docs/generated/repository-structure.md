@@ -5094,6 +5094,7 @@ Meridian-main
 │   │   ├── OrderManagementSystem.ExecutionReportSubscriptions.cs
 │   │   ├── OrderManagementSystem.FillIdentity.cs
 │   │   ├── OrderManagementSystem.KillSwitch.cs
+│   │   ├── OrderManagementSystem.Modifications.cs
 │   │   ├── OrderManagementSystem.Recovery.cs
 │   │   ├── OrderManagementSystem.Retention.cs
 │   │   ├── OrderManagementSystem.RiskOutcomes.cs
@@ -5122,6 +5123,7 @@ Meridian-main
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IExecutionGatewayModeProvider.cs
 │   │   ├── IExplicitOrderCancellationGateway.cs
+│   │   ├── IExplicitOrderModificationGateway.cs
 │   │   ├── IFaceValueOrderSizingGateway.cs
 │   │   ├── INotionalOrderSizingGateway.cs
 │   │   ├── IOrderManager.cs
@@ -5446,6 +5448,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaAssetStreamAdapters.cs
 │   │   │   │   ├── AlpacaBrokerageGateway.Cancellation.cs
 │   │   │   │   ├── AlpacaBrokerageGateway.cs
+│   │   │   │   ├── AlpacaBrokerageGateway.Modifications.cs
 │   │   │   │   ├── AlpacaBrokerageGateway.PortfolioSync.cs
 │   │   │   │   ├── AlpacaBrokerageGateway.Recovery.cs
 │   │   │   │   ├── AlpacaConstants.cs
@@ -10393,6 +10396,7 @@ Meridian-main
 │   │   │   ├── LogSanitizerTests.cs
 │   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
 │   │   │   ├── OmsGovernedBrokerageOrderGatewayTests.cs
+│   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.cs
 │   │   │   ├── OrderManagementSystemDurableHandoffOrderingTests.cs
 │   │   │   ├── OrderManagementSystemGovernanceTests.cs
 │   │   │   ├── OrderManagementSystemReportStreamTests.cs
@@ -10413,6 +10417,7 @@ Meridian-main
 │   │   │   ├── PortfolioStatePositionTrackerTests.cs
 │   │   │   ├── PositionLotSelectorTests.cs
 │   │   │   ├── RiskValidationResultTests.cs
+│   │   │   ├── RobinhoodHostedSynchronizationTests.cs
 │   │   │   ├── SessionTcaReporterTests.cs
 │   │   │   ├── TradeFillHandoffFailureStoreConcurrencyTests.cs
 │   │   │   ├── TradierExecutionReconciliationTests.cs
@@ -10532,6 +10537,7 @@ Meridian-main
 │   │   │   │   │       ├── polygon-recorded-session-spy-etf.json
 │   │   │   │   │       └── polygon-recorded-session-tsla-opening-cross.json
 │   │   │   │   ├── AlpacaAssetStreamRoutingTests.cs
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.Amendments.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.PortfolioRecovery.cs
 │   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
@@ -10564,6 +10570,8 @@ Meridian-main
 │   │   │   │   ├── HistoricalDataProviderContractTests.cs
 │   │   │   │   ├── IBApiVersionValidatorTests.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.Operations.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.PositionIdentity.cs
 │   │   │   │   ├── IBDataServicesTests.cs
 │   │   │   │   ├── IBHistoricalProviderContractTests.cs
 │   │   │   │   ├── IBMarketDataClientContractTests.cs
@@ -11219,6 +11227,7 @@ Meridian-main
 │   │   ├── SymbolSearch
 │   │   │   ├── OpenFigiClientAmbiguityTests.cs
 │   │   │   ├── OpenFigiClientTests.cs
+│   │   │   ├── OpenFigiSymbolResolverTests.cs
 │   │   │   └── SymbolSearchServiceTests.cs
 │   │   ├── Tenancy
 │   │   │   ├── AuthoritativeScopeFanOutServiceTests.cs
