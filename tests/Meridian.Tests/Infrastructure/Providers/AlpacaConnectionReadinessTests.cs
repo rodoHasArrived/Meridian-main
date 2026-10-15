@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading.Channels;
 using FluentAssertions;
 using Meridian.Core.Config;
+using Meridian.Core.Exceptions;
 using Meridian.Domain.Collectors;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Resilience;
@@ -70,6 +71,10 @@ public sealed class AlpacaConnectionReadinessTests
     }
 
     [Theory]
+    [InlineData(400, ProviderFailureKind.LocalConfigurationError)]
+    [InlineData(403, ProviderFailureKind.LocalConfigurationError)]
+    [InlineData(405, ProviderFailureKind.LocalConfigurationError)]
+    [InlineData(410, ProviderFailureKind.LocalConfigurationError)]
     [InlineData(401, ProviderFailureKind.AuthenticationOrAuthorizationFailure)]
     [InlineData(402, ProviderFailureKind.AuthenticationOrAuthorizationFailure)]
     [InlineData(409, ProviderFailureKind.AuthenticationOrAuthorizationFailure)]
@@ -90,7 +95,8 @@ public sealed class AlpacaConnectionReadinessTests
         var failure = await Record.ExceptionAsync(() => connecting);
         failure.Should().NotBeNull();
         ProviderFailureClassifier.Classify(failure!).Should().Be(expected);
-        ProviderFailureClassifier.IsRetryable(expected).Should().Be(code is not (401 or 402 or 409));
+        ProviderFailureClassifier.IsRetryable(expected).Should().Be(expected is not
+            (ProviderFailureKind.AuthenticationOrAuthorizationFailure or ProviderFailureKind.LocalConfigurationError));
         client.GetConnectionDiagnosticsSnapshot().LastFailureKind.Should().Be(expected);
     }
 
@@ -110,6 +116,8 @@ public sealed class AlpacaConnectionReadinessTests
     }
 
     [Theory]
+    [InlineData(400)]
+    [InlineData(403)]
     [InlineData(405)]
     [InlineData(409)]
     [InlineData(410)]
@@ -130,7 +138,7 @@ public sealed class AlpacaConnectionReadinessTests
         if (code == 409)
             failure.Should().BeOfType<AuthenticationException>();
         else
-            failure.Should().BeOfType<InvalidOperationException>();
+            failure.Should().BeOfType<ConfigurationException>();
         client.GetConnectionDiagnosticsSnapshot().IsConnected.Should().BeFalse();
     }
 
@@ -151,7 +159,7 @@ public sealed class AlpacaConnectionReadinessTests
         const string error = """{"T":"error","code":405}""";
         await connection.SendAsync(errorFirst ? $"[{error},{acknowledgment}]" : $"[{acknowledgment},{error}]", timeout.Token);
 
-        await FluentActions.Awaiting(() => connecting).Should().ThrowAsync<InvalidOperationException>().WithMessage("*405*");
+        await FluentActions.Awaiting(() => connecting).Should().ThrowAsync<ConfigurationException>().WithMessage("*405*");
         client.GetConnectionDiagnosticsSnapshot().IsConnected.Should().BeFalse();
     }
 
@@ -159,6 +167,13 @@ public sealed class AlpacaConnectionReadinessTests
     [InlineData("{\"T\":\"subscription\",\"trades\":[]}")]
     [InlineData("{\"T\":\"subscription\",\"trades\":[\"AAPL\"],\"quotes\":[\"AAPL\"]}")]
     [InlineData("{\"T\":\"subscription\",\"trades\":\"AAPL\"}")]
+    [InlineData("{\"T\":\"subscription\",\"trades\":[\"AAPL\"],\"corrections\":[\"MSFT\"]}")]
+    [InlineData("{\"T\":\"subscription\",\"trades\":[\"AAPL\"],\"cancelErrors\":[\"MSFT\"]}")]
+    [InlineData("{\"T\":\"subscription\",\"trades\":[\"AAPL\"],\"corrections\":[\"*\"]}")]
+    [InlineData("{\"T\":\"subscription\",\"trades\":[\"AAPL\"],\"cancelErrors\":[\"*\"]}")]
+    [InlineData("{\"T\":\"subscription\",\"trades\":[\"AAPL\"],\"corrections\":\"AAPL\"}")]
+    [InlineData("{\"T\":\"subscription\",\"trades\":[\"AAPL\"],\"cancelErrors\":[null]}")]
+    [InlineData("{\"T\":\"subscription\",\"trades\":[\"AAPL\"],\"corrections\":[\"AAPL\"],\"bars\":[\"AAPL\"]}")]
     public async Task Connect_MismatchedOrMalformedSubscriptionStateFailsInitialization(string acknowledgment)
     {
         await using var server = await LoopbackServer.StartAsync();
@@ -170,6 +185,47 @@ public sealed class AlpacaConnectionReadinessTests
         await AuthenticateAsync(connection, timeout.Token);
         await connection.ReadAsync(timeout.Token);
         await connection.SendAsync(acknowledgment, timeout.Token);
+
+        await FluentActions.Awaiting(() => connecting).Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*different subscription state*");
+        client.GetConnectionDiagnosticsSnapshot().IsConnected.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("AAPL", "AAPL")]
+    [InlineData("*", "*")]
+    [InlineData("*", "AAPL")]
+    public async Task Connect_AutomaticTradeChannelsRespectRequestedSymbolsAndWildcard(string requested, string automaticSymbol)
+    {
+        await using var server = await LoopbackServer.StartAsync();
+        await using var client = CreateClient(server.Uri);
+        client.SubscribeTrades(new(requested));
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var connecting = client.ConnectAsync(timeout.Token);
+        var connection = await server.AcceptAsync(timeout.Token);
+        await AuthenticateAsync(connection, timeout.Token);
+        AssertSymbols(await connection.ReadAsync(timeout.Token), "subscribe", "trades", requested);
+        await AcknowledgeAsync(connection, timeout.Token, trades: [requested],
+            corrections: [automaticSymbol], cancelErrors: [automaticSymbol]);
+        await connecting;
+
+        client.GetConnectionDiagnosticsSnapshot().IsConnected.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("corrections")]
+    [InlineData("cancelErrors")]
+    public async Task Connect_AutomaticTradeChannelsCannotAddTradeCoverageToQuoteSubscription(string channel)
+    {
+        await using var server = await LoopbackServer.StartAsync();
+        await using var client = CreateClient(server.Uri);
+        client.SubscribeMarketDepth(new("AAPL"));
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var connecting = client.ConnectAsync(timeout.Token);
+        var connection = await server.AcceptAsync(timeout.Token);
+        await AuthenticateAsync(connection, timeout.Token);
+        AssertSymbols(await connection.ReadAsync(timeout.Token), "subscribe", "quotes", "AAPL");
+        await connection.SendAsync($$"""{"T":"subscription","quotes":["AAPL"],"{{channel}}":["AAPL"]}""", timeout.Token);
 
         await FluentActions.Awaiting(() => connecting).Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*different subscription state*");
@@ -314,7 +370,7 @@ public sealed class AlpacaConnectionReadinessTests
     }
 
     [Fact]
-    public async Task Unsubscribe_SendsRemovalOnlyAfterLastReferenceAndReplaysRemainingSubscriptions()
+    public async Task Unsubscribe_AutomaticTradeChannelsFollowSharedReferencesAndRemainingReconnectSubscriptions()
     {
         await using var server = await LoopbackServer.StartAsync();
         await using var client = CreateClient(server.Uri);
@@ -328,22 +384,25 @@ public sealed class AlpacaConnectionReadinessTests
         var replay = await connection.ReadAsync(timeout.Token);
         AssertSymbols(replay, "subscribe", "trades", "AAPL");
         AssertSymbols(replay, "subscribe", "quotes", "AAPL");
-        await AcknowledgeAsync(connection, timeout.Token, trades: ["AAPL"], quotes: ["AAPL"]);
+        await AcknowledgeAsync(connection, timeout.Token, trades: ["AAPL"], quotes: ["AAPL"],
+            corrections: ["AAPL"], cancelErrors: ["AAPL"]);
         await connecting;
 
         client.UnsubscribeTrades(first);
         client.SubscribeTrades(new("MSFT"));
         AssertSymbols(await connection.ReadAsync(timeout.Token), "subscribe", "trades", "MSFT");
-        await AcknowledgeAsync(connection, timeout.Token, trades: ["AAPL", "MSFT"], quotes: ["AAPL"]);
+        await AcknowledgeAsync(connection, timeout.Token, trades: ["AAPL", "MSFT"], quotes: ["AAPL"],
+            corrections: ["AAPL", "MSFT"], cancelErrors: ["AAPL", "MSFT"]);
         client.UnsubscribeTrades(second);
         var unsubscribe = await connection.ReadAsync(timeout.Token);
         AssertSymbols(unsubscribe, "unsubscribe", "trades", "AAPL");
         using (var document = JsonDocument.Parse(unsubscribe))
             document.RootElement.TryGetProperty("quotes", out _).Should().BeFalse();
-        await AcknowledgeAsync(connection, timeout.Token, trades: ["MSFT"], quotes: ["AAPL"]);
+        await AcknowledgeAsync(connection, timeout.Token, trades: ["MSFT"], quotes: ["AAPL"],
+            corrections: ["MSFT"], cancelErrors: ["MSFT"]);
         client.UnsubscribeMarketDepth(quote);
         AssertSymbols(await connection.ReadAsync(timeout.Token), "unsubscribe", "quotes", "AAPL");
-        await AcknowledgeAsync(connection, timeout.Token, trades: ["MSFT"]);
+        await AcknowledgeAsync(connection, timeout.Token, trades: ["MSFT"], corrections: ["MSFT"], cancelErrors: ["MSFT"]);
 
         await connection.CloseAsync(timeout.Token);
         var reconnected = await server.AcceptAsync(timeout.Token);
@@ -352,7 +411,8 @@ public sealed class AlpacaConnectionReadinessTests
         AssertSymbols(remaining, "subscribe", "trades", "MSFT");
         using var remainingDocument = JsonDocument.Parse(remaining);
         remainingDocument.RootElement.TryGetProperty("quotes", out _).Should().BeFalse();
-        await AcknowledgeAsync(reconnected, timeout.Token, trades: ["MSFT"]);
+        await AcknowledgeAsync(reconnected, timeout.Token, trades: ["MSFT"], corrections: ["MSFT"], cancelErrors: ["MSFT"]);
+        await WaitForReadinessAsync(client, timeout.Token);
     }
 
     [Fact]
@@ -388,6 +448,43 @@ public sealed class AlpacaConnectionReadinessTests
         failed.IsConnected.Should().BeFalse();
         failed.LastError.Should().Contain("subscription replay failed");
         client.ReplayAttempts.Should().Be(2);
+    }
+
+    [Theory]
+    [InlineData(400)]
+    [InlineData(403)]
+    [InlineData(405)]
+    [InlineData(410)]
+    public async Task Reconnect_PermanentReplayRejectionStopsWithoutSpendingRemainingAttempts(int code)
+    {
+        await using var server = await LoopbackServer.StartAsync();
+        await using var client = CreateClient(server.Uri, reconnectAttempts: 3);
+        client.SubscribeTrades(new("AAPL"));
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var connecting = client.ConnectAsync(timeout.Token);
+        var connection = await server.AcceptAsync(timeout.Token);
+        await AuthenticateAsync(connection, timeout.Token);
+        await connection.ReadAsync(timeout.Token);
+        await AcknowledgeAsync(connection, timeout.Token, trades: ["AAPL"]);
+        await connecting;
+
+        var recoveryFailed = new TaskCompletionSource<WebSocketConnectionDiagnostics>(TaskCreationOptions.RunContinuationsAsynchronously);
+        client.ConnectionDiagnosticsChanged += snapshot =>
+        {
+            if (snapshot.LifecycleState == ProviderConnectionLifecycleState.Failed)
+                recoveryFailed.TrySetResult(snapshot);
+        };
+        await connection.CloseAsync(timeout.Token);
+        var reconnected = await server.AcceptAsync(timeout.Token);
+        await AuthenticateAsync(reconnected, timeout.Token);
+        AssertSymbols(await reconnected.ReadAsync(timeout.Token), "subscribe", "trades", "AAPL");
+        await reconnected.SendAsync($$"""[{"T":"error","code":{{code}}}]""", timeout.Token);
+        var failed = await recoveryFailed.Task.WaitAsync(timeout.Token);
+
+        failed.IsConnected.Should().BeFalse();
+        failed.LastFailureKind.Should().Be(ProviderFailureKind.LocalConfigurationError);
+        failed.ReconnectAttempts.Should().Be(1);
+        client.ReplayAttempts.Should().Be(2, "the rejected replay must not spend the other two reconnect attempts");
     }
 
     [Theory]
@@ -618,13 +715,16 @@ public sealed class AlpacaConnectionReadinessTests
     }
 
     private static Task AcknowledgeAsync(LoopbackConnection connection, CancellationToken ct,
-        string[]? trades = null, string[]? quotes = null, string[]? news = null)
+        string[]? trades = null, string[]? quotes = null, string[]? news = null,
+        string[]? corrections = null, string[]? cancelErrors = null)
         => connection.SendAsync(JsonSerializer.Serialize(new
         {
             T = "subscription",
             trades = trades ?? [],
             quotes = quotes ?? [],
-            news = news ?? []
+            news = news ?? [],
+            corrections = corrections ?? [],
+            cancelErrors = cancelErrors ?? []
         }), ct);
 
     private static async Task AuthenticateAsync(LoopbackConnection connection, CancellationToken ct)

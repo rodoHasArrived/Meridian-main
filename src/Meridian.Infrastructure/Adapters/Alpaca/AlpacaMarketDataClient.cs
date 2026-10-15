@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading;
 using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Exceptions;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
@@ -588,6 +589,16 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
                     return false;
                 symbols.Add(symbol.GetString()!);
             }
+            // Alpaca automatically derives these channels from trade subscriptions.
+            // Their presence cannot grant coverage beyond the requested trade symbols;
+            // only an explicitly requested trade wildcard permits wildcard/expanded sets.
+            if (property.NameEquals("corrections") || property.NameEquals("cancelErrors"))
+            {
+                if (symbols.Count > 0 && (!expected.TryGetValue("trades", out var trades) ||
+                    (!trades.Contains("*") && !symbols.IsSubsetOf(trades))))
+                    return false;
+                continue;
+            }
             if (symbols.Count > 0 && !actual.TryAdd(property.Name, symbols))
                 return false;
         }
@@ -607,7 +618,7 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
             404 => new TimeoutException(message),
             406 => new HttpRequestException(message, null, HttpStatusCode.TooManyRequests),
             >= 500 => new HttpRequestException(message, null, HttpStatusCode.InternalServerError),
-            400 or 403 or 405 or 410 => new InvalidOperationException(message),
+            400 or 403 or 405 or 410 => new ConfigurationException(message),
             _ => new WebSocketException(message)
         };
     }

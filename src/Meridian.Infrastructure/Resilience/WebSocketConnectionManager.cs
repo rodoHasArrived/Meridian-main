@@ -1043,6 +1043,7 @@ public static class ProviderFailureClassifier
             HttpRequestException => ProviderFailureKind.TransientNetworkFailure,
             WebSocketException => ProviderFailureKind.TransientNetworkFailure,
             TimeoutException => ProviderFailureKind.TransientNetworkFailure,
+            Meridian.Core.Exceptions.ConfigurationException => ProviderFailureKind.LocalConfigurationError,
             InvalidOperationException invalidOperation when LooksLikeCredentialOrConfigFailure(invalidOperation.Message) => ProviderFailureKind.LocalConfigurationError,
             FormatException => ProviderFailureKind.MalformedProviderResponse,
             System.Text.Json.JsonException => ProviderFailureKind.MalformedProviderResponse,

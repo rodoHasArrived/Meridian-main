@@ -48,6 +48,7 @@ adapters:
     are logged and return empty action collections; empty results must not be treated as verified absence of actions.
     Cancellation propagates. Streaming readiness waits for authentication and full subscription acknowledgments;
     rejected or timed-out subscription changes invalidate readiness, while transient control errors remain retryable.
+    Automatic correction/cancel channels are limited to requested trades; permanent request errors stop retries.
     Final subscription-reference removal sends an explicit upstream unsubscribe.
   registration:
   - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
